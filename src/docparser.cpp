@@ -1350,10 +1350,10 @@ reparsetoken:
         switch (Mappers::htmlTagMapper->map(tokenName))
         {
           case HTML_DIV:
-            warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <div> tag in heading\n");
+            warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <div> tag in heading");
             break;
           case HTML_PRE:
-            warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <pre> tag in heading\n");
+            warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <pre> tag in heading");
             break;
           case HTML_BOLD:
             if (!context.token->endTag)
@@ -1576,7 +1576,7 @@ void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const Ht
   }
   if (!found)
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"IMG tag does not have a SRC attribute!\n");
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"IMG tag does not have a SRC attribute!");
   }
 }
 
@@ -1847,7 +1847,7 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
           else
           {
             warn_doc_error(context.fileName,tokenizer.getLineNr(),
-	         "Found recursive @copy%s or @copydoc relation for argument '%s'.\n",
+	         "Found recursive @copy%s or @copydoc relation for argument '%s'.",
                  isBrief?"brief":"details",qPrint(id));
           }
         }

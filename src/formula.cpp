@@ -316,7 +316,7 @@ static bool extractBoundingBox(const QCString &formBase,
     }
     else
     {
-      err("Couldn't extract bounding box from %s_tmp.epsi",qPrint(formBase));
+      err("Couldn't extract bounding box from %s_tmp.epsi\n",qPrint(formBase));
       return false;
     }
     i = eps.find("%%HiResBoundingBox:");
@@ -326,7 +326,7 @@ static bool extractBoundingBox(const QCString &formBase,
     }
     else
     {
-      err("Couldn't extract high resolution bounding box from %s_tmp.epsi",qPrint(formBase));
+      err("Couldn't extract high resolution bounding box from %s_tmp.epsi\n",qPrint(formBase));
       return false;
     }
   }

@@ -1432,7 +1432,7 @@ void addGroupToGroups(const Entry *root,GroupDef *subGroup)
       else if (subGroup->findGroup(gd))
       {
         warn(root->fileName,root->startLine,"Refusing to add group %s to group %s, since the latter is already a "
-                                            "subgroup of the former\n", qPrint(subGroup->name()),qPrint(gd->name()));
+                                            "subgroup of the former", qPrint(subGroup->name()),qPrint(gd->name()));
       }
       else if (!gd->findGroup(subGroup))
       {

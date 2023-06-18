@@ -3210,7 +3210,7 @@ bool generateLink(OutputList &ol,const QCString &clName,
     }
     else
     {
-      err("%s:%d: Internal error: resolveLink successful but no compound found!",__FILE__,__LINE__);
+      err("%s:%d: Internal error: resolveLink successful but no compound found!\n",__FILE__,__LINE__);
     }
     return TRUE;
   }

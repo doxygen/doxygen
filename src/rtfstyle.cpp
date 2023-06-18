@@ -254,7 +254,7 @@ bool StyleData::setStyle(const std::string &command, const std::string &styleNam
   reg::Match match;
   if (!reg::search(command,match,s_clause))
   {
-    err("Style sheet '%s' contains no '\\s' clause.\n{%s}", styleName.c_str(), command.c_str());
+    err("Style sheet '%s' contains no '\\s' clause.\n{%s}\n", styleName.c_str(), command.c_str());
     return false;
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
@@ -275,7 +275,7 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF style sheet file %s. Using defaults.",qPrint(name));
+    err("Can't open RTF style sheet file %s. Using defaults.\n",qPrint(name));
     return;
   }
   msg("Loading RTF style sheet %s...\n",qPrint(name));
@@ -317,7 +317,7 @@ void loadExtensions(const QCString &name)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF extensions file %s. Using defaults.",qPrint(name));
+    err("Can't open RTF extensions file %s. Using defaults.\n",qPrint(name));
     return;
   }
   msg("Loading RTF extensions %s...\n",qPrint(name));

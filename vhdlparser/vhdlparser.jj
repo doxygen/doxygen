@@ -3036,7 +3036,7 @@ QCString signature() : {QCString s,s1,s2;}
 
 QCString simple_expression():  {QCString s,s1,s2;}
 {
-[ s=sign() ] s1=term() {s+=s1;} ( LOOKAHEAD(adding_operator() term()) s1=adding_operator() s2=term() {s+=s1;s+=s2;})* { return s;}
+[ s=sign() ] s1=simpleTerm() {s+=s1;} ( LOOKAHEAD(adding_operator() simpleTerm()) s1=adding_operator() s2=simpleTerm() {s+=s1;s+=s2;})* { return s;}
 }
 
 void simple_name() :  {}
@@ -3214,7 +3214,8 @@ QCString target() :  { QCString s; }
 | s=aggregate() { return s;}
 }
 
-QCString term() : { QCString s,s1,s2; }
+// use simpleTerm instead of term to prevent collision with function / macro in doxygen
+QCString simpleTerm() : { QCString s,s1,s2; }
 {
  s=factor() ( LOOKAHEAD(2) s1=multiplying_operation() s2=factor(){s+=s1;s+=s2;} )* { return s;}
 }

@@ -1590,7 +1590,7 @@ static void processSection(yyscan_t yyscanner)
   }
   else
   {
-    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor %s without context\n",qPrint(yyextra->secLabel));
+    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor %s without context",qPrint(yyextra->secLabel));
   }
   SectionInfo *si = SectionManager::instance().find(yyextra->secLabel);
   if (si)

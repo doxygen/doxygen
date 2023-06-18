@@ -6952,7 +6952,7 @@ NONLopt [^\n]*
 <DocCopyBlock><<EOF>>                   {
                                           warn(yyextra->fileName,yyextra->yyLineNr,
                                               "reached end of file while inside a '%s' block!\n"
-                                              "The command that should end the block seems to be missing!\n",
+                                              "The command that should end the block seems to be missing!",
                                               qPrint(yyextra->docBlockName));
                                           yyterminate();
                                         }

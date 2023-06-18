@@ -37,7 +37,7 @@ void DocGroup::leaveFile(const QCString &fileName,int line)
 {
   //if (m_memberGroupId!=DOX_NOGROUP)
   //{
-  //  warn(fileName,line,"end of file while inside a member group\n");
+  //  warn(fileName,line,"end of file while inside a member group");
   //}
   m_memberGroupId=DOX_NOGROUP;
   m_memberGroupRelates.resize(0);
@@ -56,7 +56,7 @@ void DocGroup::enterCompound(const QCString &fileName,int line,const QCString &n
 {
   if (m_memberGroupId!=DOX_NOGROUP)
   {
-    warn(fileName,line,"try to put compound %s inside a member group\n",qPrint(name));
+    warn(fileName,line,"try to put compound %s inside a member group",qPrint(name));
   }
   m_memberGroupId=DOX_NOGROUP;
   m_memberGroupRelates.resize(0);

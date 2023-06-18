@@ -32,6 +32,10 @@
 #include "latexgen.h"
 #include "trace.h"
 
+
+#undef warn
+#define warn warn_
+
 class TemplateToken;
 
 //-------------------------------------------------------------------
@@ -2566,7 +2570,7 @@ void TemplateContextImpl::setEncoding(const QCString &templateName,int line,cons
     m_fromUtf8 = portable_iconv_open(enc.data(),"UTF-8");
     if (m_fromUtf8==reinterpret_cast<void*>(-1))
     {
-      warn(templateName,line,"unsupported character conversion: '%s'->'UTF-8'\n", qPrint(enc));
+      warn(templateName,line,"unsupported character conversion: '%s'->'UTF-8'", qPrint(enc));
     }
   }
   //printf("TemplateContextImpl::setEncoding(%s)\n",qPrint(enc));
@@ -2723,7 +2727,7 @@ void TemplateContextImpl::pop()
   //printf("TemplateContextImpl::pop() #stacks=%lu\n",m_contextStack.size());
   if (m_contextStack.empty())
   {
-    warn(m_templateName,m_line,"pop() called on empty context stack!\n");
+    warn(m_templateName,m_line,"pop() called on empty context stack!");
   }
   else
   {
@@ -3739,7 +3743,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
         QCString includeFile = m_includeExpr->resolve(c).toString();
         if (includeFile.isEmpty())
         {
-          ci->warn(m_templateName,m_line,"invalid parameter for include command\n");
+          ci->warn(m_templateName,m_line,"invalid parameter for include command");
         }
         else
         {
@@ -3830,11 +3834,11 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
         QCString outputFile = m_fileExpr->resolve(c).toString();
         if (templateFile.isEmpty())
         {
-          ci->warn(m_templateName,m_line,"empty template name parameter for create command\n");
+          ci->warn(m_templateName,m_line,"empty template name parameter for create command");
         }
         else if (outputFile.isEmpty())
         {
-          ci->warn(m_templateName,m_line,"empty file name parameter for create command\n");
+          ci->warn(m_templateName,m_line,"empty file name parameter for create command");
         }
         else
         {
@@ -3957,7 +3961,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
             }
             else if (list==0)
             {
-              ci->warn(m_templateName,m_line,"recursetree: children attribute has type '%s' instead of list\n",qPrint(v.typeAsString()));
+              ci->warn(m_templateName,m_line,"recursetree: children attribute has type '%s' instead of list",qPrint(v.typeAsString()));
             }
           }
           //else
@@ -4542,7 +4546,7 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
         QCString resourceFile = m_resExpr->resolve(c).toString();
         if (resourceFile.isEmpty())
         {
-          ci->warn(m_templateName,m_line,"invalid parameter for resource command\n");
+          ci->warn(m_templateName,m_line,"invalid parameter for resource command");
         }
         else
         {
@@ -4553,7 +4557,7 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
             mkpath(ci,targetFile.str());
             if (targetFile.isEmpty())
             {
-              ci->warn(m_templateName,m_line,"invalid parameter at right side of '%s' for resource command\n", m_append ? "append" : "as");
+              ci->warn(m_templateName,m_line,"invalid parameter at right side of '%s' for resource command", m_append ? "append" : "as");
             }
             else
             {

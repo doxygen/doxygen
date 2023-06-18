@@ -329,7 +329,7 @@ class TagFileParser
     void characters ( const QCString & ch ) { m_curString+=ch; }
     void error( const QCString &fileName,int lineNr,const QCString &msg)
     {
-      ::warn(fileName,lineNr,"%s",qPrint(msg));
+      ::warn_(fileName,lineNr,"%s",qPrint(msg));
     }
 
     void dump();
@@ -352,7 +352,7 @@ class TagFileParser
           m_tagFileCompounds.push_back(std::move(m_curCompound));
           break;
         default:
-          warn("tag 'compound' was not expected!");
+          p_warn("tag 'compound' was not expected!");
           break;
       }
     }
@@ -409,7 +409,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'member' found");
+          p_warn("Unexpected tag 'member' found");
           break;
       }
     }
@@ -428,7 +428,7 @@ class TagFileParser
       }
       else
       {
-        warn("Found 'enumvalue' tag outside of member tag");
+        p_warn("Found 'enumvalue' tag outside of member tag");
       }
     }
 
@@ -461,7 +461,7 @@ class TagFileParser
           if (AnchorGenerator::looksGenerated(m_curString.str())) return;
           break;
         default:
-          warn("Unexpected tag 'docanchor' found");
+          p_warn("Unexpected tag 'docanchor' found");
           return;
       }
       switch(m_state)
@@ -524,7 +524,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'class' found");
+          p_warn("Unexpected tag 'class' found");
           break;
       }
     }
@@ -552,7 +552,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'concept' found");
+          p_warn("Unexpected tag 'concept' found");
           break;
       }
     }
@@ -580,7 +580,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'namespace' found");
+          p_warn("Unexpected tag 'namespace' found");
           break;
       }
     }
@@ -602,7 +602,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'file' found");
+          p_warn("Unexpected tag 'file' found");
           break;
       }
     }
@@ -618,7 +618,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'page' found");
+          p_warn("Unexpected tag 'page' found");
           break;
       }
     }
@@ -634,7 +634,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'dir' found");
+          p_warn("Unexpected tag 'dir' found");
           break;
       }
     }
@@ -659,7 +659,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'type' found");
+        p_warn("Unexpected tag 'type' found");
       }
     }
 
@@ -684,7 +684,7 @@ class TagFileParser
           m_curMember.name = m_curString;
           break;
         default:
-          warn("Unexpected tag 'name' found");
+          p_warn("Unexpected tag 'name' found");
           break;
       }
     }
@@ -715,7 +715,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'base' found");
+        p_warn("Unexpected tag 'base' found");
       }
     }
 
@@ -728,7 +728,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'base' found");
+        p_warn("Unexpected tag 'base' found");
       }
     }
 
@@ -752,7 +752,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'includes' found");
+        p_warn("Unexpected tag 'includes' found");
       }
     }
 
@@ -765,7 +765,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'templarg' found");
+        p_warn("Unexpected tag 'templarg' found");
       }
     }
 
@@ -787,7 +787,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'filename' found");
+          p_warn("Unexpected tag 'filename' found");
           break;
       }
     }
@@ -809,7 +809,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'path' found");
+          p_warn("Unexpected tag 'path' found");
           break;
       }
     }
@@ -827,7 +827,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'anchor' found");
+        p_warn("Unexpected tag 'anchor' found");
       }
     }
 
@@ -849,7 +849,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'clangid' found");
+        p_warn("Unexpected tag 'clangid' found");
       }
     }
 
@@ -863,7 +863,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'anchorfile' found");
+        p_warn("Unexpected tag 'anchorfile' found");
       }
     }
 
@@ -875,7 +875,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'arglist' found");
+        p_warn("Unexpected tag 'arglist' found");
       }
     }
 
@@ -896,7 +896,7 @@ class TagFileParser
           }
           break;
         default:
-          warn("Unexpected tag 'title' found");
+          p_warn("Unexpected tag 'title' found");
           break;
       }
     }
@@ -910,7 +910,7 @@ class TagFileParser
       }
       else
       {
-        warn("Unexpected tag 'subgroup' found");
+        p_warn("Unexpected tag 'subgroup' found");
       }
     }
 
@@ -941,16 +941,16 @@ class TagFileParser
                };
   private:
 
-    void warn(const char *fmt)
+    void p_warn(const char *fmt)
     {
       QCString fileName = m_locator->fileName();
-      ::warn(fileName,m_locator->lineNr(),"%s", fmt);
+      ::warn_(fileName,m_locator->lineNr(),"%s", fmt);
     }
 
-    void warn(const char *fmt,const char *s)
+    void p_warn(const char *fmt,const char *s)
     {
       QCString fileName = m_locator->fileName();
-      ::warn(fileName,m_locator->lineNr(),fmt,s);
+      ::warn_(fileName,m_locator->lineNr(),fmt,s);
     }
 
 
@@ -1066,7 +1066,7 @@ void TagFileParser::startElement( const QCString &name, const XMLHandlers::Attri
   }
   else
   {
-    warn("Unknown start tag '%s' found!",qPrint(name));
+    p_warn("Unknown start tag '%s' found!",qPrint(name));
   }
 }
 
@@ -1080,7 +1080,7 @@ void TagFileParser::endElement( const QCString &name )
   }
   else
   {
-    warn("Unknown end tag '%s' found!",qPrint(name));
+    p_warn("Unknown end tag '%s' found!",qPrint(name));
   }
 }
 
@@ -1100,7 +1100,7 @@ void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
   }
   else
   {
-    warn("Unknown compound attribute '%s' found!",kind.c_str());
+    p_warn("Unknown compound attribute '%s' found!",kind.c_str());
     m_state = Invalid;
   }
 
@@ -1299,7 +1299,7 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vec
     }
     else
     {
-      warn("Duplicate anchor %s found",qPrint(ta.label));
+      p_warn("Duplicate anchor %s found",qPrint(ta.label));
     }
   }
 }
