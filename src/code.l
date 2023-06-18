@@ -2776,6 +2776,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
   DBG_CTX((stderr,"getLinkInScope: trying '%s'::'%s' varOnly=%d\n",qPrint(c),qPrint(m),varOnly));
   GetDefInput input(c,m,"()");
   input.currentFile = yyextra->sourceFileDef;
+  input.insideCode = true;
   GetDefResult result = getDefs(input);
   if (result.found && (!varOnly || result.md->isVariable()))
   {

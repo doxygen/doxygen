@@ -1209,6 +1209,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   GetDefInput input(c,m,"()");
   input.currentFile = yyextra->sourceFileDef;
+  input.insideCode = true;
   GetDefResult result = getDefs(input);
   //printf("Trying '%s'::'%s'\n",qPrint(c),qPrint(m));
   if (result.found && result.md->isLinkable())

@@ -119,6 +119,7 @@ struct SymbolResolver::Private
                            const QCString &n,           // in
                            const QCString &args,        // in
                            bool checkCV,                // in
+                           bool insideCode,             // in
                            const MemberDef **pTypeDef,  // out
                            QCString *pTemplSpec,        // out
                            QCString *pResolvedType);    // out
@@ -154,6 +155,7 @@ struct SymbolResolver::Private
                            const Definition *d,                                 // in
                            const QCString &args,                                // in
                            bool  checkCV,                                       // in
+                           bool insideCode,                                     // in
                            const QCString &explicitScopePart,                   // in
                            const std::unique_ptr<ArgumentList> &actTemplParams, // in
                            int &minDistance,                                    // inout
@@ -365,6 +367,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
            const QCString &n,
            const QCString &args,
            bool checkCV,
+           bool insideCode,
            const MemberDef **pTypeDef,
            QCString *pTemplSpec,
            QCString *pResolvedType)
@@ -402,8 +405,21 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   auto &range = Doxygen::symbolMap->find(name);
   if (range.empty())
   {
-    //printf("%d ] not symbols\n",--level);
-    return 0;
+    int i;
+    if (insideCode && (i=name.find('<'))!=-1)
+    {
+      range = Doxygen::symbolMap->find(name.left(i));
+      if (range.empty())
+      {
+        //printf("%d ] no symbols even without templates\n",--level);
+        return 0;
+      }
+    }
+    else
+    {
+      //printf("%d ] no symbols\n",--level);
+      return 0;
+    }
   }
   //printf("found symbol %zu times!\n",range.size());
 
@@ -492,7 +508,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 
     for (Definition *d : range)
     {
-      getResolvedSymbol(visitedKeys,scope,d,args,checkCV,explicitScopePart,actTemplParams,
+      getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,actTemplParams,
           minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
     }
@@ -503,7 +519,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     {
       for (Definition *d : range)
       {
-        getResolvedSymbol(visitedKeys,scope,d,QCString(),false,explicitScopePart,actTemplParams,
+        getResolvedSymbol(visitedKeys,scope,d,QCString(),false,insideCode,explicitScopePart,actTemplParams,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
         if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
       }
@@ -708,6 +724,7 @@ void SymbolResolver::Private::getResolvedSymbol(
                          const Definition *d,                                 // in
                          const QCString &args,                                // in
                          bool  checkCV,                                       // in
+                         bool  insideCode,                                    // in
                          const QCString &explicitScopePart,                   // in
                          const std::unique_ptr<ArgumentList> &/* actTemplParams */, // in
                          int &minDistance,                                    // inout
@@ -1564,13 +1581,14 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
 const Definition *SymbolResolver::resolveSymbol(const Definition *scope,
                                                 const QCString &name,
                                                 const QCString &args,
-                                                bool checkCV)
+                                                bool checkCV,
+                                                bool insideCode)
 {
   p->reset();
   if (scope==0) scope=Doxygen::globalScope;
   StringUnorderedSet visitedKeys;
-  const Definition *result = p->getResolvedSymbolRec(visitedKeys,scope,name,args,checkCV,&p->typeDef,&p->templateSpec,&p->resolvedType);
-  //printf("resolveSymbol(%s,%s,%s,%d)=%s\n",qPrint(scope?scope->name():QCString()),qPrint(name),qPrint(args),checkCV,qPrint(result?result->qualifiedName():QCString()));
+  const Definition *result = p->getResolvedSymbolRec(visitedKeys,scope,name,args,checkCV,insideCode,&p->typeDef,&p->templateSpec,&p->resolvedType);
+  //printf("resolveSymbol(%s,%s,%s,%d,%d)=%s\n",qPrint(scope?scope->name():QCString()),qPrint(name),qPrint(args),checkCV,insideCode,qPrint(result?result->qualifiedName():QCString()));
   return result;
 }
 

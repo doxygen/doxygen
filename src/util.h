@@ -113,6 +113,7 @@ struct GetDefInput
   bool forceEmptyScope = false;
   const FileDef *currentFile = 0;
   bool checkCV = false;
+  bool insideCode = false;
 };
 
 struct GetDefResult
