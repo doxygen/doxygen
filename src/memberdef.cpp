@@ -2446,12 +2446,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer);
     }
   }
-  else if (isTypeAlias()) // using template alias
-  {
-    ol.writeString(" = ");
-    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_type);
-  }
-
 
   if ((isObjCMethod() || isObjCProperty()) && isImplementation())
   {

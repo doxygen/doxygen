@@ -3,16 +3,17 @@
   <compounddef id="072__using_8cpp" kind="file" language="C++">
     <compoundname>072_using.cpp</compoundname>
     <sectiondef kind="typedef">
-      <memberdef kind="typedef" id="072__using_8cpp_1a1b01c504448c96cd2191a5184dd31acf" prot="public" static="no">
+      <memberdef kind="typedef" id="072__using_8cpp_1a252deba494fd8fd638d78a2e586bfc0a" prot="public" static="no">
         <templateparamlist>
           <param>
             <type>class T</type>
           </param>
         </templateparamlist>
-        <type>std::vector&lt; T &gt;</type>
-        <definition>using Vec =  std::vector&lt;T&gt;</definition>
+        <type>typedef</type>
+        <definition>using Vec</definition>
         <argsstring/>
         <name>Vec</name>
+        <initializer>= std::vector&lt;T&gt;</initializer>
         <briefdescription>
           <para>A vector. </para>
         </briefdescription>

@@ -2363,9 +2363,9 @@ static MemberDef *addVariableToFile(
 
     if (!type.isEmpty())
     {
-      if (root->spec&Entry::Alias) // turn 'typedef B NS::A' into 'using NS::A = B'
+      if (root->spec&Entry::Alias)
       {
-        def="using "+nd->name()+sep+name+" = "+type;
+        def="using "+nd->name()+sep+name;
       }
       else // normal member
       {
@@ -2387,9 +2387,9 @@ static MemberDef *addVariableToFile(
       }
       else
       {
-        if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
+        if (root->spec&Entry::Alias)
         {
-          def="using "+root->name+" = "+type.mid(7);
+          def="using "+root->name;
         }
         else // normal member
         {
@@ -2830,7 +2830,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
   if (type=="@")
     mtype=MemberType_EnumValue;
-  else if (type.startsWith("typedef "))
+  else if (type.startsWith("typedef ") || type=="typedef")
     mtype=MemberType_Typedef;
   else if (type.startsWith("friend "))
     mtype=MemberType_Friend;

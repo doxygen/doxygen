@@ -1828,6 +1828,7 @@ NONLopt [^\n]*
                                           BEGIN(Using);
                                         }
 <Using>"="                              { // C++11 style template alias?
+                                          yyextra->previous->initializer.str(yytext);
                                           BEGIN(UsingAlias);
                                         }
 <UsingAlias>";"                         {
@@ -1867,13 +1868,13 @@ NONLopt [^\n]*
                                           }
                                         }
 <UsingAlias>">>"                        {
-                                          yyextra->previous->args+="> >"; // see bug769552
+                                          yyextra->previous->initializer << "> >"; // see bug769552
                                         }
 <UsingAlias>.                           {
-                                          yyextra->previous->args+=yytext;
+                                          yyextra->previous->initializer << yytext;
                                         }
 <UsingAlias>\n                          {
-                                          yyextra->previous->args+=yytext;
+                                          yyextra->previous->initializer << yytext;
                                           lineCount(yyscanner);
                                         }
 <UsingAliasEnd>";"                      {
