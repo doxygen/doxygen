@@ -1868,12 +1868,15 @@ NONLopt [^\n]*
                                           }
                                         }
 <UsingAlias>">>"                        {
+                                          yyextra->previous->args+="> >"; // see bug769552
                                           yyextra->previous->initializer << "> >"; // see bug769552
                                         }
 <UsingAlias>.                           {
+                                          yyextra->previous->args+=yytext;
                                           yyextra->previous->initializer << yytext;
                                         }
 <UsingAlias>\n                          {
+                                          yyextra->previous->args+=yytext;
                                           yyextra->previous->initializer << yytext;
                                           lineCount(yyscanner);
                                         }

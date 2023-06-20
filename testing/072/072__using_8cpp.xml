@@ -9,7 +9,7 @@
             <type>class T</type>
           </param>
         </templateparamlist>
-        <type>typedef</type>
+        <type>std::vector&lt; T &gt;</type>
         <definition>using Vec</definition>
         <argsstring/>
         <name>Vec</name>

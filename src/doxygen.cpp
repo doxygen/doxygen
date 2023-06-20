@@ -2830,7 +2830,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
   if (type=="@")
     mtype=MemberType_EnumValue;
-  else if (type.startsWith("typedef ") || type=="typedef")
+  else if (type.startsWith("typedef "))
     mtype=MemberType_Typedef;
   else if (type.startsWith("friend "))
     mtype=MemberType_Friend;
