@@ -698,7 +698,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
   {
     warn(dd->getDefFileName(),dd->getDefLine(),
         "maximum nesting level exceeded for directory %s: "
-        "check for possible recursive directory relation!\n",qPrint(dd->name())
+        "check for possible recursive directory relation!",qPrint(dd->name())
         );
     return;
   }
@@ -3715,7 +3715,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
   if (level>20)
   {
     warn(gd->getDefFileName(),gd->getDefLine(),
-        "maximum nesting level exceeded for group %s: check for possible recursive group relation!\n",qPrint(gd->name())
+        "maximum nesting level exceeded for group %s: check for possible recursive group relation!",qPrint(gd->name())
         );
     return;
   }

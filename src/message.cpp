@@ -207,7 +207,7 @@ QCString warn_line(const QCString &file,int line)
             "$line",lineSubst
           );
 }
-void warn(const QCString &file,int line,const char *fmt, ...)
+void warn_(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -226,7 +226,7 @@ void warn_simple(const QCString &file,int line,const char *text)
   format_warn(file,line,QCString(g_warningStr) + text);
 }
 
-void warn_undoc(const QCString &file,int line,const char *fmt, ...)
+void warn_undoc_(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -234,7 +234,7 @@ void warn_undoc(const QCString &file,int line,const char *fmt, ...)
   va_end(args);
 }
 
-void warn_incomplete_doc(const QCString &file,int line,const char *fmt, ...)
+void warn_incomplete_doc_(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -242,7 +242,7 @@ void warn_incomplete_doc(const QCString &file,int line,const char *fmt, ...)
   va_end(args);
 }
 
-void warn_doc_error(const QCString &file,int line,const char *fmt, ...)
+void warn_doc_error_(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -250,7 +250,7 @@ void warn_doc_error(const QCString &file,int line,const char *fmt, ...)
   va_end(args);
 }
 
-void warn_uncond(const char *fmt, ...)
+void warn_uncond_(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -259,7 +259,7 @@ void warn_uncond(const char *fmt, ...)
   handle_warn_as_error();
 }
 
-void err(const char *fmt, ...)
+void err_(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -268,7 +268,7 @@ void err(const char *fmt, ...)
   handle_warn_as_error();
 }
 
-extern void err_full(const QCString &file,int line,const char *fmt, ...)
+extern void err_full_(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -276,7 +276,7 @@ extern void err_full(const QCString &file,int line,const char *fmt, ...)
   va_end(args);
 }
 
-void term(const char *fmt, ...)
+void term_(const char *fmt, ...)
 {
   {
     std::unique_lock<std::mutex> lock(g_mutex);

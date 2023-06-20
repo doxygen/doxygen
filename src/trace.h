@@ -29,7 +29,11 @@
 #else
 #define SPELOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO  // release build (hide trace/debug levels)
 #endif
+
+#pragma push_macro("warn")
+#undef warn
 #include "spdlog/spdlog.h"
+#pragma pop_macro("warn")
 
 #include "types.h"
 #include "qcstring.h"

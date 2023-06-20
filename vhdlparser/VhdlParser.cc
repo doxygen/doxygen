@@ -12524,7 +12524,7 @@ QCString VhdlParser::simple_expression() {QCString s,s1,s2;
     }
     }
     if (!hasError) {
-    s1 = term();
+    s1 = simpleTerm();
     }
     if (!hasError) {
 s+=s1;
@@ -12540,7 +12540,7 @@ s+=s1;
       s1 = adding_operator();
       }
       if (!hasError) {
-      s2 = term();
+      s2 = simpleTerm();
       }
       if (!hasError) {
 s+=s1;s+=s2;
@@ -13378,7 +13378,7 @@ assert(false);
 }
 
 
-QCString VhdlParser::term() {QCString s,s1,s2;
+QCString VhdlParser::simpleTerm() {QCString s,s1,s2;
     if (!hasError) {
     s = factor();
     }

@@ -171,7 +171,7 @@ void MemberList::countDecMembers()
                                      m_numDecMembers++;
                                      break;
         default:
-          err("Unknown member type found for member '%s'\n!",qPrint(md->name()));
+          err("Unknown member type found for member '%s'!\n",qPrint(md->name()));
       }
     }
   }

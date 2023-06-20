@@ -169,7 +169,7 @@ static QCString getConvertLatexMacro()
     // check for \newcommand or \renewcommand
     if (data[i] != '\\')
     {
-      warn(macrofile,line, "file contains non valid code, expected '\\' got '%c'\n",data[i]);
+      warn(macrofile,line, "file contains non valid code, expected '\\' got '%c'",data[i]);
       return "";
     }
     i++;
@@ -189,13 +189,13 @@ static QCString getConvertLatexMacro()
     // handle {cmd}
     if (data[i] != '{')
     {
-      warn(macrofile,line, "file contains non valid code, expected '{' got '%c'\n",data[i]);
+      warn(macrofile,line, "file contains non valid code, expected '{' got '%c'",data[i]);
       return "";
     }
     i++;
     if (data[i] != '\\')
     {
-      warn(macrofile,line, "file contains non valid code, expected '\\' got '%c'\n",data[i]);
+      warn(macrofile,line, "file contains non valid code, expected '\\' got '%c'",data[i]);
       return "";
     }
     i++;
@@ -227,14 +227,14 @@ static QCString getConvertLatexMacro()
     }
     else if (data[i] != '{')
     {
-      warn(macrofile,line, "file contains non valid code, expected '[' or '{' got '%c'\n",data[i]);
+      warn(macrofile,line, "file contains non valid code, expected '[' or '{' got '%c'",data[i]);
       return "";
     }
     // handle {replacement}
     // retest as the '[' part might have advanced so we can have a new '{'
     if (data[i] != '{')
     {
-      warn(macrofile,line, "file contains non valid code, expected '{' got '%c'\n",data[i]);
+      warn(macrofile,line, "file contains non valid code, expected '{' got '%c'",data[i]);
       return "";
     }
     out.addChar('"');
@@ -1548,7 +1548,7 @@ void HtmlGenerator::writeStyleInfo(int part)
         FileInfo cssfi(cssName.str());
         if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
         {
-          err("style sheet %s does not exist or is not readable!", qPrint(Config_getString(HTML_STYLESHEET)));
+          err("style sheet %s does not exist or is not readable!\n", qPrint(Config_getString(HTML_STYLESHEET)));
         }
         else
         {

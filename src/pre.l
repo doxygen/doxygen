@@ -1960,7 +1960,7 @@ static void decrLevel(yyscan_t yyscanner)
   }
   else
   {
-    warn(state->fileName,state->yyLineNr,"More #endif's than #if's found.\n");
+    warn(state->fileName,state->yyLineNr,"More #endif's than #if's found.");
   }
 }
 
@@ -1969,7 +1969,7 @@ static bool otherCaseDone(yyscan_t yyscanner)
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   if (state->levelGuard.empty())
   {
-    warn(state->fileName,state->yyLineNr,"Found an #else without a preceding #if.\n");
+    warn(state->fileName,state->yyLineNr,"Found an #else without a preceding #if.");
     return TRUE;
   }
   else
