@@ -11,10 +11,13 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/deps/spdlog/include
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
+
+if (NOT use_sys_spdlog)
+    include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
+endif()
 
 
 file(MAKE_DIRECTORY ${GENERATED_SRC})
@@ -389,7 +392,7 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
-    spdlog
+    spdlog::spdlog
     ${ICONV_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
