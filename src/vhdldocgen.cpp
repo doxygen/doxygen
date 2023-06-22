@@ -166,7 +166,7 @@ static void createSVG()
 
     if (Portable::system(Doxygen::verifiedDotPath,vlargs)!=0)
     {
-      err("could not create dot file");
+      err("could not create dot file\n");
     }
 }
 
@@ -3435,7 +3435,7 @@ void FlowChart::createSVG()
 
   if (Portable::system(Doxygen::verifiedDotPath,vlargs)!=0)
   {
-    err("could not create dot file");
+    err("could not create dot file\n");
   }
 }
 
@@ -3729,7 +3729,7 @@ size_t FlowChart::findLabel(size_t index,const QCString &label)
       return j;
     }
   }
-  err("could not find label: %s",qPrint(label));
+  err("could not find label: '%s'\n",qPrint(label));
   return 0;
 }
 

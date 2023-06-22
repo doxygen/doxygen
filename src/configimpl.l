@@ -1738,7 +1738,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
   if (warnFormat.find("$text")==-1)
   {
-    warn_uncond("warning format foes not contain a $text tag!\n");
+    warn_uncond("warning format does not contain a $text tag!\n");
   }
 
   //------------------------

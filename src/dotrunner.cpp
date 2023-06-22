@@ -356,7 +356,7 @@ bool DotRunner::run()
   }
   return TRUE;
 error:
-  err_full(srcFile,srcLine,"Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
+  err_full(srcFile,srcLine,"Problems running dot: exit code=%d, command='%s', arguments='%s'",
     exitCode,qPrint(m_dotExe),qPrint(dotArgs));
   return FALSE;
 }

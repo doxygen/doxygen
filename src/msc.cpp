@@ -135,7 +135,7 @@ static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,ms
     int code = mscgen_generate(inFile.data(),outFile.data(),msc_format);
     if (code!=0)
     {
-      err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+      err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file '%s'",
           mscgen_error2str(code),qPrint(inFile));
       return false;
     }
@@ -183,7 +183,7 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                          qPrint(absOutFile),qPrint(absOutFile));
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
-      err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!\n",
+      err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!",
           qPrint(absOutFile));
     }
   }

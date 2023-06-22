@@ -358,7 +358,7 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
         else if ( root->type.length() > 0 && root->name != root->type && gd->groupTitle() != root->type )
         {
           warn( root->fileName,root->startLine,
-              "group %s: ignoring title \"%s\" that does not match old title \"%s\"\n",
+              "group %s: ignoring title \"%s\" that does not match old title \"%s\"",
               qPrint(root->name), qPrint(root->type), qPrint(gd->groupTitle()) );
         }
         gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -4660,7 +4660,7 @@ static bool findClassRelation(
         {
           warn(root->fileName,root->startLine,
               "Detected potential recursive class relation "
-              "between class %s and base class %s!\n",
+              "between class %s and base class %s!",
               qPrint(root->name),qPrint(baseClassName)
               );
         }
@@ -8947,7 +8947,7 @@ static void findDefineDocumentation(Entry *root)
       if (preEnabled)
       {
         warn(root->fileName,root->startLine,
-             "documentation for unknown define %s found.\n",
+             "documentation for unknown define %s found.",
              qPrint(root->name)
             );
       }
@@ -8955,7 +8955,7 @@ static void findDefineDocumentation(Entry *root)
       {
         warn(root->fileName,root->startLine,
              "found documented #define %s but ignoring it because "
-             "ENABLE_PREPROCESSING is NO.\n",
+             "ENABLE_PREPROCESSING is NO.",
              qPrint(root->name)
             );
       }
@@ -8997,7 +8997,7 @@ static void findDirDocumentation(const Entry *root)
            warn(root->fileName,root->startLine,
              "\\dir command matches multiple directories.\n"
              "  Applying the command for directory %s\n"
-             "  Ignoring the command for directory %s\n",
+             "  Ignoring the command for directory %s",
              qPrint(matchingDir->name()),qPrint(dir->name())
            );
         }
@@ -9018,7 +9018,7 @@ static void findDirDocumentation(const Entry *root)
     else
     {
       warn(root->fileName,root->startLine,"No matching "
-          "directory found for command \\dir %s\n",qPrint(normalizedName));
+          "directory found for command \\dir %s",qPrint(normalizedName));
     }
   }
   for (const auto &e : root->children()) findDirDocumentation(e.get());
