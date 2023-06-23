@@ -304,6 +304,7 @@ void warn_flush()
 
 extern void finishWarnExit()
 {
+  fflush(stdout);
   if (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT && g_warnlogFile != "-")
   {
     Portable::fclose(g_warnFile);

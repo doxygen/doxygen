@@ -224,6 +224,7 @@ class Statistics
       std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
       stats.back().elapsed = static_cast<double>(std::chrono::duration_cast<
                                 std::chrono::microseconds>(endTime - startTime).count())/1000000.0;
+      warn_flush();
     }
     void print()
     {
@@ -12490,8 +12491,6 @@ void generateOutput()
   generateExampleDocs();
   g_s.end();
 
-  warn_flush();
-
   g_s.begin("Generating file sources...\n");
   generateFileSources();
   g_s.end();
@@ -12603,8 +12602,6 @@ void generateOutput()
     g_s.end();
   }
 
-  warn_flush();
-
   if (generateRtf)
   {
     g_s.begin("Combining RTF output...\n");
@@ -12615,13 +12612,9 @@ void generateOutput()
     g_s.end();
   }
 
-  warn_flush();
-
   g_s.begin("Running plantuml with JAVA...\n");
   PlantumlManager::instance().run();
   g_s.end();
-
-  warn_flush();
 
   if (Config_getBool(HAVE_DOT))
   {
@@ -12638,8 +12631,6 @@ void generateOutput()
     runHtmlHelpCompiler();
     g_s.end();
   }
-
-  warn_flush();
 
   if ( generateHtml &&
        Config_getBool(GENERATE_QHP) &&
