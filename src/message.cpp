@@ -111,12 +111,6 @@ void msg(const char *fmt, ...)
   }
 }
 
-void msg_flush()
-{
-  fflush(stdout);
-}
-
-
 static void format_warn(const QCString &file,int line,const QCString &text)
 {
   QCString fileSubst = file.isEmpty() ? "<unknown>" : file;
@@ -310,7 +304,7 @@ void warn_flush()
 
 extern void finishWarnExit()
 {
-  msg_flush();
+  fflush(stdout);
   if (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT && g_warnlogFile != "-")
   {
     Portable::fclose(g_warnFile);
