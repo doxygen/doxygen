@@ -39,6 +39,7 @@ extern void term_(const char *fmt, ...) PRINTFLIKE(1, 2);
 extern QCString warn_line(const QCString &file,int line);
 void initWarningFormat();
 void warn_flush();
+void msg_flush();
 extern void finishWarnExit();
 
 #undef PRINTFLIKE
