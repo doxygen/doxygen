@@ -657,6 +657,10 @@ NONLopt [^\n]*
 <CppProt>":"                            {
                                           BEGIN(FindMembers);
                                         }
+<CppProt>.                              {
+                                          unput(*yytext);
+                                          BEGIN(FindMembers);
+                                        }
 <CppProt>{BN}+                          { lineCount(yyscanner); }
 <CppProt>{CPPC}.*\n                     { lineCount(yyscanner); }
 <CppProt>{CCS}                          { yyextra->lastCContext = YY_START ;
