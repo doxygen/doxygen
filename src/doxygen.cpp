@@ -2001,7 +2001,7 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
 
       if (usingCd==0) // definition not in the input => add an artificial class
       {
-        AUTO_TRACE_ADD("New using class '{}' (sec={:#x10})! #tArgLists={}",
+        AUTO_TRACE_ADD("New using class '{}' (sec={:10x})! #tArgLists={}",
              name,root->section,root->tArgLists.size());
         usingCd = toClassDefMutable(
              Doxygen::hiddenClassLinkedMap->add(name,
@@ -10609,7 +10609,7 @@ static void devUsage()
   msg("  -m          dump symbol map\n");
   msg("  -b          making messages output unbuffered\n");
 #if ENABLE_TRACING
-  msg("  -t [<file>] trace debug info to file (default file trace.txt)\n");
+  msg("  -t [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout)\n");
 #endif
   msg("  -T          activates output generation via Django like template\n");
   msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
@@ -10919,9 +10919,9 @@ void readConfiguration(int argc, char **argv)
       case 't':
         {
 #if ENABLE_TRACING
-          if (optInd+1>=argc || argv[optInd+1][0] == '-')
+          if (optInd+1>=argc || argv[optInd+1][0] == '-') // no file name given
           {
-            traceName="trace.txt";
+            traceName="stdout";
           }
           else
           {
