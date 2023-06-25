@@ -307,7 +307,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
     if (pval)
     {
       //printf("LookupInfo %p %p '%s' %p\n",
-      //    pval->classDef, pval->typeDef, qPrint(pval->templSpec),
+      //    pval->definition, pval->typeDef, qPrint(pval->templSpec),
       //    qPrint(pval->resolvedType));
       if (pTemplSpec)    *pTemplSpec=pval->templSpec;
       if (pTypeDef)      *pTypeDef=pval->typeDef;
@@ -353,11 +353,12 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
                             LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
     }
     visitedKeys.erase(key.str());
+
+    //printf("%d ] bestMatch=%s distance=%d\n",--level,
+    //    bestMatch?qPrint(bestMatch->name()):"<none>",minDistance);
+    //if (pTemplSpec)
+    //  printf("templSpec=%s\n",pTemplSpec->data());
   }
-  //printf("%d ] bestMatch=%s distance=%d\n",--level,
-  //    bestMatch?qPrint(bestMatch->name()):"<none>",minDistance);
-  //if (pTemplSpec)
-  //  printf("templSpec=%s\n",pTemplSpec->data());
   return bestMatch;
 }
 
@@ -569,7 +570,7 @@ void SymbolResolver::Private::getResolvedType(
                          QCString &bestResolvedType                           // out
                       )
 {
-  //fprintf(stderr,"getResolvedType(%s,%s)\n",qPrint(scope->name()),qPrint(d->qualifiedName()));
+  //fprintf(stderr,"getResolvedType(scope=%s,symbol=%s,explicitScope=%s)\n",qPrint(scope->name()),qPrint(d->qualifiedName()),qPrint(explicitScopePart));
   // only look at classes and members that are enums or typedefs
   if (d->definitionType()==Definition::TypeClass ||
       (d->definitionType()==Definition::TypeMember &&
@@ -714,7 +715,7 @@ void SymbolResolver::Private::getResolvedType(
       //printf("  Not accessible!\n");
     }
   } // if definition is a class or member
-  //printf("  bestMatch=%p bestResolvedType=%s\n",bestMatch,qPrint(bestResolvedType));
+  //fprintf(stderr,"  bestMatch=%p bestResolvedType=%s\n",bestMatch,qPrint(bestResolvedType));
 }
 
 
@@ -1006,7 +1007,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   accessStack.push(scope,m_fileScope,item,explicitScopePart);
 
 
-  //printf(" <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?qPrint(scope->name()):"<global>",
+  //fprintf(stderr," <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?qPrint(scope->name()):"<global>",
   //                                      item?qPrint(item->qualifiedName()):"<none>",
   //                                      qPrint(explicitScopePart));
   int result=0; // assume we found it
@@ -1015,7 +1016,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   {
     Definition *itemScope = item->getOuterScope();
 
-    //printf("    scope traversal successful %s<->%s!\n",qPrint(itemScope->name()),qPrint(newScope->name()));
+    //fprintf(stderr,"    scope traversal successful %s<->%s!\n",qPrint(itemScope->name()),qPrint(newScope->name()));
 
     bool nestedClassInsideBaseClass =
          itemScope &&
@@ -1109,14 +1110,14 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   }
   else // failed to resolve explicitScope
   {
-    //printf("    failed to resolve explicitScope=%s: scope=%s\n",qPrint(explicitScopePart), qPrint(scope->name()));
+    //fprintf(stderr,"    failed to resolve explicitScope=%s: scope=%s\n",qPrint(explicitScopePart), qPrint(scope->name()));
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       const NamespaceDef *nscope = toNamespaceDef(scope);
       StringUnorderedSet locVisitedNamespaces;
       if (accessibleViaUsingNamespace(visitedKeys,locVisitedNamespaces,nscope->getUsedNamespaces(),item,explicitScopePart))
       {
-        //printf(" > found in used namespace\n");
+        //fprintf(stderr," > found in used namespace\n");
         goto done;
       }
     }
@@ -1127,23 +1128,22 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         StringUnorderedSet locVisitedNamespaces;
         if (accessibleViaUsingNamespace(visitedKeys,locVisitedNamespaces,m_fileScope->getUsedNamespaces(),item,explicitScopePart))
         {
-          //printf(" > found in used namespace\n");
+          //fprintf(stderr," > found in used namespace\n");
           goto done;
         }
       }
-      //printf(" > not found\n");
+      //fprintf(stderr," > not found\n");
       result=-1;
     }
     else // continue by looking into the parent scope
     {
       int i=isAccessibleFromWithExpScope(visitedKeys,visitedNamespaces,accessStack,scope->getOuterScope(),item,explicitScopePart);
-      //printf(" > result=%d\n",i);
       result= (i==-1) ? -1 : i+2;
     }
   }
 
 done:
-  //printf(" > result=%d\n",result);
+  //fprintf(stderr," > result=%d\n",result);
   accessStack.pop();
   return result;
 }
@@ -1272,12 +1272,12 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(
   //size_t count=0;
   for (const auto &und : nl) // check used namespaces for the class
   {
-    //printf("%d [Trying via used namespace %s: count=%zu/%zu\n",level,qPrint(und->name()),
+    //fprintf(stderr,"%d [Trying via used namespace %s: count=%zu/%zu\n",level,qPrint(und->name()),
     //    count++,nl.size());
     const Definition *sc = explicitScopePart.isEmpty() ? und : followPath(visitedKeys,und,explicitScopePart);
     if (sc && item->getOuterScope()==sc)
     {
-      //printf("%d ] found it\n",level);
+      //fprintf(stderr,"%d ] found it\n",level);
       return true;
     }
     if (item->getLanguage()==SrcLangExt_Cpp)
@@ -1287,13 +1287,13 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(
       {
         if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaces,und->getUsedNamespaces(),item,explicitScopePart,level+1))
         {
-          //printf("%d ] found it via recursion\n",level);
+          //fprintf(stderr,"%d ] found it via recursion\n",level);
           return true;
         }
 
       }
     }
-    //printf("%d ] Try via used namespace done\n",level);
+    //fprintf(stderr,"%d ] Try via used namespace done\n",level);
   }
   return false;
 }
@@ -1319,17 +1319,18 @@ int SymbolResolver::Private::isAccessibleFrom(StringUnorderedSet &visitedKeys,
                                               const Definition *scope,
                                               const Definition *item)
 {
-  //printf("<isAccessibleFrom(scope=%s,item=%s itemScope=%s)\n",
+  //fprintf(stderr,"<isAccessibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    qPrint(scope->name()),qPrint(item->name()),qPrint(item->getOuterScope()->name()));
 
   if (accessStack.find(scope,m_fileScope,item))
   {
+    //fprintf(stderr,">already processed!\n");
     return -1;
   }
   accessStack.push(scope,m_fileScope,item);
 
   int result=0; // assume we found it
-  int i;
+  int i=0;
 
   const Definition *itemScope=item->getOuterScope();
   bool itemIsMember = item->definitionType()==Definition::TypeMember;
@@ -1377,7 +1378,7 @@ int SymbolResolver::Private::isAccessibleFrom(StringUnorderedSet &visitedKeys,
 
   if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass || enumValueOfStrongEnum)
   {
-    //printf("> found it memberAccessibleFromScope=%d nestedClassInsideBaseClass=%d enumValueOfStrongEnum=%d\n",memberAccessibleFromScope,nestedClassInsideBaseClass,enumValueOfStrongEnum);
+    //fprintf(stderr,"> found it memberAccessibleFromScope=%d nestedClassInsideBaseClass=%d enumValueOfStrongEnum=%d\n",memberAccessibleFromScope,nestedClassInsideBaseClass,enumValueOfStrongEnum);
     int distanceToBase=0;
     if (nestedClassInsideBaseClass)
     {
@@ -1403,7 +1404,7 @@ int SymbolResolver::Private::isAccessibleFrom(StringUnorderedSet &visitedKeys,
         itemScope->getOuterScope()==Doxygen::globalScope)
     { // item is in an anonymous namespace in the global scope and we are
       // looking in the global scope
-      //printf("> found in anonymous namespace\n");
+      //fprintf(stderr,"> found in anonymous namespace\n");
       result++;
       goto done;
     }
@@ -1411,17 +1412,17 @@ int SymbolResolver::Private::isAccessibleFrom(StringUnorderedSet &visitedKeys,
     {
       if (accessibleViaUsingClass(visitedKeys,m_fileScope->getUsedClasses(),item))
       {
-        //printf("> found via used class\n");
+        //fprintf(stderr,"> found via used class\n");
         goto done;
       }
       StringUnorderedSet visitedNamespaces;
       if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaces,m_fileScope->getUsedNamespaces(),item))
       {
-        //printf("> found via used namespace\n");
+        //fprintf(stderr,"> found via used namespace\n");
         goto done;
       }
     }
-    //printf("> reached global scope\n");
+    //fprintf(stderr,"> reached global scope\n");
     result=-1; // not found in path to globalScope
   }
   else // keep searching
@@ -1430,16 +1431,31 @@ int SymbolResolver::Private::isAccessibleFrom(StringUnorderedSet &visitedKeys,
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       const NamespaceDef *nscope = toNamespaceDef(scope);
-      //printf("  %s is namespace with %d used classes\n",qPrint(nscope->name()),nscope->getUsedClasses());
+      //fprintf(stderr,"  %s is namespace with %zu used classes\n",qPrint(nscope->name()),nscope->getUsedClasses().size());
       if (accessibleViaUsingClass(visitedKeys,nscope->getUsedClasses(),item))
       {
-        //printf("> found via used class\n");
+        //fprintf(stderr,"> found via used class\n");
         goto done;
       }
       StringUnorderedSet visitedNamespaces;
       if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaces,nscope->getUsedNamespaces(),item,0))
       {
-        //printf("> found via used namespace\n");
+        //fprintf(stderr,"> found via used namespace\n");
+        goto done;
+      }
+    }
+    else if (scope->definitionType()==Definition::TypeFile)
+    {
+      const FileDef *nfile = toFileDef(scope);
+      if (accessibleViaUsingClass(visitedKeys,nfile->getUsedClasses(),item))
+      {
+        //fprintf(stderr,"> found via used class\n");
+        goto done;
+      }
+      StringUnorderedSet visitedNamespaces;
+      if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaces,nfile->getUsedNamespaces(),item,0))
+      {
+        //fprintf(stderr,"> found via used namespace\n");
         goto done;
       }
     }
@@ -1457,10 +1473,10 @@ int SymbolResolver::Private::isAccessibleFrom(StringUnorderedSet &visitedKeys,
       }
     }
     i=isAccessibleFrom(visitedKeys,accessStack,parentScope,item);
-    //printf("> result=%d\n",i);
     result= (i==-1) ? -1 : i+2;
   }
 done:
+  //fprintf(stderr,"> result=%d\n",result);
   accessStack.pop();
   return result;
 }

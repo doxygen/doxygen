@@ -154,7 +154,7 @@ class CallContext
     void setScope(const ScopedTypeVariant &stv)
     {
       Ctx &ctx = m_stvList.back();
-      ctx.stv=std::move(stv);
+      ctx.stv=stv;
     }
     void pushScope(const QCString &name_,const QCString &type_)
     {

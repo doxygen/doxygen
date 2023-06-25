@@ -1328,7 +1328,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                           else
                                           {
-                                              codifyLines(yyscanner,yytext);
+                                            codifyLines(yyscanner,yytext);
                                             addToSearchIndex(yyscanner,yytext);
                                             yyextra->name.resize(0);
                                           }
@@ -2610,6 +2610,8 @@ static void setParameterList(yyscan_t yyscanner,const MemberDef *md)
 static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,const Definition *d)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  DBG_CTX((stderr,"stripClassName(scope=%s,type=%s) classScope=%s\n",
+        qPrint(d?d->name():""),qPrint(s),qPrint(yyextra->classScope)));
   int pos=0;
   QCString type = s;
   QCString className;
@@ -2803,7 +2805,11 @@ static bool getLinkInScope(yyscan_t yyscanner,
       if (result.md->resolveAlias()->getGroupDef()) d = result.md->resolveAlias()->getGroupDef();
       if (d && d->isLinkable())
       {
-        yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,result.md->typeString(),result.md->getOuterScope())));
+        const ClassDef *ncd = stripClassName(yyscanner,result.md->typeString(),result.md->getOuterScope());
+        if (ncd)
+        {
+          yyextra->theCallContext.setScope(ScopedTypeVariant(ncd));
+        }
         DBG_CTX((stderr,"yyextra->currentDefinition=%p yyextra->currentMemberDef=%p yyextra->insideBody=%d\n",
                  (void*)yyextra->currentDefinition,(void*)yyextra->currentMemberDef,yyextra->insideBody));
 
@@ -2812,7 +2818,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
         {
           addDocCrossReference(yyextra->currentMemberDef,result.md);
         }
-        DBG_CTX((stderr,"d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name())));
+        DBG_CTX((stderr,"d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(result.md->name())));
 
         writeMultiLineCodeLink(yyscanner,ol,result.md, !text.isEmpty() ? text : memberText);
         addToSearchIndex(yyscanner,!text.isEmpty() ? text : memberText);
