@@ -2233,10 +2233,12 @@ void writeLatexSpecialFormulaChars(TextStream &t)
          "  }\n"
          "  \\makeatother\n";
 
-    t << "  \\doxynewunicodechar{" << minus << "}{${}^{-}$}% Superscript minus\n"
-         "  \\doxynewunicodechar{" << sup2  << "}{${}^{2}$}% Superscript two\n"
-         "  \\doxynewunicodechar{" << sup3  << "}{${}^{3}$}% Superscript three\n"
-         "\n";
+    t << "\\ifpdftex"
+         "  \\doxynewunicodechar{" << minus << "}{${}^{-}$}% Superscript minus\n"
+                                               "  \\doxynewunicodechar{" << sup2 << "}{${}^{2}$}% Superscript two\n"
+                                                                                    "  \\doxynewunicodechar{" << sup3
+      << "}{${}^{3}$}% Superscript three\n"
+         "\\fi\n";
 }
 
 void filterLatexString(TextStream &t,const QCString &str,
@@ -2550,5 +2552,3 @@ QCString latexFilterURL(const QCString &s)
   }
   return t.str();
 }
-
-
