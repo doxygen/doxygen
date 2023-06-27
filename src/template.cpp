@@ -3036,7 +3036,7 @@ template<class T> class TemplateNodeCreator : public TemplateNode
       if (!d.exists())
       {
         Dir rootDir;
-        if (!rootDir.mkdir(outputDir))
+        if (!rootDir.mkpath(outputDir))
         {
           err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
 	      "exist and cannot be created\n",outputDir.c_str());
@@ -3049,7 +3049,7 @@ template<class T> class TemplateNodeCreator : public TemplateNode
       {
         if (d.exists())
         {
-          bool ok = d.mkdir(fileName.substr(j,i-j));
+          bool ok = d.mkpath(fileName.substr(j,i-j));
           if (!ok)
           {
             err("Failed to create directory '%s'\n",(fileName.substr(j,i-j)).c_str());

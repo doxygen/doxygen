@@ -255,12 +255,12 @@ void ManGenerator::init()
   QCString manOutput = Config_getString(MAN_OUTPUT);
 
   Dir d(manOutput.str());
-  if (!d.exists() && !d.mkdir(manOutput.str()))
+  if (!d.exists() && !d.mkpath(manOutput.str()))
   {
     term("Could not create output directory %s\n",qPrint(manOutput));
   }
   std::string manDir = manOutput.str()+"/"+getSubdir().str();
-  if (!d.exists(manDir) && !d.mkdir(manDir))
+  if (!d.exists(manDir) && !d.mkpath(manDir))
   {
     term("Could not create output directory %s/%s\n",qPrint(manOutput), qPrint(getSubdir()));
   }

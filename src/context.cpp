@@ -9174,13 +9174,13 @@ void generateTemplateFiles(const QCString &templateDir)
 {
   if (templateDir.isEmpty()) return;
   Dir thisDir;
-  if (!thisDir.exists(templateDir.str()) && !thisDir.mkdir(templateDir.str()))
+  if (!thisDir.exists(templateDir.str()) && !thisDir.mkpath(templateDir.str()))
   {
     err("Failed to create output directory '%s'\n",qPrint(templateDir));
     return;
   }
   std::string outDir = templateDir.str()+"/html";
-  if (!thisDir.exists(outDir) && !thisDir.mkdir(outDir))
+  if (!thisDir.exists(outDir) && !thisDir.mkpath(outDir))
   {
     err("Failed to create output directory '%s'\n",outDir.c_str());
     return;

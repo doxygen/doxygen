@@ -431,7 +431,7 @@ void RTFGenerator::init()
 {
   QCString dir=Config_getString(RTF_OUTPUT);
   Dir d(dir.str());
-  if (!d.exists() && !d.mkdir(dir.str()))
+  if (!d.exists() && !d.mkpath(dir.str()))
   {
     term("Could not create output directory %s\n",qPrint(dir));
   }

@@ -548,7 +548,7 @@ void LatexGenerator::init()
 {
   QCString dname = Config_getString(LATEX_OUTPUT);
   Dir d(dname.str());
-  if (!d.exists() && !d.mkdir(dname.str()))
+  if (!d.exists() && !d.mkpath(dname.str()))
   {
     term("Could not create output directory %s\n",qPrint(dname));
   }
