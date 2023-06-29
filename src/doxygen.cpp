@@ -5892,11 +5892,10 @@ static void addMemberFunction(const Entry *root,
 
     warnMsg+="  ";
     warnMsg+=fullFuncDecl;
-    warnMsg+='\n';
 
     if (candidates>0 || noMatchCount>=1)
     {
-      warnMsg+="Possible candidates:\n";
+      warnMsg+="\nPossible candidates:";
 
       NamespaceDef *nd=0;
       if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
@@ -5913,6 +5912,7 @@ static void addMemberFunction(const Entry *root,
         }
         if (cd!=0 && (rightScopeMatch(cd->name(),className) || (cd!=tcd)))
         {
+          warnMsg+='\n';
           const ArgumentList &templAl = md->templateArguments();
           warnMsg+="  '";
           if (templAl.hasParameters())
@@ -5932,11 +5932,10 @@ static void addMemberFunction(const Entry *root,
             warnMsg+=qScope+"::"+md->name();
           warnMsg+=md->argsString();
           warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
-          warnMsg+='\n';
         }
       }
     }
-    warn_simple(root->fileName,root->startLine,qPrint(warnMsg));
+    warn(root->fileName,root->startLine,"%s",qPrint(warnMsg));
   }
 }
 
