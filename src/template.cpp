@@ -1599,7 +1599,7 @@ class TemplateFilterFactory
     template<class T> class AutoRegister
     {
       public:
-        AutoRegister<T>(const QCString &key)
+        AutoRegister(const QCString &key)
         {
           TemplateFilterFactory::instance().registerFilter(key,&T::apply);
         }
@@ -4663,7 +4663,7 @@ class TemplateNodeFactory
     template<class T> class AutoRegister
     {
       public:
-        AutoRegister<T>(const QCString &key)
+        AutoRegister(const QCString &key)
         {
           TemplateNodeFactory::instance().registerTemplateNode(key,T::createInstance);
         }
