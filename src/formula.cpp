@@ -590,6 +590,7 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
           return generateFormula(thisDir,formulaFileName,formula,pageNum,pageIndex,format,hd,mode);
         };
         results.emplace_back(threadPool.queue(processFormula));
+        pageIndex++;
       }
       for (auto &f : results)
       {
