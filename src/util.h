@@ -400,6 +400,7 @@ void stackTrace();
 bool readInputFile(const QCString &fileName,BufStr &inBuf,
                    bool filter=TRUE,bool isSourceCode=FALSE);
 QCString filterTitle(const QCString &title);
+void convertBuffer(const QCString &fileName,BufStr &inBuf,size_t size,QCString encoding);
 
 bool patternMatch(const FileInfo &fi,const StringVector &patList);
 

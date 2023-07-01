@@ -11909,8 +11909,33 @@ void parseInput()
   FileInfo fi(layoutFileName.str());
   if (fi.exists())
   {
-    msg("Parsing layout file %s...\n",qPrint(layoutFileName));
-    LayoutDocManager::instance().parse(layoutFileName);
+    msg("Reading layout file %s...\n",qPrint(layoutFileName));
+
+    std::ifstream f = Portable::openInputStream(layoutFileName,true);
+    if (f.is_open())
+    {
+      BufStr inBuf(fi.size());
+      BufStr tmpBuf(fi.size()+1);
+      f.read(tmpBuf.data(),fi.size());
+      if (!f.fail())
+      {
+        f.close();
+        inBuf.addArray(tmpBuf.data(),fi.size()); // to get the curPos correct
+        inBuf.addChar('\0');
+        convertBuffer(layoutFileName,inBuf,fi.size(),QCString());
+
+        msg("Parsing layout file %s...\n",qPrint(layoutFileName));
+        LayoutDocManager::instance().parse(layoutFileName, inBuf.data());
+      }
+      else
+      {
+        err("problems while reading file %s\n",qPrint(layoutFileName));
+      }
+    }
+    else
+    {
+      err("could not open file %s\n",qPrint(layoutFileName));
+    }
   }
   else if (!defaultLayoutUsed)
   {

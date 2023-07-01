@@ -5800,16 +5800,24 @@ void stackTrace()
 }
 
 static size_t transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,size_t size,
-           const QCString &inputEncoding,const QCString &outputEncoding)
+           const QCString &inputEncoding,const QCString &outputEncoding,bool isLayout = false)
 {
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty()) return size;
   if (qstricmp(inputEncoding,outputEncoding)==0) return size;
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {
-    term("unsupported character conversion: '%s'->'%s': %s\n"
-        "Check the INPUT_ENCODING setting in the config file!\n",
-        qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno));
+    if (isLayout)
+    {
+      term("unsupported character conversion: '%s'->'%s': %s\nCheck encoding in '%s'\n",
+          qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno),qPrint(fileName));
+    }
+    else
+    {
+      term("unsupported character conversion: '%s'->'%s': %s\n"
+          "Check the INPUT_ENCODING setting in the config file!\n",
+          qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno));
+    }
   }
   size_t tmpBufSize=size*4+1;
   BufStr tmpBuf(tmpBufSize);
@@ -5827,8 +5835,16 @@ static size_t transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,s
   }
   else
   {
-    term("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
-        qPrint(fileName),qPrint(inputEncoding),qPrint(outputEncoding));
+    if (isLayout)
+    {
+      term("%s: failed to translate characters from %s to %s: check in file\n",
+          qPrint(fileName),qPrint(inputEncoding),qPrint(outputEncoding));
+    }
+    else
+    {
+      term("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+          qPrint(fileName),qPrint(inputEncoding),qPrint(outputEncoding));
+    }
   }
   portable_iconv_close(cd);
   return newSize;
@@ -5884,23 +5900,28 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
     Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(inBuf));
   }
+  convertBuffer(fileName,inBuf,size,getEncoding(fi));
+  return TRUE;
+}
 
-  int start=0;
+void convertBuffer(const QCString &fileName,BufStr &inBuf,size_t size,QCString encoding)
+{
+  bool isLayout = encoding.isEmpty();
   if (size>=2 &&
       static_cast<uint8_t>(inBuf.at(0))==0xFF &&
       static_cast<uint8_t>(inBuf.at(1))==0xFE // Little endian BOM
      ) // UCS-2LE encoded file
   {
-    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        "UCS-2LE","UTF-8");
+    transcodeCharacterBuffer(fileName,inBuf,size,
+        "UCS-2LE","UTF-8",isLayout);
   }
   else if (size>=2 &&
            static_cast<uint8_t>(inBuf.at(0))==0xFE &&
            static_cast<uint8_t>(inBuf.at(1))==0xFF // big endian BOM
          ) // UCS-2BE encoded file
   {
-    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        "UCS-2BE","UTF-8");
+    transcodeCharacterBuffer(fileName,inBuf,size,
+        "UCS-2BE","UTF-8",isLayout);
   }
   else if (size>=3 &&
            static_cast<uint8_t>(inBuf.at(0))==0xEF &&
@@ -5910,26 +5931,89 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   {
     inBuf.dropFromStart(3); // remove UTF-8 BOM: no translation needed
   }
-  else // transcode according to the INPUT_ENCODING setting
+  else
   {
     // do character transcoding if needed.
-    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        getEncoding(fi),"UTF-8");
+    if (isLayout)
+    {
+      /// we have a layout xml file
+      QCString layoutEncoding;
+      char *data = inBuf.data();
+      size_t i = 0;
+      while (i<size)
+      {
+        if (isspace(data[i]))
+        {
+          i++;
+          continue;
+        }
+        else if (data[i] == '<')
+        {
+          // potential start
+          if (size-i <= 4) break;
+          if (!(data[i+1] == '?' && data[i+2] == 'x' && data[i+3] == 'm' && data[i+4] == 'l')) break;
+          i+=5;
+          while (i<size)
+          {
+           if (data[i] == '>') break;
+           else if (data[i] == 'e') // potential encoding
+           {
+             // cannot be encoding
+             if (size-i <= 11) break;
+             if (!(data[i+1] == 'n' && data[i+2] == 'c' && data[i+3] == 'o' && data[i+4] == 'd' &&
+                   data[i+5] == 'i' && data[i+6] == 'n' && data[i+7] == 'g' && data[i+8] == '=' &&
+                   data[i+9] == '"'))
+                   {
+                     i++;
+                     continue;
+                   } 
+             i+=10;
+             QCString tmpEncoding;
+             while (i<size)
+             {
+               if (data[i] == '"')
+               {
+                 layoutEncoding = tmpEncoding;
+                 break;
+               }
+               tmpEncoding += data[i];
+               i++;
+             }
+             break;
+           }
+           i++;
+          }
+        }
+        break;
+      }
+
+      // determine encoding from file
+      if (!layoutEncoding.isEmpty())
+      {
+        transcodeCharacterBuffer(fileName,inBuf,size,
+          layoutEncoding,"UTF-8",isLayout);
+      }
+    }
+    else
+    {
+      // transcode according to the INPUT_ENCODING setting
+      transcodeCharacterBuffer(fileName,inBuf,size,
+        encoding,"UTF-8",isLayout);
+    }
   }
 
   //inBuf.addChar('\n'); /* to prevent problems under Windows ? */
 
   // and translate CR's
-  size=inBuf.curPos()-start;
-  size_t newSize=filterCRLF(inBuf.data()+start,size);
+  size_t oldSize=inBuf.curPos();
+  size_t newSize=filterCRLF(inBuf.data(),oldSize);
   //printf("filter char at %p size=%d newSize=%d\n",qPrint(dest)+oldPos,size,newSize);
-  if (newSize!=size) // we removed chars
+  if (newSize!=oldSize) // we removed chars
   {
     inBuf.shrink(newSize); // resize the array
     //printf(".......resizing from %d to %d result=[%s]\n",oldPos+size,oldPos+newSize,qPrint(dest));
   }
   inBuf.addChar(0);
-  return TRUE;
 }
 
 // Replace %word by word in title
