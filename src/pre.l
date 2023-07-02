@@ -76,8 +76,9 @@ static const char *stateToString(int state);
 
 struct preYY_CondCtx
 {
-  preYY_CondCtx(int line,const QCString &id,bool b)
-    : lineNr(line), sectionId(id), skip(b) {}
+  preYY_CondCtx(const QCString &file,int line,const QCString &id,bool b)
+    : fileName(file), lineNr(line), sectionId(id), skip(b) {}
+  QCString fileName;
   int lineNr;
   QCString sectionId;
   bool skip;
@@ -3441,7 +3442,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
   //printf("startCondSection: skip=%d stack=%d\n",state->skip,state->condStack.size());
   CondParser prs;
   bool expResult = prs.parse(state->fileName.data(),state->yyLineNr,sectId.data());
-  state->condStack.emplace(std::make_unique<preYY_CondCtx>(state->yyLineNr,sectId,state->skip));
+  state->condStack.emplace(std::make_unique<preYY_CondCtx>(state->fileName,state->yyLineNr,sectId,state->skip));
   if (!expResult)
   {
     state->skip=TRUE;
@@ -3809,7 +3810,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
     const std::unique_ptr<preYY_CondCtx> &ctx = state->condStack.top();
     QCString sectionInfo = " ";
     if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",qPrint(ctx->sectionId.stripWhiteSpace()));
-    warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "
+    warn(ctx->fileName,ctx->lineNr,"Conditional section%sdoes not have "
         "a corresponding \\endcond command within this file.",qPrint(sectionInfo));
     state->condStack.pop();
   }
