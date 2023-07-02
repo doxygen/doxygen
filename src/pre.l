@@ -76,7 +76,7 @@ static const char *stateToString(int state);
 
 struct preYY_CondCtx
 {
-  preYY_CondCtx(QCString file,int line,const QCString &id,bool b)
+  preYY_CondCtx(const QCString &file,int line,const QCString &id,bool b)
     : fileName(file), lineNr(line), sectionId(id), skip(b) {}
   QCString fileName;
   int lineNr;
