@@ -1385,9 +1385,12 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data)
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName.data(),data ? data : fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex_xml),
+  parser.parse(fileName.data(),
+               data ? data : fileToString(fileName).data(),
+               Debug::isFlagSet(Debug::Lex_xml),
                [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",qPrint(fileName)); },
-               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",qPrint(fileName)); }
+               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",qPrint(fileName)); },
+               transcodeCharacterStringToUTF8
               );
 }
 

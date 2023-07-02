@@ -1367,43 +1367,38 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 }
 
 
-QCString transcodeCharacterStringToUTF8(const QCString &inputEncoding, const QCString &input)
+bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncoding)
 {
-  bool error=FALSE;
   const char *outputEncoding = "UTF-8";
-  if (inputEncoding.isEmpty() || qstricmp(inputEncoding,outputEncoding)==0) return input;
+  if (inputEncoding==0 || qstricmp(inputEncoding,outputEncoding)==0) return true;
   int inputSize=input.length();
   int outputSize=inputSize*4+1;
   QCString output(outputSize);
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding.data());
+  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==reinterpret_cast<void *>(-1))
   {
-    err("unsupported character conversion: '%s'->'%s'\n",
-        qPrint(inputEncoding),outputEncoding);
-    error=TRUE;
+    return false;
   }
-  if (!error)
+  bool ok=true;
+  size_t iLeft=inputSize;
+  size_t oLeft=outputSize;
+  const char *inputPtr = input.data();
+  char *outputPtr = output.rawData();
+  if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
-    size_t iLeft=inputSize;
-    size_t oLeft=outputSize;
-    const char *inputPtr = input.data();
-    char *outputPtr = output.rawData();
-    if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
-    {
-      outputSize-=static_cast<int>(oLeft);
-      output.resize(outputSize+1);
-      output.at(outputSize)='\0';
-      //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
-    }
-    else
-    {
-      err("failed to translate characters from %s to %s: check INPUT_ENCODING\ninput=[%s]\n",
-          qPrint(inputEncoding),outputEncoding,qPrint(input));
-      error=TRUE;
-    }
-    portable_iconv_close(cd);
+    outputSize-=static_cast<int>(oLeft);
+    output.resize(outputSize+1);
+    output.at(outputSize)='\0';
+    // replace input
+    input=output.str();
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
   }
-  return error ? input : output;
+  else
+  {
+    ok=false;
+  }
+  portable_iconv_close(cd);
+  return ok;
 }
 
 /*! reads a file with name \a name and returns it as a string. If \a filter

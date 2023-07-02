@@ -936,7 +936,22 @@ bool readCodeFragment(const QCString &fileName,
       Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(result));
     }
   }
-  result = transcodeCharacterStringToUTF8(getEncoding(FileInfo(fileName.str())),result);
+  QCString encoding = getEncoding(FileInfo(fileName.str()));
+  if (encoding!="UTF-8")
+  {
+    std::string encBuf = result.str();
+    bool ok = transcodeCharacterStringToUTF8(encBuf,encoding.data());
+    if (ok)
+    {
+      result = QCString(encBuf);
+    }
+    else
+    {
+      err("failed to trancode characters in code fragment in file %s lines %d to %d, from input encoding %s to UTF-8\n",
+          qPrint(fileName),startLine,endLine,qPrint(encoding));
+
+    }
+  }
   if (!result.isEmpty() && result.at(result.length()-1)!='\n') result += "\n";
   //printf("readCodeFragment(%d-%d)=%s\n",startLine,endLine,qPrint(result));
   return found;
