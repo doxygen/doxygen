@@ -3310,6 +3310,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   mmd->setMemberSpecifiers(root->spec);
   mmd->setMemberGroupId(root->mGrpId);
   mmd->setRequiresClause(root->req);
+  mmd->setExplicitExternal(root->explicitExternal,root->fileName,root->startLine,root->startColumn);
 
   NamespaceDefMutable *nd = 0;
   // see if the function is inside a namespace that was not part of

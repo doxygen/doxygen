@@ -646,6 +646,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << " constexpr=\"yes\"";
   }
 
+  if (md->isExternal())
+  {
+    t << " extern=\"yes\"";
+  }
+
   if (isFunc)
   {
     const ArgumentList &al = md->argumentList();
