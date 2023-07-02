@@ -469,6 +469,13 @@ void XMLParser::parse(const char *fileName,
   yyextra->inputPosition = 0;
   yyextra->transcodeFunc = transcodeFunc;
 
+  if (static_cast<unsigned char>(inputStr[0])==0xEF &&
+      static_cast<unsigned char>(inputStr[1])==0xBB &&
+      static_cast<unsigned char>(inputStr[2])==0xBF)
+  {
+    yyextra->inputPosition = 3; // remove UTF-8 BOM
+  }
+
   xmlYYrestart( 0, yyscanner );
 
   if (yyextra->handlers.startDocument)
