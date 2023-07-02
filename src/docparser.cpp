@@ -39,6 +39,16 @@
 #include "indexlist.h"
 #include "trace.h"
 
+#if !ENABLE_DOCPARSER_TRACING
+#undef  AUTO_TRACE
+#undef  AUTO_TRACE_ADD
+#undef  AUTO_TRACE_EXIT
+#define AUTO_TRACE(...)      (void)0
+#define AUTO_TRACE_ADD(...)  (void)0
+#define AUTO_TRACE_EXIT(...) (void)0
+#endif
+
+
 //---------------------------------------------------------------------------
 
 IDocParserPtr createDocParser()

@@ -52,6 +52,15 @@
 #include "trace.h"
 #include "anchor.h"
 
+#if !ENABLE_MARKDOWN_TRACING
+#undef  AUTO_TRACE
+#undef  AUTO_TRACE_ADD
+#undef  AUTO_TRACE_EXIT
+#define AUTO_TRACE(...)      (void)0
+#define AUTO_TRACE_ADD(...)  (void)0
+#define AUTO_TRACE_EXIT(...) (void)0
+#endif
+
 enum class ExplicitPageResult
 {
   explicitPage,      /**< docs start with a page command */

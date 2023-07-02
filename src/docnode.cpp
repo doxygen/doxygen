@@ -38,6 +38,15 @@
 #include "trace.h"
 #include "anchor.h"
 
+#if !ENABLE_DOCPARSER_TRACING
+#undef  AUTO_TRACE
+#undef  AUTO_TRACE_ADD
+#undef  AUTO_TRACE_EXIT
+#define AUTO_TRACE(...)      (void)0
+#define AUTO_TRACE_ADD(...)  (void)0
+#define AUTO_TRACE_EXIT(...) (void)0
+#endif
+
 #define INTERNAL_ASSERT(x) do {} while(0)
 //#define INTERNAL_ASSERT(x) if (!(x)) TRACE("INTERNAL_ASSERT({}) failed retval={:#x}: file={} line={}",#x,retval,__FILE__,__LINE__)
 
