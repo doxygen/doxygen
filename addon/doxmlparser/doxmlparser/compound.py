@@ -3729,7 +3729,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3743,6 +3743,8 @@ class memberdefType(GeneratedsSuper):
         self.prot_nsprefix_ = None
         self.static = _cast(None, static)
         self.static_nsprefix_ = None
+        self.extern = _cast(None, extern)
+        self.extern_nsprefix_ = None
         self.strong = _cast(None, strong)
         self.strong_nsprefix_ = None
         self.const = _cast(None, const)
@@ -4051,6 +4053,10 @@ class memberdefType(GeneratedsSuper):
         return self.static
     def set_static(self, static):
         self.static = static
+    def get_extern(self):
+        return self.extern
+    def set_extern(self, extern):
+        self.extern = extern
     def get_strong(self):
         return self.strong
     def set_strong(self, strong):
@@ -4346,6 +4352,9 @@ class memberdefType(GeneratedsSuper):
         if self.static is not None and 'static' not in already_processed:
             already_processed.add('static')
             outfile.write(' static=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.static), input_name='static')), ))
+        if self.extern is not None and 'extern' not in already_processed:
+            already_processed.add('extern')
+            outfile.write(' extern=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.extern), input_name='extern')), ))
         if self.strong is not None and 'strong' not in already_processed:
             already_processed.add('strong')
             outfile.write(' strong=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.strong), input_name='strong')), ))
@@ -4573,6 +4582,11 @@ class memberdefType(GeneratedsSuper):
             already_processed.add('static')
             self.static = value
             self.validate_DoxBool(self.static)    # validate type DoxBool
+        value = find_attr_value_('extern', node)
+        if value is not None and 'extern' not in already_processed:
+            already_processed.add('extern')
+            self.extern = value
+            self.validate_DoxBool(self.extern)    # validate type DoxBool
         value = find_attr_value_('strong', node)
         if value is not None and 'strong' not in already_processed:
             already_processed.add('strong')
