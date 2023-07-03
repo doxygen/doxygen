@@ -75,8 +75,9 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "        <span class=\"left\">\n";
-  t << "          <span id=\"MSearchSelect\" ";
+  t << "          <span id=\"MSearchSelect\" tabindex=\"0\" ";
   t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\" ";
+  t << "               onclick=\"return searchBox.OnSearchSelectShow()\" ";
   t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\">&#160;</span>\n";
   t << "          <input type=\"text\" id=\"MSearchField\" value=\"\" placeholder=\""
     << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
@@ -1436,7 +1437,7 @@ void HtmlGenerator::writeSearchInfoStatic(TextStream &t,const QCString &)
   if (searchEngine && !serverBasedSearch)
   {
     t << "<!-- window showing the filter options -->\n";
-    t << "<div id=\"MSearchSelectWindow\"\n";
+    t << "<div id=\"MSearchSelectWindow\" tabindex=\"0\"\n";
     t << "     onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
     t << "     onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
     t << "     onkeydown=\"return searchBox.OnSearchSelectKey(event)\">\n";
