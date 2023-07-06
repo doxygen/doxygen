@@ -555,13 +555,24 @@ void DotNode::writeBox(TextStream &t,
   t << ",height=0.2,width=0.4";
   if (m_isRoot)
   {
-    t << ",color=\"gray40\", fillcolor=\"grey60\", style=\"filled\", fontcolor=\"black\"";
+    if (!Config_getString(DOT_NODE_ATTR).contains("shape=plain"))
+      t << ",color=\"gray40\", fillcolor=\"grey60\", style=\"filled\", fontcolor=\"black\"";
   }
   else
   {
-    t << ",color=\"" << labCol << "\"";
-    t << ", fillcolor=\"" << fillCol << "\"";
-    t << ", style=\"filled\"";
+    if (Config_getString(DOT_NODE_ATTR).contains("shape=plain"))
+    {
+      // Undocumented:
+      if ((m_classDef && m_classDef->templateMaster() && !m_classDef->templateMaster()->hasDocumentation())
+        || (m_url.isEmpty() && !hasNonReachableChildren))
+          t << ", fontcolor=\"gray30\"";
+    }
+    else
+    {
+      t << ", color=\"" << labCol << "\"";
+      t << ", fillcolor=\"" << fillCol << "\"";
+      t << ", style=\"filled\"";
+    }
     writeUrl(t);
   }
   if (!m_tooltip.isEmpty())
