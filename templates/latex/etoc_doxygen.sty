@@ -7,7 +7,7 @@
 %%
 %%     etoc.sty
 %%
-%% at version 1.2a of 2023/05/01.
+%% at version 1.2b of 2023/07/01.
 %%
 %% This file has been provided to Doxygen team courtesy of the
 %% author for benefit of users having a LaTeX installation not
@@ -26,11 +26,11 @@
 %% with new filenames distinct from etoc.sty.
 %% 
 %% Package: etoc
-%% Version: 1.2a
+%% Version: 1.2b
 %% License: LPPL 1.3c
 %% Copyright (C) 2012-2023 Jean-Francois B. <user jfbu at github>
 \NeedsTeXFormat{LaTeX2e}[2003/12/01]
-\ProvidesPackage{etoc_doxygen}[2023/05/01 v1.2a Completely customisable TOCs (JFB)]
+\ProvidesPackage{etoc_doxygen}[2023/07/01 v1.2b Completely customisable TOCs (JFB)]
 \newif\ifEtoc@oldLaTeX
 \@ifl@t@r\fmtversion{2020/10/01}
   {}
@@ -39,7 +39,7 @@
    Since 1.1a (2023/01/14), etoc prefers LaTeX at least\MessageBreak
    as recent as 2020-10-01, for reasons of the .toc file,\MessageBreak
    and used to require it (from 1.1a to 1.2).\MessageBreak
-   This etoc (1.2a) does not *require* it, but has not been\MessageBreak
+   This etoc (1.2b) does not *require* it, but has not been\MessageBreak
    tested thoroughly on old LaTeX (especially if document\MessageBreak
    does not use hyperref) and retrofitting was done only\MessageBreak
    on basis of author partial remembrances of old context.\MessageBreak
@@ -377,8 +377,7 @@
 }
 \def\Etoc@lxyz@linktoc{%
     \ifcase\Hy@linktoc
-        % none: nothing to do
-    \or % section (aka name for etoc): link name and number
+    \or
       \Etoc@global\expandafter\let\csname etocname   \endcsname\etocthelinkedname
       \Etoc@global\expandafter\let\csname etocnumber \endcsname\etocthelinkednumber
     \or % page
@@ -1131,6 +1130,7 @@
     \etocdefaultlines@setsubsubsection
     \etocdefaultlines@setdeeperones
 }
+\def\etocnoprotrusion{\leavevmode\kern-\p@\kern\p@}
 \@ifclassloaded{memoir}{%
  \def\etocdefaultlines@setbook{%
  \Etoc@setstyle@b
@@ -1205,8 +1205,8 @@
    \setbox\z@=\etoctoclineleaders
    \advance\dimen\z@\wd\z@
    \etocifnumbered
-     {\setbox\tw@\hbox{\etocnumber, \etocabbrevpagename\etocpage}}
-     {\setbox\tw@\hbox{\etocabbrevpagename\etocpage}}%
+     {\setbox\tw@\hbox{\etocnumber, \etocabbrevpagename\etocpage\etocnoprotrusion}}
+     {\setbox\tw@\hbox{\etocabbrevpagename\etocpage\etocnoprotrusion}}%
    \advance\dimen\z@\wd\tw@
    \ifdim\dimen\z@ < \linewidth
        \vbox{\etocname~%
@@ -1239,8 +1239,8 @@
    \setbox\z@=\etoctoclineleaders
    \advance\dimen\z@\wd\z@
    \etocifnumbered
-     {\setbox\tw@\hbox{\etocnumber, \etocabbrevpagename\etocpage}}
-     {\setbox\tw@\hbox{\etocabbrevpagename\etocpage}}%
+     {\setbox\tw@\hbox{\etocnumber, \etocabbrevpagename\etocpage\etocnoprotrusion}}
+     {\setbox\tw@\hbox{\etocabbrevpagename\etocpage\etocnoprotrusion}}%
    \advance\dimen\z@\wd\tw@
    \ifdim\dimen\z@ < \linewidth
        \vbox{\etocname~%
@@ -1463,7 +1463,7 @@
     \tableofcontents}
 \newcommand*\etoc@ruledtoci[2][\etocdefaultnbcol]{%
     \etocruledstyle[#1]{#2}%
-[O    \tableofcontents*}
+    \tableofcontents*}
 \newcommand*\etoc@local@ruledtoc[2][\etocdefaultnbcol]{%
     \etocruledstyle[#1]{#2}%
     \localtableofcontents}
@@ -1629,9 +1629,6 @@
            \fi
          \fi
          \ifEtoc@localtoc
-         % trying to mimic a section title but there is no \sectionheadstart
-         % there is no \printsectiontitle etc... Oh well I will be more
-         % radical then
             \@namedef{@\Etoc@currext maketitle}{%
                \@nameuse{etocclasslocal\Etoc@currext maketitle}%
             }%
@@ -1839,7 +1836,7 @@
     {\if@cftnctoc\else
                  \ifEtoc@keeporiginaltoc
                    \else
-                   \let\tableofcontents\etoctableofcontents
+                   \AtBeginDocument{\let\tableofcontents\etoctableofcontents}%
                  \fi
      \fi }
     {\AtBeginDocument
@@ -2179,4 +2176,3 @@
 \endinput
 %%
 %% End of file `etoc.sty'.
-

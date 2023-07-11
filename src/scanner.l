@@ -4873,8 +4873,8 @@ NONLopt [^\n]*
   */
 <FuncQual>[{:;,]                        {
                                           if ( qstrcmp(yytext,";")==0 &&
-                                               yyextra->insidePHP &&
-                                               !containsWord(yyextra->current->type,"function") )
+                                               ((yyextra->insideJS || yyextra->insidePHP) &&
+                                                !containsWord(yyextra->current->type,"function")) )
                                           {
                                             yyextra->current->reset();
                                             initEntry(yyscanner);
