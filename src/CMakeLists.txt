@@ -230,6 +230,7 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
     #
+    aliases.cpp
     anchor.cpp
     arguments.cpp
     cite.cpp

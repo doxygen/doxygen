@@ -105,6 +105,7 @@
 #include "clangparser.h"
 #include "symbolresolver.h"
 #include "regex.h"
+#include "aliases.h"
 #include "fileinfo.h"
 #include "dir.h"
 #include "conceptdef.h"
@@ -135,7 +136,6 @@ FileNameLinkedMap    *Doxygen::inputNameLinkedMap = 0;
 GroupLinkedMap       *Doxygen::groupLinkedMap = 0;
 PageLinkedMap        *Doxygen::pageLinkedMap = 0;
 PageLinkedMap        *Doxygen::exampleLinkedMap = 0;
-StringMap             Doxygen::aliasMap;                     // aliases
 StringSet             Doxygen::inputPaths;
 FileNameLinkedMap    *Doxygen::includeNameLinkedMap = 0;     // include names
 FileNameLinkedMap    *Doxygen::exampleNameLinkedMap = 0;     // examples
@@ -10471,93 +10471,6 @@ void readFileOrDirectory(const QCString &s,
       }
     }
   }
-}
-
-//----------------------------------------------------------------------------
-
-static void expandAliases()
-{
-  for (auto &[name,value] : Doxygen::aliasMap)
-  {
-    value = expandAlias(name,value);
-  }
-}
-
-//----------------------------------------------------------------------------
-
-static void escapeAliases()
-{
-  for (auto &[name,definition] : Doxygen::aliasMap)
-  {
-    QCString value(definition);
-    QCString newValue;
-    int in,p=0;
-    // for each \n in the alias command value
-    while ((in=value.find("\\n",p))!=-1)
-    {
-      newValue+=value.mid(p,in-p);
-      // expand \n's except if \n is part of a built-in command.
-      if (value.mid(in,5)!="\\note" &&
-          value.mid(in,5)!="\\noop" &&
-          value.mid(in,5)!="\\name" &&
-          value.mid(in,10)!="\\namespace" &&
-          value.mid(in,14)!="\\nosubgrouping"
-         )
-      {
-        newValue+="\\ilinebr ";
-      }
-      else
-      {
-        newValue+="\\n";
-      }
-      p=in+2;
-    }
-    newValue+=value.mid(p,value.length()-p);
-    p = 0;
-    newValue = "";
-    while ((in=value.find("^^",p))!=-1)
-    {
-      newValue+=value.mid(p,in-p);
-      newValue+="\\ilinebr ";
-      p=in+2;
-    }
-    newValue+=value.mid(p,value.length()-p);
-    definition=newValue.str();
-    //printf("Alias %s has value %s\n",name.c_str(),qPrint(newValue));
-  }
-}
-
-//----------------------------------------------------------------------------
-
-void readAliases()
-{
-  // add aliases to a dictionary
-  const StringVector &aliasList = Config_getList(ALIASES);
-  for (const auto &al : aliasList)
-  {
-    QCString alias(al);
-    int i=alias.find('=');
-    if (i>0)
-    {
-      QCString name=alias.left(i).stripWhiteSpace();
-      QCString value=alias.right(alias.length()-i-1);
-      //printf("Alias: found name='%s' value='%s'\n",qPrint(name),qPrint(value));
-      if (!name.isEmpty())
-      {
-        auto it = Doxygen::aliasMap.find(name.str());
-        if (it==Doxygen::aliasMap.end()) // insert new alias
-        {
-          Doxygen::aliasMap.insert(std::make_pair(name.str(),value.str()));
-        }
-        else // overwrite previous alias
-        {
-          it->second=value.str();
-        }
-      }
-    }
-  }
-  expandAliases();
-  escapeAliases();
 }
 
 //----------------------------------------------------------------------------

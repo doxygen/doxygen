@@ -34,5 +34,6 @@ using BoolStack          = std::stack<bool>;
 using BoolVector         = std::vector<bool>;
 using IntMap             = std::map<std::string,int>;
 using IntVector          = std::vector<int>;
+using CharSetMap         = std::map<std::string,std::set<char>>;
 
 #endif

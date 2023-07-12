@@ -384,13 +384,6 @@ bool transcodeCharacterStringToUTF8(std::string &input,const char *inputEncoding
 
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding);
 
-QCString extractAliasArgs(const QCString &args,size_t pos);
-
-int countAliasArguments(const QCString &argList);
-
-QCString resolveAliasCmd(const QCString &aliasCmd);
-std::string expandAlias(const std::string &aliasName,const std::string &aliasValue);
-
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
 
 QCString convertCharEntitiesToUTF8(const QCString &s);
