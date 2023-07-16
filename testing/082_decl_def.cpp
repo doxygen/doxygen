@@ -1,6 +1,7 @@
 // objective: test for declaration and definition order independence: decl first
 // check: namespace_n.xml
 // config: INPUT = $INPUTDIR/decl_def.h $INPUTDIR/082_decl_def.cpp
+// config: HTML_CODE_FOLDING = NO
 #include "test.h"
 
 /** Namespace */

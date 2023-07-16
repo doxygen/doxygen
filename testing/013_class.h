@@ -1,10 +1,11 @@
 // objective: test the \class and \headerfile commands
+// config: HTML_CODE_FOLDING=NO
 // check: class_t1.xml
 // check: class_t2.xml
 // check: class_t3.xml
 // check: class_t4.xml
 
-/** A class 
+/** A class
  *  \headerfile 013_class.h "inc/013_class.h"
  */
 class T1

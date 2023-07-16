@@ -1,4 +1,5 @@
 // objective: test the \(public|protected|private)section commands
+// config: HTML_CODE_FOLDING = NO
 // check: struct_s.xml
 
 /** A struct */
