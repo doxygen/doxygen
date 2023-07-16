@@ -152,6 +152,8 @@
 --fold-line-color: #808080;
 --fold-minus-image: url('minusd.svg');
 --fold-plus-image: url('plusd.svg');
+--fold-minus-image-relpath: url('../../minusd.svg');
+--fold-plus-image-relpath: url('../../plusd.svg');
 
 /** font-family */
 --font-family-normal: Roboto,sans-serif;

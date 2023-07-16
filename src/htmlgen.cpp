@@ -2825,7 +2825,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
     QCString initCodeFold;
     if (Config_getBool(HTML_CODE_FOLDING))
     {
-      initCodeFold="init_codefold();";
+      initCodeFold=QCString("init_codefold(") + (relPath.isEmpty() ? "0" : "1") + ");";
     }
     if (Config_getBool(SEARCHENGINE))
     {
