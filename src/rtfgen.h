@@ -53,6 +53,8 @@ class RTFCodeGenerator
     void writeCodeAnchor(const QCString &) {}
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
   private:
     friend class RTFGenerator;

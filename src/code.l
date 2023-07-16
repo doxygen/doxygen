@@ -190,6 +190,7 @@ struct codeYY_state
   CallContext     theCallContext;
   SymbolResolver  symbolResolver;
   TooltipManager  tooltipManager;
+  std::vector<const Definition *> foldStack;
 };
 
 static bool isCastKeyword(const char *s);
@@ -2368,6 +2369,48 @@ static void setClassScope(yyscan_t yyscanner,const QCString &name)
   DBG_CTX((stderr,"--->New class scope '%s'\n",qPrint(yyextra->classScope)));
 }
 
+static void codeFolding(yyscan_t yyscanner,const Definition *d)
+{
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+    while (!yyextra->foldStack.empty())
+    {
+      const Definition *dd = yyextra->foldStack.back();
+      if (dd->getEndBodyLine()+1==yyextra->yyLineNr) // +1 to close the section after the end of the body
+      {
+        yyextra->code->endFold();
+        //printf("%d:   end codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(dd->name()),dd->getStartDefLine(),dd->getEndBodyLine());
+        yyextra->foldStack.pop_back();
+      }
+      else
+      {
+        break;
+      }
+    }
+    if (d)
+    {
+      int startLine = d->getStartDefLine();
+      int endLine   = d->getEndBodyLine();
+      if (endLine!=-1 && startLine!=endLine &&
+          // since the end of a section is closed after the last line, we need to avoid starting a
+          // new section if the previous section ends at the same line, i.e. something like
+          // struct X {
+          // ...
+          // }; struct S {  <- start of S and end of X at the same line
+          // ...
+          // };
+          (yyextra->foldStack.empty() || yyextra->foldStack.back()->getEndBodyLine()!=startLine))
+      {
+        //printf("%d: start codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->name()),d->getStartDefLine(),d->getEndBodyLine());
+        bool needsSemi = d->definitionType()==Definition::TypeClass;
+        yyextra->code->startFold(yyextra->yyLineNr,"{",needsSemi ? "};" : "}");
+        yyextra->foldStack.push_back(d);
+      }
+    }
+  }
+}
+
 /*! start a new line of code, inserting a line number if yyextra->sourceFileDef
  * is TRUE. If a definition starts at the current line, then the line
  * number is linked to the documentation of that definition.
@@ -2403,6 +2446,7 @@ static void startCodeLine(yyscan_t yyscanner)
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
       {
+        codeFolding(yyscanner,yyextra->currentMemberDef);
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
                                 yyextra->currentMemberDef->anchor(),
@@ -2411,14 +2455,20 @@ static void startCodeLine(yyscan_t yyscanner)
       }
       else if (d->isLinkableInProject())
       {
+        codeFolding(yyscanner,d);
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
                                 QCString(),yyextra->yyLineNr,!yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
+      else
+      {
+        codeFolding(yyscanner,nullptr);
+      }
     }
     else
     {
+      codeFolding(yyscanner,nullptr);
       yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
                                      !yyextra->includeCodeFragment);
     }
@@ -3965,6 +4015,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const Q
   yyextra->collectXRefs = collectXRefs;
   yyextra->inFunctionTryBlock = FALSE;
   yyextra->symbolResolver.setFileScope(fd);
+  yyextra->foldStack.clear();
 
   if (startLine!=-1)
     yyextra->yyLineNr    = startLine;
@@ -4029,6 +4080,14 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const Q
   if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
+  }
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    while (!yyextra->foldStack.empty())
+    {
+      yyextra->code->endFold();
+      yyextra->foldStack.pop_back();
+    }
   }
   if (yyextra->exampleFileDef)
   {

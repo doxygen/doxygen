@@ -55,6 +55,8 @@ class LatexCodeGenerator
     void writeCodeAnchor(const QCString &) {}
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &style);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
     // extra methods not part of CodeOutputInterface
     void incUsedTableLevel() { m_usedTableLevel++; }

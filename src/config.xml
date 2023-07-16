@@ -2260,6 +2260,15 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HTML_CODE_FOLDING' defval='1' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ If the \c HTML_CODE_FOLDING and \c SOURCE_BROWSER tags are set to \c YES then 
+ classes and functions can be dynamically folded and expanded in the generated HTML
+ source code.
+]]>
+      </docs>
+    </option>
     <option type='int' id='HTML_INDEX_NUM_ENTRIES' minval='0' maxval='9999' defval='100' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[

@@ -149,6 +149,9 @@
 --tooltip-declaration-color: #006318;
 --tooltip-link-color: ##60;
 --tooltip-shadow: 1px 1px 7px gray;
+--fold-line-color: #808080;
+--fold-minus-image: url('minus.svg');
+--fold-plus-image: url('plus.svg');
 
 /** font-family */
 --font-family-normal: Roboto,sans-serif;

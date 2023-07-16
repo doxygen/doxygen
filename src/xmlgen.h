@@ -42,6 +42,8 @@ class XMLCodeGenerator
                          const QCString &anchorId,int l,bool writeLineAnchor);
     void startCodeFragment(const QCString &);
     void endCodeFragment(const QCString &);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
     void finish();
 

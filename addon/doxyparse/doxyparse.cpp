@@ -68,6 +68,8 @@ class Doxyparse : public OutputCodeExtension
                               const SourceLinkInfo &) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
     {

@@ -69,6 +69,8 @@ class DocbookCodeGenerator
         const QCString &anchorId,int l, bool writeLineAnchor);
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &style);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
     void setRelativePath(const QCString &path) { m_relPath = path; }
     void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }

@@ -345,6 +345,18 @@ div.line.glow {
 	box-shadow: 0 0 10px var(--glow-color);
 }
 
+span.fold {
+        margin-left: 5px;
+        margin-right: 1px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding: 0px;
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	background-repeat:no-repeat;
+        background-position:center;
+}
 
 span.lineno {
 	padding-right: 4px;

@@ -38,6 +38,8 @@ class DevNullCodeGenerator
     void writeCodeAnchor(const QCString &) {}
     void startCodeFragment(const QCString &) {}
     void endCodeFragment(const QCString &) {}
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 };
 
 #endif // DEVNULLGEN_H

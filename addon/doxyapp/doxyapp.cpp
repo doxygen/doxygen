@@ -62,6 +62,8 @@ class XRefDummyCodeGenerator : public OutputCodeExtension
     void writeCodeAnchor(const QCString &) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     // here we are presented with the symbols found by the code parser
     void linkableSymbol(int l, const char *sym,Definition *symDef,Definition *context)

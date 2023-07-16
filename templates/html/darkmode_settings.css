@@ -127,8 +127,8 @@
 --code-char-literal-color: #00E0F0;
 --code-xml-cdata-color: #C9D1D9;
 --code-vhdl-digit-color: #FF00FF;
---code-vhdl-char-color: #000000;
---code-vhdl-keyword-color: #700070;
+--code-vhdl-char-color: #C0C0C0;
+--code-vhdl-keyword-color: #CF53C9;
 --code-vhdl-logic-color: #FF0000;
 --code-link-color: #79C0FF;
 --code-external-link-color: #79C0FF;
@@ -149,6 +149,9 @@
 --tooltip-declaration-color: #20C348;
 --tooltip-link-color: #79C0FF;
 --tooltip-shadow: none;
+--fold-line-color: #808080;
+--fold-minus-image: url('minusd.svg');
+--fold-plus-image: url('plusd.svg');
 
 /** font-family */
 --font-family-normal: Roboto,sans-serif;

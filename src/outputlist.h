@@ -53,6 +53,8 @@ namespace OutputCodeIntf
   template <class T> struct writeCodeAnchor   { static constexpr auto method = &T::writeCodeAnchor;   };
   template <class T> struct startCodeFragment { static constexpr auto method = &T::startCodeFragment; };
   template <class T> struct endCodeFragment   { static constexpr auto method = &T::endCodeFragment;   };
+  template <class T> struct startFold         { static constexpr auto method = &T::startFold;         };
+  template <class T> struct endFold           { static constexpr auto method = &T::endFold;           };
 }
 
 /** Helper template class which defers all methods of OutputCodeIntf to an existing object of the templated type.
@@ -100,6 +102,12 @@ class OutputCodeDefer
     void endCodeFragment(const QCString &style)
     { m_codeGen->endCodeFragment(style); }
 
+    void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
+    { m_codeGen->startFold(lineNr,startMarker,endMarker); }
+
+    void endFold()
+    { m_codeGen->endFold(); }
+
   private:
     OutputCodeGen *m_codeGen;
 };
@@ -128,6 +136,8 @@ class OutputCodeExtension
     virtual void writeCodeAnchor(const QCString &name) = 0;
     virtual void startCodeFragment(const QCString &style) = 0;
     virtual void endCodeFragment(const QCString &style) = 0;
+    virtual void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker) = 0;
+    virtual void endFold() = 0;
 };
 
 using HtmlCodeGeneratorDefer    = OutputCodeDefer<HtmlCodeGenerator>;
@@ -241,6 +251,12 @@ class OutputCodeList
 
     void endCodeFragment(const QCString &style)
     { foreach<OutputCodeIntf::endCodeFragment>(style); }
+
+    void startFold(int lineNr, const QCString &startMarker, const QCString &endMarker)
+    { foreach<OutputCodeIntf::startFold>(lineNr,startMarker,endMarker); }
+
+    void endFold()
+    { foreach<OutputCodeIntf::endFold>(); }
 
   private:
     template<template <class> class GeneratorT, class... As>

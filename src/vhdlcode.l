@@ -114,6 +114,7 @@ struct vhdlcodeYY_state
   bool          lexInit = false;
   int           braceCount = 0;
   TooltipManager tooltipManager;
+  std::vector<const Definition *> foldStack;
 };
 
 
@@ -1000,6 +1001,39 @@ static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
   }
 }
 
+static void codeFolding(yyscan_t yyscanner,const Definition *d)
+{
+  // TODO: the VHDL parse doesn't seem to record startLine and endBodyLine for many of the constructs, preventing folding from working.
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+    while (!yyextra->foldStack.empty())
+    {
+      const Definition *dd = yyextra->foldStack.back();
+      if (dd->getEndBodyLine()+1==yyextra->yyLineNr) // +1 to close the section after the end of the body
+      {
+        yyextra->code->endFold();
+        //printf("%d:   end codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(dd->name()),dd->getStartDefLine(),dd->getEndBodyLine());
+        yyextra->foldStack.pop_back();
+      }
+      else
+      {
+        break;
+      }
+    }
+    if (d)
+    {
+      int startLine = d->getStartDefLine();
+      int endLine   = d->getEndBodyLine();
+      if (endLine!=-1 && startLine!=endLine && (yyextra->foldStack.empty() || yyextra->foldStack.back()->getEndBodyLine()!=startLine))
+      {
+        //printf("%d: start codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->name()),d->getStartDefLine(),d->getEndBodyLine());
+        yyextra->code->startFold(yyextra->yyLineNr,"","");
+        yyextra->foldStack.push_back(d);
+      }
+    }
+  }
+}
 
 /*! start a new line of code, inserting a line number if yyextra->sourceFileDef
  * is true. If a definition starts at the current line, then the line
@@ -1037,6 +1071,7 @@ static void startCodeLine(yyscan_t yyscanner)
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
       {
+        codeFolding(yyscanner,yyextra->currentMemberDef);
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
                                 yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
@@ -1045,15 +1080,21 @@ static void startCodeLine(yyscan_t yyscanner)
       }
       else if (d->isLinkableInProject())
       {
+        codeFolding(yyscanner,yyextra->currentMemberDef);
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
                                 QCString(),yyextra->yyLineNr,
                                 !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
+      else
+      {
+        codeFolding(yyscanner,nullptr);
+      }
     }
     else
     {
+      codeFolding(yyscanner,nullptr);
       yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
                                      !yyextra->includeCodeFragment);
     }
@@ -1615,6 +1656,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   yyextra->currentFontClass = 0;
   yyextra->insideCodeLine = false;
   yyextra->searchCtx = searchCtx;
+  yyextra->foldStack.clear();
 
   if (startLine!=-1)
     yyextra->yyLineNr    = startLine;
@@ -1661,6 +1703,14 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
+  }
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    while (!yyextra->foldStack.empty())
+    {
+      yyextra->code->endFold();
+      yyextra->foldStack.pop_back();
+    }
   }
   if (yyextra->exampleFileDef)
   {

@@ -51,6 +51,8 @@ class HtmlCodeGenerator
     void writeCodeAnchor(const QCString &anchor);
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &);
+    void startFold(int,const QCString &,const QCString &);
+    void endFold();
 
     void setRelativePath(const QCString &path);
   private:

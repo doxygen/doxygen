@@ -1046,6 +1046,21 @@ void HtmlCodeGenerator::endCodeFragment(const QCString &)
   *m_t << "</div><!-- fragment -->";
 }
 
+void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
+{
+  const int maxLineNrStr = 10;
+  char lineNumber[maxLineNrStr];
+  qsnprintf(lineNumber,maxLineNrStr,"%05d",lineNr);
+  *m_t << "<div class=\"foldopen\" id=\"foldopen" << lineNumber <<
+          "\" data-start=\"" << startMarker <<
+          "\" data-end=\"" << endMarker <<
+          "\">\n";
+}
+
+void HtmlCodeGenerator::endFold()
+{
+  *m_t << "</div>\n";
+}
 
 //--------------------------------------------------------------------------
 
@@ -1212,10 +1227,10 @@ void HtmlGenerator::init()
     if (f.is_open())
     {
       TextStream t(&f);
-      t << mgr.getAsString("dynsections.js");
+      t << replaceVariables(mgr.getAsString("dynsections.js"));
       if (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS))
       {
-        t << mgr.getAsString("dynsections_tooltips.js");
+        t << replaceVariables(mgr.getAsString("dynsections_tooltips.js"));
       }
     }
   }
@@ -1257,6 +1272,10 @@ void HtmlGenerator::writeTabData()
   mgr.copyResource("sync_off.luma",dname);
   mgr.copyResource("nav_g.png",dname);
   Doxygen::indexList->addImageFile("nav_g.png");
+  mgr.copyResource("plus.svg",dname);
+  mgr.copyResource("minus.svg",dname);
+  mgr.copyResource("plusd.svg",dname);
+  mgr.copyResource("minusd.svg",dname);
 }
 
 void HtmlGenerator::writeSearchData(const QCString &dname)
@@ -2803,18 +2822,31 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
       << (serverBasedSearch?"true":"false") << ",'"
       << searchPage << "','"
       << theTranslator->trSearch() << "');\n";
+    QCString initCodeFold;
+    if (Config_getBool(HTML_CODE_FOLDING))
+    {
+      initCodeFold="init_codefold();";
+    }
     if (Config_getBool(SEARCHENGINE))
     {
       if (!serverBasedSearch)
       {
-        t << "  $(document).ready(function() { init_search(); });\n";
+        t << "  $(document).ready(function() { init_search(); " << initCodeFold << "});\n";
       }
       else
       {
         t << "  $(document).ready(function() {\n"
-          << "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
-          << "  });\n";
+          << "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n";
+          if (!initCodeFold.isEmpty())
+          {
+            t << "    " << initCodeFold << "\n";
+          }
+        t << "  });\n";
       }
+    }
+    else if (initCodeFold.isEmpty())
+    {
+      t << "  $(document).ready(function() { " << initCodeFold << "});\n";
     }
     t << "});\n";
     t << "/* @license-end */\n";
