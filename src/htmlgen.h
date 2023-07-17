@@ -224,7 +224,7 @@ class HtmlGenerator : public OutputGenerator
     void writeSplitBar(const QCString &name);
     void writeNavigationPath(const QCString &s);
     void writeLogo();
-    void writeQuickLinks(bool compact,HighlightedItem hli,const QCString &file);
+    void writeQuickLinks(bool compact,HighlightedItem hli,const QCString &file,bool needsFolding);
     void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first);
     void startContents();
     void endContents();

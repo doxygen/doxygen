@@ -356,14 +356,14 @@ void endTitle(OutputList &ol,const QCString &fileName,const QCString &name)
 
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
-               const QCString &altSidebarName, int hierarchyLevel)
+               const QCString &altSidebarName, int hierarchyLevel,bool needsFolding)
 {
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   ol.startFile(name,manName,title,hierarchyLevel);
   ol.startQuickIndices();
   if (!disableIndex)
   {
-    ol.writeQuickLinks(TRUE,hli,name);
+    ol.writeQuickLinks(TRUE,hli,name,needsFolding);
   }
   if (!additionalIndices)
   {
@@ -3011,7 +3011,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
     ol.startQuickIndices();
     if (!disableIndex)
     {
-      ol.writeQuickLinks(TRUE,HighlightedItem::Functions,QCString());
+      ol.writeQuickLinks(true,HighlightedItem::Functions,QCString(),false);
 
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
       {
@@ -3180,7 +3180,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
     ol.startQuickIndices();
     if (!disableIndex)
     {
-      ol.writeQuickLinks(TRUE,HighlightedItem::Globals,QCString());
+      ol.writeQuickLinks(true,HighlightedItem::Globals,QCString(),false);
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
       {
         startQuickIndexList(ol);
@@ -3345,7 +3345,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     ol.startQuickIndices();
     if (!disableIndex)
     {
-      ol.writeQuickLinks(TRUE,HighlightedItem::NamespaceMembers,QCString());
+      ol.writeQuickLinks(true,HighlightedItem::NamespaceMembers,QCString(),false);
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
       {
         startQuickIndexList(ol);
@@ -4340,7 +4340,7 @@ static void writeIndex(OutputList &ol)
   ol.startQuickIndices();
   if (!Config_getBool(DISABLE_INDEX))
   {
-    ol.writeQuickLinks(TRUE,HighlightedItem::Main,QCString());
+    ol.writeQuickLinks(true,HighlightedItem::Main,QCString(),false);
   }
   ol.endQuickIndices();
   ol.writeSplitBar(indexName);
@@ -4389,7 +4389,7 @@ static void writeIndex(OutputList &ol)
   ol.startContents();
   if (Config_getBool(DISABLE_INDEX) && Doxygen::mainPage==0)
   {
-    ol.writeQuickLinks(FALSE,HighlightedItem::Main,QCString());
+    ol.writeQuickLinks(false,HighlightedItem::Main,QCString(),false);
   }
 
   if (Doxygen::mainPage)

@@ -1058,7 +1058,8 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   {
     startFile(ol,getSourceFileBase(),QCString(),pageTitle,HighlightedItem::FileVisible,
         !generateTreeView,
-        !isDocFile && genSourceFile ? QCString() : getOutputFileBase());
+        !isDocFile && genSourceFile ? QCString() : getOutputFileBase(),
+        0,true);
     if (!generateTreeView)
     {
       getDirDef()->writeNavigationPath(ol);
@@ -1070,8 +1071,9 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   }
   else
   {
-    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HighlightedItem::FileVisible,FALSE,
-        !isDocFile && genSourceFile ? QCString() : getOutputFileBase());
+    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HighlightedItem::FileVisible,false,
+        !isDocFile && genSourceFile ? QCString() : getOutputFileBase(),
+        0,true);
     startTitle(ol,getSourceFileBase());
     ol.parseText(title);
     endTitle(ol,getSourceFileBase(),QCString());

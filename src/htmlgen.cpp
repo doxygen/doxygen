@@ -2750,7 +2750,8 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
 static void writeDefaultQuickLinks(TextStream &t,bool compact,
                                    HighlightedItem hli,
                                    const QCString &file,
-                                   const QCString &relPath)
+                                   const QCString &relPath,
+                                   bool needsFolding)
 {
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool searchEngine = Config_getBool(SEARCHENGINE);
@@ -2822,31 +2823,18 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
       << (serverBasedSearch?"true":"false") << ",'"
       << searchPage << "','"
       << theTranslator->trSearch() << "');\n";
-    QCString initCodeFold;
-    if (Config_getBool(HTML_CODE_FOLDING))
-    {
-      initCodeFold=QCString("init_codefold(") + (relPath.isEmpty() ? "0" : "1") + ");";
-    }
     if (Config_getBool(SEARCHENGINE))
     {
       if (!serverBasedSearch)
       {
-        t << "  $(document).ready(function() { init_search(); " << initCodeFold << "});\n";
+        t << "  $(document).ready(function() { init_search(); });\n";
       }
       else
       {
         t << "  $(document).ready(function() {\n"
           << "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n";
-          if (!initCodeFold.isEmpty())
-          {
-            t << "    " << initCodeFold << "\n";
-          }
         t << "  });\n";
       }
-    }
-    else if (initCodeFold.isEmpty())
-    {
-      t << "  $(document).ready(function() { " << initCodeFold << "});\n";
     }
     t << "});\n";
     t << "/* @license-end */\n";
@@ -2880,6 +2868,14 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
   else
   {
     renderQuickLinksAsTree(t,relPath,root);
+  }
+  if (needsFolding && Config_getBool(HTML_CODE_FOLDING))
+  {
+    t << "<script type=\"text/javascript\">\n";
+    t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
+    t << "$(document).ready(function() { init_codefold(" << (relPath.isEmpty() ? "0" : "1") << "); });\n";
+    t << "/* @license-end */\n";
+    t << "</script>\n";
   }
 }
 
@@ -2954,9 +2950,9 @@ void HtmlGenerator::endPageDoc()
   m_t << "</div><!-- PageDoc -->\n";
 }
 
-void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli,const QCString &file)
+void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli,const QCString &file,bool needsFolding)
 {
-  writeDefaultQuickLinks(m_t,compact,hli,file,m_relPath);
+  writeDefaultQuickLinks(m_t,compact,hli,file,m_relPath,needsFolding);
 }
 
 // PHP based search script
@@ -3016,7 +3012,7 @@ void HtmlGenerator::writeSearchPage()
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
-      writeDefaultQuickLinks(t,TRUE,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,true,HighlightedItem::Search,QCString(),QCString(),false);
     }
     else
     {
@@ -3072,7 +3068,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
-      writeDefaultQuickLinks(t,TRUE,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,true,HighlightedItem::Search,QCString(),QCString(),false);
       if (!Config_getBool(HTML_DYNAMIC_MENUS)) // for dynamic menus, menu.js creates this part
       {
         t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\"" << theTranslator->trSearch() <<
