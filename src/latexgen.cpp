@@ -2364,7 +2364,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                    break;
         case '\\': t << "\\textbackslash{}";
                    break;
-        case '"':  t << "\\\"{}";
+        case '"':  t << "\"{}";
                    break;
         case '`':  t << "\\`{}";
                    break;

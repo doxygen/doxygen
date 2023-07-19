@@ -184,15 +184,6 @@ void FormulaManager::checkRepositories()
 
 void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate)
 {
-  QCString macroFile = Config_getString(FORMULA_MACROFILE);
-  QCString stripMacroFile;
-  if (!macroFile.isEmpty())
-  {
-    FileInfo fi(macroFile.str());
-    macroFile=fi.absFilePath();
-    stripMacroFile = fi.fileName();
-  }
-
   // generate a latex file containing one formula per page.
   QCString texName=fileName+".tex";
   std::ofstream f = Portable::openOutputStream(texName);
@@ -213,11 +204,15 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
 
     writeExtraLatexPackages(t);
     writeLatexSpecialFormulaChars(t);
+
+    QCString macroFile = Config_getString(FORMULA_MACROFILE);
     if (!macroFile.isEmpty())
     {
-      copyFile(macroFile,stripMacroFile);
+      FileInfo fi(macroFile.str());
+      QCString stripMacroFile = fi.fileName();
       t << "\\input{" << stripMacroFile << "}\n";
     }
+
     t << "\\pagestyle{empty}\n";
     t << "\\begin{document}\n";
     for (const auto &formula : p->formulas)
@@ -648,9 +643,23 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   }
   std::string oldDir = Dir::currentDirPath();
 
+  QCString macroFile = Config_getString(FORMULA_MACROFILE);
+  QCString stripMacroFile;
+  if (!macroFile.isEmpty())
+  {
+    FileInfo fi(macroFile.str());
+    macroFile=fi.absFilePath();
+    stripMacroFile = fi.fileName();
+  }
+
   // go to the html output directory (i.e. path)
   Dir::setCurrent(d.absPath());
   Dir thisDir;
+
+  if (!macroFile.isEmpty())
+  {
+    copyFile(macroFile,stripMacroFile);
+  }
 
   createFormulasTexFile(thisDir,format,hd,Mode::Light);
   if (Config_getEnum(HTML_COLORSTYLE)!=HTML_COLORSTYLE_t::LIGHT) // all modes other than light need a dark version

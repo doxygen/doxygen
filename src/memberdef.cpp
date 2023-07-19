@@ -4092,7 +4092,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
   bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
 
   bool isVoidReturn = (returnType=="void") || (returnType.endsWith(" void"));
-  if (!isVoidReturn && returnType == "auto")
+  if (!isVoidReturn && (returnType == "auto") || (returnType.endsWith(" auto")))
   {
     const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
     if (!defArgList.trailingReturnType().isEmpty())
