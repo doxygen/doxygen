@@ -329,6 +329,19 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
             numArgs = numArgs1;
             cmd += arg;
           }
+          if ((sep1 == ',') && it==g_aliasMap.end() && it1==g_aliasMap.end())
+          {
+            sprintf(tmp,"{%d,%c}",numArgs1,sep1);
+            arg = tmp;
+            auto it2 = g_aliasMap.find((cmd+arg).str());
+            if (it2!=g_aliasMap.end())
+            {
+              it = it2;
+              sep = sep1;
+              numArgs = numArgs1;
+              cmd += arg;
+            }
+          }
         }
       }
     }
@@ -358,6 +371,19 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
             numArgs = 1;
             cmd = cmdNoArgs+arg;
             args = escapeSeparators(args,sep1); // escape separator so that everything is seen as one argument
+          }
+          else if (sep1 == ',')
+          {
+            arg = "{1," + QCString(sep1) + "}";
+            auto it2 = g_aliasMap.find((cmdNoArgs+arg).str());
+            if (it2!=g_aliasMap.end())
+            {
+              it = it2;
+              sep = sep1;
+              numArgs = 1;
+              cmd = cmdNoArgs+arg;
+              args = escapeSeparators(args,sep1); // escape separator so that everything is seen as one argument
+            }
           }
         }
       }
