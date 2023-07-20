@@ -107,7 +107,7 @@ i.e.
 \endverbatim
 given the alias definition of `\l` in the example above.
 
-By default the separator for arguments in an alias ist the comma though when having e.g templates of function
+By default the separator for arguments in an alias is the comma though when having e.g templates of function
 definitions as an argument this will lead to problems. It is also possible to specify a separator  with an alias
 in its definition like:
 \verbatim

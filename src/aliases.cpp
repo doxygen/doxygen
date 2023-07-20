@@ -23,6 +23,7 @@
 static StringMap             g_aliasMap;                     // aliases
 static CharSetMap            g_aliasSeparatorMap;            // separators for aliases
 
+static std::string expandAlias(const std::string &aliasName,const std::string &aliasValue);
 //----------------------------------------------------------------------------
 
 static void expandAliases()
@@ -314,12 +315,10 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
         {
           int numArgs1 = countAliasArguments(args,sep1);
   
-          char tmp[30];
           if (sep1 ==',')
-            sprintf(tmp, "{%d}",numArgs1);
+            arg.sprintf("{%d}",numArgs1);
           else
-            sprintf(tmp,"{%d,%c}",numArgs1,sep1);
-          arg = tmp;
+            arg.sprintf("{%d,%c}",numArgs1,sep1);
   
           auto it1 = g_aliasMap.find((cmd+arg).str());
           if (it==g_aliasMap.end() && it1!=g_aliasMap.end())
@@ -331,8 +330,7 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
           }
           if ((sep1 == ',') && it==g_aliasMap.end() && it1==g_aliasMap.end())
           {
-            sprintf(tmp,"{%d,%c}",numArgs1,sep1);
-            arg = tmp;
+            arg.sprintf("{%d,%c}",numArgs1,sep1);
             auto it2 = g_aliasMap.find((cmd+arg).str());
             if (it2!=g_aliasMap.end())
             {
@@ -487,7 +485,7 @@ QCString resolveAliasCmd(const QCString &aliasCmd)
   return result;
 }
 
-std::string expandAlias(const std::string &aliasName,const std::string &aliasValue)
+static std::string expandAlias(const std::string &aliasName,const std::string &aliasValue)
 {
   QCString result;
   StringUnorderedSet aliasesProcessed;

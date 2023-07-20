@@ -19,7 +19,6 @@
 #include "qcstring.h"
 
 QCString resolveAliasCmd(const QCString &aliasCmd);
-std::string expandAlias(const std::string &aliasName,const std::string &aliasValue);
 void readAliases();
 
 #endif
