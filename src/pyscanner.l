@@ -114,6 +114,8 @@ struct pyscannerYY_state
   bool                    funcParamsEnd = FALSE;
   std::vector<QCString>   decorators;
   QCString                programStr;
+  TextStream              decoratorCommentStr;
+  int                     decoratorRound = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -183,7 +185,6 @@ NONEMPTYEXP       [^ \t\n:]
 PARAMNONEMPTY     [^ \t\n():]
 IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
 SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
-CALL              "("[^)]*")"
 BORDER            ([^A-Za-z0-9])
 
 TRISINGLEQUOTE    {STRINGPREFIX}?"'''"(!)?
@@ -255,6 +256,10 @@ STARTDOCSYMS      "##"
 %x FromMod
 %x FromModItem
 %x Import
+
+
+  /* Decorator */
+%x Decorator
 
 %%
 
@@ -364,10 +369,16 @@ STARTDOCSYMS      "##"
                         yyextra->packageCommentAllowed = FALSE;
                         BEGIN( DoubleQuoteString );
                       }
-    "@staticmethod"  {
+    "@staticmethod"   {
                         yyextra->isStatic=TRUE;
                       }
-    "@"{SCOPE}{CALL}? { // decorator
+    "@"{SCOPE}"("     { // decorator
+                        lineCount(yyscanner);
+                        yyextra->decoratorRound = 1;
+                        yyextra->copyString=0;
+                        BEGIN( Decorator );
+                      }
+    "@"{SCOPE}        { // decorator
                         lineCount(yyscanner);
                       }
     {SCRIPTCOMMENT}   { // Unix type script comment
@@ -1522,6 +1533,47 @@ STARTDOCSYMS      "##"
                         }
 }
 
+<Decorator>{
+   {TRIDOUBLEQUOTE}     { // start of a comment block
+                          yyextra->doubleQuote=TRUE;
+                          yyextra->decoratorCommentStr.str(std::string());
+                          yyextra->copyString=&yyextra->decoratorCommentStr;
+                          yyextra->stringContext=YY_START;
+                          BEGIN(TripleString);
+                        }
+
+   {TRISINGLEQUOTE}     { // start of a comment block
+                          yyextra->doubleQuote=FALSE;
+                          yyextra->decoratorCommentStr.str(std::string());
+                          yyextra->copyString=&yyextra->decoratorCommentStr;
+                          yyextra->stringContext=YY_START;
+                          BEGIN(TripleString);
+                        }
+   "'"                  {
+                          yyextra->stringContext=YY_START;
+                          yyextra->decoratorCommentStr.str(std::string());
+                          yyextra->copyString=&yyextra->decoratorCommentStr;
+                          BEGIN( SingleQuoteString );
+                        }
+   "\""                 {
+                          yyextra->stringContext=YY_START;
+                          yyextra->decoratorCommentStr.str(std::string());
+                          yyextra->copyString=&yyextra->decoratorCommentStr;
+                          BEGIN( DoubleQuoteString );
+                        }
+    "("                 {
+                          yyextra->decoratorRound++;
+                        }
+    ")"                 {
+                          yyextra->decoratorRound--;
+                          if (!yyextra->decoratorRound) BEGIN( Search );
+                        }
+    \n                  {
+                          incLineNr(yyscanner);
+                        }
+    .                   { }
+}
+              
   /* ------------ End rules -------------- */
 
   /*
