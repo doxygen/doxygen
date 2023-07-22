@@ -2971,6 +2971,10 @@ NONLopt [^\n]*
                                         }
 <ReadInitializer,ReadInitializerPtr>[>\]})]             {
                                           yyextra->initBracketCount--;
+                                          if (*yytext=='}')
+                                          {
+                                            yyextra->current->endBodyLine=yyextra->yyLineNr;
+                                          }
                                           yyextra->current->initializer << *yytext;
                                         }
 <ReadInitializer,ReadInitializerPtr>\'                  {
@@ -3399,7 +3403,10 @@ NONLopt [^\n]*
 <GCopyCurly>"}"                         {
                                           *yyextra->pCopyCurlyGString << *yytext;
                                           if (--yyextra->curlyCount<0)
+                                          {
+                                            yyextra->current->endBodyLine = yyextra->yyLineNr;
                                             BEGIN(yyextra->lastCurlyContext);
+                                          }
                                         }
 <GCopyCurly>{CHARLIT}                    { if (yyextra->insidePHP)
                                           {

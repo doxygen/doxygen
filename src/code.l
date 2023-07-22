@@ -1242,7 +1242,10 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <SkipString>@?\"                        {
                                           yyextra->code->codify(yytext);
-                                          endFontClass(yyscanner);
+                                          if (yyextra->lastStringContext!=SkipCPP)
+                                          {
+                                            endFontClass(yyscanner);
+                                          }
                                           BEGIN( yyextra->lastStringContext );
                                         }
 <SkipStringS>\'                         {
@@ -2374,6 +2377,8 @@ static void codeFolding(yyscan_t yyscanner,const Definition *d)
   if (Config_getBool(HTML_CODE_FOLDING))
   {
     struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+    //if (d)
+    //  printf("%d: codeFolding: candidate=%s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->qualifiedName()),d->getStartDefLine(),d->getEndBodyLine());
     while (!yyextra->foldStack.empty())
     {
       const Definition *dd = yyextra->foldStack.back();
@@ -2403,7 +2408,8 @@ static void codeFolding(yyscan_t yyscanner,const Definition *d)
           (yyextra->foldStack.empty() || yyextra->foldStack.back()->getEndBodyLine()!=startLine))
       {
         //printf("%d: start codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->name()),d->getStartDefLine(),d->getEndBodyLine());
-        bool needsSemi = d->definitionType()==Definition::TypeClass;
+        bool needsSemi = d->definitionType()==Definition::TypeClass ||
+                         (d->definitionType()==Definition::TypeMember && !toMemberDef(d)->isCallable());
         yyextra->code->startFold(yyextra->yyLineNr,"{",needsSemi ? "};" : "}");
         yyextra->foldStack.push_back(d);
       }

@@ -2715,8 +2715,8 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 {
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
-  AUTO_TRACE("VARIABLE_SEC: type='{}' name='{}' args='{}' bodyLine={} mGrpId={} relates='{}'",
-      root->type, root->name, root->args, root->bodyLine, root->mGrpId, root->relates);
+  AUTO_TRACE("VARIABLE_SEC: type='{}' name='{}' args='{}' bodyLine={} endBodyLine={} mGrpId={} relates='{}'",
+      root->type, root->name, root->args, root->bodyLine, root->endBodyLine, root->mGrpId, root->relates);
   //printf("root->parent->name=%s\n",qPrint(root->parent->name));
 
   QCString type = root->type;
@@ -2821,6 +2821,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
             );
       }
     }
+    AUTO_TRACE_ADD("static variable body=[{}..{}]",root->bodyLine,root->endBodyLine);
     return;  /* skip this member, because it is a
               * static variable definition (always?), which will be
               * found in a class scope as well, but then we know the
