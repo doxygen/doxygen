@@ -38,6 +38,7 @@ typedef yyguts_t *yyscan_t;
 #include "config.h"
 #include "doxygen.h"
 #include "util.h"
+#include "aliases.h"
 #include "condparser.h"
 
 #include <assert.h>
