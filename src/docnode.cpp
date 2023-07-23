@@ -37,6 +37,7 @@
 #include "datetime.h"
 #include "trace.h"
 #include "anchor.h"
+#include "aliases.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE
@@ -3862,7 +3863,14 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
   {
     case CMD_UNKNOWN:
       children().append<DocWord>(parser(),thisVariant(),TK_COMMAND_CHAR(tok) + cmdName);
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Found unknown command '%s%s'",TK_COMMAND_CHAR(tok),qPrint(cmdName));
+      if (isAliasCmd(cmdName))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Found unexpanded alias '%s%s'. Check if number of arguments passed is correct.",TK_COMMAND_CHAR(tok),qPrint(cmdName));
+      }
+      else
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Found unknown command '%s%s'",TK_COMMAND_CHAR(tok),qPrint(cmdName));
+      }
       break;
     case CMD_EMPHASIS:
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE);

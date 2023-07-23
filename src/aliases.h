@@ -19,6 +19,7 @@
 #include "qcstring.h"
 
 QCString resolveAliasCmd(const QCString &aliasCmd);
+bool isAliasCmd(const QCString &aliasCmd);
 void readAliases();
 
 #endif

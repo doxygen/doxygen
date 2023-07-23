@@ -1907,22 +1907,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  // check ALIASES
-  const StringVector &aliasList = Config_getList(ALIASES);
-  for (const auto &alias : aliasList)
-  {
-    // match aliases of the form re1='name=' and re2='name{2} ='
-    static const reg::Ex re1(R"(^\a[\w-]*\s*=)");
-    static const reg::Ex re2(R"(^\a[\w-]*{\d+}\s*=)");
-    static const reg::Ex re3(R"(^\a[\w-]*{\d+,.}\s*=)");
-    if (!reg::search(alias,re1) && !reg::search(alias,re2) && !reg::search(alias,re3))
-    {
-      err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\" or \"name{n,c}=value\", where n is the number of arguments and 'c' the separator\n",
-          alias.c_str());
-    }
-  }
-
-  //------------------------
   // check EXTENSION_MAPPING
   checkList(Config_getList(EXTENSION_MAPPING),"EXTENSION_MAPPING",TRUE,TRUE);
 
