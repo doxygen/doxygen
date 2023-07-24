@@ -102,7 +102,6 @@ class Doxygen
     static GroupLinkedMap           *groupLinkedMap;
     static NamespaceLinkedMap       *namespaceLinkedMap;
     static StringMap                 tagDestinationMap;
-    static StringMap                 aliasMap;
     static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
     static std::unique_ptr<NamespaceDef> globalNamespaceDef;
@@ -137,7 +136,6 @@ void checkConfiguration();
 void adjustConfiguration();
 void parseInput();
 void generateOutput();
-void readAliases();
 void cleanUpDoxygen();
 void readFileOrDirectory(const QCString &s,
                         FileNameLinkedMap *fnDict,
