@@ -490,7 +490,40 @@
 
   <xsd:group name="docCmdGroup">
     <xsd:choice>
-      <xsd:group ref="docTitleCmdGroup"/>
+      <!-- start workaround for xsd.exe
+        <xsd:group ref="docTitleCmdGroup"/>
+      -->
+      <xsd:element name="ulink" type="docURLLink" />
+      <xsd:element name="bold" type="docMarkupType" />
+      <xsd:element name="s" type="docMarkupType" />
+      <xsd:element name="strike" type="docMarkupType" />
+      <xsd:element name="underline" type="docMarkupType" />
+      <xsd:element name="emphasis" type="docMarkupType" />
+      <xsd:element name="computeroutput" type="docMarkupType" />
+      <xsd:element name="subscript" type="docMarkupType" />
+      <xsd:element name="superscript" type="docMarkupType" />
+      <xsd:element name="center" type="docMarkupType" />
+      <xsd:element name="small" type="docMarkupType" />
+      <xsd:element name="cite" type="docMarkupType" />
+      <xsd:element name="del" type="docMarkupType" />
+      <xsd:element name="ins" type="docMarkupType" />
+      <xsd:element name="htmlonly" type="docHtmlOnlyType" />
+      <xsd:element name="manonly" type="xsd:string" />
+      <xsd:element name="xmlonly" type="xsd:string" />
+      <xsd:element name="rtfonly" type="xsd:string" />
+      <xsd:element name="latexonly" type="xsd:string" />
+      <xsd:element name="docbookonly" type="xsd:string" />
+      <xsd:element name="image" type="docImageType" />
+      <xsd:element name="dot" type="docDotMscType" />
+      <xsd:element name="msc" type="docDotMscType" />
+      <xsd:element name="plantuml" type="docPlantumlType" />
+      <xsd:element name="anchor" type="docAnchorType" />
+      <xsd:element name="formula" type="docFormulaType" />
+      <xsd:element name="ref" type="docRefTextType" />
+      <xsd:element name="emoji" type="docEmojiType" />
+      <xsd:element name="linebreak" type="docEmptyType" />
+      <!-- Automatically insert here the HTML entities -->
+      <!-- end workaround for xsd.exe -->
       <xsd:element name="hruler" type="docEmptyType" />
       <xsd:element name="preformatted" type="docMarkupType" />
       <xsd:element name="programlisting" type="listingType" />
