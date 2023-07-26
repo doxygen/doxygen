@@ -59,7 +59,7 @@ static void addValidAliasToMap(const std::string &aliasStr)
   int         numParams = 0;
   std::string separator;
 
-  static const char *separators="!#$%^&,.?|;:\"+=~`/";
+  static const char *separators="!#$%&,.?|;:'+=~`/";
   auto isValidSeparator = [](char c) -> bool
   {
     const char *p=separators;
@@ -362,7 +362,7 @@ static std::string escapeSeparators(const std::string &s, const std::string &sep
 {
   if (s.empty() || sep.empty()) return s;
   std::string result;
-  result.resize(s.length()+10);
+  result.reserve(s.length()+10);
   size_t i,p=0,l=sep.length();
   while ((i=s.find(sep,p))!=std::string::npos)
   {
@@ -375,6 +375,7 @@ static std::string escapeSeparators(const std::string &s, const std::string &sep
     p=i+l;
   }
   result+=s.substr(p);
+  //printf("escapeSeparators(%s,sep='%s')=%s\n",qPrint(s),qPrint(sep),qPrint(result));
   return result;
 }
 

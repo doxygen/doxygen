@@ -126,7 +126,7 @@ ALIASES += reminder="\xreflist{reminders||Reminder||Reminders}"
 \endverbatim
 The following characters are allowed to create separators:
 \verbatim
-!#$%^&,.?|;:"+=~`/
+!#$%&,.?|;:'+=~`/
 \endverbatim
 
 Note that for each command and number of parameters, one can use a different separator.
