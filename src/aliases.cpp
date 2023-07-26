@@ -14,6 +14,7 @@
  */
 
 #include <unordered_map>
+#include <cassert>
 
 #include "message.h"
 #include "aliases.h"
@@ -72,7 +73,8 @@ static void addValidAliasToMap(const std::string &aliasStr)
   {
     QCString alias=QCString(aliasStr);
     int i=alias.find('=');
-    QCString name = alias.left(i).stripWhiteSpace();
+    assert(i!=-1); // based on re1 and re2 there is always a =
+    QCString name = alias.left(static_cast<size_t>(i)).stripWhiteSpace();
     aliasValue    = alias.right(alias.length()-i-1).str();
     //printf("Alias: found name='%s' value='%s'\n",qPrint(name),qPrint(value));
     int j=name.find('{');
@@ -448,7 +450,8 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s'\n", qPrint(s),qPrint(cmd),selectedNumArgs,qPrint(args));
     if ((allowRecursion || aliasesProcessed.find(cmd.str())==aliasesProcessed.end()) &&
-        it!=g_aliasInfoMap.end() && selectedNumArgs!=-1) // expand the alias
+        it!=g_aliasInfoMap.end() && selectedNumArgs!=-1 &&
+        it->second.find(selectedNumArgs)!=it->second.end()) // expand the alias
     {
       const auto &aliasInfo = it->second.find(selectedNumArgs)->second;
       //printf("is an alias with separator='%s' hasArgs=%d!\n",qPrint(aliasInfo.separator),hasArgs);
