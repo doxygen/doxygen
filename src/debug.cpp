@@ -44,6 +44,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "rtf",                Debug::Rtf                },
   { "qhp",                Debug::Qhp                },
   { "tag",                Debug::Tag                },
+  { "alias",              Debug::Alias              },
   { "lex",                Debug::Lex                },
   { "lex:code",           Debug::Lex_code           },
   { "lex:commentcnv",     Debug::Lex_commentcnv     },

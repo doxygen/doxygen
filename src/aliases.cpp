@@ -23,6 +23,7 @@
 #include "regex.h"
 #include "textstream.h"
 #include "util.h"
+#include "debug.h"
 
 //-----------------------------------------------------------
 
@@ -106,8 +107,8 @@ static void addValidAliasToMap(const std::string &aliasStr)
           if (valid) // valid alias with parameters
           {
             aliasName = name.left(j).str();
-            //printf("Found alias '%s' with %d parameters, value='%s' and separator '%s'\n",
-            //    qPrint(aliasName),numParams,qPrint(aliasValue),qPrint(separator));
+            Debug::print(Debug::Alias,0,"Alias definition: name='%s' #param='%d' separator='%s' value='%s'\n",
+                qPrint(aliasName),numParams,qPrint(separator),qPrint(aliasValue));
           }
           else
           {
@@ -126,7 +127,7 @@ static void addValidAliasToMap(const std::string &aliasStr)
     {
       aliasName = name.str();
       numParams = 0;
-      //printf("Found alias '%s' value='%s' without parameters\n",qPrint(aliasName),qPrint(aliasValue));
+      Debug::print(Debug::Alias,0,"Alias definition: name='%s' value='%s'\n",qPrint(aliasName),qPrint(aliasValue));
     }
   }
   else
@@ -214,7 +215,7 @@ void readAliases()
   {
     for (auto &[numParams,aliasInfo] : overloads)
     {
-      aliasInfo.value = expandAlias(name,aliasInfo.value);
+      aliasInfo.value = expandAlias(name+":"+std::to_string(numParams),aliasInfo.value);
     }
   }
   for (auto &[name,overloads] : g_aliasInfoMap)
@@ -456,7 +457,8 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
     {
       const auto &aliasInfo = it->second.find(selectedNumArgs)->second;
       //printf("is an alias with separator='%s' hasArgs=%d!\n",qPrint(aliasInfo.separator),hasArgs);
-      if (!allowRecursion) aliasesProcessed.insert(cmd.str());
+      std::string qualifiedName = cmd.str()+":"+std::to_string(selectedNumArgs);
+      if (!allowRecursion) aliasesProcessed.insert(qualifiedName);
       std::string val = aliasInfo.value;
       if (hasArgs)
       {
@@ -465,7 +467,7 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
         //       qPrint(aliasInfo.separator),qPrint(val),qPrint(args));
       }
       result+=expandAliasRec(aliasesProcessed,QCString(val));
-      if (!allowRecursion) aliasesProcessed.erase(cmd.str());
+      if (!allowRecursion) aliasesProcessed.erase(qualifiedName);
       p=i+l;
       if (hasArgs) p+=argsLen+2;
     }
@@ -543,6 +545,7 @@ QCString resolveAliasCmd(const QCString &aliasCmd)
   //printf("Expanding: '%s'\n",qPrint(aliasCmd));
   result = expandAliasRec(aliasesProcessed,aliasCmd);
   //printf("Expanding result: '%s'->'%s'\n",qPrint(aliasCmd),qPrint(result));
+  Debug::print(Debug::Alias,0,"Resolving alias: cmd='%s' result='%s'\n",qPrint(aliasCmd),qPrint(result));
   return result;
 }
 
@@ -556,6 +559,7 @@ static std::string expandAlias(const std::string &aliasName,const std::string &a
   //printf("Expanding: '%s'->'%s'\n",qPrint(aliasName),qPrint(aliasValue));
   result = expandAliasRec(aliasesProcessed,QCString(aliasValue));
   //printf("Expanding result: '%s'->'%s'\n",qPrint(aliasName),qPrint(result));
+  Debug::print(Debug::Alias,0,"Expanding alias: input='%s' result='%s'\n",qPrint(aliasValue),qPrint(result));
   return result.str();
 }
 
