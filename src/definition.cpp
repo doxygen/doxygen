@@ -947,7 +947,7 @@ bool readCodeFragment(const QCString &fileName,
     }
     else
     {
-      err("failed to trancode characters in code fragment in file %s lines %d to %d, from input encoding %s to UTF-8\n",
+      err("failed to transcode characters in code fragment in file %s lines %d to %d, from input encoding %s to UTF-8\n",
           qPrint(fileName),startLine,endLine,qPrint(encoding));
 
     }
