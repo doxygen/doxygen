@@ -428,7 +428,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
                  bool inGroup,bool showEnumValues=FALSE,bool
                  showInline=FALSE) const = 0;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
-    virtual void writeTagFile(TextStream &,bool useQualifiedName) const = 0;
+    virtual void writeTagFile(TextStream &,bool useQualifiedName,bool showNamespaceMembers) const = 0;
 
     // write helpers
     virtual void setFromAnonymousScope(bool b) = 0;

@@ -370,7 +370,7 @@ void FileDefImpl::writeTagFile(TextStream &tagFile)
             MemberList * ml = getMemberList(lmd->type);
             if (ml)
             {
-              ml->writeTagFile(tagFile);
+              ml->writeTagFile(tagFile,false,false);
             }
           }
         }
