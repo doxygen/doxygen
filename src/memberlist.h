@@ -134,7 +134,7 @@ class MemberList : public MemberVector
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
                const QCString &scopeName, const DefinitionMutable *container, int hierarchyLevel=0) const;
-    void writeTagFile(TextStream &,bool useQualifiedName=false);
+    void writeTagFile(TextStream &,bool useQualifiedName=false,bool showNamespaceMembers=true);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);
     void addListReferences(Definition *def);
