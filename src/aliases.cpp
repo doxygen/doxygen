@@ -451,13 +451,13 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
       //printf("Alias %s not found\n",qPrint(cmd));
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s'\n", qPrint(s),qPrint(cmd),selectedNumArgs,qPrint(args));
-    if ((allowRecursion || aliasesProcessed.find(cmd.str())==aliasesProcessed.end()) &&
+    std::string qualifiedName = cmd.str()+":"+std::to_string(selectedNumArgs);
+    if ((allowRecursion || aliasesProcessed.find(qualifiedName)==aliasesProcessed.end()) &&
         it!=g_aliasInfoMap.end() && selectedNumArgs!=-1 &&
         it->second.find(selectedNumArgs)!=it->second.end()) // expand the alias
     {
       const auto &aliasInfo = it->second.find(selectedNumArgs)->second;
       //printf("is an alias with separator='%s' hasArgs=%d!\n",qPrint(aliasInfo.separator),hasArgs);
-      std::string qualifiedName = cmd.str()+":"+std::to_string(selectedNumArgs);
       if (!allowRecursion) aliasesProcessed.insert(qualifiedName);
       std::string val = aliasInfo.value;
       if (hasArgs)
