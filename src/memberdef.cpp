@@ -999,7 +999,8 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
 {
   const ArgumentList &defArgList=(md->isDocsForDefinition()) ?
                              md->argumentList() : md->declArgumentList();
-  //printf("writeDefArgumentList '%s' isDocsForDefinition()=%d\n",qPrint(md->name()),md->isDocsForDefinition());
+  //printf("writeDefArgumentList '%s' isDocsForDefinition()=%d hasParameters()=%d (%s)\n",
+  //    qPrint(md->name()),md->isDocsForDefinition(),defArgList.hasParameters(),qPrint(argListToString(defArgList)));
   if (!defArgList.hasParameters() || md->isProperty() || md->isTypedef())
   {
     return FALSE; // member has no function like argument list

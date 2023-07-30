@@ -5543,6 +5543,9 @@ static void substituteTemplatesInArgList(
   dst.setTrailingReturnType(substituteTemplatesInString(
                              srcTempArgLists,dstTempArgLists,
                              src.trailingReturnType().str()));
+  dst.setIsDeleted(src.isDeleted());
+  dst.setRefQualifier(src.refQualifier());
+  dst.setNoParameters(src.noParameters());
   //printf("substituteTemplatesInArgList: replacing %s with %s\n",
   //    qPrint(argListToString(src)),qPrint(argListToString(dst))
   //    );
@@ -5753,6 +5756,13 @@ static void addMemberFunction(const Entry *root,
           //printf(" ---> no matching\n");
           matching = FALSE;
         }
+      }
+      else if (defTemplArgs.size()>declTemplArgs.size())
+      {
+        // avoid matching a non-template function in a template class against a
+        // template function with the same name and parameters, see issue #10184
+        substDone = false;
+        matching  = false;
       }
       bool rootIsUserDoc = (root->section&Entry::MEMBERDOC_SEC)!=0;
       bool classIsTemplate = scopeIsTemplate(md->getClassDef());

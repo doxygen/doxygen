@@ -1690,7 +1690,12 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->current->name += *yytext ;
                                         }
-<Operator>"<"({B}*{ID}{B}*(","{B}*{BN})*{B}*)?">" { /* skip guided templ specifiers */ }
+<Operator>"<"({B}*{ID}{B}*(","{B}*{BN})*{B}*)?">" { /* skip guided templ specifiers */ 
+                                          if (!yyextra->current->type.startsWith("friend "))
+                                          {
+                                            yyextra->current->name += yytext;
+                                          }
+                                        }
 <Operator>"("                           {
                                           yyextra->current->name = yyextra->current->name.simplifyWhiteSpace();
                                           unput(*yytext);
@@ -5222,9 +5227,6 @@ NONLopt [^\n]*
 
                                           if (*yytext!=';' || (yyextra->current_root->section&Entry::COMPOUND_MASK) )
                                           {
-                                            int tempArg=yyextra->current->name.find('<');
-                                            QCString tempName;
-                                            if (tempArg==-1) tempName=yyextra->current->name; else tempName=yyextra->current->name.left(tempArg);
                                             if (isVariable)
                                             {
                                               //printf("Scanner.l: found in class variable: '%s' '%s' '%s'\n", qPrint(yyextra->current->type),qPrint(yyextra->current->name),qPrint(yyextra->current->args));
