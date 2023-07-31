@@ -99,6 +99,7 @@ function SearchBox(name, resultsPath, extension)
   this.searchIndex           = 0;
   this.searchActive          = false;
   this.extension             = extension;
+  this.ignoreNextEscKeyUp    = false;
 
   // ----------- DOM Elements
 
@@ -196,6 +197,11 @@ function SearchBox(name, resultsPath, extension)
     else if (e.keyCode==27) // Escape out of the search field
     {
       e.stopPropagation();
+      if (this.ignoreNextEscKeyUp)
+      {
+        this.ignoreNextEscKeyUp = false;
+        return;
+      }
       this.DOMSearchField().blur();
       this.DOMPopupSearchResultsWindow().style.display = 'none';
       this.DOMSearchClose().style.display = 'none';
@@ -291,6 +297,10 @@ function SearchBox(name, resultsPath, extension)
     else if (e.keyCode==13 || e.keyCode==27)
     {
       e.stopPropagation();
+      if (e.keyCode==27)
+      {
+        this.ignoreNextEscKeyUp = true;
+      }
       this.OnSelectItem(this.searchIndex);
       this.CloseSelectionWindow();
       this.DOMSearchField().focus();
@@ -304,6 +314,7 @@ function SearchBox(name, resultsPath, extension)
   this.CloseResultsWindow = function()
   {
     this.DOMPopupSearchResultsWindow().style.display = 'none';
+    this.DOMPopupSearchResultsWindow().style.tabindex = '-1';
     this.DOMSearchClose().style.display = 'none';
     this.Activate(false);
   }
@@ -820,5 +831,22 @@ function init_search()
     results.appendChild(link);
   }
   searchBox.OnSelectItem(0);
+
+
+  var input = document.getElementById("MSearchSelect");
+  var searchSelectWindow = document.getElementById("MSearchSelectWindow");
+
+  input.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (searchSelectWindow.style.display == 'block') {
+        this.CloseSelectionWindow();
+        this.DOMSearchField().focus();
+      } else {
+        searchBox.OnSearchSelectShow();
+        searchSelectWindow.focus();
+      }
+    }
+  });
 }
 /* @license-end */
