@@ -2,7 +2,7 @@
 // check: 085__tooltip_8cpp.xml
 // config: SOURCE_BROWSER=YES
 /** \file */
-
+#include <stdio.h>
 
 /** \brief the unit */
 FILE *unit = NULL;
