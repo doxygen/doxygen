@@ -139,16 +139,18 @@ a.navtab {
 	font-weight: bold;
 }
 
-.tablist a:focus {
-	outline: auto;
-}
-
 div.qindex{
 	text-align: center;
 	width: 100%;
 	line-height: 140%;
 	font-size: 130%;
 	color: var(--index-separator-color);
+}
+
+#main-menu a:focus {
+	outline: auto;
+	z-index: 10;
+	position: relative;
 }
 
 dt.alphachar{
