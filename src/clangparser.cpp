@@ -125,17 +125,11 @@ void ClangTUParser::parse()
   p->index    = clang_createIndex(0, 0);
   p->curToken = 0;
   p->cursors.clear();
-  size_t clang_option_len = 0;
   std::vector<clang::tooling::CompileCommand> command;
   if (p->parser.database()!=nullptr)
   {
     // check if the file we are parsing is in the DB
     command = p->parser.database()->getCompileCommands(fileName.data());
-    if (!command.empty() )
-    {
-      // it's possible to have multiple entries for the same file, so use the last entry
-      clang_option_len = command[command.size()-1].CommandLine.size();
-    }
   }
   std::vector<char *> argv;
   if (!command.empty() )
