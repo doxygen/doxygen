@@ -2,6 +2,18 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="072__using_8cpp" kind="file" language="C++">
     <compoundname>072_using.cpp</compoundname>
+    <includes local="no">vector</includes>
+    <incdepgraph>
+      <node id="1">
+        <label>072_using.cpp</label>
+        <link refid="072__using_8cpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>vector</label>
+      </node>
+    </incdepgraph>
     <sectiondef kind="typedef">
       <memberdef kind="typedef" id="072__using_8cpp_1a1b01c504448c96cd2191a5184dd31acf" prot="public" static="no">
         <templateparamlist>

@@ -26,5 +26,5 @@ void Foo::foo(signed long) {}
 void Foo::foo(const struct Foo) {}
 
 /** @brief Unnamed const pointer */
-void Foo::foo(const char * const, const double param2);
+void Foo::foo(const char * const, const double param2) {}
 

@@ -1,6 +1,6 @@
 // objective: test the \exception, \param, and \tparam commands
 // check: class_test.xml
-
+#include <stdexcept>
 /** A Test class.
  *  More details about this class.
  *  @tparam T A template parameter.
