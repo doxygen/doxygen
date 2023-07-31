@@ -217,7 +217,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% block searchInfo %}
 {% if config.SEARCHENGINE and not config.SERVER_BASED_SEARCH %}
 <!-- window showing the filter options -->
-<div id="MSearchSelectWindow tabindex="0""
+<div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
