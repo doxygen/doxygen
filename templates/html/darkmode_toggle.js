@@ -57,6 +57,7 @@ class DarkModeToggle extends HTMLElement {
                 const toggleButton = document.createElement('dark-mode-toggle')
                 toggleButton.title = DarkModeToggle.title
                 toggleButton.innerHTML = DarkModeToggle.icon
+                toggleButton.tabIndex = 0;
 
                 function addButton() {
                   var titleArea = document.getElementById("titlearea");
@@ -121,6 +122,7 @@ class DarkModeToggle extends HTMLElement {
     constructor() {
         super();
         this.onclick=this.toggleDarkMode
+        this.onkeypress=function(e){if (e.keyCode==13) { this.toggleDarkMode(); }};
     }
 
     static createCookie(name, value, days) {
