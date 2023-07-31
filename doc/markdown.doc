@@ -455,9 +455,11 @@ The curly braces and dot are optional by the way.
 
 Another way to denote fenced code blocks is to use 3 or more backticks (```):
 
-    ```
-    also a fenced code block
-    ```
+~~~~~~{.unparsed}
+```
+also a fenced code block
+```
+~~~~~~
 
 For the image formats `dot`, `msc` and `plantuml` the fenced block will be shown as 
 an image provided the image format is enabled (see \ref cfg_have_dot "HAVE_DOT" and
@@ -633,7 +635,7 @@ and is therefore not seen as a code block.
 
 \subsection mddox_emph_spans Emphasis and strikethrough limits
 
-Unlike standard Markdown and Github Flavored Markdown doxygen will not touch internal underscores or
+Unlike standard Markdown and GitHub Flavored Markdown doxygen will not touch internal underscores or
 stars or tildes, so the following will appear as-is:
 
     a_nice_identifier
