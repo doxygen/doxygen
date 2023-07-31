@@ -147,6 +147,12 @@ div.qindex{
 	color: var(--index-separator-color);
 }
 
+#main-menu a:focus {
+	outline: auto;
+	z-index: 10;
+	position: relative;
+}
+
 dt.alphachar{
 	font-size: 180%;
 	font-weight: bold;

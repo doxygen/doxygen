@@ -100,8 +100,15 @@ class DarkModeToggle extends HTMLElement {
                 $(window).resize(function(){
                     addButton();
                 })
+                var inFocus = false;
+                $(document).focusin(function(e) {
+                    inFocus = true;
+                })
+                $(document).focusout(function(e) {
+                    inFocus = false;
+                })
                 $(document).keyup(function(e) {
-                    if (e.keyCode==27) { // escape key maps to keycode `27`
+                    if (e.keyCode==27 && !inFocus) { // escape key maps to keycode `27`
                        e.stopPropagation();
                        DarkModeToggle.userPreference = !DarkModeToggle.userPreference
                    }
