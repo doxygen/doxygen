@@ -245,14 +245,17 @@ void Image::writeChar(uint32_t x,uint32_t y,char c,uint8_t fg)
         bitOffset=0;
         byteOffset++;
       }
-      uint32_t mask=1<<(cw-1);
-      // draw character row yf
-      for (xf=0;xf<cw;xf++)
+      if (cw>0 && cw<32)
       {
-        setPixel(x+xf,y+yf,(bitPattern&mask) ? fg : getPixel(x+xf,y+yf));
-        mask>>=1;
+        uint32_t mask=(uint32_t)1<<(cw-1);
+        // draw character row yf
+        for (xf=0;xf<cw;xf++)
+        {
+          setPixel(x+xf,y+yf,(bitPattern&mask) ? fg : getPixel(x+xf,y+yf));
+          mask>>=1;
+        }
+        rowOffset+=charSetWidth;
       }
-      rowOffset+=charSetWidth;
     }
   }
 }

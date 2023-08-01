@@ -1087,7 +1087,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (a.type!="...")
       {
-        if (!cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
+        if (!cName.isEmpty() && scope) n=addTemplateNames(n,scope->name(),cName);
         linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
       }
     }
@@ -1129,7 +1129,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     if (!a.defval.isEmpty()) // write the default value
     {
       QCString n=a.defval;
-      if (!cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
+      if (scope && !cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
       ol.docify(" = ");
 
       ol.startTypewriter();
@@ -2170,6 +2170,11 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   else if (d==fd) // see issue #9850, namespace member can be shown in file scope as well
   {
     if (getNamespaceDef()) d = getNamespaceDef();
+  }
+  if (d==0)
+  {
+    err("No context could be derived for member '%s'\n",qPrint(name()));
+    return; // should not happen
   }
 
   QCString cname  = d->name();

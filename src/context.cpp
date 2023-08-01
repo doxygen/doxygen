@@ -8416,7 +8416,7 @@ class SymbolContext::Private
       QCString name;
       if (prev==0 && next==0) // unique name
       {
-        if (scope!=Doxygen::globalScope)
+        if (scope && scope!=Doxygen::globalScope)
         {
           name = scope->name();
         }
@@ -8898,7 +8898,7 @@ class HtmlEscaper : public TemplateEscapeIntf
 class LatexSpaceless : public TemplateSpacelessIntf
 {
   public:
-    LatexSpaceless() { reset(); }
+    LatexSpaceless() {}
     std::unique_ptr<TemplateSpacelessIntf> clone()
     {
       return std::make_unique<LatexSpaceless>(*this);
@@ -8931,7 +8931,6 @@ class LatexSpaceless : public TemplateSpacelessIntf
 class HtmlSpaceless : public TemplateSpacelessIntf
 {
   public:
-    HtmlSpaceless() { reset(); }
     std::unique_ptr<TemplateSpacelessIntf> clone()
     {
       return std::make_unique<HtmlSpaceless>(*this);
@@ -9000,9 +8999,9 @@ class HtmlSpaceless : public TemplateSpacelessIntf
       return result.str();
     }
   private:
-    bool m_insideTag;
-    char m_insideString;
-    bool m_removeSpaces;
+    bool m_insideTag = false;
+    char m_insideString = '\0';
+    bool m_removeSpaces = true;
 };
 
 //------------------------------------------------------------------------

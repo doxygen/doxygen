@@ -1142,7 +1142,7 @@ void DocVhdlFlow::parse()
       parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"\\vhdlflow");
     }
   }
-  tok=parser()->tokenizer.lex();
+  parser()->tokenizer.lex();
 
   parser()->tokenizer.setStatePara();
   parser()->handlePendingStyleCommands(thisVariant(),children());
@@ -3610,7 +3610,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   if (tok==TK_WORD && parser()->context.token->name=="{")
   {
     parser()->tokenizer.setStateOptions();
-    tok=parser()->tokenizer.lex();
+    parser()->tokenizer.lex();
     parser()->tokenizer.setStatePara();
     StringVector optList=split(parser()->context.token->name.str(),",");
     auto contains = [&optList](const char *kw)
@@ -3652,10 +3652,10 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   else if (tok==TK_WORD && parser()->context.token->name=="[")
   {
     parser()->tokenizer.setStateBlock();
-    tok=parser()->tokenizer.lex();
+    parser()->tokenizer.lex();
     isBlock = (parser()->context.token->name.stripWhiteSpace() == "block");
     parser()->tokenizer.setStatePara();
-    tok=parser()->tokenizer.lex();
+    parser()->tokenizer.lex();
   }
   else if (tok!=TK_WHITESPACE)
   {
@@ -4095,7 +4095,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         DocVerbatim::Type t = DocVerbatim::JavaDocLiteral;
         parser()->tokenizer.setStateILiteralOpt();
-        retval = parser()->tokenizer.lex();
+        parser()->tokenizer.lex();
 
         QCString fullMatch = parser()->context.token->verb;
         int idx = fullMatch.find('{');
@@ -4211,7 +4211,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         parser()->tokenizer.setStatePlantUMLOpt();
-        retval = parser()->tokenizer.lex();
+        parser()->tokenizer.lex();
         QCString fullMatch = parser()->context.token->sectionId;
         QCString sectionId = "";
         int idx = fullMatch.find('{');

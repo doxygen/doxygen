@@ -134,6 +134,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     void addNamespaceAttributes(OutputList &ol);
     void writeClassesToTagFile(TextStream &,const ClassLinkedRefMap &d);
     void writeConceptsToTagFile(TextStream &);
+    void setFileNameLocal(const QCString &fn);
 
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool isConstantGroup=false);
@@ -277,7 +278,7 @@ NamespaceDefImpl::NamespaceDefImpl(const QCString &df,int dl,int dc,
   }
   else
   {
-    setFileName(name);
+    setFileNameLocal(name);
   }
   setReference(lref);
   m_inline=FALSE;
@@ -323,7 +324,7 @@ NamespaceDefImpl::~NamespaceDefImpl()
 {
 }
 
-void NamespaceDefImpl::setFileName(const QCString &fn)
+void NamespaceDefImpl::setFileNameLocal(const QCString &fn)
 {
   if (isReference())
   {
@@ -333,6 +334,11 @@ void NamespaceDefImpl::setFileName(const QCString &fn)
   {
     fileName = convertNameToFile("namespace"+fn);
   }
+}
+
+void NamespaceDefImpl::setFileName(const QCString &fn)
+{
+  setFileNameLocal(fn);
 }
 
 void NamespaceDefImpl::distributeMemberGroupDocumentation()

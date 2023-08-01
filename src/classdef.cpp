@@ -143,6 +143,41 @@ static QCString makeDisplayName(const ClassDef *cd,bool includeScope)
   return n;
 }
 
+//-----------------------------------------------------------------------------
+
+static QCString getCompoundTypeString(SrcLangExt lang,ClassDef::CompoundType compType,bool isJavaEnum)
+{
+  if (lang==SrcLangExt_Fortran)
+  {
+    switch (compType)
+    {
+      case ClassDef::Class:     return "module";
+      case ClassDef::Struct:    return "type";
+      case ClassDef::Union:     return "union";
+      case ClassDef::Interface: return "interface";
+      case ClassDef::Protocol:  return "protocol";
+      case ClassDef::Category:  return "category";
+      case ClassDef::Exception: return "exception";
+      default:                  return "unknown";
+    }
+  }
+  else
+  {
+    switch (compType)
+    {
+      case ClassDef::Class:     return isJavaEnum ? "enum" : "class";
+      case ClassDef::Struct:    return "struct";
+      case ClassDef::Union:     return "union";
+      case ClassDef::Interface: return lang==SrcLangExt_ObjC ? "class" : "interface";
+      case ClassDef::Protocol:  return "protocol";
+      case ClassDef::Category:  return "category";
+      case ClassDef::Exception: return "exception";
+      case ClassDef::Service:   return "service";
+      case ClassDef::Singleton: return "singleton";
+      default:                  return "unknown";
+    }
+  }
+}
 
 //-----------------------------------------------------------------------------
 
@@ -799,8 +834,9 @@ ClassDefImpl::ClassDefImpl(
   setReference(lref);
   m_impl->compType = ct;
   m_impl->isJavaEnum = isJavaEnum;
-  m_impl->init(defFileName,name(),compoundTypeString(),fName);
-  m_impl->memberListFileName = convertNameToFile(compoundTypeString()+name()+"-members");
+  QCString compTypeString = getCompoundTypeString(getLanguage(),ct,isJavaEnum);
+  m_impl->init(defFileName,name(),compTypeString,fName);
+  m_impl->memberListFileName = convertNameToFile(compTypeString+name()+"-members");
   m_impl->collabFileName = convertNameToFile(m_impl->fileName+"_coll_graph");
   m_impl->inheritFileName = convertNameToFile(m_impl->fileName+"_inherit_graph");
   if (lref.isEmpty())
@@ -3875,36 +3911,7 @@ void ClassDefImpl::addUsedByClass(ClassDef *cd,const QCString &accessName,
 
 QCString ClassDefImpl::compoundTypeString() const
 {
-  if (getLanguage()==SrcLangExt_Fortran)
-  {
-    switch (m_impl->compType)
-    {
-      case Class:     return "module";
-      case Struct:    return "type";
-      case Union:     return "union";
-      case Interface: return "interface";
-      case Protocol:  return "protocol";
-      case Category:  return "category";
-      case Exception: return "exception";
-      default:        return "unknown";
-    }
-  }
-  else
-  {
-    switch (m_impl->compType)
-    {
-      case Class:     return isJavaEnum() ? "enum" : "class";
-      case Struct:    return "struct";
-      case Union:     return "union";
-      case Interface: return getLanguage()==SrcLangExt_ObjC ? "class" : "interface";
-      case Protocol:  return "protocol";
-      case Category:  return "category";
-      case Exception: return "exception";
-      case Service:   return "service";
-      case Singleton: return "singleton";
-      default:        return "unknown";
-    }
-  }
+  return getCompoundTypeString(getLanguage(),m_impl->compType,isJavaEnum());
 }
 
 QCString ClassDefImpl::getOutputFileBase() const

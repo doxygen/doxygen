@@ -884,12 +884,11 @@ QCString filter2008VhdlComment(const QCString &s)
   }
   // special attention in case */ at end of last line
   size_t len = growBuf.getPos();
-  if (growBuf.at(len-1) == '/' && growBuf.at(len-2) == '*')
+  if (len>=2 && growBuf.at(len-1) == '/' && growBuf.at(len-2) == '*')
   {
     len -= 2;
-    while (growBuf.at(len-1) == '*') len--;
-    c = growBuf.at(len-1);
-    while ((c = growBuf.at(len-1)) == ' ' || c == '\t') len--;
+    while (len>0 && growBuf.at(len-1) == '*') len--;
+    while (len>0 && ((c = growBuf.at(len-1)) == ' ' || c == '\t')) len--;
     growBuf.setPos(len);
   }
   growBuf.addChar(0);

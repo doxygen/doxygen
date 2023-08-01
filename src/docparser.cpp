@@ -1046,7 +1046,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
       if (context.token->name == "{")
       {
         tokenizer.setStateOptions();
-        tok=tokenizer.lex();
+        tokenizer.lex();
         tokenizer.setStatePara();
         StringVector optList=split(context.token->name.str(),",");
         for (const auto &opt : optList)

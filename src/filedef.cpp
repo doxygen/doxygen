@@ -137,6 +137,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void addListReferences();
 
   private:
+    void setDiskNameLocal(const QCString &name);
     void acquireFileVersion();
     void addMemberToList(MemberListType lt,MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
@@ -210,7 +211,7 @@ FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
   m_filePath=m_path+nm;
   m_fileName=nm;
   setReference(lref);
-  setDiskName(!dn.isEmpty() ? dn : nm);
+  setDiskNameLocal(!dn.isEmpty() ? dn : nm);
   m_package           = 0;
   m_isSource          = guessSection(nm)==Entry::SOURCE_SEC;
   m_docname           = nm;
@@ -219,7 +220,8 @@ FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
   {
     m_docname.prepend(stripFromPath(m_path));
   }
-  setLanguage(getLanguageFromFileName(name()));
+  setLanguage(getLanguageFromFileName(
+     Config_getBool(FULL_PATH_NAMES) ? m_fileName : DefinitionMixin::name()));
   acquireFileVersion();
   m_subGrouping=Config_getBool(SUBGROUPING);
 }
@@ -229,7 +231,7 @@ FileDefImpl::~FileDefImpl()
 {
 }
 
-void FileDefImpl::setDiskName(const QCString &name)
+void FileDefImpl::setDiskNameLocal(const QCString &name)
 {
   if (isReference())
   {
@@ -243,6 +245,11 @@ void FileDefImpl::setDiskName(const QCString &name)
     m_inclDepFileName = convertNameToFile(name+"_incl");
     m_inclByDepFileName = convertNameToFile(name+"_dep_incl");
   }
+}
+
+void FileDefImpl::setDiskName(const QCString &name)
+{
+  setDiskNameLocal(name);
 }
 
 /*! Compute the HTML anchor names for all members in the class */

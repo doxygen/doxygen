@@ -46,9 +46,10 @@ class PerlModOutputStream
 {
   public:
     //QCString m_s;
-    std::ostream &m_t;
+    std::ostream *m_t;
 
-    PerlModOutputStream(std::ostream &t) : m_t(t) { }
+    PerlModOutputStream(std::ostream &t) : m_t(&t) { }
+   ~PerlModOutputStream() { m_t=0; }
 
     void add(char c);
     void add(const QCString &s);
@@ -58,38 +59,22 @@ class PerlModOutputStream
 
 void PerlModOutputStream::add(char c)
 {
-  m_t << c;
-  //if (m_t != 0)
-  //  (*m_t) << c;
-  //else
-  //  m_s += c;
+  *m_t << c;
 }
 
 void PerlModOutputStream::add(const QCString &s)
 {
-  m_t << s;
-  //if (m_t != 0)
-  //  (*m_t) << s;
-  //else
-  //  m_s += s;
+  *m_t << s;
 }
 
 void PerlModOutputStream::add(int n)
 {
-  m_t << n;
-  //if (m_t != 0)
-  //  (*m_t) << n;
-  //else
-  //  m_s += QCString().setNum(n);
+  *m_t << n;
 }
 
 void PerlModOutputStream::add(unsigned int n)
 {
-  m_t << n;
-  //if (m_t != 0)
-  //  (*m_t) << n;
-  //else
-  //  m_s += QCString().setNum(n);
+  *m_t << n;
 }
 
 class PerlModOutput
@@ -104,7 +89,9 @@ public:
     m_spaces[0] = 0;
   }
 
-  virtual ~PerlModOutput() { }
+  virtual ~PerlModOutput() { reset(); }
+
+  void reset() { m_stream=0; }
 
   inline void setPerlModOutputStream(PerlModOutputStream *os) { m_stream = os; }
 
@@ -2129,6 +2116,7 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.closeList();
 
   m_output.closeHash().add(";\n1;\n");
+  m_output.reset();
   return true;
 }
 

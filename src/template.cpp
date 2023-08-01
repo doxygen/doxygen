@@ -2546,13 +2546,18 @@ TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
 {
   //printf("%p:TemplateContextImpl::TemplateContextImpl()\n",(void*)this);
   m_fromUtf8 = reinterpret_cast<void*>(-1);
-  push();
-  set("index",std::static_pointer_cast<TemplateStructIntf>(m_indices));
+  m_contextStack.push_front(std::unordered_map<std::string,TemplateVariant>());
+  auto &ctx = m_contextStack.front();
+  ctx.insert(std::make_pair("index",
+                            std::static_pointer_cast<TemplateStructIntf>(m_indices)));
 }
 
 TemplateContextImpl::~TemplateContextImpl()
 {
-  pop();
+  while (!m_contextStack.empty())
+  {
+    m_contextStack.pop_front();
+  }
   //printf("%p:TemplateContextImpl::~TemplateContextImpl()\n",(void*)this);
 }
 

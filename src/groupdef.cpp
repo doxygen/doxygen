@@ -139,6 +139,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     void writeAuthorSection(OutputList &ol);
     void writeSummaryLinks(OutputList &ol) const;
     void updateLanguage(const Definition *);
+    void setGroupTitleLocal( const QCString &title);
 
     QCString             m_title;               // title of the group
     bool                 m_titleSet;            // true if title is not the same as the name
@@ -181,7 +182,7 @@ GroupDefImpl::GroupDefImpl(const QCString &df,int dl,const QCString &na,const QC
   {
     m_fileName = convertNameToFile(QCString("group_")+na);
   }
-  setGroupTitle( t );
+  setGroupTitleLocal( t );
 
   //visited = 0;
   m_groupScope = 0;
@@ -192,7 +193,7 @@ GroupDefImpl::~GroupDefImpl()
 {
 }
 
-void GroupDefImpl::setGroupTitle( const QCString &t )
+void GroupDefImpl::setGroupTitleLocal( const QCString &t )
 {
   if ( !t.isEmpty())
   {
@@ -205,6 +206,11 @@ void GroupDefImpl::setGroupTitle( const QCString &t )
     m_title[0]=static_cast<char>(toupper(m_title[0]));
     m_titleSet = FALSE;
   }
+}
+
+void GroupDefImpl::setGroupTitle( const QCString &t )
+{
+  setGroupTitleLocal(t);
 }
 
 
