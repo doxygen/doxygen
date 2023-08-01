@@ -158,7 +158,7 @@ following values (each option has to be preceded by `-d`):
     Retains the temporary files as created and used for the non LaTeX output results of the 
     generation of the bibliographical references.
   - fortranfixed2free<br>
-    Shows the result ogf the conversion of Fortran fixed formatted files to Fortran free formatted 
+    Shows the result of the conversion of Fortran fixed formatted files to Fortran free formatted 
     files as done by doxygen.
   - plantuml<br>
     Shows information about the plantuml process run and the used input / output filenames, the content of the
