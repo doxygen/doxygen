@@ -3192,7 +3192,7 @@ The following block name is set based on whether or not a feature is used in the
     <option type='enum' id='LATEX_BATCHMODE' defval='NO' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_BATCHMODE tag ignals the behavior of \f$\mbox{\LaTeX}\f$ in case of an error.
+ The \c LATEX_BATCHMODE tag signals the behavior of \f$\mbox{\LaTeX}\f$ in case of an error.
 ]]>
       </docs>
       <value name="NO" desc='same as ERROR_STOP' />
