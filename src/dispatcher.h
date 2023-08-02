@@ -73,7 +73,7 @@ struct Dispatcher<true>
 //! \tparam As   the parameter types used to invoke the method
 //! \param  v    a object of the variant type for which to invoke the method
 //! \param  args the parameters to pass to the method
-//! \note This implementation assumes a maximum of 10 types in the variant (easy to extend though by adding more cases).
+//! \note This implementation assumes a maximum of 20 types in the variant (easy to extend though by adding more cases).
 template<template<class> class W,class V, class...As>
 static constexpr void dispatch_call(V &&v,As &&... args)
 {

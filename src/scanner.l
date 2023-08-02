@@ -2582,7 +2582,7 @@ NONLopt [^\n]*
                                           yyextra->current->name = yytext;
                                           BEGIN(DefineEnd);
                                         }
-<DefineEnd>\n                           {
+<DefineEnd>({BN}*{B}*"/*#end#*/")?\n    {
                                           //printf("End define: doc=%s docFile=%s docLine=%d\n",qPrint(yyextra->current->doc),qPrint(yyextra->current->docFile),yyextra->current->docLine);
                                           yyextra->current->fileName   = yyextra->fileName;
                                           yyextra->current->startLine  = yyextra->yyLineNr;
@@ -2591,8 +2591,14 @@ NONLopt [^\n]*
                                           yyextra->current->args       = yyextra->current->args.simplifyWhiteSpace();
                                           yyextra->current->name       = yyextra->current->name.stripWhiteSpace();
                                           yyextra->current->section    = Entry::DEFINE_SEC;
-                                          yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           lineCount(yyscanner);
+                                          if (yyleng>1) // multiline define
+                                          {
+                                            yyextra->current->endBodyLine = yyextra->yyLineNr-1;
+                                            //printf("found multiline define %s body=[%d..%d]\n",
+                                            //    qPrint(yyextra->current->name),yyextra->current->bodyLine,yyextra->current->endBodyLine);
+                                          }
+                                          yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
                                           BEGIN(yyextra->lastDefineContext);
                                         }

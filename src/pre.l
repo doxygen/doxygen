@@ -1682,13 +1682,20 @@ WSopt [ \t\r]*
                                                  "expected formal parameter after # in macro definition '%s': '%s'",
                                                  qPrint(yyextra->defName),qPrint(yyextra->defLitText.stripWhiteSpace()));
                                           }
-                                          yyextra->defLitText+=yytext;
                                           if (!comment.isEmpty())
                                           {
                                             outputString(yyscanner,comment);
                                             yyextra->defLitText=yyextra->defLitText.left(yyextra->defLitText.length()-comment.length()-1);
                                           }
-                                          outputChar(yyscanner,'\n');
+                                          if (yyextra->defLitText.find('\n')!=-1)
+                                          {
+                                            outputString(yyscanner,"/*#end#*/\n");
+                                          }
+                                          else
+                                          {
+                                            outputChar(yyscanner,'\n');
+                                          }
+                                          yyextra->defLitText+=yytext;
                                           Define *def=0;
                                           //printf("Define name='%s' text='%s' litTexti='%s'\n",qPrint(yyextra->defName),qPrint(yyextra->defText),qPrint(yyextra->defLitText));
                                           if (yyextra->includeStack.empty() || yyextra->curlyCount>0)

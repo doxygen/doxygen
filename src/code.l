@@ -2408,9 +2408,30 @@ static void codeFolding(yyscan_t yyscanner,const Definition *d)
           (yyextra->foldStack.empty() || yyextra->foldStack.back()->getEndBodyLine()!=startLine))
       {
         //printf("%d: start codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->name()),d->getStartDefLine(),d->getEndBodyLine());
-        bool needsSemi = d->definitionType()==Definition::TypeClass ||
-                         (d->definitionType()==Definition::TypeMember && !toMemberDef(d)->isCallable());
-        yyextra->code->startFold(yyextra->yyLineNr,"{",needsSemi ? "};" : "}");
+        if (d->definitionType()==Definition::TypeMember)
+        {
+          const MemberDef *md = toMemberDef(d);
+          if (md && md->isDefine())
+          {
+            yyextra->code->startFold(yyextra->yyLineNr,"",""); // #define X ...
+          }
+          else if (md && md->isCallable())
+          {
+            yyextra->code->startFold(yyextra->yyLineNr,"{","}"); // func() { ... }
+          }
+          else
+          {
+            yyextra->code->startFold(yyextra->yyLineNr,"{","};"); // enum X { ... }
+          }
+        }
+        else if (d->definitionType()==Definition::TypeClass)
+        {
+          yyextra->code->startFold(yyextra->yyLineNr,"{","};"); // class X { ... };
+        }
+        else
+        {
+          yyextra->code->startFold(yyextra->yyLineNr,"{","}"); // namespace X {...}
+        }
         yyextra->foldStack.push_back(d);
       }
     }
