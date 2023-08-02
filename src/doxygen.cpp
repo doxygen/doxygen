@@ -172,6 +172,7 @@ volatile bool         Doxygen::terminating = false;
 InputFileEncodingList Doxygen::inputFileEncodingList;
 std::mutex            Doxygen::countFlowKeywordsMutex;
 std::mutex            Doxygen::addExampleMutex;
+StaticInitMap         Doxygen::staticInitMap;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -2821,7 +2822,13 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
             );
       }
     }
-    AUTO_TRACE_ADD("static variable body=[{}..{}]",root->bodyLine,root->endBodyLine);
+    if (root->bodyLine!=-1 && root->endBodyLine!=-1) // store the body location for later use
+    {
+      Doxygen::staticInitMap.insert(std::make_pair(name.str(),BodyInfo{root->startLine,root->bodyLine,root->endBodyLine}));
+    }
+
+
+    AUTO_TRACE_ADD("static variable {} body=[{}..{}]",name,root->bodyLine,root->endBodyLine);
     return;  /* skip this member, because it is a
               * static variable definition (always?), which will be
               * found in a class scope as well, but then we know the
@@ -3899,6 +3906,38 @@ static void transferRelatedFunctionDocumentation()
               else
                 md->makeRelated();
             }
+          }
+        }
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------
+
+void transferStaticInstanceInitializers()
+{
+  AUTO_TRACE();
+  for (const auto &[qualifiedName,bodyInfo] : Doxygen::staticInitMap)
+  {
+    size_t i=qualifiedName.rfind("::");
+    if (i!=std::string::npos)
+    {
+      QCString scope = qualifiedName.substr(0,i);
+      QCString name  = qualifiedName.substr(i+2);
+      MemberName *mn = Doxygen::memberNameLinkedMap->find(name);
+      if (mn)
+      {
+        for (const auto &imd : *mn)
+        {
+          MemberDefMutable *md = toMemberDefMutable(imd.get());
+          if (md && md->qualifiedName().str()==qualifiedName && md->isVariable())
+          {
+            AUTO_TRACE_ADD("found static member {} body [{}..{}]\n",
+              md->qualifiedName(),bodyInfo.startLine,bodyInfo.endLine);
+            md->setBodySegment(bodyInfo.defLine,
+                               bodyInfo.startLine,
+                               bodyInfo.endLine);
           }
         }
       }
@@ -12064,9 +12103,9 @@ void parseInput()
   findObjCMethodDefinitions(root.get());
   findMemberDocumentation(root.get()); // may introduce new members !
   findUsingDeclImports(root.get()); // may introduce new members !
-
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
+  transferStaticInstanceInitializers();
   g_s.end();
 
   // moved to after finding and copying documentation,

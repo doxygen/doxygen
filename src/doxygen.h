@@ -75,6 +75,8 @@ using InputFileEncodingList = std::vector<InputFileEncoding>;
 
 using ClangUsrMap = std::unordered_map<std::string,const Definition *>;
 
+using StaticInitMap = std::unordered_map<std::string,BodyInfo>;
+
 /*! \brief This class serves as a namespace for global variables used by doxygen.
  *
  *  All fields in this class are public and static, so they can be used directly.
@@ -128,6 +130,7 @@ class Doxygen
     static InputFileEncodingList     inputFileEncodingList;
     static std::mutex                countFlowKeywordsMutex;
     static std::mutex                addExampleMutex;
+    static StaticInitMap             staticInitMap;
 };
 
 void initDoxygen();
