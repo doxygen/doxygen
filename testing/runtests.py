@@ -622,12 +622,13 @@ def main():
     parser.add_argument('--xmllint',nargs='?',default='xmllint',help=
         'path/name of the xmllint executable')
     parser.add_argument('--id',nargs='+',dest='ids',action='append',type=int,help=
-        'run test with number n only (the option can be specified to run test with '
-        'number n only (the option can be specified multiple times')
+        'run test number n (the option can be specified multiple times')
     parser.add_argument('--start_id',dest='start_id',type=int,help=
         'run tests starting with number n')
     parser.add_argument('--end_id',dest='end_id',type=int,help=
         'run tests ending with number n')
+    parser.add_argument('--exclude_id',nargs='+',dest='exclude_ids',action='append',type=int,help=
+        'run without test number n (the option can be specified multiple times')
     parser.add_argument('--all',help=
         'can be used in combination with -updateref to update the reference files '
         'for all tests.',action="store_true")
@@ -697,6 +698,18 @@ def main():
         tests = sorted(glob.glob('[0-9][0-9][0-9]_*'))
     else:
         tests = list(itertools.chain.from_iterable(tests))
+
+    if args.exclude_ids:  # test ids are given by user
+        for id in list(itertools.chain.from_iterable(args.exclude_ids)):
+            x=glob.glob('%s_*'%id)
+            if len(x):
+              tests.remove(x[0])
+            x=glob.glob('0%s_*'%id)
+            if len(x):
+              tests.remove(x[0])
+            x=glob.glob('00%s_*'%id)
+            if len(x):
+              tests.remove(x[0])
     os.chdir(starting_directory)
 
     # create test manager to run the tests
