@@ -125,11 +125,14 @@ static void writeBoxMemberList(TextStream &t,
   constexpr auto br       = "<BR ALIGN=\"LEFT\"/>";
   if (ml)
   {
+    auto hideUndocMembers = Config_getEnum(HIDE_UNDOC_MEMBERS);
     int totalCount=0;
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef()==scope &&
-        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
+        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)) &&
+          !(hideUndocMembers && !mma->hasDocumentation())
+         )
       {
         totalCount++;
       }
@@ -140,7 +143,9 @@ static void writeBoxMemberList(TextStream &t,
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
-        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
+        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)) &&
+          !(hideUndocMembers && !mma->hasDocumentation())
+         )
       {
         int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
