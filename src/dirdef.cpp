@@ -41,37 +41,37 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     DirDefImpl(const QCString &path);
     virtual ~DirDefImpl();
 
-    virtual DefType definitionType() const { return TypeDir; }
-    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
-    virtual QCString getOutputFileBase() const;
-    virtual QCString anchor() const { return QCString(); }
-    virtual bool isLinkableInProject() const;
-    virtual bool isLinkable() const;
-    virtual QCString displayName(bool=TRUE) const { return m_dispName; }
-    virtual const QCString shortName() const { return m_shortName; }
-    virtual void addSubDir(DirDef *subdir);
-    virtual const FileList &getFiles() const { return m_fileList; }
-    virtual void addFile(const FileDef *fd);
-    virtual const DirList &subDirs() const { return m_subdirs; }
-    virtual bool hasSubdirs() const { return !m_subdirs.empty(); }
-    virtual int level() const { return m_level; }
-    virtual DirDef *parent() const { return m_parent; }
-    virtual int dirCount() const { return m_dirCount; }
-    virtual const UsedDirLinkedMap &usedDirs() const { return m_usedDirs; }
-    virtual bool isParentOf(const DirDef *dir) const;
-    virtual bool depGraphIsTrivial() const;
-    virtual QCString shortTitle() const;
-    virtual bool hasDetailedDescription() const;
-    virtual void writeDocumentation(OutputList &ol);
-    virtual void writeTagFile(TextStream &t);
-    virtual void setDiskName(const QCString &name) { m_diskName = name; }
-    virtual void sort();
-    virtual void setParent(DirDef *parent);
-    virtual void setDirCount(int count);
-    virtual void setLevel();
+    virtual DefType definitionType() const override { return TypeDir; }
+    virtual CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
+    virtual QCString getOutputFileBase() const override;
+    virtual QCString anchor() const override { return QCString(); }
+    virtual bool isLinkableInProject() const override;
+    virtual bool isLinkable() const override;
+    virtual QCString displayName(bool=TRUE) const override { return m_dispName; }
+    virtual const QCString shortName() const override { return m_shortName; }
+    virtual void addSubDir(DirDef *subdir) override;
+    virtual const FileList &getFiles() const override { return m_fileList; }
+    virtual void addFile(const FileDef *fd) override;
+    virtual const DirList &subDirs() const override { return m_subdirs; }
+    virtual bool hasSubdirs() const override { return !m_subdirs.empty(); }
+    virtual int level() const override { return m_level; }
+    virtual DirDef *parent() const override { return m_parent; }
+    virtual int dirCount() const override { return m_dirCount; }
+    virtual const UsedDirLinkedMap &usedDirs() const override { return m_usedDirs; }
+    virtual bool isParentOf(const DirDef *dir) const override;
+    virtual bool depGraphIsTrivial() const override;
+    virtual QCString shortTitle() const override;
+    virtual bool hasDetailedDescription() const override;
+    virtual void writeDocumentation(OutputList &ol) override;
+    virtual void writeTagFile(TextStream &t) override;
+    virtual void setDiskName(const QCString &name) override { m_diskName = name; }
+    virtual void sort() override;
+    virtual void setParent(DirDef *parent) override;
+    virtual void setDirCount(int count) override;
+    virtual void setLevel() override;
     virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
-                                   const FileDef *dstFd,bool srcDirect, bool dstDirect);
-    virtual void computeDependencies();
+                                   const FileDef *dstFd,bool srcDirect, bool dstDirect) override;
+    virtual void computeDependencies() override;
 
   public:
     static DirDef *mergeDirectoryInTree(const QCString &path);

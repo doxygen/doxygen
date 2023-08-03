@@ -33,35 +33,35 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     PageDefImpl(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
     virtual ~PageDefImpl();
 
-    virtual void setFileName(const QCString &name);
-    virtual void setLocalToc(const LocalToc &tl);
-    virtual void setShowLineNo(bool);
-    virtual DefType definitionType() const { return TypePage; }
-    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
-    virtual bool isLinkableInProject() const { return /*hasDocumentation() &&*/ !isReference(); }
-    virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
-    virtual QCString getOutputFileBase() const;
-    virtual QCString anchor() const { return QCString(); }
-    virtual void findSectionsInDocumentation();
-    virtual QCString title() const { return m_title; }
-    virtual const GroupDef * getGroupDef() const;
-    virtual const PageLinkedRefMap &getSubPages() const { return m_subPages; }
-    virtual void addInnerCompound(Definition *d);
-    virtual bool visibleInIndex() const;
-    virtual bool documentedPage() const;
-    virtual bool hasSubPages() const;
-    virtual bool hasParentPage() const;
-    virtual bool hasTitle() const;
-    virtual LocalToc localToc() const { return m_localToc; }
-    virtual void setPageScope(Definition *d){ m_pageScope = d; }
-    virtual Definition *getPageScope() const { return m_pageScope; }
-    virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionMixin::name(); }
-    virtual bool showLineNo() const;
-    virtual void setTitle(const QCString &title);
-    virtual void writeDocumentation(OutputList &ol);
-    virtual void writeTagFile(TextStream &);
-    virtual void setNestingLevel(int l);
-    virtual void writePageDocumentation(OutputList &ol) const;
+    virtual void setFileName(const QCString &name) override;
+    virtual void setLocalToc(const LocalToc &tl) override;
+    virtual void setShowLineNo(bool) override;
+    virtual DefType definitionType() const override { return TypePage; }
+    virtual CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
+    virtual bool isLinkableInProject() const override { return /*hasDocumentation() &&*/ !isReference(); }
+    virtual bool isLinkable() const override { return isLinkableInProject() || isReference(); }
+    virtual QCString getOutputFileBase() const override;
+    virtual QCString anchor() const override { return QCString(); }
+    virtual void findSectionsInDocumentation() override;
+    virtual QCString title() const override { return m_title; }
+    virtual const GroupDef * getGroupDef() const override;
+    virtual const PageLinkedRefMap &getSubPages() const override { return m_subPages; }
+    virtual void addInnerCompound(Definition *d) override;
+    virtual bool visibleInIndex() const override;
+    virtual bool documentedPage() const override;
+    virtual bool hasSubPages() const override;
+    virtual bool hasParentPage() const override;
+    virtual bool hasTitle() const override;
+    virtual LocalToc localToc() const override { return m_localToc; }
+    virtual void setPageScope(Definition *d) override { m_pageScope = d; }
+    virtual Definition *getPageScope() const override { return m_pageScope; }
+    virtual QCString displayName(bool=TRUE) const override { return hasTitle() ? m_title : DefinitionMixin::name(); }
+    virtual bool showLineNo() const override;
+    virtual void setTitle(const QCString &title) override;
+    virtual void writeDocumentation(OutputList &ol) override;
+    virtual void writeTagFile(TextStream &) override;
+    virtual void setNestingLevel(int l) override;
+    virtual void writePageDocumentation(OutputList &ol) const override;
 
   private:
     QCString m_fileName;

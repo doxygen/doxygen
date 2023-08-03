@@ -35,37 +35,37 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
                    const QCString &name,const QCString &tagRef=QCString(),const QCString &tagFile=QCString());
    ~ConceptDefImpl();
 
-    virtual ConceptDef *resolveAlias() { return this; }
+    ConceptDef *resolveAlias() { return this; }
 
     //---------- ConceptDef
-    virtual DefType definitionType() const;
-    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Concept; }
-    virtual QCString getOutputFileBase() const;
-    virtual bool hasDetailedDescription() const;
-    virtual QCString displayName(bool includeScope=true) const;
-    virtual const IncludeInfo *includeInfo() const;
-    virtual ArgumentList getTemplateParameterList() const;
-    virtual QCString anchor() const;
-    virtual bool isLinkableInProject() const;
-    virtual bool isLinkable() const;
-    virtual QCString initializer() const;
+    virtual DefType definitionType() const override;
+    virtual CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Concept; }
+    virtual QCString getOutputFileBase() const override;
+    virtual bool hasDetailedDescription() const override;
+    virtual QCString displayName(bool includeScope=true) const override;
+    virtual const IncludeInfo *includeInfo() const override;
+    virtual ArgumentList getTemplateParameterList() const override;
+    virtual QCString anchor() const override;
+    virtual bool isLinkableInProject() const override;
+    virtual bool isLinkable() const override;
+    virtual QCString initializer() const override;
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                              const QCString &header,bool localNames) const;
-    virtual const NamespaceDef *getNamespaceDef() const;
-    virtual const FileDef *getFileDef() const;
-    virtual QCString title() const;
-    virtual int groupId() const;
+                              const QCString &header,bool localNames) const override;
+    virtual const NamespaceDef *getNamespaceDef() const override;
+    virtual const FileDef *getFileDef() const override;
+    virtual QCString title() const override;
+    virtual int groupId() const override;
 
     //---------- ConceptDefMutable
-    virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force);
-    virtual void setTemplateArguments(const ArgumentList &al);
-    virtual void setNamespace(NamespaceDef *nd);
-    virtual void setFileDef(FileDef *fd);
-    virtual void writeTagFile(TextStream &);
-    virtual void writeDocumentation(OutputList &);
-    virtual void setInitializer(const QCString &init);
-    virtual void findSectionsInDocumentation();
-    virtual void setGroupId(int id);
+    virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) override;
+    virtual void setTemplateArguments(const ArgumentList &al) override;
+    virtual void setNamespace(NamespaceDef *nd) override;
+    virtual void setFileDef(FileDef *fd) override;
+    virtual void writeTagFile(TextStream &) override;
+    virtual void writeDocumentation(OutputList &) override;
+    virtual void setInitializer(const QCString &init) override;
+    virtual void findSectionsInDocumentation() override;
+    virtual void setGroupId(int id) override;
 
     //---------- Helpers
     void writeBriefDescription(OutputList &) const;

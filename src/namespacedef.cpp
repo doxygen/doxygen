@@ -57,63 +57,64 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
                  const QCString &refFile=QCString(),const QCString &type=QCString(),
                  bool isPublished=false);
     virtual ~NamespaceDefImpl();
-    virtual DefType definitionType() const { return TypeNamespace; }
-    virtual CodeSymbolType codeSymbolType() const
+    virtual DefType definitionType() const override { return TypeNamespace; }
+    virtual CodeSymbolType codeSymbolType() const override
     { return getLanguage()==SrcLangExt_Java ? CodeSymbolType::Package : CodeSymbolType::Namespace; }
-    virtual QCString getOutputFileBase() const;
-    virtual QCString anchor() const { return QCString(); }
-    virtual void insertUsedFile(FileDef *fd);
-    virtual void writeDocumentation(OutputList &ol);
-    virtual void writeMemberPages(OutputList &ol);
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
-    virtual void writeTagFile(TextStream &);
-    virtual void insertClass(ClassDef *cd);
-    virtual void insertConcept(ConceptDef *cd);
-    virtual void insertNamespace(NamespaceDef *nd);
-    virtual void insertMember(MemberDef *md);
-    virtual void computeAnchors();
-    virtual void countMembers();
-    virtual int  numDocMembers() const;
-    virtual void addUsingDirective(NamespaceDef *nd);
-    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const { return m_usingDirList; }
-    virtual void addUsingDeclaration(ClassDef *cd);
-    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const { return m_usingDeclList; }
-    virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace);
-    virtual QCString displayName(bool=TRUE) const;
-    virtual void setInline(bool isInline) { m_inline = isInline; }
-    virtual bool isConstantGroup() const { return CONSTANT_GROUP == m_type; }
-    virtual bool isModule()        const { return NAMESPACE == m_type || MODULE == m_type; }
-    virtual bool isLibrary() const { return LIBRARY == m_type; }
-    virtual bool isInline() const { return m_inline; }
-    virtual bool isLinkableInProject() const;
-    virtual bool isLinkable() const;
-    virtual bool hasDetailedDescription() const;
-    virtual void addMembersToMemberGroup();
-    virtual void distributeMemberGroupDocumentation();
-    virtual void findSectionsInDocumentation();
-    virtual void sortMemberLists();
-    virtual const Definition *findInnerCompound(const QCString &name) const;
-    virtual void addInnerCompound(Definition *d);
-    virtual void addListReferences();
-    virtual void setFileName(const QCString &fn);
-    virtual bool subGrouping() const { return m_subGrouping; }
-    virtual MemberList *getMemberList(MemberListType lt) const;
-    virtual const MemberLists &getMemberLists() const { return m_memberLists; }
-    virtual const MemberDef *getMemberByName(const QCString &) const;
-    virtual const MemberGroupList &getMemberGroups() const { return m_memberGroups; }
-    virtual ClassLinkedRefMap getClasses() const { return classes; }
-    virtual ClassLinkedRefMap getInterfaces() const { return interfaces; }
-    virtual ClassLinkedRefMap getStructs() const { return structs; }
-    virtual ClassLinkedRefMap getExceptions() const { return exceptions; }
-    virtual NamespaceLinkedRefMap getNamespaces() const { return namespaces; }
-    virtual ConceptLinkedRefMap getConcepts() const { return m_concepts; }
-    virtual void setName(const QCString &name);
+    virtual QCString getOutputFileBase() const override;
+    virtual QCString anchor() const override { return QCString(); }
+    virtual void insertUsedFile(FileDef *fd) override;
+    virtual void writeDocumentation(OutputList &ol) override;
+    virtual void writeMemberPages(OutputList &ol) override;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const override;
+    virtual void writeTagFile(TextStream &) override;
+    virtual void insertClass(ClassDef *cd) override;
+    virtual void insertConcept(ConceptDef *cd) override;
+    virtual void insertNamespace(NamespaceDef *nd) override;
+    virtual void insertMember(MemberDef *md) override;
+    virtual void computeAnchors() override;
+    virtual void countMembers() override;
+    virtual int  numDocMembers() const override;
+    virtual void addUsingDirective(NamespaceDef *nd) override;
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const override { return m_usingDirList; }
+    virtual void addUsingDeclaration(ClassDef *cd) override;
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const override { return m_usingDeclList; }
+    virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace) override;
+    virtual QCString displayName(bool=TRUE) const override;
+    virtual void setInline(bool isInline) override { m_inline = isInline; }
+    virtual bool isConstantGroup() const override { return CONSTANT_GROUP == m_type; }
+    virtual bool isModule()        const override { return NAMESPACE == m_type || MODULE == m_type; }
+    virtual bool isLibrary() const override { return LIBRARY == m_type; }
+    virtual bool isInline() const override { return m_inline; }
+    virtual bool isLinkableInProject() const override;
+    virtual bool isLinkable() const override;
+    virtual bool hasDetailedDescription() const override;
+    virtual void addMembersToMemberGroup() override;
+    virtual void distributeMemberGroupDocumentation() override;
+    virtual void findSectionsInDocumentation() override;
+    virtual void sortMemberLists() override;
+    virtual const Definition *findInnerCompound(const QCString &name) const override;
+    virtual void addInnerCompound(Definition *d) override;
+    virtual void addListReferences() override;
+    virtual void setFileName(const QCString &fn) override;
+    virtual bool subGrouping() const override { return m_subGrouping; }
+    virtual MemberList *getMemberList(MemberListType lt) const override;
+    virtual const MemberLists &getMemberLists() const override { return m_memberLists; }
+    virtual const MemberDef *getMemberByName(const QCString &) const override;
+    virtual const MemberGroupList &getMemberGroups() const override { return m_memberGroups; }
+    virtual ClassLinkedRefMap getClasses() const override { return classes; }
+    virtual ClassLinkedRefMap getInterfaces() const override { return interfaces; }
+    virtual ClassLinkedRefMap getStructs() const override { return structs; }
+    virtual ClassLinkedRefMap getExceptions() const override { return exceptions; }
+    virtual NamespaceLinkedRefMap getNamespaces() const override { return namespaces; }
+    virtual ConceptLinkedRefMap getConcepts() const override { return m_concepts; }
+    virtual void setName(const QCString &name) override;
 
-    virtual QCString title() const;
-    virtual QCString compoundTypeString() const;
+    virtual QCString title() const override;
+    virtual QCString compoundTypeString() const override;
 
-    virtual void setMetaData(const QCString &m);
-    virtual int countVisibleMembers() const;
+    virtual void setMetaData(const QCString &m) override;
+    virtual int countVisibleMembers() const override;
+    virtual void writeSummaryLinks(OutputList &ol) const override;
 
   private:
     void addMemberToList(MemberListType lt,MemberDef *md);
@@ -130,7 +131,6 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     void writeAuthorSection(OutputList &ol);
     void startMemberDocumentation(OutputList &ol);
     void endMemberDocumentation(OutputList &ol);
-    void writeSummaryLinks(OutputList &ol) const;
     void addNamespaceAttributes(OutputList &ol);
     void writeClassesToTagFile(TextStream &,const ClassLinkedRefMap &d);
     void writeConceptsToTagFile(TextStream &);
