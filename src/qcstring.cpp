@@ -422,9 +422,8 @@ char *qstrdup( const char *str )
 {
   if ( !str )
     return 0;
-  size_t l=qstrlen(str);
-  char *dst = new char[l+1];
-  return qstrncpy( dst, str, l+1);
+  char *dst = new char[qstrlen(str)+1];
+  return strcpy( dst, str );
 }
 
 void qstrfree( const char *str )
@@ -436,7 +435,7 @@ char *qstrncpy( char *dst, const char *src, size_t len )
 {
   if ( !src )
     return nullptr;
-  strncpy( dst, src, len+1 );
+  strncpy( dst, src, len );
   if ( len > 0 )
     dst[len-1] = '\0';
   return dst;
