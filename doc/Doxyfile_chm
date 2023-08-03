@@ -13,6 +13,7 @@
 @INCLUDE = Doxyfile
       GENERATE_LATEX         = NO
       HTML_OUTPUT            = chm
+      HTML_CODE_FOLDING      = NO
       GENERATE_HTMLHELP      = YES
       GENERATE_TREEVIEW      = NO
       HTML_DYNAMIC_MENUS     = NO
