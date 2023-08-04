@@ -101,7 +101,7 @@
   <xsd:complexType name="incType">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
-        <xsd:attribute name="refid" type="xsd:string" />
+        <xsd:attribute name="refid" type="xsd:string" use="optional" />
         <xsd:attribute name="local" type="DoxBool" />
       </xsd:extension>
     </xsd:simpleContent>
