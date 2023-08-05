@@ -174,8 +174,8 @@ The following table gives an overview of the doxygen special commands and the ve
 <dt>New in 1.8.6</dt><dd>\\diafile</dd>
 <dt></dt>             <dd>\\endparblock</dd>
 <dt></dt>             <dd>\\parblock</dd>
-<dt>New in 1.8.7</dt><dd>\\\\--</dd>
-<dt></dt>             <dd>\\\\---</dd>
+<dt>New in 1.8.7</dt><dd>\\\--</dd>
+<dt></dt>             <dd>\\\---</dd>
 <dt></dt>             <dd>\\latexinclude</dd>
 <dt>New in 1.8.8</dt><dd>\\enduml</dd>
 <dt></dt>             <dd>\\startuml</dd>
