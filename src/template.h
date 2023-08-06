@@ -73,7 +73,7 @@ using TemplateStructIntfWeakPtr = std::weak_ptr<TemplateStructIntf>;
  *
  *  Extension tags:
  *  - `create` which instantiates a template and writes the result to a file.
- *     The syntax is `{% create 'filename' from 'template' %}`.
+ *     The syntax is ``{% create 'filename' from 'template' %}``.
  *  - `recursetree`
  *  - `markers`
  *  - `msg` ... `endmsg`
