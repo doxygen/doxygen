@@ -85,13 +85,13 @@ static std::map<std::string, SearchIndexMap> getSearchIndexMapByLetter(const Sea
   std::map<std::string, SearchIndexMap> result;
   for (const auto &value : map)
   {
-    const auto &[search_name, symList] = value;
-    std::string letter = convertUTF8ToLower(getUTF8CharAt(search_name,0));
+    const auto &[searchName, symList] = value;
+    std::string letter = convertUTF8ToLower(getUTF8CharAt(searchName,0));
 
     auto &resultMap = result[letter];
     for (const Definition* d: symList)
     {
-      std::string id = searchId(search_name).str();
+      std::string id = searchId(searchName).str();
       resultMap[id].push_back(d);
     }
   }
@@ -452,9 +452,9 @@ static void writeJavascriptSearchData(const QCString &searchDirName)
         t << "  " << j << ": \"";
 
         std::string previous_letter;  // Does not exist in search names
-        for (const auto &[search_name,list] : sii.symbolMap)
+        for (const auto &[searchName,list] : sii.symbolMap)
         {
-          std::string letter = convertUTF8ToLower(getUTF8CharAt(search_name,0));
+          std::string letter = convertUTF8ToLower(getUTF8CharAt(searchName,0));
           if (letter != previous_letter) {
             if ( letter == "\"" ) t << "\\";
             t << letter;
@@ -690,7 +690,7 @@ void writeJavaScriptSearchIndex()
     for (auto &sii : g_searchIndexInfo)
     {
       int p=0;
-      for (auto [search_name,symList] : getSearchIndexMapByLetter(sii.symbolMap))
+      for (auto [searchName,symList] : getSearchIndexMapByLetter(sii.symbolMap))
       {
         QCString baseName;
         baseName.sprintf("%s_%x",sii.name.data(),p);
@@ -712,7 +712,7 @@ void writeJavaScriptSearchIndex()
     for (auto &sii : g_searchIndexInfo)
     {
       int p=0;
-      for (const auto &[search_name,symList] : getSearchIndexMapByLetter(sii.symbolMap))
+      for (const auto &[searchName,symList] : getSearchIndexMapByLetter(sii.symbolMap))
       {
         QCString baseName;
         baseName.sprintf("%s_%x",sii.name.data(),p);
@@ -732,17 +732,17 @@ void writeJavaScriptSearchIndex()
 
 //--------------------------------------------------------------------------------------
 
-void SearchIndexInfo::add(const std::string &search_name,const Definition *def)
+void SearchIndexInfo::add(const std::string &searchName,const Definition *def)
 {
-  std::string lowercase_search_name = convertUTF8ToLower(search_name);
-  auto it = symbolMap.find(lowercase_search_name);
+  std::string lowercaseSearchName = convertUTF8ToLower(searchName);
+  auto it = symbolMap.find(lowercaseSearchName);
   if (it!=symbolMap.end())
   {
     it->second.push_back(def);
   }
   else
   {
-    symbolMap.insert(std::make_pair(lowercase_search_name,std::vector<const Definition*>({def})));
+    symbolMap.insert(std::make_pair(lowercaseSearchName,std::vector<const Definition*>({def})));
   }
 }
 
