@@ -40,7 +40,7 @@ using SearchIndexMap  = std::map<std::string,SearchIndexList>;
 
 struct SearchIndexInfo
 {
-  void add(const std::string &letter,const Definition *def);
+  void add(const std::string &search_name,const Definition *def);
   QCString name;
   std::function<QCString()> getText;
   SearchIndexMap symbolMap;
