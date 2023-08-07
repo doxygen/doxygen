@@ -690,13 +690,12 @@ void writeJavaScriptSearchIndex()
     for (auto &sii : g_searchIndexInfo)
     {
       int p=0;
-      for (const auto &[search_name,symList] : getSearchIndexMapByLetter(sii.symbolMap))
+      for (auto [search_name,symList] : getSearchIndexMapByLetter(sii.symbolMap))
       {
         QCString baseName;
         baseName.sprintf("%s_%x",sii.name.data(),p);
         QCString dataFileName = searchDirName + "/"+baseName+".js";
-        auto &list = symList;
-        auto processFile = [p,baseName,dataFileName,&list]()
+        auto processFile = [p,baseName,dataFileName,list=std::move(symList)]()
         {
           writeJavasScriptSearchDataPage(baseName,dataFileName,list);
           return p;
