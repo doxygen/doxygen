@@ -709,7 +709,7 @@ class TranslatorBrazilian : public Translator
                                     bool isTemplate)
     {
       QCString result="Referência";
-      if (isTemplate) result+=" do <em>Template</em>";
+      if (isTemplate) result+=" do Template";
       if (compType == ClassDef::Protocol)
       {
         result+=" do ";
@@ -854,11 +854,11 @@ class TranslatorBrazilian : public Translator
     {
       QCString result="Essa é a lista com todos os membros ";
       if (!extractAll) result+="documentados ";
-      result+="do <em>Namespace</em> com referências para ";
+      result+="do Namespace com referências para ";
       if (extractAll)
-        result+="a documentação do <em>Namespace</em> para cada membro:";
+        result+="a documentação do Namespace para cada membro:";
       else
-        result+="os seus respectivos <em>Namespaces</em>:";
+        result+="os seus respectivos Namespaces:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
@@ -2180,7 +2180,7 @@ class TranslatorBrazilian : public Translator
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result="A documentação para esse <em>Singleton</em> "
+      QCString result="A documentação para esse Singleton "
                                 "foi gerada a partir ";
       if (single) {
         result+="do seguinte arquivo:";
