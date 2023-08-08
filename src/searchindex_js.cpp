@@ -118,14 +118,12 @@ static StringVector splitSearchTokens(std::string str)
   }
 
   StringVector result = split(str, " ");
-  if (result.empty())
+  const auto remover = [](const auto& part)
   {
-    return result;
-  }
-  const auto remover = [](const auto& part){
-      return part.size() < 4;
+      return part.empty() || part[0] == '%';
   };
-  result.erase(std::remove_if(result.begin()+1, result.end(), remover), result.end());
+  result.erase(std::remove_if(result.begin(),result.end(),remover),result.end());
+
   return result;
 }
 
