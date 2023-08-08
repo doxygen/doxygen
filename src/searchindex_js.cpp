@@ -111,7 +111,7 @@ static StringVector splitSearchTokens(std::string str)
 {
   for (auto& c : str)
   {
-    if (c == '(' || c == ')' || c == ',' || c == '!' || c == '/' || c == '.' || c == '%')
+    if (c == '(' || c == ')' || c == ',' || c == '!' || c == '/' || c == '.')
     {
       c = ' ';
     }
