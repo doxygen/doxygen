@@ -77,6 +77,9 @@ static void sortSearchIndexList(SearchIndexList& symList)
             {
               return qstricmp(d1->name(),d2->name())<0;
             });
+
+  // removing same Definition's
+  symList.erase(std::unique(symList.begin(),symList.end()),symList.end());
 }
 
 static std::map<std::string, SearchIndexMap> getSearchIndexMapByLetter(const SearchIndexMap &map)
