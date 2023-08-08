@@ -111,7 +111,7 @@ static StringVector splitSearchTokens(std::string str)
 {
   for (auto& c : str)
   {
-    if (c == '(' || c == ')' || c == ',' || c == '!' || c == '/' || c == '.')
+    if (c == '(' || c == ')' || c == ',' || c == '!' || c == '/' || c == '.' || c == '%')
     {
       c = ' ';
     }
@@ -120,9 +120,24 @@ static StringVector splitSearchTokens(std::string str)
   StringVector result = split(str, " ");
   const auto remover = [](const auto& part)
   {
-      return part.empty() || part[0] == '%';
+    return part.empty();
   };
   result.erase(std::remove_if(result.begin(),result.end(),remover),result.end());
+
+  if (result.size() > 1)
+  {
+    // Concatenate the words starting from the end to allow multiword search
+    auto rit = result.end();
+    const auto rend = result.begin();
+    auto prev = --rit;
+
+    do {
+        --rit;
+        rit->append(" ");
+        rit->append(*prev);
+        prev = rit;
+    } while (rit != rend);
+  }
 
   return result;
 }
