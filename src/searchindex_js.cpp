@@ -37,8 +37,8 @@
 
 QCString searchName(const Definition *d)
 {
-  return d->definitionType()==Definition::TypeGroup ?  QCString(toGroupDef(d)->groupTitle()) :
-         d->definitionType()==Definition::TypePage  ?  toPageDef(d)->title() :
+  return d->definitionType()==Definition::TypeGroup ?  filterTitle(QCString(toGroupDef(d)->groupTitle())) :
+         d->definitionType()==Definition::TypePage  ?  filterTitle(toPageDef(d)->title()) :
                                                        d->localName();
 }
 
@@ -419,7 +419,7 @@ void createJavaScriptSearchIndex()
   {
     if (gd->isLinkable())
     {
-      std::string title = gd->groupTitle().str();
+      std::string title = filterTitle(gd->groupTitle()).str();
       for(const auto& word: splitSearchTokens(title))
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(word,gd.get());
@@ -433,7 +433,7 @@ void createJavaScriptSearchIndex()
   {
     if (pd->isLinkable())
     {
-      std::string title = pd->title().str();
+      std::string title = filterTitle(pd->title()).str();
       for(const auto& word: splitSearchTokens(title))
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(word,pd.get());
@@ -443,7 +443,7 @@ void createJavaScriptSearchIndex()
   }
   if (Doxygen::mainPage)
   {
-    std::string title = Doxygen::mainPage->title().str();
+    std::string title = filterTitle(Doxygen::mainPage->title()).str();
     for(const auto& word: splitSearchTokens(title))
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(word,Doxygen::mainPage.get());
