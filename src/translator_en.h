@@ -2565,6 +2565,66 @@ class TranslatorEnglish : public Translator
     }
     virtual QCString trDefinition()  { return "Definition";}
     virtual QCString trDeclaration() { return "Declaration";}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trTopics()
+    { return "Topics"; }
+    virtual QCString trTopicDocumentation()
+    { return "Topic Documentation"; }
+    virtual QCString trTopicList()
+    { return "Topic List"; }
+    virtual QCString trTopicIndex()
+    { return "Topic Index"; }
+    virtual QCString trTopicListDescription()
+    { return "Here is a list of all topics with brief descriptions:"; }
+    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Here is a list of all ";
+      if (!extractAll) result+="documented ";
+      result+="module ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="member";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="function";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="variable";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="typedef";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="enum";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="enum value";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=" with links to ";
+      if (extractAll)
+        result+="the module documentation for each " + singularResult + ":";
+      else
+        result+="the module they belong to:";
+      return result;
+    }
+    virtual QCString trExportedModules()
+    {
+      return "Exported Modules";
+    }
+
+
 };
 
 #endif

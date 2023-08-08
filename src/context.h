@@ -155,14 +155,14 @@ class UsedFilesContext : public TemplateListIntf
 class IncludeInfoContext : public TemplateStructIntf
 {
   public:
-    static TemplateStructIntfPtr alloc(const IncludeInfo *info,SrcLangExt lang)
-    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<IncludeInfoContext>(info,lang)); }
+    static TemplateStructIntfPtr alloc(const IncludeInfo *info)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<IncludeInfoContext>(info)); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
     virtual StringVector fields() const;
 
-    IncludeInfoContext(const IncludeInfo *,SrcLangExt lang);
+    IncludeInfoContext(const IncludeInfo *);
     virtual ~IncludeInfoContext();
 
   private:
@@ -175,15 +175,15 @@ class IncludeInfoContext : public TemplateStructIntf
 class IncludeInfoListContext : public TemplateListIntf
 {
   public:
-    static TemplateListIntfPtr alloc(const IncludeInfoList &list,SrcLangExt lang)
-    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<IncludeInfoListContext>(list,lang)); }
+    static TemplateListIntfPtr alloc(const IncludeInfoList &list)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<IncludeInfoListContext>(list)); }
 
     // TemplateListIntf
     virtual size_t count() const;
     virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-    IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang);
+    IncludeInfoListContext(const IncludeInfoList &list);
     virtual ~IncludeInfoListContext();
 
   private:

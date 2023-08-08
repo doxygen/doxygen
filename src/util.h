@@ -357,6 +357,7 @@ inline int computeQualifiedIndex(const QCString &name)
 void addDirPrefix(QCString &fileName);
 
 QCString relativePathToRoot(const QCString &name);
+QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &incFileName);
 
 void createSubDirs(const Dir &d);
 void clearSubDirs(const Dir &d);

@@ -59,8 +59,11 @@ struct LayoutDocEntry
               FileIncludedByGraph, FileSourceLink,
               FileInlineClasses,
 
+              // C++20 Modules
+              ModuleExports, ModuleClasses, ModuleConcepts, ModuleUsedFiles,
+
               // Group specific items
-              GroupClasses, GroupConcepts, GroupInlineClasses, GroupNamespaces,
+              GroupClasses, GroupConcepts, GroupModules, GroupInlineClasses, GroupNamespaces,
               GroupDirs, GroupNestedGroups, GroupFiles,
               GroupGraph, GroupPageDocs,
 
@@ -132,6 +135,9 @@ struct LayoutNavEntry
       MainPage,
       Pages,
       Modules,
+      ModuleList,
+      ModuleMembers,
+      Topics,
       Namespaces,
       NamespaceList,
       NamespaceMembers,
@@ -201,7 +207,7 @@ class LayoutDocManager
     enum LayoutPart
     {
       Undefined = -1,
-      Class, Concept, Namespace, File, Group, Directory,
+      Class, Concept, Namespace, File, Group, Directory, Module,
       NrParts
     };
     /** Returns a reference to this singleton. */

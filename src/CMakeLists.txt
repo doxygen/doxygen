@@ -295,6 +295,7 @@ add_library(doxymain STATIC
     memberdef.cpp
     membergroup.cpp
     memberlist.cpp
+    moduledef.cpp
     msc.cpp
     namespacedef.cpp
     outputgen.cpp

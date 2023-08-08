@@ -82,7 +82,7 @@ class Translator
     virtual QCString trISOLang() = 0;
 
     /** language codes for Html help
- 
+
        <pre>
        0x402 Bulgarian
        0x405 Czech
@@ -751,6 +751,16 @@ class Translator
     virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) = 0;
     virtual QCString trDefinition() = 0;
     virtual QCString trDeclaration() = 0;
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trTopics() = 0;
+    virtual QCString trTopicDocumentation() = 0;
+    virtual QCString trTopicList() = 0;
+    virtual QCString trTopicIndex() = 0;
+    virtual QCString trTopicListDescription() = 0;
+    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) = 0;
+    virtual QCString trExportedModules() = 0;
 };
 
 #endif

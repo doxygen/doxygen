@@ -1468,11 +1468,12 @@ class DefinitionContext
         case Definition::TypeClass:     result="class";     break;
         case Definition::TypeFile:      result="file";      break;
         case Definition::TypeNamespace: result="namespace"; break;
-        case Definition::TypeGroup:     result="module";    break;
+        case Definition::TypeGroup:     result="topic";    break;
         case Definition::TypePackage:   result="package";   break;
         case Definition::TypePage:      result="page";      break;
         case Definition::TypeDir:       result="dir";       break;
         case Definition::TypeConcept:   result="concept";   break;
+        case Definition::TypeModule:    result="module";   break;
         case Definition::TypeMember:                        break;
       }
       return result;
@@ -1605,9 +1606,8 @@ class DefinitionContext
 class IncludeInfoContext::Private
 {
   public:
-    Private(const IncludeInfo *info,SrcLangExt lang) :
-      m_info(info),
-      m_lang(lang)
+    Private(const IncludeInfo *info) :
+      m_info(info)
     {
     }
     TemplateVariant get(const QCString &n) const
@@ -1620,12 +1620,11 @@ class IncludeInfoContext::Private
     }
     TemplateVariant isLocal() const
     {
-      bool isIDLorJava = m_lang==SrcLangExt_IDL || m_lang==SrcLangExt_Java;
-      return m_info->local || isIDLorJava;
+      return (m_info->kind & IncludeKind_LocalMask)!=0;
     }
     TemplateVariant isImport() const
     {
-      return m_info->imported || m_lang==SrcLangExt_ObjC;
+      return (m_info->kind & IncludeKind_ImportMask)!=0;
     }
     TemplateVariant file() const
     {
@@ -1644,7 +1643,6 @@ class IncludeInfoContext::Private
              TemplateVariant(false);
     }
     CachedItem<TemplateVariant, Private, &Private::createFileContext> m_fileContext;
-    SrcLangExt m_lang;
     static const PropertyMap<IncludeInfoContext::Private> s_inst;
 };
 
@@ -1658,7 +1656,7 @@ const PropertyMap<IncludeInfoContext::Private> IncludeInfoContext::Private::s_in
 };
 //%% }
 
-IncludeInfoContext::IncludeInfoContext(const IncludeInfo *info,SrcLangExt lang) : p(std::make_unique<Private>(info,lang))
+IncludeInfoContext::IncludeInfoContext(const IncludeInfo *info) : p(std::make_unique<Private>(info))
 {
 }
 
@@ -1684,16 +1682,16 @@ StringVector IncludeInfoContext::fields() const
 class IncludeInfoListContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const IncludeInfoList &list,SrcLangExt lang)
+    Private(const IncludeInfoList &list)
     {
       for (const auto &ii : list)
       {
-        append(IncludeInfoContext::alloc(&ii,lang));
+        append(IncludeInfoContext::alloc(&ii));
       }
     }
 };
 
-IncludeInfoListContext::IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang) : p(std::make_unique<Private>(list,lang))
+IncludeInfoListContext::IncludeInfoListContext(const IncludeInfoList &list) : p(std::make_unique<Private>(list))
 {
 }
 
@@ -1957,7 +1955,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant createIncludeInfo() const
     {
       return m_classDef->includeInfo() ?
-             IncludeInfoContext::alloc(m_classDef->includeInfo(),m_classDef->getLanguage()) :
+             IncludeInfoContext::alloc(m_classDef->includeInfo()) :
              TemplateVariant(false);
     }
     TemplateVariant createInheritsList() const
@@ -2886,7 +2884,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant createIncludeList() const
     {
       return !m_fileDef->includeFileList().empty() ?
-        TemplateVariant(IncludeInfoListContext::alloc(m_fileDef->includeFileList(),m_fileDef->getLanguage())) :
+        TemplateVariant(IncludeInfoListContext::alloc(m_fileDef->includeFileList())) :
         TemplateVariant(false);
     }
     DotInclDepGraphPtr createIncludeGraph() const
@@ -4480,7 +4478,7 @@ class ConceptContext::Private : public DefinitionContext<ConceptContext::Private
     TemplateVariant createIncludeInfo() const
     {
       return m_conceptDef->includeInfo() ?
-          TemplateVariant(IncludeInfoContext::alloc(m_conceptDef->includeInfo(),m_conceptDef->getLanguage())) :
+          TemplateVariant(IncludeInfoContext::alloc(m_conceptDef->includeInfo())) :
           TemplateVariant(false);
     }
     TemplateVariant createTemplateDecls() const

@@ -75,6 +75,7 @@
 #include "textstream.h"
 #include "indexlist.h"
 #include "datetime.h"
+#include "moduledef.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -334,7 +335,7 @@ int guessSection(const QCString &name)
 {
   QCString n=name.lower();
   static const std::unordered_set<std::string> sourceExt = {
-     "c","cc","cxx","cpp","c++",   // C/C++
+     "c","cc","cxx","cpp","c++","cppm","cxxm","c++m",   // C/C++
      "java",                       // Java
      "cs",                         // C#
      "m","mm",                     // Objective-C
@@ -342,7 +343,7 @@ int guessSection(const QCString &name)
      "xml","lex","sql"             // others
   };
   static const std::unordered_set<std::string> headerExt = {
-     "h", "hh", "hxx", "hpp", "h++" // C/C++ header
+     "h", "hh", "hxx", "hpp", "h++", "ixx", // C/C++ header
      "idl", "ddl", "pidl", "ice"    // IDL like
   };
   int lastDot = n.findRev('.');
@@ -3763,6 +3764,46 @@ QCString relativePathToRoot(const QCString &name)
   return result;
 }
 
+QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &incFileName)
+{
+  bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
+  QCString absIncFileName = incFileName;
+  FileInfo fi(curFile.str());
+  if (fi.exists())
+  {
+    QCString absName = QCString(fi.dirPath(TRUE))+"/"+incFileName;
+    FileInfo fi2(absName.str());
+    if (fi2.exists())
+    {
+      absIncFileName=fi2.absFilePath();
+    }
+    else if (searchIncludes) // search in INCLUDE_PATH as well
+    {
+      const StringVector &includePath = Config_getList(INCLUDE_PATH);
+      for (const auto &incPath : includePath)
+      {
+        FileInfo fi3(incPath);
+        if (fi3.exists() && fi3.isDir())
+        {
+          absName = QCString(fi3.absFilePath())+"/"+incFileName;
+          //printf("trying absName=%s\n",qPrint(absName));
+          FileInfo fi4(absName.str());
+          if (fi4.exists())
+          {
+            absIncFileName=fi4.absFilePath();
+            break;
+          }
+          //printf( "absIncFileName = %s\n", qPrint(absIncFileName) );
+        }
+      }
+    }
+    //printf( "absIncFileName = %s\n", qPrint(absIncFileName) );
+  }
+  return absIncFileName;
+}
+
+
+
 void createSubDirs(const Dir &d)
 {
   if (Config_getBool(CREATE_SUBDIRS))
@@ -4894,9 +4935,39 @@ void addRefItem(const RefItemVector &sli,
   }
 }
 
-bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root)
+static ModuleDef *findModuleDef(const Definition *d)
 {
-  if (!d->partOfGroups().empty()) // write list of group to which this definition belongs
+  ModuleDef *mod = 0;
+  if (d->definitionType()==Definition::TypeFile)
+  {
+    const FileDef *fd = toFileDef(d);
+    if (fd) mod = fd->getModuleDef();
+  }
+  else if (d->definitionType()==Definition::TypeClass)
+  {
+    const ClassDef *cd = toClassDef(d);
+    if (cd)
+    {
+      const FileDef *fd = cd->getFileDef();
+      if (fd) mod = fd->getModuleDef();
+    }
+  }
+  else if (d->definitionType()==Definition::TypeConcept)
+  {
+    const ConceptDef *cd = toConceptDef(d);
+    if (cd)
+    {
+      const FileDef *fd = cd->getFileDef();
+      if (fd) mod = fd->getModuleDef();
+    }
+  }
+  return mod;
+}
+
+static bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root)
+{
+  ModuleDef *mod = root ? findModuleDef(d) : 0;
+  if (!d->partOfGroups().empty() || mod!=nullptr) // write list of group to which this definition belongs
   {
     if (root)
     {
@@ -4916,6 +4987,14 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root
     }
     if (root)
     {
+      // add module as a group to the file as well
+      if (mod)
+      {
+        if (!first) { ol.writeString(" &#124; "); } else first=false;
+        ol.writeString(theTranslator->trModule(false,true)+" ");
+        ol.writeObjectLink(mod->getReference(),mod->getOutputFileBase(),QCString(),
+                           mod->displayName());
+      }
       ol.writeString("</div>");
       ol.popGeneratorState();
     }
@@ -5180,6 +5259,9 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".cxx",      "c");
   updateLanguageMapping(".cpp",      "c");
   updateLanguageMapping(".c++",      "c");
+  updateLanguageMapping(".cxxm",     "c"); // C++20 modules
+  updateLanguageMapping(".cppm",     "c"); // C++20 modules
+  updateLanguageMapping(".c++m",     "c"); // C++20 modules
   updateLanguageMapping(".ii",       "c");
   updateLanguageMapping(".ixx",      "c");
   updateLanguageMapping(".ipp",      "c");

@@ -49,6 +49,7 @@
 #include "debug.h"
 #include "datetime.h"
 #include "outputlist.h"
+#include "moduledef.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -703,6 +704,10 @@ void RTFGenerator::startIndexSection(IndexSection is)
       //Introduction
       beginRTFChapter();
       break;
+    case IndexSection::isTopicIndex:
+      //Topic Index
+      beginRTFChapter();
+      break;
     case IndexSection::isModuleIndex:
       //Module Index
       beginRTFChapter();
@@ -736,12 +741,25 @@ void RTFGenerator::startIndexSection(IndexSection is)
       //Related Page Index
       beginRTFChapter();
       break;
-    case IndexSection::isModuleDocumentation:
+    case IndexSection::isTopicDocumentation:
       {
-        //Module Documentation
+        //Topic Documentation
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
+          {
+            beginRTFChapter();
+            break;
+          }
+        }
+      }
+      break;
+    case IndexSection::isModuleDocumentation:
+      {
+        //Module Documentation
+        for (const auto &mod : ModuleManager::instance().modules())
+        {
+          if (!mod->isReference() && mod->isPrimaryInterface())
           {
             beginRTFChapter();
             break;
@@ -962,6 +980,11 @@ void RTFGenerator::endIndexSection(IndexSection is)
         writePageLink(Doxygen::mainPage->getOutputFileBase(), TRUE);
       }
       break;
+    case IndexSection::isTopicIndex:
+      m_t << "\\par " << rtf_Style_Reset << "\n";
+      m_t << "{\\tc \\v " << theTranslator->trTopicIndex() << "}\n";
+      m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"topics.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      break;
     case IndexSection::isModuleIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}\n";
@@ -1021,14 +1044,26 @@ void RTFGenerator::endIndexSection(IndexSection is)
       m_t << "{\\tc \\v " << theTranslator->trPageIndex() << "}\n";
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"pages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case IndexSection::isModuleDocumentation:
+    case IndexSection::isTopicDocumentation:
       {
-        m_t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}\n";
+        m_t << "{\\tc \\v " << theTranslator->trTopicDocumentation() << "}\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference() && !gd->isASubGroup())
           {
             writePageLink(gd->getOutputFileBase(), FALSE);
+          }
+        }
+      }
+      break;
+    case IndexSection::isModuleDocumentation:
+      {
+        m_t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}\n";
+        for (const auto &mod : ModuleManager::instance().modules())
+        {
+          if (!mod->isReference() && mod->isPrimaryInterface())
+          {
+            writePageLink(mod->getOutputFileBase(), FALSE);
           }
         }
       }

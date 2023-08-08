@@ -52,6 +52,7 @@
 #include "dir.h"
 #include "growbuf.h"
 #include "outputlist.h"
+#include "moduledef.h"
 
 // no debug info
 #define Docbook_DB(x) do {} while(0)
@@ -444,6 +445,9 @@ DB_GEN_C2("IndexSection " << is)
     case IndexSection::isModuleIndex:
       //Module Index\n"
       break;
+    case IndexSection::isTopicIndex:
+      //Module Index\n"
+      break;
     case IndexSection::isDirIndex:
       //Directory Index\n"
       break;
@@ -466,6 +470,10 @@ DB_GEN_C2("IndexSection " << is)
       //Annotated Page Index\n"
       break;
     case IndexSection::isModuleDocumentation:
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
+      break;
+    case IndexSection::isTopicDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
@@ -522,6 +530,9 @@ DB_GEN_C2("IndexSection " << is)
     case IndexSection::isModuleIndex:
       //m_t << "</chapter>\n";
       break;
+    case IndexSection::isTopicIndex:
+      //m_t << "</chapter>\n";
+      break;
     case IndexSection::isDirIndex:
       //m_t << "<xi:include href=\"dirs.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
@@ -549,7 +560,7 @@ DB_GEN_C2("IndexSection " << is)
       //m_t << "<xi:include href=\"pages.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case IndexSection::isModuleDocumentation:
+    case IndexSection::isTopicDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
@@ -561,6 +572,20 @@ DB_GEN_C2("IndexSection " << is)
         }
       }
       m_t << "</chapter>\n";
+      break;
+    case IndexSection::isModuleDocumentation:
+      {
+        m_t << "</title>\n";
+        for (const auto &mod : ModuleManager::instance().modules())
+        {
+          if (!mod->isReference() && mod->isPrimaryInterface())
+          {
+            writePageLink(mod->getOutputFileBase(), TRUE);
+          }
+        }
+      }
+      m_t << "</chapter>\n";
+      break;
       break;
     case IndexSection::isDirDocumentation:
       {

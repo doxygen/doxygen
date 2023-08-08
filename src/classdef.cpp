@@ -220,6 +220,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool visibleInParentsDeclList() const override;
     virtual const ArgumentList &templateArguments() const override;
     virtual FileDef *getFileDef() const override;
+    virtual ModuleDef *getModuleDef() const override;
     virtual const MemberDef *getMemberByName(const QCString &) const override;
     virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const override;
     virtual bool isSubClass(ClassDef *bcd,int level=0) const override;
@@ -282,6 +283,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file) override;
     virtual void mergeCategory(ClassDef *category) override;
     virtual void setFileDef(FileDef *fd) override;
+    virtual void setModuleDef(ModuleDef *mod) override;
     virtual void setSubGrouping(bool enabled) override;
     virtual void setProtection(Protection p) override;
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) override;
@@ -384,7 +386,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                                  ClassDefSet &visitedClasses) const;
     void getTitleForMemberListType(MemberListType type,
                QCString &title,QCString &subtitle) const;
-    QCString includeStatement() const;
     void addTypeConstraint(const QCString &typeConstraint,const QCString &type);
     void writeTemplateSpec(OutputList &ol,const Definition *d,
             const QCString &type,SrcLangExt lang) const;
@@ -467,6 +468,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     //{ return getCdAlias()->getNamespaceDef(); }
     virtual FileDef *getFileDef() const
     { return getCdAlias()->getFileDef(); }
+    virtual ModuleDef *getModuleDef() const
+    { return getCdAlias()->getModuleDef(); }
     virtual const MemberDef *getMemberByName(const QCString &s) const
     { return getCdAlias()->getMemberByName(s); }
     virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const
@@ -672,6 +675,9 @@ class ClassDefImpl::IMPL
     /*! File this class is defined in */
     FileDef *fileDef = 0;
 
+    /*! Module this class is defined in */
+    ModuleDef *moduleDef = 0;
+
     /*! List of all members (including inherited members) */
     MemberNameInfoLinkedMap allMemberNameInfoLinkedMap;
 
@@ -791,6 +797,7 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
   prot=Protection::Public;
   //nspace=0;
   fileDef=0;
+  moduleDef=0;
   subGrouping=Config_getBool(SUBGROUPING);
   templateMaster =0;
   isAbstract = FALSE;
@@ -1287,12 +1294,12 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
     //printf("Setting file info\n");
     m_impl->incInfo->fileDef     = fd;
     m_impl->incInfo->includeName = includeName;
-    m_impl->incInfo->local       = local;
+    m_impl->incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
   }
   if (force && !includeName.isEmpty())
   {
     m_impl->incInfo->includeName = includeName;
-    m_impl->incInfo->local       = local;
+    m_impl->incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
   }
 }
 
@@ -1610,7 +1617,9 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
     }
     else
     {
+      ol.startBold();
       ol.docify(fname);
+      ol.endBold();
     }
     ol.popGeneratorState();
 
@@ -1781,23 +1790,6 @@ void ClassDefImpl::writeCollaborationGraph(OutputList &ol) const
   }
 }
 
-QCString ClassDefImpl::includeStatement() const
-{
-  SrcLangExt lang = getLanguage();
-  bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
-  if (isIDLorJava)
-  {
-    return "import";
-  }
-  else if (isObjectiveC())
-  {
-    return "#import ";
-  }
-  else
-  {
-    return "#include ";
-  }
-}
 
 void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
 {
@@ -1954,12 +1946,8 @@ void ClassDefImpl::writeIncludeFiles(OutputList &ol) const
     {
       ol.startParagraph();
       ol.startTypewriter();
-      ol.docify(includeStatement());
-      bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
-      if (m_impl->incInfo->local || isIDLorJava)
-        ol.docify("\"");
-      else
-        ol.docify("<");
+      ol.docify(::includeStatement(lang,m_impl->incInfo->kind));
+      ol.docify(::includeOpen(lang,m_impl->incInfo->kind));
       ol.pushGeneratorState();
       ol.disable(OutputType::Html);
       ol.docify(nm);
@@ -1974,12 +1962,7 @@ void ClassDefImpl::writeIncludeFiles(OutputList &ol) const
         ol.docify(nm);
       }
       ol.popGeneratorState();
-      if (m_impl->incInfo->local || isIDLorJava)
-        ol.docify("\"");
-      else
-        ol.docify(">");
-      if (isIDLorJava)
-        ol.docify(";");
+      ol.docify(::includeClose(lang,m_impl->incInfo->kind));
       ol.endTypewriter();
       ol.endParagraph();
     }
@@ -1993,7 +1976,7 @@ void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline) const
   {
     if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
     {
-      mg->writeDeclarations(ol,this,0,0,0,showInline);
+      mg->writeDeclarations(ol,this,0,0,0,0,showInline);
     }
     else // add this group to the corresponding member section
     {
@@ -2527,6 +2510,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isFinal())    sl.push_back("final");
   if (isSealed())   sl.push_back("sealed");
   if (isAbstract()) sl.push_back("abstract");
+  if (isExported()) sl.push_back("export");
   if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
 
   for (const auto &sx : m_impl->qualifiers)
@@ -2677,6 +2661,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::FileInlineClasses:
       case LayoutDocEntry::GroupClasses:
       case LayoutDocEntry::GroupConcepts:
+      case LayoutDocEntry::GroupModules:
       case LayoutDocEntry::GroupInlineClasses:
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs:
@@ -2684,6 +2669,10 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::GroupFiles:
       case LayoutDocEntry::GroupGraph:
       case LayoutDocEntry::GroupPageDocs:
+      case LayoutDocEntry::ModuleExports:
+      case LayoutDocEntry::ModuleClasses:
+      case LayoutDocEntry::ModuleConcepts:
+      case LayoutDocEntry::ModuleUsedFiles:
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
@@ -3344,7 +3333,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   // write user defined member groups
   for (const auto &mg : m_impl->memberGroups)
   {
-    mg->writePlainDeclarations(ol,inGroup,this,0,0,0,indentLevel,inheritedFrom,inheritId);
+    mg->writePlainDeclarations(ol,inGroup,this,0,0,0,0,indentLevel,inheritedFrom,inheritId);
   }
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
@@ -4533,7 +4522,7 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
     }
     if (ml)
     {
-      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0,0);
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0,0,0);
     }
   }
   else
@@ -4543,14 +4532,14 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
     if (ml)
     {
       //printf("  writeDeclaration type=%d count=%d\n",lt,ml->numDecMembers());
-      ml->writeDeclarations(ol,this,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
+      ml->writeDeclarations(ol,this,0,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
       tt.resize(0);
       st.resize(0);
     }
     if (ml2)
     {
       //printf("  writeDeclaration type=%d count=%d\n",lt2,ml2->numDecMembers());
-      ml2->writeDeclarations(ol,this,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
+      ml2->writeDeclarations(ol,this,0,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
     }
     bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
     if (!inlineInheritedMembers) // show inherited members as separate lists
@@ -4597,7 +4586,7 @@ void ClassDefImpl::writePlainMemberDeclaration(OutputList &ol,
   MemberList * ml = getMemberList(lt);
   if (ml)
   {
-    ml->writePlainDeclarations(ol,inGroup,this,0,0,0,indentLevel,inheritedFrom,inheritId);
+    ml->writePlainDeclarations(ol,inGroup,this,0,0,0,0,indentLevel,inheritedFrom,inheritId);
   }
 }
 
@@ -4669,6 +4658,11 @@ const ArgumentList &ClassDefImpl::templateArguments() const
 FileDef *ClassDefImpl::getFileDef() const
 {
   return m_impl->fileDef;
+}
+
+ModuleDef *ClassDefImpl::getModuleDef() const
+{
+  return m_impl->moduleDef;
 }
 
 const TemplateInstanceList &ClassDefImpl::getTemplateInstances() const
@@ -4773,7 +4767,12 @@ const MemberGroupList &ClassDefImpl::getMemberGroups() const
 
 void ClassDefImpl::setFileDef(FileDef *fd)
 {
-  m_impl->fileDef=fd;
+  m_impl->fileDef = fd;
+}
+
+void ClassDefImpl::setModuleDef(ModuleDef *mod)
+{
+  m_impl->moduleDef = mod;
 }
 
 void ClassDefImpl::setSubGrouping(bool enabled)

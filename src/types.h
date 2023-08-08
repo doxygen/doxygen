@@ -99,10 +99,12 @@ struct Grouping
 
 enum MemberListType
 {
-  MemberListType_privateLists       = 0x0800,
-  MemberListType_detailedLists      = 0x1000,
-  MemberListType_declarationLists   = 0x2000,
-  MemberListType_documentationLists = 0x4000,
+  MemberListType_privateLists       = 0x00800,
+  MemberListType_detailedLists      = 0x01000,
+  MemberListType_declarationLists   = 0x02000,
+  MemberListType_documentationLists = 0x04000,
+  MemberListType_exportedLists      = 0x08000,
+  MemberListType_internalLists      = 0x10000,
 
   MemberListType_undefined               = -1,
 
@@ -192,7 +194,7 @@ enum MemberListType
   MemberListType_decSequenceMembers      = 74 + MemberListType_declarationLists,
   MemberListType_docSequenceMembers      = 75 + MemberListType_documentationLists,
   MemberListType_decDictionaryMembers    = 76 + MemberListType_declarationLists,
-  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists
+  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists,
 };
 
 enum class MemberListContainer
@@ -200,7 +202,8 @@ enum class MemberListContainer
   File,
   Namespace,
   Group,
-  Class
+  Class,
+  Module
 };
 
 enum class CodeSymbolType
@@ -220,6 +223,7 @@ enum class CodeSymbolType
   Concept,
   Namespace,
   Package,
+  Module,
   // Member types
   Define,
   Function,

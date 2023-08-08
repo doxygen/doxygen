@@ -46,6 +46,7 @@
 #include "datetime.h"
 #include "portable.h"
 #include "outputlist.h"
+#include "moduledef.h"
 
 static QCString g_header;
 static QCString g_footer;
@@ -837,6 +838,10 @@ void LatexGenerator::startIndexSection(IndexSection is)
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Module Index}\n"
       break;
+    case IndexSection::isTopicIndex:
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Topic Index}\n"
+      break;
     case IndexSection::isDirIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Directory Index}\n"
@@ -865,14 +870,27 @@ void LatexGenerator::startIndexSection(IndexSection is)
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Annotated Page Index}\n"
       break;
-    case IndexSection::isModuleDocumentation:
+    case IndexSection::isTopicDocumentation:
       {
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
           {
             if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
-            m_t << "{"; //Module Documentation}\n";
+            m_t << "{"; //Topic Documentation}\n";
+            break;
+          }
+        }
+      }
+      break;
+    case IndexSection::isModuleDocumentation:
+      {
+        for (const auto &mod : ModuleManager::instance().modules())
+        {
+          if (!mod->isReference() && mod->isPrimaryInterface())
+          {
+            if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+            m_t << "{"; //Topic Documentation}\n";
             break;
           }
         }
@@ -885,7 +903,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
           if (dd->isLinkableInProject())
           {
             if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
-            m_t << "{"; //Module Documentation}\n";
+            m_t << "{"; //Dir Documentation}\n";
             break;
           }
         }
@@ -989,6 +1007,9 @@ void LatexGenerator::endIndexSection(IndexSection is)
     case IndexSection::isModuleIndex:
       m_t << "}\n\\input{modules}\n";
       break;
+    case IndexSection::isTopicIndex:
+      m_t << "}\n\\input{topics}\n";
+      break;
     case IndexSection::isDirIndex:
       m_t << "}\n\\input{dirs}\n";
       break;
@@ -1010,7 +1031,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
     case IndexSection::isPageIndex:
       m_t << "}\n\\input{pages}\n";
       break;
-    case IndexSection::isModuleDocumentation:
+    case IndexSection::isTopicDocumentation:
       {
         m_t << "}\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
@@ -1018,6 +1039,18 @@ void LatexGenerator::endIndexSection(IndexSection is)
           if (!gd->isReference() && !gd->isASubGroup())
           {
             writePageLink(gd->getOutputFileBase(), FALSE);
+          }
+        }
+      }
+      break;
+    case IndexSection::isModuleDocumentation:
+      {
+        m_t << "}\n";
+        for (const auto &mod : ModuleManager::instance().modules())
+        {
+          if (!mod->isReference() && mod->isPrimaryInterface())
+          {
+            writePageLink(mod->getOutputFileBase(), FALSE);
           }
         }
       }

@@ -28,7 +28,7 @@
 
 #include "qcstring.h"
 
-#define NUM_SEARCH_INDICES 21
+#define NUM_SEARCH_INDICES 22
 
 class Definition;
 

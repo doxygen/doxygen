@@ -30,6 +30,7 @@ class MemberDef;
 class ClassDef;
 class NamespaceDef;
 class FileDef;
+class ModuleDef;
 class GroupDef;
 class OutputList;
 class Definition;
@@ -50,10 +51,10 @@ class MemberGroup
     void insertMember(MemberDef *md);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,bool inGroup,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                bool showInline=FALSE) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const;
