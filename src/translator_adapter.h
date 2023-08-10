@@ -44,7 +44,7 @@ class TranslatorAdapter_1_9_6 : public TranslatorAdapterBase
 {
   public:
     virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.6"); }
 
     /*! Small trick to use the original functions as the wording has been changed */
     virtual QCString trRelatedSymbols()
