@@ -2795,15 +2795,18 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant hasIncludeGraph() const
     {
       bool haveDot = Config_getBool(HAVE_DOT);
-      DotInclDepGraphPtr incGraph = getIncludeGraph();
-      return (haveDot && !incGraph->isTooBig() && !incGraph->isTrivial());
+      if (haveDot && m_fileDef->hasIncludeGraph())
+      {
+        DotInclDepGraphPtr incGraph = getIncludeGraph();
+        return !incGraph->isTooBig() && !incGraph->isTrivial();
+      }
+      return TemplateVariant(FALSE);
     }
     TemplateVariant includeGraph() const
     {
-      bool haveDot = Config_getBool(HAVE_DOT);
-      TextStream t;
-      if (haveDot)
+      if (hasIncludeGraph().toBool())
       {
+        TextStream t;
         DotInclDepGraphPtr cg = getIncludeGraph();
         QCString fn = m_fileDef->getOutputFileBase();
         addHtmlExtensionIfMissing(fn);
@@ -2833,21 +2836,28 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             break;
         }
         g_globals.dynSectionId++;
+        return TemplateVariant(t.str().c_str(),TRUE);
       }
-      return TemplateVariant(t.str().c_str(),TRUE);
+      else
+      {
+        return TemplateVariant("");
+      }
     }
     TemplateVariant hasIncludedByGraph() const
     {
       bool haveDot = Config_getBool(HAVE_DOT);
-      DotInclDepGraphPtr incGraph = getIncludedByGraph();
-      return (haveDot && !incGraph->isTooBig() && !incGraph->isTrivial());
+      if (haveDot && m_fileDef->hasIncludedByGraph())
+      {
+        DotInclDepGraphPtr incGraph = getIncludedByGraph();
+        return !incGraph->isTooBig() && !incGraph->isTrivial();
+      }
+      return TemplateVariant(FALSE);
     }
     TemplateVariant includedByGraph() const
     {
-      bool haveDot = Config_getBool(HAVE_DOT);
-      TextStream t;
-      if (haveDot)
+      if (hasIncludedByGraph().toBool())
       {
+        TextStream t;
         DotInclDepGraphPtr cg = getIncludedByGraph();
         QCString fn = m_fileDef->getOutputFileBase();
         addHtmlExtensionIfMissing(fn);
@@ -2877,8 +2887,12 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             break;
         }
         g_globals.dynSectionId++;
+        return TemplateVariant(t.str().c_str(),TRUE);
       }
-      return TemplateVariant(t.str().c_str(),TRUE);
+      else
+      {
+        return TemplateVariant("");
+      }
     }
 
   private:

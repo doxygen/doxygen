@@ -143,8 +143,8 @@
   <file>
     <briefdescription visible="yes"/>
     <includes visible="$SHOW_INCLUDE_FILES"/>
-    <includegraph visible="$INCLUDE_GRAPH"/>
-    <includedbygraph visible="$INCLUDED_BY_GRAPH"/>
+    <includegraph visible="yes"/>
+    <includedbygraph visible="yes"/>
     <sourcelink visible="yes"/>
     <memberdecl>
       <interfaces visible="yes" title=""/>

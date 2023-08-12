@@ -255,6 +255,8 @@ class Entry
     bool callerGraph;         //!< do we need to draw the caller graph?
     bool referencedByRelation;//!< do we need to show the referenced by relation?
     bool referencesRelation;  //!< do we need to show the references relation?
+    bool includeGraph;        //!< do we need to draw the include graph?
+    bool includedByGraph;     //!< do we need to draw the included by graph?
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
