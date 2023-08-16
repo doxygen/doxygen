@@ -32,7 +32,6 @@ class ClassLinkedRefMap;
 class ConceptLinkedRefMap;
 class MemberDef;
 class NamespaceDef;
-class NamespaceDef;
 class NamespaceDefMutable;
 
 // --- Set of namespaces

@@ -193,7 +193,7 @@ void FTVHelp::addContentsItem(bool isDir,
                               const Definition *def
                               )
 {
-  //printf("%p: p->indent=%d addContentsItem(%s,%s,%s,%s)\n",this,p->indent,name,ref,file,anchor);
+  //printf("%p: p->indent=%d addContentsItem(%s,%s,%s,%s)\n",(void*)this,p->indent,qPrint(name),qPrint(ref),qPrint(file),qPrint(anchor));
   auto &nl = p->indentNodes[p->indent];
   if (!nl.empty())
   {
@@ -406,6 +406,10 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
           t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
         }
       }
+      else if (n->def && n->def->definitionType()==Definition::TypeModule)
+      {
+        t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+      }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
         char icon=compoundIcon(toClassDef(n->def));
@@ -465,6 +469,10 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
         {
           t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
         }
+      }
+      else if (n->def && n->def->definitionType()==Definition::TypeModule)
+      {
+        t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {

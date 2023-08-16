@@ -110,6 +110,7 @@ class DefinitionImpl::IMPL
     bool hidden = FALSE;
     bool isArtificial = FALSE;
     bool isAnonymous = FALSE;
+    bool isExported = FALSE;
 
     Definition *outerScope = 0;  // not owner
 
@@ -166,6 +167,7 @@ void DefinitionImpl::IMPL::init(const QCString &df, const QCString &n)
   outerScope      = Doxygen::globalScope;
   hidden          = FALSE;
   isArtificial    = FALSE;
+  isExported      = FALSE;
   lang            = SrcLangExt_Unknown;
 }
 
@@ -1691,6 +1693,11 @@ bool DefinitionImpl::isArtificial() const
   return m_impl->isArtificial;
 }
 
+bool DefinitionImpl::isExported() const
+{
+  return m_impl->isExported;
+}
+
 QCString DefinitionImpl::getReference() const
 {
   return m_impl->ref;
@@ -1813,6 +1820,11 @@ void DefinitionImpl::setHidden(bool b)
 void DefinitionImpl::setArtificial(bool b)
 {
   m_impl->isArtificial = b;
+}
+
+void DefinitionImpl::setExported(bool b)
+{
+  m_impl->isExported = b;
 }
 
 void DefinitionImpl::setLocalName(const QCString &name)

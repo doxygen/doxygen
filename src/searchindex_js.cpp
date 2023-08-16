@@ -34,12 +34,14 @@
 #include "indexlist.h"
 #include "portable.h"
 #include "threadpool.h"
+#include "moduledef.h"
 
 QCString searchName(const Definition *d)
 {
-  return d->definitionType()==Definition::TypeGroup ?  filterTitle(QCString(toGroupDef(d)->groupTitle())) :
-         d->definitionType()==Definition::TypePage  ?  filterTitle(toPageDef(d)->title()) :
-                                                       d->localName();
+  Definition::DefType type = d->definitionType();
+  return type==Definition::TypeGroup ?  filterTitle(QCString(toGroupDef(d)->groupTitle())) :
+         type==Definition::TypePage  ?  filterTitle(toPageDef(d)->title()) :
+                                                    d->localName();
 }
 
 static QCString searchId(const std::string& sname)
@@ -166,6 +168,7 @@ static StringVector splitSearchTokens(std::string str)
 #define SEARCH_INDEX_GROUPS       18
 #define SEARCH_INDEX_PAGES        19
 #define SEARCH_INDEX_CONCEPTS     20
+#define SEARCH_INDEX_MODULES      21
 
 static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
 { {
@@ -196,7 +199,8 @@ static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
   { /* SEARCH_INDEX_DEFINES */      "defines"     , []() { return theTranslator->trDefines();             }, {} },
   { /* SEARCH_INDEX_GROUPS */       "groups"      , []() { return theTranslator->trGroup(TRUE,FALSE);     }, {} },
   { /* SEARCH_INDEX_PAGES */        "pages"       , []() { return theTranslator->trPage(TRUE,FALSE);      }, {} },
-  { /* SEARCH_INDEX_CONCEPTS */     "concepts"    , []() { return theTranslator->trConcept(true,false);   }, {} }
+  { /* SEARCH_INDEX_CONCEPTS */     "concepts"    , []() { return theTranslator->trConcept(true,false);   }, {} },
+  { /* SEARCH_INDEX_MODULES */      "modules"     , []() { return theTranslator->trModule(true,false);    }, {} }
 } };
 
 static void addMemberToSearchIndex(const MemberDef *md)
@@ -371,6 +375,17 @@ void createJavaScriptSearchIndex()
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(n,cd.get());
       g_searchIndexInfo[SEARCH_INDEX_CONCEPTS].add(n,cd.get());
+    }
+  }
+
+  // index modules
+  for (const auto &mod : ModuleManager::instance().modules())
+  {
+    if (mod->isLinkable() && mod->isPrimaryInterface())
+    {
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(mod->name().str(),0));
+      g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,mod.get());
+      g_searchIndexInfo[SEARCH_INDEX_MODULES].add(letter,mod.get());
     }
   }
 
@@ -642,6 +657,11 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
         else if (d->definitionType()==Definition::TypeNamespace)
         {
           name = convertToXML((toNamespaceDef(d))->displayName());
+          found = TRUE;
+        }
+        else if (d->definitionType()==Definition::TypeModule)
+        {
+          name = convertToXML(d->name()+" "+theTranslator->trModule(false,true));
           found = TRUE;
         }
         else if (scope==0 || scope==Doxygen::globalScope) // in global scope

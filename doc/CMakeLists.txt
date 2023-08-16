@@ -15,7 +15,7 @@ include (${TOP}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
 string(TIMESTAMP YEAR "%Y")
 
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED)
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(PDFLATEX NAMES pdflatex )
 find_program(MAKEINDEX NAMES makeindex )

@@ -148,6 +148,11 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
           }
         }
         break;
+      case Definition::TypeModule:
+        {
+          name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
+        }
+        break;
       default:
         break;
     }
@@ -435,6 +440,8 @@ static QCString definitionToName(const Definition *ctx)
         return "page";
       case Definition::TypeDir:
         return "dir";
+      case Definition::TypeModule:
+        return "module";
       default:
         break;
     }

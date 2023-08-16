@@ -150,6 +150,7 @@ static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector 
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -247,6 +248,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "maninclude",      { 0,                       CommandSpacing::Inline    }},
   { "manonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
   { "memberof",        { &handleMemberOf,         CommandSpacing::Invisible }},
+  { "module",          { &handleModule,           CommandSpacing::Invisible }},
   { "msc",             { &handleFormatBlock,      CommandSpacing::Block     }},
   { "name",            { &handleName,             CommandSpacing::Invisible }},
   { "namespace",       { &handleNamespace,        CommandSpacing::Invisible }},
@@ -536,6 +538,7 @@ SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
 TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
+MODULE_ID ({ID}".")*{ID}
 
   // C start comment 
 CCS   "/\*"
@@ -569,6 +572,7 @@ STopt  [^\n@\\]*
 %x      NameSpaceDocArg1
 %x      PackageDocArg1
 %x      ConceptDocArg1
+%x      ModuleDocArg1
 %x      GroupDocArg1
 %x      GroupDocArg2
 %x      SectionLabel
@@ -1205,6 +1209,25 @@ STopt  [^\n@\\]*
 <ConceptDocArg1>.                       { // ignore other stuff
                                         }
 
+  /* ------------ handle argument of module command --------------- */
+<ModuleDocArg1>{MODULE_ID}             { // handle argument
+                                         yyextra->current->name = yytext;
+                                         BEGIN( Comment );
+                                       }
+<ModuleDocArg1>{LC}                    { // line continuation
+                                          yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                        }
+<ModuleDocArg1>{DOCNL}                 { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                               "missing argument after "
+                                               "\\module."
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
+<ModuleDocArg1>.                        { // ignore other stuff
+                                        }
 
   /* ------ handle argument of class/struct/union command --------------- */
 
@@ -2346,6 +2369,16 @@ static bool handleConcept(yyscan_t yyscanner,const QCString &cmd, const StringVe
   return stop;
 }
 
+static bool handleModule(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  bool stop=makeStructuralIndicator(yyscanner,Entry::MODULEDOC_SEC);
+  yyextra->currentCmd = cmd;
+  BEGIN( ModuleDocArg1 );
+  return stop;
+}
+
+
 static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -3229,7 +3262,7 @@ static bool handleExtends(yyscan_t yyscanner,const QCString &cmd, const StringVe
 static bool handleCopyBrief(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->brief.isEmpty() && yyextra->current->doc.isEmpty())
+  if (yyextra->current->brief.stripWhiteSpace().isEmpty() && yyextra->current->doc.stripWhiteSpace().isEmpty())
   { // if we don't have a brief or detailed description yet,
     // then the @copybrief should end up in the brief description.
     // otherwise it will be copied inline (see bug691315 & bug700788)
@@ -3260,7 +3293,7 @@ static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->brief.isEmpty() && yyextra->current->doc.isEmpty())
+  if (yyextra->current->brief.stripWhiteSpace().isEmpty() && yyextra->current->doc.stripWhiteSpace().isEmpty())
   { // if we don't have a brief or detailed description yet,
     // then the @copybrief should end up in the brief description.
     // otherwise it will be copied inline (see bug691315 & bug700788)

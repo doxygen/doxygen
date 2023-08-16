@@ -40,6 +40,7 @@ struct TagInfo;
 class MemberDefMutable;
 class MemberGroupList;
 class MemberVector;
+class ModuleDef;
 
 /** A model of a class/file/namespace member symbol. */
 class MemberDef : public Definition
@@ -77,12 +78,13 @@ class MemberDef : public Definition
     virtual QCString    displayDefinition() const = 0;
 
     // scope query members
-    virtual const FileDef *getFileDef() const           = 0;
-    virtual       FileDef *getFileDef()                 = 0;
-    virtual const ClassDef *getClassDef() const         = 0;
-    virtual       ClassDef *getClassDef()               = 0;
+    virtual const FileDef *     getFileDef() const      = 0;
+    virtual       FileDef *     getFileDef()            = 0;
+    virtual const ClassDef *    getClassDef() const     = 0;
+    virtual       ClassDef *    getClassDef()           = 0;
     virtual const NamespaceDef* getNamespaceDef() const = 0;
     virtual       NamespaceDef* getNamespaceDef()       = 0;
+    virtual const ModuleDef*    getModuleDef() const    = 0;
 
     virtual const ClassDef *accessorClass() const = 0;
 
@@ -282,12 +284,12 @@ class MemberDef : public Definition
     virtual std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void writeDeclaration(OutputList &ol,
-                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *md,
                  bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
     virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
-                const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const = 0;
+                const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const = 0;
     virtual void writeLink(OutputList &ol,
-                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *md,
                  bool onlyText=FALSE) const = 0;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
     virtual void warnIfUndocumented() const = 0;
@@ -409,6 +411,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setRequiresClause(const QCString &req) = 0;
 
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
+
+    virtual void setModuleDef(ModuleDef *mod) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

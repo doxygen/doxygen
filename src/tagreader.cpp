@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -41,6 +38,7 @@
 #include "containers.h"
 #include "debug.h"
 #include "anchor.h"
+#include "moduledef.h"
 
 // ----------------- private part -----------------------------------------------
 
@@ -78,6 +76,8 @@ class TagIncludeInfo
     QCString text;
     bool isLocal;
     bool isImported;
+    bool isModule;
+    bool isObjC;
 };
 
 /** Container for member specific info that can be read from a tagfile */
@@ -134,6 +134,15 @@ struct TagConceptInfo : public TagCompoundInfo
 
 using TagConceptInfoPtr = std::unique_ptr<TagConceptInfo>;
 
+/** Container for module specific info that can be read from a tagfile */
+struct TagModuleInfo : public TagCompoundInfo
+{
+  QCString clangId;
+};
+
+using TagModuleInfoPtr = std::unique_ptr<TagModuleInfo>;
+
+
 /** Container for namespace specific info that can be read from a tagfile */
 struct TagNamespaceInfo : public TagCompoundInfo
 {
@@ -176,6 +185,7 @@ struct TagGroupInfo : public TagCompoundInfo
   StringVector fileList;
   StringVector pageList;
   StringVector dirList;
+  StringVector moduleList;
 };
 
 using TagGroupInfoPtr = std::unique_ptr<TagGroupInfo>;
@@ -210,7 +220,8 @@ class TagCompoundVariant
                                    TagFileInfoPtr,      // 5
                                    TagGroupInfoPtr,     // 6
                                    TagPageInfoPtr,      // 7
-                                   TagDirInfoPtr>;      // 8
+                                   TagDirInfoPtr,       // 8
+                                   TagModuleInfoPtr>;   // 9
 
     enum class Type : uint8_t
     {
@@ -222,7 +233,8 @@ class TagCompoundVariant
       File          = 5,
       Group         = 6,
       Page          = 7,
-      Dir           = 8
+      Dir           = 8,
+      Module        = 9
     };
 
     TagCompoundVariant() {}
@@ -274,6 +286,8 @@ class TagCompoundVariant
     const TagPageInfo      *getPageInfo()      const { return get<TagPageInfo     >(); }
           TagDirInfo       *getDirInfo()             { return get<TagDirInfo      >(); }
     const TagDirInfo       *getDirInfo()       const { return get<TagDirInfo      >(); }
+          TagModuleInfo    *getModuleInfo()          { return get<TagModuleInfo   >(); }
+    const TagModuleInfo    *getModuleInfo()    const { return get<TagModuleInfo   >(); }
     /** @} */
 
     /** Convenience method to get the shared compound info */
@@ -290,6 +304,7 @@ class TagCompoundVariant
         case Type::Group:         return getGroupInfo();
         case Type::Page:          return getPageInfo();
         case Type::Dir:           return getDirInfo();
+        case Type::Module:        return getModuleInfo();
       }
       return 0;
     }
@@ -348,6 +363,7 @@ class TagFileParser
         case InGroup:
         case InPage:
         case InDir:
+        case InModule:
         case InPackage:
           m_tagFileCompounds.push_back(std::move(m_curCompound));
           break;
@@ -458,6 +474,7 @@ class TagFileParser
         case InMember:
         case InPackage:
         case InDir:
+        case InModule:
           if (AnchorGenerator::looksGenerated(m_curString.str())) return;
           break;
         default:
@@ -474,6 +491,7 @@ class TagFileParser
         case InPage:
         case InPackage:
         case InDir:
+        case InModule:
           {
             TagCompoundInfo *info = m_curCompound.getCompoundInfo();
             if (info)
@@ -553,6 +571,22 @@ class TagFileParser
           break;
         default:
           p_warn("Unexpected tag 'concept' found");
+          break;
+      }
+    }
+
+    void endModule()
+    {
+      switch(m_state)
+      {
+        case InGroup:
+          {
+            TagGroupInfo *info = m_curCompound.getGroupInfo();
+            if (info) info->moduleList.push_back(m_curString.str());
+          }
+          break;
+        default:
+          p_warn("Unexpected tag 'module' found");
           break;
       }
     }
@@ -675,6 +709,7 @@ class TagFileParser
         case InPage:
         case InDir:
         case InPackage:
+        case InModule:
           {
             TagCompoundInfo *info = m_curCompound.getCompoundInfo();
             if (info) info->name = m_curString;
@@ -739,6 +774,8 @@ class TagFileParser
       m_curIncludes.name       = XMLHandlers::value(attrib,"name");
       m_curIncludes.isLocal    = XMLHandlers::value(attrib,"local")=="yes";
       m_curIncludes.isImported = XMLHandlers::value(attrib,"imported")=="yes";
+      m_curIncludes.isModule   = XMLHandlers::value(attrib,"module")=="yes";
+      m_curIncludes.isObjC     = XMLHandlers::value(attrib,"objc")=="yes";
       m_curString="";
     }
 
@@ -781,6 +818,7 @@ class TagFileParser
         case InPage:
         case InPackage:
         case InDir:
+        case InModule:
           {
             TagCompoundInfo *info = m_curCompound.getCompoundInfo();
             if (info) info->filename = m_curString;
@@ -937,6 +975,7 @@ class TagFileParser
                  InEnumValue,
                  InPackage,
                  InDir,
+                 InModule,
                  InTempArgList
                };
   private:
@@ -1012,6 +1051,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "subgroup",    { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endSubgroup     ) } },
   { "class",       { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endClass        ) } },
   { "concept",     { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endConcept      ) } },
+  { "module",      { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endModule       ) } },
   { "namespace",   { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endNamespace    ) } },
   { "file",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endFile         ) } },
   { "dir",         { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endDir          ) } },
@@ -1048,6 +1088,7 @@ static const std::map< std::string, CompoundFactory > g_compoundFactory =
   { "file",      { TagFileParser::InFile,      []() { return TagCompoundVariant::make<TagFileInfo>();                               } } },
   { "namespace", { TagFileParser::InNamespace, []() { return TagCompoundVariant::make<TagNamespaceInfo>();                          } } },
   { "concept",   { TagFileParser::InConcept,   []() { return TagCompoundVariant::make<TagConceptInfo>();                            } } },
+  { "module",    { TagFileParser::InModule,    []() { return TagCompoundVariant::make<TagModuleInfo>();                             } } },
   { "group",     { TagFileParser::InGroup,     []() { return TagCompoundVariant::make<TagGroupInfo>();                              } } },
   { "page",      { TagFileParser::InPage,      []() { return TagCompoundVariant::make<TagPageInfo>();                               } } },
   { "package",   { TagFileParser::InPackage,   []() { return TagCompoundVariant::make<TagPackageInfo>();                            } } },
@@ -1147,6 +1188,17 @@ void TagFileParser::dump()
 
       Debug::print(Debug::Tag,0,"concept '%s'\n",qPrint(cd->name));
       Debug::print(Debug::Tag,0,"  filename '%s'\n",qPrint(cd->filename));
+    }
+  }
+  //============== MODULES
+  for (const auto &comp : m_tagFileCompounds)
+  {
+    if (comp.type()==TagCompoundVariant::Type::Module)
+    {
+      const TagModuleInfo *mi = comp.getModuleInfo();
+
+      Debug::print(Debug::Tag,0,"module '%s'\n",qPrint(mi->name));
+      Debug::print(Debug::Tag,0,"  filename '%s'\n",qPrint(mi->filename));
     }
   }
   //============== NAMESPACES
@@ -1537,6 +1589,42 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     }
   }
 
+  // build module list
+  for (const auto &comp : m_tagFileCompounds)
+  {
+    const TagModuleInfo *tmi = comp.getModuleInfo();
+    if (tmi)
+    {
+      auto &mm = ModuleManager::instance();
+      mm.createModuleDef(tmi->filename,tmi->lineNr,1,true,tmi->name,QCString());
+      mm.addTagInfo(tmi->filename,m_tagName,tmi->clangId);
+
+      ModuleDef *mod = mm.getPrimaryInterface(tmi->name);
+      if (mod && !tmi->docAnchors.empty())
+      {
+        std::vector<const SectionInfo *> anchorList;
+        for (const auto &ta : tmi->docAnchors)
+        {
+          if (SectionManager::instance().find(QCString(ta.label))==0)
+          {
+            //printf("New sectionInfo file=%s anchor=%s\n",
+            //    qPrint(ta->fileName),qPrint(ta->label));
+            SectionInfo *si=SectionManager::instance().add(
+                ta.label,ta.fileName,-1,ta.title,
+                SectionType::Anchor,0,m_tagName);
+            anchorList.push_back(si);
+          }
+          else
+          {
+            p_warn("Duplicate anchor %s found",qPrint(ta.label));
+          }
+        }
+        mod->addSectionsToDefinition(anchorList);
+      }
+    }
+  }
+
+
   // build namespace list
   for (const auto &comp : m_tagFileCompounds)
   {
@@ -1669,7 +1757,20 @@ void TagFileParser::addIncludes()
                   //        qPrint(ifd->getOutputFileBase()),qPrint(ii->id));
                   if (ifd->getOutputFileBase()==QCString(ii.id))
                   {
-                    fd->addIncludeDependency(ifd.get(),ii.text,ii.isLocal,ii.isImported);
+                    IncludeKind kind = IncludeKind::IncludeSystem;
+                    if (ii.isModule)
+                    {
+                      kind = IncludeKind::ImportModule;
+                    }
+                    else if (ii.isImported)
+                    {
+                      kind = ii.isLocal ? IncludeKind::ImportLocal : IncludeKind::ImportSystem;
+                    }
+                    else if (ii.isLocal)
+                    {
+                      kind = IncludeKind::IncludeLocal;
+                    }
+                    fd->addIncludeDependency(ifd.get(),ii.text,kind);
                   }
                 }
               }

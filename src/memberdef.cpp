@@ -41,6 +41,7 @@
 #include "arguments.h"
 #include "memberlist.h"
 #include "namespacedef.h"
+#include "moduledef.h"
 #include "filedef.h"
 #include "config.h"
 #include "definitionimpl.h"
@@ -86,6 +87,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual const NamespaceDef* getNamespaceDef() const override;
     virtual       NamespaceDef* getNamespaceDef() override;
     virtual const GroupDef *getGroupDef() const override;
+    virtual const ModuleDef *getModuleDef() const override;
     virtual ClassDef *accessorClass() const override;
     virtual QCString getReadAccessor() const override;
     virtual QCString getWriteAccessor() const override;
@@ -311,7 +313,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setRequiresClause(const QCString &req) override;
     virtual void incrementFlowKeyWordCount() override;
     virtual void writeDeclaration(OutputList &ol,
-                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                    bool inGroup, int indentLevel,const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const override;
     virtual void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
                             const QCString &scopeName,const Definition *container,
@@ -319,7 +321,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                             showInline=FALSE) const override;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const override;
     virtual void writeEnumDeclaration(OutputList &typeDecl,
-            const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const override;
+            const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const override;
     virtual void writeTagFile(TextStream &,bool useQualifiedName,bool showNamespaceMembers) const override;
     virtual void warnIfUndocumented() const override;
     virtual void warnIfUndocumentedParams() const override;
@@ -329,12 +331,13 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                const std::unique_ptr<ArgumentList> &actualArgs) const override;
     virtual void findSectionsInDocumentation() override;
     virtual void writeLink(OutputList &ol,
-                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                    bool onlyText=FALSE) const override;
     virtual void resolveUnnamedParameters(const MemberDef *md) override;
     virtual void addQualifiers(const StringVector &qualifiers) override;
     virtual StringVector getQualifiers() const override;
     virtual ClassDefMutable *getClassDefMutable() override;
+    virtual void setModuleDef(ModuleDef *mod) override;
 
   private:
     void _computeLinkableInProject();
@@ -379,6 +382,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     ClassDef     *m_classDef = 0; // member of or related to
     FileDef      *m_fileDef  = 0; // member of file definition
     NamespaceDef *m_nspace   = 0; // the namespace this member is in.
+    ModuleDef    *m_moduleDef = 0;
 
     const MemberDef  *m_enumScope = 0;    // the enclosing scope, if this is an enum field
     bool        m_livesInsideEnum = false;
@@ -567,6 +571,9 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getFileDef(); }
     virtual       FileDef *getFileDef()
     { return getMdAlias()->getFileDef(); }
+
+    virtual const ModuleDef *getModuleDef() const
+    { return getMdAlias()->getModuleDef(); }
 
     virtual const NamespaceDef* getNamespaceDef() const
     { return getMdAlias()->getNamespaceDef(); }
@@ -897,21 +904,21 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->createTemplateInstanceMember(formalArgs,actualArgs); }
 
     virtual void writeDeclaration(OutputList &ol,
-                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                    bool inGroup, int indentLevel, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const
     {
-      getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel,inheritFrom,inheritId);
+      getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritFrom,inheritId);
     }
     virtual void writeEnumDeclaration(OutputList &typeDecl,
-            const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const
+            const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const
     {
-      getMdAlias()->writeEnumDeclaration(typeDecl,cd,nd,fd,gd);
+      getMdAlias()->writeEnumDeclaration(typeDecl,cd,nd,fd,gd,mod);
     }
     virtual void writeLink(OutputList &ol,
-                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                    bool onlyText=FALSE) const
     {
-      getMdAlias()->writeLink(ol,cd,nd,fd,gd,onlyText);
+      getMdAlias()->writeLink(ol,cd,nd,fd,gd,mod,onlyText);
     }
   private:
     MemberGroup *m_memberGroup; // group's member definition
@@ -1287,6 +1294,7 @@ void MemberDefImpl::init(Definition *d,
 {
   m_classDef=0;
   m_fileDef=0;
+  m_moduleDef=0;
   m_redefines=0;
   m_relatedAlso=0;
   m_accessorClass=0;
@@ -1401,6 +1409,7 @@ MemberDefImpl::MemberDefImpl(const MemberDefImpl &md) : DefinitionMixin(md)
 {
   m_classDef                       = md.m_classDef                       ;
   m_fileDef                        = md.m_fileDef                        ;
+  m_moduleDef                      = md.m_moduleDef                      ;
   m_nspace                         = md.m_nspace                         ;
   m_enumScope                      = md.m_enumScope                      ;
   m_livesInsideEnum                = md.m_livesInsideEnum                ;
@@ -1514,6 +1523,10 @@ void MemberDefImpl::moveTo(Definition *scope)
    {
      m_fileDef = toFileDef(scope);
    }
+   else if (scope->definitionType()==Definition::TypeModule)
+   {
+     m_moduleDef = toModuleDef(scope);
+   }
    else if (scope->definitionType()==Definition::TypeNamespace)
    {
      m_nspace = toNamespaceDef(scope);
@@ -1601,6 +1614,7 @@ QCString MemberDefImpl::getOutputFileBase() const
   const NamespaceDef *nspace = getNamespaceDef();
   const FileDef *fileDef = getFileDef();
   const ClassDef *classDef = getClassDef();
+  const ModuleDef *moduleDef = getModuleDef();
   const GroupDef *groupDef = getGroupDef();
   if (!m_explicitOutputFileBase.isEmpty())
   {
@@ -1629,6 +1643,10 @@ QCString MemberDefImpl::getOutputFileBase() const
   else if (fileDef)
   {
     baseName=fileDef->getOutputFileBase();
+  }
+  else if (moduleDef)
+  {
+    baseName=moduleDef->getOutputFileBase();
   }
 
   if (baseName.isEmpty())
@@ -1663,6 +1681,7 @@ QCString MemberDefImpl::getReference() const
   const NamespaceDef *nspace = getNamespaceDef();
   const FileDef *fileDef = getFileDef();
   const ClassDef *classDef = getClassDef();
+  const ModuleDef *moduleDef = getModuleDef();
   const GroupDef *groupDef = getGroupDef();
   if (templateMaster())
   {
@@ -1679,6 +1698,10 @@ QCString MemberDefImpl::getReference() const
   else if (nspace)
   {
     return nspace->getReference();
+  }
+  else if (moduleDef)
+  {
+    return moduleDef->getReference();
   }
   else if (fileDef)
   {
@@ -1741,6 +1764,7 @@ void MemberDefImpl::_computeLinkableInProject()
     return;
   }
   const GroupDef *groupDef = getGroupDef();
+  const ModuleDef *moduleDef = getModuleDef();
   const ClassDef *classDef = getClassDef();
   if (groupDef && !groupDef->isLinkableInProject())
   {
@@ -1752,6 +1776,11 @@ void MemberDefImpl::_computeLinkableInProject()
   {
     //printf("in a class but class not linkable!\n");
     m_isLinkableCached = 1; // in class but class not linkable
+    return;
+  }
+  if (!groupDef && moduleDef && !moduleDef->isLinkableInProject())
+  {
+    m_isLinkableCached = 1; // in module but module not linkable
     return;
   }
   const NamespaceDef *nspace = getNamespaceDef();
@@ -1842,7 +1871,7 @@ void MemberDefImpl::setDefinitionTemplateParameterLists(const ArgumentLists &lis
 }
 
 void MemberDefImpl::writeLink(OutputList &ol,
-                      const ClassDef *,const NamespaceDef *,const FileDef *fd,const GroupDef *gd,
+                      const ClassDef *,const NamespaceDef *,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                       bool onlyText) const
 {
   SrcLangExt lang = getLanguage();
@@ -1850,6 +1879,7 @@ void MemberDefImpl::writeLink(OutputList &ol,
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
   QCString n = name();
   const ClassDef *classDef = getClassDef();
+  const ModuleDef *moduleDef = getModuleDef();
   const NamespaceDef *nspace = getNamespaceDef();
   if (!hideScopeNames)
   {
@@ -1861,7 +1891,7 @@ void MemberDefImpl::writeLink(OutputList &ol,
     {
       n.prepend(classDef->displayName()+sep);
     }
-    else if (nspace && (gd || fd))
+    else if (nspace && (gd || fd || moduleDef))
     {
       n.prepend(nspace->displayName()+sep);
     }
@@ -2148,7 +2178,7 @@ bool MemberDefImpl::_isAnonymousBitField() const
 }
 
 void MemberDefImpl::writeDeclaration(OutputList &ol,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("> %s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
@@ -2158,8 +2188,12 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   if (!inGroup && m_mtype==MemberType_EnumValue) return;
 
   const Definition *d=0;
-  ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
-  if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+  ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0 || mod!=0); // member should belong to something
+  if (cd) d=cd;
+  else if (nd) d=nd;
+  else if (mod) d=mod;
+  else if (fd) d=fd;
+  else d=gd;
   if (d==gd) // see bug 753608
   {
     if (getClassDef())          d = getClassDef();
@@ -2298,7 +2332,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                     ltype.left(i),           // text
                     FALSE                    // autoBreak
                    );
-        getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd);
+        getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd,mod);
         //ol+=*getAnonymousEnumType()->enumDecl();
         linkifyText(TextGeneratorOLImpl(ol),d,getFileDef(),this,ltype.right(ltype.length()-i-l),TRUE);
       }
@@ -2383,21 +2417,22 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
             annMemb->getClassDef(),
             annMemb->getNamespaceDef(),
             annMemb->getFileDef(),
-            annMemb->getGroupDef());
+            annMemb->getGroupDef(),
+            annMemb->getModuleDef());
       }
       else
       {
         //printf("writeLink %s->%d\n",qPrint(name),hasDocumentation());
         const ClassDef *rcd = cd;
         if (isReference() && getClassDef()) rcd = getClassDef();
-        writeLink(ol,rcd,nd,fd,gd);
+        writeLink(ol,rcd,nd,fd,gd,mod);
       }
     }
     else if (isDocumentedFriendClass())
       // if the member is an undocumented friend declaration for some class,
       // then maybe we can link to the class
     {
-      writeLink(ol,getClass(name()),0,0,0);
+      writeLink(ol,getClass(name()),0,0,0,0);
     }
     else
       // there is a brief member description and brief member
@@ -2405,7 +2440,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       const ClassDef *rcd = cd;
       if (isReference() && getClassDef()) rcd = getClassDef();
-      writeLink(ol,rcd,nd,fd,gd,TRUE);
+      writeLink(ol,rcd,nd,fd,gd,mod,TRUE);
     }
   }
 
@@ -2720,6 +2755,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
        (isInline() && inlineInfo) ||
        isSignal() || isSlot() ||
        isStatic() || isExternal() ||
+       isExported() ||
        (getClassDef() && getClassDef()!=container && container->definitionType()==TypeClass) ||
        (m_memSpec & ~Entry::Inline)!=0
       )
@@ -2770,6 +2806,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
         if      (isNew())                               sl.push_back("new");
         if      (isOptional())                          sl.push_back("optional");
         if      (isRequired())                          sl.push_back("required");
+        if      (isExported())                          sl.push_back("export");
 
         if      (isNonAtomic())                         sl.push_back("nonatomic");
         else if (isObjCProperty())                      sl.push_back("atomic");
@@ -3441,7 +3478,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         std::string prefix = match.prefix().str();
         std::string suffix = match.suffix().str();
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix.c_str());
-        vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
+        vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef(),getModuleDef());
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
 
         found=true;
@@ -4588,7 +4625,7 @@ bool MemberDefImpl::isDestructor() const
 }
 
 void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
-     const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const
+     const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const
 {
   int enumMemCount=0;
 
@@ -4610,7 +4647,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
     if (isLinkableInProject() || hasDocumentedEnumValues())
     {
       //_writeTagData(compoundType);
-      writeLink(typeDecl,cd,nd,fd,gd);
+      writeLink(typeDecl,cd,nd,fd,gd,mod);
     }
     else
     {
@@ -4665,7 +4702,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
 
           if (fmd->hasDocumentation()) // enum value has docs
           {
-            fmd->writeLink(typeDecl,cd,nd,fd,gd);
+            fmd->writeLink(typeDecl,cd,nd,fd,gd,mod);
           }
           else // no docs for this enum value
           {
@@ -4941,6 +4978,11 @@ QCString MemberDefImpl::getWriteAccessor() const
 const GroupDef *MemberDefImpl::getGroupDef() const
 {
   return m_group;
+}
+
+const ModuleDef *MemberDefImpl::getModuleDef() const
+{
+  return m_moduleDef;
 }
 
 Grouping::GroupPri_t MemberDefImpl::getGroupPri() const
@@ -5581,6 +5623,11 @@ void MemberDefImpl::setFileDef(FileDef *fd)
   m_isLinkableCached = 0;
   m_isConstructorCached = 0;
   m_isDestructorCached = 0;
+}
+
+void MemberDefImpl::setModuleDef(ModuleDef *mod)
+{
+  m_moduleDef=mod;
 }
 
 void MemberDefImpl::setProtection(Protection p)

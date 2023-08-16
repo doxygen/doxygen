@@ -74,7 +74,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public Translator
+class TranslatorPortuguese : public TranslatorAdapter_1_9_8
 {
   public:
 
@@ -2422,7 +2422,7 @@ class TranslatorPortuguese : public Translator
      * Supersedes trRelatedFunctionDocumentation
      */
     virtual QCString trRelatedSymbolDocumentation()
-    { return "Documentação dos símbolos amigos e relacionados"; }    
+    { return "Documentação dos símbolos amigos e relacionados"; }
 
     /*! the compound type as used for the xrefitems */
     virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
@@ -2492,8 +2492,8 @@ class TranslatorPortuguese : public Translator
         case FileMemberHighlight::Total: // for completeness
           break;
       }
-      if (!extractAll) 
-      { 
+      if (!extractAll)
+      {
         result+= masculine? " documentados": " documentadas";
       }
       result+=" com links para ";
@@ -2503,7 +2503,7 @@ class TranslatorPortuguese : public Translator
         result+="a documentação:";
       return result;
     }
-   
+
     virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
@@ -2636,7 +2636,7 @@ class TranslatorPortuguese : public Translator
       return result;
     }
     virtual QCString trDefinition()  { return "Definição";}
-    virtual QCString trDeclaration() { return "Declaração";}        
+    virtual QCString trDeclaration() { return "Declaração";}
 };
 
 #endif

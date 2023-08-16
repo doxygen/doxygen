@@ -21,6 +21,8 @@
 #include "definition.h"
 #include "filedef.h"
 
+class ModuleDef;
+
 class ConceptDef : public Definition
 {
   public:
@@ -38,6 +40,7 @@ class ConceptDef : public Definition
                               const QCString &header,bool localNames) const = 0;
     virtual const NamespaceDef *getNamespaceDef() const = 0;
     virtual const FileDef *getFileDef() const = 0;
+    virtual const ModuleDef *getModuleDef() const = 0;
     virtual QCString title() const = 0;
     virtual int groupId() const = 0;
 };
@@ -54,6 +57,7 @@ class ConceptDefMutable : public DefinitionMutable, public ConceptDef
     virtual void setInitializer(const QCString &init) = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual void setGroupId(int id) = 0;
+    virtual void setModuleDef(ModuleDef *mod) = 0;
 };
 
 std::unique_ptr<ConceptDef> createConceptDef(
@@ -73,7 +77,6 @@ class ConceptLinkedRefMap : public LinkedRefMap<ConceptDef>
   public:
     bool declVisible() const;
     void writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const;
-    void writeDocumentation(OutputList &ol,const Definition * container=0) const;
 };
 
 // ---- Cast functions

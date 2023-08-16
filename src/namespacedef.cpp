@@ -818,7 +818,7 @@ void NamespaceDefImpl::writeMemberGroups(OutputList &ol)
   {
     if (!mg->allMembersInSameSection() || !m_subGrouping)
     {
-      mg->writeDeclarations(ol,0,this,0,0);
+      mg->writeDeclarations(ol,0,this,0,0,0);
     }
   }
 }
@@ -916,6 +916,15 @@ void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
     ol.disableAllBut(OutputType::Html);
     ol.startLabels();
     ol.writeLabel("published",false);
+    ol.endLabels();
+    ol.popGeneratorState();
+  }
+  else if (isExported())
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputType::Html);
+    ol.startLabels();
+    ol.writeLabel("export",false);
     ol.endLabels();
     ol.popGeneratorState();
   }
@@ -1082,6 +1091,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileInlineClasses:
       case LayoutDocEntry::GroupClasses:
       case LayoutDocEntry::GroupConcepts:
+      case LayoutDocEntry::GroupModules:
       case LayoutDocEntry::GroupInlineClasses:
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs:
@@ -1089,6 +1099,10 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::GroupFiles:
       case LayoutDocEntry::GroupGraph:
       case LayoutDocEntry::GroupPageDocs:
+      case LayoutDocEntry::ModuleExports:
+      case LayoutDocEntry::ModuleClasses:
+      case LayoutDocEntry::ModuleConcepts:
+      case LayoutDocEntry::ModuleUsedFiles:
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
@@ -1468,7 +1482,7 @@ MemberList *NamespaceDefImpl::getMemberList(MemberListType lt) const
 void NamespaceDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDeclarations(ol,0,this,0,0,title,QCString());
+  if (ml) ml->writeDeclarations(ol,0,this,0,0,0,title,QCString());
 }
 
 void NamespaceDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
