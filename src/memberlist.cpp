@@ -490,6 +490,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
  *  @param nd non-null if this list is part of namespace documentation.
  *  @param fd non-null if this list is part of file documentation.
  *  @param gd non-null if this list is part of group documentation.
+ *  @param mod non-null if this list is part of module documentation.
  *  @param title Title to use for the member list.
  *  @param subtitle Sub title to use for the member list.
  *  @param showEnumValues Obsolete, always set to FALSE.
