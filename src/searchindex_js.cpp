@@ -383,9 +383,9 @@ void createJavaScriptSearchIndex()
   {
     if (mod->isLinkable() && mod->isPrimaryInterface())
     {
-      std::string letter = convertUTF8ToLower(getUTF8CharAt(mod->name().str(),0));
-      g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,mod.get());
-      g_searchIndexInfo[SEARCH_INDEX_MODULES].add(letter,mod.get());
+      std::string name = mod->name().str();
+      g_searchIndexInfo[SEARCH_INDEX_ALL].add(name,mod.get());
+      g_searchIndexInfo[SEARCH_INDEX_MODULES].add(name,mod.get());
     }
   }
 
