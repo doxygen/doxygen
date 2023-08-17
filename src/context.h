@@ -1227,14 +1227,14 @@ class ArgumentListContext : public TemplateListIntf
 class SymbolContext : public TemplateStructIntf
 {
   public:
-    static TemplateStructIntfPtr alloc(const Definition *def,const Definition *prev,const Definition *next)
-    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<SymbolContext>(def,prev,next)); }
+    static TemplateStructIntfPtr alloc(const SearchTerm::LinkInfo &info,const SearchTerm::LinkInfo &prev,const SearchTerm::LinkInfo &next)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<SymbolContext>(info,prev,next)); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
     virtual StringVector fields() const;
 
-    SymbolContext(const Definition *def,const Definition *prev,const Definition *next);
+    SymbolContext(const SearchTerm::LinkInfo &info,const SearchTerm::LinkInfo &prev,const SearchTerm::LinkInfo &next);
     virtual ~SymbolContext();
 
   private:
