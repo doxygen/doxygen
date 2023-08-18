@@ -3255,44 +3255,6 @@ static void determineBlockName(yyscan_t yyscanner)
   }
 }
 
-static QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &incFileName)
-{
-  bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
-  QCString absIncFileName = incFileName;
-  FileInfo fi(curFile.str());
-  if (fi.exists())
-  {
-    QCString absName = QCString(fi.dirPath(TRUE))+"/"+incFileName;
-    FileInfo fi2(absName.str());
-    if (fi2.exists())
-    {
-      absIncFileName=fi2.absFilePath();
-    }
-    else if (searchIncludes) // search in INCLUDE_PATH as well
-    {
-      const StringVector &includePath = Config_getList(INCLUDE_PATH);
-      for (const auto &incPath : includePath)
-      {
-        FileInfo fi3(incPath);
-        if (fi3.exists() && fi3.isDir())
-        {
-          absName = QCString(fi3.absFilePath())+"/"+incFileName;
-          //printf("trying absName=%s\n",qPrint(absName));
-          FileInfo fi4(absName.str());
-          if (fi4.exists())
-          {
-            absIncFileName=fi4.absFilePath();
-            break;
-          }
-          //printf( "absIncFileName = %s\n", qPrint(absIncFileName) );
-        }
-      }
-    }
-    //printf( "absIncFileName = %s\n", qPrint(absIncFileName) );
-  }
-  return absIncFileName;
-}
-
 static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 {
   AUTO_TRACE("inc={}",inc);
@@ -3864,13 +3826,29 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
     std::lock_guard<std::mutex> lock(g_updateGlobals);
     for (const auto &inc : state->includeRelations)
     {
+      auto toKind = [](bool local,bool imported) -> IncludeKind
+      {
+        if (local)
+        {
+          if (imported)
+          {
+            return IncludeKind::ImportLocalObjC;
+          }
+          return IncludeKind::IncludeLocal;
+        }
+        else if (imported)
+        {
+          return IncludeKind::ImportSystemObjC;
+        }
+        return IncludeKind::IncludeSystem;
+      };
       if (inc->fromFileDef)
       {
-        inc->fromFileDef->addIncludeDependency(inc->toFileDef,inc->includeName,inc->local,inc->imported);
+        inc->fromFileDef->addIncludeDependency(inc->toFileDef,inc->includeName,toKind(inc->local,inc->imported));
       }
       if (inc->toFileDef && inc->fromFileDef)
       {
-        inc->toFileDef->addIncludedByDependency(inc->fromFileDef,inc->fromFileDef->docName(),inc->local,inc->imported);
+        inc->toFileDef->addIncludedByDependency(inc->fromFileDef,inc->fromFileDef->docName(),toKind(inc->local,inc->imported));
       }
     }
     // add the macro definition for this file to the global map

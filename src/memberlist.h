@@ -121,10 +121,10 @@ class MemberList : public MemberVector
     void countDocMembers();
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,bool inGroup,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,const ModuleDef *mod,
                int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                const QCString &title,const QCString &subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
                const ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods) const;

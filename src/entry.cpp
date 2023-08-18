@@ -69,6 +69,7 @@ Entry::Entry(const Entry &e)
   includedByGraph = e.includedByGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
+  exported    = e.exported;
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
@@ -227,6 +228,7 @@ void Entry::reset()
   includedByGraph = entryIncludedByGraph;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
+  exported = false;
   section = EMPTY_SEC;
   mtype   = MethodTypes::Method;
   virt    = Specifier::Normal;

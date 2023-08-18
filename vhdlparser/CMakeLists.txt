@@ -28,14 +28,14 @@ if (JAVACC_FOUND)
 endif()
 
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${GENERATED_SRC}/VhdlParser_adj.cc
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${GENERATED_SRC}/VhdlParser_adj.cc
     DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py
     OUTPUT  ${GENERATED_SRC}/VhdlParser_adj.cc
 )
 set_source_files_properties(${GENERATED_SRC}/VhdlParser_adj.cc PROPERTIES GENERATED 1)
 
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${GENERATED_SRC}/VhdlParserTokenManager_adj.cc
+    COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${GENERATED_SRC}/VhdlParserTokenManager_adj.cc
     DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py
     OUTPUT  ${GENERATED_SRC}/VhdlParserTokenManager_adj.cc
 )

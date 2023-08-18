@@ -80,12 +80,13 @@ class Definition
       TypeClass      = 0,
       TypeFile       = 1,
       TypeNamespace  = 2,
-      TypeMember     = 3,
-      TypeGroup      = 4,
-      TypePackage    = 5,
-      TypePage       = 6,
-      TypeDir        = 7,
-      TypeConcept    = 8
+      TypeModule     = 3,
+      TypeMember     = 4,
+      TypeGroup      = 5,
+      TypePackage    = 6,
+      TypePage       = 7,
+      TypeDir        = 8,
+      TypeConcept    = 9,
     };
 
 
@@ -217,10 +218,13 @@ class Definition
     /*! Returns TRUE iff this item is supposed to be hidden from the output. */
     virtual bool isHidden() const = 0;
 
-    /*! returns TRUE if this entity was artificially introduced, for
+    /*! Returns TRUE if this entity was artificially introduced, for
      *  instance because it is used to show a template instantiation relation.
      */
     virtual bool isArtificial() const = 0;
+
+    /*! Returns TRUE iff this entity was exported from a C++20 module. */
+    virtual bool isExported() const = 0;
 
     /*! If this definition was imported via a tag file, this function
      *  returns the tagfile for the external project. This can be
@@ -343,6 +347,7 @@ class DefinitionMutable
     virtual void setHidden(bool b) = 0;
 
     virtual void setArtificial(bool b) = 0;
+    virtual void setExported(bool b) = 0;
     virtual void setLanguage(SrcLangExt lang) = 0;
     virtual void setLocalName(const QCString &name) = 0;
 

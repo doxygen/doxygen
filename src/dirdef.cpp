@@ -619,6 +619,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileInlineClasses:
       case LayoutDocEntry::GroupClasses:
       case LayoutDocEntry::GroupConcepts:
+      case LayoutDocEntry::GroupModules:
       case LayoutDocEntry::GroupInlineClasses:
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs:
@@ -626,6 +627,10 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::GroupFiles:
       case LayoutDocEntry::GroupGraph:
       case LayoutDocEntry::GroupPageDocs:
+      case LayoutDocEntry::ModuleExports:
+      case LayoutDocEntry::ModuleClasses:
+      case LayoutDocEntry::ModuleConcepts:
+      case LayoutDocEntry::ModuleUsedFiles:
       case LayoutDocEntry::AuthorSection:
       case LayoutDocEntry::MemberGroups:
       case LayoutDocEntry::MemberDecl:

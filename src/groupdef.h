@@ -31,6 +31,7 @@ class MemberLists;
 class FileList;
 class ClassLinkedRefMap;
 class ConceptLinkedRefMap;
+class ModuleLinkedRefMap;
 class NamespaceLinkedRefMap;
 class FileDef;
 class ClassDef;
@@ -44,6 +45,7 @@ class DirDef;
 class FTVHelp;
 class Entry;
 class MemberDef;
+class ModuleDef;
 
 /** A model of a group of symbols. */
 class GroupDef : public DefinitionMutable, public Definition
@@ -60,6 +62,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual bool containsFile(const FileDef *def) const = 0;
     virtual bool addClass(ClassDef *def) = 0;
     virtual bool addConcept(ConceptDef *def) = 0;
+    virtual bool addModule(ModuleDef *def) = 0;
     virtual bool addNamespace(NamespaceDef *def) = 0;
     virtual void addGroup(GroupDef *def) = 0;
     virtual void addPage(PageDef *def) = 0;
@@ -99,6 +102,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual const FileList &getFiles() const = 0;
     virtual const ClassLinkedRefMap &getClasses() const = 0;
     virtual const ConceptLinkedRefMap &getConcepts() const = 0;
+    virtual const ModuleLinkedRefMap &getModules() const = 0;
     virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
     virtual const GroupList &getSubGroups() const = 0;
     virtual const PageLinkedRefMap &getPages() const = 0;
@@ -129,6 +133,7 @@ class GroupList : public std::vector<GroupDef *>
 
 void addClassToGroups    (const Entry *root,ClassDef *cd);
 void addConceptToGroups  (const Entry *root,ConceptDef *cd);
+void addModuleToGroups   (const Entry *root,ModuleDef *mod);
 void addNamespaceToGroups(const Entry *root,NamespaceDef *nd);
 void addGroupToGroups    (const Entry *root,GroupDef *subGroup);
 void addMemberToGroups   (const Entry *root,MemberDef *md);

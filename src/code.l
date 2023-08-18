@@ -66,6 +66,7 @@ typedef yyguts_t *yyscan_t;
 #include "symbolresolver.h"
 #include "dir.h"
 #include "debug.h"
+#include "moduledef.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -296,6 +297,7 @@ BITOP   "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
+MODULE_ID ({ID}".")*{ID}
 
   /* no comment start / end signs inside square brackets */
 NCOMM [^/\*]
@@ -377,6 +379,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 %x      UsingName
 %x      RawString
 %x      InlineInit
+%x      ModuleName
+%x      ModuleImport
 
 %%
 
@@ -948,6 +952,20 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           endFontClass(yyscanner);
                                           BEGIN(UsingName);
                                         }
+<Body>"module"/{B}*[:;]?                { // 'module X' or 'module : private' or 'module;'
+                                          if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+                                          startFontClass(yyscanner,"keyword");
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner);
+                                          BEGIN(ModuleName);
+                                        }
+<Body>"import"/{B}*[<":]?               {
+                                          if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+                                          startFontClass(yyscanner,"keyword");
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner);
+                                          BEGIN(ModuleImport);
+                                        }
 <ConceptName>{ID}("::"{ID})*              {
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                         }
@@ -1155,6 +1173,41 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
                                         }
+<ModuleName,ModuleImport>{MODULE_ID}({BN}*":"{BN}*{MODULE_ID})?  {
+                                          QCString name = yytext;
+                                          int i = name.find(':');
+                                          QCString partition;
+                                          if (i!=-1)
+                                          {
+                                            partition = name.mid(i+1).stripWhiteSpace();
+                                            name = name.left(i).stripWhiteSpace();
+                                          }
+                                          ModuleDef *mod = ModuleManager::instance().getPrimaryInterface(name);
+                                          if (mod)
+                                          {
+                                            writeMultiLineCodeLink(yyscanner,*yyextra->code,mod,yytext);
+                                          }
+                                          else
+                                          {
+                                            codifyLines(yyscanner,yytext);
+                                          }
+                                        }
+<ModuleName>":"{BN}+"private"           {
+                                          QCString text=yytext;
+                                          int i=text.find('p');
+                                          codifyLines(yyscanner,text.left(i));
+                                          startFontClass(yyscanner,"keyword");
+                                          codifyLines(yyscanner,text.mid(i));
+                                          endFontClass(yyscanner);
+                                        }
+<ModuleName>";"                         { yyextra->code->codify(yytext); BEGIN(Body); }
+<ModuleName>.                           { yyextra->code->codify(yytext); }
+<ModuleName>\n                          { codifyLines(yyscanner,yytext); }
+<ModuleImport>["<]                      { yyextra->code->codify(yytext); BEGIN(ReadInclude); }
+<ModuleImport>";"                       { yyextra->code->codify(yytext); BEGIN(Body); }
+<ModuleImport>.                         { yyextra->code->codify(yytext); }
+<ModuleImport>\n                        { codifyLines(yyscanner,yytext); }
+
 <Body>{SCOPENAME}/{BN}*[:;,)\]]         { // "int var;" or "var, var2" or "debug(f) macro" , or int var : 5;
                                           if (startsWithKeyword(yytext,"typedef")) REJECT;
                                           addType(yyscanner);
@@ -1173,6 +1226,12 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           {
                                             REJECT;
                                           }
+                                        }
+<Body>"export"/{B}*                     {
+                                          if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+                                          startFontClass(yyscanner,"keyword");
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner);
                                         }
 <Body>{SCOPENAME}/{B}*                  { // p->func()
                                           if (startsWithKeyword(yytext,"typedef")) REJECT;

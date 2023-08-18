@@ -60,6 +60,8 @@
 #include "regex.h"
 #include "plantuml.h"
 #include "textstream.h"
+#include "moduledef.h"
+
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType
 
@@ -1465,7 +1467,7 @@ bool VhdlDocGen::writeFuncProcDocu(
     ol.startParameterType(first,"");
     //   if (first) ol.writeChar('(');
     QCString attl=arg.defval;
-    
+
     //bool bGen=attl.stripPrefix("generic");
     //if (bGen)
     //  VhdlDocGen::writeFormatString(QCString("generic "),ol,md);
@@ -1554,33 +1556,33 @@ QCString VhdlDocGen::convertArgumentListToString(const ArgumentList &al,bool fun
 
 
 void VhdlDocGen::writeVhdlDeclarations(const MemberList* ml,
-    OutputList& ol,const GroupDef* gd,const ClassDef* cd,const FileDef *fd,const NamespaceDef* nd)
+    OutputList& ol,const GroupDef* gd,const ClassDef* cd,const FileDef *fd,const NamespaceDef* nd,const ModuleDef *mod)
 {
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::LIBRARY,FALSE),QCString(),FALSE,VhdlDocGen::LIBRARY);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::USE,FALSE),QCString(),FALSE,VhdlDocGen::USE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::FUNCTION,FALSE),QCString(),FALSE,VhdlDocGen::FUNCTION);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::COMPONENT,FALSE),QCString(),FALSE,VhdlDocGen::COMPONENT);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::CONSTANT,FALSE),QCString(),FALSE,VhdlDocGen::CONSTANT);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::TYPE,FALSE),QCString(),FALSE,VhdlDocGen::TYPE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::SUBTYPE,FALSE),QCString(),FALSE,VhdlDocGen::SUBTYPE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::GENERIC,FALSE),QCString(),FALSE,VhdlDocGen::GENERIC);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::PORT,FALSE),QCString(),FALSE,VhdlDocGen::PORT);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::PROCESS,FALSE),QCString(),FALSE,VhdlDocGen::PROCESS);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::SIGNAL,FALSE),QCString(),FALSE,VhdlDocGen::SIGNAL);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::ATTRIBUTE,FALSE),QCString(),FALSE,VhdlDocGen::ATTRIBUTE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::PROCEDURE,FALSE),QCString(),FALSE,VhdlDocGen::PROCEDURE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::RECORD,FALSE),QCString(),FALSE,VhdlDocGen::RECORD);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::UNITS,FALSE),QCString(),FALSE,VhdlDocGen::UNITS);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::SHAREDVARIABLE,FALSE),QCString(),FALSE,VhdlDocGen::SHAREDVARIABLE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::VFILE,FALSE),QCString(),FALSE,VhdlDocGen::VFILE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::GROUP,FALSE),QCString(),FALSE,VhdlDocGen::GROUP);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::INSTANTIATION,FALSE),QCString(),FALSE,VhdlDocGen::INSTANTIATION);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::ALIAS,FALSE),QCString(),FALSE,VhdlDocGen::ALIAS);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::MISCELLANEOUS,TRUE),QCString(),FALSE,VhdlDocGen::MISCELLANEOUS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::LIBRARY,FALSE),QCString(),FALSE,VhdlDocGen::LIBRARY);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::USE,FALSE),QCString(),FALSE,VhdlDocGen::USE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::FUNCTION,FALSE),QCString(),FALSE,VhdlDocGen::FUNCTION);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::COMPONENT,FALSE),QCString(),FALSE,VhdlDocGen::COMPONENT);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::CONSTANT,FALSE),QCString(),FALSE,VhdlDocGen::CONSTANT);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::TYPE,FALSE),QCString(),FALSE,VhdlDocGen::TYPE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::SUBTYPE,FALSE),QCString(),FALSE,VhdlDocGen::SUBTYPE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::GENERIC,FALSE),QCString(),FALSE,VhdlDocGen::GENERIC);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::PORT,FALSE),QCString(),FALSE,VhdlDocGen::PORT);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::PROCESS,FALSE),QCString(),FALSE,VhdlDocGen::PROCESS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::SIGNAL,FALSE),QCString(),FALSE,VhdlDocGen::SIGNAL);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::ATTRIBUTE,FALSE),QCString(),FALSE,VhdlDocGen::ATTRIBUTE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::PROCEDURE,FALSE),QCString(),FALSE,VhdlDocGen::PROCEDURE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::RECORD,FALSE),QCString(),FALSE,VhdlDocGen::RECORD);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::UNITS,FALSE),QCString(),FALSE,VhdlDocGen::UNITS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::SHAREDVARIABLE,FALSE),QCString(),FALSE,VhdlDocGen::SHAREDVARIABLE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::VFILE,FALSE),QCString(),FALSE,VhdlDocGen::VFILE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::GROUP,FALSE),QCString(),FALSE,VhdlDocGen::GROUP);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::INSTANTIATION,FALSE),QCString(),FALSE,VhdlDocGen::INSTANTIATION);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::ALIAS,FALSE),QCString(),FALSE,VhdlDocGen::ALIAS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::MISCELLANEOUS,TRUE),QCString(),FALSE,VhdlDocGen::MISCELLANEOUS);
 
   // configurations must be added to global file definitions.
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::CONFIG,FALSE),QCString(),FALSE,VhdlDocGen::CONFIG);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::UCF_CONST,FALSE),QCString(),FALSE,VhdlDocGen::UCF_CONST);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::CONFIG,FALSE),QCString(),FALSE,VhdlDocGen::CONFIG);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::UCF_CONST,FALSE),QCString(),FALSE,VhdlDocGen::UCF_CONST);
 
 }
 
@@ -1763,18 +1765,19 @@ void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,TextStream &tagFile)
 /* writes a vhdl type declaration */
 
 void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &ol,
-    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
     bool /*inGroup*/)
 {
   const Definition *d=0;
 
-  ASSERT(cd!=0 || nd!=0 || fd!=0 || gd!=0 ||
+  ASSERT(cd!=0 || nd!=0 || fd!=0 || gd!=0 || mod!=0 ||
       mdef->getMemberSpecifiers()==VhdlDocGen::LIBRARY ||
       mdef->getMemberSpecifiers()==VhdlDocGen::USE
       ); // member should belong to something
   if (cd) d=cd;
   else if (nd) d=nd;
   else if (fd) d=fd;
+  else if (mod) d=mod;
   else if (gd) d=gd;
   else d=mdef;
 
@@ -2061,7 +2064,8 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
 
 void VhdlDocGen::writePlainVHDLDeclarations(
     const MemberList* mlist,OutputList &ol,
-    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,uint64_t specifier)
+    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
+    uint64_t specifier)
 {
 
   StringSet pack;
@@ -2076,14 +2080,14 @@ void VhdlDocGen::writePlainVHDLDeclarations(
       if (md->isBriefSectionVisible() && (mems==specifier) && (mems!=VhdlDocGen::LIBRARY) )
       {
         if (first) { ol.startMemberList();first=FALSE; }
-        VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,FALSE);
+        VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,mod,FALSE);
       } //if
       else if (md->isBriefSectionVisible() && (mems==specifier))
       {
         if (pack.find(md->name().str())==pack.end())
         {
           if (first) ol.startMemberList(),first=FALSE;
-          VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,FALSE);
+          VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,mod,FALSE);
           pack.insert(md->name().str());
         }
       } //if
@@ -2113,7 +2117,7 @@ static bool membersHaveSpecificType(const MemberList *ml,uint64_t type)
 }
 
 void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
-    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
     const QCString &title,const QCString &subtitle,bool /*showEnumValues*/,int type)
 {
   if (!membersHaveSpecificType(ml,type)) return;
@@ -2133,7 +2137,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
     ol.endMemberSubtitle();
   } //printf("memberGroupList=%p\n",memberGroupList);
 
-  VhdlDocGen::writePlainVHDLDeclarations(ml,ol,cd,nd,fd,gd,type);
+  VhdlDocGen::writePlainVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,type);
 
   for (const auto &mg : ml->getMemberGroupList())
   {
@@ -2157,7 +2161,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
       }
       ol.startMemberGroup();
       //printf("--- mg->writePlainDeclarations ---\n");
-      VhdlDocGen::writePlainVHDLDeclarations(&mg->members(),ol,cd,nd,fd,gd,type);
+      VhdlDocGen::writePlainVHDLDeclarations(&mg->members(),ol,cd,nd,fd,gd,mod,type);
       ol.endMemberGroup(hasHeader);
     }
   }

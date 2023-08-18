@@ -25,22 +25,43 @@
 #include <map>
 #include <string>
 #include <functional>
+#include <variant>
 
 #include "qcstring.h"
+#include "utf8.h"
 
-#define NUM_SEARCH_INDICES 21
+#define NUM_SEARCH_INDICES 22
 
+class SectionInfo;
 class Definition;
 
-QCString searchId(const Definition *d);
+//QCString searchId(const Definition *d);
 QCString searchName(const Definition *d);
 
-using SearchIndexList = std::vector<const Definition *>;
-using SearchIndexMap  = std::map<std::string,SearchIndexList>;
+//! Searchable term
+struct SearchTerm
+{
+  using LinkInfo = std::variant<std::monostate,const Definition *,const SectionInfo *>;
+  SearchTerm(const QCString &w,const Definition *d)  : word(convertUTF8ToLower(w.str())), info(d)  { makeTitle(); }
+  SearchTerm(const QCString &w,const SectionInfo *s) : word(convertUTF8ToLower(w.str())), info(s)  { makeTitle(); }
+  QCString word;                 //!< lower case word that is indexed (e.g. name of a symbol, or word from a title)
+  QCString title;                //!< title to show in the output for this search result
+  LinkInfo info;                 //!< definition to link to
+  QCString termEncoded() const;  //!< encoded version of the search term
+private:
+  void makeTitle();
+};
 
+//! List of search terms
+using SearchIndexList = std::vector<SearchTerm>;
+
+//! Map of search terms for a given starting letter
+using SearchIndexMap  = std::map<std::string,SearchIndexList>; // key is starting letter of a term (UTF-8).
+
+//! Table entry to allow filtering the search results per category
 struct SearchIndexInfo
 {
-  void add(const std::string &letter,const Definition *def);
+  void add(const SearchTerm &term);
   QCString name;
   std::function<QCString()> getText;
   SearchIndexMap symbolMap;

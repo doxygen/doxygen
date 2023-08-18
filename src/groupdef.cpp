@@ -46,6 +46,7 @@
 #include "config.h"
 #include "definitionimpl.h"
 #include "regex.h"
+#include "moduledef.h"
 
 //---------------------------------------------------------------------------
 
@@ -67,6 +68,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual bool containsFile(const FileDef *def) const override;
     virtual bool addClass(ClassDef *def) override;
     virtual bool addConcept(ConceptDef *def) override;
+    virtual bool addModule(ModuleDef *def) override;
     virtual bool addNamespace(NamespaceDef *def) override;
     virtual void addGroup(GroupDef *def) override;
     virtual void addPage(PageDef *def) override;
@@ -106,6 +108,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual const FileList &getFiles() const override                    { return m_fileList; }
     virtual const ClassLinkedRefMap &getClasses() const override         { return m_classes; }
     virtual const ConceptLinkedRefMap &getConcepts() const override      { return m_concepts; }
+    virtual const ModuleLinkedRefMap &getModules() const override        { return m_modules; }
     virtual const NamespaceLinkedRefMap &getNamespaces() const override  { return m_namespaces; }
     virtual const GroupList &getSubGroups() const override               { return m_groups; }
     virtual const PageLinkedRefMap &getPages() const override            { return m_pages; }
@@ -128,6 +131,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     void writeDirs(OutputList &ol,const QCString &title);
     void writeClasses(OutputList &ol,const QCString &title);
     void writeConcepts(OutputList &ol,const QCString &title);
+    void writeModules(OutputList &ol,const QCString &title);
     void writeInlineClasses(OutputList &ol);
     void writePageDocumentation(OutputList &ol);
     void writeDetailedDescription(OutputList &ol,const QCString &title);
@@ -147,6 +151,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     FileList             m_fileList;            // list of files in the group
     ClassLinkedRefMap    m_classes;             // list of classes in the group
     ConceptLinkedRefMap  m_concepts;            // list of concepts in the group
+    ModuleLinkedRefMap   m_modules;             // list of modules in the group
     NamespaceLinkedRefMap m_namespaces;         // list of namespaces in the group
     GroupList            m_groups;              // list of sub groups.
     PageLinkedRefMap     m_pages;               // list of pages in the group
@@ -283,6 +288,18 @@ bool GroupDefImpl::addConcept(ConceptDef *cd)
     return TRUE;
   }
   return FALSE;
+}
+
+bool GroupDefImpl::addModule(ModuleDef *mod)
+{
+  if (mod->isHidden()) return false;
+  QCString qn = mod->name();
+  if (m_modules.find(qn)==0)
+  {
+    m_modules.add(qn,mod);
+    return true;
+  }
+  return false;
 }
 
 bool GroupDefImpl::addNamespace(NamespaceDef *def)
@@ -656,6 +673,18 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
           }
         }
         break;
+      case LayoutDocEntry::GroupModules:
+        {
+          for (const auto &mod : m_modules)
+          {
+            if (mod->isLinkableInProject())
+            {
+              tagFile << "    <module>" << convertToXML(mod->name())
+                      << "</module>\n";
+            }
+          }
+        }
+        break;
       case LayoutDocEntry::GroupNamespaces:
         {
           for (const auto &nd : m_namespaces)
@@ -982,6 +1011,13 @@ void GroupDefImpl::writeConcepts(OutputList &ol,const QCString &title)
   m_concepts.writeDeclaration(ol,title,FALSE);
 }
 
+void GroupDefImpl::writeModules(OutputList &ol,const QCString &title)
+{
+  // write list of modules
+  m_modules.writeDeclaration(ol,title,FALSE);
+}
+
+
 void GroupDefImpl::writeInlineClasses(OutputList &ol)
 {
   m_classes.writeDocumentation(ol);
@@ -1014,7 +1050,7 @@ void GroupDefImpl::writeMemberGroups(OutputList &ol)
   /* write user defined member groups */
   for (const auto &mg : m_memberGroups)
   {
-    mg->writeDeclarations(ol,0,0,0,this);
+    mg->writeDeclarations(ol,0,0,0,this,0);
   }
 }
 
@@ -1071,6 +1107,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
   {
     if ((lde->kind()==LayoutDocEntry::GroupClasses      &&  m_classes.declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupConcepts     &&  m_concepts.declVisible()) ||
+        (lde->kind()==LayoutDocEntry::GroupModules      &&  m_modules.declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupNamespaces   &&  m_namespaces.declVisible(false)) ||
         (lde->kind()==LayoutDocEntry::GroupFiles        && !m_fileList.empty()) ||
         (lde->kind()==LayoutDocEntry::GroupNestedGroups && !m_groups.empty()) ||
@@ -1082,10 +1119,11 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
       {
         QCString label = lde->kind()==LayoutDocEntry::GroupClasses      ? "nested-classes" :
                          lde->kind()==LayoutDocEntry::GroupConcepts     ? "concepts"       :
+                         lde->kind()==LayoutDocEntry::GroupModules      ? "modules"        :
                          lde->kind()==LayoutDocEntry::GroupNamespaces   ? "namespaces"     :
                          lde->kind()==LayoutDocEntry::GroupFiles        ? "files"          :
                          lde->kind()==LayoutDocEntry::GroupNestedGroups ? "groups"         :
-                         "dirs";
+                                                                          "dirs";
         ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
         first=FALSE;
       }
@@ -1125,7 +1163,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
     ++hierarchyLevel;
   }
 
-  startFile(ol,getOutputFileBase(),name(),m_title,HighlightedItem::Modules,
+  startFile(ol,getOutputFileBase(),name(),m_title,HighlightedItem::Topics,
             FALSE /* additionalIndices*/, QCString() /*altSidebarName*/, hierarchyLevel);
 
   ol.startHeaderSection();
@@ -1171,6 +1209,9 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::GroupConcepts:
         if (ls) writeConcepts(ol,ls->title(lang));
+        break;
+      case LayoutDocEntry::GroupModules:
+        if (ls) writeModules(ol,ls->title(lang));
         break;
       case LayoutDocEntry::GroupInlineClasses:
         writeInlineClasses(ol);
@@ -1257,6 +1298,10 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileIncludedByGraph:
       case LayoutDocEntry::FileSourceLink:
       case LayoutDocEntry::FileInlineClasses:
+      case LayoutDocEntry::ModuleExports:
+      case LayoutDocEntry::ModuleClasses:
+      case LayoutDocEntry::ModuleConcepts:
+      case LayoutDocEntry::ModuleUsedFiles:
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
@@ -1382,6 +1427,19 @@ void addConceptToGroups(const Entry *root,ConceptDef *cd)
         cdm->makePartOfGroup(gd);
       }
       //printf("Compound %s: in group %s\n",qPrint(cd->name()),gd->groupTitle());
+    }
+  }
+}
+
+void addModuleToGroups(const Entry *root,ModuleDef *mod)
+{
+  for (const Grouping &g : root->groups)
+  {
+    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd && gd->addModule(mod))
+    {
+      mod->makePartOfGroup(gd);
+      //printf("Module %s: in group %s\n",qPrint(mod->name()),gd->groupTitle());
     }
   }
 }
@@ -1736,12 +1794,12 @@ void GroupDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,cons
   MemberList * ml = getMemberList(lt);
   if (optimizeVhdl && ml)
   {
-    VhdlDocGen::writeVhdlDeclarations(ml,ol,this,0,0,0);
+    VhdlDocGen::writeVhdlDeclarations(ml,ol,this,0,0,0,0);
     return;
   }
   if (ml)
   {
-    ml->writeDeclarations(ol,0,0,0,this,title,QCString());
+    ml->writeDeclarations(ol,0,0,0,this,0,title,QCString());
   }
 }
 

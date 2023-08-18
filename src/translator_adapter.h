@@ -40,11 +40,34 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_9_6 : public TranslatorAdapterBase
+class TranslatorAdapter_1_9_8 : public TranslatorAdapterBase
 {
   public:
     virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.8"); }
+
+    virtual QCString trTopics()
+    { return english.trTopics(); }
+    virtual QCString trTopicDocumentation()
+    { return english.trTopicDocumentation(); }
+    virtual QCString trTopicList()
+    { return english.trTopicList(); }
+    virtual QCString trTopicIndex()
+    { return english.trTopicIndex(); }
+    virtual QCString trTopicListDescription()
+    { return english.trTopicListDescription(); }
+    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl)
+    { return english.trModuleMembersDescriptionTotal(hl); }
+    virtual QCString trExportedModules()
+    { return english.trExportedModules(); }
+
+};
+
+class TranslatorAdapter_1_9_6 : public TranslatorAdapter_1_9_8
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.6"); }
 
     /*! Small trick to use the original functions as the wording has been changed */
     virtual QCString trRelatedSymbols()
@@ -504,15 +527,10 @@ class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_6_0
   public:
     virtual QCString updateNeededMessage()
     { return createUpdateNeededMessage(idLanguage(),"release 1.4.6"); }
-
     virtual QCString trCallerGraph()
-    {
-      return english.trCallerGraph();
-    }
+    { return english.trCallerGraph(); }
     virtual QCString trEnumerationValueDocumentation()
-    {
-      return english.trEnumerationValueDocumentation();
-    }
+    { return english.trEnumerationValueDocumentation(); }
 };
 
 #endif
