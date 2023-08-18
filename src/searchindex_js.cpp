@@ -98,7 +98,7 @@ static void splitSearchTokens(QCString &title,IntVector &indices)
     char c = title[si];
     if (isId(c) || c==':') // add "word" character
     {
-      title[di++];
+      title[di++]=c;
       lastIsSpace=false;
     }
     else if (!lastIsSpace) // add one separator as space
