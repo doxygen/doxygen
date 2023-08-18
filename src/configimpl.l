@@ -61,14 +61,15 @@ static const char *stateToString(int state);
 static const char *warning_str = "warning: ";
 static const char *error_str = "error: ";
 
-void config_err(const char *fmt, ...)
+void ConfigImpl::config_err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
   vfprintf(stderr, qPrint(QCString(error_str) + fmt), args);
   va_end(args);
 }
-void config_term(const char *fmt, ...)
+
+void ConfigImpl::config_term(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -78,7 +79,7 @@ void config_term(const char *fmt, ...)
   exit(1);
 }
 
-void config_warn(const char *fmt, ...)
+void ConfigImpl::config_warn(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -217,7 +218,7 @@ void ConfigInt::convertStrToVal(Config::CompareMode compareMode)
     int val = m_valueString.toInt(&ok);
     if (!ok || val<m_minVal || val>m_maxVal)
     {
-      config_warn("argument '%s' for option %s is not a valid number in the range [%d..%d]!\n"
+      ConfigImpl::config_warn("argument '%s' for option %s is not a valid number in the range [%d..%d]!\n"
                 "Using the default: %d!\n",qPrint(m_valueString),qPrint(m_name),m_minVal,m_maxVal,m_value);
     }
     else
@@ -263,7 +264,7 @@ void ConfigBool::convertStrToVal(Config::CompareMode compareMode)
     }
     else
     {
-      config_warn("argument '%s' for option %s is not a valid boolean value\n"
+      ConfigImpl::config_warn("argument '%s' for option %s is not a valid boolean value\n"
           "Using the default: %s!\n",qPrint(m_valueString),qPrint(m_name),m_value?"YES":"NO");
     }
   }
@@ -290,7 +291,7 @@ void ConfigEnum::convertStrToVal(Config::CompareMode compareMode)
     }
   }
 
-  config_warn("argument '%s' for option %s is not a valid enum value\n"
+  ConfigImpl::config_warn("argument '%s' for option %s is not a valid enum value\n"
               "Using the default: %s!\n",qPrint(m_value),qPrint(m_name),qPrint(m_defValue));
   m_value = m_defValue;
 }
@@ -682,7 +683,7 @@ static QCString configStringRecode(
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {
-    config_term("Error: unsupported character conversion: '%s'->'%s'\n"
+    ConfigImpl::config_term("Error: unsupported character conversion: '%s'->'%s'\n"
                 "Check the 'DOXYFILE_ENCODING' setting in the config file!\n",
         qPrint(inputEncoding),qPrint(outputEncoding));
   }
@@ -699,7 +700,7 @@ static QCString configStringRecode(
   }
   else
   {
-    config_term("Error: failed to translate characters from %s to %s: %s\n",
+    ConfigImpl::config_term("Error: failed to translate characters from %s to %s: %s\n",
         qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno));
   }
   portable_iconv_close(cd);
@@ -788,7 +789,7 @@ static void processString()
     {
       if (!warned)
       {
-        config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
+        ConfigImpl::config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
                     qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_string->stripWhiteSpace()));
       }
       warned=true;
@@ -878,7 +879,7 @@ static void processList()
       {
         if (!warned)
         {
-          config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
+          ConfigImpl::config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
                     qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_listStr.stripWhiteSpace()),allowCommaAsSeparator?"or comma ":"");
           warned=true;
         }
@@ -896,7 +897,7 @@ static void processList()
   addElem();
   if (insideQuote)
   {
-    config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
+    ConfigImpl::config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
                 qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_listStr.stripWhiteSpace()));
   }
 }
@@ -908,7 +909,7 @@ static FILE *tryPath(const QCString &path,const QCString &fileName)
   if (fi.exists() && fi.isFile())
   {
     FILE *f=Portable::fopen(absName,"r");
-    if (!f) config_err("could not open file %s for reading\n",qPrint(absName));
+    if (!f) ConfigImpl::config_err("could not open file %s for reading\n",qPrint(absName));
     return f;
   }
   return 0;
@@ -940,7 +941,7 @@ static FILE *findFile(const QCString &fileName)
 static void readIncludeFile(const QCString &incName)
 {
   if (g_includeStack.size()==MAX_INCLUDE_DEPTH) {
-    config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
+    ConfigImpl::config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
         MAX_INCLUDE_DEPTH,qPrint(incName));
   }
 
@@ -978,7 +979,7 @@ static void readIncludeFile(const QCString &incName)
   }
   else
   {
-    config_term("@INCLUDE = %s: not found!\n",qPrint(inc));
+    ConfigImpl::config_term("@INCLUDE = %s: not found!\n",qPrint(inc));
   }
 }
 
@@ -1018,7 +1019,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                            ConfigOption *option = g_config->get(g_cmd);
                                            if (option==0) // oops not known
                                            {
-                                             config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
+                                             ConfigImpl::config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
                                                  qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                              BEGIN(SkipInvalid);
                                            }
@@ -1061,12 +1062,12 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                                case ConfigOption::O_Obsolete:
                                                  if (g_configUpdate)
                                                  {
-                                                   config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
+                                                   ConfigImpl::config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
                                                               "         This tag has been removed.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  else
                                                  {
-                                                   config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
+                                                   ConfigImpl::config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
                                                               "         To avoid this warning please remove this line from your configuration "
                                                               "file or upgrade it using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
@@ -1088,12 +1089,12 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                                case ConfigOption::O_Disabled:
                                                  if (g_configUpdate)
                                                  {
-                                                   config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
+                                                   ConfigImpl::config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
                                                               "         This tag has been removed.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  else
                                                  {
-                                                   config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
+                                                   ConfigImpl::config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
                                                               "         To avoid this warning please remove this line from your configuration "
                                                             "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
@@ -1107,7 +1108,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                           ConfigOption *option = g_config->get(g_cmd);
                                           if (option==0) // oops not known
                                           {
-                                            config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
+                                            ConfigImpl::config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
                                                 qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                             BEGIN(SkipInvalid);
                                           }
@@ -1129,12 +1130,12 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                               case ConfigOption::O_String:
                                               case ConfigOption::O_Int:
                                               case ConfigOption::O_Bool:
-                                                config_warn("operator += not supported for '%s'. Ignoring line at line %d, file %s\n",
+                                                ConfigImpl::config_warn("operator += not supported for '%s'. Ignoring line at line %d, file %s\n",
                                                     yytext,g_yyLineNr,qPrint(g_yyFileName));
                                                 BEGIN(SkipInvalid);
                                                 break;
                                                case ConfigOption::O_Obsolete:
-                                                 config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
+                                                ConfigImpl::config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
                                                             "To avoid this warning please update your configuration "
                                                             "file using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  if (dynamic_cast<ConfigObsolete*>(option)->orgType()==ConfigOption::O_List)
@@ -1149,7 +1150,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                                  }
                                                  break;
                                                case ConfigOption::O_Disabled:
-                                                 config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
+                                                 ConfigImpl::config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
                                                             "To avoid this warning please remove this line from your configuration "
                                                             "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  BEGIN(SkipInvalid);
@@ -1184,7 +1185,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                           }
                                           else
                                           {
-                                            config_warn("ignoring unknown '%s' at line %d, file %s\n",
+                                            ConfigImpl::config_warn("ignoring unknown '%s' at line %d, file %s\n",
                                                         yytext,g_yyLineNr,qPrint(g_yyFileName));
                                           }
                                         }
@@ -1213,7 +1214,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                           }
                                         }
 
-<Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,qPrint(g_yyFileName)); }
+<Start>[a-z_A-Z0-9]+                    { ConfigImpl::config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,qPrint(g_yyFileName)); }
    /*-------------- GetString ---------------*/
 
 <StoreRepl>\n                           {
@@ -1282,7 +1283,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
 <*>\\[ \r\t]*\n                         { g_yyLineNr++; }
 <*>[ \t\r]
 <*>\n                                   { g_yyLineNr++ ; }
-<*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,qPrint(g_yyFileName)); }
+<*>.                                    { ConfigImpl::config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,qPrint(g_yyFileName)); }
 
 %%
 
@@ -1559,7 +1560,7 @@ static QCString configFileToString(const QCString &name)
     std::ifstream f = Portable::openInputStream(name);
     if (!f.is_open())
     {
-      config_term("file '%s' not found or could not be opened\n",qPrint(name));
+      ConfigImpl::config_term("file '%s' not found or could not be opened\n",qPrint(name));
       return "";
     }
     return stream2string(f);
@@ -1785,7 +1786,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     FileInfo fi(headerFile.str());
     if (!fi.exists())
     {
-      config_term("tag HTML_HEADER: header file '%s' "
+      ConfigImpl::config_term("tag HTML_HEADER: header file '%s' "
           "does not exist\n",qPrint(headerFile));
     }
   }
@@ -1798,7 +1799,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     FileInfo fi(footerFile.str());
     if (!fi.exists())
     {
-      config_term("tag HTML_FOOTER: footer file '%s' "
+      ConfigImpl::config_term("tag HTML_FOOTER: footer file '%s' "
           "does not exist\n",qPrint(footerFile));
     }
   }
@@ -1830,7 +1831,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       FileInfo fi(mathJaxCodefile.str());
       if (!fi.exists())
       {
-        config_term("tag MATHJAX_CODEFILE file '%s' "
+        ConfigImpl::config_term("tag MATHJAX_CODEFILE file '%s' "
             "does not exist\n",qPrint(mathJaxCodefile));
       }
     }
@@ -1860,7 +1861,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     FileInfo fi(latexHeaderFile.str());
     if (!fi.exists())
     {
-      config_term("tag LATEX_HEADER: header file '%s' "
+      ConfigImpl::config_term("tag LATEX_HEADER: header file '%s' "
           "does not exist\n",qPrint(latexHeaderFile));
     }
   }
@@ -1873,7 +1874,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     FileInfo fi(latexFooterFile.str());
     if (!fi.exists())
     {
-      config_term("tag LATEX_FOOTER: footer file '%s' "
+      ConfigImpl::config_term("tag LATEX_FOOTER: footer file '%s' "
           "does not exist\n",qPrint(latexFooterFile));
     }
   }

@@ -66,10 +66,9 @@
 #include "translator_vi.h"
 #include "translator_tr.h"
 #include "translator_bg.h"
+#include "configimpl.h"
 
 Translator *theTranslator=0;
-
-void config_warn(const char *fmt, ...);
 
 void setTranslator(OUTPUT_LANGUAGE_t langName)
 {
@@ -123,5 +122,5 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
   }
 
   QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) config_warn("%s", qPrint(msg));
+  if (!msg.isEmpty()) ConfigImpl::config_warn("%s", qPrint(msg));
 }
