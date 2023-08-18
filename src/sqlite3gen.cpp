@@ -48,6 +48,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "datetime.h"
+#include "moduledef.h"
 
 #include <sys/stat.h>
 #include <string.h>
@@ -1287,6 +1288,19 @@ static void writeInnerConcepts(const ConceptLinkedRefMap &cl, struct Refid outer
   }
 }
 
+static void writeInnerModules(const ModuleLinkedRefMap &ml, struct Refid outer_refid)
+{
+  for (const auto &mod : ml)
+  {
+    struct Refid inner_refid = insertRefid(mod->getOutputFileBase());
+
+    bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
+    bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
+    step(contains_insert);
+  }
+}
+
+
 static void writeInnerPages(const PageLinkedRefMap &pl, struct Refid outer_refid)
 {
   for (const auto &pd : pl)
@@ -2058,6 +2072,61 @@ static void generateSqlite3ForConcept(const ConceptDef *cd)
   writeTemplateList(cd);
 }
 
+static void generateSqlite3ForModule(const ModuleDef *mod)
+{
+  // + contained class definitions
+  // + contained concept definitions
+  // + member groups
+  // + normal members
+  // + brief desc
+  // + detailed desc
+  // + location (file_id, line, column)
+  // - exports
+  // + used files
+
+  if (mod->isReference() || mod->isHidden()) return;
+  struct Refid refid = insertRefid(mod->getOutputFileBase());
+  if(!refid.created && compounddefExists(refid)){return;}
+  bindIntParameter(compounddef_insert,":rowid", refid.rowid);
+  bindTextParameter(compounddef_insert,":name",mod->name());
+  bindTextParameter(compounddef_insert,":kind","module");
+
+  int file_id = insertPath(mod->getDefFileName());
+  bindIntParameter(compounddef_insert,":file_id",file_id);
+  bindIntParameter(compounddef_insert,":line",mod->getDefLine());
+  bindIntParameter(compounddef_insert,":column",mod->getDefColumn());
+
+  getSQLDesc(compounddef_insert,":briefdescription",mod->briefDescription(),mod);
+  getSQLDesc(compounddef_insert,":detaileddescription",mod->documentation(),mod);
+
+  step(compounddef_insert);
+
+  // + contained class definitions
+  writeInnerClasses(mod->getClasses(),refid);
+
+  // + contained concept definitions
+  writeInnerConcepts(mod->getConcepts(),refid);
+
+  // + member groups
+  for (const auto &mg : mod->getMemberGroups())
+  {
+    generateSqlite3Section(mod,&mg->members(),refid,"user-defined",mg->header(),
+        mg->documentation());
+  }
+
+  // + normal members
+  for (const auto &ml : mod->getMemberLists())
+  {
+    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    {
+      generateSqlite3Section(mod,ml.get(),refid,"user-defined");
+    }
+  }
+
+  // + files
+  writeInnerFiles(mod->getUsedFiles(),refid);
+}
+
 // kinds: constants library module namespace package
 static void generateSqlite3ForNamespace(const NamespaceDef *nd)
 {
@@ -2158,6 +2227,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
     int src_id=insertPath(fd->absFilePath(),!fd->isReference());
     int dst_id;
     QCString dst_path;
+    bool isLocal = (ii.kind & IncludeKind_LocalMask)!=0;
 
     if(ii.fileDef) // found file
     {
@@ -2172,16 +2242,16 @@ static void generateSqlite3ForFile(const FileDef *fd)
       {
         dst_path = ii.fileDef->absFilePath();
       }
-      dst_id = insertPath(dst_path,ii.local);
+      dst_id = insertPath(dst_path,isLocal);
     }
     else // can't find file
     {
-      dst_id = insertPath(ii.includeName,ii.local,FALSE);
+      dst_id = insertPath(ii.includeName,isLocal,FALSE);
     }
 
     DBG_CTX(("-----> FileDef includeInfo for %s\n", qPrint(ii.includeName)));
-    DBG_CTX(("       local:    %d\n", ii.local));
-    DBG_CTX(("       imported: %d\n", ii.imported));
+    DBG_CTX(("       local:    %d\n", isLocal));
+    DBG_CTX(("       imported: %d\n", (ii.kind & IncludeKind_ImportMask)!=0));
     if(ii.fileDef)
     {
       DBG_CTX(("include: %s\n", qPrint(ii.fileDef->absFilePath())));
@@ -2189,11 +2259,11 @@ static void generateSqlite3ForFile(const FileDef *fd)
     DBG_CTX(("       src_id  : %d\n", src_id));
     DBG_CTX(("       dst_id: %d\n", dst_id));
 
-    bindIntParameter(incl_select,":local",ii.local);
+    bindIntParameter(incl_select,":local",isLocal);
     bindIntParameter(incl_select,":src_id",src_id);
     bindIntParameter(incl_select,":dst_id",dst_id);
     if (step(incl_select,TRUE,TRUE)==0) {
-      bindIntParameter(incl_insert,":local",ii.local);
+      bindIntParameter(incl_insert,":local",isLocal);
       bindIntParameter(incl_insert,":src_id",src_id);
       bindIntParameter(incl_insert,":dst_id",dst_id);
       step(incl_insert);
@@ -2206,6 +2276,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
     int dst_id=insertPath(fd->absFilePath(),!fd->isReference());
     int src_id;
     QCString src_path;
+    bool isLocal = (ii.kind & IncludeKind_LocalMask)!=0;
 
     if(ii.fileDef) // found file
     {
@@ -2220,18 +2291,18 @@ static void generateSqlite3ForFile(const FileDef *fd)
       {
         src_path = ii.fileDef->absFilePath();
       }
-      src_id = insertPath(src_path,ii.local);
+      src_id = insertPath(src_path,isLocal);
     }
     else // can't find file
     {
-      src_id = insertPath(ii.includeName,ii.local,FALSE);
+      src_id = insertPath(ii.includeName,isLocal,FALSE);
     }
 
-    bindIntParameter(incl_select,":local",ii.local);
+    bindIntParameter(incl_select,":local",isLocal);
     bindIntParameter(incl_select,":src_id",src_id);
     bindIntParameter(incl_select,":dst_id",dst_id);
     if (step(incl_select,TRUE,TRUE)==0) {
-      bindIntParameter(incl_insert,":local",ii.local);
+      bindIntParameter(incl_insert,":local",isLocal);
       bindIntParameter(incl_insert,":src_id",src_id);
       bindIntParameter(incl_insert,":dst_id",dst_id);
       step(incl_insert);
@@ -2307,6 +2378,9 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
 
   // + concepts
   writeInnerConcepts(gd->getConcepts(),refid);
+
+  // + modules
+  writeInnerModules(gd->getModules(),refid);
 
   // + namespaces
   writeInnerNamespaces(gd->getNamespaces(),refid);
@@ -2548,6 +2622,13 @@ void generateSqlite3()
   {
     msg("Generating Sqlite3 output for concept %s\n",qPrint(cd->name()));
     generateSqlite3ForConcept(cd.get());
+  }
+
+  // + modules
+  for (const auto &mod : ModuleManager::instance().modules())
+  {
+    msg("Generating Sqlite3 output for module %s\n",qPrint(mod->name()));
+    generateSqlite3ForModule(mod.get());
   }
 
   // + namespaces

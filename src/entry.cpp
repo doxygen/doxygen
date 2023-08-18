@@ -67,6 +67,7 @@ Entry::Entry(const Entry &e)
   callerGraph = e.callerGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
+  exported    = e.exported;
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
@@ -221,6 +222,7 @@ void Entry::reset()
   callerGraph = entryCallerGraph;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
+  exported = false;
   section = EMPTY_SEC;
   mtype   = MethodTypes::Method;
   virt    = Specifier::Normal;

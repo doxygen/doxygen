@@ -91,8 +91,8 @@ static std::vector<QCString> split(const QCString &str,const QCString &sep,
 
 //----------------------------------------------------------------------------
 
-/** Strips spaces surrounding `=` from string \a in, so
- *  `foo = 10 bar=5 baz= 'hello'` will become `foo=10 bar=5 baz='hello'`
+/** Strips spaces surrounding `=` from string \a s, so
+ *  ``foo = 10 bar=5 baz= 'hello'`` will become ``foo=10 bar=5 baz='hello'``
  */
 static void removeSpacesAroundEquals(QCString &s)
 {

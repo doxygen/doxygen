@@ -50,6 +50,7 @@
 #include "utf8.h"
 #include "portable.h"
 #include "outputlist.h"
+#include "moduledef.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -1130,7 +1131,7 @@ static void generateXMLSection(const Definition *d,TextStream &ti,TextStream &t,
   }
   if (count==0) return; // empty list
 
-  t << "      <sectiondef kind=\"" << kind << "\">\n";
+  t << "    <sectiondef kind=\"" << kind << "\">\n";
   if (!header.isEmpty())
   {
     t << "      <header>" << convertToXML(header) << "</header>\n";
@@ -1148,7 +1149,7 @@ static void generateXMLSection(const Definition *d,TextStream &ti,TextStream &t,
       generateXMLForMember(md,ti,t,d);
     }
   }
-  t << "      </sectiondef>\n";
+  t << "    </sectiondef>\n";
 }
 
 static void writeListOfAllMembers(const ClassDef *cd,TextStream &t)
@@ -1216,8 +1217,23 @@ static void writeInnerConcepts(const ConceptLinkedRefMap &cl,TextStream &t)
 {
   for (const auto &cd : cl)
   {
-    t << "    <innerconcept refid=\"" << cd->getOutputFileBase()
-      << "\">" << convertToXML(cd->name()) << "</innerconcept>\n";
+    if (cd->isHidden())
+    {
+      t << "    <innerconcept refid=\"" << cd->getOutputFileBase()
+        << "\">" << convertToXML(cd->name()) << "</innerconcept>\n";
+    }
+  }
+}
+
+static void writeInnerModules(const ModuleLinkedRefMap &ml,TextStream &t)
+{
+  for (const auto &mod : ml)
+  {
+    if (mod->isHidden())
+    {
+      t << "    <innermodule refid=\"" << mod->getOutputFileBase()
+        << "\">" << convertToXML(mod->name()) << "</innermodule>\n";
+    }
   }
 }
 
@@ -1232,6 +1248,25 @@ static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,TextStream &t)
         << ">" << convertToXML(nd->name()) << "</innernamespace>\n";
     }
   }
+}
+
+static void writeExports(const ImportInfoMap &exportMap,TextStream &t)
+{
+  if (exportMap.empty()) return;
+  t << "    <exports>\n";
+  for (auto &[moduleName,importInfo] : exportMap)
+  {
+    t << "      <export";
+    ModuleDef *mod = ModuleManager::instance().getPrimaryInterface(importInfo.importName);
+    if (mod && mod->isLinkableInProject())
+    {
+      t << " refid=\"" << mod->getOutputFileBase() << "\"";
+    }
+    t << ">";
+    t << importInfo.importName;
+    t << "</export>\n";
+  }
+  t << "    </exports>\n";
 }
 
 static void writeInnerFiles(const FileList &fl,TextStream &t)
@@ -1291,7 +1326,7 @@ static void writeIncludeInfo(const IncludeInfo *ii,TextStream &t)
       {
         t << " refid=\"" << ii->fileDef->getOutputFileBase() << "\"";
       }
-      t << " local=\"" << (ii->local ? "yes" : "no") << "\">";
+      t << " local=\"" << ((ii->kind & IncludeKind_LocalMask) ? "yes" : "no") << "\">";
       t << nm;
       t << "</includes>\n";
     }
@@ -1537,6 +1572,61 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
   ti << "  </compound>\n";
 }
 
+static void generateXMLForModule(const ModuleDef *mod,TextStream &ti)
+{
+  if (mod->isReference() || mod->isHidden() || !mod->isPrimaryInterface()) return;
+  ti << "  <compound refid=\"" << mod->getOutputFileBase()
+     << "\" kind=\"module\"" << "><name>"
+     << convertToXML(mod->name()) << "</name>\n";
+
+  QCString outputDirectory = Config_getString(XML_OUTPUT);
+  QCString fileName=outputDirectory+"/"+mod->getOutputFileBase()+".xml";
+  std::ofstream f = Portable::openOutputStream(fileName);
+  if (!f.is_open())
+  {
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    return;
+  }
+  TextStream t(&f);
+  writeXMLHeader(t);
+  t << "  <compounddef id=\"" << mod->getOutputFileBase()
+    << "\" kind=\"module\">\n";
+  t << "    <compoundname>";
+  writeXMLString(t,mod->name());
+  t << "</compoundname>\n";
+  writeInnerFiles(mod->getUsedFiles(),t);
+  writeInnerClasses(mod->getClasses(),t);
+  writeInnerConcepts(mod->getConcepts(),t);
+  for (const auto &ml : mod->getMemberLists())
+  {
+    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    {
+      generateXMLSection(mod,ti,t,ml.get(),xmlSectionMapper(ml->listType()));
+    }
+  }
+  for (const auto &mg : mod->getMemberGroups())
+  {
+    generateXMLSection(mod,ti,t,&mg->members(),"user-defined",mg->header(),
+        mg->documentation());
+  }
+  t << "    <briefdescription>\n";
+  writeXMLDocBlock(t,mod->briefFile(),mod->briefLine(),mod,0,mod->briefDescription());
+  t << "    </briefdescription>\n";
+  t << "    <detaileddescription>\n";
+  writeXMLDocBlock(t,mod->docFile(),mod->docLine(),mod,0,mod->documentation());
+  t << "    </detaileddescription>\n";
+  writeExports(mod->getExports(),t);
+  t << "    <location file=\""
+    << convertToXML(stripFromPath(mod->getDefFileName())) << "\" line=\""
+    << mod->getDefLine() << "\"" << " column=\""
+    << mod->getDefColumn() << "\"/>\n" ;
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
+
+  ti << "  </compound>\n";
+
+}
+
 static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
 {
   // + contained class definitions
@@ -1657,7 +1747,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
     {
       t << " refid=\"" << inc.fileDef->getOutputFileBase() << "\"";
     }
-    t << " local=\"" << (inc.local ? "yes" : "no") << "\">";
+    t << " local=\"" << ((inc.kind & IncludeKind_LocalMask) ? "yes" : "no") << "\">";
     t << inc.includeName;
     t << "</includes>\n";
   }
@@ -1669,7 +1759,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
     {
       t << " refid=\"" << inc.fileDef->getOutputFileBase() << "\"";
     }
-    t << " local=\"" << (inc.local ? "yes" : "no") << "\">";
+    t << " local=\"" << ((inc.kind &IncludeKind_LocalMask) ? "yes" : "no") << "\">";
     t << inc.includeName;
     t << "</includedby>\n";
   }
@@ -1760,6 +1850,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
   t << "    <compoundname>" << convertToXML(gd->name()) << "</compoundname>\n";
   t << "    <title>" << convertToXML(gd->groupTitle()) << "</title>\n";
 
+  writeInnerModules(gd->getModules(),t);
   writeInnerFiles(gd->getFiles(),t);
   writeInnerClasses(gd->getClasses(),t);
   writeInnerConcepts(gd->getConcepts(),t);
@@ -2094,6 +2185,11 @@ void generateXML()
     {
       msg("Generate XML output for dir %s\n",qPrint(dd->name()));
       generateXMLForDir(dd.get(),t);
+    }
+    for (const auto &mod : ModuleManager::instance().modules())
+    {
+      msg("Generating XML output for module %s\n",qPrint(mod->name()));
+      generateXMLForModule(mod.get(),t);
     }
     for (const auto &pd : *Doxygen::exampleLinkedMap)
     {

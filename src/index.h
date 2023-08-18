@@ -33,6 +33,7 @@ enum class IndexSection
   isTitlePageAuthor,
   isMainPage,
   isModuleIndex,
+  isTopicIndex,
   isDirIndex,
   isNamespaceIndex,
   isConceptIndex,
@@ -41,6 +42,7 @@ enum class IndexSection
   isFileIndex,
   isPageIndex,
   isModuleDocumentation,
+  isTopicDocumentation,
   isDirDocumentation,
   isNamespaceDocumentation,
   isClassDocumentation,
@@ -58,6 +60,7 @@ enum class HighlightedItem
   Main,
   Modules,
   Namespaces,
+  Topics,
   ClassHierarchy,
   InterfaceHierarchy,
   ExceptionHierarchy,
@@ -72,6 +75,7 @@ enum class HighlightedItem
   AnnotatedExceptions,
   Files,
   NamespaceMembers,
+  ModuleMembers,
   Functions,
   Globals,
   Pages,
@@ -85,7 +89,8 @@ enum class HighlightedItem
   StructVisible,
   ExceptionVisible,
   NamespaceVisible,
-  FileVisible
+  FileVisible,
+  ModuleVisible
 };
 
 // Note: we can't use enum class for the enums below as they are also used as an array index,
@@ -141,6 +146,20 @@ namespace NamespaceMemberHighlight
   };
 } // namespace NamespaceMemberHighlight
 
+namespace ModuleMemberHighlight
+{
+  enum Enum : int
+  {
+    All = 0,
+    Functions,
+    Variables,
+    Typedefs,
+    Enums,
+    EnumValues,
+    Total
+  };
+} // namespace ModuleMemberHighlight
+
 class Index
 {
   public:
@@ -153,6 +172,7 @@ class Index
     void addClassMemberNameToIndex(const MemberDef *md);
     void addFileMemberNameToIndex(const MemberDef *md);
     void addNamespaceMemberNameToIndex(const MemberDef *md);
+    void addModuleMemberNameToIndex(const MemberDef *md);
     void sortMemberIndexLists();
 
     // ---- getters
@@ -170,6 +190,7 @@ class Index
     int numDocumentedGroups() const;
     int numDocumentedNamespaces() const;
     int numDocumentedConcepts() const;
+    int numDocumentedModules() const;
     int numIndexedPages() const;
     int numDocumentedFiles() const;
     int numDocumentedPages() const;
@@ -177,17 +198,21 @@ class Index
     int numDocumentedClassMembers(ClassMemberHighlight::Enum e) const;
     int numDocumentedFileMembers(FileMemberHighlight::Enum e) const;
     int numDocumentedNamespaceMembers(NamespaceMemberHighlight::Enum e) const;
+    int numDocumentedModuleMembers(ModuleMemberHighlight::Enum e) const;
     MemberIndexMap isClassIndexLetterUsed(ClassMemberHighlight::Enum e) const;
     MemberIndexMap isFileIndexLetterUsed(FileMemberHighlight::Enum e) const;
     MemberIndexMap isNamespaceIndexLetterUsed(NamespaceMemberHighlight::Enum e) const;
+    MemberIndexMap isModuleIndexLetterUsed(ModuleMemberHighlight::Enum e) const;
 
   private:
     void resetDocumentedClassMembers(int i);
     void resetDocumentedFileMembers(int i);
     void resetDocumentedNamespaceMembers(int i);
+    void resetDocumentedModuleMembers(int i);
     void incrementDocumentedClassMembers(int i,const std::string &letter,const MemberDef *md);
     void incrementDocumentedFileMembers(int i,const std::string &letter,const MemberDef *md);
     void incrementDocumentedNamespaceMembers(int i,const std::string &letter,const MemberDef *md);
+    void incrementDocumentedModuleMembers(int i,const std::string &letter,const MemberDef *md);
     Index();
     ~Index();
     struct Private;

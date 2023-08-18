@@ -1499,7 +1499,7 @@ int Markdown::processLink(const char *data,int offset,int size)
   return i;
 }
 
-/** '`' parsing a code span (assuming codespan != 0) */
+/** `` ` `` parsing a code span (assuming codespan != 0) */
 int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
 {
   AUTO_TRACE("data='{}' size={}",Trace::trunc(data),size);

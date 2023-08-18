@@ -50,6 +50,7 @@ typedef yyguts_t *yyscan_t;
 #include "language.h"
 #include "commentscan.h"
 #include "arguments.h"
+#include "moduledef.h"
 
 #include "clangparser.h"
 #include "markdown.h"
@@ -99,6 +100,7 @@ struct scannerYY_state
   int              lastModifierContext = 0;
   Protection       protection = Protection::Public;
   Protection       baseProt = Protection::Public;
+  bool             exported = false;
   int              sharpCount   = 0 ;
   int              roundCount   = 0 ;
   int              curlyCount   = 0 ;
@@ -280,6 +282,7 @@ ASSIGNOP  "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
 LOGICOP   "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"|"<=>"
 BITOP     "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
+MODULE_ID ({ID}".")*{ID}
 
   /* no comment start / end signs inside square brackets */
 NCOMM [^/\*]
@@ -477,6 +480,10 @@ NONLopt [^\n]*
  /** Object-C Deprecated */
 %x      Deprecated_round
 
+
+  /** C++20 modules */
+%x      ModuleName
+%x      ModuleImport
 %%
 
 <*>"DEPRECATED_ATTRIBUTE"               { // Object-C attribute
@@ -1061,6 +1068,126 @@ NONLopt [^\n]*
 <PackageName>"{"                        {
                                           yyextra->curlyCount=0;
                                           BEGIN( ReadNSBody );
+                                        }
+<FindMembers>{B}*"export"{BN}+"module"{BN}+ { // primary module interface unit
+                                          if (!yyextra->insideCpp) REJECT;
+                                          //printf("Interface module unit\n");
+                                          yyextra->current->exported = true;
+                                          lineCount(yyscanner);
+                                          BEGIN( ModuleName );
+                                        }
+<FindMembers>{B}*"module"{BN}*";"       { // global module section
+                                          if (!yyextra->insideCpp) REJECT;
+                                          //printf("Implementation module unit\n");
+                                          lineCount(yyscanner);
+                                          BEGIN( FindMembers );
+                                        }
+<FindMembers>{B}*"module"{BN}+          { // module implementation unit
+                                          if (!yyextra->insideCpp) REJECT;
+                                          //printf("Implementation module unit\n");
+                                          yyextra->current->exported = false;
+                                          lineCount(yyscanner);
+                                          BEGIN( ModuleName );
+                                        }
+<FindMembers>{B}*"export"{BN}+"import"{BN}+  { // export an imported module
+                                          yyextra->current->exported = true;
+                                          lineCount(yyscanner);
+                                          BEGIN( ModuleImport );
+                                        }
+<FindMembers>{B}*"import"{BN}+          { // start of a module import
+                                          lineCount(yyscanner);
+                                          BEGIN( ModuleImport );
+                                        }
+<ModuleName>{MODULE_ID}{BN}*":"{BN}*{MODULE_ID} { // module partition name, e.g. A.B:C.D'
+                                          QCString name = yytext;
+                                          int i = name.find(':');
+                                          QCString partition = name.mid(i+1).stripWhiteSpace();
+                                          name = name.left(i).stripWhiteSpace();
+                                          ModuleManager::instance().createModuleDef(yyextra->fileName,
+                                                                                    yyextra->yyLineNr,
+                                                                                    yyextra->yyColNr,
+                                                                                    yyextra->current->exported,
+                                                                                    name,
+                                                                                    partition);
+                                          yyextra->current->section = Entry::MODULEDOC_SEC;
+                                          yyextra->isTypedef=FALSE;
+                                          addType(yyscanner);
+                                          yyextra->current->type += " module";
+                                          yyextra->current->fileName  = yyextra->fileName;
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          yyextra->current->startColumn = yyextra->yyColNr;
+                                          yyextra->current->bodyLine  = yyextra->yyLineNr;
+                                          yyextra->current->bodyColumn = yyextra->yyColNr;
+                                          yyextra->current->name = name+":"+partition;
+                                          lineCount(yyscanner);
+                                        }
+<ModuleName>{MODULE_ID}                 { // primary module name, e.g. A.B
+                                          ModuleManager::instance().createModuleDef(yyextra->fileName,
+                                                                                    yyextra->yyLineNr,
+                                                                                    yyextra->yyColNr,
+                                                                                    yyextra->current->exported,
+                                                                                    yytext);
+                                          yyextra->current->section = Entry::MODULEDOC_SEC;
+                                          yyextra->isTypedef=FALSE;
+                                          addType(yyscanner);
+                                          yyextra->current->type += " module";
+                                          yyextra->current->fileName  = yyextra->fileName;
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          yyextra->current->startColumn = yyextra->yyColNr;
+                                          yyextra->current->bodyLine  = yyextra->yyLineNr;
+                                          yyextra->current->bodyColumn = yyextra->yyColNr;
+                                          yyextra->current->name = yytext;
+                                          lineCount(yyscanner);
+                                        }
+<ModuleName>":"{BN}+"private"           { // start of private section of the module interface
+                                          yyextra->current->exported = yyextra->exported = false;
+                                          lineCount(yyscanner);
+                                        }
+<ModuleName>";"                         { unput(';');
+                                          BEGIN(FindMembers);
+                                        }
+<ModuleName>\n                          { lineCount(yyscanner); }
+<ModuleName>.                           {}
+<ModuleImport>"\""[^"\n]*"\""           { // local header import
+                                          ModuleManager::instance().addHeader(yyextra->fileName,
+                                                                              yyextra->yyLineNr,
+                                                                              QCString(yytext).mid(1,yyleng-2),
+                                                                              false);
+                                        }
+<ModuleImport>"<"[^>\n]*">"             { // system header import
+                                          ModuleManager::instance().addHeader(yyextra->fileName,
+                                                                              yyextra->yyLineNr,
+                                                                              QCString(yytext).mid(1,yyleng-2),
+                                                                              true);
+                                        }
+<ModuleImport>{MODULE_ID}?{BN}*":"{BN}*{MODULE_ID} { // module partition import
+                                          QCString name = yytext; // can be 'M:P' or ':P'
+                                          int i = name.find(':');
+                                          QCString partition = name.mid(i+1).stripWhiteSpace();
+                                          name = name.left(i).stripWhiteSpace();
+                                          ModuleManager::instance().addImport(yyextra->fileName,
+                                                                              yyextra->yyLineNr,
+                                                                              name,
+                                                                              yyextra->current->exported,
+                                                                              partition);
+                                          lineCount(yyscanner);
+                                        }
+<ModuleImport>{MODULE_ID}               { // module import
+                                          ModuleManager::instance().addImport(yyextra->fileName,
+                                                                              yyextra->yyLineNr,
+                                                                              yytext,
+                                                                              yyextra->current->exported);
+                                          lineCount(yyscanner);
+                                        }
+<ModuleImport>";"                       { BEGIN(FindMembers); }
+<ModuleImport>\n                        { lineCount(yyscanner); }
+<ModuleImport>.                         {}
+<FindMembers>{B}*"export"{BN}+"{"       {
+                                          yyextra->current->exported = yyextra->exported = true; // export block
+                                        }
+<FindMembers>{B}*"export"{BN}+          {
+                                          if (!yyextra->insideCpp) REJECT;
+                                          yyextra->current->exported=true;
                                         }
 <FindMembers>{B}*"initonly"{BN}+        { if (yyextra->insideJava || yyextra->insideCpp) REJECT;
                                           yyextra->current->type += " initonly ";
@@ -1907,12 +2034,13 @@ NONLopt [^\n]*
                                           yyextra->current->name=n.left(n.length()-2);
                                         }
 <FindMembers>{SCOPENAME}{BNopt}/"<"     { // Note: this could be a return type!
+                                          QCString name = QCString(yytext).stripWhiteSpace();
+                                          if (yyextra->insideCpp && name=="import") REJECT; // C++20 module header import
                                           yyextra->roundCount=0;
                                           yyextra->sharpCount=0;
                                           lineCount(yyscanner);
                                           addType(yyscanner);
-                                          yyextra->current->name=yytext;
-                                          yyextra->current->name=yyextra->current->name.stripWhiteSpace();
+                                          yyextra->current->name=name;
                                           //yyextra->current->scopeSpec.resize(0);
                                           // yyextra->currentTemplateSpec = &yyextra->current->scopeSpec;
                                           if (nameIsOperator(yyextra->current->name))
@@ -3494,7 +3622,13 @@ NONLopt [^\n]*
                                           bool isStatic = yyextra->current->isStatic;
                                           Protection prot = yyextra->current->protection;
                                           bool isConcept = yyextra->current->section==Entry::CONCEPT_SEC;
+                                          bool isModule  = yyextra->current->section==Entry::MODULEDOC_SEC;
                                           if (isConcept) // C++20 concept
+                                          {
+                                            yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
+                                            initEntry(yyscanner);
+                                          }
+                                          else if (isModule) // C++20 module
                                           {
                                             yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
                                             initEntry(yyscanner);
@@ -7134,6 +7268,7 @@ NONLopt [^\n]*
                                             }
                                           }
                                         }
+<*>"}"                                  { yyextra->exported=false; }
 <*>.
 <SkipComment>{CPPC}|{CCS}
 <*>{CCS}                                 { yyextra->lastCContext = YY_START ;
@@ -7205,6 +7340,7 @@ static void initEntry(yyscan_t yyscanner)
     yyextra->protection = (yyextra->current_root->spec & (Entry::Interface|Entry::Enum)) ?  Protection::Public : Protection::Package;
   }
   yyextra->current->protection = yyextra->protection ;
+  yyextra->current->exported   = yyextra->exported ;
   yyextra->current->mtype      = yyextra->mtype;
   yyextra->current->virt       = yyextra->virt;
   yyextra->current->isStatic   = yyextra->isStatic;
@@ -7746,10 +7882,16 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
           yyextra->current->isStatic = yyextra->isStatic = TRUE;
         }
         yyextra->current->protection = yyextra->protection = ce->protection;
+        yyextra->current->exported = yyextra->exported = false;
+      }
+      else if (ce->section==Entry::NAMESPACE_SEC )
+      {
+        yyextra->current->exported = yyextra->exported = ce->exported;
       }
       else // named struct, union, protocol, category
       {
         yyextra->current->protection = yyextra->protection = Protection::Public ;
+        yyextra->current->exported = yyextra->exported = false;
       }
       yyextra->mtype = MethodTypes::Method;
       yyextra->virt = Specifier::Normal;
@@ -7801,6 +7943,7 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->protection    = Protection::Public;
   yyextra->mtype         = MethodTypes::Method;
   yyextra->isStatic      = FALSE;
+  yyextra->exported      = false;
   yyextra->virt          = Specifier::Normal;
   yyextra->current_root  = rt;
   yyextra->yyLineNr      = 1 ;

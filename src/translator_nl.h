@@ -2239,6 +2239,71 @@ class TranslatorDutch : public Translator
 
     virtual QCString trDefinition()  { return "Definitie";}
     virtual QCString trDeclaration() { return "Declaratie";}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trTopics()
+    { return "Onderwerpen"; }
+    virtual QCString trTopicDocumentation()
+    { return "Documentatie voor dit onderwerp"; }
+    virtual QCString trTopicIndex()
+    { return "Overwerpen"; }
+    virtual QCString trTopicList()
+    { return "Lijst met onderwerpen"; }
+    virtual QCString trTopicListDescription()
+    { return "Hieronder volgt de lijst met alle onderwerpen, elk met een korte beschrijving:"; }
+    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Hier is een lijst van alle ";
+      if (!extractAll) result+="gedocumenteerde ";
+      result+="module ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="symbool";
+          pluralResult="symbolen";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="e functie";
+          pluralResult="functies";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="e variabele";
+          pluralResult="variabelen";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="e typedef";
+          pluralResult="typedefs";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="e enumeratie";
+          pluralResult="enumeraties";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="e enumeratie waarde";
+          pluralResult="enumeratie waarden";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=pluralResult;
+      result+=" met links naar ";
+      if (extractAll)
+        result+="de module documentatie voor ieder" + singularResult + ":";
+      else
+        result+="de modules waartoe ze behoren:";
+      return result;
+    }
+    virtual QCString trExportedModules()
+    {
+      return "Ge&euml;xporteerde Modules";
+    }
+
 };
 
 #endif

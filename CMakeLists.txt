@@ -11,7 +11,7 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.12)
 project(doxygen)
 
 option(build_wizard    "Build the GUI frontend for doxygen." OFF)
@@ -148,7 +148,7 @@ else ()
 endif ()
 
 find_program(DOT NAMES dot)
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED)
 find_package(FLEX REQUIRED)
 if (FLEX_VERSION VERSION_LESS 2.5.37)
   message(SEND_ERROR "Doxygen requires at least flex version 2.5.37 (installed: ${FLEX_VERSION})")

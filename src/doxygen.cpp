@@ -110,6 +110,7 @@
 #include "dir.h"
 #include "conceptdef.h"
 #include "trace.h"
+#include "moduledef.h"
 
 #include <sqlite3.h>
 
@@ -496,7 +497,7 @@ static void buildFileList(const Entry *root)
       fd=findFileDef(Doxygen::inputNameLinkedMap,fn,ambig);
       if (!fd) ambig = save_ambig;
     }
-    //printf("**************** root->name=%s fd=%p\n",qPrint(root->name),fd);
+    //printf("**************** root->name=%s fd=%p\n",qPrint(root->name),(void*)fd);
     if (fd && !ambig)
     {
       //printf("Adding documentation!\n");
@@ -1078,6 +1079,7 @@ static void addClassToContext(const Entry *root)
       }
     }
     addClassToGroups(root,cd);
+    ModuleManager::instance().addClassToModule(root,cd);
     cd->setRefItems(root->sli);
   }
 }
@@ -1224,9 +1226,21 @@ static void addConceptToContext(const Entry *root)
       fd->insertConcept(cd);
     }
     addConceptToGroups(root,cd);
+    ModuleManager::instance().addConceptToModule(root,cd);
     cd->setRefItems(root->sli);
   }
 }
+
+static void findModuleDocumentation(const Entry *root)
+{
+  if (root->section==Entry::MODULEDOC_SEC)
+  {
+    AUTO_TRACE();
+    ModuleManager::instance().addDocs(root);
+  }
+  for (const auto &e : root->children()) findModuleDocumentation(e.get());
+}
+
 static void buildConceptList(const Entry *root)
 {
   if (root->section & Entry::CONCEPT_SEC)
@@ -1708,6 +1722,7 @@ static void buildNamespaceList(const Entry *root)
           nd->setId(root->id);
           nd->setMetaData(root->metaData);
           nd->setInline((root->spec&Entry::Inline)!=0);
+          nd->setExported(root->exported);
 
           addNamespaceToGroups(root,nd);
           nd->setRefItems(root->sli);
@@ -1912,6 +1927,7 @@ static void findUsingDirectives(const Entry *root)
           nd->setId(root->id);
           nd->setMetaData(root->metaData);
           nd->setInline((root->spec&Entry::Inline)!=0);
+          nd->setExported(root->exported);
 
           for (const Grouping &g : root->groups)
           {
@@ -2282,6 +2298,7 @@ static MemberDef *addVariableToClass(
   mmd->setLanguage(root->lang);
   mmd->setId(root->id);
   addMemberToGroups(root,md.get());
+  ModuleManager::instance().addMemberToModule(root,md.get());
   mmd->setBodyDef(root->fileDef());
   mmd->addQualifiers(root->qualifiers);
 
@@ -2508,6 +2525,7 @@ static MemberDef *addVariableToFile(
     mmd->setBodyDef(fd);
   }
   addMemberToGroups(root,md.get());
+  ModuleManager::instance().addMemberToModule(root,md.get());
 
   mmd->setRefItems(root->sli);
   if (nd && !nd->isAnonymous())
@@ -3088,6 +3106,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   cd->insertUsedFile(fd);
 
   addMemberToGroups(root,md.get());
+  ModuleManager::instance().addMemberToModule(root,md.get());
   root->markAsProcessed();
   mmd->setRefItems(root->sli);
 
@@ -3276,6 +3295,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   cd->insertUsedFile(fd);
 
   addMemberToGroups(root,md.get());
+  ModuleManager::instance().addMemberToModule(root,md.get());
   root->markAsProcessed();
   mmd->setRefItems(root->sli);
 
@@ -3382,6 +3402,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   }
 
   addMemberToGroups(root,md.get());
+  ModuleManager::instance().addMemberToModule(root,md.get());
   if (root->relatesType == RelatesType::Simple) // if this is a relatesalso command,
                                                 // allow find Member to pick it up
   {
@@ -3635,6 +3656,7 @@ static void buildFunctionList(const Entry *root)
                   {
                     //printf("both members are grouped\n");
                   }
+                  ModuleManager::instance().addMemberToModule(root,md);
 
                   // if md is a declaration and root is the corresponding
                   // definition, then turn md into a definition.
@@ -5023,6 +5045,8 @@ static void addListReferences()
         theTranslator->trDir(TRUE,TRUE),
         name,dd->displayName(),QCString(),0);
   }
+
+  ModuleManager::instance().addListReferences();
 }
 
 //----------------------------------------------------------------------
@@ -5166,6 +5190,7 @@ static void addMemberDocs(const Entry *root,
   md->mergeMemberSpecifiers(spec);
   md->addSectionsToDefinition(root->anchors);
   addMemberToGroups(root,md);
+  ModuleManager::instance().addMemberToModule(root,md);
   if (cd) cd->insertUsedFile(rfd);
   //printf("root->mGrpId=%d\n",root->mGrpId);
   if (root->mGrpId!=-1)
@@ -5942,11 +5967,10 @@ static void addMemberFunction(const Entry *root,
 
     warnMsg+="  ";
     warnMsg+=fullFuncDecl;
-    warnMsg+='\n';
 
     if (candidates>0 || noMatchCount>=1)
     {
-      warnMsg+="Possible candidates:\n";
+      warnMsg+="\nPossible candidates:";
 
       NamespaceDef *nd=0;
       if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
@@ -5963,6 +5987,7 @@ static void addMemberFunction(const Entry *root,
         }
         if (cd!=0 && (rightScopeMatch(cd->name(),className) || (cd!=tcd)))
         {
+          warnMsg+='\n';
           const ArgumentList &templAl = md->templateArguments();
           warnMsg+="  '";
           if (templAl.hasParameters())
@@ -5982,11 +6007,10 @@ static void addMemberFunction(const Entry *root,
             warnMsg+=qScope+"::"+md->name();
           warnMsg+=md->argsString();
           warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
-          warnMsg+='\n';
         }
       }
     }
-    warn_simple(root->fileName,root->startLine,qPrint(warnMsg));
+    warn(root->fileName,root->startLine,"%s",qPrint(warnMsg));
   }
 }
 
@@ -6694,6 +6718,7 @@ static void findMember(const Entry *root,
           if (!mdDefine)
           {
             addMemberToGroups(root,md.get());
+            ModuleManager::instance().addMemberToModule(root,md.get());
           }
           //printf("Adding member=%s\n",qPrint(md->name()));
           mn->push_back(std::move(md));
@@ -7122,6 +7147,7 @@ static void findEnums(const Entry *root)
 
       //printf("Adding member=%s\n",qPrint(md->name()));
       addMemberToGroups(root,md.get());
+      ModuleManager::instance().addMemberToModule(root,md.get());
 
       MemberName *mn = mnsd->add(name);
       mn->push_back(std::move(md));
@@ -7403,6 +7429,7 @@ static void addEnumDocs(const Entry *root,MemberDefMutable *md)
   {
     addMemberToGroups(root,md);
   }
+  ModuleManager::instance().addMemberToModule(root,md);
 }
 
 //----------------------------------------------------------------------
@@ -7583,6 +7610,10 @@ static void addMembersToIndex()
     for (const auto &md : *mn)
     {
       index.addClassMemberNameToIndex(md.get());
+      if (md->getModuleDef())
+      {
+        index.addModuleMemberNameToIndex(md.get());
+      }
     }
   }
   // for each file/namespace function name
@@ -7599,8 +7630,13 @@ static void addMembersToIndex()
       {
         index.addFileMemberNameToIndex(md.get());
       }
+      if (md->getModuleDef())
+      {
+        index.addModuleMemberNameToIndex(md.get());
+      }
     }
   }
+
   index.sortMemberIndexLists();
 }
 
@@ -8340,6 +8376,8 @@ static void sortMemberLists()
   {
     gd->sortMemberLists();
   }
+
+  ModuleManager::instance().sortMemberLists();
 }
 
 //----------------------------------------------------------------------------
@@ -8443,6 +8481,9 @@ static void countMembers()
   {
     gd->countMembers();
   }
+
+  auto &mm = ModuleManager::instance();
+  mm.countMembers();
 }
 
 
@@ -8679,6 +8720,7 @@ static void addMembersToMemberGroup()
   {
     gd->addMembersToMemberGroup();
   }
+  ModuleManager::instance().addMembersToMemberGroup();
 }
 
 //----------------------------------------------------------------------------
@@ -8716,6 +8758,7 @@ static void distributeMemberGroupDocumentation()
   {
     gd->distributeMemberGroupDocumentation();
   }
+  ModuleManager::instance().distributeMemberGroupDocumentation();
 }
 
 //----------------------------------------------------------------------------
@@ -8767,6 +8810,7 @@ static void findSectionsInDocumentation()
   {
     pd->findSectionsInDocumentation();
   }
+  ModuleManager::instance().findSectionsInDocumentation();
   if (Doxygen::mainPage) Doxygen::mainPage->findSectionsInDocumentation();
 }
 
@@ -8918,6 +8962,7 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
   md->setRefItems(root->sli);
   if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
   addMemberToGroups(root,md);
+  ModuleManager::instance().addMemberToModule(root,md);
 }
 
 //----------------------------------------------------------------------------
@@ -10766,6 +10811,7 @@ void cleanUpDoxygen()
 {
   FormulaManager::instance().clear();
   SectionManager::instance().clear();
+  ModuleManager::instance().clear();
 
   delete Doxygen::indexList;
   delete Doxygen::inputNameLinkedMap;
@@ -11424,6 +11470,11 @@ static void writeTagFile()
   {
     if (gd->isLinkableInProject()) gd->writeTagFile(tagFile);
   }
+  // for each module
+  for (const auto &mod : ModuleManager::instance().modules())
+  {
+    if (mod->isLinkableInProject()) mod->writeTagFile(tagFile);
+  }
   // for each page
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
@@ -12006,6 +12057,10 @@ void parseInput()
   distributeConceptGroups();
   g_s.end();
 
+  g_s.begin("Associating documentation with modules...\n");
+  findModuleDocumentation(root.get());
+  g_s.end();
+
   g_s.begin("Building example list...\n");
   buildExampleList(root.get());
   g_s.end();
@@ -12132,6 +12187,13 @@ void parseInput()
   findGroupScope(root.get());
   g_s.end();
 
+  g_s.begin("Computing module relations...\n");
+  auto &mm = ModuleManager::instance();
+  mm.resolvePartitions();
+  mm.resolveImports();
+  mm.collectExportedSymbols();
+  g_s.end();
+
   auto memberNameComp = [](const MemberNameLinkedMap::Ptr &n1,const MemberNameLinkedMap::Ptr &n2)
   {
     return qstricmp(n1->memberName().data()+getPrefixIndex(n1->memberName()),
@@ -12217,6 +12279,7 @@ void parseInput()
     inheritDocumentation();
     g_s.end();
   }
+
 
   // compute the shortest possible names of all files
   // without losing the uniqueness of the file names.
@@ -12476,6 +12539,10 @@ void generateOutput()
 
   g_s.begin("Generating concept documentation...\n");
   generateConceptDocs();
+  g_s.end();
+
+  g_s.begin("Generating module documentation...\n");
+  ModuleManager::instance().writeDocumentation(*g_outputList);
   g_s.end();
 
   g_s.begin("Generating namespace documentation...\n");

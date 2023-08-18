@@ -30,6 +30,7 @@ class Entry;
 class ClassDef;
 class MemberList;
 class MemberDef;
+class ModuleDef;
 class MemberDefMutable;
 class OutputList;
 class Definition;
@@ -197,18 +198,18 @@ class VhdlDocGen
 
     static bool writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
-    static void writeVhdlDeclarations(const MemberList*,OutputList&,const GroupDef*,const ClassDef*,const FileDef*,const NamespaceDef*);
+    static void writeVhdlDeclarations(const MemberList*,OutputList&,const GroupDef*,const ClassDef*,const FileDef*,const NamespaceDef*,const ModuleDef *);
 
     static void writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &ol,
-        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
         bool inGroup);
 
     static void writePlainVHDLDeclarations(const MemberList* ml,OutputList &ol,
-        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
         uint64_t specifier);
 
     static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
-        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
         const QCString &title,const QCString &subtitle,bool showEnumValues,int type);
 
     static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);

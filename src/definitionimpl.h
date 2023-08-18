@@ -61,6 +61,7 @@ class DefinitionImpl
     bool isVisible() const;
     bool isHidden() const;
     bool isArtificial() const;
+    bool isExported() const;
     QCString getReference() const;
     bool isReference() const;
     QCString externalReference(const QCString &relPath) const;
@@ -101,6 +102,7 @@ class DefinitionImpl
     void setOuterScope(Definition *d);
     void setHidden(bool b);
     void setArtificial(bool b);
+    void setExported(bool b);
     void setLanguage(SrcLangExt lang);
     void writeSourceDef(OutputList &ol,const QCString &scopeName) const;
     void writeInlineCode(OutputList &ol,const QCString &scopeName) const;
@@ -180,6 +182,7 @@ class DefinitionMixin : public Base
     virtual bool isVisible() const override { return m_impl.isVisible(); }
     virtual bool isHidden() const override { return m_impl.isHidden(); }
     virtual bool isArtificial() const override { return m_impl.isArtificial(); }
+    virtual bool isExported() const override { return m_impl.isExported(); }
     virtual QCString getReference() const override { return m_impl.getReference(); }
     virtual bool isReference() const override { return m_impl.isReference(); }
     virtual QCString externalReference(const QCString &relPath) const override { return m_impl.externalReference(relPath); }
@@ -240,6 +243,8 @@ class DefinitionMixin : public Base
     { m_impl.setHidden(b); }
     virtual void setArtificial(bool b) override
     { m_impl.setArtificial(b); }
+    virtual void setExported(bool b) override
+    { m_impl.setExported(b); }
     virtual void setLanguage(SrcLangExt lang) override
     { m_impl.setLanguage(lang); }
     virtual void writeSourceDef(OutputList &ol,const QCString &scopeName) const override
@@ -379,6 +384,8 @@ class DefinitionAliasMixin : public Base
     { return m_alias->isHidden(); }
     virtual bool isArtificial() const override
     { return m_alias->isArtificial(); }
+    virtual bool isExported() const override
+    { return m_alias->isExported(); }
     virtual QCString getReference() const override
     { return m_alias->getReference(); }
     virtual bool isReference() const override

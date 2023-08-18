@@ -39,6 +39,7 @@
 #include "emoji.h"
 #include "dir.h"
 #include "portable.h"
+#include "moduledef.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -1421,6 +1422,7 @@ public:
   void addIncludeInfo(const IncludeInfo *ii);
   void generatePerlModForClass(const ClassDef *cd);
   void generatePerlModForConcept(const ConceptDef *cd);
+  void generatePerlModForModule(const ModuleDef *mod);
   void generatePerlModForNamespace(const NamespaceDef *nd);
   void generatePerlModForFile(const FileDef *fd);
   void generatePerlModForGroup(const GroupDef *gd);
@@ -1696,7 +1698,7 @@ void PerlModGenerator::addIncludeInfo(const IncludeInfo *ii)
     if (!nm.isEmpty())
     {
       m_output.openHash("includes");
-      m_output.addFieldBoolean("local", ii->local)
+      m_output.addFieldBoolean("local", ii->kind==IncludeKind::IncludeLocal || ii->kind==IncludeKind::ImportLocal)
 	.addFieldQuotedString("name", nm)
 	.closeHash();
     }
@@ -1841,6 +1843,66 @@ void PerlModGenerator::generatePerlModForConcept(const ConceptDef *cd)
   m_output.addFieldQuotedString("initializer", cd->initializer());
   addPerlModDocBlock(m_output,"brief",cd->getDefFileName(),cd->getDefLine(),0,0,cd->briefDescription());
   addPerlModDocBlock(m_output,"detailed",cd->getDefFileName(),cd->getDefLine(),0,0,cd->documentation());
+
+  m_output.closeHash();
+}
+
+void PerlModGenerator::generatePerlModForModule(const ModuleDef *mod)
+{
+  // + contained class definitions
+  // + contained concept definitions
+  // + member groups
+  // + normal members
+  // + brief desc
+  // + detailed desc
+  // + location (file_id, line, column)
+  // - exports
+  // + used files
+
+  if (mod->isReference()) return; // skip external references
+
+  m_output.openHash()
+    .addFieldQuotedString("name", mod->name());
+
+  generatePerlUserDefinedSection(mod, mod->getMemberGroups());
+
+  if (!mod->getClasses().empty())
+  {
+    m_output.openList("classes");
+    for (const auto &cd : mod->getClasses())
+      m_output.openHash()
+	.addFieldQuotedString("name", cd->name())
+	.closeHash();
+    m_output.closeList();
+  }
+
+  if (!mod->getConcepts().empty())
+  {
+    m_output.openList("concepts");
+    for (const auto &cd : mod->getConcepts())
+      m_output.openHash()
+	.addFieldQuotedString("name", cd->name())
+	.closeHash();
+    m_output.closeList();
+  }
+
+  generatePerlModSection(mod,mod->getMemberList(MemberListType_decTypedefMembers),"typedefs");
+  generatePerlModSection(mod,mod->getMemberList(MemberListType_decEnumMembers),"enums");
+  generatePerlModSection(mod,mod->getMemberList(MemberListType_decFuncMembers),"functions");
+  generatePerlModSection(mod,mod->getMemberList(MemberListType_decVarMembers),"variables");
+
+  addPerlModDocBlock(m_output,"brief",mod->getDefFileName(),mod->getDefLine(),0,0,mod->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",mod->getDefFileName(),mod->getDefLine(),0,0,mod->documentation());
+
+  if (!mod->getUsedFiles().empty())
+  {
+    m_output.openList("files");
+    for (const auto &fd : mod->getUsedFiles())
+      m_output.openHash()
+	.addFieldQuotedString("name", fd->name())
+	.closeHash();
+    m_output.closeList();
+  }
 
   m_output.closeHash();
 }
@@ -1998,6 +2060,26 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
     m_output.closeList();
   }
 
+  if (!gd->getConcepts().empty())
+  {
+    m_output.openList("concepts");
+    for (const auto &cd : gd->getConcepts())
+      m_output.openHash()
+	.addFieldQuotedString("name", cd->name())
+	.closeHash();
+    m_output.closeList();
+  }
+
+  if (!gd->getModules().empty())
+  {
+    m_output.openList("modules");
+    for (const auto &mod : gd->getModules())
+      m_output.openHash()
+	.addFieldQuotedString("name", mod->name())
+	.closeHash();
+    m_output.closeList();
+  }
+
   if (!gd->getNamespaces().empty())
   {
     m_output.openList("namespaces");
@@ -2080,6 +2162,11 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.openList("concepts");
   for (const auto &cd : *Doxygen::conceptLinkedMap)
     generatePerlModForConcept(cd.get());
+  m_output.closeList();
+
+  m_output.openList("modules");
+  for (const auto &mod : ModuleManager::instance().modules())
+    generatePerlModForModule(mod.get());
   m_output.closeList();
 
   m_output.openList("namespaces");

@@ -145,6 +145,7 @@ documentation:
 \refitem cmdmaninclude \\maninclude
 \refitem cmdmanonly \\manonly
 \refitem cmdmemberof \\memberof
+\refitem cmdmodule \\module
 \refitem cmdmsc \\msc
 \refitem cmdmscfile \\mscfile
 \refitem cmdn \\n
@@ -509,9 +510,9 @@ Structural indicators
 
   \addindex \\defgroup
   Indicates that a comment block contains documentation for a
-  \ref modules "group" of classes, files or namespaces. This can be used to
-  categorize classes, files or namespaces, and document those
-  categories. You can also use groups as members of other groups,
+  \ref topics "topics" of classes, modules, concepts, files or namespaces. This can be used to
+  categorize symbols, and document those categories.
+  You can also use groups as members of other groups,
   thus building a hierarchy of groups.
 
   The \<name\> argument should be a single-word identifier.
@@ -916,6 +917,13 @@ Structural indicators
   \sa sections \ref cmdextends "\\extends", \ref cmdimplements "\\implements",
       \ref cmdpublic "\\public", \ref cmdprotected "\\protected" and
       \ref cmdprivate "\\private".
+
+<hr>
+\section cmdmodule \\module <name>
+
+  \addindex \\module
+  Indicates that a comment block contains documentation for a
+  C++20 module with name \<name\>.
 
 <hr>
 \section cmdname \\name [(header)]
@@ -3928,14 +3936,14 @@ class Receiver
   for Markdown tables.
 
 <hr>
-\section cmdndash \\--
+\section cmdndash \\\--
 
   \addindex \\\--
   This command writes two dashes (\--) to the output. This allows
   writing two consecutive dashes to the output instead of one n-dash character (--).
 
 <hr>
-\section cmdmdash \\---
+\section cmdmdash \\\---
 
   \addindex \\\---
   This command writes three dashes (\---) to the output. This allows
