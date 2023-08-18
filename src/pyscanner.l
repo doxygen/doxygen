@@ -147,6 +147,7 @@ static void initSpecialBlock(yyscan_t yyscanner);
 static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName);
+static void setProtection(yyscan_t yyscanner);
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
@@ -1049,6 +1050,8 @@ STARTDOCSYMS      "##"
 
                           yyextra->current->section = Entry::CLASS_SEC;
                           yyextra->current->name = yytext;
+                          // we need to set the protectiion based on the "local" class name
+                          setProtection(yyscanner);
 
                           // prepend scope in case of nested classes
                           if (yyextra->current_root->section&Entry::SCOPE_MASK)
