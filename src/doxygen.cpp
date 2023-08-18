@@ -96,7 +96,6 @@
 #include "docsets.h"
 #include "formula.h"
 #include "settings.h"
-#include "context.h"
 #include "fileparser.h"
 #include "emoji.h"
 #include "plantuml.h"
@@ -183,7 +182,6 @@ static OutputList      *g_outputList = 0;          // list of output generating 
 static StringSet        g_usingDeclarations; // used classes
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
-static bool             g_useOutputTemplate = FALSE;
 
 void clearAll()
 {
@@ -8002,7 +8000,7 @@ static void generateFileSources()
 {
   auto processSourceFile = [](FileDef *fd,OutputList &ol,ClangTUParser *parser)
   {
-    bool showSources  = fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate; // sources need to be shown in the output
+    bool showSources  = fd->generateSourceFile() && !Htags::useHtags; // sources need to be shown in the output
     bool parseSources = !fd->isReference() && Doxygen::parseSourcesNeeded; // we needed to parse the sources even if we do not show them
     if (showSources)
     {
@@ -8040,7 +8038,7 @@ static void generateFileSources()
         for (const auto &fd : *fn)
         {
           if (fd->isSource() && !fd->isReference() && fd->getLanguage()==SrcLangExt_Cpp &&
-              ((fd->generateSourceFile() && !g_useOutputTemplate) ||
+              (fd->generateSourceFile() ||
                (!fd->isReference() && Doxygen::parseSourcesNeeded)
               )
              )
@@ -8111,7 +8109,7 @@ static void generateFileSources()
         {
           for (const auto &fd : *fn)
           {
-            bool generateSourceFile = fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate;
+            bool generateSourceFile = fd->generateSourceFile() && !Htags::useHtags;
             auto ctx = std::make_shared<SourceContext>(fd.get(),generateSourceFile,*g_outputList);
             auto processFile = [ctx]()
             {
@@ -11146,12 +11144,6 @@ void readConfiguration(int argc, char **argv)
       case 'q':
         quiet = true;
         break;
-      case 'T':
-        msg("Warning: this option activates output generation via Django like template files. "
-            "This option is scheduled for doxygen 2.0, is currently incomplete and highly experimental! "
-            "Only use if you are a doxygen developer\n");
-        g_useOutputTemplate=TRUE;
-        break;
       case 'h':
       case '?':
         usage(argv[0],versionString);
@@ -11208,13 +11200,6 @@ void readConfiguration(int argc, char **argv)
       usage(argv[0],versionString);
       exit(1);
     }
-  }
-
-  if (genConfig && g_useOutputTemplate)
-  {
-    generateTemplateFiles("templates");
-    cleanUpDoxygen();
-    exit(0);
   }
 
   if (genConfig)
@@ -11811,7 +11796,7 @@ void parseInput()
 
   QCString htmlOutput;
   bool generateHtml = Config_getBool(GENERATE_HTML);
-  if (generateHtml || g_useOutputTemplate /* TODO: temp hack */)
+  if (generateHtml)
   {
     htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
     Config_updateString(HTML_OUTPUT,htmlOutput);
@@ -12444,7 +12429,7 @@ void generateOutput()
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
 
   g_s.begin("Generating search indices...\n");
-  if (searchEngine && !serverBasedSearch && (generateHtml || g_useOutputTemplate))
+  if (searchEngine && !serverBasedSearch && generateHtml)
   {
     createJavaScriptSearchIndex();
   }
@@ -12624,13 +12609,6 @@ void generateOutput()
       }
       Doxygen::searchIndex->write(searchDataFile);
     }
-    g_s.end();
-  }
-
-  if (g_useOutputTemplate)
-  {
-    g_s.begin("Generating output via template engine...\n");
-    generateOutputViaTemplate();
     g_s.end();
   }
 

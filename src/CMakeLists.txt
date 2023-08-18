@@ -240,7 +240,6 @@ add_library(doxymain STATIC
     cmdmapper.cpp
     conceptdef.cpp
     condparser.cpp
-    context.cpp
     cppvalue.cpp
     datetime.cpp
     defgen.cpp
@@ -318,7 +317,6 @@ add_library(doxymain STATIC
     stlsupport.cpp
     symbolresolver.cpp
     tagreader.cpp
-    template.cpp
     textdocvisitor.cpp
     tooltip.cpp
     utf8.cpp
