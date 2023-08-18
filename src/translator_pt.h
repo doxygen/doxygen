@@ -26,6 +26,9 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20230817:
+ *  - Updated to 1.9.8;
+ *  - Small fixes to the method TranslatorPortuguese::trNamespaceMembersDescriptionTotal(). 
  * 20230430:
  *  - Updated to 1.9.7;
  *  - Inclusion of translator_br.h's PortugueseTranslatorUtils namespace;
@@ -74,7 +77,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public TranslatorAdapter_1_9_8
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -2624,10 +2627,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_8
           break;
       }
       result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
-
-      result+="do namespace ";
-      if (!extractAll) result+="documented ";
-
+      result+=" do namespace ";
+      if (!extractAll) result+="documentado ";
       result+=" com links para ";
       if (extractAll)
         result+="a documentação de cada " + singularResult + ":";
@@ -2637,6 +2638,71 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_8
     }
     virtual QCString trDefinition()  { return "Definição";}
     virtual QCString trDeclaration() { return "Declaração";}
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trTopics()
+    { return "Tópicos"; }
+    virtual QCString trTopicDocumentation()
+    { return "Tópico"; }
+    virtual QCString trTopicList()
+    { return "Lista de Tópicos"; }
+    virtual QCString trTopicIndex()
+    { return "Índice de Tópicos"; }
+    virtual QCString trTopicListDescription()
+    { return "Esta é uma lista de todos os tópicos e suas descrições:"; }
+    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool masculine = PortugueseTranslatorUtils::isModuleMemberHighlightMasculine(hl);
+      QCString result="Esta é a list de ";
+      result+= (masculine?"todos os ":"todas as ");
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="membro";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="função";
+          pluralResult="funções";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="variável";
+          pluralResult="variáveis";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="definição de tipo";
+          pluralResult="definições de tipo";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="enumeração";
+          pluralResult="enumerações";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="valor enumerado";
+          pluralResult="valores enumerados";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+="do módulo ";
+      if (!extractAll) result+="documentado ";
+      result+=" com links para ";
+      if (extractAll)
+        result+="a documentação de cada " + singularResult + ":";
+      else
+        result+="o módulo a que pertencem:";      
+      return result;
+    }
+    virtual QCString trExportedModules()
+    {
+      return "Módulos Exportados";
+    }    
 };
 
 #endif
