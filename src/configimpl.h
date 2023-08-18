@@ -594,6 +594,10 @@ class ConfigImpl
       return substitute(result,"\r","");
     }
 
+    static void config_err(const char *fmt, ...);
+    static void config_term(const char *fmt, ...);
+    static void config_warn(const char *fmt, ...);
+
   private:
     ConfigOptionList m_options;
     ConfigOptionList m_obsolete;
