@@ -18,7 +18,8 @@
  */
 
 /**
- @todo - continuation lines not always recognized
+ @todo
+       - continuation lines not always recognized
        - merging of use-statements with same module name and different only-names
        - rename part of use-statement
        - links to interface functions
