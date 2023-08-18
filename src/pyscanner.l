@@ -1050,7 +1050,7 @@ STARTDOCSYMS      "##"
 
                           yyextra->current->section = Entry::CLASS_SEC;
                           yyextra->current->name = yytext;
-                          // we need tos set the protectiion based on the "l.cal" class name
+                          // we need to set the protectiion based on the "local" class name
                           setProtection(yyscanner);
 
                           // prepend scope in case of nested classes
