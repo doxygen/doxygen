@@ -508,6 +508,8 @@ static void buildFileList(const Entry *root)
       fd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       fd->addSectionsToDefinition(root->anchors);
       fd->setRefItems(root->sli);
+      fd->enableIncludeGraph(root->includeGraph);
+      fd->enableIncludedByGraph(root->includedByGraph);
       for (const Grouping &g : root->groups)
       {
         GroupDef *gd=0;

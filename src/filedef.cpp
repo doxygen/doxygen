@@ -197,6 +197,11 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void addIncludedUsingDirectives(FileDefSet &visitedFiles) override;
     virtual void addListReferences() override;
 
+    virtual bool hasIncludeGraph() const override;
+    virtual bool hasIncludedByGraph() const override;
+    virtual void enableIncludeGraph(bool e) override;
+    virtual void enableIncludedByGraph(bool e) override;
+
   private:
     void setDiskNameLocal(const QCString &name);
     void acquireFileVersion();
@@ -250,6 +255,9 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     ClassLinkedRefMap     m_exceptions;
     ConceptLinkedRefMap   m_concepts;
     bool                  m_subGrouping;
+    bool                  m_hasIncludeGraph = false;
+    bool                  m_hasIncludedByGraph = false;
+
 };
 
 std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const QCString &ref,const QCString &dn)
@@ -617,7 +625,7 @@ void FileDefImpl::writeIncludeFiles(OutputList &ol)
 
 void FileDefImpl::writeIncludeGraph(OutputList &ol)
 {
-  if (Config_getBool(HAVE_DOT) /*&& Config_getBool(INCLUDE_GRAPH)*/)
+  if (Config_getBool(HAVE_DOT) && m_hasIncludeGraph /*&& Config_getBool(INCLUDE_GRAPH)*/)
   {
     //printf("Graph for file %s\n",qPrint(name()));
     DotInclDepGraph incDepGraph(this,FALSE);
@@ -642,7 +650,7 @@ void FileDefImpl::writeIncludeGraph(OutputList &ol)
 
 void FileDefImpl::writeIncludedByGraph(OutputList &ol)
 {
-  if (Config_getBool(HAVE_DOT) /*&& Config_getBool(INCLUDED_BY_GRAPH)*/)
+  if (Config_getBool(HAVE_DOT) && m_hasIncludedByGraph /*&& Config_getBool(INCLUDED_BY_GRAPH)*/)
   {
     //printf("Graph for file %s\n",qPrint(name()));
     DotInclDepGraph incDepGraph(this,TRUE);
@@ -1782,6 +1790,26 @@ int FileDefImpl::numDecMembers() const
 {
   MemberList *ml = getMemberList(MemberListType_allMembersList);
   return ml ? ml->numDecMembers() : 0;
+}
+
+void FileDefImpl::enableIncludeGraph(bool e)
+{
+  m_hasIncludeGraph=e;
+}
+
+void FileDefImpl::enableIncludedByGraph(bool e)
+{
+  m_hasIncludedByGraph=e;
+}
+
+bool FileDefImpl::hasIncludeGraph() const
+{
+  return m_hasIncludeGraph;
+}
+
+bool FileDefImpl::hasIncludedByGraph() const
+{
+  return m_hasIncludedByGraph;
 }
 
 // -----------------------

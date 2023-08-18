@@ -3839,6 +3839,10 @@ UML notation for the relationships.
  tags are set to \c YES then doxygen will generate a graph for each documented file
  showing the direct and indirect include dependencies of the file with other
  documented files.
+ Explicit enabling an include graph, when \c INCLUDE_GRAPH is is set to \c NO, can be
+ accomplished by means of the command \ref cmdincludegraph "\\includegraph".
+ Disabling an include graph can be accomplished by means of the command
+ \ref cmdhideincludegraph "\\hideincludegraph".
 ]]>
       </docs>
     </option>
@@ -3850,6 +3854,10 @@ UML notation for the relationships.
  tags are set to \c YES then doxygen will generate a graph for each documented file
  showing the direct and indirect include dependencies of the file with other
  documented files.
+ Explicit enabling an included by graph, when \c INCLUDED_BY_GRAPH is set to \c NO, can be
+ accomplished by means of the command \ref cmdincludedbygraph "\\includedbygraph".
+ Disabling an included by graph can be accomplished by means of the command
+ \ref cmdhideincludedbygraph "\\hideincludedbygraph".
 ]]>
       </docs>
     </option>
