@@ -682,18 +682,14 @@ def main():
     if args.start_id:
         if args.end_id:
             for id in range(args.start_id, args.end_id + 1):
-                tests.append(glob.glob('%s_*'%id))
-                tests.append(glob.glob('0%s_*'%id))
-                tests.append(glob.glob('00%s_*'%id))
+                tests.append(glob.glob('%03d_*'%int(id)))
         else:
             parser.error('--start_id requires --end_id')
     elif args.end_id:
         parser.error('--end_id requires --start_id')
     if args.ids:  # test ids are given by user
         for id in list(itertools.chain.from_iterable(args.ids)):
-            tests.append(glob.glob('%s_*'%id))
-            tests.append(glob.glob('0%s_*'%id))
-            tests.append(glob.glob('00%s_*'%id))
+            tests.append(glob.glob('%03d_*'%int(id)))
     if (not args.ids and not args.start_id):  # find all tests
         tests = sorted(glob.glob('[0-9][0-9][0-9]_*'))
     else:
@@ -701,13 +697,7 @@ def main():
 
     if args.exclude_ids:  # test ids are given by user
         for id in list(itertools.chain.from_iterable(args.exclude_ids)):
-            x=glob.glob('%s_*'%id)
-            if len(x):
-              tests.remove(x[0])
-            x=glob.glob('0%s_*'%id)
-            if len(x):
-              tests.remove(x[0])
-            x=glob.glob('00%s_*'%id)
+            x=glob.glob('%03d_*'%int(id))
             if len(x):
               tests.remove(x[0])
     os.chdir(starting_directory)
