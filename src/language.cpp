@@ -69,6 +69,8 @@
 
 Translator *theTranslator=0;
 
+void config_warn(const char *fmt, ...);
+
 void setTranslator(OUTPUT_LANGUAGE_t langName)
 {
   switch (langName)
@@ -121,5 +123,5 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
   }
 
   QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) ::msg("%s", qPrint(msg));
+  if (!msg.isEmpty()) config_warn("%s", qPrint(msg));
 }
