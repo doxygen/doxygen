@@ -220,12 +220,6 @@ void va_warn(const QCString &file,int line,const char *fmt,va_list args)
   do_warn(Config_getBool(WARNINGS), file, line, g_warningStr, fmt, args);
 }
 
-void warn_simple(const QCString &file,int line,const char *text)
-{
-  if (!Config_getBool(WARNINGS)) return; // warning type disabled
-  format_warn(file,line,QCString(g_warningStr) + text);
-}
-
 void warn_undoc_(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;

@@ -8384,8 +8384,8 @@ TemplateListIntf::ConstIteratorPtr ArgumentListContext::createIterator() const
 class SymbolContext::Private
 {
   public:
-    Private(const Definition *d,const Definition *prev, const Definition *next)
-      : m_def(d), m_prevDef(prev), m_nextDef(next) {}
+    Private(const SearchTerm::LinkInfo &info,const SearchTerm::LinkInfo &prev, const SearchTerm::LinkInfo &next)
+      : m_info(info), m_prevInfo(prev), m_nextInfo(next) {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -8393,26 +8393,52 @@ class SymbolContext::Private
 
   private:
     // Property getters
-    TemplateVariant fileName() const             { return m_def->getOutputFileBase(); }
-    TemplateVariant anchor() const               { return m_def->anchor(); }
+    TemplateVariant fileName() const             { return std::holds_alternative<const Definition *>(m_info) ?
+                                                          std::get<const Definition *>(m_info)->getOutputFileBase() :
+                                                          std::get<const SectionInfo *>(m_info)->fileName(); }
+    TemplateVariant anchor() const               { return std::holds_alternative<const Definition *>(m_info) ?
+                                                          std::get<const Definition *>(m_info)->anchor() :
+                                                          std::get<const SectionInfo *>(m_info)->label(); }
     TemplateVariant scope() const                { return m_scope.get(this); }
-    TemplateVariant relPath() const              { return externalRef("../",m_def->getReference(),TRUE); }
+    TemplateVariant relPath() const              { QCString ref = std::holds_alternative<const Definition *>(m_info) ?
+                                                                  std::get<const Definition *>(m_info)->getReference() :
+                                                                  std::get<const SectionInfo *>(m_info)->ref();
+                                                   return externalRef("../",ref,TRUE); }
 
   private:
     TemplateVariant createScope() const
     {
-      const Definition *scope     = m_def->getOuterScope();
-      const Definition *next      = m_nextDef;
-      const Definition *prev      = m_prevDef;
-      const Definition *nextScope = next ? next->getOuterScope() : 0;
-      const Definition *prevScope = prev ? prev->getOuterScope() : 0;
-      const MemberDef  *md        = toMemberDef(m_def);
-      bool isFunctionLike   = md && (md->isFunction() || md->isSlot() || md->isSignal());
+      auto isDef = [](const SearchTerm::LinkInfo &info)
+      {
+        return std::holds_alternative<const Definition *>(info);
+      };
+      auto getDef = [isDef](const SearchTerm::LinkInfo &info)
+      {
+        return isDef(info) ? std::get<const Definition *>(info) : nullptr;
+      };
+      auto isSection = [](const SearchTerm::LinkInfo &info)
+      {
+        return std::holds_alternative<const SectionInfo *>(info);
+      };
+      auto getSection = [isSection](const SearchTerm::LinkInfo &info)
+      {
+        return isSection(info) ? std::get<const SectionInfo *>(info) : nullptr;
+      };
+
+      const Definition *d             = getDef(m_info);
+      const Definition *scope         = d ? d->getOuterScope() : nullptr;
+      const SectionInfo *si           = getSection(m_info);
+      const SearchTerm::LinkInfo next = m_nextInfo;
+      const SearchTerm::LinkInfo prev = m_prevInfo;
+      const Definition *nextScope     = isDef(next) ? getDef(next)->getOuterScope() : nullptr;
+      const Definition *prevScope     = isDef(prev) ? getDef(prev)->getOuterScope() : nullptr;
+      const MemberDef  *md            = isDef(m_info) ? toMemberDef(getDef(m_info)) : nullptr;
+      bool isFunctionLike   = md && md->isCallable();
       bool overloadedFunction = ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope)) &&
-                                md && (md->isFunction() || md->isSlot());
+                                md && md->isCallable();
 
       QCString name;
-      if (prev==0 && next==0) // unique name
+      if (prev==SearchTerm::LinkInfo() && next==SearchTerm::LinkInfo()) // unique name
       {
         if (scope && scope!=Doxygen::globalScope)
         {
@@ -8442,41 +8468,49 @@ class SymbolContext::Private
           prefix+="()"; // only to show it is a function
         }
         bool found=FALSE;
-        if (m_def->definitionType()==Definition::TypeClass)
+        if (d)
         {
-          name = m_def->displayName();
-          found = TRUE;
-        }
-        else if (m_def->definitionType()==Definition::TypeNamespace)
-        {
-          name = m_def->displayName();
-          found = TRUE;
-        }
-        else if (scope==0 || scope==Doxygen::globalScope) // in global scope
-        {
-          if (md)
+          switch (d->definitionType())
           {
-            const FileDef *fd = md->getBodyDef();
-            if (fd==0) fd = md->getFileDef();
-            if (fd)
-            {
-              if (!prefix.isEmpty()) prefix+=": ";
-              name = prefix + convertToXML(fd->localName());
-              found = TRUE;
-            }
+            case Definition::TypeClass:      name = d->displayName();   found=true; break;
+            case Definition::TypeNamespace:  name = d->displayName();   found=true; break;
+            case Definition::TypeModule:     name = d->displayName();   found=true; break;
+            case Definition::TypePage:       name = toPageDef(d)->title(); found=true; break;
+            case Definition::TypeGroup:      name = toGroupDef(d)->groupTitle(); found=true; break;
+            default:
+              if (scope==0 || scope==Doxygen::globalScope) // in global scope
+              {
+                if (md)
+                {
+                  const FileDef *fd = md->getBodyDef();
+                  if (fd==0) fd = md->getFileDef();
+                  if (fd)
+                  {
+                    if (!prefix.isEmpty()) prefix+=": ";
+                    name = prefix + convertToXML(fd->localName());
+                    found = TRUE;
+                  }
+                }
+              }
+              else if (md && (md->resolveAlias()->getClassDef() || md->resolveAlias()->getNamespaceDef()))
+                // member in class or namespace scope
+              {
+                SrcLangExt lang = md->getLanguage();
+                name = d->getOuterScope()->qualifiedName()
+                  + getLanguageSpecificSeparator(lang) + prefix;
+                found = TRUE;
+              }
+              else if (scope) // some thing else? -> show scope
+              {
+                name = prefix + convertToXML(scope->name());
+                found = TRUE;
+              }
+              break;
           }
         }
-        else if (md && (md->resolveAlias()->getClassDef() || md->resolveAlias()->getNamespaceDef()))
-          // member in class or namespace scope
+        else if (si)
         {
-          SrcLangExt lang = md->getLanguage();
-          name = m_def->getOuterScope()->qualifiedName()
-            + getLanguageSpecificSeparator(lang) + prefix;
-          found = TRUE;
-        }
-        else if (scope) // some thing else? -> show scope
-        {
-          name = prefix + convertToXML(scope->name());
+          name= si->title();
           found = TRUE;
         }
         if (!found) // fallback
@@ -8486,9 +8520,9 @@ class SymbolContext::Private
       }
       return name;
     }
-    const Definition *m_def;
-    const Definition *m_prevDef;
-    const Definition *m_nextDef;
+    const SearchTerm::LinkInfo m_info;
+    const SearchTerm::LinkInfo m_prevInfo;
+    const SearchTerm::LinkInfo m_nextInfo;
     CachedItem<TemplateVariant,Private,&Private::createScope> m_scope;
     static const PropertyMap<SymbolContext::Private> s_inst;
 };
@@ -8503,7 +8537,10 @@ const PropertyMap<SymbolContext::Private> SymbolContext::Private::s_inst {
 };
 //%% }
 
-SymbolContext::SymbolContext(const Definition *def,const Definition *prevDef,const Definition *nextDef) : p(std::make_unique<Private>(def,prevDef,nextDef))
+SymbolContext::SymbolContext(const SearchTerm::LinkInfo &info,
+                             const SearchTerm::LinkInfo &prevInfo,
+                             const SearchTerm::LinkInfo &nextInfo)
+  : p(std::make_unique<Private>(info,prevInfo,nextInfo))
 {
 }
 
@@ -8530,14 +8567,14 @@ class SymbolListContext::Private : public GenericNodeListContext
     Private(const SearchIndexList::const_iterator &start,
             const SearchIndexList::const_iterator &end)
     {
-      const Definition *prev = 0;
+      SearchTerm::LinkInfo prev;
       for (auto it = start; it!=end;)
       {
-        const Definition *def = *it;
+        const SearchTerm::LinkInfo info = it->info;
         ++it;
-        const Definition *next = it!=end ? *it : 0;
-        append(SymbolContext::alloc(def,prev,next));
-        prev = def;
+        const SearchTerm::LinkInfo next = it!=end ? it->info : SearchTerm::LinkInfo();
+        append(SymbolContext::alloc(info,prev,next));
+        prev = info;
       }
     }
 };
@@ -8581,8 +8618,8 @@ class SymbolGroupContext::Private
 
   private:
     // Property getters
-    TemplateVariant id() const                   { return searchId(*m_start); }
-    TemplateVariant name() const                 { return searchName(*m_start); }
+    TemplateVariant id() const                   { return m_start->termEncoded(); }
+    TemplateVariant name() const                 { return m_start->word;          }
     TemplateVariant symbolList() const           { return m_symbolList.get(this); }
 
   private:
@@ -8634,20 +8671,20 @@ class SymbolGroupListContext::Private : public GenericNodeListContext
   public:
     Private(const SearchIndexList &sil)
     {
-      QCString lastName;
+      QCString lastWord;
       auto it = sil.begin();
       auto it_begin = it;
       while (it!=sil.end())
       {
-        QCString name = searchName(*it);
-        if (name!=lastName)
+        QCString word = it->word;
+        if (word!=lastWord)
         {
           if (it!=it_begin)
           {
             append(SymbolGroupContext::alloc(it_begin,it));
           }
           it_begin = it;
-          lastName = name;
+          lastWord = word;
         }
         ++it;
       }
