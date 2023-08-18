@@ -4012,8 +4012,11 @@ void MemberDefImpl::warnIfUndocumented() const
       !isReference() && !isDeleted()
      )
   {
+    SrcLangExt lang = getLanguage();
+    QCString sep = getLanguageSpecificSeparator(lang,TRUE);
     warn_undoc(getDefFileName(),getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
-         qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),qPrint(t),qPrint(d->name()));
+         qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),qPrint(t),
+         qPrint(sep=="::"?d->name():substitute(d->name(),"::",sep)));
   }
   else if (!hasDetailedDescription())
   {
@@ -4027,8 +4030,10 @@ void MemberDefImpl::warnIfUndocumented() const
     {
       if (!fmd->isLinkableInProject())
       {
-        warn(fmd->getDefFileName(),fmd->getDefLine(), "Documentation for enum member '%s::%s' is missing.",
-             qPrint(qualifiedName()), qPrint(fmd->name()));
+        SrcLangExt lang = getLanguage();
+        QCString sep = getLanguageSpecificSeparator(lang,TRUE);
+        warn(fmd->getDefFileName(),fmd->getDefLine(), "Documentation for enum member '%s%s%s' is missing.",
+             qPrint(qualifiedName()),qPrint(sep),qPrint(fmd->name()));
       }
     }
   }
