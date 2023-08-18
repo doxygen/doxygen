@@ -65,6 +65,8 @@ Entry::Entry(const Entry &e)
   subGrouping = e.subGrouping;
   callGraph   = e.callGraph;
   callerGraph = e.callerGraph;
+  includeGraph = e.includeGraph;
+  includedByGraph = e.includedByGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
   exported    = e.exported;
@@ -188,6 +190,8 @@ void Entry::reset()
   bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
   bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
   bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
+  bool entryIncludeGraph    = Config_getBool(INCLUDE_GRAPH);
+  bool entryIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
   //printf("Entry::reset()\n");
   name.resize(0);
   type.resize(0);
@@ -220,6 +224,8 @@ void Entry::reset()
   mGrpId = -1;
   callGraph   = entryCallGraph;
   callerGraph = entryCallerGraph;
+  includeGraph = entryIncludeGraph;
+  includedByGraph = entryIncludedByGraph;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
   exported = false;

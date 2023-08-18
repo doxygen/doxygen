@@ -124,6 +124,10 @@ static bool handleCallgraph(yyscan_t yyscanner,const QCString &, const StringVec
 static bool handleHideCallgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -223,6 +227,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "headerfile",      { &handleHeaderFile,       CommandSpacing::Invisible }},
   { "hidecallergraph", { &handleHideCallergraph,  CommandSpacing::Invisible }},
   { "hidecallgraph",   { &handleHideCallgraph,    CommandSpacing::Invisible }},
+  { "hideincludedbygraph", { &handleHideIncludedBygraph, CommandSpacing::Invisible }},
+  { "hideincludegraph",    { &handleHideIncludegraph,    CommandSpacing::Invisible }},
   { "hideinitializer", { &handleHideInitializer,  CommandSpacing::Invisible }},
   { "hiderefby",       { &handleHideReferencedByRelation, CommandSpacing::Invisible }},
   { "hiderefs",        { &handleHideReferencesRelation,   CommandSpacing::Invisible }},
@@ -234,6 +240,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "image",           { &handleImage,            CommandSpacing::Block     }},
   { "implements",      { &handleExtends,          CommandSpacing::Invisible }},
   { "include",         { 0,                       CommandSpacing::Block     }},
+  { "includedbygraph", { &handleIncludedBygraph,  CommandSpacing::Invisible }},
+  { "includegraph",    { &handleIncludegraph,     CommandSpacing::Invisible }},
   { "includelineno",   { 0,                       CommandSpacing::Block     }},
   { "ingroup",         { &handleIngroup,          CommandSpacing::Invisible }},
   { "inherit",         { &handleInherit,          CommandSpacing::Invisible }},
@@ -3066,6 +3074,34 @@ static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const Str
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->callerGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->includeGraph = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->includedByGraph = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->includeGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleHideIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->includedByGraph = FALSE; // OFF
   return FALSE;
 }
 

@@ -118,6 +118,8 @@ documentation:
 \refitem cmdheaderfile \\headerfile
 \refitem cmdhidecallergraph \\hidecallergraph
 \refitem cmdhidecallgraph \\hidecallgraph
+\refitem cmdhideincludedbygraph \\hideincludedbygraph
+\refitem cmdhideincludegraph \\hideincludegraph
 \refitem cmdhiderefby \\hiderefby
 \refitem cmdhiderefs \\hiderefs
 \refitem cmdhideinitializer \\hideinitializer
@@ -130,6 +132,8 @@ documentation:
 \refitem cmdimplements \\implements
 \refitem cmdinclude \\include
 \refitem cmdincludedoc \\includedoc
+\refitem cmdincludedbygraph \\includedbygraph
+\refitem cmdincludegraph \\includegraph
 \refitem cmdincludelineno \\includelineno
 \refitem cmdingroup \\ingroup
 \refitem cmdinternal \\internal
@@ -426,6 +430,62 @@ Structural indicators
       section \ref cmdshowrefby "\\showrefby",
       section \ref cmdhiderefby "\\hiderefby" and
       option \ref cfg_references_relation "REFERENCES_RELATION"
+
+<hr>
+\section cmdincludegraph \\includegraph
+
+  \addindex \\includegraph
+  When this command is put in a comment block of a file
+  then doxygen will generate an include graph for that file. The
+  include graph will be generated regardless of the value of
+  \ref cfg_include_graph "INCLUDE_GRAPH".
+
+  \sa section \ref cmdhideincludegraph "\\hideincludegraph",
+      section \ref cmdincludedbygraph "\\includedbygraph",
+      section \ref cmdhideincludedbygraph "\\hideincludedbygraph" and
+      option \ref cfg_include_graph "INCLUDE_GRAPH"
+
+<hr>
+\section cmdhideincludegraph \\hideincludegraph
+
+  \addindex \\hideincludegraph
+  When this command is put in a comment block of a file
+  then doxygen will not generate an include graph for that file. The
+  include graph will not be generated regardless of the value of
+  \ref cfg_include_graph "INCLUDE_GRAPH".
+
+  \sa section \ref cmdincludegraph "\\includegraph",
+      section \ref cmdincludedbygraph "\\includedbygraph",
+      section \ref cmdhideincludedbygraph "\\hideincludedbygraph" and
+      option \ref cfg_include_graph "INCLUDE_GRAPH"
+
+<hr>
+\section cmdincludedbygraph \\includedbygraph
+
+  \addindex \\includedbygraph
+  When this command is put in a comment block of an include file
+  then doxygen will generate an included by graph for that include file. The
+  included by graph will be generated regardless of the value of
+  \ref cfg_included_by_graph "INCLUDED_BY_GRAPH".
+
+  \sa section \ref cmdhideincludedbygraph "\\hideincludedbygraph",
+      section \ref cmdincludegraph "\\ncludegraph",
+      section \ref cmdhideincludegraph "\\hideincludegraph" and
+      option \ref cfg_included_by_graph "INCLUDED_BY_GRAPH"
+
+<hr>
+\section cmdhideincludedbygraph \\hideincludedbygraph
+
+  \addindex \\hideincludedbygraph
+  When this command is put in a comment block of an include file
+  then doxygen will not generate an included by graph for that include file. The
+  included by graph will not be generated regardless of the value of
+  \ref cfg_included_by_graph "INCLUDED_BY_GRAPH".
+
+  \sa section \ref cmdincludedbygraph "\\includedbygraph",
+      section \ref cmdincludegraph "\\ncludegraph",
+      section \ref cmdhideincludegraph "\\hideincludegraph" and
+      option \ref cfg_included_by_graph "INCLUDED_BY_GRAPH"
 
 <hr>
 \section cmdqualifier \\qualifier <label> | "(text)"
