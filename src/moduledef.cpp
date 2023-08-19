@@ -1493,7 +1493,7 @@ void ModuleManager::addDocs(const Entry *root)
       }
       else
       {
-        warn(root->fileName,root->startLine,"Found documentated for module %s but it has no primary interface unit.",qPrint(root->name));
+        warn(root->fileName,root->startLine,"Found documentation for module %s but it has no primary interface unit.",qPrint(root->name));
       }
     }
     else
