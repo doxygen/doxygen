@@ -132,7 +132,7 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
     ModuleList            m_contributing;
     MemberGroupList       m_memberGroups;
     const ModuleDef      *m_primaryInterface = nullptr;
-    FileDef              *m_fileDef;          // file holding this module
+    FileDef              *m_fileDef = nullptr;  // file holding this module
 };
 
 QCString ModuleDefImpl::getOutputFileBase() const
