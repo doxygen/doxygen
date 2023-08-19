@@ -1008,6 +1008,7 @@ class DoxCompoundKind(str, Enum):
     EXAMPLE='example'
     DIR='dir'
     CONCEPT='concept'
+    MODULE_1='module'
 
 
 class DoxGraphRelation(str, Enum):
@@ -1371,7 +1372,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1421,6 +1422,11 @@ class compounddefType(GeneratedsSuper):
         self.incdepgraph_nsprefix_ = None
         self.invincdepgraph = invincdepgraph
         self.invincdepgraph_nsprefix_ = None
+        if innermodule is None:
+            self.innermodule = []
+        else:
+            self.innermodule = innermodule
+        self.innermodule_nsprefix_ = None
         if innerdir is None:
             self.innerdir = []
         else:
@@ -1478,6 +1484,8 @@ class compounddefType(GeneratedsSuper):
         self.briefdescription_nsprefix_ = None
         self.detaileddescription = detaileddescription
         self.detaileddescription_nsprefix_ = None
+        self.exports = exports
+        self.exports_nsprefix_ = None
         self.inheritancegraph = inheritancegraph
         self.inheritancegraph_nsprefix_ = None
         self.collaborationgraph = collaborationgraph
@@ -1559,6 +1567,16 @@ class compounddefType(GeneratedsSuper):
         return self.invincdepgraph
     def set_invincdepgraph(self, invincdepgraph):
         self.invincdepgraph = invincdepgraph
+    def get_innermodule(self):
+        return self.innermodule
+    def set_innermodule(self, innermodule):
+        self.innermodule = innermodule
+    def add_innermodule(self, value):
+        self.innermodule.append(value)
+    def insert_innermodule_at(self, index, value):
+        self.innermodule.insert(index, value)
+    def replace_innermodule_at(self, index, value):
+        self.innermodule[index] = value
     def get_innerdir(self):
         return self.innerdir
     def set_innerdir(self, innerdir):
@@ -1673,6 +1691,10 @@ class compounddefType(GeneratedsSuper):
         return self.detaileddescription
     def set_detaileddescription(self, detaileddescription):
         self.detaileddescription = detaileddescription
+    def get_exports(self):
+        return self.exports
+    def set_exports(self, exports):
+        self.exports = exports
     def get_inheritancegraph(self):
         return self.inheritancegraph
     def set_inheritancegraph(self, inheritancegraph):
@@ -1733,7 +1755,7 @@ class compounddefType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept']
+            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept', 'module']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxCompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )
@@ -1787,6 +1809,7 @@ class compounddefType(GeneratedsSuper):
             self.includedby or
             self.incdepgraph is not None or
             self.invincdepgraph is not None or
+            self.innermodule or
             self.innerdir or
             self.innerfile or
             self.innerclass or
@@ -1802,6 +1825,7 @@ class compounddefType(GeneratedsSuper):
             self.initializer is not None or
             self.briefdescription is not None or
             self.detaileddescription is not None or
+            self.exports is not None or
             self.inheritancegraph is not None or
             self.collaborationgraph is not None or
             self.programlisting is not None or
@@ -1890,6 +1914,9 @@ class compounddefType(GeneratedsSuper):
         if self.invincdepgraph is not None:
             namespaceprefix_ = self.invincdepgraph_nsprefix_ + ':' if (UseCapturedNS_ and self.invincdepgraph_nsprefix_) else ''
             self.invincdepgraph.export(outfile, level, namespaceprefix_, namespacedef_='', name_='invincdepgraph', pretty_print=pretty_print)
+        for innermodule_ in self.innermodule:
+            namespaceprefix_ = self.innermodule_nsprefix_ + ':' if (UseCapturedNS_ and self.innermodule_nsprefix_) else ''
+            innermodule_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='innermodule', pretty_print=pretty_print)
         for innerdir_ in self.innerdir:
             namespaceprefix_ = self.innerdir_nsprefix_ + ':' if (UseCapturedNS_ and self.innerdir_nsprefix_) else ''
             innerdir_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='innerdir', pretty_print=pretty_print)
@@ -1936,6 +1963,9 @@ class compounddefType(GeneratedsSuper):
         if self.detaileddescription is not None:
             namespaceprefix_ = self.detaileddescription_nsprefix_ + ':' if (UseCapturedNS_ and self.detaileddescription_nsprefix_) else ''
             self.detaileddescription.export(outfile, level, namespaceprefix_, namespacedef_='', name_='detaileddescription', pretty_print=pretty_print)
+        if self.exports is not None:
+            namespaceprefix_ = self.exports_nsprefix_ + ':' if (UseCapturedNS_ and self.exports_nsprefix_) else ''
+            self.exports.export(outfile, level, namespaceprefix_, namespacedef_='', name_='exports', pretty_print=pretty_print)
         if self.inheritancegraph is not None:
             namespaceprefix_ = self.inheritancegraph_nsprefix_ + ':' if (UseCapturedNS_ and self.inheritancegraph_nsprefix_) else ''
             self.inheritancegraph.export(outfile, level, namespaceprefix_, namespacedef_='', name_='inheritancegraph', pretty_print=pretty_print)
@@ -2045,6 +2075,11 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.invincdepgraph = obj_
             obj_.original_tagname_ = 'invincdepgraph'
+        elif nodeName_ == 'innermodule':
+            obj_ = refType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.innermodule.append(obj_)
+            obj_.original_tagname_ = 'innermodule'
         elif nodeName_ == 'innerdir':
             obj_ = refType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -2121,6 +2156,11 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.detaileddescription = obj_
             obj_.original_tagname_ = 'detaileddescription'
+        elif nodeName_ == 'exports':
+            obj_ = exportsType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.exports = obj_
+            obj_.original_tagname_ = 'exports'
         elif nodeName_ == 'inheritancegraph':
             obj_ = graphType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -3116,6 +3156,200 @@ class incType(GeneratedsSuper):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         pass
 # end class incType
+
+
+class exportsType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, export=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        if export is None:
+            self.export = []
+        else:
+            self.export = export
+        self.export_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, exportsType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if exportsType.subclass:
+            return exportsType.subclass(*args_, **kwargs_)
+        else:
+            return exportsType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_export(self):
+        return self.export
+    def set_export(self, export):
+        self.export = export
+    def add_export(self, value):
+        self.export.append(value)
+    def insert_export_at(self, index, value):
+        self.export.insert(index, value)
+    def replace_export_at(self, index, value):
+        self.export[index] = value
+    def hasContent_(self):
+        if (
+            self.export
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='exportsType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('exportsType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'exportsType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='exportsType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='exportsType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='exportsType'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='exportsType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for export_ in self.export:
+            namespaceprefix_ = self.export_nsprefix_ + ':' if (UseCapturedNS_ and self.export_nsprefix_) else ''
+            export_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='export', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'export':
+            obj_ = exportType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.export.append(obj_)
+            obj_.original_tagname_ = 'export'
+# end class exportsType
+
+
+class exportType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, refid=None, valueOf_=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.refid = _cast(None, refid)
+        self.refid_nsprefix_ = None
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, exportType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if exportType.subclass:
+            return exportType.subclass(*args_, **kwargs_)
+        else:
+            return exportType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_refid(self):
+        return self.refid
+    def set_refid(self, refid):
+        self.refid = refid
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_)
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='exportType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('exportType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'exportType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='exportType')
+        if self.hasContent_():
+            outfile.write('>')
+            outfile.write(self.convert_unicode(self.valueOf_))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='exportType', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='exportType'):
+        if self.refid is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            outfile.write(' refid=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.refid), input_name='refid')), ))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='exportType', fromsubclass_=False, pretty_print=True):
+        pass
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('refid', node)
+        if value is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            self.refid = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        pass
+# end class exportType
 
 
 class refType(GeneratedsSuper):
@@ -27325,6 +27559,8 @@ __all__ = [
     "docXRefSectType",
     "edgelabel",
     "enumvalueType",
+    "exportType",
+    "exportsType",
     "graphType",
     "highlightType",
     "incType",
