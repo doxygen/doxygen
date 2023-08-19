@@ -87,6 +87,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual bool isInline() const override { return m_inline; }
     virtual bool isLinkableInProject() const override;
     virtual bool isLinkable() const override;
+    virtual bool isVisibleInHierarchy() const override;
     virtual bool hasDetailedDescription() const override;
     virtual void addMembersToMemberGroup() override;
     virtual void distributeMemberGroupDocumentation() override;
@@ -213,6 +214,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->isLinkableInProject(); }
     virtual bool isLinkable() const
     { return getNSAlias()->isLinkable(); }
+    virtual bool isVisibleInHierarchy() const
+    { return getNSAlias()->isVisibleInHierarchy(); }
     virtual bool hasDetailedDescription() const
     { return getNSAlias()->hasDetailedDescription(); }
     virtual const Definition *findInnerCompound(const QCString &name) const
@@ -1491,6 +1494,34 @@ void NamespaceDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt
   if (ml) ml->writeDocumentation(ol,displayName(),this,title);
 }
 
+static bool hasNonReferenceNestedNamespaceRec(const NamespaceDef *nd,int level)
+{
+  if (level>30)
+  {
+    err("Possible recursive namespace relation while inside %s\n",qPrint(nd->name()));
+    return false;
+  }
+  bool found=nd->isLinkableInProject();
+  if (found)
+  {
+    return true;
+  }
+  else
+  {
+    for (const auto &ind : nd->getNamespaces())
+    {
+      found = found || hasNonReferenceNestedNamespaceRec(ind,level+1);
+      if (found) break;
+    }
+  }
+  return found;
+}
+
+bool NamespaceDefImpl::isVisibleInHierarchy() const
+{
+  bool allExternals = Config_getBool(ALLEXTERNALS);
+  return (allExternals || hasNonReferenceNestedNamespaceRec(this,0)) && isLinkable();
+}
 
 bool NamespaceDefImpl::isLinkableInProject() const
 {

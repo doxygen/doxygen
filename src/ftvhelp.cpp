@@ -193,7 +193,7 @@ void FTVHelp::addContentsItem(bool isDir,
                               const Definition *def
                               )
 {
-  //printf("%p: p->indent=%d addContentsItem(%s,%s,%s,%s)\n",(void*)this,p->indent,qPrint(name),qPrint(ref),qPrint(file),qPrint(anchor));
+  //printf("%p: p->indent=%d addContentsItem(%d,%s,%s,%s,%s)\n",(void*)this,p->indent,isDir,qPrint(name),qPrint(ref),qPrint(file),qPrint(anchor));
   auto &nl = p->indentNodes[p->indent];
   if (!nl.empty())
   {

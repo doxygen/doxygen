@@ -194,6 +194,7 @@ using TagGroupInfoPtr = std::unique_ptr<TagGroupInfo>;
 struct TagPageInfo : public TagCompoundInfo
 {
   QCString title;
+  StringVector subpages;
 };
 
 using TagPageInfoPtr = std::unique_ptr<TagPageInfo>;
@@ -657,6 +658,22 @@ class TagFileParser
       }
     }
 
+    void endSubpage()
+    {
+      switch(m_state)
+      {
+        case InPage:
+          {
+            TagPageInfo *info = m_curCompound.getPageInfo();
+            if (info) info->subpages.push_back(m_curString.str());
+          }
+          break;
+        default:
+          p_warn("Unexpected tag 'subpage' found");
+          break;
+      }
+    }
+
     void endDir()
     {
       switch(m_state)
@@ -1056,6 +1073,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "file",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endFile         ) } },
   { "dir",         { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endDir          ) } },
   { "page",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endPage         ) } },
+  { "subpage",     { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endSubpage      ) } },
   { "docanchor",   { startCb(&TagFileParser::startDocAnchor    ), endCb(&TagFileParser::endDocAnchor    ) } },
   { "tagfile",     { startCb(&TagFileParser::startIgnoreElement), endCb(&TagFileParser::endIgnoreElement) } },
   { "templarg",    { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endTemplateArg  ) } },
@@ -1717,9 +1735,15 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       pe->section  = isIndex ? Entry::MAINPAGEDOC_SEC : Entry::PAGEDOC_SEC;
       pe->name     = tpi->name;
       pe->args     = tpi->title;
+      for (const auto &subpage : tpi->subpages)
+      {
+        // we add subpage labels as a kind of "inheritance" relation to prevent
+        // needing to add another list to the Entry class.
+        pe->extends.push_back(BaseInfo(stripExtension(QCString(subpage)),Protection::Public,Specifier::Normal));
+      }
       addDocAnchors(pe,tpi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
-      pe->tagInfoData.fileName = tpi->filename;
+      pe->tagInfoData.fileName = stripExtension(tpi->filename);
       pe->startLine   = tpi->lineNr;
       pe->hasTagInfo  = TRUE;
       root->moveToSubEntryAndKeep(pe);

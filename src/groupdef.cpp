@@ -84,6 +84,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual size_t numDocMembers() const override;
     virtual bool isLinkableInProject() const override;
     virtual bool isLinkable() const override;
+    virtual bool isVisibleInHierarchy() const override;
     virtual bool isASubGroup() const override;
     virtual void computeAnchors() override;
     virtual void countMembers() override;
@@ -1821,6 +1822,35 @@ void GroupDefImpl::sortSubGroups()
             m_groups.end(),
             [](const auto &g1,const auto &g2)
             { return g1->groupTitle() < g2->groupTitle(); });
+}
+
+static bool hasNonReferenceNestedGroupRec(const GroupDef *gd,int level)
+{
+  if (level>30)
+  {
+    err("Possible recursive group relation while inside %s\n",qPrint(gd->name()));
+    return false;
+  }
+  bool found=gd->isLinkableInProject();
+  if (found)
+  {
+    return true;
+  }
+  else
+  {
+    for (const auto &igd : gd->getSubGroups())
+    {
+      found = found || hasNonReferenceNestedGroupRec(igd,level+1);
+      if (found) break;
+    }
+  }
+  return found;
+}
+
+bool GroupDefImpl::isVisibleInHierarchy() const
+{
+  bool allExternals = Config_getBool(EXTERNAL_GROUPS);
+  return (allExternals || hasNonReferenceNestedGroupRec(this,0)) && isLinkable();
 }
 
 bool GroupDefImpl::isLinkableInProject() const

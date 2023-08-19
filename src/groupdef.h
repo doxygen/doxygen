@@ -78,6 +78,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual size_t numDocMembers() const = 0;
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
+    virtual bool isVisibleInHierarchy() const = 0;
     virtual bool isASubGroup() const = 0;
     virtual void computeAnchors() = 0;
     virtual void countMembers() = 0;

@@ -165,6 +165,12 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
     tagFile << "    <name>" << name() << "</name>\n";
     tagFile << "    <title>" << convertToXML(title()) << "</title>\n";
     tagFile << "    <filename>" << fn << "</filename>\n";
+    for (const auto &subPage : m_subPages)
+    {
+      QCString sfn = subPage->getOutputFileBase();
+      addHtmlExtensionIfMissing(sfn);
+      tagFile << "    <subpage>" << sfn << "</subpage>\n";
+    }
     writeDocAnchorsToTagFile(tagFile);
     tagFile << "  </compound>\n";
   }
@@ -339,8 +345,7 @@ bool PageDefImpl::visibleInIndex() const
   return // not part of a group
          !getGroupDef() &&
          // not an externally defined page
-         (!isReference() || externalPages)
-         ;
+         (!isReference() || externalPages);
 }
 
 bool PageDefImpl::documentedPage() const

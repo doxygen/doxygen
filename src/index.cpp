@@ -1854,7 +1854,7 @@ static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp 
 {
   for (const auto &nd : nsLinkedMap)
   {
-    if (nd->isLinkable())
+    if (nd->isVisibleInHierarchy())
     {
       writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
     }
@@ -1866,7 +1866,7 @@ static void writeNamespaceTree(const NamespaceLinkedMap &nsLinkedMap,FTVHelp *ft
 {
   for (const auto &nd : nsLinkedMap)
   {
-    if (nd->isLinkable())
+    if (nd->isVisibleInHierarchy())
     {
       writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
     }
@@ -3822,14 +3822,14 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
       ftv->addContentsItem(
           hasSubPages || hasSections,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
-          QCString(),hasSubPages,TRUE,pd);
+          QCString(),FALSE,TRUE,pd);
     }
     if (addToIndex && pd!=Doxygen::mainPage.get())
     {
       Doxygen::indexList->addContentsItem(
           hasSubPages || hasSections,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
-          QCString(),hasSubPages,TRUE,pd);
+          QCString(),FALSE,TRUE,pd);
     }
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
@@ -3879,7 +3879,7 @@ static void writePageIndex(OutputList &ol)
     {
       if ((pd->getOuterScope()==0 ||
           pd->getOuterScope()->definitionType()!=Definition::TypePage) && // not a sub page
-          !pd->isReference() // not an external page
+          pd->visibleInIndex()
          )
       {
         writePages(pd.get(),&ftv);
@@ -3997,31 +3997,26 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
   /* Some groups should appear twice under different parent-groups.
    * That is why we should not check if it was visited
    */
-  if ((!gd->isASubGroup() || level>0) && gd->isVisible() &&
-      (!gd->isReference() || Config_getBool(EXTERNAL_GROUPS)) // hide external groups by default
-     )
+  if ((!gd->isASubGroup() || level>0) && gd->isVisible() && gd->isVisibleInHierarchy())
   {
     //printf("gd->name()=%s #members=%d\n",qPrint(gd->name()),gd->countMembers());
     // write group info
     bool hasSubGroups = !gd->getSubGroups().empty();
     bool hasSubPages  = !gd->getPages().empty();
     size_t numSubItems = 0;
-    if (1 /*Config_getBool(TOC_EXPAND)*/)
+    for (const auto &ml : gd->getMemberLists())
     {
-      for (const auto &ml : gd->getMemberLists())
+      if (ml->listType()&MemberListType_documentationLists)
       {
-        if (ml->listType()&MemberListType_documentationLists)
-        {
-          numSubItems += ml->size();
-        }
+        numSubItems += ml->size();
       }
-      numSubItems += gd->getNamespaces().size();
-      numSubItems += gd->getClasses().size();
-      numSubItems += gd->getFiles().size();
-      numSubItems += gd->getConcepts().size();
-      numSubItems += gd->getDirs().size();
-      numSubItems += gd->getPages().size();
     }
+    numSubItems += gd->getNamespaces().size();
+    numSubItems += gd->getClasses().size();
+    numSubItems += gd->getFiles().size();
+    numSubItems += gd->getConcepts().size();
+    numSubItems += gd->getDirs().size();
+    numSubItems += gd->getPages().size();
 
     bool isDir = hasSubGroups || hasSubPages || numSubItems>0;
     //printf("gd='%s': pageDict=%d\n",qPrint(gd->name()),gd->pageDict->count());
@@ -4228,7 +4223,10 @@ static void writeGroupHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
   startIndexHierarchy(ol,0);
   for (const auto &gd : *Doxygen::groupLinkedMap)
   {
-    writeGroupTreeNode(ol,gd.get(),0,ftv,addToIndex);
+    if (gd->isVisibleInHierarchy())
+    {
+      writeGroupTreeNode(ol,gd.get(),0,ftv,addToIndex);
+    }
   }
   endIndexHierarchy(ol,0);
   if (ftv)

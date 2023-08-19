@@ -3631,9 +3631,9 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
     <option type='bool' id='ALLEXTERNALS' defval='0'>
       <docs>
 <![CDATA[
- If the \c ALLEXTERNALS tag is set to \c YES, all external class will be listed
- in the class index. If set to \c NO, only the inherited external classes
- will be listed.
+ If the \c ALLEXTERNALS tag is set to \c YES, all external classes and namespaces 
+ will be listed in the class and namespace index. 
+ If set to \c NO, only the inherited external classes will be listed.
 ]]>
       </docs>
     </option>
@@ -3641,7 +3641,7 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
       <docs>
 <![CDATA[
  If the \c EXTERNAL_GROUPS tag is set to \c YES, all external groups will be listed
- in the modules index. If set to \c NO, only the current project's groups will
+ in the topic index. If set to \c NO, only the current project's groups will
  be listed.
 ]]>
       </docs>
