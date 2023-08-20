@@ -73,6 +73,7 @@ documentation:
 \refitem cmddetails \\details
 \refitem cmddiafile \\diafile
 \refitem cmddir \\dir
+\refitem cmddirectorygraph \\directorygraph
 \refitem cmddocbookinclude \\docbookinclude
 \refitem cmddocbookonly \\docbookonly
 \refitem cmddontinclude \\dontinclude
@@ -118,6 +119,7 @@ documentation:
 \refitem cmdheaderfile \\headerfile
 \refitem cmdhidecallergraph \\hidecallergraph
 \refitem cmdhidecallgraph \\hidecallgraph
+\refitem cmdhidedirectorygraph \\hidedirectorygraph
 \refitem cmdhideincludedbygraph \\hideincludedbygraph
 \refitem cmdhideincludegraph \\hideincludegraph
 \refitem cmdhiderefby \\hiderefby
@@ -486,6 +488,32 @@ Structural indicators
       section \ref cmdincludegraph "\\ncludegraph",
       section \ref cmdhideincludegraph "\\hideincludegraph" and
       option \ref cfg_included_by_graph "INCLUDED_BY_GRAPH"
+
+<hr>
+\section cmddirectorygraph \\directorygraph
+
+  \addindex \\directorygraph
+  When this command is put in a comment block of a directory
+  (see section \ref cmddir "\\dir")
+  then doxygen will generate a directory graph for that directory. The
+  directory graph will be generated regardless of the value of
+  \ref cfg_directory_graph "DIRECTORY_GRAPH".
+
+  \sa section \ref cmdhidedirectorygraph "\\hidedirectorygraph",
+      option \ref cfg_directory_graph "DIRECTORY_GRAPH"
+
+<hr>
+\section cmdhidedirectorygraph \\hidedirectorygraph
+
+  \addindex \\hidedirectorygraph
+  When this command is put in a comment block of a directory
+  (see section \ref cmddir "\\dir")
+  then doxygen will not generate a directory graph for that directory. The
+  directory graph will not be generated regardless of the value of
+  \ref cfg_directory_graph "DIRECTORY_GRAPH".
+
+  \sa section \ref cmddirectorygraph "\\directorygraph",
+      option \ref cfg_directory_graph "DIRECTORY_GRAPH"
 
 <hr>
 \section cmdqualifier \\qualifier <label> | "(text)"

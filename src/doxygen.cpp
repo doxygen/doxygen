@@ -9110,6 +9110,7 @@ static void findDirDocumentation(const Entry *root)
       matchingDir->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       matchingDir->setDocumentation(root->doc,root->docFile,root->docLine);
       matchingDir->setRefItems(root->sli);
+      matchingDir->enableDirectoryGraph(root->directoryGraph);
       addDirToGroups(root,matchingDir);
     }
     else
@@ -12292,12 +12293,9 @@ void parseInput()
   setAnonymousEnumType();
   g_s.end();
 
-  if (Config_getBool(DIRECTORY_GRAPH))
-  {
-    g_s.begin("Computing dependencies between directories...\n");
-    computeDirDependencies();
-    g_s.end();
-  }
+  g_s.begin("Computing dependencies between directories...\n");
+  computeDirDependencies();
+  g_s.end();
 
   g_s.begin("Generating citations page...\n");
   CitationManager::instance().generatePage();

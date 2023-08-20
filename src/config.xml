@@ -3902,6 +3902,11 @@ UML notation for the relationships.
  to \c YES then doxygen will show the dependencies a directory has on other directories
  in a graphical way. The dependency relations are determined by the \c \#include
  relations between the files in the directories.
+ Explicit enabling a directory graph, when \c DIRECTORY_GRAPH is set to \c NO, can be
+ accomplished by means of the command \ref cmddirectorygraph "\\directorygraph".
+ Disabling a directory graph can be accomplished by means of the command
+ \ref cmdhidedirectorygraph "\\hidedirectorygraph".
+
 ]]>
       </docs>
     </option>
