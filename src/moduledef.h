@@ -130,7 +130,7 @@ class ModuleManager
     void collectExportedSymbols();
     void countMembers();
     void writeDocumentation(OutputList &ol);
-    size_t numDocumentedModules() const;
+    int numDocumentedModules() const;
     const ModuleLinkedMap &modules() const;
     ModuleDef *getPrimaryInterface(const QCString &moduleName) const;
 

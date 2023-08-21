@@ -42,7 +42,7 @@ using AliasInfoMap   = std::unordered_map<std::string,AliasOverloads>;   // key 
 
 static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,
                                const QCString &s,bool allowRecursion=FALSE);
-static size_t countAliasArguments(const std::string &args, const std::string &sep);
+static int countAliasArguments(const std::string &args, const std::string &sep);
 static QCString extractAliasArgs(const QCString &args,size_t pos);
 static std::string expandAlias(const std::string &aliasName,const std::string &aliasValue);
 
@@ -484,9 +484,9 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
 }
 
 
-static size_t countAliasArguments(const std::string &args, const std::string &sep)
+static int countAliasArguments(const std::string &args, const std::string &sep)
 {
-  size_t count=1;
+  int count=1;
   size_t l = args.length();
   size_t i;
   for (i=0;i<l;i++)
