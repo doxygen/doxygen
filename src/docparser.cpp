@@ -1790,7 +1790,7 @@ static uint32_t skipToEndMarker(const char *data,uint32_t i,size_t len,const QCS
     i++;
   }
   // oops no endmarker found...
-  return i<len ? i+1 : len;
+  return i<len ? i+1 : static_cast<uint32_t>(len);
 }
 
 
