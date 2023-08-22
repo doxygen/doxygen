@@ -65,14 +65,14 @@ QCString SearchTerm::termEncoded() const
   TextStream t;
   for (size_t i=0;i<word.length();i++)
   {
-    if (isIdJS(word[i]))
+    if (isIdJS(word.at(i)))
     {
-      t << word[i];
+      t << word.at(i);
     }
     else // escape non-identifier characters
     {
       static const char *hex = "0123456789ABCDEF";
-      unsigned char uc = static_cast<unsigned char>(word[i]);
+      unsigned char uc = static_cast<unsigned char>(word.at(i));
       t << '_';
       t << hex[uc>>4];
       t << hex[uc&0xF];
@@ -95,19 +95,21 @@ static void splitSearchTokens(QCString &title,IntVector &indices)
   bool lastIsSpace=true;
   for (size_t si=0; si<title.length(); si++)
   {
-    char c = title[si];
+    char c = title.at(si);
     if (isId(c) || c==':') // add "word" character
     {
-      title[di++]=c;
+      title.at(di)=c;
+      di++;
       lastIsSpace=false;
     }
     else if (!lastIsSpace) // add one separator as space
     {
-      title[di++]=' ';
+      title.at(di)=' ';
+      di++;
       lastIsSpace=true;
     }
   }
-  if (di>0 && title[di-1]==' ') di--; // strip trailing whitespace
+  if (di>0 && title.at(di-1)==' ') di--; // strip trailing whitespace
   title.resize(di+1);
 
   // create a list of start positions within title for

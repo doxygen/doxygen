@@ -195,7 +195,7 @@ ENDCDATA        "]]>"
 <Prolog>{
   "encoding"\s*=\s*\"[^\"]*\" {
                      std::string encoding=yytext;
-                     int i=encoding.find('"');
+                     size_t i=encoding.find('"');
                      encoding=encoding.substr(i+1,yyleng-i-2);
                      if (encoding!="UTF-8") // need to transcode to UTF-8
                      {
