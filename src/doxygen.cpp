@@ -9409,15 +9409,20 @@ static void buildExampleList(Entry *root)
 
 void printNavTree(Entry *root,int indent)
 {
-  QCString indentStr;
-  indentStr.fill(' ',indent);
-  msg("%s%s (sec=0x%x)\n",
-      indentStr.isEmpty()?"":qPrint(indentStr),
-      root->name.isEmpty()?"<empty>":qPrint(root->name),
-      root->section);
-  for (const auto &e : root->children())
+  if (Debug::isFlagSet(Debug::Entries))
   {
-    printNavTree(e.get(),indent+2);
+    QCString indentStr;
+    indentStr.fill(' ',indent);
+    Debug::print(Debug::Entries,0,"%s%s at %s:%d (sec=0x%x, spec=%" PRIx64 ")\n",
+        indentStr.isEmpty()?"":qPrint(indentStr),
+        root->name.isEmpty()?"<empty>":qPrint(root->name),
+        qPrint(root->fileName),root->startLine,
+        root->section,
+        root->spec);
+    for (const auto &e : root->children())
+    {
+      printNavTree(e.get(),indent+2);
+    }
   }
 }
 
@@ -12352,6 +12357,7 @@ void parseInput()
     }
   }
 
+  printNavTree(root.get(),0);
 }
 
 void generateOutput()
