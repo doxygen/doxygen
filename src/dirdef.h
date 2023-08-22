@@ -146,6 +146,10 @@ class DirDef : public DefinitionMutable, public Definition
     virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect) = 0;
     virtual void computeDependencies() = 0;
+
+    // directory graph related members
+    virtual bool hasDirectoryGraph() const = 0;
+    virtual void enableDirectoryGraph(bool e) = 0;
 };
 
 // --- Cast functions
