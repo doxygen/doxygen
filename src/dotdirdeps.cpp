@@ -392,6 +392,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
           QCString fn = relationName;
           addHtmlExtensionIfMissing(fn);
           t << " headhref=\"" << fn << "\"";
+          t << " href=\"" << fn << "\"";
         }
         t << " color=\"steelblue1\" fontcolor=\"steelblue1\"];\n";
       }
