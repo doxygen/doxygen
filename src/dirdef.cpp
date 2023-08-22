@@ -73,6 +73,9 @@ class DirDefImpl : public DefinitionMixin<DirDef>
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect) override;
     virtual void computeDependencies() override;
 
+    virtual bool hasDirectoryGraph() const override;
+    virtual void enableDirectoryGraph(bool e) override;
+
   public:
     static DirDef *mergeDirectoryInTree(const QCString &path);
 
@@ -98,6 +101,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     int m_level;
     DirDef *m_parent;
     UsedDirLinkedMap m_usedDirs;
+    bool m_hasDirectoryGraph = false;
 };
 
 DirDef *createDirDef(const QCString &path)
@@ -134,6 +138,8 @@ DirDefImpl::DirDefImpl(const QCString &path) : DefinitionMixin(path,1,1,path)
 
   m_level=-1;
   m_parent=0;
+  m_hasDirectoryGraph=Config_getBool(DIRECTORY_GRAPH);
+
 }
 
 DirDefImpl::~DirDefImpl()
@@ -309,7 +315,7 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
 void DirDefImpl::writeDirectoryGraph(OutputList &ol)
 {
   // write graph dependency graph
-  if (Config_getBool(DIRECTORY_GRAPH) && Config_getBool(HAVE_DOT))
+  if (Config_getBool(HAVE_DOT) && m_hasDirectoryGraph /*&& Config_getBool(DIRECTORY_GRAPH)*/)
   {
     DotDirDeps dirDep(this);
     if (!dirDep.isTrivial())
@@ -781,7 +787,6 @@ bool DirDefImpl::depGraphIsTrivial() const
   return m_usedDirs.empty() && m_parent==nullptr;
 }
 
-
 //----------------------------------------------------------------------
 
 UsedDir::UsedDir(const DirDef *dir) :
@@ -865,6 +870,16 @@ DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
     p=i+1;
   }
   return dir;
+}
+
+void DirDefImpl::enableDirectoryGraph(bool e)
+{
+  m_hasDirectoryGraph=e;
+}
+
+bool DirDefImpl::hasDirectoryGraph() const
+{
+  return m_hasDirectoryGraph;
 }
 
 //----------------------------------------------------------------------
@@ -1144,7 +1159,7 @@ void generateDirDocs(OutputList &ol)
     dir->writeDocumentation(ol);
     ol.popGeneratorState();
   }
-  if (Config_getBool(DIRECTORY_GRAPH))
+  //if (Config_getBool(DIRECTORY_GRAPH))
   {
     for (const auto &dr : Doxygen::dirRelations)
     {

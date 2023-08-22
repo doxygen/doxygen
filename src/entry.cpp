@@ -67,6 +67,7 @@ Entry::Entry(const Entry &e)
   callerGraph = e.callerGraph;
   includeGraph = e.includeGraph;
   includedByGraph = e.includedByGraph;
+  directoryGraph = e.directoryGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
   exported    = e.exported;
@@ -192,6 +193,7 @@ void Entry::reset()
   bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
   bool entryIncludeGraph    = Config_getBool(INCLUDE_GRAPH);
   bool entryIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
+  bool entryDirectoryGraph  = Config_getBool(DIRECTORY_GRAPH);
   //printf("Entry::reset()\n");
   name.resize(0);
   type.resize(0);
@@ -226,6 +228,7 @@ void Entry::reset()
   callerGraph = entryCallerGraph;
   includeGraph = entryIncludeGraph;
   includedByGraph = entryIncludedByGraph;
+  directoryGraph = entryDirectoryGraph;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
   exported = false;

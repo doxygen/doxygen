@@ -1677,7 +1677,7 @@ void DocParser::readTextFileByName(const QCString &file,QCString &text)
 
 //---------------------------------------------------------------------------
 
-static QCString extractCopyDocId(const char *data, uint32_t &j, uint32_t len)
+static QCString extractCopyDocId(const char *data, uint32_t &j, size_t len)
 {
   uint32_t s=j;
   int round=0;
@@ -1740,7 +1740,7 @@ static QCString extractCopyDocId(const char *data, uint32_t &j, uint32_t len)
    do if ((i+sizeof(str)<len) && qstrncmp(data+i+1,str,sizeof(str)-1)==0) \
    { j=i+sizeof(str); action; } while(0)
 
-static uint32_t isCopyBriefOrDetailsCmd(const char *data, uint32_t i,uint32_t len,bool &brief)
+static uint32_t isCopyBriefOrDetailsCmd(const char *data, uint32_t i,size_t len,bool &brief)
 {
   uint32_t j=0;
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
@@ -1751,7 +1751,7 @@ static uint32_t isCopyBriefOrDetailsCmd(const char *data, uint32_t i,uint32_t le
   return j;
 }
 
-static uint32_t isVerbatimSection(const char *data,uint32_t i,uint32_t len,QCString &endMarker)
+static uint32_t isVerbatimSection(const char *data,uint32_t i,size_t len,QCString &endMarker)
 {
   uint32_t j=0;
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
@@ -1775,7 +1775,7 @@ static uint32_t isVerbatimSection(const char *data,uint32_t i,uint32_t len,QCStr
   return j;
 }
 
-static uint32_t skipToEndMarker(const char *data,uint32_t i,uint32_t len,const QCString &endMarker)
+static uint32_t skipToEndMarker(const char *data,uint32_t i,size_t len,const QCString &endMarker)
 {
   while (i<len)
   {
@@ -1790,7 +1790,7 @@ static uint32_t skipToEndMarker(const char *data,uint32_t i,uint32_t len,const Q
     i++;
   }
   // oops no endmarker found...
-  return i<len ? i+1 : len;
+  return i<len ? i+1 : static_cast<uint32_t>(len);
 }
 
 

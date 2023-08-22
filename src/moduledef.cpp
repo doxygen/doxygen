@@ -1450,9 +1450,9 @@ void ModuleManager::writeDocumentation(OutputList &ol)
   }
 }
 
-size_t ModuleManager::numDocumentedModules() const
+int ModuleManager::numDocumentedModules() const
 {
-  size_t count=0;
+  int count=0;
   for (auto &mod : p->moduleFileMap) // foreach module
   {
     if (mod->isPrimaryInterface()) count++;

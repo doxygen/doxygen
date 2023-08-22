@@ -128,6 +128,8 @@ static bool handleIncludegraph(yyscan_t yyscanner,const QCString &, const String
 static bool handleIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -210,6 +212,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "deprecated",      { &handleDeprecated,       CommandSpacing::XRef      }},
   { "details",         { &handleDetails,          CommandSpacing::Block     }},
   { "dir",             { &handleDir,              CommandSpacing::Invisible }},
+  { "directorygraph",  { &handleDirectoryGraph,   CommandSpacing::Invisible }},
   { "docbookinclude",  { 0,                       CommandSpacing::Inline    }},
   { "docbookonly",     { &handleFormatBlock,      CommandSpacing::Invisible }},
   { "dot",             { &handleFormatBlock,      CommandSpacing::Block     }},
@@ -227,6 +230,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "headerfile",      { &handleHeaderFile,       CommandSpacing::Invisible }},
   { "hidecallergraph", { &handleHideCallergraph,  CommandSpacing::Invisible }},
   { "hidecallgraph",   { &handleHideCallgraph,    CommandSpacing::Invisible }},
+  { "hidedirectorygraph",  { &handleHideDirectoryGraph,  CommandSpacing::Invisible }},
   { "hideincludedbygraph", { &handleHideIncludedBygraph, CommandSpacing::Invisible }},
   { "hideincludegraph",    { &handleHideIncludegraph,    CommandSpacing::Invisible }},
   { "hideinitializer", { &handleHideInitializer,  CommandSpacing::Invisible }},
@@ -481,7 +485,7 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor, const QCString 
 static inline void addOutput(yyscan_t yyscanner,const char *s);
 static inline void addOutput(yyscan_t yyscanner,const QCString &s);
 static inline void addOutput(yyscan_t yyscanner,char c);
-static void endBrief(yyscan_t yyscanner,bool addToOutput=TRUE);
+static void endBrief(yyscan_t yyscanner);
 static void handleGuard(yyscan_t yyscanner,const QCString &expr);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addCite(yyscan_t yyscanner);
@@ -1038,7 +1042,7 @@ STopt  [^\n@\\]*
                                           else // yyextra->inContext==OutputBrief
                                           { // only go to the detailed description if we have
                                             // found some brief description and not just whitespace
-                                            endBrief(yyscanner,TRUE);
+                                            endBrief(yyscanner);
                                           }
                                           lineCount(yyscanner);
                                         }
@@ -3105,6 +3109,20 @@ static bool handleHideIncludedBygraph(yyscan_t yyscanner,const QCString &, const
   return FALSE;
 }
 
+static bool handleDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->directoryGraph = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->directoryGraph = FALSE; // OFF
+  return FALSE;
+}
+
 static bool handleQualifier(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -3829,7 +3847,7 @@ static void addIlineBreak(yyscan_t yyscanner,int lineNr)
   addOutput(yyscanner, cmd);
 }
 
-static void endBrief(yyscan_t yyscanner,bool addToOutput)
+static void endBrief(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->brief.stripWhiteSpace().isEmpty())
@@ -3837,8 +3855,16 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=FALSE;
     setOutput(yyscanner,OutputDoc);
-    addIline(yyscanner,yyextra->lineNr);
-    if (addToOutput) addOutput(yyscanner,yytext);
+    if (yyextra->current->doc.stripWhiteSpace().isEmpty())
+    {
+      yyextra->current->docLine = yyextra->lineNr;
+      yyextra->current->doc = "";
+    }
+    else
+    {
+      addIline(yyscanner,yyextra->lineNr);
+    }
+    addOutput(yyscanner,yytext);
   }
   else
   {
