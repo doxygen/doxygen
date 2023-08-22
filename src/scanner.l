@@ -2209,6 +2209,8 @@ NONLopt [^\n]*
 <FindMembers>"Q_OBJECT"|"Q_GADGET"      { // Qt object / gadget macro
                                         }
 <FindMembers>"Q_PROPERTY"               { // Qt property declaration
+                                          yyextra->yyBegLineNr = yyextra->yyLineNr;
+                                          yyextra->yyBegColNr  = yyextra->yyColNr;
                                           yyextra->current->protection = Protection::Public ; // see bug734245 & bug735462
                                           yyextra->current->mtype = yyextra->mtype = MethodTypes::Property;
                                           yyextra->current->type.resize(0);
