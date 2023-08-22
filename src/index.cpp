@@ -449,15 +449,16 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
   bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
   const MemberVector &enumList = md->enumFieldList();
   bool isDir = !enumList.empty() && md->isEnumerate();
+  QCString name = def->definitionType()==Definition::TypeModule ? md->qualifiedName() : md->name();
   if (md->getOuterScope()==def || md->getOuterScope()==Doxygen::globalScope)
   {
     Doxygen::indexList->addContentsItem(isDir,
-        md->name(),md->getReference(),md->getOutputFileBase(),md->anchor(),FALSE,addToIndex && md->getGroupDef()==nullptr);
+        name,md->getReference(),md->getOutputFileBase(),md->anchor(),FALSE,addToIndex && md->getGroupDef()==nullptr);
   }
   else // inherited member
   {
     Doxygen::indexList->addContentsItem(isDir,
-        md->name(),def->getReference(),def->getOutputFileBase(),md->anchor(),FALSE,addToIndex && md->getGroupDef()==nullptr);
+        name,def->getReference(),def->getOutputFileBase(),md->anchor(),FALSE,addToIndex && md->getGroupDef()==nullptr);
   }
   if (isDir)
   {
@@ -2755,7 +2756,7 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
       const char *sep;
       bool isFunc=!md->isObjCMethod() &&
         (md->isFunction() || md->isSlot() || md->isSignal());
-      QCString name=md->name();
+      QCString name=type==Definition::TypeModule ? md->qualifiedName() : md->name();
       int startIndex = getPrefixIndex(name);
       if (name.data()+startIndex!=prevName) // new entry
       {
@@ -2983,7 +2984,7 @@ void Index::addFileMemberNameToIndex(const MemberDef *md)
 void Index::addModuleMemberNameToIndex(const MemberDef *md)
 {
   const ModuleDef *mod = md->getModuleDef();
-  if (mod && mod->isLinkableInProject() && md->isLinkableInProject())
+  if (mod && mod->isPrimaryInterface() && mod->isLinkableInProject() && md->isLinkableInProject())
   {
     QCString n = md->name();
     std::string letter = getUTF8CharAt(n.str(),getPrefixIndex(n));

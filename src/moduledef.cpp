@@ -934,6 +934,11 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
         ol.startMemberItem(fd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
         ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
+        QCString path=fd->getPath();
+        if (Config_getBool(FULL_PATH_NAMES))
+        {
+          ol.docify(stripFromPath(path));
+        }
         if (fd->isLinkable())
         {
           ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->displayName());
