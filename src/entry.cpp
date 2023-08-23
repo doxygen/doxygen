@@ -30,7 +30,7 @@
 
 static AtomicInt g_num;
 
-Entry::Entry()
+Entry::Entry() : program(static_cast<size_t>(0)), initializer(static_cast<size_t>(0))
 {
   //printf("Entry::Entry(%p)\n",this);
   g_num++;
