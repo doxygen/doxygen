@@ -119,6 +119,8 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void sortSubGroups() override;
     virtual void writeSummaryLinks(OutputList &ol) const override;
 
+    virtual bool hasGroupGraph() const override;
+    virtual void enableGroupGraph(bool e) override;
   private:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
     void addMemberToList(MemberListType lt,MemberDef *md);
@@ -164,6 +166,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     MemberLists          m_memberLists;
     MemberGroupList      m_memberGroups;
     bool                 m_subGrouping;
+    bool                 m_hasGroupGraph = false;
 
 };
 
@@ -193,6 +196,7 @@ GroupDefImpl::GroupDefImpl(const QCString &df,int dl,const QCString &na,const QC
   //visited = 0;
   m_groupScope = 0;
   m_subGrouping=Config_getBool(SUBGROUPING);
+  m_hasGroupGraph=Config_getBool(GROUP_GRAPHS);
 }
 
 GroupDefImpl::~GroupDefImpl()
@@ -873,10 +877,15 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
 
 void GroupDefImpl::writeGroupGraph(OutputList &ol)
 {
-  if (Config_getBool(HAVE_DOT) /*&& Config_getBool(GROUP_GRAPHS)*/ )
+  if (Config_getBool(HAVE_DOT) && m_hasGroupGraph /*&& Config_getBool(GROUP_GRAPHS)*/)
   {
     DotGroupCollaboration graph(this);
-    if (!graph.isTrivial())
+    if (graph.isTooBig())
+    {
+       warn_uncond("Group dependency graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           qPrint(name()), graph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
+    }
+    else if (!graph.isTrivial())
     {
       msg("Generating dependency graph for group %s\n",qPrint(qualifiedName()));
       ol.pushGeneratorState();
@@ -1880,6 +1889,16 @@ bool GroupDefImpl::hasDetailedDescription() const
          !documentation().isEmpty() ||
          !inbodyDocumentation().isEmpty()) &&
          (m_pages.size()!=numDocMembers());
+}
+
+void GroupDefImpl::enableGroupGraph(bool e)
+{
+  m_hasGroupGraph=e;
+}
+
+bool GroupDefImpl::hasGroupGraph() const
+{
+  return m_hasGroupGraph;
 }
 
 // --- Cast functions
