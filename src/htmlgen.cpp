@@ -1998,7 +1998,7 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
   m_t << "<tr class=\"memitem:" << anchor;
   if (!inheritId.isEmpty())
   {
-    m_t << " inherit" << inheritId;
+    m_t << " inherit " << inheritId;
   }
   m_t << "\"";
   if (!anchor.isEmpty())

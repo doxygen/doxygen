@@ -260,6 +260,8 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *kw);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
 static bool startsWithKeyword(const QCString &str,const QCString &kw);
+static void endCodeFold(yyscan_t yyscanner);
+static void skipHiddenComment(yyscan_t yyscanner,const char *text);
 
 /* -----------------------------------------------------------------
  */
@@ -1976,12 +1978,12 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                         }
 <RemoveSpecialCComment>{CCE}{B}*\n({B}*\n)*({B}*(({CPPC}"@"[{}])|({CCS}"@"[{}]{CCE})){B}*\n)?{B}*{CCS}[*!]/{NCOMM} {
-                                          yyextra->yyLineNr+=QCString(yytext).contains('\n');
+                                          skipHiddenComment(yyscanner,yytext);
                                         }
 <RemoveSpecialCComment>{CCE}{B}*\n({B}*\n)*({B}*(({CPPC}"@"[{}])|({CCS}"@"[{}]{CCE})){B}*\n)? {
                                           if (yyextra->lastSpecialCContext==SkipCxxComment)
                                           { // force end of C++ comment here
-                                            yyextra->yyLineNr+=QCString(yytext).contains('\n');
+                                            skipHiddenComment(yyscanner,yytext);
                                             nextCodeLine(yyscanner);
                                             endFontClass(yyscanner);
                                             BEGIN( yyextra->lastCContext ) ;
@@ -2006,7 +2008,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <RemoveSpecialCComment>[^*\n]+
 <RemoveSpecialCComment>{CPPC}|{CCS}
-<RemoveSpecialCComment>\n  { yyextra->yyLineNr++; }
+<RemoveSpecialCComment>\n  { yyextra->yyLineNr++; endCodeFold(yyscanner); }
 <RemoveSpecialCComment>.
 <MemberCall>[^a-z_A-Z0-9(\n]            {
                                           yyextra->code->codify(yytext);
@@ -2018,7 +2020,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           if (YY_START==SkipCPP) REJECT;
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
-                                            yyextra->yyLineNr+=QCString(yytext).contains('\n');
+                                            skipHiddenComment(yyscanner,yytext);
                                             nextCodeLine(yyscanner);
                                           }
                                           else
@@ -2041,7 +2043,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <*>\n{B}*{CPPC}"@"[{}].*\n                  { // remove one-line group marker
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
-                                            yyextra->yyLineNr+=2;
+                                            skipHiddenComment(yyscanner,yytext);
                                             nextCodeLine(yyscanner);
                                           }
                                           else
@@ -2078,7 +2080,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <*>^{B}*{CPPC}"@"[{}].*\n                   { // remove one-line group marker
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
-                                            yyextra->yyLineNr++;
+                                            skipHiddenComment(yyscanner,yytext);
                                             nextCodeLine(yyscanner);
                                           }
                                           else
@@ -2123,11 +2125,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             endFontClass(yyscanner);
                                           }
                                         }
-<*>\n{B}*{CCS}[!*]/{NCOMM}                 {
+<*>\n{B}*{CCS}[!*]/{NCOMM}               {
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
+                                            skipHiddenComment(yyscanner,yytext);
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
-                                            yyextra->yyLineNr++;
                                             BEGIN(RemoveSpecialCComment);
                                           }
                                           else
@@ -2160,7 +2162,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>^{B}*{CCS}[!*]/{NCOMM}                  { // special C comment block at a new line
+<*>^{B}*{CCS}[!*]/{NCOMM}               { // special C comment block at a new line
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
@@ -2178,7 +2180,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>{CCS}[!*]/{NCOMM}                       { // special C comment block half way a line
+<*>{CCS}[!*]/{NCOMM}                    { // special C comment block half way a line
                                           if (YY_START==SkipString) REJECT;
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
@@ -2197,7 +2199,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>{CCS}("!"?){CCE}                       {
+<*>{CCS}("!"?){CCE}                     {
                                           if (YY_START==SkipString) REJECT;
                                           if (!Config_getBool(STRIP_CODE_COMMENTS))
                                           {
@@ -2209,7 +2211,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <SkipComment>[^\*\n]+                   {
                                           yyextra->code->codify(yytext);
                                         }
-<*>{CCS}                                 {
+<*>{CCS}                                {
                                           startFontClass(yyscanner,"comment");
                                           yyextra->code->codify(yytext);
                                           // check is to prevent getting stuck in skipping C++ comments
@@ -2251,15 +2253,6 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->yyColNr++;
                                           yyextra->code->codify(yytext);
                                         }
-  /*
-<*>([ \t\n]*"\n"){2,}                   { // combine multiple blank lines
-                                          //QCString sepLine=yytext;
-                                          //yyextra->code->codify("\n\n");
-                                          //yyextra->yyLineNr+=sepLine.contains('\n');
-                                          //char sepLine[3]="\n\n";
-                                          codifyLines(yyscanner,yytext);
-                                        }
-  */
 
 %%
 
@@ -2431,27 +2424,51 @@ static void setClassScope(yyscan_t yyscanner,const QCString &name)
   DBG_CTX((stderr,"--->New class scope '%s'\n",qPrint(yyextra->classScope)));
 }
 
+static void endCodeFold(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  while (!yyextra->foldStack.empty())
+  {
+    const Definition *dd = yyextra->foldStack.back();
+    if (dd->getEndBodyLine()+1==yyextra->yyLineNr) // +1 to close the section after the end of the body
+    {
+      yyextra->code->endFold();
+      //fprintf(stderr,"%d:   end codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(dd->name()),dd->getStartDefLine(),dd->getEndBodyLine());
+      yyextra->foldStack.pop_back();
+    }
+    else
+    {
+      //fprintf(stderr,"no end of block dd=%s end=%d\n",qPrint(dd->qualifiedName()),dd->getEndBodyLine());
+      break;
+    }
+  }
+}
+
+static void skipHiddenComment(yyscan_t yyscanner,const char *text)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  int count=QCString(text).contains('\n');
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
+  for (int i=0;i<count;i++)
+  {
+    yyextra->yyLineNr++;
+    endCodeFold(yyscanner);
+  }
+}
+
+
 static void codeFolding(yyscan_t yyscanner,const Definition *d)
 {
   if (Config_getBool(HTML_CODE_FOLDING))
   {
     struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+    //fprintf(stderr,"codeFolding at %d\n",yyextra->yyLineNr);
     //if (d)
-    //  printf("%d: codeFolding: candidate=%s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->qualifiedName()),d->getStartDefLine(),d->getEndBodyLine());
-    while (!yyextra->foldStack.empty())
-    {
-      const Definition *dd = yyextra->foldStack.back();
-      if (dd->getEndBodyLine()+1==yyextra->yyLineNr) // +1 to close the section after the end of the body
-      {
-        yyextra->code->endFold();
-        //printf("%d:   end codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(dd->name()),dd->getStartDefLine(),dd->getEndBodyLine());
-        yyextra->foldStack.pop_back();
-      }
-      else
-      {
-        break;
-      }
-    }
+    //  fprintf(stderr,"%d: codeFolding: candidate=%s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->qualifiedName()),d->getStartDefLine(),d->getEndBodyLine());
+    endCodeFold(yyscanner);
     if (d)
     {
       int startLine = d->getStartDefLine();

@@ -4129,7 +4129,7 @@ NONLopt [^\n]*
                                           yyextra->current->program << yytext ;
                                           --yyextra->curlyCount ;
                                         }
-<ReadBody,ReadNSBody>"}"                { //err("ReadBody count=%d\n",yyextra->curlyCount);
+<ReadBody,ReadNSBody>"}"                { //err("%d:ReadBody count=%d\n",yyextra->yyLineNr,yyextra->curlyCount);
                                           if ( yyextra->curlyCount>0 )
                                           {
                                             yyextra->current->program << yytext ;
