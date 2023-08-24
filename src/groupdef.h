@@ -112,6 +112,9 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual bool hasDetailedDescription() const = 0;
     virtual void sortSubGroups() = 0;
 
+    // group graph related members
+    virtual bool hasGroupGraph() const = 0;
+    virtual void enableGroupGraph(bool e) = 0;
 };
 
 std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,

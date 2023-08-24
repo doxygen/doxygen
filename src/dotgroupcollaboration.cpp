@@ -321,6 +321,16 @@ bool DotGroupCollaboration::isTrivial() const
   return m_usedNodes.size() <= 1;
 }
 
+bool DotGroupCollaboration::isTooBig() const
+{
+  return numNodes()>=Config_getInt(DOT_GRAPH_MAX_NODES);
+}
+
+int DotGroupCollaboration::numNodes() const
+{
+  return static_cast<int>(m_usedNodes.size());
+}
+
 void DotGroupCollaboration::writeGraphHeader(TextStream &t,const QCString &title) const
 {
   DotGraph::writeGraphHeader(t, title);

@@ -134,6 +134,8 @@ static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, cons
 static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleGroupgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideGroupgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleInternal(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePure(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -227,10 +229,12 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "extends",         { &handleExtends,          CommandSpacing::Invisible }},
   { "file",            { &handleFile,             CommandSpacing::Invisible }},
   { "fn",              { &handleFn,               CommandSpacing::Invisible }},
+  { "groupgraph",      { &handleGroupgraph,       CommandSpacing::Invisible }},
   { "headerfile",      { &handleHeaderFile,       CommandSpacing::Invisible }},
   { "hidecallergraph", { &handleHideCallergraph,  CommandSpacing::Invisible }},
   { "hidecallgraph",   { &handleHideCallgraph,    CommandSpacing::Invisible }},
   { "hidedirectorygraph",  { &handleHideDirectoryGraph,  CommandSpacing::Invisible }},
+  { "hidegroupgraph",  { &handleHideGroupgraph,  CommandSpacing::Invisible }},
   { "hideincludedbygraph", { &handleHideIncludedBygraph, CommandSpacing::Invisible }},
   { "hideincludegraph",    { &handleHideIncludegraph,    CommandSpacing::Invisible }},
   { "hideinitializer", { &handleHideInitializer,  CommandSpacing::Invisible }},
@@ -3120,6 +3124,20 @@ static bool handleHideDirectoryGraph(yyscan_t yyscanner,const QCString &, const 
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->directoryGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleGroupgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->groupGraph = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideGroupgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->groupGraph = FALSE; // OFF
   return FALSE;
 }
 

@@ -368,6 +368,10 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
         gd->addSectionsToDefinition(root->anchors);
         gd->setRefItems(root->sli);
         gd->setLanguage(root->lang);
+        if (root->groupDocType==Entry::GROUPDOC_NORMAL)
+        {
+          gd->enableGroupGraph(root->groupGraph);
+        }
       }
       else
       {
@@ -391,6 +395,10 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
         gd->addSectionsToDefinition(root->anchors);
         gd->setRefItems(root->sli);
         gd->setLanguage(root->lang);
+        if (root->groupDocType==Entry::GROUPDOC_NORMAL)
+        {
+          gd->enableGroupGraph(root->groupGraph);
+        }
       }
     }
   }
