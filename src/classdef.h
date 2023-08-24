@@ -400,8 +400,6 @@ class ClassDef : public Definition
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
-
-
 };
 
 class ClassDefMutable : public DefinitionMutable, public ClassDef
@@ -431,6 +429,10 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
+
+    // collaboration graph related members
+    virtual bool hasCollaborationGraph() const = 0;
+    virtual void enableCollaborationGraph(bool e) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

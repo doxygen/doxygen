@@ -130,6 +130,8 @@ static bool handleHideIncludegraph(yyscan_t yyscanner,const QCString &, const St
 static bool handleHideIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleCollaborationgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideCollaborationgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -202,6 +204,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "class",           { &handleClass,            CommandSpacing::Invisible }},
   { "code",            { &handleFormatBlock,      CommandSpacing::Block     }},
   { "icode",           { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "collaborationgraph", { &handleCollaborationgraph, CommandSpacing::Invisible }},
   { "concept",         { &handleConcept,          CommandSpacing::Invisible }},
   { "copybrief",       { &handleCopyBrief,        CommandSpacing::Invisible }},
   { "copydetails",     { &handleCopyDetails,      CommandSpacing::Block     }},
@@ -233,6 +236,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "headerfile",      { &handleHeaderFile,       CommandSpacing::Invisible }},
   { "hidecallergraph", { &handleHideCallergraph,  CommandSpacing::Invisible }},
   { "hidecallgraph",   { &handleHideCallgraph,    CommandSpacing::Invisible }},
+  { "hidecollaborationgraph", { &handleHideCollaborationgraph, CommandSpacing::Invisible }},
   { "hidedirectorygraph",  { &handleHideDirectoryGraph,  CommandSpacing::Invisible }},
   { "hidegroupgraph",  { &handleHideGroupgraph,  CommandSpacing::Invisible }},
   { "hideincludedbygraph", { &handleHideIncludedBygraph, CommandSpacing::Invisible }},
@@ -3124,6 +3128,20 @@ static bool handleHideDirectoryGraph(yyscan_t yyscanner,const QCString &, const 
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->directoryGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleCollaborationgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->collaborationGraph = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideCollaborationgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->collaborationGraph = FALSE; // OFF
   return FALSE;
 }
 

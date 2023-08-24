@@ -1046,6 +1046,7 @@ static void addClassToContext(const Entry *root)
       cd->setClassSpecifier(root->spec);
       cd->addQualifiers(root->qualifiers);
       cd->setTypeConstraints(root->typeConstr);
+      cd->enableCollaborationGraph(root->collaborationGraph);
 
       if (tArgList)
       {

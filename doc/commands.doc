@@ -60,6 +60,7 @@ documentation:
 \refitem cmdcite \\cite
 \refitem cmdclass \\class
 \refitem cmdcode \\code
+\refitem cmdcollaborationgraph \\collaborationgraph
 \refitem cmdconcept \\concept
 \refitem cmdcond \\cond
 \refitem cmdcopybrief \\copybrief
@@ -120,6 +121,7 @@ documentation:
 \refitem cmdheaderfile \\headerfile
 \refitem cmdhidecallergraph \\hidecallergraph
 \refitem cmdhidecallgraph \\hidecallgraph
+\refitem cmdhidecollaborationgraph \\hidecollaborationgraph
 \refitem cmdhidedirectorygraph \\hidedirectorygraph
 \refitem cmdhidegroupgraph \\hidegroupgraph
 \refitem cmdhideincludedbygraph \\hideincludedbygraph
@@ -518,6 +520,28 @@ Structural indicators
       option \ref cfg_directory_graph "DIRECTORY_GRAPH"
 
 <hr>
+\section cmdcollaborationgraph \\collaborationgraph
+
+  \addindex \\collaborationgraph
+  When this command is put in a comment block of a class
+  then doxygen will generate a collaboration graph for that class. The
+  collaboration graph will be generated regardless of the value of
+  \ref cfg_collaboration_graph "COLLABORATION_GRAPH".
+
+  \sa section \ref cmdhidecollaborationgraph "\\hidecollaborationgraph",
+      option \ref cfg_collaboration_graph "COLLABORATION_GRAPH"
+
+<hr>
+\section cmdhidecollaborationgraph \\hidecollaborationgraph
+
+  \addindex \\hidecollaborationgraph
+  When this command is put in a comment block of a class
+  then doxygen will not generate a collaboration graph for that class. The
+  collaboration graph will not be generated regardless of the value of
+  \ref cfg_collaboration_graph "COLLABORATION_GRAPH".
+
+  \sa section \ref cmdcollaborationgraph "\\collaborationgraph",
+      option \ref cfg_collaboration_graph "COLLABORATION_GRAPH"
 \section cmdgroupgraph \\groupgraph
 
   \addindex \\groupgraph
