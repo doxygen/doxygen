@@ -260,6 +260,7 @@ class Entry
     bool includedByGraph;     //!< do we need to draw the included by graph?
     bool directoryGraph;      //!< do we need to draw the directory graph?
     bool collaborationGraph;  //!< do we need to draw the collaboration graph?
+    bool groupGraph;          //!< do we need to draw the group graph?
     bool exported;            //!< is the symbol exported from a C++20 module
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string

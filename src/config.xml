@@ -3773,6 +3773,10 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 <![CDATA[
  If the \c GROUP_GRAPHS tag is set to \c YES then doxygen
  will generate a graph for groups, showing the direct groups dependencies.
+ Explicit enabling a group dependency graph, when \c GROUP_GRAPHS is set to \c NO, can be
+ accomplished by means of the command \ref cmdgroupgraph "\\groupgraph".
+ Disabling a directory graph can be accomplished by means of the command
+ \ref cmdhidegroupgraph "\\hidegroupgraph".
 
  See also the chapter \ref grouping "Grouping" in the manual.
 ]]>
