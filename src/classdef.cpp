@@ -345,6 +345,9 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const override;
     virtual void setRequiresClause(const QCString &req) override;
 
+    // directory graph related members
+    virtual bool hasCollaborationGraph() const override;
+    virtual void enableCollaborationGraph(bool e) override;
   private:
     void addUsedInterfaceClasses(MemberDef *md,const QCString &typeStr);
     void showUsedFiles(OutputList &ol) const;
@@ -781,6 +784,8 @@ class ClassDefImpl::IMPL
     QCString requiresClause;
 
     StringVector qualifiers;
+
+    bool hasCollaborationGraph = false;
 };
 
 void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
@@ -825,6 +830,7 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
   {
     isLocal=FALSE;
   }
+  hasCollaborationGraph = Config_getBool(COLLABORATION_GRAPH);
 }
 
 //-------------------------------------------------------------------------------------------
@@ -1775,10 +1781,15 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 
 void ClassDefImpl::writeCollaborationGraph(OutputList &ol) const
 {
-  if (Config_getBool(HAVE_DOT) /*&& Config_getBool(COLLABORATION_GRAPH)*/)
+  if (Config_getBool(HAVE_DOT) && m_impl->hasCollaborationGraph /*&& Config_getBool(COLLABORATION_GRAPH)*/)
   {
     DotClassGraph usageImplGraph(this,Collaboration);
-    if (!usageImplGraph.isTrivial())
+    if (usageImplGraph.isTooBig())
+    {
+       warn_uncond("Collaboration graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           qPrint(name()), usageImplGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
+    }
+    else if (!usageImplGraph.isTrivial())
     {
       ol.pushGeneratorState();
       ol.disable(OutputType::Man);
@@ -5002,6 +5013,17 @@ CodeSymbolType ClassDefImpl::codeSymbolType() const
   }
   return CodeSymbolType::Class;
 }
+
+void ClassDefImpl::enableCollaborationGraph(bool e)
+{
+  m_impl->hasCollaborationGraph=e;
+}
+
+bool ClassDefImpl::hasCollaborationGraph() const
+{
+  return m_impl->hasCollaborationGraph;
+}
+
 
 // --- Cast functions
 //

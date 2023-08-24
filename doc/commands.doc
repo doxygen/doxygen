@@ -60,6 +60,7 @@ documentation:
 \refitem cmdcite \\cite
 \refitem cmdclass \\class
 \refitem cmdcode \\code
+\refitem cmdcollaborationgraph \\collaborationgraph
 \refitem cmdconcept \\concept
 \refitem cmdcond \\cond
 \refitem cmdcopybrief \\copybrief
@@ -116,10 +117,13 @@ documentation:
 \refitem cmdfile \\file
 \refitem cmdfileinfo \\fileinfo
 \refitem cmdfn \\fn
+\refitem cmdgroupgraph \\groupgraph
 \refitem cmdheaderfile \\headerfile
 \refitem cmdhidecallergraph \\hidecallergraph
 \refitem cmdhidecallgraph \\hidecallgraph
+\refitem cmdhidecollaborationgraph \\hidecollaborationgraph
 \refitem cmdhidedirectorygraph \\hidedirectorygraph
+\refitem cmdhidegroupgraph \\hidegroupgraph
 \refitem cmdhideincludedbygraph \\hideincludedbygraph
 \refitem cmdhideincludegraph \\hideincludegraph
 \refitem cmdhiderefby \\hiderefby
@@ -514,6 +518,54 @@ Structural indicators
 
   \sa section \ref cmddirectorygraph "\\directorygraph",
       option \ref cfg_directory_graph "DIRECTORY_GRAPH"
+
+<hr>
+\section cmdcollaborationgraph \\collaborationgraph
+
+  \addindex \\collaborationgraph
+  When this command is put in a comment block of a class
+  then doxygen will generate a collaboration graph for that class. The
+  collaboration graph will be generated regardless of the value of
+  \ref cfg_collaboration_graph "COLLABORATION_GRAPH".
+
+  \sa section \ref cmdhidecollaborationgraph "\\hidecollaborationgraph",
+      option \ref cfg_collaboration_graph "COLLABORATION_GRAPH"
+
+<hr>
+\section cmdhidecollaborationgraph \\hidecollaborationgraph
+
+  \addindex \\hidecollaborationgraph
+  When this command is put in a comment block of a class
+  then doxygen will not generate a collaboration graph for that class. The
+  collaboration graph will not be generated regardless of the value of
+  \ref cfg_collaboration_graph "COLLABORATION_GRAPH".
+
+  \sa section \ref cmdcollaborationgraph "\\collaborationgraph",
+      option \ref cfg_collaboration_graph "COLLABORATION_GRAPH"
+\section cmdgroupgraph \\groupgraph
+
+  \addindex \\groupgraph
+  When this command is put in a comment block of a
+  \ref cmddefgroup "\\defgroup" command
+  then doxygen will generate a group dependency graph for that group. The
+  group graph will be generated regardless of the value of
+  \ref cfg_group_graphs "GROUP_GRAPHS".
+
+  \sa section \ref cmdhidegroupgraph "\\hidegroupgraph",
+      option \ref cfg_group_graphs "GROUP_GRAPHS"
+
+<hr>
+\section cmdhidegroupgraph \\hidegroupgraph
+
+  \addindex \\hidegroupgraph
+  When this command is put in a comment block of a
+  \ref cmddefgroup "\\defgroup" command
+  then doxygen will not generate a group dependency graph for that group. The
+  group graph will not be generated regardless of the value of
+  \ref cfg_group_graphs "GROUP_GRAPHS".
+
+  \sa section \ref cmdgroupgraph "\\groupgraph",
+      option \ref cfg_group_graphs "GROUP_GRAPHS"
 
 <hr>
 \section cmdqualifier \\qualifier <label> | "(text)"

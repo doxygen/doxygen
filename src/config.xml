@@ -3761,6 +3761,10 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
  will generate a graph for each documented class showing the direct and
  indirect implementation dependencies (inheritance, containment, and
  class references variables) of the class with other documented classes.
+ Explicit enabling a collaboration graph, when \c COLLABORATION_GRAPH is set to \c NO, can be
+ accomplished by means of the command \ref cmdcollaborationgraph "\\collaborationgraph".
+ Disabling a collaboration graph can be accomplished by means of the command
+ \ref cmdhidecollaborationgraph "\\hidecollaborationgraph".
 ]]>
       </docs>
     </option>
@@ -3769,6 +3773,10 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 <![CDATA[
  If the \c GROUP_GRAPHS tag is set to \c YES then doxygen
  will generate a graph for groups, showing the direct groups dependencies.
+ Explicit enabling a group dependency graph, when \c GROUP_GRAPHS is set to \c NO, can be
+ accomplished by means of the command \ref cmdgroupgraph "\\groupgraph".
+ Disabling a directory graph can be accomplished by means of the command
+ \ref cmdhidegroupgraph "\\hidegroupgraph".
 
  See also the chapter \ref grouping "Grouping" in the manual.
 ]]>

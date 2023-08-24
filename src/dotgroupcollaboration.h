@@ -34,6 +34,8 @@ class DotGroupCollaboration : public DotGraph
                         const QCString &path,const QCString &fileName,const QCString &relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
+    bool isTooBig() const;
+    int numNodes() const;
 
   protected:
     virtual QCString getBaseName() const;

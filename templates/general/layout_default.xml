@@ -48,7 +48,7 @@
     <briefdescription visible="yes"/>
     <includes visible="$SHOW_HEADERFILE"/>
     <inheritancegraph visible="$CLASS_GRAPH"/>
-    <collaborationgraph visible="$COLLABORATION_GRAPH"/>
+    <collaborationgraph visible="yes"/>
     <memberdecl>
       <nestedclasses visible="yes" title=""/>
       <publictypes title=""/>
@@ -184,7 +184,7 @@
   <!-- Layout definition for a group page -->
   <group>
     <briefdescription visible="yes"/>
-    <groupgraph visible="$GROUP_GRAPHS"/>
+    <groupgraph visible="yes"/>
     <memberdecl>
       <nestedgroups visible="yes" title=""/>
       <modules visible="yes" title=""/>

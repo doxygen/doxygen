@@ -368,6 +368,10 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
         gd->addSectionsToDefinition(root->anchors);
         gd->setRefItems(root->sli);
         gd->setLanguage(root->lang);
+        if (root->groupDocType==Entry::GROUPDOC_NORMAL)
+        {
+          gd->enableGroupGraph(root->groupGraph);
+        }
       }
       else
       {
@@ -391,6 +395,10 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
         gd->addSectionsToDefinition(root->anchors);
         gd->setRefItems(root->sli);
         gd->setLanguage(root->lang);
+        if (root->groupDocType==Entry::GROUPDOC_NORMAL)
+        {
+          gd->enableGroupGraph(root->groupGraph);
+        }
       }
     }
   }
@@ -1038,6 +1046,7 @@ static void addClassToContext(const Entry *root)
       cd->setClassSpecifier(root->spec);
       cd->addQualifiers(root->qualifiers);
       cd->setTypeConstraints(root->typeConstr);
+      cd->enableCollaborationGraph(root->collaborationGraph);
 
       if (tArgList)
       {
