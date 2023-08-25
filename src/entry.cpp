@@ -69,6 +69,7 @@ Entry::Entry(const Entry &e)
   includedByGraph = e.includedByGraph;
   directoryGraph = e.directoryGraph;
   collaborationGraph = e.collaborationGraph;
+  inheritanceGraph = e.inheritanceGraph;
   groupGraph  = e.groupGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
@@ -197,6 +198,7 @@ void Entry::reset()
   bool entryIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
   bool entryDirectoryGraph  = Config_getBool(DIRECTORY_GRAPH);
   bool entryCollaborationGraph = Config_getBool(COLLABORATION_GRAPH);
+  CLASS_GRAPH_t entryInheritanceGraph  = Config_getBool(CLASS_GRAPH);
   bool entryGroupGraph  = Config_getBool(GROUP_GRAPHS);
   //printf("Entry::reset()\n");
   name.resize(0);
@@ -234,6 +236,7 @@ void Entry::reset()
   includedByGraph = entryIncludedByGraph;
   directoryGraph = entryDirectoryGraph;
   collaborationGraph = entryCollaborationGraph;
+  inheritanceGraph = entryInheritanceGraph;
   groupGraph = entryGroupGraph;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;

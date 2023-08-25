@@ -26,6 +26,7 @@
 #include "arguments.h"
 #include "reflist.h"
 #include "textstream.h"
+#include "configvalues.h"
 
 class SectionInfo;
 class FileDef;
@@ -260,6 +261,7 @@ class Entry
     bool includedByGraph;     //!< do we need to draw the included by graph?
     bool directoryGraph;      //!< do we need to draw the directory graph?
     bool collaborationGraph;  //!< do we need to draw the collaboration graph?
+    CLASS_GRAPH_t inheritanceGraph; //!< type of inheritance graph?
     bool groupGraph;          //!< do we need to draw the group graph?
     bool exported;            //!< is the symbol exported from a C++20 module
     Specifier    virt;        //!< virtualness of the entry

@@ -3746,6 +3746,11 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
  or if the \c CLASS_GRAPH tag is set to \c BUILTIN, then the built-in generator will be used.
  If the \c CLASS_GRAPH tag is set to \c TEXT the direct and indirect inheritance relations
  will be shown as texts / links.
+ Explicit enabling an inheritance graph or choosing a different representation for an inheritance graph
+ of a specific class, can be accomplished by means of the command
+ \ref cmdinheritancegraph "\\inheritancegraph".
+ Disabling an inheritance graph can be accomplished by means of the command
+ \ref cmdhideinheritancegraph "\\hideinheritancegraph".
 ]]>
       </docs>
       <value name="NO" bool_representation="NO" />
