@@ -20,6 +20,7 @@
 #define MANDOCVISITOR_H
 
 #include <iostream>
+#include <array>
 
 #include "qcstring.h"
 #include "docvisitor.h"
