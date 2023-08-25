@@ -128,15 +128,15 @@ class ManDocVisitor : public DocVisitor
     bool m_firstCol;
     int  m_indent;
     QCString m_langExt;
+
+    struct ManListItemInfo
+    {
+      int number;
+      char type;
+    };
+    static const int maxIndentLevels = 13;
+
+    std::array<ManListItemInfo,maxIndentLevels> m_listItemInfo;
 };
 
-struct ManListItemInfo
-{
-  int number;
-  char type;
-};
-
-const int man_maxIndentLevels = 13;
-
-extern ManListItemInfo man_listItemInfo[man_maxIndentLevels];
 #endif

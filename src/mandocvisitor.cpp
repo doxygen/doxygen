@@ -28,8 +28,6 @@
 #include "emoji.h"
 #include "fileinfo.h"
 
-ManListItemInfo man_listItemInfo[man_maxIndentLevels];
-
 ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(FALSE),
@@ -475,9 +473,9 @@ void ManDocVisitor::operator()(const DocSeparator &s)
 void ManDocVisitor::operator()(const DocAutoList &l)
 {
   if (m_hide) return;
-  m_indent+=2;
+  m_indent++;
   visitChildren(l);
-  m_indent-=2;
+  m_indent--;
   m_t << ".PP\n";
 }
 
@@ -485,17 +483,17 @@ void ManDocVisitor::operator()(const DocAutoListItem &li)
 {
   if (m_hide) return;
   QCString ws;
-  ws.fill(' ',m_indent-2);
+  if (m_indent>0) ws.fill(' ',2*(m_indent-1));
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
   const DocAutoList *list = std::get_if<DocAutoList>(li.parent());
   if (list && list->isEnumList())
   {
-    m_t << li.itemNumber() << ".\" " << m_indent+2;
+    m_t << li.itemNumber() << ".\" " << (2*(m_indent+1));
   }
   else // bullet list
   {
-    m_t << "\\(bu\" " << m_indent;
+    m_t << "\\(bu\" " << (2*m_indent);
   }
   m_t << "\n";
   m_firstCol=TRUE;
@@ -594,11 +592,12 @@ void ManDocVisitor::operator()(const DocTitle &t)
 void ManDocVisitor::operator()(const DocSimpleList &l)
 {
   if (m_hide) return;
-  m_indent+=2;
+  m_indent++;
   if (!m_firstCol) m_t << "\n";
   m_t << ".PD 0\n";
+  m_firstCol=true;
   visitChildren(l);
-  m_indent-=2;
+  m_indent--;
   m_t << ".PP\n";
 }
 
@@ -606,7 +605,7 @@ void ManDocVisitor::operator()(const DocSimpleListItem &li)
 {
   if (m_hide) return;
   QCString ws;
-  ws.fill(' ',m_indent-2);
+  if (m_indent>0) ws.fill(' ',2*(m_indent-1));
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << "\n";
   m_firstCol=TRUE;
@@ -634,26 +633,28 @@ void ManDocVisitor::operator()(const DocSection &s)
 void ManDocVisitor::operator()(const DocHtmlList &l)
 {
   if (m_hide) return;
-  m_indent+=2;
+  m_indent++;
   if (!m_firstCol) m_t << "\n";
   m_t << ".PD 0\n";
-  man_listItemInfo[m_indent].number = 1;
-  man_listItemInfo[m_indent].type   = '1';
+  m_firstCol=true;
+  int indent = std::min(m_indent,maxIndentLevels-1);
+  m_listItemInfo[indent].number = 1;
+  m_listItemInfo[indent].type   = '1';
   for (const auto &opt : l.attribs())
   {
     if (opt.name=="type")
     {
-      man_listItemInfo[m_indent].type = opt.value[0];
+      m_listItemInfo[indent].type = opt.value[0];
     }
     if (opt.name=="start")
     {
       bool ok;
       int val = opt.value.toInt(&ok);
-      if (ok) man_listItemInfo[m_indent].number = val;
+      if (ok) m_listItemInfo[indent].number = val;
     }
   }
   visitChildren(l);
-  m_indent-=2;
+  m_indent--;
   if (!m_firstCol) m_t << "\n";
   m_t << ".PP\n";
 }
@@ -662,48 +663,49 @@ void ManDocVisitor::operator()(const DocHtmlListItem &li)
 {
   if (m_hide) return;
   QCString ws;
-  ws.fill(' ',m_indent-2);
+  if (m_indent>0) ws.fill(' ',2*(m_indent-1));
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
   const DocHtmlList *list = std::get_if<DocHtmlList>(li.parent());
   if (list && list->type()==DocHtmlList::Ordered)
   {
+    int indent = std::min(m_indent,maxIndentLevels-1);
     for (const auto &opt : li.attribs())
     {
       if (opt.name=="value")
       {
         bool ok;
         int val = opt.value.toInt(&ok);
-        if (ok) man_listItemInfo[m_indent].number = val;
+        if (ok) m_listItemInfo[indent].number = val;
       }
     }
-    switch (man_listItemInfo[m_indent].type)
+    switch (m_listItemInfo[indent].type)
     {
       case '1':
-        m_t << man_listItemInfo[m_indent].number;
+        m_t << m_listItemInfo[indent].number;
         break;
       case 'a':
-        m_t << integerToAlpha(man_listItemInfo[m_indent].number,false);
+        m_t << integerToAlpha(m_listItemInfo[indent].number,false);
         break;
       case 'A':
-        m_t << integerToAlpha(man_listItemInfo[m_indent].number);
+        m_t << integerToAlpha(m_listItemInfo[indent].number);
         break;
       case 'i':
-        m_t << integerToRoman(man_listItemInfo[m_indent].number,false);
+        m_t << integerToRoman(m_listItemInfo[indent].number,false);
         break;
       case 'I':
-        m_t << integerToRoman(man_listItemInfo[m_indent].number);
+        m_t << integerToRoman(m_listItemInfo[indent].number);
         break;
       default:
-        m_t << man_listItemInfo[m_indent].number;
+        m_t << m_listItemInfo[indent].number;
         break;
     }
-    m_t << ".\" " << m_indent+2;
-    man_listItemInfo[m_indent].number++;
+    m_t << ".\" " << ((m_indent+1)*2);
+    m_listItemInfo[indent].number++;
   }
   else // bullet list
   {
-    m_t << "\\(bu\" " << m_indent;
+    m_t << "\\(bu\" " << (m_indent*2);
   }
   m_t << "\n";
   m_firstCol=TRUE;
@@ -851,9 +853,9 @@ void ManDocVisitor::operator()(const DocSecRefItem &ref)
 {
   if (m_hide) return;
   QCString ws;
-  ws.fill(' ',m_indent-2);
+  if (m_indent>0) ws.fill(' ',2*(m_indent-1));
   if (!m_firstCol) m_t << "\n";
-  m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << "\n";
+  m_t << ".IP \"" << ws << "\\(bu\" " << (2*m_indent) << "\n";
   m_firstCol=TRUE;
   visitChildren(ref);
   m_t << "\n";
@@ -863,9 +865,9 @@ void ManDocVisitor::operator()(const DocSecRefItem &ref)
 void ManDocVisitor::operator()(const DocSecRefList &l)
 {
   if (m_hide) return;
-  m_indent+=2;
+  m_indent++;
   visitChildren(l);
-  m_indent-=2;
+  m_indent--;
   if (!m_firstCol) m_t << "\n";
   m_t << ".PP\n";
 }
