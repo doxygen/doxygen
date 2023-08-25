@@ -3821,7 +3821,7 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
     {
       //printf("*** adding %s hasSubPages=%d hasSections=%d\n",qPrint(pageTitle),hasSubPages,hasSections);
       ftv->addContentsItem(
-          hasSubPages || hasSections,pageTitle,
+          hasSubPages,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
           QCString(),FALSE,TRUE,pd);
     }
