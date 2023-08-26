@@ -344,6 +344,9 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                  bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const override;
     virtual void setRequiresClause(const QCString &req) override;
+        // inheritance graph related members
+    virtual CLASS_GRAPH_t inheritanceGraphType() const override;
+    virtual void setTypeInheritanceGraph(CLASS_GRAPH_t e) override;
 
     // directory graph related members
     virtual bool hasCollaborationGraph() const override;
@@ -786,6 +789,7 @@ class ClassDefImpl::IMPL
     StringVector qualifiers;
 
     bool hasCollaborationGraph = false;
+    CLASS_GRAPH_t typeInheritanceGraph = CLASS_GRAPH_t::NO;
 };
 
 void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
@@ -831,6 +835,7 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
     isLocal=FALSE;
   }
   hasCollaborationGraph = Config_getBool(COLLABORATION_GRAPH);
+  typeInheritanceGraph = Config_getEnum(CLASS_GRAPH);
 }
 
 //-------------------------------------------------------------------------------------------
@@ -1668,7 +1673,7 @@ int ClassDefImpl::countInheritanceNodes() const
 void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 {
   bool haveDot    = Config_getBool(HAVE_DOT);
-  auto classGraph = Config_getEnum(CLASS_GRAPH);
+  auto classGraph = m_impl->typeInheritanceGraph;
 
   if (classGraph == CLASS_GRAPH_t::NO) return;
   // count direct inheritance relations
@@ -4995,6 +5000,16 @@ QCString ClassDefImpl::collaborationGraphFileName() const
 QCString ClassDefImpl::inheritanceGraphFileName() const
 {
   return m_impl->inheritFileName;
+}
+
+void ClassDefImpl::setTypeInheritanceGraph(CLASS_GRAPH_t e)
+{
+  m_impl->typeInheritanceGraph=e;
+}
+
+CLASS_GRAPH_t ClassDefImpl::inheritanceGraphType() const
+{
+  return m_impl->typeInheritanceGraph;
 }
 
 CodeSymbolType ClassDefImpl::codeSymbolType() const

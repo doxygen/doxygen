@@ -24,6 +24,7 @@
 #include "definition.h"
 #include "arguments.h"
 #include "membergroup.h"
+#include "configvalues.h"
 
 struct Argument;
 class MemberDef;
@@ -429,6 +430,9 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
+        // inheritance graph related members
+    virtual CLASS_GRAPH_t inheritanceGraphType() const = 0;
+    virtual void setTypeInheritanceGraph(CLASS_GRAPH_t e) = 0;
 
     // collaboration graph related members
     virtual bool hasCollaborationGraph() const = 0;
