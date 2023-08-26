@@ -47,7 +47,7 @@
   <class>
     <briefdescription visible="yes"/>
     <includes visible="$SHOW_HEADERFILE"/>
-    <inheritancegraph visible="$CLASS_GRAPH"/>
+    <inheritancegraph visible="yes"/>
     <collaborationgraph visible="yes"/>
     <memberdecl>
       <nestedclasses visible="yes" title=""/>

@@ -126,6 +126,7 @@ documentation:
 \refitem cmdhidegroupgraph \\hidegroupgraph
 \refitem cmdhideincludedbygraph \\hideincludedbygraph
 \refitem cmdhideincludegraph \\hideincludegraph
+\refitem cmdhideinheritancegraph \\hideinheritancegraph
 \refitem cmdhiderefby \\hiderefby
 \refitem cmdhiderefs \\hiderefs
 \refitem cmdhideinitializer \\hideinitializer
@@ -142,6 +143,7 @@ documentation:
 \refitem cmdincludegraph \\includegraph
 \refitem cmdincludelineno \\includelineno
 \refitem cmdingroup \\ingroup
+\refitem cmdinheritancegraph \\inheritancegraph
 \refitem cmdinternal \\internal
 \refitem cmdinvariant \\invariant
 \refitem cmdinterface \\interface
@@ -542,6 +544,34 @@ Structural indicators
 
   \sa section \ref cmdcollaborationgraph "\\collaborationgraph",
       option \ref cfg_collaboration_graph "COLLABORATION_GRAPH"
+
+<hr>
+\section cmdinheritancegraph \\inheritancegraph['{option}']
+
+  \addindex \\inheritancegraph
+  When this command is put in a comment block of a class
+  then doxygen will generate an inheritance graph for that class conforming the `option`.
+  The inheritance graph will be generated, conforming the `option`, regardless of the value of
+  \ref cfg_class_graph "CLASS_GRAPH".
+  The possible values of `option` are the smae valuesz as can be used with \ref cfg_class_graph "CLASS_GRAPH".
+  In case no `option` is specified the vaue `YES` is assumed.
+
+  \sa section \ref cmdhideinheritancegraph "\\hideinheritancegraph",
+      option \ref cfg_class_graph "CLASS_GRAPH"
+
+<hr>
+\section cmdhideinheritancegraph \\hideinheritancegraph
+
+  \addindex \\hideinheritancegraph
+  When this command is put in a comment block of a class
+  then doxygen will not generate an inheritance graph for that class. The
+  inheritance graph will not be generated regardless of the value of
+  \ref cfg_class_graph "CLASS_GRAPH".
+
+  \sa section \ref cmdinheritancegraph "\\inheritancegraph",
+      option \ref cfg_class_graph "CLASS_GRAPH"
+
+<hr>
 \section cmdgroupgraph \\groupgraph
 
   \addindex \\groupgraph

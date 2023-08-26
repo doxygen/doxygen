@@ -1047,6 +1047,7 @@ static void addClassToContext(const Entry *root)
       cd->addQualifiers(root->qualifiers);
       cd->setTypeConstraints(root->typeConstr);
       cd->enableCollaborationGraph(root->collaborationGraph);
+      cd->setTypeInheritanceGraph(root->inheritanceGraph);
 
       if (tArgList)
       {

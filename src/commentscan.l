@@ -132,6 +132,8 @@ static bool handleDirectoryGraph(yyscan_t yyscanner,const QCString &, const Stri
 static bool handleHideDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleCollaborationgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideCollaborationgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleInheritanceGraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideInheritanceGraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -241,6 +243,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "hidegroupgraph",  { &handleHideGroupgraph,  CommandSpacing::Invisible }},
   { "hideincludedbygraph", { &handleHideIncludedBygraph, CommandSpacing::Invisible }},
   { "hideincludegraph",    { &handleHideIncludegraph,    CommandSpacing::Invisible }},
+  { "hideinheritancegraph",{ &handleHideInheritanceGraph,CommandSpacing::Invisible }},
   { "hideinitializer", { &handleHideInitializer,  CommandSpacing::Invisible }},
   { "hiderefby",       { &handleHideReferencedByRelation, CommandSpacing::Invisible }},
   { "hiderefs",        { &handleHideReferencesRelation,   CommandSpacing::Invisible }},
@@ -257,6 +260,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "includelineno",   { 0,                       CommandSpacing::Block     }},
   { "ingroup",         { &handleIngroup,          CommandSpacing::Invisible }},
   { "inherit",         { &handleInherit,          CommandSpacing::Invisible }},
+  { "inheritancegraph",{ &handleInheritanceGraph, CommandSpacing::Invisible }},
   { "interface",       { &handleInterface,        CommandSpacing::Invisible }},
   { "internal",        { &handleInternal,         CommandSpacing::Block     }},
   { "invariant",       { 0,                       CommandSpacing::Block     }},
@@ -3156,6 +3160,51 @@ static bool handleHideGroupgraph(yyscan_t yyscanner,const QCString &, const Stri
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->groupGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleInheritanceGraph(yyscan_t yyscanner,const QCString &, const StringVector &optList)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->inheritanceGraph = CLASS_GRAPH_t::YES;
+  for (const auto &opt_ : optList)
+  {
+    QCString opt = QCString(opt_).stripWhiteSpace().lower();
+    if (!opt.isEmpty())
+    {
+      if (opt == "yes")
+      {
+        yyextra->current->inheritanceGraph = CLASS_GRAPH_t::YES;
+      }
+      else if (opt == "graph")
+      {
+        yyextra->current->inheritanceGraph = CLASS_GRAPH_t::GRAPH;
+      }
+      else if (opt == "builtin")
+      {
+        yyextra->current->inheritanceGraph = CLASS_GRAPH_t::BUILTIN;
+      }
+      else if (opt == "text")
+      {
+        yyextra->current->inheritanceGraph = CLASS_GRAPH_t::TEXT;
+      }
+      else if (opt == "no")
+      {
+        yyextra->current->inheritanceGraph = CLASS_GRAPH_t::NO;
+      }
+      else
+      {
+        warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\inheritancegraph: '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+      }
+    }
+  }
+  return FALSE;
+}
+
+static bool handleHideInheritanceGraph(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->inheritanceGraph = CLASS_GRAPH_t::NO; // OFF
   return FALSE;
 }
 
