@@ -9446,8 +9446,13 @@ static void generateExampleDocs()
   for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
     msg("Generating docs for example %s...\n",qPrint(pd->name()));
-    auto intf = Doxygen::parserManager->getCodeParser(".c"); // TODO: do this on code type
-    intf->resetCodeParserState();
+    SrcLangExt lang = getLanguageFromFileName(pd->name(), SrcLangExt_Unknown);
+    if (lang != SrcLangExt_Unknown)
+    {
+      QCString ext = getFileNameExtension(pd->name());
+      auto intf = Doxygen::parserManager->getCodeParser(ext);
+      intf->resetCodeParserState();
+    }
     QCString n=pd->getOutputFileBase();
     startFile(*g_outputList,n,n,pd->name());
     startTitle(*g_outputList,n);
