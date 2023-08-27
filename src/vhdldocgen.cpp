@@ -427,7 +427,7 @@ static std::vector<const MemberDef*> getPorts(const ClassDef *cd)
 
   for (const auto &md : *ml)
   {
-    if (md->getMemberSpecifiers()==VhdlDocGen::PORT)
+    if (md->getVhdlSpecifiers()==VhdlSpecifier::PORT)
     {
       portList.push_back(md);
     }
@@ -791,6 +791,21 @@ const MemberDef* VhdlDocGen::findFunction(const QCString& funcname, const QCStri
 
 
 
+static VhdlSpecifier getSpecifierTypeFromClass(const ClassDef *cd)
+{
+  VhdlDocGen::VhdlClasses ii=VhdlDocGen::convert(cd->protection());
+
+  QCString type;
+  if (ii==VhdlDocGen::ENTITYCLASS)
+    return VhdlSpecifier::ENTITY;
+  else if (ii==VhdlDocGen::ARCHITECTURECLASS)
+    return VhdlSpecifier::ARCHITECTURE;
+  else if (ii==VhdlDocGen::PACKBODYCLASS)
+    return VhdlSpecifier::PACKAGE_BODY;
+  else if (ii==VhdlDocGen::PACKAGECLASS)
+    return VhdlSpecifier::PACKAGE;
+  return VhdlSpecifier::UNKNOWN;
+}
 
 /*!
  * returns the class title+ref
@@ -801,9 +816,8 @@ QCString VhdlDocGen::getClassTitle(const ClassDef *cd)
   QCString pageTitle;
   if (cd==0) return "";
   pageTitle=VhdlDocGen::getClassName(cd);
-  Protection ii=cd->protection();
   pageTitle+=" ";
-  pageTitle+=theTranslator_vhdlType(static_cast<int>(ii)+2,TRUE); // TODO: fix ugly hack
+  pageTitle+=theTranslator_vhdlType(getSpecifierTypeFromClass(cd),TRUE);
   return pageTitle;
 } // getClassTitle
 
@@ -834,17 +848,7 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
   QCString nn=cd->className();
   VhdlClasses ii=convert(cd->protection());
 
-  QCString type;
-  if (ii==VhdlDocGen::ENTITYCLASS)
-    type+=theTranslator_vhdlType(VhdlDocGen::ENTITY,TRUE);
-  else if (ii==VhdlDocGen::ARCHITECTURECLASS)
-    type+=theTranslator_vhdlType(VhdlDocGen::ARCHITECTURE,TRUE);
-  else if (ii==VhdlDocGen::PACKBODYCLASS)
-    type+=theTranslator_vhdlType(VhdlDocGen::PACKAGE_BODY,TRUE);
-  else if (ii==VhdlDocGen::PACKAGECLASS)
-    type+=theTranslator_vhdlType(VhdlDocGen::PACKAGE,TRUE);
-  else
-    type+="";
+  QCString type = theTranslator_vhdlType(getSpecifierTypeFromClass(cd),TRUE);
 
   //type=type.lower();
   type+=" >> ";
@@ -1558,31 +1562,31 @@ QCString VhdlDocGen::convertArgumentListToString(const ArgumentList &al,bool fun
 void VhdlDocGen::writeVhdlDeclarations(const MemberList* ml,
     OutputList& ol,const GroupDef* gd,const ClassDef* cd,const FileDef *fd,const NamespaceDef* nd,const ModuleDef *mod)
 {
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::LIBRARY,FALSE),QCString(),FALSE,VhdlDocGen::LIBRARY);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::USE,FALSE),QCString(),FALSE,VhdlDocGen::USE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::FUNCTION,FALSE),QCString(),FALSE,VhdlDocGen::FUNCTION);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::COMPONENT,FALSE),QCString(),FALSE,VhdlDocGen::COMPONENT);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::CONSTANT,FALSE),QCString(),FALSE,VhdlDocGen::CONSTANT);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::TYPE,FALSE),QCString(),FALSE,VhdlDocGen::TYPE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::SUBTYPE,FALSE),QCString(),FALSE,VhdlDocGen::SUBTYPE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::GENERIC,FALSE),QCString(),FALSE,VhdlDocGen::GENERIC);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::PORT,FALSE),QCString(),FALSE,VhdlDocGen::PORT);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::PROCESS,FALSE),QCString(),FALSE,VhdlDocGen::PROCESS);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::SIGNAL,FALSE),QCString(),FALSE,VhdlDocGen::SIGNAL);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::ATTRIBUTE,FALSE),QCString(),FALSE,VhdlDocGen::ATTRIBUTE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::PROCEDURE,FALSE),QCString(),FALSE,VhdlDocGen::PROCEDURE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::RECORD,FALSE),QCString(),FALSE,VhdlDocGen::RECORD);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::UNITS,FALSE),QCString(),FALSE,VhdlDocGen::UNITS);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::SHAREDVARIABLE,FALSE),QCString(),FALSE,VhdlDocGen::SHAREDVARIABLE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::VFILE,FALSE),QCString(),FALSE,VhdlDocGen::VFILE);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::GROUP,FALSE),QCString(),FALSE,VhdlDocGen::GROUP);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::INSTANTIATION,FALSE),QCString(),FALSE,VhdlDocGen::INSTANTIATION);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::ALIAS,FALSE),QCString(),FALSE,VhdlDocGen::ALIAS);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::MISCELLANEOUS,TRUE),QCString(),FALSE,VhdlDocGen::MISCELLANEOUS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::LIBRARY,FALSE),QCString(),FALSE,VhdlSpecifier::LIBRARY);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::USE,FALSE),QCString(),FALSE,VhdlSpecifier::USE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::FUNCTION,FALSE),QCString(),FALSE,VhdlSpecifier::FUNCTION);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::COMPONENT,FALSE),QCString(),FALSE,VhdlSpecifier::COMPONENT);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::CONSTANT,FALSE),QCString(),FALSE,VhdlSpecifier::CONSTANT);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::TYPE,FALSE),QCString(),FALSE,VhdlSpecifier::TYPE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::SUBTYPE,FALSE),QCString(),FALSE,VhdlSpecifier::SUBTYPE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::GENERIC,FALSE),QCString(),FALSE,VhdlSpecifier::GENERIC);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::PORT,FALSE),QCString(),FALSE,VhdlSpecifier::PORT);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::PROCESS,FALSE),QCString(),FALSE,VhdlSpecifier::PROCESS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::SIGNAL,FALSE),QCString(),FALSE,VhdlSpecifier::SIGNAL);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::ATTRIBUTE,FALSE),QCString(),FALSE,VhdlSpecifier::ATTRIBUTE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::PROCEDURE,FALSE),QCString(),FALSE,VhdlSpecifier::PROCEDURE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::RECORD,FALSE),QCString(),FALSE,VhdlSpecifier::RECORD);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::UNITS,FALSE),QCString(),FALSE,VhdlSpecifier::UNITS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::SHAREDVARIABLE,FALSE),QCString(),FALSE,VhdlSpecifier::SHAREDVARIABLE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::VFILE,FALSE),QCString(),FALSE,VhdlSpecifier::VFILE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::GROUP,FALSE),QCString(),FALSE,VhdlSpecifier::GROUP);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::INSTANTIATION,FALSE),QCString(),FALSE,VhdlSpecifier::INSTANTIATION);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::ALIAS,FALSE),QCString(),FALSE,VhdlSpecifier::ALIAS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::MISCELLANEOUS,TRUE),QCString(),FALSE,VhdlSpecifier::MISCELLANEOUS);
 
   // configurations must be added to global file definitions.
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::CONFIG,FALSE),QCString(),FALSE,VhdlDocGen::CONFIG);
-  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlDocGen::UCF_CONST,FALSE),QCString(),FALSE,VhdlDocGen::UCF_CONST);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::CONFIG,FALSE),QCString(),FALSE,VhdlSpecifier::CONFIG);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,theTranslator_vhdlType(VhdlSpecifier::UCF_CONST,FALSE),QCString(),FALSE,VhdlSpecifier::UCF_CONST);
 
 }
 
@@ -1590,30 +1594,30 @@ void VhdlDocGen::correctMemberProperties(MemberDefMutable *md)
 {
   if (md->argsString()=="package")
   {
-    md->setMemberSpecifiers(VhdlDocGen::INSTANTIATION);
+    md->setVhdlSpecifiers(VhdlSpecifier::INSTANTIATION);
   }
   else if (md->argsString()=="configuration")
   {
-    md->setMemberSpecifiers(VhdlDocGen::CONFIG);
+    md->setVhdlSpecifiers(VhdlSpecifier::CONFIG);
   }
   else if (md->typeString()=="library")
   {
-    md->setMemberSpecifiers(VhdlDocGen::LIBRARY);
+    md->setVhdlSpecifiers(VhdlSpecifier::LIBRARY);
   }
   else if (md->typeString()=="use")
   {
-    md->setMemberSpecifiers(VhdlDocGen::USE);
+    md->setVhdlSpecifiers(VhdlSpecifier::USE);
   }
   else if (md->typeString().lower()=="misc")
   {
-    md->setMemberSpecifiers(VhdlDocGen::MISCELLANEOUS);
+    md->setVhdlSpecifiers(VhdlSpecifier::MISCELLANEOUS);
   }
   else if (md->typeString().lower()=="ucf_const")
   {
-    md->setMemberSpecifiers(VhdlDocGen::UCF_CONST);
+    md->setVhdlSpecifiers(VhdlSpecifier::UCF_CONST);
   }
 
-  if (md->getMemberSpecifiers()==VhdlDocGen::UCF_CONST)
+  if (md->getVhdlSpecifiers()==VhdlSpecifier::UCF_CONST)
   {
     int mm=md->name().findRev('_');
     if (mm>0)
@@ -1621,7 +1625,7 @@ void VhdlDocGen::correctMemberProperties(MemberDefMutable *md)
       md->setName(md->name().left(mm));
     }
   }
-  else if (md->getMemberSpecifiers()==VhdlDocGen::TYPE)
+  else if (md->getVhdlSpecifiers()==VhdlSpecifier::TYPE)
   {
     QCString largs=md->argsString();
     bool bRec=largs.stripPrefix("record") ;
@@ -1771,8 +1775,8 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   const Definition *d=0;
 
   ASSERT(cd!=0 || nd!=0 || fd!=0 || gd!=0 || mod!=0 ||
-      mdef->getMemberSpecifiers()==VhdlDocGen::LIBRARY ||
-      mdef->getMemberSpecifiers()==VhdlDocGen::USE
+      mdef->getVhdlSpecifiers()==VhdlSpecifier::LIBRARY ||
+      mdef->getVhdlSpecifiers()==VhdlSpecifier::USE
       ); // member should belong to something
   if (cd) d=cd;
   else if (nd) d=nd;
@@ -1803,8 +1807,8 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   OutputGenerator::MemberItemType memType = annoClassDef!=0 ? OutputGenerator::MemberItemType::AnonymousStart :
                                                               OutputGenerator::MemberItemType::Normal;
   ///printf("startMemberItem for %s\n",qPrint(name()));
-  uint64_t mm=mdef->getMemberSpecifiers();
-  if (mm==VhdlDocGen::MISCELLANEOUS)
+  VhdlSpecifier mm=mdef->getVhdlSpecifiers();
+  if (mm==VhdlSpecifier::MISCELLANEOUS)
       memType=OutputGenerator::MemberItemType::Templated;
 
    ol.startMemberItem( mdef->anchor(), memType );
@@ -1838,11 +1842,11 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   if (gd) gd=0;
   switch (mm)
   {
-    case VhdlDocGen::MISCELLANEOUS:
+    case VhdlSpecifier::MISCELLANEOUS:
       VhdlDocGen::writeSource(mdef,ol,nn);
       break;
-    case VhdlDocGen::PROCEDURE:
-    case VhdlDocGen::FUNCTION:
+    case VhdlSpecifier::PROCEDURE:
+    case VhdlSpecifier::FUNCTION:
       ol.startBold();
       VhdlDocGen::formatString(ltype,ol,mdef);
       ol.endBold();
@@ -1850,14 +1854,14 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
       ol.docify(" ");
 
       writeLink(mdef,ol);
-      if (al.hasParameters() && mm==VhdlDocGen::FUNCTION)
+      if (al.hasParameters() && mm==VhdlSpecifier::FUNCTION)
         VhdlDocGen::writeFunctionProto(ol,al,mdef);
 
-      if (al.hasParameters() && mm==VhdlDocGen::PROCEDURE)
+      if (al.hasParameters() && mm==VhdlSpecifier::PROCEDURE)
         VhdlDocGen::writeProcedureProto(ol,al,mdef);
 
       break;
-    case VhdlDocGen::USE:
+    case VhdlSpecifier::USE:
       kl=VhdlDocGen::getClass(mdef->name());
       if (kl && (VhdlDocGen::convert(kl->protection())==VhdlDocGen::ENTITYCLASS)) break;
       writeLink(mdef,ol);
@@ -1870,7 +1874,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         ol.pushGeneratorState();
         ol.disableAllBut(OutputType::Html);
         ol.docify(" ");
-        QCString name=theTranslator_vhdlType(VhdlDocGen::PACKAGE,TRUE);
+        QCString name=theTranslator_vhdlType(VhdlSpecifier::PACKAGE,TRUE);
         ol.startBold();
         ol.docify(name);
         name.resize(0);
@@ -1881,7 +1885,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         ol.popGeneratorState();
       }
       break;
-    case VhdlDocGen::LIBRARY:
+    case VhdlSpecifier::LIBRARY:
       writeLink(mdef,ol);
       ol.insertMemberAlign();
       if (largs=="context")
@@ -1891,13 +1895,13 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
 
       break;
 
-    case VhdlDocGen::GENERIC:
-    case VhdlDocGen::PORT:
-    case VhdlDocGen::ALIAS:
+    case VhdlSpecifier::GENERIC:
+    case VhdlSpecifier::PORT:
+    case VhdlSpecifier::ALIAS:
 
       writeLink(mdef,ol);
       ol.docify(" ");
-      if (mm==VhdlDocGen::GENERIC)
+      if (mm==VhdlSpecifier::GENERIC)
       {
         ol.insertMemberAlign();
         ol.startBold();
@@ -1916,16 +1920,16 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         VhdlDocGen::formatString(largs,ol,mdef);
       }
       break;
-    case VhdlDocGen::PROCESS:
+    case VhdlSpecifier::PROCESS:
       writeLink(mdef,ol);
       ol.insertMemberAlign();
       VhdlDocGen::writeProcessProto(ol,al,mdef);
       break;
-    case VhdlDocGen::PACKAGE:
-    case VhdlDocGen::ENTITY:
-    case VhdlDocGen::COMPONENT:
-    case VhdlDocGen::INSTANTIATION:
-    case VhdlDocGen::CONFIG:
+    case VhdlSpecifier::PACKAGE:
+    case VhdlSpecifier::ENTITY:
+    case VhdlSpecifier::COMPONENT:
+    case VhdlSpecifier::INSTANTIATION:
+    case VhdlSpecifier::CONFIG:
       if (VhdlDocGen::isCompInst(mdef) )
       {
         nn=largs;
@@ -1989,24 +1993,24 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         }
       }
       break;
-    case VhdlDocGen::UCF_CONST:
+    case VhdlSpecifier::UCF_CONST:
       writeUCFLink(mdef,ol);
       break;
-    case VhdlDocGen::SIGNAL:
-    case VhdlDocGen::ATTRIBUTE:
-    case VhdlDocGen::SUBTYPE:
-    case VhdlDocGen::CONSTANT:
-    case VhdlDocGen::SHAREDVARIABLE:
-    case VhdlDocGen::VFILE:
-    case VhdlDocGen::GROUP:
-    case VhdlDocGen::TYPE:
+    case VhdlSpecifier::SIGNAL:
+    case VhdlSpecifier::ATTRIBUTE:
+    case VhdlSpecifier::SUBTYPE:
+    case VhdlSpecifier::CONSTANT:
+    case VhdlSpecifier::SHAREDVARIABLE:
+    case VhdlSpecifier::VFILE:
+    case VhdlSpecifier::GROUP:
+    case VhdlSpecifier::TYPE:
       writeLink(mdef,ol);
       ol.docify(" ");
       ol.insertMemberAlign();
       VhdlDocGen::formatString(ltype,ol,mdef);
       break;
-    case VhdlDocGen::RECORD:
-    case VhdlDocGen::UNITS:
+    case VhdlSpecifier::RECORD:
+    case VhdlSpecifier::UNITS:
      writeRecordUnit(largs,ltype,ol,mdef);
       break;
 
@@ -2034,7 +2038,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   if (!mdef->briefDescription().isEmpty() &&   Config_getBool(BRIEF_MEMBER_DESC) /* && !annMemb */)
   {
     QCString s=mdef->briefDescription();
-    ol.startMemberDescription(mdef->anchor(), QCString(), mm == VhdlDocGen::PORT);
+    ol.startMemberDescription(mdef->anchor(), QCString(), mm == VhdlSpecifier::PORT);
     ol.generateDoc(mdef->briefFile(),mdef->briefLine(),
                    mdef->getOuterScope()?mdef->getOuterScope():d,
                    mdef,s,TRUE,FALSE,
@@ -2065,7 +2069,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
 void VhdlDocGen::writePlainVHDLDeclarations(
     const MemberList* mlist,OutputList &ol,
     const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-    uint64_t specifier)
+    VhdlSpecifier specifier)
 {
 
   StringSet pack;
@@ -2076,8 +2080,8 @@ void VhdlDocGen::writePlainVHDLDeclarations(
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
     {
-      uint64_t mems=md->getMemberSpecifiers();
-      if (md->isBriefSectionVisible() && (mems==specifier) && (mems!=VhdlDocGen::LIBRARY) )
+      VhdlSpecifier mems=md->getVhdlSpecifiers();
+      if (md->isBriefSectionVisible() && (mems==specifier) && (mems!=VhdlSpecifier::LIBRARY) )
       {
         if (first) { ol.startMemberList();first=FALSE; }
         VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,mod,FALSE);
@@ -2096,12 +2100,12 @@ void VhdlDocGen::writePlainVHDLDeclarations(
   if (!first) ol.endMemberList();
 }//plainDeclaration
 
-static bool membersHaveSpecificType(const MemberList *ml,uint64_t type)
+static bool membersHaveSpecificType(const MemberList *ml,VhdlSpecifier type)
 {
   if (ml==0) return FALSE;
   for (const auto &mdd : *ml)
   {
-    if (mdd->getMemberSpecifiers()==type) //is type in class
+    if (mdd->getVhdlSpecifiers()==type) //is type in class
     {
       return TRUE;
     }
@@ -2118,13 +2122,13 @@ static bool membersHaveSpecificType(const MemberList *ml,uint64_t type)
 
 void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
     const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-    const QCString &title,const QCString &subtitle,bool /*showEnumValues*/,int type)
+    const QCString &title,const QCString &subtitle,bool /*showEnumValues*/,VhdlSpecifier type)
 {
   if (!membersHaveSpecificType(ml,type)) return;
 
   if (!title.isEmpty())
   {
-    ol.startMemberHeader(convertToId(title),type == VhdlDocGen::PORT ? 3 : 2);
+    ol.startMemberHeader(convertToId(title),type == VhdlSpecifier::PORT ? 3 : 2);
     ol.parseText(title);
     ol.endMemberHeader();
     ol.docify(" ");
@@ -2171,8 +2175,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
 bool VhdlDocGen::writeClassType( const ClassDef * cd,
     OutputList &ol ,QCString & cname)
 {
-  Protection id=cd->protection();
-  QCString qcs = theTranslator->trVhdlType(static_cast<int>(id)+2,TRUE); // TODO: fix ugly hack
+  QCString qcs = theTranslator->trVhdlType(getSpecifierTypeFromClass(cd),TRUE);
   cname=VhdlDocGen::getClassName(cd);
   ol.startBold();
   ol.writeString(qcs);
@@ -2369,7 +2372,7 @@ static void initUCF(Entry* root,const QCString &type,QCString &qcs,
   qcs.stripPrefix("=");
 
   std::shared_ptr<Entry> current = std::make_shared<Entry>();
-  current->spec=VhdlDocGen::UCF_CONST;
+  current->vhdlSpec=VhdlSpecifier::UCF_CONST;
   current->section=Entry::VARIABLE_SEC;
   current->bodyLine=line;
   current->fileName=fileName;
@@ -2622,7 +2625,7 @@ ferr:
   //fprintf(stderr,"\n%s%s%s\n",qPrint(md->name()),qPrint(cur->brief),qPrint(cur->doc));
 
   mmd->setLanguage(SrcLangExt_VHDL);
-  mmd->setMemberSpecifiers(VhdlDocGen::INSTANTIATION);
+  mmd->setVhdlSpecifiers(VhdlSpecifier::INSTANTIATION);
   mmd->setBriefDescription(cur->brief,cur->briefFile,cur->briefLine);
   mmd->setBodySegment(cur->startLine,cur->startLine,-1) ;
   mmd->setDocumentation(cur->doc,cur->docFile,cur->docLine);
@@ -2809,59 +2812,59 @@ void VhdlDocGen::resetCodeVhdlParserState()
 }
 
 bool VhdlDocGen::isConstraint(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::UCF_CONST; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::UCF_CONST; }
 bool VhdlDocGen::isConfig(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::CONFIG; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::CONFIG; }
 bool VhdlDocGen::isAlias(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::ALIAS; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::ALIAS; }
 bool VhdlDocGen::isLibrary(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::LIBRARY; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::LIBRARY; }
 bool VhdlDocGen::isGeneric(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::GENERIC; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::GENERIC; }
 bool VhdlDocGen::isPort(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::PORT; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::PORT; }
 bool VhdlDocGen::isComponent(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::COMPONENT; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::COMPONENT; }
 bool VhdlDocGen::isPackage(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::USE; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::USE; }
 bool VhdlDocGen::isEntity(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::ENTITY; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::ENTITY; }
 bool VhdlDocGen::isConstant(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::CONSTANT; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::CONSTANT; }
 bool VhdlDocGen::isVType(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::TYPE; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::TYPE; }
 bool VhdlDocGen::isSubType(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::SUBTYPE; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::SUBTYPE; }
 bool VhdlDocGen::isVhdlFunction(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::FUNCTION; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::FUNCTION; }
 bool VhdlDocGen::isProcess(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::PROCESS; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::PROCESS; }
 bool VhdlDocGen::isSignal(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::SIGNAL; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::SIGNAL; }
 bool VhdlDocGen::isAttribute(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::ATTRIBUTE; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::ATTRIBUTE; }
 bool VhdlDocGen::isSignals(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::SIGNAL; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::SIGNAL; }
 bool VhdlDocGen::isProcedure(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::PROCEDURE; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::PROCEDURE; }
 bool VhdlDocGen::isRecord(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::RECORD; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::RECORD; }
 bool VhdlDocGen::isArchitecture(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::ARCHITECTURE; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::ARCHITECTURE; }
 bool VhdlDocGen::isUnit(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::UNITS; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::UNITS; }
 bool VhdlDocGen::isPackageBody(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::PACKAGE_BODY; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::PACKAGE_BODY; }
 bool VhdlDocGen::isVariable(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::SHAREDVARIABLE; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::SHAREDVARIABLE; }
 bool VhdlDocGen::isFile(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::VFILE; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::VFILE; }
 bool VhdlDocGen::isGroup(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::GROUP; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::GROUP; }
 bool VhdlDocGen::isCompInst(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::INSTANTIATION; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::INSTANTIATION; }
 bool VhdlDocGen::isMisc(const MemberDef *mdef)
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }
+{ return mdef->getVhdlSpecifiers()==VhdlSpecifier::MISCELLANEOUS; }
 
 
 

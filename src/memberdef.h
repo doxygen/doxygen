@@ -73,7 +73,8 @@ class MemberDef : public Definition
     virtual QCString extraTypeChars() const = 0;
     virtual const QCString &initializer() const = 0;
     virtual int initializerLines() const = 0;
-    virtual uint64_t getMemberSpecifiers() const = 0;
+    virtual TypeSpecifier getMemberSpecifiers() const = 0;
+    virtual VhdlSpecifier getVhdlSpecifiers() const = 0;
     virtual const MemberList *getSectionList(const Definition *container) const = 0;
     virtual QCString    displayDefinition() const = 0;
 
@@ -315,8 +316,9 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setFileDef(FileDef *fd) = 0;
     virtual void setAnchor() = 0;
     virtual void setProtection(Protection p) = 0;
-    virtual void setMemberSpecifiers(uint64_t s) = 0;
-    virtual void mergeMemberSpecifiers(uint64_t s) = 0;
+    virtual void setMemberSpecifiers(TypeSpecifier s) = 0;
+    virtual void setVhdlSpecifiers(VhdlSpecifier s) = 0;
+    virtual void mergeMemberSpecifiers(TypeSpecifier s) = 0;
     virtual void setInitializer(const QCString &i) = 0;
     virtual void setBitfields(const QCString &s) = 0;
     virtual void setMaxInitLines(int lines) = 0;

@@ -295,5 +295,12 @@ template<> struct fmt::formatter<MemberType> : formatter<std::string>
   }
 };
 
+//! adds support for formatting TypeSpecifier
+template<> struct fmt::formatter<TypeSpecifier> : formatter<std::string>
+{
+  auto format(TypeSpecifier type, format_context& ctx) {
+    return formatter<std::string>::format(type.to_string(),ctx);
+  }
+};
 
 #endif // TRACE_H

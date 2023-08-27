@@ -255,7 +255,7 @@ class Statistics
 
 
 static void addMemberDocs(const Entry *root,MemberDefMutable *md, const QCString &funcDecl,
-                   const ArgumentList *al,bool over_load,uint64_t spec);
+                   const ArgumentList *al,bool over_load,TypeSpecifier spec);
 static void findMember(const Entry *root,
                        const QCString &relates,
                        const QCString &type,
@@ -861,24 +861,24 @@ std::unique_ptr<ArgumentList> getTemplateArgumentsFromName(
 }
 
 static
-ClassDef::CompoundType convertToCompoundType(int section,uint64_t specifier)
+ClassDef::CompoundType convertToCompoundType(int section,TypeSpecifier specifier)
 {
   ClassDef::CompoundType sec=ClassDef::Class;
-  if (specifier&Entry::Struct)
+  if (specifier.isStruct())
     sec=ClassDef::Struct;
-  else if (specifier&Entry::Union)
+  else if (specifier.isUnion())
     sec=ClassDef::Union;
-  else if (specifier&Entry::Category)
+  else if (specifier.isCategory())
     sec=ClassDef::Category;
-  else if (specifier&Entry::Interface)
+  else if (specifier.isInterface())
     sec=ClassDef::Interface;
-  else if (specifier&Entry::Protocol)
+  else if (specifier.isProtocol())
     sec=ClassDef::Protocol;
-  else if (specifier&Entry::Exception)
+  else if (specifier.isException())
     sec=ClassDef::Exception;
-  else if (specifier&Entry::Service)
+  else if (specifier.isService())
     sec=ClassDef::Service;
-  else if (specifier&Entry::Singleton)
+  else if (specifier.isSingleton())
     sec=ClassDef::Singleton;
 
   switch(section)
@@ -959,7 +959,7 @@ static void addClassToContext(const Entry *root)
     cd->setDocumentation(root->doc,root->docFile,root->docLine);
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
 
-    if ((root->spec&Entry::ForwardDecl)==0 && cd->isForwardDeclared())
+    if (!root->spec.isForwardDecl() && cd->isForwardDeclared())
     {
       cd->setDefFile(root->fileName,root->startLine,root->startColumn);
       if (root->bodyLine!=-1)
@@ -969,7 +969,7 @@ static void addClassToContext(const Entry *root)
       }
     }
 
-    if (cd->templateArguments().empty() || (cd->isForwardDeclared() && (root->spec&Entry::ForwardDecl)==0))
+    if (cd->templateArguments().empty() || (cd->isForwardDeclared() && !root->spec.isForwardDecl()))
     {
       // this happens if a template class declared with @class is found
       // before the actual definition or if a forward declaration has different template
@@ -1031,7 +1031,7 @@ static void addClassToContext(const Entry *root)
     cd = toClassDefMutable(
         Doxygen::classLinkedMap->add(fullName,
           createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
-             fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) ));
+             fullName,sec,tagName,refFileName,TRUE,root->spec.isEnum()) ));
     if (cd)
     {
       AUTO_TRACE_ADD("New class '{}' type={} #tArgLists={} tagInfo={} hidden={} artificial={}",
@@ -1075,7 +1075,7 @@ static void addClassToContext(const Entry *root)
   {
     cd->addSectionsToDefinition(root->anchors);
     if (!root->subGrouping) cd->setSubGrouping(FALSE);
-    if ((root->spec&Entry::ForwardDecl)==0)
+    if (!root->spec.isForwardDecl())
     {
       if (cd->hasDocumentation())
       {
@@ -1516,6 +1516,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
         imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
         imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
         imd->setMemberSpecifiers(md->getMemberSpecifiers());
+        imd->setVhdlSpecifiers(md->getVhdlSpecifiers());
         imd->setMemberGroupId(md->getMemberGroupId());
         imd->setInitializer(md->initializer());
         imd->setRequiresClause(md->requiresClause());
@@ -1720,7 +1721,7 @@ static void buildNamespaceList(const Entry *root)
             Doxygen::namespaceLinkedMap->add(fullName,
               createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
                 root->startColumn,fullName,tagName,tagFileName,
-                root->type,root->spec&Entry::Published)));
+                root->type,root->spec.isPublished())));
         if (nd)
         {
           nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -1731,7 +1732,7 @@ static void buildNamespaceList(const Entry *root)
           nd->setLanguage(root->lang);
           nd->setId(root->id);
           nd->setMetaData(root->metaData);
-          nd->setInline((root->spec&Entry::Inline)!=0);
+          nd->setInline(root->spec.isInline());
           nd->setExported(root->exported);
 
           addNamespaceToGroups(root,nd);
@@ -1936,7 +1937,7 @@ static void findUsingDirectives(const Entry *root)
           nd->setLanguage(root->lang);
           nd->setId(root->id);
           nd->setMetaData(root->metaData);
-          nd->setInline((root->spec&Entry::Inline)!=0);
+          nd->setInline(root->spec.isInline());
           nd->setExported(root->exported);
 
           for (const Grouping &g : root->groups)
@@ -2138,6 +2139,7 @@ static void findUsingDeclImports(const Entry *root)
                 newMmd->setMaxInitLines(md->initializerLines());
                 newMmd->setMemberGroupId(root->mGrpId);
                 newMmd->setMemberSpecifiers(md->getMemberSpecifiers());
+                newMmd->setVhdlSpecifiers(md->getVhdlSpecifiers());
                 newMmd->setLanguage(root->lang);
                 newMmd->setId(root->id);
                 MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
@@ -2200,7 +2202,7 @@ static MemberDef *addVariableToClass(
   {
     if (related!=Relationship::Member || mtype==MemberType_Friend || Config_getBool(HIDE_SCOPE_NAMES))
     {
-      if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
+      if (root->spec.isAlias()) // turn 'typedef B A' into 'using A = B'
       {
         def="using "+name+" = "+type.mid(7);
       }
@@ -2211,7 +2213,7 @@ static MemberDef *addVariableToClass(
     }
     else
     {
-      if (root->spec&Entry::Alias) // turn 'typedef B C::A' into 'using C::A = B'
+      if (root->spec.isAlias()) // turn 'typedef B C::A' into 'using C::A = B'
       {
         def="using "+qualScope+scopeSeparator+name+" = "+type.mid(7);
       }
@@ -2297,6 +2299,7 @@ static MemberDef *addVariableToClass(
   mmd->setMaxInitLines(root->initLines);
   mmd->setMemberGroupId(root->mGrpId);
   mmd->setMemberSpecifiers(root->spec);
+  mmd->setVhdlSpecifiers(root->vhdlSpec);
   mmd->setReadAccessor(root->read);
   mmd->setWriteAccessor(root->write);
   mmd->enableCallGraph(root->callGraph);
@@ -2392,7 +2395,7 @@ static MemberDef *addVariableToFile(
 
     if (!type.isEmpty())
     {
-      if (root->spec&Entry::Alias) // turn 'typedef B NS::A' into 'using NS::A = B'
+      if (root->spec.isAlias()) // turn 'typedef B NS::A' into 'using NS::A = B'
       {
         def="using "+nd->name()+sep+name+" = "+type;
       }
@@ -2416,7 +2419,7 @@ static MemberDef *addVariableToFile(
       }
       else
       {
-        if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
+        if (root->spec.isAlias()) // turn 'typedef B A' into 'using A = B'
         {
           def="using "+root->name+" = "+type.mid(7);
         }
@@ -2509,6 +2512,7 @@ static MemberDef *addVariableToFile(
   auto mmd = toMemberDefMutable(md.get());
   mmd->setTagInfo(root->tagInfo());
   mmd->setMemberSpecifiers(root->spec);
+  mmd->setVhdlSpecifiers(root->vhdlSpec);
   mmd->setDocumentation(root->doc,root->docFile,root->docLine);
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -2773,7 +2777,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   else
   {
     int i=isFuncPtr;
-    if (i==-1 && (root->spec&Entry::Alias)==0) i=findFunctionPtr(type.str(),root->lang); // for typedefs isFuncPtr is not yet set
+    if (i==-1 && (root->spec.isAlias())==0) i=findFunctionPtr(type.str(),root->lang); // for typedefs isFuncPtr is not yet set
     AUTO_TRACE_ADD("functionPtr={}",i!=-1?"yes":"no");
     if (i>=0) // function pointer
     {
@@ -3086,6 +3090,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   mmd->setMemberSpecifiers(root->spec);
+  mmd->setVhdlSpecifiers(root->vhdlSpec);
   mmd->setMemberGroupId(root->mGrpId);
   mmd->setTypeConstraints(root->typeConstr);
   mmd->setLanguage(root->lang);
@@ -3108,7 +3113,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   // also add the member as a "base" (to get nicer diagrams)
   // "optional" interface/service get Protected which turns into dashed line
   BaseInfo base(rname,
-          (root->spec & (Entry::Optional)) ? Protection::Protected : Protection::Public, Specifier::Normal);
+          root->spec.isOptional() ? Protection::Protected : Protection::Public, Specifier::Normal);
   TemplateNameMap templateNames;
   findClassRelation(root,cd,cd,&base,templateNames,DocumentedOnly,true) ||
        findClassRelation(root,cd,cd,&base,templateNames,Undocumented,true);
@@ -3132,7 +3137,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
   {
     AUTO_TRACE("Exported interface/included service: type='{}' scope='{}' name='{}' args='{}'"
                " relates='{}' relatesType='{}' file='{}' line={} bodyLine={} #tArgLists={}"
-               " mGrpId={} spec={:#x} proto={} docFile='{}'",
+               " mGrpId={} spec={} proto={} docFile='{}'",
                  root->type, root->parent()->name, root->name, root->args,
                  root->relates, root->relatesType, root->fileName, root->startLine, root->bodyLine, root->tArgLists.size(),
                  root->mGrpId, root->spec, root->proto, root->docFile);
@@ -3181,7 +3186,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
 static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
                   const QCString &rtype,const QCString &rname,const QCString &rargs,
                   bool isFriend,
-                  Protection protection,bool stat,Specifier virt,uint64_t spec,
+                  Protection protection,bool stat,Specifier virt,TypeSpecifier spec,
                   const QCString &relates
                   )
 {
@@ -3244,6 +3249,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   mmd->setMemberSpecifiers(spec);
+  mmd->setVhdlSpecifiers(root->vhdlSpec);
   mmd->setMemberGroupId(root->mGrpId);
   mmd->setTypeConstraints(root->typeConstr);
   mmd->setLanguage(root->lang);
@@ -3346,6 +3352,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   mmd->setBodyDef(fd);
   mmd->addSectionsToDefinition(root->anchors);
   mmd->setMemberSpecifiers(root->spec);
+  mmd->setVhdlSpecifiers(root->vhdlSpec);
   mmd->setMemberGroupId(root->mGrpId);
   mmd->setRequiresClause(root->req);
   mmd->setExplicitExternal(root->explicitExternal,root->fileName,root->startLine,root->startColumn);
@@ -3433,7 +3440,7 @@ static void buildFunctionList(const Entry *root)
   {
     AUTO_TRACE("member function: type='{}' scope='{}' name='{}' args='{}' relates='{}' relatesType='{}'"
                " file='{}' line={} bodyLine={} #tArgLists={} mGrpId={}"
-               " spec={:#x} proto={} docFile='{}'",
+               " spec={} proto={} docFile='{}'",
                root->type, root->parent()->name, root->name, root->args, root->relates, root->relatesType,
                root->fileName, root->startLine, root->bodyLine, root->tArgLists.size(), root->mGrpId,
                root->spec, root->proto, root->docFile);
@@ -5080,11 +5087,11 @@ static void addMemberDocs(const Entry *root,
                    MemberDefMutable *md, const QCString &funcDecl,
                    const ArgumentList *al,
                    bool over_load,
-                   uint64_t spec
+                   TypeSpecifier spec
                   )
 {
   if (md==0) return;
-  AUTO_TRACE("scope='{}' name='{}' args='{}' funcDecl='{}' mSpec={:#x}",
+  AUTO_TRACE("scope='{}' name='{}' args='{}' funcDecl='{}' mSpec={}",
        root->parent()->name,md->name(),md->argsString(),funcDecl,spec);
   QCString fDecl=funcDecl;
   // strip extern specifier
@@ -5274,7 +5281,7 @@ static bool findGlobalMember(const Entry *root,
                            const QCString &tempArg,
                            const QCString &,
                            const QCString &decl,
-                           uint64_t /* spec */)
+                           TypeSpecifier /* spec */)
 {
   AUTO_TRACE("namespace='{}' type='{}' name='{}' tempArg='{}' decl='{}'",namespaceName,type,name,tempArg,decl);
   QCString n=name;
@@ -5632,7 +5639,7 @@ static void addLocalObjCMethod(const Entry *root,
                         const QCString &scopeName,
                         const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
                         const QCString &exceptions,const QCString &funcDecl,
-                        uint64_t spec)
+                        TypeSpecifier spec)
 {
   AUTO_TRACE();
   //printf("scopeName='%s' className='%s'\n",qPrint(scopeName),qPrint(className));
@@ -5667,6 +5674,7 @@ static void addLocalObjCMethod(const Entry *root,
     FileDef *fd=root->fileDef();
     mmd->setBodyDef(fd);
     mmd->setMemberSpecifiers(spec);
+    mmd->setVhdlSpecifiers(root->vhdlSpec);
     mmd->setMemberGroupId(root->mGrpId);
     cd->insertMember(md.get());
     cd->insertUsedFile(fd);
@@ -5696,7 +5704,7 @@ static void addMemberFunction(const Entry *root,
                        const QCString &type,
                        const QCString &args,
                        bool isFriend,
-                       uint64_t spec,
+                       TypeSpecifier spec,
                        const QCString &relates,
                        const QCString &funcDecl,
                        bool overloaded,
@@ -6035,7 +6043,7 @@ static void addMemberSpecialization(const Entry *root,
                              const QCString &funcArgs,
                              const QCString &funcDecl,
                              const QCString &exceptions,
-                             uint64_t spec
+                             TypeSpecifier spec
                             )
 {
   MemberDef *declMd=0;
@@ -6081,6 +6089,7 @@ static void addMemberSpecialization(const Entry *root,
   FileDef *fd=root->fileDef();
   mmd->setBodyDef(fd);
   mmd->setMemberSpecifiers(spec);
+  mmd->setVhdlSpecifiers(root->vhdlSpec);
   mmd->setMemberGroupId(root->mGrpId);
   cd->insertMember(md.get());
   mmd->setRefItems(root->sli);
@@ -6092,7 +6101,7 @@ static void addMemberSpecialization(const Entry *root,
 
 static void addOverloaded(const Entry *root,MemberName *mn,
                           const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
-                          const QCString &funcDecl,const QCString &exceptions,uint64_t spec)
+                          const QCString &funcDecl,const QCString &exceptions,TypeSpecifier spec)
 {
   // for unique overloaded member we allow the class to be
   // omitted, this is to be Qt compatible. Using this should
@@ -6151,6 +6160,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     FileDef *fd=root->fileDef();
     mmd->setBodyDef(fd);
     mmd->setMemberSpecifiers(spec);
+    mmd->setVhdlSpecifiers(root->vhdlSpec);
     mmd->setMemberGroupId(root->mGrpId);
     cd->insertMember(md.get());
     cd->insertUsedFile(fd);
@@ -6180,7 +6190,7 @@ static void findMember(const Entry *root,
                        bool isFunc
                       )
 {
-  AUTO_TRACE("root='{}' funcDecl='{}' related='{}' overload={} isFunc={} mGrpId={} #tArgList={} spec={:#x} lang={}",
+  AUTO_TRACE("root='{}' funcDecl='{}' related='{}' overload={} isFunc={} mGrpId={} #tArgList={} spec={} lang={}",
                root->name, funcDecl, relates, overloaded, isFunc, root->mGrpId, root->tArgLists.size(),
                root->spec, root->lang);
 
@@ -6197,7 +6207,7 @@ static void findMember(const Entry *root,
   bool isMemberOf=FALSE;
   bool isFriend=FALSE;
   bool done;
-  uint64_t spec = root->spec;
+  TypeSpecifier spec = root->spec;
   do
   {
     done=TRUE;
@@ -6208,17 +6218,17 @@ static void findMember(const Entry *root,
     }
     if (funcDecl.stripPrefix("inline "))
     {
-      spec|=Entry::Inline;
+      spec.setInline(true);
       done=FALSE;
     }
     if (funcDecl.stripPrefix("explicit "))
     {
-      spec|=Entry::Explicit;
+      spec.setExplicit(true);
       done=FALSE;
     }
     if (funcDecl.stripPrefix("mutable "))
     {
-      spec|=Entry::Mutable;
+      spec.setMutable(true);
       done=FALSE;
     }
     if (funcDecl.stripPrefix("virtual "))
@@ -6706,6 +6716,7 @@ static void findMember(const Entry *root,
           //}
           mmd->setMemberClass(cd);
           mmd->setMemberSpecifiers(spec);
+          mmd->setVhdlSpecifiers(root->vhdlSpec);
           mmd->setDefinition(funcDecl);
           mmd->enableCallGraph(root->callGraph);
           mmd->enableCallerGraph(root->callerGraph);
@@ -6794,7 +6805,7 @@ static void findMember(const Entry *root,
 static void filterMemberDocumentation(const Entry *root,const QCString &relates)
 {
   int i=-1,l;
-  AUTO_TRACE("root->type='{}' root->inside='{}' root->name='{}' root->args='{}' section={:#x} root->spec={:#x} root->mGrpId={}",
+  AUTO_TRACE("root->type='{}' root->inside='{}' root->name='{}' root->args='{}' section={:#x} root->spec={} root->mGrpId={}",
       root->type,root->inside,root->name,root->args,root->section,root->spec,root->mGrpId);
   //printf("root->parent()->name=%s\n",qPrint(root->parent()->name));
   bool isFunc=TRUE;
@@ -7085,6 +7096,7 @@ static void findEnums(const Entry *root)
       mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
       mmd->setBodyDef(root->fileDef());
       mmd->setMemberSpecifiers(root->spec);
+      mmd->setVhdlSpecifiers(root->vhdlSpec);
       mmd->setEnumBaseType(root->args);
       //printf("Enum %s definition at line %d of %s: protection=%d scope=%s\n",
       //    qPrint(root->name),root->bodyLine,qPrint(root->fileName),root->protection,cd?qPrint(cd->name()):"<none>");
@@ -7267,9 +7279,7 @@ static void addEnumValuesToEnums(const Entry *root)
             {
               SrcLangExt sle = root->lang;
               bool isJavaLike = sle==SrcLangExt_CSharp || sle==SrcLangExt_Java || sle==SrcLangExt_XML;
-              if ( isJavaLike ||
-                   (root->spec&Entry::Strong)
-                 )
+              if ( isJavaLike || root->spec.isStrong())
               {
                 // Unlike classic C/C++ enums, for C++11, C# & Java enum
                 // values are only visible inside the enum scope, so we must create

@@ -1962,64 +1962,64 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     virtual QCString trFunctionAndProc()
     { return "函数/调用过程/进程语句"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64_t type,bool single)
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single)
     {
       switch(type)
       {
-        case VhdlDocGen::LIBRARY:
+        case VhdlSpecifier::LIBRARY:
           return "库";
-        case VhdlDocGen::PACKAGE:
+        case VhdlSpecifier::PACKAGE:
           return "包";
-        case VhdlDocGen::SIGNAL:
+        case VhdlSpecifier::SIGNAL:
           return "信号";
-        case VhdlDocGen::COMPONENT:
+        case VhdlSpecifier::COMPONENT:
           return "元件";
-        case VhdlDocGen::CONSTANT:
+        case VhdlSpecifier::CONSTANT:
           return "常量";
-        case VhdlDocGen::ENTITY:
+        case VhdlSpecifier::ENTITY:
           return "实体";
-        case VhdlDocGen::TYPE:
+        case VhdlSpecifier::TYPE:
           return "类型";
-        case VhdlDocGen::SUBTYPE:
+        case VhdlSpecifier::SUBTYPE:
           return "子类型";
-        case VhdlDocGen::FUNCTION:
+        case VhdlSpecifier::FUNCTION:
           return "函数";
-        case VhdlDocGen::RECORD:
+        case VhdlSpecifier::RECORD:
           return "记录";
-        case VhdlDocGen::PROCEDURE:
+        case VhdlSpecifier::PROCEDURE:
           return "过程";
-        case VhdlDocGen::ARCHITECTURE:
+        case VhdlSpecifier::ARCHITECTURE:
           return "结构体";
-        case VhdlDocGen::ATTRIBUTE:
+        case VhdlSpecifier::ATTRIBUTE:
           return "属性";
-        case VhdlDocGen::PROCESS:
+        case VhdlSpecifier::PROCESS:
           return "进程语句";
-        case VhdlDocGen::PORT:
+        case VhdlSpecifier::PORT:
           return "端口";
-        case VhdlDocGen::USE:
+        case VhdlSpecifier::USE:
           if (single) return "使用语句";
           else        return "使用语句";
-        case VhdlDocGen::GENERIC:
+        case VhdlSpecifier::GENERIC:
           return "类属";
-        case VhdlDocGen::PACKAGE_BODY:
+        case VhdlSpecifier::PACKAGE_BODY:
           return "包体";
-        case VhdlDocGen::UNITS:
+        case VhdlSpecifier::UNITS:
           return "单元";
-        case VhdlDocGen::SHAREDVARIABLE:
+        case VhdlSpecifier::SHAREDVARIABLE:
           return "共享变量";
-        case VhdlDocGen::VFILE:
+        case VhdlSpecifier::VFILE:
           return "文件";
-        case VhdlDocGen::GROUP:
+        case VhdlSpecifier::GROUP:
           return "组";
-        case VhdlDocGen::INSTANTIATION:
+        case VhdlSpecifier::INSTANTIATION:
           return "实例化";
-        case VhdlDocGen::ALIAS:
+        case VhdlSpecifier::ALIAS:
           return "别名";
-        case VhdlDocGen::CONFIG:
+        case VhdlSpecifier::CONFIG:
           return " 配置";
-        case VhdlDocGen::MISCELLANEOUS:
+        case VhdlSpecifier::MISCELLANEOUS:
           return "混合运算";
-        case VhdlDocGen::UCF_CONST:
+        case VhdlSpecifier::UCF_CONST:
           return "约束";
         default:
           return "类";

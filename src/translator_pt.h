@@ -28,7 +28,7 @@
  * History:
  * 20230817:
  *  - Updated to 1.9.8;
- *  - Small fixes to the method TranslatorPortuguese::trNamespaceMembersDescriptionTotal(). 
+ *  - Small fixes to the method TranslatorPortuguese::trNamespaceMembersDescriptionTotal().
  * 20230430:
  *  - Updated to 1.9.7;
  *  - Inclusion of translator_br.h's PortugueseTranslatorUtils namespace;
@@ -2103,86 +2103,86 @@ class TranslatorPortuguese : public Translator
     virtual QCString trFunctionAndProc()
     { return "Funções/Procedimentos/Processos"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64_t type,bool single)
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single)
     {
       switch(type)
       {
-        case VhdlDocGen::LIBRARY:
+        case VhdlSpecifier::LIBRARY:
           if (single) return "Biblioteca";
           else        return "Bibliotecas";
-        case VhdlDocGen::PACKAGE:
+        case VhdlSpecifier::PACKAGE:
           if (single) return "Pacote";
           else        return "Pacotes";
-        case VhdlDocGen::SIGNAL:
+        case VhdlSpecifier::SIGNAL:
           if (single) return "Sinal";
           else        return "Sinais";
-        case VhdlDocGen::COMPONENT:
+        case VhdlSpecifier::COMPONENT:
           if (single) return "Componente";
           else        return "Componentes";
-        case VhdlDocGen::CONSTANT:
+        case VhdlSpecifier::CONSTANT:
           if (single) return "Constante";
           else        return "Constantes";
-        case VhdlDocGen::ENTITY:
+        case VhdlSpecifier::ENTITY:
           if (single) return "Entidade";
           else        return "Entidades";
-        case VhdlDocGen::TYPE:
+        case VhdlSpecifier::TYPE:
           if (single) return "Tipo";
           else        return "Tipos";
-        case VhdlDocGen::SUBTYPE:
+        case VhdlSpecifier::SUBTYPE:
           if (single) return "Subtipo";
           else        return "Subtipos";
-        case VhdlDocGen::FUNCTION:
+        case VhdlSpecifier::FUNCTION:
           if (single) return "Função";
           else        return "Funções";
-        case VhdlDocGen::RECORD:
+        case VhdlSpecifier::RECORD:
           if (single) return "Registro";
           else        return "Registros";
-        case VhdlDocGen::PROCEDURE:
+        case VhdlSpecifier::PROCEDURE:
           if (single) return "Procedimento";
           else        return "Procedimentos";
-        case VhdlDocGen::ARCHITECTURE:
+        case VhdlSpecifier::ARCHITECTURE:
           if (single) return "Arquitetura";
           else        return "Arquiteturas";
-        case VhdlDocGen::ATTRIBUTE:
+        case VhdlSpecifier::ATTRIBUTE:
           if (single) return "Atributo";
           else        return "Atributos";
-        case VhdlDocGen::PROCESS:
+        case VhdlSpecifier::PROCESS:
           if (single) return "Processo";
           else        return "Processos";
-        case VhdlDocGen::PORT:
+        case VhdlSpecifier::PORT:
           if (single) return "Porta";
           else        return "Portas";
-        case VhdlDocGen::USE:
+        case VhdlSpecifier::USE:
           if (single) return "cláusula de uso";
           else        return "cláusulas de uso";
-        case VhdlDocGen::GENERIC:
+        case VhdlSpecifier::GENERIC:
           if (single) return "Generico";
           else        return "Genericos";
-        case VhdlDocGen::PACKAGE_BODY:
+        case VhdlSpecifier::PACKAGE_BODY:
           return "Corpo do Pacote";
-        case VhdlDocGen::UNITS:
+        case VhdlSpecifier::UNITS:
           return "Unidades";
-        case VhdlDocGen::SHAREDVARIABLE:
+        case VhdlSpecifier::SHAREDVARIABLE:
           if (single) return "Variável Compartilhada";
           else        return "Variáveis Compartilhadas";
-        case VhdlDocGen::VFILE:
+        case VhdlSpecifier::VFILE:
           if (single) return "Ficheiro";
           else        return "Ficheiros";
-        case VhdlDocGen::GROUP:
+        case VhdlSpecifier::GROUP:
           if (single) return "Grupo";
           else        return "Grupos";
-        case VhdlDocGen::INSTANTIATION:
+        case VhdlSpecifier::INSTANTIATION:
           if (single) return "Instância";
           else        return "Instâncias";
-        case VhdlDocGen::ALIAS:
+        case VhdlSpecifier::ALIAS:
           if (single) return "Apelido";
           else        return "Apelidos";
-        case VhdlDocGen::CONFIG:
+        case VhdlSpecifier::CONFIG:
           if (single) return "Configuração";
           else        return "Configurações";
-        case VhdlDocGen::MISCELLANEOUS:
+        case VhdlSpecifier::MISCELLANEOUS:
           return "Outros"; // Is this correct for VHDL?
-        case VhdlDocGen::UCF_CONST:
+        case VhdlSpecifier::UCF_CONST:
           return "Restrições";
         default:
           return "Classe";
@@ -2638,7 +2638,7 @@ class TranslatorPortuguese : public Translator
     }
     virtual QCString trDefinition()  { return "Definição";}
     virtual QCString trDeclaration() { return "Declaração";}
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.8
 //////////////////////////////////////////////////////////////////////////
@@ -2696,13 +2696,13 @@ class TranslatorPortuguese : public Translator
       if (extractAll)
         result+="a documentação de cada " + singularResult + ":";
       else
-        result+="o módulo a que pertencem:";      
+        result+="o módulo a que pertencem:";
       return result;
     }
     virtual QCString trExportedModules()
     {
       return "Módulos Exportados";
-    }    
+    }
 };
 
 #endif

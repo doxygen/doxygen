@@ -1772,86 +1772,86 @@ class TranslatorDutch : public Translator
     virtual QCString trFunctionAndProc()
     { return "Functies/Procedures/Processen"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64_t type,bool single)
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single)
     {
       switch(type)
       {
-        case VhdlDocGen::LIBRARY:
+        case VhdlSpecifier::LIBRARY:
           if (single) return "Bibliotheek";
           else        return "Bibliotheken";
-        case VhdlDocGen::PACKAGE:
+        case VhdlSpecifier::PACKAGE:
           if (single) return "Package";
           else        return "Packages";
-        case VhdlDocGen::SIGNAL:
+        case VhdlSpecifier::SIGNAL:
           if (single) return "Signal";
           else        return "Signals";
-        case VhdlDocGen::COMPONENT:
+        case VhdlSpecifier::COMPONENT:
           if (single) return "Bestanddeel";
           else        return "Bestanddelen";
-        case VhdlDocGen::CONSTANT:
+        case VhdlSpecifier::CONSTANT:
           if (single) return "Konstante";
           else        return "Konstanten";
-        case VhdlDocGen::ENTITY:
+        case VhdlSpecifier::ENTITY:
           if (single) return "Entiteit";
           else        return "Entiteiten";
-        case VhdlDocGen::TYPE:
+        case VhdlSpecifier::TYPE:
           if (single) return "Type";
           else        return "Types";
-        case VhdlDocGen::SUBTYPE:
+        case VhdlSpecifier::SUBTYPE:
           if (single) return "Ondertype";
           else        return "Ondertypes";
-        case VhdlDocGen::FUNCTION:
+        case VhdlSpecifier::FUNCTION:
           if (single) return "Funktie";
           else        return "Funkties";
-        case VhdlDocGen::RECORD:
+        case VhdlSpecifier::RECORD:
           if (single) return "Record";
           else        return "Records";
-        case VhdlDocGen::PROCEDURE:
+        case VhdlSpecifier::PROCEDURE:
           if (single) return "Procedure";
           else        return "Procedures";
-        case VhdlDocGen::ARCHITECTURE:
+        case VhdlSpecifier::ARCHITECTURE:
           if (single) return "Architectuur";
           else        return "Architecturen";
-        case VhdlDocGen::ATTRIBUTE:
+        case VhdlSpecifier::ATTRIBUTE:
           if (single) return "Attribuut";
           else        return "Attributen";
-        case VhdlDocGen::PROCESS:
+        case VhdlSpecifier::PROCESS:
           if (single) return "Proces";
           else        return "Processen";
-        case VhdlDocGen::PORT:
+        case VhdlSpecifier::PORT:
           if (single) return "Poort";
           else        return "Porten";
-        case VhdlDocGen::USE:
+        case VhdlSpecifier::USE:
           if (single) return "gebruiks clausule";
           else        return "Gebruiks Clausules";
-        case VhdlDocGen::GENERIC:
+        case VhdlSpecifier::GENERIC:
           if (single) return "Algemeen";
           else        return "Algemene";
-        case VhdlDocGen::PACKAGE_BODY:
+        case VhdlSpecifier::PACKAGE_BODY:
           return "Package Body";
-        case VhdlDocGen::UNITS:
+        case VhdlSpecifier::UNITS:
           return "Eenheden";
-        case VhdlDocGen::SHAREDVARIABLE:
+        case VhdlSpecifier::SHAREDVARIABLE:
           if (single) return "Gedeelde Variable";
           else        return "Gedeelde Variablen";
-        case VhdlDocGen::VFILE:
+        case VhdlSpecifier::VFILE:
           if (single) return "Bestand";
           else        return "Bestanden";
-        case VhdlDocGen::GROUP:
+        case VhdlSpecifier::GROUP:
           if (single) return "Groep";
           else        return "Groepen";
-        case VhdlDocGen::INSTANTIATION:
+        case VhdlSpecifier::INSTANTIATION:
           if (single) return "Instanti&euml;ring";
           else        return "Instanti&euml;ringen";
-        case VhdlDocGen::ALIAS:
+        case VhdlSpecifier::ALIAS:
           if (single) return "Alias";
           else        return "Aliases";
-        case VhdlDocGen::CONFIG:
+        case VhdlSpecifier::CONFIG:
           if (single) return "Configuratie";
           else        return "Configuraties";
-        case VhdlDocGen::MISCELLANEOUS:
+        case VhdlSpecifier::MISCELLANEOUS:
           return "Diverse";
-        case VhdlDocGen::UCF_CONST:
+        case VhdlSpecifier::UCF_CONST:
           return "Limiteringen";
         default:
           return "Klasse";

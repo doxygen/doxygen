@@ -57,6 +57,7 @@ Entry::Entry(const Entry &e)
   protection  = e.protection;
   mtype       = e.mtype;
   spec        = e.spec;
+  vhdlSpec    = e.vhdlSpec;
   initLines   = e.initLines;
   isStatic    = e.isStatic;
   localToc    = e.localToc;
@@ -247,7 +248,8 @@ void Entry::reset()
   isStatic = false;
   proto   = false;
   explicitExternal = false;
-  spec  = 0;
+  spec.reset();
+  vhdlSpec = VhdlSpecifier::UNKNOWN;
   lang = SrcLangExt_Unknown;
   hidden = false;
   artificial = false;

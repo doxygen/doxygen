@@ -293,7 +293,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setIsStatic(bool b) override;
     virtual void setCompoundType(CompoundType t) override;
     virtual void setClassName(const QCString &name) override;
-    virtual void setClassSpecifier(uint64_t spec) override;
+    virtual void setClassSpecifier(TypeSpecifier spec) override;
     virtual void addQualifiers(const StringVector &qualifiers) override;
     virtual void setTemplateArguments(const ArgumentList &al) override;
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) override;
@@ -779,7 +779,7 @@ class ClassDefImpl::IMPL
     /** Does this class represent a Java style enum? */
     bool isJavaEnum = false;
 
-    uint64_t spec = 0;
+    TypeSpecifier spec;
 
     QCString metaData;
 
@@ -818,7 +818,7 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
   isSimple = Config_getBool(INLINE_SIMPLE_STRUCTS);
   arrowOperator = 0;
   tagLessRef = 0;
-  spec=0;
+  spec=TypeSpecifier();
   //QCString ns;
   //extractNamespaceName(name,className,ns);
   //printf("m_name=%s m_className=%s ns=%s\n",qPrint(m_name),qPrint(m_className),qPrint(ns));
@@ -925,7 +925,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
 
   if (getLanguage()==SrcLangExt_VHDL)
   {
-    QCString title=theTranslator->trVhdlType(md->getMemberSpecifiers(),FALSE);
+    QCString title=theTranslator->trVhdlType(md->getVhdlSpecifiers(),FALSE);
     m_impl->vhdlSummaryTitles.insert(title.str());
   }
 
@@ -1874,19 +1874,19 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
     ol.docify(m_impl->metaData);
     ol.lineBreak();
   }
-  if (m_impl->spec & Entry::Local)
+  if (m_impl->spec.isLocal())
   {
     ol.docify("local ");
   }
-  if (m_impl->spec & Entry::Interface)
+  if (m_impl->spec.isInterface())
   {
     ol.docify("interface ");
   }
-  else if (m_impl->spec & Entry::Struct)
+  else if (m_impl->spec.isStruct())
   {
     ol.docify("struct ");
   }
-  else if (m_impl->spec & Entry::Exception)
+  else if (m_impl->spec.isException())
   {
     ol.docify("exception ");
   }
@@ -1897,7 +1897,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
   ol.docify(stripScope(name()));
   if (!m_impl->inherits.empty())
   {
-    if (m_impl->spec & (Entry::Interface|Entry::Exception))
+    if (m_impl->spec.isInterface() || m_impl->spec.isException())
     {
       ol.docify(" extends ");
       bool first=true;
@@ -2448,7 +2448,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       }
       else if (lang==SrcLangExt_VHDL)
       {
-        ol.parseText(theTranslator->trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
+        ol.parseText(theTranslator->trVhdlType(VhdlSpecifier::ARCHITECTURE,FALSE));
       }
       else
       {
@@ -3115,7 +3115,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
           StringVector sl;
           if (lang==SrcLangExt_VHDL)
           {
-            sl.push_back(theTranslator->trVhdlType(md->getMemberSpecifiers(),TRUE).str()); //append vhdl type
+            sl.push_back(theTranslator->trVhdlType(md->getVhdlSpecifiers(),TRUE).str()); //append vhdl type
           }
           else if (md->isFriend()) sl.push_back("friend");
           else if (md->isRelated()) sl.push_back("related");
@@ -4723,32 +4723,32 @@ bool ClassDefImpl::isTemplateArgument() const
 
 bool ClassDefImpl::isAbstract() const
 {
-  return m_impl->isAbstract || (m_impl->spec&Entry::Abstract);
+  return m_impl->isAbstract || m_impl->spec.isAbstract();
 }
 
 bool ClassDefImpl::isFinal() const
 {
-  return m_impl->spec&Entry::Final;
+  return m_impl->spec.isFinal();
 }
 
 bool ClassDefImpl::isSealed() const
 {
-  return m_impl->spec&Entry::Sealed;
+  return m_impl->spec.isSealed();
 }
 
 bool ClassDefImpl::isPublished() const
 {
-  return m_impl->spec&Entry::Published;
+  return m_impl->spec.isPublished();
 }
 
 bool ClassDefImpl::isForwardDeclared() const
 {
-  return m_impl->spec&Entry::ForwardDecl;
+  return m_impl->spec.isForwardDecl();
 }
 
 bool ClassDefImpl::isInterface() const
 {
-  return m_impl->spec&Entry::Interface;
+  return m_impl->spec.isInterface();
 }
 
 bool ClassDefImpl::isObjectiveC() const
@@ -4931,7 +4931,7 @@ bool ClassDefImpl::isJavaEnum() const
   return m_impl->isJavaEnum;
 }
 
-void ClassDefImpl::setClassSpecifier(uint64_t spec)
+void ClassDefImpl::setClassSpecifier(TypeSpecifier spec)
 {
   m_impl->spec = spec;
 }
@@ -4984,7 +4984,7 @@ bool ClassDefImpl::subGrouping() const
 
 bool ClassDefImpl::isSliceLocal() const
 {
-  return m_impl->spec&Entry::Local;
+  return m_impl->spec.isLocal();
 }
 
 void ClassDefImpl::setMetaData(const QCString &md)

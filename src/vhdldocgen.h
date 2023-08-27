@@ -89,37 +89,6 @@ class VhdlDocGen
       return ENTITYCLASS;
     }
 
-    enum VhdlKeyWords
-    {
-      LIBRARY=1,
-      ENTITY,
-      PACKAGE_BODY,
-      ARCHITECTURE,
-      PACKAGE,
-      ATTRIBUTE,
-      SIGNAL,
-      COMPONENT,
-      CONSTANT,
-      TYPE,
-      SUBTYPE,
-      FUNCTION,
-      RECORD,
-      PROCEDURE,
-      USE,
-      PROCESS,
-      PORT,
-      UNITS,
-      GENERIC,
-      INSTANTIATION,
-      GROUP,
-      VFILE,
-      SHAREDVARIABLE,
-      CONFIG,
-      ALIAS,
-      MISCELLANEOUS,
-      UCF_CONST
-    };
-
     VhdlDocGen();
     virtual ~VhdlDocGen();
     static void init();
@@ -206,11 +175,11 @@ class VhdlDocGen
 
     static void writePlainVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-        uint64_t specifier);
+        VhdlSpecifier specifier);
 
     static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-        const QCString &title,const QCString &subtitle,bool showEnumValues,int type);
+        const QCString &title,const QCString &subtitle,bool showEnumValues,VhdlSpecifier type);
 
     static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);
 
@@ -247,10 +216,10 @@ class VhdlDocGen
 
     static  bool isVhdlClass (const Entry *cu)
     {
-      return cu->spec==VhdlDocGen::ENTITY       ||
-             cu->spec==VhdlDocGen::PACKAGE      ||
-             cu->spec==VhdlDocGen::ARCHITECTURE ||
-             cu->spec==VhdlDocGen::PACKAGE_BODY;
+      return cu->vhdlSpec==VhdlSpecifier::ENTITY       ||
+             cu->vhdlSpec==VhdlSpecifier::PACKAGE      ||
+             cu->vhdlSpec==VhdlSpecifier::ARCHITECTURE ||
+             cu->vhdlSpec==VhdlSpecifier::PACKAGE_BODY;
     }
 
   static void resetCodeVhdlParserState();

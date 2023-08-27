@@ -357,4 +357,115 @@ class LocalToc
     int m_level[numTocTypes];
 };
 
+//---------------------------------------------------------------------------------------
+
+
+#define TYPE_SPECIFIERS                                                                                                         \
+/*  0 */ TSPEC(Template)          TSPEC(Generic)         TSPEC(Ref)               TSPEC(Value)        TSPEC(Interface)          \
+/*  5 */ TSPEC(Struct)            TSPEC(Union)           TSPEC(Exception)         TSPEC(Protocol)     TSPEC(Category)           \
+/* 10 */ TSPEC(SealedClass)       TSPEC(AbstractClass)   TSPEC(Enum)              TSPEC(Service)      TSPEC(Singleton)          \
+/* 15 */ TSPEC(ForwardDecl)       TSPEC(Local)           TSPEC(EnumStruct)        TSPEC(ConstExpr)    TSPEC(PrivateGettable)    \
+/* 20 */ TSPEC(ProtectedGettable) TSPEC(PrivateSettable) TSPEC(ProtectedSettable) TSPEC(Inline)       TSPEC(Explicit)           \
+/* 25 */ TSPEC(Mutable)           TSPEC(Settable)        TSPEC(Gettable)          TSPEC(Readable)     TSPEC(Writable)           \
+/* 30 */ TSPEC(Final)             TSPEC(Abstract)        TSPEC(Addable)           TSPEC(Removable)    TSPEC(Raisable)           \
+/* 35 */ TSPEC(Override)          TSPEC(New)             TSPEC(Sealed)            TSPEC(Initonly)     TSPEC(Optional)           \
+/* 40 */ TSPEC(Required)          TSPEC(NonAtomic)       TSPEC(Copy)              TSPEC(Retain)       TSPEC(Assign)             \
+/* 45 */ TSPEC(Strong)            TSPEC(Weak)            TSPEC(Unretained)        TSPEC(Alias)        TSPEC(ConstExp)           \
+/* 50 */ TSPEC(Default)           TSPEC(Delete)          TSPEC(NoExcept)          TSPEC(Attribute)    TSPEC(Property)           \
+/* 55 */ TSPEC(Readonly)          TSPEC(Bound)           TSPEC(Constrained)       TSPEC(Transient)    TSPEC(MaybeVoid)          \
+/* 60 */ TSPEC(MaybeDefault)      TSPEC(MaybeAmbiguous)  TSPEC(Published)
+
+/** Wrapper class for a number of boolean properties.
+ *  The properties are packed together, and initialized to false.
+ */
+class TypeSpecifier
+{
+  public:
+    TypeSpecifier() { reset(); }
+
+    void reset() { std::memset(this, 0, sizeof(*this)); }
+
+    void merge(const TypeSpecifier &other)
+    {
+#define TSPEC(x) m_is##x = m_is##x || other.is##x();
+      TYPE_SPECIFIERS
+#undef TSPEC
+    }
+
+    friend inline bool operator==(const TypeSpecifier &t1,const TypeSpecifier &t2)
+    {
+      bool eq = true;
+#define TSPEC(x) eq = eq && (t1.m_is##x == t2.m_is##x);
+      TYPE_SPECIFIERS
+#undef TSPEC
+      return eq;
+    }
+
+    friend inline bool operator!=(const TypeSpecifier &t1,const TypeSpecifier &t2)
+    {
+      return !(operator==(t1,t2));
+    }
+
+
+    std::string to_string() const
+    {
+      std::string result="[";
+      bool first=true;
+#define TSPEC(x)                                                          \
+      if (m_is##x) {                                                      \
+        if (!first) result+=",";                                          \
+        result+=#x; first=false;                                          \
+      }
+      TYPE_SPECIFIERS
+#undef TSPEC
+      result+="]";
+      return result;
+    }
+
+    // generate getter and setter for each property
+#define TSPEC(x)                                                          \
+    public:                                                               \
+      TypeSpecifier &set##x(bool b) { m_is##x = b; return *this; }        \
+      bool is##x() const { return m_is##x; }                              \
+    private:                                                              \
+      bool m_is##x : 1;
+    TYPE_SPECIFIERS
+#undef TSPEC
+
+};
+
+enum class VhdlSpecifier
+{
+  UNKNOWN=0,
+  LIBRARY,
+  ENTITY,
+  PACKAGE_BODY,
+  ARCHITECTURE,
+  PACKAGE,
+  ATTRIBUTE,
+  SIGNAL,
+  COMPONENT,
+  CONSTANT,
+  TYPE,
+  SUBTYPE,
+  FUNCTION,
+  RECORD,
+  PROCEDURE,
+  USE,
+  PROCESS,
+  PORT,
+  UNITS,
+  GENERIC,
+  INSTANTIATION,
+  GROUP,
+  VFILE,
+  SHAREDVARIABLE,
+  CONFIG,
+  ALIAS,
+  MISCELLANEOUS,
+  UCF_CONST
+};
+
+
+
 #endif

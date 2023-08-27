@@ -2045,86 +2045,86 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     virtual QCString trFunctionAndProc()
     { return "Функции/Процедури/Процеси"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64_t type,bool single)
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single)
     {
       switch(type)
       {
-        case VhdlDocGen::LIBRARY:
+        case VhdlSpecifier::LIBRARY:
           if (single) return "Библиотека";
           else        return "Библиотеки";
-        case VhdlDocGen::PACKAGE:
+        case VhdlSpecifier::PACKAGE:
           if (single) return "Пакет";
           else        return "Пакети";
-        case VhdlDocGen::SIGNAL:
+        case VhdlSpecifier::SIGNAL:
           if (single) return "Сигнал";
           else        return "Сигнали";
-        case VhdlDocGen::COMPONENT:
+        case VhdlSpecifier::COMPONENT:
           if (single) return "Компонент";
           else        return "Компоненти";
-        case VhdlDocGen::CONSTANT:
+        case VhdlSpecifier::CONSTANT:
           if (single) return "Константа";
           else        return "Константи";
-        case VhdlDocGen::ENTITY:
+        case VhdlSpecifier::ENTITY:
           if (single) return "Същност";
           else        return "Същности";
-        case VhdlDocGen::TYPE:
+        case VhdlSpecifier::TYPE:
           if (single) return "Тип";
           else        return "Типове";
-        case VhdlDocGen::SUBTYPE:
+        case VhdlSpecifier::SUBTYPE:
           if (single) return "Подтип";
           else        return "Подтипове";
-        case VhdlDocGen::FUNCTION:
+        case VhdlSpecifier::FUNCTION:
           if (single) return "Функция";
           else        return "Функции";
-        case VhdlDocGen::RECORD:
+        case VhdlSpecifier::RECORD:
           if (single) return "Запис";
           else        return "Записи";
-        case VhdlDocGen::PROCEDURE:
+        case VhdlSpecifier::PROCEDURE:
           if (single) return "Процедура";
           else        return "Процедури";
-        case VhdlDocGen::ARCHITECTURE:
+        case VhdlSpecifier::ARCHITECTURE:
           if (single) return "Архитектура";
           else        return "Архитектури";
-        case VhdlDocGen::ATTRIBUTE:
+        case VhdlSpecifier::ATTRIBUTE:
           if (single) return "Атрибут";
           else        return "Атрибути";
-        case VhdlDocGen::PROCESS:
+        case VhdlSpecifier::PROCESS:
           if (single) return "Процес";
           else        return "Процеси";
-        case VhdlDocGen::PORT:
+        case VhdlSpecifier::PORT:
           if (single) return "Порт";
           else        return "Портове";
-        case VhdlDocGen::USE:
+        case VhdlSpecifier::USE:
           if (single) return "use клауза";
           else        return "Use клаузи";
-        case VhdlDocGen::GENERIC:
+        case VhdlSpecifier::GENERIC:
           if (single) return "Роден";
           else        return "Родни";
-        case VhdlDocGen::PACKAGE_BODY:
+        case VhdlSpecifier::PACKAGE_BODY:
           return "Тяло на пакета";
-        case VhdlDocGen::UNITS:
+        case VhdlSpecifier::UNITS:
           return "Единици";
-        case VhdlDocGen::SHAREDVARIABLE:
+        case VhdlSpecifier::SHAREDVARIABLE:
           if (single) return "Споделена променлива";
           else        return "Споделени променливи";
-        case VhdlDocGen::VFILE:
+        case VhdlSpecifier::VFILE:
           if (single) return "Файл";
           else        return "Файлове";
-        case VhdlDocGen::GROUP:
+        case VhdlSpecifier::GROUP:
           if (single) return "Група";
           else        return "Групи";
-        case VhdlDocGen::INSTANTIATION:
+        case VhdlSpecifier::INSTANTIATION:
           if (single) return "Инстанция";
           else        return "Инстанции";
-        case VhdlDocGen::ALIAS:
+        case VhdlSpecifier::ALIAS:
           if (single) return "Псевдоним";
           else        return "Псевдоними";
-        case VhdlDocGen::CONFIG:
+        case VhdlSpecifier::CONFIG:
           if (single) return "Конфигурация";
           else        return "Конфигурации";
-        case VhdlDocGen::MISCELLANEOUS:
+        case VhdlSpecifier::MISCELLANEOUS:
           return "Други";
-        case VhdlDocGen::UCF_CONST:
+        case VhdlSpecifier::UCF_CONST:
           return "Ограничения";
         default:
           return "Клас";

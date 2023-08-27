@@ -670,7 +670,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 {BS}"::"{BS}                            {}
 
 abstract                                {
-                                          yyextra->current->spec |= Entry::AbstractClass;
+                                          yyextra->current->spec.setAbstractClass(true);
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext).lower();
@@ -687,7 +687,7 @@ private                                 {
                                         }
 {ID}                                    { /* type name found */
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec |= Entry::Struct;
+                                          yyextra->current->spec.setStruct(true);
                                           yyextra->current->name = yytext;
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->bodyLine  = yyextra->lineNr;
@@ -726,7 +726,7 @@ private                                 {
                                           yyextra->current->type = QCString(yytext).simplifyWhiteSpace().lower();
                                         }
 ^{BS}final                              {
-                                          yyextra->current->spec |= Entry::Final;
+                                          yyextra->current->spec.setFinal(true);
                                           yyextra->current->type = QCString(yytext).simplifyWhiteSpace();
                                         }
 ^{BS}generic                            {
@@ -1178,7 +1178,7 @@ private                                 {
                                           yyextra->typeProtection = yyextra->defaultProtection;
                                           yyextra->typeMode = true;
 
-                                          yyextra->current->spec |= Entry::Struct;
+                                          yyextra->current->spec.setStruct(true);
                                           yyextra->current->name.resize(0);
                                           yyextra->current->args.resize(0);
                                           yyextra->current->name.sprintf("@%d",yyextra->anonCount++);
@@ -2302,7 +2302,7 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
     ent->protection = Protection::Private;
 
   if (mdfs.nonoverridable)
-    ent->spec |= Entry::Final;
+    ent->spec.setFinal(true);
   if (mdfs.nopass)
     ent->isStatic = TRUE;
   if (mdfs.deferred)
@@ -2384,9 +2384,9 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     }
 
   }
-  if (scope->section == Entry::CLASS_SEC && scope->spec & Entry::Interface) 
+  if (scope->section==Entry::CLASS_SEC && scope->spec.isInterface())
   { // was INTERFACE_SEC
-    if (scope->parent() && scope->parent()->section == Entry::FUNCTION_SEC) 
+    if (scope->parent() && scope->parent()->section == Entry::FUNCTION_SEC)
     { // interface within function
       // iterate functions of interface and
       // try to find types for dummy(ie. argument) procedures.
@@ -2539,7 +2539,7 @@ static void resolveTypeBoundProcedures(Entry *scope)
       {
         for(const auto &cf: scope->children())
         {
-          if (cf->section == Entry::CLASS_SEC && cf->spec & Entry::Interface && cf->type == "abstract")
+          if (cf->section==Entry::CLASS_SEC && cf->spec.isInterface() && cf->type=="abstract")
           {
             std::shared_ptr<Entry> ci = cf->children().front();
             interfMap.insert(std::make_pair(ci->name.str(), ci));
@@ -2632,7 +2632,7 @@ static void initEntry(yyscan_t yyscanner)
   {
     yyextra->current->protection = yyextra->typeProtection;
   }
-  else if (yyextra->current_root && yyextra->current_root->section == Entry::CLASS_SEC && yyextra->current_root->spec & Entry::Interface)
+  else if (yyextra->current_root && yyextra->current_root->section == Entry::CLASS_SEC && yyextra->current_root->spec.isInterface())
   {
     yyextra->current->protection = Protection::Public;
   }
@@ -2734,7 +2734,7 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type)
   }
 
   yyextra->current->section = Entry::CLASS_SEC; // was Entry::INTERFACE_SEC;
-  yyextra->current->spec = Entry::Interface;
+  yyextra->current->spec = TypeSpecifier().setInterface(true);
   yyextra->current->name = name;
 
   switch (type)

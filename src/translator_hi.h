@@ -2007,86 +2007,86 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     { return "फलनगण/कार्यविधियाँ/प्रक्रियाएं"; }
 
     /** VHDL type */
-    virtual QCString trVhdlType(uint64_t type,bool single)
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single)
     {
       switch (type)
       {
-        case VhdlDocGen::LIBRARY:
+        case VhdlSpecifier::LIBRARY:
           if (single) return "संग्रह";
           else        return "संग्रहगण";
-        case VhdlDocGen::PACKAGE:
+        case VhdlSpecifier::PACKAGE:
           if (single) return "संकुल";
           else        return "संकुलगण";
-        case VhdlDocGen::SIGNAL:
+        case VhdlSpecifier::SIGNAL:
           if (single) return "संकेत";
           else        return "संकेतगण";
-        case VhdlDocGen::COMPONENT:
+        case VhdlSpecifier::COMPONENT:
           if (single) return "अंग";
           else        return "अंगगण";
-        case VhdlDocGen::CONSTANT:
+        case VhdlSpecifier::CONSTANT:
           if (single) return "स्थिर";
           else        return "स्थिरगण";
-        case VhdlDocGen::ENTITY:
+        case VhdlSpecifier::ENTITY:
           if (single) return "इकाई";
           else        return "इकाईयाँ";
-        case VhdlDocGen::TYPE:
+        case VhdlSpecifier::TYPE:
           if (single) return "प्ररूप";
           else        return "प्ररूपगण";
-        case VhdlDocGen::SUBTYPE:
+        case VhdlSpecifier::SUBTYPE:
           if (single) return "उपप्ररूप";
           else        return "उपप्ररूपगण";
-        case VhdlDocGen::FUNCTION:
+        case VhdlSpecifier::FUNCTION:
           if (single) return "फलन";
           else        return "फलनगण";
-        case VhdlDocGen::RECORD:
+        case VhdlSpecifier::RECORD:
           if (single) return "अभिलेख";
           else        return "अभिलेखगण";
-        case VhdlDocGen::PROCEDURE:
+        case VhdlSpecifier::PROCEDURE:
           if (single) return "कार्यविधि";
           else        return "कार्यविधियाँ";
-        case VhdlDocGen::ARCHITECTURE:
+        case VhdlSpecifier::ARCHITECTURE:
           if (single) return "वास्तुकला";
           else        return "वास्तुकलाएं";
-        case VhdlDocGen::ATTRIBUTE:
+        case VhdlSpecifier::ATTRIBUTE:
           if (single) return "तर्क";
           else        return "तर्कगण";
-        case VhdlDocGen::PROCESS:
+        case VhdlSpecifier::PROCESS:
           if (single) return "प्रक्रिया";
           else        return "प्रक्रियाएं";
-        case VhdlDocGen::PORT:
+        case VhdlSpecifier::PORT:
           if (single) return "द्वार";
           else        return "द्वारगण";
-        case VhdlDocGen::USE:
+        case VhdlSpecifier::USE:
           if (single) return "प्रयोग खंड";
           else        return "प्रयोग खंडगण";
-        case VhdlDocGen::GENERIC:
+        case VhdlSpecifier::GENERIC:
           if (single) return "सामान्य";
           else        return "सामान्यगण";
-        case VhdlDocGen::PACKAGE_BODY:
+        case VhdlSpecifier::PACKAGE_BODY:
           return "संकुल शरीर";
-        case VhdlDocGen::UNITS:
+        case VhdlSpecifier::UNITS:
           return "इकाईयाँ";
-        case VhdlDocGen::SHAREDVARIABLE:
+        case VhdlSpecifier::SHAREDVARIABLE:
           if (single) return "साझाकृत परिवर्तनशील";
           else        return "साझाकृत परिवर्तनशीलगण";
-        case VhdlDocGen::VFILE:
+        case VhdlSpecifier::VFILE:
           if (single) return "फ़ाइल";
           else        return "फ़ाइलगण";
-        case VhdlDocGen::GROUP:
+        case VhdlSpecifier::GROUP:
           if (single) return "समूह";
           else        return "समूहगण";
-        case VhdlDocGen::INSTANTIATION:
+        case VhdlSpecifier::INSTANTIATION:
           if (single) return "उदाहरणीकरण";
           else        return "उदाहरणीकरणगण";
-        case VhdlDocGen::ALIAS:
+        case VhdlSpecifier::ALIAS:
           if (single) return "उपनाम";
           else        return "उपनामगण";
-        case VhdlDocGen::CONFIG:
+        case VhdlSpecifier::CONFIG:
           if (single) return "विन्यास";
           else        return "विन्यासगण";
-        case VhdlDocGen::MISCELLANEOUS:
+        case VhdlSpecifier::MISCELLANEOUS:
           return "विविध";
-        case VhdlDocGen::UCF_CONST:
+        case VhdlSpecifier::UCF_CONST:
           return "बाध्यताएं";
         default:
           return "वर्ग";

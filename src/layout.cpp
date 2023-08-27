@@ -20,10 +20,10 @@
 
 #include <assert.h>
 
+#include "types.h"
 #include "layout.h"
 #include "message.h"
 #include "language.h"
-#include "vhdldocgen.h"
 #include "util.h"
 #include "doxygen.h"
 #include "version.h"
@@ -799,7 +799,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "class/memberdecl/membergroups",              { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::MemberGroups) } },
   { "class/memberdecl/nestedclasses",             { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::ClassNestedClasses,
                                                             []() { return compileOptions(/*default*/        theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
                                                                                          SrcLangExt_Fortran,theTranslator->trDataTypes()); })
                                                   } },
   { "class/memberdecl/services",                  { startCb(&LayoutParser::startMemberDeclEntry,MemberListType_services,
@@ -980,7 +980,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "namespace/memberdecl/classes",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
-                                                                           SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                                                           SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
                                                                            SrcLangExt_Fortran,theTranslator->trDataTypes()); })
                                                   } },
   { "namespace/memberdecl/concepts",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceConcepts,
@@ -1062,7 +1062,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "file/memberdecl/classes",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
                                                                                          SrcLangExt_Fortran,theTranslator->trDataTypes()); })
                                                   } },
   { "file/memberdecl/concepts",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::FileConcepts,
@@ -1152,7 +1152,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "group/memberdecl/membergroups",              { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::MemberGroups)  } },
   { "group/memberdecl/classes",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupClasses,
                                                             []() { return compileOptions(/* default */       theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,    theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                                                                         SrcLangExt_VHDL,    theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
                                                                                          SrcLangExt_Fortran, theTranslator->trDataTypes()); })
                                                   } },
   { "group/memberdecl/concepts",                  { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupConcepts,

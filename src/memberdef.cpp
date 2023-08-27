@@ -77,7 +77,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual QCString extraTypeChars() const override;
     virtual const QCString &initializer() const override;
     virtual int initializerLines() const override;
-    virtual uint64_t getMemberSpecifiers() const override;
+    virtual TypeSpecifier getMemberSpecifiers() const override;
+    virtual VhdlSpecifier getVhdlSpecifiers() const override;
     virtual const MemberList *getSectionList(const Definition *) const override;
     virtual QCString displayDefinition() const override;
     virtual const ClassDef *getClassDef() const override;
@@ -248,8 +249,9 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setFileDef(FileDef *fd) override;
     virtual void setAnchor() override;
     virtual void setProtection(Protection p) override;
-    virtual void setMemberSpecifiers(uint64_t s) override;
-    virtual void mergeMemberSpecifiers(uint64_t s) override;
+    virtual void setMemberSpecifiers(TypeSpecifier s) override;
+    virtual void setVhdlSpecifiers(VhdlSpecifier s) override;
+    virtual void mergeMemberSpecifiers(TypeSpecifier s) override;
     virtual void setInitializer(const QCString &i) override;
     virtual void setBitfields(const QCString &s) override;
     virtual void setMaxInitLines(int lines) override;
@@ -418,7 +420,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     QCString m_requiresClause;  // requires clause (C++20)
     int m_initLines = 0;            // number of lines in the initializer
 
-    uint64_t  m_memSpec = 0;          // The specifiers present for this member
+    TypeSpecifier m_memSpec;          // The specifiers present for this member
+    VhdlSpecifier m_vhdlSpec;
     MemberType m_mtype = MemberType_Define; // returns the kind of member
     int m_maxInitLines = 0;         // when the initializer will be displayed
     int m_userInitLines = 0;        // result of explicit \hideinitializer or \showinitializer
@@ -555,8 +558,10 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->initializer(); }
     virtual int initializerLines() const
     { return getMdAlias()->initializerLines(); }
-    virtual uint64_t getMemberSpecifiers() const
+    virtual TypeSpecifier getMemberSpecifiers() const
     { return getMdAlias()->getMemberSpecifiers(); }
+    virtual VhdlSpecifier getVhdlSpecifiers() const
+    { return getMdAlias()->getVhdlSpecifiers(); }
     virtual const MemberList *getSectionList(const Definition *container) const
     { return getMdAlias()->getSectionList(container); }
     virtual QCString displayDefinition() const
@@ -1329,7 +1334,8 @@ void MemberDefImpl::init(Definition *d,
   m_exception=e;
   m_proto=FALSE;
   m_annScope=FALSE;
-  m_memSpec=0;
+  m_memSpec=TypeSpecifier();
+  m_vhdlSpec=VhdlSpecifier::UNKNOWN;
   m_annMemb=0;
   m_annEnumType=0;
   m_groupAlias=0;
@@ -1440,6 +1446,7 @@ MemberDefImpl::MemberDefImpl(const MemberDefImpl &md) : DefinitionMixin(md)
   m_requiresClause                 = md.m_requiresClause                 ;
   m_initLines                      = md.m_initLines                      ;
   m_memSpec                        = md.m_memSpec                        ;
+  m_vhdlSpec                       = md.m_vhdlSpec                       ;
   m_mtype                          = md.m_mtype                          ;
   m_maxInitLines                   = md.m_maxInitLines                   ;
   m_userInitLines                  = md.m_userInitLines                  ;
@@ -2757,7 +2764,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
        isStatic() || isExternal() ||
        isExported() ||
        (getClassDef() && getClassDef()!=container && container->definitionType()==TypeClass) ||
-       (m_memSpec & ~Entry::Inline)!=0
+       TypeSpecifier(m_memSpec).setInline(false)!=TypeSpecifier()
       )
      )
   {
@@ -2770,7 +2777,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
     bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     if (optVhdl)
     {
-      sl.push_back(theTranslator->trVhdlType(getMemberSpecifiers(),TRUE).str());
+      sl.push_back(theTranslator->trVhdlType(getVhdlSpecifiers(),TRUE).str());
     }
     else
     {
@@ -4930,9 +4937,14 @@ int MemberDefImpl::initializerLines() const
   return m_initLines;
 }
 
-uint64_t MemberDefImpl::getMemberSpecifiers() const
+TypeSpecifier MemberDefImpl::getMemberSpecifiers() const
 {
   return m_memSpec;
+}
+
+VhdlSpecifier MemberDefImpl::getVhdlSpecifiers() const
+{
+  return m_vhdlSpec;
 }
 
 const ClassDef *MemberDefImpl::getClassDef() const
@@ -5112,147 +5124,147 @@ bool MemberDefImpl::isStatic() const
 
 bool MemberDefImpl::isInline() const
 {
-  return (m_memSpec&Entry::Inline)!=0;
+  return m_memSpec.isInline();
 }
 
 bool MemberDefImpl::isExplicit() const
 {
-  return (m_memSpec&Entry::Explicit)!=0;
+  return m_memSpec.isExplicit();
 }
 
 bool MemberDefImpl::isMutable() const
 {
-  return (m_memSpec&Entry::Mutable)!=0;
+  return m_memSpec.isMutable();
 }
 
 bool MemberDefImpl::isGettable() const
 {
-  return (m_memSpec&Entry::Gettable)!=0;
+  return m_memSpec.isGettable();
 }
 
 bool MemberDefImpl::isPrivateGettable() const
 {
-  return (m_memSpec&Entry::PrivateGettable)!=0;
+  return m_memSpec.isPrivateGettable();
 }
 
 bool MemberDefImpl::isProtectedGettable() const
 {
-  return (m_memSpec&Entry::ProtectedGettable)!=0;
+  return m_memSpec.isProtectedGettable();
 }
 
 bool MemberDefImpl::isSettable() const
 {
-  return (m_memSpec&Entry::Settable)!=0;
+  return m_memSpec.isSettable();
 }
 
 bool MemberDefImpl::isPrivateSettable() const
 {
-  return (m_memSpec&Entry::PrivateSettable)!=0;
+  return m_memSpec.isPrivateSettable();
 }
 
 bool MemberDefImpl::isProtectedSettable() const
 {
-  return (m_memSpec&Entry::ProtectedSettable)!=0;
+  return m_memSpec.isProtectedSettable();
 }
 
 bool MemberDefImpl::isAddable() const
 {
-  return (m_memSpec&Entry::Addable)!=0;
+  return m_memSpec.isAddable();
 }
 
 bool MemberDefImpl::isRemovable() const
 {
-  return (m_memSpec&Entry::Removable)!=0;
+  return m_memSpec.isRemovable();
 }
 
 bool MemberDefImpl::isRaisable() const
 {
-  return (m_memSpec&Entry::Raisable)!=0;
+  return m_memSpec.isRaisable();
 }
 
 bool MemberDefImpl::isReadable() const
 {
-  return (m_memSpec&Entry::Readable)!=0;
+  return m_memSpec.isReadable();
 }
 
 bool MemberDefImpl::isWritable() const
 {
-  return (m_memSpec&Entry::Writable)!=0;
+  return m_memSpec.isWritable();
 }
 
 bool MemberDefImpl::isFinal() const
 {
-  return (m_memSpec&Entry::Final)!=0;
+  return m_memSpec.isFinal();
 }
 
 bool MemberDefImpl::isNew() const
 {
-  return (m_memSpec&Entry::New)!=0;
+  return m_memSpec.isNew();
 }
 
 bool MemberDefImpl::isSealed() const
 {
-  return (m_memSpec&Entry::Sealed)!=0;
+  return m_memSpec.isSealed();
 }
 
 bool MemberDefImpl::isOverride() const
 {
-  return (m_memSpec&Entry::Override)!=0;
+  return m_memSpec.isOverride();
 }
 
 bool MemberDefImpl::isInitonly() const
 {
-  return (m_memSpec&Entry::Initonly)!=0;
+  return m_memSpec.isInitonly();
 }
 
 bool MemberDefImpl::isAbstract() const
 {
-  return (m_memSpec&Entry::Abstract)!=0;
+  return m_memSpec.isAbstract();
 }
 
 bool MemberDefImpl::isOptional() const
 {
-  return (m_memSpec&Entry::Optional)!=0;
+  return m_memSpec.isOptional();
 }
 
 bool MemberDefImpl::isRequired() const
 {
-  return (m_memSpec&Entry::Required)!=0;
+  return m_memSpec.isRequired();
 }
 
 bool MemberDefImpl::isNonAtomic() const
 {
-  return (m_memSpec&Entry::NonAtomic)!=0;
+  return m_memSpec.isNonAtomic();
 }
 
 bool MemberDefImpl::isCopy() const
 {
-  return (m_memSpec&Entry::Copy)!=0;
+  return m_memSpec.isCopy();
 }
 
 bool MemberDefImpl::isAssign() const
 {
-  return (m_memSpec&Entry::Assign)!=0;
+  return m_memSpec.isAssign();
 }
 
 bool MemberDefImpl::isRetain() const
 {
-  return (m_memSpec&Entry::Retain)!=0;
+  return m_memSpec.isRetain();
 }
 
 bool MemberDefImpl::isWeak() const
 {
-  return (m_memSpec&Entry::Weak)!=0;
+  return m_memSpec.isWeak();
 }
 
 bool MemberDefImpl::isStrong() const
 {
-  return (m_memSpec&Entry::Strong)!=0;
+  return m_memSpec.isStrong();
 }
 
 bool MemberDefImpl::isEnumStruct() const
 {
-  return (m_memSpec&Entry::EnumStruct)!=0;
+  return m_memSpec.isEnumStruct();
 }
 
 bool MemberDefImpl::isStrongEnumValue() const
@@ -5264,77 +5276,77 @@ bool MemberDefImpl::isStrongEnumValue() const
 
 bool MemberDefImpl::isUnretained() const
 {
-  return (m_memSpec&Entry::Unretained)!=0;
+  return m_memSpec.isUnretained();
 }
 
 bool MemberDefImpl::isTypeAlias() const
 {
-  return (m_memSpec&Entry::Alias)!=0;
+  return m_memSpec.isAlias();
 }
 
 bool MemberDefImpl::isDefault() const
 {
-  return (m_memSpec&Entry::Default)!=0;
+  return m_memSpec.isDefault();
 }
 
 bool MemberDefImpl::isDelete() const
 {
-  return (m_memSpec&Entry::Delete)!=0;
+  return m_memSpec.isDelete();
 }
 
 bool MemberDefImpl::isNoExcept() const
 {
-  return (m_memSpec&Entry::NoExcept)!=0;
+  return m_memSpec.isNoExcept();
 }
 
 bool MemberDefImpl::isAttribute() const
 {
-  return (m_memSpec&Entry::Attribute)!=0;
+  return m_memSpec.isAttribute();
 }
 
 bool MemberDefImpl::isUNOProperty() const
 {
-  return (m_memSpec&Entry::Property)!=0;
+  return m_memSpec.isProperty();
 }
 
 bool MemberDefImpl::isReadonly() const
 {
-  return (m_memSpec&Entry::Readonly)!=0;
+  return m_memSpec.isReadonly();
 }
 
 bool MemberDefImpl::isBound() const
 {
-  return (m_memSpec&Entry::Bound)!=0;
+  return m_memSpec.isBound();
 }
 
 bool MemberDefImpl::isConstrained() const
 {
-  return (m_memSpec&Entry::Constrained)!=0;
+  return m_memSpec.isConstrained();
 }
 
 bool MemberDefImpl::isTransient() const
 {
-  return (m_memSpec&Entry::Transient)!=0;
+  return m_memSpec.isTransient();
 }
 
 bool MemberDefImpl::isMaybeVoid() const
 {
-  return (m_memSpec&Entry::MaybeVoid)!=0;
+  return m_memSpec.isMaybeVoid();
 }
 
 bool MemberDefImpl::isMaybeDefault() const
 {
-  return (m_memSpec&Entry::MaybeDefault)!=0;
+  return m_memSpec.isMaybeDefault();
 }
 
 bool MemberDefImpl::isMaybeAmbiguous() const
 {
-  return (m_memSpec&Entry::MaybeAmbiguous)!=0;
+  return m_memSpec.isMaybeAmbiguous();
 }
 
 bool MemberDefImpl::isPublished() const
 {
-  return (m_memSpec&Entry::Published)!=0;
+  return m_memSpec.isPublished();
 }
 
 
@@ -5395,12 +5407,12 @@ bool MemberDefImpl::livesInsideEnum() const
 
 bool MemberDefImpl::isSliceLocal() const
 {
-  return (m_memSpec&Entry::Local)!=0;
+  return m_memSpec.isLocal();
 }
 
 bool MemberDefImpl::isConstExpr() const
 {
-  return (m_memSpec&Entry::ConstExpr)!=0;
+  return m_memSpec.isConstExpr();
 }
 
 const MemberVector &MemberDefImpl::enumFieldList() const
@@ -5641,14 +5653,19 @@ void MemberDefImpl::setProtection(Protection p)
   m_isLinkableCached = 0;
 }
 
-void MemberDefImpl::setMemberSpecifiers(uint64_t s)
+void MemberDefImpl::setMemberSpecifiers(TypeSpecifier s)
 {
   m_memSpec=s;
 }
 
-void MemberDefImpl::mergeMemberSpecifiers(uint64_t s)
+void MemberDefImpl::setVhdlSpecifiers(VhdlSpecifier s)
 {
-  m_memSpec|=s;
+  m_vhdlSpec=s;
+}
+
+void MemberDefImpl::mergeMemberSpecifiers(TypeSpecifier s)
+{
+  m_memSpec.merge(s);
 }
 
 StringVector MemberDefImpl::getQualifiers() const

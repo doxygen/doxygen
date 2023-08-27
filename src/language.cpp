@@ -15,11 +15,11 @@
  *
  */
 
+#include "types.h"
 #include "message.h"
 #include "config.h"
 #include "util.h"
 #include "language.h"
-#include "vhdldocgen.h"
 #include "translator.h"
 #include "translator_en.h"
 #include "translator_adapter.h"

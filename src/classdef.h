@@ -419,7 +419,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const QCString &name) = 0;
-    virtual void setClassSpecifier(uint64_t spec) = 0;
+    virtual void setClassSpecifier(TypeSpecifier spec) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;

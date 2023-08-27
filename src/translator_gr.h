@@ -2045,86 +2045,86 @@ class TranslatorGreek : public TranslatorAdapter_1_9_6
     virtual QCString trFunctionAndProc()
     { return "Συναρτήσεις/Διαδικασίες/Διεργασίες"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64_t type,bool single)
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single)
     {
       switch(type)
       {
-        case VhdlDocGen::LIBRARY:
+        case VhdlSpecifier::LIBRARY:
           if (single) return "Βιβλιοθήκη";
           else        return "Βιβλιοθήκες";
-        case VhdlDocGen::PACKAGE:
+        case VhdlSpecifier::PACKAGE:
           if (single) return "Πακέτο";
           else        return "Πακέτα";
-        case VhdlDocGen::SIGNAL:
+        case VhdlSpecifier::SIGNAL:
           if (single) return "Σήμα";
           else        return "Σήματα";
-        case VhdlDocGen::COMPONENT:
+        case VhdlSpecifier::COMPONENT:
           if (single) return "Εξάρτημα";
           else        return "Εξαρτήματα";
-        case VhdlDocGen::CONSTANT:
+        case VhdlSpecifier::CONSTANT:
           if (single) return "Σταθερά";
           else        return "Σταθερές";
-        case VhdlDocGen::ENTITY:
+        case VhdlSpecifier::ENTITY:
           if (single) return "Οντότητα";
           else        return "Οντότητες";
-        case VhdlDocGen::TYPE:
+        case VhdlSpecifier::TYPE:
           if (single) return "Τύπος";
           else        return "Τύποι";
-        case VhdlDocGen::SUBTYPE:
+        case VhdlSpecifier::SUBTYPE:
           if (single) return "Υποτύπος";
           else        return "Υποτύποι";
-        case VhdlDocGen::FUNCTION:
+        case VhdlSpecifier::FUNCTION:
           if (single) return "Συνάρτηση";
           else        return "Συναρτήσεις";
-        case VhdlDocGen::RECORD:
+        case VhdlSpecifier::RECORD:
           if (single) return "Εγγραφή";
           else        return "Εγγραφές";
-        case VhdlDocGen::PROCEDURE:
+        case VhdlSpecifier::PROCEDURE:
           if (single) return "Διαδικασία";
           else        return "Διαδικασίες";
-        case VhdlDocGen::ARCHITECTURE:
+        case VhdlSpecifier::ARCHITECTURE:
           if (single) return "Αρχιτεκτονική";
           else        return "Αρχιτεκτονικές";
-        case VhdlDocGen::ATTRIBUTE:
+        case VhdlSpecifier::ATTRIBUTE:
           if (single) return "Ιδιότητα";
           else        return "Ιδιότητες";
-        case VhdlDocGen::PROCESS:
+        case VhdlSpecifier::PROCESS:
           if (single) return "Διεργασία";
           else        return "Διεργασίες";
-        case VhdlDocGen::PORT:
+        case VhdlSpecifier::PORT:
           if (single) return "Πόρτα";
           else        return "Πόρτες";
-        case VhdlDocGen::USE:
+        case VhdlSpecifier::USE:
           if (single) return "χρήση διάταξης";
           else        return "Χρήση Διατάξεων";
-        case VhdlDocGen::GENERIC:
+        case VhdlSpecifier::GENERIC:
           if (single) return "Γενίκευση";
           else        return "Γενικεύσεις";
-        case VhdlDocGen::PACKAGE_BODY:
+        case VhdlSpecifier::PACKAGE_BODY:
           return "Σώμα Πακέτου";
-        case VhdlDocGen::UNITS:
+        case VhdlSpecifier::UNITS:
           return "Μονάδες";
-        case VhdlDocGen::SHAREDVARIABLE:
+        case VhdlSpecifier::SHAREDVARIABLE:
           if (single) return "Κοινόχρηστη Μεταβλητή";
           else        return "Κοινόχρηστες Μεταβλητές";
-        case VhdlDocGen::VFILE:
+        case VhdlSpecifier::VFILE:
           if (single) return "Αρχείο";
           else        return "Αρχεία";
-        case VhdlDocGen::GROUP:
+        case VhdlSpecifier::GROUP:
           if (single) return "Ομάδα";
           else        return "Ομάδες";
-        case VhdlDocGen::INSTANTIATION:
+        case VhdlSpecifier::INSTANTIATION:
           if (single) return "Ενσάρκωση";
           else        return "Ενσαρκώσεις";
-        case VhdlDocGen::ALIAS:
+        case VhdlSpecifier::ALIAS:
           if (single) return "Συνώνυμο";
           else        return "Συνώνυμα";
-        case VhdlDocGen::CONFIG:
+        case VhdlSpecifier::CONFIG:
           if (single) return "Ρύθμιση";
           else        return "Ρυθμίσεις";
-        case VhdlDocGen::MISCELLANEOUS:
+        case VhdlSpecifier::MISCELLANEOUS:
           return "Διάφορα";
-        case VhdlDocGen::UCF_CONST:
+        case VhdlSpecifier::UCF_CONST:
           return "Εξαναγκασμοί";
         default:
           return "Κλάση";

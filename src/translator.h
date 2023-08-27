@@ -676,7 +676,7 @@ class Translator
     virtual QCString trDesignUnitIndex() = 0;
     virtual QCString trDesignUnits() = 0;
     virtual QCString trFunctionAndProc() = 0;
-    virtual QCString trVhdlType(uint64_t type,bool single) = 0;
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single) = 0;
     virtual QCString trCustomReference(const QCString &name) = 0;
 
     virtual QCString trConstants() = 0;
