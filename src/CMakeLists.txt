@@ -6,7 +6,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/deps/libmd5
     ${PROJECT_SOURCE_DIR}/deps/liblodepng
     ${PROJECT_SOURCE_DIR}/deps/libmscgen
-    ${PROJECT_SOURCE_DIR}/deps/sqlite3
     ${PROJECT_SOURCE_DIR}/libversion
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
@@ -17,6 +16,9 @@ include_directories(
 
 if (NOT use_sys_spdlog)
     include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
+endif()
+if (NOT use_sys_sqlite)
+    include_directories(${PROJECT_SOURCE_DIR}/deps/sqlite3)
 endif()
 
 
