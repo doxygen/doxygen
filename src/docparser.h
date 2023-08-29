@@ -87,7 +87,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,const QCString &fileNam
  */
 IDocNodeASTPtr validatingParseText(IDocParser &parser,const QCString &input);
 
-IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCString &context);
+IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCString &context, const QCString &srcFile = "", int srcLine = -1);
 
 //--------------------------------------------------------------------------------
 
