@@ -1,5 +1,5 @@
 Doxygen uses cmake (http://www.cmake.org/) to build executables for various platforms.
-At least cmake version 3.3 is required.
+At least cmake version 3.14 is required.
 
 The first step is to create a build directory where the output should be stored.
 Doxygen can be fully built outside of the source tree.
