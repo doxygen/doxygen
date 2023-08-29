@@ -33,7 +33,8 @@ Doxygen's cmake configuration provides a number of options:
 - build_search    Build external search tools (doxysearch and doxyindexer).
 - build_doc       Build user manual.
 - use_libclang    Add support for libclang parsing.
-- use_sys_spdlog  Use system spdlog instead of bundled.
+- use_sys_spdlog  Use system spdlog library instead of the one bundled.
+- use_sys_sqlite3 Use system sqlite3 library instead of the one bundled.
 - win_static      Link with /MT in stead of /MD on windows.
 - force_qt=<vers> Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6
 
