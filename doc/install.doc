@@ -37,7 +37,7 @@ following to build the executable:
     \addindex python
 <li>You need \c python (version 2.7 or higher, see https://www.python.org).
 <li>In order to generate a \c Makefile for your platform, you need
-    <a href="https://cmake.org/">cmake</a> version 3.3 or later.
+    <a href="https://cmake.org/">cmake</a> version 3.14 or later.
     \addindex cmake
 </ul>
 

@@ -553,8 +553,8 @@ Structural indicators
   then doxygen will generate an inheritance graph for that class conforming the `option`.
   The inheritance graph will be generated, conforming the `option`, regardless of the value of
   \ref cfg_class_graph "CLASS_GRAPH".
-  The possible values of `option` are the smae valuesz as can be used with \ref cfg_class_graph "CLASS_GRAPH".
-  In case no `option` is specified the vaue `YES` is assumed.
+  The possible values of `option` are the same values as can be used with \ref cfg_class_graph "CLASS_GRAPH".
+  In case no `option` is specified the value `YES` is assumed.
 
   \sa section \ref cmdhideinheritancegraph "\\hideinheritancegraph",
       option \ref cfg_class_graph "CLASS_GRAPH"
