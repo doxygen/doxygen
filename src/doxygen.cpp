@@ -4242,7 +4242,7 @@ static void findBaseClassesForClass(
     }
     BaseInfo tbi = bi;
     tbi.name = substituteTemplateArgumentsInString(bi.name,formalArgs,actualArgs);
-    //printf("bi->name=%s tbi.name=%s\n",qPrint(bi->name),qPrint(tbi.name));
+    //printf("masterCd=%p instanceCd=%p bi->name=%s tbi.name=%s\n",(void*)masterCd,(void*)instanceCd,qPrint(bi.name),qPrint(tbi.name));
 
     if (mode==DocumentedOnly)
     {
@@ -4277,10 +4277,9 @@ static void findTemplateInstanceRelation(const Entry *root,
   AUTO_TRACE("Derived from template '{}' with parameters '{}' isArtificial={}",
          templateClass->name(),templSpec,isArtificial);
 
-  bool existingClass = (templSpec ==
-                        tempArgListToString(templateClass->templateArguments(),root->lang,false)
-                       );
-  if (existingClass) return;
+  QCString tempArgsStr = tempArgListToString(templateClass->templateArguments(),root->lang,false);
+  bool existingClass = templSpec==tempArgsStr;
+  if (existingClass) return; // avoid recursion
 
   bool freshInstance=FALSE;
   ClassDefMutable *instanceClass = toClassDefMutable(
@@ -4615,7 +4614,7 @@ static bool findClassRelation(
             // doxygen
             if (baseClassTypeDef==0)
             {
-              //printf("       => findTemplateInstanceRelation: %p\n",baseClassTypeDef);
+              //printf("       => findTemplateInstanceRelation: %s\n",qPrint(baseClass->name()));
               findTemplateInstanceRelation(root,context,baseClass,templSpec,templateNames,baseClass->isArtificial());
             }
           }
