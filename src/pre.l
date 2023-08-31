@@ -1689,7 +1689,7 @@ WSopt [ \t\r]*
                                           }
                                           if (yyextra->defLitText.find('\n')!=-1)
                                           {
-                                            outputString(yyscanner,"/*#end#*/\n");
+                                            outputString(yyscanner,"\\doxygen_end_of_macro_marker\n");
                                           }
                                           else
                                           {

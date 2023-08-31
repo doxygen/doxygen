@@ -2715,7 +2715,7 @@ NONLopt [^\n]*
                                           yyextra->current->name = yytext;
                                           BEGIN(DefineEnd);
                                         }
-<DefineEnd>({BN}*{B}*"/*#end#*/")?\n    {
+<DefineEnd>({BN}*[^\n]*"\\doxygen_end_of_macro_marker")?\n    {
                                           //printf("End define: doc=%s docFile=%s docLine=%d\n",qPrint(yyextra->current->doc),qPrint(yyextra->current->docFile),yyextra->current->docLine);
                                           yyextra->current->fileName   = yyextra->fileName;
                                           yyextra->current->startLine  = yyextra->yyLineNr;

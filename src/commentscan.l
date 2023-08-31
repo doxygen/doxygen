@@ -163,6 +163,7 @@ static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleEndOfMacroMarker(yyscan_t yyscanner,const QCString &s, const StringVector &optList);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -350,6 +351,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "iliteral",        { &handleFormatBlock,      CommandSpacing::Inline    }},
   { "fileinfo",        { &handleFileInfo,         CommandSpacing::Inline    }},
   { "lineinfo",        { &handleLineInfo,         CommandSpacing::Inline    }},
+  { "doxygen_end_of_macro_marker", { &handleEndOfMacroMarker, CommandSpacing::Invisible }},
 };
 
 #define YY_NO_INPUT 1
@@ -2800,6 +2802,13 @@ static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector 
   }
   addOutput(yyscanner,"@"+s+" ");
   BEGIN(CiteLabel);
+  return FALSE;
+}
+
+static bool handleEndOfMacroMarker(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->endBodyLine = yyextra->lineNr-1;
   return FALSE;
 }
 
