@@ -2079,11 +2079,16 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   return ast;
 }
 
-IDocNodeASTPtr createRef(IDocParser &parserIntf,const QCString &target,const QCString &context)
+IDocNodeASTPtr createRef(IDocParser &parserIntf,const QCString &target,const QCString &context, const QCString &srcFile, int srcLine )
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
   assert(parser!=0);
   if (parser==0) return 0;
+  if (!srcFile.isEmpty())
+  {
+    parser->context.fileName = srcFile;
+    parser->tokenizer.setLineNr(srcLine);
+  }
   return std::make_unique<DocNodeAST>(DocRef(parser,0,target,context));
 }
 

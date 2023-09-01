@@ -4573,16 +4573,16 @@ QCString substituteTemplateArgumentsInString(
       {
         if (formArg.name==n && actualArgs && actIt!=actualArgs->end() && !actArg.type.isEmpty()) // base class is a template argument
         {
-          static constexpr auto hasRecursion = [](const QCString &name,const QCString &subst) -> bool
+          static constexpr auto hasRecursion = [](const QCString &nameArg,const QCString &subst) -> bool
           {
-            int i;
-            int p=0;
-            while ((i=subst.find(name,p))!=-1)
+            int ii;
+            int pp=0;
+            while ((ii=subst.find(nameArg,pp))!=-1)
             {
-              bool beforeNonWord = i==0 || !isId(subst.at(i-1));
-              bool afterNonWord  = subst.length()==i+name.length() || !isId(subst.at(i+name.length()));
-              if (beforeNonWord && afterNonWord) return true; // if name=='A' then subst=='A::Z' or 'S<A>' or 'Z::A' should return true, but 'AA::ZZ' or 'BAH' should not match
-              p=i+name.length();
+              bool beforeNonWord = ii==0 || !isId(subst.at(ii-1));
+              bool afterNonWord  = subst.length()==ii+nameArg.length() || !isId(subst.at(ii+nameArg.length()));
+              if (beforeNonWord && afterNonWord) return true; // if nameArg=='A' then subst=='A::Z' or 'S<A>' or 'Z::A' should return true, but 'AA::ZZ' or 'BAH' should not match
+              pp=ii+nameArg.length();
             }
             return false;
           };
@@ -4594,7 +4594,7 @@ QCString substituteTemplateArgumentsInString(
             // since n==A and actArg->type==A::T
             // see bug595833 for an example
             //
-            // Also prevent recursive subtitution if n is part of actArg.type, i.e.
+            // Also prevent recursive substitution if n is part of actArg.type, i.e.
             // n='A' in argType='S< A >' would produce 'S< S< A > >'
           {
             if (actArg.name.isEmpty())

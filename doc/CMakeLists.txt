@@ -118,12 +118,7 @@ if (build_doc_chm)
 )
 endif ()
 
-if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-    file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
-else()
-    file(GLOB LANG_FILES "${TOP}/src//translator_??.h")
-endif()
-
+file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
                     ${PROJECT_BINARY_DIR}/src

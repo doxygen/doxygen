@@ -6,11 +6,7 @@ add_custom_target(tests
 )
 
 # get the files in the testing directory starting with 3 digits and an underscore
-if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  file(GLOB TEST_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/[0-9][0-9][0-9]_*.*")
-else()
-  file(GLOB TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/[0-9][0-9][0-9]_*.*")
-endif()
+file(GLOB TEST_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/[0-9][0-9][0-9]_*.*")
 
 foreach(TEST_FILE ${TEST_FILES})
   # extract the test name from the file name
