@@ -4594,7 +4594,7 @@ QCString substituteTemplateArgumentsInString(
             // since n==A and actArg->type==A::T
             // see bug595833 for an example
             //
-            // Also prevent recursive subtitution if n is part of actArg.type, i.e.
+            // Also prevent recursive substitution if n is part of actArg.type, i.e.
             // n='A' in argType='S< A >' would produce 'S< S< A > >'
           {
             if (actArg.name.isEmpty())
