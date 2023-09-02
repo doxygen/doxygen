@@ -214,6 +214,11 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
 *                 references followed by a $ and then the URL.
 *  \param context the context (file, class, or namespace) in which the
 *                 map file was found
+*  \param srcFile the name of the file in which the `dot` / `dotfile`
+*                 command was given
+*  \param srcLine the line number in the original file where the
+*                 `dot` / `dotfile` command was given
+*
 *  \returns TRUE if successful.
 */
 bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
