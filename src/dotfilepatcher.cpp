@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 )svg";
 
 static QCString replaceRef(const QCString &buf,const QCString &relPath,
-  bool urlOnly,const QCString &context,const QCString &target=QCString())
+  bool urlOnly,const QCString &context,const QCString &target=QCString(), const QCString &srcFile = "", int srcLine = -1)
 {
   // search for href="...", store ... part in link
   QCString href = "href";
@@ -140,21 +140,28 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
         result=href+"=\"";
         // fake ref node to resolve the url
         auto parser { createDocParser() };
-        auto dfAst  { createRef( *parser.get(), link.mid(5), context ) };
+        auto dfAst  { createRef( *parser.get(), link.mid(5), context, srcFile, srcLine ) };
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         result+=externalRef(relPath,df->ref(),TRUE);
-        if (!df->file().isEmpty())
+        if (!df->file().isEmpty() || !df->anchor().isEmpty())
         {
-          QCString fn = df->file();
-          addHtmlExtensionIfMissing(fn);
-          result += fn;
+          if (!df->file().isEmpty())
+          {
+            QCString fn = df->file();
+            addHtmlExtensionIfMissing(fn);
+            result += fn;
+          }
+          if (!df->anchor().isEmpty())
+          {
+            result += "#" + df->anchor();
+          }
+          result += "\"";
         }
-        if (!df->anchor().isEmpty())
+        else
         {
-          result += "#" + df->anchor();
+          result = "";
         }
-        result += "\"";
       }
       else
       {
@@ -211,7 +218,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
 */
 bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
                     const QCString &relPath, bool urlOnly,
-                    const QCString &context)
+                    const QCString &context, const QCString &srcFile, int srcLine)
 {
   std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
@@ -227,7 +234,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
     QCString buf = line+'\n';
     if (buf.startsWith("<area"))
     {
-      QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
+      QCString replBuf = replaceRef(buf,relPath,urlOnly,context,QCString(),srcFile,srcLine);
       // in dot version 7.0.2 the alt attribute is, incorrectly, removed.
       // see https://gitlab.com/graphviz/graphviz/-/issues/265
       int indexA = replBuf.find("alt=");
@@ -251,8 +258,8 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
   return TRUE;
 }
 
-DotFilePatcher::DotFilePatcher(const QCString &patchFile)
-  : m_patchFile(patchFile)
+DotFilePatcher::DotFilePatcher(const QCString &patchFile, const QCString &srcFile, int srcLine)
+  : m_patchFile(patchFile), m_srcFile(srcFile), m_srcLine(srcLine)
 {
 }
 
@@ -403,7 +410,7 @@ bool DotFilePatcher::run() const
                                        // Then we replace it with another header.
       {
         const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
-        t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
+        t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top",m_srcFile,m_srcLine);
       }
     }
     else if (line.find("SVG")!=-1 && (i=findIndex(line.str(),reSVG))!=-1)
