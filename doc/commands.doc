@@ -2634,7 +2634,7 @@ Commands for displaying examples
   \ref cfg_example_path "EXAMPLE_PATH"
   tag of doxygen's configuration file.
 
-  You can add option `{lineno}` to enable line numbers for the included code if desired.
+  You can add option `lineno` to enable line numbers for the included code if desired.
 
   The class and member declarations and definitions inside the code fragment
   are 'remembered' during the parsing of the comment block that contained
@@ -2698,9 +2698,11 @@ Commands for displaying examples
   \note Doxygen's special commands do not work inside blocks of code.
   It is allowed to nest C-style comments inside a code block though.
 
-  The `option` can either be `lineno` or `doc`.
-  The `option` `lineno` can be used to enable line numbers for the included code if desired.
-  The `option` `doc` can be used to treat the file as documentation rather than code.
+  The `option` can either be `lineno`, or `doc`, and additionally `local` can be specified.
+  - The `option` `lineno` can be used to enable line numbers for the included code if desired.
+  - The `option` `doc` can be used to treat the file as documentation rather than code.
+  - The `option` `local` can be used make doxygen interpret the code as if it was in the
+               class or namespace in which the include command appears, rather than the global namespace.
 
   \note When using the `{doc}` option,
        some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
@@ -2830,11 +2832,13 @@ Commands for displaying examples
  Note also that the [block_id] markers should appear exactly twice in the
  source file.
 
- - The `option` can either be `lineno`, `trimleft` or `doc`.
+ The `option` can either be `lineno`, `trimleft` or `doc`, and additionally `local` can be specified.
  - The `option` `lineno` can be used to enable line numbers for the included code if desired.
  - The `option` `trimleft` can be used to remove the common spacing in front of all lines
    (also taking in account the setting of the \ref cfg_tab_size "TAB_SIZE" tag).
  - The `option` `doc` can be used to treat the file as documentation rather than code.
+ - The `option` `local` can be used make doxygen interpret the code as if it was in the
+               class or namespace in which the include command appears, rather than the global namespace.
 
  \note When using the `{doc}` option,
        some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with

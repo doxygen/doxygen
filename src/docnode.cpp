@@ -3607,6 +3607,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   QCString saveCmdName = cmdName;
   int tok=parser()->tokenizer.lex();
   bool isBlock = false;
+  bool localScope = false;
   if (tok==TK_WORD && parser()->context.token->name=="{")
   {
     parser()->tokenizer.setStateOptions();
@@ -3617,6 +3618,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     {
       return std::find(optList.begin(),optList.end(),kw)!=optList.end();
     };
+    localScope = contains("local");
     if (t==DocInclude::Include && contains("lineno"))
     {
       t = DocInclude::IncWithLines;
@@ -3726,8 +3728,11 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   }
   else
   {
-    children().append<DocInclude>(parser(),thisVariant(),fileName,
-                                  parser()->context.context,t,
+    children().append<DocInclude>(parser(),
+                                  thisVariant(),
+                                  fileName,
+                                  localScope ? parser()->context.context : "",
+                                  t,
                                   parser()->context.isExample,
                                   parser()->context.exampleName,
                                   blockId,isBlock);

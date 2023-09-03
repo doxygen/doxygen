@@ -4223,7 +4223,7 @@ const MemberDef *ClassDefImpl::getMemberByName(const QCString &name) const
       int m=minClassDistance(this,mcd);
       //printf("found member in %s linkable=%d m=%d\n",
       //    qPrint(mcd->name()),mcd->isLinkable(),m);
-      if (m<mdist && mcd->isLinkable())
+      if (m<mdist)
       {
         mdist=m;
         xmd=mi->memberDef();

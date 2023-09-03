@@ -422,7 +422,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                         // Try to find class in global scope
                                         if (baseDefToAdd==0)
                                         {
-                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s.c_str());
+                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s.c_str(),true);
                                         }
 
                                         if (baseDefToAdd && baseDefToAdd->name()!=yyextra->curClassName)
@@ -976,11 +976,11 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,Defin
     const ClassDef *cd=0;
     if (!yyextra->classScope.isEmpty())
     {
-      cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName);
+      cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName,true);
     }
     if (cd==0)
     {
-      cd=yyextra->symbolResolver.resolveClass(d,clName);
+      cd=yyextra->symbolResolver.resolveClass(d,clName,true);
     }
     if (cd)
     {
@@ -1341,7 +1341,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     const Definition *d = yyextra->currentDefinition;
     QCString scope = substitute(className,".","::");
 
-    cd = yyextra->symbolResolver.resolveClass(d,substitute(className,".","::"));
+    cd = yyextra->symbolResolver.resolveClass(d,substitute(className,".","::"),true);
     md = yyextra->symbolResolver.getTypedef();
 
     DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",

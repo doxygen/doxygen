@@ -807,7 +807,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             yyextra->scopeStack.push(CLASSBLOCK);
                                             pushScope(yyscanner,yyextra->curClassName);
                                             DBG_CTX((stderr,"***** yyextra->curClassName=%s\n",qPrint(yyextra->curClassName)));
-                                            if (yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,yyextra->curClassName)==0)
+                                            if (yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,yyextra->curClassName,true)==0)
                                             {
                                               DBG_CTX((stderr,"Adding new class %s\n",qPrint(yyextra->curClassName)));
                                               ScopedTypeVariant var(yyextra->curClassName);
@@ -820,7 +820,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                                 {
                                                   bcd = toClassDef(it->second.globalDef());
                                                 }
-                                                if (bcd==0) bcd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,QCString(s));
+                                                if (bcd==0) bcd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,QCString(s),true);
                                                 if (bcd && bcd->name()!=yyextra->curClassName)
                                                 {
                                                   var.localDef()->insertBaseClass(bcd->name());
@@ -1776,7 +1776,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           {
                                             QCString scope = yyextra->name.left((uint32_t)index);
                                             if (!yyextra->classScope.isEmpty()) scope.prepend((yyextra->classScope+"::"));
-                                            const ClassDef *cd=yyextra->symbolResolver.resolveClass(Doxygen::globalScope,scope);
+                                            const ClassDef *cd=yyextra->symbolResolver.resolveClass(Doxygen::globalScope,scope,true);
                                             if (cd)
                                             {
                                               setClassScope(yyscanner,cd->name());
@@ -2288,7 +2288,7 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
   {
     auto findVariableType = [&yyscanner,&yyg,&ltype,&lname,&name](const Definition *d) -> const ClassDef *
     {
-      const ClassDef *varDef = yyextra->symbolResolver.resolveClass(d,ltype);
+      const ClassDef *varDef = yyextra->symbolResolver.resolveClass(d,ltype,true);
       int i=0;
       if (varDef)
       {
@@ -2775,11 +2775,11 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,const
     const ClassDef *cd=0;
     if (!yyextra->classScope.isEmpty())
     {
-      cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName);
+      cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName,true);
     }
     if (cd==0)
     {
-      cd=yyextra->symbolResolver.resolveClass(d,clName);
+      cd=yyextra->symbolResolver.resolveClass(d,clName,true);
     }
     DBG_CTX((stderr,"stripClass trying '%s' = %p\n",qPrint(clName),(void*)cd));
     if (cd)
@@ -3051,7 +3051,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     auto checkForClass = [&yyg,&bareName,&className](const Definition *d,
                                                      const ClassDef *&cd_,const MemberDef *&md_)
     {
-      cd_ = yyextra->symbolResolver.resolveClass(d,className);
+      cd_ = yyextra->symbolResolver.resolveClass(d,className,true);
       md_ = yyextra->symbolResolver.getTypedef();
       DBG_CTX((stderr,"non-local variable name=%s cd=%s md=%s!\n",
             qPrint(className),cd_?qPrint(cd_->name()):"<none>",
@@ -3061,7 +3061,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
         DBG_CTX((stderr,"bareName=%s\n",qPrint(bareName)));
         if (bareName!=className)
         {
-          cd_ = yyextra->symbolResolver.resolveClass(d,bareName); // try unspecialized version
+          cd_ = yyextra->symbolResolver.resolveClass(d,bareName,true); // try unspecialized version
           md_ = yyextra->symbolResolver.getTypedef();
         }
       }
@@ -3368,7 +3368,7 @@ static void generateMemberLink(yyscan_t yyscanner,
   }
   else // variable not in current context, maybe it is in a parent context
   {
-    const ClassDef *vcd = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,yyextra->classScope);
+    const ClassDef *vcd = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,yyextra->classScope,true);
     if (vcd && vcd->isLinkable())
     {
       DBG_CTX((stderr,"Found class %s for variable '%s'\n",qPrint(yyextra->classScope),qPrint(varName)));
@@ -3616,7 +3616,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
         }
         else
         {
-          ctx->objectType = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,ctx->objectTypeOrName);
+          ctx->objectType = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,ctx->objectTypeOrName,true);
           ctx->method = yyextra->symbolResolver.getTypedef();
         }
         DBG_CTX((stderr,"  object is class? %p\n",(void*)ctx->objectType));
