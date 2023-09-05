@@ -778,8 +778,8 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
 
 void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
-  if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
-      || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()
+  if ((!briefDescription().stripWhiteSpace().isEmpty() && Config_getBool(REPEAT_BRIEF))
+      || !documentation().stripWhiteSpace().isEmpty() || !inbodyDocumentation().stripWhiteSpace().isEmpty()
      )
   {
     ol.pushGeneratorState();
