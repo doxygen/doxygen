@@ -35,7 +35,7 @@ mscgen
 doxygen_version
 doxycfg
 vhdlparser
-spdlog
+spdlog::spdlog
 ${ICONV_LIBRARIES}
 ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}
