@@ -19,11 +19,13 @@ optional parameters:
                         for the given test
   --doxygen [DOXYGEN]   path/name of the doxygen executable
   --xmllint [XMLLINT]   path/name of the xmllint executable
-  --id IDS [IDS ...]    run test with number n only (the option can be
-                        specified to run test with number n only (the option
-                        can be specified multiple times
+  --id IDS [IDS ...]    run test number n (the option can be specified
+                        multiple times)
   --start_id START_ID   run tests starting with number n
   --end_id END_ID       run tests ending with number n
+  --exclude_id EXCLUDE_IDS [EXCLUDE_IDS ...]
+                        run without test number n (the option can be specified
+                        multiple times)
   --all                 can be used in combination with -updateref to update
                         the reference files for all tests.
   --inputdir [INPUTDIR]
@@ -44,7 +46,7 @@ optional parameters:
   --keep                keep result directories
   --cfg CFGS [CFGS ...]
                         run test with extra doxygen configuration settings
-                        (the option may be specified multiple times
+                        (the option may be specified multiple times)
 In case neither --xml, --xmlxsd, --pdf, --rtf, --docbook or --xhtml is used the
 default is set to --xml.
 
