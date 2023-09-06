@@ -622,13 +622,13 @@ def main():
     parser.add_argument('--xmllint',nargs='?',default='xmllint',help=
         'path/name of the xmllint executable')
     parser.add_argument('--id',nargs='+',dest='ids',action='append',type=int,help=
-        'run test number n (the option can be specified multiple times')
+        'run test number n (the option can be specified multiple times)')
     parser.add_argument('--start_id',dest='start_id',type=int,help=
         'run tests starting with number n')
     parser.add_argument('--end_id',dest='end_id',type=int,help=
         'run tests ending with number n')
     parser.add_argument('--exclude_id',nargs='+',dest='exclude_ids',action='append',type=int,help=
-        'run without test number n (the option can be specified multiple times')
+        'run without test number n (the option can be specified multiple times)')
     parser.add_argument('--all',help=
         'can be used in combination with -updateref to update the reference files '
         'for all tests.',action="store_true")
@@ -663,7 +663,7 @@ def main():
         action="store_true")
     parser.add_argument('--cfg',nargs='+',dest='cfgs',action='append',help=
         'run test with extra doxygen configuration settings '
-        '(the option may be specified multiple times')
+        '(the option may be specified multiple times)')
 
     test_flags = split_and_keep(os.getenv('TEST_FLAGS', default=''), '--')
 
