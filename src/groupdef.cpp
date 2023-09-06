@@ -1529,9 +1529,8 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
   for (const Grouping &g : root->groups)
   {
     GroupDef *gd=0;
-    if (!g.groupname.isEmpty() &&
-        (gd=Doxygen::groupLinkedMap->find(g.groupname)) &&
-        g.pri >= pri)
+    if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd && g.pri >= pri)
     {
       if (fgd && gd!=fgd && g.pri==pri)
       {
@@ -1545,6 +1544,13 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
 
       fgd = gd;
       pri = g.pri;
+    }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
     }
   }
   //printf("fgd=%p\n",fgd);
