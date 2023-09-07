@@ -2636,6 +2636,13 @@ NONLopt [^\n]*
                                             REJECT;
                                           yyextra->current->bodyLine = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
+                                          yyextra->current->fileName   = yyextra->fileName;
+                                          yyextra->current->startLine  = yyextra->yyLineNr;
+                                          yyextra->current->startColumn = yyextra->yyColNr;
+                                          yyextra->current->type.resize(0);
+                                          yyextra->current->args       = yyextra->current->args.simplifyWhiteSpace();
+                                          yyextra->current->name       = yyextra->current->name.stripWhiteSpace();
+                                          yyextra->current->section    = Entry::DEFINE_SEC;
                                           yyextra->lastDefineContext = YY_START;
                                           BEGIN( Define );
                                         }
@@ -2715,22 +2722,10 @@ NONLopt [^\n]*
                                           yyextra->current->name = yytext;
                                           BEGIN(DefineEnd);
                                         }
-<DefineEnd>({BN}*[^\n]*"\\doxygen_end_of_macro_marker")?\n    {
+<DefineEnd><<EOF>>                      |
+<DefineEnd>\n                           {
                                           //printf("End define: doc=%s docFile=%s docLine=%d\n",qPrint(yyextra->current->doc),qPrint(yyextra->current->docFile),yyextra->current->docLine);
-                                          yyextra->current->fileName   = yyextra->fileName;
-                                          yyextra->current->startLine  = yyextra->yyLineNr;
-                                          yyextra->current->startColumn = yyextra->yyColNr;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->args       = yyextra->current->args.simplifyWhiteSpace();
-                                          yyextra->current->name       = yyextra->current->name.stripWhiteSpace();
-                                          yyextra->current->section    = Entry::DEFINE_SEC;
                                           lineCount(yyscanner);
-                                          if (yyleng>1) // multiline define
-                                          {
-                                            yyextra->current->endBodyLine = yyextra->yyLineNr-1;
-                                            //printf("found multiline define %s body=[%d..%d]\n",
-                                            //    qPrint(yyextra->current->name),yyextra->current->bodyLine,yyextra->current->endBodyLine);
-                                          }
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
                                           BEGIN(yyextra->lastDefineContext);
@@ -2755,6 +2750,7 @@ NONLopt [^\n]*
 <DefinePHPEnd>.
 <DefineEnd>\\[\r]?\n                    {
                                           lineCount(yyscanner);
+                                          yyextra->current->endBodyLine = yyextra->yyLineNr;
                                         }
 <DefineEnd>\"                           {
                                           if (yyextra->insideIDL && yyextra->insideCppQuote)

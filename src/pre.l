@@ -1656,6 +1656,7 @@ WSopt [ \t\r]*
                                         }
 <DefineText>\\[\r]?\n                   {
                                           yyextra->defLitText+=yytext;
+                                          outputChar(yyscanner,'\\');
                                           outputChar(yyscanner,'\n');
                                           yyextra->defText += ' ';
                                           yyextra->yyLineNr++;
@@ -1687,14 +1688,7 @@ WSopt [ \t\r]*
                                             outputString(yyscanner,comment);
                                             yyextra->defLitText=yyextra->defLitText.left(yyextra->defLitText.length()-comment.length()-1);
                                           }
-                                          if (yyextra->defLitText.find('\n')!=-1)
-                                          {
-                                            outputString(yyscanner,"\\doxygen_end_of_macro_marker\n");
-                                          }
-                                          else
-                                          {
-                                            outputChar(yyscanner,'\n');
-                                          }
+                                          outputChar(yyscanner,'\n');
                                           yyextra->defLitText+=yytext;
                                           Define *def=0;
                                           //printf("Define name='%s' text='%s' litTexti='%s'\n",qPrint(yyextra->defName),qPrint(yyextra->defText),qPrint(yyextra->defLitText));
