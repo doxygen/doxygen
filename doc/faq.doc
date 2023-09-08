@@ -70,7 +70,7 @@ to be documented you should document the file in which these commands are
 located using a comment block containing a \ref cmdfile "\\file" (or \ref cmdfile "\@file")
 command.
 
-Alternatively, you can put all members in a group (or module)
+Alternatively, you can put all members in a group (or topic)
 using the \ref cmdingroup "\\ingroup" command and then document the group using a comment
 block containing the \ref cmddefgroup "\\defgroup" command.
 
