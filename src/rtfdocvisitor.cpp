@@ -1708,9 +1708,15 @@ void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
+  GraphOutputFormat format = GOF_BITMAP;
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
   QCString imgExt = getDotImageExtension();
+  if(imgExt == "svg")
+  {
+    imgExt = "png";
+    format = GOF_PNG;
+  }
+  writeDotGraphFromFile(filename,outDir,baseName,format,srcFile,srcLine);
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
 

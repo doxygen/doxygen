@@ -25,7 +25,7 @@
 class DotNode;
 class TextStream;
 
-enum GraphOutputFormat    { GOF_BITMAP, GOF_EPS };
+enum GraphOutputFormat    { GOF_BITMAP, GOF_EPS, GOF_PNG };
 enum EmbeddedOutputFormat { EOF_Html, EOF_LaTeX, EOF_Rtf, EOF_DocBook };
 enum GraphType            { Dependency, Inheritance, Collaboration, Hierarchy, CallGraph };
 

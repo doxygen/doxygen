@@ -237,15 +237,21 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
     term("Output dir %s does not exist!\n",qPrint(outDir));
   }
 
+  QCString jobFormat = Config_getEnumAsString(DOT_IMAGE_FORMAT);
   QCString imgExt = getDotImageExtension();
+  if(format == GOF_PNG && imgExt != "png")
+  {
+    imgExt = "png";
+    jobFormat = "png";
+  }
   QCString imgName = QCString(outFile)+"."+imgExt;
   QCString absImgName = QCString(d.absPath())+"/"+imgName;
   QCString absOutFile = QCString(d.absPath())+"/"+outFile;
 
   DotRunner dotRun(inFile);
-  if (format==GOF_BITMAP)
+  if (format==GOF_BITMAP || format == GOF_PNG)
   {
-    dotRun.addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
+    dotRun.addJob(jobFormat,absImgName,srcFile,srcLine);
   }
   else // format==GOF_EPS
   {
