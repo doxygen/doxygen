@@ -1170,7 +1170,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                             []() { return compileOptions(theTranslator->trDirectories()); })
                                                   } },
   { "group/memberdecl/nestedgroups",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupNestedGroups,
-                                                            []() { return compileOptions(theTranslator->trModules()); })
+                                                            []() { return compileOptions(theTranslator->trTopics()); })
                                                   } },
   { "group/memberdecl/files",                     { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupFiles,
                                                             []() { return compileOptions(theTranslator->trFile(TRUE,FALSE)); })
