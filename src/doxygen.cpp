@@ -2578,11 +2578,11 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
     return -1; // Fortran and VHDL do not have function pointers
   }
 
-  static const reg::Ex re(R"(\([^)]*[*^][^)]*\))");
+  static const reg::Ex re(R"(\([^)]*[*&^][^)]*\))");
   reg::Match match;
   size_t i=std::string::npos;
   size_t l=0;
-  if (reg::search(type,match,re)) // contains (...*...)
+  if (reg::search(type,match,re)) // contains (...*...) or (...&...) or (...^...)
   {
     i = match.position();
     l = match.length();

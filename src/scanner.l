@@ -225,6 +225,7 @@ static const char *stateToString(int state);
 static inline int computeIndent(const char *s,int startIndent);
 static inline void initMethodProtection(yyscan_t yyscanner,Protection prot);
 static QCString stripQuotes(const char *s);
+static QCString stripFuncPtr(const QCString &type);
 static bool nameIsOperator(QCString &name);
 void fixArgumentListForJavaScript(ArgumentList &al);
 static bool startOfRequiresExpression(const QCString &req);
@@ -3660,9 +3661,7 @@ NONLopt [^\n]*
                                             yyextra->current->doc.resize(0);
                                             yyextra->current->initializer.str(std::string());
                                             yyextra->current->bitfields.resize(0);
-                                            int i=oldType.length();
-                                            while (i>0 && (oldType[i-1]=='*' || oldType[i-1]=='&' || oldType[i-1]==' ')) i--;
-                                            yyextra->current->type = oldType.left(i);
+                                            yyextra->current->type = stripFuncPtr(oldType);
                                           }
                                           else
                                           {
@@ -4547,7 +4546,10 @@ NONLopt [^\n]*
                                         }
 <EndFuncPtr>")"{BNopt}/"("              { // a function pointer
                                           lineCount(yyscanner);
-                                          yyextra->current->type+=yyextra->funcPtrType+")";
+                                          if (yyextra->funcPtrType!="(") // not just redundant braces
+                                          {
+                                            yyextra->current->type+=yyextra->funcPtrType+")";
+                                          }
                                           BEGIN(FindMembers);
                                         }
 <EndFuncPtr>")"{BNopt}/"["              { // an array of variables
@@ -5445,11 +5447,7 @@ NONLopt [^\n]*
                                             yyextra->lastCurlyContext = FindMembers;
                                             if ( *yytext == ',' )
                                             {
-                                              yyextra->current->type = yyextra->previous->type;
-                                              // we need to strip any trailing * and & (see bugs 623023 and 649103 for test cases)
-                                              int i=yyextra->current->type.length();
-                                              while (i>0 && (yyextra->current->type[i-1]=='*' || yyextra->current->type[i-1]=='&' || yyextra->current->type[i-1]==' ')) i--;
-                                              yyextra->current->type = yyextra->current->type.left(i);
+                                              yyextra->current->type = stripFuncPtr(yyextra->previous->type);
                                             }
                                             if ( *yytext == '{' )
                                             {
@@ -7439,6 +7437,18 @@ static QCString stripQuotes(const char *s)
     name=name.mid(1,name.length()-2);
   }
   return name;
+}
+
+static QCString stripFuncPtr(const QCString &type)
+{
+  // we need to strip any trailing * and & (see bugs 623023 and 649103 for test cases)
+  // also needed to reset the type for 'arr' to 'int' in 'typedef int (&fp)(), arr[2]'
+  int i=type.length();
+  bool funcPtr = i>0 && type[i-1]==')';
+  if (funcPtr) i--;
+  while (i>0 && (type[i-1]=='*' || type[i-1]=='&' || type[i-1]==' ')) i--;
+  if (funcPtr && i>0 && type[i-1]=='(') i--;
+  return type.left(i);
 }
 
 //-----------------------------------------------------------------
