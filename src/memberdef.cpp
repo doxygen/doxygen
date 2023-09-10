@@ -1098,7 +1098,10 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (a.type!="...")
       {
-        if (!cName.isEmpty() && scope) n=addTemplateNames(n,scope->name(),cName);
+        if (!cName.isEmpty() && scope && scope!=Doxygen::globalScope)
+        {
+          n=addTemplateNames(n,scope->name(),cName);
+        }
         linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
       }
     }
@@ -1140,7 +1143,10 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     if (!a.defval.isEmpty()) // write the default value
     {
       QCString n=a.defval;
-      if (scope && !cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
+      if (scope && scope!=Doxygen::globalScope && !cName.isEmpty())
+      {
+        n=addTemplateNames(n,scope->name(),cName);
+      }
       ol.docify(" = ");
 
       ol.startTypewriter();

@@ -469,7 +469,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
       if (outerScope->definitionType()==Definition::TypeNamespace)
       {
         NamespaceDefMutable *nd = toNamespaceDefMutable(outerScope);
-        if (nd)
+        if (nd && nd!=Doxygen::globalScope)
         {
           nd->insertMember(md);
           if (mdm)
