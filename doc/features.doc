@@ -41,7 +41,7 @@
 <li>Uses the `dot` tool of the Graphviz tool kit to generate
     include dependency graphs, collaboration diagrams, call graphs, directory structure
     graphs, and graphical class hierarchy graphs. 
-<li>Allows grouping of entities in modules and creating a hierarchy of modules.
+<li>Allows grouping of entities in topics and creating a hierarchy of topics.
 <li>Flexible comment placement: Allows you to put documentation in the 
     header file (before the 
     declaration of an entity), source file (before the definition of an entity) 
