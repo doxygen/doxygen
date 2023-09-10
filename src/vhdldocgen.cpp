@@ -2794,7 +2794,7 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   int actualStart= mdef->getStartBodyLine();
   int actualEnd=mdef->getEndBodyLine();
   const FileDef* fd=mdef->getFileDef();
-  bool b=readCodeFragment( fd->absFilePath(), actualStart,actualEnd,codeFragment);
+  bool b=readCodeFragment( fd->absFilePath(), false, actualStart, actualEnd, codeFragment);
   if (!b) return;
 
   auto parser { Doxygen::parserManager->getOutlineParser(".vhd") };

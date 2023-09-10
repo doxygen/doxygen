@@ -401,7 +401,7 @@ DefinitionMutable   *toDefinitionMutable(Definition *d);
  *  via \a result. The function returns TRUE if successful and FALSE
  *  in case of an error.
  */
-bool readCodeFragment(const QCString &fileName,
+bool readCodeFragment(const QCString &fileName,bool isMacro,
                       int &startLine,int &endLine,
                       QCString &result);
 #endif

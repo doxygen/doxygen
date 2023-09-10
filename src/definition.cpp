@@ -812,7 +812,7 @@ FilterCache &FilterCache::instance()
  * The line actually containing the bracket is returned via endLine.
  * Note that for VHDL code the bracket search is not done.
  */
-bool readCodeFragment(const QCString &fileName,
+bool readCodeFragment(const QCString &fileName,bool isMacro,
                       int &startLine,int &endLine,QCString &result)
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
@@ -829,7 +829,8 @@ bool readCodeFragment(const QCString &fileName,
 
   bool found = lang==SrcLangExt_VHDL   ||
                lang==SrcLangExt_Python ||
-               lang==SrcLangExt_Fortran;
+               lang==SrcLangExt_Fortran ||
+               isMacro;
                // for VHDL, Python, and Fortran no bracket search is possible
   char *p=str.data();
   if (p && *p)
@@ -1068,26 +1069,27 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
 {
   bool inlineSources = Config_getBool(INLINE_SOURCES);
   ol.pushGeneratorState();
-  //printf("Source Fragment %s: %d-%d bodyDef=%p\n",qPrint(name()),
-  //        m_startBodyLine,m_endBodyLine,m_bodyDef);
+  //printf("Source Fragment %s: %d-%d\n",qPrint(name()),
+  //        m_impl->body->startLine,m_impl->body->endLine);
   if (inlineSources && hasSources())
   {
     QCString codeFragment;
+    const MemberDef *thisMd = 0;
+    if (m_impl->def->definitionType()==Definition::TypeMember)
+    {
+      thisMd = toMemberDef(m_impl->def);
+    }
+    bool isMacro = thisMd && thisMd->memberType()==MemberType_Define;
     int actualStart=m_impl->body->startLine,actualEnd=m_impl->body->endLine;
-    if (readCodeFragment(m_impl->body->fileDef->absFilePath(),
+    if (readCodeFragment(m_impl->body->fileDef->absFilePath(),isMacro,
           actualStart,actualEnd,codeFragment)
        )
     {
-      //printf("Adding code fragment '%s' ext='%s'\n",
-      //    qPrint(codeFragment),qPrint(m_impl->defFileExt));
+      //printf("Adding code fragment '%s' ext='%s' range=%d-%d\n",
+      //    qPrint(codeFragment),qPrint(m_impl->defFileExt),actualStart,actualEnd);
       auto intf = Doxygen::parserManager->getCodeParser(m_impl->defFileExt);
       intf->resetCodeParserState();
       //printf("Read:\n'%s'\n\n",qPrint(codeFragment));
-      const MemberDef *thisMd = 0;
-      if (m_impl->def->definitionType()==Definition::TypeMember)
-      {
-        thisMd = toMemberDef(m_impl->def);
-      }
 
       auto &codeOL = ol.codeGenerators();
       codeOL.startCodeFragment("DoxyCode");
