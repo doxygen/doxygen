@@ -293,9 +293,13 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setFromAnonymousScope(bool b) override;
     virtual void setFromAnonymousMember(MemberDef *m) override;
     virtual void enableCallGraph(bool e) override;
+    virtual void enableCallGraph(bool e1, bool e2) override;
     virtual void enableCallerGraph(bool e) override;
+    virtual void enableCallerGraph(bool e1, bool e2) override;
     virtual void enableReferencedByRelation(bool e) override;
+    virtual void enableReferencedByRelation(bool e1, bool e2) override;
     virtual void enableReferencesRelation(bool e) override;
+    virtual void enableReferencesRelation(bool e1, bool e2) override;
     virtual void setTemplateMaster(MemberDef *mt) override;
     virtual void addListReference(Definition *d) override;
     virtual void setDocsForDefinition(bool b) override;
@@ -4810,10 +4814,24 @@ void MemberDefImpl::enableCallGraph(bool e)
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
+void MemberDefImpl::enableCallGraph(bool e1, bool e2)
+{
+  if (e1 == e2) m_hasCallGraph=e1;
+  else m_hasCallGraph=!Config_getBool(CALL_GRAPH);
+  if (m_hasCallGraph) Doxygen::parseSourcesNeeded = TRUE;
+}
+
 void MemberDefImpl::enableCallerGraph(bool e)
 {
   m_hasCallerGraph=e;
   if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDefImpl::enableCallerGraph(bool e1, bool e2)
+{
+  if (e1 == e2) m_hasCallerGraph=e1;
+  else m_hasCallerGraph=!Config_getBool(CALLER_GRAPH);
+  if (m_hasCallerGraph) Doxygen::parseSourcesNeeded = TRUE;
 }
 
 void MemberDefImpl::enableReferencedByRelation(bool e)
@@ -4822,10 +4840,24 @@ void MemberDefImpl::enableReferencedByRelation(bool e)
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
+void MemberDefImpl::enableReferencedByRelation(bool e1, bool e2)
+{
+  if (e1 == e2) m_hasReferencedByRelation=e1;
+  else m_hasReferencedByRelation=!Config_getBool(REFERENCED_BY_RELATION);
+  if (m_hasReferencedByRelation) Doxygen::parseSourcesNeeded = TRUE;
+}
+
 void MemberDefImpl::enableReferencesRelation(bool e)
 {
   m_hasReferencesRelation=e;
   if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDefImpl::enableReferencesRelation(bool e1, bool e2)
+{
+  if (e1 == e2) m_hasReferencesRelation=e1;
+  else m_hasReferencesRelation=!Config_getBool(REFERENCES_RELATION);
+  if (m_hasReferencesRelation) Doxygen::parseSourcesNeeded = TRUE;
 }
 
 bool MemberDefImpl::isObjCMethod() const
@@ -6118,15 +6150,15 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       mdef->setMemberDeclaration(mdec);
       mdec->setMemberDefinition(mdef);
 
-      mdef->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
-      mdef->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
-      mdec->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
-      mdec->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
+      mdef->enableCallGraph(mdec->hasCallGraph(), mdef->hasCallGraph());
+      mdef->enableCallerGraph(mdec->hasCallerGraph(), mdef->hasCallerGraph());
+      mdec->enableCallGraph(mdec->hasCallGraph(), mdef->hasCallGraph());
+      mdec->enableCallerGraph(mdec->hasCallerGraph(), mdef->hasCallerGraph());
 
-      mdef->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
-      mdef->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
-      mdec->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
-      mdec->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
+      mdef->enableReferencedByRelation(mdec->hasReferencedByRelation(), mdef->hasReferencedByRelation());
+      mdef->enableReferencesRelation(mdec->hasReferencesRelation(), mdef->hasReferencesRelation());
+      mdec->enableReferencedByRelation(mdec->hasReferencedByRelation(), mdef->hasReferencedByRelation());
+      mdec->enableReferencesRelation(mdec->hasReferencesRelation(), mdef->hasReferencesRelation());
 
       mdef->addQualifiers(mdec->getQualifiers());
       mdec->addQualifiers(mdef->getQualifiers());
