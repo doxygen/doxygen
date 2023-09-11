@@ -90,7 +90,9 @@ comments can be used:
 \verbatim
 /*! <!-- This is a comment with a comment block --> Visible text */
 \endverbatim
-The part `<!-- ... -->` will not be shown in the main documentation.
+The part `<!-- ... -->` will not be shown in the main documentation.<br>
+Note: It is explicitly forbidden to use 3 dashes before the closing greater than sign.
+Doxygen won't see that as the closing either and give a warning.
 
 
 

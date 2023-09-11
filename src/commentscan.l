@@ -1077,6 +1077,11 @@ STopt  [^\n@\\]*
 
  /* --------------   Rules for handling HTML comments ----------- */
 
+<HtmlComment>"---"[!]?">"{B}*           {
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                               "incorrect HTML end comment --->"
+                                              );
+                                        }
 <HtmlComment>"--"[!]?">"{B}*            { BEGIN( Comment ); }
 <HtmlComment>{DOCNL}                    {
                                           if (*yytext=='\n')

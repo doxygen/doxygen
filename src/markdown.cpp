@@ -842,6 +842,8 @@ int Markdown::processNmdash(const char *data,int off,int size)
   { AUTO_TRACE_EXIT("result={}",1-count); return 1-count; } // start HTML comment
   if (count==2 && (data[2]=='>'))
   { return 0; } // end HTML comment
+  if (count==3 && (data[3]=='>'))
+  { return 0; } // end HTML comment
   if (count==2 && (off<8 || qstrncmp(data-8,"operator",8)!=0)) // -- => ndash
   {
     m_out.addStr("&ndash;");
