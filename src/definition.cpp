@@ -1067,18 +1067,18 @@ bool DefinitionImpl::hasSources() const
 /*! Write code of this definition into the documentation */
 void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) const
 {
-  bool inlineSources = Config_getBool(INLINE_SOURCES);
-  ol.pushGeneratorState();
+  const MemberDef *thisMd = 0;
+  if (m_impl->def->definitionType()==Definition::TypeMember)
+  {
+    thisMd = toMemberDef(m_impl->def);
+  }
+  bool inlineSources = thisMd && thisMd->hasInlineSource();
   //printf("Source Fragment %s: %d-%d\n",qPrint(name()),
   //        m_impl->body->startLine,m_impl->body->endLine);
   if (inlineSources && hasSources())
   {
+    ol.pushGeneratorState();
     QCString codeFragment;
-    const MemberDef *thisMd = 0;
-    if (m_impl->def->definitionType()==Definition::TypeMember)
-    {
-      thisMd = toMemberDef(m_impl->def);
-    }
     bool isMacro = thisMd && thisMd->memberType()==MemberType_Define;
     int actualStart=m_impl->body->startLine,actualEnd=m_impl->body->endLine;
     if (readCodeFragment(m_impl->body->fileDef->absFilePath(),isMacro,
@@ -1108,8 +1108,8 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
                      );
       codeOL.endCodeFragment("DoxyCode");
     }
+    ol.popGeneratorState();
   }
-  ol.popGeneratorState();
 }
 
 static inline MemberVector refMapToVector(const std::unordered_map<std::string,MemberDef *> &map)
