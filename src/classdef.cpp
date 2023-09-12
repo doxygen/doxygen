@@ -344,11 +344,12 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                  bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const override;
     virtual void setRequiresClause(const QCString &req) override;
-        // inheritance graph related members
+
+    // inheritance graph related members
     virtual CLASS_GRAPH_t inheritanceGraphType() const override;
     virtual void setTypeInheritanceGraph(CLASS_GRAPH_t e) override;
 
-    // directory graph related members
+    // collaboration graph related members
     virtual bool hasCollaborationGraph() const override;
     virtual void enableCollaborationGraph(bool e) override;
   private:
