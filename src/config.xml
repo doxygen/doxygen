@@ -1777,7 +1777,8 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  Setting the \c INLINE_SOURCES tag to \c YES will include the body
- of functions, classes and enums directly into the documentation.
+ of functions, multi-line macros, enums as well as multi-line and list initialized
+ variables directly into the documentation.
 ]]>
       </docs>
     </option>
