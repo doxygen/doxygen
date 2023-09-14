@@ -388,7 +388,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void enableReferencesRelation(bool e) = 0;
 
     virtual void enableInlineSource(bool e) = 0;
-    virtual void enableInlineSource(bool e1, bool e2) = 0;
+    virtual void mergeEnableInlineSource(bool other) = 0;
 
     virtual void setTemplateMaster(MemberDef *mt) = 0;
     virtual void addListReference(Definition *d) = 0;

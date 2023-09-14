@@ -298,7 +298,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void enableReferencedByRelation(bool e) override;
     virtual void enableReferencesRelation(bool e) override;
     virtual void enableInlineSource(bool e) override;
-    virtual void enableInlineSource(bool e1, bool e2) override;
+    virtual void mergeEnableInlineSource(bool other) override;
     virtual void setTemplateMaster(MemberDef *mt) override;
     virtual void addListReference(Definition *d) override;
     virtual void setDocsForDefinition(bool b) override;
@@ -4841,10 +4841,16 @@ void MemberDefImpl::enableInlineSource(bool e)
   m_hasInlineSource=e;
 }
 
-void MemberDefImpl::enableInlineSource(bool e1, bool e2)
+void MemberDefImpl::mergeEnableInlineSource(bool other)
 {
-  if (e1 == e2) m_hasInlineSource=e1;
-  else m_hasInlineSource=!Config_getBool(INLINE_SOURCES);
+  if (Config_getBool(INLINE_SOURCES))
+  {
+    enableInlineSource(m_hasInlineSource && other); // enabled if neither deviate from config value
+  }
+  else
+  {
+    enableInlineSource(m_hasInlineSource || other); // enabled if either deviate from config value
+  }
 }
 
 bool MemberDefImpl::isObjCMethod() const
@@ -6152,8 +6158,8 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       mdec->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
       mdec->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
 
-      mdef->enableInlineSource(mdec->hasInlineSource(), mdef->hasInlineSource());
-      mdec->enableInlineSource(mdec->hasInlineSource(), mdef->hasInlineSource());
+      mdef->mergeEnableInlineSource(mdec->hasInlineSource());
+      mdec->mergeEnableInlineSource(mdef->hasInlineSource());
 
       mdef->addQualifiers(mdec->getQualifiers());
       mdec->addQualifiers(mdef->getQualifiers());

@@ -3665,7 +3665,7 @@ static void buildFunctionList(const Entry *root)
                   md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
                   md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
                   md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
-                  md->enableInlineSource(md->hasInlineSource(), root->inlineSource);
+                  md->mergeEnableInlineSource(root->inlineSource);
                   md->addQualifiers(root->qualifiers);
 
                   // merge ingroup specifiers
@@ -3816,14 +3816,14 @@ static void findFriends()
             mmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
             mmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
             mmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
-            mmd->enableInlineSource(mmd->hasInlineSource(), fmd->hasInlineSource());
+            mmd->mergeEnableInlineSource(fmd->hasInlineSource());
             mmd->addQualifiers(fmd->getQualifiers());
 
             fmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
             fmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
             fmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
             fmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
-            fmd->enableInlineSource(mmd->hasInlineSource(), fmd->hasInlineSource());
+            fmd->mergeEnableInlineSource(mmd->hasInlineSource());
             fmd->addQualifiers(mmd->getQualifiers());
           }
         }
@@ -5212,7 +5212,7 @@ static void addMemberDocs(const Entry *root,
   md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
   md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
   md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
-  md->enableInlineSource(md->hasInlineSource(), root->inlineSource);
+  md->mergeEnableInlineSource(root->inlineSource);
   md->addQualifiers(root->qualifiers);
 
   md->mergeMemberSpecifiers(spec);
