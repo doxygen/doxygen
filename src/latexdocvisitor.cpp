@@ -1910,7 +1910,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   baseName.prepend("dot_");
   QCString outDir = Config_getString(LATEX_OUTPUT);
   QCString name = fileName;
-  writeDotGraphFromFile(name,outDir,baseName,GOF_EPS,srcFile,srcLine);
+  writeDotGraphFromFile(name,outDir,baseName,GOF_EPS,srcFile,srcLine,false);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 

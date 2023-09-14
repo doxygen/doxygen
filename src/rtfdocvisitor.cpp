@@ -67,6 +67,18 @@ QCString RTFDocVisitor::getStyle(const QCString &name)
   return sd.reference();
 }
 
+QCString RTFDocVisitor::getDotImageExtension()
+{
+  if(Config_getBool(RTF_USE_PNG))
+  {
+    return "png";
+  }
+  else
+  {
+    return ::getDotImageExtension();
+  }
+}
+
 int RTFDocVisitor::indentLevel() const
 {
   return std::min(m_indentLevel,maxIndentLevels-1);
@@ -1708,15 +1720,9 @@ void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
-  GraphOutputFormat format = GOF_BITMAP;
   QCString outDir = Config_getString(RTF_OUTPUT);
   QCString imgExt = getDotImageExtension();
-  if(imgExt == "svg")
-  {
-    imgExt = "png";
-    format = GOF_PNG;
-  }
-  writeDotGraphFromFile(filename,outDir,baseName,format,srcFile,srcLine);
+  writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP,srcFile,srcLine,true);
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
 

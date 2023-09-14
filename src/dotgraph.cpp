@@ -106,8 +106,12 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 
 QCString DotGraph::imgName() const
 {
-  return m_baseName + ((m_graphFormat == GOF_BITMAP) ?
-                      ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
+  return m_baseName + (
+      (m_graphFormat == GOF_BITMAP)
+        ? ((m_textFormat == EOF_Rtf && Config_getBool(RTF_USE_PNG))
+          ? ".png" : "." + getDotImageExtension())
+        : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps")
+  );
 }
 
 std::mutex g_dotIndexListMutex;
@@ -188,9 +192,15 @@ bool DotGraph::prepareDotFile()
 
   if (m_graphFormat == GOF_BITMAP)
   {
+    QCString jobFormat = Config_getEnumAsString(DOT_IMAGE_FORMAT);
+    if(m_textFormat == EOF_Rtf && Config_getBool(RTF_USE_PNG))
+    {
+      jobFormat = "png";
+    }
+
     // run dot to create a bitmap image
     DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
-    dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
+    dotRun->addJob(jobFormat, absImgName(), absDotName(), 1);
     if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
   }
   else if (m_graphFormat == GOF_EPS)

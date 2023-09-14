@@ -2208,7 +2208,7 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   }
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine,false);
   writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine);
 }
 

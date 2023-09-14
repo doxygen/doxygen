@@ -119,6 +119,7 @@ class RTFDocVisitor : public DocVisitor
                    const QCString &anchor);
     void endLink(const QCString &ref);
     QCString getStyle(const QCString &name);
+    QCString getDotImageExtension();
 
     int indentLevel() const;
     void incIndentLevel();

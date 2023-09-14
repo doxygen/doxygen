@@ -229,7 +229,7 @@ bool DotManager::run()
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,GraphOutputFormat format,
-                           const QCString &srcFile,int srcLine)
+                           const QCString &srcFile,int srcLine, bool isRtf)
 {
   Dir d(outDir.str());
   if (!d.exists())
@@ -239,17 +239,18 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
 
   QCString jobFormat = Config_getEnumAsString(DOT_IMAGE_FORMAT);
   QCString imgExt = getDotImageExtension();
-  if(format == GOF_PNG && imgExt != "png")
+  if(isRtf && format == GOF_BITMAP && Config_getBool(RTF_USE_PNG))
   {
     imgExt = "png";
     jobFormat = "png";
   }
+
   QCString imgName = QCString(outFile)+"."+imgExt;
   QCString absImgName = QCString(d.absPath())+"/"+imgName;
   QCString absOutFile = QCString(d.absPath())+"/"+outFile;
 
   DotRunner dotRun(inFile);
-  if (format==GOF_BITMAP || format == GOF_PNG)
+  if (format==GOF_BITMAP)
   {
     dotRun.addJob(jobFormat,absImgName,srcFile,srcLine);
   }

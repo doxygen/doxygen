@@ -290,6 +290,7 @@ class RTFGenerator : public OutputGenerator
     QCString rtf_EList_DepthStyle();
     QCString rtf_LCList_DepthStyle();
     QCString rtf_DList_DepthStyle();
+    QCString getDotImageExtension();
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
