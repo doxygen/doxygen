@@ -596,7 +596,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     else // reset counter
       csp=0;
 
-    if (vosp<6 && c==volatileScope[vosp] && // character matches substring "volatile"
+    if (vosp<9 && c==volatileScope[vosp] && // character matches substring "volatile"
          (vosp>0 ||                         // inside search string
           i==0  ||                          // if it is the first character
           !(isId(pc) || pc==':')            // the previous may not be a digit or a colon
