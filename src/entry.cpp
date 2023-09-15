@@ -74,6 +74,7 @@ Entry::Entry(const Entry &e)
   groupGraph  = e.groupGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
+  inlineSource = e.inlineSource;
   exported    = e.exported;
   virt        = e.virt;
   args        = e.args;
@@ -195,6 +196,7 @@ void Entry::reset()
   bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
   bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
   bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
+  bool entryInlineSource    = Config_getBool(INLINE_SOURCES);
   bool entryIncludeGraph    = Config_getBool(INCLUDE_GRAPH);
   bool entryIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
   bool entryDirectoryGraph  = Config_getBool(DIRECTORY_GRAPH);
@@ -241,6 +243,7 @@ void Entry::reset()
   groupGraph = entryGroupGraph;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
+  inlineSource = entryInlineSource;
   exported = false;
   section = EMPTY_SEC;
   mtype   = MethodTypes::Method;

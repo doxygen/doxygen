@@ -244,6 +244,8 @@ class MemberDef : public Definition
     virtual bool hasReferencesRelation() const = 0;
     virtual bool hasReferencedByRelation() const = 0;
 
+    virtual bool hasInlineSource() const = 0;
+
     virtual const MemberDef *templateMaster() const = 0;
     virtual QCString getScopeString() const = 0;
     virtual ClassDef *getClassDefOfAnonymousType() const = 0;
@@ -384,6 +386,9 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void enableReferencedByRelation(bool e) = 0;
     virtual void enableReferencesRelation(bool e) = 0;
+
+    virtual void enableInlineSource(bool e) = 0;
+    virtual void mergeEnableInlineSource(bool other) = 0;
 
     virtual void setTemplateMaster(MemberDef *mt) = 0;
     virtual void addListReference(Definition *d) = 0;
