@@ -219,6 +219,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool hasCallerGraph() const override;
     virtual bool hasReferencesRelation() const override;
     virtual bool hasReferencedByRelation() const override;
+    virtual bool hasInlineSource() const override;
     virtual const MemberDef *templateMaster() const override;
     virtual QCString getScopeString() const override;
     virtual ClassDef *getClassDefOfAnonymousType() const override;
@@ -296,6 +297,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void enableCallerGraph(bool e) override;
     virtual void enableReferencedByRelation(bool e) override;
     virtual void enableReferencesRelation(bool e) override;
+    virtual void enableInlineSource(bool e) override;
+    virtual void mergeEnableInlineSource(bool other) override;
     virtual void setTemplateMaster(MemberDef *mt) override;
     virtual void addListReference(Definition *d) override;
     virtual void setDocsForDefinition(bool b) override;
@@ -486,6 +489,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool m_hasCallerGraph = false;
     bool m_hasReferencedByRelation = false;
     bool m_hasReferencesRelation = false;
+    bool m_hasInlineSource = false;
     bool m_explExt = false;             // member was explicitly declared external
     bool m_tspec = false;               // member is a template specialization
     bool m_groupHasDocs = false;        // true if the entry that caused the grouping was documented
@@ -845,6 +849,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
     { return getMdAlias()->hasReferencedByRelation(); }
+    virtual bool hasInlineSource() const
+    { return getMdAlias()->hasInlineSource(); }
     virtual StringVector getQualifiers() const
     { return getMdAlias()->getQualifiers(); }
     virtual const MemberDef *templateMaster() const
@@ -1320,6 +1326,7 @@ void MemberDefImpl::init(Definition *d,
   m_hasCallerGraph = FALSE;
   m_hasReferencedByRelation = FALSE;
   m_hasReferencesRelation = FALSE;
+  m_hasInlineSource = FALSE;
   m_initLines=0;
   m_type=t;
   if (mt==MemberType_Typedef) m_type.stripPrefix("typedef ");
@@ -1496,6 +1503,7 @@ MemberDefImpl::MemberDefImpl(const MemberDefImpl &md) : DefinitionMixin(md)
   m_hasCallerGraph                 = md.m_hasCallerGraph                 ;
   m_hasReferencedByRelation        = md.m_hasReferencedByRelation        ;
   m_hasReferencesRelation          = md.m_hasReferencesRelation          ;
+  m_hasInlineSource                = md.m_hasInlineSource                ;
   m_explExt                        = md.m_explExt                        ;
   m_tspec                          = md.m_tspec                          ;
   m_groupHasDocs                   = md.m_groupHasDocs                   ;
@@ -2646,7 +2654,7 @@ bool MemberDefImpl::hasDetailedDescription() const
     bool hideUndocMembers      = Config_getBool(HIDE_UNDOC_MEMBERS);
     bool extractStatic         = Config_getBool(EXTRACT_STATIC);
     bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
-    bool inlineSources         = Config_getBool(INLINE_SOURCES);
+    bool inlineSources         = hasInlineSource();
 
     // the member has detailed documentation because the user added some comments
     bool docFilter =
@@ -2682,7 +2690,7 @@ bool MemberDefImpl::hasDetailedDescription() const
     // _writeExamples                  -> hasExamples()
     // _writeTypeConstraints           -> m_typeConstraints.hasParameters()
     // writeSourceDef                  -> !getSourceFileBase().isEmpty();
-    // writeInlineCode                 -> INLINE_SOURCES && hasSources()
+    // writeInlineCode                 -> hasInlineSource() && hasSources()
     // writeSourceRefs                 -> hasReferencesRelation() && hasSourceRefs()
     // writeSourceReffedBy             -> hasReferencedByRelation() && hasSourceReffedBy()
     // _writeCallGraph                 -> _hasVisibleCallGraph()
@@ -4828,6 +4836,23 @@ void MemberDefImpl::enableReferencesRelation(bool e)
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
+void MemberDefImpl::enableInlineSource(bool e)
+{
+  m_hasInlineSource=e;
+}
+
+void MemberDefImpl::mergeEnableInlineSource(bool other)
+{
+  if (Config_getBool(INLINE_SOURCES))
+  {
+    enableInlineSource(m_hasInlineSource && other); // enabled if neither deviate from config value
+  }
+  else
+  {
+    enableInlineSource(m_hasInlineSource || other); // enabled if either deviate from config value
+  }
+}
+
 bool MemberDefImpl::isObjCMethod() const
 {
   if (getClassDef() && getClassDef()->isObjectiveC() && isFunction()) return TRUE;
@@ -5565,6 +5590,11 @@ bool MemberDefImpl::hasReferencesRelation() const
   return m_hasReferencesRelation;
 }
 
+bool MemberDefImpl::hasInlineSource() const
+{
+  return m_hasInlineSource;
+}
+
 const MemberDef *MemberDefImpl::templateMaster() const
 {
   return m_templateMaster;
@@ -6127,6 +6157,9 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       mdef->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
       mdec->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
       mdec->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
+
+      mdef->mergeEnableInlineSource(mdec->hasInlineSource());
+      mdec->mergeEnableInlineSource(mdef->hasInlineSource());
 
       mdef->addQualifiers(mdec->getQualifiers());
       mdec->addQualifiers(mdef->getQualifiers());

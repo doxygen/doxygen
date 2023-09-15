@@ -127,6 +127,7 @@ documentation:
 \refitem cmdhideincludedbygraph \\hideincludedbygraph
 \refitem cmdhideincludegraph \\hideincludegraph
 \refitem cmdhideinheritancegraph \\hideinheritancegraph
+\refitem cmdhideinlinesource \\hideinlinesource
 \refitem cmdhiderefby \\hiderefby
 \refitem cmdhiderefs \\hiderefs
 \refitem cmdhideinitializer \\hideinitializer
@@ -208,6 +209,7 @@ documentation:
 \refitem cmdshort \\short
 \refitem cmdshowdate \\showdate
 \refitem cmdshowinitializer \\showinitializer
+\refitem cmdshowinlinesource \\showinlinesource
 \refitem cmdshowrefby \\showrefby
 \refitem cmdshowrefs \\showrefs
 \refitem cmdsince \\since
@@ -438,6 +440,32 @@ Structural indicators
       section \ref cmdshowrefby "\\showrefby",
       section \ref cmdhiderefby "\\hiderefby" and
       option \ref cfg_references_relation "REFERENCES_RELATION"
+
+<hr>
+\section cmdshowinlinesource \\showinlinesource
+
+  \addindex \\showinlinesource
+  When this command is put in a comment block of a function, multi-line macro,
+  enum or a list initialized variable
+  then doxygen will generate the inline source for that member. The
+  inline source will be generated regardless of the value of
+  \ref cfg_inline_sources "INLINE_SOURCES".
+
+  \sa section \ref cmdhideinlinesource "\\hideinlinesource",
+      option \ref cfg_inline_sources "INLINE_SOURCES"
+
+<hr>
+\section cmdhideinlinesource \\hideinlinesource
+
+  \addindex \\hideinlinesource
+  When this command is put in a comment block of a function, multi-line macro,
+  enum or a list initialized variable
+  then doxygen will not generate the inline source for that member. The
+  inline source will not be generated regardless of the value of
+  \ref cfg_inline_sources "INLINE_SOURCES".
+
+  \sa section \ref cmdshowinlinesource "\\showinlinesource",
+      option \ref cfg_inline_sources "INLINE_SOURCES"
 
 <hr>
 \section cmdincludegraph \\includegraph
