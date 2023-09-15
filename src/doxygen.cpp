@@ -2129,6 +2129,7 @@ static void findUsingDeclImports(const Entry *root)
                 newMmd->enableCallerGraph(root->callerGraph);
                 newMmd->enableReferencedByRelation(root->referencedByRelation);
                 newMmd->enableReferencesRelation(root->referencesRelation);
+                newMmd->enableInlineSource(root->inlineSource);
                 newMmd->addQualifiers(root->qualifiers);
                 newMmd->setBitfields(md->bitfieldString());
                 newMmd->addSectionsToDefinition(root->anchors);
@@ -2306,6 +2307,7 @@ static MemberDef *addVariableToClass(
   mmd->enableCallerGraph(root->callerGraph);
   mmd->enableReferencedByRelation(root->referencedByRelation);
   mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->enableInlineSource(root->inlineSource);
   mmd->setHidden(root->hidden);
   mmd->setArtificial(root->artificial);
   mmd->setLanguage(root->lang);
@@ -2530,6 +2532,7 @@ static MemberDef *addVariableToFile(
   mmd->enableCallerGraph(root->callerGraph);
   mmd->enableReferencedByRelation(root->referencedByRelation);
   mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->enableInlineSource(root->inlineSource);
   mmd->setExplicitExternal(root->explicitExternal,fileName,root->startLine,root->startColumn);
   mmd->addQualifiers(root->qualifiers);
   //md->setOuterScope(fd);
@@ -3103,6 +3106,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   mmd->enableCallerGraph(root->callerGraph);
   mmd->enableReferencedByRelation(root->referencedByRelation);
   mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->enableInlineSource(root->inlineSource);
   mmd->addQualifiers(root->qualifiers);
 
   AUTO_TRACE("Interface member: fileName='{}' type='{}' name='{}' mtype='{}' prot={} virt={} state={} proto={} def='{}'",
@@ -3300,6 +3304,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   mmd->enableCallerGraph(root->callerGraph);
   mmd->enableReferencedByRelation(root->referencedByRelation);
   mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->enableInlineSource(root->inlineSource);
   mmd->addQualifiers(root->qualifiers);
 
   AUTO_TRACE("function member: type='{}' scope='{}' name='{}' args='{}' proto={} def='{}'",
@@ -3402,6 +3407,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   mmd->enableCallerGraph(root->callerGraph);
   mmd->enableReferencedByRelation(root->referencedByRelation);
   mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->enableInlineSource(root->inlineSource);
   mmd->addQualifiers(root->qualifiers);
 
   mmd->setRefItems(root->sli);
@@ -3659,6 +3665,7 @@ static void buildFunctionList(const Entry *root)
                   md->mergeEnableCallerGraph(root->callerGraph);
                   md->mergeEnableReferencedByRelation(root->referencedByRelation);
                   md->mergeEnableReferencesRelation(root->referencesRelation);
+                  md->mergeEnableInlineSource(root->inlineSource);
                   md->addQualifiers(root->qualifiers);
 
                   // merge ingroup specifiers
@@ -3809,12 +3816,14 @@ static void findFriends()
             mmd->mergeEnableCallerGraph(fmd->hasCallerGraph());
             mmd->mergeEnableReferencedByRelation(fmd->hasReferencedByRelation());
             mmd->mergeEnableReferencesRelation(fmd->hasReferencesRelation());
+            mmd->mergeEnableInlineSource(fmd->hasInlineSource());
             mmd->addQualifiers(fmd->getQualifiers());
 
             fmd->mergeEnableCallGraph(mmd->hasCallGraph());
             fmd->mergeEnableCallerGraph(mmd->hasCallerGraph());
             fmd->mergeEnableReferencedByRelation(mmd->hasReferencedByRelation());
             fmd->mergeEnableReferencesRelation(mmd->hasReferencesRelation());
+            fmd->mergeEnableInlineSource(mmd->hasInlineSource());
             fmd->addQualifiers(mmd->getQualifiers());
           }
         }
@@ -5100,6 +5109,7 @@ static void addMemberDocs(const Entry *root,
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
+  md->enableInlineSource(root->inlineSource);
   md->addQualifiers(root->qualifiers);
   ClassDefMutable *cd=md->getClassDefMutable();
   const NamespaceDef *nd=md->getNamespaceDef();
@@ -5202,6 +5212,7 @@ static void addMemberDocs(const Entry *root,
   md->mergeEnableCallerGraph(root->callerGraph);
   md->mergeEnableReferencedByRelation(root->referencedByRelation);
   md->mergeEnableReferencesRelation(root->referencesRelation);
+  md->mergeEnableInlineSource(root->inlineSource);
   md->addQualifiers(root->qualifiers);
 
   md->mergeMemberSpecifiers(spec);
@@ -5662,6 +5673,7 @@ static void addLocalObjCMethod(const Entry *root,
     mmd->enableCallerGraph(root->callerGraph);
     mmd->enableReferencedByRelation(root->referencedByRelation);
     mmd->enableReferencesRelation(root->referencesRelation);
+    mmd->enableInlineSource(root->inlineSource);
     mmd->addQualifiers(root->qualifiers);
     mmd->setDocumentation(root->doc,root->docFile,root->docLine);
     mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -6077,6 +6089,7 @@ static void addMemberSpecialization(const Entry *root,
   mmd->enableCallerGraph(root->callerGraph);
   mmd->enableReferencedByRelation(root->referencedByRelation);
   mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->enableInlineSource(root->inlineSource);
   mmd->addQualifiers(root->qualifiers);
   mmd->setDocumentation(root->doc,root->docFile,root->docLine);
   mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -6145,6 +6158,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     mmd->enableCallerGraph(root->callerGraph);
     mmd->enableReferencedByRelation(root->referencedByRelation);
     mmd->enableReferencesRelation(root->referencesRelation);
+    mmd->enableInlineSource(root->inlineSource);
     mmd->addQualifiers(root->qualifiers);
     QCString doc=getOverloadDocs();
     doc+="<p>";
@@ -6721,6 +6735,7 @@ static void findMember(const Entry *root,
           mmd->enableCallerGraph(root->callerGraph);
           mmd->enableReferencedByRelation(root->referencedByRelation);
           mmd->enableReferencesRelation(root->referencesRelation);
+          mmd->enableInlineSource(root->inlineSource);
           mmd->addQualifiers(root->qualifiers);
           mmd->setDocumentation(root->doc,root->docFile,root->docLine);
           mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -7105,6 +7120,7 @@ static void findEnums(const Entry *root)
       mmd->enableCallerGraph(root->callerGraph);
       mmd->enableReferencedByRelation(root->referencedByRelation);
       mmd->enableReferencesRelation(root->referencesRelation);
+      mmd->enableInlineSource(root->inlineSource);
       mmd->addQualifiers(root->qualifiers);
       //printf("%s::setRefItems(%zu)\n",qPrint(md->name()),root->sli.size());
       mmd->setRefItems(root->sli);
@@ -8979,6 +8995,7 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
   }
   md->addSectionsToDefinition(root->anchors);
   md->setMaxInitLines(root->initLines);
+  md->enableInlineSource(root->inlineSource);
   md->setRefItems(root->sli);
   if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
   addMemberToGroups(root,md);

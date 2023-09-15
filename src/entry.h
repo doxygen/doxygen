@@ -191,6 +191,7 @@ class Entry
     bool callerGraph;         //!< do we need to draw the caller graph?
     bool referencedByRelation;//!< do we need to show the referenced by relation?
     bool referencesRelation;  //!< do we need to show the references relation?
+    bool inlineSource;        //!< do we need to show the inline source?
     bool includeGraph;        //!< do we need to draw the include graph?
     bool includedByGraph;     //!< do we need to draw the included by graph?
     bool directoryGraph;      //!< do we need to draw the directory graph?
