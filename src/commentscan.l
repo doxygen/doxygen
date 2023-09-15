@@ -126,6 +126,8 @@ static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleShowInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -245,6 +247,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "hideincludegraph",    { &handleHideIncludegraph,    CommandSpacing::Invisible }},
   { "hideinheritancegraph",{ &handleHideInheritanceGraph,CommandSpacing::Invisible }},
   { "hideinitializer", { &handleHideInitializer,  CommandSpacing::Invisible }},
+  { "hideinlinesource",    { &handleHideInlineSource,     CommandSpacing::Invisible }},
   { "hiderefby",       { &handleHideReferencedByRelation, CommandSpacing::Invisible }},
   { "hiderefs",        { &handleHideReferencesRelation,   CommandSpacing::Invisible }},
   { "htmlinclude",     { 0,                       CommandSpacing::Inline    }},
@@ -317,6 +320,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "see",             { 0,                       CommandSpacing::Block     }},
   { "short",           { &handleBrief,            CommandSpacing::Invisible }},
   { "showinitializer", { &handleShowInitializer,  CommandSpacing::Invisible }},
+  { "showinlinesource",{ &handleShowInlineSource, CommandSpacing::Invisible }},
   { "showrefby",       { &handleReferencedByRelation,     CommandSpacing::Invisible }},
   { "showrefs",        { &handleReferencesRelation,       CommandSpacing::Invisible }},
   { "since",           { 0,                       CommandSpacing::Block     }},
@@ -3095,6 +3099,20 @@ static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const Str
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->callerGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleShowInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->inlineSource = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->inlineSource = FALSE; // OFF
   return FALSE;
 }
 
