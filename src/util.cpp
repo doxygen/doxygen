@@ -589,17 +589,17 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     if (csp<6 && c==constScope[csp] && // character matches substring "const"
          (csp>0 ||                     // inside search string
           i==0  ||                     // if it is the first character
-          !(isId(pc) || pc==':')       // the previous may not be a digit or a colon
+          !isId(pc)                    // the previous may not be a digit
          )
        )
       csp++;
     else // reset counter
       csp=0;
 
-    if (vosp<6 && c==volatileScope[vosp] && // character matches substring "volatile"
-         (vosp>0 ||                         // inside search string
-          i==0  ||                          // if it is the first character
-          !(isId(pc) || pc==':')            // the previous may not be a digit or a colon
+    if (vosp<9 && c==volatileScope[vosp] && // character matches substring "volatile"
+         (vosp>0 ||                     // inside search string
+          i==0  ||                     // if it is the first character
+          !isId(pc)                    // the previous may not be a digit
          )
        )
       vosp++;
@@ -610,7 +610,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     if (vsp<8 && c==virtualScope[vsp] && // character matches substring "virtual"
          (vsp>0 ||                       // inside search string
           i==0  ||                       // if it is the first character
-          !(isId(pc) || pc==':')         // the previous may not be a digit or a colon
+          !isId(pc)                      // the previous may not be a digit
          )
        )
       vsp++;
@@ -621,7 +621,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     if (osp<11 && (osp>=8 || c==operatorScope[osp]) && // character matches substring "operator" followed by 3 arbitrary characters
         (osp>0 ||                         // inside search string
          i==0 ||                          // if it is the first character
-         !(isId(pc) || pc==':')           // the previous may not be a digit or a colon
+         !isId(pc)                        // the previous may not be a digit
         )
        )
       osp++;
