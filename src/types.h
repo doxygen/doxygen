@@ -467,5 +467,116 @@ enum class VhdlSpecifier
 };
 
 
+//     Type                Categories (or'ed)
+#define ENTRY_TYPES                         \
+ ETYPE(Empty,              None)            \
+ ETYPE(Class,              Compound|Scope)  \
+ ETYPE(Namespace,          Scope)           \
+ ETYPE(Concept,            None)            \
+ ETYPE(ClassDoc,           CompoundDoc|Doc) \
+ ETYPE(StructDoc,          CompoundDoc|Doc) \
+ ETYPE(UnionDoc,           CompoundDoc|Doc) \
+ ETYPE(ExceptionDoc,       CompoundDoc|Doc) \
+ ETYPE(InterfaceDoc,       CompoundDoc|Doc) \
+ ETYPE(ProtocolDoc,        CompoundDoc|Doc) \
+ ETYPE(CategoryDoc,        CompoundDoc|Doc) \
+ ETYPE(ServiceDoc,         CompoundDoc|Doc) \
+ ETYPE(SingletonDoc,       CompoundDoc|Doc) \
+ ETYPE(Source,             File)            \
+ ETYPE(Header,             File)            \
+ ETYPE(ModuleDoc,          Doc)             \
+ ETYPE(ConceptDoc,         Doc)             \
+ ETYPE(NamespaceDoc,       Doc)             \
+ ETYPE(EnumDoc,            Doc)             \
+ ETYPE(PageDoc,            Doc)             \
+ ETYPE(MemberDoc,          Doc)             \
+ ETYPE(OverloadDoc,        Doc)             \
+ ETYPE(Example,            Doc)             \
+ ETYPE(VariableDoc,        Doc)             \
+ ETYPE(FileDoc,            Doc)             \
+ ETYPE(DefineDoc,          Doc)             \
+ ETYPE(GroupDoc,           Doc)             \
+ ETYPE(MainpageDoc,        Doc)             \
+ ETYPE(MemberGrp,          Doc)             \
+ ETYPE(PackageDoc,         Doc)             \
+ ETYPE(DirDoc,             Doc)             \
+ ETYPE(Variable,           None)            \
+ ETYPE(Function,           None)            \
+ ETYPE(Typedef,            None)            \
+ ETYPE(Include,            None)            \
+ ETYPE(Enum,               None)            \
+ ETYPE(Define,             None)            \
+ ETYPE(UsingDir,           None)            \
+ ETYPE(UsingDecl,          None)            \
+ ETYPE(Package,            None)            \
+ ETYPE(ObjcImpl,           None)            \
+ ETYPE(ExportedInterface,  None)            \
+ ETYPE(IncludedService,    None)            \
+ ETYPE(ExampleLineno,      None)            \
+
+/** Wrapper class for the Entry type. Can be set only during construction.
+ *  Packs the type together with category flags.
+ */
+class EntryType
+{
+  public:
+#define ETYPE(x,bits)                                                   \
+    static EntryType make##x() { return EntryType(x|bits); }            \
+    bool is##x() const { return (m_type&TypeMask)==x; }
+    ENTRY_TYPES
+#undef ETYPE
+    bool isCompound()    const { return (m_type & Compound)!=0;    }
+    bool isScope()       const { return (m_type & Scope)!=0;       }
+    bool isFile()        const { return (m_type & File)!=0;        }
+    bool isCompoundDoc() const { return (m_type & CompoundDoc)!=0; }
+    bool isDoc()         const { return (m_type & Doc)!=0;         }
+    std::string to_string() const
+    {
+      switch (type())
+      {
+#define ETYPE(x,bits)                                                   \
+        case x : return "["+std::string(#x)+bits_to_string()+"]";
+        ENTRY_TYPES
+#undef ETYPE
+      }
+      return "[unknown]";
+    }
+    friend inline bool operator==(const EntryType &t1,const EntryType &t2) { return t1.m_type==t2.m_type; }
+    friend inline bool operator!=(const EntryType &t1,const EntryType &t2) { return !(operator==(t1,t2)); }
+
+  private:
+    enum TypeName
+    {
+#define ETYPE(x,bits)                                                   \
+      x,
+      ENTRY_TYPES
+#undef ETYPE
+    };
+
+    enum CategoryBits
+    {
+      None        = 0,
+      Compound    = (1<<16),
+      Scope       = (1<<17),
+      File        = (1<<18),
+      CompoundDoc = (1<<19),
+      Doc         = (1<<20),
+      TypeMask      = 0x0000FFFF,
+      CategoryMask  = 0xFFFF0000
+    };
+    explicit EntryType(int t) : m_type(t) {}
+    std::string bits_to_string() const
+    {
+      std::string result;
+      if (m_type&Compound) result+=",Compound";
+      if (m_type&Scope) result+=",Scope";
+      if (m_type&File) result+=",File";
+      if (m_type&CompoundDoc) result+=",CompoundDoc";
+      return result;
+    }
+    TypeName type() const { return static_cast<TypeName>(m_type & TypeMask); }
+    unsigned int m_type = Empty;
+};
+
 
 #endif

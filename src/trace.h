@@ -303,4 +303,13 @@ template<> struct fmt::formatter<TypeSpecifier> : formatter<std::string>
   }
 };
 
+//! adds support for formatting EntryType
+template<> struct fmt::formatter<EntryType> : formatter<std::string>
+{
+  auto format(EntryType type, format_context& ctx) {
+    return formatter<std::string>::format(type.to_string(),ctx);
+  }
+};
+
+
 #endif // TRACE_H

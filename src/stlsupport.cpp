@@ -142,7 +142,7 @@ static void addSTLMember(const std::shared_ptr<Entry> &root,const char *type,con
   memEntry->name       = name;
   memEntry->type       = type;
   memEntry->protection = Protection::Public;
-  memEntry->section    = Entry::VARIABLE_SEC;
+  memEntry->section    = EntryType::makeVariable();
   memEntry->brief      = "STL member";
   memEntry->hidden     = FALSE;
   memEntry->artificial = TRUE;
@@ -155,7 +155,7 @@ static void addSTLIterator(const std::shared_ptr<Entry> &classEntry,const QCStri
   iteratorClassEntry->fileName  = "[STL]";
   iteratorClassEntry->startLine = 1;
   iteratorClassEntry->name      = name;
-  iteratorClassEntry->section   = Entry::CLASS_SEC;
+  iteratorClassEntry->section   = EntryType::makeClass();
   iteratorClassEntry->brief     = "STL iterator class";
   iteratorClassEntry->hidden    = FALSE;
   iteratorClassEntry->artificial= TRUE;
@@ -173,7 +173,7 @@ static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
   classEntry->fileName  = "[STL]";
   classEntry->startLine = 1;
   classEntry->name      = fullName;
-  classEntry->section   = Entry::CLASS_SEC;
+  classEntry->section = EntryType::makeClass();
   classEntry->brief     = "STL class";
   classEntry->hidden    = FALSE;
   classEntry->artificial= TRUE;
@@ -214,7 +214,7 @@ static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
     memEntry->args       = "()";
     memEntry->type       = "T*";
     memEntry->protection = Protection::Public;
-    memEntry->section    = Entry::FUNCTION_SEC;
+    memEntry->section = EntryType::makeFunction();
     memEntry->brief      = "STL member";
     memEntry->hidden     = FALSE;
     memEntry->artificial = FALSE;
@@ -247,7 +247,7 @@ static void addSTLClasses(const std::shared_ptr<Entry> &root)
   namespaceEntry->fileName  = "[STL]";
   namespaceEntry->startLine = 1;
   namespaceEntry->name      = "std";
-  namespaceEntry->section   = Entry::NAMESPACE_SEC;
+  namespaceEntry->section = EntryType::makeNamespace();
   namespaceEntry->brief     = "STL namespace";
   namespaceEntry->hidden    = FALSE;
   namespaceEntry->artificial= TRUE;

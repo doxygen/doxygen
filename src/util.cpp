@@ -331,7 +331,7 @@ QCString stripFromIncludePath(const QCString &path)
  * at the extension. A number of variations is allowed in both upper and
  * lower case) If anyone knows or uses another extension please let me know :-)
  */
-int guessSection(const QCString &name)
+EntryType guessSection(const QCString &name)
 {
   QCString n=name.lower();
   static const std::unordered_set<std::string> sourceExt = {
@@ -352,18 +352,18 @@ int guessSection(const QCString &name)
     QCString extension = n.mid(lastDot+1); // part after the last dot
     if (sourceExt.find(extension.str())!=sourceExt.end())
     {
-      return Entry::SOURCE_SEC;
+      return EntryType::makeSource();
     }
     if (headerExt.find(extension.str())!=headerExt.end())
     {
-      return Entry::HEADER_SEC;
+      return EntryType::makeHeader();
     }
   }
   else
   {
-    if (getLanguageFromFileName(name,SrcLangExt_Unknown) == SrcLangExt_Cpp) return Entry::HEADER_SEC;
+    if (getLanguageFromFileName(name,SrcLangExt_Unknown) == SrcLangExt_Cpp) return EntryType::makeHeader();
   }
-  return 0;
+  return EntryType::makeEmpty();
 }
 
 QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,

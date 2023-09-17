@@ -2373,7 +2373,7 @@ static void initUCF(Entry* root,const QCString &type,QCString &qcs,
 
   std::shared_ptr<Entry> current = std::make_shared<Entry>();
   current->vhdlSpec=VhdlSpecifier::UCF_CONST;
-  current->section=Entry::VARIABLE_SEC;
+  current->section=EntryType::makeVariable();
   current->bodyLine=line;
   current->fileName=fileName;
   current->type="ucf_const";

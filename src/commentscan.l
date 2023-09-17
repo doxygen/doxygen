@@ -483,12 +483,11 @@ static std::mutex g_citeMutex;
 //-----------------------------------------------------------------------------
 
 static QCString stripQuotes(const char *s);
-static bool getDocSectionName(int s);
 static SectionType sectionLevelToType(int level);
 static void stripTrailingWhiteSpace(QCString &s);
 
 static void initParser(yyscan_t yyscanner);
-static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s);
+static bool makeStructuralIndicator(yyscan_t yyscanner,EntryType t);
 static void lineCount(yyscan_t yyscanner);
 static void addXRefItem(yyscan_t yyscanner,
                         const QCString &listName,const QCString &itemTitle,
@@ -1272,7 +1271,7 @@ STopt  [^\n@\\]*
 <ClassDocArg1>{SCOPENAME}               { // first argument
                                           lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
-                                          if (yyextra->current->section==Entry::PROTOCOLDOC_SEC)
+                                          if (yyextra->current->section.isProtocolDoc())
                                           {
                                             yyextra->current->name+="-p";
                                           }
@@ -2146,7 +2145,7 @@ STopt  [^\n@\\]*
                                           }
                                           else // overload declaration
                                           {
-                                            makeStructuralIndicator(yyscanner,Entry::OVERLOADDOC_SEC);
+                                            makeStructuralIndicator(yyscanner,EntryType::makeOverloadDoc());
                                             yyextra->langParser->parsePrototype(yyextra->functionProto);
                                           }
                                           BEGIN( Comment );
@@ -2309,7 +2308,7 @@ static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector 
 static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::MEMBERDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMemberDoc());
   yyextra->functionProto.resize(0);
   yyextra->braceCount=0;
   BEGIN(FnParam);
@@ -2319,7 +2318,7 @@ static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &)
 static bool handleDef(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::DEFINEDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeDefineDoc());
   yyextra->functionProto.resize(0);
   BEGIN(FnParam);
   return stop;
@@ -2336,7 +2335,7 @@ static bool handleOverload(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleEnum(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::ENUMDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeEnumDoc());
   BEGIN(EnumDocArg1);
   return stop;
 }
@@ -2344,7 +2343,7 @@ static bool handleEnum(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc());
   yyextra->current->groupDocType = Entry::GROUPDOC_NORMAL;
   BEGIN( GroupDocArg1 );
   return stop;
@@ -2353,7 +2352,7 @@ static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc());
   yyextra->current->groupDocType = Entry::GROUPDOC_ADD;
   BEGIN( GroupDocArg1 );
   return stop;
@@ -2362,7 +2361,7 @@ static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVe
 static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc());
   yyextra->current->groupDocType = Entry::GROUPDOC_WEAK;
   BEGIN( GroupDocArg1 );
   return stop;
@@ -2371,7 +2370,7 @@ static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVec
 static bool handleNamespace(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::NAMESPACEDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeNamespaceDoc());
   BEGIN( NameSpaceDocArg1 );
   return stop;
 }
@@ -2379,7 +2378,7 @@ static bool handleNamespace(yyscan_t yyscanner,const QCString &, const StringVec
 static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::PACKAGEDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makePackageDoc());
   BEGIN( PackageDocArg1 );
   return stop;
 }
@@ -2387,7 +2386,7 @@ static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVecto
 static bool handleClass(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::CLASSDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeClassDoc());
   yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
@@ -2396,7 +2395,7 @@ static bool handleClass(yyscan_t yyscanner,const QCString &cmd, const StringVect
 static bool handleConcept(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::CONCEPTDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeConceptDoc());
   yyextra->currentCmd = cmd;
   BEGIN( ConceptDocArg1 );
   return stop;
@@ -2405,7 +2404,7 @@ static bool handleConcept(yyscan_t yyscanner,const QCString &cmd, const StringVe
 static bool handleModule(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::MODULEDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeModuleDoc());
   yyextra->currentCmd = cmd;
   BEGIN( ModuleDocArg1 );
   return stop;
@@ -2422,7 +2421,7 @@ static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const StringVe
 static bool handleProtocol(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 { // Obj-C protocol
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::PROTOCOLDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeProtocolDoc());
   yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
@@ -2431,7 +2430,7 @@ static bool handleProtocol(yyscan_t yyscanner,const QCString &cmd, const StringV
 static bool handleCategory(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 { // Obj-C category
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::CATEGORYDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeCategoryDoc());
   yyextra->currentCmd = cmd;
   BEGIN( CategoryDocArg1 );
   return stop;
@@ -2440,7 +2439,7 @@ static bool handleCategory(yyscan_t yyscanner,const QCString &cmd, const StringV
 static bool handleUnion(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::UNIONDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeUnionDoc());
   yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
@@ -2449,7 +2448,7 @@ static bool handleUnion(yyscan_t yyscanner,const QCString &cmd, const StringVect
 static bool handleStruct(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::STRUCTDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeStructDoc());
   yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
@@ -2458,7 +2457,7 @@ static bool handleStruct(yyscan_t yyscanner,const QCString &cmd, const StringVec
 static bool handleInterface(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::INTERFACEDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeInterfaceDoc());
   yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
@@ -2467,7 +2466,7 @@ static bool handleInterface(yyscan_t yyscanner,const QCString &cmd, const String
 static bool handleIdlException(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::EXCEPTIONDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeExceptionDoc());
   yyextra->currentCmd = cmd;
   BEGIN( ClassDocArg1 );
   return stop;
@@ -2476,7 +2475,7 @@ static bool handleIdlException(yyscan_t yyscanner,const QCString &cmd, const Str
 static bool handlePage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::PAGEDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makePageDoc());
   BEGIN( PageDocArg1 );
   return stop;
 }
@@ -2484,7 +2483,7 @@ static bool handlePage(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::MAINPAGEDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMainpageDoc());
   if (!stop)
   {
     yyextra->current->name = "mainpage";
@@ -2497,7 +2496,7 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleFile(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::FILEDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeFileDoc());
   if (!stop)
   {
     yyextra->current->name = yyextra->fileName;
@@ -2527,7 +2526,7 @@ static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handleDir(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::DIRDOC_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeDirDoc());
   if (!stop) yyextra->current->name = yyextra->fileName;
   BEGIN( FileDocArg1 );
   return stop;
@@ -2536,12 +2535,12 @@ static bool handleDir(yyscan_t yyscanner,const QCString &, const StringVector &)
 static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  Entry::Sections section=Entry::EXAMPLE_SEC;
+  EntryType section = EntryType::makeExample();
   for (const auto &opt : optList)
   {
     if (opt=="lineno")
     {
-      section=Entry::EXAMPLE_LINENO_SEC;
+      section=EntryType::makeExampleLineno();
     }
     else
     {
@@ -2585,7 +2584,7 @@ static bool handleNoop(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleName(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::MEMBERGRP_SEC);
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMemberGrp());
   if (!stop)
   {
     yyextra->docGroup.clearHeader();
@@ -2740,9 +2739,9 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
 static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->section!=Entry::EMPTY_SEC &&
-      yyextra->current->section!=Entry::PAGEDOC_SEC &&
-      yyextra->current->section!=Entry::MAINPAGEDOC_SEC
+  if (!yyextra->current->section.isEmpty() &&
+      !yyextra->current->section.isPageDoc() &&
+      !yyextra->current->section.isMainpageDoc()
      )
   {
     warn(yyextra->fileName,yyextra->lineNr,
@@ -3349,8 +3348,8 @@ static bool handlePublicSection(yyscan_t yyscanner,const QCString &, const Strin
 static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->section==Entry::PAGEDOC_SEC ||
-      yyextra->current->section==Entry::MAINPAGEDOC_SEC)
+  if (yyextra->current->section.isPageDoc() ||
+      yyextra->current->section.isMainpageDoc())
   {
     for (const auto &opt_ : optList)
     {
@@ -3484,52 +3483,20 @@ static void initParser(yyscan_t yyscanner)
   yyextra->insideParBlock = FALSE;
 }
 
-
-static bool getDocSectionName(int s)
-{
-  switch(s)
-  {
-    case Entry::CLASSDOC_SEC:
-    case Entry::STRUCTDOC_SEC:
-    case Entry::UNIONDOC_SEC:
-    case Entry::EXCEPTIONDOC_SEC:
-    case Entry::NAMESPACEDOC_SEC:
-    case Entry::PROTOCOLDOC_SEC:
-    case Entry::CATEGORYDOC_SEC:
-    case Entry::ENUMDOC_SEC:
-    case Entry::PAGEDOC_SEC:
-    case Entry::VARIABLEDOC_SEC:
-    case Entry::MEMBERDOC_SEC:
-    case Entry::OVERLOADDOC_SEC:
-    case Entry::FILEDOC_SEC:
-    case Entry::DEFINEDOC_SEC:
-    case Entry::GROUPDOC_SEC:
-    case Entry::MAINPAGEDOC_SEC:
-    case Entry::PACKAGEDOC_SEC:
-    case Entry::DIRDOC_SEC:
-    case Entry::EXAMPLE_SEC:
-    case Entry::MEMBERGRP_SEC:
-    case Entry::CONCEPTDOC_SEC:
-      return TRUE;
-    default:
-      return FALSE;
-  }
-}
-
 //-----------------------------------------------------------------------------
 
-static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s)
+static bool makeStructuralIndicator(yyscan_t yyscanner,EntryType t)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("yyextra->current->section=%x\n",yyextra->current->section);
-  if (getDocSectionName(yyextra->current->section))
+  if (yyextra->current->section.isDoc())
   {
     return TRUE;
   }
   else
   {
     yyextra->needNewEntry = TRUE;
-    yyextra->current->section = s;
+    yyextra->current->section = t;
     yyextra->current->fileName = yyextra->fileName;
     yyextra->current->startLine = yyextra->lineNr;
     yyextra->current->docLine = yyextra->lineNr;
@@ -4115,13 +4082,13 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
 
   yyextra->current->doc=stripLeadingAndTrailingEmptyLines(yyextra->current->doc,yyextra->current->docLine);
 
-  if (yyextra->current->section==Entry::FILEDOC_SEC && yyextra->current->doc.isEmpty())
+  if (yyextra->current->section.isFileDoc() && yyextra->current->doc.isEmpty())
   {
     // to allow a comment block with just a @file command.
     yyextra->current->doc="\n\n";
   }
 
-  if (yyextra->current->section==Entry::MEMBERGRP_SEC &&
+  if (yyextra->current->section.isMemberGrp() &&
       yyextra->docGroup.isEmpty()) // @name section but no group started yet
   {
     yyextra->docGroup.open(yyextra->current,yyextra->fileName,yyextra->lineNr,true);

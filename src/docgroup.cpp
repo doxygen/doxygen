@@ -110,7 +110,7 @@ void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
   if (!implicit) m_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%zu\n",
   //  	qPrint(e->name),e->section,m_autoGroupStack.size());
-  if (e->section==Entry::GROUPDOC_SEC) // auto group
+  if (e->section.isGroupDoc()) // auto group
   {
     m_autoGroupStack.push_back(Grouping(e->name,e->groupingPri()));
   }
@@ -200,7 +200,7 @@ void DocGroup::initGroupInfo(Entry *e)
 
 void DocGroup::addDocs(Entry *e)
 {
-  if (e->section==Entry::MEMBERGRP_SEC)
+  if (e->section.isMemberGrp())
   {
     m_memberGroupDocs=e->brief.stripWhiteSpace();
     e->doc = stripLeadingAndTrailingEmptyLines(e->doc,e->docLine);

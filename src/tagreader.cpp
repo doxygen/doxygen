@@ -1395,7 +1395,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
         ev->type       = "@";
         ev->name       = evi.name;
         ev->id         = evi.clangid;
-        ev->section    = Entry::VARIABLE_SEC;
+        ev->section = EntryType::makeVariable();
         ev->tagInfoData.tagName    = m_tagName;
         ev->tagInfoData.anchor     = evi.anchor;
         ev->tagInfoData.fileName   = evi.file;
@@ -1409,7 +1409,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->fileName   = ce->fileName;
     me->id         = tmi.clangId;
     me->startLine  = tmi.lineNr;
-    if (ce->section == Entry::GROUPDOC_SEC)
+    if (ce->section.isGroupDoc())
     {
       me->groups.push_back(Grouping(ce->name,Grouping::GROUPING_INGROUP));
     }
@@ -1421,68 +1421,68 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     if (tmi.kind=="define")
     {
       me->type="#define";
-      me->section = Entry::DEFINE_SEC;
+      me->section = EntryType::makeDefine();
     }
     else if (tmi.kind=="enumvalue")
     {
-      me->section = Entry::VARIABLE_SEC;
+      me->section = EntryType::makeVariable();
       me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="property")
     {
-      me->section = Entry::VARIABLE_SEC;
+      me->section = EntryType::makeVariable();
       me->mtype = MethodTypes::Property;
     }
     else if (tmi.kind=="event")
     {
-      me->section = Entry::VARIABLE_SEC;
+      me->section = EntryType::makeVariable();
       me->mtype = MethodTypes::Event;
     }
     else if (tmi.kind=="variable")
     {
-      me->section = Entry::VARIABLE_SEC;
+      me->section = EntryType::makeVariable();
       me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="typedef")
     {
-      me->section = Entry::VARIABLE_SEC; //Entry::TYPEDEF_SEC;
+      me->section = EntryType::makeVariable();
       me->type.prepend("typedef ");
       me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="enumeration")
     {
-      me->section = Entry::ENUM_SEC;
+      me->section = EntryType::makeEnum();
       me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="function")
     {
-      me->section = Entry::FUNCTION_SEC;
+      me->section = EntryType::makeFunction();
       me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="signal")
     {
-      me->section = Entry::FUNCTION_SEC;
+      me->section = EntryType::makeFunction();
       me->mtype = MethodTypes::Signal;
     }
     else if (tmi.kind=="prototype")
     {
-      me->section = Entry::FUNCTION_SEC;
+      me->section = EntryType::makeFunction();
       me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="friend")
     {
-      me->section = Entry::FUNCTION_SEC;
+      me->section = EntryType::makeFunction();
       me->type.prepend("friend ");
       me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="dcop")
     {
-      me->section = Entry::FUNCTION_SEC;
+      me->section = EntryType::makeFunction();
       me->mtype = MethodTypes::DCOP;
     }
     else if (tmi.kind=="slot")
     {
-      me->section = Entry::FUNCTION_SEC;
+      me->section = EntryType::makeFunction();
       me->mtype = MethodTypes::Slot;
     }
     ce->moveToSubEntryAndKeep(me);
@@ -1502,7 +1502,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     if (tci)
     {
       std::shared_ptr<Entry> ce = std::make_shared<Entry>();
-      ce->section = Entry::CLASS_SEC;
+      ce->section = EntryType::makeClass();
       switch (tci->kind)
       {
         case TagClassInfo::Kind::Class:     break;
@@ -1594,7 +1594,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     if (tci)
     {
       std::shared_ptr<Entry> ce = std::make_shared<Entry>();
-      ce->section  = Entry::CONCEPT_SEC;
+      ce->section = EntryType::makeConcept();
       ce->name     = tci->name;
       addDocAnchors(ce,tci->docAnchors);
       ce->tagInfoData.tagName  = m_tagName;
@@ -1650,7 +1650,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     if (tni)
     {
       std::shared_ptr<Entry> ne = std::make_shared<Entry>();
-      ne->section  = Entry::NAMESPACE_SEC;
+      ne->section = EntryType::makeNamespace();
       ne->name     = tni->name;
       addDocAnchors(ne,tni->docAnchors);
       ne->tagInfoData.tagName  = m_tagName;
@@ -1671,7 +1671,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     if (tpgi)
     {
       std::shared_ptr<Entry> pe = std::make_shared<Entry>();
-      pe->section  = Entry::PACKAGE_SEC;
+      pe->section = EntryType::makePackage();
       pe->name     = tpgi->name;
       addDocAnchors(pe,tpgi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
@@ -1691,7 +1691,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     if (tgi)
     {
       std::shared_ptr<Entry> ge = std::make_shared<Entry>();
-      ge->section  = Entry::GROUPDOC_SEC;
+      ge->section = EntryType::makeGroupDoc();
       ge->name     = tgi->name;
       ge->type     = tgi->title;
       addDocAnchors(ge,tgi->docAnchors);
@@ -1732,7 +1732,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     {
       std::shared_ptr<Entry> pe = std::make_shared<Entry>();
       bool isIndex = (stripExtensionGeneral(tpi->filename,getFileNameExtension(tpi->filename))=="index");
-      pe->section  = isIndex ? Entry::MAINPAGEDOC_SEC : Entry::PAGEDOC_SEC;
+      pe->section  = isIndex ? EntryType::makeMainpageDoc() : EntryType::makePageDoc();
       pe->name     = tpi->name;
       pe->args     = tpi->title;
       for (const auto &subpage : tpi->subpages)

@@ -294,7 +294,7 @@ static void addPageToContext(PageDef *pd,Entry *root)
   if (root->parent()) // add the page to it's scope
   {
     QCString scope = root->parent()->name;
-    if (root->parent()->section==Entry::PACKAGEDOC_SEC)
+    if (root->parent()->section.isPackageDoc())
     {
       scope=substitute(scope,".","::");
     }
@@ -338,7 +338,7 @@ static void addRelatedPage(Entry *root)
 
 static void buildGroupListFiltered(const Entry *root,bool additional, bool includeExternal)
 {
-  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty() &&
+  if (root->section.isGroupDoc() && !root->name.isEmpty() &&
         ((!includeExternal && root->tagInfo()==0) ||
          ( includeExternal && root->tagInfo()!=0))
      )
@@ -422,14 +422,14 @@ static void buildGroupList(const Entry *root)
 
 static void findGroupScope(const Entry *root)
 {
-  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty() &&
+  if (root->section.isGroupDoc() && !root->name.isEmpty() &&
       root->parent() && !root->parent()->name.isEmpty())
   {
     GroupDef *gd;
     if ((gd=Doxygen::groupLinkedMap->find(root->name)))
     {
       QCString scope = root->parent()->name;
-      if (root->parent()->section==Entry::PACKAGEDOC_SEC)
+      if (root->parent()->section.isPackageDoc())
       {
         scope=substitute(scope,".","::");
       }
@@ -447,7 +447,7 @@ static void findGroupScope(const Entry *root)
 
 static void organizeSubGroupsFiltered(const Entry *root,bool additional)
 {
-  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
+  if (root->section.isGroupDoc() && !root->name.isEmpty())
   {
     AUTO_TRACE("additional={}",additional);
     if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
@@ -478,8 +478,7 @@ static void organizeSubGroups(const Entry *root)
 
 static void buildFileList(const Entry *root)
 {
-  if (((root->section==Entry::FILEDOC_SEC) ||
-        ((root->section & Entry::FILE_MASK) && Config_getBool(EXTRACT_ALL))) &&
+  if ((root->section.isFileDoc() || (root->section.isFile() && Config_getBool(EXTRACT_ALL))) &&
       !root->name.isEmpty() && !root->tagInfo() // skip any file coming from tag files
      )
   {
@@ -606,7 +605,7 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
     }
     else if (includeFile.isEmpty() && ifd &&
         // see if the file extension makes sense
-        guessSection(ifd->name())==Entry::HEADER_SEC)
+        guessSection(ifd->name()).isHeader())
     { // implicit assumption
       fd=ifd;
     }
@@ -861,9 +860,10 @@ std::unique_ptr<ArgumentList> getTemplateArgumentsFromName(
 }
 
 static
-ClassDef::CompoundType convertToCompoundType(int section,TypeSpecifier specifier)
+ClassDef::CompoundType convertToCompoundType(EntryType section,TypeSpecifier specifier)
 {
   ClassDef::CompoundType sec=ClassDef::Class;
+
   if (specifier.isStruct())
     sec=ClassDef::Struct;
   else if (specifier.isUnion())
@@ -881,39 +881,23 @@ ClassDef::CompoundType convertToCompoundType(int section,TypeSpecifier specifier
   else if (specifier.isSingleton())
     sec=ClassDef::Singleton;
 
-  switch(section)
-  {
-    //case Entry::UNION_SEC:
-    case Entry::UNIONDOC_SEC:
-      sec=ClassDef::Union;
-      break;
-      //case Entry::STRUCT_SEC:
-    case Entry::STRUCTDOC_SEC:
-      sec=ClassDef::Struct;
-      break;
-      //case Entry::INTERFACE_SEC:
-    case Entry::INTERFACEDOC_SEC:
-      sec=ClassDef::Interface;
-      break;
-      //case Entry::PROTOCOL_SEC:
-    case Entry::PROTOCOLDOC_SEC:
-      sec=ClassDef::Protocol;
-      break;
-      //case Entry::CATEGORY_SEC:
-    case Entry::CATEGORYDOC_SEC:
-      sec=ClassDef::Category;
-      break;
-      //case Entry::EXCEPTION_SEC:
-    case Entry::EXCEPTIONDOC_SEC:
-      sec=ClassDef::Exception;
-      break;
-    case Entry::SERVICEDOC_SEC:
-      sec=ClassDef::Service;
-      break;
-    case Entry::SINGLETONDOC_SEC:
-      sec=ClassDef::Singleton;
-      break;
-  }
+  if (section.isUnionDoc())
+    sec=ClassDef::Union;
+  else if (section.isStructDoc())
+    sec=ClassDef::Struct;
+  else if (section.isInterfaceDoc())
+    sec=ClassDef::Interface;
+  else if (section.isProtocolDoc())
+    sec=ClassDef::Protocol;
+  else if (section.isCategoryDoc())
+    sec=ClassDef::Category;
+  else if (section.isExceptionDoc())
+    sec=ClassDef::Exception;
+  else if (section.isServiceDoc())
+    sec=ClassDef::Service;
+  else if (section.isSingletonDoc())
+    sec=ClassDef::Singleton;
+
   return sec;
 }
 
@@ -924,7 +908,7 @@ static void addClassToContext(const Entry *root)
   FileDef *fd = root->fileDef();
 
   QCString scName;
-  if (root->parent()->section&Entry::SCOPE_MASK)
+  if (root->parent()->section.isScope())
   {
      scName=root->parent()->name;
   }
@@ -1081,7 +1065,7 @@ static void addClassToContext(const Entry *root)
       {
         addIncludeFile(cd,fd,root);
       }
-      if (fd && (root->section & Entry::COMPOUND_MASK))
+      if (fd && root->section.isCompound())
       {
         AUTO_TRACE_ADD("Inserting class {} in file {} (root->fileName='{}')", cd->name(), fd->name(), root->fileName);
         cd->setFileDef(fd);
@@ -1099,10 +1083,7 @@ static void addClassToContext(const Entry *root)
 // and all classes that have a documentation block before their definition.
 static void buildClassList(const Entry *root)
 {
-  if (
-        ((root->section & Entry::COMPOUND_MASK) ||
-         root->section==Entry::OBJCIMPL_SEC) && !root->name.isEmpty()
-     )
+  if ((root->section.isCompound() || root->section.isObjcImpl()) && !root->name.isEmpty())
   {
     AUTO_TRACE();
     addClassToContext(root);
@@ -1112,9 +1093,7 @@ static void buildClassList(const Entry *root)
 
 static void buildClassDocList(const Entry *root)
 {
-  if (
-       (root->section & Entry::COMPOUNDDOC_MASK) && !root->name.isEmpty()
-     )
+  if ((root->section.isCompoundDoc()) && !root->name.isEmpty())
   {
     AUTO_TRACE();
     addClassToContext(root);
@@ -1132,7 +1111,7 @@ static void addConceptToContext(const Entry *root)
   FileDef *fd = root->fileDef();
 
   QCString scName;
-  if (root->parent()->section&Entry::SCOPE_MASK)
+  if (root->parent()->section.isScope())
   {
      scName=root->parent()->name;
   }
@@ -1243,7 +1222,7 @@ static void addConceptToContext(const Entry *root)
 
 static void findModuleDocumentation(const Entry *root)
 {
-  if (root->section==Entry::MODULEDOC_SEC)
+  if (root->section.isModuleDoc())
   {
     AUTO_TRACE();
     ModuleManager::instance().addDocs(root);
@@ -1253,7 +1232,7 @@ static void findModuleDocumentation(const Entry *root)
 
 static void buildConceptList(const Entry *root)
 {
-  if (root->section & Entry::CONCEPT_SEC)
+  if (root->section.isConcept())
   {
     AUTO_TRACE();
     addConceptToContext(root);
@@ -1263,7 +1242,7 @@ static void buildConceptList(const Entry *root)
 
 static void buildConceptDocList(const Entry *root)
 {
-  if (root->section & Entry::CONCEPTDOC_SEC)
+  if (root->section.isConceptDoc())
   {
     AUTO_TRACE();
     addConceptToContext(root);
@@ -1648,9 +1627,9 @@ static void findTagLessClasses()
 static void buildNamespaceList(const Entry *root)
 {
   if (
-       (root->section==Entry::NAMESPACE_SEC ||
-        root->section==Entry::NAMESPACEDOC_SEC ||
-        root->section==Entry::PACKAGEDOC_SEC
+       (root->section.isNamespace() ||
+        root->section.isNamespaceDoc() ||
+        root->section.isPackageDoc()
        ) &&
        !root->name.isEmpty()
      )
@@ -1658,7 +1637,7 @@ static void buildNamespaceList(const Entry *root)
     AUTO_TRACE("name={}",root->name);
 
     QCString fName = root->name;
-    if (root->section==Entry::PACKAGEDOC_SEC)
+    if (root->section.isPackageDoc())
     {
       fName=substitute(fName,".","::");
     }
@@ -1827,7 +1806,7 @@ static NamespaceDef *findUsedNamespace(const LinkedRefMap<NamespaceDef> &unl,
 
 static void findUsingDirectives(const Entry *root)
 {
-  if (root->section==Entry::USINGDIR_SEC)
+  if (root->section.isUsingDir())
   {
     AUTO_TRACE("Found using directive {} at line {} of {}",root->name,root->startLine,root->fileName);
     QCString name=substitute(root->name,".","::");
@@ -1844,7 +1823,7 @@ static void findUsingDirectives(const Entry *root)
 
       // see if the using statement was found inside a namespace or inside
       // the global file scope.
-      if (root->parent() && root->parent()->section==Entry::NAMESPACE_SEC &&
+      if (root->parent() && root->parent()->section.isNamespace() &&
           (fd==0 || fd->getLanguage()!=SrcLangExt_Java) // not a .java file
          )
       {
@@ -1969,8 +1948,8 @@ static void findUsingDirectives(const Entry *root)
 
 static void buildListOfUsingDecls(const Entry *root)
 {
-  if (root->section==Entry::USINGDECL_SEC &&
-      !(root->parent()->section&Entry::COMPOUND_MASK) // not a class/struct member
+  if (root->section.isUsingDecl() &&
+      !root->parent()->section.isCompound() // not a class/struct member
      )
   {
     QCString name = substitute(root->name,".","::");
@@ -1982,12 +1961,12 @@ static void buildListOfUsingDecls(const Entry *root)
 
 static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
 {
-  if (root->section==Entry::USINGDECL_SEC &&
-      !(root->parent()->section&Entry::COMPOUND_MASK) && // not a class/struct member
+  if (root->section.isUsingDecl() &&
+      !root->parent()->section.isCompound() && // not a class/struct member
       (!filterPythonPackages || (root->lang==SrcLangExt_Python && root->fileName.endsWith("__init__.py")))
      )
   {
-    AUTO_TRACE("Found using declaration '{}' at line {} of {} inside section {:#10x}",
+    AUTO_TRACE("Found using declaration '{}' at line {} of {} inside section {}",
        root->name,root->startLine,root->fileName,root->parent()->section);
     if (!root->name.isEmpty())
     {
@@ -1998,7 +1977,7 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
 
       // see if the using statement was found inside a namespace or inside
       // the global file scope.
-      if (root->parent()->section == Entry::NAMESPACE_SEC)
+      if (root->parent()->section.isNamespace())
       {
         scName=root->parent()->name;
         if (!scName.isEmpty())
@@ -2029,7 +2008,7 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
 
       if (usingCd==0) // definition not in the input => add an artificial class
       {
-        AUTO_TRACE_ADD("New using class '{}' (sec={:10x})! #tArgLists={}",
+        AUTO_TRACE_ADD("New using class '{}' (sec={})! #tArgLists={}",
              name,root->section,root->tArgLists.size());
         usingCd = toClassDefMutable(
              Doxygen::hiddenClassLinkedMap->add(name,
@@ -2063,8 +2042,8 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
 
 static void findUsingDeclImports(const Entry *root)
 {
-  if (root->section==Entry::USINGDECL_SEC &&
-      (root->parent()->section&Entry::COMPOUND_MASK) // in a class/struct member
+  if (root->section.isUsingDecl() &&
+      root->parent()->section.isCompound() // in a class/struct member
      )
   {
     AUTO_TRACE("Found using declaration '{}' inside section {:#10x}", root->name, root->parent()->section);
@@ -2630,7 +2609,7 @@ static bool isVarWithConstructor(const Entry *root)
   SymbolResolver resolver(fd);
 
   AUTO_TRACE("isVarWithConstructor({})",root->name);
-  if (root->parent()->section & Entry::COMPOUND_MASK)
+  if (root->parent()->section.isCompound())
   { // inside a class
     result=FALSE;
     AUTO_TRACE_EXIT("inside class: result={}",result);
@@ -2804,7 +2783,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
   // find the scope of this variable
   int index = computeQualifiedIndex(name);
-  if (index!=-1 && root->parent()->section==Entry::GROUPDOC_SEC && root->parent()->tagInfo())
+  if (index!=-1 && root->parent()->section.isGroupDoc() && root->parent()->tagInfo())
     // grouped members are stored with full scope
   {
     buildScopeFromQualifiedName(name.left(index+2),root->lang,root->tagInfo());
@@ -2814,7 +2793,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   else
   {
     Entry *p = root->parent();
-    while ((p->section & Entry::SCOPE_MASK))
+    while (p->section.isScope())
     {
       QCString scopeName = p->name;
       if (!scopeName.isEmpty())
@@ -2983,7 +2962,7 @@ static void buildTypedefList(const Entry *root)
 {
   //printf("buildVarList(%s)\n",qPrint(rootNav->name()));
   if (!root->name.isEmpty() &&
-      root->section==Entry::VARIABLE_SEC &&
+      root->section.isVariable() &&
       root->type.find("typedef ")!=-1 // its a typedef
      )
   {
@@ -2991,7 +2970,7 @@ static void buildTypedefList(const Entry *root)
     addVariable(root);
   }
   for (const auto &e : root->children())
-    if (e->section!=Entry::ENUM_SEC)
+    if (!e->section.isEnum())
       buildTypedefList(e.get());
 }
 
@@ -3001,7 +2980,7 @@ static void buildTypedefList(const Entry *root)
 static void buildSequenceList(const Entry *root)
 {
   if (!root->name.isEmpty() &&
-      root->section==Entry::VARIABLE_SEC &&
+      root->section.isVariable() &&
       root->type.find("sequence<")!=-1 // it's a sequence
      )
   {
@@ -3009,7 +2988,7 @@ static void buildSequenceList(const Entry *root)
     addVariable(root);
   }
   for (const auto &e : root->children())
-    if (e->section!=Entry::ENUM_SEC)
+    if (!e->section.isEnum())
       buildSequenceList(e.get());
 }
 
@@ -3019,7 +2998,7 @@ static void buildSequenceList(const Entry *root)
 static void buildDictionaryList(const Entry *root)
 {
   if (!root->name.isEmpty() &&
-      root->section==Entry::VARIABLE_SEC &&
+      root->section.isVariable() &&
       root->type.find("dictionary<")!=-1 // it's a dictionary
      )
   {
@@ -3027,7 +3006,7 @@ static void buildDictionaryList(const Entry *root)
     addVariable(root);
   }
   for (const auto &e : root->children())
-    if (e->section!=Entry::ENUM_SEC)
+    if (!e->section.isEnum())
       buildDictionaryList(e.get());
 }
 
@@ -3042,12 +3021,12 @@ static void buildVarList(const Entry *root)
   if (!root->name.isEmpty() &&
       (root->type.isEmpty() || g_compoundKeywords.find(root->type.str())==g_compoundKeywords.end()) &&
       (
-       (root->section==Entry::VARIABLE_SEC    // it's a variable
+       (root->section.isVariable()    // it's a variable
        ) ||
-       (root->section==Entry::FUNCTION_SEC && // or maybe a function pointer variable
+       (root->section.isFunction() && // or maybe a function pointer variable
         (isFuncPtr=findFunctionPtr(root->type.str(),root->lang))!=-1
        ) ||
-       (root->section==Entry::FUNCTION_SEC && // class variable initialized by constructor
+       (root->section.isFunction() && // class variable initialized by constructor
         isVarWithConstructor(root)
        )
       )
@@ -3057,7 +3036,7 @@ static void buildVarList(const Entry *root)
     addVariable(root,isFuncPtr);
   }
   for (const auto &e : root->children())
-    if (e->section!=Entry::ENUM_SEC)
+    if (!e->section.isEnum())
       buildVarList(e.get());
 }
 
@@ -3072,9 +3051,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
         QCString const& rname)
 {
   FileDef *fd = root->fileDef();
-  enum MemberType type = (root->section==Entry::EXPORTED_INTERFACE_SEC)
-      ? MemberType_Interface
-      : MemberType_Service;
+  enum MemberType type = root->section.isExportedInterface() ? MemberType_Interface : MemberType_Service;
   QCString fileName = root->fileName;
   if (fileName.isEmpty() && root->tagInfo())
   {
@@ -3136,8 +3113,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
 
 static void buildInterfaceAndServiceList(const Entry *root)
 {
-  if (root->section==Entry::EXPORTED_INTERFACE_SEC ||
-      root->section==Entry::INCLUDED_SERVICE_SEC)
+  if (root->section.isExportedInterface() || root->section.isIncludedService())
   {
     AUTO_TRACE("Exported interface/included service: type='{}' scope='{}' name='{}' args='{}'"
                " relates='{}' relatesType='{}' file='{}' line={} bodyLine={} #tArgLists={}"
@@ -3365,7 +3341,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   NamespaceDefMutable *nd = 0;
   // see if the function is inside a namespace that was not part of
   // the name already (in that case nd should be non-zero already)
-  if (root->parent()->section == Entry::NAMESPACE_SEC )
+  if (root->parent()->section.isNamespace())
   {
     //QCString nscope=removeAnonymousScopes(root->parent()->name);
     QCString nscope=root->parent()->name;
@@ -3374,7 +3350,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
       nd = getResolvedNamespaceMutable(nscope);
     }
   }
-  else if (root->parent()->section==Entry::GROUPDOC_SEC && !scope.isEmpty())
+  else if (root->parent()->section.isGroupDoc() && !scope.isEmpty())
   {
     nd = getResolvedNamespaceMutable(sc);
   }
@@ -3442,7 +3418,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
 
 static void buildFunctionList(const Entry *root)
 {
-  if (root->section==Entry::FUNCTION_SEC)
+  if (root->section.isFunction())
   {
     AUTO_TRACE("member function: type='{}' scope='{}' name='{}' args='{}' relates='{}' relatesType='{}'"
                " file='{}' line={} bodyLine={} #tArgLists={} mGrpId={}"
@@ -3457,7 +3433,7 @@ static void buildFunctionList(const Entry *root)
 
     QCString scope;
     int index = computeQualifiedIndex(rname);
-    if (index!=-1 && root->parent()->section==Entry::GROUPDOC_SEC && root->parent()->tagInfo())
+    if (index!=-1 && root->parent()->section.isGroupDoc() && root->parent()->tagInfo())
       // grouped members are stored with full scope
     {
       buildScopeFromQualifiedName(rname.left(index+2),root->lang,root->tagInfo());
@@ -3511,18 +3487,13 @@ static void buildFunctionList(const Entry *root)
         }
       }
 
-      if (!root->parent()->name.isEmpty() &&
-          (root->parent()->section & Entry::COMPOUND_MASK) &&
-          cd
-         )
+      if (!root->parent()->name.isEmpty() && root->parent()->section.isCompound() && cd)
       {
         AUTO_TRACE_ADD("member '{}' of class '{}'", rname,cd->name());
         addMethodToClass(root,cd,root->type,rname,root->args,isFriend,
                          root->protection,root->isStatic,root->virt,root->spec,root->relates);
       }
-      else if (!((root->parent()->section & Entry::COMPOUND_MASK)
-                 || root->parent()->section==Entry::OBJCIMPL_SEC
-                ) &&
+      else if (!root->parent()->section.isCompound() && !root->parent()->section.isObjcImpl() &&
                !isMember &&
                (root->relates.isEmpty() || root->relatesType==RelatesType::Duplicate) &&
                !root->type.startsWith("extern ") && !root->type.startsWith("typedef ")
@@ -4514,8 +4485,9 @@ static bool findClassRelation(
           // sadly isRecursiveBaseClass always true for UNO IDL ifc/svc members
           // (i.e. this is needed for addInterfaceOrServiceToServiceOrSingleton)
           || (root->lang==SrcLangExt_IDL &&
-              (root->section==Entry::EXPORTED_INTERFACE_SEC ||
-               root->section==Entry::INCLUDED_SERVICE_SEC)))
+              (root->section.isExportedInterface() ||
+               root->section.isIncludedService()))
+         )
       {
         AUTO_TRACE_ADD("class relation '{}' inherited/used by '{}' found prot={} virt={} templSpec='{}'",
             baseClassName, root->name, bi->prot, bi->virt, templSpec);
@@ -4788,12 +4760,12 @@ static bool isClassSection(const Entry *root)
 {
   if ( !root->name.isEmpty() )
   {
-    if (root->section & Entry::COMPOUND_MASK)
+    if (root->section.isCompound())
          // is it a compound (class, struct, union, interface ...)
     {
       return TRUE;
     }
-    else if (root->section & Entry::COMPOUNDDOC_MASK)
+    else if (root->section.isCompoundDoc())
          // is it a documentation block with inheritance info.
     {
       bool hasExtends = !root->extends.empty();
@@ -4891,7 +4863,7 @@ static void computeClassRelations()
         !bName.endsWith("::"))
     {
       if (!root->name.isEmpty() && root->name.find('@')==-1 && // normal name
-          (guessSection(root->fileName)==Entry::HEADER_SEC ||
+          (guessSection(root->fileName).isHeader() ||
            Config_getBool(EXTRACT_LOCAL_CLASSES)) && // not defined in source file
            protectionLevelVisible(root->protection) && // hidden by protection
            !Config_getBool(HIDE_UNDOC_CLASSES) // undocumented class are visible
@@ -5453,7 +5425,7 @@ static bool findGlobalMember(const Entry *root,
         }
       }
     }
-    if (!found && root->relatesType!=RelatesType::Duplicate && root->section==Entry::FUNCTION_SEC) // no match
+    if (!found && root->relatesType!=RelatesType::Duplicate && root->section.isFunction()) // no match
     {
       QCString fullFuncDecl=decl;
       if (!root->argList.empty()) fullFuncDecl+=argListToString(root->argList,TRUE);
@@ -5829,7 +5801,7 @@ static void addMemberFunction(const Entry *root,
             cd,fd,&root->argList,
             TRUE,root->lang);
 
-      if (md->getLanguage()==SrcLangExt_ObjC && md->isVariable() && (root->section&Entry::FUNCTION_SEC))
+      if (md->getLanguage()==SrcLangExt_ObjC && md->isVariable() && root->section.isFunction())
       {
         matching = FALSE; // don't match methods and attributes with the same name
       }
@@ -5858,7 +5830,7 @@ static void addMemberFunction(const Entry *root,
         substDone = false;
         matching  = false;
       }
-      bool rootIsUserDoc = (root->section&Entry::MEMBERDOC_SEC)!=0;
+      bool rootIsUserDoc   = root->section.isMemberDoc();
       bool classIsTemplate = scopeIsTemplate(md->getClassDef());
       bool mdIsTemplate    = md->templateArguments().hasParameters();
       bool classOrMdIsTemplate = mdIsTemplate || classIsTemplate;
@@ -5914,8 +5886,7 @@ static void addMemberFunction(const Entry *root,
 
     if (memFound) break;
   }
-  if (count==0 && root->parent() &&
-      root->parent()->section==Entry::OBJCIMPL_SEC)
+  if (count==0 && root->parent() && root->parent()->section.isObjcImpl())
   {
     addLocalObjCMethod(root,scopeName,funcType,funcName,funcArgs,exceptions,funcDecl,spec);
     return;
@@ -6310,11 +6281,9 @@ static void findMember(const Entry *root,
   }
 
   if (relates.isEmpty() && root->parent() &&
-      ((root->parent()->section&Entry::SCOPE_MASK) ||
-       (root->parent()->section==Entry::OBJCIMPL_SEC)
-      ) &&
+      (root->parent()->section.isScope() || root->parent()->section.isObjcImpl()) &&
       !root->parent()->name.isEmpty()) // see if we can combine scopeName
-                                     // with the scope in which it was found
+                                       // with the scope in which it was found
   {
     QCString joinedName = root->parent()->name+"::"+scopeName;
     if (!scopeName.isEmpty() &&
@@ -6781,7 +6750,7 @@ static void findMember(const Entry *root,
                   );
       }
     }
-    else if (root->parent() && root->parent()->section==Entry::OBJCIMPL_SEC)
+    else if (root->parent() && root->parent()->section.isObjcImpl())
     {
       addLocalObjCMethod(root,scopeName,funcType,funcName,funcArgs,exceptions,funcDecl,spec);
     }
@@ -6844,7 +6813,7 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
   }
 
   //printf("Member %s isFunc=%d\n",qPrint(root->name),isFunc);
-  if (root->section==Entry::MEMBERDOC_SEC)
+  if (root->section.isMemberDoc())
   {
     //printf("Documentation for inline member '%s' found args='%s'\n",
     //    qPrint(root->name),qPrint(args));
@@ -6870,7 +6839,7 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
                  isFunc);
     }
   }
-  else if (root->section==Entry::OVERLOADDOC_SEC)
+  else if (root->section.isOverloadDoc())
   {
     //printf("Overloaded member %s found\n",qPrint(root->name));
     findMember(root,
@@ -6882,9 +6851,9 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
                isFunc);
   }
   else if
-    ((root->section==Entry::FUNCTION_SEC      // function
+    ((root->section.isFunction()      // function
       ||
-      (root->section==Entry::VARIABLE_SEC &&  // variable
+      (root->section.isVariable() &&  // variable
        !type.isEmpty() &&                // with a type
        g_compoundKeywords.find(type.str())==g_compoundKeywords.end() // that is not a keyword
        // (to skip forward declaration of class etc.)
@@ -6926,7 +6895,7 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
             FALSE,isFunc);
       }
     }
-  else if (root->section==Entry::DEFINE_SEC && !relates.isEmpty())
+  else if (root->section.isDefine() && !relates.isEmpty())
   {
     findMember(root,
                relates,
@@ -6936,7 +6905,7 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
                FALSE,
                !args.isEmpty());
   }
-  else if (root->section==Entry::VARIABLEDOC_SEC)
+  else if (root->section.isVariableDoc())
   {
     //printf("Documentation for variable %s found\n",qPrint(root->name));
     //if (!relates.isEmpty()) printf("  Relates %s\n",qPrint(relates));
@@ -6948,8 +6917,8 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
                FALSE,
                FALSE);
   }
-  else if (root->section==Entry::EXPORTED_INTERFACE_SEC ||
-           root->section==Entry::INCLUDED_SERVICE_SEC)
+  else if (root->section.isExportedInterface() ||
+           root->section.isIncludedService())
   {
     findMember(root,
                relates,
@@ -6968,14 +6937,14 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
 
 static void findMemberDocumentation(const Entry *root)
 {
-  if (root->section==Entry::MEMBERDOC_SEC ||
-      root->section==Entry::OVERLOADDOC_SEC ||
-      root->section==Entry::FUNCTION_SEC ||
-      root->section==Entry::VARIABLE_SEC ||
-      root->section==Entry::VARIABLEDOC_SEC ||
-      root->section==Entry::DEFINE_SEC ||
-      root->section==Entry::INCLUDED_SERVICE_SEC ||
-      root->section==Entry::EXPORTED_INTERFACE_SEC
+  if (root->section.isMemberDoc() ||
+      root->section.isOverloadDoc() ||
+      root->section.isFunction() ||
+      root->section.isVariable() ||
+      root->section.isVariableDoc() ||
+      root->section.isDefine() ||
+      root->section.isIncludedService() ||
+      root->section.isExportedInterface()
      )
   {
     AUTO_TRACE();
@@ -6987,7 +6956,7 @@ static void findMemberDocumentation(const Entry *root)
   }
   for (const auto &e : root->children())
   {
-    if (e->section!=Entry::ENUM_SEC)
+    if (!e->section.isEnum())
     {
       findMemberDocumentation(e.get());
     }
@@ -7001,11 +6970,11 @@ static void findObjCMethodDefinitions(const Entry *root)
   AUTO_TRACE();
   for (const auto &objCImpl : root->children())
   {
-    if (objCImpl->section==Entry::OBJCIMPL_SEC)
+    if (objCImpl->section.isObjcImpl())
     {
       for (const auto &objCMethod : objCImpl->children())
       {
-        if (objCMethod->section==Entry::FUNCTION_SEC)
+        if (objCMethod->section.isFunction())
         {
           //Printf("  Found ObjC method definition %s\n",qPrint(objCMethod->name));
           findMember(objCMethod.get(),
@@ -7014,7 +6983,7 @@ static void findObjCMethodDefinitions(const Entry *root)
                      objCMethod->args,
                      objCMethod->type+" "+objCImpl->name+"::"+objCMethod->name+" "+objCMethod->args,
                      FALSE,TRUE);
-          objCMethod->section=Entry::EMPTY_SEC;
+          objCMethod->section=EntryType::makeEmpty();
         }
       }
     }
@@ -7026,7 +6995,7 @@ static void findObjCMethodDefinitions(const Entry *root)
 
 static void findEnums(const Entry *root)
 {
-  if (root->section==Entry::ENUM_SEC)
+  if (root->section.isEnum())
   {
     ClassDefMutable *cd=0;
     FileDef         *fd=0;
@@ -7052,9 +7021,7 @@ static void findEnums(const Entry *root)
     }
     else // no scope, check the scope in which the docs where found
     {
-      if (( root->parent()->section & Entry::SCOPE_MASK )
-          && !root->parent()->name.isEmpty()
-         ) // found enum docs inside a compound
+      if (root->parent()->section.isScope() && !root->parent()->name.isEmpty()) // found enum docs inside a compound
       {
         scope=root->parent()->name;
         if ((cd=getClassMutable(scope))==0) nd=getResolvedNamespaceMutable(scope);
@@ -7201,7 +7168,7 @@ static void findEnums(const Entry *root)
 
 static void addEnumValuesToEnums(const Entry *root)
 {
-  if (root->section==Entry::ENUM_SEC)
+  if (root->section.isEnum())
     // non anonymous enumeration
   {
     ClassDefMutable     *cd=0;
@@ -7227,9 +7194,7 @@ static void addEnumValuesToEnums(const Entry *root)
     }
     else // no scope, check the scope in which the docs where found
     {
-      if (( root->parent()->section & Entry::SCOPE_MASK )
-          && !root->parent()->name.isEmpty()
-         ) // found enum docs inside a compound
+      if (root->parent()->section.isScope() && !root->parent()->name.isEmpty()) // found enum docs inside a compound
       {
         scope=root->parent()->name;
         if ((cd=getClassMutable(scope))==0) nd=getResolvedNamespaceMutable(scope);
@@ -7501,9 +7466,9 @@ static bool tryAddEnumDocsToGroupMember(const Entry *root,const QCString &name)
 
 static void findEnumDocumentation(const Entry *root)
 {
-  if (root->section==Entry::ENUMDOC_SEC
-      && !root->name.isEmpty()
-      && root->name.at(0)!='@'        // skip anonymous enums
+  if (root->section.isEnumDoc() &&
+     !root->name.isEmpty() &&
+      root->name.at(0)!='@'        // skip anonymous enums
      )
   {
     int i;
@@ -7519,9 +7484,7 @@ static void findEnumDocumentation(const Entry *root)
     {
       name=root->name;
     }
-    if (( root->parent()->section & Entry::SCOPE_MASK )
-        && !root->parent()->name.isEmpty()
-       ) // found enum docs inside a compound
+    if (root->parent()->section.isScope() && !root->parent()->name.isEmpty()) // found enum docs inside a compound
     {
       if (!scope.isEmpty()) scope.prepend("::");
       scope.prepend(root->parent()->name);
@@ -9006,9 +8969,7 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
 
 static void findDefineDocumentation(Entry *root)
 {
-  if ((root->section==Entry::DEFINEDOC_SEC ||
-       root->section==Entry::DEFINE_SEC) && !root->name.isEmpty()
-     )
+  if ((root->section.isDefineDoc() || root->section.isDefine()) && !root->name.isEmpty())
   {
     //printf("found define '%s' '%s' brief='%s' doc='%s'\n",
     //       qPrint(root->name),qPrint(root->args),qPrint(root->brief),qPrint(root->doc));
@@ -9101,7 +9062,7 @@ static void findDefineDocumentation(Entry *root)
 
 static void findDirDocumentation(const Entry *root)
 {
-  if (root->section == Entry::DIRDOC_SEC)
+  if (root->section.isDirDoc())
   {
     QCString normalizedName = root->name;
     normalizedName = substitute(normalizedName,"\\","/");
@@ -9164,14 +9125,14 @@ static void findDirDocumentation(const Entry *root)
 
 static void buildPageList(Entry *root)
 {
-  if (root->section == Entry::PAGEDOC_SEC)
+  if (root->section.isPageDoc())
   {
     if (!root->name.isEmpty())
     {
       addRelatedPage(root);
     }
   }
-  else if (root->section == Entry::MAINPAGEDOC_SEC)
+  else if (root->section.isMainpageDoc())
   {
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
@@ -9191,7 +9152,7 @@ static void buildPageList(Entry *root)
 // search for the main page defined in this project
 static void findMainPage(Entry *root)
 {
-  if (root->section == Entry::MAINPAGEDOC_SEC)
+  if (root->section.isMainpageDoc())
   {
     if (Doxygen::mainPage==0 && root->tagInfo()==0)
     {
@@ -9261,7 +9222,7 @@ static void findMainPage(Entry *root)
 // search for the main page imported via tag files and add only the section labels
 static void findMainPageTagFiles(Entry *root)
 {
-  if (root->section == Entry::MAINPAGEDOC_SEC)
+  if (root->section.isMainpageDoc())
   {
     if (Doxygen::mainPage && root->tagInfo())
     {
@@ -9273,13 +9234,9 @@ static void findMainPageTagFiles(Entry *root)
 
 static void computePageRelations(Entry *root)
 {
-  if ((root->section==Entry::PAGEDOC_SEC ||
-       root->section==Entry::MAINPAGEDOC_SEC
-      )
-      && !root->name.isEmpty()
-     )
+  if ((root->section.isPageDoc() || root->section.isMainpageDoc()) && !root->name.isEmpty())
   {
-    PageDef *pd = root->section==Entry::PAGEDOC_SEC ?
+    PageDef *pd = root->section.isPageDoc() ?
                     Doxygen::pageLinkedMap->find(root->name) :
                     Doxygen::mainPage.get();
     if (pd)
@@ -9412,7 +9369,7 @@ static void generatePageDocs()
 
 static void buildExampleList(Entry *root)
 {
-  if ((root->section==Entry::EXAMPLE_SEC || root->section==Entry::EXAMPLE_LINENO_SEC) && !root->name.isEmpty())
+  if ((root->section.isExample() || root->section.isExampleLineno()) && !root->name.isEmpty())
   {
     if (Doxygen::exampleLinkedMap->find(root->name))
     {
@@ -9431,7 +9388,7 @@ static void buildExampleList(Entry *root)
       pd->setFileName(convertNameToFile(pd->name()+"-example",FALSE,TRUE));
       pd->addSectionsToDefinition(root->anchors);
       pd->setLanguage(root->lang);
-      pd->setShowLineNo(root->section==Entry::EXAMPLE_LINENO_SEC);
+      pd->setShowLineNo(root->section.isExampleLineno());
 
       //we don't add example to groups
       //addExampleToGroups(root,pd);
@@ -9449,12 +9406,12 @@ void printNavTree(Entry *root,int indent)
   {
     QCString indentStr;
     indentStr.fill(' ',indent);
-    Debug::print(Debug::Entries,0,"%s%s at %s:%d (sec=0x%x, spec=%" PRIx64 ")\n",
+    Debug::print(Debug::Entries,0,"%s%s at %s:%d (sec=%s, spec=%s)\n",
         indentStr.isEmpty()?"":qPrint(indentStr),
         root->name.isEmpty()?"<empty>":qPrint(root->name),
         qPrint(root->fileName),root->startLine,
-        root->section,
-        root->spec);
+        root->section.to_string().c_str(),
+        root->spec.to_string().c_str());
     for (const auto &e : root->children())
     {
       printNavTree(e.get(),indent+2);

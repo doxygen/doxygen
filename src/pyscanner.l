@@ -311,7 +311,7 @@ STARTDOCSYMS      "##"
                           BEGIN( Import );
                        }
      ^{B}{IDENTIFIER}/{B}"="{B}"property" { // property
-                        yyextra->current->section   = Entry::VARIABLE_SEC;
+                        yyextra->current->section   = EntryType::makeVariable();
                         yyextra->current->mtype     = MethodTypes::Property;
                         yyextra->current->name      = QCString(yytext).stripWhiteSpace();
                         yyextra->current->fileName  = yyextra->fileName;
@@ -323,7 +323,7 @@ STARTDOCSYMS      "##"
      ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
                         if (yyextra->searchCount>0) REJECT;
                         yyextra->indent=computeIndent(yytext);
-                        yyextra->current->section   = Entry::VARIABLE_SEC;
+                        yyextra->current->section   = EntryType::makeVariable();
                         yyextra->current->name      = QCString(yytext).stripWhiteSpace();
                         yyextra->current->fileName  = yyextra->fileName;
                         yyextra->current->startLine = yyextra->yyLineNr;
@@ -336,7 +336,7 @@ STARTDOCSYMS      "##"
                         QCString id = QCString(yytext).stripWhiteSpace();
                         if (id =="try" || id == "else" || id == "except" || id == "finally") REJECT;
                         yyextra->indent=computeIndent(yytext);
-                        yyextra->current->section   = Entry::VARIABLE_SEC;
+                        yyextra->current->section   = EntryType::makeVariable();
                         yyextra->current->name      = id;
                         yyextra->current->fileName  = yyextra->fileName;
                         yyextra->current->startLine = yyextra->yyLineNr;
@@ -350,7 +350,7 @@ STARTDOCSYMS      "##"
                                                                // is caught in the rule: [(], the ")" will be handled in [)]
                         if (yyextra->searchCount>1) REJECT;
                         yyextra->indent=computeIndent(yytext);
-                        yyextra->current->section   = Entry::VARIABLE_SEC;
+                        yyextra->current->section   = EntryType::makeVariable();
                         yyextra->current->name      = QCString(yytext).stripWhiteSpace();
                         yyextra->current->fileName  = yyextra->fileName;
                         yyextra->current->startLine = yyextra->yyLineNr;
@@ -509,7 +509,7 @@ STARTDOCSYMS      "##"
                         yyextra->current->name=removeRedundantWhiteSpace(substitute(yytext,".","::"));
                         yyextra->current->fileName = yyextra->fileName;
                         //printf("Adding using declaration: found:%s:%d name=%s\n",qPrint(yyextra->fileName),yyextra->yyLineNr,qPrint(yyextra->current->name));
-                        yyextra->current->section=Entry::USINGDECL_SEC;
+                        yyextra->current->section=EntryType::makeUsingDecl();
                         yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                         initEntry(yyscanner);
                         BEGIN(Search);
@@ -1048,13 +1048,13 @@ STARTDOCSYMS      "##"
                               yyextra->current->type = "class";
                           }
 
-                          yyextra->current->section = Entry::CLASS_SEC;
+                          yyextra->current->section = EntryType::makeClass();
                           yyextra->current->name = yytext;
                           // we need to set the protectiion based on the "local" class name
                           setProtection(yyscanner);
 
                           // prepend scope in case of nested classes
-                          if (yyextra->current_root->section&Entry::SCOPE_MASK)
+                          if (yyextra->current_root->section.isScope())
                           {
                             //printf("*** Prepending scope %s to class %s\n",qPrint(yyextra->current_root->name),qPrint(yyextra->current->name));
                             yyextra->current->name.prepend(yyextra->current_root->name+"::");
@@ -1694,7 +1694,7 @@ static void docVariable(yyscan_t yyscanner,const char *name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->name = name;
-  yyextra->current->section=Entry::VARIABLE_SEC;
+  yyextra->current->section=EntryType::makeVariable();
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->startLine = yyextra->yyLineNr;
   yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1706,7 +1706,7 @@ static void newVariable(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   setProtection(yyscanner);
-  if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
+  if (yyextra->current_root->section.isCompound()) // mark as class variable
   {
     yyextra->current->isStatic = TRUE;
   }
@@ -1717,7 +1717,7 @@ static void addVariable(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   setProtection(yyscanner);
-  if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
+  if (yyextra->current_root->section.isCompound()) // mark as class variable
   {
     yyextra->current->isStatic = TRUE;
   }
@@ -1795,7 +1795,7 @@ static void addFrom(yyscan_t yyscanner,bool all)
   yyextra->current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
   yyextra->current->fileName = yyextra->fileName;
   //printf("Adding using declaration: found:%s:%d name=%s\n",qPrint(yyextra->fileName),yyextra->yyLineNr,qPrint(yyextra->current->name));
-  yyextra->current->section=all ? Entry::USINGDIR_SEC : Entry::USINGDECL_SEC;
+  yyextra->current->section=all ? EntryType::makeUsingDir() : EntryType::makeUsingDecl();
   yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   initEntry(yyscanner);
 }
@@ -1955,7 +1955,7 @@ static void searchFoundDef(yyscan_t yyscanner)
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->startLine = yyextra->yyLineNr;
   yyextra->current->bodyLine  = yyextra->yyLineNr;
-  yyextra->current->section = Entry::FUNCTION_SEC;
+  yyextra->current->section = EntryType::makeFunction();
   yyextra->current->lang = SrcLangExt_Python;
   yyextra->current->virt = Specifier::Normal;
   yyextra->current->isStatic = yyextra->isStatic;
@@ -1972,7 +1972,7 @@ static void searchFoundDef(yyscan_t yyscanner)
 static void searchFoundClass(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->section = Entry::CLASS_SEC;
+  yyextra->current->section = EntryType::makeClass();
   yyextra->current->argList.clear();
   yyextra->current->type += "class" ;
   yyextra->current->fileName  = yyextra->fileName;
@@ -1999,7 +1999,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       yyextra->inputString = yyextra->programStr.data();
       yyextra->inputPosition = 0;
       pyscannerYYrestart( 0, yyscanner );
-      if (ce->section&Entry::COMPOUND_MASK)
+      if (ce->section.isCompound())
       {
         yyextra->specialBlock = false;
         yyextra->current_root = ce;
@@ -2082,7 +2082,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
     yyextra->current            = std::make_shared<Entry>();
     initEntry(yyscanner);
     yyextra->current->name      = scope.left(pos);
-    yyextra->current->section   = Entry::NAMESPACE_SEC;
+    yyextra->current->section   = EntryType::makeNamespace();
     yyextra->current->type      = "namespace";
     yyextra->current->fileName  = yyextra->fileName;
     yyextra->current->startLine = yyextra->yyLineNr;
@@ -2146,8 +2146,10 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->lexInit=TRUE;
 
   yyextra->current->name = yyextra->current->name.stripWhiteSpace();
-  if (yyextra->current->section == Entry::MEMBERDOC_SEC && yyextra->current->args.isEmpty())
-    yyextra->current->section = Entry::VARIABLEDOC_SEC;
+  if (yyextra->current->section.isMemberDoc() && yyextra->current->args.isEmpty())
+  {
+    yyextra->current->section = EntryType::makeVariableDoc();
+  }
 
   // restore original scanner state
 

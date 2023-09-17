@@ -30,12 +30,11 @@
 
 static AtomicInt g_num;
 
-Entry::Entry() : program(static_cast<size_t>(0)), initializer(static_cast<size_t>(0))
+Entry::Entry() : section(EntryType::makeEmpty()), program(static_cast<size_t>(0)), initializer(static_cast<size_t>(0))
 {
   //printf("Entry::Entry(%p)\n",this);
   g_num++;
   m_parent=0;
-  section = EMPTY_SEC;
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
   hasTagInfo = false;
@@ -45,11 +44,10 @@ Entry::Entry() : program(static_cast<size_t>(0)), initializer(static_cast<size_t
   reset();
 }
 
-Entry::Entry(const Entry &e)
+Entry::Entry(const Entry &e) : section(e.section)
 {
   //printf("Entry::Entry(%p):copy\n",this);
   g_num++;
-  section     = e.section;
   type        = e.type;
   name        = e.name;
   hasTagInfo  = e.hasTagInfo;
@@ -245,7 +243,7 @@ void Entry::reset()
   referencesRelation   = entryReferencesRelation;
   inlineSource = entryInlineSource;
   exported = false;
-  section = EMPTY_SEC;
+  section = EntryType::makeEmpty();
   mtype   = MethodTypes::Method;
   virt    = Specifier::Normal;
   isStatic = false;

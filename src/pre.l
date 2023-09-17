@@ -1941,8 +1941,8 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
-  int isSource = guessSection(state->fileName);
-  state->isSource = isSource==Entry::HEADER_SEC || isSource==Entry::SOURCE_SEC;
+  EntryType section = guessSection(state->fileName);
+  state->isSource = section.isHeader() || section.isSource();
 }
 
 static void incrLevel(yyscan_t yyscanner)
@@ -3761,7 +3761,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
 
   BEGIN( Start );
 
-  state->expectGuard = guessSection(fileName)==Entry::HEADER_SEC;
+  state->expectGuard = guessSection(fileName).isHeader();
   state->guardName.resize(0);
   state->lastGuardName.resize(0);
   state->guardExpr.resize(0);

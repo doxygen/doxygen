@@ -358,7 +358,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   gBlock.doc = code;
   gBlock.inbodyDocs = code;
   gBlock.brief = co;
-  gBlock.section = Entry::VARIABLE_SEC;
+  gBlock.section = EntryType::makeVariable();
   gBlock.vhdlSpec = VhdlSpecifier::MISCELLANEOUS;
   gBlock.fileName = p->yyFileName;
   gBlock.endBodyLine = p->yyLineNr + val +iLine;
@@ -459,7 +459,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
     {
       p->varr = FALSE;
       s->current->name = p->varName;
-      s->current->section = Entry::VARIABLEDOC_SEC;
+      s->current->section = EntryType::makeVariableDoc();
       p->varName = "";
     }
     newEntry();
@@ -478,7 +478,7 @@ void VHDLOutlineParser::addCompInst(const char *n, const char* instName, const c
 {
   VhdlParser::SharedState *s = &p->shared;
   s->current->vhdlSpec=VhdlSpecifier::INSTANTIATION;
-  s->current->section=Entry::VARIABLE_SEC;
+  s->current->section=EntryType::makeVariable();
   s->current->startLine=iLine;
   s->current->bodyLine=iLine;
   s->current->type=instName;                       // foo:instname e.g proto or work. proto(ttt)
@@ -516,7 +516,7 @@ void VHDLOutlineParser::addCompInst(const char *n, const char* instName, const c
   }
 }
 
-void VHDLOutlineParser::addVhdlType(const char *n,int startLine,int section,
+void VHDLOutlineParser::addVhdlType(const char *n,int startLine,EntryType section,
     VhdlSpecifier spec,const char* args,const char* type,Protection prot)
 {
   VhdlParser::SharedState *s = &p->shared;
@@ -545,7 +545,7 @@ void VHDLOutlineParser::addVhdlType(const char *n,int startLine,int section,
     s->current->type=type;
     s->current->protection=prot;
 
-    if (!s->lastCompound && (section==Entry::VARIABLE_SEC) &&  (spec == VhdlSpecifier::USE || spec == VhdlSpecifier::LIBRARY) )
+    if (!s->lastCompound && section.isVariable() &&  (spec == VhdlSpecifier::USE || spec == VhdlSpecifier::LIBRARY) )
     {
       p->libUse.emplace_back(std::make_shared<Entry>(*s->current));
       s->current->reset();
@@ -558,7 +558,7 @@ void VHDLOutlineParser::createFunction(const QCString &impure,VhdlSpecifier spec
 {
   VhdlParser::SharedState *s = &p->shared;
   s->current->vhdlSpec=spec;
-  s->current->section=Entry::FUNCTION_SEC;
+  s->current->section=EntryType::makeFunction();
 
   if (impure=="impure" || impure=="pure")
   {
@@ -568,7 +568,7 @@ void VHDLOutlineParser::createFunction(const QCString &impure,VhdlSpecifier spec
   if (s->parse_sec==GEN_SEC)
   {
     s->current->vhdlSpec=VhdlSpecifier::GENERIC;
-    s->current->section=Entry::FUNCTION_SEC;
+    s->current->section=EntryType::makeFunction();
   }
 
   if (s->currP==VhdlSpecifier::PROCEDURE)

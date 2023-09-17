@@ -826,8 +826,7 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
 
   // we cannot use getLanguage at this point, as setLanguage has not been called.
   SrcLangExt lang = getLanguageFromFileName(defFileName);
-  if ((lang==SrcLangExt_Cpp || lang==SrcLangExt_ObjC) &&
-      guessSection(defFileName)==Entry::SOURCE_SEC)
+  if ((lang==SrcLangExt_Cpp || lang==SrcLangExt_ObjC) && guessSection(defFileName).isSource())
   {
     isLocal=TRUE;
   }

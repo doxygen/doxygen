@@ -63,6 +63,7 @@ class Entry
 {
   public:
 
+#if 0
     /*! Kind of entries that are supported */
     enum Sections {
       CLASS_SEC        = 0x0000'0001,
@@ -119,6 +120,7 @@ class Entry
       EXAMPLE_LINENO_SEC     = 0x1B00'0000,
       MODULEDOC_SEC          = 0x1C00'0000
     };
+#endif
 
     enum GroupDocType
     {
@@ -165,12 +167,12 @@ class Entry
      */
     void reset();
 
-    void markAsProcessed() const { (const_cast<Entry*>(this))->section = Entry::EMPTY_SEC; }
+    void markAsProcessed() const { (const_cast<Entry*>(this))->section = EntryType::makeEmpty(); }
     void setFileDef(FileDef *fd);
     FileDef *fileDef() const { return m_fileDef; }
 
     // identification
-    int          section;     //!< entry type (see Sections);
+    EntryType    section;     //!< entry type (see Sections);
     QCString	 type;        //!< member type
     QCString	 name;        //!< member name
     bool         hasTagInfo;  //!< is tag info valid
@@ -258,7 +260,7 @@ class Entry
     }
     Grouping::GroupPri_t groupingPri() const
     {
-      if( section != GROUPDOC_SEC )
+      if( !section.isGroupDoc() )
       {
         return Grouping::GROUPING_LOWEST;
       }

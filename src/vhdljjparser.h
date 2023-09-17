@@ -47,7 +47,7 @@ class VHDLOutlineParser : public OutlineParserInterface
     void lineCount();
     void addProto(const char *s1,const char *s2,const char *s3,const char *s4,const char *s5,const char *s6);
     void createFunction(const QCString &impure,VhdlSpecifier spec,const QCString &fname);
-    void addVhdlType(const char *n,int startLine,int section, VhdlSpecifier spec,const char* args,const char* type,Protection prot);
+    void addVhdlType(const char *n,int startLine,EntryType section, VhdlSpecifier spec,const char* args,const char* type,Protection prot);
     void addCompInst(const char *n, const char* instName, const char* comp,int iLine);
     void handleCommentBlock(const QCString &doc,bool brief);
     void handleFlowComment(const QCString &);

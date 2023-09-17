@@ -196,7 +196,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,
 
 QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n);
 
-int guessSection(const QCString &name);
+EntryType guessSection(const QCString &name);
 
 inline bool isId(int c)
 {

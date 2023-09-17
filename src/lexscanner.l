@@ -966,11 +966,11 @@ static void parseMain(yyscan_t yyscanner,
 
   yyextra->current_root  = rt;
   yyextra->current = std::make_shared<Entry>();
-  int sec=guessSection(yyextra->fileName);
-  if (sec)
+  EntryType sec=guessSection(yyextra->fileName);
+  if (!sec.isEmpty())
   {
     yyextra->current->name    = yyextra->fileName;
-    yyextra->current->section = sec;
+    yyextra->current->section = EntryType(sec);
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   }
   yyextra->current->reset();
