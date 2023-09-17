@@ -430,6 +430,8 @@ struct commentscanYY_state
   QCString         blockName;                // preformatted block name (e.g. verbatim, latexonly,...)
   XRefKind         xrefKind    = XRef_Item;  // kind of cross-reference command
   XRefKind         newXRefKind = XRef_Item;  //
+  QCString         currentXrefFileName;
+  int              currentXrefLineNr;
   GuardType        guardType = Guard_If;     // kind of guards for conditional section
   QCString         functionProto;          // function prototype
   std::stack<GuardedSection> guards;             // tracks nested conditional sections (if,ifnot,..)
@@ -2598,11 +2600,19 @@ static bool handleName(yyscan_t yyscanner,const QCString &, const StringVector &
   return stop;
 }
 
+static void setXrefPosition(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->currentXrefFileName = yyextra->fileName;
+  yyextra->currentXrefLineNr = yyextra->lineNr;
+}
+
 static bool handleTodo(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->newXRefKind = XRef_Todo;
   setOutput(yyscanner,OutputXRef);
+  setXrefPosition(yyscanner);
   yyextra->xrefKind = XRef_Todo;
   return FALSE;
 }
@@ -2612,6 +2622,7 @@ static bool handleTest(yyscan_t yyscanner,const QCString &, const StringVector &
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->newXRefKind = XRef_Test;
   setOutput(yyscanner,OutputXRef);
+  setXrefPosition(yyscanner);
   yyextra->xrefKind = XRef_Test;
   return FALSE;
 }
@@ -2621,6 +2632,7 @@ static bool handleBug(yyscan_t yyscanner,const QCString &, const StringVector &)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->newXRefKind = XRef_Bug;
   setOutput(yyscanner,OutputXRef);
+  setXrefPosition(yyscanner);
   yyextra->xrefKind = XRef_Bug;
   return FALSE;
 }
@@ -3601,6 +3613,7 @@ static void addXRefItem(yyscan_t yyscanner,
     anchorLabel.sprintf("_%s%06d",listName.data(),item->id());
     item->setText(yyextra->outputXRef);
     item->setAnchor(anchorLabel);
+    item->setPosition(yyextra->currentXrefFileName,yyextra->currentXrefLineNr);
     yyextra->current->sli.push_back(item);
     QCString cmdString;
     cmdString.sprintf(" \\xrefitem %s %d.",qPrint(listName),item->id());
