@@ -2256,8 +2256,11 @@ void setPosition(double x,double y,double z,double t)
   This command can be used to specify since when (version or time) an
   entity is available. The paragraph that follows \c \\since does not have any
   special internal structure. All visual enhancement commands may be
-  used inside the paragraph. The \c \\since description ends when a blank
-  line or some other sectioning command is encountered.
+  used inside the paragraph.
+  Multiple adjacent \c \\since commands will be joined into a single
+  paragraph.
+  The \c \\since description ends when a blank line or some other
+  sectioning command is encountered.
 
 <hr>
 \section cmdtest \\test { paragraph describing a test case }
