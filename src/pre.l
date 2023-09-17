@@ -294,6 +294,7 @@ struct preYY_state
   bool               insideCS       = false; // C# has simpler preprocessor
   bool               insideFtn      = false;
   bool               isSource       = false;
+  bool               isFixedFormFtn = false;
 
   yy_size_t          fenceSize      = 0;
   bool               ccomment       = false;
@@ -471,6 +472,15 @@ WSopt [ \t\r]*
 <IDLquote>.                             {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
+<Start>^[Cc*].*                         {
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          if (!yyextra->isFixedFormFtn) REJECT;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<Start>^{Bopt}"!".*                     {
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
 <Start>^{Bopt}/[^#]                     {
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(CopyLine);
@@ -563,6 +573,10 @@ WSopt [ \t\r]*
                                           if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_CSharp) REJECT;
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN( CopyStringCs );
+                                        }
+<CopyLine,LexCopyLine>"!".*             {
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyLine,LexCopyLine>\"                {
                                           outputChar(yyscanner,*yytext);
@@ -1941,6 +1955,12 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
+  state->isFixedFormFtn = false;
+  if (state->insideFtn)
+  {
+    FortranFormat fmt = convertFileNameFortranParserCode(state->fileName);
+    state->isFixedFormFtn = recognizeFixedForm(QCString(state->inputBuf->data()),fmt);
+  }
   int isSource = guessSection(state->fileName);
   state->isSource = isSource==Entry::HEADER_SEC || isSource==Entry::SOURCE_SEC;
 }
