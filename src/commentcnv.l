@@ -193,6 +193,7 @@ RLopt [^\\@\n\*\/]*
   // Optional slash
 SLASHopt [/]*
 
+CMD          ("\\"|"@")
 %%
 
 <Scan>{NUMBER}			    { //Note similar code in code.l
@@ -616,6 +617,9 @@ SLASHopt [/]*
 				       REJECT;
 				     }
   				   }
+<Verbatim,VerbatimCode>{CMD}{CMD}  {
+                                     copyToOutput(yyscanner,yytext,(int)yyleng); 
+                                   }
 <Verbatim,VerbatimCode>.	   { /* any other character */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
