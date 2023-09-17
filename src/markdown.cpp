@@ -80,7 +80,8 @@ enum class ExplicitPageResult
 #define extraChar(i) \
   (data[i]=='-' || data[i]=='+' || data[i]=='!' || \
    data[i]=='?' || data[i]=='$' || data[i]=='@' || \
-   data[i]=='&' || data[i]=='*' || data[i]=='%')
+   data[i]=='&' || data[i]=='*' || data[i]=='%' || \
+   data[i]=='[' || data[i]=='(' || data[i]=='{' || data[i]=='<')
 
 // is character at position i in data allowed before an emphasis section
 #define isOpenEmphChar(i) \
@@ -983,8 +984,8 @@ int Markdown::processEmphasis(const char *data,int offset,int size)
 {
   AUTO_TRACE("data='{}' offset={} size={}",Trace::trunc(data),offset,size);
   if ((offset>0 && !isOpenEmphChar(-1)) || // invalid char before * or _
-      (size>1 && data[0]!=data[1] && !(isIdChar(1) || extraChar(1) || data[1]=='[')) || // invalid char after * or _
-      (size>2 && data[0]==data[1] && !(isIdChar(2) || extraChar(2) || data[2]=='[')))   // invalid char after ** or __
+      (size>1 && data[0]!=data[1] && !(isIdChar(1) || extraChar(1))) || // invalid char after * or _
+      (size>2 && data[0]==data[1] && !(isIdChar(2) || extraChar(2))))   // invalid char after ** or __
   {
     return 0;
   }
