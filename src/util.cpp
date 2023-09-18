@@ -585,37 +585,21 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     c=src[i];
     char nc=i<l-1 ? src[i+1] : ' ';
 
-    // search for "const"
-    if (csp<6 && c==constScope[csp] && // character matches substring "const"
-         (csp>0 ||                     // inside search string
-          i==0  ||                     // if it is the first character
-          !isId(pc)                    // the previous may not be a digit
+    auto searchForKeyword = [&](const char *kw,uint32_t &matchLen,uint32_t totalLen)
+    {
+      if (matchLen<=totalLen && c==kw[matchLen] && // character matches substring kw
+          (matchLen>0 ||                           // inside search string
+           i==0  ||                                // if it is the first character
+           !isId(pc)                               // the previous may not be a digit
+          )
          )
-       )
-      csp++;
-    else // reset counter
-      csp=0;
-
-    if (vosp<9 && c==volatileScope[vosp] && // character matches substring "volatile"
-         (vosp>0 ||                     // inside search string
-          i==0  ||                     // if it is the first character
-          !isId(pc)                    // the previous may not be a digit
-         )
-       )
-      vosp++;
-    else // reset counter
-      vosp=0;
-
-    // search for "virtual"
-    if (vsp<8 && c==virtualScope[vsp] && // character matches substring "virtual"
-         (vsp>0 ||                       // inside search string
-          i==0  ||                       // if it is the first character
-          !isId(pc)                      // the previous may not be a digit
-         )
-       )
-      vsp++;
-    else // reset counter
-      vsp=0;
+        matchLen++;
+      else // reset counter
+        matchLen=0;
+    };
+    searchForKeyword(constScope,    csp,  5); // keyword: const
+    searchForKeyword(volatileScope, vosp, 8); // keyword: volatile
+    searchForKeyword(virtualScope,  vsp,  7); // keyword: virtual
 
     // search for "operator"
     if (osp<11 && (osp>=8 || c==operatorScope[osp]) && // character matches substring "operator" followed by 3 arbitrary characters
@@ -782,43 +766,31 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       default:
         *dst++=c;
-        if (c=='t' && csp==5)
-        {
-          if (i<l-2 && src[i+1] == ':' && src[i+2] == ':') csp = 0;
-          else if (i > csp && src[i-csp] == ':' && src[i-csp-1] == ':') csp = 0;
-        }
-        else if (c=='e' && vosp==8)
-        {
-          if (i<l-2 && src[i+1] == ':' && src[i+2] == ':') vosp = 0;
-          else if (i > vosp && src[i-vosp] == ':' && src[i-vosp-1] == ':') vosp = 0;
-        }
-        else if (c=='l' && vsp==7)
-        {
-          if (i<l-2 && src[i+1] == ':' && src[i+2] == ':') vsp = 0;
-          else if (i > vsp && src[i-vsp] == ':' && src[i-vsp-1] == ':') vsp = 0;
-        }
+        auto correctKeywordAllowedInsideScope = [&](char cc,uint32_t &matchLen,uint32_t totalLen) {
+          if (c==cc && matchLen==totalLen)
+          {
+            if ((i<l-2 && src[i+1] == ':' && src[i+2] == ':') ||                     // keyword::
+                ((i>matchLen && src[i-matchLen] == ':' && src[i-matchLen-1] == ':')) // ::keyword
+               ) matchLen = 0;
+          };
+        };
+        correctKeywordAllowedInsideScope('t',csp, 5); // keyword: const
+        correctKeywordAllowedInsideScope('e',vosp,8); // keyword: volatile
+        correctKeywordAllowedInsideScope('l',vsp, 7); // keyword: virtual
 
-        if (c=='t' && csp==5 && i<l-1 && // found 't' in 'const'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
-           ) // prevent const ::A from being converted to const::A
+        auto correctKeywordNotPartOfScope = [&](char cc,uint32_t &matchLen,uint32_t totalLen)
         {
-          *dst++=' ';
-          csp=0;
-        }
-        else if (c=='e' && vosp==8 && i<l-1 && // found 'e' in 'volatile'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
-           ) // prevent volatile ::A from being converted to volatile::A
-        {
-          *dst++=' ';
-          vosp=0;
-        }
-        else if (c=='l' && vsp==7 && i<l-1 && // found 'l' in 'virtual'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
-            ) // prevent virtual ::A from being converted to virtual::A
-        {
-          *dst++=' ';
-          vsp=0;
-        }
+          if (c==cc && matchLen==totalLen && i<l-1 && // found matching keyword
+              !(isId(nc) || nc==')' || nc==',' || qisspace(nc))
+             ) // prevent keyword ::A from being converted to keyword::A
+          {
+            *dst++=' ';
+            matchLen=0;
+          }
+        };
+        correctKeywordNotPartOfScope('t',csp, 5); // keyword: const
+        correctKeywordNotPartOfScope('e',vosp,8); // keyword: volatile
+        correctKeywordNotPartOfScope('l',vsp, 7); // keyword: virtual
         break;
     }
     pc=c;
