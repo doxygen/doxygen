@@ -782,6 +782,22 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       default:
         *dst++=c;
+        if (c=='t' && csp==5)
+        {
+          if (i<l-2 && src[i+1] == ':' && src[i+2] == ':') csp = 0;
+          else if (i > csp && src[i-csp] == ':' && src[i-csp-1] == ':') csp = 0;
+        }
+        else if (c=='e' && vosp==8)
+        {
+          if (i<l-2 && src[i+1] == ':' && src[i+2] == ':') vosp = 0;
+          else if (i > vosp && src[i-vosp] == ':' && src[i-vosp-1] == ':') vosp = 0;
+        }
+        else if (c=='l' && vsp==7)
+        {
+          if (i<l-2 && src[i+1] == ':' && src[i+2] == ':') vsp = 0;
+          else if (i > vsp && src[i-vsp] == ':' && src[i-vsp-1] == ':') vsp = 0;
+        }
+
         if (c=='t' && csp==5 && i<l-1 && // found 't' in 'const'
              !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
            ) // prevent const ::A from being converted to const::A
