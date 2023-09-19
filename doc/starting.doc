@@ -109,23 +109,25 @@ using the following table:
 
 Extension | Language | Extension | Language     | Extension | Language
 ---------:|--------- | ---------:|------------- | ---------:|---------
-.dox      |C / C++   | .hpp      |C / C++       |.py        |Python
-.doc      |C / C++   | .h++      |C / C++       |.pyw       |Python
-.c        |C / C++   | .mm       |C / C++       |.f         |Fortran
-.cc       |C / C++   | .txt      |C / C++       |.for       |Fortran
-.cxx      |C / C++   | .idl      |IDL           |.f90       |Fortran
-.cpp      |C / C++   | .ddl      |IDL           |.f95       |Fortran
-.c++      |C / C++   | .odl      |IDL           |.f03       |Fortran
-.ii       |C / C++   | .java     |Java          |.f08       |Fortran
-.ixx      |C / C++   | .cs       |C#            |.f18       |Fortran
-.ipp      |C / C++   | .d        |D             |.vhd       |VHDL
-.i++      |C / C++   | .php      |PHP           |.vhdl      |VHDL
-.inl      |C / C++   | .php4     |PHP           |.ucf       |VHDL
-.h        |C / C++   | .php5     |PHP           |.qsf       |VHDL
-.H        |C / C++   | .inc      |PHP           |.l         |Lex
-.hh       |C / C++   | .phtml    |PHP           |.md        |Markdown
-.HH       |C / C++   | .m        |Objective-C   |.markdown  |Markdown
-.hxx      |C / C++   | .M        |Objective-C   |.ice       |Slice
+.dox      |C / C++   | .HH       |C / C++       |.py        |Python
+.doc      |C / C++   | .hxx      |C / C++       |.pyw       |Python
+.c        |C / C++   | .hpp      |C / C++       |.f         |Fortran
+.cc       |C / C++   | .h++      |C / C++       |.for       |Fortran
+.cxx      |C / C++   | .mm       |C / C++       |.f90       |Fortran
+.cpp      |C / C++   | .txt      |C / C++       |.f95       |Fortran
+.c++      |C / C++   | .idl      |IDL           |.f03       |Fortran
+.cppm     |C / C++   | .ddl      |IDL           |.f08       |Fortran
+.ccm      |C / C++   | .odl      |IDL           |.f18       |Fortran
+.cxxm     |C / C++   | .java     |Java          |.vhd       |VHDL
+.c++m     |C / C++   | .cs       |C#            |.vhdl      |VHDL
+.ii       |C / C++   | .d        |D             |.ucf       |VHDL
+.ixx      |C / C++   | .php      |PHP           |.qsf       |VHDL
+.ipp      |C / C++   | .php4     |PHP           |.l         |Lex
+.i++      |C / C++   | .php5     |PHP           |.md        |Markdown
+.inl      |C / C++   | .inc      |PHP           |.markdown  |Markdown
+.h        |C / C++   | .phtml    |PHP           |.ice       |Slice
+.H        |C / C++   | .m        |Objective-C   |&nbsp;     |&nbsp;
+.hh       |C / C++   | .M        |Objective-C   |&nbsp;     |&nbsp;
 
 Please note that the above list might contain more items than that by default set
 in the \ref cfg_file_patterns "FILE_PATTERNS".
