@@ -520,8 +520,8 @@ enum class VhdlSpecifier
 class EntryType
 {
   public:
-#define ETYPE(x,bits)                                                   \
-    static EntryType make##x() { return EntryType(x|bits); }            \
+#define ETYPE(x,bits)                                                                            \
+    static EntryType make##x() { return EntryType(static_cast<int>(x)|static_cast<int>(bits)); } \
     bool is##x() const { return (m_type&TypeMask)==x; }
     ENTRY_TYPES
 #undef ETYPE
