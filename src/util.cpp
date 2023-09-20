@@ -335,7 +335,7 @@ EntryType guessSection(const QCString &name)
 {
   QCString n=name.lower();
   static const std::unordered_set<std::string> sourceExt = {
-     "c","cc","cxx","cpp","c++","cppm","cxxm","c++m",   // C/C++
+     "c","cc","cxx","cpp","c++","cppm","ccm","cxxm","c++m",   // C/C++
      "java",                       // Java
      "cs",                         // C#
      "m","mm",                     // Objective-C
@@ -5261,6 +5261,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".c++",      "c");
   updateLanguageMapping(".cxxm",     "c"); // C++20 modules
   updateLanguageMapping(".cppm",     "c"); // C++20 modules
+  updateLanguageMapping(".ccm",      "c"); // C++20 modules
   updateLanguageMapping(".c++m",     "c"); // C++20 modules
   updateLanguageMapping(".ii",       "c");
   updateLanguageMapping(".ixx",      "c");

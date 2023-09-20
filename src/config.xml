@@ -1543,6 +1543,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <value name='*.cxxm'/>
       <value name='*.cpp'/>
       <value name='*.cppm'/>
+      <value name='*.ccm'/>
       <value name='*.c++'/>
       <value name='*.c++m'/>
       <value name='*.java'/>
