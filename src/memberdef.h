@@ -382,10 +382,14 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setFromAnonymousMember(MemberDef *m) = 0;
 
     virtual void enableCallGraph(bool e) = 0;
+    virtual void mergeEnableCallGraph(bool other) = 0;
     virtual void enableCallerGraph(bool e) = 0;
+    virtual void mergeEnableCallerGraph(bool other) = 0;
 
     virtual void enableReferencedByRelation(bool e) = 0;
+    virtual void mergeEnableReferencedByRelation(bool other) = 0;
     virtual void enableReferencesRelation(bool e) = 0;
+    virtual void mergeEnableReferencesRelation(bool other) = 0;
 
     virtual void enableInlineSource(bool e) = 0;
     virtual void mergeEnableInlineSource(bool other) = 0;

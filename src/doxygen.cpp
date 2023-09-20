@@ -3632,10 +3632,10 @@ static void buildFunctionList(const Entry *root)
 
                   md->addSectionsToDefinition(root->anchors);
 
-                  md->enableCallGraph(md->hasCallGraph() || root->callGraph);
-                  md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
-                  md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
-                  md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
+                  md->mergeEnableCallGraph(root->callGraph);
+                  md->mergeEnableCallerGraph(root->callerGraph);
+                  md->mergeEnableReferencedByRelation(root->referencedByRelation);
+                  md->mergeEnableReferencesRelation(root->referencesRelation);
                   md->mergeEnableInlineSource(root->inlineSource);
                   md->addQualifiers(root->qualifiers);
 
@@ -3783,17 +3783,17 @@ static void findFriends()
             }
             mmd->setDocsForDefinition(fmd->isDocsForDefinition());
 
-            mmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
-            mmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
-            mmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
-            mmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
+            mmd->mergeEnableCallGraph(fmd->hasCallGraph());
+            mmd->mergeEnableCallerGraph(fmd->hasCallerGraph());
+            mmd->mergeEnableReferencedByRelation(fmd->hasReferencedByRelation());
+            mmd->mergeEnableReferencesRelation(fmd->hasReferencesRelation());
             mmd->mergeEnableInlineSource(fmd->hasInlineSource());
             mmd->addQualifiers(fmd->getQualifiers());
 
-            fmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
-            fmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
-            fmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
-            fmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
+            fmd->mergeEnableCallGraph(mmd->hasCallGraph());
+            fmd->mergeEnableCallerGraph(mmd->hasCallerGraph());
+            fmd->mergeEnableReferencedByRelation(mmd->hasReferencedByRelation());
+            fmd->mergeEnableReferencesRelation(mmd->hasReferencesRelation());
             fmd->mergeEnableInlineSource(mmd->hasInlineSource());
             fmd->addQualifiers(mmd->getQualifiers());
           }
@@ -5180,10 +5180,10 @@ static void addMemberDocs(const Entry *root,
     md->setRefItems(root->sli);
   }
 
-  md->enableCallGraph(md->hasCallGraph() || root->callGraph);
-  md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
-  md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
-  md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
+  md->mergeEnableCallGraph(root->callGraph);
+  md->mergeEnableCallerGraph(root->callerGraph);
+  md->mergeEnableReferencedByRelation(root->referencedByRelation);
+  md->mergeEnableReferencesRelation(root->referencesRelation);
   md->mergeEnableInlineSource(root->inlineSource);
   md->addQualifiers(root->qualifiers);
 
