@@ -520,8 +520,8 @@ enum class VhdlSpecifier
 class EntryType
 {
   public:
-#define ETYPE(x,bits)                                                                            \
-    static EntryType make##x() { return EntryType(static_cast<int>(x)|static_cast<int>(bits)); } \
+#define ETYPE(x,bits)                                        \
+    static EntryType make##x() { return EntryType(x|bits); } \
     bool is##x() const { return (m_type&TypeMask)==x; }
     ENTRY_TYPES
 #undef ETYPE
@@ -545,7 +545,7 @@ class EntryType
     friend inline bool operator!=(const EntryType &t1,const EntryType &t2) { return !(operator==(t1,t2)); }
 
   private:
-    enum TypeName
+    enum TypeName : int
     {
 #define ETYPE(x,bits)                                                   \
       x,
@@ -553,7 +553,7 @@ class EntryType
 #undef ETYPE
     };
 
-    enum CategoryBits
+    enum CategoryBits : int
     {
       None        = 0,
       Compound    = (1<<16),
@@ -562,7 +562,7 @@ class EntryType
       CompoundDoc = (1<<19),
       Doc         = (1<<20),
       TypeMask      = 0x0000FFFF,
-      CategoryMask  = 0xFFFF0000
+      CategoryMask  = 0x0FFF0000
     };
     explicit EntryType(int t) : m_type(t) {}
     std::string bits_to_string() const
