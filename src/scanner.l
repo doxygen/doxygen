@@ -345,7 +345,6 @@ NONLopt [^\n]*
 %x      ReadBodyIntf
 %x      Using
 %x      UsingAlias
-%x      UsingAliasEnd
 %x      UsingDirective
 %x      SkipCurly
 %x      SkipCurlyCpp
@@ -1953,9 +1952,9 @@ NONLopt [^\n]*
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
                                           if (yyextra->insideCS) /* Hack: in C# a using declaration and
-                                                           directive have the same syntax, so we
-                                                           also add it as a using directive here
-                                                         */
+                                                                    directive have the same syntax, so we
+                                                                    also add it as a using directive here
+                                                                  */
                                           {
                                             yyextra->current->name=yytext;
                                             yyextra->current->fileName = yyextra->fileName;
@@ -1967,47 +1966,30 @@ NONLopt [^\n]*
                                           }
                                           BEGIN(Using);
                                         }
-<Using>"="                              { // C++11 style template alias?
-                                          BEGIN(UsingAlias);
+<Using>({ID}{BN}*("::"|"."){BN}*)*({ID}|{OPERATOR}){BN}*"=" { // C++11 style using alias
+                                          yyextra->current->name=QCString(yytext).left(yyleng-1).stripWhiteSpace();
+                                          yyextra->current->fileName = yyextra->fileName;
+                                          yyextra->current->section = EntryType::makeUsingDecl();
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          yyextra->current->bodyLine = yyextra->yyLineNr;
+                                          yyextra->current->bodyColumn = yyextra->yyColNr;
+                                          yyextra->lastInitializerContext = UsingAlias;
+                                          yyextra->initBracketCount=0;
+                                          BEGIN(ReadInitializer);
                                         }
 <UsingAlias>";"                         {
-                                          yyextra->previous->section = EntryType::makeVariable();
-                                          yyextra->previous->args = yyextra->previous->args.stripWhiteSpace();
-                                          yyextra->previous->args.stripPrefix("class ");
-                                          yyextra->previous->args.stripPrefix("struct ");
-                                          yyextra->previous->type = "typedef "+yyextra->previous->args;
-                                          yyextra->previous->type=yyextra->previous->type.simplifyWhiteSpace();
-                                          yyextra->previous->args.resize(0);
-                                          yyextra->previous->name=yyextra->previous->name.stripWhiteSpace();
-                                          yyextra->previous->bodyLine = yyextra->yyLineNr;
-                                          yyextra->previous->bodyColumn = yyextra->yyColNr;
-                                          yyextra->previous->spec.setAlias(true);
+                                          yyextra->current->section = EntryType::makeVariable();
+                                          QCString init = yyextra->current->initializer.str();
+                                          init.stripPrefix("class ");
+                                          init.stripPrefix("struct ");
+                                          init = init.stripWhiteSpace();
+                                          yyextra->current->type = "typedef "+init;
+                                          yyextra->current->initializer.clear();
+                                          yyextra->current->args.resize(0);
+                                          yyextra->current->spec.setAlias(true);
+                                          yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+                                          initEntry(yyscanner);
                                           BEGIN(FindMembers);
-                                        }
-<UsingAlias>";"{BN}*{DCOMM}"<" {
-                                          yyextra->docBlockContext   = UsingAliasEnd;
-                                          yyextra->docBlockInBody    = FALSE;
-                                          yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
-                                                              ( yytext[yyleng-2]=='!' && Config_getBool(QT_AUTOBRIEF) );
-                                          QCString indent;
-                                          indent.fill(' ',computeIndent(yytext,yyextra->column));
-                                          yyextra->docBlock.str(indent.str());
-                                          lineCount(yyscanner);
-
-                                          yyextra->docBlockTerm = ';';
-                                          if (yytext[yyleng-3]=='/')
-                                          {
-                                            startCommentBlock(yyscanner,TRUE);
-                                            BEGIN( DocLine );
-                                          }
-                                          else
-                                          {
-                                            startCommentBlock(yyscanner,FALSE);
-                                            BEGIN( DocBlock );
-                                          }
-                                        }
-<UsingAlias>">>"                        {
-                                          yyextra->previous->args+="> >"; // see bug769552
                                         }
 <UsingAlias>.                           {
                                           yyextra->previous->args+=yytext;
@@ -2015,14 +1997,6 @@ NONLopt [^\n]*
 <UsingAlias>\n                          {
                                           yyextra->previous->args+=yytext;
                                           lineCount(yyscanner);
-                                        }
-<UsingAliasEnd>";"                      {
-                                          yyextra->previous->doc   = yyextra->current->doc;
-                                          yyextra->previous->brief = yyextra->current->brief;
-                                          yyextra->current->doc.resize(0);
-                                          yyextra->current->brief.resize(0);
-                                          unput(';');
-                                          BEGIN(UsingAlias);
                                         }
 <UsingDirective>{SCOPENAME}             { yyextra->current->name=removeRedundantWhiteSpace(yytext);
                                           yyextra->current->fileName = yyextra->fileName;
