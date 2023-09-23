@@ -145,7 +145,7 @@ FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = 0;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = 0;     // dia files
 StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace aliases
 StringMap             Doxygen::tagDestinationMap;            // all tag locations
-std::vector<QCString> Doxygen::tagFileVector;                // all tag file names
+StringSet             Doxygen::tagFileSet;                   // all tag file names
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
 MemberGroupInfoMap    Doxygen::memberGroupInfoMap;           // dictionary of the member groups heading
 std::unique_ptr<PageDef> Doxygen::mainPage;
@@ -9797,9 +9797,9 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const QCString &tagLi
     return;
   }
 
-  if (std::find(Doxygen::tagFileVector.begin(), Doxygen::tagFileVector.end(), fi.absFilePath().c_str()) != Doxygen::tagFileVector.end()) return;
+  if (std::find(Doxygen::tagFileSet.begin(), Doxygen::tagFileSet.end(), fi.absFilePath().c_str()) != Doxygen::tagFileSet.end()) return;
 
-  Doxygen::tagFileVector.push_back(fi.absFilePath());
+  Doxygen::tagFileSet.emplace(fi.absFilePath());
 
   if (!destName.isEmpty())
   {
