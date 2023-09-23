@@ -9797,7 +9797,7 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const QCString &tagLi
     return;
   }
 
-  if (std::find(Doxygen::tagFileSet.begin(), Doxygen::tagFileSet.end(), fi.absFilePath().c_str()) != Doxygen::tagFileSet.end()) return;
+  if (Doxygen::tagFileSet.find(fi.absFilePath().c_str()) != Doxygen::tagFileSet.end()) return;
 
   Doxygen::tagFileSet.emplace(fi.absFilePath());
 
