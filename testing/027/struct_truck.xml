@@ -11,6 +11,7 @@
         <definition>Vehicle Truck::base</definition>
         <argsstring/>
         <name>base</name>
+        <qualifiedname>Truck::base</qualifiedname>
         <briefdescription>
           <para>Base class. </para>
         </briefdescription>
@@ -27,6 +28,10 @@
       <para><ref refid="struct_truck" kindref="compound">Truck</ref> class. </para>
     </detaileddescription>
     <inheritancegraph>
+      <node id="3">
+        <label>Object</label>
+        <link refid="struct_object"/>
+      </node>
       <node id="1">
         <label>Truck</label>
         <link refid="struct_truck"/>
@@ -39,12 +44,12 @@
         <childnode refid="3" relation="public-inheritance">
         </childnode>
       </node>
+    </inheritancegraph>
+    <collaborationgraph>
       <node id="3">
         <label>Object</label>
         <link refid="struct_object"/>
       </node>
-    </inheritancegraph>
-    <collaborationgraph>
       <node id="1">
         <label>Truck</label>
         <link refid="struct_truck"/>
@@ -62,10 +67,6 @@
         <childnode refid="3" relation="usage">
           <edgelabel>base</edgelabel>
         </childnode>
-      </node>
-      <node id="3">
-        <label>Object</label>
-        <link refid="struct_object"/>
       </node>
     </collaborationgraph>
     <location file="027_extends.c" line="77" column="1" bodyfile="027_extends.c" bodystart="78" bodyend="80"/>

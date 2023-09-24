@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacem2" kind="namespace" language="Fortran">
+    <compoundname>m2</compoundname>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="088__module__var_8f90_1aa9535f64b6a936c2e53e2f4ddd2f7043" prot="private" static="no" mutable="no">
+        <type>integer, private</type>
+        <definition>integer, private m2::v1</definition>
+        <argsstring/>
+        <name>v1</name>
+        <qualifiedname>m2::v1</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="088_module_var.f90" line="24" column="1" bodyfile="088_module_var.f90" bodystart="24" bodyend="24"/>
+      </memberdef>
+      <memberdef kind="variable" id="088__module__var_8f90_1aab4499a13318c88c757d70bbfc8278e5" prot="public" static="no" mutable="no">
+        <type>integer</type>
+        <definition>integer m2::v2</definition>
+        <argsstring/>
+        <name>v2</name>
+        <qualifiedname>m2::v2</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="088_module_var.f90" line="26" column="1" bodyfile="088_module_var.f90" bodystart="26" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="variable" id="088__module__var_8f90_1a14cb0c2e7f4f108ca3a06b79f6635c5c" prot="private" static="no" mutable="no">
+        <type>integer, private</type>
+        <definition>integer, private m2::v3</definition>
+        <argsstring/>
+        <name>v3</name>
+        <qualifiedname>m2::v3</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="088_module_var.f90" line="28" column="1" bodyfile="088_module_var.f90" bodystart="28" bodyend="28"/>
+      </memberdef>
+      <memberdef kind="variable" id="088__module__var_8f90_1a7e7474396674938ae25b1a2300109b1c" prot="public" static="no" mutable="no">
+        <type>integer, public</type>
+        <definition>integer, public m2::v4</definition>
+        <argsstring/>
+        <name>v4</name>
+        <qualifiedname>m2::v4</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="088_module_var.f90" line="30" column="1" bodyfile="088_module_var.f90" bodystart="30" bodyend="30"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="088_module_var.f90" line="20" column="1"/>
+  </compounddef>
+</doxygen>

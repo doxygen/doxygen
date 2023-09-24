@@ -41,5 +41,6 @@
 }
 </verbatim> More text after the verbatim section. </para>
     </detaileddescription>
+    <location file="050_verbatim.dox"/>
   </compounddef>
 </doxygen>

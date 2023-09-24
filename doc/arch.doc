@@ -38,9 +38,9 @@ directly by \c doxywizard, so it is put in a separate library.
 Each configuration option has one of 5 possible types: \c String,
 \c List, \c Enum, \c Int, or \c Bool. The values of these options are
 available through the global functions \c Config_getXXX(), where \c XXX is the
-type of the option. The argument of these function is a string naming
+type of the option. The argument of these functions is a string naming
 the option as it appears in the configuration file. For instance:
-\c Config_getBool("GENERATE_TESTLIST") returns a reference to a boolean
+\c Config_getBool(GENERATE_TESTLIST) returns a reference to a boolean
 value that is \c TRUE if the test list was enabled in the configuration file.
 
 The function \c readConfiguration() in \c src/doxygen.cpp
@@ -242,8 +242,14 @@ utime $now, $now, $file;
 Another way to get rules matching / debugging information
 from the \c flex code is setting \c LEX_FLAGS with \c make (`make LEX_FLAGS=-d`).
 
+By default a debug version of doxygen (i.e. an executable created with the \c CMake
+setting `-DCMAKE_BUILD_TYPE=Debug`) will automatically have the \c flex debugging
+information for all `flex codefile`s.
+
 Note that by running doxygen with `-d lex` you get information about which
 `flex codefile` is used.
+To see the information of the flex parser, which is compiled with the flex debug option,
+you have to specify `-d lex:<flex codefile>` when running doxygen.
 
 <h3>Testing</h3>
 
@@ -262,7 +268,8 @@ In case one has to communicate through e.g. a forum the configuration settings t
 are different from the standard doxygen configuration file settings one can run the
 doxygen command: with the `-x` option and the name of the configuration file (default
 is `Doxyfile`). The output will be a list of the not default settings (in `Doxyfile`
-format).
+format). Alternatively also `-x_noenv` is possible which is identical to the `-x`
+option but without replacing the environment variables and the \c CMake type replacement variables.
 
 \htmlonly
 Return to the <a href="index.html">index</a>.

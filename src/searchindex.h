@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -15,162 +13,164 @@
  *
  */
 
-#ifndef _SEARCHINDEX_H
-#define _SEARCHINDEX_H
+/** @file
+ *  @brief Web server based search engine.
+ *
+ *  Comes in two flavors: internal (via generated index) or external (via doxyindexer + doxysearch)
+ */
+
+#ifndef SEARCHINDEX_H
+#define SEARCHINDEX_H
 
 #include <memory>
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <string>
+#include <array>
+#include <variant>
 
-#include <qintdict.h>
-#include <qlist.h>
-#include <qintdict.h>
-#include "sortdict.h"
-#include "definition.h"
-#include "util.h"
+#include "qcstring.h"
+#include "growbuf.h"
+#include "dispatcher.h"
 
-class FTextStream;
 class Definition;
-class MemberDef;
+class SearchIndexIntf;
 
 /*! Initialize the search indexer */
 void initSearchIndexer();
 /*! Cleanup the search indexer */
 void finalizeSearchIndexer();
 
-//------- server side search index ----------------------
+// --- intermediate data collected by one thread ------
 
-struct URL
+struct SIData_CurrentDoc
 {
-  URL(QCString n,QCString u) : name(n), url(u) {}
-  QCString name;
-  QCString url;
+  SIData_CurrentDoc(const Definition *d,const QCString &a,bool b)
+    : ctx(d), anchor(a), isSourceFile(b) {}
+  const Definition *ctx = 0;
+  QCString anchor;
+  bool isSourceFile;
 };
 
-
-struct URLInfo
+struct SIData_Word
 {
-  URLInfo(int idx,int f) : urlIdx(idx), freq(f) {}
-  int urlIdx;
-  int freq;
+  SIData_Word(const QCString &w,bool b)
+    : word(w), hiPrio(b) {}
+  QCString word;
+  bool hiPrio;
 };
 
-class IndexWord
-{
-  public:
-    using URLInfoMap = std::unordered_map<int,URLInfo>;
-    IndexWord(QCString word);
-    void addUrlIndex(int,bool);
-    URLInfoMap urls() const { return m_urls; }
-    QCString word() const { return m_word; }
+//-----------------------------
 
-  private:
-    QCString    m_word;
-    URLInfoMap  m_urls;
-};
-
-class SearchIndexIntf
+/** Writes search index for doxygen provided server based search engine that uses PHP. */
+class SearchIndex
 {
-  public:
-    enum Kind { Internal, External };
-    SearchIndexIntf(Kind k) : m_kind(k) {}
-    virtual ~SearchIndexIntf() {}
-    virtual void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile) = 0;
-    virtual void addWord(const char *word,bool hiPriority) = 0;
-    virtual void write(const char *file) = 0;
-    Kind kind() const { return m_kind; }
-  private:
-    Kind m_kind;
-};
+    struct URL
+    {
+      URL(const QCString &n,const QCString &u) : name(n), url(u) {}
+      QCString name;
+      QCString url;
+    };
 
-class SearchIndex : public SearchIndexIntf
-{
+    struct URLInfo
+    {
+      URLInfo(int idx,int f) : urlIdx(idx), freq(f) {}
+      int urlIdx;
+      int freq;
+    };
+
+    class IndexWord
+    {
+      public:
+        using URLInfoMap = std::unordered_map<int,URLInfo>;
+        IndexWord(const QCString &word) : m_word(word) {}
+        void addUrlIndex(int,bool);
+        URLInfoMap urls() const { return m_urls; }
+        QCString word() const { return m_word; }
+
+      private:
+        QCString    m_word;
+        URLInfoMap  m_urls;
+    };
+
   public:
     SearchIndex();
-    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile) override;
-    void addWord(const char *word,bool hiPriority) override;
-    void write(const char *file) override;
+    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile);
+    void addWord(const QCString &word,bool hiPriority);
+    void write(const QCString &file);
   private:
-    void addWord(const char *word,bool hiPrio,bool recurse);
+    void addWordRec(const QCString &word,bool hiPrio,bool recurse);
     std::unordered_map<std::string,int> m_words;
     std::vector< std::vector< IndexWord> > m_index;
     std::unordered_map<std::string,int> m_url2IdMap;
     std::map<int,URL> m_urls;
     int m_urlIndex = -1;
+    int m_urlMaxIndex = 0;
 };
 
-
-class SearchIndexExternal : public SearchIndexIntf
+/** Writes search index that should be used with an externally provided search engine,
+ *  e.g. doxyindexer and doxysearch.cgi.
+ */
+class SearchIndexExternal
 {
-    struct Private;
+    struct SearchDocEntry
+    {
+      QCString type;
+      QCString name;
+      QCString args;
+      QCString extId;
+      QCString url;
+      GrowBuf  importantText;
+      GrowBuf  normalText;
+    };
+
   public:
     SearchIndexExternal();
-    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile);
-    void addWord(const char *word,bool hiPriority);
-    void write(const char *file);
+    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile);
+    void addWord(const QCString &word,bool hiPriority);
+    void write(const QCString &file);
   private:
-    std::unique_ptr<Private> p;
+    std::map<std::string,SearchDocEntry> m_docEntries;
+    SearchDocEntry *m_current = 0;
 };
 
-//------- client side search index ----------------------
+namespace SearchIndexMethods
+{
+  template <class T> struct setCurrentDoc     { static constexpr auto method = &T::setCurrentDoc;     };
+  template <class T> struct addWord           { static constexpr auto method = &T::addWord;           };
+  template <class T> struct write             { static constexpr auto method = &T::write;             };
+}
 
-#define SEARCH_INDEX_ALL           0
-#define SEARCH_INDEX_CLASSES       1
-#define SEARCH_INDEX_INTERFACES    2
-#define SEARCH_INDEX_STRUCTS       3
-#define SEARCH_INDEX_EXCEPTIONS    4
-#define SEARCH_INDEX_NAMESPACES    5
-#define SEARCH_INDEX_FILES         6
-#define SEARCH_INDEX_FUNCTIONS     7
-#define SEARCH_INDEX_VARIABLES     8
-#define SEARCH_INDEX_TYPEDEFS      9
-#define SEARCH_INDEX_SEQUENCES    10
-#define SEARCH_INDEX_DICTIONARIES 11
-#define SEARCH_INDEX_ENUMS        12
-#define SEARCH_INDEX_ENUMVALUES   13
-#define SEARCH_INDEX_PROPERTIES   14
-#define SEARCH_INDEX_EVENTS       15
-#define SEARCH_INDEX_RELATED      16
-#define SEARCH_INDEX_DEFINES      17
-#define SEARCH_INDEX_GROUPS       18
-#define SEARCH_INDEX_PAGES        19
-#define NUM_SEARCH_INDICES        20
-
-class SearchDefinitionList : public QList<Definition>
+/** Abstract proxy interface for non-javascript based search indices.
+ *  It forwards calls to either SearchIndex or SearchIndexExternal depending
+ *  on the Kind passed during construction.
+ */
+class SearchIndexIntf
 {
   public:
-    SearchDefinitionList(const QCString &id,const QCString &name) : m_id(id), m_name(name) {}
-    QCString id() const   { return m_id;   }
-    QCString name() const { return m_name; }
+    using SearchIndexVariant = std::variant<SearchIndex,SearchIndexExternal>;
+    enum Kind { Internal, External };
+    SearchIndexIntf(Kind k) : m_kind(k),
+        m_variant(k==Internal ? SearchIndexVariant(SearchIndex()) :
+                                SearchIndexVariant(SearchIndexExternal())) { }
+    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
+    {
+      dispatch_call<SearchIndexMethods::setCurrentDoc>(m_variant,ctx,anchor,isSourceFile);
+    }
+    void addWord(const QCString &word,bool hiPriority)
+    {
+      dispatch_call<SearchIndexMethods::addWord>(m_variant,word,hiPriority);
+    }
+    void write(const QCString &file)
+    {
+      dispatch_call<SearchIndexMethods::write>(m_variant,file);
+    }
+    Kind kind() const { return m_kind; }
   private:
-    QCString m_id;
-    QCString m_name;
+    Kind m_kind;
+    SearchIndexVariant m_variant;
 };
 
-class SearchIndexList : public SDict< SearchDefinitionList >
-{
-  public:
-    typedef const Definition ElementType;
-    SearchIndexList(uint letter);
-   ~SearchIndexList();
-    void append(const Definition *d);
-    uint letter() const;
-  private:
-    int compareValues(const SearchDefinitionList *md1, const SearchDefinitionList *md2) const;
-    uint m_letter;
-};
-
-struct SearchIndexInfo
-{
-  LetterToIndexMap<SearchIndexList> symbolList;
-  QCString name;
-  QCString text;
-};
-
-void createJavaScriptSearchIndex();
-void writeJavaScriptSearchIndex();
-const SearchIndexInfo *getSearchIndices();
 
 #endif

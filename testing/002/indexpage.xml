@@ -13,5 +13,6 @@
         </indexentry>
       </para>
     </detaileddescription>
+    <location file="002_addindex.dox"/>
   </compounddef>
 </doxygen>

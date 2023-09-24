@@ -8,5 +8,6 @@
     <detaileddescription>
       <para>Text <bold>bold</bold> normal text. </para>
     </detaileddescription>
+    <location file="007_b.dox"/>
   </compounddef>
 </doxygen>

@@ -49,15 +49,6 @@ dt {
 	font-weight: bold;
 }
 
-ul.multicol {
-	-moz-column-gap: 1em;
-	-webkit-column-gap: 1em;
-	column-gap: 1em;
-	-moz-column-count: 3;
-	-webkit-column-count: 3;
-	column-count: 3;
-}
-
 p.startli, p.startdd {
 	margin-top: 2px;
 }
@@ -182,10 +173,10 @@ div.fragment {
 }
 
 div.line {
-	font-family: monospace, fixed;
+	font-family: 'JetBrains Mono', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace, fixed;
         font-size: 13px;
 	min-height: 13px;
-	line-height: 1.0;
+	line-height: 1.2;
 	text-wrap: unrestricted;
 	white-space: -moz-pre-wrap; /* Moz */
 	white-space: -pre-wrap;     /* Opera 4-6 */
@@ -288,6 +279,7 @@ body {
 }
 
 div.contents {
+	margin-top: 0px;
         margin-bottom: 10px;
         padding: 12px;
         margin-left: auto;
@@ -807,7 +799,7 @@ div.directory {
     width: 24px;
     height: 18px;
     margin-bottom: 4px;
-    background-image:url('folderopen.png');
+    background-image:url('folderopen.svg');
     background-position: 0px -4px;
     background-repeat: repeat-y;
     vertical-align:top;
@@ -818,7 +810,7 @@ div.directory {
     width: 24px;
     height: 18px;
     margin-bottom: 4px;
-    background-image:url('folderclosed.png');
+    background-image:url('folderclosed.svg');
     background-position: 0px -4px;
     background-repeat: repeat-y;
     vertical-align:top;
@@ -829,7 +821,7 @@ div.directory {
     width: 24px;
     height: 18px;
     margin-bottom: 4px;
-    background-image:url('doc.png');
+    background-image:url('doc.svg');
     background-position: 0px -4px;
     background-repeat: repeat-y;
     vertical-align:top;
@@ -1254,7 +1246,7 @@ div.toc {
 }
 
 div.toc li {
-        background: url("bdwn.png") no-repeat scroll 0 5px transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='10px' width='5px'><text x='0' y='5' font-size='10' fill='grey'>&%238595;</text></svg>") no-repeat scroll 0 5px transparent;
         font: 10px/1.2 Verdana,DejaVu Sans,Geneva,sans-serif;
         margin-top: 5px;
         padding-left: 10px;
@@ -1283,11 +1275,11 @@ div.toc li.level2 {
 }
 
 div.toc li.level3 {
-        margin-left: 30px;
+        margin-left: 15px;
 }
 
 div.toc li.level4 {
-        margin-left: 45px;
+        margin-left: 15px;
 }
 
 .inherit_header {
@@ -1583,5 +1575,8 @@ th.markdownTableHeadCenter, td.markdownTableBodyCenter {
 	text-align: center
 }
 
+span.obfuscator {
+  display: none;
+}
 
 /* @end */

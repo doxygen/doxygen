@@ -44,8 +44,9 @@ Note that you cannot put `\n`'s in the value part of an alias to insert newlines
 (in the resulting output). You can put `^^` in the value part of an alias to
 insert a newline as if a physical newline was in the original file.
 
-Note when you need a literal `{` or `}` or `,` in the value part of an alias you have to
-escape them by means of a backslash (`\`), this can lead to conflicts with the
+Note when you need a literal `{` or `}` or `,` (or non default separator)
+in the value part of an alias you have to
+escape it by means of a backslash (`\`), this can lead to conflicts with the
 commands \c \\{ and \c \\} for these it is advised to use the version \c @@{ and \c @@} or
 use a double escape (\c \\\\{ and \c \\\\})
 
@@ -106,6 +107,51 @@ i.e.
 \l{SomeClass,Some text\, with an escaped comma}
 \endverbatim
 given the alias definition of `\l` in the example above.
+
+By default the separator for arguments in an alias is a comma.
+However, for arguments with a lot of commas, such as templates of function
+definitions, escaping each comma can be cumbersome.
+To solve this, one can specify a different separator, directly
+after the parameter count, for example to use a semicolon
+as separator one can define the command as follows:
+\verbatim
+ALIASES += xreflist{3;}="\xrefitem \1 \"\2\" \"\3\" "
+ALIASES += reminder="\xreflist{reminders;Reminder;Reminders}"
+\endverbatim
+Note that also multi-character separators are allowed, i.e. the same example
+can be written using double pipe symbols as separator:
+\verbatim
+ALIASES += xreflist{3||}="\xrefitem \1 \"\2\" \"\3\" "
+ALIASES += reminder="\xreflist{reminders||Reminder||Reminders}"
+\endverbatim
+The following characters are allowed to create separators:
+\verbatim
+!#$%&,.?|;:'+=~`/
+\endverbatim
+
+Note that for each command and number of parameters, one can use a different separator.
+It is not recommended to select a different separator for same command however,
+as this may lead to ambiguity as to which command definition
+is to be used. Doxygen resolves such ambiguity by choosing the command which matches the
+most parameters. Consider the following, rather contrived example:
+\verbatim
+ALIASES += v{2+}="Choose 2: '\1' and '\2'"
+ALIASES += v{3;}="Choose 3: '\1', '\2', and '\3'"
+\endverbatim
+Then
+\verbatim
+- \v{One+Two}
+- \v{One;Two;Three}
+- \v{One+Two;Three;Four}
+\endverbatim
+Will produce:
+
+- Choose 2: 'One' and 'Two'
+- Choose 3: 'One', 'Two', and 'Three'
+- Choose 3: 'One+Two', 'Three', and 'Four'
+
+For the last command both definitions of `v` match, but the
+one with 3 parameters is selected as it matches more parameters.
 
 \section custcmd_nesting Nesting custom command
 

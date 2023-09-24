@@ -9,7 +9,7 @@
       <para>
         <toclist>
           <tocitem id="index_1item1">First Item</tocitem>
-          <tocitem id="item2_1item2">Second Item</tocitem>
+          <tocitem id="item2">Second Item</tocitem>
           <tocitem id="item2_1item3">Third Item</tocitem>
         </toclist>
       </para>
@@ -19,5 +19,6 @@
         <para>Section 1 text. </para>
       </sect1>
     </detaileddescription>
+    <location file="045_refitem.dox"/>
   </compounddef>
 </doxygen>

@@ -20,44 +20,83 @@
 
 #include "outputgen.h"
 
-class QFile;
+class OutputCodeList;
+
+/** Generator for Man page code fragments */
+class ManCodeGenerator
+{
+  public:
+    ManCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
+
+    OutputType type() const { return OutputType::Man; }
+
+    void codify(const QCString &text);
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip);
+    void writeTooltip(const QCString &,
+                      const DocLinkInfo &,
+                      const QCString &,
+                      const QCString &,
+                      const SourceLinkInfo &,
+                      const SourceLinkInfo &
+                     ) {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
+    void startCodeLine(bool) {}
+    void endCodeLine() { codify("\n"); m_col=0; }
+    void startFontClass(const QCString &) {}
+    void endFontClass() {}
+    void writeCodeAnchor(const QCString &) {}
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
+
+  private:
+    int  m_col = 0;
+    TextStream *m_t;
+};
 
 /** Generator for Man page output. */
 class ManGenerator : public OutputGenerator
 {
   public:
     ManGenerator();
-    ManGenerator(const ManGenerator &g);
-    ManGenerator &operator=(const ManGenerator &g);
-    virtual ~ManGenerator();
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    ManGenerator(const ManGenerator &);
+    ManGenerator &operator=(const ManGenerator &);
+    ManGenerator(ManGenerator &&);
+    ManGenerator &operator=(ManGenerator &&) = delete;
+   ~ManGenerator();
 
-    OutputType type() const { return Man; }
+    OutputType type() const { return OutputType::Man; }
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
     static void init();
-    void startFile(const char *name,const char *manName,const char *title,int);
+    void cleanup();
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id, int hierarchyLevel);
     void writeSearchInfo() {}
-    void writeFooter(const char *) {}
+    void writeFooter(const QCString &) {}
     void endFile();
     void clearBuffer();
 
-    void startIndexSection(IndexSections) {}
-    void endIndexSection(IndexSections) {}
-    void writePageLink(const char *,bool) {}
+    void startPageDoc(const QCString &) {}
+    void endPageDoc() {}
+    void startIndexSection(IndexSection) {}
+    void endIndexSection(IndexSection) {}
+    void writePageLink(const QCString &,bool) {}
     void startProjectNumber() {}
     void endProjectNumber() {}
     void writeStyleInfo(int) {}
-    void startTitleHead(const char *) {}
-    void endTitleHead(const char *,const char *);
-    void startTitle();
-    void endTitle();
+    void startTitleHead(const QCString &) {}
+    void endTitleHead(const QCString &,const QCString &);
 
     void newParagraph();
-    void startParagraph(const char *classDef);
+    void startParagraph(const QCString &classDef);
     void endParagraph();
-    void writeString(const char *text);
+    void writeString(const QCString &text);
     void startIndexListItem() {}
     void endIndexListItem() {}
     void startIndexList() {}
@@ -65,40 +104,30 @@ class ManGenerator : public OutputGenerator
     void startIndexKey() {}
     void endIndexKey()   {}
     void startIndexValue(bool) {}
-    void endIndexValue(const char *,bool)   {}
+    void endIndexValue(const QCString &,bool)   {}
     void startItemList()  {}
     void endItemList()    { newParagraph(); }
-    void startIndexItem(const char *ref,const char *file);
-    void endIndexItem(const char *ref,const char *file);
-    void docify(const char *text);
-    void codify(const char *text);
-    void writeObjectLink(const char *ref,const char *file,
-                         const char *anchor,const char *name);
-    void writeCodeLink(const char *ref,const char *file,
-                       const char *anchor,const char *name,
-                       const char *tooltip);
-    void writeTooltip(const char *, const DocLinkInfo &, const char *,
-                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
-                     ) {}
-    void startTextLink(const char *,const char *) {}
+    void startIndexItem(const QCString &ref,const QCString &file);
+    void endIndexItem(const QCString &ref,const QCString &file);
+    void docify(const QCString &text);
+    void writeObjectLink(const QCString &ref,const QCString &file,
+                         const QCString &anchor,const QCString &name);
+    void startTextLink(const QCString &,const QCString &) {}
     void endTextLink() {}
-    void startHtmlLink(const char *url);
-    void endHtmlLink();
-    void startTypewriter() { t << "\\fC"; m_firstCol=FALSE; }
-    void endTypewriter()   { t << "\\fP"; m_firstCol=FALSE; }
+    void startTypewriter() { m_t << "\\fC"; m_firstCol=FALSE; }
+    void endTypewriter()   { m_t << "\\fP"; m_firstCol=FALSE; }
     void startGroupHeader(int);
     void endGroupHeader(int);
     void startMemberSections() {}
     void endMemberSections() {}
     void startHeaderSection() {}
     void endHeaderSection();
-    void startMemberHeader(const char *,int);
+    void startMemberHeader(const QCString &,int);
     void endMemberHeader();
     void insertMemberAlign(bool) {}
-    void insertMemberAlignLeft(int,bool){}
+    void insertMemberAlignLeft(MemberItemType,bool){}
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
-    //void writeListItem();
     void startItemListItem();
     void endItemListItem();
     void startMemberDocList() {}
@@ -109,10 +138,12 @@ class ManGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
-    void startMemberItem(const char *,int,const char *);
-    void endMemberItem();
+    void startMemberItem(const QCString &,MemberItemType,const QCString &);
+    void endMemberItem(MemberItemType);
     void startMemberTemplateParams() {}
-    void endMemberTemplateParams(const char *,const char *) {}
+    void endMemberTemplateParams(const QCString &,const QCString &) {}
+    void startCompoundTemplateParams();
+    void endCompoundTemplateParams();
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -122,77 +153,58 @@ class ManGenerator : public OutputGenerator
     void endMemberGroup(bool);
 
     void writeRuler()    {}
-    void writeAnchor(const char *,const char *) {}
-    void startCodeFragment(const char *);
-    void endCodeFragment(const char *);
-    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; m_col=0; }
-    void startCodeLine(bool) {}
-    void endCodeLine() { codify("\n"); m_col=0; }
-    void startEmphasis() { t << "\\fI"; m_firstCol=FALSE; }
-    void endEmphasis()   { t << "\\fP"; m_firstCol=FALSE; }
-    void startBold()     { t << "\\fB"; m_firstCol=FALSE; }
-    void endBold()       { t << "\\fP"; m_firstCol=FALSE; }
-    void startBoldEmphasis() { t << "\\f(BI"; m_firstCol=FALSE; }
-    void endBoldEmphasis()   { t << "\\fP"; m_firstCol=FALSE; }
-    void startDescription() {}
-    void endDescription()   {}
-    void startDescItem();
-    void endDescItem();
-    void lineBreak(const char *) { t << "\n.br" << endl; }
+    void writeAnchor(const QCString &,const QCString &) {}
+    void startEmphasis() { m_t << "\\fI"; m_firstCol=FALSE; }
+    void endEmphasis()   { m_t << "\\fP"; m_firstCol=FALSE; }
+    void startBold()     { m_t << "\\fB"; m_firstCol=FALSE; }
+    void endBold()       { m_t << "\\fP"; m_firstCol=FALSE; }
+    void startBoldEmphasis() { m_t << "\\f(BI"; m_firstCol=FALSE; }
+    void endBoldEmphasis()   { m_t << "\\fP"; m_firstCol=FALSE; }
+    void lineBreak(const QCString &) { m_t << "\n.br\n"; }
     void writeChar(char c);
-    void startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool);
+    void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool);
     void endMemberDoc(bool);
-    void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
-    void endDoxyAnchor(const char *,const char *) {}
+    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
+    void endDoxyAnchor(const QCString &,const QCString &) {}
     void writeLatexSpacing() {}
-    void writeStartAnnoItem(const char *type,const char *file,
-                            const char *path,const char *name);
-    void writeEndAnnoItem(const char *) { t << endl; m_firstCol=TRUE; }
-    void startSubsection();
-    void endSubsection();
-    void startSubsubsection();
-    void endSubsubsection();
+    void writeStartAnnoItem(const QCString &type,const QCString &file,
+                            const QCString &path,const QCString &name);
     void startCenter()        {}
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    void startMemberDescription(const char *,const char *,bool) { t << "\n.RI \""; m_firstCol=FALSE; }
-    void endMemberDescription()   { t << "\""; m_firstCol=FALSE; }
+    void startMemberDescription(const QCString &,const QCString &,bool) { m_t << "\n.RI \""; m_firstCol=FALSE; }
+    void endMemberDescription()   { m_t << "\""; m_firstCol=FALSE; }
     void startMemberDeclaration() {}
-    void endMemberDeclaration(const char *,const char *) {}
-    void writeInheritedSectionTitle(const char *,const char *,const char *,
-                      const char *,const char *,const char *) {}
-    void startDescList(SectionTypes);
-    void endDescList()        {}
+    void endMemberDeclaration(const QCString &,const QCString &) {}
+    void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
+                      const QCString &,const QCString &,const QCString &);
     void startExamples();
     void endExamples();
-    void startParamList(ParamListTypes,const char *title);
-    void endParamList();
-    //void writeDescItem();
     void startDescForItem();
     void endDescForItem();
-    void startSection(const char *,const char *,SectionType);
-    void endSection(const char *,SectionType);
-    void addIndexItem(const char *,const char *) {}
+    void startSection(const QCString &,const QCString &,SectionType);
+    void endSection(const QCString &,SectionType);
+    void addIndexItem(const QCString &,const QCString &) {}
     void startIndent()        {}
     void endIndent()          {}
     void writeSynopsis();
     void startClassDiagram() {}
-    void endClassDiagram(const ClassDiagram &,const char *,const char *) {}
+    void endClassDiagram(const ClassDiagram &,const QCString &,const QCString &) {}
     void startPageRef() {}
-    void endPageRef(const char *,const char *) {}
+    void endPageRef(const QCString &,const QCString &) {}
     void startQuickIndices() {}
     void endQuickIndices() {}
-    void writeSplitBar(const char *) {}
-    void writeNavigationPath(const char *) {}
+    void writeSplitBar(const QCString &) {}
+    void writeNavigationPath(const QCString &) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem,const char *) {}
-    void writeSummaryLink(const char *,const char *,const char *,bool) {}
+    void writeQuickLinks(bool,HighlightedItem,const QCString &,bool) {}
+    void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) {}
     void startContents() {}
     void endContents() {}
-    void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
+    void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) m_t << " "; }
 
-    void startDescTable(const char *t,const bool hasInits);
+    void startDescTable(const QCString &title,const bool hasInits);
     void endDescTable();
     void startDescTableRow() {}
     void endDescTableRow() {}
@@ -200,7 +212,7 @@ class ManGenerator : public OutputGenerator
     void endDescTableTitle() { endBoldEmphasis(); }
     void startDescTableInit(){};
     void endDescTableInit(){};
-    void startDescTableData() { t << endl; m_firstCol=TRUE; }
+    void startDescTableData() { m_t << "\n"; m_firstCol=TRUE; }
     void endDescTableData() {}
 
     void startDotGraph() {}
@@ -223,18 +235,18 @@ class ManGenerator : public OutputGenerator
     void endMemberDocPrefixItem() {}
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
-    void startParameterType(bool,const char *) {}
+    void startParameterType(bool,const QCString &) {}
     void endParameterType() {}
     void startParameterName(bool) {}
     void endParameterName(bool,bool,bool) {}
     void startParameterList(bool) {}
     void endParameterList() {}
-    void exceptionEntry(const char*,bool) {}
+    void exceptionEntry(const QCString &,bool) {}
 
-    void startFontClass(const char *) {}
+    void startFontClass(const QCString &) {}
     void endFontClass() {}
 
-    void startConstraintList(const char *);
+    void startConstraintList(const QCString &);
     void startConstraintParam();
     void endConstraintParam();
     void startConstraintType();
@@ -253,20 +265,25 @@ class ManGenerator : public OutputGenerator
     void endInlineMemberDoc();
 
     void startLabels();
-    void writeLabel(const char *l,bool isLast);
+    void writeLabel(const QCString &l,bool isLast);
     void endLabels();
 
-    void writeCodeAnchor(const char *) {}
-    void setCurrentDoc(const Definition *,const char *,bool) {}
-    void addWord(const char *,bool) {}
+    void writeLocalToc(const SectionRefs &,const LocalToc &) {}
+
+    void addCodeGen(OutputCodeList &list);
 
   private:
+    void startTitle();
+    void endTitle();
+
     bool m_firstCol = true;
-    bool m_paragraph = true;
     int  m_col = 0;
+    bool m_paragraph = true;
     bool m_upperCase = false;
     bool m_insideTabbing = false;
     bool m_inHeader = false;
+    std::unique_ptr<OutputCodeList> m_codeList;
+    ManCodeGenerator *m_codeGen;
 
 };
 

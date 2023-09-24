@@ -45,11 +45,11 @@ bool jjCanMove_1(int hiByte, int i1, int i2, unsigned long long l1, unsigned lon
 Token * jjFillToken();
 
 public:
-    int curLexState;
-    int jjnewStateCnt;
-    int jjround;
-    int jjmatchedPos;
-    int jjmatchedKind;
+    int curLexState = 0;
+    int jjnewStateCnt = 0;
+    int jjround = 0;
+    int jjmatchedPos = 0;
+    int jjmatchedKind = 0;
 
 Token * getNextToken();
 void  SkipLexicalActions(Token *matchedToken);
@@ -98,8 +98,8 @@ public:
   const JJSimpleString jjKindsForStateVector(int lexState, int vec[], int start, int end);
 
   JAVACC_CHARSTREAM*        input_stream;
-  int                       jjrounds[87];
-  int                       jjstateSet[2 * 87];
+  int                       jjrounds[83];
+  int                       jjstateSet[2 * 83];
   JJString                  jjimage;
   JJString                  image;
   int                       jjimageLen;

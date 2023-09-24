@@ -13,8 +13,9 @@
 
 include (${TOP}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
+string(TIMESTAMP YEAR "%Y")
 
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED)
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(PDFLATEX NAMES pdflatex )
 find_program(MAKEINDEX NAMES makeindex )
@@ -63,6 +64,7 @@ set(DOC_FILES
         expert_list_string.png
         expert_string_dir.png
         expert_string_file.png
+        expert_string_filedir.png
         expert_string_image.png
         expert_string_string.png
         external.doc
@@ -76,18 +78,19 @@ set(DOC_FILES
         tables.doc
         grouping.doc
         htmlcmds.doc
-        index.doc
-        index.hhp.txt
         infoflow.eps
         infoflow.fig
         infoflow.png
         install.doc
-        install_prefix
+        layout_index_and_notreeview.png
+        layout_index_and_treeview.png
+        layout_noindex_and_notreeview.png
+        layout_noindex_and_treeview.png
+        layout_noindex_and_sidebar.png
         lists.doc
         markdown.doc
         output.doc
         perlmod.doc
-        perlmod_tree.doc
         preprocessing.doc
         searching.doc
         starting.doc
@@ -115,12 +118,7 @@ if (build_doc_chm)
 )
 endif ()
 
-if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-    file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
-else()
-    file(GLOB LANG_FILES "${TOP}/src//translator_??.h")
-endif()
-
+file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
                     ${PROJECT_BINARY_DIR}/src
@@ -154,17 +152,23 @@ set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 
 list(APPEND OUT_DOC_CHM_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
 endforeach()
 
-configure_file(${PROJECT_SOURCE_DIR}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen_manual.tex ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex)
+configure_file(${PROJECT_SOURCE_DIR}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen_manual.tex ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex COPYONLY)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
 
+# Call the main page "Introduction" in LaTeX, which is more appropriate for that format.
+set(MAINPAGE_TITLE Doxygen)
+configure_file(${PROJECT_SOURCE_DIR}/doc/index.doc          ${PROJECT_BINARY_DIR}/doc/index_html.doc)
+set(MAINPAGE_TITLE Introduction)
+configure_file(${PROJECT_SOURCE_DIR}/doc/index.doc          ${PROJECT_BINARY_DIR}/doc/index_latex.doc)
+
 # doc/language.doc (see tag Doxyfile:INPUT)
 add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} translator.py ${PROJECT_SOURCE_DIR}
-        DEPENDS ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py ${LANG_FILES}
+        COMMAND ${Python_EXECUTABLE} translator.py --doc ${PROJECT_SOURCE_DIR}
+        DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py ${LANG_FILES}
         OUTPUT language.doc
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc
 )
@@ -172,7 +176,7 @@ set_source_files_properties(language.doc PROPERTIES GENERATED 1)
 
 # doc/config.doc (see tag Doxyfile:INPUT)
 add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE}  ${TOP}/src/configgen.py -doc ${TOP}/src/config.xml > config.doc
+        COMMAND ${Python_EXECUTABLE}  ${TOP}/src/configgen.py -doc ${TOP}/src/config.xml > config.doc
         DEPENDS ${TOP}/src/config.xml ${TOP}/src/configgen.py
         OUTPUT config.doc
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
@@ -181,7 +185,8 @@ set_source_files_properties(config.doc PROPERTIES GENERATED 1)
 ################################################################################
 add_custom_target(run_doxygen
         COMMENT "Generating Latex and HTML documentation."
-        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${DOXYGEN_EXECUTABLE}
+        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} INDEX_DOC=index_html.doc GENERATE_HTML=YES GENERATE_LATEX=NO ${DOXYGEN_EXECUTABLE}
+        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} INDEX_DOC=index_latex.doc GENERATE_HTML=NO GENERATE_LATEX=YES ${DOXYGEN_EXECUTABLE}
         DEPENDS ${PROJECT_BINARY_DIR}/doc/language.doc ${PROJECT_BINARY_DIR}/doc/config.doc
         DEPENDS ${OUT_DOC_FILES}
         DEPENDS examples
@@ -192,13 +197,17 @@ add_custom_target(run_doxygen
 add_custom_target(doxygen_pdf
         COMMENT "Generating Doxygen Manual PDF."
         COMMAND ${CMAKE_COMMAND} -E remove refman.tex
-        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/manual.sty  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf  .
+        COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex" "${PROJECT_BINARY_DIR}/latex/doxygen_manual.tex" "${VERSION}"
+        COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/manual.sty" "${PROJECT_BINARY_DIR}/latex/manual.sty" "${VERSION}"
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
-        DEPENDS run_doxygen
+        COMMAND ${MAKEINDEX} doxygen_manual.idx
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        DEPENDS ${PROJECT_BINARY_DIR}/doc/manual.sty ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf
+        DEPENDS run_doxygen ${PROJECT_SOURCE_DIR}/doc/replace_version.py ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
 )
 add_custom_target(docs
@@ -215,15 +224,15 @@ add_custom_target(docs
 if (build_doc_chm)
 add_custom_target(docs_chm
     COMMENT "Generating CHM documentation."
-    COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} HTML_HELP_COMPILER=${HTML_HELP_COMPILER} ${DOXYGEN_EXECUTABLE} Doxyfile_chm
+    COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} HTML_HELP_COMPILER=${HTML_HELP_COMPILER} INDEX_DOC=index_html.doc ${DOXYGEN_EXECUTABLE} Doxyfile_chm
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/html/examples ${PROJECT_BINARY_DIR}/chm/examples
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/chm/index.hhp ${PROJECT_BINARY_DIR}/chm/doxygen_manual.hhp
     COMMAND ${CMAKE_COMMAND} -E echo "import os" > ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
     COMMAND ${CMAKE_COMMAND} -E echo "for root, dirs, files in os.walk('examples'):" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
     COMMAND ${CMAKE_COMMAND} -E echo "    for file in files:" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
-    COMMAND ${CMAKE_COMMAND} -E echo "        if file.endswith('.html') or file.endswith('.png') or file.endswith('.css') or file.endswith('.gif'):" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
+    COMMAND ${CMAKE_COMMAND} -E echo "        if file.endswith('.html') or file.endswith('.png') or file.endswith('.svg') or file.endswith('.css') or file.endswith('.gif'):" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
     COMMAND ${CMAKE_COMMAND} -E echo "            print(os.path.join(root, file))" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
-    COMMAND ${CMAKE_COMMAND} -E chdir  ${PROJECT_BINARY_DIR}/chm ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual.hhp
+    COMMAND ${CMAKE_COMMAND} -E chdir  ${PROJECT_BINARY_DIR}/chm ${Python_EXECUTABLE} ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual.hhp
     COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/chm "${HTML_HELP_COMPILER}" doxygen_manual.hhp || echo > nul
     COMMAND ${CMAKE_COMMAND} -E rename ${PROJECT_BINARY_DIR}/chm/index.chm ${PROJECT_BINARY_DIR}/chm/doxygen_manual.chm
         DEPENDS ${PROJECT_BINARY_DIR}/doc/language.doc ${PROJECT_BINARY_DIR}/doc/config.doc

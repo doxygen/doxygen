@@ -1,25 +1,26 @@
 Doxygen uses cmake (http://www.cmake.org/) to build executables for various platforms.
-It's required at least cmake version 3.3.
+At least cmake version 3.14 is required.
 
 The first step is to create a build directory where the output should be stored.
-Doxygen can be fully build outside of the source tree.
+Doxygen can be fully built outside of the source tree.
 
 The second step is to invoke cmake from within the build directory with the desired generator.
 
-For Linux/Unix systems do the following
+For Linux/Unix systems do the following:
 
-  mkdir build
-  cd build
-  cmake -G "Unix Makefiles" path/to/root/of/doxygen/source/tree
-  make
+    mkdir build
+    cd build
+    cmake -G "Unix Makefiles" path/to/root/of/doxygen/source/tree
+    make
+Note: "path/to/root/of/doxygen/source/tree" is not the "src" directory but its parent.
 
-This also works for MacOSX, but if XCode is installed you can also generate an XCode project file
+This also works for MacOS, but if XCode is installed you can also generate an XCode project file
 
-  cmake -G XCode path/to/root/of/doxygen/source/tree
+    cmake -G XCode path/to/root/of/doxygen/source/tree
 
 For Windows one can generate a Visual Studio project using
 
-  cmake -G "Visual Studio 12 2013" path\to\root\of\doxygen\source\tree
+    cmake -G "Visual Studio 12 2013" path\to\root\of\doxygen\source\tree
 
 (this is for Visual Studio 12, there are typically also generators for other versions of
 Visual Studio or other compiler environments like MinGW)
@@ -31,25 +32,25 @@ Doxygen's cmake configuration provides a number of options:
 - build_xmlparser Example showing how to parse doxygen's XML output.
 - build_search    Build external search tools (doxysearch and doxyindexer).
 - build_doc       Build user manual.
-- use_sqlite3     Add support for sqlite3 output [experimental].
 - use_libclang    Add support for libclang parsing.
+- use_sys_spdlog  Use system spdlog library instead of the one bundled.
+- use_sys_sqlite3 Use system sqlite3 library instead of the one bundled.
 - win_static      Link with /MT in stead of /MD on windows.
-- english_only    Only compile in support for the English language.
-- force_qt4       Forces doxywizard to build using Qt4 even if Qt5 is installed
+- force_qt=<vers> Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6
 
 An option can be turned on, by adding -D<option>=ON as a command line option, this can be
 done when generating the initial build files, but also afterwards, i.e. to enable building
 of the documentation after an initial cmake -G run, do
 
-  cmake -Dbuild_doc=ON path/to/root/of/doxygen/source/tree
+    cmake -Dbuild_doc=ON path/to/root/of/doxygen/source/tree
 
 To turn the option off use
 
-  cmake -Dbuild_doc=OFF path/to/root/of/doxygen/source/tree
+    cmake -Dbuild_doc=OFF path/to/root/of/doxygen/source/tree
 
 To see the current value is of the various options, you can run
 
-  cmake -L path/to/root/of/doxygen/source/tree
+    cmake -L path/to/root/of/doxygen/source/tree
 
 The build target for building the documentation is 'docs' and the build target for
 the regression tests is 'tests'

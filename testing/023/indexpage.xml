@@ -8,5 +8,6 @@
     <detaileddescription>
       <para>Normal <emphasis>emphasis</emphasis> and more <emphasis>emphasis</emphasis> back to normal. </para>
     </detaileddescription>
+    <location file="023_e.dox"/>
   </compounddef>
 </doxygen>

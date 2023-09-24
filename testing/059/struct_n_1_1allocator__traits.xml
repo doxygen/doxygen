@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_n_1_1allocator__traits" kind="struct" language="C++" prot="public">
+    <compoundname>N::allocator_traits</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename _Alloc</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="struct_n_1_1allocator__traits_1a764c5cc2bd9edc0cfa83282a3f5a75f8" prot="public" static="no">
+        <type>typename _Ptr&lt; __c_pointer, const value_type &gt;::type</type>
+        <definition>using N::allocator_traits&lt; _Alloc &gt;::const_pointer =  typename _Ptr&lt;__c_pointer, const value_type&gt;::type</definition>
+        <argsstring/>
+        <name>const_pointer</name>
+        <qualifiedname>N::allocator_traits::const_pointer</qualifiedname>
+        <briefdescription>
+          <para>The allocator's const pointer type. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para><computeroutput>Alloc::const_pointer</computeroutput> if that type exists, otherwise <computeroutput>pointer_traits&lt;pointer&gt;::rebind&lt;const value_type&gt;</computeroutput>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="059_template.cpp" line="18" column="5" bodyfile="059_template.cpp" bodystart="18" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Uniform interface to all allocator types. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="059_template.cpp" line="8" column="13" bodyfile="059_template.cpp" bodystart="9" bodyend="19"/>
+    <listofallmembers>
+      <member refid="struct_n_1_1allocator__traits_1a764c5cc2bd9edc0cfa83282a3f5a75f8" prot="public" virt="non-virtual">
+        <scope>N::allocator_traits</scope>
+        <name>const_pointer</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

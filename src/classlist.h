@@ -18,63 +18,21 @@
 #ifndef CLASSLIST_H
 #define CLASSLIST_H
 
-#include <qlist.h>
-#include <qdict.h>
-
 #include "linkedmap.h"
 #include "classdef.h"
-#include "sortdict.h"
 
 class Definition;
-
-/** A list of ClassDef objects. */
-class ClassList : public QList<ClassDef>
-{
-  public:
-    ClassList();
-   ~ClassList();
-
-  private:
-    int compareValues(const ClassDef *item1,const ClassDef *item2) const;
-};
-
-/** An iterator for ClassDef objects in a ClassList. */
-class ClassListIterator : public QListIterator<ClassDef>
-{
-  public:
-    ClassListIterator(const ClassList &list);
-};
-
-class GenericsCollection : public QIntDict<ClassDef>
-{
-  public:
-    GenericsCollection() : QIntDict<ClassDef>(17) {}
-   ~GenericsCollection() {}
-};
-
-class GenericsSDict
-{
-  public:
-   GenericsSDict() : m_dict(17) { m_dict.setAutoDelete(TRUE); }
-  ~GenericsSDict() {}
-   void insert(const QCString &key,ClassDef *cd);
-   ClassDef *find(const QCString &key);
-  private:
-   SDict<GenericsCollection> m_dict;
-};
 
 class ClassLinkedMap : public LinkedMap<ClassDef>
 {
 };
 
-class ClassLinkedRefMap : public LinkedRefMap<const ClassDef>
+class ClassLinkedRefMap : public LinkedRefMap<ClassDef>
 {
   public:
     bool declVisible(const ClassDef::CompoundType *filter=0) const;
-    void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,const char *header,bool localNames) const;
+    void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,const QCString &header,bool localNames) const;
     void writeDocumentation(OutputList &ol,const Definition * container=0) const;
 };
-
-
 
 #endif

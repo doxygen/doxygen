@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,14 +15,7 @@
 
 #include "cmdmapper.h"
 
-/** Call representing a mapping from a command name to a command ID. */
-struct CommandMap
-{
-  const char *cmdName;
-  int cmdId;
-};
-
-CommandMap cmdMap[] =
+static const CommandMap g_cmdMap =
 {
   { "a",             CMD_EMPHASIS },
   { "addindex",      CMD_ADDINDEX },
@@ -37,21 +27,26 @@ CommandMap cmdMap[] =
   { "b",             CMD_BOLD },
   { "c",             CMD_CODE },
   { "cite",          CMD_CITE },
+  { "icode",         CMD_ISTARTCODE },
   { "code",          CMD_STARTCODE },
   { "copydoc",       CMD_COPYDOC },
   { "copybrief",     CMD_COPYBRIEF },
   { "copydetails",   CMD_COPYDETAILS },
   { "copyright",     CMD_COPYRIGHT },
   { "date",          CMD_DATE },
+  { "showdate",      CMD_SHOWDATE },
   { "dontinclude",   CMD_DONTINCLUDE },
   { "dotfile",       CMD_DOTFILE },
+  { "doxyconfig",    CMD_DOXYCONFIG },
   { "e",             CMD_EMPHASIS },
   { "em",            CMD_EMPHASIS },
+  { "endicode",      CMD_ENDICODE },
   { "endcode",       CMD_ENDCODE },
   { "endhtmlonly",   CMD_ENDHTMLONLY },
   { "endlatexonly",  CMD_ENDLATEXONLY },
   { "endlink",       CMD_ENDLINK },
   { "endsecreflist", CMD_ENDSECREFLIST },
+  { "endiverbatim",  CMD_ENDIVERBATIM },
   { "endverbatim",   CMD_ENDVERBATIM },
   { "endxmlonly",    CMD_ENDXMLONLY },
   { "exception",     CMD_EXCEPTION },
@@ -63,6 +58,7 @@ CommandMap cmdMap[] =
   { "internal",      CMD_INTERNAL },
   { "invariant",     CMD_INVARIANT },
   { "javalink",      CMD_JAVALINK },
+  { "javalinkplain", CMD_JAVALINK },
   { "latexinclude",  CMD_LATEXINCLUDE },
   { "latexonly",     CMD_LATEXONLY },
   { "li",            CMD_LI },
@@ -83,7 +79,6 @@ CommandMap cmdMap[] =
   { "return",        CMD_RETURN },
   { "returns",       CMD_RETURN },
   { "retval",        CMD_RETVAL },
-  { "rtfonly",       CMD_RTFONLY },
   { "sa",            CMD_SA },
   { "secreflist",    CMD_SECREFLIST },
   { "section",       CMD_SECTION },
@@ -102,6 +97,7 @@ CommandMap cmdMap[] =
   { "xrefitem",      CMD_XREFITEM },
   { "throw",         CMD_EXCEPTION },
   { "until",         CMD_UNTIL },
+  { "iverbatim",     CMD_IVERBATIM },
   { "verbatim",      CMD_VERBATIM },
   { "verbinclude",   CMD_VERBINCLUDE },
   { "version",       CMD_VERSION },
@@ -153,18 +149,23 @@ CommandMap cmdMap[] =
   { "docbookinclude",CMD_DOCBOOKINCLUDE },
   { "maninclude",    CMD_MANINCLUDE },
   { "xmlinclude",    CMD_XMLINCLUDE },
-  { 0,               0 },
+  { "iline",         CMD_ILINE },
+  { "ifile",         CMD_IFILE },
+  { "iliteral",      CMD_ILITERAL },
+  { "endiliteral",   CMD_ENDILITERAL },
+  { "ianchor" ,      CMD_IANCHOR },
 };
 
 //----------------------------------------------------------------------------
 
-CommandMap htmlTagMap[] =
+static const CommandMap g_htmlTagMap =
 {
   { "strong",     HTML_BOLD },
   { "center",     HTML_CENTER },
   { "table",      HTML_TABLE },
   { "caption",    HTML_CAPTION },
   { "small",      HTML_SMALL },
+  { "cite",       HTML_CITE },
   { "code",       HTML_CODE },
   { "dfn",        HTML_CODE },
   { "var",        HTML_EMPHASIS },
@@ -204,6 +205,10 @@ CommandMap htmlTagMap[] =
   { "u",          HTML_UNDERLINE },
   { "ins",        HTML_INS },
   { "del",        HTML_DEL },
+  { "thead",      HTML_THEAD },
+  { "tbody",      HTML_TBODY },
+  { "tfoot",      HTML_TFOOT },
+  { "details",    HTML_DETAILS },
 
   { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambiguous <code> is also a HTML tag
@@ -228,47 +233,40 @@ CommandMap htmlTagMap[] =
   { "term",         XML_TERM },
   { "value",        XML_VALUE },
   { "inheritdoc",   XML_INHERITDOC },
-  { 0,              0 }
 };
 
 //----------------------------------------------------------------------------
 
-Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,TRUE);
-Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,FALSE);
-
-int Mapper::map(const char *n)
+int Mapper::map(const QCString &n) const
 {
-  QCString name=n;
+  if (n.isEmpty()) return 0;
+  QCString name = n;
   if (!m_cs) name=name.lower();
-  int *result;
-  return !name.isEmpty() && (result=m_map.find(name)) ? *result: 0;
+  auto it = m_map.find(name.str());
+  return it!=m_map.end() ? it->second : 0;
 }
 
-QCString Mapper::find(const int n)
+QCString Mapper::find(const int n) const
 {
-  QDictIterator<int> mapIterator(m_map);
-  for (int *curVal = mapIterator.toFirst();(curVal = mapIterator.current());++mapIterator)
+  for (const auto &[name,id] : m_map)
   {
-    if (*curVal == n || (*curVal == (n | SIMPLESECT_BIT))) return mapIterator.currentKey();
+    int curVal = id;
+    if (curVal == n || (curVal == (n | SIMPLESECT_BIT))) return name.c_str();
   }
   return QCString();
 }
 
-Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)
+Mapper::Mapper(const CommandMap &cm,bool caseSensitive) : m_map(cm), m_cs(caseSensitive)
 {
-  m_map.setAutoDelete(TRUE);
-  const CommandMap *p = cm;
-  while (p->cmdName)
-  {
-    m_map.insert(p->cmdName,new int(p->cmdId));
-    p++;
-  }
 }
 
-void Mappers::freeMappers()
+static Mapper g_cmdMapper(g_cmdMap,true);
+static Mapper g_htmlTagMapper(g_htmlTagMap,false);
+
+namespace Mappers
 {
-  delete cmdMapper;     cmdMapper     = 0;
-  delete htmlTagMapper; htmlTagMapper = 0;
+  const Mapper *cmdMapper     = &g_cmdMapper;
+  const Mapper *htmlTagMapper = &g_htmlTagMapper;
 }
 
 

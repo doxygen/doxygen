@@ -8,5 +8,6 @@
     <detaileddescription>
       <para><ref refid="index_1myanchor" kindref="member">See Anchor</ref> Some text. <anchor id="index_1myanchor"/>More text. </para>
     </detaileddescription>
+    <location file="003_anchor.dox"/>
   </compounddef>
 </doxygen>

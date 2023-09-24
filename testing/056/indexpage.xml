@@ -9,5 +9,6 @@
       <para>Some text. <latexonly>\section{Hello world}
 </latexonly> More text. </para>
     </detaileddescription>
+    <location file="056_latexinclude.dox"/>
   </compounddef>
 </doxygen>

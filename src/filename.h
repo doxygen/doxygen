@@ -20,7 +20,8 @@
 #include <vector>
 
 #include "linkedmap.h"
-#include "config.h"
+#include "utf8.h"
+#include "util.h"
 
 class FileDef;
 
@@ -28,10 +29,10 @@ class FileDef;
 class FileName : public std::vector< std::unique_ptr<FileDef> >
 {
   public:
-    FileName(const char *nm,const char *fn) : m_name(nm), m_fName(fn), m_pathName("tmp") {}
-    const char *fileName() const { return m_name; }
-    const char *fullName() const { return m_fName; }
-    const char *path() const { return m_pathName; }
+    FileName(const QCString &nm,const QCString &fn) : m_name(nm), m_fName(fn), m_pathName("tmp") {}
+    QCString fileName() const { return m_name; }
+    QCString fullName() const { return m_fName; }
+    QCString path() const { return m_pathName; }
 
   private:
     QCString m_name;
@@ -55,14 +56,12 @@ class FileNameFn
       return searchKey(t1) == searchKey(t2);
     }
   private:
-    std::string searchKey(std::string input) const
+    std::string searchKey(const std::string &input) const
     {
       std::string key = input;
-      if (!Config_getBool(CASE_SENSE_NAMES))
+      if (!getCaseSenseNames())
       {
-        // convert key to lower case
-        std::transform(key.begin(),key.end(),key.begin(),
-                       [](char c){ return (char)std::tolower(c); });
+        key = convertUTF8ToLower(key);
       }
       return key;
     }

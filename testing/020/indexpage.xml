@@ -22,5 +22,6 @@ XML
 DocBook
 </docbookonly> More text. </para>
     </detaileddescription>
+    <location file="020_only.dox"/>
   </compounddef>
 </doxygen>

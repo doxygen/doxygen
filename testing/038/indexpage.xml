@@ -10,5 +10,6 @@
 New line<linebreak/>
 Another line </para>
     </detaileddescription>
+    <location file="038_n.dox"/>
   </compounddef>
 </doxygen>

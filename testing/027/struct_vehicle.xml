@@ -13,6 +13,7 @@
         <definition>Object Vehicle::base</definition>
         <argsstring/>
         <name>base</name>
+        <qualifiedname>Vehicle::base</qualifiedname>
         <briefdescription>
           <para>Base class. </para>
         </briefdescription>
@@ -29,6 +30,7 @@
         <definition>void vehicleStart</definition>
         <argsstring>(Vehicle *obj)</argsstring>
         <name>vehicleStart</name>
+        <qualifiedname>Vehicle::vehicleStart</qualifiedname>
         <param>
           <type><ref refid="struct_vehicle" kindref="compound">Vehicle</ref> *</type>
           <declname>obj</declname>
@@ -47,6 +49,7 @@
         <definition>void vehicleStop</definition>
         <argsstring>(Vehicle *obj)</argsstring>
         <name>vehicleStop</name>
+        <qualifiedname>Vehicle::vehicleStop</qualifiedname>
         <param>
           <type><ref refid="struct_vehicle" kindref="compound">Vehicle</ref> *</type>
           <declname>obj</declname>
@@ -67,6 +70,16 @@
       <para><ref refid="struct_vehicle" kindref="compound">Vehicle</ref> class. </para>
     </detaileddescription>
     <inheritancegraph>
+      <node id="3">
+        <label>Car</label>
+        <link refid="struct_car"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Object</label>
+        <link refid="struct_object"/>
+      </node>
       <node id="4">
         <label>Truck</label>
         <link refid="struct_truck"/>
@@ -79,18 +92,12 @@
         <childnode refid="2" relation="public-inheritance">
         </childnode>
       </node>
+    </inheritancegraph>
+    <collaborationgraph>
       <node id="2">
         <label>Object</label>
         <link refid="struct_object"/>
       </node>
-      <node id="3">
-        <label>Car</label>
-        <link refid="struct_car"/>
-        <childnode refid="1" relation="public-inheritance">
-        </childnode>
-      </node>
-    </inheritancegraph>
-    <collaborationgraph>
       <node id="1">
         <label>Vehicle</label>
         <link refid="struct_vehicle"/>
@@ -99,10 +106,6 @@
         <childnode refid="2" relation="usage">
           <edgelabel>base</edgelabel>
         </childnode>
-      </node>
-      <node id="2">
-        <label>Object</label>
-        <link refid="struct_object"/>
       </node>
     </collaborationgraph>
     <location file="027_extends.c" line="43" column="1" bodyfile="027_extends.c" bodystart="44" bodyend="46"/>

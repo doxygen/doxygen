@@ -18,17 +18,17 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include <qgstring.h>
-
 #include <vector>
 #include <memory>
+#include <sstream>
 
 #include "types.h"
 #include "arguments.h"
 #include "reflist.h"
+#include "textstream.h"
+#include "configvalues.h"
 
 class SectionInfo;
-class QFile;
 class FileDef;
 
 /** This class stores information about an inheritance relation
@@ -36,7 +36,7 @@ class FileDef;
 struct BaseInfo
 {
   /*! Creates an object representing an inheritance relation */
-  BaseInfo(const char *n,Protection p,Specifier v) :
+  BaseInfo(const QCString &n,Protection p,Specifier v) :
     name(n),prot(p),virt(v) {}
   QCString   name; //!< the name of the base class
   Protection prot; //!< inheritance type
@@ -63,125 +63,64 @@ class Entry
 {
   public:
 
+#if 0
     /*! Kind of entries that are supported */
     enum Sections {
-      CLASS_SEC        = 0x00000001,
-      NAMESPACE_SEC    = 0x00000010,
+      CLASS_SEC        = 0x0000'0001,
+      NAMESPACE_SEC    = 0x0000'0010,
+      CONCEPT_SEC      = 0x0000'0020,
       COMPOUND_MASK    = CLASS_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
 
-      CLASSDOC_SEC     = 0x00000800,
-      STRUCTDOC_SEC    = 0x00001000,
-      UNIONDOC_SEC     = 0x00002000,
-      EXCEPTIONDOC_SEC = 0x00004000,
-      NAMESPACEDOC_SEC = 0x00008000,
-      INTERFACEDOC_SEC = 0x00010000,
-      PROTOCOLDOC_SEC  = 0x00020000,
-      CATEGORYDOC_SEC  = 0x00040000,
-      SERVICEDOC_SEC   = 0x00080000,
-      SINGLETONDOC_SEC = 0x00100000,
+      CLASSDOC_SEC     = 0x0000'0800,
+      STRUCTDOC_SEC    = 0x0000'1000,
+      UNIONDOC_SEC     = 0x0000'2000,
+      EXCEPTIONDOC_SEC = 0x0000'4000,
+      NAMESPACEDOC_SEC = 0x0000'8000,
+      INTERFACEDOC_SEC = 0x0001'0000,
+      PROTOCOLDOC_SEC  = 0x0002'0000,
+      CATEGORYDOC_SEC  = 0x0004'0000,
+      SERVICEDOC_SEC   = 0x0008'0000,
+      SINGLETONDOC_SEC = 0x0010'0000,
+      CONCEPTDOC_SEC   = 0x0020'0000,
       COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC |
                          INTERFACEDOC_SEC | EXCEPTIONDOC_SEC | PROTOCOLDOC_SEC |
                          CATEGORYDOC_SEC | SERVICEDOC_SEC | SINGLETONDOC_SEC,
 
-      SOURCE_SEC       = 0x00400000,
-      HEADER_SEC       = 0x00800000,
+      SOURCE_SEC       = 0x0040'0000,
+      HEADER_SEC       = 0x0080'0000,
       FILE_MASK        = SOURCE_SEC | HEADER_SEC,
 
-      ENUMDOC_SEC      = 0x01000000,
-      ENUM_SEC         = 0x02000000,
-      EMPTY_SEC        = 0x03000000,
-      PAGEDOC_SEC      = 0x04000000,
-      VARIABLE_SEC     = 0x05000000,
-      FUNCTION_SEC     = 0x06000000,
-      TYPEDEF_SEC      = 0x07000000,
-      MEMBERDOC_SEC    = 0x08000000,
-      OVERLOADDOC_SEC  = 0x09000000,
-      EXAMPLE_SEC      = 0x0a000000,
-      VARIABLEDOC_SEC  = 0x0b000000,
-      FILEDOC_SEC      = 0x0c000000,
-      DEFINEDOC_SEC    = 0x0d000000,
-      INCLUDE_SEC      = 0x0e000000,
-      DEFINE_SEC       = 0x0f000000,
-      GROUPDOC_SEC     = 0x10000000,
-      USINGDIR_SEC     = 0x11000000,
-      MAINPAGEDOC_SEC  = 0x12000000,
-      MEMBERGRP_SEC    = 0x13000000,
-      USINGDECL_SEC    = 0x14000000,
-      PACKAGE_SEC      = 0x15000000,
-      PACKAGEDOC_SEC   = 0x16000000,
-      OBJCIMPL_SEC     = 0x17000000,
-      DIRDOC_SEC       = 0x18000000,
-      EXPORTED_INTERFACE_SEC = 0x19000000,
-      INCLUDED_SERVICE_SEC   = 0x1A000000,
-      EXAMPLE_LINENO_SEC     = 0x1B000000,
+      ENUMDOC_SEC            = 0x0100'0000,
+      ENUM_SEC               = 0x0200'0000,
+      EMPTY_SEC              = 0x0300'0000,
+      PAGEDOC_SEC            = 0x0400'0000,
+      VARIABLE_SEC           = 0x0500'0000,
+      FUNCTION_SEC           = 0x0600'0000,
+      TYPEDEF_SEC            = 0x0700'0000,
+      MEMBERDOC_SEC          = 0x0800'0000,
+      OVERLOADDOC_SEC        = 0x0900'0000,
+      EXAMPLE_SEC            = 0x0a00'0000,
+      VARIABLEDOC_SEC        = 0x0b00'0000,
+      FILEDOC_SEC            = 0x0c00'0000,
+      DEFINEDOC_SEC          = 0x0d00'0000,
+      INCLUDE_SEC            = 0x0e00'0000,
+      DEFINE_SEC             = 0x0f00'0000,
+      GROUPDOC_SEC           = 0x1000'0000,
+      USINGDIR_SEC           = 0x1100'0000,
+      MAINPAGEDOC_SEC        = 0x1200'0000,
+      MEMBERGRP_SEC          = 0x1300'0000,
+      USINGDECL_SEC          = 0x1400'0000,
+      PACKAGE_SEC            = 0x1500'0000,
+      PACKAGEDOC_SEC         = 0x1600'0000,
+      OBJCIMPL_SEC           = 0x1700'0000,
+      DIRDOC_SEC             = 0x1800'0000,
+      EXPORTED_INTERFACE_SEC = 0x1900'0000,
+      INCLUDED_SERVICE_SEC   = 0x1A00'0000,
+      EXAMPLE_LINENO_SEC     = 0x1B00'0000,
+      MODULEDOC_SEC          = 0x1C00'0000
     };
-
-    // class specifiers (add new items to the end)
-    static const uint64 Template        = (1ULL<<0);
-    static const uint64 Generic         = (1ULL<<1);
-    static const uint64 Ref             = (1ULL<<2);
-    static const uint64 Value           = (1ULL<<3);
-    static const uint64 Interface       = (1ULL<<4);
-    static const uint64 Struct          = (1ULL<<5);
-    static const uint64 Union           = (1ULL<<6);
-    static const uint64 Exception       = (1ULL<<7);
-    static const uint64 Protocol        = (1ULL<<8);
-    static const uint64 Category        = (1ULL<<9);
-    static const uint64 SealedClass     = (1ULL<<10);
-    static const uint64 AbstractClass   = (1ULL<<11);
-    static const uint64 Enum            = (1ULL<<12); // for Java-style enums
-    static const uint64 Service         = (1ULL<<13); // UNO IDL
-    static const uint64 Singleton       = (1ULL<<14); // UNO IDL
-    static const uint64 ForwardDecl     = (1ULL<<15); // forward declared template classes
-    static const uint64 Local           = (1ULL<<16); // for Slice types
-
-    // member specifiers (add new items to the beginning)
-    static const uint64 ConstExpr       = (1ULL<<19); // C++11 constexpr
-    static const uint64 PrivateGettable     = (1ULL<<20); // C# private getter
-    static const uint64 ProtectedGettable   = (1ULL<<21); // C# protected getter
-    static const uint64 PrivateSettable     = (1ULL<<22); // C# private setter
-    static const uint64 ProtectedSettable   = (1ULL<<23); // C# protected setter
-    static const uint64 Inline          = (1ULL<<24);
-    static const uint64 Explicit        = (1ULL<<25);
-    static const uint64 Mutable         = (1ULL<<26);
-    static const uint64 Settable        = (1ULL<<27);
-    static const uint64 Gettable        = (1ULL<<28);
-    static const uint64 Readable        = (1ULL<<29);
-    static const uint64 Writable        = (1ULL<<30);
-    static const uint64 Final           = (1ULL<<31);
-    static const uint64 Abstract        = (1ULL<<32);
-    static const uint64 Addable         = (1ULL<<33);
-    static const uint64 Removable       = (1ULL<<34);
-    static const uint64 Raisable        = (1ULL<<35);
-    static const uint64 Override        = (1ULL<<36);
-    static const uint64 New             = (1ULL<<37);
-    static const uint64 Sealed          = (1ULL<<38);
-    static const uint64 Initonly        = (1ULL<<39);
-    static const uint64 Optional        = (1ULL<<40);
-    static const uint64 Required        = (1ULL<<41);
-    static const uint64 NonAtomic       = (1ULL<<42);
-    static const uint64 Copy            = (1ULL<<43);
-    static const uint64 Retain          = (1ULL<<44);
-    static const uint64 Assign          = (1ULL<<45);
-    static const uint64 Strong          = (1ULL<<46);
-    static const uint64 Weak            = (1ULL<<47);
-    static const uint64 Unretained      = (1ULL<<48);
-    static const uint64 Alias           = (1ULL<<49);
-    static const uint64 ConstExp        = (1ULL<<50);
-    static const uint64 Default         = (1ULL<<51);
-    static const uint64 Delete          = (1ULL<<52);
-    static const uint64 NoExcept        = (1ULL<<53);
-    static const uint64 Attribute       = (1ULL<<54); // UNO IDL attribute
-    static const uint64 Property        = (1ULL<<55); // UNO IDL property
-    static const uint64 Readonly        = (1ULL<<56); // on UNO IDL attribute or property
-    static const uint64 Bound           = (1ULL<<57); // on UNO IDL attribute or property
-    static const uint64 Constrained     = (1ULL<<58); // on UNO IDL property
-    static const uint64 Transient       = (1ULL<<59); // on UNO IDL property
-    static const uint64 MaybeVoid       = (1ULL<<60); // on UNO IDL property
-    static const uint64 MaybeDefault    = (1ULL<<61); // on UNO IDL property
-    static const uint64 MaybeAmbiguous  = (1ULL<<62); // on UNO IDL property
-    static const uint64 Published       = (1ULL<<63); // UNO IDL keyword
+#endif
 
     enum GroupDocType
     {
@@ -228,12 +167,12 @@ class Entry
      */
     void reset();
 
-    void markAsProcessed() const { ((Entry*)(this))->section = Entry::EMPTY_SEC; }
+    void markAsProcessed() const { (const_cast<Entry*>(this))->section = EntryType::makeEmpty(); }
     void setFileDef(FileDef *fd);
     FileDef *fileDef() const { return m_fileDef; }
 
     // identification
-    int          section;     //!< entry type (see Sections);
+    EntryType    section;     //!< entry type (see Sections);
     QCString	 type;        //!< member type
     QCString	 name;        //!< member name
     bool         hasTagInfo;  //!< is tag info valid
@@ -243,9 +182,10 @@ class Entry
     // content
     Protection protection;    //!< class protection
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
-    uint64 spec;              //!< class/member specifiers
+    TypeSpecifier spec;       //!< class/member specifiers
+    VhdlSpecifier vhdlSpec;   //!< VHDL specifiers
     int  initLines;           //!< define/variable initializer lines to show
-    bool stat;                //!< static ?
+    bool isStatic;            //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?
@@ -253,13 +193,21 @@ class Entry
     bool callerGraph;         //!< do we need to draw the caller graph?
     bool referencedByRelation;//!< do we need to show the referenced by relation?
     bool referencesRelation;  //!< do we need to show the references relation?
+    bool inlineSource;        //!< do we need to show the inline source?
+    bool includeGraph;        //!< do we need to draw the include graph?
+    bool includedByGraph;     //!< do we need to draw the included by graph?
+    bool directoryGraph;      //!< do we need to draw the directory graph?
+    bool collaborationGraph;  //!< do we need to draw the collaboration graph?
+    CLASS_GRAPH_t inheritanceGraph; //!< type of inheritance graph?
+    bool groupGraph;          //!< do we need to draw the group graph?
+    bool exported;            //!< is the symbol exported from a C++20 module
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
     ArgumentList argList;     //!< member arguments as a list
-    ArgumentLists tArgLists; //!< template argument declarations
-    QGString	 program;     //!< the program text
-    QGString     initializer; //!< initial value (for variables)
+    ArgumentLists tArgLists;  //!< template argument declarations
+    TextStream   program;     //!< the program text
+    TextStream   initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
     QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)
@@ -296,6 +244,8 @@ class Entry
     QCString    id;           //!< libclang id
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
+    QCString    req;          //!< C++20 requires clause
+    std::vector<std::string> qualifiers;  //!< qualifiers specified with the qualifier command
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const
@@ -310,7 +260,7 @@ class Entry
     }
     Grouping::GroupPri_t groupingPri() const
     {
-      if( section != GROUPDOC_SEC )
+      if( !section.isGroupDoc() )
       {
         return Grouping::GROUPING_LOWEST;
       }

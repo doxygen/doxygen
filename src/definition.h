@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,14 +17,12 @@
 #define DEFINITION_H
 
 #include <vector>
-#include <qlist.h>
-#include <qdict.h>
 
 #include "types.h"
 #include "reflist.h"
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-// To disable 'inherits via dominance' warnings.
+#ifdef _MSC_VER
+// To disable 'inherits via dominance' warnings with MSVC.
 // See also https://stackoverflow.com/a/14487243/784672
 #pragma warning( disable: 4250 )
 #endif
@@ -34,21 +30,21 @@
 class FileDef;
 class OutputList;
 class SectionRefs;
-class MemberSDict;
 class MemberDef;
+class MemberVector;
 class GroupDef;
 class GroupList;
 class SectionInfo;
 class Definition;
 class DefinitionMutable;
 class DefinitionImpl;
-class FTextStream;
+class TextStream;
 
 /** Data associated with a detailed description. */
 struct DocInfo
 {
     QCString doc;
-    int      line;
+    int      line = -1;
     QCString file;
 };
 
@@ -57,17 +53,17 @@ struct BriefInfo
 {
     QCString doc;
     QCString tooltip;
-    int      line;
+    int      line = -1;
     QCString file;
 };
 
 /** Data associated with description found in the body. */
 struct BodyInfo
 {
-    int      defLine;     //!< line number of the start of the definition
-    int      startLine;   //!< line number of the start of the definition's body
-    int      endLine;     //!< line number of the end of the definition's body
-    FileDef *fileDef;     //!< file definition containing the function body
+    int      defLine = -1;     //!< line number of the start of the definition
+    int      startLine = -1;   //!< line number of the start of the definition's body
+    int      endLine = -1;     //!< line number of the end of the definition's body
+    const FileDef *fileDef = 0;      //!< file definition containing the function body
 };
 
 /** The common base class of all entity definitions found in the sources.
@@ -78,22 +74,19 @@ struct BodyInfo
 class Definition
 {
   public:
-    struct Cookie
-    {
-      virtual ~Cookie() {}
-    };
-
     /*! Types of derived classes */
     enum DefType
     {
       TypeClass      = 0,
       TypeFile       = 1,
       TypeNamespace  = 2,
-      TypeMember     = 3,
-      TypeGroup      = 4,
-      TypePackage    = 5,
-      TypePage       = 6,
-      TypeDir        = 7
+      TypeModule     = 3,
+      TypeMember     = 4,
+      TypeGroup      = 5,
+      TypePackage    = 6,
+      TypePage       = 7,
+      TypeDir        = 8,
+      TypeConcept    = 9,
     };
 
 
@@ -104,11 +97,14 @@ class Definition
     /*! Use this for dynamic inspection of the type of the derived class */
     virtual DefType definitionType() const = 0;
 
+    /*! Used for syntax highlighting symbol class */
+    virtual CodeSymbolType codeSymbolType() const = 0;
+
     /*! Returns TRUE if this is an alias of another definition */
     virtual bool isAlias() const = 0;
 
     /*! Returns the name of the definition */
-    virtual QCString name() const = 0;
+    virtual const QCString &name() const = 0;
 
     /*! Returns TRUE iff this definition has an artificially generated name
      * (typically starting with a @) that is used for nameless definitions
@@ -119,7 +115,7 @@ class Definition
     virtual QCString displayName(bool includeScope=TRUE) const = 0;
 
     /*! Returns the local name without any scope qualifiers. */
-    virtual QCString localName() const = 0;
+    virtual const QCString &localName() const = 0;
 
     /*! Returns the fully qualified name of this definition
      */
@@ -222,10 +218,13 @@ class Definition
     /*! Returns TRUE iff this item is supposed to be hidden from the output. */
     virtual bool isHidden() const = 0;
 
-    /*! returns TRUE if this entity was artificially introduced, for
+    /*! Returns TRUE if this entity was artificially introduced, for
      *  instance because it is used to show a template instantiation relation.
      */
     virtual bool isArtificial() const = 0;
+
+    /*! Returns TRUE iff this entity was exported from a C++20 module. */
+    virtual bool isExported() const = 0;
 
     /*! If this definition was imported via a tag file, this function
      *  returns the tagfile for the external project. This can be
@@ -256,21 +255,21 @@ class Definition
     /*! Returns the file in which the body of this item is located or 0 if no
      *  body is available.
      */
-    virtual FileDef *getBodyDef() const = 0;
+    virtual const FileDef *getBodyDef() const = 0;
 
     /** Returns the programming language this definition was written in. */
     virtual SrcLangExt getLanguage() const = 0;
 
-    virtual GroupList *partOfGroups() const = 0;
+    virtual const GroupList &partOfGroups() const = 0;
     virtual bool isLinkableViaGroup() const = 0;
 
     virtual const RefItemVector &xrefListItems() const = 0;
 
-    virtual const Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const QCString &name) const = 0;
     virtual Definition *getOuterScope() const = 0;
 
-    virtual std::vector<const MemberDef *> getReferencesMembers() const = 0;
-    virtual std::vector<const MemberDef *> getReferencedByMembers() const = 0;
+    virtual const MemberVector &getReferencesMembers() const = 0;
+    virtual const MemberVector &getReferencedByMembers() const = 0;
 
     virtual bool hasSections() const = 0;
     virtual bool hasSources() const = 0;
@@ -285,12 +284,6 @@ class Definition
 
     virtual QCString navigationPathAsString() const = 0;
     virtual QCString pathFragment() const = 0;
-
-    //-----------------------------------------------------------------------------------
-    // --- cookie storage ----
-    //-----------------------------------------------------------------------------------
-    virtual void setCookie(Cookie *cookie) const = 0;
-    virtual Cookie *cookie() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- symbol name ----
@@ -319,34 +312,34 @@ class DefinitionMutable
     //-----------------------------------------------------------------------------------
 
     /*! Sets a new \a name for the definition */
-    virtual void setName(const char *name) = 0;
+    virtual void setName(const QCString &name) = 0;
 
     /*! Sets a unique id for the symbol. Used for libclang integration. */
-    virtual void setId(const char *name) = 0;
+    virtual void setId(const QCString &name) = 0;
 
     /*! Set a new file name and position */
     virtual void setDefFile(const QCString& df,int defLine,int defColumn) = 0;
 
     /*! Sets the documentation of this definition to \a d. */
-    virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
+    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
 
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
-    virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine) = 0;
+    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) = 0;
 
     /*! Set the documentation that was found inside the body of an item.
      *  If there was already some documentation set, the new documentation
      *  will be appended.
      */
-    virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine) = 0;
+    virtual void setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine) = 0;
 
     /*! Sets the tag file id via which this definition was imported. */
-    virtual void setReference(const char *r) = 0;
+    virtual void setReference(const QCString &r) = 0;
 
     // source references
     virtual void setBodySegment(int defLine, int bls,int ble) = 0;
-    virtual void setBodyDef(FileDef *fd) = 0;
+    virtual void setBodyDef(const FileDef *fd) = 0;
 
     virtual void setRefItems(const RefItemVector &sli) = 0;
     virtual void setOuterScope(Definition *d) = 0;
@@ -354,8 +347,9 @@ class DefinitionMutable
     virtual void setHidden(bool b) = 0;
 
     virtual void setArtificial(bool b) = 0;
+    virtual void setExported(bool b) = 0;
     virtual void setLanguage(SrcLangExt lang) = 0;
-    virtual void setLocalName(const QCString name) = 0;
+    virtual void setLocalName(const QCString &name) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
@@ -367,10 +361,10 @@ class DefinitionMutable
      * documentation.
      */
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
-    virtual void addSourceReferencedBy(const MemberDef *d) = 0;
-    virtual void addSourceReferences(const MemberDef *d) = 0;
+    virtual void addSourceReferencedBy(MemberDef *d) = 0;
+    virtual void addSourceReferences(MemberDef *d) = 0;
     virtual void mergeRefItems(Definition *d) = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addInnerCompound(Definition *d) = 0;
     virtual void addSectionsToIndex() = 0;
     virtual void mergeReferences(const Definition *other) = 0;
     virtual void mergeReferencedBy(const Definition *other) = 0;
@@ -379,14 +373,16 @@ class DefinitionMutable
     //-----------------------------------------------------------------------------------
     // --- writing output ----
     //-----------------------------------------------------------------------------------
-    virtual void writeSourceDef(OutputList &ol,const char *scopeName) const = 0;
-    virtual void writeInlineCode(OutputList &ol,const char *scopeName) const = 0;
-    virtual void writeSourceRefs(OutputList &ol,const char *scopeName) const = 0;
-    virtual void writeSourceReffedBy(OutputList &ol,const char *scopeName) const = 0;
+    virtual void writeSourceDef(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual void writeInlineCode(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual bool hasSourceRefs() const = 0;
+    virtual bool hasSourceReffedBy() const = 0;
+    virtual void writeSourceRefs(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeNavigationPath(OutputList &ol) const = 0;
     virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const = 0;
     virtual void writeSummaryLinks(OutputList &) const = 0;
-    virtual void writeDocAnchorsToTagFile(FTextStream &) const = 0;
+    virtual void writeDocAnchorsToTagFile(TextStream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
 
     // ---------------------------------
@@ -399,14 +395,13 @@ class DefinitionMutable
 
 Definition          *toDefinition(DefinitionMutable *dm);
 DefinitionMutable   *toDefinitionMutable(Definition *d);
-DefinitionMutable   *toDefinitionMutable(const Definition *d);
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
  *  and ending with line \a endLine. The result is returned as a string
  *  via \a result. The function returns TRUE if successful and FALSE
  *  in case of an error.
  */
-bool readCodeFragment(const char *fileName,
+bool readCodeFragment(const QCString &fileName,bool isMacro,
                       int &startLine,int &endLine,
                       QCString &result);
 #endif

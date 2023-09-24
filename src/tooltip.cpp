@@ -21,32 +21,20 @@
 
 #include "tooltip.h"
 #include "definition.h"
-#include "outputgen.h"
+#include "outputlist.h"
 #include "util.h"
 #include "filedef.h"
 #include "doxygen.h"
 #include "config.h"
 
-static std::mutex g_tooltipLock;
-
-struct TooltipData
-{
-  std::map<std::string,const Definition*> tooltipInfo;
-  std::set<std::string> tooltipWritten;
-};
+static std::mutex                                      g_tooltipsMutex;
+static std::unordered_map<int, std::set<std::string> > g_tooltipsWrittenPerFile;
 
 class TooltipManager::Private
 {
   public:
-    std::unordered_map<int, std::unique_ptr<TooltipData> > tooltips;
-    std::unique_ptr<TooltipData> &getTooltipData(int id);
+    std::map<std::string,const Definition*> tooltipInfo;
 };
-
-TooltipManager &TooltipManager::instance()
-{
-  static TooltipManager s_instance;
-  return s_instance;
-}
 
 TooltipManager::TooltipManager() : p(std::make_unique<Private>())
 {
@@ -56,33 +44,17 @@ TooltipManager::~TooltipManager()
 {
 }
 
-static QCString escapeId(const char *s)
+static QCString escapeId(const QCString &s)
 {
   QCString res=s;
-  char *p=res.rawData();
-  while (*p)
-  {
-    if (!isId(*p)) *p='_';
-    p++;
-  }
+  for (uint32_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
   return res;
 }
 
-std::unique_ptr<TooltipData> &TooltipManager::Private::getTooltipData(int id)
-{
-  std::lock_guard<std::mutex> lock(g_tooltipLock);
-  auto it = tooltips.insert(std::make_pair(id,std::make_unique<TooltipData>())).first;
-  return it->second;
-}
-
-void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
+void TooltipManager::addTooltip(const Definition *d)
 {
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   if (!sourceTooltips) return;
-  int outputId = ol.id();
-  if (outputId==0) return;
-
-  auto &ttd = p->getTooltipData(outputId);
 
   QCString id = d->getOutputFileBase();
   int i=id.findRev('/');
@@ -90,63 +62,77 @@ void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
   {
     id = id.right(id.length()-i-1); // strip path (for CREATE_SUBDIRS=YES)
   }
-  id+=escapeId(Doxygen::htmlFileExtension);
+  // In case an extension is present translate this extension to something understood by the tooltip handler
+  // otherwise extend t with a translated htmlFileExtension.
+  QCString currentExtension = getFileNameExtension(id);
+  if (currentExtension.isEmpty())
+  {
+    id += escapeId(Doxygen::htmlFileExtension);
+  }
+  else
+  {
+    id = stripExtensionGeneral(id,currentExtension) + escapeId(currentExtension);
+  }
+
   QCString anc = d->anchor();
   if (!anc.isEmpty())
   {
     id+="_"+anc;
   }
   id = "a" + id;
-  ttd->tooltipInfo.insert(std::make_pair(id.str(),d));
-  //printf("%p: addTooltip(%s) ol=%d\n",this,id.data(),ol.id());
+  p->tooltipInfo.insert(std::make_pair(id.str(),d));
+  //printf("%p: addTooltip(%s)\n",this,id.data());
 }
 
-void TooltipManager::writeTooltips(CodeOutputInterface &ol)
+void TooltipManager::writeTooltips(OutputCodeList &ol)
 {
-  int outputId = ol.id(); // get unique identifier per output file
-  if (outputId==0) return; // not set => no HTML output
-  auto it = p->tooltips.find(outputId); // see if we have tooltips for this file
-  if (it!=p->tooltips.end())
+  // critical section
+  std::lock_guard<std::mutex> lock(g_tooltipsMutex);
+
+  int id = ol.id();
+  auto it = g_tooltipsWrittenPerFile.find(id);
+  if (it==g_tooltipsWrittenPerFile.end()) // new file
   {
-    auto &ttd = it->second;
-    for (const auto &kv : ttd->tooltipInfo)
+    it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
+  }
+
+  for (const auto &[name,d] : p->tooltipInfo)
+  {
+    bool written = it->second.find(name)!=it->second.end();
+    if (!written) // only write tooltips once
     {
-      if (ttd->tooltipWritten.find(kv.first)==ttd->tooltipWritten.end()) // only write tooltips once
+      //printf("%p: writeTooltips(%s) ol=%d\n",this,name.c_str(),ol.id());
+      DocLinkInfo docInfo;
+      docInfo.name   = d->qualifiedName();
+      docInfo.ref    = d->getReference();
+      docInfo.url    = d->getOutputFileBase();
+      docInfo.anchor = d->anchor();
+      SourceLinkInfo defInfo;
+      if (d->getBodyDef() && d->getStartBodyLine()!=-1)
       {
-        //printf("%p: writeTooltips(%s) ol=%d\n",this,kv.first.c_str(),ol.id());
-        const Definition *d = kv.second;
-        DocLinkInfo docInfo;
-        docInfo.name   = d->qualifiedName();
-        docInfo.ref    = d->getReference();
-        docInfo.url    = d->getOutputFileBase();
-        docInfo.anchor = d->anchor();
-        SourceLinkInfo defInfo;
-        if (d->getBodyDef() && d->getStartBodyLine()!=-1)
-        {
-          defInfo.file    = d->getBodyDef()->name();
-          defInfo.line    = d->getStartBodyLine();
-          defInfo.url     = d->getSourceFileBase();
-          defInfo.anchor  = d->getSourceAnchor();
-        }
-        SourceLinkInfo declInfo; // TODO: fill in...
-        QCString decl;
-        if (d->definitionType()==Definition::TypeMember)
-        {
-          const MemberDef *md = toMemberDef(d);
-          if (!md->isAnonymous())
-          {
-            decl = md->declaration();
-          }
-        }
-        ol.writeTooltip(kv.first.c_str(),                // id
-            docInfo,                         // symName
-            decl,                            // decl
-            d->briefDescriptionAsTooltip(),  // desc
-            defInfo,
-            declInfo
-            );
-        ttd->tooltipWritten.insert(kv.first);
+        defInfo.file    = d->getBodyDef()->name();
+        defInfo.line    = d->getStartBodyLine();
+        defInfo.url     = d->getSourceFileBase();
+        defInfo.anchor  = d->getSourceAnchor();
       }
+      SourceLinkInfo declInfo; // TODO: fill in...
+      QCString decl;
+      if (d->definitionType()==Definition::TypeMember)
+      {
+        const MemberDef *md = toMemberDef(d);
+        if (!md->isAnonymous())
+        {
+          decl = md->declaration();
+        }
+      }
+      ol.writeTooltip(name.c_str(),    // id
+          docInfo,                         // symName
+          decl,                            // decl
+          d->briefDescriptionAsTooltip(),  // desc
+          defInfo,
+          declInfo
+          );
+      it->second.insert(name); // remember we wrote this tooltip for the given file id
     }
   }
 }

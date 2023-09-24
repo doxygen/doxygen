@@ -21,6 +21,10 @@
 %option extra-type="struct sqlcodeYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -39,6 +43,7 @@
 #include "filedef.h"
 #include "tooltip.h"
 #include "message.h"
+#include "debug.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -48,18 +53,20 @@
 
 struct sqlcodeYY_state
 {
-     CodeOutputInterface * code;
+     OutputCodeList * code;
      const char   *inputString;     //!< the code fragment as text
-     yy_size_t     inputPosition;   //!< read offset during parsing
+     int           inputPosition;   //!< read offset during parsing
+     QCString      fileName;
      int           inputLines;      //!< number of line in the code fragment
      int           yyLineNr;        //!< current line number
-     bool          needsTermination;
+     bool          insideCodeLine;
      const Definition   *searchCtx;
 
      bool          exampleBlock;
      QCString      exampleName;
      QCString      classScope;
 
+     std::unique_ptr<FileDef> exampleFileDef;
      const FileDef    *sourceFileDef;
      const Definition *currentDefinition;
      const MemberDef  *currentMemberDef;
@@ -79,10 +86,14 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const char *text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static int countLines(yyscan_t yyscanner);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -119,7 +130,7 @@ variable        @{idchar}+
 
 simplecomment   --.*
 commentopen     "/\*"
-commentclose    "\*/"
+commentclose    "\*\/"
 
 %x COMMENT
 
@@ -207,11 +218,11 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   {
     if (yyextra->searchCtx)
     {
-      yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      yyextra->code->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -231,31 +242,35 @@ static void startCodeLine(yyscan_t yyscanner)
     {
       yyextra->currentDefinition = d;
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
-      yyextra->classScope = d->name().copy();
+      yyextra->classScope = d->name();
       QCString lineAnchor;
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
       {
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                             yyextra->currentMemberDef->getOutputFileBase(),
-                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else
       {
         yyextra->code->writeLineNumber(d->getReference(),
                             d->getOutputFileBase(),
-                            0,yyextra->yyLineNr);
+                            QCString(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(0,0,0,yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
 
-  yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->code->startCodeLine(yyextra->sourceFileDef!=0);
+  yyextra->insideCodeLine=true;
 
   if (yyextra->currentFontClass)
   {
@@ -278,13 +293,17 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine=false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -344,18 +363,17 @@ static int countLines(yyscan_t yyscanner)
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=true;
+    count++;
   }
   return count;
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
@@ -378,7 +396,7 @@ SQLCodeParser::SQLCodeParser() : p(std::make_unique<Private>())
 {
   sqlcodeYYlex_init_extra(&p->state, &p->yyscanner);
 #ifdef FLEX_DEBUG
-  sqlcodeYYset_debug(1,yyscanner);
+  sqlcodeYYset_debug(Debug::isFlagSet(Debug::Lex_sqlcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -395,20 +413,20 @@ void SQLCodeParser::resetCodeParserState()
   yyextra->currentMemberDef = 0;
 }
 
-void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const char *scopeName,
+void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
+               const QCString &/* scopeName */,
                const QCString &input,
                SrcLangExt,
                bool isExampleBlock,
-               const char *exampleName,
-               FileDef *fileDef,
+               const QCString &exampleName,
+               const FileDef *fileDef,
                int startLine,
                int endLine,
                bool inlineFragment,
-               const MemberDef *memberDef,
-               bool showLineNumbers,
+               const MemberDef * /* memberDef */,
+               bool /* showLineNumbers */,
                const Definition *searchCtx,
-               bool collectXRefs
+               bool/* collectXRefs */ 
               )
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -416,13 +434,14 @@ void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  printlex(yy_flex_debug, true, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
+  DebugLex debugLex(Debug::Lex_sqlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
 
   yyextra->code = &codeOutIntf;
-  yyextra->inputString   = input;
+  yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = false;
+  yyextra->insideCodeLine = false;
   yyextra->searchCtx=searchCtx;
 
   if (startLine!=-1)
@@ -439,13 +458,11 @@ void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;
 
-  bool cleanupSourceDef = false;
-
   if (isExampleBlock && fileDef==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef("",(exampleName?exampleName:"generated"));
-    cleanupSourceDef = true;
+    yyextra->exampleFileDef = createFileDef(QCString(),!exampleName.isEmpty() ? exampleName : QCString("generated"));
+    yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 
   if (yyextra->sourceFileDef)
@@ -461,18 +478,16 @@ void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   sqlcodeYYlex(yyscanner);
 
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
   }
-  if (cleanupSourceDef)
+  if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
-    delete yyextra->sourceFileDef;
+    yyextra->exampleFileDef.reset();
     yyextra->sourceFileDef=0;
   }
-
-  printlex(yy_flex_debug, false, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 }
 
 //---------------------------------------------------------------------------------

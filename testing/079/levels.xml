@@ -37,5 +37,6 @@
         <para>Yay! </para>
       </sect1>
     </detaileddescription>
+    <location file="079_tableofcontents.dox"/>
   </compounddef>
 </doxygen>

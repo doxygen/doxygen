@@ -26,10 +26,10 @@
  */
 
 #include <stdlib.h>
-#include <qfile.h>
-#include <qdir.h>
+#include "dir.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "classdef.h"
 #include "namespacedef.h"
@@ -38,8 +38,9 @@
 #include "classlist.h"
 #include "config.h"
 #include "filename.h"
+#include "version.h"
 
-class XRefDummyCodeGenerator : public CodeOutputInterface
+class XRefDummyCodeGenerator : public OutputCodeExtension
 {
   public:
     XRefDummyCodeGenerator(FileDef *fd) : m_fd(fd) {}
@@ -47,23 +48,22 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
-    void codify(const char *) {}
-    void writeCodeLink(const char *,const char *,const char *,const char *,const char *)  {}
-    void writeLineNumber(const char *,const char *,const char *,int) {}
-    virtual void writeTooltip(const char *,const DocLinkInfo &,
-                              const char *,const char *,const SourceLinkInfo &,
-                              const SourceLinkInfo &) {}
-    void startCodeLine(bool) {}
-    void endCodeLine() {}
-    void startCodeAnchor(const char *) {}
-    void endCodeAnchor() {}
-    void startFontClass(const char *) {}
-    void endFontClass() {}
-    void writeCodeAnchor(const char *) {}
-    void setCurrentDoc(const Definition *,const char *,bool) {}
-    void addWord(const char *,bool) {}
-    void startCodeFragment(const char *) {}
-    void endCodeFragment(const char *) {}
+    OutputType type() const override { return OutputType::Extension; }
+    void codify(const QCString &) override {}
+    void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
+    virtual void writeTooltip(const QCString &,const DocLinkInfo &,
+                              const QCString &,const QCString &,const SourceLinkInfo &,
+                              const SourceLinkInfo &) override {}
+    void startCodeLine(bool) override {}
+    void endCodeLine() override {}
+    void startFontClass(const QCString &) override {}
+    void endFontClass() override {}
+    void writeCodeAnchor(const QCString &) override {}
+    void startCodeFragment(const QCString &) override {}
+    void endCodeFragment(const QCString &) override {}
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     // here we are presented with the symbols found by the code parser
     void linkableSymbol(int l, const char *sym,Definition *symDef,Definition *context)
@@ -120,19 +120,18 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  XRefDummyCodeGenerator *xrefGen = new XRefDummyCodeGenerator(fd);
+  XRefDummyCodeGenerator xrefGen(fd);
+  OutputCodeList xrefList;
+  xrefList.add(OutputCodeDeferExtension(&xrefGen));
 
   // parse the source code
-  intf->parseCode(*xrefGen,
+  intf->parseCode(xrefList,
                 0,
                 fileToString(fd->absFilePath()),
                 lang,
                 FALSE,
                 0,
                 fd);
-
-  // dismiss the object.
-  delete xrefGen;
 }
 
 static void listSymbol(Definition *d)
@@ -148,13 +147,16 @@ static void listSymbol(Definition *d)
 
 static void listSymbols()
 {
-  for (const auto &kv : Doxygen::symbolMap)
+  for (const auto &kv : *Doxygen::symbolMap)
   {
-    listSymbol(kv.second);
+    for (const auto &def : kv.second)
+    {
+      listSymbol(def);
+    }
   }
 }
 
-static void lookupSymbol(Definition *d)
+static void lookupSymbol(const Definition *d)
 {
   if (d!=Doxygen::globalScope && // skip the global namespace symbol
       d->name().at(0)!='@'       // skip anonymous stuff
@@ -171,28 +173,28 @@ static void lookupSymbol(Definition *d)
     {
       case Definition::TypeClass:
         {
-          ClassDef *cd = dynamic_cast<ClassDef*>(d);
+          const ClassDef *cd = dynamic_cast<const ClassDef*>(d);
           printf("Kind: %s\n",cd->compoundTypeString().data());
         }
         break;
       case Definition::TypeFile:
         {
-          FileDef *fd = dynamic_cast<FileDef*>(d);
-          printf("Kind: File: #includes %d other files\n",
-              fd->includeFileList() ? fd->includeFileList()->count() : 0);
+          const FileDef *fd = dynamic_cast<const FileDef*>(d);
+          printf("Kind: File: #includes %zu other files\n",
+              fd->includeFileList().size());
         }
         break;
       case Definition::TypeNamespace:
         {
-          NamespaceDef *nd = dynamic_cast<NamespaceDef*>(d);
-          printf("Kind: Namespace: contains %zu classes and %d namespaces\n",
+          const NamespaceDef *nd = dynamic_cast<const NamespaceDef*>(d);
+          printf("Kind: Namespace: contains %zu classes and %zu namespaces\n",
               nd->getClasses().size(),
-              nd->getNamespaceSDict() ? nd->getNamespaceSDict()->count() : 0);
+              nd->getNamespaces().size());
         }
         break;
       case Definition::TypeMember:
         {
-          MemberDef *md = dynamic_cast<MemberDef*>(d);
+          const MemberDef *md = dynamic_cast<const MemberDef*>(d);
           printf("Kind: %s\n",md->memberTypeName().data());
         }
         break;
@@ -207,11 +209,11 @@ static void lookupSymbols(const QCString &sym)
 {
   if (!sym.isEmpty())
   {
-    auto range = Doxygen::symbolMap.find(sym);
+    auto range = Doxygen::symbolMap->find(sym);
     bool found=false;
-    for (auto it=range.first; it!=range.second; ++it)
+    for (const Definition *def : range)
     {
-      lookupSymbol(it->second);
+      lookupSymbol(def);
       found=true;
     }
     if (!found)
@@ -225,7 +227,23 @@ int main(int argc,char **argv)
 {
   char cmd[256];
 
-  if (argc<2)
+  int locArgc = argc;
+
+  if (locArgc == 2)
+  {
+    if (!strcmp(argv[1],"--help"))
+    {
+      printf("Usage: %s [source_file | source_dir]\n",argv[0]);
+      exit(0);
+    }
+    else if (!strcmp(argv[1],"--version"))
+    {
+      printf("%s version: %s\n",argv[0],getFullVersion());
+      exit(0);
+    }
+  }
+
+  if (locArgc!=2)
   {
     printf("Usage: %s [source_file | source_dir]\n",argv[0]);
     exit(1);
@@ -250,6 +268,7 @@ int main(int argc,char **argv)
   Config_updateBool(WARNINGS,FALSE);
   Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
   Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
   // Extract as much as possible
   Config_updateBool(EXTRACT_ALL,TRUE);
   Config_updateBool(EXTRACT_STATIC,TRUE);
@@ -279,16 +298,13 @@ int main(int argc,char **argv)
     }
   }
 
-  // remove temporary files
-  if (!Doxygen::objDBFileName.isEmpty()) QFile::remove(Doxygen::objDBFileName);
-  if (!Doxygen::entryDBFileName.isEmpty()) QFile::remove(Doxygen::entryDBFileName);
   // clean up after us
-  QDir().rmdir("/tmp/doxygen");
+  Dir().rmdir("/tmp/doxygen");
 
   while (1)
   {
     printf("> Type a symbol name or\n> .list for a list of symbols or\n> .quit to exit\n> ");
-    fgets(cmd,256,stdin);
+    (void)fgets(cmd,256,stdin);
     QCString s(cmd);
     if (s.at(s.length()-1)=='\n') s=s.left(s.length()-1); // strip trailing \n
     if (s==".list")

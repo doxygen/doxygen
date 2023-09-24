@@ -27,6 +27,7 @@
 #include "version.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "classlist.h"
 #include "config.h"
@@ -40,13 +41,12 @@
 #include <cstdlib>
 #include <sstream>
 #include <map>
-#include <qdir.h>
-#include <qcstring.h>
-#include <qregexp.h>
+#include "qcstring.h"
 #include "namespacedef.h"
 #include "portable.h"
+#include "dir.h"
 
-class Doxyparse : public CodeOutputInterface
+class Doxyparse : public OutputCodeExtension
 {
   public:
     Doxyparse(const FileDef *fd) : m_fd(fd) {}
@@ -54,24 +54,22 @@ class Doxyparse : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
-    void codify(const char *) {}
-    void writeCodeLink(const char *,const char *,const char *,const char *,const char *)  {}
-    void startCodeLine() {}
-    void endCodeLine() {}
-    void startCodeAnchor(const char *) {}
-    void endCodeAnchor() {}
-    void startFontClass(const char *) {}
-    void endFontClass() {}
-    void writeCodeAnchor(const char *) {}
-    void writeLineNumber(const char *,const char *,const char *,int) {}
-    virtual void writeTooltip(const char *,const DocLinkInfo &,
-                              const char *,const char *,const SourceLinkInfo &,
-                              const SourceLinkInfo &) {}
-    void startCodeLine(bool) {}
-    void setCurrentDoc(const Definition *,const char *,bool) {}
-    void addWord(const char *,bool) {}
-    void startCodeFragment(const char *) {}
-    void endCodeFragment(const char *) {}
+    OutputType type() const override { return OutputType::Extension; }
+    void codify(const QCString &) override {}
+    void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
+    void startCodeLine(bool) override {}
+    void endCodeLine() override {}
+    void writeCodeAnchor(const QCString &) override {}
+    void startFontClass(const QCString &) override {}
+    void endFontClass() override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
+    virtual void writeTooltip(const QCString &,const DocLinkInfo &,
+                              const QCString &,const QCString &,const SourceLinkInfo &,
+                              const SourceLinkInfo &) override {}
+    void startCodeFragment(const QCString &) override {}
+    void endCodeFragment(const QCString &) override {}
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
     {
@@ -101,13 +99,12 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  Doxyparse *parse = new Doxyparse(fd);
+  Doxyparse parse(fd);
+  OutputCodeList parseList;
+  parseList.add(OutputCodeDeferExtension(&parse));
 
   // parse the source code
-  intf->parseCode(*parse, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
-
-  // dismiss the object.
-  delete parse;
+  intf->parseCode(parseList, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
@@ -184,8 +181,8 @@ static int isPartOfCStruct(const MemberDef * md) {
 
 std::string sanitizeString(std::string data) {
   QCString new_data = QCString(data.c_str());
-  new_data.replace(QRegExp("\""), "");
-  new_data.replace(QRegExp("\\"), ""); // https://github.com/analizo/analizo/issues/138
+  new_data = substitute(new_data,"\"", "");
+  new_data = substitute(new_data,"\'", ""); // https://github.com/analizo/analizo/issues/138
   return !new_data.isEmpty() ? new_data.data() : "";
 }
 
@@ -239,16 +236,16 @@ static void referenceTo(const MemberDef* md) {
 }
 
 void protectionInformation(Protection protection) {
-  if (protection == Public) {
+  if (protection == Protection::Public) {
     printProtection("public");
   }
-  else if (protection == Protected) {
+  else if (protection == Protection::Protected) {
     printProtection("protected");
   }
-  else if (protection == Private) {
+  else if (protection == Protection::Private) {
     printProtection("private");
   }
-  else if (protection == Package) {
+  else if (protection == Protection::Package) {
     printProtection("package");
   }
 }
@@ -258,13 +255,11 @@ void cModule(const ClassDef* cd) {
   if (ml) {
     const FileDef *fd = cd->getFileDef();
     const MemberList *fd_ml = fd->getMemberList(MemberListType_allMembersList);
-    if (!fd_ml || fd_ml->count() == 0) {
+    if (!fd_ml || fd_ml->size() == 0) {
       printModule(fd->getOutputFileBase().data());
       printDefines();
     }
-    MemberListIterator mli(*ml);
-    const MemberDef* md;
-    for (mli.toFirst(); (md=mli.current()); ++mli) {
+    for (const auto &md : *ml) {
       printDefinition("variable", cd->name().data() + std::string("::") + md->name().data(), md->getDefLine());
       protectionInformation(md->protection());
     }
@@ -336,9 +331,7 @@ static void lookupSymbol(const Definition *d) {
 
 void listMembers(const MemberList *ml) {
   if (ml) {
-    MemberListIterator mli(*ml);
-    const MemberDef *md;
-    for (mli.toFirst(); (md=mli.current()); ++mli) {
+    for (const auto &md : *ml) {
       lookupSymbol((Definition*) md);
     }
   }
@@ -384,7 +377,7 @@ static bool checkLanguage(std::string& filename, std::string extension) {
  * about whether it is a C project or not. */
 static void detectProgrammingLanguage(FileNameLinkedMap &fnli) {
   for (const auto &fn : fnli) {
-    std::string filename = fn->fileName();
+    std::string filename = fn->fileName().str();
     if (
         checkLanguage(filename, ".cc") ||
         checkLanguage(filename, ".cxx") ||
@@ -407,7 +400,7 @@ static void listSymbols() {
     for (const auto &fd : *fn) {
       printFile(fd->absFilePath().data());
       MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
-      if (ml && ml->count() > 0) {
+      if (ml && ml->size() > 0) {
         printModule(fd->getOutputFileBase().data());
         printDefines();
         listMembers(ml);
@@ -426,14 +419,26 @@ static void listSymbols() {
 }
 
 int main(int argc,char **argv) {
-  if (argc < 2) {
+  int locArgc = argc;
+
+  if (locArgc == 2)
+  {
+    if (!strcmp(argv[1],"--help"))
+    {
+      printf("Usage: %s [source_file | source_dir]\n",argv[0]);
+      exit(0);
+    }
+    else if (!strcmp(argv[1],"--version"))
+    {
+      printf("%s version: %s\n",argv[0],getFullVersion());
+      exit(0);
+    }
+  }
+
+  if (locArgc!=2)
+  {
     printf("Usage: %s [source_file | source_dir]\n",argv[0]);
     exit(1);
-  }
-  if (qstrcmp(&argv[1][2], "version") == 0) {
-    QCString versionString = getDoxygenVersion();
-    printf("%s\n", versionString.data());
-    exit(0);
   }
 
   // initialize data structures
@@ -448,9 +453,9 @@ int main(int argc,char **argv) {
   // we need a place to put intermediate files
   std::ostringstream tmpdir;
   unsigned int pid = Portable::pid();
-  if (Portable::getenv("TMP"))
+  if (!Portable::getenv("TMP").isEmpty())
     tmpdir << Portable::getenv("TMP") << "/doxyparse-" << pid;
-  else if (Portable::getenv("TEMP"))
+  else if (!Portable::getenv("TEMP").isEmpty())
     tmpdir << Portable::getenv("TEMP") << "/doxyparse-" << pid;
   else
     tmpdir << "doxyparse-" << pid;
@@ -466,6 +471,7 @@ int main(int argc,char **argv) {
   Config_updateBool(WARNINGS,FALSE);
   Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
   Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
   // Extract as much as possible
   Config_updateBool(EXTRACT_ALL,TRUE);
   Config_updateBool(EXTRACT_STATIC,TRUE);
@@ -488,7 +494,7 @@ int main(int argc,char **argv) {
     if (strcmp(argv[i], "-") == 0) {
       char filename[1024];
       while (1) {
-        scanf("%s[^\n]", filename);
+        (void)scanf("%s[^\n]", filename);
         if (feof(stdin)) {
           break;
         }
@@ -514,21 +520,19 @@ int main(int argc,char **argv) {
     }
   }
 
-  QDir thisDir;
+  Dir thisDir;
   // remove temporary files
-  if (!Doxygen::objDBFileName.isEmpty())    thisDir.remove(Doxygen::objDBFileName);
-  if (!Doxygen::entryDBFileName.isEmpty())  thisDir.remove(Doxygen::entryDBFileName);
-  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName);
+  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName.str());
 
   // clean up after us
-  thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY));
+  thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY).str());
 
   startYamlDocument();
   listSymbols();
 
   std::string cleanup_command = "rm -rf ";
   cleanup_command += tmpdir.str();
-  system(cleanup_command.c_str());
+  (void)system(cleanup_command.c_str());
 
   exit(0);
 }

@@ -16,5 +16,6 @@ digraph example {
 </dot>
  </para>
     </detaileddescription>
+    <location file="022_dot.cpp"/>
   </compounddef>
 </doxygen>

@@ -15,27 +15,26 @@
 #ifndef EMOJIENTITY_H
 #define EMOJIENTITY_H
 
-#include <qdict.h>
-#include <qfile.h>
+#include <map>
+#include <string>
 
-class FTextStream;
+class TextStream;
 
 /** @brief Singleton helper class to map emoji entities to other formats */
 class EmojiEntityMapper
 {
   public:
-    static EmojiEntityMapper *instance();
-    static void deleteInstance();
+    static EmojiEntityMapper &instance();
     const char *name(int index) const;
     const char *unicode(int index) const;
-    void writeEmojiFile(QFile &file);
-    int symbol2index(const QCString &symName) const;
+    void writeEmojiFile(TextStream &t);
+    int symbol2index(const std::string &symName) const;
 
   private:
     EmojiEntityMapper();
    ~EmojiEntityMapper();
     static EmojiEntityMapper *s_instance;
-    QDict<int> *m_name2symGh;
+    std::map<std::string,int> m_name2symGh;
 };
 
 #endif

@@ -1,0 +1,50 @@
+%--- End generated contents ---
+
+%%BEGIN CITATIONS_PRESENT
+  % Bibliography
+  \newpage
+  \phantomsection
+
+%%BEGIN !PDF_HYPERLINKS
+   \clearemptydoublepage
+%%BEGIN COMPACT_LATEX
+   \addcontentsline{toc}{section}{$latexcitereference}
+%%END COMPACT_LATEX
+%%BEGIN !COMPACT_LATEX
+   \addcontentsline{toc}{chapter}{$latexcitereference}
+%%END !COMPACT_LATEX
+  \printindex
+%%END !PDF_HYPERLINKS
+
+  \bibliographystyle{$latexbibstyle}
+  \bibliography{$latexbibfiles}
+%%BEGIN PDF_HYPERLINKS
+%%BEGIN COMPACT_LATEX
+    \addcontentsline{toc}{section}{$latexcitereference}
+%%END COMPACT_LATEX
+%%BEGIN !COMPACT_LATEX
+    \addcontentsline{toc}{chapter}{$latexcitereference}
+%%END !COMPACT_LATEX
+%%END PDF_HYPERLINKS
+
+%%END CITATIONS_PRESENT
+
+% Index
+%%BEGIN !COMPACT_LATEX
+  \backmatter
+%%END !COMPACT_LATEX
+  \newpage
+  \phantomsection
+  \clearemptydoublepage
+%%BEGIN COMPACT_LATEX
+  \addcontentsline{toc}{section}{\indexname}
+%%END COMPACT_LATEX
+%%BEGIN !COMPACT_LATEX
+  \addcontentsline{toc}{chapter}{\indexname}
+%%END !COMPACT_LATEX
+  \printindex
+
+% Required for some languages (in combination with latexdocumentpre from the header)
+$latexdocumentpost
+\end{document}
+

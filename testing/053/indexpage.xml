@@ -8,5 +8,6 @@
     <detaileddescription>
       <para>Dit is Nederlands. Output for all languages. </para>
     </detaileddescription>
+    <location file="053_tilde.dox"/>
   </compounddef>
 </doxygen>

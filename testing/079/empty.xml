@@ -8,5 +8,6 @@
     <detaileddescription>
       <para>With an empty TOC. </para>
     </detaileddescription>
+    <location file="079_tableofcontents.dox"/>
   </compounddef>
 </doxygen>

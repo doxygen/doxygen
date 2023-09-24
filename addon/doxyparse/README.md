@@ -9,7 +9,7 @@ machine-readable output.
 
 Doxyparse has been used in many software engineering research (as a source-code
 static analysis tool) regards on software metrics, quality metrics and so on,
-Doxyparse was first used by the [Analizo](http://analizo.org) toolkit, a suite
+Doxyparse was first used by the [Analizo](https://www.analizo.org) toolkit, a suite
 of source code analysis tools, aimed at being language-independent and
 extensible, able to extract and calculate a fair number of source code metrics,
 generate dependency graphs, and other software evolution analysis.
@@ -36,8 +36,8 @@ Academic publications citing Doxyparse:
 * update debian/changelog, commit, push
 * create git tag, push to github analizo/doxyparse
 * build on amd64 and i386 archs, upload tar.gz to github
-  * tar -zcf doxyparse_<VERSION>_amd64.tar.gz -C bin/ doxyparse
-  * tar -zcf doxyparse_<VERSION>_i386.tar.gz -C bin/ doxyparse
+  * `tar -zcf doxyparse_<VERSION>_amd64.tar.gz -C bin/ doxyparse`
+  * `tar -zcf doxyparse_<VERSION>_i386.tar.gz -C bin/ doxyparse`
 * build debian packages for amd64 and i386, update analizo.org repository
     * (see analizo.github.io/README.md file for updating repository instructions)
     * upload the deb files to github release tag also

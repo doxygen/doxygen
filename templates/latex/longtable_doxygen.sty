@@ -438,7 +438,15 @@
   \the\LT@p@ftn
   \global\LT@p@ftn{}%
   \hfil}
-\def\LT@p@ftntext#1{%
+%% added \long to prevent:
+% LaTeX Warning: Command \LT@p@ftntext  has changed.
+%
+% from the original repository (https://github.com/latex3/latex2e/blob/develop/required/tools/longtable.dtx):
+% \changes{v4.15}{2021/03/28}
+%      {make long for gh/364}
+% Inside the `p' column, just save up the footnote text in a token
+% register.
+\long\def\LT@p@ftntext#1{%
   \edef\@tempa{\the\LT@p@ftn\noexpand\footnotetext[\the\c@footnote]}%
   \global\LT@p@ftn\expandafter{\@tempa{#1}}}%
 

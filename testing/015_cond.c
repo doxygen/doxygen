@@ -23,8 +23,8 @@ void cond_enabled()
 }
 /// \endcond
 
-/** \cond COND_DISABLED */
-    Function not to be shown.
+/** \cond COND_DISABLED 
+    Function not to be shown. */
 void cond_disabled()
 {
 }

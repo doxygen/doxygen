@@ -43,17 +43,13 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
 class TranslatorKorean : public TranslatorAdapter_1_8_15
 {
-  protected:
-    friend class TranslatorAdapterBase;
-    virtual ~TranslatorKorean() {}
-
   public:
 
     // --- Language control methods -------------------
@@ -102,7 +98,14 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return "ko";
     }
-
+    virtual QCString getLanguageString()
+    {
+      return "0x412 Korean";
+    }
+    virtual bool needsPunctuation()
+    {
+      return false;
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -116,6 +119,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "상세한 설명"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "상세"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -165,9 +172,9 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="소스 코드로부터 ";
-      if (s) result+=s+(QCString)"를 위해 ";
+      if (!s.isEmpty()) result+=s+"를 위해 ";
       result+="Doxygen에 의해 자동으로 생성됨.";
       return result;
     }
@@ -417,6 +424,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       {
         return "데이터 구조 문서화";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "클래스 문서화";
@@ -428,18 +439,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileDocumentation()
     { return "파일 문서화"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "예제 문서화"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "페이지 문서화"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -529,23 +528,19 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"생성시간 : "+date;
-      if (projName) result+=(QCString)", 프로젝트명 : "+projName;
-      result+=(QCString)", 생성자 : ";
+      QCString result="생성시간 : "+date;
+      if (!projName.isEmpty()) result+=", 프로젝트명 : "+projName;
+      result+=", 생성자 : ";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)clName+"에 대한 상속 다이어그램 : ";
+      return clName+"에 대한 상속 다이어그램 : ";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "내부적적으로만 사용하기 위해."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -617,11 +612,11 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" 클래스"; break;
@@ -639,7 +634,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" 파일 참조";
@@ -647,7 +642,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" 네임스페이스 참조";
@@ -781,7 +776,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"이 ";
+      QCString result="이 ";
       switch(compType)
       {
         case ClassDef::Class:      result+="클래스"; break;
@@ -845,14 +840,14 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)clName+"에 대한 협력 다이어그램:";
+      return clName+"에 대한 협력 다이어그램:";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)fName+"에 대한 include 의존 그래프";
+      return fName+"에 대한 include 의존 그래프";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1124,14 +1119,9 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return name+(QCString)" 패키지";
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "패키지 목록";
+      return name+" 패키지";
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1388,14 +1378,18 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "패키지 함수";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "패키지 멤버들";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "정적 패키지 함수";
     }
@@ -1507,17 +1501,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     virtual QCString trDirectories()
     { return "디렉토리"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "이 디렉토리 목록은 완전하진 않지만, (대략적으로) 알파벳순으로 정렬되어있습니다.:";
-    }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" 디렉토리 참조"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1645,11 +1632,11 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" 모듈"; break;
@@ -1666,7 +1653,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" 모듈 참조";
@@ -1717,7 +1704,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"다음 파일";
+      QCString result="다음 파일";
       if (single) result+=""; else result+="들";
       result+="로부터 생성된 ";
       result+="이 ";
@@ -1767,7 +1754,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return QCString(name)+" 관계";
     }
@@ -1804,7 +1791,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
       return QCString(name) + "의 파일";
     }
@@ -1813,7 +1800,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
       return QCString(name) + "의 파일 포함";
     }
@@ -1830,19 +1817,42 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "월","화","수","목","금","토","일" };
       static const char *months[] = { "1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "월", "화", "수", "목", "금", "토", "일" };
+      static const char *days_full[]    = { "월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+      static const char *months_full[]  = { "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "오전", "오후" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1858,7 +1868,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return QCString(name) + QCString("에 대한 디렉토리 의존성 그래프:"); }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1884,11 +1894,11 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     { return QCString(name)+" Enum Reference"; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return QCString(what) + QCString("(으)로부터 상속된 ") + QCString(members); }
 
     /*! Header of the sections with inherited members specific for the
@@ -1969,23 +1979,23 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     { return "상수 그룹들"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const char *namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" 상수 그룹 레퍼런스";
       return result;
     }
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const char *sName)
+    virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" 서비스 레퍼런스";
       return result;
     }
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const char *sName)
+    virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" 싱글톤 레퍼런스";
       return result;
     }
@@ -1993,7 +2003,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"이 서비스에 대한 문서화는 다음의 파일";
+      QCString result="이 서비스에 대한 문서화는 다음의 파일";
       if (!single) result+="들";
 	  result+="로부터 생성되었습니다.:";
       return result;
@@ -2002,7 +2012,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"이 싱글톤에 대한 문서화는 다음의 파일";
+      QCString result="이 싱글톤에 대한 문서화는 다음의 파일";
       if (!single) result+="들";
 	  result+="로부터 생성되었습니다.:";
       return result;

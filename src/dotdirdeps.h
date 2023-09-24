@@ -16,6 +16,8 @@
 #ifndef DOTDIRDEPS_H
 #define DOTDIRDEPS_H
 
+#include <memory>
+
 #include "dotgraph.h"
 #include "dirdef.h"
 
@@ -26,12 +28,12 @@ class DotDirDeps : public DotGraph
     DotDirDeps(const DirDef *dir);
     ~DotDirDeps();
     bool isTrivial() const;
-    QCString writeGraph(FTextStream &out,
+    QCString writeGraph(TextStream &out,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
-                        const char *path,
-                        const char *fileName,
-                        const char *relPath,
+                        const QCString &path,
+                        const QCString &fileName,
+                        const QCString &relPath,
                         bool writeImageMap=TRUE,
                         int graphId=-1,
                         bool linkRelations=TRUE);
@@ -47,5 +49,7 @@ class DotDirDeps : public DotGraph
 
     bool m_linkRelations = false;
 };
+
+using DotDirDepsPtr = std::shared_ptr<DotDirDeps>;
 
 #endif

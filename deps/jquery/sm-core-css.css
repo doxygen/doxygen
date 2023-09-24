@@ -1,0 +1,88 @@
+.sm{position:relative;z-index:9999;}
+.sm,.sm ul,.sm li{display:block;list-style:none;margin:0;padding:0;line-height:normal;direction:ltr;text-align:left;-webkit-tap-highlight-color:rgba(0,0,0,0);}
+.sm-rtl,.sm-rtl ul,.sm-rtl li{direction:rtl;text-align:right;}
+.sm>li>h1,.sm>li>h2,.sm>li>h3,.sm>li>h4,.sm>li>h5,.sm>li>h6{margin:0;padding:0;}
+.sm ul{display:none;}
+.sm li,.sm a{position:relative;}
+.sm a{display:block;}
+.sm a.disabled{cursor:not-allowed;}
+.sm:after{content:"\00a0";display:block;height:0;font:0px/0 serif;clear:both;visibility:hidden;overflow:hidden;}
+.sm,.sm *,.sm *:before,.sm *:after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;}
+
+.main-menu-btn {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  text-indent: 36px;
+  margin-left: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+/* hamburger icon */
+.main-menu-btn-icon, .main-menu-btn-icon:before, .main-menu-btn-icon:after {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  height: 2px;
+  width: 24px;
+  background: var(--nav-menu-button-color);
+  -webkit-transition: all 0.25s;
+  transition: all 0.25s;
+}
+.main-menu-btn-icon:before {
+  content: '';
+  top: -7px;
+  left: 0;
+}
+.main-menu-btn-icon:after {
+  content: '';
+  top: 7px;
+  left: 0;
+}
+/* x icon */
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon {
+  height: 0;
+  /*background: transparent;*/
+}
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon:before {
+  top: 0;
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon:after {
+  top: 0;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+/* hide menu state checkbox (keep it visible to screen readers) */
+#main-menu-state {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(1px,1px,1px,1px);
+}
+/* hide the menu in mobile view */
+#main-menu-state:not(:checked) ~ #main-menu {
+  display: none;
+}
+#main-menu-state:checked ~ #main-menu {
+  display: block;
+}
+@media (min-width: 768px) {
+  /* hide the button in desktop view */
+  .main-menu-btn {
+    position: absolute;
+    top: -99999px;
+  }
+  /* always show the menu in desktop view */
+  #main-menu-state:not(:checked) ~ #main-menu {
+    display: block;
+  }
+}

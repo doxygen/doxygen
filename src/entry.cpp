@@ -16,8 +16,9 @@
  */
 
 #include <algorithm>
+#include <atomic>
 #include <stdlib.h>
-#include <qfile.h>
+
 #include "entry.h"
 #include "util.h"
 #include "section.h"
@@ -29,26 +30,24 @@
 
 static AtomicInt g_num;
 
-Entry::Entry()
+Entry::Entry() : section(EntryType::makeEmpty()), program(static_cast<size_t>(0)), initializer(static_cast<size_t>(0))
 {
   //printf("Entry::Entry(%p)\n",this);
   g_num++;
   m_parent=0;
-  section = EMPTY_SEC;
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
-  hasTagInfo = FALSE;
-  relatesType = Simple;
+  hasTagInfo = false;
+  relatesType = RelatesType::Simple;
   hidden = FALSE;
   groupDocType = GROUPDOC_NORMAL;
   reset();
 }
 
-Entry::Entry(const Entry &e)
+Entry::Entry(const Entry &e) : section(e.section)
 {
   //printf("Entry::Entry(%p):copy\n",this);
   g_num++;
-  section     = e.section;
   type        = e.type;
   name        = e.name;
   hasTagInfo  = e.hasTagInfo;
@@ -56,23 +55,32 @@ Entry::Entry(const Entry &e)
   protection  = e.protection;
   mtype       = e.mtype;
   spec        = e.spec;
+  vhdlSpec    = e.vhdlSpec;
   initLines   = e.initLines;
-  stat        = e.stat;
+  isStatic    = e.isStatic;
   localToc    = e.localToc;
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
   subGrouping = e.subGrouping;
   callGraph   = e.callGraph;
   callerGraph = e.callerGraph;
+  includeGraph = e.includeGraph;
+  includedByGraph = e.includedByGraph;
+  directoryGraph = e.directoryGraph;
+  collaborationGraph = e.collaborationGraph;
+  inheritanceGraph = e.inheritanceGraph;
+  groupGraph  = e.groupGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
+  inlineSource = e.inlineSource;
+  exported    = e.exported;
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
   argList     = e.argList;
   tArgLists   = e.tArgLists;
-  program     = e.program;
-  initializer = e.initializer;
+  program.str(e.program.str());
+  initializer.str(e.initializer.str());
   includeFile = e.includeFile;
   includeName = e.includeName;
   doc         = e.doc;
@@ -107,7 +115,9 @@ Entry::Entry(const Entry &e)
   id          = e.id;
   extends     = e.extends;
   groups      = e.groups;
+  req         = e.req;
   m_fileDef   = e.m_fileDef;
+  qualifiers  = e.qualifiers;
 
   m_parent    = e.m_parent;
   // deep copy child entries
@@ -122,7 +132,7 @@ Entry::~Entry()
 {
   //printf("Entry::~Entry(%p) num=%d\n",this,g_num);
   //printf("Deleting entry %d name %s type %x children %d\n",
-  //       num,name.data(),section,sublist->count());
+  //       num,qPrint(name),section,sublist->count());
 
   g_num--;
 }
@@ -184,20 +194,27 @@ void Entry::reset()
   bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
   bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
   bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
+  bool entryInlineSource    = Config_getBool(INLINE_SOURCES);
+  bool entryIncludeGraph    = Config_getBool(INCLUDE_GRAPH);
+  bool entryIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
+  bool entryDirectoryGraph  = Config_getBool(DIRECTORY_GRAPH);
+  bool entryCollaborationGraph = Config_getBool(COLLABORATION_GRAPH);
+  CLASS_GRAPH_t entryInheritanceGraph  = Config_getBool(CLASS_GRAPH);
+  bool entryGroupGraph  = Config_getBool(GROUP_GRAPHS);
   //printf("Entry::reset()\n");
   name.resize(0);
   type.resize(0);
   args.resize(0);
   bitfields.resize(0);
   exception.resize(0);
-  program.resize(0);
+  program.str(std::string());
   includeFile.resize(0);
   includeName.resize(0);
   doc.resize(0);
   docFile.resize(0);
   docLine=-1;
   relates.resize(0);
-  relatesType=Simple;
+  relatesType=RelatesType::Simple;
   brief.resize(0);
   briefFile.resize(0);
   briefLine=-1;
@@ -206,7 +223,7 @@ void Entry::reset()
   inbodyLine=-1;
   inside.resize(0);
   fileName.resize(0);
-  initializer.resize(0);
+  initializer.str(std::string());
   initLines = -1;
   startLine = 1;
   startColumn = 1;
@@ -216,20 +233,29 @@ void Entry::reset()
   mGrpId = -1;
   callGraph   = entryCallGraph;
   callerGraph = entryCallerGraph;
+  includeGraph = entryIncludeGraph;
+  includedByGraph = entryIncludedByGraph;
+  directoryGraph = entryDirectoryGraph;
+  collaborationGraph = entryCollaborationGraph;
+  inheritanceGraph = entryInheritanceGraph;
+  groupGraph = entryGroupGraph;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
-  section = EMPTY_SEC;
-  mtype   = Method;
-  virt    = Normal;
-  stat    = FALSE;
-  proto   = FALSE;
-  explicitExternal = FALSE;
-  spec  = 0;
+  inlineSource = entryInlineSource;
+  exported = false;
+  section = EntryType::makeEmpty();
+  mtype   = MethodTypes::Method;
+  virt    = Specifier::Normal;
+  isStatic = false;
+  proto   = false;
+  explicitExternal = false;
+  spec.reset();
+  vhdlSpec = VhdlSpecifier::UNKNOWN;
   lang = SrcLangExt_Unknown;
-  hidden = FALSE;
-  artificial = FALSE;
-  subGrouping = TRUE;
-  protection = Public;
+  hidden = false;
+  artificial = false;
+  subGrouping = true;
+  protection = Protection::Public;
   groupDocType = GROUPDOC_NORMAL;
   id.resize(0);
   metaData.resize(0);
@@ -241,7 +267,9 @@ void Entry::reset()
   tArgLists.clear();
   typeConstr.reset();
   sli.clear();
+  req.resize(0);
   m_fileDef = 0;
+  qualifiers.clear();
 }
 
 void Entry::setFileDef(FileDef *fd)

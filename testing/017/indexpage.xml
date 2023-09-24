@@ -15,5 +15,6 @@
         </simplesect>
       </para>
     </detaileddescription>
+    <location file="017_copyright.dox"/>
   </compounddef>
 </doxygen>

@@ -23,17 +23,18 @@
  */
 #include "config.h"
 #include "input.h"
+#include "inputbool.h"
 #include "inputstring.h"
+#include "inputobsolete.h"
 #include "config_msg.h"
 
 #include <QString>
 #include <QVariant>
 #include <QStack>
-#include <QTextCodec>
 #include <QByteArray>
 #include <QFileInfo>
 #include <QStringList>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QMessageBox>
 
@@ -41,6 +42,7 @@
 
 #define MAX_INCLUDE_DEPTH 10
 
+#define USE_STATE2STRING 0
 
 /* -----------------------------------------------------------------
  *
@@ -65,13 +67,11 @@ static QStack<ConfigFileState*>       g_includeStack;
 static int                            g_includeDepth;
 static QVariant                      *g_arg;
 static Input                         *g_curOption=0;
-static QString                        g_elemStr;
-static QTextCodec                    *g_codec     = QTextCodec::codecForName("UTF-8");
+static QByteArray                     g_str;
+static std::unique_ptr<TextCodecAdapter> g_codec = std::make_unique<TextCodecAdapter>("UTF-8");
 static QString                        g_codecName = QString::fromLatin1("UTF-8");
-static int                            g_lastState;
-static QByteArray                     g_tmpString;
 static QString                        g_cmd;
-static int                            g_part;
+static bool                           g_isEnum;
 
 static const char *stateToString(int state);
 
@@ -80,16 +80,16 @@ static const char *stateToString(int state);
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
-static yy_size_t yyread(char *buf,yy_size_t maxSize)
+static int yyread(char *buf,int maxSize)
 {
     // no file included
     if (g_includeStack.isEmpty())
     {
-      return fread(buf,1,maxSize,g_file);
+      return static_cast<int>(fread(buf,1,maxSize,g_file));
     }
     else
     {
-      return fread(buf,1,maxSize,g_includeStack.top()->file);
+      return static_cast<int>(fread(buf,1,maxSize,g_includeStack.top()->file));
     }
 }
 
@@ -101,14 +101,199 @@ static void checkEncoding()
   Input *option = g_options->value(QString::fromLatin1("DOXYFILE_ENCODING"));
   if (option && option->value().toString()!=g_codecName)
   {
-    QTextCodec *newCodec = QTextCodec::codecForName(option->value().toString().toLatin1());
-    if (newCodec)
+    auto newCodec = std::make_unique<TextCodecAdapter>(option->value().toString().toLatin1());
+    if (newCodec->isValid())
     {
-      g_codec = newCodec;
+      g_codec.swap(newCodec);
       g_codecName = option->value().toString();
     }
   }
 }
+
+static QByteArray stripComment(const QByteArray &s)
+{
+  // check if there is a comment at the end of the string
+  bool insideQuote=false;
+  int l = s.length();
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (c=='\\') // skip over escaped characters
+    {
+      i++;
+    }
+    else if (c=='"') // toggle inside/outside quotation
+    {
+      insideQuote=!insideQuote;
+    }
+    else if (!insideQuote && c=='#') // found start of a comment
+    {
+      return s.left(i).trimmed();
+    }
+  }
+  return s;
+}
+
+
+static void processString()
+{
+  // strip leading and trailing whitespace
+  QByteArray s = stripComment(g_str.trimmed());
+  int l = s.length();
+
+  // remove surrounding quotes if present (and not escaped)
+  if (l>=2 && s.at(0)=='"' && s.at(l-1)=='"' && // remove quotes
+      (s.at(l-2)!='\\' || (s.at(l-2)=='\\' && s.at(l-3)=='\\')))
+  {
+    s=s.mid(1,s.length()-2);
+    l=s.length();
+  }
+
+  // check for invalid and/or escaped quotes
+  bool warned=false;
+  QByteArray result;
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (c=='\\') // escaped character
+    {
+      if (i<l-1 && s.at(i+1)=='"') // unescape the quote character
+      {
+        result+='"';
+      }
+      else // keep other escaped characters in escaped form
+      {
+        result+=c;
+        if (i<l-1)
+        {
+          result+=s.at(i+1);
+        }
+      }
+      i++; // skip over the escaped character
+    }
+    else if (c=='"') // unescaped quote
+    {
+      if (!warned)
+      {
+        std::string str = g_str.trimmed().data();
+        config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
+                    qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str());
+      }
+      warned=true;
+    }
+    else // normal character
+    {
+      result+=c;
+    }
+  }
+
+  // recode the string
+  if (g_isEnum)
+  {
+    InputString *cur = dynamic_cast<InputString *>(g_curOption);
+    *g_arg = cur->checkEnumVal(g_codec->decode(result));
+  }
+  else
+  {
+    *g_arg = QVariant(g_codec->decode(result));
+  }
+
+  // update encoding
+  checkEncoding();
+
+  //printf("Processed string '%s'\n",g_string->data());
+}
+
+static void processList()
+{
+  bool allowCommaAsSeparator = g_cmd!=QString::fromLatin1("PREDEFINED");
+
+  const QByteArray s = stripComment(g_str.trimmed());
+  int l = s.length();
+
+  QByteArray elemStr;
+
+  // helper to push elemStr to the list and clear it
+  auto addElem = [&elemStr]()
+  {
+    if (!elemStr.isEmpty())
+    {
+      //printf("Processed list element '%s'\n",e.data());
+      *g_arg = QVariant(g_arg->toStringList() << g_codec->decode(elemStr));
+      elemStr="";
+    }
+  };
+
+  bool needsSeparator=false;
+  int insideQuote=false;
+  bool warned=false;
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (!needsSeparator && c=='\\') // escaped character
+    {
+      if (i<l-1 && s.at(i+1)=='"') // unescape the quote character
+      {
+        elemStr+='"';
+      }
+      else // keep other escaped characters in escaped form
+      {
+        elemStr+=c;
+        if (i<l-1)
+        {
+          elemStr+=s.at(i+1);
+        }
+      }
+      i++; // skip over the escaped character
+    }
+    else if (!needsSeparator && c=='"') // quote character
+    {
+      if (!insideQuote)
+      {
+        insideQuote=true;
+      }
+      else // this quote ends an element
+      {
+        insideQuote=false;
+        needsSeparator=true;
+      }
+    }
+    else if (!insideQuote && ((c==',' && allowCommaAsSeparator) || isspace(c))) // separator
+    {
+      needsSeparator=false;
+      addElem();
+    }
+    else // normal content character
+    {
+      if (needsSeparator)
+      {
+        if (!warned)
+        {
+          std::string str = g_str.trimmed().data();
+          config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
+                    qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str(),allowCommaAsSeparator?"or comma ":"");
+          warned=true;
+        }
+        needsSeparator=false;
+        i--; // try the character again as part of a new element
+        addElem();
+      }
+      else
+      {
+        elemStr+=c;
+      }
+    }
+  }
+  // add last part
+  addElem();
+  if (insideQuote)
+  {
+    std::string str = g_str.trimmed().data();
+    config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
+                qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str());
+  }
+}
+
 
 static FILE *tryPath(const QString &path,const QString &fileName)
 {
@@ -190,6 +375,9 @@ static void readIncludeFile(const QString &incName)
   }
 }
 
+#if USE_STATE2STRING
+static const char *stateToString(int state);
+#endif
 
 %}
 
@@ -198,20 +386,23 @@ static void readIncludeFile(const QString &incName)
 %option yylineno
 
 %x      Start
-%x	SkipComment
 %x      SkipInvalid
 %x      GetString
-%x      GetEnum
 %x      GetStrList
-%x      GetQuotedString
 %x      Include
 
 %%
 
 <*>\0x0d
-<Start,GetString,GetEnum,GetStrList,SkipInvalid>"#"	 { BEGIN(SkipComment); }
-<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { g_cmd = g_codec->toUnicode(yytext);
-                                           g_part = 0;
+
+   /*-------------- Comments ---------------*/
+
+<Start>"#".*\n	                         { /* Skip comment */ }
+
+   /*-------------- TAG start ---------------*/
+
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 {
+                                           g_cmd = g_codec->decode(yytext);
                                            g_cmd=g_cmd.left(g_cmd.length()-1).trimmed();
 					   g_curOption = g_options->value(g_cmd);
 					   if (g_curOption==0) // oops not known
@@ -222,24 +413,18 @@ static void readIncludeFile(const QString &incName)
 					   }
 					   else // known tag
 					   {
-					     //option->setEncoding(encoding);
 					     g_arg = &g_curOption->value();
+                                             g_str = QByteArray();
+                                             g_isEnum = false;
 					     switch(g_curOption->kind())
 					     {
 					       case Input::StrList:
-						 g_elemStr = QString();
 						 *g_arg = QStringList();
 					         BEGIN(GetStrList);
 					         break;
 					       case Input::String:
-                                                 if (dynamic_cast<InputString *>(g_curOption)->stringMode() == InputString::StringFixed)
-                                                 {
-                                                   BEGIN(GetEnum);
-                                                 }
-                                                 else
-                                                 {
-                                                   BEGIN(GetString);
-                                                 }
+                                                 g_isEnum = dynamic_cast<InputString *>(g_curOption)->stringMode() == InputString::StringFixed;
+                                                 BEGIN(GetString);
 					         break;
 					       case Input::Int:
 					         BEGIN(GetString);
@@ -248,16 +433,35 @@ static void readIncludeFile(const QString &incName)
 					         BEGIN(GetString);
 						 break;
 					       case Input::Obsolete:
-					         config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
-						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n", qPrintable(g_cmd),
-							    yylineno,qPrintable(g_yyFileName));
-					         BEGIN(SkipInvalid);
+                                                 {
+                                                   config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
+                                                       "To avoid this warning please update your configuration "
+                                                       "file using \"doxygen -u\"\n", qPrintable(g_cmd),
+                                                       yylineno,qPrintable(g_yyFileName));
+                                                   InputObsolete *obsoleteOpt = dynamic_cast<InputObsolete*>(g_curOption);
+                                                   if (obsoleteOpt)
+                                                   {
+                                                     if (obsoleteOpt->orgKind()==Input::StrList)
+                                                     {
+                                                       *g_arg = QStringList();
+                                                       BEGIN(GetStrList);
+                                                     }
+                                                     else
+                                                     {
+                                                       BEGIN(GetString);
+                                                     }
+                                                   }
+                                                   else
+                                                   {
+                                                     BEGIN(SkipInvalid);
+                                                   }
+                                                 }
 						 break;
 					     }
 					   }
 					}
-<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{ g_cmd=g_codec->toUnicode(yytext);
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{
+                                          g_cmd=g_codec->decode(yytext);
                                           g_cmd=g_cmd.left(g_cmd.length()-2).trimmed();
 					  g_curOption = g_options->value(g_cmd);
 					  if (g_curOption==0) // oops not known
@@ -272,7 +476,7 @@ static void readIncludeFile(const QString &incName)
 					    {
 					      case Input::StrList:
 						g_arg = &g_curOption->value();
-						g_elemStr=QString();
+						g_str=QByteArray();
 					        BEGIN(GetStrList);
 					        break;
 					      case Input::String:
@@ -283,20 +487,35 @@ static void readIncludeFile(const QString &incName)
 					        BEGIN(SkipInvalid);
 						break;
 					      case Input::Obsolete:
-					         config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
-						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n",
-							    qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-					         BEGIN(SkipInvalid);
-						 break;
+                                                {
+					          config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
+						              "To avoid this warning please update your configuration "
+						  	      "file using \"doxygen -u\"\n",
+							      qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
+                                                   InputObsolete *obsoleteOpt = dynamic_cast<InputObsolete*>(g_curOption);
+                                                   if (obsoleteOpt && obsoleteOpt->orgKind()==Input::StrList)
+                                                   {
+						     g_arg = &g_curOption->value();
+						     g_str=QByteArray();
+                                                     BEGIN(GetStrList);
+                                                   }
+					           else
+                                                   {
+                                                     BEGIN(SkipInvalid);
+                                                   }
+                                                }
+					        break;
 					     }
 					   }
 					}
-<Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); g_arg=&g_includePathList; *g_arg = QStringList(); g_elemStr=QString(); }
+
+   /*-------------- INCLUDE* ---------------*/
+
+<Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); g_arg=&g_includePathList; *g_arg = QStringList(); g_str=QByteArray(); }
   /* include a config file */
 <Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
-  					  readIncludeFile(g_codec->toUnicode(yytext));
+  					  readIncludeFile(g_codec->decode(yytext));
   					  BEGIN(Start);
 					}
 <<EOF>>					{
@@ -321,137 +540,56 @@ static void readIncludeFile(const QString &incName)
   					}
 
 <Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,yylineno,qPrintable(g_yyFileName)); }
-<GetString,GetEnum,SkipInvalid>\n	        { BEGIN(Start); }
-<GetStrList>\n				{
-					  if (!g_elemStr.isEmpty())
-					  {
-					    //printf("elemStr1='%s'\n",qPrintable(elemStr));
-					    *g_arg = QVariant(g_arg->toStringList() << g_elemStr);
-					  }
-					  BEGIN(Start);
-					}
-<GetStrList>[ \t]+			{
-  				          if (!g_elemStr.isEmpty())
-					  {
-					    //printf("elemStr2='%s'\n",qPrintable(elemStr));
-  					    *g_arg = QVariant(g_arg->toStringList() << g_elemStr);
-					  }
-					  g_elemStr = QString();
-  					}
-<GetString>[^ \"\t\r\n]+		{
-                                          if (g_part == 1) // multiple unquoted parts, reset to default
-                                          {
-                                            config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                        "Value should not contain unquoted whitespace, "
-                                                        "using the default\n",
-                                                        qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-                                            *g_arg=QVariant(g_codec->toUnicode(""));
-                                          }
-                                          else if (g_part > 1) // multiple unquoted parts, reset to default
-                                          {
-                                            *g_arg=QVariant(g_codec->toUnicode(""));
-                                          }
-                                          else
-                                          {
-                                            *g_arg = QVariant(g_codec->toUnicode(yytext));
-                                            checkEncoding();
-                                          }
-                                          g_part++;
+
+   /*-------------- GetString ---------------*/
+
+<GetString>\n                           { // end of string
+                                          processString();
+                                          BEGIN(Start);
                                         }
-<GetEnum>[^ \"\t\r\n]+			{
-                                          InputString *cur = dynamic_cast<InputString *>(g_curOption);
-                                          if (g_part == 1) // multiple unquoted parts, reset to default
-                                          {
-                                            config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                        "Value should not contain unquoted whitespace, "
-                                                        "using the default\n",
-                                                        qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-                                            *g_arg=QVariant(g_codec->toUnicode(""));
-                                          }
-                                          else if (g_part > 1) // multiple unquoted parts, reset to default
-                                          {
-                                            *g_arg=QVariant(g_codec->toUnicode(""));
-                                          }
-                                          else
-                                          {
-                                            *g_arg = cur->checkEnumVal(g_codec->toUnicode(yytext));
-                                          }
-                                          g_part++;
+<GetString>\\[ \r\t]*\n                 { // line continuation
+                                          g_str+=' ';
                                         }
-<GetString,GetEnum,GetStrList,SkipInvalid>"\""	{ g_lastState=YY_START;
-  					  BEGIN(GetQuotedString);
-                                          g_tmpString="";
-					}
-<GetQuotedString>"\""|"\n" 		{
-                                          // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
-                                          g_tmpString+=" ";
-  					  //printf("Quoted String = '%s'\n",qPrintable(tmpString));
-					  if (g_lastState==GetString)
-					  {
-                                            if (g_part == 1) // multiple unquoted parts, reset to default
-                                            {
-                                              config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                          "Value should not contain unquoted whitespace, "
-                                                          "using the default\n",
-                                                          qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-                                              *g_arg=g_codec->toUnicode("");
-                                            }
-                                            else if (g_part > 1) // multiple unquoted parts, reset to default
-                                            {
-                                              *g_arg=g_codec->toUnicode("");
-                                            }
-                                            else
-                                            {
-					      *g_arg = g_codec->toUnicode(g_tmpString);
-                                              checkEncoding();
-					    }
-                                            g_part++;
-					  }
-					  else if (g_lastState==GetEnum)
-					  {
-                                            if (g_part == 1) // multiple unquoted parts, reset to default
-                                            {
-                                              config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                          "Value should not contain unquoted whitespace, "
-                                                          "using the default\n",
-                                                          qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-                                              *g_arg=g_codec->toUnicode("");
-                                            }
-                                            else if (g_part > 1) // multiple unquoted parts, reset to default
-                                            {
-                                              *g_arg=g_codec->toUnicode("");
-                                            }
-                                            else
-                                            {
-                                              InputString *cur = dynamic_cast<InputString *>(g_curOption);
-                                              *g_arg = cur->checkEnumVal(g_codec->toUnicode(g_tmpString));
-					    }
-                                            g_part++;
-					  }
-					  else
-					  {
-					    g_elemStr+=g_codec->toUnicode(g_tmpString);
-					  }
-					  if (*yytext=='\n')
-					  {
-					    config_warn("Missing end quote (\") on line %d, file %s\n",yylineno,
-                                                qPrintable(g_yyFileName));
-					  }
-					  BEGIN(g_lastState);
-  					}
-<GetQuotedString>("\\\\"|"@\\"|"\\@"|"@@") {
-  					  g_tmpString+=yytext;
-  					}
-<GetQuotedString>"\\\""			{
-  					  g_tmpString+='"';
-  					}
-<GetQuotedString>.			{ g_tmpString+=*yytext; }
-<GetStrList>[^ \#\"\t\r\n]+		{
-  					  g_elemStr+=g_codec->toUnicode(yytext);
-  					}
-<SkipComment>\n				{ BEGIN(Start); }
-<SkipComment>\\[ \r\t]*\n		{ BEGIN(Start); }
-<SkipComment,SkipInvalid>.		{ }
+<GetString>"\\"                         { // escape character
+                                          g_str+=yytext;
+                                        }
+<GetString>[^\n\\]+                     { // string part without escape characters
+                                          g_str+=yytext;
+                                        }
+
+   /*-------------- GetStrList ---------------*/
+
+<GetStrList>\n                          { // end of list
+                                          processList();
+                                          BEGIN(Start);
+                                        }
+<GetStrList>\\[ \r\t]*\n                { // line continuation
+                                          g_str+=' ';
+                                        }
+<GetStrList>"\\"                        { // escape character
+                                          g_str+=yytext;
+                                        }
+<GetStrList>[^\n\\]+                    { // string part without escape characters
+                                          g_str+=yytext;
+                                        }
+
+   /*-------------- SkipInvalid ---------------*/
+
+<SkipInvalid>\n                         { // end of skipped part
+                                          BEGIN(Start);
+                                        }
+<SkipInvalid>\\[ \r\t]*\n               { // line continuation
+                                          g_str+=' ';
+                                        }
+<SkipInvalid>"\\"                       { // escape character
+                                          g_str+=yytext;
+                                        }
+<SkipInvalid>[^\n\\]+                   { // string part without escape characters
+                                          g_str+=yytext;
+                                        }
+
+   /*-------------- fall through -------------*/
+
 <*>\\[ \r\t]*\n				{ }
 <*>[ \r\t]				{ }
 <*>\n
@@ -464,16 +602,18 @@ static void readIncludeFile(const QString &incName)
 
 static void substEnvVarsInString(QString &s)
 {
-  static QRegExp re(QString::fromLatin1("\\$\\([a-z_A-Z0-9]+\\)"));
+  static QRegularExpression re(QString::fromLatin1("\\$\\([a-z_A-Z0-9]+\\)"));
   if (s.isEmpty()) return;
   int p=0;
   int i,l;
   //printf("substEnvVarInString(%s) start\n",qPrintable(s));
-  while ((i=re.indexIn(s,p))!=-1)
+
+  QRegularExpressionMatch match;
+  while ((i=s.indexOf(re,p,&match))!=-1)
   {
-    l = re.matchedLength();
+    l = match.capturedLength();
     //printf("Found environment var s.mid(%d,%d)='%s'\n",i+2,l-3,qPrintable(s.mid(i+2,l-3)));
-    QString env=g_codec->toUnicode(getenv(s.mid(i+2,l-3).toLatin1()));
+    QString env=g_codec->decode(getenv(s.mid(i+2,l-3).toLatin1()));
     substEnvVarsInString(env); // recursively expand variables if needed.
     s = s.left(i)+env+s.right(s.length()-i-l);
     p=i+env.length(); // next time start at the end of the expanded string
@@ -509,7 +649,7 @@ static void substEnvVarsInStrList(QStringList &sl)
       // search for a "word"
       for (i=0;i<l;i++)
       {
-	QChar c=0;
+	QChar c;
 	// skip until start of new word
 	while (i<l && ((c=result.at(i))==QChar::fromLatin1(' ') || c==QChar::fromLatin1('\t'))) i++;
 	p=i; // p marks the start index of the word
@@ -559,6 +699,39 @@ static void substEnvVarsInStrList(QStringList &sl)
 
 //--------------------------------------------------------------------------
 
+static void upgradeConfig(const QHash<QString,Input*> &options)
+{
+  auto it1 = options.find(QString::fromLatin1("CLASS_DIAGRAMS"));
+  auto it2 = options.find(QString::fromLatin1("HAVE_DOT"));
+  auto it3 = options.find(QString::fromLatin1("CLASS_GRAPH"));
+  if (it1!=options.end() && it2!=options.end() && it3!=options.end())
+  {
+    if ((*it1)->kind()==Input::Obsolete)
+    {
+      InputObsolete *optClassDiagram = dynamic_cast<InputObsolete*>(*it1);
+      InputBool     *optHaveDot      = dynamic_cast<InputBool*>    (*it2);
+      InputString   *optClassGraph   = dynamic_cast<InputString*>  (*it3);
+      if (optClassDiagram->orgKind()==Input::Bool)
+      {
+        const QVariant &v1 = optClassDiagram->value();
+        const QVariant &v2 = optHaveDot->value();
+        QVariant &v3 = optClassGraph->value();
+        bool isValid1=false,isValid2=false,isValid3=false;
+        bool classDiagrams = InputBool::convertToBool(v1,isValid1);
+        bool haveDot       = InputBool::convertToBool(v2,isValid2);
+        bool classGraph    = InputBool::convertToBool(v3,isValid3);
+        if (isValid1 && isValid2 && isValid3 && !classDiagrams && !haveDot && classGraph)
+        {
+   	  config_warn("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");
+          optClassGraph->setValue(QString::fromLatin1("TEXT"));
+        }
+      }
+    }
+  }
+}
+
+//--------------------------------------------------------------------------
+
 bool parseConfig(
       const QString &fileName,
       const QHash<QString,Input *> &options
@@ -590,6 +763,8 @@ bool parseConfig(
   BEGIN( Start );
   config_doxywYYlex();
 
+  upgradeConfig(options);
+
   // update the values in the UI
   i.toFront();
   while (i.hasNext())
@@ -610,14 +785,13 @@ bool parseConfig(
   return true;
 }
 
-void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
+void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
 {
   QChar c;
   bool needsEscaping=false;
   bool needsHashEscaping=false;
   // convert the string back to it original encoding
-  //QByteArray se = codec->fromUnicode(s);
-  t.setCodec(codec);
+  codec->applyToStream(t);
   const QChar *p=s.data();
   if (!s.isEmpty() && !p->isNull())
   {
@@ -626,6 +800,7 @@ void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
       while (!(c=*p++).isNull() && !needsEscaping)
       {
         needsEscaping = (c==QChar::fromLatin1(' ')  ||
+	                 c==QChar::fromLatin1(',') ||
 	                 c==QChar::fromLatin1('\n') ||
 		         c==QChar::fromLatin1('\t') ||
 		         c==QChar::fromLatin1('"'));
@@ -661,4 +836,6 @@ void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
     }
   }
 }
+#if USE_STATE2STRING
 #include "config_doxyw.l.h"
+#endif

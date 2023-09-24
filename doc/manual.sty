@@ -1,6 +1,5 @@
 % Use helvetica font instead of times roman
 \RequirePackage{helvet}
-\RequirePackage{sectsty}
 \RequirePackage{tocloft}
 \providecommand{\rmdefault}{phv}
 \providecommand{\bfdefault}{bc}
@@ -10,12 +9,6 @@
 \RequirePackage{fancyhdr}
 \newcommand{\clearemptydoublepage}{%
   \newpage{\pagestyle{empty}\cleardoublepage}%
-}
-\renewcommand{\chaptermark}[1]{%
-  \markboth{#1}{}%
-}
-\renewcommand{\sectionmark}[1]{%
-  \markright{\thesection\ #1}%
 }
 % Used by @image
 % (only if inline is specified)
@@ -44,7 +37,13 @@
 \renewcommand{\headrulewidth}{0pt}}
 %
 \pagestyle{fancyplain}
+\renewcommand{\chaptermark}[1]{%
+  \markboth{#1}{}%
+}
+\renewcommand{\sectionmark}[1]{%
+  \markright{\thesection\ #1}%
+}
 %
-\usepackage{xpatch}
+\usepackage{regexpatch}
 \xpatchcmd{\part}{plain}{empty}{}{}
 

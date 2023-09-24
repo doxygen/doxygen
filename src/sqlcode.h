@@ -19,7 +19,6 @@
 
 #include "parserintf.h"
 
-class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 class QCString;
@@ -32,13 +31,13 @@ class SQLCodeParser : public CodeParserInterface
   public:
     SQLCodeParser();
     virtual ~SQLCodeParser();
-    void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
+    void parseCode(OutputCodeList &codeOutIntf,
+                   const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt,
                    bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
+                   const QCString &exampleName=QCString(),
+                   const FileDef *fileDef=0,
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,
