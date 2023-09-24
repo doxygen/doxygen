@@ -6244,6 +6244,12 @@ NONLopt [^\n]*
 <BasesProt>"private"{BN}+               { lineCount(yyscanner); yyextra->baseProt = Protection::Private; }
 <BasesProt>{BN}                         { lineCount(yyscanner); }
 <BasesProt>.                            { unput(*yytext); BEGIN(Bases); }
+<Bases>"decltype"{BN}*"("               {
+                                          lineCount(yyscanner);
+                                          yyextra->roundCount=0;
+                                          yyextra->lastSkipRoundContext=YY_START;
+                                          BEGIN(SkipRound);
+                                        }
 <Bases>("\\")?({ID}"\\")*{ID}           { // PHP namespace token, not sure if interspacing is allowed but it gives problems (see bug 640847)
                                           if (!yyextra->insidePHP)
                                           {
