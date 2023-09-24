@@ -198,6 +198,7 @@ class Entry
     bool includedByGraph;     //!< do we need to draw the included by graph?
     bool directoryGraph;      //!< do we need to draw the directory graph?
     bool collaborationGraph;  //!< do we need to draw the collaboration graph?
+    bool enumValues;          //!< do we need to show the enum values besides the mnemonics?
     CLASS_GRAPH_t inheritanceGraph; //!< type of inheritance graph?
     bool groupGraph;          //!< do we need to draw the group graph?
     bool exported;            //!< is the symbol exported from a C++20 module

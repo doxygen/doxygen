@@ -73,6 +73,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
   inlineSource = e.inlineSource;
+  enumValues  = e.enumValues;
   exported    = e.exported;
   virt        = e.virt;
   args        = e.args;
@@ -201,6 +202,7 @@ void Entry::reset()
   bool entryCollaborationGraph = Config_getBool(COLLABORATION_GRAPH);
   CLASS_GRAPH_t entryInheritanceGraph  = Config_getBool(CLASS_GRAPH);
   bool entryGroupGraph  = Config_getBool(GROUP_GRAPHS);
+  bool entryEnumValues  = Config_getBool(SHOW_ENUM_VALUES);
   //printf("Entry::reset()\n");
   name.resize(0);
   type.resize(0);
@@ -242,6 +244,7 @@ void Entry::reset()
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
   inlineSource = entryInlineSource;
+  enumValues = entryEnumValues;
   exported = false;
   section = EntryType::makeEmpty();
   mtype   = MethodTypes::Method;

@@ -7089,6 +7089,7 @@ static void findEnums(const Entry *root)
       mmd->enableReferencesRelation(root->referencesRelation);
       mmd->enableInlineSource(root->inlineSource);
       mmd->addQualifiers(root->qualifiers);
+      mmd->enableEnumValues(root->enumValues);
       //printf("%s::setRefItems(%zu)\n",qPrint(md->name()),root->sli.size());
       mmd->setRefItems(root->sli);
       //printf("found enum %s nd=%p\n",qPrint(md->name()),nd);
