@@ -6,6 +6,9 @@ with open('README.md') as f:
 with open('LICENSE') as f:
     license = f.read()
 
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setup(
     name='doxmlparser',
     version='0.1',
@@ -15,5 +18,6 @@ setup(
     author_email='doxygen@gmail.com',
     url='https://github.com/doxygen/doxygen/addon/doxmlparser',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests', 'docs')),
+    install_requires=requirements
 )
