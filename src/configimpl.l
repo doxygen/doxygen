@@ -2136,7 +2136,18 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(depOption,"EXTRACT_PACKAGE",      true );
   }
 
-  if (!checkFileName(Config_getString(GENERATE_TAGFILE),"GENERATE_TAGFILE"))
+  QCString tagLine = Config_getString(GENERATE_TAGFILE);
+  QCString fileName;
+  int eqPos = tagLine.find('=');
+  if (eqPos!=-1) // tag command contains a tagname
+  {
+    fileName = tagLine.left(eqPos).stripWhiteSpace();
+  }
+  else
+  {
+    fileName = tagLine;
+  }
+  if (!checkFileName(fileName,"GENERATE_TAGFILE"))
   {
     Config_updateString(GENERATE_TAGFILE,"");
   }

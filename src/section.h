@@ -167,6 +167,23 @@ class SectionManager : public LinkedMap<SectionInfo>
         return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
       }
     }
+    void addDeleteSection(const QCString &label)
+    {
+      m_deleteVector.push_back(label);
+    }
+
+    void cleanDeleteSection()
+    {
+      for (const auto &label : m_deleteVector)
+      {
+        SectionInfo *si = LinkedMap<SectionInfo>::find(label);
+        if (si && !si->ref().isEmpty())
+        {
+          LinkedMap<SectionInfo>::del(label);
+        }
+      }
+      m_deleteVector.clear();
+    }
 
     //! returns a reference to the singleton
     static SectionManager &instance()
@@ -179,6 +196,8 @@ class SectionManager : public LinkedMap<SectionInfo>
     SectionManager() {}
     SectionManager(const SectionManager &other) = delete;
     SectionManager &operator=(const SectionManager &other) = delete;
+
+    std::vector<QCString> m_deleteVector;
 };
 
 
