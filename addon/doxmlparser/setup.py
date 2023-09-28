@@ -1,4 +1,12 @@
+import os
+
+from pathlib import Path
 from setuptools import setup, find_packages
+
+topdir = Path(os.getcwd()).parent.parent
+
+with open(topdir / 'VERSION') as f:
+    version = f.read()
 
 with open('README.md') as f:
     readme = f.read()
@@ -11,7 +19,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='doxmlparser',
-    version='0.1',
+    version=version,
     description='Python API to access doxygen generated XML output',
     long_description=readme,
     author='Dimitri van Heesch',
