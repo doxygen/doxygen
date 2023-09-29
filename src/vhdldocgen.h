@@ -204,9 +204,6 @@ class VhdlDocGen
     static void addBaseClass(ClassDef* cd,ClassDef *ent);
     static ClassDef* findVhdlClass(const QCString &className );
 
-    static void writeOverview(OutputList &ol);
-    static void writeOverview();
-
  // flowcharts
     static void createFlowChart(const MemberDef*);
     //static void addFlowImage(const TextStream &,const QCString &);
