@@ -31,7 +31,7 @@ class DevNullCodeGenerator
                              ) {}
     void writeLineNumber(const QCString &,const QCString &,
                                  const QCString &,int,bool) {}
-    void startCodeLine(bool) {}
+    void startCodeLine(int) {}
     void endCodeLine() {}
     void startFontClass(const QCString &) {}
     void endFontClass() {}

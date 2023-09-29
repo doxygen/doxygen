@@ -44,7 +44,7 @@ class HtmlCodeGenerator
                       const SourceLinkInfo &declInfo
                      );
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool);
-    void startCodeLine(bool);
+    void startCodeLine(int);
     void endCodeLine();
     void startFontClass(const QCString &s);
     void endFontClass();

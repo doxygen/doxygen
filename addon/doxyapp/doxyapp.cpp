@@ -55,7 +55,7 @@ class XRefDummyCodeGenerator : public OutputCodeExtension
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,
                               const QCString &,const QCString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}
-    void startCodeLine(bool) override {}
+    void startCodeLine(int) override {}
     void endCodeLine() override {}
     void startFontClass(const QCString &) override {}
     void endFontClass() override {}

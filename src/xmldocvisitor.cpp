@@ -29,6 +29,7 @@
 #include "emoji.h"
 #include "filedef.h"
 #include "fileinfo.h"
+#include "codefragment.h"
 
 static void startSimpleSect(TextStream &t,const DocSimpleSect &s)
 {
@@ -479,36 +480,16 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       m_t << "<programlisting filename=\"" << inc.file() << "\">";
-      getCodeParser(inc.extension()).parseCode(m_ci,
-                                        inc.context(),
-                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                        langExt,
-                                        inc.isExample(),
-                                        inc.exampleFile()
-                                       );
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                       inc.file(),
+                                       inc.blockId(),
+                                       inc.context(),
+                                       inc.type()==DocInclude::SnippetWithLines,
+                                       inc.type()==DocInclude::SnippetTrimLeft
+                                      );
       m_t << "</programlisting>";
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         m_t << "<programlisting filename=\"" << inc.file() << "\">";
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName());
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         m_t << "</programlisting>";
-      }
       break;
     case DocInclude::SnippetDoc:
     case DocInclude::IncludeDoc:

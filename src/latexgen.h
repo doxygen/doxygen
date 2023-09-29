@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -48,7 +46,7 @@ class LatexCodeGenerator
                       const SourceLinkInfo &
                      )  {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool);
-    void startCodeLine(bool);
+    void startCodeLine(int);
     void endCodeLine();
     void startFontClass(const QCString &);
     void endFontClass();

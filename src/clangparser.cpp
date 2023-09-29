@@ -500,7 +500,7 @@ void ClangTUParser::codifyLines(OutputCodeList &ol,const FileDef *fd,const char 
       free(tmp);
       if (fontClass) ol.endFontClass();
       ol.endCodeLine();
-      ol.startCodeLine(TRUE);
+      ol.startCodeLine(line);
       writeLineNumber(ol,fd,line,inlineCodeFragment);
       if (fontClass) ol.startFontClass(fontClass);
     }
@@ -542,7 +542,7 @@ void ClangTUParser::writeMultiLineCodeLink(OutputCodeList &ol,
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,QCString(sp,p-sp-1),tooltip);
       ol.endCodeLine();
-      ol.startCodeLine(TRUE);
+      ol.startCodeLine(line);
       writeLineNumber(ol,fd,line,inlineCodeFragment);
     }
     else
@@ -706,7 +706,7 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
   unsigned int line=1,column=1;
   QCString lineNumber,lineAnchor;
   bool inlineCodeFragment = false;
-  ol.startCodeLine(TRUE);
+  ol.startCodeLine(line);
   writeLineNumber(ol,fd,line,!inlineCodeFragment);
   for (unsigned int i=0;i<p->numTokens;i++)
   {
@@ -718,7 +718,7 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
     {
       line++;
       ol.endCodeLine();
-      ol.startCodeLine(TRUE);
+      ol.startCodeLine(line);
       writeLineNumber(ol,fd,line,!inlineCodeFragment);
     }
     while (column<c) { ol.codify(" "); column++; }

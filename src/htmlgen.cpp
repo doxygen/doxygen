@@ -994,7 +994,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
 }
 
 
-void HtmlCodeGenerator::startCodeLine(bool)
+void HtmlCodeGenerator::startCodeLine(int)
 {
   m_col=0;
   if (!m_lineOpen)

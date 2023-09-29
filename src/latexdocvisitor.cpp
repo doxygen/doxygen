@@ -39,6 +39,7 @@
 #include "fileinfo.h"
 #include "regex.h"
 #include "portable.h"
+#include "codefragment.h"
 
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =
@@ -597,36 +598,16 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       {
         m_ci.startCodeFragment("DoxyCodeInclude");
-        getCodeParser(inc.extension()).parseCode(m_ci,
-                                                  inc.context(),
-                                                  extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                                  langExt,
-                                                  inc.isExample(),
-                                                  inc.exampleFile()
-                                                 );
-        m_ci.endCodeFragment("DoxyCodeInclude");
-      }
-      break;
-    case DocInclude::SnipWithLines:
-      {
-        FileInfo cfi( inc.file().str() );
-        auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-        m_ci.startCodeFragment("DoxyCodeInclude");
-        getCodeParser(inc.extension()).parseCode(m_ci,
-                                                  inc.context(),
-                                                  extractBlock(inc.text(),inc.blockId()),
-                                                  langExt,
-                                                  inc.isExample(),
-                                                  inc.exampleFile(),
-                                                  fd.get(),
-                                                  lineBlock(inc.text(),inc.blockId()),
-                                                  -1,    // endLine
-                                                  FALSE, // inlineFragment
-                                                  0,     // memberDef
-                                                  TRUE   // show line number
-                                                 );
+        CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                         inc.file(),
+                                         inc.blockId(),
+                                         inc.context(),
+                                         inc.type()==DocInclude::SnippetWithLines,
+                                         inc.type()==DocInclude::SnippetTrimLeft
+                                        );
         m_ci.endCodeFragment("DoxyCodeInclude");
       }
       break;

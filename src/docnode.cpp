@@ -98,6 +98,56 @@ static void unescapeCRef(QCString &s)
 
 //---------------------------------------------------------------------------
 
+/** Returns the section of text, in between a pair of markers.
+ *  Full lines are returned, excluding the lines on which the markers appear.
+ *  \sa routine lineBlock
+ */
+static QCString extractBlock(const QCString &text,const QCString &marker)
+{
+  QCString result;
+  int p=0,i=-1;
+  bool found=FALSE;
+
+  // find the character positions of the markers
+  int m1 = text.find(marker);
+  if (m1==-1) return result;
+  int m2 = text.find(marker,m1+marker.length());
+  if (m2==-1) return result;
+
+  // find start and end line positions for the markers
+  int l1=-1,l2=-1;
+  while (!found && (i=text.find('\n',p))!=-1)
+  {
+    found = (p<=m1 && m1<i); // found the line with the start marker
+    p=i+1;
+  }
+  l1=p;
+  int lp=i;
+  if (found)
+  {
+    while ((i=text.find('\n',p))!=-1)
+    {
+      if (p<=m2 && m2<i) // found the line with the end marker
+      {
+        l2=p;
+        break;
+      }
+      p=i+1;
+      lp=i;
+    }
+  }
+  if (l2==-1) // marker at last line without newline (see bug706874)
+  {
+    l2=lp;
+  }
+  //printf("text=[%s]\n",qPrint(text.mid(l1,l2-l1)));
+  return l2>l1 ? text.mid(l1,l2-l1) : QCString();
+}
+
+
+
+//---------------------------------------------------------------------------
+
 /*! Strips known html and tex extensions from \a text. */
 static QCString stripKnownExtensions(const QCString &text)
 {
@@ -295,7 +345,7 @@ void DocInclude::parse()
       break;
     case Snippet:
     case SnippetTrimLeft:
-    case SnipWithLines:
+    case SnippetWithLines:
       parser()->readTextFileByName(m_file,m_text);
       // check here for the existence of the blockId inside the file, so we
       // only generate the warning once.
@@ -3625,7 +3675,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     }
     else if (t==DocInclude::Snippet && contains("lineno"))
     {
-      t = DocInclude::SnipWithLines;
+      t = DocInclude::SnippetWithLines;
     }
     else if (t==DocInclude::DontInclude && contains("lineno"))
     {
@@ -3682,7 +3732,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   }
   QCString fileName = parser()->context.token->name;
   QCString blockId;
-  if (t==DocInclude::Snippet || t==DocInclude::SnipWithLines || t==DocInclude::SnippetDoc || t == DocInclude::SnippetTrimLeft)
+  if (t==DocInclude::Snippet || t==DocInclude::SnippetWithLines || t==DocInclude::SnippetDoc || t == DocInclude::SnippetTrimLeft)
   {
     if (fileName == "this") fileName=parser()->context.fileName;
     parser()->tokenizer.setStateSnippet();
@@ -4415,7 +4465,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       handleInclude(cmdName,DocInclude::Snippet);
       break;
     case CMD_SNIPWITHLINES:
-      handleInclude(cmdName,DocInclude::SnipWithLines);
+      handleInclude(cmdName,DocInclude::SnippetWithLines);
       break;
     case CMD_INCLUDEDOC:
       handleInclude(cmdName,DocInclude::IncludeDoc);

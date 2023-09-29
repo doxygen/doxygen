@@ -187,7 +187,7 @@ void DocbookCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, c
   Docbook_DB(("(writeToolTip)\n"));
 }
 
-void DocbookCodeGenerator::startCodeLine(bool)
+void DocbookCodeGenerator::startCodeLine(int)
 {
   Docbook_DB(("(startCodeLine)\n"));
   m_insideCodeLine=TRUE;

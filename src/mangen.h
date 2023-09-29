@@ -44,7 +44,7 @@ class ManCodeGenerator
                       const SourceLinkInfo &
                      ) {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
-    void startCodeLine(bool) {}
+    void startCodeLine(int) {}
     void endCodeLine() { codify("\n"); m_col=0; }
     void startFontClass(const QCString &) {}
     void endFontClass() {}

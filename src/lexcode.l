@@ -1007,8 +1007,9 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
 
-  yyextra->code->startCodeLine(yyextra->sourceFileDef && yyextra->lineNumbers);
+  yyextra->code->startCodeLine(yyextra->yyLineNr);
   yyextra->insideCodeLine = true;
+
 
   if (yyextra->currentFontClass)
   {

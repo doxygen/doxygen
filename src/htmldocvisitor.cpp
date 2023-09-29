@@ -38,6 +38,7 @@
 #include "indexlist.h"
 #include "growbuf.h"
 #include "portable.h"
+#include "codefragment.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -767,50 +768,17 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
-      {
-         forceEndParagraph(inc);
-         m_ci.startCodeFragment("DoxyCode");
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           0,
-                                           -1,    // startLine
-                                           -1,    // endLine
-                                           TRUE,  // inlineFragment
-                                           0,     // memberDef
-                                           FALSE, // show line number
-                                           m_ctx  // search context
-                                          );
-         m_ci.endCodeFragment("DoxyCode");
-         forceStartParagraph(inc);
-      }
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         forceEndParagraph(inc);
-         m_ci.startCodeFragment("DoxyCode");
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE,  // show line number
-                                           m_ctx  // search context
-                                          );
-         m_ci.endCodeFragment("DoxyCode");
-         forceStartParagraph(inc);
-      }
+    case DocInclude::SnippetWithLines:
+      forceEndParagraph(inc);
+      m_ci.startCodeFragment("DoxyCode");
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                       inc.file(),
+                                       inc.blockId(),
+                                       inc.context(),
+                                       inc.type()==DocInclude::SnippetWithLines,
+                                       inc.type()==DocInclude::SnippetTrimLeft
+                                      );
+      m_ci.endCodeFragment("DoxyCode");
       break;
     case DocInclude::SnippetDoc:
     case DocInclude::IncludeDoc:

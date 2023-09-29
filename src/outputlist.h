@@ -35,6 +35,8 @@
 #include "xmlgen.h"
 #include "devnullgen.h"
 
+class OutputCodeList;
+
 //-------------------------------------------------------------------------------------------
 
 /** Namespace containing typed wrappers to refer to member functions for specific code generators called by OutputCodeList.
@@ -81,8 +83,8 @@ class OutputCodeDefer
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
     { m_codeGen->writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
 
-    void startCodeLine(bool hasLineNumbers)
-    { m_codeGen->startCodeLine(hasLineNumbers); }
+    void startCodeLine(int lineNr)
+    { m_codeGen->startCodeLine(lineNr); }
 
     void endCodeLine()
     { m_codeGen->endCodeLine(); }
@@ -129,7 +131,7 @@ class OutputCodeExtension
                          int lineNumber, bool writeLineAnchor) = 0;
     virtual void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) = 0;
-    virtual void startCodeLine(bool hasLineNumbers) = 0;
+    virtual void startCodeLine(int) = 0;
     virtual void endCodeLine() = 0;
     virtual void startFontClass(const QCString &c) = 0;
     virtual void endFontClass() = 0;
@@ -146,6 +148,49 @@ using RTFCodeGeneratorDefer     = OutputCodeDefer<RTFCodeGenerator>;
 using ManCodeGeneratorDefer     = OutputCodeDefer<ManCodeGenerator>;
 using DocbookCodeGeneratorDefer = OutputCodeDefer<DocbookCodeGenerator>;
 using OutputCodeDeferExtension  = OutputCodeDefer<OutputCodeExtension>;
+
+/** Implementation that allows capturing calls made to the code interface to later
+ *  invoke them on a #OutputCodeList via replay().
+ */
+class OutputCodeRecorder
+{
+  public:
+    virtual ~OutputCodeRecorder() = default;
+    OutputType type() const { return OutputType::Recorder; }
+    void codify(const QCString &s);
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip);
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+                         int lineNumber, bool writeLineAnchor);
+    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
+                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo);
+    void startCodeLine(int);
+    void endCodeLine();
+    void startFontClass(const QCString &c);
+    void endFontClass();
+    void writeCodeAnchor(const QCString &name);
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &style);
+    void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker);
+    void endFold();
+    void replay(OutputCodeList &ol,int startLine,int endLine,bool showLineNumbers);
+  private:
+    void startNewLine(int lineNr);
+    struct CallInfo
+    {
+      using ConditionFunc = std::function<bool()>;
+      using OutputFunc    = std::function<void(OutputCodeList*)>;
+      CallInfo(ConditionFunc &&c,OutputFunc &&f) : condition(std::move(c)), function(std::move(f)) {}
+      ConditionFunc  condition;
+      OutputFunc     function;
+    };
+    std::vector<CallInfo> m_calls;
+    std::vector<size_t>   m_lineOffset;
+    bool m_showLineNumbers = false;
+};
+
 
 /** Class representing a list of different code generators.
  *  It offers the same interface as the specific code generators,
@@ -166,7 +211,8 @@ class OutputCodeList
                                            DocbookCodeGeneratorDefer,
                                            XMLCodeGenerator,
                                            DevNullCodeGenerator,
-                                           OutputCodeDeferExtension
+                                           OutputCodeDeferExtension,
+                                           OutputCodeRecorder
                                           >;
 
     int id() const     { return m_id; }
@@ -231,8 +277,8 @@ class OutputCodeList
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
     { foreach<OutputCodeIntf::writeTooltip>(id,docInfo,decl,desc,defInfo,declInfo); }
 
-    void startCodeLine(bool hasLineNumbers)
-    { foreach<OutputCodeIntf::startCodeLine>(hasLineNumbers); }
+    void startCodeLine(int lineNr)
+    { foreach<OutputCodeIntf::startCodeLine>(lineNr); }
 
     void endCodeLine()
     { foreach<OutputCodeIntf::endCodeLine>(); }

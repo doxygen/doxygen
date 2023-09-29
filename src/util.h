@@ -418,7 +418,6 @@ void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[]);
 QCString replaceColorMarkers(const QCString &str);
 
 bool copyFile(const QCString &src,const QCString &dest);
-QCString extractBlock(const QCString &text,const QCString &marker, const bool trimLeft=false);
 
 int lineBlock(const QCString &text,const QCString &marker);
 

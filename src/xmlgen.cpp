@@ -269,7 +269,7 @@ void XMLCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, const
 {
   XML_DB(("(writeToolTip)\n"));
 }
-void XMLCodeGenerator::startCodeLine(bool)
+void XMLCodeGenerator::startCodeLine(int)
 {
   XML_DB(("(startCodeLine)\n"));
   *m_t << "<codeline";

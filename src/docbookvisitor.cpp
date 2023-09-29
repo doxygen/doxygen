@@ -34,6 +34,7 @@
 #include "growbuf.h"
 #include "fileinfo.h"
 #include "portable.h"
+#include "codefragment.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -482,36 +483,16 @@ DB_VIS_C
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       m_t << "<literallayout><computeroutput>";
-      getCodeParser(inc.extension()).parseCode(m_ci,
-                                                inc.context(),
-                                                extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                                langExt,
-                                                inc.isExample(),
-                                                inc.exampleFile()
-                                               );
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                          inc.file(),
+                                          inc.blockId(),
+                                          inc.context(),
+                                          inc.type()==DocInclude::SnippetWithLines,
+                                          inc.type()==DocInclude::SnippetTrimLeft
+                                         );
       m_t << "</computeroutput></literallayout>";
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-         m_t << "<literallayout><computeroutput>";
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         m_t << "</computeroutput></literallayout>";
-      }
       break;
     case DocInclude::SnippetDoc:
     case DocInclude::IncludeDoc:

@@ -2573,8 +2573,8 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
   DBG_CTX((stderr,"startCodeLine(%d)\n",yyextra->yyLineNr));
-  yyextra->code->startCodeLine(yyextra->sourceFileDef && yyextra->lineNumbers);
-  yyextra->insideCodeLine = true;
+  yyextra->code->startCodeLine(yyextra->yyLineNr);
+  yyextra->insideCodeLine = true;  
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(QCString(yyextra->currentFontClass));

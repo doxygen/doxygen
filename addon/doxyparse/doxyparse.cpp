@@ -57,7 +57,7 @@ class Doxyparse : public OutputCodeExtension
     OutputType type() const override { return OutputType::Extension; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
-    void startCodeLine(bool) override {}
+    void startCodeLine(int) override {}
     void endCodeLine() override {}
     void writeCodeAnchor(const QCString &) override {}
     void startFontClass(const QCString &) override {}

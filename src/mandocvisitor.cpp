@@ -27,6 +27,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "fileinfo.h"
+#include "codefragment.h"
 
 ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt)
@@ -326,46 +327,21 @@ void ManDocVisitor::operator()(const DocInclude &inc)
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
-      getCodeParser(inc.extension()).parseCode(m_ci,
-                                        inc.context(),
-                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                        langExt,
-                                        inc.isExample(),
-                                        inc.exampleFile()
-                                       );
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                          inc.file(),
+                                          inc.blockId(),
+                                          inc.context(),
+                                          inc.type()==DocInclude::SnippetWithLines,
+                                          inc.type()==DocInclude::SnippetTrimLeft
+                                         );
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";
       m_firstCol=TRUE;
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         if (!m_firstCol) m_t << "\n";
-         m_t << ".PP\n";
-         m_t << ".nf\n";
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         if (!m_firstCol) m_t << "\n";
-         m_t << ".fi\n";
-         m_t << ".PP\n";
-         m_firstCol=TRUE;
-      }
       break;
     case DocInclude::SnippetDoc:
     case DocInclude::IncludeDoc:

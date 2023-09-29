@@ -46,7 +46,7 @@ class RTFCodeGenerator
                       const SourceLinkInfo &
                      ) {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
-    void startCodeLine(bool);
+    void startCodeLine(int);
     void endCodeLine();
     void startFontClass(const QCString &);
     void endFontClass();

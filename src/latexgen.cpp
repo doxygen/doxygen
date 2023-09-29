@@ -226,7 +226,7 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
 }
 
 
-void LatexCodeGenerator::startCodeLine(bool)
+void LatexCodeGenerator::startCodeLine(int)
 {
   m_col=0;
   if (!m_doxyCodeLineOpen)

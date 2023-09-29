@@ -241,7 +241,7 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
   m_col=0;
 }
 
-void RTFCodeGenerator::startCodeLine(bool)
+void RTFCodeGenerator::startCodeLine(int)
 {
   m_doxyCodeLineOpen = true;
   m_col=0;

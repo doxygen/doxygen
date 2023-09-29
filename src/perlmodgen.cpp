@@ -684,7 +684,7 @@ void PerlModDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::VerbInclude:	type = "preformatted"; break;
     case DocInclude::Snippet: return;
     case DocInclude::SnippetTrimLeft: return;
-    case DocInclude::SnipWithLines: return;
+    case DocInclude::SnippetWithLines: return;
     case DocInclude::SnippetDoc:
     case DocInclude::IncludeDoc:
       err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
