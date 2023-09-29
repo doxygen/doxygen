@@ -9418,6 +9418,20 @@ void printNavTree(Entry *root,int indent)
     }
   }
 }
+//----------------------------------------------------------------------------
+// prints the Sections tree (for debugging)
+
+void printSectionsTree()
+{
+  if (Debug::isFlagSet(Debug::Sections))
+  {
+    for (const auto &si : SectionManager::instance())
+    {
+      Debug::print(Debug::Sections,0,"Section = %s, file = %s, title = %s\n",
+            qPrint(si->label()),qPrint(si->fileName()),qPrint(si->title()));
+    }
+  }
+}
 
 
 //----------------------------------------------------------------------------
@@ -12356,6 +12370,7 @@ void parseInput()
   }
 
   printNavTree(root.get(),0);
+  printSectionsTree();
 }
 
 void generateOutput()
