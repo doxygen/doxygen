@@ -1992,10 +1992,10 @@ NONLopt [^\n]*
                                           BEGIN(FindMembers);
                                         }
 <UsingAlias>.                           {
-                                          yyextra->previous->args+=yytext;
+                                          yyextra->current->initializer << yytext;
                                         }
 <UsingAlias>\n                          {
-                                          yyextra->previous->args+=yytext;
+                                          yyextra->current->initializer << yytext;
                                           lineCount(yyscanner);
                                         }
 <UsingDirective>{SCOPENAME}             { yyextra->current->name=removeRedundantWhiteSpace(yytext);
