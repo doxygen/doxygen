@@ -779,10 +779,9 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
 void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
-      || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()
+      || !documentation().stripWhiteSpace().isEmpty() || !inbodyDocumentation().stripWhiteSpace().isEmpty()
      )
   {
-    ol.pushGeneratorState();
     if (m_pages.size()!=numDocMembers()) // not only pages -> classical layout
     {
       ol.pushGeneratorState();
@@ -794,14 +793,10 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
         ol.writeAnchor(QCString(),"details");
       ol.popGeneratorState();
     }
-    else
-    {
-      ol.disableAllBut(OutputType::Man); // always print title for man page
-    }
+
     ol.startGroupHeader();
     ol.parseText(title);
     ol.endGroupHeader();
-    ol.popGeneratorState();
 
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
