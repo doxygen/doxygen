@@ -29,7 +29,7 @@ class TextStream;
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx);
+    HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx,const QCString &fn = QCString());
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -146,6 +146,7 @@ class HtmlDocVisitor : public DocVisitor
     bool m_hide = false;
     bool m_insideTitle = false;
     const Definition *m_ctx;
+    QCString m_fileName;
     QCString m_langExt;
 };
 
