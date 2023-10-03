@@ -61,8 +61,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 static AtomicInt  anonCount;
 static AtomicInt  anonNSCount;
 
@@ -216,9 +214,7 @@ struct scannerYY_state
   TextStream       dummyTextStream;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 
 // forward declarations for stateless functions
@@ -8110,6 +8106,4 @@ void COutlineParser::parsePrototype(const QCString &text)
 
 //----------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "scanner.l.h"
-#endif

@@ -46,8 +46,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 struct lexcodeYY_state
 {
      OutputCodeList *code;
@@ -93,9 +91,7 @@ struct lexcodeYY_state
      const char   *currentFontClass;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static void startCodeLine(yyscan_t yyscanner);
@@ -1284,6 +1280,4 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
 //---------------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "lexcode.l.h"
-#endif

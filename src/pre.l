@@ -68,11 +68,7 @@ typedef yyguts_t *yyscan_t;
 
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 struct preYY_CondCtx
 {
@@ -94,6 +90,7 @@ struct FileState
   int oldFileBufPos = 0;
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
+  bool lexRulesPart = false;
 };
 
 struct PreIncludeInfo
@@ -311,6 +308,9 @@ struct preYY_state
   DefineMap                                localDefines;   // macros defined in this file
   DefineList                               macroDefinitions;
   LinkedMap<PreIncludeInfo>                includeRelations;
+
+  int                                      lastContext = 0;
+  bool                                     lexRulesPart = false;
 };
 
 // stateless functions
@@ -371,6 +371,20 @@ VERBATIM_LINE  [\\@]"noop"{B}+
 LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
 LITERAL_BLOCK_END {FORMULA_END}|{VERBATIM_END}
 
+  // some Lex informations
+nl              (\r\n|\r|\n)
+RulesDelim      "%%"{nl}
+RulesSharp      "<"[^>\n]*">"
+RulesCurly      "{"[^{}\n]*"}"
+StartSquare     "["
+StartDouble     "\""
+StartRound      "("
+StartRoundQuest "(?"
+EscapeRulesCharOpen  "\\["|"\\<"|"\\{"|"\\("|"\\\""|"\\ "|"\\\\"
+EscapeRulesCharClose "\\]"|"\\>"|"\\}"|"\\)"
+EscapeRulesChar      {EscapeRulesCharOpen}|{EscapeRulesCharClose}
+CHARCE    "[:"[^:]*":]"
+
   // C start comment
 CCS   "/\*"
   // C end comment
@@ -425,6 +439,13 @@ WSopt [ \t\r]*
 %x      CondLineCpp
 %x      SkipCond
 %x      IDLquote
+%x      RulesPattern
+%x      RulesDouble
+%x      RulesRoundDouble
+%x      RulesSquare
+%x      RulesRoundSquare
+%x      RulesRound
+%x      RulesRoundQuest
 
 %%
 
@@ -666,6 +687,132 @@ WSopt [ \t\r]*
                                             outputArray(yyscanner,yytext,yyleng);
                                           }
                                         }
+<CopyLine>{RulesDelim}                  {
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT;
+                                          yyextra->lexRulesPart = !yyextra->lexRulesPart;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+  /* start lex rule handling */
+<CopyLine>{RulesSharp}                  {
+                                          if (!yyextra->lexRulesPart) REJECT;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN(RulesPattern);
+                                        }
+<RulesPattern>{EscapeRulesChar}         {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesPattern>{RulesCurly}              {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesPattern>{StartDouble}             {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          yyextra->lastContext = YY_START;
+                                          BEGIN(RulesDouble);
+                                        }
+<RulesDouble,RulesRoundDouble>"\\\\"    {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesDouble,RulesRoundDouble>"\\\""    {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesDouble>"\""                       {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN( yyextra->lastContext ) ;
+                                        }
+<RulesRoundDouble>"\""                  {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN(RulesRound) ;
+                                        }
+<RulesDouble,RulesRoundDouble>.         {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesPattern>{StartSquare}             {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          yyextra->lastContext = YY_START;
+                                          BEGIN(RulesSquare);
+                                        }
+<RulesSquare,RulesRoundSquare>{CHARCE}  {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesSquare,RulesRoundSquare>"\\[" |
+<RulesSquare,RulesRoundSquare>"\\]"     {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesSquare>"]"                        {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN(RulesPattern);
+                                        }
+<RulesRoundSquare>"]"                   {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN(RulesRound) ;
+                                        }
+<RulesSquare,RulesRoundSquare>"\\\\" {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesSquare,RulesRoundSquare>.         {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesPattern>{StartRoundQuest}         {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          yyextra->lastContext = YY_START;
+                                          BEGIN(RulesRoundQuest);
+                                        }
+<RulesRoundQuest>{nl}                   {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesRoundQuest>[^)]                   {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesRoundQuest>")"                    {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN(yyextra->lastContext);
+                                        }
+<RulesPattern>{StartRound}              {
+                                          yyextra->roundCount++;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          yyextra->lastContext = YY_START;
+                                          BEGIN(RulesRound);
+                                        }
+<RulesRound>{RulesCurly}                {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesRound>{StartSquare}               {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN(RulesRoundSquare);
+                                        }
+<RulesRound>{StartDouble}               {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN(RulesRoundDouble);
+                                        }
+<RulesRound>{EscapeRulesChar}           {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesRound>"("                         {
+                                          yyextra->roundCount++;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesRound>")"                         {
+                                          yyextra->roundCount--;
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          if (!yyextra->roundCount) BEGIN( yyextra->lastContext ) ;
+                                        }
+<RulesRound>{nl}                        {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesRound>{B}                         {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesRound>.                           {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<RulesPattern>{B}                       {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                          BEGIN(CopyLine);
+                                        }
+<RulesPattern>.                         {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+  /* end lex rule handling */
 <CopyLine,LexCopyLine>{ID}              {
                                           Define *def=0;
                                           if ((yyextra->includeStack.empty() || yyextra->curlyCount>0) &&
@@ -1337,7 +1484,7 @@ WSopt [ \t\r]*
                                           yyextra->javaBlock=1;
                                           BEGIN(JavaDocVerbatimCode);
                                         }
-<SkipCComment,SkipCPPComment>[\\@][\\@]"cond"[ \t]+ { // escaped @cond
+<SkipCComment,SkipCPPComment>[\\@][\\@]"cond"[ \t]+ { // escaped cond command
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <SkipCPPComment>[\\@]"cond"[ \t]+       { // conditional section
@@ -1881,6 +2028,10 @@ WSopt [ \t\r]*
                                         }
 <*>{CPPC}[/!]?                          {
                                           if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
+                                          {
+                                            REJECT;
+                                          }
+                                          else if (YY_START==RulesRoundDouble)
                                           {
                                             REJECT;
                                           }
@@ -3329,6 +3480,8 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       fs->fileName = oldFileName;
       fs->curlyCount = state->curlyCount;
       state->curlyCount = 0;
+      fs->lexRulesPart = state->lexRulesPart;
+      state->lexRulesPart = false;
       // push the state on the stack
       FileState *fs_ptr = fs.get();
       state->includeStack.push_back(std::move(fs));
@@ -3739,6 +3892,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   state->expandOnlyPredef = Config_getBool(EXPAND_ONLY_PREDEF);
   state->skip=FALSE;
   state->curlyCount=0;
+  state->lexRulesPart=false;
   state->nospaces=FALSE;
   state->inputBuf=&input;
   state->inputBufPos=0;
@@ -3852,6 +4006,4 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   //yyextra->defineManager.endContext();
 }
 
-#if USE_STATE2STRING
 #include "pre.l.h"
-#endif

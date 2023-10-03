@@ -54,8 +54,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 struct xmlcodeYY_state
 {
   OutputCodeList * code;
@@ -89,9 +87,7 @@ struct xmlcodeYY_state
   const char *  currentFontClass = 0;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void codify(yyscan_t yyscanner,const char* text);
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
@@ -124,7 +120,7 @@ name        {namestart}{namechar}*
 comment     {open}"!--"([^-]|"-"[^-])*"--"{close}
 cdata       {open}"![CDATA["([^\]]|"\]"[^\]])*"]]"{close}
 data        "random string"
-string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
+string      \"([^\"&]|{esc})*\"|\'([^'&]|{esc})*\'
 
 %option noyywrap
 %option nounput
@@ -498,6 +494,4 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
 }
 
 
-#if USE_STATE2STRING
 #include "xmlcode.l.h"
-#endif

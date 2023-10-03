@@ -74,8 +74,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 /*
  * For fixed formatted code position 6 is of importance (continuation character).
  * The following variables and macros keep track of the column number
@@ -178,9 +176,7 @@ struct fortrancodeYY_state
    int fixedCommentAfter = 72;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static bool getFortranNamespaceDefs(const QCString &mname,
                                NamespaceDef *&cd);
@@ -1600,6 +1596,4 @@ static inline void pop_state(yyscan_t yyscanner)
 }
 //---------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "fortrancode.l.h"
-#endif

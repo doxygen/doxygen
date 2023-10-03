@@ -64,8 +64,6 @@ typedef yyguts_t *yyscan_t;
 #include "trace.h"
 #include "debug.h"
 
-#define USE_STATE2STRING 0
-
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -166,9 +164,7 @@ static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector &);
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const StringVector &optList);
 
@@ -831,7 +827,7 @@ STopt  [^\n@\\]*
                                           // the {B}* in the front was added for bug620924
                                           QCString fullMatch = QCString(yytext);
                                           int idx = fullMatch.find('{');
-                                          /* handle `\f{` and `@f{` as special cases */
+                                          /* handle `f{` command as special case */
                                           if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
                                           int idxEnd = fullMatch.find("}",idx+1);
                                           QCString cmdName;
@@ -4217,6 +4213,4 @@ void CommentScanner::close(Entry *e,const QCString &fileName,int lineNr,bool fou
   yyextra->docGroup.close(e,fileName,lineNr,foundInline,implicit);
 }
 
-#if USE_STATE2STRING
 #include "commentscan.l.h"
-#endif
