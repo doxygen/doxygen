@@ -71,8 +71,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-  
 /* -----------------------------------------------------------------
  *	state variables
  */
@@ -104,9 +102,7 @@ struct defargsYY_state
   QCString         delimiter;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static bool nameIsActuallyPartOfType(QCString &name);
@@ -841,6 +837,4 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   return al;
 }
 
-#if USE_STATE2STRING
 #include "defargs.l.h"
-#endif

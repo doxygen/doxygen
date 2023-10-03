@@ -48,8 +48,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_UNISTD_H 1
 #define YY_NEVER_INTERACTIVE 1
 
-#define USE_STATE2STRING 0
-
 /* -----------------------------------------------------------------
  *
  *	statics
@@ -74,9 +72,7 @@ struct declinfoYY_state
      bool         insidePHP;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void addType(yyscan_t yyscanner);
 static void addTypeName(yyscan_t yyscanner);
@@ -419,6 +415,4 @@ int main()
 }
 #endif
 
-#if USE_STATE2STRING
 #include "declinfo.l.h"
-#endif

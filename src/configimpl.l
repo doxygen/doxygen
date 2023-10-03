@@ -52,11 +52,7 @@
 // For debugging
 #define SHOW_INCLUDES 0
 
-#define USE_STATE2STRING 0
-
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static const char *warning_str = "warning: ";
 static const char *error_str = "error: ";
@@ -2323,6 +2319,4 @@ void Config::deinit()
   ConfigImpl::instance()->deleteInstance();
 }
 
-#if USE_STATE2STRING
 #include "configimpl.l.h"
-#endif

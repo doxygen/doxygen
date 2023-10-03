@@ -78,8 +78,6 @@ typedef yyguts_t *yyscan_t;
 #define SCOPEBLOCK 2
 #define INNERBLOCK 3
 
-#define USE_STATE2STRING 0
-
 // context for an Objective-C method call
 struct ObjCCallCtx
 {
@@ -197,9 +195,7 @@ struct codeYY_state
 static bool isCastKeyword(const char *s);
 
 //-------------------------------------------------------------------
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void saveObjCContext(yyscan_t yyscanner);
 static void restoreObjCContext(yyscan_t yyscanner);
@@ -4202,6 +4198,4 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const Q
   yyextra->tooltipManager.writeTooltips(od);
 }
 
-#if USE_STATE2STRING
 #include "code.l.h"
-#endif

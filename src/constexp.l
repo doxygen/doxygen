@@ -37,11 +37,7 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static int yyread(char *buf,int max_size,yyscan_t yyscanner);
 
@@ -170,6 +166,4 @@ extern "C" {
   int constexpYYwrap(yyscan_t /* yyscanner */) { return 1; }
 }
 
-#if USE_STATE2STRING
 #include "constexp.l.h"
-#endif

@@ -51,8 +51,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 #define TK_COMMAND_SEL() (yytext[0] == '@' ? TK_COMMAND_AT : TK_COMMAND_BS)
 
 //--------------------------------------------------------------------------
@@ -98,10 +96,7 @@ struct doctokenizerYY_state
 #define lineCount(s,len) do { for(int i=0;i<(int)len;i++) if (s[i]=='\n') yyextra->yyLineNr++; } while(0)
 
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
-
+[[maybe_unused]] static const char *stateToString(int state);
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void handleHtmlTag(yyscan_t yyscanner,const char *text);
@@ -2183,6 +2178,4 @@ int DocTokenizer::getLineNr(void)
   return yyextra->yyLineNr;
 }
 
-#if USE_STATE2STRING
 #include "doctokenizer.l.h"
-#endif

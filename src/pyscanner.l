@@ -62,8 +62,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
 /* ----------------------------------------------------------------- */
@@ -119,9 +117,7 @@ struct pyscannerYY_state
 };
 
 //-----------------------------------------------------------------------------
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static inline int computeIndent(const char *s);
 
@@ -2210,6 +2206,4 @@ void PythonOutlineParser::parsePrototype(const QCString &text)
 
 //----------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "pyscanner.l.h"
-#endif

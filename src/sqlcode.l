@@ -49,8 +49,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 struct sqlcodeYY_state
 {
      OutputCodeList * code;
@@ -74,9 +72,7 @@ struct sqlcodeYY_state
      const char   *currentFontClass;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static void startCodeLine(yyscan_t yyscanner);
@@ -122,7 +118,7 @@ typekeyword     (?i:"ARRAY"|"BIGINT"|"BINARY"|"BLOB"|"BOOLEAN"|"CHAR"|"CHARACTER
 flowkeyword     (?i:"CASE"|"IF"|"ELSE"|"BEGIN"|"END"|"WHILE")
 
 literalkeyword  (?i:"false"|"true"|"NULL"|"UNKNOWN")
-stringliteral   (\"[^"]*\")|('[^']*')
+stringliteral   (\"[^\"]*\")|('[^']*')
 number          [0-9]+
 literals        ({literalkeyword}|{stringliteral}|{number})
 
@@ -492,6 +488,4 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
 //---------------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "sqlcode.l.h"
-#endif

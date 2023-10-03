@@ -67,9 +67,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
-
 struct pycodeYY_state
 {
   std::unordered_map< std::string, ScopedTypeVariant > codeClassMap;
@@ -121,9 +118,7 @@ struct pycodeYY_state
 };
 
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void startCodeLine(yyscan_t yyscanner);
 static int countLines(yyscan_t yyscanner);
@@ -1714,6 +1709,4 @@ static inline void pop_state(yyscan_t yyscanner)
     yy_pop_state(yyscanner);
 }
 
-#if USE_STATE2STRING
 #include "pycode.l.h"
-#endif
