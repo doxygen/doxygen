@@ -272,6 +272,15 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='string' id='PROJECT_ICON' format='image' defval=''>
+      <docs>
+<![CDATA[
+ With the \c PROJECT_ICON tag one can specify an icon that is
+ included in the tabs when the HTML document is shown.
+ Doxygen will copy the logo to the output directory.
+]]>
+      </docs>
+    </option>
     <option type='string' id='OUTPUT_DIRECTORY' format='dir' defval=''>
       <docs>
 <![CDATA[

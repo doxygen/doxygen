@@ -8,6 +8,7 @@ PROJECT_NAME           = Doxygen
 PROJECT_NUMBER         =
 PROJECT_BRIEF          =
 PROJECT_LOGO           =
+PROJECT_ICON           = @CMAKE_SOURCE_DIR@/templates/icon/doxygen.ico
 OUTPUT_DIRECTORY       = @PROJECT_BINARY_DIR@/doxygen_docs
 CREATE_SUBDIRS         = YES
 CREATE_SUBDIRS_LEVEL   = 8

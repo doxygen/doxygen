@@ -3398,6 +3398,7 @@ QCString substituteKeywords(const QCString &s,const QCString &title,
     { "$projectnumber", [&]() { return projNum;                                   } },
     { "$projectbrief",  [&]() { return projBrief;                                 } },
     { "$projectlogo",   [&]() { return stripPath(Config_getString(PROJECT_LOGO)); } },
+    { "$projecticon",   [&]() { return stripPath(Config_getString(PROJECT_ICON)); } },
     { "$langISO",       [&]() { return theTranslator->trISOLang();                } },
     { "$showdate",      [&](const QCString &fmt) { return showDate(fmt);          } }
   });

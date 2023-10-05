@@ -62,6 +62,8 @@ set(BASIC_EXAMPLES
   EXAMPLE_manual  EXAMPLE_mux
 )
 
+configure_file(${PROJECT_SOURCE_DIR}/templates/icon/doxygen.ico ${PROJECT_BINARY_DIR}/examples/doxygen.ico COPYONLY)
+
 foreach (f_inp  ${BASIC_EXAMPLES})
 	list(LENGTH ${f_inp} f_len)
 	list(GET    ${f_inp} 0 f)

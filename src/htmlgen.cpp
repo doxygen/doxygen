@@ -342,6 +342,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   bool hasProjectNumber = !Config_getString(PROJECT_NUMBER).isEmpty();
   bool hasProjectBrief = !Config_getString(PROJECT_BRIEF).isEmpty();
   bool hasProjectLogo = !Config_getString(PROJECT_LOGO).isEmpty();
+  bool hasProjectIcon = !Config_getString(PROJECT_ICON).isEmpty();
   bool hasFullSideBar = Config_getBool(FULL_SIDEBAR) && disableIndex && treeView;
   static bool titleArea = (hasProjectName || hasProjectBrief || hasProjectLogo || (disableIndex && searchEngine));
 
@@ -610,7 +611,8 @@ static QCString substituteHtmlKeywords(const QCString &str,
     { "PROJECT_NAME",      hasProjectName   },
     { "PROJECT_NUMBER",    hasProjectNumber },
     { "PROJECT_BRIEF",     hasProjectBrief  },
-    { "PROJECT_LOGO",      hasProjectLogo   }
+    { "PROJECT_LOGO",      hasProjectLogo   },
+    { "PROJECT_ICON",      hasProjectIcon   }
   },htmlMarkerInfo);
 
   result = removeEmptyLines(result);
