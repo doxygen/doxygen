@@ -8958,6 +8958,8 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
   }
   md->addSectionsToDefinition(root->anchors);
   md->setMaxInitLines(root->initLines);
+  md->enableReferencedByRelation(root->referencedByRelation);
+  md->enableReferencesRelation(root->referencesRelation);
   md->enableInlineSource(root->inlineSource);
   md->setRefItems(root->sli);
   if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
@@ -9908,6 +9910,26 @@ static void copyLogo(const QCString &outputOption)
     {
       QCString destFileName = outputOption+"/"+fi.fileName();
       copyFile(projectLogo,destFileName);
+      Doxygen::indexList->addImageFile(fi.fileName().c_str());
+    }
+  }
+}
+
+static void copyIcon(const QCString &outputOption)
+{
+  QCString projectIcon = Config_getString(PROJECT_ICON);
+  if (!projectIcon.isEmpty())
+  {
+    FileInfo fi(projectIcon.str());
+    if (!fi.exists())
+    {
+      err("Project icon '%s' specified by PROJECT_ICON does not exist!\n",qPrint(projectIcon));
+      projectIcon = Config_updateString(PROJECT_ICON,""); // revert to the default
+    }
+    else
+    {
+      QCString destFileName = outputOption+"/"+fi.fileName();
+      copyFile(projectIcon,destFileName);
       Doxygen::indexList->addImageFile(fi.fileName().c_str());
     }
   }
@@ -12478,21 +12500,25 @@ void generateOutput()
     FTVHelp::generateTreeViewImages();
     copyStyleSheet();
     copyLogo(Config_getString(HTML_OUTPUT));
+    copyIcon(Config_getString(HTML_OUTPUT));
     copyExtraFiles(Config_getList(HTML_EXTRA_FILES),"HTML_EXTRA_FILES",Config_getString(HTML_OUTPUT));
   }
   if (generateLatex)
   {
     copyLatexStyleSheet();
     copyLogo(Config_getString(LATEX_OUTPUT));
+    copyIcon(Config_getString(LATEX_OUTPUT));
     copyExtraFiles(Config_getList(LATEX_EXTRA_FILES),"LATEX_EXTRA_FILES",Config_getString(LATEX_OUTPUT));
   }
   if (generateDocbook)
   {
     copyLogo(Config_getString(DOCBOOK_OUTPUT));
+    copyIcon(Config_getString(DOCBOOK_OUTPUT));
   }
   if (generateRtf)
   {
     copyLogo(Config_getString(RTF_OUTPUT));
+    copyIcon(Config_getString(RTF_OUTPUT));
   }
 
   FormulaManager &fm = FormulaManager::instance();

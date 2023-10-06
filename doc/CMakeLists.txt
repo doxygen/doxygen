@@ -158,6 +158,7 @@ configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
+configure_file(${PROJECT_SOURCE_DIR}/templates/icon/doxygen.ico ${PROJECT_BINARY_DIR}/doc/doxygen.ico COPYONLY)
 
 # Call the main page "Introduction" in LaTeX, which is more appropriate for that format.
 set(MAINPAGE_TITLE Doxygen)

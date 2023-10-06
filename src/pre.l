@@ -371,7 +371,7 @@ VERBATIM_LINE  [\\@]"noop"{B}+
 LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
 LITERAL_BLOCK_END {FORMULA_END}|{VERBATIM_END}
 
-  // some Lex informations
+  // some rule pattern information for rules to handle lex files
 nl              (\r\n|\r|\n)
 RulesDelim      "%%"{nl}
 RulesSharp      "<"[^>\n]*">"
