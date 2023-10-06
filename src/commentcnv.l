@@ -49,8 +49,6 @@ typedef yyguts_t *yyscan_t;
 #define ADDCHAR(c)    yyextra->outBuf.addChar(c)
 #define ADDARRAY(a,s) yyextra->outBuf.addArray(a,s)
 
-#define USE_STATE2STRING 0
-
 struct commentcnvYY_CondCtx
 {
   commentcnvYY_CondCtx(int line,const QCString &id,bool b)
@@ -105,9 +103,7 @@ struct commentcnvYY_state
   bool       isFixedForm = FALSE; // For Fortran
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 static inline int computeIndent(const char *s);
 
 static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len);
@@ -1290,6 +1286,4 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
 
 //----------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "commentcnv.l.h"
-#endif

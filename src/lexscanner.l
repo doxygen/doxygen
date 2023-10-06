@@ -52,8 +52,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 #define repeatChar(chr, cnt) std::string(cnt, chr).c_str()
 
 struct lexscannerYY_state
@@ -91,9 +89,7 @@ struct lexscannerYY_state
   SrcLangExt language;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 
 // forward declarations for statefull functions
@@ -1033,6 +1029,4 @@ void LexOutlineParser::parseInput(const QCString &fileName,
 
 //----------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "lexscanner.l.h"
-#endif
