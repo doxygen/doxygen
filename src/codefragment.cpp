@@ -110,12 +110,23 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     {
       //printf("gotoLine(pos=%p,start=%d,target=%d) backward\n",(void*)startPos,startLine,targetLine);
       while (startLine>=targetLine && startPos>=startBuf && (cc=*startPos--)) { if (cc=='\n') startLine--; }
-      startPos++;
+      if (startPos>startBuf)
+      {
+        // given fragment:
+        //         line1\n
+        //         line2\n
+        //         line3
+        // and targetLine==2 then startPos ends at character '1' of line 1 before we detect that startLine<targetLine,
+        // so we need to advance startPos with 2 to be at the start of line2, unless we are already at the first line.
+        startPos+=2;
+      }
+      //printf("result=[%s]\n",qPrint(QCString(startPos).left(20)));
     }
     else
     {
       //printf("gotoLine(pos=%p,start=%d,target=%d) forward\n",(void*)startPos,startLine,targetLine);
       while (startLine<targetLine && (cc=*startPos++)) { if (cc=='\n') startLine++; }
+      //printf("result=[%s]\n",qPrint(QCString(startPos).left(20)));
     }
     return startPos;
   };
@@ -366,13 +377,13 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     }
   }
   // use the recorded OutputCodeList from the cache to output a pre-recorded fragment
-  auto blockKv  = codeFragment->blocksById.find(blockId.str());
-  if (blockKv!=codeFragment->blocksById.end())
+  auto blockKv = codeFragment->blocksById.find(blockId.str());
+  if (blockKv != codeFragment->blocksById.end())
   {
     const auto &marker = blockKv->second;
     int startLine = marker->lines[0];
     int endLine   = marker->lines[1];
-    AUTO_TRACE_ADD("replay(start={},end={})",startLine,endLine);
+    AUTO_TRACE_ADD("replay(start={},end={}) fileContentsTrimLeft.empty()={}",startLine,endLine,codeFragment->fileContentsTrimLeft.isEmpty());
     if (!trimLeft || codeFragment->fileContentsTrimLeft.isEmpty()) // replay the normal version
     {
       codeFragment->recorderCodeList.get<OutputCodeRecorder>()->replay(codeOutList,startLine+1,endLine,showLineNumbers);
