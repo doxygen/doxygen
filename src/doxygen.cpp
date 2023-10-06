@@ -8958,6 +8958,8 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
   }
   md->addSectionsToDefinition(root->anchors);
   md->setMaxInitLines(root->initLines);
+  md->enableReferencedByRelation(root->referencedByRelation);
+  md->enableReferencesRelation(root->referencesRelation);
   md->enableInlineSource(root->inlineSource);
   md->setRefItems(root->sli);
   if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
