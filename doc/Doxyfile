@@ -13,6 +13,7 @@
 # input used in their production; they are not affected by this license.
 
 PROJECT_NAME      = "Doxygen"
+PROJECT_ICON      = ../doc/doxygen.ico
 OUTPUT_DIRECTORY  = ..
 HTML_HEADER       = 
 HTML_FOOTER       = 
