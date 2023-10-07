@@ -145,6 +145,7 @@ FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = 0;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = 0;     // dia files
 StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace aliases
 StringMap             Doxygen::tagDestinationMap;            // all tag locations
+StringSet             Doxygen::tagFileSet;                   // all tag file names
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
 MemberGroupInfoMap    Doxygen::memberGroupInfoMap;           // dictionary of the member groups heading
 std::unique_ptr<PageDef> Doxygen::mainPage;
@@ -9797,9 +9798,6 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const QCString &tagLi
     fileName = tagLine.left(eqPos).stripWhiteSpace();
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
     if (fileName.isEmpty() || destName.isEmpty()) return;
-    FileInfo fi(fileName.str());
-    Doxygen::tagDestinationMap.insert(
-        std::make_pair(fi.absFilePath(), destName.str()));
     //printf("insert tagDestination %s->%s\n",qPrint(fi.fileName()),qPrint(destName));
   }
   else
@@ -9815,8 +9813,16 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const QCString &tagLi
     return;
   }
 
+  if (Doxygen::tagFileSet.find(fi.absFilePath().c_str()) != Doxygen::tagFileSet.end()) return;
+
+  Doxygen::tagFileSet.emplace(fi.absFilePath());
+
   if (!destName.isEmpty())
+  {
+    Doxygen::tagDestinationMap.insert(
+        std::make_pair(fi.absFilePath(), destName.str()));
     msg("Reading tag file '%s', location '%s'...\n",qPrint(fileName),qPrint(destName));
+  }
   else
     msg("Reading tag file '%s'...\n",qPrint(fileName));
 
