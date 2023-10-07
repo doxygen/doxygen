@@ -398,6 +398,12 @@ QCString filterTitle(const QCString &title);
 bool patternMatch(const FileInfo &fi,const StringVector &patList);
 
 QCString externalLinkTarget(const bool parent = false);
+QCString createHtmlUrl(const QCString &relPath,
+                       const QCString &ref,
+                       bool href,
+                       const QCString &srcFileName,
+                       const QCString &targetFileName,
+                       const QCString &anchor);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos);
 

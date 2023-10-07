@@ -5825,6 +5825,36 @@ QCString externalLinkTarget(const bool parent)
     return "";
 }
 
+QCString createHtmlUrl(const QCString &relPath,
+                       const QCString &ref,
+                       bool href,
+                       const QCString &srcFileName,
+                       const QCString &targetFileName,
+                       const QCString &anchor)
+{
+  QCString url;
+  if (!ref.isEmpty()) url = externalRef(relPath,ref,href);
+  if (!targetFileName.isEmpty())
+  {
+    QCString fn = targetFileName;
+    addHtmlExtensionIfMissing(fn);
+    if (ref.isEmpty())
+    {
+      if (!anchor.isEmpty() && srcFileName==fn)
+      {
+        fn=""; // omit file name for local links
+      }
+      else
+      {
+        url = relPath;
+      }
+    }
+    url+=fn;
+  }
+  if (!anchor.isEmpty()) url+="#"+anchor;
+  return url;
+}
+
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
 {
   QCString result;
