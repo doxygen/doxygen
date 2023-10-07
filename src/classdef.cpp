@@ -2164,23 +2164,20 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
     ClassDef *cd=ibcd.classDef;
     if (cd && cd->isLinkable())
     {
-      if (!Config_getString(GENERATE_TAGFILE).isEmpty())
+      tagFile << "    <base";
+      if (ibcd.prot==Protection::Protected)
       {
-        tagFile << "    <base";
-        if (ibcd.prot==Protection::Protected)
-        {
-          tagFile << " protection=\"protected\"";
-        }
-        else if (ibcd.prot==Protection::Private)
-        {
-          tagFile << " protection=\"private\"";
-        }
-        if (ibcd.virt==Specifier::Virtual)
-        {
-          tagFile << " virtualness=\"virtual\"";
-        }
-        tagFile << ">" << convertToXML(cd->name()) << "</base>\n";
+        tagFile << " protection=\"protected\"";
       }
+      else if (ibcd.prot==Protection::Private)
+      {
+        tagFile << " protection=\"private\"";
+      }
+      if (ibcd.virt==Specifier::Virtual)
+      {
+        tagFile << " virtualness=\"virtual\"";
+      }
+      tagFile << ">" << convertToXML(cd->name()) << "</base>\n";
     }
   }
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
