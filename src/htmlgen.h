@@ -28,6 +28,8 @@ class HtmlCodeGenerator
     HtmlCodeGenerator(TextStream *t);
 
     void setTextStream(TextStream *t) { m_t = t; }
+    void setFileName(const QCString fileName) { m_fileName = fileName; }
+    QCString fileName() { return m_fileName; }
 
     OutputType type() const { return OutputType::Html; }
 
@@ -64,6 +66,7 @@ class HtmlCodeGenerator
     TextStream *m_t;
     int m_col = 0;
     QCString m_relPath;
+    QCString m_fileName;
     bool m_lineOpen = false;
 };
 

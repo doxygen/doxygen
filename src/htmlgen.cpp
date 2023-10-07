@@ -892,11 +892,16 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
     *m_t << "<a class=\"" << className << "\" ";
   }
   *m_t << "href=\"";
-  *m_t << externalRef(m_relPath,ref,TRUE);
+  if (!ref.isEmpty()) *m_t << externalRef(m_relPath,ref,TRUE);
   if (!f.isEmpty())
   {
     QCString fn = f;
     addHtmlExtensionIfMissing(fn);
+    if (ref.isEmpty())
+    {
+      if (!anchor.isEmpty() && (fileName() == fn)) fn = "";
+      else *m_t << externalRef(m_relPath,ref,TRUE);
+    }
     *m_t << fn;
   }
   if (!anchor.isEmpty()) *m_t << "#" << anchor;
@@ -920,7 +925,12 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
   if (!docInfo.url.isEmpty())
   {
     *m_t << "<a href=\"";
-    *m_t << externalRef(m_relPath,docInfo.ref,TRUE);
+    if (!docInfo.ref.isEmpty()) *m_t << externalRef(m_relPath,docInfo.ref,TRUE);
+    else
+    {
+      if (!docInfo.anchor.isEmpty() && (fileName() == url)) url = "";
+      else *m_t << externalRef(m_relPath,docInfo.ref,TRUE);
+    }
     *m_t << url;
     if (!docInfo.anchor.isEmpty())
     {
@@ -934,18 +944,21 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     *m_t << "</a>";
   }
   *m_t << "</div>";
+
   if (!decl.isEmpty())
   {
     *m_t << "<div class=\"ttdeci\">";
     docify(decl);
     *m_t << "</div>";
   }
+
   if (!desc.isEmpty())
   {
     *m_t << "<div class=\"ttdoc\">";
     docify(desc);
     *m_t << "</div>";
   }
+
   if (!defInfo.file.isEmpty())
   {
     *m_t << "<div class=\"ttdef\"><b>" << theTranslator->trDefinition() << "</b> ";
@@ -954,7 +967,12 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
       url = defInfo.url;
       addHtmlExtensionIfMissing(url);
       *m_t << "<a href=\"";
-      *m_t << externalRef(m_relPath,defInfo.ref,TRUE);
+      if (!defInfo.ref.isEmpty()) *m_t << externalRef(m_relPath,defInfo.ref,TRUE);
+      else
+      {
+        if (!defInfo.anchor.isEmpty() && (fileName() == url)) url = "";
+        else *m_t << externalRef(m_relPath,defInfo.ref,TRUE);
+      }
       *m_t << url;
       if (!defInfo.anchor.isEmpty())
       {
@@ -977,7 +995,12 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
       url = declInfo.url;
       addHtmlExtensionIfMissing(url);
       *m_t << "<a href=\"";
-      *m_t << externalRef(m_relPath,declInfo.ref,TRUE);
+      if (!declInfo.ref.isEmpty()) *m_t << externalRef(m_relPath,declInfo.ref,TRUE);
+      else
+      {
+        if (!declInfo.anchor.isEmpty() && (fileName() == url)) url = "";
+        else *m_t << externalRef(m_relPath,declInfo.ref,TRUE);
+      }
       *m_t << url;
       if (!declInfo.anchor.isEmpty())
       {
@@ -1426,6 +1449,7 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   m_lastTitle=title;
 
   startPlainFile(fileName);
+  m_codeGen->setFileName(fileName);
   m_codeGen->setRelativePath(m_relPath);
   {
     std::lock_guard<std::mutex> lock(g_indexLock);
@@ -1725,11 +1749,16 @@ void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
     m_t << "<a class=\"el\" ";
   }
   m_t << "href=\"";
-  m_t << externalRef(m_relPath,ref,TRUE);
+  if (!ref.isEmpty()) m_t << externalRef(m_relPath,ref,TRUE);
   if (!f.isEmpty())
   {
     QCString fn = f;
     addHtmlExtensionIfMissing(fn);
+    if (ref.isEmpty())
+    {
+      if (!anchor.isEmpty() && (fileName() == Config_getString(HTML_OUTPUT) + "/" + fn)) fn = "";
+      else m_t << externalRef(m_relPath,ref,TRUE);
+    }
     m_t << fn;
   }
   if (!anchor.isEmpty()) m_t << "#" << anchor;
@@ -1745,7 +1774,7 @@ void HtmlGenerator::startTextLink(const QCString &f,const QCString &anchor)
   {
     QCString fn = f;
     addHtmlExtensionIfMissing(fn);
-    m_t << m_relPath << fn;
+    if (anchor.isEmpty() || (fileName() != Config_getString(HTML_OUTPUT) + "/" + fn)) m_t << m_relPath << fn;
   }
   if (!anchor.isEmpty()) m_t << "#" << anchor;
   m_t << "\">";
@@ -2553,7 +2582,7 @@ void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const 
   if (astImpl)
   {
     m_codeList->setId(id);
-    HtmlDocVisitor visitor(m_t,*m_codeList,ctx);
+    HtmlDocVisitor visitor(m_t,*m_codeList,ctx,fileName());
     std::visit(visitor,astImpl->root);
   }
 }
