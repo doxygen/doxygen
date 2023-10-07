@@ -401,7 +401,7 @@ QCString externalLinkTarget(const bool parent = false);
 QCString createHtmlUrl(const QCString &relPath,
                        const QCString &ref,
                        bool href,
-                       const QCString &srcFileName,
+                       bool islocalFile,
                        const QCString &targetFileName,
                        const QCString &anchor);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);

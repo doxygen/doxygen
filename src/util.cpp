@@ -5828,19 +5828,21 @@ QCString externalLinkTarget(const bool parent)
 QCString createHtmlUrl(const QCString &relPath,
                        const QCString &ref,
                        bool href,
-                       const QCString &srcFileName,
+                       bool isLocalFile,
                        const QCString &targetFileName,
                        const QCString &anchor)
 {
   QCString url;
-  if (!ref.isEmpty()) url = externalRef(relPath,ref,href);
+  if (!ref.isEmpty())
+  {
+    url = externalRef(relPath,ref,href);
+  }
   if (!targetFileName.isEmpty())
   {
     QCString fn = targetFileName;
-    addHtmlExtensionIfMissing(fn);
     if (ref.isEmpty())
     {
-      if (!anchor.isEmpty() && srcFileName==fn)
+      if (!anchor.isEmpty() && isLocalFile)
       {
         fn=""; // omit file name for local links
       }

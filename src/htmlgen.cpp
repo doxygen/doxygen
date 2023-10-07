@@ -892,7 +892,10 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
     *m_t << "<a class=\"" << className << "\" ";
   }
   *m_t << "href=\"";
-  *m_t << createHtmlUrl(m_relPath,ref,true,fileName(),f,anchor);
+  QCString fn = f;
+  addHtmlExtensionIfMissing(fn);
+  *m_t << createHtmlUrl(m_relPath,ref,true,
+                        fileName()==fn,fn,anchor);
   *m_t << "\"";
   if (!tooltip.isEmpty()) *m_t << " title=\"" << convertToHtml(tooltip) << "\"";
   *m_t << ">";
@@ -911,8 +914,10 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
   if (!docInfo.url.isEmpty())
   {
     *m_t << "<a href=\"";
+    QCString fn = docInfo.url;
+    addHtmlExtensionIfMissing(fn);
     *m_t << createHtmlUrl(m_relPath,docInfo.ref,true,
-                          fileName(),docInfo.url,docInfo.anchor);
+                          fileName()==fn,fn,docInfo.anchor);
     *m_t << "\">";
   }
   docify(docInfo.name);
@@ -942,8 +947,10 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     if (!defInfo.url.isEmpty())
     {
       *m_t << "<a href=\"";
+      QCString fn = defInfo.url;
+      addHtmlExtensionIfMissing(fn);
       *m_t << createHtmlUrl(m_relPath,defInfo.ref,true,
-                            fileName(),defInfo.url,defInfo.anchor);
+                            fileName()==fn,fn,defInfo.anchor);
       *m_t << "\">";
     }
     *m_t << defInfo.file << ":" << defInfo.line;
@@ -959,8 +966,10 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     if (!declInfo.url.isEmpty())
     {
       *m_t << "<a href=\"";
+      QCString fn = declInfo.url;
+      addHtmlExtensionIfMissing(fn);
       *m_t << createHtmlUrl(m_relPath,declInfo.ref,true,
-                            fileName(),declInfo.url,declInfo.anchor);
+                            fileName()==fn,fn,declInfo.anchor);
       *m_t << "\">";
     }
     *m_t << declInfo.file << ":" << declInfo.line;
@@ -1707,7 +1716,9 @@ void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
   QCString fn = f;
   addHtmlExtensionIfMissing(fn);
   m_t << createHtmlUrl(m_relPath,ref,true,
-                       Config_getString(HTML_OUTPUT)+"/"+fn,f,anchor);
+                       fileName() == Config_getString(HTML_OUTPUT)+"/"+fn,
+                       fn,
+                       anchor);
   m_t << "\">";
   docify(name);
   m_t << "</a>";
@@ -1718,7 +1729,10 @@ void HtmlGenerator::startTextLink(const QCString &f,const QCString &anchor)
   m_t << "<a href=\"";
   QCString fn = f;
   addHtmlExtensionIfMissing(fn);
-  m_t << createHtmlUrl("","",true,Config_getString(HTML_OUTPUT)+"/"+fn,f,anchor);
+  m_t << createHtmlUrl("","",true,
+                       fileName() == Config_getString(HTML_OUTPUT)+"/"+fn,
+                       fn,
+                       anchor);
   m_t << "\">";
 }
 

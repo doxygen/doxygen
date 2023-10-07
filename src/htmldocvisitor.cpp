@@ -2147,8 +2147,8 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   QCString fn = file;
   addHtmlExtensionIfMissing(fn);
   m_t << createHtmlUrl(relPath,ref,true,
-                       Config_getString(HTML_OUTPUT)+"/"+fn,
-                       file,
+                       m_fileName == Config_getString(HTML_OUTPUT)+"/"+fn,
+                       fn,
                        anchor);
   m_t << "\"";
   if (!tooltip.isEmpty()) m_t << " title=\"" << convertToHtml(tooltip) << "\"";
