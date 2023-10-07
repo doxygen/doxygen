@@ -281,8 +281,8 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 //-------------------------------------------------------------------------
 
 HtmlDocVisitor::HtmlDocVisitor(TextStream &t,OutputCodeList &ci,
-                               const Definition *ctx)
-  : m_t(t), m_ci(ci), m_ctx(ctx)
+                               const Definition *ctx,const QCString &fn)
+  : m_t(t), m_ci(ci), m_ctx(ctx), m_fileName(fn)
 {
   if (ctx) m_langExt=ctx->getDefFileExtension();
 }
@@ -2144,14 +2144,12 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
     m_t << "<a class=\"el\" ";
   }
   m_t << "href=\"";
-  m_t << externalRef(relPath,ref,TRUE);
-  if (!file.isEmpty())
-  {
-    QCString fn = file;
-    addHtmlExtensionIfMissing(fn);
-    m_t << fn;
-  }
-  if (!anchor.isEmpty()) m_t << "#" << anchor;
+  QCString fn = file;
+  addHtmlExtensionIfMissing(fn);
+  m_t << createHtmlUrl(relPath,ref,true,
+                       Config_getString(HTML_OUTPUT)+"/"+fn,
+                       file,
+                       anchor);
   m_t << "\"";
   if (!tooltip.isEmpty()) m_t << " title=\"" << convertToHtml(tooltip) << "\"";
   m_t << ">";
