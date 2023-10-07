@@ -181,7 +181,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
   }
 
   AUTO_TRACE_ADD("needsTrimLeft={}",needsTrimLeft);
-  // create trimmed verion of fileContents (if needed)
+  // create trimmed version of fileContents (if needed)
   if (needsTrimLeft)
   {
     fileContentsTrimLeft = fileContents;
