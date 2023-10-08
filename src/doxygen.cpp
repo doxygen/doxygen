@@ -2183,9 +2183,9 @@ static MemberDef *addVariableToClass(
   {
     if (related!=Relationship::Member || mtype==MemberType_Friend || Config_getBool(HIDE_SCOPE_NAMES))
     {
-      if (root->spec.isAlias()) // turn 'typedef B A' into 'using A = B'
+      if (root->spec.isAlias()) // turn 'typedef B A' into 'using A'
       {
-        def="using "+name+" = "+type.mid(7);
+        def="using "+name;
       }
       else
       {
@@ -2194,9 +2194,9 @@ static MemberDef *addVariableToClass(
     }
     else
     {
-      if (root->spec.isAlias()) // turn 'typedef B C::A' into 'using C::A = B'
+      if (root->spec.isAlias()) // turn 'typedef B C::A' into 'using C::A'
       {
-        def="using "+qualScope+scopeSeparator+name+" = "+type.mid(7);
+        def="using "+qualScope+scopeSeparator+name;
       }
       else
       {
@@ -2377,9 +2377,9 @@ static MemberDef *addVariableToFile(
 
     if (!type.isEmpty())
     {
-      if (root->spec.isAlias()) // turn 'typedef B NS::A' into 'using NS::A = B'
+      if (root->spec.isAlias()) // turn 'typedef B NS::A' into 'using NS::A'
       {
-        def="using "+nd->name()+sep+name+" = "+type;
+        def="using "+nd->name()+sep+name;
       }
       else // normal member
       {
@@ -2401,9 +2401,9 @@ static MemberDef *addVariableToFile(
       }
       else
       {
-        if (root->spec.isAlias()) // turn 'typedef B A' into 'using A = B'
+        if (root->spec.isAlias()) // turn 'typedef B A' into 'using A'
         {
-          def="using "+root->name+" = "+type.mid(7);
+          def="using "+root->name;
         }
         else // normal member
         {

@@ -856,6 +856,10 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,typeStr);
     t << "</type>\n";
     QCString defStr = md->definition();
+    if (md->isTypeAlias())
+    {
+      defStr+=" = "+md->initializer();
+    }
     stripAnonymousMarkers(defStr);
     t << "        <definition>" << convertToXML(defStr) << "</definition>\n";
     t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>\n";
@@ -1012,7 +1016,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "    </requiresclause>\n";
   }
 
-  if (md->hasOneLineInitializer() || md->hasMultiLineInitializer())
+  if (!md->isTypeAlias() && (md->hasOneLineInitializer() || md->hasMultiLineInitializer()))
   {
     t << "        <initializer>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->initializer());

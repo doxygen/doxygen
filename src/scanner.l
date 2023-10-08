@@ -1980,7 +1980,6 @@ NONLopt [^\n]*
                                           init.stripPrefix("struct ");
                                           init = init.stripWhiteSpace();
                                           yyextra->current->type = "typedef "+init;
-                                          yyextra->current->initializer.clear();
                                           yyextra->current->args.resize(0);
                                           yyextra->current->spec.setAlias(true);
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);

@@ -2499,7 +2499,12 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       //((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
           ) // add initializer
   {
-    if (!isDefine())
+    if (isTypeAlias()) // using statement
+    {
+      ol.writeString(" = ");
+      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer.simplifyWhiteSpace());
+    }
+    else if (!isDefine())
     {
       //ol.writeString(" = ");
       ol.writeString(" ");
@@ -2510,11 +2515,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.writeNonBreakableSpace(3);
       linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_initializer);
     }
-  }
-  else if (isTypeAlias()) // using template alias
-  {
-    ol.writeString(" = ");
-    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_type);
   }
 
 
@@ -3672,9 +3672,14 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
     if (hasOneLineInitializer()) // add initializer
     {
-      if (!isDefine())
+      if (isTypeAlias())
       {
-        //ol.docify(" = ");
+        ol.docify(" = ");
+        QCString init = m_initializer.simplifyWhiteSpace();
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,init);
+      }
+      else if (!isDefine())
+      {
         ol.docify(" ");
         QCString init = m_initializer.simplifyWhiteSpace();
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,init);
@@ -4254,10 +4259,14 @@ void MemberDefImpl::setAnchor()
 {
   QCString memAnchor = name();
   if (!m_args.isEmpty()) memAnchor+=m_args;
-
+  if (m_memSpec.isAlias()) // this is for backward compatibility
+  {
+    memAnchor.prepend(" = "+m_initializer);
+  }
   memAnchor.prepend(definition()); // actually the method name is now included
             // twice, which is silly, but we keep it this way for backward
             // compatibility.
+
 
   // include number of template arguments as well,
   // to distinguish between two template
