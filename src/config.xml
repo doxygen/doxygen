@@ -3258,8 +3258,8 @@ The following block name is set based on whether or not a feature is used in the
     <option type='bool' id='RTF_USE_PNG' defval='0' depends='GENERATE_RTF'>
       <docs>
 <![CDATA[
-  If the \c RTF_USE_PNG tag is set to \c YES, doxygen will use the png for dot
-  and plantuml, whatever the \c DOT_IMAGE_FORMAT is.
+  If the \c RTF_USE_PNG tag is set to \c YES, doxygen will use the png for dot,
+  whatever the \c DOT_IMAGE_FORMAT is.
 ]]>
       </docs>
     </option>
