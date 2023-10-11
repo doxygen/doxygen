@@ -1411,7 +1411,8 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
 {
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    GroupDef *gd=0;
+    if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
     if (gd && gd->addClass(cd))
     {
       ClassDefMutable *cdm = toClassDefMutable(cd);
@@ -1420,6 +1421,13 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
         cdm->makePartOfGroup(gd);
       }
       //printf("Compound %s: in group %s\n",qPrint(cd->name()),gd->groupTitle());
+    }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
     }
   }
 }
@@ -1438,6 +1446,13 @@ void addConceptToGroups(const Entry *root,ConceptDef *cd)
       }
       //printf("Compound %s: in group %s\n",qPrint(cd->name()),gd->groupTitle());
     }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
+    }
   }
 }
 
@@ -1451,6 +1466,13 @@ void addModuleToGroups(const Entry *root,ModuleDef *mod)
       mod->makePartOfGroup(gd);
       //printf("Module %s: in group %s\n",qPrint(mod->name()),gd->groupTitle());
     }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
+    }
   }
 }
 
@@ -1460,7 +1482,8 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
   //printf("root->groups.size()=%zu\n",root->groups.size());
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    GroupDef *gd=0;
+    if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
     //printf("group '%s' gd=%p\n",qPrint(g.groupname),(void*)gd);
     if (gd && gd->addNamespace(nd))
     {
@@ -1470,6 +1493,13 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
         ndm->makePartOfGroup(gd);
       }
       //printf("Namespace %s: in group %s\n",qPrint(nd->name()),qPrint(gd->name()));
+    }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
     }
   }
 }
@@ -1486,6 +1516,13 @@ void addDirToGroups(const Entry *root,DirDef *dd)
       gd->addDir(dd);
       dd->makePartOfGroup(gd);
       //printf("Dir %s: in group %s\n",qPrint(dd->name()),qPrint(g->groupname));
+    }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
     }
   }
 }
@@ -1513,6 +1550,13 @@ void addGroupToGroups(const Entry *root,GroupDef *subGroup)
         gd->addGroup(subGroup);
         subGroup->makePartOfGroup(gd);
       }
+    }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
     }
   }
 }
@@ -1654,6 +1698,13 @@ void addExampleToGroups(const Entry *root,PageDef *eg)
       gd->addExample(eg);
       eg->makePartOfGroup(gd);
       //printf("Example %s: in group %s\n",qPrint(eg->name()),s->data());
+    }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
     }
   }
 }
