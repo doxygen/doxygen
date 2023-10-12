@@ -1674,7 +1674,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the subpage command ------- */
 
-<SubpageLabel>{LABELID}                 { // first argument
+<SubpageLabel>{FILE}                    { // first argument
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
