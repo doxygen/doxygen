@@ -528,6 +528,13 @@ static void buildFileList(const Entry *root)
             //printf("File %s: in group %s\n",qPrint(fd->name()),qPrint(gd->name()));
           }
         }
+        else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+        {
+          warn(root->fileName, root->startLine,
+              "Found non-existing group '%s' for the command '%s', ignoring command",
+              qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+              );
+    }
       }
     }
     else
@@ -7456,6 +7463,13 @@ static bool tryAddEnumDocsToGroupMember(const Entry *root,const QCString &name)
           return TRUE;
         }
       }
+    }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, root->startLine,
+          "Found non-existing group '%s' for the command '%s', ignoring command",
+          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          );
     }
   }
 
