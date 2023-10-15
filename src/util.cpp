@@ -5854,6 +5854,7 @@ QCString createHtmlUrl(const QCString &relPath,
     url+=fn;
   }
   if (!anchor.isEmpty()) url+="#"+anchor;
+  //printf("createHtmlUrl(relPath=%s,local=%d,target=%s,anchor=%s)=%s\n",qPrint(relPath),isLocalFile,qPrint(targetFileName),qPrint(anchor),qPrint(url));
   return url;
 }
 

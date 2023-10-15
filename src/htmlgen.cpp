@@ -1729,7 +1729,7 @@ void HtmlGenerator::startTextLink(const QCString &f,const QCString &anchor)
   m_t << "<a href=\"";
   QCString fn = f;
   addHtmlExtensionIfMissing(fn);
-  m_t << createHtmlUrl("","",true,
+  m_t << createHtmlUrl(m_relPath,"",true,
                        fileName() == Config_getString(HTML_OUTPUT)+"/"+fn,
                        fn,
                        anchor);
