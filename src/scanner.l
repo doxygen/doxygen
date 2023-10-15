@@ -2044,7 +2044,7 @@ NONLopt [^\n]*
                                             BEGIN(HereDoc);
                                           }
                                         }
-<ClassTemplSpec,EndTemplate>"<<"        {
+<ClassTemplSpec,EndTemplate>("<<"|"<=") {
                                           yyextra->current->name+=yytext;
                                           // *yyextra->currentTemplateSpec+=yytext;
                                         }
@@ -2056,12 +2056,12 @@ NONLopt [^\n]*
                                           }
                                           yyextra->current->name+=yytext;
                                         }
-<ClassTemplSpec,EndTemplate>">>"        {
+<ClassTemplSpec,EndTemplate>(">>"|">=") {
                                           if (yyextra->insideJava || yyextra->insideCS || yyextra->insideCli || yyextra->roundCount==0)
                                           {
                                             unput('>');
                                             unput(' ');
-                                            unput('>');
+                                            unput(*yytext);
                                           }
                                           else
                                           {
