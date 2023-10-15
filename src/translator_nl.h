@@ -86,7 +86,7 @@ class TranslatorDutch : public Translator
     QCString trThisIsTheListOfAllMembers()
     { return "Dit is de complete lijst van alle members voor"; }
     QCString trIncludingInheritedMembers()
-    { return ", inclusief alle overge&euml;rfde members."; }
+    { return ", inclusief alle overgeërfde members."; }
     QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automatisch gegenereerd door Doxygen";
       if (!s.isEmpty()) result+=" voor "+s;
@@ -102,7 +102,7 @@ class TranslatorDutch : public Translator
     QCString trModules()
     { return "Modules"; }
     QCString trClassHierarchy()
-    { return "Klasse Hi&euml;rarchie"; }
+    { return "Klasse Hiërarchie"; }
     QCString trCompoundList()
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -148,7 +148,7 @@ class TranslatorDutch : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-        return "Hieronder is een hi&euml;rarchische lijst met alle entiteiten:";
+        return "Hieronder is een hiërarchische lijst met alle entiteiten:";
       }
       else
       {
@@ -247,7 +247,7 @@ class TranslatorDutch : public Translator
     QCString trModuleIndex()
     { return "Module Index"; }
     QCString trHierarchicalIndex()
-    { return "Hi&euml;rarchische Index"; }
+    { return "Hiërarchische Index"; }
     QCString trCompoundIndex()
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -466,7 +466,7 @@ class TranslatorDutch : public Translator
       // used in class documentation to produce a list of super classes,
       // if class diagrams are disabled.
     {
-      return "Wordt overge&euml;rfd door "+trWriteList(numEntries)+".";
+      return "Wordt overgeërfd door "+trWriteList(numEntries)+".";
     }
     QCString trReimplementedFromList(int numEntries)
       // used in member documentation blocks to produce a list of
@@ -478,7 +478,7 @@ class TranslatorDutch : public Translator
     {
       // used in member documentation blocks to produce a list of
       // all member that overwrite the implementation of this member.
-      return "Opnieuw ge&iuml;mplementeerd in "+trWriteList(numEntries)+".";
+      return "Opnieuw geïmplementeerd in "+trWriteList(numEntries)+".";
     }
 
     QCString trNamespaceMembers()
@@ -636,7 +636,7 @@ class TranslatorDutch : public Translator
     /*! Text shown before a multi-line variable/enum initialization */
     QCString trInitialValue()
     {
-      return "Initi&euml;le waarde:";
+      return "Initiële waarde:";
     }
     /*! Text used the source code in the file index */
     QCString trCode()
@@ -645,15 +645,15 @@ class TranslatorDutch : public Translator
     }
     QCString trGraphicalHierarchy()
     {
-      return "Grafische Klasse Hi&euml;rarchie";
+      return "Grafische Klasse Hiërarchie";
     }
     QCString trGotoGraphicalHierarchy()
     {
-      return "Ga naar de grafische klasse hi&euml;rarchie";
+      return "Ga naar de grafische klasse hiërarchie";
     }
     QCString trGotoTextualHierarchy()
     {
-      return "Ga naar de tekstuele klasse hi&euml;rarchie";
+      return "Ga naar de tekstuele klasse hiërarchie";
     }
     QCString trPageIndex()
     {
@@ -768,7 +768,7 @@ class TranslatorDutch : public Translator
     {
       return
         "Deze pagina legt uit hoe de grafen die gegenereerd worden door doxygen "
-        "ge&iuml;nterpreteerd dienen te worden.<p>\n"
+        "geïnterpreteerd dienen te worden.<p>\n"
         "Beschouw het volgende voorbeeld:\n"
         "\\code\n"
         "/*! Onzichtbare klasse vanwege afkappen van de graaf */\n"
@@ -1080,7 +1080,7 @@ class TranslatorDutch : public Translator
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return "Wordt ge&iuml;mplementeerd door "+trWriteList(numEntries)+".";
+      return "Wordt geïmplementeerd door "+trWriteList(numEntries)+".";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1240,7 +1240,7 @@ class TranslatorDutch : public Translator
      *  hierarchy.
      */
     virtual QCString trDirIndex()
-    { return "Folder Hi&euml;rarchie"; }
+    { return "Folder Hiërarchie"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
@@ -1626,13 +1626,13 @@ class TranslatorDutch : public Translator
 
     /*! Used for a section containing inherited members */
     virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
-    { return members+" overge&euml;rfd van "+what; }
+    { return members+" overgeërfd van "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
     virtual QCString trAdditionalInheritedMembers()
-    { return "Additionele Overge&euml;rfde Members"; }
+    { return "Additionele Overgeërfde Members"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.2
@@ -1695,11 +1695,11 @@ class TranslatorDutch : public Translator
 
     /** old style UNO IDL services: implemented interfaces */
     virtual QCString trInterfaces()
-    { return "Ge&euml;porteerde Interfaces"; }
+    { return "Geëporteerde Interfaces"; }
 
     /** old style UNO IDL services: inherited services */
     virtual QCString trServices()
-    { return "Ge&iuml;ncludeerde Services"; }
+    { return "Geïncludeerde Services"; }
 
     /** UNO IDL constant groups */
     virtual QCString trConstantGroups()
@@ -1749,7 +1749,7 @@ class TranslatorDutch : public Translator
 
     /** VHDL design unit hierarchy */
     virtual QCString trDesignUnitHierarchy()
-    { return "Ontwerp Eenheid Hi&euml;rarchie"; }
+    { return "Ontwerp Eenheid Hiërarchie"; }
     /** VHDL design unit list */
     virtual QCString trDesignUnitList()
     { return "Ontwerp Eenheid Lijst"; }
@@ -1841,8 +1841,8 @@ class TranslatorDutch : public Translator
           if (single) return "Groep";
           else        return "Groepen";
         case VhdlSpecifier::INSTANTIATION:
-          if (single) return "Instanti&euml;ring";
-          else        return "Instanti&euml;ringen";
+          if (single) return "Instantiëring";
+          else        return "Instantiëringen";
         case VhdlSpecifier::ALIAS:
           if (single) return "Alias";
           else        return "Aliases";
@@ -1882,7 +1882,7 @@ class TranslatorDutch : public Translator
     virtual QCString trInterfaceListDescription()
     { return "Hieronder volgt de lijst met alle interfaces, elk met een korte beschrijving:"; }
     virtual QCString trInterfaceHierarchy()
-    { return "Interface Hi&euml;rarchie"; }
+    { return "Interface Hiërarchie"; }
     virtual QCString trInterfaceHierarchyDescription()
     { return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:"; }
     virtual QCString trInterfaceDocumentation()
@@ -1904,7 +1904,7 @@ class TranslatorDutch : public Translator
     virtual QCString trExceptionListDescription()
     { return "Hieronder volgt de lijst met alle exeptions, elk met een korte beschrijving:"; }
     virtual QCString trExceptionHierarchy()
-    { return "Exception Hi&euml;rarchie"; }
+    { return "Exception Hiërarchie"; }
     virtual QCString trExceptionHierarchyDescription()
     { return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:"; }
     virtual QCString trExceptionDocumentation()
@@ -2301,9 +2301,17 @@ class TranslatorDutch : public Translator
     }
     virtual QCString trExportedModules()
     {
-      return "Ge&euml;xporteerde Modules";
+      return "Geëxporteerde Modules";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trCopyToClipboard()
+    {
+      return "Kopiëren naar het klembord";
+    }
 };
 
 #endif

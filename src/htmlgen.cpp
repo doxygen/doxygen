@@ -344,6 +344,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   bool hasProjectLogo = !Config_getString(PROJECT_LOGO).isEmpty();
   bool hasProjectIcon = !Config_getString(PROJECT_ICON).isEmpty();
   bool hasFullSideBar = Config_getBool(FULL_SIDEBAR) && disableIndex && treeView;
+  bool hasCopyClipboard = Config_getBool(HTML_COPY_CLIPBOARD);
   static bool titleArea = (hasProjectName || hasProjectBrief || hasProjectLogo || (disableIndex && searchEngine));
 
   cssFile = Config_getString(HTML_STYLESHEET);
@@ -612,7 +613,8 @@ static QCString substituteHtmlKeywords(const QCString &str,
     { "PROJECT_NUMBER",    hasProjectNumber },
     { "PROJECT_BRIEF",     hasProjectBrief  },
     { "PROJECT_LOGO",      hasProjectLogo   },
-    { "PROJECT_ICON",      hasProjectIcon   }
+    { "PROJECT_ICON",      hasProjectIcon   },
+    { "COPY_CLIPBOARD",    hasCopyClipboard }
   },htmlMarkerInfo);
 
   result = removeEmptyLines(result);
@@ -1198,6 +1200,16 @@ void HtmlGenerator::init()
   if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
   {
     mgr.copyResource("menu.js",dname);
+  }
+
+  if (Config_getBool(HTML_COPY_CLIPBOARD))
+  {
+    std::ofstream f = Portable::openOutputStream(dname+"/clipboard.js");
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << substitute(mgr.getAsString("clipboard.js"),"$copy_to_clipboard_text",theTranslator->trCopyToClipboard());
+    }
   }
 
   if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)

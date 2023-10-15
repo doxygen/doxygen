@@ -164,7 +164,7 @@ namespace PortugueseTranslatorUtils
     }
 }
 
-class TranslatorBrazilian : public Translator
+class TranslatorBrazilian : public TranslatorAdapter_1_10_0
 {
   public:
 

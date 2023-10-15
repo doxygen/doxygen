@@ -2283,6 +2283,15 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HTML_COPY_CLIPBOARD' defval='1' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ If the \c HTML_COPY_CLIPBOARD tag is set to \c YES then doxygen will show an
+ icon the top right of code and text fragments that allows the user to copy the
+ contents to the clipboard (provided this is supported by the browser).
+]]>
+      </docs>
+    </option>
     <option type='int' id='HTML_INDEX_NUM_ENTRIES' minval='0' maxval='9999' defval='100' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[

@@ -1943,11 +1943,13 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   if (Config_getBool(GENERATE_HTMLHELP))
   {
     const char *depOption = "GENERATE_HTMLHELP";
-    adjustBoolSetting(  depOption, "GENERATE_TREEVIEW",   false  );
-    adjustBoolSetting(  depOption, "SEARCHENGINE",        false  );
-    adjustBoolSetting(  depOption, "HTML_DYNAMIC_MENUS",  false  );
-    adjustBoolSetting(  depOption, "HTML_CODE_FOLDING",   false  );
+    adjustBoolSetting(  depOption, "GENERATE_TREEVIEW",    false  );
+    adjustBoolSetting(  depOption, "SEARCHENGINE",         false  );
+    adjustBoolSetting(  depOption, "HTML_DYNAMIC_MENUS",   false  );
+    adjustBoolSetting(  depOption, "HTML_CODE_FOLDING",    false  );
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_SECTIONS",false  );
+    adjustBoolSetting(  depOption, "HTML_CODE_FOLDING",    false  );
+    adjustBoolSetting(  depOption, "HTML_COPY_CLIPBOARD",  false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
     adjustColorStyleSetting(depOption);
   }

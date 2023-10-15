@@ -288,30 +288,63 @@ ul.multicol {
 .fragment {
   text-align: left;
   direction: ltr;
-  overflow-x: auto; /*Fixed: fragment lines overlap floating elements*/
+  overflow-x: auto;
   overflow-y: hidden;
+  position: relative;
+  min-height: 28px;
+  margin: 4px 4px 4px 2px;
+  padding: 2px 2px 3px 2px;
+  border: 1px solid var(--fragment-border-color);
+  background-color: var(--fragment-background-color);
+  border-radius : 2px;
+  color: var(--fragment-foreground-color);
 }
 
 pre.fragment {
-        border: 1px solid var(--fragment-border-color);
-        background-color: var(--fragment-background-color);
-	color: var(--fragment-foreground-color);
-        padding: 4px 6px;
-        margin: 4px 8px 4px 2px;
-        overflow: auto;
-        word-wrap: break-word;
-        font-size:  9pt;
-        line-height: 125%;
-        font-family: var(--font-family-monospace);
-        font-size: 105%;
+  word-wrap: break-word;
+  font-size:  10pt;
+  line-height: 125%;
+  font-family: var(--font-family-monospace);
 }
 
-div.fragment {
-	padding: 0 0 1px 0; /*Fixed: last line underline overlap border*/
-	margin: 4px 8px 4px 2px;
-	color: var(--fragment-foreground-color);
-	background-color: var(--fragment-background-color);
-	border: 1px solid var(--fragment-border-color);
+.clipboard {
+        width: 24px;
+        height: 24px;
+        right: 5px;
+        top: 5px;
+        opacity: 0;
+        position: absolute;
+        display: inline;
+        overflow: auto;
+        fill: var(--fragment-foreground-color);
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+}
+
+.clipboard.success {
+        border: 1px solid var(--fragment-foreground-color);
+        border-radius: 4px;
+}
+
+.fragment:hover .clipboard, .clipboard.success {
+        opacity: .28;
+}
+
+.clipboard:hover, .clipboard.success {
+        opacity: 1 !important;
+}
+
+.clipboard:active:not([class~=success]) svg {
+        transform: scale(.91);
+}
+
+.clipboard.success svg {
+        fill: var(--fragment-copy-ok-color);
+}
+
+.clipboard.success {
+        border-color: var(--fragment-copy-ok-color);
 }
 
 div.line {

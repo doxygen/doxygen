@@ -2624,7 +2624,14 @@ class TranslatorEnglish : public Translator
       return "Exported Modules";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
 
+    virtual QCString trCopyToClipboard()
+    {
+      return "Copy to clipboard";
+    }
 };
 
 #endif

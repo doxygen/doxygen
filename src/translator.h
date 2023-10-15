@@ -761,6 +761,10 @@ class Translator
     virtual QCString trTopicListDescription() = 0;
     virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) = 0;
     virtual QCString trExportedModules() = 0;
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trCopyToClipboard() = 0;
 };
 
 #endif
