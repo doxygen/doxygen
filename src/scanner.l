@@ -2056,12 +2056,12 @@ NONLopt [^\n]*
                                           }
                                           yyextra->current->name+=yytext;
                                         }
-<ClassTemplSpec,EndTemplate>(">>"|"=>") {
+<ClassTemplSpec,EndTemplate>(">>"|">=") {
                                           if (yyextra->insideJava || yyextra->insideCS || yyextra->insideCli || yyextra->roundCount==0)
                                           {
-                                            unput(*yytext);
-                                            unput(' ');
                                             unput('>');
+                                            unput(' ');
+                                            unput(*yytext);
                                           }
                                           else
                                           {
