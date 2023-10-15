@@ -2021,17 +2021,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
   //    "", //qPrint(getFileDef()->name()),
   //    argsString());
 
-  auto it = Doxygen::memberGroupInfoMap.find(m_grpId);
   bool hasDocs = hasDocumentation();
-  if (it!=Doxygen::memberGroupInfoMap.end())
-  {
-    auto &info = it->second;
-    //printf("name=%s m_grpId=%d info=%p\n",qPrint(name()),m_grpId,info);
-    //QCString *pMemGrp = Doxygen::memberDocDict[grpId];
-    hasDocs = hasDocs &&
-                  // part of a documented member group
-                 (m_grpId!=-1 && !(info->doc.isEmpty() && info->header.isEmpty()));
-  }
 
   // only include static members with file/namespace scope if
   // explicitly enabled in the config file
