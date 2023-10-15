@@ -2021,7 +2021,6 @@ bool MemberDefImpl::isBriefSectionVisible() const
   //    "", //qPrint(getFileDef()->name()),
   //    argsString());
 
-  auto it = Doxygen::memberGroupInfoMap.find(m_grpId);
   bool hasDocs = hasDocumentation();
 
   // only include static members with file/namespace scope if
