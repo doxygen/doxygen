@@ -1694,6 +1694,8 @@ static QCString extractCopyDocId(const char *data, uint32_t &j, size_t len)
         case ')': round--; break;
         case '"': insideDQuote=TRUE; break;
         case '\'': insideSQuote=TRUE; break;
+        case '\\': // fall through, begin of command
+        case '@':  // fall through, begin of command
         case ' ':  // fall through
         case '\t': // fall through
         case '\n':
