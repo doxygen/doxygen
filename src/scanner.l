@@ -3066,13 +3066,13 @@ NONLopt [^\n]*
                                             BEGIN(CopyGString);
                                           }
                                         }
-<ReadInitializer,ReadInitializerPtr>"->"                        {
+<ReadInitializer,ReadInitializerPtr>"->"        {
                                           yyextra->current->initializer << yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>"<<"                        {
+<ReadInitializer,ReadInitializerPtr>("<<"|"<=") {
                                           yyextra->current->initializer << yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>">>"                        {
+<ReadInitializer,ReadInitializerPtr>(">>"|">=") {
                                           yyextra->current->initializer << yytext;
                                         }
 <ReadInitializer,ReadInitializerPtr>[<\[{(]             {
