@@ -54,6 +54,8 @@ The runtests.py has the following dependencies on 3rd party tools:
 - python  to run the script
 - xmllint to normalize the XML output
 - diff    to show the differences in case a test fails
+- LaTeX   for test 12 and when testing with --pdf flag (with adequate packages)
+- perl    for test 12
 
 Each test file can have a number of special comment lines that are extracted by
 the runtests.py script and take the form:
