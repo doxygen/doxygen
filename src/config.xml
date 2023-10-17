@@ -3463,9 +3463,9 @@ put in front of it.
     <option type='bool' id='SQLITE3_RECREATE_DB' defval='1' depends='GENERATE_SQLITE3'>
       <docs>
 <![CDATA[
-The \c SQLITE3_OVERWRITE_DB tag is set to \c YES, the existing doxygen_sqlite3.db
+The \c SQLITE3_RECREATE_DB tag is set to \c YES, the existing doxygen_sqlite3.db
 database file will be recreated with each doxygen run.
-If set to \c NO, doxygen will warn if an a database file is already found and not modify it.
+If set to \c NO, doxygen will warn if a database file is already found and not modify it.
 ]]>
       </docs>
     </option>
