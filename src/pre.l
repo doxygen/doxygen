@@ -3387,7 +3387,7 @@ static void determineBlockName(yyscan_t yyscanner)
   else
   {
     QCString bn=&yytext[1];
-    if (bn=="startuml")
+    if (bn.stripWhiteSpace()=="startuml")
     {
       yyextra->blockName="uml";
     }
