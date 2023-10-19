@@ -3386,16 +3386,16 @@ static void determineBlockName(yyscan_t yyscanner)
   }
   else
   {
-    QCString bn=&yytext[1];
-    if (bn.stripWhiteSpace()=="startuml")
+    QCString bn=QCString(&yytext[1]).stripWhiteSpace();
+    if (bn=="startuml")
     {
       yyextra->blockName="uml";
     }
     else
     {
       int i = bn.find('{'); // for \code{.c}
-      if (i!=-1) bn=bn.left(i);
-      yyextra->blockName=bn.stripWhiteSpace();
+      if (i!=-1) bn=bn.left(i).stripWhiteSpace();
+      yyextra->blockName=bn;
     }
   }
 }
