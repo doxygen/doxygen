@@ -1999,7 +1999,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN(yyextra->lastSpecialCContext);
                                           }
                                         }
-<RemoveSpecialCComment>{CCE}             {
+<RemoveSpecialCComment>{CCE}            {
+                                          if (!yyextra->insideCodeLine)
+                                          {
+                                            startCodeLine(yyscanner);
+                                          }
                                           BEGIN(yyextra->lastSpecialCContext);
                                         }
 <RemoveSpecialCComment>[^*\n]+
