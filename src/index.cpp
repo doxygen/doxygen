@@ -3823,14 +3823,14 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
       ftv->addContentsItem(
           hasSubPages,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
-          QCString(),FALSE,TRUE,pd);
+          QCString(),hasSubPages,TRUE,pd);
     }
     if (addToIndex && pd!=Doxygen::mainPage.get())
     {
       Doxygen::indexList->addContentsItem(
           hasSubPages || hasSections,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
-          QCString(),FALSE,TRUE,pd);
+          QCString(),hasSubPages,TRUE,pd);
     }
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
