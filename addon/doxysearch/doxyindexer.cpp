@@ -18,7 +18,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
-#include <algorithm>
 #include <sstream>
 #include <fstream>
 #include <iterator>
@@ -92,9 +91,8 @@ static void addWords(const std::string &s,Xapian::Document &doc,int wfd)
   std::istream_iterator<std::string> begin(iss),end,it;
   for (it=begin;it!=end;++it)
   {
-    std::string word = *it;
-    std::string lword = word;
-    std::transform(lword.begin(), lword.end(), lword.begin(), ::tolower);
+    const std::string word = *it;
+    const std::string lword = Xapian::Unicode::tolower(word);
     safeAddTerm(word,doc,wfd);
     if (lword!=word)
     {
