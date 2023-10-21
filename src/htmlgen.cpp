@@ -473,7 +473,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
     {
       case MATHJAX_VERSION_t::MathJax_3:
         {
-          mathJaxJs += "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n"
+          mathJaxJs += // "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n" // needed for IE11 only, see #10354
                        "<script type=\"text/javascript\">\n"
                        "window.MathJax = {\n"
                        "  options: {\n"
