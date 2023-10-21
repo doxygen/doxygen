@@ -64,7 +64,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual QCString anchor() const override { return QCString(); }
     virtual void insertUsedFile(FileDef *fd) override;
     virtual void writeDocumentation(OutputList &ol) override;
-    virtual void writeMemberPages(OutputList &ol) override;
+    virtual void writeMemberPages(OutputList &ol, bool onlyEnum=false);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const override;
     virtual void writeTagFile(TextStream &) override;
     virtual void insertClass(ClassDef *cd) override;
@@ -281,7 +281,20 @@ NamespaceDefImpl::NamespaceDefImpl(const QCString &df,int dl,int dc,
   }
   else
   {
-    setFileNameLocal(name);
+    static int predictable = 2; // means: not initialized
+    // argh... namespace <globalScope> created before Doxyfile is read :(
+    if (predictable == 2 && df == "<globalScope>")
+    {
+      predictable = Config_getBool(PREDICTABLE_URLS) ? 1 : 0;
+    }
+    if (predictable == 1)
+    {
+      fileName = name;
+    }
+    else
+    {
+      setFileNameLocal(name);
+    }
   }
   setReference(lref);
   m_inline=FALSE;
@@ -1127,9 +1140,16 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
     if (allMemberList) allMemberList->sort();
     writeMemberPages(ol);
   }
+  else if (Config_getBool(PREDICTABLE_URLS))
+  {
+    // put enums on separate pages
+    MemberList *enumMemberList = getMemberList(MemberListType_docEnumMembers);
+    if (enumMemberList) enumMemberList->sort(); // is this really needed?
+    writeMemberPages(ol,true);
+  }
 }
 
-void NamespaceDefImpl::writeMemberPages(OutputList &ol)
+void NamespaceDefImpl::writeMemberPages(OutputList &ol, bool onlyEnum)
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
@@ -1138,7 +1158,10 @@ void NamespaceDefImpl::writeMemberPages(OutputList &ol)
   {
     if (ml->listType()&MemberListType_documentationLists)
     {
-      ml->writeDocumentationPage(ol,displayName(),this);
+      if (!onlyEnum || ml->listType()==MemberListType_docEnumMembers)
+      {
+        ml->writeDocumentationPage(ol,displayName(),this);
+      }
     }
   }
   ol.popGeneratorState();
@@ -1490,6 +1513,11 @@ void NamespaceDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,
 
 void NamespaceDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
 {
+  static bool predictableURLs = Config_getBool(PREDICTABLE_URLS);
+  if (predictableURLs && (MemberListType_docEnumMembers == lt))
+  {
+    return; // enums get separate pages, see NamespaceDef::writeDocumentation()
+  }
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDocumentation(ol,displayName(),this,title);
 }

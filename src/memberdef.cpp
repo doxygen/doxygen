@@ -1630,6 +1630,7 @@ bool MemberDefImpl::hasExamples() const
 QCString MemberDefImpl::getOutputFileBase() const
 {
   bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+  bool predictableURLs = Config_getBool(PREDICTABLE_URLS);
   bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
   QCString baseName;
 
@@ -1682,13 +1683,14 @@ QCString MemberDefImpl::getOutputFileBase() const
       );
     return "dummy";
   }
-  else if (separateMemberPages && hasDetailedDescription())
+  else if ((separateMemberPages && hasDetailedDescription()) || predictableURLs)
   {
+    // put only enums on separate page when PREDICTABLE_URLS is set
     if (getEnumScope()) // enum value, which is part of enum's documentation
     {
       baseName+="_"+getEnumScope()->anchor();
     }
-    else
+    else if (separateMemberPages || isEnumerate())
     {
       baseName+="_"+anchor();
     }
@@ -4247,7 +4249,14 @@ QCString MemberDefImpl::getScopeString() const
 
 void MemberDefImpl::setAnchor()
 {
+  static bool predictableURLs = Config_getBool(PREDICTABLE_URLS);
   QCString memAnchor = name();
+  if (predictableURLs)
+  {
+    // assumes name() contains only valid fragment chars
+    m_anc = memAnchor;
+    return;
+  }
   if (!m_args.isEmpty()) memAnchor+=m_args;
   if (m_memSpec.isAlias()) // this is for backward compatibility
   {
