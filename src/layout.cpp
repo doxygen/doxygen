@@ -1015,6 +1015,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                                                               theTranslator->trConstants() :
                                                                                               theTranslator->trVariables()); })
                                                   } },
+  { "namespace/memberdecl/properties",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_properties,
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
+                                                  } },
   { "namespace/memberdef",                        { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
   { "namespace/memberdef/inlineclasses",          { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceInlineClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trClassDocumentation(),
@@ -1040,6 +1043,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                             []() { return compileOptions(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
                                                                                               theTranslator->trConstantDocumentation() :
                                                                                               theTranslator->trVariableDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/properties",             { startCb(&LayoutParser::startMemberDefEntry, MemberListType_propertyMembers,
+                                                            []() { return compileOptions(theTranslator->trPropertyDocumentation()); })
                                                   } },
 
   // file layout handlers
@@ -1109,6 +1115,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                                                                             theTranslator->trConstants() :
                                                                                                             theTranslator->trVariables()); })
                                                   } },
+  { "file/memberdecl/properties",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_properties,
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
+                                                  } },
   { "file/memberdef",                             { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
 
   { "file/memberdef/inlineclasses",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileInlineClasses,
@@ -1138,6 +1147,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                             []() { return compileOptions(theTranslator->trVariableDocumentation()); })
                                                   } },
 
+  { "file/memberdef/properties",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_propertyMembers,
+                                                            []() { return compileOptions(theTranslator->trPropertyDocumentation()); })
+                                                  } },
   // group layout handlers
   { "group",                                      { startCb(&LayoutParser::startTop,LayoutDocManager::Group,"group/",LayoutNavEntry::None),
                                                     endCb(&LayoutParser::endTop)
