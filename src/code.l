@@ -109,7 +109,6 @@ struct codeYY_state
   QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
-  yy_size_t     yyColNr = 0;         //!< current column number
   bool          insideCodeLine = FALSE;
   bool          skipCodify = FALSE;  //!< for CSharp files scoped namespace {
 
@@ -2246,15 +2245,12 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                         }
 <*>\n                                   {
-                                          yyextra->yyColNr++;
                                           codifyLines(yyscanner,yytext);
                                         }
 <*>[\x80-\xFF]*                         { // keep utf8 characters together...
-                                          yyextra->yyColNr+=yyleng;
                                           yyextra->code->codify(yytext);
                                         }
 <*>.                                    {
-                                          yyextra->yyColNr++;
                                           yyextra->code->codify(yytext);
                                         }
 
@@ -2629,11 +2625,10 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
   while (!done)
   {
     sp=p;
-    while ((c=*p++) && c!='\n') { yyextra->yyColNr++; }
+    while ((c=*p++) && c!='\n');
     if (c=='\n')
     {
       yyextra->yyLineNr++;
-      yyextra->yyColNr=1;
       int l = (int)(p-sp-1);
       char *tmp = (char*)malloc(l+1);
       memcpy(tmp,sp,l);
