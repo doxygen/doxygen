@@ -2008,7 +2008,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <RemoveSpecialCComment>[^*\n]+
 <RemoveSpecialCComment>{CPPC}|{CCS}
-<RemoveSpecialCComment>\n  { yyextra->yyLineNr++; endCodeFold(yyscanner); }
+<RemoveSpecialCComment>\n               {
+                                           yyextra->yyLineNr++;
+                                           endCodeLine(yyscanner);
+                                           endCodeFold(yyscanner);
+                                        }
 <RemoveSpecialCComment>.
 <MemberCall>[^a-z_A-Z0-9(\n]            {
                                           yyextra->code->codify(yytext);
