@@ -2579,13 +2579,17 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
   }
   size_t bb=type.find('<');
   size_t be=type.rfind('>');
+  bool templFp = false;
+  if (be!=std::string::npos) {
+    templFp = type.find("::*")>be || type.find("::&")>be; // hack to find, e.g 'B<X>(A<int>::*)'
+  }
 
   if (!type.empty()                            &&  // return type is non-empty
       i!=std::string::npos                     &&   // contains (...*...)
       type.find("operator")==std::string::npos &&   // not an operator
       (type.find(")(")==std::string::npos || type.find("typedef ")!=std::string::npos) &&
                                                     // not a function pointer return type
-      !(bb<i && i<be) // bug665855: avoid treating "typedef A<void (T*)> type" as a function pointer
+      (!(bb<i && i<be) || templFp) // bug665855: avoid treating "typedef A<void (T*)> type" as a function pointer
      )
   {
     if (pLength) *pLength=static_cast<int>(l);

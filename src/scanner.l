@@ -2103,7 +2103,7 @@ NONLopt [^\n]*
                                              yyextra->roundCount++;
                                           }
                                         }
-<EndTemplate>">"{BNopt}/"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ { // function pointer returning a template instance
+<EndTemplate>">"{BNopt}/"("({BN}*{TSCOPE}{BN}*"::")*({BN}*"*"{BN}*)+ { // function pointer returning a template instance
                                           lineCount(yyscanner);
                                           yyextra->current->name+='>';
                                           if (yyextra->roundCount==0)
