@@ -533,6 +533,14 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         addMemberToList(MemberListType_decDefineMembers,md);
         addMemberToList(MemberListType_docDefineMembers,md);
         break;
+      case MemberType_Property:
+        if (md->getLanguage() == SrcLangExt_Python)
+        {
+          addMemberToList(MemberListType_propertyMembers,md);
+          addMemberToList(MemberListType_properties,md);
+          break;
+        }
+        //  fallthrough, explicitly no break here
       default:
         err("NamespaceDefImpl::insertMembers(): "
             "member '%s' with unexpected type id %d and class scope '%s' inserted in namespace scope '%s'!\n",
