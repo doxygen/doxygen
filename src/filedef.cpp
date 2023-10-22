@@ -1282,8 +1282,15 @@ void FileDefImpl::insertMember(MemberDef *md)
   allMemberList->push_back(md);
   switch (md->memberType())
   {
-    case MemberType_Variable:
     case MemberType_Property:
+      if (md->getLanguage() == SrcLangExt_Python)
+      {
+        addMemberToList(MemberListType_propertyMembers,md);
+        addMemberToList(MemberListType_properties,md);
+        break;
+      }
+      //  fallthrough, explicitly no break here
+    case MemberType_Variable:
       addMemberToList(MemberListType_decVarMembers,md);
       addMemberToList(MemberListType_docVarMembers,md);
       break;
