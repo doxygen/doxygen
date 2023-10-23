@@ -5450,7 +5450,7 @@ static bool findGlobalMember(const Entry *root,
         warnMsg+="\nPossible candidates:";
         for (const auto &md : *mn)
         {
-          warnMsg+="\n '";
+          warnMsg+="\n  '";
           warnMsg+=substitute(md->declaration(),"%","%%");
           warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
         }
