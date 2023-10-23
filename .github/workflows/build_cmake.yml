@@ -173,7 +173,7 @@ jobs:
 #      if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Windows)
-      uses: teatimeguest/setup-texlive-action@v2
+      uses: teatimeguest/setup-texlive-action@v3
       with:
         packages: >-
           scheme-medium
