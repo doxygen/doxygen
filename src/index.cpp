@@ -1837,9 +1837,6 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
       {
         ftv->incContentsDepth();
         writeNamespaceTree(nd->getNamespaces(),ftv,FALSE,addToIndex);
-        writeClassTree(nd->getClasses(),ftv,addToIndex,FALSE,ClassDef::Class);
-        writeConceptList(nd->getConcepts(),ftv,addToIndex);
-        writeNamespaceMembers(nd,addToIndex);
         ftv->decContentsDepth();
       }
       if (addToIndex && isDir)
