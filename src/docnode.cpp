@@ -1080,7 +1080,7 @@ bool DocDotFile::parse()
     ok = true;
     if (ambig)
     {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dot file name %s is ambiguous.\n"
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dot file name '%s' is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(p->name),
            qPrint(showFileDefMatches(Doxygen::dotFileNameLinkedMap,p->name))
           );
@@ -1088,7 +1088,7 @@ bool DocDotFile::parse()
   }
   else
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dot file %s is not found "
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dot file '%s' is not found "
            "in any of the paths specified via DOTFILE_DIRS!",qPrint(p->name));
   }
   return ok;
@@ -1118,7 +1118,7 @@ bool DocMscFile::parse()
     ok = true;
     if (ambig)
     {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included msc file name %s is ambiguous.\n"
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included msc file name '%s' is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(p->name),
            qPrint(showFileDefMatches(Doxygen::mscFileNameLinkedMap,p->name))
           );
@@ -1126,7 +1126,7 @@ bool DocMscFile::parse()
   }
   else
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included msc file %s is not found "
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included msc file '%s' is not found "
            "in any of the paths specified via MSCFILE_DIRS!",qPrint(p->name));
   }
   return ok;
@@ -1158,7 +1158,7 @@ bool DocDiaFile::parse()
     ok = true;
     if (ambig)
     {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dia file name %s is ambiguous.\n"
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dia file name '%s' is ambiguous.\n"
            "Possible candidates:\n%s",qPrint(p->name),
            qPrint(showFileDefMatches(Doxygen::diaFileNameLinkedMap,p->name))
           );
@@ -1166,7 +1166,7 @@ bool DocDiaFile::parse()
   }
   else
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dia file %s is not found "
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included dia file '%s' is not found "
            "in any of the paths specified via DIAFILE_DIRS!",qPrint(p->name));
   }
   return ok;

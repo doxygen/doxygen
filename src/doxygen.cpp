@@ -547,6 +547,7 @@ static void buildFileList(const Entry *root)
       {
         text+="matches the following input files:\n";
         text+=showFileDefMatches(Doxygen::inputNameLinkedMap,root->name);
+        text+="\n";
         text+="Please use a more specific name by "
           "including a (larger) part of the path!";
       }
@@ -602,6 +603,7 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
       {
         text+="matches the following input files:\n";
         text+=showFileDefMatches(Doxygen::inputNameLinkedMap,root->includeFile);
+        text+="\n";
         text+="Please use a more specific name by "
             "including a (larger) part of the path!";
       }
@@ -5448,7 +5450,7 @@ static bool findGlobalMember(const Entry *root,
         warnMsg+="\nPossible candidates:";
         for (const auto &md : *mn)
         {
-          warnMsg+="\n '";
+          warnMsg+="\n  '";
           warnMsg+=substitute(md->declaration(),"%","%%");
           warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
         }
