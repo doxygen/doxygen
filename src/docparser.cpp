@@ -106,7 +106,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
     if (ambig & doWarn)
     {
       QCString text;
-      text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
+      text.sprintf("image file name '%s' is ambiguous.\n",qPrint(fileName));
       text+="Possible candidates:\n";
       text+=showFileDefMatches(Doxygen::imageNameLinkedMap,fileName);
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"%s", qPrint(text));
@@ -1662,7 +1662,7 @@ void DocParser::readTextFileByName(const QCString &file,QCString &text)
     text = fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
     if (ambig)
     {
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file name %s is ambiguous"
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file name '%s' is ambiguous"
            "Possible candidates:\n%s",qPrint(file),
            qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,file))
           );
@@ -1670,7 +1670,7 @@ void DocParser::readTextFileByName(const QCString &file,QCString &text)
   }
   else
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file %s is not found. "
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file '%s' is not found. "
            "Check your EXAMPLE_PATH",qPrint(file));
   }
 }

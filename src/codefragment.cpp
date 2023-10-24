@@ -269,7 +269,7 @@ static QCString readTextFileByName(const QCString &file)
   {
     if (ambig)
     {
-      err("included file name %s is ambiguous. Possible candidates: %s\n",qPrint(file),
+      err("included file name '%s' is ambiguous.\nPossible candidates:\n%s\n",qPrint(file),
            qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,file))
           );
     }

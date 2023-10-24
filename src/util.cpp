@@ -3292,11 +3292,14 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
   const FileName *fn;
   if ((fn=fnMap->find(name)))
   {
+    bool first = true;
     for (const auto &fd : *fn)
     {
       if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {
-        result+="   "+fd->absFilePath()+"\n";
+        if (!first) result += "\n";
+        else first = false;
+        result+="  "+fd->absFilePath();
       }
     }
   }
