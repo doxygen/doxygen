@@ -2448,6 +2448,37 @@ static inline void addTillEndOfString(yyscan_t yyscanner,const QCString &expr,QC
   }
 }
 
+static void skipCommentMacroName(yyscan_t yyscanner, const QCString &expr, QCString *rest,
+                                 int &cc, uint32_t &j, int &len)
+{
+  bool changed = false;
+
+  do
+  {
+    changed = false;
+    while ((cc=getCurrentChar(yyscanner,expr,rest,j))!=EOF && cc!='\n' && isspace(cc))
+    {
+      len++;
+      getNextChar(yyscanner,expr,rest,j);
+    }
+
+    if (cc=='/') // possible start of a comment
+    {
+      int prevChar = '\0';
+      getNextChar(yyscanner,expr,rest,j);
+      if ((cc=getCurrentChar(yyscanner,expr,rest,j))!=EOF && cc == '*') // we have a comment
+      {
+        while ((cc=getNextChar(yyscanner,expr,rest,j))!=EOF && cc!=0)
+        {
+          if (cc == '/' && prevChar == '*') break; // we have an end of comment
+          prevChar = cc;
+        }
+        if (cc != EOF) changed = true;
+      }
+    }
+  } while (changed);
+}
+
 /*! replaces the function macro \a def whose argument list starts at
  * \a pos in expression \a expr.
  * Notice that this routine may scan beyond the \a expr string if needed.
@@ -2463,11 +2494,9 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
   len=0;
   result.resize(0);
   int cc;
-  while ((cc=getCurrentChar(yyscanner,expr,rest,j))!=EOF && cc!='\n' && isspace(cc))
-  {
-    len++;
-    getNextChar(yyscanner,expr,rest,j);
-  }
+
+  skipCommentMacroName(yyscanner, expr, rest, cc, j, len);
+
   if (cc!='(')
   {
     unputChar(yyscanner,expr,rest,j,' ');
