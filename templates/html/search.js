@@ -22,6 +22,9 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
+var cookie_namespace = 'doxygen';
+var cookie_name = '_search_grp';
+
 function convertToId(search)
 {
   var result = '';
@@ -252,6 +255,7 @@ function SearchBox(name, resultsPath, extension)
         if (j==id)
         {
           node.innerHTML='&#8226;';
+          writeSetting(cookie_name, id)
         }
         else
         {
@@ -807,9 +811,45 @@ function createResults(resultsPath)
   }
 }
 
+function writeSetting(cookie, val)
+{
+  if (window.chrome) {
+    localStorage.setItem(cookie_namespace+cookie,val);
+  } else {
+    var date = new Date();
+    date.setTime(date.getTime()+(1*60*60*1000)); // default expiration is one hour
+    expiration = date.toGMTString();
+    document.cookie = cookie_namespace + cookie + "=" + val + "; SameSite=Lax; expires=" + expiration+"; path=/";
+  }
+}
+
 function init_search()
 {
   var results = document.getElementById("MSearchSelectWindow");
+
+  function readSetting(cookie)
+  {
+    if (window.chrome) {
+      var val = localStorage.getItem(cookie_namespace+cookie);
+      if (val) return val;
+    } else {
+      var myCookie = cookie_namespace+cookie+"=";
+      if (document.cookie) {
+        var index = document.cookie.indexOf(myCookie);
+        if (index != -1) {
+          var valStart = index + myCookie.length;
+          var valEnd = document.cookie.indexOf(";", valStart);
+          if (valEnd == -1) {
+            valEnd = document.cookie.length;
+          }
+          var val = document.cookie.substring(valStart, valEnd);
+          return val;
+        }
+      }
+    }
+    return 0;
+  }
+
   results.tabIndex=0;
   for (var key in indexSectionLabels)
   {
@@ -820,7 +860,6 @@ function init_search()
     link.innerHTML='<span class="SelectionMark">&#160;</span>'+indexSectionLabels[key];
     results.appendChild(link);
   }
-  searchBox.OnSelectItem(0);
 
   var input = document.getElementById("MSearchSelect");
   var searchSelectWindow = document.getElementById("MSearchSelectWindow");
@@ -836,5 +875,7 @@ function init_search()
       }
     }
   });
+  var id = readSetting(cookie_name);
+  searchBox.OnSelectItem(id);
 }
 /* @license-end */
