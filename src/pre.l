@@ -3440,7 +3440,6 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
     bool alreadyProcessed = FALSE;
     //printf("calling findFile(%s)\n",qPrint(incFileName));
     fs=findFile(yyscanner,absIncFileName,localInclude,alreadyProcessed); // see if the absolute include file can be found
-    if (!fs && !alreadyProcessed) fs=findFile(yyscanner,incFileName,localInclude,alreadyProcessed); // see if the include file can be found
     if (fs)
     {
       {
