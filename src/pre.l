@@ -2851,7 +2851,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
 
         if (replaced) // expand the macro and rescan the expression
         {
-          //printf(" replacing '%s'->'%s'\n",expr.mid(p,qPrint(len)),qPrint(expMacro));
+          //printf(" replacing '%s'->'%s'\n",qPrint(expr.mid(p,len)),qPrint(expMacro));
           QCString resultExpr=expMacro;
           QCString restExpr=expr.right(expr.length()-len-p);
           processConcatOperators(resultExpr);
@@ -3439,7 +3439,8 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
     std::unique_ptr<FileState> fs;
     bool alreadyProcessed = FALSE;
     //printf("calling findFile(%s)\n",qPrint(incFileName));
-    if ((fs=findFile(yyscanner,incFileName,localInclude,alreadyProcessed))) // see if the include file can be found
+    fs=findFile(yyscanner,absIncFileName,localInclude,alreadyProcessed); // see if the absolute include file can be found
+    if (fs)
     {
       {
         std::lock_guard<std::mutex> lock(g_globalDefineMutex);
