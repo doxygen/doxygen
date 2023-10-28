@@ -242,6 +242,25 @@ function SearchBox(name, resultsPath, extension)
     return count;
   }
 
+  this.GetSelectionIdByName = function(name)
+  {
+    var i=0,j=0;
+    var win=this.DOMSearchSelectWindow();
+    for (i=0;i<win.childNodes.length;i++)
+    {
+      var child = win.childNodes[i];
+      if (child.className=='SelectItem')
+      {
+        if (child.childNodes[1].nodeValue==name)
+        {
+          return j;
+        }
+        j++;
+      }
+    }
+    return 0;
+  }
+
   this.SelectItemSet = function(id)
   {
     var i,j=0;
@@ -255,7 +274,7 @@ function SearchBox(name, resultsPath, extension)
         if (j==id)
         {
           node.innerHTML='&#8226;';
-          writeSetting(cookie_name, id)
+          writeSetting(cookie_name, child.childNodes[1].nodeValue)
         }
         else
         {
@@ -875,7 +894,8 @@ function init_search()
       }
     }
   });
-  var id = readSetting(cookie_name);
+  var name = readSetting(cookie_name);
+  var id = searchBox.GetSelectionIdByName(name);
   searchBox.OnSelectItem(id);
 }
 /* @license-end */
