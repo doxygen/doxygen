@@ -73,11 +73,11 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
         auto dfAst  { createRef( *parser.get(), url, context, srcFile, srcLine) };
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
-        t << externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty() || !df->anchor().isEmpty())
         {
           link = true;
           t << "<area href=\"";
+          t << externalRef(relPath,df->ref(),TRUE);
         }
         if (!df->file().isEmpty())
         {

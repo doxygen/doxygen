@@ -30,6 +30,8 @@
 #include "config.h"
 #include "xml.h"
 #include "resourcemgr.h"
+#include "docparser.h"
+#include "docnode.h"
 #include "debug.h"
 
 inline QCString compileOptions(const QCString &def)
@@ -145,20 +147,26 @@ QCString LayoutNavEntry::url() const
   }
   else if (url.startsWith("@ref ") || url.startsWith("\\ref "))
   {
-    const Definition *d = 0;
-    QCString anchor;
-    bool found=FALSE;
-    if (resolveLink(QCString(),url.mid(5).stripWhiteSpace(),TRUE,&d,anchor))
+    bool found=false;
+    QCString relPath = "";
+    QCString context = QCString();
+    auto parser { createDocParser() };
+    auto dfAst  { createRef( *parser.get(), url.mid(5).stripWhiteSpace(), context ) };
+    auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+    const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
+    if (!df->file().isEmpty() || !df->anchor().isEmpty())
     {
-      if (d && d->isLinkable())
+      found = true;
+      url=externalRef(relPath,df->ref(),TRUE);
+      if (!df->file().isEmpty())
       {
-        url = d->getOutputFileBase();
-        addHtmlExtensionIfMissing(url);
-        if (!anchor.isEmpty())
-        {
-          url+="#"+anchor;
-        }
-        found=TRUE;
+        QCString fn = df->file();
+        addHtmlExtensionIfMissing(fn);
+        url += fn;
+      }
+      if (!df->anchor().isEmpty())
+      {
+        url += "#" + df->anchor();
       }
     }
     if (!found)
