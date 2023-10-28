@@ -107,6 +107,7 @@ struct codeYY_state
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
+  QCString      absFileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   bool          insideCodeLine = FALSE;
@@ -504,7 +505,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           bool ambig;
                                           bool found=FALSE;
 
-                                          const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,yytext,ambig);
+                                          QCString absIncFileName = determineAbsoluteIncludeName(yyextra->absFileName,yytext);
+                                          const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
                                           //printf("looking for include %s -> %s fd=%p\n",yytext,qPrint(absPath),fd);
                                           if (fd && fd->isLinkable())
                                           {
@@ -4110,6 +4112,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const Q
   yyextra->code = &od;
   yyextra->inputString   = s.data();
   yyextra->fileName      = fd ? fd->fileName():"";
+  yyextra->absFileName   = fd ? fd->absFilePath():"";
   yyextra->inputPosition = 0;
   codeYYrestart(0,yyscanner);
   yyextra->currentFontClass = 0;
