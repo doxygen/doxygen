@@ -11,7 +11,8 @@ SCRIPTS = jquery-$(JQUERY_VERSION).min.js \
           jquery.scrollTo-$(SCROLL_VERSION).min.js \
 	  jquery.powertip-$(POWERTIP_VERSION).mod.min.js \
 	  jquery.ui.touch-punch-$(TOUCHPUNCH_VERSION).min.js \
-	  jquery.smartmenus-$(SMARTMENUS_VERSION).min.js
+	  jquery.smartmenus-$(SMARTMENUS_VERSION).min.js \
+	  cookie.js
 RESULTS = jquery.js doxmenu-min.css
 
 all: $(RESULTS)

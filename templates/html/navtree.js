@@ -25,6 +25,7 @@
 var navTreeSubIndices = new Array();
 var arrowDown = '&#9660;';
 var arrowRight = '&#9658;';
+var navpath_cookie_name = 'navpath';
 
 function getData(varName)
 {
@@ -61,37 +62,21 @@ function pathName()
   return $(location).attr('pathname').replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)]/g, '');
 }
 
-function localStorageSupported()
-{
-  try {
-    return 'localStorage' in window && window['localStorage'] !== null && window.localStorage.getItem;
-  }
-  catch(e) {
-    return false;
-  }
-}
-
 function storeLink(link)
 {
-  if (!$("#nav-sync").hasClass('sync') && localStorageSupported()) {
-      window.localStorage.setItem('navpath',link);
+  if (!$("#nav-sync").hasClass('sync')) {
+      Cookie.writeSetting(navpath_cookie_name,link);
   }
 }
 
 function deleteLink()
 {
-  if (localStorageSupported()) {
-    window.localStorage.setItem('navpath','');
-  }
+  Cookie.writeSetting(navpath_cookie_name,'');
 }
 
 function cachedLink()
 {
-  if (localStorageSupported()) {
-    return window.localStorage.getItem('navpath');
-  } else {
-    return '';
-  }
+  return Cookie.readSetting(navpath_cookie_name,'');
 }
 
 function getScript(scriptName,func)
@@ -506,16 +491,14 @@ function initNavTree(toroot,relpath)
   o.node.plus_img.className = 'arrow';
   o.node.plus_img.innerHTML = arrowRight;
 
-  if (localStorageSupported()) {
-    var navSync = $('#nav-sync');
-    if (cachedLink()) {
-      showSyncOff(navSync,relpath);
-      navSync.removeClass('sync');
-    } else {
-      showSyncOn(navSync,relpath);
-    }
-    navSync.click(function(){ toggleSyncButton(relpath); });
+  var navSync = $('#nav-sync');
+  if (cachedLink()) {
+    showSyncOff(navSync,relpath);
+    navSync.removeClass('sync');
+  } else {
+    showSyncOn(navSync,relpath);
   }
+  navSync.click(function(){ toggleSyncButton(relpath); });
 
   if (loadTriggered) { // load before ready
     navTo(o,toroot,hashUrl(),relpath);

@@ -28,6 +28,10 @@ SOFTWARE.
 */
 
 class DarkModeToggle extends HTMLElement {
+
+    static darkmode_cookie_name = 'prefers-dark';
+    static lightmode_cookie_name = 'prefers-light';
+
     static icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="1em" width="1em"><g fill="none" fill-rule="evenodd"><path d="M0 0h24v24H0z"></path><rect width="1" height="3" x="12" fill="currentColor" rx=".5"></rect><rect width="1" height="3" x="12" y="21" fill="currentColor" rx=".5"></rect><rect width="1" height="3" x="22" y="10.5" fill="currentColor" rx=".5" transform="rotate(90 22.5 12)"></rect><rect width="1" height="3" x="1" y="10.5" fill="currentColor" rx=".5" transform="rotate(90 1.5 12)"></rect><rect width="1" height="3" x="19" y="3" fill="currentColor" rx=".5" transform="rotate(-135 19.5 4.5)"></rect><rect width="1" height="3" x="19" y="18" fill="currentColor" rx=".5" transform="rotate(135 19.5 19.5)"></rect><rect width="1" height="3" x="4" y="3" fill="currentColor" rx=".5" transform="scale(1 -1) rotate(45 15.37 0)"></rect><rect width="1" height="3" x="4" y="18" fill="currentColor" rx=".5" transform="scale(1 -1) rotate(-45 -42.57 0)"></rect><circle cx="12" cy="12" r="6.5" stroke="currentColor"></circle><path fill="currentColor" stroke="currentColor" d="M12.5 18.48V5.52a6.5 6.5 0 010 12.96z"></path></g></svg>';
     static title = "Toggle Light/Dark Mode"
 
@@ -159,53 +163,28 @@ class DarkModeToggle extends HTMLElement {
     }
 
     static get prefersDarkModeInLightMode() {
-        if (window.chrome) { // Chrome supports localStorage in combination with file:// but not cookies
-          return localStorage.getItem(DarkModeToggle.prefersDarkModeInLightModeKey)
-        } else { // Other browsers support cookies in combination with file:// but not localStorage
-          return DarkModeToggle.readCookie('doxygen_prefers_dark')=='1'
-        }
+        return Cookie.readSetting(DarkModeToggle.darkmode_cookie_name,'0')=='1';
     }
 
     static set prefersDarkModeInLightMode(preference) {
-        if (window.chrome) {
-            if (preference) {
-                localStorage.setItem(DarkModeToggle.prefersDarkModeInLightModeKey, true)
-            } else {
-                localStorage.removeItem(DarkModeToggle.prefersDarkModeInLightModeKey)
-            }
+        if (preference) {
+          Cookie.writeSetting(DarkModeToggle.darkmode_cookie_name,'1');
         } else {
-            if (preference) {
-               DarkModeToggle.createCookie('doxygen_prefers_dark','1',365)
-            } else {
-               DarkModeToggle.eraseCookie('doxygen_prefers_dark')
-            }
+          Cookie.eraseSetting(DarkModeToggle.darkmode_cookie_name);
         }
     }
 
     static get prefersLightModeInDarkMode() {
-        if (window.chrome) { // Chrome supports localStorage in combination with file:// but not cookies
-          return localStorage.getItem(DarkModeToggle.prefersLightModeInDarkModeKey)
-        } else { // Other browsers support cookies in combination with file:// but not localStorage
-          return DarkModeToggle.readCookie('doxygen_prefers_light')=='1'
-        }
+        return Cookie.readSetting(DarkModeToggle.lightmode_cookie_name,'0')=='1'
     }
 
     static set prefersLightModeInDarkMode(preference) {
-        if (window.chrome) {
-            if (preference) {
-                localStorage.setItem(DarkModeToggle.prefersLightModeInDarkModeKey, true)
-            } else {
-                localStorage.removeItem(DarkModeToggle.prefersLightModeInDarkModeKey)
-            }
+        if (preference) {
+          Cookie.writeSetting(DarkModeToggle.lightmode_cookie_name,'1');
         } else {
-            if (preference) {
-               DarkModeToggle.createCookie('doxygen_prefers_light','1',365)
-            } else {
-               DarkModeToggle.eraseCookie('doxygen_prefers_light')
-            }
+          Cookie.eraseSetting(DarkModeToggle.lightmode_cookie_name);
         }
     }
-
 
     /**
      * @returns `true` for dark-mode, `false` for light-mode user preference

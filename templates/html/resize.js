@@ -22,46 +22,12 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
+
 var once=1;
 function initResizable()
 {
-  var cookie_namespace = 'doxygen';
   var sidenav,navtree,content,header,barWidth=6,desktop_vp=768,titleHeight;
-
-  function readSetting(cookie)
-  {
-    if (window.chrome) {
-      var val = localStorage.getItem(cookie_namespace+'_width');
-      if (val) return val;
-    } else {
-      var myCookie = cookie_namespace+"_"+cookie+"=";
-      if (document.cookie) {
-        var index = document.cookie.indexOf(myCookie);
-        if (index != -1) {
-          var valStart = index + myCookie.length;
-          var valEnd = document.cookie.indexOf(";", valStart);
-          if (valEnd == -1) {
-            valEnd = document.cookie.length;
-          }
-          var val = document.cookie.substring(valStart, valEnd);
-          return val;
-        }
-      }
-    }
-    return $TREEVIEW_WIDTH;
-  }
-
-  function writeSetting(cookie, val)
-  {
-    if (window.chrome) {
-      localStorage.setItem(cookie_namespace+"_width",val);
-    } else {
-      var date = new Date();
-      date.setTime(date.getTime()+(10*365*24*60*60*1000)); // default expiration is one week
-      expiration = date.toGMTString();
-      document.cookie = cookie_namespace + "_" + cookie + "=" + val + "; SameSite=Lax; expires=" + expiration+"; path=/";
-    }
-  }
+  var resize_cookie_name = 'width';
 
   function resizeWidth()
   {
@@ -71,7 +37,7 @@ function initResizable()
     if (typeof page_layout!=='undefined' && page_layout==1) {
       footer.css({marginLeft:parseInt(sidenavWidth)+"px"});
     }
-    writeSetting('width',sidenavWidth-barWidth);
+    Cookie.writeSetting(resize_cookie_name,sidenavWidth-barWidth);
   }
 
   function restoreWidth(navWidth)
@@ -114,12 +80,12 @@ function initResizable()
       newWidth=0;
     }
     else {
-      var width = readSetting('width');
+      var width = Cookie.readSetting(resize_cookie_name,$TREEVIEW_WIDTH);
       newWidth = (width>$TREEVIEW_WIDTH && width<$(window).width()) ? width : $TREEVIEW_WIDTH;
     }
     restoreWidth(newWidth);
     var sidenavWidth = $(sidenav).outerWidth();
-    writeSetting('width',sidenavWidth-barWidth);
+    Cookie.writeSetting(resize_cookie_name,sidenavWidth-barWidth);
   }
 
   header  = $("#top");
@@ -138,7 +104,7 @@ function initResizable()
     $('#nav-sync').css({ right:'34px' });
     barWidth=20;
   }
-  var width = readSetting('width');
+  var width = Cookie.readSetting(resize_cookie_name,$TREEVIEW_WIDTH);
   if (width) { restoreWidth(width); } else { resizeWidth(); }
   resizeHeight();
   var url = location.href;
