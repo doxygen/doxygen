@@ -1402,7 +1402,22 @@ int Markdown::processLink(const char *data,int offset,int size)
     else
     {
       m_out.addStr("<img src=\"");
-      m_out.addStr(link);
+      if (Portable::isAbsolutePath(link) || isURL(link))
+      {
+        m_out.addStr(link);
+      }
+      else
+      {
+        // lets see if the file exists based on the path of the input file and the image file name (is a relative path / local filename)
+        FileInfo fi(m_fileName.str());
+        QCString imgFile = m_fileName.left(m_fileName.length()-fi.fileName().length()) + link;
+        FileInfo fimg(imgFile.str());
+        if (fimg.exists() && fimg.isReadable())
+        {
+          link = imgFile.right(fimg.fileName().length());
+        }
+        m_out.addStr(link);
+      }
       m_out.addStr("\" alt=\"");
       m_out.addStr(content);
       m_out.addStr("\"");
