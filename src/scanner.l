@@ -1086,11 +1086,13 @@ NONLopt [^\n]*
                                           BEGIN( ModuleName );
                                         }
 <FindMembers>{B}*"export"{BN}+"import"{BN}+  { // export an imported module
+                                          if (!yyextra->insideCpp) REJECT;
                                           yyextra->current->exported = true;
                                           lineCount(yyscanner);
                                           BEGIN( ModuleImport );
                                         }
 <FindMembers>{B}*"import"{BN}+          { // start of a module import
+                                          if (!yyextra->insideCpp) REJECT;
                                           lineCount(yyscanner);
                                           BEGIN( ModuleImport );
                                         }
