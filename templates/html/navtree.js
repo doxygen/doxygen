@@ -22,67 +22,57 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
-var navTreeSubIndices = new Array();
-var arrowDown = '&#9660;';
-var arrowRight = '&#9658;';
-var navpath_cookie_name = 'navpath';
+let navTreeSubIndices = new Array();
+const ARROW_DOWN = '&#9660;';
+const ARROW_RIGHT = '&#9658;';
+const NAVPATH_COOKIE_NAME = 'navpath';
 
-function getData(varName)
-{
-  var i = varName.lastIndexOf('/');
-  var n = i>=0 ? varName.substring(i+1) : varName;
-  return eval(n.replace(/\-/g,'_'));
+function getData(varName) {
+  const i = varName.lastIndexOf('/');
+  const n = i>=0 ? varName.substring(i+1) : varName;
+  return eval(n.replace(/-/g,'_'));
 }
 
-function stripPath(uri)
-{
+function stripPath(uri) {
   return uri.substring(uri.lastIndexOf('/')+1);
 }
 
-function stripPath2(uri)
-{
-  var i = uri.lastIndexOf('/');
-  var s = uri.substring(i+1);
-  var m = uri.substring(0,i+1).match(/\/d\w\/d\w\w\/$/);
+function stripPath2(uri) {
+  const i = uri.lastIndexOf('/');
+  const s = uri.substring(i+1);
+  const m = uri.substring(0,i+1).match(/\/d\w\/d\w\w\/$/);
   return m ? uri.substring(i-6) : s;
 }
 
-function hashValue()
-{
-  return $(location).attr('hash').substring(1).replace(/[^\w\-]/g,'');
+function hashValue() {
+  return $(location).attr('hash').substring(1).replace(/[^\w-]/g,'');
 }
 
-function hashUrl()
-{
+function hashUrl() {
   return '#'+hashValue();
 }
 
-function pathName()
-{
-  return $(location).attr('pathname').replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)]/g, '');
+function pathName() {
+  return $(location).attr('pathname').replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;()]/g, '');
 }
 
-function storeLink(link)
-{
+function storeLink(link) {
   if (!$("#nav-sync").hasClass('sync')) {
-      Cookie.writeSetting(navpath_cookie_name,link);
+    Cookie.writeSetting(NAVPATH_COOKIE_NAME,link,0);
   }
 }
 
-function deleteLink()
-{
-  Cookie.writeSetting(navpath_cookie_name,'');
+function deleteLink() {
+  Cookie.eraseSetting(NAVPATH_COOKIE_NAME);
 }
 
-function cachedLink()
-{
-  return Cookie.readSetting(navpath_cookie_name,'');
+function cachedLink() {
+  return Cookie.readSetting(NAVPATH_COOKIE_NAME,'');
 }
 
-function getScript(scriptName,func)
-{
-  var head = document.getElementsByTagName("head")[0];
-  var script = document.createElement('script');
+function getScript(scriptName,func) {
+  const head = document.getElementsByTagName("head")[0];
+  const script = document.createElement('script');
   script.id = scriptName;
   script.type = 'text/javascript';
   script.onload = func;
@@ -90,23 +80,22 @@ function getScript(scriptName,func)
   head.appendChild(script);
 }
 
-function createIndent(o,domNode,node,level)
-{
-  var level=-1;
-  var n = node;
+function createIndent(o,domNode,node) {
+  let level=-1;
+  let n = node;
   while (n.parentNode) { level++; n=n.parentNode; }
   if (node.childrenData) {
-    var imgNode = document.createElement("span");
+    const imgNode = document.createElement("span");
     imgNode.className = 'arrow';
     imgNode.style.paddingLeft=(16*level).toString()+'px';
-    imgNode.innerHTML=arrowRight;
+    imgNode.innerHTML=ARROW_RIGHT;
     node.plus_img = imgNode;
     node.expandToggle = document.createElement("a");
     node.expandToggle.href = "javascript:void(0)";
     node.expandToggle.onclick = function() {
       if (node.expanded) {
         $(node.getChildrenUL()).slideUp("fast");
-        node.plus_img.innerHTML=arrowRight;
+        node.plus_img.innerHTML=ARROW_RIGHT;
         node.expanded = false;
       } else {
         expandNode(o, node, false, true);
@@ -115,7 +104,7 @@ function createIndent(o,domNode,node,level)
     node.expandToggle.appendChild(imgNode);
     domNode.appendChild(node.expandToggle);
   } else {
-    var span = document.createElement("span");
+    let span = document.createElement("span");
     span.className = 'arrow';
     span.style.width   = 16*(level+1)+'px';
     span.innerHTML = '&#160;';
@@ -123,24 +112,22 @@ function createIndent(o,domNode,node,level)
   }
 }
 
-var animationInProgress = false;
+let animationInProgress = false;
 
-function gotoAnchor(anchor,aname,updateLocation)
-{
-  var pos, docContent = $('#doc-content');
-  var ancParent = $(anchor.parent());
+function gotoAnchor(anchor,aname,updateLocation) {
+  let pos, docContent = $('#doc-content');
+  let ancParent = $(anchor.parent());
   if (ancParent.hasClass('memItemLeft') ||
       ancParent.hasClass('memtitle') ||
       ancParent.hasClass('fieldname') ||
       ancParent.hasClass('fieldtype') ||
-      ancParent.is(':header'))
-  {
+      ancParent.is(':header')) {
     pos = ancParent.position().top;
   } else if (anchor.position()) {
     pos = anchor.position().top;
   }
   if (pos) {
-    var dist = Math.abs(Math.min(
+    let dist = Math.abs(Math.min(
                pos-docContent.offset().top,
                docContent[0].scrollHeight-
                docContent.height()-docContent.scrollTop()));
@@ -154,9 +141,8 @@ function gotoAnchor(anchor,aname,updateLocation)
   }
 }
 
-function newNode(o, po, text, link, childrenData, lastNode)
-{
-  var node = new Object();
+function newNode(o, po, text, link, childrenData, lastNode) {
+  const node = new Object();
   node.children = Array();
   node.childrenData = childrenData;
   node.depth = po.depth + 1;
@@ -173,17 +159,17 @@ function newNode(o, po, text, link, childrenData, lastNode)
   node.labelSpan = document.createElement("span");
   node.labelSpan.className = "label";
 
-  createIndent(o,node.itemDiv,node,0);
+  createIndent(o,node.itemDiv,node);
   node.itemDiv.appendChild(node.labelSpan);
   node.li.appendChild(node.itemDiv);
 
-  var a = document.createElement("a");
+  const a = document.createElement("a");
   node.labelSpan.appendChild(a);
   node.label = document.createTextNode(text);
   node.expanded = false;
   a.appendChild(node.label);
   if (link) {
-    var url;
+    let url;
     if (link.substring(0,1)=='^') {
       url = link.substring(1);
       link = url;
@@ -192,29 +178,27 @@ function newNode(o, po, text, link, childrenData, lastNode)
     }
     a.className = stripPath(link.replace('#',':'));
     if (link.indexOf('#')!=-1) {
-      var aname = '#'+link.split('#')[1];
-      var srcPage = stripPath(pathName());
-      var targetPage = stripPath(link.split('#')[0]);
+      const aname = '#'+link.split('#')[1];
+      const srcPage = stripPath(pathName());
+      const targetPage = stripPath(link.split('#')[0]);
       a.href = srcPage!=targetPage ? url : "javascript:void(0)";
       a.onclick = function(){
         storeLink(link);
-        if (!$(a).parent().parent().hasClass('selected'))
-        {
+        if (!$(a).parent().parent().hasClass('selected')) {
           $('.item').removeClass('selected');
           $('.item').removeAttr('id');
           $(a).parent().parent().addClass('selected');
           $(a).parent().parent().attr('id','selected');
         }
-        var anchor = $(aname);
+        const anchor = $(aname);
         gotoAnchor(anchor,aname,true);
       };
     } else {
       a.href = url;
-      a.onclick = function() { storeLink(link); }
+      a.onclick = () => storeLink(link);
     }
   } else {
-    if (childrenData != null)
-    {
+    if (childrenData != null) {
       a.className = "nolink";
       a.href = "javascript:void(0)";
       a.onclick = node.expandToggle.onclick;
@@ -235,14 +219,13 @@ function newNode(o, po, text, link, childrenData, lastNode)
   return node;
 }
 
-function showRoot()
-{
-  var headerHeight = $("#top").height();
-  var footerHeight = $("#nav-path").height();
-  var windowHeight = $(window).height() - headerHeight - footerHeight;
+function showRoot() {
+  const headerHeight = $("#top").height();
+  const footerHeight = $("#nav-path").height();
+  const windowHeight = $(window).height() - headerHeight - footerHeight;
   (function (){ // retry until we can scroll to the selected item
     try {
-      var navtree=$('#nav-tree');
+      const navtree=$('#nav-tree');
       navtree.scrollTo('#selected',100,{offset:-windowHeight/2});
     } catch (err) {
       setTimeout(arguments.callee, 0);
@@ -250,11 +233,10 @@ function showRoot()
   })();
 }
 
-function expandNode(o, node, imm, setFocus)
-{
+function expandNode(o, node, imm, setFocus) {
   if (node.childrenData && !node.expanded) {
     if (typeof(node.childrenData)==='string') {
-      var varName    = node.childrenData;
+      const varName    = node.childrenData;
       getScript(node.relpath+varName,function(){
         node.childrenData = getData(varName);
         expandNode(o, node, imm, setFocus);
@@ -264,7 +246,7 @@ function expandNode(o, node, imm, setFocus)
         getNode(o, node);
       }
       $(node.getChildrenUL()).slideDown("fast");
-      node.plus_img.innerHTML = arrowDown;
+      node.plus_img.innerHTML = ARROW_DOWN;
       node.expanded = true;
       if (setFocus) {
         $(node.expandToggle).focus();
@@ -273,19 +255,17 @@ function expandNode(o, node, imm, setFocus)
   }
 }
 
-function glowEffect(n,duration)
-{
+function glowEffect(n,duration) {
   n.addClass('glow').delay(duration).queue(function(next){
     $(this).removeClass('glow');next();
   });
 }
 
-function highlightAnchor()
-{
-  var aname = hashUrl();
-  var anchor = $(aname);
+function highlightAnchor() {
+  const aname = hashUrl();
+  const anchor = $(aname);
   if (anchor.parent().attr('class')=='memItemLeft'){
-    var rows = $('.memberdecls tr[class$="'+hashValue()+'"]');
+    let rows = $('.memberdecls tr[class$="'+hashValue()+'"]');
     glowEffect(rows.children(),300); // member without details
   } else if (anchor.parent().attr('class')=='fieldname'){
     glowEffect(anchor.parent().parent(),1000); // enum value
@@ -298,11 +278,10 @@ function highlightAnchor()
   }
 }
 
-function selectAndHighlight(hash,n)
-{
-  var a;
+function selectAndHighlight(hash,n) {
+  let a;
   if (hash) {
-    var link=stripPath(pathName())+':'+hash.substring(1);
+    const link=stripPath(pathName())+':'+hash.substring(1);
     a=$('.item a[class$="'+link+'"]');
   }
   if (a && a.length) {
@@ -313,7 +292,7 @@ function selectAndHighlight(hash,n)
     $(n.itemDiv).addClass('selected');
     $(n.itemDiv).attr('id','selected');
   }
-  var topOffset=5;
+  let topOffset=5;
   if (typeof page_layout!=='undefined' && page_layout==1) {
     topOffset+=$('#top').outerHeight();
   }
@@ -324,11 +303,10 @@ function selectAndHighlight(hash,n)
   showRoot();
 }
 
-function showNode(o, node, index, hash)
-{
+function showNode(o, node, index, hash) {
   if (node && node.childrenData) {
     if (typeof(node.childrenData)==='string') {
-      var varName    = node.childrenData;
+      const varName = node.childrenData;
       getScript(node.relpath+varName,function(){
         node.childrenData = getData(varName);
         showNode(o,node,index,hash);
@@ -338,21 +316,21 @@ function showNode(o, node, index, hash)
         getNode(o, node);
       }
       $(node.getChildrenUL()).css({'display':'block'});
-      node.plus_img.innerHTML = arrowDown;
+      node.plus_img.innerHTML = ARROW_DOWN;
       node.expanded = true;
-      var n = node.children[o.breadcrumbs[index]];
+      const n = node.children[o.breadcrumbs[index]];
       if (index+1<o.breadcrumbs.length) {
         showNode(o,n,index+1,hash);
       } else {
         if (typeof(n.childrenData)==='string') {
-          var varName = n.childrenData;
+          const varName = n.childrenData;
           getScript(n.relpath+varName,function(){
             n.childrenData = getData(varName);
             node.expanded=false;
             showNode(o,node,index,hash); // retry with child node expanded
           });
         } else {
-          var rootBase = stripPath(o.toroot.replace(/\..+$/, ''));
+          const rootBase = stripPath(o.toroot.replace(/\..+$/, ''));
           if (rootBase=="index" || rootBase=="pages" || rootBase=="search") {
             expandNode(o, n, true, false);
           }
@@ -366,8 +344,8 @@ function showNode(o, node, index, hash)
 }
 
 function removeToInsertLater(element) {
-  var parentNode = element.parentNode;
-  var nextSibling = element.nextSibling;
+  const parentNode = element.parentNode;
+  const nextSibling = element.nextSibling;
   parentNode.removeChild(element);
   return function() {
     if (nextSibling) {
@@ -378,22 +356,20 @@ function removeToInsertLater(element) {
   };
 }
 
-function getNode(o, po)
-{
-  var insertFunction = removeToInsertLater(po.li);
+function getNode(o, po) {
+  const insertFunction = removeToInsertLater(po.li);
   po.childrenVisited = true;
-  var l = po.childrenData.length-1;
-  for (var i in po.childrenData) {
-    var nodeData = po.childrenData[i];
+  const l = po.childrenData.length-1;
+  for (let i in po.childrenData) {
+    const nodeData = po.childrenData[i];
     po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2],
       i==l);
   }
   insertFunction();
 }
 
-function gotoNode(o,subIndex,root,hash,relpath)
-{
-  var nti = navTreeSubIndices[subIndex][root+hash];
+function gotoNode(o,subIndex,root,hash,relpath) {
+  const nti = navTreeSubIndices[subIndex][root+hash];
   o.breadcrumbs = $.extend(true, [], nti ? nti : navTreeSubIndices[subIndex][root]);
   if (!o.breadcrumbs && root!=NAVTREE[0][1]) { // fallback: show index
     navTo(o,NAVTREE[0][1],"",relpath);
@@ -406,22 +382,20 @@ function gotoNode(o,subIndex,root,hash,relpath)
   }
 }
 
-function navTo(o,root,hash,relpath)
-{
-  var link = cachedLink();
+function navTo(o,root,hash,relpath) {
+  const link = cachedLink();
   if (link) {
-    var parts = link.split('#');
+    const parts = link.split('#');
     root = parts[0];
-    if (parts.length>1) hash = '#'+parts[1].replace(/[^\w\-]/g,'');
-    else hash='';
+    hash = parts.length>1 ? '#'+parts[1].replace(/[^\w-]/g,'') : '';
   }
   if (hash.match(/^#l\d+$/)) {
-    var anchor=$('a[name='+hash.substring(1)+']');
+    const anchor=$('a[name='+hash.substring(1)+']');
     glowEffect(anchor.parent(),1000); // line number
     hash=''; // strip line number anchors
   }
-  var url=root+hash;
-  var i=-1;
+  const url=root+hash;
+  let i=-1;
   while (NAVTREEINDEX[i+1]<=url) i++;
   if (i==-1) { i=0; root=NAVTREE[0][1]; } // fallback: show index
   if (navTreeSubIndices[i]) {
@@ -436,19 +410,16 @@ function navTo(o,root,hash,relpath)
   }
 }
 
-function showSyncOff(n,relpath)
-{
-    n.html('<img src="'+relpath+'sync_off.png" title="'+SYNCOFFMSG+'"/>');
+function showSyncOff(n,relpath) {
+  n.html('<img src="'+relpath+'sync_off.png" title="'+SYNCOFFMSG+'"/>');
 }
 
-function showSyncOn(n,relpath)
-{
-    n.html('<img src="'+relpath+'sync_on.png" title="'+SYNCONMSG+'"/>');
+function showSyncOn(n,relpath) {
+  n.html('<img src="'+relpath+'sync_on.png" title="'+SYNCONMSG+'"/>');
 }
 
-function toggleSyncButton(relpath)
-{
-  var navSync = $('#nav-sync');
+function toggleSyncButton(relpath) {
+  const navSync = $('#nav-sync');
   if (navSync.hasClass('sync')) {
     navSync.removeClass('sync');
     showSyncOff(navSync,relpath);
@@ -460,9 +431,9 @@ function toggleSyncButton(relpath)
   }
 }
 
-var loadTriggered = false;
-var readyTriggered = false;
-var loadObject,loadToRoot,loadUrl,loadRelPath;
+let loadTriggered = false;
+let readyTriggered = false;
+let loadObject,loadToRoot,loadUrl,loadRelPath;
 
 $(window).on('load',function(){
   if (readyTriggered) { // ready first
@@ -472,16 +443,15 @@ $(window).on('load',function(){
   loadTriggered=true;
 });
 
-function initNavTree(toroot,relpath)
-{
-  var o = new Object();
+function initNavTree(toroot,relpath) {
+  const o = new Object();
   o.toroot = toroot;
   o.node = new Object();
   o.node.li = document.getElementById("nav-tree-contents");
   o.node.childrenData = NAVTREE;
   o.node.children = new Array();
   o.node.childrenUL = document.createElement("ul");
-  o.node.getChildrenUL = function() { return o.node.childrenUL; };
+  o.node.getChildrenUL = () => o.node.childrenUL;
   o.node.li.appendChild(o.node.childrenUL);
   o.node.depth = 0;
   o.node.relpath = relpath;
@@ -489,16 +459,16 @@ function initNavTree(toroot,relpath)
   o.node.isLast = true;
   o.node.plus_img = document.createElement("span");
   o.node.plus_img.className = 'arrow';
-  o.node.plus_img.innerHTML = arrowRight;
+  o.node.plus_img.innerHTML = ARROW_RIGHT;
 
-  var navSync = $('#nav-sync');
+  const navSync = $('#nav-sync');
   if (cachedLink()) {
     showSyncOff(navSync,relpath);
     navSync.removeClass('sync');
   } else {
     showSyncOn(navSync,relpath);
   }
-  navSync.click(function(){ toggleSyncButton(relpath); });
+  navSync.click(() => toggleSyncButton(relpath));
 
   if (loadTriggered) { // load before ready
     navTo(o,toroot,hashUrl(),relpath);
@@ -513,16 +483,16 @@ function initNavTree(toroot,relpath)
 
   $(window).bind('hashchange', function(){
      if (window.location.hash && window.location.hash.length>1){
-       var a;
+       let a;
        if ($(location).attr('hash')){
-         var clslink=stripPath(pathName())+':'+hashValue();
+         const clslink=stripPath(pathName())+':'+hashValue();
          a=$('.item a[class$="'+clslink.replace(/</g,'\\3c ')+'"]');
        }
        if (a==null || !$(a).parent().parent().hasClass('selected')){
          $('.item').removeClass('selected');
          $('.item').removeAttr('id');
        }
-       var link=stripPath2(pathName());
+       const link=stripPath2(pathName());
        navTo(o,link,hashUrl(),relpath);
      } else if (!animationInProgress) {
        $('#doc-content').scrollTop(0);
@@ -534,8 +504,7 @@ function initNavTree(toroot,relpath)
 
   $("div.toc a[href]").click(function(e) {
     e.preventDefault();
-    var docContent = $('#doc-content');
-    var aname = $(this).attr("href");
+    const aname = $(this).attr("href");
     gotoAnchor($(aname),aname,true);
   })
 }

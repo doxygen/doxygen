@@ -23,16 +23,13 @@
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
 
-var once=1;
-function initResizable()
-{
-  var sidenav,navtree,content,header,barWidth=6,desktop_vp=768,titleHeight;
-  var resize_cookie_name = 'width';
+let once=1;
+function initResizable() {
+  let sidenav,navtree,content,header,footer,barWidth=6;
+  const resize_cookie_name = 'width';
 
-  function resizeWidth()
-  {
-    var windowWidth = $(window).width() + "px";
-    var sidenavWidth = $(sidenav).outerWidth();
+  function resizeWidth() {
+    const sidenavWidth = $(sidenav).outerWidth();
     content.css({marginLeft:parseInt(sidenavWidth)+"px"});
     if (typeof page_layout!=='undefined' && page_layout==1) {
       footer.css({marginLeft:parseInt(sidenavWidth)+"px"});
@@ -40,9 +37,7 @@ function initResizable()
     Cookie.writeSetting(resize_cookie_name,sidenavWidth-barWidth);
   }
 
-  function restoreWidth(navWidth)
-  {
-    var windowWidth = $(window).width() + "px";
+  function restoreWidth(navWidth) {
     content.css({marginLeft:parseInt(navWidth)+barWidth+"px"});
     if (typeof page_layout!=='undefined' && page_layout==1) {
       footer.css({marginLeft:parseInt(navWidth)+barWidth+"px"});
@@ -50,12 +45,11 @@ function initResizable()
     sidenav.css({width:navWidth + "px"});
   }
 
-  function resizeHeight()
-  {
-    var headerHeight = header.outerHeight();
-    var footerHeight = footer.outerHeight();
-    var windowHeight = $(window).height();
-    var contentHeight,navtreeHeight,sideNavHeight;
+  function resizeHeight() {
+    const headerHeight = header.outerHeight();
+    const footerHeight = footer.outerHeight();
+    const windowHeight = $(window).height();
+    let contentHeight,navtreeHeight,sideNavHeight;
     if (typeof page_layout==='undefined' || page_layout==0) { /* DISABLE_INDEX=NO */
       contentHeight = windowHeight - headerHeight - footerHeight;
       navtreeHeight = contentHeight;
@@ -73,18 +67,16 @@ function initResizable()
     }
   }
 
-  function collapseExpand()
-  {
-    var newWidth;
+  function collapseExpand() {
+    let newWidth;
     if (sidenav.width()>0) {
       newWidth=0;
-    }
-    else {
-      var width = Cookie.readSetting(resize_cookie_name,$TREEVIEW_WIDTH);
+    } else {
+      const width = Cookie.readSetting(resize_cookie_name,$TREEVIEW_WIDTH);
       newWidth = (width>$TREEVIEW_WIDTH && width<$(window).width()) ? width : $TREEVIEW_WIDTH;
     }
     restoreWidth(newWidth);
-    var sidenavWidth = $(sidenav).outerWidth();
+    const sidenavWidth = $(sidenav).outerWidth();
     Cookie.writeSetting(resize_cookie_name,sidenavWidth-barWidth);
   }
 
@@ -93,24 +85,24 @@ function initResizable()
   content = $("#doc-content");
   navtree = $("#nav-tree");
   footer  = $("#nav-path");
-  $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(); } });
+  $(".side-nav-resizable").resizable({resize: () => resizeWidth() });
   $(sidenav).resizable({ minWidth: 0 });
-  $(window).resize(function() { resizeHeight(); });
-  var device = navigator.userAgent.toLowerCase();
-  var touch_device = device.match(/(iphone|ipod|ipad|android)/);
+  $(window).resize(() => resizeHeight());
+  const device = navigator.userAgent.toLowerCase();
+  const touch_device = device.match(/(iphone|ipod|ipad|android)/);
   if (touch_device) { /* wider split bar for touch only devices */
     $(sidenav).css({ paddingRight:'20px' });
     $('.ui-resizable-e').css({ width:'20px' });
     $('#nav-sync').css({ right:'34px' });
     barWidth=20;
   }
-  var width = Cookie.readSetting(resize_cookie_name,$TREEVIEW_WIDTH);
+  const width = Cookie.readSetting(resize_cookie_name,$TREEVIEW_WIDTH);
   if (width) { restoreWidth(width); } else { resizeWidth(); }
   resizeHeight();
-  var url = location.href;
-  var i=url.indexOf("#");
+  const url = location.href;
+  const i=url.indexOf("#");
   if (i>=0) window.location.hash=url.substr(i);
-  var _preventDefault = function(evt) { evt.preventDefault(); };
+  const _preventDefault = (evt) => evt.preventDefault();
   $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
   if (once) {
     $(".ui-resizable-handle").dblclick(collapseExpand);

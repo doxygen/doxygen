@@ -22,13 +22,12 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
-function toggleVisibility(linkObj)
-{
- var base = $(linkObj).attr('id');
- var summary = $('#'+base+'-summary');
- var content = $('#'+base+'-content');
- var trigger = $('#'+base+'-trigger');
- var src=$(trigger).attr('src');
+function toggleVisibility(linkObj) {
+ const base = $(linkObj).attr('id');
+ const summary = $('#'+base+'-summary');
+ const content = $('#'+base+'-content');
+ const trigger = $('#'+base+'-trigger');
+ const src=$(trigger).attr('src');
  if (content.is(':visible')===true) {
    content.hide();
    summary.show();
@@ -43,20 +42,18 @@ function toggleVisibility(linkObj)
  return false;
 }
 
-function updateStripes()
-{
+function updateStripes() {
   $('table.directory tr').
        removeClass('even').filter(':visible:even').addClass('even');
   $('table.directory tr').
        removeClass('odd').filter(':visible:odd').addClass('odd');
 }
 
-function toggleLevel(level)
-{
+function toggleLevel(level) {
   $('table.directory tr').each(function() {
-    var l = this.id.split('_').length-1;
-    var i = $('#img'+this.id.substring(3));
-    var a = $('#arr'+this.id.substring(3));
+    const l = this.id.split('_').length-1;
+    const i = $('#img'+this.id.substring(3));
+    const a = $('#arr'+this.id.substring(3));
     if (l<level+1) {
       i.removeClass('iconfopen iconfclosed').addClass('iconfopen');
       a.html('&#9660;');
@@ -72,33 +69,32 @@ function toggleLevel(level)
   updateStripes();
 }
 
-function toggleFolder(id)
-{
+function toggleFolder(id) {
   // the clicked row
-  var currentRow = $('#row_'+id);
+  const currentRow = $('#row_'+id);
 
   // all rows after the clicked row
-  var rows = currentRow.nextAll("tr");
+  const rows = currentRow.nextAll("tr");
 
-  var re = new RegExp('^row_'+id+'\\d+_$', "i"); //only one sub
+  const re = new RegExp('^row_'+id+'\\d+_$', "i"); //only one sub
 
   // only match elements AFTER this one (can't hide elements before)
-  var childRows = rows.filter(function() { return this.id.match(re); });
+  const childRows = rows.filter(function() { return this.id.match(re); });
 
   // first row is visible we are HIDING
   if (childRows.filter(':first').is(':visible')===true) {
     // replace down arrow by right arrow for current row
-    var currentRowSpans = currentRow.find("span");
+    const currentRowSpans = currentRow.find("span");
     currentRowSpans.filter(".iconfopen").removeClass("iconfopen").addClass("iconfclosed");
     currentRowSpans.filter(".arrow").html('&#9658;');
     rows.filter("[id^=row_"+id+"]").hide(); // hide all children
   } else { // we are SHOWING
     // replace right arrow by down arrow for current row
-    var currentRowSpans = currentRow.find("span");
+    const currentRowSpans = currentRow.find("span");
     currentRowSpans.filter(".iconfclosed").removeClass("iconfclosed").addClass("iconfopen");
     currentRowSpans.filter(".arrow").html('&#9660;');
     // replace down arrows by right arrows for child rows
-    var childRowsSpans = childRows.find("span");
+    const childRowsSpans = childRows.find("span");
     childRowsSpans.filter(".iconfopen").removeClass("iconfopen").addClass("iconfclosed");
     childRowsSpans.filter(".arrow").html('&#9658;');
     childRows.show(); //show all children
@@ -107,11 +103,10 @@ function toggleFolder(id)
 }
 
 
-function toggleInherit(id)
-{
-  var rows = $('tr.inherit.'+id);
-  var img = $('tr.inherit_header.'+id+' img');
-  var src = $(img).attr('src');
+function toggleInherit(id) {
+  const rows = $('tr.inherit.'+id);
+  const img = $('tr.inherit_header.'+id+' img');
+  const src = $(img).attr('src');
   if (rows.filter(':first').is(':visible')===true) {
     rows.css('display','none');
     $(img).attr('src',src.substring(0,src.length-8)+'closed.png');
@@ -121,10 +116,10 @@ function toggleInherit(id)
   }
 }
 
-var opened=true;
+let opened=true;
 // in case HTML_COLORSTYLE is LIGHT or DARK the vars will be replaced, so we write them out explicitly and use double quotes
-var plusImg  = [ "var(--fold-plus-image)",  "var(--fold-plus-image-relpath)" ];
-var minusImg = [ "var(--fold-minus-image)", "var(--fold-minus-image-relpath)" ];
+const plusImg  = [ "var(--fold-plus-image)",  "var(--fold-plus-image-relpath)" ];
+const minusImg = [ "var(--fold-minus-image)", "var(--fold-minus-image-relpath)" ];
 
 // toggle all folding blocks
 function codefold_toggle_all(relPath) {
@@ -146,8 +141,8 @@ function codefold_toggle(id) {
   $('#foldclosed'+id).toggle();
 }
 function init_codefold(relPath) {
-  $('span[class=lineno]').css(
-    {'padding-right':'4px',
+  $('span[class=lineno]').css({
+     'padding-right':'4px',
      'margin-right':'2px',
      'display':'inline-block',
      'width':'54px',
@@ -162,10 +157,10 @@ function init_codefold(relPath) {
   // add toggle controls to lines with fold divs
   $('div[class=foldopen]').each(function() {
     // extract specific id to use
-    var id    = $(this).attr('id').replace('foldopen','');
+    const id    = $(this).attr('id').replace('foldopen','');
     // extract start and end foldable fragment attributes
-    var start = $(this).attr('data-start');
-    var end   = $(this).attr('data-end');
+    const start = $(this).attr('data-start');
+    const end   = $(this).attr('data-end');
     // replace normal fold span with controls for the first line of a foldable fragment
     $(this).find('span[class=fold]:first').replaceWith('<span class="fold" '+
                                                        'onclick="javascript:codefold_toggle(\''+id+'\');" '+
@@ -173,7 +168,7 @@ function init_codefold(relPath) {
     // append div for folded (closed) representation
     $(this).after('<div id="foldclosed'+id+'" class="foldclosed" style="display:none;"></div>');
     // extract the first line from the "open" section to represent closed content
-    var line = $(this).children().first().clone();
+    const line = $(this).children().first().clone();
     // remove any glow that might still be active on the original line
     $(line).removeClass('glow');
     if (start) {

@@ -64,27 +64,27 @@ class DarkModeToggle extends HTMLElement {
                 toggleButton.tabIndex = 0;
 
                 function addButton() {
-                  var titleArea = document.getElementById("titlearea");
-                  var searchBox = document.getElementById("MSearchBox");
-                  var mainMenu  = document.getElementById("main-menu");
-                  var navRow1   = document.getElementById("navrow1");
-                  var mainMenuVisible = false;
+                  const titleArea = document.getElementById("titlearea");
+                  const searchBox = document.getElementById("MSearchBox");
+                  const mainMenu  = document.getElementById("main-menu");
+                  const navRow1   = document.getElementById("navrow1");
+                  let mainMenuVisible = false;
                   if (mainMenu) {
-                    var menuStyle = window.getComputedStyle(mainMenu);
+                    const menuStyle = window.getComputedStyle(mainMenu);
                     mainMenuVisible = menuStyle.display!=='none'
                   }
-                  var searchBoxPos1 = document.getElementById("searchBoxPos1");
+                  const searchBoxPos1 = document.getElementById("searchBoxPos1");
                   if (searchBox) { // (1) search box visible
                     searchBox.parentNode.appendChild(toggleButton)
                   } else if (navRow1) { // (2) no search box, static menu bar
-                    var li = document.createElement('li');
+                    const li = document.createElement('li');
                     li.style = 'float: right;'
                     li.appendChild(toggleButton);
                     toggleButton.style = 'width: 24px; height: 25px; padding-top: 11px; float: right;';
-                    var row = document.querySelector('#navrow1 > ul:first-of-type');
+                    const row = document.querySelector('#navrow1 > ul:first-of-type');
                     row.appendChild(li)
                   } else if (mainMenu && mainMenuVisible) { // (3) no search box + dynamic menu bar expanded
-                    var li = document.createElement('li');
+                    const li = document.createElement('li');
                     li.style = 'float: right;'
                     li.appendChild(toggleButton);
                     toggleButton.style = 'width: 14px; height: 36px; padding-top: 10px; float: right;';
@@ -99,19 +99,11 @@ class DarkModeToggle extends HTMLElement {
                   }
                 }
 
-                $(document).ready(function(){
-                    addButton();
-                })
-                $(window).resize(function(){
-                    addButton();
-                })
-                var inFocus = false;
-                $(document).focusin(function(e) {
-                    inFocus = true;
-                })
-                $(document).focusout(function(e) {
-                    inFocus = false;
-                })
+                $(document).ready(() => addButton());
+                $(window).resize(() => addButton());
+                let inFocus = false;
+                $(document).focusin(() => inFocus = true);
+                $(document).focusout(() => inFocus = false);
                 $(document).keyup(function(e) {
                     if (e.keyCode==27 && !inFocus) { // escape key maps to keycode `27`
                        e.stopPropagation();
@@ -127,32 +119,6 @@ class DarkModeToggle extends HTMLElement {
         super();
         this.onclick=this.toggleDarkMode
         this.onkeypress=function(e){if (e.keyCode==13) { this.toggleDarkMode(); }};
-    }
-
-    static createCookie(name, value, days) {
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            var expires = "; expires=" + date.toGMTString();
-        }
-        else var expires = "";
-
-        document.cookie = name + "=" + value + expires + "; path=/";
-    }
-
-    static readCookie(name) {
-        var nameEQ = name + "=";
-        var ca = document.cookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-    }
-
-    static eraseCookie(name) {
-        DarkModeToggle.createCookie(name, "", -1);
     }
 
     /**
@@ -213,7 +179,7 @@ class DarkModeToggle extends HTMLElement {
     }
 
     static setDarkModeVisibility(enable) {
-        var darkModeStyle, lightModeStyle;
+        let darkModeStyle, lightModeStyle;
         if(enable) {
           darkModeStyle  = 'inline-block';
           lightModeStyle = 'none'
@@ -221,12 +187,8 @@ class DarkModeToggle extends HTMLElement {
           darkModeStyle  = 'none';
           lightModeStyle = 'inline-block'
         }
-        document.querySelectorAll('.dark-mode-visible').forEach(function(el) {
-            el.style.display = darkModeStyle;
-        });
-        document.querySelectorAll('.light-mode-visible').forEach(function(el) {
-            el.style.display = lightModeStyle;
-        });
+        document.querySelectorAll('.dark-mode-visible' ).forEach(el => el.style.display = darkModeStyle);
+        document.querySelectorAll('.light-mode-visible').forEach(el => el.style.display = lightModeStyle);
     }
     static enableDarkMode(enable) {
         if(enable) {
