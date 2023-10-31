@@ -6987,3 +6987,13 @@ QCString detab(const QCString &s,int &refIndent)
   out.addChar(0);
   return out.get();
 }
+
+QCString getProjectId()
+{
+  QCString projectName = Config_getString(PROJECT_NAME)+" "+Config_getString(PROJECT_NUMBER);
+  uint8_t md5_sig[16];
+  char sigStr[33];
+  MD5Buffer(projectName.data(),projectName.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr);
+  return sigStr;
+}

@@ -1219,7 +1219,8 @@ void HtmlGenerator::init()
     if (f.is_open())
     {
       TextStream t(&f);
-      t << replaceColorMarkers(mgr.getAsString("darkmode_toggle.js"));
+      t << substitute(replaceColorMarkers(mgr.getAsString("darkmode_toggle.js")),
+          "$PROJECTID",getProjectId());
     }
   }
 

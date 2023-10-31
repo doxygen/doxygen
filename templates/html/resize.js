@@ -26,7 +26,7 @@
 let once=1;
 function initResizable() {
   let sidenav,navtree,content,header,footer,barWidth=6;
-  const resize_cookie_name = 'width';
+  const RESIZE_COOKIE_NAME = '$PROJECTID'+'_width';
 
   function resizeWidth() {
     const sidenavWidth = $(sidenav).outerWidth();
@@ -34,7 +34,7 @@ function initResizable() {
     if (typeof page_layout!=='undefined' && page_layout==1) {
       footer.css({marginLeft:parseInt(sidenavWidth)+"px"});
     }
-    Cookie.writeSetting(resize_cookie_name,sidenavWidth-barWidth);
+    Cookie.writeSetting(RESIZE_COOKIE_NAME,sidenavWidth-barWidth);
   }
 
   function restoreWidth(navWidth) {
@@ -72,12 +72,12 @@ function initResizable() {
     if (sidenav.width()>0) {
       newWidth=0;
     } else {
-      const width = Cookie.readSetting(resize_cookie_name,$TREEVIEW_WIDTH);
+      const width = Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH);
       newWidth = (width>$TREEVIEW_WIDTH && width<$(window).width()) ? width : $TREEVIEW_WIDTH;
     }
     restoreWidth(newWidth);
     const sidenavWidth = $(sidenav).outerWidth();
-    Cookie.writeSetting(resize_cookie_name,sidenavWidth-barWidth);
+    Cookie.writeSetting(RESIZE_COOKIE_NAME,sidenavWidth-barWidth);
   }
 
   header  = $("#top");
@@ -96,7 +96,7 @@ function initResizable() {
     $('#nav-sync').css({ right:'34px' });
     barWidth=20;
   }
-  const width = Cookie.readSetting(resize_cookie_name,$TREEVIEW_WIDTH);
+  const width = Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH);
   if (width) { restoreWidth(width); } else { resizeWidth(); }
   resizeHeight();
   const url = location.href;

@@ -8,7 +8,8 @@ let Cookie = {
 
   readSetting(cookie,defVal) {
     if (window.chrome) {
-      const val = localStorage.getItem(this.cookie_namespace+cookie);
+      const val = localStorage.getItem(this.cookie_namespace+cookie) ||
+                  sessionStorage.getItem(this.cookie_namespace+cookie);
       if (val) return val;
     } else {
       let myCookie = this.cookie_namespace+cookie+"=";
@@ -29,7 +30,11 @@ let Cookie = {
 
   writeSetting(cookie,val,days=10*365) { // default days='forever', 0=session cookie, -1=delete
     if (window.chrome) {
-      localStorage.setItem(this.cookie_namespace+cookie,val);
+      if (days==0) {
+        sessionStorage.setItem(this.cookie_namespace+cookie,val);
+      } else {
+        localStorage.setItem(this.cookie_namespace+cookie,val);
+      }
     } else {
       let date = new Date();
       date.setTime(date.getTime()+(days*24*60*60*1000));
@@ -41,8 +46,11 @@ let Cookie = {
 
   eraseSetting(cookie) {
     if (window.chrome) {
-      const val = localStorage.removeItem(this.cookie_namespace+cookie);
-      if (val) return val;
+      if (localStorage.getItem(this.cookie_namespace+cookie)) {
+        localStorage.removeItem(this.cookie_namespace+cookie);
+      } else if (sessionStorage.getItem(this.cookie_namespace+cookie)) {
+        sessionStorage.removeItem(this.cookie_namespace+cookie);
+      }
     } else {
       this.writeSetting(cookie,'',-1);
     }

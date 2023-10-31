@@ -835,6 +835,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     t << "\nvar SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
     t << "\nvar SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
   }
+
   ResourceMgr::instance().copyResource("navtree.js",htmlOutput);
 }
 
@@ -870,7 +871,10 @@ void FTVHelp::generateTreeViewScripts()
     if (f.is_open())
     {
       TextStream t(&f);
-      t << substitute(mgr.getAsString("resize.js"), "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH)));
+      t << substitute(
+             substitute(mgr.getAsString("resize.js"),
+                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
+                "$PROJECTID",      getProjectId());
     }
   }
   {
