@@ -6990,10 +6990,12 @@ QCString detab(const QCString &s,int &refIndent)
 
 QCString getProjectId()
 {
-  QCString projectName = Config_getString(PROJECT_NAME)+" "+Config_getString(PROJECT_NUMBER);
+  QCString projectCookie = Config_getString(HTML_PROJECT_COOKIE);
+  if (projectCookie.isEmpty()) return QCString();
   uint8_t md5_sig[16];
-  char sigStr[33];
-  MD5Buffer(projectName.data(),projectName.length(),md5_sig);
+  char sigStr[34];
+  MD5Buffer(projectCookie.data(),projectCookie.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
+  sigStr[32]='_'; sigStr[33]=0;
   return sigStr;
 }

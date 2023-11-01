@@ -25,7 +25,7 @@
 let navTreeSubIndices = new Array();
 const ARROW_DOWN = '&#9660;';
 const ARROW_RIGHT = '&#9658;';
-const NAVPATH_COOKIE_NAME = 'navpath';
+const NAVPATH_COOKIE_NAME = '$PROJECTID'+'navpath';
 
 function getData(varName) {
   const i = varName.lastIndexOf('/');

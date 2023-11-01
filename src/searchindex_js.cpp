@@ -814,7 +814,15 @@ void writeJavaScriptSearchIndex()
   }
 
   writeJavascriptSearchData(searchDirName);
-  ResourceMgr::instance().copyResource("search.js",searchDirName);
+  auto &mgr = ResourceMgr::instance();
+  {
+    std::ofstream fn = Portable::openOutputStream(searchDirName+"/search.js");
+    if (fn.is_open())
+    {
+      TextStream t(&fn);
+      t << substitute(mgr.getAsString("search.js"),"$PROJECTID",getProjectId());
+    }
+  }
 
   Doxygen::indexList->addStyleSheetFile("search/searchdata.js");
   Doxygen::indexList->addStyleSheetFile("search/search.js");

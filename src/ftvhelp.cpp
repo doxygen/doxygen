@@ -836,7 +836,15 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     t << "\nvar SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
   }
 
-  ResourceMgr::instance().copyResource("navtree.js",htmlOutput);
+  auto &mgr = ResourceMgr::instance();
+  {
+    std::ofstream fn = Portable::openOutputStream(htmlOutput+"/navtree.js");
+    if (fn.is_open())
+    {
+      TextStream t(&fn);
+      t << substitute(mgr.getAsString("navtree.js"),"$PROJECTID",getProjectId());
+    }
+  }
 }
 
 //-----------------------------------------------------------

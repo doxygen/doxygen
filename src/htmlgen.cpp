@@ -1214,7 +1214,6 @@ void HtmlGenerator::init()
 
   if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
-    //mgr.copyResource("darkmode_toggle.js",dname);
     std::ofstream f = Portable::openOutputStream(dname+"/darkmode_toggle.js");
     if (f.is_open())
     {
