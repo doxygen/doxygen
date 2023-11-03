@@ -114,7 +114,7 @@ function createIndent(o,domNode,node) {
 
 let animationInProgress = false;
 
-function gotoAnchor(anchor,aname,updateLocation) {
+function gotoAnchor(anchor,aname) {
   let pos, docContent = $('#doc-content');
   let ancParent = $(anchor.parent());
   if (ancParent.hasClass('memItemLeft') ||
@@ -135,7 +135,7 @@ function gotoAnchor(anchor,aname,updateLocation) {
     docContent.animate({
       scrollTop: pos + docContent.scrollTop() - docContent.offset().top
     },Math.max(50,Math.min(500,dist)),function(){
-      if (updateLocation) window.location.href=aname;
+      window.location.href=aname;
       animationInProgress=false;
     });
   }
@@ -191,7 +191,7 @@ function newNode(o, po, text, link, childrenData, lastNode) {
           $(a).parent().parent().attr('id','selected');
         }
         const anchor = $(aname);
-        gotoAnchor(anchor,aname,true);
+        gotoAnchor(anchor,aname);
       };
     } else {
       a.href = url;
@@ -276,6 +276,7 @@ function highlightAnchor() {
   } else {
     glowEffect(anchor.next(),1000); // normal member
   }
+  gotoAnchor(anchor,aname);
 }
 
 function selectAndHighlight(hash,n) {
@@ -505,7 +506,7 @@ function initNavTree(toroot,relpath) {
   $("div.toc a[href]").click(function(e) {
     e.preventDefault();
     const aname = $(this).attr("href");
-    gotoAnchor($(aname),aname,true);
+    gotoAnchor($(aname),aname);
   })
 }
 /* @license-end */
