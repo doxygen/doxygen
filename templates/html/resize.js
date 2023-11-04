@@ -23,7 +23,6 @@
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
 
-let once=1;
 function initResizable() {
   let sidenav,navtree,content,header,footer,barWidth=6;
   const RESIZE_COOKIE_NAME = '$PROJECTID'+'width';
@@ -104,10 +103,7 @@ function initResizable() {
   if (i>=0) window.location.hash=url.substr(i);
   const _preventDefault = (evt) => evt.preventDefault();
   $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
-  if (once) {
-    $(".ui-resizable-handle").dblclick(collapseExpand);
-    once=0
-  }
+  $(".ui-resizable-handle").dblclick(collapseExpand);
   $(window).on('load',resizeHeight);
 }
 /* @license-end */

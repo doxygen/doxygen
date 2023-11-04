@@ -1869,7 +1869,7 @@ static void startSectionHeader(TextStream &t,
   if (dynamicSections)
   {
     t << "<div id=\"dynsection-" << sectionCount << "\" "
-         "onclick=\"return toggleVisibility(this)\" "
+         "onclick=\"return dynsection.toggleVisibility(this)\" "
          "class=\"dynheader closed\" "
          "style=\"cursor:pointer;\">\n";
     t << "  <img id=\"dynsection-" << sectionCount << "-trigger\" src=\""
@@ -2885,7 +2885,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
   {
     t << "<script type=\"text/javascript\">\n";
     t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-    t << "$(function() { init_codefold(" << (relPath.isEmpty() ? "0" : "1") << "); });\n";
+    t << "$(function() { codefold.init(" << (relPath.isEmpty() ? "0" : "1") << "); });\n";
     t << "/* @license-end */\n";
     t << "</script>\n";
   }
@@ -3359,7 +3359,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   classLink=classLink+fn+a;
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
   m_t << "<tr class=\"inherit_header " << id << "\">"
-    << "<td colspan=\"2\" onclick=\"javascript:toggleInherit('" << id << "')\">"
+    << "<td colspan=\"2\" onclick=\"javascript:dynsection.toggleInherit('" << id << "')\">"
     << "<img src=\"" << m_relPath << "closed.png\" alt=\"-\"/>&#160;"
     << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
     << "</td></tr>\n";

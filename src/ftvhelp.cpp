@@ -266,7 +266,7 @@ static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
     QCString dir = opened ? "&#9660;" : "&#9658;";
     t << "<span style=\"width:" << (indent*16) << "px;display:inline-block;\">&#160;</span>"
       << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\" ";
-    t << "onclick=\"toggleFolder('" << generateIndentLabel(n,0) << "')\"";
+    t << "onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0) << "')\"";
     t << ">" << dir
       << "</span>";
   }
@@ -420,7 +420,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
         t << "<span id=\"img_" << generateIndentLabel(n,0)
           << "\" class=\"iconf"
           << (nodeOpened?"open":"closed")
-          << "\" onclick=\"toggleFolder('" << generateIndentLabel(n,0)
+          << "\" onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0)
           << "')\">&#160;</span>";
       }
       generateLink(t,n);
@@ -918,7 +918,7 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
     t << " ";
     for (int i=1;i<=depth;i++)
     {
-      t << "<span onclick=\"javascript:toggleLevel(" << i << ");\">" << i << "</span>";
+      t << "<span onclick=\"javascript:dynsection.toggleLevel(" << i << ");\">" << i << "</span>";
     }
     t << "]</div>";
 
