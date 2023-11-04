@@ -166,7 +166,7 @@ struct SymbolResolver::Private
                            bool  checkCV,                                       // in
                            bool insideCode,                                     // in
                            const QCString &explicitScopePart,                   // in
-                           const std::unique_ptr<ArgumentList> &actTemplParams, // in
+                           bool forceCallable,                                  // in
                            int &minDistance,                                    // inout
                            const Definition *&bestMatch,                        // out
                            const MemberDef *&bestTypedef,                       // out
@@ -508,7 +508,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 
     for (Definition *d : range)
     {
-      getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,actTemplParams,
+      getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,false,
           minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
     }
@@ -519,7 +519,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     {
       for (Definition *d : range)
       {
-        getResolvedSymbol(visitedKeys,scope,d,QCString(),false,insideCode,explicitScopePart,actTemplParams,
+        getResolvedSymbol(visitedKeys,scope,d,QCString(),false,insideCode,explicitScopePart,true,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
         if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
       }
@@ -715,7 +715,7 @@ void SymbolResolver::Private::getResolvedType(
       AUTO_TRACE_ADD("not accessible");
     }
   } // if definition is a class or member
-  AUTO_TRACE_EXIT("bestMatch sym={} distance={}",
+  AUTO_TRACE_EXIT("bestMatch sym={} type={}",
       bestMatch?bestMatch->name():QCString("<none>"),bestResolvedType);
 }
 
@@ -728,7 +728,7 @@ void SymbolResolver::Private::getResolvedSymbol(
                          bool  checkCV,                                       // in
                          bool  insideCode,                                    // in
                          const QCString &explicitScopePart,                   // in
-                         const std::unique_ptr<ArgumentList> &/* actTemplParams */, // in
+                         bool forceCallable,                                  // in
                          int &minDistance,                                    // inout
                          const Definition *&bestMatch,                        // out
                          const MemberDef *&bestTypedef,                       // out
@@ -746,7 +746,7 @@ void SymbolResolver::Private::getResolvedSymbol(
   if (distance!=-1) // definition is accessible
   {
     // see if we are dealing with a class or a typedef
-    if (d->definitionType()==Definition::TypeClass) // d is a class
+    if (args.isEmpty() && !forceCallable && d->definitionType()==Definition::TypeClass) // d is a class
     {
       const ClassDef *cd = toClassDef(d);
       if (!cd->isTemplateArgument()) // skip classes that
