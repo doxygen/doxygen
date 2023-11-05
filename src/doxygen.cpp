@@ -8527,9 +8527,8 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
     for (const auto &cd : classList)
     {
       //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
-      if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+      if (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
            cd->getOuterScope()==Doxygen::globalScope // only look at global classes
-          ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
          )
       {
         auto ctx = std::make_shared<DocContext>(cd,*g_outputList);
@@ -8539,7 +8538,8 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
 
           // skip external references, anonymous compounds and
           // template instances
-          if ( ctx->cd->isLinkableInProject() && ctx->cd->templateMaster()==0)
+          if (!ctx->cd->isHidden() && !ctx->cd->isEmbeddedInOuterScope() &&
+              ctx->cd->isLinkableInProject() && ctx->cd->templateMaster()==0)
           {
             ctx->cd->writeDocumentation(ctx->ol);
             ctx->cd->writeMemberList(ctx->ol);
@@ -8561,15 +8561,16 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
   {
     for (const auto &cd : classList)
     {
-      //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
-      if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
-           cd->getOuterScope()==Doxygen::globalScope // only look at global classes
-          ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
+      //printf("cd=%s getOuterScope=%p global=%p hidden=%d embeddedInOuterScope=%d\n",
+      //    qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope,cd->isHidden(),cd->isEmbeddedInOuterScope());
+      if (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+          cd->getOuterScope()==Doxygen::globalScope // only look at global classes
          )
       {
         // skip external references, anonymous compounds and
         // template instances
-        if ( cd->isLinkableInProject() && cd->templateMaster()==0)
+        if ( !cd->isHidden() && !cd->isEmbeddedInOuterScope() &&
+              cd->isLinkableInProject() && cd->templateMaster()==0)
         {
           msg("Generating docs for compound %s...\n",qPrint(cd->name()));
 
