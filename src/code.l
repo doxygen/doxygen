@@ -2011,7 +2011,10 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <RemoveSpecialCComment>{CPPC}|{CCS}
 <RemoveSpecialCComment>\n               {
                                            yyextra->yyLineNr++;
-                                           endCodeLine(yyscanner);
+                                           if (yyextra->insideCodeLine)
+                                           {
+                                             endCodeLine(yyscanner);
+                                           }
                                            endCodeFold(yyscanner);
                                         }
 <RemoveSpecialCComment>.
