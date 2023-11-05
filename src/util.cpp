@@ -977,42 +977,28 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           }
         }
       }
+      auto writeCompoundName = [&](const auto *cd) {
+        if (external ? cd->isLinkable() : cd->isLinkableInProject())
+        {
+          if (cd->qualifiedName()!=self->qualifiedName())
+          {
+            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word.c_str());
+            found=TRUE;
+          }
+        }
+      };
       if (!found && (cd || (cd=getClass(matchWord))))
       {
         //printf("Found class %s\n",qPrint(cd->name()));
-        // add link to the result
-        if (external ? cd->isLinkable() : cd->isLinkableInProject())
-        {
-          if (cd!=self)
-          {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word.c_str());
-            found=TRUE;
-          }
-        }
+        writeCompoundName(cd);
       }
       else if ((cd=getClass(matchWord+"-p"))) // search for Obj-C protocols as well
       {
-        // add link to the result
-        if (external ? cd->isLinkable() : cd->isLinkableInProject())
-        {
-          if (cd!=self)
-          {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word.c_str());
-            found=TRUE;
-          }
-        }
+        writeCompoundName(cd);
       }
-      else if ((cnd=getConcept(matchWord)))
+      else if ((cnd=getConcept(matchWord))) // search for concepts
       {
-        // add link to the result
-        if (external ? cnd->isLinkable() : cnd->isLinkableInProject())
-        {
-          if (cnd!=self)
-          {
-            out.writeLink(cnd->getReference(),cnd->getOutputFileBase(),cnd->anchor(),word.c_str());
-            found=TRUE;
-          }
-        }
+        writeCompoundName(cnd);
       }
       else
       {
