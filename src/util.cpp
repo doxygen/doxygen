@@ -977,12 +977,12 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           }
         }
       }
-      auto writeCompoundName = [&](const auto *cd) {
-        if (external ? cd->isLinkable() : cd->isLinkableInProject())
+      auto writeCompoundName = [&](const auto *cd_) {
+        if (external ? cd_->isLinkable() : cd_->isLinkableInProject())
         {
-          if (self==nullptr || cd->qualifiedName()!=self->qualifiedName())
+          if (self==nullptr || cd_->qualifiedName()!=self->qualifiedName())
           {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word.c_str());
+            out.writeLink(cd_->getReference(),cd_->getOutputFileBase(),cd_->anchor(),word.c_str());
             found=TRUE;
           }
         }
