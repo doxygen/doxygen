@@ -980,7 +980,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       auto writeCompoundName = [&](const auto *cd) {
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
-          if (cd->qualifiedName()!=self->qualifiedName())
+          if (self==nullptr || cd->qualifiedName()!=self->qualifiedName())
           {
             out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word.c_str());
             found=TRUE;
