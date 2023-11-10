@@ -1145,7 +1145,6 @@ int Markdown::processLink(const char *data,int offset,int size)
   {
     whiteSpace = true;
     i++;
-    nl++;
     // skip more whitespace
     while (i<size && data[i]==' ') i++;
   }
