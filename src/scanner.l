@@ -1761,6 +1761,13 @@ NONLopt [^\n]*
                                           if (yyextra->insideJava)
                                           {
                                             yyextra->current->section = EntryType::makeClass();
+                                            yyextra->current->protection = Protection::Public;
+                                            if (text.find("protected")!=-1)
+                                              yyextra->current->protection = Protection::Protected;
+                                            else if (text.find("private")!=-1)
+                                              yyextra->current->protection = Protection::Private;
+                                            else if (text.find("package")!=-1)
+                                              yyextra->current->protection = Protection::Package;
                                             yyextra->current->spec = TypeSpecifier().setEnum(true);
                                           }
                                           else
@@ -7318,7 +7325,7 @@ static void initEntry(yyscan_t yyscanner)
   {
     yyextra->protection = (yyextra->current_root->spec.isInterface() || yyextra->current_root->spec.isEnum()) ?  Protection::Public : Protection::Package;
   }
-  yyextra->current->protection = yyextra->protection ;
+  yyextra->current->protection = yyextra->protection;
   yyextra->current->exported   = yyextra->exported ;
   yyextra->current->mtype      = yyextra->mtype;
   yyextra->current->virt       = yyextra->virt;
