@@ -158,6 +158,8 @@ class ManGenerator : public OutputGenerator
     void endEmphasis()   { m_t << "\\fP"; m_firstCol=FALSE; }
     void startBold()     { m_t << "\\fB"; m_firstCol=FALSE; }
     void endBold()       { m_t << "\\fP"; m_firstCol=FALSE; }
+    void startBoldEmphasis() { m_t << "\\f(BI"; m_firstCol=FALSE; }
+    void endBoldEmphasis()   { m_t << "\\fP"; m_firstCol=FALSE; }
     void lineBreak(const QCString &) { m_t << "\n.br\n"; }
     void writeChar(char c);
     void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool);
@@ -202,12 +204,14 @@ class ManGenerator : public OutputGenerator
     void endContents() {}
     void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) m_t << " "; }
 
-    void startDescTable(const QCString &t);
+    void startDescTable(const QCString &title,const bool hasInits);
     void endDescTable();
     void startDescTableRow() {}
     void endDescTableRow() {}
-    void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
-    void endDescTableTitle() { endEmphasis(); endBold(); }
+    void startDescTableTitle() { startItemListItem(); startBoldEmphasis(); endItemListItem(); }
+    void endDescTableTitle() { endBoldEmphasis(); }
+    void startDescTableInit(){};
+    void endDescTableInit(){};
     void startDescTableData() { m_t << "\n"; m_firstCol=TRUE; }
     void endDescTableData() {}
 

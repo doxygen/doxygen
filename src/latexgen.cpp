@@ -1809,10 +1809,10 @@ void LatexGenerator::writeNonBreakableSpace(int)
 // - endDescTableRow()
 // endDescTable()
 
-void LatexGenerator::startDescTable(const QCString &title)
+void LatexGenerator::startDescTable(const QCString &title,const bool hasInits)
 {
   m_codeGen->incUsedTableLevel();
-  m_t << "\\begin{DoxyEnumFields}{" << title << "}\n";
+  m_t << "\\begin{DoxyEnumFields}[" << (hasInits?3:2) << "]{" << title << "}\n";
 }
 
 void LatexGenerator::endDescTable()
@@ -1838,6 +1838,15 @@ void LatexGenerator::startDescTableTitle()
 }
 
 void LatexGenerator::endDescTableTitle()
+{
+}
+
+void LatexGenerator::startDescTableInit()
+{
+  m_t << "&";
+}
+
+void LatexGenerator::endDescTableInit()
 {
 }
 

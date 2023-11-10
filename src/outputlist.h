@@ -468,6 +468,8 @@ namespace OutputGenIntf
   template<class T> struct endDescTableRow             { static constexpr auto method = &T::endDescTableRow;             };
   template<class T> struct startDescTableTitle         { static constexpr auto method = &T::startDescTableTitle;         };
   template<class T> struct endDescTableTitle           { static constexpr auto method = &T::endDescTableTitle;           };
+  template<class T> struct startDescTableInit          { static constexpr auto method = &T::startDescTableInit;          };
+  template<class T> struct endDescTableInit            { static constexpr auto method = &T::endDescTableInit;            };
   template<class T> struct startDescTableData          { static constexpr auto method = &T::startDescTableData;          };
   template<class T> struct endDescTableData            { static constexpr auto method = &T::endDescTableData;            };
   template<class T> struct startDotGraph               { static constexpr auto method = &T::startDotGraph;               };
@@ -812,8 +814,8 @@ class OutputList
     { foreach<OutputGenIntf::endPageDoc>(); }
     void writeNonBreakableSpace(int num)
     { foreach<OutputGenIntf::writeNonBreakableSpace>(num); }
-    void startDescTable(const QCString &title)
-    { foreach<OutputGenIntf::startDescTable>(title); }
+    void startDescTable(const QCString &title,const bool hasInits)
+    { foreach<OutputGenIntf::startDescTable>(title,hasInits); }
     void endDescTable()
     { foreach<OutputGenIntf::endDescTable>(); }
     void startDescTableRow()
@@ -824,6 +826,10 @@ class OutputList
     { foreach<OutputGenIntf::startDescTableTitle>(); }
     void endDescTableTitle()
     { foreach<OutputGenIntf::endDescTableTitle>(); }
+    void startDescTableInit()
+    { foreach<OutputGenIntf::startDescTableInit>(); }
+    void endDescTableInit()
+    { foreach<OutputGenIntf::endDescTableInit>(); }
     void startDescTableData()
     { foreach<OutputGenIntf::startDescTableData>(); }
     void endDescTableData()

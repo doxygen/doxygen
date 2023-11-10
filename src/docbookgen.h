@@ -168,12 +168,14 @@ class DocbookGenerator : public OutputGenerator
     void lineBreak(const QCString &);
     void addIndexItem(const QCString &,const QCString &);
     void writeNonBreakableSpace(int);
-    void startDescTable(const QCString &);
+    void startDescTable(const QCString &,const bool hasInits);
     void endDescTable();
     void startDescTableRow();
     void endDescTableRow();
     void startDescTableTitle();
     void endDescTableTitle();
+    void startDescTableInit();
+    void endDescTableInit();
     void startDescTableData();
     void endDescTableData();
     void startTextLink(const QCString &,const QCString &){DB_GEN_NEW};

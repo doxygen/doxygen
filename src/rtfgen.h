@@ -212,12 +212,14 @@ class RTFGenerator : public OutputGenerator
     void endContents() {}
     void writeNonBreakableSpace(int);
 
-    void startDescTable(const QCString &title);
+    void startDescTable(const QCString &title,const bool hasInits);
     void endDescTable();
     void startDescTableRow();
     void endDescTableRow();
     void startDescTableTitle();
     void endDescTableTitle();
+    void startDescTableInit();
+    void endDescTableInit();
     void startDescTableData();
     void endDescTableData();
 
