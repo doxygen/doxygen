@@ -26,6 +26,8 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20231107:
+ *  - Updated to 1.10.0:
  * 20230817:
  *  - Updated to 1.9.8;
  *  - Small fixes to the method TranslatorPortuguese::trNamespaceMembersDescriptionTotal().
@@ -77,7 +79,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public TranslatorAdapter_1_10_0
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -2703,6 +2705,15 @@ class TranslatorPortuguese : public TranslatorAdapter_1_10_0
     {
       return "Módulos Exportados";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trCopyToClipboard()
+    {
+      return "Copiado para a área de transferência";
+    }    
 };
 
 #endif

@@ -19,6 +19,8 @@
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
+ * 20231107:
+ *  - Updated to 1.10.0:
  * 20230817:
  *  - Updated to 1.9.8;
  *  - Small fixes to the method TranslatorBrazilian::trNamespaceMembersDescriptionTotal().
@@ -164,7 +166,7 @@ namespace PortugueseTranslatorUtils
     }
 }
 
-class TranslatorBrazilian : public TranslatorAdapter_1_10_0
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -2841,6 +2843,14 @@ class TranslatorBrazilian : public TranslatorAdapter_1_10_0
       return "Módulos Exportados";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trCopyToClipboard()
+    {
+      return "Copiado para a área de transferência";
+    }
 };
 
 #endif
