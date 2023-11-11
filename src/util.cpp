@@ -2727,7 +2727,7 @@ GetDefResult getDefs(const GetDefInput &input)
  *   - if `nd` is non zero, the scope was a namespace pointed to by nd.
  */
 static bool getScopeDefs(const QCString &docScope,const QCString &scope,
-    ClassDef *&cd, NamespaceDef *&nd)
+    ClassDef *&cd, ConceptDef *&cnd, NamespaceDef *&nd)
 {
   cd=0;nd=0;
 
@@ -2763,6 +2763,10 @@ static bool getScopeDefs(const QCString &docScope,const QCString &scope,
     else if ((nd=Doxygen::namespaceLinkedMap->find(fullName)) && nd->isLinkable())
     {
       return TRUE; // namespace link written => quit
+    }
+    else if ((cnd=Doxygen::conceptLinkedMap->find(fullName)) && cnd->isLinkable())
+    {
+      return TRUE; // concept link written => quit
     }
     if (scopeOffset==0)
     {
@@ -2829,6 +2833,7 @@ bool resolveRef(/* in */  const QCString &scName,
   {
     ClassDef *cd=0;
     NamespaceDef *nd=0;
+    ConceptDef *cnd=0;
 
     // the following if() was commented out for releases in the range
     // 1.5.2 to 1.6.1, but has been restored as a result of bug report 594787.
@@ -2840,12 +2845,16 @@ bool resolveRef(/* in */  const QCString &scName,
     //printf("scName=%s fullName=%s\n",qPrint(scName),qPrint(fullName));
 
     // check if this is a class or namespace reference
-    if (scName!=fullName && getScopeDefs(scName,fullName,cd,nd))
+    if (scName!=fullName && getScopeDefs(scName,fullName,cd,cnd,nd))
     {
       //printf("found scopeDef\n");
       if (cd) // scope matches that of a class
       {
         *resContext = cd;
+      }
+      else if (cnd)
+      {
+        *resContext = cnd;
       }
       else // scope matches that of a namespace
       {
@@ -2908,7 +2917,7 @@ bool resolveRef(/* in */  const QCString &scName,
   GetDefResult result = getDefs(input);
   if (result.found)
   {
-    //printf("after getDefs checkScope=%d nameStr=%s cd=%p nd=%p\n",checkScope,qPrint(nameStr),cd,nd);
+    //printf("after getDefs checkScope=%d nameStr=%s\n",checkScope,qPrint(nameStr));
     if (checkScope && result.md && result.md->getOuterScope()==Doxygen::globalScope &&
         !result.md->isStrongEnumValue() &&
         (!scopeStr.isEmpty() || nameStr.find("::")>0))
@@ -2965,7 +2974,7 @@ bool resolveRef(/* in */  const QCString &scName,
       return TRUE;
     }
   }
-  //printf("resolveRef: %s not found!\n",name);
+  //printf("resolveRef: %s not found!\n",qPrint(name));
 
   return FALSE;
 }
