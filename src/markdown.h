@@ -16,6 +16,7 @@
 #ifndef MARKDOWN_H
 #define MARKDOWN_H
 
+#include <array>
 #include <functional>
 
 #include "qcstring.h"
@@ -87,7 +88,7 @@ class Markdown
     int            m_lineNr = 0;
     int            m_indentLevel=0;  // 0 is outside markdown, -1=page level
     GrowBuf        m_out;
-    Markdown::Action_t m_actions[256];
+    std::array<Action_t,256> m_actions;
 };
 
 class MarkdownOutlineParser : public OutlineParserInterface

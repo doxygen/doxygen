@@ -108,17 +108,17 @@ Markdown::Markdown(const QCString &fileName,int lineNr,int indentLevel)
 {
   using namespace std::placeholders;
   // setup callback table for special characters
-  m_actions[static_cast<unsigned int>('_')] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('*')] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('~')] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('`')] = std::bind(&Markdown::processCodeSpan,      this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('\\')]= std::bind(&Markdown::processSpecialCommand,this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('@')] = std::bind(&Markdown::processSpecialCommand,this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('[')] = std::bind(&Markdown::processLink,          this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('!')] = std::bind(&Markdown::processLink,          this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('<')] = std::bind(&Markdown::processHtmlTag,       this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('-')] = std::bind(&Markdown::processNmdash,        this,_1,_2,_3);
-  m_actions[static_cast<unsigned int>('"')] = std::bind(&Markdown::processQuoted,        this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('_')] = [this](const char *data,int off,int size) { return processEmphasis      (data,off,size); };
+  m_actions[static_cast<unsigned int>('*')] = [this](const char *data,int off,int size) { return processEmphasis      (data,off,size); };
+  m_actions[static_cast<unsigned int>('~')] = [this](const char *data,int off,int size) { return processEmphasis      (data,off,size); };
+  m_actions[static_cast<unsigned int>('`')] = [this](const char *data,int off,int size) { return processCodeSpan      (data,off,size); };
+  m_actions[static_cast<unsigned int>('\\')]= [this](const char *data,int off,int size) { return processSpecialCommand(data,off,size); };
+  m_actions[static_cast<unsigned int>('@')] = [this](const char *data,int off,int size) { return processSpecialCommand(data,off,size); };
+  m_actions[static_cast<unsigned int>('[')] = [this](const char *data,int off,int size) { return processLink          (data,off,size); };
+  m_actions[static_cast<unsigned int>('!')] = [this](const char *data,int off,int size) { return processLink          (data,off,size); };
+  m_actions[static_cast<unsigned int>('<')] = [this](const char *data,int off,int size) { return processHtmlTag       (data,off,size); };
+  m_actions[static_cast<unsigned int>('-')] = [this](const char *data,int off,int size) { return processNmdash        (data,off,size); };
+  m_actions[static_cast<unsigned int>('"')] = [this](const char *data,int off,int size) { return processQuoted        (data,off,size); };
   (void)m_lineNr; // not used yet
 }
 
@@ -1671,8 +1671,8 @@ void Markdown::processInline(const char *data,int size)
   Action_t action;
   while (i<size)
   {
-    // skip over character that do not trigger a specific action
-    while (end<size && ((action=m_actions[static_cast<uint8_t>(data[end])])==0)) end++;
+    // skip over characters that do not trigger a specific action
+    while (end<size && ((action=m_actions[static_cast<uint8_t>(data[end])])==nullptr)) end++;
     // and add them to the output
     m_out.addStr(data+i,end-i);
     if (end>=size) break;
