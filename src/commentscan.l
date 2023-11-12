@@ -3495,7 +3495,7 @@ static bool makeStructuralIndicator(yyscan_t yyscanner,EntryType t)
     yyextra->current->section = t;
     yyextra->current->fileName = yyextra->fileName;
     yyextra->current->startLine = yyextra->lineNr;
-    yyextra->current->docLine = yyextra->lineNr;
+    if (yyextra->current->docLine == -1) yyextra->current->docLine = yyextra->lineNr;
     return FALSE;
   }
 }
