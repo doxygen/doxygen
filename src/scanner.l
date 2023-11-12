@@ -5317,13 +5317,21 @@ NONLopt [^\n]*
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;
                                           yyextra->current->startColumn = yyextra->yyBegColNr;
-                                          static const reg::Ex re(R"(\([^)]*[*&][^)]*\))");
+                                          static const reg::Ex re(R"(\([^)]*[*&][^)]*\))"); // e.g. (...*...)
                                           reg::Match match;
                                           std::string type = yyextra->current->type.str();
                                           int ti=-1;
                                           if (reg::search(type,match,re))
                                           {
                                             ti = (int)match.position();
+                                          }
+                                          if (ti!=-1)
+                                          {
+                                           int di = yyextra->current->type.find("decltype(");
+                                           if (di!=-1 && di<ti) // decltype(...(...*...) -> normal return type
+                                           {
+                                             ti=-1;
+                                           }
                                           }
                                           int ts=yyextra->current->type.find('<');
                                           int te=yyextra->current->type.findRev('>');

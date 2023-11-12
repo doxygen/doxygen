@@ -2579,6 +2579,14 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
     i = match.position();
     l = match.length();
   }
+  if (i!=std::string::npos)
+  {
+    size_t di = type.find("decltype(");
+    if (di!=std::string::npos && di<i)
+    {
+      i = std::string::npos;
+    }
+  }
   size_t bb=type.find('<');
   size_t be=type.rfind('>');
   bool templFp = false;
