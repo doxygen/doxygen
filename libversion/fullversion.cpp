@@ -9,11 +9,12 @@ const char *getFullVersion(void)
   if (!init)
   {
     strncpy(fullVersionString,getDoxygenVersion(),BUF_SIZE-1);
+    fullVersionString[BUF_SIZE-1]='\0';
     if (strlen(getGitVersion())>0)
     {
-      strncat(fullVersionString," (",BUF_SIZE-1);
-      strncat(fullVersionString,getGitVersion(),BUF_SIZE-1);
-      strncat(fullVersionString,")",BUF_SIZE-1);
+      strncat(fullVersionString," (",BUF_SIZE-strlen(fullVersionString)-1);
+      strncat(fullVersionString,getGitVersion(),BUF_SIZE-strlen(fullVersionString)-1);
+      strncat(fullVersionString,")",BUF_SIZE-strlen(fullVersionString)-1);
     }
     fullVersionString[BUF_SIZE-1]='\0';
     init = true;
