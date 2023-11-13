@@ -1145,12 +1145,9 @@ int Markdown::processLink(const char *data,int offset,int size)
   {
     whiteSpace = true;
     i++;
-    nl++;
     // skip more whitespace
     while (i<size && data[i]==' ') i++;
   }
-  nlTotal += nl;
-  nl = 0;
   if (whiteSpace && i<size && (data[i]=='(' || data[i]=='[')) return 0;
 
   bool explicitTitle=FALSE;
