@@ -238,7 +238,7 @@ int main(int argc,char **argv)
     }
     else if (!strcmp(argv[1],"--version"))
     {
-      printf("%s version: %s\n",argv[0],getFullVersion());
+      printf("%s version: %s\n",argv[0],getFullVersion().c_str());
       exit(0);
     }
   }

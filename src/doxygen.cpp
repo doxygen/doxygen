@@ -11487,9 +11487,10 @@ static void writeTagFile()
   TextStream tagFile(&f);
   tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>\n";
   tagFile << "<tagfile doxygen_version=\"" << getDoxygenVersion() << "\"";
-  if (strlen(getGitVersion())>0)
+  std::string gitVersion = getGitVersion();
+  if (!gitVersion.empty())
   {
-    tagFile << " doxygen_gitid=\"" << getGitVersion() << "\"";
+    tagFile << " doxygen_gitid=\"" << gitVersion << "\"";
   }
   tagFile << ">\n";
 
