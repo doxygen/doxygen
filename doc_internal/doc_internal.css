@@ -8,7 +8,7 @@ dl.multicol {
         list-style-type: none;
 }
 ul.multicol {
-        font-family: courier;
+        font-family: courier,monospace;
 }
 
 body {
