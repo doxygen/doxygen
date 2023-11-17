@@ -159,7 +159,6 @@ pre.fragment {
         margin: 4px 8px 4px 2px;
         overflow: auto;
         word-wrap: break-word;
-        font-size:  9pt;
         line-height: 125%;
         font-family: monospace, fixed;
         font-size: 105%;
@@ -572,7 +571,6 @@ table.memberdecls {
         border-left: 1px solid #C0C0C0;      
         border-right: 1px solid #C0C0C0; 
         padding: 6px 10px 2px 10px;
-        background-color: #FCFCFC;
         border-top-width: 0;
         background-image:url('nav_g.png');
         background-repeat:repeat-x;
@@ -757,7 +755,7 @@ div.directory {
 }
 
 .icon {
-    font-family: Arial, Helvetica;
+    font-family: Arial, Helvetica,sans-serif;
     font-weight: bold;
     font-size: 12px;
     height: 14px;
@@ -959,7 +957,6 @@ table.fieldtable {
 {
 	height:32px;
 	display:block;
-	text-decoration: none;
 	outline: none;
 	color: #434343;
 	font-family: 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
