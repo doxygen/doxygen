@@ -67,7 +67,12 @@ Credits
 -------
 
 Special thanks to all contributors:<br/><br/>
-<a href="https://github.com/doxygen/doxygen/graphs/contributors"><img src="https://contrib.rocks/image?repo=doxygen/doxygen"/></a>
+
+<a href="https://github.com/doxygen/doxygen/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=doxygen/doxygen" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 Enjoy,
 
