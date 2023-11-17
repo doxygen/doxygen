@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="64" column="7" bodyfile="100_a.c" bodystart="64" bodyend="-1"/>
+        <location file="100_a.c" line="66" column="7" bodyfile="100_a.c" bodystart="66" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -25,7 +25,7 @@
     <detaileddescription>
       <para>More for s in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
     </detaileddescription>
-    <location file="100_a.c" line="60" column="1" bodyfile="100_a.c" bodystart="60" bodyend="65"/>
+    <location file="100_a.c" line="62" column="1" bodyfile="100_a.c" bodystart="62" bodyend="67"/>
     <listofallmembers>
       <member refid="structs_1afbd4a62a1d1e5d85ea3fcb5954434f29" prot="public" virt="non-virtual">
         <scope>s</scope>

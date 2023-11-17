@@ -7529,8 +7529,8 @@ static void findEnumDocumentation(const Entry *root)
 
     if (!name.isEmpty())
     {
-      bool found = FALSE;
-      if (root->groups.empty())
+      bool found = tryAddEnumDocsToGroupMember(root, name);
+      if (!found)
       {
         MemberName *mn;
         if (cd)
@@ -7575,10 +7575,6 @@ static void findEnumDocumentation(const Entry *root)
             }
           }
         }
-      }
-      else
-      {
-        found = tryAddEnumDocsToGroupMember(root, name);
       }
       if (!found)
       {
