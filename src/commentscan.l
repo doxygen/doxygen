@@ -1380,6 +1380,8 @@ STopt  [^\n@\\]*
                                           unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
+                                          addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
+                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr));
                                           BEGIN( Comment );
                                         }
 <GroupDocArg2>.                         { // title (stored in type)
@@ -3495,7 +3497,7 @@ static bool makeStructuralIndicator(yyscan_t yyscanner,EntryType t)
     yyextra->current->section = t;
     yyextra->current->fileName = yyextra->fileName;
     yyextra->current->startLine = yyextra->lineNr;
-    yyextra->current->docLine = yyextra->lineNr;
+    if (yyextra->current->docLine == -1) yyextra->current->docLine = yyextra->lineNr;
     return FALSE;
   }
 }
