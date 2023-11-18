@@ -1664,7 +1664,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      */
     QCString trGeneratedFromFilesFortran(
       ClassDef::CompoundType compType,
-      bool single)
+      bool single) override
     {
       // single is true implies a single file
       QCString result;
@@ -1771,7 +1771,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      */
     QCString trDateTime(
       int year, int month, int day, int dayOfWeek,
-      int hour, int minutes, int seconds, DateTimeType includeTime)
+      int hour, int minutes, int seconds, DateTimeType includeTime) override
     {
       static const char *days[] = { "सोमवार", "मंगलवार", "बुधवार", "गुरुवार",
                                     "शुक्रवार", "शनिवार", "रविवार" };
