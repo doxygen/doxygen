@@ -38,7 +38,7 @@ class TranslatorDutch : public Translator
     { return "\\usepackage[dutch]{babel}\n"; }
     QCString trISOLang()
     { return "nl"; }
-    virtual QCString getLanguageString()
+    virtual QCString getLanguageString() override
     {
       return "0x413 Dutch";
     }
@@ -48,7 +48,7 @@ class TranslatorDutch : public Translator
     { return "(Merk op dat dit geen member functies zijn.)"; }
     QCString trDetailedDescription()
     { return "Gedetailleerde Beschrijving"; }
-    virtual QCString trDetails()
+    virtual QCString trDetails() override
     { return "Details"; }
 
     QCString trMemberTypedefDocumentation()
@@ -942,7 +942,7 @@ class TranslatorDutch : public Translator
      * </pre>
      *
      */
-    virtual QCString trRTFansicp()
+    virtual QCString trRTFansicp() override
     {
       return "1252";
     }
@@ -951,13 +951,13 @@ class TranslatorDutch : public Translator
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    virtual QCString trRTFCharSet()
+    virtual QCString trRTFCharSet() override
     {
       return "0";
     }
 
     /*! Used as header RTF general index */
-    virtual QCString trRTFGeneralIndex()
+    virtual QCString trRTFGeneralIndex() override
     {
       return "Index";
     }
@@ -966,7 +966,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    virtual QCString trClass(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Klasse" : "klasse"));
       if (!singular)  result+="n";
@@ -977,7 +977,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    virtual QCString trFile(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Bestand" : "bestand"));
       if (!singular)  result+="en";
@@ -988,7 +988,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool first_capital, bool singular)
+    virtual QCString trNamespace(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Namespace" : "namespace"));
       if (!singular)  result+="s";
@@ -999,7 +999,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    virtual QCString trGroup(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Groep" : "groep"));
       if (!singular)  result+="en";
@@ -1010,7 +1010,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    virtual QCString trPage(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Pagina" : "pagina"));
       if (!singular)  result+="s";
@@ -1021,7 +1021,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    virtual QCString trMember(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Member" : "member"));
       if (!singular)  result+="s";
@@ -1032,7 +1032,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool first_capital, bool singular)
+    virtual QCString trGlobal(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Globale member" : "globale member"));
       if (!singular)  result+="s";
@@ -1045,7 +1045,7 @@ class TranslatorDutch : public Translator
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    virtual QCString trAuthor(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Auteur" : "auteur"));
       if (!singular)  result+="s";
@@ -1058,7 +1058,7 @@ class TranslatorDutch : public Translator
 
     /*! This text is put before the list of members referenced by a member
      */
-    virtual QCString trReferences()
+    virtual QCString trReferences() override
     {
       return "Gebruikt";
     }
@@ -1070,7 +1070,7 @@ class TranslatorDutch : public Translator
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trImplementedFromList(int numEntries) override
     {
       return "Implementeert "+trWriteList(numEntries)+".";
     }
@@ -1078,7 +1078,7 @@ class TranslatorDutch : public Translator
     /*! used in member documentation blocks to produce a list of
      *  all members that implementation this member.
      */
-    virtual QCString trImplementedInList(int numEntries)
+    virtual QCString trImplementedInList(int numEntries) override
     {
       return "Wordt geïmplementeerd door "+trWriteList(numEntries)+".";
     }
@@ -1087,7 +1087,7 @@ class TranslatorDutch : public Translator
 // new since 1.2.16
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trRTFTableOfContents()
+    virtual QCString trRTFTableOfContents() override
     { return "Inhoudsopgave"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1097,7 +1097,7 @@ class TranslatorDutch : public Translator
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    virtual QCString trDeprecatedList()
+    virtual QCString trDeprecatedList() override
     {
       return "Deprecated Lijst";
     }
@@ -1108,12 +1108,12 @@ class TranslatorDutch : public Translator
 
     /*! Used as a header for a section of events found in a C# program
      */
-    virtual QCString trEvents()
+    virtual QCString trEvents() override
     {
       return "Events";
     }
     /*! Header used for the documentation section of a class' events. */
-    virtual QCString trEventDocumentation()
+    virtual QCString trEventDocumentation() override
     {
       return "Event Documentatie";
     }
@@ -1124,39 +1124,39 @@ class TranslatorDutch : public Translator
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    virtual QCString trPackageTypes()
+    virtual QCString trPackageTypes() override
     {
       return "Package Types";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageFunctions()
+    virtual QCString trPackageFunctions() override
     {
       return "Package Functies";
     }
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageMembers() override
     {
       return "Package Members";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageFunctions()
+    virtual QCString trStaticPackageFunctions() override
     {
       return "Statische Package Functies";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    virtual QCString trPackageAttribs()
+    virtual QCString trPackageAttribs() override
     {
       return "Package Attributen";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    virtual QCString trStaticPackageAttribs()
+    virtual QCString trStaticPackageAttribs() override
     {
       return "Statische Package Attributen";
     }
@@ -1168,12 +1168,12 @@ class TranslatorDutch : public Translator
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    virtual QCString trAll()
+    virtual QCString trAll() override
     {
       return "Alle";
     }
     /*! Put in front of the call graph for a function. */
-    virtual QCString trCallGraph()
+    virtual QCString trCallGraph() override
     {
       return "Hier is de call graaf voor deze functie:";
     }
@@ -1185,7 +1185,7 @@ class TranslatorDutch : public Translator
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    virtual QCString trSearchResultsTitle()
+    virtual QCString trSearchResultsTitle() override
     {
       return "Zoek Resultaten";
     }
@@ -1197,7 +1197,7 @@ class TranslatorDutch : public Translator
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1216,7 +1216,7 @@ class TranslatorDutch : public Translator
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    virtual QCString trSearchMatches()
+    virtual QCString trSearchMatches() override
     {
       return "Gevonden:";
     }
@@ -1227,7 +1227,7 @@ class TranslatorDutch : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    virtual QCString trSourceFile(QCString& filename)
+    virtual QCString trSourceFile(QCString& filename) override
     {
       return filename + " Bron Bestand";
     }
@@ -1239,31 +1239,31 @@ class TranslatorDutch : public Translator
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    virtual QCString trDirIndex()
+    virtual QCString trDirIndex() override
     { return "Folder Hiërarchie"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    virtual QCString trDirDocumentation()
+    virtual QCString trDirDocumentation() override
     { return "Folder Documentatie"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
-    virtual QCString trDirectories()
+    virtual QCString trDirectories() override
     { return "Folders"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const QCString &dirName)
+    virtual QCString trDirReference(const QCString &dirName) override
     { QCString result=dirName; result+=" Folder Referentie"; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
-    virtual QCString trDir(bool first_capital, bool singular)
+    virtual QCString trDir(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Folder" : "folder"));
       if (!singular) result+="s";
@@ -1277,7 +1277,7 @@ class TranslatorDutch : public Translator
     /*! This text is added to the documentation when the \\overload command
      *  is used for a function.
      */
-    virtual QCString trOverloadText()
+    virtual QCString trOverloadText() override
     {
       return "Deze functie is overloaded en is beschikbaar gemaakt om het "
              "gebruik te vergemakkelijken. Ze verschilt alleen van de "
@@ -1289,13 +1289,13 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Put in front of the call graph for a function. */
-    virtual QCString trCallerGraph()
+    virtual QCString trCallerGraph() override
     {
       return "Hier is de caller graaf voor deze functie:";
     }
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trMemberFunctionDocumentationFortran() override
     { return "Member Functie/Subroutine Documentatie"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1303,19 +1303,19 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    virtual QCString trCompoundListFortran()
+    virtual QCString trCompoundListFortran() override
     { return "Lijst met data types"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    virtual QCString trCompoundMembersFortran()
+    virtual QCString trCompoundMembersFortran() override
     { return "Data velden"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trCompoundListDescriptionFortran() override
     { return "Hieronder volgen de data types elk een korte beschrijving:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
@@ -1328,39 +1328,39 @@ class TranslatorDutch : public Translator
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    virtual QCString trCompoundIndexFortran()
+    virtual QCString trCompoundIndexFortran() override
     { return "Data Type Index"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    virtual QCString trTypeDocumentation()
+    virtual QCString trTypeDocumentation() override
     { return "Data Type Documentatie"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    virtual QCString trSubprograms()
+    virtual QCString trSubprograms() override
     { return "Functies/Subroutines"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    virtual QCString trSubprogramDocumentation()
+    virtual QCString trSubprogramDocumentation() override
     { return "Functie/Subroutine Documentatie"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     virtual QCString trDataTypes()
+     virtual QCString trDataTypes() override
     { return "Data Types"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    virtual QCString trModulesList()
+    virtual QCString trModulesList() override
     { return "Module Lijst"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesListDescription(bool extractAll) override
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
@@ -1371,7 +1371,7 @@ class TranslatorDutch : public Translator
     /*! used as the title of the HTML page of a module/type (Fortran) */
     virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
       QCString result=clName;
       switch(compType)
@@ -1390,7 +1390,7 @@ class TranslatorDutch : public Translator
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const QCString &namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName) override
     {
       QCString result=namespaceName;
       result+=" Module Referentie";
@@ -1398,11 +1398,11 @@ class TranslatorDutch : public Translator
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    virtual QCString trModulesMembers()
+    virtual QCString trModulesMembers() override
     { return "Module Members"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMemberDescription(bool extractAll) override
     {
       QCString result="Hier is een lijst van alle ";
       if (!extractAll) result+="gedocumenteerde ";
@@ -1417,14 +1417,14 @@ class TranslatorDutch : public Translator
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    virtual QCString trModulesIndex()
+    virtual QCString trModulesIndex() override
     { return "Module Index"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Module" : "module"));
       if (!singular)  result+="n";
@@ -1434,7 +1434,7 @@ class TranslatorDutch : public Translator
      *  followed by a list of files that were used to generate the page.
      */
     virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single)
+        bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       QCString result="De documentatie voor ";
@@ -1459,7 +1459,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trType(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Type" : "type"));
       if (!singular)  result+="s";
@@ -1469,7 +1469,7 @@ class TranslatorDutch : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trSubprogram(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Subprogramma" : "subprogramma"));
       if (!singular)  result+="s";
@@ -1477,7 +1477,7 @@ class TranslatorDutch : public Translator
     }
 
     /*! C# Type Contraint list */
-    virtual QCString trTypeConstraints()
+    virtual QCString trTypeConstraints() override
     {
       return "Type Beperkingen";
     }
@@ -1487,31 +1487,31 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const QCString &name)
+    virtual QCString trDirRelation(const QCString &name) override
     {
       return name+" Relatie";
     }
 
     /*! Loading message shown when loading search results */
-    virtual QCString trLoading()
+    virtual QCString trLoading() override
     {
       return "Laden...";
     }
 
     /*! Label used for search results in the global namespace */
-    virtual QCString trGlobalNamespace()
+    virtual QCString trGlobalNamespace() override
     {
       return "Globale Namespace";
     }
 
     /*! Message shown while searching */
-    virtual QCString trSearching()
+    virtual QCString trSearching() override
     {
       return "Zoeken...";
     }
 
     /*! Text shown when no search results are found */
-    virtual QCString trNoMatches()
+    virtual QCString trNoMatches() override
     {
       return "Niets gevonden";
     }
@@ -1524,7 +1524,7 @@ class TranslatorDutch : public Translator
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const QCString &name)
+    virtual QCString trFileIn(const QCString &name) override
     {
       return "Bestand in "+name;
     }
@@ -1533,13 +1533,13 @@ class TranslatorDutch : public Translator
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const QCString &name)
+    virtual QCString trIncludesFileIn(const QCString &name) override
     {
       return "Includeert bestand in "+name;
     }
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                DateTimeType includeTime)
+                                DateTimeType includeTime) override
     {
       static const char *days[]   = { "Ma","Di","Wo","Do","Vr","Za","Zo" };
       static const char *months[] = { "Jan","Feb","Maa","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec" };
@@ -1557,7 +1557,7 @@ class TranslatorDutch : public Translator
       }
       return sdate;
     }
-    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
     {
       static const char *days_short[]   = { "ma", "di", "wo", "do", "vr", "za", "zo" };
       static const char *days_full[]    = { "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag" };
@@ -1565,7 +1565,7 @@ class TranslatorDutch : public Translator
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    virtual QCString trMonth(int month, bool first_capital, bool full)
+    virtual QCString trMonth(int month, bool first_capital, bool full) override
     {
       static const char *months_short[] = { "jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec" };
       static const char *months_full[]  = { "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december" };
@@ -1573,7 +1573,7 @@ class TranslatorDutch : public Translator
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    virtual QCString trDayPeriod(int period)
+    virtual QCString trDayPeriod(int period) override
     {
       static const char *dayPeriod[] = { "a.m.", "p.m." };
       return dayPeriod[period];
@@ -1584,15 +1584,15 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
-    virtual QCString trCiteReferences()
+    virtual QCString trCiteReferences() override
     { return "Bibliografie"; }
 
     /*! Text for copyright paragraph */
-    virtual QCString trCopyright()
+    virtual QCString trCopyright() override
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const QCString &name)
+    virtual QCString trDirDepGraph(const QCString &name) override
     { return "Folder afhankelijkheidsgraaf voor "+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1600,19 +1600,19 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
-    virtual QCString trDetailLevel()
+    virtual QCString trDetailLevel() override
     { return "detail niveau"; }
 
     /*! Section header for list of template parameters */
-    virtual QCString trTemplateParameters()
+    virtual QCString trTemplateParameters() override
     { return "Template Parameters"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
-    virtual QCString trAndMore(const QCString &number)
+    virtual QCString trAndMore(const QCString &number) override
     { return "en "+number+ " anderen..."; }
 
     /*! Used file list for a Java enum */
-    virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trEnumGeneratedFromFiles(bool single) override
     { QCString result = "De documentatie voor deze enum is gegenereerd op grond van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
@@ -1621,17 +1621,17 @@ class TranslatorDutch : public Translator
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const QCString &name)
+    virtual QCString trEnumReference(const QCString &name) override
     { return name+" Enum Referentie"; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what) override
     { return members+" overgeërfd van "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
-    virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trAdditionalInheritedMembers() override
     { return "Additionele Overgeërfde Members"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1642,7 +1642,7 @@ class TranslatorDutch : public Translator
      *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
-    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    virtual QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "in" : "uit";
       return "klik hier de paneel synchronisatie "+opt+" the schakelen";
@@ -1652,7 +1652,7 @@ class TranslatorDutch : public Translator
      *  a category. Note that the @1 marker is required and is replaced
      *  by a link.
      */
-    virtual QCString trProvidedByCategory()
+    virtual QCString trProvidedByCategory() override
     {
       return "Wordt aangeboden door category @0.";
     }
@@ -1661,7 +1661,7 @@ class TranslatorDutch : public Translator
      *  Note that the @1 marker is required and is replaced by a link to
      *  the class method.
      */
-    virtual QCString trExtendsClass()
+    virtual QCString trExtendsClass() override
     {
       return "Uitbereiding van klasse @0.";
     }
@@ -1669,7 +1669,7 @@ class TranslatorDutch : public Translator
     /*! Used as the header of a list of class methods in Objective-C.
      *  These are similar to static public member functions in C++.
      */
-    virtual QCString trClassMethods()
+    virtual QCString trClassMethods() override
     {
       return "Klasse Methoden";
     }
@@ -1677,14 +1677,14 @@ class TranslatorDutch : public Translator
     /*! Used as the header of a list of instance methods in Objective-C.
      *  These are similar to public member functions in C++.
      */
-    virtual QCString trInstanceMethods()
+    virtual QCString trInstanceMethods() override
     {
       return "Instantie Methoden";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
-    virtual QCString trMethodDocumentation()
+    virtual QCString trMethodDocumentation() override
     {
       return "Methode Documentatie";
     }
@@ -1694,40 +1694,40 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /** old style UNO IDL services: implemented interfaces */
-    virtual QCString trInterfaces()
+    virtual QCString trInterfaces() override
     { return "Geëporteerde Interfaces"; }
 
     /** old style UNO IDL services: inherited services */
-    virtual QCString trServices()
+    virtual QCString trServices() override
     { return "Geïncludeerde Services"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroups()
+    virtual QCString trConstantGroups() override
     { return "Konstanten Groepen"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const QCString &namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName) override
     {
       QCString result=namespaceName;
       result+=" Konstanten Groepen Referentie";
       return result;
     }
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const QCString &sName)
+    virtual QCString trServiceReference(const QCString &sName) override
     {
       QCString result=sName;
       result+=" Service Referentie";
       return result;
     }
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const QCString &sName)
+    virtual QCString trSingletonReference(const QCString &sName) override
     {
       QCString result=sName;
       result+=" Singleton Referentie";
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trServiceGeneratedFromFiles(bool single) override
     { QCString result = "De documentatie voor deze service is gegenereerd op grond van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
@@ -1735,7 +1735,7 @@ class TranslatorDutch : public Translator
       return result;
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trSingletonGeneratedFromFiles(bool single) override
     { QCString result = "De documentatie voor deze singleton is gegenereerd op grond van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
@@ -1748,31 +1748,31 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit hierarchy */
-    virtual QCString trDesignUnitHierarchy()
+    virtual QCString trDesignUnitHierarchy() override
     { return "Ontwerp Eenheid Hiërarchie"; }
     /** VHDL design unit list */
-    virtual QCString trDesignUnitList()
+    virtual QCString trDesignUnitList() override
     { return "Ontwerp Eenheid Lijst"; }
     /** VHDL design unit members */
-    virtual QCString trDesignUnitMembers()
+    virtual QCString trDesignUnitMembers() override
     { return "Ontwerp Eenheid Members"; }
     /** VHDL design unit list description */
-    virtual QCString trDesignUnitListDescription()
+    virtual QCString trDesignUnitListDescription() override
     {
       return "hieronder volgt de lijst met all ontwerp eenheden met links "
              "naar de entiteiten waar ze bij behoren:";
     }
     /** VHDL design unit index */
-    virtual QCString trDesignUnitIndex()
+    virtual QCString trDesignUnitIndex() override
     { return "Ontwerp Eenheid Index"; }
     /** VHDL design units */
-    virtual QCString trDesignUnits()
+    virtual QCString trDesignUnits() override
     { return "Ontwerp Eenheden"; }
     /** VHDL functions/procedures/processes */
-    virtual QCString trFunctionAndProc()
+    virtual QCString trFunctionAndProc() override
     { return "Functies/Procedures/Processen"; }
     /** VHDL type */
-    virtual QCString trVhdlType(VhdlSpecifier type,bool single)
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single) override
     {
       switch(type)
       {
@@ -1857,59 +1857,59 @@ class TranslatorDutch : public Translator
           return "Klasse";
       }
     }
-    virtual QCString trCustomReference(const QCString &name)
+    virtual QCString trCustomReference(const QCString &name) override
     { return name+" Referentie"; }
 
     /* Slice */
-    virtual QCString trConstants()
+    virtual QCString trConstants() override
     { return "Konstanten"; }
-    virtual QCString trConstantDocumentation()
+    virtual QCString trConstantDocumentation() override
     { return "Documentatie van konstanten"; }
-    virtual QCString trSequences()
+    virtual QCString trSequences() override
     { return "Reeksen"; }
-    virtual QCString trSequenceDocumentation()
+    virtual QCString trSequenceDocumentation() override
     { return "Documentatie van reeksen"; }
-    virtual QCString trDictionaries()
+    virtual QCString trDictionaries() override
     { return "Vertalingslijsten"; }
-    virtual QCString trDictionaryDocumentation()
+    virtual QCString trDictionaryDocumentation() override
     { return "Documentatie van vertalingslijsten"; }
-    virtual QCString trSliceInterfaces()
+    virtual QCString trSliceInterfaces() override
     { return "Interfaces"; }
-    virtual QCString trInterfaceIndex()
+    virtual QCString trInterfaceIndex() override
     { return "Index van interfaces"; }
-    virtual QCString trInterfaceList()
+    virtual QCString trInterfaceList() override
     { return "Lijst van interfaces"; }
-    virtual QCString trInterfaceListDescription()
+    virtual QCString trInterfaceListDescription() override
     { return "Hieronder volgt de lijst met alle interfaces, elk met een korte beschrijving:"; }
-    virtual QCString trInterfaceHierarchy()
+    virtual QCString trInterfaceHierarchy() override
     { return "Interface Hiërarchie"; }
-    virtual QCString trInterfaceHierarchyDescription()
+    virtual QCString trInterfaceHierarchyDescription() override
     { return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:"; }
-    virtual QCString trInterfaceDocumentation()
+    virtual QCString trInterfaceDocumentation() override
     { return "Documentatie van interfaces"; }
-    virtual QCString trStructs()
+    virtual QCString trStructs() override
     { return "Structs"; }
-    virtual QCString trStructIndex()
+    virtual QCString trStructIndex() override
     { return "Index van struct"; }
-    virtual QCString trStructList()
+    virtual QCString trStructList() override
     { return "Lijst van struct"; }
-    virtual QCString trStructListDescription()
+    virtual QCString trStructListDescription() override
     { return "Hieronder volgt de lijst met alle structs, elk met een korte beschrijving:"; }
-    virtual QCString trStructDocumentation()
+    virtual QCString trStructDocumentation() override
     { return "Documentatie van structs"; }
-    virtual QCString trExceptionIndex()
+    virtual QCString trExceptionIndex() override
     { return "Index van exceptions"; }
-    virtual QCString trExceptionList()
+    virtual QCString trExceptionList() override
     { return "Lijst van exceptions"; }
-    virtual QCString trExceptionListDescription()
+    virtual QCString trExceptionListDescription() override
     { return "Hieronder volgt de lijst met alle exeptions, elk met een korte beschrijving:"; }
-    virtual QCString trExceptionHierarchy()
+    virtual QCString trExceptionHierarchy() override
     { return "Exception Hiërarchie"; }
-    virtual QCString trExceptionHierarchyDescription()
+    virtual QCString trExceptionHierarchyDescription() override
     { return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:"; }
-    virtual QCString trExceptionDocumentation()
+    virtual QCString trExceptionDocumentation() override
     { return "Documentatie van exceptions"; }
-    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
+    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
     {
       QCString result=clName;
       if (isLocal) result+=" Lokale";
@@ -1927,48 +1927,48 @@ class TranslatorDutch : public Translator
       result+=" Referentie";
       return result;
     }
-    virtual QCString trOperations()
+    virtual QCString trOperations() override
     { return "Bewerkingen"; }
-    virtual QCString trOperationDocumentation()
+    virtual QCString trOperationDocumentation() override
     { return "Documentatie van bewerkingen"; }
-    virtual QCString trDataMembers()
+    virtual QCString trDataMembers() override
     { return "Data members"; }
-    virtual QCString trDataMemberDocumentation()
+    virtual QCString trDataMemberDocumentation() override
     { return "Documentatie van data members"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.19
 //////////////////////////////////////////////////////////////////////////
-    virtual QCString trDesignUnitDocumentation()
+    virtual QCString trDesignUnitDocumentation() override
     { return "Ontwerp Eenheid Documentatie"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.2
 //////////////////////////////////////////////////////////////////////////
-    virtual QCString trConcept(bool first_capital, bool singular)
+    virtual QCString trConcept(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Concept" : "concept"));
       if (!singular) result+="en";
       return result;
     }
 
-    virtual QCString trConceptReference(const QCString &conceptName)
+    virtual QCString trConceptReference(const QCString &conceptName) override
     {
       QCString result=conceptName;
       result+=" Concept Referentie";
       return result;
     }
 
-    virtual QCString trConceptList()
+    virtual QCString trConceptList() override
     { return "Concept Lijst"; }
 
-    virtual QCString trConceptIndex()
+    virtual QCString trConceptIndex() override
     { return "Concept Index"; }
 
-    virtual QCString trConceptDocumentation()
+    virtual QCString trConceptDocumentation() override
     { return "Concept Documentatie"; }
 
-    virtual QCString trConceptListDescription(bool extractAll)
+    virtual QCString trConceptListDescription(bool extractAll) override
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
@@ -1976,7 +1976,7 @@ class TranslatorDutch : public Translator
       return result;
     }
 
-    virtual QCString trConceptDefinition()
+    virtual QCString trConceptDefinition() override
     {
       return "Concept definitie";
     }
@@ -1985,7 +1985,7 @@ class TranslatorDutch : public Translator
 // new since 1.9.4
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trPackageList()
+    virtual QCString trPackageList() override
     { return "Package Lijst"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1995,7 +1995,7 @@ class TranslatorDutch : public Translator
     /*! This is used for translation of the word that will be
      *  followed by a single name of the VHDL process flowchart.
      */
-    virtual QCString trFlowchart()
+    virtual QCString trFlowchart() override
     { return "Stroomschema: "; }
 
     /*! Please translate also updated body of the method
@@ -2011,14 +2011,14 @@ class TranslatorDutch : public Translator
      *
      *  Supersedes trRelatedFunctions
      */
-    virtual QCString trRelatedSymbols()
+    virtual QCString trRelatedSymbols() override
     { return "Gerelateerde symbolen"; }
 
     /*! subscript for the related symbols
      *
      *  Supersedes trRelatedSubscript
      */
-    virtual QCString trRelatedSymbolsSubscript()
+    virtual QCString trRelatedSymbolsSubscript() override
     { return "(Merk op dat dit geen member symbolen zijn.)"; }
 
     /*! used in the class documentation as a header before the list of all
@@ -2026,10 +2026,10 @@ class TranslatorDutch : public Translator
      *
      * Supersedes trRelatedFunctionDocumentation
      */
-    virtual QCString trRelatedSymbolDocumentation()
+    virtual QCString trRelatedSymbolDocumentation() override
     { return "Documentatie van friends en gerelateerde symbolen"; }
 
-    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
     {
       QCString result;
       switch(compType)
@@ -2051,7 +2051,7 @@ class TranslatorDutch : public Translator
       return result;
     }
 
-    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
       QCString result="Hieronder volgt de lijst met alle ";
@@ -2103,7 +2103,7 @@ class TranslatorDutch : public Translator
     }
         //return trCompoundMembersDescription(Config_getBool(EXTRACT_ALL));
 
-    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
       QCString result="Hieronder volgt de lijst met alle ";
@@ -2183,7 +2183,7 @@ class TranslatorDutch : public Translator
       return result;
     }
 
-    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
       QCString result="Hier is een lijst van alle ";
@@ -2237,24 +2237,24 @@ class TranslatorDutch : public Translator
       return result;
     }
 
-    virtual QCString trDefinition()  { return "Definitie";}
-    virtual QCString trDeclaration() { return "Declaratie";}
+    virtual QCString trDefinition() override  { return "Definitie";}
+    virtual QCString trDeclaration() override { return "Declaratie";}
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.8
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trTopics()
+    virtual QCString trTopics() override
     { return "Onderwerpen"; }
-    virtual QCString trTopicDocumentation()
+    virtual QCString trTopicDocumentation() override
     { return "Documentatie voor dit onderwerp"; }
-    virtual QCString trTopicIndex()
+    virtual QCString trTopicIndex() override
     { return "Overwerpen"; }
-    virtual QCString trTopicList()
+    virtual QCString trTopicList() override
     { return "Lijst met onderwerpen"; }
-    virtual QCString trTopicListDescription()
+    virtual QCString trTopicListDescription() override
     { return "Hieronder volgt de lijst met alle onderwerpen, elk met een korte beschrijving:"; }
-    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl)
+    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
       QCString result="Hier is een lijst van alle ";
@@ -2299,7 +2299,7 @@ class TranslatorDutch : public Translator
         result+="de modules waartoe ze behoren:";
       return result;
     }
-    virtual QCString trExportedModules()
+    virtual QCString trExportedModules() override
     {
       return "Geëxporteerde Modules";
     }
@@ -2308,7 +2308,7 @@ class TranslatorDutch : public Translator
 // new since 1.10.0
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trCopyToClipboard()
+    virtual QCString trCopyToClipboard() override
     {
       return "Kopiëren naar het klembord";
     }

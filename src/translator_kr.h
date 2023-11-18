@@ -32,7 +32,7 @@
  that you should copy the translator_en.h (this) file to your
  translator_xx.h new file.  Your new language should use the
  Translator class as the base class.  This means that you need to
- implement exactly the same (pure virtual) methods as the
+ implement exactly the same (pure virtual) override methods as the
  TranslatorEnglish does.  Because of this, it is a good idea to
  start with the copy of TranslatorEnglish and replace the strings
  one by one.
@@ -60,7 +60,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
-    virtual QCString idLanguage()
+    virtual QCString idLanguage() override
     { return "korean"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
@@ -77,14 +77,14 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      * The English LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
-    virtual QCString latexLanguageSupportCommand()
+    virtual QCString latexLanguageSupportCommand() override
     {
       // I'm not sure what this should be.
       // When I figure it out, I'll update this.
       // see http://www.ktug.or.kr/jsboard/read.php?table=operate&no=4422&page=1
       return "\\usepackage{kotex}\n";
     }
-    virtual QCString latexCommandName()
+    virtual QCString latexCommandName() override
     {
       QCString latex_command = Config_getString(LATEX_CMD_NAME);
       if (latex_command.isEmpty()) latex_command = "latex";
@@ -94,50 +94,50 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       }
       return latex_command;
     }
-    virtual QCString trISOLang()
+    virtual QCString trISOLang() override
     {
       return "ko";
     }
-    virtual QCString getLanguageString()
+    virtual QCString getLanguageString() override
     {
       return "0x412 Korean";
     }
-    virtual bool needsPunctuation()
+    virtual bool needsPunctuation() override
     {
       return false;
     }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    virtual QCString trRelatedFunctions()
+    virtual QCString trRelatedFunctions() override
     { return "관련된 함수들"; }
 
     /*! subscript for the related functions. */
-    virtual QCString trRelatedSubscript()
+    virtual QCString trRelatedSubscript() override
     { return "(다음은 멤버 함수들이 아닙니다. 주의하십시오.)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    virtual QCString trDetailedDescription()
+    virtual QCString trDetailedDescription() override
     { return "상세한 설명"; }
 
     /*! header that is used when the summary tag is missing inside the details tag */
-    virtual QCString trDetails()
+    virtual QCString trDetails() override
     { return "상세"; }
 
     /*! header that is put before the list of typedefs. */
-    virtual QCString trMemberTypedefDocumentation()
+    virtual QCString trMemberTypedefDocumentation() override
     { return "멤버 타입정의 문서화"; }
 
     /*! header that is put before the list of enumerations. */
-    virtual QCString trMemberEnumerationDocumentation()
+    virtual QCString trMemberEnumerationDocumentation() override
     { return "멤버 열거형 문서화"; }
 
     /*! header that is put before the list of member functions. */
-    virtual QCString trMemberFunctionDocumentation()
+    virtual QCString trMemberFunctionDocumentation() override
     { return "멤버 함수 문서화"; }
 
     /*! header that is put before the list of member attributes. */
-    virtual QCString trMemberDataDocumentation()
+    virtual QCString trMemberDataDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -150,29 +150,29 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore()
+    virtual QCString trMore() override
     { return "더 자세히 ..."; }
 
     /*! put in the class documentation */
-    virtual QCString trListOfAllMembers()
+    virtual QCString trListOfAllMembers() override
     { return "모든 멤버 목록"; }
 
     /*! used as the title of the "list of all members" page of a class */
-    virtual QCString trMemberList()
+    virtual QCString trMemberList() override
     { return "멤버 목록"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    virtual QCString trThisIsTheListOfAllMembers()
+    virtual QCString trThisIsTheListOfAllMembers() override
     { return "다음에 대한 모든 멤버의 목록입니다 : "; }
 
     /*! this is the remainder of the sentence after the class name */
-    virtual QCString trIncludingInheritedMembers()
+    virtual QCString trIncludingInheritedMembers() override
     { return " (모든 상속된 멤버들도 포함합니다.)"; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const QCString &s)
+    virtual QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="소스 코드로부터 ";
       if (!s.isEmpty()) result+=s+"를 위해 ";
       result+="Doxygen에 의해 자동으로 생성됨.";
@@ -180,15 +180,15 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! put after an enum name in the list of all members */
-    virtual QCString trEnumName()
+    virtual QCString trEnumName() override
     { return "열거형 이름"; }
 
     /*! put after an enum value in the list of all members */
-    virtual QCString trEnumValue()
+    virtual QCString trEnumValue() override
     { return "열거형 값"; }
 
     /*! put after an undocumented member in the list of all members */
-    virtual QCString trDefinedIn()
+    virtual QCString trDefinedIn() override
     { return "다음에서 정의됨 :"; }
 
     // quick reference sections
@@ -196,15 +196,15 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    virtual QCString trModules()
+    virtual QCString trModules() override
     { return "모듈"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    virtual QCString trClassHierarchy()
+    virtual QCString trClassHierarchy() override
     { return "클래스 계통도"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    virtual QCString trCompoundList()
+    virtual QCString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -217,11 +217,11 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    virtual QCString trFileList()
+    virtual QCString trFileList() override
     { return "파일 목록"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    virtual QCString trCompoundMembers()
+    virtual QCString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -234,7 +234,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to all members of files. */
-    virtual QCString trFileMembers()
+    virtual QCString trFileMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -247,24 +247,24 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to all related pages. */
-    virtual QCString trRelatedPages()
+    virtual QCString trRelatedPages() override
     { return "관련된 페이지"; }
 
     /*! This is put above each page as a link to all examples. */
-    virtual QCString trExamples()
+    virtual QCString trExamples() override
     { return "예제"; }
 
     /*! This is put above each page as a link to the search engine. */
-    virtual QCString trSearch()
+    virtual QCString trSearch() override
     { return "검색"; }
 
     /*! This is an introduction to the class hierarchy. */
-    virtual QCString trClassHierarchyDescription()
+    virtual QCString trClassHierarchyDescription() override
     { return "이 상속 목록은 완전하진 않지만 알파벳순으로 대략적으로 정렬되어있습니다.:";
     }
 
     /*! This is an introduction to the list with all files. */
-    virtual QCString trFileListDescription(bool extractAll)
+    virtual QCString trFileListDescription(bool extractAll) override
     {
       QCString result="다음은 ";
       if (!extractAll) result+="문서화된 ";
@@ -273,7 +273,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! This is an introduction to the annotated compound list. */
-    virtual QCString trCompoundListDescription()
+    virtual QCString trCompoundListDescription() override
     {
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -288,7 +288,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! This is an introduction to the page with all class members. */
-    virtual QCString trCompoundMembersDescription(bool extractAll)
+    virtual QCString trCompoundMembersDescription(bool extractAll) override
     {
       QCString result="다음은 ";
       if (!extractAll)
@@ -335,7 +335,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! This is an introduction to the page with all file members. */
-    virtual QCString trFileMembersDescription(bool extractAll)
+    virtual QCString trFileMembersDescription(bool extractAll) override
     {
       QCString result="다음은 ";
       if (!extractAll) result+="문서화된  ";
@@ -359,39 +359,39 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    virtual QCString trExamplesDescription()
+    virtual QCString trExamplesDescription() override
     { return "다음은 모든 예제들의 목록입니다.:"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    virtual QCString trRelatedPagesDescription()
+    virtual QCString trRelatedPagesDescription() override
     { return "다음은 관련된 모든 문서화 페이지들의 목록입니다.:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    virtual QCString trModulesDescription()
+    virtual QCString trModulesDescription() override
     { return "다음은 모든 모듈들의 목록입니다.:"; }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    virtual QCString trDocumentation()
+    virtual QCString trDocumentation() override
     { return "문서화"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    virtual QCString trModuleIndex()
+    virtual QCString trModuleIndex() override
     { return "모듈 색인"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    virtual QCString trHierarchicalIndex()
+    virtual QCString trHierarchicalIndex() override
     { return "계통도 색인"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    virtual QCString trCompoundIndex()
+    virtual QCString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -406,19 +406,19 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex()
+    virtual QCString trFileIndex() override
     { return "파일 색인"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    virtual QCString trModuleDocumentation()
+    virtual QCString trModuleDocumentation() override
     { return "모듈 문서화"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    virtual QCString trClassDocumentation()
+    virtual QCString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -437,83 +437,83 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    virtual QCString trFileDocumentation()
+    virtual QCString trFileDocumentation() override
     { return "파일 문서화"; }
 
     /*! This is used in LaTeX as the title of the document */
-    virtual QCString trReferenceManual()
+    virtual QCString trReferenceManual() override
     { return "참조 매뉴얼"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    virtual QCString trDefines()
+    virtual QCString trDefines() override
     { return "매크로"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    virtual QCString trTypedefs()
+    virtual QCString trTypedefs() override
     { return "타입정의"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    virtual QCString trEnumerations()
+    virtual QCString trEnumerations() override
     { return "열거형 타입"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    virtual QCString trFunctions()
+    virtual QCString trFunctions() override
     { return "함수"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trVariables()
+    virtual QCString trVariables() override
     { return "변수"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trEnumerationValues()
+    virtual QCString trEnumerationValues() override
     { return "열거형 멤버"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    virtual QCString trDefineDocumentation()
+    virtual QCString trDefineDocumentation() override
     { return "매크로 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    virtual QCString trTypedefDocumentation()
+    virtual QCString trTypedefDocumentation() override
     { return "타입정의 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    virtual QCString trEnumerationTypeDocumentation()
+    virtual QCString trEnumerationTypeDocumentation() override
     { return "열거형 타입 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    virtual QCString trFunctionDocumentation()
+    virtual QCString trFunctionDocumentation() override
     { return "함수 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    virtual QCString trVariableDocumentation()
+    virtual QCString trVariableDocumentation() override
     { return "변수 문서화"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    virtual QCString trCompounds()
+    virtual QCString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -528,7 +528,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="생성시간 : "+date;
       if (!projName.isEmpty()) result+=", 프로젝트명 : "+projName;
@@ -537,41 +537,41 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const QCString &clName)
+    virtual QCString trClassDiagram(const QCString &clName) override
     {
       return clName+"에 대한 상속 다이어그램 : ";
     }
 
     /*! this text is generated when the \\warning command is used. */
-    virtual QCString trWarning()
+    virtual QCString trWarning() override
     { return "경고"; }
 
     /*! this text is generated when the \\version command is used. */
-    virtual QCString trVersion()
+    virtual QCString trVersion() override
     { return "버전"; }
 
     /*! this text is generated when the \\date command is used. */
-    virtual QCString trDate()
+    virtual QCString trDate() override
     { return "날짜"; }
 
     /*! this text is generated when the \\return command is used. */
-    virtual QCString trReturns()
+    virtual QCString trReturns() override
     { return "반환값"; }
 
     /*! this text is generated when the \\sa command is used. */
-    virtual QCString trSeeAlso()
+    virtual QCString trSeeAlso() override
     { return "참고"; }
 
     /*! this text is generated when the \\param command is used. */
-    virtual QCString trParameters()
+    virtual QCString trParameters() override
     { return "매개변수"; }
 
     /*! this text is generated when the \\exception command is used. */
-    virtual QCString trExceptions()
+    virtual QCString trExceptions() override
     { return "예외"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    virtual QCString trGeneratedBy()
+    virtual QCString trGeneratedBy() override
     { return "다음에 의해 생성됨 : "; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -579,11 +579,11 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    virtual QCString trNamespaceList()
+    virtual QCString trNamespaceList() override
     { return "네임스페이스 목록"; }
 
     /*! used as an introduction to the namespace list */
-    virtual QCString trNamespaceListDescription(bool extractAll)
+    virtual QCString trNamespaceListDescription(bool extractAll) override
     {
       QCString result="다음은 ";
       if (!extractAll) result+="문서화된 ";
@@ -594,7 +594,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    virtual QCString trFriends()
+    virtual QCString trFriends() override
     { return "Friends"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -604,7 +604,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
-    virtual QCString trRelatedFunctionDocumentation()
+    virtual QCString trRelatedFunctionDocumentation() override
     { return "Friend, 그리고 관련된 함수 문서화"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -614,7 +614,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used as the title of the HTML page of a class/struct/union */
     virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
       QCString result=clName;
       switch(compType)
@@ -634,7 +634,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const QCString &fileName)
+    virtual QCString trFileReference(const QCString &fileName) override
     {
       QCString result=fileName;
       result+=" 파일 참조";
@@ -642,38 +642,38 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const QCString &namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName) override
     {
       QCString result=namespaceName;
       result+=" 네임스페이스 참조";
       return result;
     }
 
-    virtual QCString trPublicMembers()
+    virtual QCString trPublicMembers() override
     { return "Public 멤버 함수"; }
-    virtual QCString trPublicSlots()
+    virtual QCString trPublicSlots() override
     { return "Public Slots"; }
-    virtual QCString trSignals()
+    virtual QCString trSignals() override
     { return "Signals"; }
-    virtual QCString trStaticPublicMembers()
+    virtual QCString trStaticPublicMembers() override
     { return "정적 Public 멤버 함수"; }
-    virtual QCString trProtectedMembers()
+    virtual QCString trProtectedMembers() override
     { return "Protected 멤버 함수"; }
-    virtual QCString trProtectedSlots()
+    virtual QCString trProtectedSlots() override
     { return "Protected Slots"; }
-    virtual QCString trStaticProtectedMembers()
+    virtual QCString trStaticProtectedMembers() override
     { return "정적 Protected 멤버 함수"; }
-    virtual QCString trPrivateMembers()
+    virtual QCString trPrivateMembers() override
     { return "Private 멤버 함수"; }
-    virtual QCString trPrivateSlots()
+    virtual QCString trPrivateSlots() override
     { return "Private Slots"; }
-    virtual QCString trStaticPrivateMembers()
+    virtual QCString trStaticPrivateMembers() override
     { return "정적 Private 멤버 함수"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    virtual QCString trWriteList(int numEntries)
+    virtual QCString trWriteList(int numEntries) override
     {
       QCString result;
       int i;
@@ -698,7 +698,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritsList(int numEntries)
+    virtual QCString trInheritsList(int numEntries) override
     {
       return trWriteList(numEntries)+"를(을) 상속했습니다.";
     }
@@ -706,7 +706,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritedByList(int numEntries)
+    virtual QCString trInheritedByList(int numEntries) override
     {
       return trWriteList(numEntries)+"에 의해 상속되었습니다.";
     }
@@ -714,7 +714,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    virtual QCString trReimplementedFromList(int numEntries)
+    virtual QCString trReimplementedFromList(int numEntries) override
     {
       return trWriteList(numEntries)+"(으)로부터 재구현되었습니다.";
     }
@@ -722,17 +722,17 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    virtual QCString trReimplementedInList(int numEntries)
+    virtual QCString trReimplementedInList(int numEntries) override
     {
       return trWriteList(numEntries)+"에서 재구현되었습니다.";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    virtual QCString trNamespaceMembers()
+    virtual QCString trNamespaceMembers() override
     { return "네임스페이스 멤버"; }
 
     /*! This is an introduction to the page with all namespace members */
-    virtual QCString trNamespaceMemberDescription(bool extractAll)
+    virtual QCString trNamespaceMemberDescription(bool extractAll) override
     {
       QCString result="다음은 ";
       if (!extractAll) result+="문서화된 ";
@@ -746,13 +746,13 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    virtual QCString trNamespaceIndex()
+    virtual QCString trNamespaceIndex() override
     { return "네임스페이스 색인"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    virtual QCString trNamespaceDocumentation()
+    virtual QCString trNamespaceDocumentation() override
     { return "네임스페이스 문서화"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -762,7 +762,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    virtual QCString trNamespaces()
+    virtual QCString trNamespaces() override
     { return "네임스페이스"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -773,7 +773,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  followed by a list of files that were used to generate the page.
      */
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single)
+        bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       QCString result="이 ";
@@ -799,29 +799,29 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    virtual QCString trReturnValues()
+    virtual QCString trReturnValues() override
     { return "반환값"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    virtual QCString trMainPage()
+    virtual QCString trMainPage() override
     { return "메인 페이지"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    virtual QCString trPageAbbreviation()
+    virtual QCString trPageAbbreviation() override
     { return "페이지"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDefinedAtLineInSourceFile()
+    virtual QCString trDefinedAtLineInSourceFile() override
     {
       return "@1 파일의 @0 번째 라인에서 정의되었습니다.";
     }
-    virtual QCString trDefinedInSourceFile()
+    virtual QCString trDefinedInSourceFile() override
     {
       return "@0 파일에서 정의되었습니다.";
     }
@@ -830,7 +830,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDeprecated()
+    virtual QCString trDeprecated() override
     {
       return "잘못된 코드";
     }
@@ -840,68 +840,68 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const QCString &clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName) override
     {
       return clName+"에 대한 협력 다이어그램:";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const QCString &fName)
+    virtual QCString trInclDepGraph(const QCString &fName) override
     {
       return fName+"에 대한 include 의존 그래프";
     }
     /*! header that is put before the list of constructor/destructors. */
-    virtual QCString trConstructorDocumentation()
+    virtual QCString trConstructorDocumentation() override
     {
       return "생성자 & 소멸자 문서화";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    virtual QCString trGotoSourceCode()
+    virtual QCString trGotoSourceCode() override
     {
       return "이 파일의 소스 코드 페이지로 가기";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    virtual QCString trGotoDocumentation()
+    virtual QCString trGotoDocumentation() override
     {
       return "이 파일의 문서화 페이지로 가기";
     }
     /*! Text for the \\pre command */
-    virtual QCString trPrecondition()
+    virtual QCString trPrecondition() override
     {
       return "전제조건";
     }
     /*! Text for the \\post command */
-    virtual QCString trPostcondition()
+    virtual QCString trPostcondition() override
     {
       return "후미조건";
     }
     /*! Text for the \\invariant command */
-    virtual QCString trInvariant()
+    virtual QCString trInvariant() override
     {
       return "변하지 않는";
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    virtual QCString trInitialValue()
+    virtual QCString trInitialValue() override
     {
       return "초기값:";
     }
     /*! Text used the source code in the file index */
-    virtual QCString trCode()
+    virtual QCString trCode() override
     {
       return "코드";
     }
-    virtual QCString trGraphicalHierarchy()
+    virtual QCString trGraphicalHierarchy() override
     {
       return "그래픽컬한 클래스 계통도";
     }
-    virtual QCString trGotoGraphicalHierarchy()
+    virtual QCString trGotoGraphicalHierarchy() override
     {
       return "그래픽컬한 클래스 계통도 페이지로 가기";
     }
-    virtual QCString trGotoTextualHierarchy()
+    virtual QCString trGotoTextualHierarchy() override
     {
       return "텍스트 형식의 클래스 계통도 페이지로 가기";
     }
-    virtual QCString trPageIndex()
+    virtual QCString trPageIndex() override
     {
       return "페이지 색인";
     }
@@ -910,15 +910,15 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trNote()
+    virtual QCString trNote() override
     {
       return "주의";
     }
-    virtual QCString trPublicTypes()
+    virtual QCString trPublicTypes() override
     {
       return "Public 타입";
     }
-    virtual QCString trPublicAttribs()
+    virtual QCString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -929,31 +929,31 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         return "Public 속성";
       }
     }
-    virtual QCString trStaticPublicAttribs()
+    virtual QCString trStaticPublicAttribs() override
     {
       return "정적 Public 속성";
     }
-    virtual QCString trProtectedTypes()
+    virtual QCString trProtectedTypes() override
     {
       return "Protected 타입";
     }
-    virtual QCString trProtectedAttribs()
+    virtual QCString trProtectedAttribs() override
     {
       return "Protected 속성";
     }
-    virtual QCString trStaticProtectedAttribs()
+    virtual QCString trStaticProtectedAttribs() override
     {
       return "정적 Protected 속성";
     }
-    virtual QCString trPrivateTypes()
+    virtual QCString trPrivateTypes() override
     {
       return "Private 타입";
     }
-    virtual QCString trPrivateAttribs()
+    virtual QCString trPrivateAttribs() override
     {
       return "Private 속성";
     }
-    virtual QCString trStaticPrivateAttribs()
+    virtual QCString trStaticPrivateAttribs() override
     {
       return "정적 Private 속성";
     }
@@ -963,12 +963,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
-    virtual QCString trTodo()
+    virtual QCString trTodo() override
     {
       return "할일";
     }
     /*! Used as the header of the todo list */
-    virtual QCString trTodoList()
+    virtual QCString trTodoList() override
     {
       return "할일 목록";
     }
@@ -977,23 +977,23 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trReferencedBy()
+    virtual QCString trReferencedBy() override
     {
       return "다음에 의해서 참조됨 : ";
     }
-    virtual QCString trRemarks()
+    virtual QCString trRemarks() override
     {
       return "Remarks";
     }
-    virtual QCString trAttention()
+    virtual QCString trAttention() override
     {
         return "주의";
     }
-    virtual QCString trInclByDepGraph()
+    virtual QCString trInclByDepGraph() override
     {
       return "이 그래프는 이 파일을 직/간접적으로 include 하는 파일들을 보여줍니다.:";
     }
-    virtual QCString trSince()
+    virtual QCString trSince() override
     {
       return "Since";
     }
@@ -1003,14 +1003,14 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    virtual QCString trLegendTitle()
+    virtual QCString trLegendTitle() override
     {
       return "그래프 범례";
     }
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
-    virtual QCString trLegendDocs()
+    virtual QCString trLegendDocs() override
     {
       return
         "이 페이지는 doxygen에 의해 생성된 그래프들을 이해하는 방법을 설명합니다.<p>\n"
@@ -1067,7 +1067,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    virtual QCString trLegend()
+    virtual QCString trLegend() override
     {
       return "범례";
     }
@@ -1077,12 +1077,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    virtual QCString trTest()
+    virtual QCString trTest() override
     {
       return "테스트";
     }
     /*! Used as the header of the test list */
-    virtual QCString trTestList()
+    virtual QCString trTestList() override
     {
       return "테스트 목록";
     }
@@ -1092,12 +1092,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    virtual QCString trProperties()
+    virtual QCString trProperties() override
     {
       return "속성";
     }
     /*! Used as a section header for IDL property documentation */
-    virtual QCString trPropertyDocumentation()
+    virtual QCString trPropertyDocumentation() override
     {
       return "속성 문서화";
     }
@@ -1107,7 +1107,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    virtual QCString trClasses()
+    virtual QCString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -1119,22 +1119,22 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const QCString &name)
+    virtual QCString trPackage(const QCString &name) override
     {
       return name+" 패키지";
     }
     /*! The description of the package index page */
-    virtual QCString trPackageListDescription()
+    virtual QCString trPackageListDescription() override
     {
       return "다음은 패키지들입니다. (가능한한 간략한 설명만을 보여줍니다) :";
     }
     /*! The link name in the Quick links header for each page */
-    virtual QCString trPackages()
+    virtual QCString trPackages() override
     {
       return "패키지";
     }
     /*! Text shown before a multi-line define */
-    virtual QCString trDefineValue()
+    virtual QCString trDefineValue() override
     {
       return "값:";
     }
@@ -1144,12 +1144,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    virtual QCString trBug()
+    virtual QCString trBug() override
     {
       return "버그";
     }
     /*! Used as the header of the bug list */
-    virtual QCString trBugList()
+    virtual QCString trBugList() override
     {
       return "버그 목록";
     }
@@ -1183,7 +1183,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      * </pre>
      *
      */
-    virtual QCString trRTFansicp()
+    virtual QCString trRTFansicp() override
     {
       return "949";
     }
@@ -1192,13 +1192,13 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    virtual QCString trRTFCharSet()
+    virtual QCString trRTFCharSet() override
     {
       return "129";
     }
 
     /*! Used as header RTF general index */
-    virtual QCString trRTFGeneralIndex()
+    virtual QCString trRTFGeneralIndex() override
     {
       return "색인";
     }
@@ -1207,7 +1207,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool, bool singular)
+    virtual QCString trClass(bool, bool singular) override
     {
       QCString result("클래스");
       if (!singular)  result+="들";
@@ -1218,7 +1218,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool, bool singular)
+    virtual QCString trFile(bool, bool singular) override
     {
       QCString result("파일");
       if (!singular)  result+="들";
@@ -1229,7 +1229,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool, bool singular)
+    virtual QCString trNamespace(bool, bool singular) override
     {
       QCString result("네임스페이스");
       if (!singular)  result+="들";
@@ -1240,7 +1240,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool, bool singular)
+    virtual QCString trGroup(bool, bool singular) override
     {
       QCString result("그룹");
       if (!singular)  result+="들";
@@ -1251,7 +1251,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool, bool singular)
+    virtual QCString trPage(bool, bool singular) override
     {
       QCString result("페이지");
       if (!singular)  result+="들";
@@ -1262,7 +1262,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool, bool singular)
+    virtual QCString trMember(bool, bool singular) override
     {
       QCString result("멤버");
       if (!singular)  result+="들";
@@ -1273,7 +1273,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool, bool singular)
+    virtual QCString trGlobal(bool, bool singular) override
     {
       QCString result("전역");
       if (!singular)  result+="";
@@ -1286,7 +1286,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool, bool singular)
+    virtual QCString trAuthor(bool, bool singular) override
     {
       QCString result("작성자");
       if (!singular)  result+="들";
@@ -1299,7 +1299,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 
     /*! This text is put before the list of members referenced by a member
      */
-    virtual QCString trReferences()
+    virtual QCString trReferences() override
     {
       return "다음을 참조함 : ";
     }
@@ -1311,7 +1311,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trImplementedFromList(int numEntries) override
     {
       return trWriteList(numEntries)+"를 구현.";
     }
@@ -1319,7 +1319,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    virtual QCString trImplementedInList(int numEntries)
+    virtual QCString trImplementedInList(int numEntries) override
     {
       return trWriteList(numEntries)+"에서 구현되었습니다.";
     }
@@ -1331,7 +1331,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    virtual QCString trRTFTableOfContents()
+    virtual QCString trRTFTableOfContents() override
     {
       return "목차";
     }
@@ -1343,7 +1343,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    virtual QCString trDeprecatedList()
+    virtual QCString trDeprecatedList() override
     {
       return "잘못된 코드 목록";
     }
@@ -1355,12 +1355,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    virtual QCString trEvents()
+    virtual QCString trEvents() override
     {
       return "이벤트";
     }
     /*! Header used for the documentation section of a class' events. */
-    virtual QCString trEventDocumentation()
+    virtual QCString trEventDocumentation() override
     {
       return "이벤트 문서화";
     }
@@ -1371,39 +1371,39 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    virtual QCString trPackageTypes()
+    virtual QCString trPackageTypes() override
     {
       return "패키지 타입";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageFunctions()
+    virtual QCString trPackageFunctions() override
     {
       return "패키지 함수";
     }
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageMembers() override
     {
       return "패키지 멤버들";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageFunctions()
+    virtual QCString trStaticPackageFunctions() override
     {
       return "정적 패키지 함수";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    virtual QCString trPackageAttribs()
+    virtual QCString trPackageAttribs() override
     {
       return "패키지 속성";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    virtual QCString trStaticPackageAttribs()
+    virtual QCString trStaticPackageAttribs() override
     {
       return "정적 패키지 속성";
     }
@@ -1415,12 +1415,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    virtual QCString trAll()
+    virtual QCString trAll() override
     {
       return "모두";
     }
     /*! Put in front of the call graph for a function. */
-    virtual QCString trCallGraph()
+    virtual QCString trCallGraph() override
     {
       return "이 함수 내부에서 호출하는 함수들에 대한 그래프입니다.:";
     }
@@ -1432,7 +1432,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    virtual QCString trSearchResultsTitle()
+    virtual QCString trSearchResultsTitle() override
     {
       return "검색 결과";
     }
@@ -1444,7 +1444,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1463,7 +1463,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    virtual QCString trSearchMatches()
+    virtual QCString trSearchMatches() override
     {
       return "결과:";
     }
@@ -1474,7 +1474,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    virtual QCString trSourceFile(QCString& filename)
+    virtual QCString trSourceFile(QCString& filename) override
     {
       return filename + " 소스 파일";
     }
@@ -1486,31 +1486,31 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    virtual QCString trDirIndex()
+    virtual QCString trDirIndex() override
     { return "디렉토리 계통도"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    virtual QCString trDirDocumentation()
+    virtual QCString trDirDocumentation() override
     { return "디렉토리 문서화"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    virtual QCString trDirectories()
+    virtual QCString trDirectories() override
     { return "디렉토리"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const QCString &dirName)
+    virtual QCString trDirReference(const QCString &dirName) override
     { QCString result=dirName; result+=" 디렉토리 참조"; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
-    virtual QCString trDir(bool, bool singular)
+    virtual QCString trDir(bool, bool singular) override
     {
       QCString result("디렉토리");
       if (singular) result+=""; else result+="들";
@@ -1524,7 +1524,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    virtual QCString trOverloadText()
+    virtual QCString trOverloadText() override
     {
        return "이 함수는 편의를 제공하기 위해 오버로드된 멤버 함수입니다. "
               "위의 함수와 틀린 점은 단지 받아들이는 아규먼트(argument)가 다르다는 것입니다.";
@@ -1535,7 +1535,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
-    virtual QCString trCallerGraph()
+    virtual QCString trCallerGraph() override
     {
       return "이 함수를 호출하는 함수들에 대한 그래프입니다.:";
     }
@@ -1543,7 +1543,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    virtual QCString trEnumerationValueDocumentation()
+    virtual QCString trEnumerationValueDocumentation() override
     { return "열거형 문서화"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1551,23 +1551,23 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trMemberFunctionDocumentationFortran() override
     { return "멤버 함수/서브루틴 문서화"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    virtual QCString trCompoundListFortran()
+    virtual QCString trCompoundListFortran() override
     { return "데이터 타입 목록"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    virtual QCString trCompoundMembersFortran()
+    virtual QCString trCompoundMembersFortran() override
     { return "데이터 필드"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trCompoundListDescriptionFortran() override
     { return "대략적인 설명과 함께 데이터 타입들의 목록입니다.:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
       QCString result="다음은 ";
       if (!extractAll)
@@ -1591,39 +1591,39 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    virtual QCString trCompoundIndexFortran()
+    virtual QCString trCompoundIndexFortran() override
     { return "데이터 타입 색인"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    virtual QCString trTypeDocumentation()
+    virtual QCString trTypeDocumentation() override
     { return "데이터 타입 문서화"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    virtual QCString trSubprograms()
+    virtual QCString trSubprograms() override
     { return "함수/서브루틴"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    virtual QCString trSubprogramDocumentation()
+    virtual QCString trSubprogramDocumentation() override
     { return "함수/서브루틴 문서화"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     virtual QCString trDataTypes()
+     virtual QCString trDataTypes() override
     { return "데이터 타입들"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    virtual QCString trModulesList()
+    virtual QCString trModulesList() override
     { return "모듈 목록"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesListDescription(bool extractAll) override
     {
       QCString result="다음은 ";
       if (!extractAll) result+="문서화된 ";
@@ -1634,7 +1634,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! used as the title of the HTML page of a module/type (Fortran) */
     virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
       QCString result=clName;
       switch(compType)
@@ -1653,7 +1653,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const QCString &namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName) override
     {
       QCString result=namespaceName;
       result+=" 모듈 참조";
@@ -1661,11 +1661,11 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    virtual QCString trModulesMembers()
+    virtual QCString trModulesMembers() override
     { return "모듈 멤버들"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMemberDescription(bool extractAll) override
     {
       QCString result="다음은 ";
       if (!extractAll) result+="문서화된 ";
@@ -1684,14 +1684,14 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    virtual QCString trModulesIndex()
+    virtual QCString trModulesIndex() override
     { return "모듈 색인"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool, bool singular)
+    virtual QCString trModule(bool, bool singular) override
     {
       QCString result("모듈");
       if (!singular)  result+="들";
@@ -1701,7 +1701,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  followed by a list of files that were used to generate the page.
      */
     virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single)
+        bool single) override
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
       QCString result="다음 파일";
@@ -1726,7 +1726,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trType(bool, bool singular)
+    virtual QCString trType(bool, bool singular) override
     {
       QCString result("타입");
       if (!singular)  result+="들";
@@ -1736,7 +1736,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trSubprogram(bool, bool singular)
+    virtual QCString trSubprogram(bool, bool singular) override
     {
       QCString result("서브프로그램");
       if (!singular)  result+="들";
@@ -1744,7 +1744,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     }
 
     /*! C# Type Constraint list */
-    virtual QCString trTypeConstraints()
+    virtual QCString trTypeConstraints() override
     {
       return "타입 한정자들";
     }
@@ -1754,31 +1754,31 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const QCString &name)
+    virtual QCString trDirRelation(const QCString &name) override
     {
       return QCString(name)+" 관계";
     }
 
     /*! Loading message shown when loading search results */
-    virtual QCString trLoading()
+    virtual QCString trLoading() override
     {
       return "로딩중...";
     }
 
     /*! Label used for search results in the global namespace */
-    virtual QCString trGlobalNamespace()
+    virtual QCString trGlobalNamespace() override
     {
       return "전역 이름공간";
     }
 
     /*! Message shown while searching */
-    virtual QCString trSearching()
+    virtual QCString trSearching() override
     {
       return "검색중...";
     }
 
     /*! Text shown when no search results are found */
-    virtual QCString trNoMatches()
+    virtual QCString trNoMatches() override
     {
       return "일치하는것 없음";
     }
@@ -1791,7 +1791,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const QCString &name)
+    virtual QCString trFileIn(const QCString &name) override
     {
       return QCString(name) + "의 파일";
     }
@@ -1800,7 +1800,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const QCString &name)
+    virtual QCString trIncludesFileIn(const QCString &name) override
     {
       return QCString(name) + "의 파일 포함";
     }
@@ -1817,7 +1817,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                DateTimeType includeTime)
+                                DateTimeType includeTime) override
     {
       static const char *days[]   = { "월","화","수","목","금","토","일" };
       static const char *months[] = { "1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월" };
@@ -1835,21 +1835,21 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       }
       return sdate;
     }
-    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
       static const char *days_short[]   = { "월", "화", "수", "목", "금", "토", "일" };
       static const char *days_full[]    = { "월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일" };
       QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
       return text;
     }
-    virtual QCString trMonth(int month, bool, bool full)
+    virtual QCString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
       static const char *months_full[]  = { "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월" };
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    virtual QCString trDayPeriod(int period)
+    virtual QCString trDayPeriod(int period) override
     {
       static const char *dayPeriod[] = { "오전", "오후" };
       return dayPeriod[period];
@@ -1860,15 +1860,15 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
-    virtual QCString trCiteReferences()
+    virtual QCString trCiteReferences() override
     { return "참고 문헌"; }
 
     /*! Text for copyright paragraph */
-    virtual QCString trCopyright()
+    virtual QCString trCopyright() override
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const QCString &name)
+    virtual QCString trDirDepGraph(const QCString &name) override
     { return QCString(name) + QCString("에 대한 디렉토리 의존성 그래프:"); }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1876,35 +1876,35 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
-    virtual QCString trDetailLevel()
+    virtual QCString trDetailLevel() override
     { return "상세 단계"; }
 
     /*! Section header for list of template parameters */
-    virtual QCString trTemplateParameters()
+    virtual QCString trTemplateParameters() override
     { return "템플릿 파라메터"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
-    virtual QCString trAndMore(const QCString &number)
+    virtual QCString trAndMore(const QCString &number) override
     { return QCString("그리고 ")+number+"개 더..."; }
 
     /*! Used file list for a Java enum */
-    virtual QCString trEnumGeneratedFromFiles(bool /*single*/)
+    virtual QCString trEnumGeneratedFromFiles(bool /*single*/) override
     { QCString result = "이 열거형에 대한 문서가 다음 파일(들)로부터 생성되었습니다.:";
       return result;
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const QCString &name)
+    virtual QCString trEnumReference(const QCString &name) override
     { return QCString(name)+" Enum Reference"; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what) override
     { return QCString(what) + QCString("(으)로부터 상속된 ") + QCString(members); }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
-    virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trAdditionalInheritedMembers() override
     { return "추가로 상속된 멤버들"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1915,7 +1915,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
-    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    virtual QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "활성화" : "비활성화";
       return "패널 동기화를 "+opt+"하기 위해 클릭하십시오";
@@ -1925,7 +1925,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  a category. Note that the @1 marker is required and is replaced
      *  by a link.
      */
-    virtual QCString trProvidedByCategory()
+    virtual QCString trProvidedByCategory() override
     {
       return "카테고리 @0에 의해 제공됨.";
     }
@@ -1934,7 +1934,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  Note that the @1 marker is required and is replaced by a link to
      *  the class method.
      */
-    virtual QCString trExtendsClass()
+    virtual QCString trExtendsClass() override
     {
       return "클래스 @0 확장.";
     }
@@ -1942,7 +1942,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used as the header of a list of class methods in Objective-C.
      *  These are similar to static public member functions in C++.
      */
-    virtual QCString trClassMethods()
+    virtual QCString trClassMethods() override
     {
       return "클래스 메소드들";
     }
@@ -1950,14 +1950,14 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used as the header of a list of instance methods in Objective-C.
      *  These are similar to public member functions in C++.
      */
-    virtual QCString trInstanceMethods()
+    virtual QCString trInstanceMethods() override
     {
       return "인스턴스 메소드들";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
-    virtual QCString trMethodDocumentation()
+    virtual QCString trMethodDocumentation() override
     {
       return "메소드 문서화";
     }
@@ -1967,40 +1967,40 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /** old style UNO IDL services: implemented interfaces */
-    virtual QCString trInterfaces()
+    virtual QCString trInterfaces() override
     { return "익스포트된 인터페이스들"; }
 
     /** old style UNO IDL services: inherited services */
-    virtual QCString trServices()
+    virtual QCString trServices() override
     { return "포함된 서비스들"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroups()
+    virtual QCString trConstantGroups() override
     { return "상수 그룹들"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const QCString &namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName) override
     {
       QCString result=namespaceName;
       result+=" 상수 그룹 레퍼런스";
       return result;
     }
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const QCString &sName)
+    virtual QCString trServiceReference(const QCString &sName) override
     {
       QCString result=sName;
       result+=" 서비스 레퍼런스";
       return result;
     }
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const QCString &sName)
+    virtual QCString trSingletonReference(const QCString &sName) override
     {
       QCString result=sName;
       result+=" 싱글톤 레퍼런스";
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trServiceGeneratedFromFiles(bool single) override
     {
       // single is true implies a single file
       QCString result="이 서비스에 대한 문서화는 다음의 파일";
@@ -2009,7 +2009,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       return result;
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trSingletonGeneratedFromFiles(bool single) override
     {
       // single is true implies a single file
       QCString result="이 싱글톤에 대한 문서화는 다음의 파일";

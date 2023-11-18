@@ -35,7 +35,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "\\usepackage[slovene]{babel}\n"; }
     QCString trISOLang()
     { return "sl"; }
-    virtual QCString getLanguageString()
+    virtual QCString getLanguageString() override
     {
       return "0x424 Slovenian";
     }
@@ -45,7 +45,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "(To niso metode.)"; }
     QCString trDetailedDescription()
     { return "Podroben opis"; }
-    virtual QCString trDetails()
+    virtual QCString trDetails() override
     { return "Podrobnosti"; }
 
     QCString trMemberTypedefDocumentation()
@@ -373,7 +373,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    virtual QCString trNamespaces()
+    virtual QCString trNamespaces() override
     { return "Imenski prostori"; }
 
 
@@ -574,12 +574,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a todo item */
-    virtual QCString trTodo()
+    virtual QCString trTodo() override
     {
       return "TODO";
     }
     /*! Used as the header of the todo list */
-    virtual QCString trTodoList()
+    virtual QCString trTodoList() override
     {
       return "Seznam nedokončanih opravil";
     }
@@ -588,19 +588,19 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trReferencedBy()
+    virtual QCString trReferencedBy() override
     {
       return "Uporabniki entitete:  ";
     }
-    virtual QCString trRemarks()
+    virtual QCString trRemarks() override
     {
       return "Opomba";
     }
-    virtual QCString trAttention()
+    virtual QCString trAttention() override
     {
       return "Pozor";
     }
-    virtual QCString trInclByDepGraph()
+    virtual QCString trInclByDepGraph() override
     {
       return "Graf prikazuje datoteke, ki posredno ali neposredno "
              "vključujejo tekočo datoteko. Pravokotniki simbolizirajo datoteke, "
@@ -612,7 +612,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 	     "le posredno. "
 	;
     }
-    virtual QCString trSince()
+    virtual QCString trSince() override
     {
       return "Od";
     }
@@ -622,14 +622,14 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    virtual QCString trLegendTitle()
+    virtual QCString trLegendTitle() override
     {
       return "Legenda grafa";
     }
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
-    virtual QCString trLegendDocs()
+    virtual QCString trLegendDocs() override
     {
       return
         "Tekoča stran pojasnjuje način interpretacije grafov, ki jih izriše "
@@ -689,7 +689,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    virtual QCString trLegend()
+    virtual QCString trLegend() override
     {
       return "legenda";
     }
@@ -699,12 +699,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    virtual QCString trTest()
+    virtual QCString trTest() override
     {
       return "Test";
     }
     /*! Used as the header of the test list */
-    virtual QCString trTestList()
+    virtual QCString trTestList() override
     {
       return "Test List";
     }
@@ -714,12 +714,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    virtual QCString trProperties()
+    virtual QCString trProperties() override
     {
       return "IDL Lastnosti";
     }
     /*! Used as a section header for IDL property documentation */
-    virtual QCString trPropertyDocumentation()
+    virtual QCString trPropertyDocumentation() override
     {
       return "Opis IDL lastnosti";
     }
@@ -729,12 +729,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java interfaces in the summary section of Java packages */
-/*     virtual QCString trInterfaces() */
+/*     virtual QCString trInterfaces() override */
 /*     { */
 /*       return "Vmesniki"; */
 /*     } */
     /*! Used for Java classes in the summary section of Java packages */
-    virtual QCString trClasses()
+    virtual QCString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -746,22 +746,22 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const QCString &name)
+    virtual QCString trPackage(const QCString &name) override
     {
       return "JAVA paket "+name;
     }
     /*! The description of the package index page */
-    virtual QCString trPackageListDescription()
+    virtual QCString trPackageListDescription() override
     {
       return "Seznam JAVA paketov in njihovih kratkih opisov v primeru, da obstajajo:";
     }
     /*! The link name in the Quick links header for each page */
-    virtual QCString trPackages()
+    virtual QCString trPackages() override
     {
       return "JAVA paketi";
     }
     /*! Text shown before a multi-line define */
-    virtual QCString trDefineValue()
+    virtual QCString trDefineValue() override
     {
       return "Vrednost:";
     }
@@ -771,12 +771,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    virtual QCString trBug()
+    virtual QCString trBug() override
     {
       return "Programska napaka";
     }
     /*! Used as the header of the bug list */
-    virtual QCString trBugList()
+    virtual QCString trBugList() override
     {
       return "Seznam programskih napak";
     }
@@ -810,7 +810,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      * </pre>
      *
      */
-    virtual QCString trRTFansicp()
+    virtual QCString trRTFansicp() override
     {
       return "1250";
     }
@@ -819,13 +819,13 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    virtual QCString trRTFCharSet()
+    virtual QCString trRTFCharSet() override
     {
       return "0";
     }
 
     /*! Used as header RTF general index */
-    virtual QCString trRTFGeneralIndex()
+    virtual QCString trRTFGeneralIndex() override
     {
       return "Indeks";
     }
@@ -834,7 +834,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    virtual QCString trClass(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Razred" : "razred"));
       if (!singular)  result+="i";
@@ -845,7 +845,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    virtual QCString trFile(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Datotek" : "datotek"));
       if (!singular)  result+="e";
@@ -857,7 +857,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool first_capital, bool singular)
+    virtual QCString trNamespace(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Imenski prostor" : "imenski prostor"));
       if (!singular)  result+="i";
@@ -868,7 +868,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    virtual QCString trGroup(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Skupina" : "skupina"));
       if (!singular)  result+="s";
@@ -879,7 +879,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    virtual QCString trPage(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Stran" : "stran"));
       if (!singular)  result+="i";
@@ -890,7 +890,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    virtual QCString trMember(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Element" : "element"));
       if (!singular)  result+="i";
@@ -901,7 +901,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool first_capital, bool singular)
+    virtual QCString trGlobal(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Global" : "global"));
       if (!singular)  result+="s";
@@ -914,7 +914,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    virtual QCString trAuthor(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Avtor" : "avtor"));
       if (!singular)  result+="ji";
@@ -926,7 +926,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! This text is put before the list of members referenced by a member
      */
-    virtual QCString trReferences()
+    virtual QCString trReferences() override
     {
       return "Reference";
     }
@@ -937,7 +937,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trImplementedFromList(int numEntries) override
     {
       return "Implementira "+trWriteList(numEntries)+".";
     }
@@ -945,7 +945,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    virtual QCString trImplementedInList(int numEntries)
+    virtual QCString trImplementedInList(int numEntries) override
     {
       return "Implementirano v "+trWriteList(numEntries)+".";
     }
@@ -957,7 +957,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    virtual QCString trRTFTableOfContents()
+    virtual QCString trRTFTableOfContents() override
     {
       return "Vsebina";
     }
@@ -969,7 +969,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    virtual QCString trDeprecatedList()
+    virtual QCString trDeprecatedList() override
     {
       return "Seznam opuščenih";
     }
@@ -981,12 +981,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    virtual QCString trEvents()
+    virtual QCString trEvents() override
     {
       return "Dogodki";
     }
     /*! Header used for the documentation section of a class' events. */
-    virtual QCString trEventDocumentation()
+    virtual QCString trEventDocumentation() override
     {
       return "Opisi dogodkov";
     }
@@ -997,39 +997,39 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    virtual QCString trPackageTypes()
+    virtual QCString trPackageTypes() override
     {
       return "Tipi paketov";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageFunctions()
+    virtual QCString trPackageFunctions() override
     {
       return "Funkcije paketa";   /* don't know the context */
     }
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageMembers() override
     {
       return "Elemente paketa";   /* don't know the context */
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageFunctions()
+    virtual QCString trStaticPackageFunctions() override
     {
       return "Statične funkcije paketa";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    virtual QCString trPackageAttribs()
+    virtual QCString trPackageAttribs() override
     {
       return "Atributi paketa";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    virtual QCString trStaticPackageAttribs()
+    virtual QCString trStaticPackageAttribs() override
     {
       return "Statični atributi paketa";
     }
@@ -1041,12 +1041,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    virtual QCString trAll()
+    virtual QCString trAll() override
     {
       return "Vse";
     }
     /*! Put in front of the call graph for a function. */
-    virtual QCString trCallGraph()
+    virtual QCString trCallGraph() override
     {
       return "Graf klicev tekoče funkcije:";
     }
@@ -1058,7 +1058,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    virtual QCString trSearchResultsTitle()
+    virtual QCString trSearchResultsTitle() override
     {
       return "Rezultat(i) iskanja";
     }
@@ -1070,7 +1070,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1093,7 +1093,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    virtual QCString trSearchMatches()
+    virtual QCString trSearchMatches() override
     {
       return "Zadetki:";
     }
@@ -1104,7 +1104,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    virtual QCString trSourceFile(QCString& filename)
+    virtual QCString trSourceFile(QCString& filename) override
     {
       return filename + " izvorna koda";
     }
@@ -1116,25 +1116,25 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    virtual QCString trDirIndex()
+    virtual QCString trDirIndex() override
     { return "Hierarhija imenikov"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    virtual QCString trDirDocumentation()
+    virtual QCString trDirDocumentation() override
     { return "Opisi imenikov"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    virtual QCString trDirectories()
+    virtual QCString trDirectories() override
     { return "Imeniki"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const QCString &dirName)
+    virtual QCString trDirReference(const QCString &dirName) override
     { QCString result=dirName;
       result+=" imeniške reference"; /* not sure for context */
       return result;
@@ -1143,7 +1143,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
-    virtual QCString trDir(bool first_capital, bool singular)
+    virtual QCString trDir(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Imenik" : "imenik"));
       if (singular) result+="i"; else result+="";
@@ -1157,14 +1157,14 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    virtual QCString trOverloadText()
+    virtual QCString trOverloadText() override
     {
       return "To je ponovno definirana metoda, " /* don't know Slovene expresion for overloaded */
              "podana je zaradi priročnosti. Metoda se od predhodnje razlikuje "
              "samo v številu in/ali tipu formalnih argumentov.";
     }
 
-    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
     {
       static const char *days_short[]   = { "pon.", "tor.", "sre.", "čet.", "pet.", "sob.", "ned." };
       static const char *days_full[]    = { "ponedeljek", "torek", "sreda", "četrtek", "petek", "sobota", "nedelja" };
@@ -1172,7 +1172,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    virtual QCString trMonth(int month, bool first_capital, bool full)
+    virtual QCString trMonth(int month, bool first_capital, bool full) override
     {
       static const char *months_short[] = { "jan.", "feb.", "mar.", "apr.", "maj", "jun.", "jul.", "avg.", "sep.", "okt.", "nov.", "dec." };
       static const char *months_full[]  = { "januar", "februar", "marec", "april", "maj", "junij", "julij", "avgust", "september", "oktober", "november", "december" };
@@ -1180,7 +1180,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    virtual QCString trDayPeriod(int period)
+    virtual QCString trDayPeriod(int period) override
     {
       static const char *dayPeriod[] = { "dop.", "pop." };
       return dayPeriod[period];

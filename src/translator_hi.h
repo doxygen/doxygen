@@ -163,7 +163,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
-    virtual QCString idLanguage()
+    virtual QCString idLanguage() override
     { return "hindi"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
@@ -180,47 +180,47 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      * The English LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
-    virtual QCString latexLanguageSupportCommand()
+    virtual QCString latexLanguageSupportCommand() override
     { return ""; }
 
-    virtual QCString trISOLang()
+    virtual QCString trISOLang() override
     { return "hi-IN"; }
 
-    virtual QCString getLanguageString()
+    virtual QCString getLanguageString() override
     { return "0x439 Hindi"; }
 
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    virtual QCString trRelatedFunctions()
+    virtual QCString trRelatedFunctions() override
     { return "संबंधित फलन"; }
 
     /*! subscript for the related functions. */
-    virtual QCString trRelatedSubscript()
+    virtual QCString trRelatedSubscript() override
     { return "(ध्यान दें कि ये सदस्य फलन नहीं हैं।)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    virtual QCString trDetailedDescription()
+    virtual QCString trDetailedDescription() override
     { return "विस्तृत विवरण"; }
 
     /*! header that is used when the summary tag is missing inside the details tag */
-    virtual QCString trDetails()
+    virtual QCString trDetails() override
     { return "विवरण"; }
 
     /*! header that is put before the list of typedefs. */
-    virtual QCString trMemberTypedefDocumentation()
+    virtual QCString trMemberTypedefDocumentation() override
     { return "सदस्य प्ररुप-परिभाषा दस्तावेज़ीकरण"; }
 
     /*! header that is put before the list of enumerations. */
-    virtual QCString trMemberEnumerationDocumentation()
+    virtual QCString trMemberEnumerationDocumentation() override
     { return "सदस्य परिगणना दस्तावेज़ीकरण"; }
 
     /*! header that is put before the list of member functions. */
-    virtual QCString trMemberFunctionDocumentation()
+    virtual QCString trMemberFunctionDocumentation() override
     { return "सदस्य फलन दस्तावेज़ीकरण"; }
 
     /*! header that is put before the list of member attributes. */
-    virtual QCString trMemberDataDocumentation()
+    virtual QCString trMemberDataDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "भाग दस्तावेज़ीकरण";
@@ -229,29 +229,29 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore()
+    virtual QCString trMore() override
     { return "और..."; }
 
     /*! put in the class documentation */
-    virtual QCString trListOfAllMembers()
+    virtual QCString trListOfAllMembers() override
     { return "सभी सदस्यों की सूची"; }
 
     /*! used as the title of the "list of all members" page of a class */
-    virtual QCString trMemberList()
+    virtual QCString trMemberList() override
     { return "सदस्य सूची"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    virtual QCString trThisIsTheListOfAllMembers()
+    virtual QCString trThisIsTheListOfAllMembers() override
     { return "यह है सदस्यों की पूरी सूची "; }
 
     /*! this is the remainder of the sentence after the class name */
-    virtual QCString trIncludingInheritedMembers()
+    virtual QCString trIncludingInheritedMembers() override
     { return ", सभी विरासत में मिले सदस्यों सहित।"; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const QCString &s)
+    virtual QCString trGeneratedAutomatically(const QCString &s) override
     {
       QCString result = "स्रोत संकेत-लिपि से ";
       if (!s.isEmpty())
@@ -261,15 +261,15 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! put after an enum name in the list of all members */
-    virtual QCString trEnumName()
+    virtual QCString trEnumName() override
     { return "परिगणक नाम"; }
 
     /*! put after an enum value in the list of all members */
-    virtual QCString trEnumValue()
+    virtual QCString trEnumValue() override
     { return "परिगणक मूल्य"; }
 
     /*! put after an undocumented member in the list of all members */
-    virtual QCString trDefinedIn()
+    virtual QCString trDefinedIn() override
     { return "में परिभाषित"; }
 
     // quick reference sections
@@ -277,15 +277,15 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    virtual QCString trModules()
+    virtual QCString trModules() override
     { return "अनुखंडगण"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    virtual QCString trClassHierarchy()
+    virtual QCString trClassHierarchy() override
     { return "वर्ग पदानुक्रम"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    virtual QCString trCompoundList()
+    virtual QCString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "आंकड़े संरचनाएं";
@@ -294,11 +294,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    virtual QCString trFileList()
+    virtual QCString trFileList() override
     { return "फ़ाइल सूची"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    virtual QCString trCompoundMembers()
+    virtual QCString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "आंकड़े भागगण";
@@ -307,7 +307,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is put above each page as a link to all members of files. */
-    virtual QCString trFileMembers()
+    virtual QCString trFileMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "वैश्र्विकगण";
@@ -316,19 +316,19 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is put above each page as a link to all related pages. */
-    virtual QCString trRelatedPages()
+    virtual QCString trRelatedPages() override
     { return "संबंधित पृष्ठगण"; }
 
     /*! This is put above each page as a link to all examples. */
-    virtual QCString trExamples()
+    virtual QCString trExamples() override
     { return "उदाहरणगण"; }
 
     /*! This is put above each page as a link to the search engine. */
-    virtual QCString trSearch()
+    virtual QCString trSearch() override
     { return "खोजें"; }
 
     /*! This is an introduction to the class hierarchy. */
-    virtual QCString trClassHierarchyDescription()
+    virtual QCString trClassHierarchyDescription() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
         return "यहाँ वर्गगण की एक पदानुक्रमनुसार सूची दी गई है:";
@@ -337,7 +337,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is an introduction to the list with all files. */
-    virtual QCString trFileListDescription(bool extractAll)
+    virtual QCString trFileListDescription(bool extractAll) override
     {
       QCString result = "यहाँ संक्षिप्त विवरण के साथ सभी ";
       if (!extractAll)
@@ -347,7 +347,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is an introduction to the annotated compound list. */
-    virtual QCString trCompoundListDescription()
+    virtual QCString trCompoundListDescription() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "यहाँ संक्षिप्त विवरण के साथ आंकड़े संरचनाएँ हैं:";
@@ -358,7 +358,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is an introduction to the page with all class members. */
-    virtual QCString trCompoundMembersDescription(bool extractAll)
+    virtual QCString trCompoundMembersDescription(bool extractAll) override
     {
       QCString result = "यहाँ सभी ";
       if (!extractAll)
@@ -387,7 +387,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is an introduction to the page with all file members. */
-    virtual QCString trFileMembersDescription(bool extractAll)
+    virtual QCString trFileMembersDescription(bool extractAll) override
     {
       QCString result = "यहाँ सभी ";
       if (!extractAll) result += "दस्तावेज़ीकृत ";
@@ -405,39 +405,39 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    virtual QCString trExamplesDescription()
+    virtual QCString trExamplesDescription() override
     { return "यहाँ सभी उदाहरणों की एक सूची दी गई है:"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    virtual QCString trRelatedPagesDescription()
+    virtual QCString trRelatedPagesDescription() override
     { return "यहाँ सभी संबंधित दस्तावेज़ीकरण पृष्ठों की सूची दी गई है:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    virtual QCString trModulesDescription()
+    virtual QCString trModulesDescription() override
     { return "यहाँ सभी अनुखंडों की एक सूची है:"; }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    virtual QCString trDocumentation()
+    virtual QCString trDocumentation() override
     { return "दस्तावेज़ीकरण"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    virtual QCString trModuleIndex()
+    virtual QCString trModuleIndex() override
     { return "अनुखंड अनुक्रमणिका"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    virtual QCString trHierarchicalIndex()
+    virtual QCString trHierarchicalIndex() override
     { return "पदानुक्रमनुसार अनुक्रमणिका"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    virtual QCString trCompoundIndex()
+    virtual QCString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "आंकड़े संरचना अनुक्रमणिका";
@@ -448,19 +448,19 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex()
+    virtual QCString trFileIndex() override
     { return "फ़ाइल अनुक्रमणिका"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    virtual QCString trModuleDocumentation()
+    virtual QCString trModuleDocumentation() override
     { return "अनुखंड दस्तावेज़ीकरण"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    virtual QCString trClassDocumentation()
+    virtual QCString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "आंकड़े संरचना दस्तावेज़ीकरण";
@@ -473,83 +473,83 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    virtual QCString trFileDocumentation()
+    virtual QCString trFileDocumentation() override
     { return "फ़ाइल दस्तावेज़ीकरण"; }
 
     /*! This is used in LaTeX as the title of the document */
-    virtual QCString trReferenceManual()
+    virtual QCString trReferenceManual() override
     { return "संदर्भ पुस्तिका"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    virtual QCString trDefines()
+    virtual QCString trDefines() override
     { return "मैक्रोगण"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    virtual QCString trTypedefs()
+    virtual QCString trTypedefs() override
     { return "प्ररुप-परिभाषाएं"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    virtual QCString trEnumerations()
+    virtual QCString trEnumerations() override
     { return "परिगणकगण"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    virtual QCString trFunctions()
+    virtual QCString trFunctions() override
     { return "फलनगण"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trVariables()
+    virtual QCString trVariables() override
     { return "परिवर्तनशीलगण"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trEnumerationValues()
+    virtual QCString trEnumerationValues() override
     { return "परिगणक"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    virtual QCString trDefineDocumentation()
+    virtual QCString trDefineDocumentation() override
     { return "मैक्रो परिभाषा दस्तावेज़ीकरण"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    virtual QCString trTypedefDocumentation()
+    virtual QCString trTypedefDocumentation() override
     { return "प्ररुप-परिभाषा दस्तावेज़ीकरण"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    virtual QCString trEnumerationTypeDocumentation()
+    virtual QCString trEnumerationTypeDocumentation() override
     { return "परिगणना प्ररूप दस्तावेज़ीकरण"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    virtual QCString trFunctionDocumentation()
+    virtual QCString trFunctionDocumentation() override
     { return "फलन दस्तावेज़ीकरण"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    virtual QCString trVariableDocumentation()
+    virtual QCString trVariableDocumentation() override
     { return "परिवर्तनशील दस्तावेज़ीकरण"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    virtual QCString trCompounds()
+    virtual QCString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "आंकड़े संरचनाएं";
@@ -560,7 +560,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result;
       if (!projName.isEmpty())
@@ -570,39 +570,39 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const QCString &clName)
+    virtual QCString trClassDiagram(const QCString &clName) override
     { return clName + " के लिए वरासत आरेख:"; }
 
     /*! this text is generated when the \\warning command is used. */
-    virtual QCString trWarning()
+    virtual QCString trWarning() override
     { return "चेतावनी"; }
 
     /*! this text is generated when the \\version command is used. */
-    virtual QCString trVersion()
+    virtual QCString trVersion() override
     { return "संस्करण"; }
 
     /*! this text is generated when the \\date command is used. */
-    virtual QCString trDate()
+    virtual QCString trDate() override
     { return "दिनांक"; }
 
     /*! this text is generated when the \\return command is used. */
-    virtual QCString trReturns()
+    virtual QCString trReturns() override
     { return "वापसी"; }
 
     /*! this text is generated when the \\sa command is used. */
-    virtual QCString trSeeAlso()
+    virtual QCString trSeeAlso() override
     { return "यह भी देखें"; }
 
     /*! this text is generated when the \\param command is used. */
-    virtual QCString trParameters()
+    virtual QCString trParameters() override
     { return "मापदंडगण"; }
 
     /*! this text is generated when the \\exception command is used. */
-    virtual QCString trExceptions()
+    virtual QCString trExceptions() override
     { return "अपवादगण"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    virtual QCString trGeneratedBy()
+    virtual QCString trGeneratedBy() override
     { return "द्वारा उत्पन्न"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -610,11 +610,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    virtual QCString trNamespaceList()
+    virtual QCString trNamespaceList() override
     { return "नाम-स्थान सूची"; }
 
     /*! used as an introduction to the namespace list */
-    virtual QCString trNamespaceListDescription(bool extractAll)
+    virtual QCString trNamespaceListDescription(bool extractAll) override
     {
       QCString result = "यहाँ संक्षिप्त विवरण के साथ सभी ";
       if (!extractAll)
@@ -626,7 +626,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    virtual QCString trFriends()
+    virtual QCString trFriends() override
     { return "मित्रगण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -636,7 +636,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
-    virtual QCString trRelatedFunctionDocumentation()
+    virtual QCString trRelatedFunctionDocumentation() override
     { return "मित्रगण और संबंधित फलन दस्तावेज़ीकरण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -668,7 +668,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const QCString &fileName)
+    virtual QCString trFileReference(const QCString &fileName) override
     {
       QCString result = fileName;
       result += " फ़ाइल संदर्भ";
@@ -676,47 +676,47 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const QCString &namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName) override
     {
       QCString result = namespaceName;
       result += " नाम-स्थान संदर्भ";
       return result;
     }
 
-    virtual QCString trPublicMembers()
+    virtual QCString trPublicMembers() override
     { return "सार्वजनिक सदस्य फलनगण"; }
 
-    virtual QCString trPublicSlots()
+    virtual QCString trPublicSlots() override
     { return "सार्वजनिक खांचें"; }
 
-    virtual QCString trSignals()
+    virtual QCString trSignals() override
     { return "संकेतगण"; }
 
-    virtual QCString trStaticPublicMembers()
+    virtual QCString trStaticPublicMembers() override
     { return "अचल सार्वजनिक सदस्य फलनगण"; }
 
-    virtual QCString trProtectedMembers()
+    virtual QCString trProtectedMembers() override
     { return "संरक्षित सदस्य फलनगण"; }
 
-    virtual QCString trProtectedSlots()
+    virtual QCString trProtectedSlots() override
     { return "संरक्षित खांचे"; }
 
-    virtual QCString trStaticProtectedMembers()
+    virtual QCString trStaticProtectedMembers() override
     { return "अचल संरक्षित सदस्य फलनगण"; }
 
-    virtual QCString trPrivateMembers()
+    virtual QCString trPrivateMembers() override
     { return "निजी सदस्य फलनगण"; }
 
-    virtual QCString trPrivateSlots()
+    virtual QCString trPrivateSlots() override
     { return "निजी खांचें"; }
 
-    virtual QCString trStaticPrivateMembers()
+    virtual QCString trStaticPrivateMembers() override
     { return "अचल निजी सदस्य फलनगण"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    virtual QCString trWriteList(int numEntries)
+    virtual QCString trWriteList(int numEntries) override
     {
       QCString result;
       int i;
@@ -740,33 +740,33 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritsList(int numEntries)
+    virtual QCString trInheritsList(int numEntries) override
     { return trWriteList(numEntries) + " से विरासित।"; }
 
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritedByList(int numEntries)
+    virtual QCString trInheritedByList(int numEntries) override
     { return trWriteList(numEntries) + " द्वारा विरासित।"; }
 
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    virtual QCString trReimplementedFromList(int numEntries)
+    virtual QCString trReimplementedFromList(int numEntries) override
     { return trWriteList(numEntries) + " से पुन: लागू किया गया।"; }
 
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    virtual QCString trReimplementedInList(int numEntries)
+    virtual QCString trReimplementedInList(int numEntries) override
     { return trWriteList(numEntries) + " में पुन: लागू किया गया।"; }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    virtual QCString trNamespaceMembers()
+    virtual QCString trNamespaceMembers() override
     { return "नाम-स्थान सदस्यगण"; }
 
     /*! This is an introduction to the page with all namespace members */
-    virtual QCString trNamespaceMemberDescription(bool extractAll)
+    virtual QCString trNamespaceMemberDescription(bool extractAll) override
     {
       QCString result = "यहाँ सभी ";
       if (!extractAll)
@@ -783,13 +783,13 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    virtual QCString trNamespaceIndex()
+    virtual QCString trNamespaceIndex() override
     { return "नाम-स्थान अनुक्रमणिका"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    virtual QCString trNamespaceDocumentation()
+    virtual QCString trNamespaceDocumentation() override
     { return "नाम-स्थान दस्तावेज़ीकरण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -799,7 +799,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    virtual QCString trNamespaces()
+    virtual QCString trNamespaces() override
     { return "नाम-स्थानगण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -810,7 +810,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  followed by a list of files that were used to generate the page.
      */
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single)
+        bool single) override
     {
       // single is true implies a single file
       bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
@@ -839,35 +839,35 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    virtual QCString trReturnValues()
+    virtual QCString trReturnValues() override
     { return "वापसी मान"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    virtual QCString trMainPage()
+    virtual QCString trMainPage() override
     { return "मुख्य पृष्ठ"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    virtual QCString trPageAbbreviation()
+    virtual QCString trPageAbbreviation() override
     { return "पृ."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDefinedAtLineInSourceFile()
+    virtual QCString trDefinedAtLineInSourceFile() override
     { return "फ़ाइल @1 की लाइन @0 पर परिभाषित।"; }
 
-    virtual QCString trDefinedInSourceFile()
+    virtual QCString trDefinedInSourceFile() override
     { return "फ़ाइल @0 में परिभाषित।"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDeprecated()
+    virtual QCString trDeprecated() override
     { return "पदावनत"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -875,68 +875,68 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const QCString &clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName) override
     { return clName + " के लिए सहयोगीकरण आरेख:"; }
 
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const QCString &fName)
+    virtual QCString trInclDepGraph(const QCString &fName) override
     { return fName + " के लिए निर्भरता लेखाचित्र शामिल करें:"; }
 
     /*! header that is put before the list of constructor/destructors. */
-    virtual QCString trConstructorDocumentation()
+    virtual QCString trConstructorDocumentation() override
     { return "निर्माता और नाशक दस्तावेज़ीकरण"; }
 
     /*! Used in the file documentation to point to the corresponding sources. */
-    virtual QCString trGotoSourceCode()
+    virtual QCString trGotoSourceCode() override
     { return "इस फाइल कि स्त्रोत संकेत-लिपि को देखें।"; }
 
     /*! Used in the file sources to point to the corresponding documentation. */
-    virtual QCString trGotoDocumentation()
+    virtual QCString trGotoDocumentation() override
     { return "इस फ़ाइल के दस्तावेज़ीकरण पर जाएं।"; }
 
     /*! Text for the \\pre command */
-    virtual QCString trPrecondition()
+    virtual QCString trPrecondition() override
     { return "पूर्वशर्त"; }
 
     /*! Text for the \\post command */
-    virtual QCString trPostcondition()
+    virtual QCString trPostcondition() override
     { return "शर्तपश्चात्"; }
 
     /*! Text for the \\invariant command */
-    virtual QCString trInvariant()
+    virtual QCString trInvariant() override
     { return "अपरिवर्तनीय"; }
 
     /*! Text shown before a multi-line variable/enum initialization */
-    virtual QCString trInitialValue()
+    virtual QCString trInitialValue() override
     { return "प्रारंभिक मूल्य:"; }
 
     /*! Text used the source code in the file index */
-    virtual QCString trCode()
+    virtual QCString trCode() override
     { return "संकेत-लिपि"; }
 
-    virtual QCString trGraphicalHierarchy()
+    virtual QCString trGraphicalHierarchy() override
     { return "चित्रात्मक वर्ग पदानुक्रम"; }
 
-    virtual QCString trGotoGraphicalHierarchy()
+    virtual QCString trGotoGraphicalHierarchy() override
     { return "चित्रात्मक वर्ग पदानुक्रम पर जाएँ"; }
 
-    virtual QCString trGotoTextualHierarchy()
+    virtual QCString trGotoTextualHierarchy() override
     { return "पाठ्य वर्ग पदानुक्रम पर जाएँ"; }
 
-    virtual QCString trPageIndex()
+    virtual QCString trPageIndex() override
     { return "पृष्ठ अनुक्रमणिका"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trNote()
+    virtual QCString trNote() override
     { return "ध्यान दें"; }
 
-    virtual QCString trPublicTypes()
+    virtual QCString trPublicTypes() override
     { return "सार्वजनिक प्ररुपगण"; }
 
-    virtual QCString trPublicAttribs()
+    virtual QCString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "आंकड़े भागगण";
@@ -944,25 +944,25 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
         return "सार्वजनिक गुणगण";
     }
 
-    virtual QCString trStaticPublicAttribs()
+    virtual QCString trStaticPublicAttribs() override
     { return "अचल सार्वजनिक गुणगण"; }
 
-    virtual QCString trProtectedTypes()
+    virtual QCString trProtectedTypes() override
     { return "संरक्षित प्ररुपगण"; }
 
-    virtual QCString trProtectedAttribs()
+    virtual QCString trProtectedAttribs() override
     { return "संरक्षित गुणगण"; }
 
-    virtual QCString trStaticProtectedAttribs()
+    virtual QCString trStaticProtectedAttribs() override
     { return "अचल संरक्षित गुणगण"; }
 
-    virtual QCString trPrivateTypes()
+    virtual QCString trPrivateTypes() override
     { return "निजी प्ररुपगण"; }
 
-    virtual QCString trPrivateAttribs()
+    virtual QCString trPrivateAttribs() override
     { return "निजी गुणगण"; }
 
-    virtual QCString trStaticPrivateAttribs()
+    virtual QCString trStaticPrivateAttribs() override
     { return "अचल निजी गुणगण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -970,30 +970,30 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
-    virtual QCString trTodo()
+    virtual QCString trTodo() override
     { return "करने के लिए"; }
 
     /*! Used as the header of the todo list */
-    virtual QCString trTodoList()
+    virtual QCString trTodoList() override
     { return "करने के लिए सूची"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trReferencedBy()
+    virtual QCString trReferencedBy() override
     { return "द्वारा संदर्भित"; }
 
-    virtual QCString trRemarks()
+    virtual QCString trRemarks() override
     { return "टिप्पणियाँ"; }
 
-    virtual QCString trAttention()
+    virtual QCString trAttention() override
     { return "ध्यान"; }
 
-    virtual QCString trInclByDepGraph()
+    virtual QCString trInclByDepGraph() override
     { return "यह लेखाचित्र दिखाता है कि कौन सी फ़ाइलें प्रत्यक्ष या परोक्ष रूप से इस फ़ाइल को शामिल करती हैं:"; }
 
-    virtual QCString trSince()
+    virtual QCString trSince() override
     { return "जबसे"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1001,13 +1001,13 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    virtual QCString trLegendTitle()
+    virtual QCString trLegendTitle() override
     { return "लेखाचित्र किंवदंती"; }
 
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
-    virtual QCString trLegendDocs()
+    virtual QCString trLegendDocs() override
     {
       return
         "यह पृष्ठ बताता है कि डॉक्सिजन द्वारा उत्पन्न लेखाचित्र की व्याख्या कैसे करें।\n"
@@ -1071,7 +1071,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! text for the link to the legend page */
-    virtual QCString trLegend()
+    virtual QCString trLegend() override
     { return "किंवदंती"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1079,10 +1079,10 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    virtual QCString trTest()
+    virtual QCString trTest() override
     { return "परीक्षा"; }
     /*! Used as the header of the test list */
-    virtual QCString trTestList()
+    virtual QCString trTestList() override
     { return "परीक्षा सूची"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1090,11 +1090,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    virtual QCString trProperties()
+    virtual QCString trProperties() override
     { return "संपत्तियाँ"; }
 
     /*! Used as a section header for IDL property documentation */
-    virtual QCString trPropertyDocumentation()
+    virtual QCString trPropertyDocumentation() override
     { return "संपत्ति दस्तावेज़ीकरण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1102,7 +1102,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    virtual QCString trClasses()
+    virtual QCString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         return "आंकड़े संरचनाएं";
@@ -1111,19 +1111,19 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const QCString &name)
+    virtual QCString trPackage(const QCString &name) override
     { return "संकुल " + name; }
 
     /*! The description of the package index page */
-    virtual QCString trPackageListDescription()
+    virtual QCString trPackageListDescription() override
     { return "यहाँ संक्षिप्त विवरण के साथ संकुल दिए गए हैं (यदि उपलब्ध हो):"; }
 
     /*! The link name in the Quick links header for each page */
-    virtual QCString trPackages()
+    virtual QCString trPackages() override
     { return "संकुलगण"; }
 
     /*! Text shown before a multi-line define */
-    virtual QCString trDefineValue()
+    virtual QCString trDefineValue() override
     { return "मूल्य:"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1131,11 +1131,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    virtual QCString trBug()
+    virtual QCString trBug() override
     { return "त्रुटि"; }
 
     /*! Used as the header of the bug list */
-    virtual QCString trBugList()
+    virtual QCString trBugList() override
     { return "त्रुटि सूची"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1167,24 +1167,24 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      * </pre>
      *
      */
-    virtual QCString trRTFansicp()
+    virtual QCString trRTFansicp() override
     { return "65001"; }
 
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    virtual QCString trRTFCharSet()
+    virtual QCString trRTFCharSet() override
     { return "1252"; }
 
     /*! Used as header RTF general index */
-    virtual QCString trRTFGeneralIndex()
+    virtual QCString trRTFGeneralIndex() override
     { return "अनुक्रमणिका"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool /* first_capital */, bool singular)
+    virtual QCString trClass(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "वर्ग";
@@ -1197,7 +1197,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool /* first_capital */, bool singular)
+    virtual QCString trFile(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "फ़ाइल";
@@ -1210,7 +1210,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool /* first_capital */, bool singular)
+    virtual QCString trNamespace(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "नाम-स्थान";
@@ -1223,7 +1223,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool /* first_capital */, bool singular)
+    virtual QCString trGroup(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "अनुखंड";
@@ -1236,7 +1236,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool /* first_capital */, bool singular)
+    virtual QCString trPage(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "पृष्ठ";
@@ -1249,7 +1249,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool /* first_capital */, bool singular)
+    virtual QCString trMember(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "सदस्य";
@@ -1262,7 +1262,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool /* first_capital */, bool singular)
+    virtual QCString trGlobal(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "वैश्र्विक";
@@ -1277,7 +1277,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool /* first_capital */, bool singular)
+    virtual QCString trAuthor(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "लेखक";
@@ -1292,7 +1292,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 
     /*! This text is put before the list of members referenced by a member
      */
-    virtual QCString trReferences()
+    virtual QCString trReferences() override
     { return "संदर्भ"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1302,13 +1302,13 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trImplementedFromList(int numEntries) override
     { return trWriteList(numEntries) + " लागू करता है।"; }
 
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    virtual QCString trImplementedInList(int numEntries)
+    virtual QCString trImplementedInList(int numEntries) override
     { return trWriteList(numEntries) + " में लागू करता है।"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1318,7 +1318,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    virtual QCString trRTFTableOfContents()
+    virtual QCString trRTFTableOfContents() override
     { return "विषय-सूची"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1328,7 +1328,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    virtual QCString trDeprecatedList()
+    virtual QCString trDeprecatedList() override
     { return "पदावनत सूची"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1338,11 +1338,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    virtual QCString trEvents()
+    virtual QCString trEvents() override
     { return "घटनाएं"; }
 
     /*! Header used for the documentation section of a class' events. */
-    virtual QCString trEventDocumentation()
+    virtual QCString trEventDocumentation() override
     { return "घटना दस्तावेज़ीकरण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1351,33 +1351,33 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    virtual QCString trPackageTypes()
+    virtual QCString trPackageTypes() override
     { return "संकुल प्ररूपगण"; }
 
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageFunctions()
+    virtual QCString trPackageFunctions() override
     { return "संकुल फलनगण"; }
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageMembers() override
     { return "संकुल सदस्यगण"; }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageFunctions()
+    virtual QCString trStaticPackageFunctions() override
     { return "अचल संकुल फलनगण"; }
 
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    virtual QCString trPackageAttribs()
+    virtual QCString trPackageAttribs() override
     { return "संकुल गुणगण"; }
 
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    virtual QCString trStaticPackageAttribs()
+    virtual QCString trStaticPackageAttribs() override
     { return "अचल संकुल गुणगण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1387,11 +1387,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    virtual QCString trAll()
+    virtual QCString trAll() override
     { return "सभी"; }
 
     /*! Put in front of the call graph for a function. */
-    virtual QCString trCallGraph()
+    virtual QCString trCallGraph() override
     { return "इस फलन के लिए बुलावा लेखाचित्र यहां दिया गया है:"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1401,7 +1401,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    virtual QCString trSearchResultsTitle()
+    virtual QCString trSearchResultsTitle() override
     { return "खोज के परिणामगण"; }
 
     /*! This string is put just before listing the search results. The
@@ -1412,7 +1412,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trSearchResults(int numDocuments) override
     {
       if (numDocuments == 0)
         return "क्षमा करें, आपकी जिज्ञासा से मेल खाने वाला कोई दस्तावेज़ नहीं है।";
@@ -1425,7 +1425,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    virtual QCString trSearchMatches()
+    virtual QCString trSearchMatches() override
     { return "मिलानगण:"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1434,7 +1434,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    virtual QCString trSourceFile(QCString& filename)
+    virtual QCString trSourceFile(QCString& filename) override
     { return filename + " स्त्रोत फ़ाइल"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1444,25 +1444,25 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    virtual QCString trDirIndex()
+    virtual QCString trDirIndex() override
     { return "निर्देशिकाएं पदानुक्रम"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    virtual QCString trDirDocumentation()
+    virtual QCString trDirDocumentation() override
     { return "निर्देशिका दस्तावेज़ीकरण"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    virtual QCString trDirectories()
+    virtual QCString trDirectories() override
     { return "निर्देशिकाएं"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const QCString &dirName)
+    virtual QCString trDirReference(const QCString &dirName) override
     {
       QCString result = dirName;
       result += " निर्देशिका संदर्भ";
@@ -1472,7 +1472,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    virtual QCString trDir(bool /* first_capital */, bool singular)
+    virtual QCString trDir(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "निर्देशिका";
@@ -1488,7 +1488,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    virtual QCString trOverloadText()
+    virtual QCString trOverloadText() override
     {
       return "यह अतिभारित सदस्य फलन सुविधा के लिए प्रदान किया गया है। यह उपरोक्त"
               " फलन से केवल इस बात में भिन्न है कि यह किस तर्क को स्वीकार करता है।";
@@ -1499,7 +1499,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
-    virtual QCString trCallerGraph()
+    virtual QCString trCallerGraph() override
     {
       return "इस फलन के लिए बुलावा लेखाचित्र यहाँ दिया गया है:";
     }
@@ -1507,7 +1507,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    virtual QCString trEnumerationValueDocumentation()
+    virtual QCString trEnumerationValueDocumentation() override
     { return "परिगणक दस्तावेज़ीकरण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1515,23 +1515,23 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trMemberFunctionDocumentationFortran() override
     { return "सदस्य फलन/उपफलन दस्तावेज़ीकरण"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    virtual QCString trCompoundListFortran()
+    virtual QCString trCompoundListFortran() override
     { return "आंकड़े प्ररुपगण सूची"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    virtual QCString trCompoundMembersFortran()
+    virtual QCString trCompoundMembersFortran() override
     { return "आंकड़े भागगण"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trCompoundListDescriptionFortran() override
     { return "यहाँ संक्षिप्त विवरण के साथ आँकड़े प्ररूपगण हैं:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
       QCString result = "यहाँ सभी ";
       if (!extractAll)
@@ -1548,39 +1548,39 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    virtual QCString trCompoundIndexFortran()
+    virtual QCString trCompoundIndexFortran() override
     { return "आंकड़े प्ररुप अनुक्रमणिका"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    virtual QCString trTypeDocumentation()
+    virtual QCString trTypeDocumentation() override
     { return "आंकड़े प्ररुप दस्तावेज़ीकरण"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    virtual QCString trSubprograms()
+    virtual QCString trSubprograms() override
     { return "फलनगण/उपफलनगण"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    virtual QCString trSubprogramDocumentation()
+    virtual QCString trSubprogramDocumentation() override
     { return "फलन/उपफलन दस्तावेज़ीकरण"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-    virtual QCString trDataTypes()
+    virtual QCString trDataTypes() override
     { return "आंकड़े प्ररुपगण"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    virtual QCString trModulesList()
+    virtual QCString trModulesList() override
     { return "अनुखंडगण सूची"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesListDescription(bool extractAll) override
     {
       QCString result = "यहाँ संक्षिप्त विवरण के साथ सभी ";
       if (!extractAll)
@@ -1614,7 +1614,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const QCString &namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName) override
     {
       QCString result = namespaceName;
       result += " अनुखंड संदर्भ";
@@ -1622,11 +1622,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    virtual QCString trModulesMembers()
+    virtual QCString trModulesMembers() override
     { return "अनुखंडगण सदस्यगण"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMemberDescription(bool extractAll) override
     {
       QCString result = "यहाँ सभी ";
       if (!extractAll)
@@ -1643,14 +1643,14 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    virtual QCString trModulesIndex()
+    virtual QCString trModulesIndex() override
     { return "अनुखंडगण अनुक्रमणिका"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool /* first_capital */, bool singular)
+    virtual QCString trModule(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "अनुखंड";
@@ -1691,7 +1691,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trType(bool /* first_capital */, bool singular)
+    virtual QCString trType(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "प्ररुप";
@@ -1704,7 +1704,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trSubprogram(bool /* first_capital */, bool singular)
+    virtual QCString trSubprogram(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "उपप्रोग्राम";
@@ -1714,7 +1714,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! C# Type Constraint list */
-    virtual QCString trTypeConstraints()
+    virtual QCString trTypeConstraints() override
     { return "प्ररुप बाध्यताएं"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1722,23 +1722,23 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const QCString &name)
+    virtual QCString trDirRelation(const QCString &name) override
     { return name + " रिश्ता"; }
 
     /*! Loading message shown when loading search results */
-    virtual QCString trLoading()
+    virtual QCString trLoading() override
     { return "लादा जा रहा..."; }
 
     /*! Label used for search results in the global namespace */
-    virtual QCString trGlobalNamespace()
+    virtual QCString trGlobalNamespace() override
     { return "वैश्र्विक नाम-स्थान"; }
 
     /*! Message shown while searching */
-    virtual QCString trSearching()
+    virtual QCString trSearching() override
     { return "खोजां जा रहा..."; }
 
     /*! Text shown when no search results are found */
-    virtual QCString trNoMatches()
+    virtual QCString trNoMatches() override
     { return "कोई समानता नहीं"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1749,14 +1749,14 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const QCString &name)
+    virtual QCString trFileIn(const QCString &name) override
     { return name + " में फ़ाइल"; }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const QCString &name)
+    virtual QCString trIncludesFileIn(const QCString &name) override
     { return name + " में फ़ाइल शामिल है"; }
 
     /** Compiles a date string.
@@ -1791,21 +1791,21 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       }
       return sdate;
     }
-    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
       static const char *days_short[]   = { "सोम.", "मंगल.", "बुध.", "गुरु.", "शुक्र.", "शनि.", "रवि." };
       static const char *days_full[]    = { "सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार" };
       QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
       return text;
     }
-    virtual QCString trMonth(int month, bool, bool full)
+    virtual QCString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितम्बर", "अक्तूबर", "नवम्बर", "दिसम्बर" };
       static const char *months_full[]  = { "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितम्बर", "अक्तूबर", "नवम्बर", "दिसम्बर" };
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    virtual QCString trDayPeriod(int period)
+    virtual QCString trDayPeriod(int period) override
     {
       static const char *dayPeriod[] = { "am", "pm" };
       return dayPeriod[period];
@@ -1816,15 +1816,15 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
-    virtual QCString trCiteReferences()
+    virtual QCString trCiteReferences() override
     { return "ग्रन्थसूची"; }
 
     /*! Text for copyright paragraph */
-    virtual QCString trCopyright()
+    virtual QCString trCopyright() override
     { return "कॉपीराइट"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const QCString &name)
+    virtual QCString trDirDepGraph(const QCString &name) override
     { return name + " के लिए निर्देशिका निर्भरता लेखाचित्र:"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1832,19 +1832,19 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
-    virtual QCString trDetailLevel()
+    virtual QCString trDetailLevel() override
     { return "विस्तार स्तर"; }
 
     /*! Section header for list of template parameters */
-    virtual QCString trTemplateParameters()
+    virtual QCString trTemplateParameters() override
     { return "टेम्पलेट मापदंड"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
-    virtual QCString trAndMore(const QCString &number)
+    virtual QCString trAndMore(const QCString &number) override
     { return "और " + number + " अधिक..."; }
 
     /*! Used file list for a Java enum */
-    virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trEnumGeneratedFromFiles(bool single) override
     {
       QCString result = "इस परिगणक के लिए दस्तावेज़ीकरण निम्न फ़ाइल";
       if (!single)
@@ -1854,17 +1854,17 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const QCString &name)
+    virtual QCString trEnumReference(const QCString &name) override
     { return name + " परिगणक संदर्भ"; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what) override
     { return what + " से विरासत में मिले " + members; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
-    virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trAdditionalInheritedMembers() override
     { return "अतिरिक्त विरासत में मिले सदस्य"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1875,7 +1875,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
-    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    virtual QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "चालू" : "बंद";
       return "पैनल सिंक्रनाइज़ीकरण " + opt + " करने के लिए क्लिक करें";
@@ -1885,31 +1885,31 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  a category. Note that the @1 marker is required and is replaced
      *  by a link.
      */
-    virtual QCString trProvidedByCategory()
+    virtual QCString trProvidedByCategory() override
     { return "श्रेणी @0 द्वारा प्रदान किया गया।"; }
 
     /*! Used in a method of an Objective-C category that extends a class.
      *  Note that the @1 marker is required and is replaced by a link to
      *  the class method.
      */
-    virtual QCString trExtendsClass()
+    virtual QCString trExtendsClass() override
     { return "वर्ग @0 को विस्तार करता है।"; }
 
     /*! Used as the header of a list of class methods in Objective-C.
      *  These are similar to static public member functions in C++.
      */
-    virtual QCString trClassMethods()
+    virtual QCString trClassMethods() override
     { return "वर्ग विधियाँ"; }
 
     /*! Used as the header of a list of instance methods in Objective-C.
      *  These are similar to public member functions in C++.
      */
-    virtual QCString trInstanceMethods()
+    virtual QCString trInstanceMethods() override
     { return "उदाहरण विधियाँ"; }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
-    virtual QCString trMethodDocumentation()
+    virtual QCString trMethodDocumentation() override
     { return "विधि दस्तावेज़ीकरण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1917,19 +1917,19 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** old style UNO IDL services: implemented interfaces */
-    virtual QCString trInterfaces()
+    virtual QCString trInterfaces() override
     { return "निर्यातीत अंतराफलकगण"; }
 
     /** old style UNO IDL services: inherited services */
-    virtual QCString trServices()
+    virtual QCString trServices() override
     { return "शामिलीत सेवाएं"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroups()
+    virtual QCString trConstantGroups() override
     { return "स्थिर समूहगण"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const QCString &namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName) override
     {
       QCString result = namespaceName;
       result += " स्थिर समूह संदर्भ";
@@ -1937,7 +1937,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const QCString &sName)
+    virtual QCString trServiceReference(const QCString &sName) override
     {
       QCString result = sName;
       result += " सेवा संदर्भ";
@@ -1945,7 +1945,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const QCString &sName)
+    virtual QCString trSingletonReference(const QCString &sName) override
     {
       QCString result = sName;
       result += " एकल संदर्भ";
@@ -1953,7 +1953,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trServiceGeneratedFromFiles(bool single) override
     {
       // single is true implies a single file
       QCString result = "इस सेवा के लिए दस्तावेज़ीकरण निम्न फ़ाइल";
@@ -1964,7 +1964,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trSingletonGeneratedFromFiles(bool single) override
     {
       // single is true implies a single file
       QCString result = "इस एकल के लिए दस्तावेज़ीकरण निम्न फ़ाइल";
@@ -1979,35 +1979,35 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit hierarchy */
-    virtual QCString trDesignUnitHierarchy()
+    virtual QCString trDesignUnitHierarchy() override
     { return "डिज़ाइन इकाई पदानुक्रम"; }
 
     /** VHDL design unit list */
-    virtual QCString trDesignUnitList()
+    virtual QCString trDesignUnitList() override
     { return "डिज़ाइन इकाई सूची"; }
 
     /** VHDL design unit members */
-    virtual QCString trDesignUnitMembers()
+    virtual QCString trDesignUnitMembers() override
     { return "डिज़ाइन इकाई सदस्यगण"; }
 
     /** VHDL design unit list description */
-    virtual QCString trDesignUnitListDescription()
+    virtual QCString trDesignUnitListDescription() override
     { return "यहाँ उन सभी डिज़ाइन इकाई सदस्यों की सूची उनसे संबंधित इकाईयों की लिंक के साथ दी गई हैं:"; }
 
     /** VHDL design unit index */
-    virtual QCString trDesignUnitIndex()
+    virtual QCString trDesignUnitIndex() override
     { return "डिज़ाइन इकाई अनुक्रमणिका"; }
 
     /** VHDL design units */
-    virtual QCString trDesignUnits()
+    virtual QCString trDesignUnits() override
     { return "डिज़ाइन इकाईयाँ"; }
 
     /** VHDL functions/procedures/processes */
-    virtual QCString trFunctionAndProc()
+    virtual QCString trFunctionAndProc() override
     { return "फलनगण/कार्यविधियाँ/प्रक्रियाएं"; }
 
     /** VHDL type */
-    virtual QCString trVhdlType(VhdlSpecifier type,bool single)
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single) override
     {
       switch (type)
       {
@@ -2093,82 +2093,82 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       }
     }
 
-    virtual QCString trCustomReference(const QCString &name)
+    virtual QCString trCustomReference(const QCString &name) override
     { return name + " संदर्भ"; }
 
-    virtual QCString trConstants()
+    virtual QCString trConstants() override
     { return "स्थिरगण"; }
 
-    virtual QCString trConstantDocumentation()
+    virtual QCString trConstantDocumentation() override
     { return "स्थिर दस्तावेज़ीकरण"; }
 
-    virtual QCString trSequences()
+    virtual QCString trSequences() override
     { return "अनुक्रमगण"; }
 
-    virtual QCString trSequenceDocumentation()
+    virtual QCString trSequenceDocumentation() override
     { return "अनुक्रम दस्तावेज़ीकरण"; }
 
-    virtual QCString trDictionaries()
+    virtual QCString trDictionaries() override
     { return "शब्दकोशगण"; }
 
-    virtual QCString trDictionaryDocumentation()
+    virtual QCString trDictionaryDocumentation() override
     { return "शब्दकोश दस्तावेज़ीकरण"; }
 
-    virtual QCString trSliceInterfaces()
+    virtual QCString trSliceInterfaces() override
     { return "अंतराफलकगण"; }
 
-    virtual QCString trInterfaceIndex()
+    virtual QCString trInterfaceIndex() override
     { return "अंतराफलक अनुक्रमणिका"; }
 
-    virtual QCString trInterfaceList()
+    virtual QCString trInterfaceList() override
     { return "अंतराफलक सूची"; }
 
-    virtual QCString trInterfaceListDescription()
+    virtual QCString trInterfaceListDescription() override
     { return "यहाँ संक्षिप्त विवरण के साथ अंतराफलकगण हैं:"; }
 
-    virtual QCString trInterfaceHierarchy()
+    virtual QCString trInterfaceHierarchy() override
     { return "अंतराफलक पदानुक्रम"; }
 
-    virtual QCString trInterfaceHierarchyDescription()
+    virtual QCString trInterfaceHierarchyDescription() override
     { return "यह अंतराफलक विरासत सूची मोटे तौर पर क्रमबद्ध है, लेकिन पूरी तरह से नहीं, वर्णानुक्रम में:"; }
 
-    virtual QCString trInterfaceDocumentation()
+    virtual QCString trInterfaceDocumentation() override
     { return "अंतराफलक दस्तावेज़ीकरण"; }
 
-    virtual QCString trStructs()
+    virtual QCString trStructs() override
     { return "संरचनाएं"; }
 
-    virtual QCString trStructIndex()
+    virtual QCString trStructIndex() override
     { return "संरचना अनुक्रमणिका"; }
 
-    virtual QCString trStructList()
+    virtual QCString trStructList() override
     { return "संरचना सूची"; }
 
-    virtual QCString trStructListDescription()
+    virtual QCString trStructListDescription() override
     { return "यहाँ संक्षिप्त विवरण के साथ संरचनाएं हैं:"; }
 
-    virtual QCString trStructDocumentation()
+    virtual QCString trStructDocumentation() override
     { return "संरचना दस्तावेज़ीकरण"; }
 
-    virtual QCString trExceptionIndex()
+    virtual QCString trExceptionIndex() override
     { return "अपवाद अनुक्रमणिका"; }
 
-    virtual QCString trExceptionList()
+    virtual QCString trExceptionList() override
     { return "अपवाद सूची"; }
 
-    virtual QCString trExceptionListDescription()
+    virtual QCString trExceptionListDescription() override
     { return "यहाँ संक्षिप्त विवरण के साथ अपवादगण हैं:"; }
 
-    virtual QCString trExceptionHierarchy()
+    virtual QCString trExceptionHierarchy() override
     { return "अपवाद पदानुक्रम"; }
 
-    virtual QCString trExceptionHierarchyDescription()
+    virtual QCString trExceptionHierarchyDescription() override
     { return "यह अपवाद विरासत सूची मोटे तौर पर क्रमबद्ध है, लेकिन पूरी तरह से नहीं, वर्णानुक्रम में:"; }
 
-    virtual QCString trExceptionDocumentation()
+    virtual QCString trExceptionDocumentation() override
     { return "अपवाद दस्तावेज़ीकरण"; }
 
-    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
+    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
     {
       QCString result = clName;
       if (isLocal) result += " स्थानीय";
@@ -2187,16 +2187,16 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       return result;
     }
 
-    virtual QCString trOperations()
+    virtual QCString trOperations() override
     { return "कार्यवाहीयाँ"; }
 
-    virtual QCString trOperationDocumentation()
+    virtual QCString trOperationDocumentation() override
     { return "कार्यवाही दस्तावेज़ीकरण"; }
 
-    virtual QCString trDataMembers()
+    virtual QCString trDataMembers() override
     { return "आंकड़े सदस्यगण"; }
 
-    virtual QCString trDataMemberDocumentation()
+    virtual QCString trDataMemberDocumentation() override
     { return "आंकड़े सदस्य दस्तावेज़ीकरण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2204,7 +2204,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit documentation */
-    virtual QCString trDesignUnitDocumentation()
+    virtual QCString trDesignUnitDocumentation() override
     { return "डिज़ाइन इकाई दस्तावेज़ीकरण"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2212,7 +2212,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    virtual QCString trConcept(bool /* first_capital */, bool singular)
+    virtual QCString trConcept(bool /* first_capital */, bool singular) override
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "संकल्पना";
@@ -2220,7 +2220,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       return result;
     }
     /*! used as the title of the HTML page of a C++20 concept page */
-    virtual QCString trConceptReference(const QCString &conceptName)
+    virtual QCString trConceptReference(const QCString &conceptName) override
     {
       QCString result = conceptName;
       result += " संकल्पना संदर्भ";
@@ -2228,19 +2228,19 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! used as the title of page containing all the index of all concepts. */
-    virtual QCString trConceptList()
+    virtual QCString trConceptList() override
     { return "संकल्पना सूची"; }
 
     /*! used as the title of chapter containing the index listing all concepts. */
-    virtual QCString trConceptIndex()
+    virtual QCString trConceptIndex() override
     { return "संकल्पना अनुक्रमणिका"; }
 
     /*! used as the title of chapter containing all information about concepts. */
-    virtual QCString trConceptDocumentation()
+    virtual QCString trConceptDocumentation() override
     { return "संकल्पना दस्तावेज़ीकरण"; }
 
     /*! used as an introduction to the concept list */
-    virtual QCString trConceptListDescription(bool extractAll)
+    virtual QCString trConceptListDescription(bool extractAll) override
     {
       QCString result = "यहाँ संक्षिप्त विवरण के साथ सभी ";
       if (!extractAll)
@@ -2250,7 +2250,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     }
 
     /*! used to introduce the definition of the C++20 concept */
-    virtual QCString trConceptDefinition()
+    virtual QCString trConceptDefinition() override
     { return "संकल्पना परिभाषा"; }
 };
 
