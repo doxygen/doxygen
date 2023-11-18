@@ -3751,21 +3751,39 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   // as the content is included here as if it is really here.
   if (t==DocInclude::IncludeDoc || t==DocInclude::SnippetDoc)
   {
+     static THREAD_LOCAL std::deque<std::pair<QCString, QCString > > m_includedStack;
+     if (find(m_includedStack.begin(), m_includedStack.end(), std::make_pair(fileName,blockId)) != m_includedStack.end())
+     {
+       if (!blockId.isEmpty())
+       {
+         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"recursive usage of '\\snippet{doc}' block with name '%s' and file name '%s', skipping",
+            qPrint(blockId),qPrint(fileName));
+       }
+       else
+       {
+         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"recursive usage of '\\include{doc}' with file name '%s', skipping",
+            qPrint(fileName));
+       }
+       return;
+     }
      QCString inc_text;
      int inc_line  = 1;
      parser()->readTextFileByName(fileName,inc_text);
+     if (inc_text.isEmpty()) return;
      if (t==DocInclude::SnippetDoc)
      {
        int count;
        if (!blockId.isEmpty() && (count=inc_text.contains(blockId.data()))!=2)
        {
-          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"block marked with %s for \\snippet should appear twice in file %s, found it %d times",
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"block marked with %s for \\snippet should appear twice in file %s, found it %d times, skipping",
             qPrint(blockId),qPrint(fileName),count);
+          return;
        }
        inc_line = lineBlock(inc_text, blockId);
        inc_text = extractBlock(inc_text, blockId);
      }
 
+     m_includedStack.emplace_back(std::make_pair(fileName,blockId));
      Markdown markdown(fileName,inc_line);
      QCString strippedDoc = stripIndentation(inc_text);
      QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,inc_line) : strippedDoc;
@@ -3775,6 +3793,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
      parser()->tokenizer.setLineNr(inc_line);
      parser()->internalValidatingParseDoc(thisVariant(),children(),processedDoc);
      parser()->popContext();
+     m_includedStack.pop_back();
   }
   else
   {
