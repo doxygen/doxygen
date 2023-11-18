@@ -170,6 +170,7 @@ class Transl:
                      'private':   'private',
                      'static':    'static',
                      'virtual':   'virtual',
+                     'override':  'override',
                      ':':         'colon',
                      ';':         'semic',
                      ',':         'comma',
@@ -837,6 +838,8 @@ class Transl:
                 if tokenId == 'lcurly':
                     curlyCnt = 1      # method body entered
                     status = 10
+                elif tokenId == 'override':
+                    pass
                 elif tokenId == 'comment':
                     pass
                 elif tokenId == 'assign': # allowed only for TranslatorAdapterBase
