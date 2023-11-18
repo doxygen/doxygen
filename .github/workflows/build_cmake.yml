@@ -71,22 +71,6 @@ jobs:
       with:
         fetch-depth: 0
 
-#    - name: Download MikTex (Windows)
-#      run: |
-#        $wc = New-Object System.Net.WebClient;
-#        $maxAttempts=5;
-#        $attemptCount=0;
-#        Do {
-#          $attemptCount++;
-#          Try {
-#            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-5.2.0+b8f430f-x64.zip","miktexsetup-5.2.0+b8f430f-x64.zip")
-#          } Catch [Exception] {
-#            Write-Host $_.Exception | format-list -force
-#          }
-#        } while (((Test-Path "miktexsetup-5.2.0+b8f430f-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))
-#      shell: pwsh
-#      if: matrix.config.os == 'windows-latest'
-
     - name: Install libiconv (Windows)
       uses: suisei-cn/actions-download-file@v1
       with:
@@ -96,7 +80,7 @@ jobs:
 
     - name: Install LaTeX (Linux)
       run: |
-        #sudo apt update --fix-missing
+        sudo apt update --fix-missing
         sudo apt upgrade
         sudo apt update
         sudo apt-get install texlive texlive-latex-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
@@ -135,42 +119,6 @@ jobs:
         sudo apt update
         sudo apt install libxapian-dev
       if: matrix.config.os == 'ubuntu-20.04'
-
-#    - name: Extract MikTex zip (Windows)
-#      shell: bash
-#      run: |
-#        unzip miktexsetup-5.2.0+b8f430f-x64.zip
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Download MikTex packages (Windows)
-#      shell: bash
-#      run: |
-#        ./miktexsetup_standalone --verbose \
-#                      --local-package-repository="C:/miktex-repository" \
-#                      --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
-#                      --package-set=essential \
-#                      download
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Install MikTex packages (Windows)
-#      shell: bash
-#      run: |
-#        ./miktexsetup_standalone --local-package-repository="C:/miktex-repository" \
-#                      --verbose \
-#                      --package-set=essential \
-#                      --shared \
-#                      install
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Setting MikTex paths (Windows)
-#      shell: bash
-#      run: |
-#        echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
-#        export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
-#
-#        echo "Configuring MiKTeX to install missing packages on the fly"
-#        initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
-#      if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Windows)
       uses: teatimeguest/setup-texlive-action@v3
@@ -250,11 +198,6 @@ jobs:
       run:
         choco install graphviz.portable
       if: matrix.config.os == 'windows-latest'
-
-#    - name: Install Perl (Windows)
-#      run:
-#        choco install activeperl
-#      if: matrix.config.os == 'windows-latest'
 
     - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
