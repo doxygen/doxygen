@@ -1977,7 +1977,6 @@ void HtmlDocVisitor::operator()(const DocXRefItem &x)
     m_t << "<dl class=\"" << x.key() << "\"><dt><b>";
   }
   filter(x.title());
-  m_t << ":";
   if (!anonymousEnum) m_t << "</a>";
   m_t << "</b></dt><dd>";
   visitChildren(x);
