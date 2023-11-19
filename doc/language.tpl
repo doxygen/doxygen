@@ -1,6 +1,6 @@
 
-ATTENTION! This is the template for generating language.doc. If you want to
-change the language.doc, make the changes here and inside maintainers.txt.
+ATTENTION! This is the template for generating language.dox. If you want to
+change the language.dox, make the changes here and inside maintainers.txt.
 
 /******************************************************************************
  * %(editnote)s
