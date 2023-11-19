@@ -63,8 +63,9 @@ def get_versions():
 
 def get_commands(version):
     lst = xpopen('git show %s:doc/commands.dox'%(version))
+    if lst.count('\n') == 0:
+        lst = xpopen('git show %s:doc/commands.doc'%(version))
     lst_list = []
-    print("==> '%s' %d\n"%(version,lst.count('\n')));
     for line in lst.split('\n'):
         if cmds_reg.match(line):
             lst_list.append(re.sub(cmds_reg,'',line).replace("\\\\","\\"))
