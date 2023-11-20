@@ -399,25 +399,25 @@ void NamespaceDefImpl::addInnerCompound(Definition *d)
 
 void NamespaceDefImpl::insertClass(ClassDef *cd)
 {
-  ClassLinkedRefMap &d = classes;
+  ClassLinkedRefMap *d = &classes;
 
   if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
     if (cd->compoundType()==ClassDef::Interface)
     {
-      d = interfaces;
+      d = &interfaces;
     }
     else if (cd->compoundType()==ClassDef::Struct)
     {
-      d = structs;
+      d = &structs;
     }
     else if (cd->compoundType()==ClassDef::Exception)
     {
-      d = exceptions;
+      d = &exceptions;
     }
   }
 
-  d.add(cd->name(),cd);
+  d->add(cd->name(),cd);
 }
 
 void NamespaceDefImpl::insertConcept(ConceptDef *cd)
