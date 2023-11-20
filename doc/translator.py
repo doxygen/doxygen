@@ -3,7 +3,7 @@
   The main purpose of the script is to extract the information from sources
   related to internationalization (the translator classes). It uses the
   information to generate documentation (language.dox,
-  doxnslator_report.txt) from templates (language.tpl, maintainers.txt).
+  translator_report.txt) from templates (language.tpl, maintainers.txt).
 
   Simply run the script without parameters to get the reports and
   documentation for all supported languages. If you want to generate the
