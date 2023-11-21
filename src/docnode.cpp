@@ -98,56 +98,6 @@ static void unescapeCRef(QCString &s)
 
 //---------------------------------------------------------------------------
 
-/** Returns the section of text, in between a pair of markers.
- *  Full lines are returned, excluding the lines on which the markers appear.
- *  \sa routine lineBlock
- */
-static QCString extractBlock(const QCString &text,const QCString &marker)
-{
-  QCString result;
-  int p=0,i=-1;
-  bool found=FALSE;
-
-  // find the character positions of the markers
-  int m1 = text.find(marker);
-  if (m1==-1) return result;
-  int m2 = text.find(marker,m1+marker.length());
-  if (m2==-1) return result;
-
-  // find start and end line positions for the markers
-  int l1=-1,l2=-1;
-  while (!found && (i=text.find('\n',p))!=-1)
-  {
-    found = (p<=m1 && m1<i); // found the line with the start marker
-    p=i+1;
-  }
-  l1=p;
-  int lp=i;
-  if (found)
-  {
-    while ((i=text.find('\n',p))!=-1)
-    {
-      if (p<=m2 && m2<i) // found the line with the end marker
-      {
-        l2=p;
-        break;
-      }
-      p=i+1;
-      lp=i;
-    }
-  }
-  if (l2==-1) // marker at last line without newline (see bug706874)
-  {
-    l2=lp;
-  }
-  //printf("text=[%s]\n",qPrint(text.mid(l1,l2-l1)));
-  return l2>l1 ? text.mid(l1,l2-l1) : QCString();
-}
-
-
-
-//---------------------------------------------------------------------------
-
 /*! Strips known html and tex extensions from \a text. */
 static QCString stripKnownExtensions(const QCString &text)
 {
@@ -357,11 +307,6 @@ void DocInclude::parse()
                        "block marked with %s for \\snippet should appear twice in file %s, found it %d times",
                        qPrint(m_blockId),qPrint(m_file),count);
       }
-      break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
       break;
   }
 }
@@ -3681,14 +3626,6 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     {
       t = DocInclude::DontIncWithLines;
     }
-    else if (t==DocInclude::Include && contains("doc"))
-    {
-      t = DocInclude::IncludeDoc;
-    }
-    else if (t==DocInclude::Snippet && contains("doc"))
-    {
-      t = DocInclude::SnippetDoc;
-    }
     else if (t==DocInclude::Snippet && contains("trimleft"))
     {
       t = DocInclude::SnippetTrimLeft;
@@ -3732,7 +3669,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   }
   QCString fileName = parser()->context.token->name;
   QCString blockId;
-  if (t==DocInclude::Snippet || t==DocInclude::SnippetWithLines || t==DocInclude::SnippetDoc || t == DocInclude::SnippetTrimLeft)
+  if (t==DocInclude::Snippet || t==DocInclude::SnippetWithLines || t == DocInclude::SnippetTrimLeft)
   {
     if (fileName == "this") fileName=parser()->context.fileName;
     parser()->tokenizer.setStateSnippet();
@@ -3747,67 +3684,15 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     blockId = "["+parser()->context.token->name+"]";
   }
 
-  // This is the only place to handle the \includedoc and \snippetdoc commands,
-  // as the content is included here as if it is really here.
-  if (t==DocInclude::IncludeDoc || t==DocInclude::SnippetDoc)
-  {
-    std::string includeKey = (fileName+":"+blockId).str();
-    auto it = parser()->includes.find(includeKey);
-    if (it != parser()->includes.end()) // recursive include
-    {
-      if (!blockId.isEmpty())
-      {
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"recursive usage of '\\snippet{doc}' block with name '%s' and file name '%s', skipping",
-            qPrint(blockId),qPrint(fileName));
-      }
-      else
-      {
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"recursive usage of '\\include{doc}' with file name '%s', skipping",
-            qPrint(fileName));
-      }
-      return;
-    }
-    QCString inc_text;
-    int inc_line  = 1;
-    parser()->readTextFileByName(fileName,inc_text);
-    if (inc_text.isEmpty()) return;
-    if (t==DocInclude::SnippetDoc)
-    {
-      int count;
-      if (!blockId.isEmpty() && (count=inc_text.contains(blockId.data()))!=2)
-      {
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"block marked with %s for \\snippet should appear twice in file %s, found it %d times, skipping",
-            qPrint(blockId),qPrint(fileName),count);
-        return;
-      }
-      inc_line = lineBlock(inc_text, blockId);
-      inc_text = extractBlock(inc_text, blockId);
-    }
-
-    parser()->includes.insert(includeKey);
-    Markdown markdown(fileName,inc_line);
-    QCString strippedDoc = stripIndentation(inc_text);
-    QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,inc_line) : strippedDoc;
-
-    parser()->pushContext();
-    parser()->context.fileName = fileName;
-    parser()->tokenizer.setLineNr(inc_line);
-    parser()->internalValidatingParseDoc(thisVariant(),children(),processedDoc);
-    parser()->popContext();
-    parser()->includes.erase(includeKey);
-  }
-  else
-  {
-    children().append<DocInclude>(parser(),
-                                  thisVariant(),
-                                  fileName,
-                                  localScope ? parser()->context.context : "",
-                                  t,
-                                  parser()->context.isExample,
-                                  parser()->context.exampleName,
-                                  blockId,isBlock);
-    children().get_last<DocInclude>()->parse();
-  }
+  children().append<DocInclude>(parser(),
+                                thisVariant(),
+                                fileName,
+                                localScope ? parser()->context.context : "",
+                                t,
+                                parser()->context.isExample,
+                                parser()->context.exampleName,
+                                blockId,isBlock);
+  children().get_last<DocInclude>()->parse();
 }
 
 void DocPara::handleSection(const QCString &cmdName)
@@ -4486,12 +4371,6 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_SNIPWITHLINES:
       handleInclude(cmdName,DocInclude::SnippetWithLines);
-      break;
-    case CMD_INCLUDEDOC:
-      handleInclude(cmdName,DocInclude::IncludeDoc);
-      break;
-    case CMD_SNIPPETDOC:
-      handleInclude(cmdName,DocInclude::SnippetDoc);
       break;
     case CMD_SKIP:
       handleIncludeOperator(cmdName,DocIncOperator::Skip);

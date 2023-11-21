@@ -134,7 +134,6 @@ class DocParser : public IDocParser
     std::stack< DocParserContext > contextStack;
     DocParserContext               context;
     DocTokenizer                   tokenizer;
-    StringSet                      includes;
 };
 
 //---------------------------------------------------------------------------

@@ -417,7 +417,7 @@ class DocInclude : public DocNode
 {
   public:
   enum Type { Include, DontInclude, VerbInclude, HtmlInclude, LatexInclude,
-	      IncWithLines, Snippet , IncludeDoc, SnippetDoc, SnippetWithLines,
+	      IncWithLines, Snippet , SnippetWithLines,
 	      DontIncWithLines, RtfInclude, ManInclude, DocbookInclude, XmlInclude,
               SnippetTrimLeft};
     DocInclude(DocParser *parser,DocNodeVariant *parent,const QCString &file,
