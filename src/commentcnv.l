@@ -1311,7 +1311,6 @@ static QCString extractBlock(const QCString &text,const QCString &marker,int &bl
   {
     l2=lp;
   }
-  printf("text=[%s]\n",qPrint(text.mid(l1,l2-l1)));
   return l2>l1 ? text.mid(l1,l2-l1) : QCString();
 }
 
