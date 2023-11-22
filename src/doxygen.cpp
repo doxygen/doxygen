@@ -9868,6 +9868,10 @@ static void copyLatexStyleSheet()
       {
         err("Style sheet '%s' specified by LATEX_EXTRA_STYLESHEET does not exist!\n",qPrint(fileName));
       }
+      else if (fi.isDir())
+      {
+        err("Style sheet '%s' specified by LATEX_EXTRA_STYLESHEET is a directory, it has to be a file!\n", qPrint(fileName));
+      }
       else
       {
         QCString destFileName = Config_getString(LATEX_OUTPUT)+"/"+fi.fileName();
@@ -9895,6 +9899,11 @@ static void copyStyleSheet()
         err("Style sheet '%s' specified by HTML_STYLESHEET does not exist!\n",qPrint(htmlStyleSheet));
         htmlStyleSheet = Config_updateString(HTML_STYLESHEET,""); // revert to the default
       }
+      else if (fi.isDir())
+      {
+        err("Style sheet '%s' specified by HTML_STYLESHEET is a directory, it has to be a file!\n",qPrint(htmlStyleSheet));
+        htmlStyleSheet = Config_updateString(HTML_STYLESHEET,""); // revert to the default
+      }
       else
       {
         QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
@@ -9917,6 +9926,10 @@ static void copyStyleSheet()
       {
         err("Style sheet %s specified by HTML_EXTRA_STYLESHEET is already a built-in stylesheet. Please use a different name\n",qPrint(fi.fileName()));
       }
+      else if (fi.isDir())
+      {
+        err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET is a directory, it has to be a file!\n",qPrint(fileName));
+      }
       else
       {
         QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
@@ -9935,6 +9948,11 @@ static void copyLogo(const QCString &outputOption)
     if (!fi.exists())
     {
       err("Project logo '%s' specified by PROJECT_LOGO does not exist!\n",qPrint(projectLogo));
+      projectLogo = Config_updateString(PROJECT_LOGO,""); // revert to the default
+    }
+    else if (fi.isDir())
+    {
+      err("Project logo '%s' specified by PROJECT_LOGO is a directory, it has to be a file!\n",qPrint(projectLogo));
       projectLogo = Config_updateString(PROJECT_LOGO,""); // revert to the default
     }
     else
@@ -9957,6 +9975,11 @@ static void copyIcon(const QCString &outputOption)
       err("Project icon '%s' specified by PROJECT_ICON does not exist!\n",qPrint(projectIcon));
       projectIcon = Config_updateString(PROJECT_ICON,""); // revert to the default
     }
+    else if (fi.isDir())
+    {
+      err("Project icon '%s' specified by PROJECT_ICON is a directory, it has to be a file!\n",qPrint(projectIcon));
+      projectIcon = Config_updateString(PROJECT_ICON,""); // revert to the default
+    }
     else
     {
       QCString destFileName = outputOption+"/"+fi.fileName();
@@ -9976,6 +9999,10 @@ static void copyExtraFiles(const StringVector &files,const QCString &filesOption
       if (!fi.exists())
       {
         err("Extra file '%s' specified in %s does not exist!\n", fileName.c_str(),qPrint(filesOption));
+      }
+      else if (fi.isDir())
+      {
+        err("Extra file '%s' specified in %s is a directory, it has to be a file!\n", fileName.c_str(),qPrint(filesOption));
       }
       else
       {
