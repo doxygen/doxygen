@@ -241,6 +241,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
 static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString &name,
                           const QCString &brief,const QCString &docs);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+static void setJavaProtection(yyscan_t yyscanner);
 
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
@@ -1449,6 +1450,7 @@ NONLopt [^\n]*
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
+                                            setJavaProtection(yyscanner);
                                             BEGIN( CompoundName );
                                           }
                                           else
@@ -1761,13 +1763,7 @@ NONLopt [^\n]*
                                           if (yyextra->insideJava)
                                           {
                                             yyextra->current->section = EntryType::makeClass();
-                                            yyextra->current->protection = Protection::Public;
-                                            if (text.find("protected")!=-1)
-                                              yyextra->current->protection = Protection::Protected;
-                                            else if (text.find("private")!=-1)
-                                              yyextra->current->protection = Protection::Private;
-                                            else if (text.find("package")!=-1)
-                                              yyextra->current->protection = Protection::Package;
+                                            setJavaProtection(yyscanner);
                                             yyextra->current->spec = TypeSpecifier().setEnum(true);
                                           }
                                           else
@@ -7510,6 +7506,21 @@ static bool checkForKnRstyleC(yyscan_t yyscanner)
   return TRUE;
 }
 
+static void setJavaProtection(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->insideJava)
+  {
+    QCString text=yytext;
+    yyextra->current->protection = Protection::Public;
+    if (text.find("protected")!=-1)
+      yyextra->current->protection = Protection::Protected;
+    else if (text.find("private")!=-1)
+      yyextra->current->protection = Protection::Private;
+    else if (text.find("package")!=-1)
+      yyextra->current->protection = Protection::Package;
+  }
+}
 //-----------------------------------------------------------------------------
 
 static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &oldStyleArgName)
