@@ -1381,7 +1381,7 @@ STopt  [^\n@\\]*
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
-                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr));
+                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr) + " \\ilinebr ");
                                           BEGIN( Comment );
                                         }
 <GroupDocArg2>.                         { // title (stored in type)
@@ -1434,7 +1434,7 @@ STopt  [^\n@\\]*
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
-                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr));
+                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr) + " \\ilinebr ");
                                           BEGIN( Comment );
                                         }
 <PageDocArg2>{CMD}[<>]                  {
