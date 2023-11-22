@@ -427,7 +427,7 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
     { return english.trIncludesFileIn(name); }
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                DateTimeType includeTime)
+                                DateTimeType includeTime) override
     { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
     QCString trDayPeriod(int period) override
     { return english.trDayPeriod(period); }
@@ -496,7 +496,7 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_7_5
 
     virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                  ClassDef::CompoundType compType,
-                                 bool isTemplate)
+                                 bool isTemplate) override
     { return english.trCompoundReferenceFortran(clName,compType,isTemplate); }
 
     QCString trModuleReference(const QCString &namespaceName) override
@@ -515,7 +515,7 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_7_5
     { return english.trModule(first_capital,singular); }
 
     virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-                     bool single)
+                     bool single) override
     { return english.trGeneratedFromFilesFortran(compType,single); }
 
     QCString trType(bool first_capital, bool singular) override
