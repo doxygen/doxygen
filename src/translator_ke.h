@@ -31,17 +31,17 @@
 class TranslatorKoreanEn : public TranslatorEnglish
 {
   public:
-    virtual QCString idLanguage()
+    QCString idLanguage() override
     { return "korean-en"; }
-    virtual QCString latexLanguageSupportCommand()
+    QCString latexLanguageSupportCommand() override
     {
       return "\\usepackage{kotex}\n";
     }
-    virtual QCString trRTFansicp()
+    QCString trRTFansicp() override
     {
       return "949";
     }
-    virtual QCString latexCommandName()
+    QCString latexCommandName() override
     {
       QCString latex_command = Config_getString(LATEX_CMD_NAME);
       if (latex_command.isEmpty()) latex_command = "latex";
@@ -55,16 +55,16 @@ class TranslatorKoreanEn : public TranslatorEnglish
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    virtual QCString trRTFCharSet()
+    QCString trRTFCharSet() override
     {
       return "129";
     }
 
-    virtual QCString trISOLang()
+    QCString trISOLang() override
     {
       return "ko";
     }
-    virtual QCString getLanguageString()
+    QCString getLanguageString() override
     {
       return "0x412 Korean";
     }
