@@ -74,7 +74,7 @@ struct commentcnv_FileState
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
   QCString oldFileName;
-  int oldState;
+  int oldState = 0;
   BufStr fileBuf;
   const BufStr *oldFileBuf = nullptr;
   int oldFileBufPos = 0;
