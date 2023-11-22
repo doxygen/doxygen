@@ -1433,6 +1433,8 @@ STopt  [^\n@\\]*
                                           unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
+                                          addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
+                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr));
                                           BEGIN( Comment );
                                         }
 <PageDocArg2>{CMD}[<>]                  {
