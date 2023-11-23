@@ -525,13 +525,13 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
   public:
     MemberDefAliasImpl(const Definition *newScope,const MemberDef *md)
     : DefinitionAliasMixin(newScope,md), m_memberGroup(0) { init(); }
-    ~MemberDefAliasImpl() { deinit(); }
+    ~MemberDefAliasImpl() override { deinit(); }
     DefType definitionType() const override { return TypeMember; }
 
-    const MemberDef *getMdAlias() const           { return toMemberDef(getAlias()); }
-          MemberDef *getMdAlias()                 { return toMemberDef(const_cast<Definition*>(getAlias())); }
-          MemberDef *resolveAlias()       { return const_cast<MemberDef*>(getMdAlias()); }
-    const MemberDef *resolveAlias() const { return getMdAlias(); }
+    const MemberDef *getMdAlias() const            { return toMemberDef(getAlias()); }
+          MemberDef *getMdAlias()                  { return toMemberDef(const_cast<Definition*>(getAlias())); }
+          MemberDef *resolveAlias() override       { return const_cast<MemberDef*>(getMdAlias()); }
+    const MemberDef *resolveAlias() const override { return getMdAlias(); }
 
     std::unique_ptr<MemberDef> deepCopy() const override  {
       return createMemberDefAlias(getScope(),getMdAlias());

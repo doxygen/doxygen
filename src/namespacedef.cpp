@@ -180,7 +180,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
   public:
     NamespaceDefAliasImpl(const Definition *newScope,const NamespaceDef *nd)
       : DefinitionAliasMixin(newScope,nd) { init(); }
-    ~NamespaceDefAliasImpl() { deinit(); }
+    ~NamespaceDefAliasImpl()  override{ deinit(); }
     DefType definitionType() const override { return TypeNamespace; }
 
     const NamespaceDef *getNSAlias() const { return toNamespaceDef(getAlias()); }

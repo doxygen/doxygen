@@ -102,7 +102,7 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
   public:
     ConceptDefAliasImpl(const Definition *newScope,const ConceptDef *cd)
       : DefinitionAliasMixin(newScope,cd) { init(); }
-    ~ConceptDefAliasImpl() { deinit(); }
+    ~ConceptDefAliasImpl() override { deinit(); }
 
     const ConceptDef *getCdAlias() const { return toConceptDef(getAlias()); }
     ConceptDef *resolveAlias() { return const_cast<ConceptDef*>(getCdAlias()); }

@@ -54,7 +54,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 {
   public:
     GroupDefImpl(const QCString &fileName,int line,const QCString &name,const QCString &title,const QCString &refFileName=QCString());
-    ~GroupDefImpl();
+    ~GroupDefImpl() override;
 
     DefType definitionType() const override { return TypeGroup; }
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }

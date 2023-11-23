@@ -121,7 +121,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
 {
   public:
     FileDefImpl(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());
-    ~FileDefImpl();
+    ~FileDefImpl() override;
 
     DefType definitionType() const override { return TypeFile; }
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }

@@ -31,7 +31,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
 {
   public:
     PageDefImpl(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
-    ~PageDefImpl();
+    ~PageDefImpl() override;
 
     void setFileName(const QCString &name) override;
     void setLocalToc(const LocalToc &tl) override;
