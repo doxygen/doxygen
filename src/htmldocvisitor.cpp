@@ -781,11 +781,6 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
       m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(inc);
       break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
-      break;
   }
 }
 
@@ -1977,7 +1972,6 @@ void HtmlDocVisitor::operator()(const DocXRefItem &x)
     m_t << "<dl class=\"" << x.key() << "\"><dt><b>";
   }
   filter(x.title());
-  m_t << ":";
   if (!anonymousEnum) m_t << "</a>";
   m_t << "</b></dt><dd>";
   visitChildren(x);

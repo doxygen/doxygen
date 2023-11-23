@@ -2,13 +2,13 @@
 
   The main purpose of the script is to extract the information from sources
   related to internationalization (the translator classes). It uses the
-  information to generate documentation (language.doc,
+  information to generate documentation (language.dox,
   translator_report.txt) from templates (language.tpl, maintainers.txt).
 
   Simply run the script without parameters to get the reports and
   documentation for all supported languages. If you want to generate the
   translator report only for some languages, pass their codes as arguments
-  to the script. In that case, the language.doc will not be generated.
+  to the script. In that case, the language.dox will not be generated.
   Example:
 
     python translator.py en nl cz
@@ -23,7 +23,7 @@
   2002/05/21 - This was the last Perl version.
   2003/05/16 - List of language marks can be passed as arguments.
   2004/01/24 - Total reimplementation started: classes TrManager, and Transl.
-  2004/02/05 - First version that produces translator report. No language.doc yet.
+  2004/02/05 - First version that produces translator report. No language.dox yet.
   2004/02/10 - First fully functional version that generates both the translator
                report and the documentation. It is a bit slower than the
                Perl version, but is much less tricky and much more flexible.
@@ -35,7 +35,7 @@
   2004/05/25 - Added from __future__ import generators not to force Python 2.3.
   2004/06/03 - Removed dependency on textwrap module.
   2004/07/07 - Fixed the bug in the fill() function.
-  2004/07/21 - Better e-mail mangling for HTML part of language.doc.
+  2004/07/21 - Better e-mail mangling for HTML part of language.dox.
              - Plural not used for reporting a single missing method.
              - Removal of not used translator adapters is suggested only
                when the report is not restricted to selected languages
@@ -58,7 +58,7 @@
              - [any mark] introduced instead of [unreachable] only
              - marks highlighted in HTML
   2010/08/30 - Highlighting in what will be the table in langhowto.html modified.
-  2010/09/27 - The underscore in \latexonly part of the generated language.doc
+  2010/09/27 - The underscore in \latexonly part of the generated language.dox
                was prefixed by backslash (was LaTeX related error).
   2013/02/19 - Better diagnostics when translator_xx.h is too crippled.
   2013/06/25 - TranslatorDecoder checks removed after removing the class.
@@ -170,6 +170,7 @@ class Transl:
                      'private':   'private',
                      'static':    'static',
                      'virtual':   'virtual',
+                     'override':  'override',
                      ':':         'colon',
                      ';':         'semic',
                      ',':         'comma',
@@ -837,6 +838,8 @@ class Transl:
                 if tokenId == 'lcurly':
                     curlyCnt = 1      # method body entered
                     status = 10
+                elif tokenId == 'override':
+                    pass
                 elif tokenId == 'comment':
                     pass
                 elif tokenId == 'assign': # allowed only for TranslatorAdapterBase
@@ -1287,7 +1290,7 @@ class TrManager:
             self.translatorReportFileName = 'translator_report.txt'
         self.maintainersFileName = 'maintainers.txt'
         self.languageTplFileName = 'language.tpl'
-        self.languageDocFileName = 'language.doc'
+        self.languageDocFileName = 'language.dox'
 
         # The information about the maintainers will be stored
         # in the dictionary with the following name.
@@ -1777,7 +1780,7 @@ class TrManager:
 
 
     def generateLanguageDoc(self):
-        """Checks the modtime of files and generates language.doc."""
+        """Checks the modtime of files and generates language.dox."""
         self.__loadMaintainers()
 
         # Check the last modification time of the VERSION file.

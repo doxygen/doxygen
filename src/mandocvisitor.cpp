@@ -343,11 +343,6 @@ void ManDocVisitor::operator()(const DocInclude &inc)
       m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
-      break;
   }
 }
 

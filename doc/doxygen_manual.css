@@ -152,24 +152,6 @@ dl.el {
 	margin-left: -1cm;
 }
 
-pre.fragment {
-        border: 1px solid #C4CFE5;
-        background-color: #FBFCFD;
-        padding: 4px 6px;
-        margin: 4px 8px 4px 2px;
-        overflow: auto;
-        word-wrap: break-word;
-        line-height: 125%;
-        font-family: monospace, fixed;
-        font-size: 105%;
-}
-
-div.fragment {
-        padding: 0px;
-        margin: 4px 8px 4px 2px;
-	background-color: #FCFCFC;
-	border: 1px solid #D5D5D5;
-}
 
 div.line {
 	font-family: 'JetBrains Mono', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace, fixed;
@@ -1049,74 +1031,6 @@ dl
 {
         padding: 0 0 0 10px;
 }
-
-/* dl.note, dl.warning, dl.attention, dl.pre, dl.post, dl.invariant, dl.deprecated, dl.todo, dl.test, dl.bug */
-dl.section
-{
-	margin-left: 0px;
-	padding-left: 0px;
-}
-
-dl.note
-{
-        margin-left:-7px;
-        padding-left: 3px;
-        border-left:4px solid;
-        border-color: #D0C000;
-}
-
-dl.warning, dl.attention
-{
-        margin-left:-7px;
-        padding-left: 3px;
-        border-left:4px solid;
-        border-color: #FF0000;
-}
-
-dl.pre, dl.post, dl.invariant
-{
-        margin-left:-7px;
-        padding-left: 3px;
-        border-left:4px solid;
-        border-color: #00D000;
-}
-
-dl.deprecated
-{
-        margin-left:-7px;
-        padding-left: 3px;
-        border-left:4px solid;
-        border-color: #505050;
-}
-
-dl.todo
-{
-        margin-left:-7px;
-        padding-left: 3px;
-        border-left:4px solid;
-        border-color: #00C0E0;
-}
-
-dl.test
-{
-        margin-left:-7px;
-        padding-left: 3px;
-        border-left:4px solid;
-        border-color: #3030E0;
-}
-
-dl.bug
-{
-        margin-left:-7px;
-        padding-left: 3px;
-        border-left:4px solid;
-        border-color: #C08050;
-}
-
-dl.section dd {
-	margin-bottom: 6px;
-}
-
 
 #projectlogo
 {

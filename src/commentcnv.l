@@ -31,6 +31,7 @@ typedef yyguts_t *yyscan_t;
 #include <stdlib.h>
 #include <stack>
 #include <algorithm>
+#include <deque>
 
 #include "bufstr.h"
 #include "debug.h"
@@ -40,6 +41,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "aliases.h"
 #include "condparser.h"
+#include "fileinfo.h"
 
 #include <assert.h>
 
@@ -65,16 +67,32 @@ struct CommentCtx
   int lineNr;
 };
 
+struct commentcnv_FileState
+{
+  commentcnv_FileState(uint32_t size) : fileBuf(size) {}
+  int oldLineNr = 1;
+  YY_BUFFER_STATE bufState = 0;
+  QCString fileName;
+  QCString oldFileName;
+  int oldState = 0;
+  BufStr fileBuf;
+  const BufStr *oldFileBuf = nullptr;
+  int oldFileBufPos = 0;
+  int oldIncludeCtx = 0;
+};
+
+
 struct commentcnvYY_state
 {
-  commentcnvYY_state(const BufStr &i,BufStr &o) : inBuf(i), outBuf(o) {}
-  const BufStr &inBuf;
+  commentcnvYY_state(const BufStr *i,BufStr &o) : inBuf(i), outBuf(o) {}
+  const BufStr *inBuf;
   BufStr &outBuf;
   int      inBufPos = 0;
   int      col = 0;
   int      blockHeadCol = 0;
   bool     mlBrief = FALSE;
   int      readLineCtx = 0;
+  int      includeCtx = 0;
   bool     skip = FALSE;
   QCString fileName;
   int      lineNr = 0;
@@ -101,6 +119,7 @@ struct commentcnvYY_state
 
   SrcLangExt lang = SrcLangExt_Unknown;
   bool       isFixedForm = FALSE; // For Fortran
+  std::deque<std::unique_ptr<commentcnv_FileState>> includeStack;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -115,6 +134,7 @@ static void replaceAliases(yyscan_t yyscanner,const QCString &s);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
+static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCString &blockId);
 
 
 
@@ -143,6 +163,9 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 %x ReadLine
 %x CondLine
 %x ReadAliasArgs
+%x IncludeDoc
+%x SnippetDoc
+%x IncludeFile
 
   //- start: NUMBER -------------------------------------------------------------------------
   // Note same defines in code.l: keep in sync
@@ -170,6 +193,17 @@ FLOAT_DECIMAL {DEC_FP1}|{DEC_FP2}
 FLOAT_HEXADECIMAL {HEX_FP1}|{HEX_FP2}
 FLOAT_NUMBER {FLOAT_DECIMAL}|{FLOAT_HEXADECIMAL}
 NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
+
+FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
+FILEECHAR [a-z_A-Z0-9\-\+=&#@]
+FILECHARS {FILEICHAR}*{FILEECHAR}+
+HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
+VFILEMASK {FILECHARS}("."{FILECHARS})*
+FILEMASK  {VFILEMASK}|{HFILEMASK}
+
+B         [ \t]
+ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
+
   //- end: NUMBER ---------------------------------------------------------------------------
 
   // C start comment
@@ -887,6 +921,56 @@ SLASHopt [/]*
 <CComment,CNComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
   				   }
+<CComment,ReadLine,IncludeFile>[\\@]("include"{B}*"{doc}"|"includedoc") {
+                                     yyextra->includeCtx = YY_START;
+                                     BEGIN(IncludeDoc);
+                                   }
+<CComment,ReadLine,IncludeFile>[\\@]("snippet"{B}*"{doc}"|"snippetdoc") {
+                                     yyextra->includeCtx = YY_START;
+                                     BEGIN(SnippetDoc);
+                                   }
+<IncludeDoc,SnippetDoc>{B}*
+<IncludeDoc>{FILEMASK}|"\""[^\n\"]+"\"" {
+                                     QCString fileName=yytext;
+                                     if (yytext[0]=='"')
+                                     {
+                                       fileName=fileName.mid(1,fileName.length()-2); // strip quotes
+                                     }
+                                     if (readIncludeFile(yyscanner,fileName,""))
+                                     {
+                                       BEGIN(IncludeFile);
+                                     }
+                                     else
+                                     {
+                                       BEGIN(yyextra->includeCtx);
+                                     }
+                                   }
+<SnippetDoc>({FILEMASK}|"\""[^\n\"]+"\""){B}+{ID} {
+                                     QCString fileName=yytext;
+                                     int i=fileName.findRev(' ');
+                                     if (i==-1) i=fileName.findRev('\t');
+                                     QCString blockId = "["+fileName.mid(i+1)+"]";
+                                     fileName=fileName.left(i).stripWhiteSpace();
+                                     //printf("yytext='%s' i=%d fileName='%s' blockId='%s'\n",yytext,i,qPrint(fileName),qPrint(blockId));
+                                     if (readIncludeFile(yyscanner,fileName,blockId))
+                                     {
+                                       BEGIN(IncludeFile);
+                                     }
+                                     else
+                                     {
+                                       BEGIN(yyextra->includeCtx);
+                                     }
+                                   }
+<IncludeDoc,SnippetDoc>\n          {
+				     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                     // missing file name
+                                     //warn(yyextra->fileName,yyextra->lineNr,"Found \\include{doc} command without valid file name argument");
+                                     BEGIN(yyextra->includeCtx);
+                                   }
+<IncludeDoc,SnippetDoc>.           { // invalid character
+				     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                     BEGIN(yyextra->includeCtx);
+                                   }
 <CComment,ReadLine>[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
   				     yyextra->condCtx = YY_START;
   				     BEGIN(CondLine);
@@ -984,8 +1068,38 @@ SLASHopt [/]*
   				     copyToOutput(yyscanner,yytext,(int)yyleng);
   				   }
 
+<IncludeFile>.                     {
+  				     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
+<IncludeFile>\n                    {
+  				     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
 <*>.                               {
   				     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
+<<EOF>>                            {
+                                      if (yyextra->includeStack.empty())
+                                      {
+                                        yyterminate();
+                                      }
+                                      else // switch back to parent file
+                                      {
+                                        std::unique_ptr<commentcnv_FileState> &fs = yyextra->includeStack.back();
+                                        YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
+                                        yy_switch_to_buffer(fs->bufState, yyscanner);
+                                        yy_delete_buffer(oldBuf, yyscanner);
+                                        BEGIN(fs->oldState);
+                                        yyextra->fileName   = fs->oldFileName;
+                                        yyextra->lineNr     = fs->oldLineNr;
+                                        yyextra->inBuf      = fs->oldFileBuf;
+                                        yyextra->inBufPos   = fs->oldFileBufPos;
+                                        yyextra->includeCtx = fs->oldIncludeCtx;
+                                        QCString lineStr=" \\ilinebr\\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
+                                        copyToOutput(yyscanner,lineStr.data(),lineStr.length());
+                                        yyextra->includeStack.pop_back();
+                                        //printf("<<EOF>> switch back to %s line %d inbufPos=%d outbufPos=%d\n",
+                                        //    qPrint(yyextra->fileName),yyextra->lineNr,yyextra->inBufPos,yyextra->outBuf.curPos());
+                                      }
                                    }
   /*
 <*>\n  { fprintf(stderr,"Lex scanner %s (%s) default rule newline for state %s.\n", __FILE__, qPrint(yyextra->fileName),stateToString(YY_START));}
@@ -1154,6 +1268,145 @@ static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
   }
 }
 
+/** Returns the section of text, in between a pair of markers.
+ *  Full lines are returned, excluding the lines on which the markers appear.
+ *  \sa routine lineBlock
+ */
+static QCString extractBlock(const QCString &text,const QCString &marker,int &blockPos)
+{
+  QCString result;
+  int p=0,i=-1;
+  bool found=FALSE;
+
+  // find the character positions of the markers
+  int m1 = text.find(marker);
+  if (m1==-1) return result;
+  int m2 = text.find(marker,m1+marker.length());
+  if (m2==-1) return result;
+
+  // find start and end line positions for the markers
+  int l1=-1,l2=-1;
+  while (!found && (i=text.find('\n',p))!=-1)
+  {
+    found = (p<=m1 && m1<i); // found the line with the start marker
+    p=i+1;
+  }
+  l1=p;
+  blockPos=p;
+  int lp=i;
+  if (found)
+  {
+    while ((i=text.find('\n',p))!=-1)
+    {
+      if (p<=m2 && m2<i) // found the line with the end marker
+      {
+        l2=p;
+        break;
+      }
+      p=i+1;
+      lp=i;
+    }
+  }
+  if (l2==-1) // marker at last line without newline (see bug706874)
+  {
+    l2=lp;
+  }
+  return l2>l1 ? text.mid(l1,l2-l1) : QCString();
+}
+
+
+static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCString &blockId)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  FileInfo pathFi(yyextra->fileName.str());
+  std::string fileName = pathFi.dirPath(true)+"/"+inc.str();
+  FileInfo fi(fileName);
+  if (!fi.exists()) fi = FileInfo(fileName+".md");
+  if (!fi.exists()) fi = FileInfo(fileName+".dox");
+  if (!fi.exists()) fi = FileInfo(fileName+".txt");
+  if (fi.exists() && fi.isFile())
+  {
+    QCString lineStr=" \\ilinebr\\ifile \""+fileName+"\" \\iline 1 ";
+    copyToOutput(yyscanner,lineStr.data(),lineStr.length());
+
+    QCString absFileName(fi.absFilePath());
+
+    bool alreadyProcessed = std::any_of(
+      yyextra->includeStack.begin(),
+      yyextra->includeStack.end(),
+      [absFileName](const auto &lfs)
+        { return lfs->fileName==absFileName; }
+    );
+
+    if (alreadyProcessed)
+    {
+      if (!blockId.isEmpty())
+      {
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\snippet{doc}' block with name '%s' and file name '%s', skipping",
+             qPrint(blockId),qPrint(fileName));
+      }
+      else
+      {
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\include{doc}' with file name '%s', skipping", qPrint(fileName));
+      }
+      return false;
+    }
+
+    auto fs = std::make_unique<commentcnv_FileState>(static_cast<uint32_t>(fi.size()+4096));
+    if (!readInputFile(QCString(fileName),fs->fileBuf,false))
+    {
+      warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' could not be read",blockId.isEmpty()?"include":"snippet",qPrint(fileName));
+      fs.reset();
+      return false;
+    }
+    int lineNr=1;
+    if (!blockId.isEmpty())
+    {
+      QCString incText = fs->fileBuf.data();
+      int count = incText.contains(blockId.data());
+      if (count!=2)
+      {
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with [%s] for \\snippet{doc} should appear twice in file %s, found it %d times, skipping",
+            qPrint(blockId),qPrint(fileName),count);
+        return false;
+      }
+      lineNr = lineBlock(incText, blockId);
+      int blockPos;
+      incText = extractBlock(incText, blockId, blockPos);
+      fs->fileBuf.shrink(0);
+      if (!incText.isEmpty())
+      {
+        fs->fileBuf.addArray(incText.data(),incText.length());
+      }
+    }
+    else if (fs->fileBuf.curPos()>0) // remove '\0' terminator
+    {
+      fs->fileBuf.shrink(fs->fileBuf.curPos()-1);
+    }
+
+    fs->fileName      = absFileName;
+    fs->bufState      = YY_CURRENT_BUFFER;
+    fs->oldLineNr     = yyextra->lineNr;
+    fs->oldFileName   = yyextra->fileName;
+    fs->oldState      = YY_START;
+    fs->oldFileBuf    = yyextra->inBuf;
+    fs->oldFileBufPos = yyextra->inBufPos;
+    fs->oldIncludeCtx = yyextra->includeCtx;
+    yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner),yyscanner);
+    yyextra->fileName = fileName;
+    yyextra->lineNr   = lineNr;
+    yyextra->inBuf    = &fs->fileBuf;
+    yyextra->inBufPos = 0;
+    yyextra->includeStack.push_back(std::move(fs));
+    //printf("switched to %s\n",qPrint(fileName));
+  }
+  else
+  {
+    warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' not found",blockId.isEmpty()?"include":"snippet",qPrint(fileName));
+  }
+  return true;
+}
+
 /** copies string \a s with length \a len to the output, while
  *  replacing any alias commands found in the string.
  */
@@ -1168,9 +1421,9 @@ static void replaceAliases(yyscan_t yyscanner,const QCString &s)
 static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int bytesInBuf = static_cast<int>(yyextra->inBuf.curPos())-yyextra->inBufPos;
+  int bytesInBuf = static_cast<int>(yyextra->inBuf->curPos())-yyextra->inBufPos;
   int bytesToCopy = std::min(max_size,bytesInBuf);
-  memcpy(buf,yyextra->inBuf.data()+yyextra->inBufPos,bytesToCopy);
+  memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
   return bytesToCopy;
 }
@@ -1209,7 +1462,7 @@ static void replaceComment(yyscan_t yyscanner,int offset)
 void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileName)
 {
   yyscan_t yyscanner;
-  commentcnvYY_state extra(inBuf,outBuf);
+  commentcnvYY_state extra(&inBuf,outBuf);
   commentcnvYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
   commentcnvYYset_debug(Debug::isFlagSet(Debug::Lex_commentcnv)?1:0,yyscanner);
@@ -1276,8 +1529,8 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     yyextra->outBuf.at(yyextra->outBuf.curPos())='\0';
-    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
-                 "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf.data()
+    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s curPos=%zu\n"
+                 "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf.curPos(),yyextra->outBuf.data()
                 );
   }
   commentcnvYYlex_destroy(yyscanner);
