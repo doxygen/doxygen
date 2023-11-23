@@ -54,33 +54,33 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
         m_type(type), m_partitionName(partitionName) {}
 
     // --- Definition
-    virtual DefType definitionType() const override { return TypeModule; }
-    virtual CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Module; }
-    virtual QCString displayName(bool=TRUE) const override { return name(); }
-    virtual QCString getOutputFileBase() const override;
-    virtual QCString anchor() const override { return ""; }
-    virtual bool isLinkableInProject() const override { return isLinkable() && !isHidden() && !isReference(); }
-    virtual bool isLinkable() const override { return hasDocumentation(); }
-    virtual QCString qualifiedName() const override;
-    virtual void writeSummaryLinks(OutputList &ol) const override;
+    DefType definitionType() const override { return TypeModule; }
+    CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Module; }
+    QCString displayName(bool=TRUE) const override { return name(); }
+    QCString getOutputFileBase() const override;
+    QCString anchor() const override { return ""; }
+    bool isLinkableInProject() const override { return isLinkable() && !isHidden() && !isReference(); }
+    bool isLinkable() const override { return hasDocumentation(); }
+    QCString qualifiedName() const override;
+    void writeSummaryLinks(OutputList &ol) const override;
 
     // --- ModuleDef
-    virtual Type moduleType() const override { return m_type; }
-    virtual QCString partitionName() const override { return m_partitionName; }
-    virtual void writeDocumentation(OutputList &ol) override;
-    virtual bool isPrimaryInterface() const override { return m_type==Type::Interface && m_partitionName.isEmpty(); }
-    virtual MemberList *getMemberList(MemberListType lt) const override;
-    virtual const MemberLists &getMemberLists() const override { return m_memberLists; }
-    virtual const MemberGroupList &getMemberGroups() const override { return m_memberGroups; }
-    virtual const ClassLinkedRefMap &getClasses()  const override { return m_classes;  }
-    virtual const ConceptLinkedRefMap &getConcepts() const override { return m_concepts; }
-    virtual int countVisibleMembers() const override;
-    virtual FileDef *getFileDef() const override { return m_fileDef; }
-    virtual const ImportInfoMap &getImports() const override { return m_imports; }
-    virtual const ImportInfoMap &getExports() const override { return m_exportedModules; }
-    virtual const ModuleMap &partitions() const override { return m_partitions; }
-    virtual void writeTagFile(TextStream &t) const override;
-    virtual FileList getUsedFiles() const override;
+    Type moduleType() const override { return m_type; }
+    QCString partitionName() const override { return m_partitionName; }
+    void writeDocumentation(OutputList &ol) override;
+    bool isPrimaryInterface() const override { return m_type==Type::Interface && m_partitionName.isEmpty(); }
+    MemberList *getMemberList(MemberListType lt) const override;
+    const MemberLists &getMemberLists() const override { return m_memberLists; }
+    const MemberGroupList &getMemberGroups() const override { return m_memberGroups; }
+    const ClassLinkedRefMap &getClasses()  const override { return m_classes;  }
+    const ConceptLinkedRefMap &getConcepts() const override { return m_concepts; }
+    int countVisibleMembers() const override;
+    FileDef *getFileDef() const override { return m_fileDef; }
+    const ImportInfoMap &getImports() const override { return m_imports; }
+    const ImportInfoMap &getExports() const override { return m_exportedModules; }
+    const ModuleMap &partitions() const override { return m_partitions; }
+    void writeTagFile(TextStream &t) const override;
+    FileList getUsedFiles() const override;
 
     void writeExports(OutputList &ol,const QCString &title);
     void writeClassDeclarations(OutputList &ol,const QCString &title);

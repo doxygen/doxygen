@@ -59,294 +59,294 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
               Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData);
 
-    virtual DefType definitionType() const override        { return TypeMember; }
-    virtual       MemberDef *resolveAlias() override       { return this; }
-    virtual const MemberDef *resolveAlias() const override { return this; }
-    virtual CodeSymbolType codeSymbolType() const override;
-    virtual std::unique_ptr<MemberDef> deepCopy() const override;
-    virtual void moveTo(Definition *) override;
-    virtual QCString getOutputFileBase() const override;
-    virtual QCString getReference() const override;
-    virtual QCString anchor() const override;
-    virtual QCString declaration() const override;
-    virtual QCString definition() const override;
-    virtual QCString typeString() const override;
-    virtual QCString argsString() const override;
-    virtual QCString excpString() const override;
-    virtual QCString bitfieldString() const override;
-    virtual QCString extraTypeChars() const override;
-    virtual const QCString &initializer() const override;
-    virtual int initializerLines() const override;
-    virtual TypeSpecifier getMemberSpecifiers() const override;
-    virtual VhdlSpecifier getVhdlSpecifiers() const override;
-    virtual const MemberList *getSectionList(const Definition *) const override;
-    virtual QCString displayDefinition() const override;
-    virtual const ClassDef *getClassDef() const override;
-    virtual       ClassDef *getClassDef() override;
-    virtual const FileDef  *getFileDef() const override;
-    virtual       FileDef  *getFileDef() override;
-    virtual const NamespaceDef* getNamespaceDef() const override;
-    virtual       NamespaceDef* getNamespaceDef() override;
-    virtual const GroupDef *getGroupDef() const override;
-    virtual const ModuleDef *getModuleDef() const override;
-    virtual ClassDef *accessorClass() const override;
-    virtual QCString getReadAccessor() const override;
-    virtual QCString getWriteAccessor() const override;
-    virtual Grouping::GroupPri_t getGroupPri() const override;
-    virtual QCString getGroupFileName() const override;
-    virtual int getGroupStartLine() const override;
-    virtual bool getGroupHasDocs() const override;
-    virtual QCString qualifiedName() const override;
-    virtual QCString objCMethodName(bool localLink,bool showStatic) const override;
-    virtual Protection protection() const override;
-    virtual Specifier virtualness(int count=0) const override;
-    virtual MemberType memberType() const override;
-    virtual QCString memberTypeName() const override;
-    virtual bool isSignal() const override;
-    virtual bool isSlot() const override;
-    virtual bool isVariable() const override;
-    virtual bool isEnumerate() const override;
-    virtual bool isEnumValue() const override;
-    virtual bool isTypedef() const override;
-    virtual bool isSequence() const override;
-    virtual bool isDictionary() const override;
-    virtual bool isFunction() const override;
-    virtual bool isFunctionPtr() const override;
-    virtual bool isDefine() const override;
-    virtual bool isFriend() const override;
-    virtual bool isDCOP() const override;
-    virtual bool isProperty() const override;
-    virtual bool isEvent() const override;
-    virtual bool isRelated() const override;
-    virtual bool isForeign() const override;
-    virtual bool isStatic() const override;
-    virtual bool isInline() const override;
-    virtual bool isExplicit() const override;
-    virtual bool isMutable() const override;
-    virtual bool isGettable() const override;
-    virtual bool isPrivateGettable() const override;
-    virtual bool isProtectedGettable() const override;
-    virtual bool isSettable() const override;
-    virtual bool isPrivateSettable() const override;
-    virtual bool isProtectedSettable() const override;
-    virtual bool isReadable() const override;
-    virtual bool isWritable() const override;
-    virtual bool isAddable() const override;
-    virtual bool isRemovable() const override;
-    virtual bool isRaisable() const override;
-    virtual bool isFinal() const override;
-    virtual bool isAbstract() const override;
-    virtual bool isOverride() const override;
-    virtual bool isInitonly() const override;
-    virtual bool isOptional() const override;
-    virtual bool isRequired() const override;
-    virtual bool isNonAtomic() const override;
-    virtual bool isCopy() const override;
-    virtual bool isAssign() const override;
-    virtual bool isRetain() const override;
-    virtual bool isWeak() const override;
-    virtual bool isStrong() const override;
-    virtual bool isEnumStruct() const override;
-    virtual bool isUnretained() const override;
-    virtual bool isNew() const override;
-    virtual bool isSealed() const override;
-    virtual bool isImplementation() const override;
-    virtual bool isExternal() const override;
-    virtual bool isTypeAlias() const override;
-    virtual bool isDefault() const override;
-    virtual bool isDelete() const override;
-    virtual bool isNoExcept() const override;
-    virtual bool isAttribute() const override;
-    virtual bool isUNOProperty() const override;
-    virtual bool isReadonly() const override;
-    virtual bool isBound() const override;
-    virtual bool isConstrained() const override;
-    virtual bool isTransient() const override;
-    virtual bool isMaybeVoid() const override;
-    virtual bool isMaybeDefault() const override;
-    virtual bool isMaybeAmbiguous() const override;
-    virtual bool isPublished() const override;
-    virtual bool isTemplateSpecialization() const override;
-    virtual bool isObjCMethod() const override;
-    virtual bool isObjCProperty() const override;
-    virtual bool isCSharpProperty() const override;
-    virtual bool isConstructor() const override;
-    virtual bool isDestructor() const override;
-    virtual bool hasOneLineInitializer() const override;
-    virtual bool hasMultiLineInitializer() const override;
-    virtual bool isCallable() const override;
-    virtual bool isStrongEnumValue() const override;
-    virtual bool livesInsideEnum() const override;
-    virtual bool isSliceLocal() const override;
-    virtual bool isConstExpr() const override;
-    virtual int  numberOfFlowKeyWords() const override;
-    virtual bool isFriendToHide() const override;
-    virtual bool isNotFriend() const override;
-    virtual bool isFunctionOrSignalSlot() const override;
-    virtual bool isRelatedOrFriend() const override;
-    virtual bool isLinkableInProject() const override;
-    virtual bool isLinkable() const override;
-    virtual bool hasDocumentation() const override;
-    virtual bool isDeleted() const override;
-    virtual bool isBriefSectionVisible() const override;
-    virtual bool isDetailedSectionVisible(MemberListContainer container) const override;
-    virtual bool hasDetailedDescription() const override;
-    virtual bool isFriendClass() const override;
-    virtual bool isDocumentedFriendClass() const override;
-    virtual const MemberDef *reimplements() const override;
-    virtual const MemberVector &reimplementedBy() const override;
-    virtual bool isReimplementedBy(const ClassDef *cd) const override;
-    virtual ClassDef *relatedAlso() const override;
-    virtual bool hasDocumentedEnumValues() const override;
-    virtual const MemberDef *getAnonymousEnumType() const override;
-    virtual bool isDocsForDefinition() const override;
-    virtual const MemberDef *getEnumScope() const override;
-    virtual const MemberVector &enumFieldList() const override;
-    virtual void setEnumBaseType(const QCString &type) override;
-    virtual QCString enumBaseType() const override;
-    virtual bool hasExamples() const override;
-    virtual const ExampleList &getExamples() const override;
-    virtual bool isPrototype() const override;
-    virtual const ArgumentList &argumentList() const override;
-    virtual const ArgumentList &declArgumentList() const override;
-    virtual const ArgumentList &templateArguments() const override;
-    virtual const ArgumentLists &definitionTemplateParameterLists() const override;
-    virtual int getMemberGroupId() const override;
-    virtual MemberGroup *getMemberGroup() const override;
-    virtual bool fromAnonymousScope() const override;
-    virtual MemberDef *fromAnonymousMember() const override;
-    virtual bool hasCallGraph() const override;
-    virtual bool hasCallerGraph() const override;
-    virtual bool hasReferencesRelation() const override;
-    virtual bool hasReferencedByRelation() const override;
-    virtual bool hasInlineSource() const override;
-    virtual const MemberDef *templateMaster() const override;
-    virtual QCString getScopeString() const override;
-    virtual ClassDef *getClassDefOfAnonymousType() const override;
-    virtual bool isTypedefValCached() const override;
-    virtual const ClassDef *getCachedTypedefVal() const override;
-    virtual QCString getCachedTypedefTemplSpec() const override;
-    virtual QCString getCachedResolvedTypedef() const override;
-    virtual MemberDef *memberDefinition() const override;
-    virtual MemberDef *memberDeclaration() const override;
-    virtual const MemberDef *inheritsDocsFrom() const override;
-    virtual const MemberDef *getGroupAlias() const override;
-    virtual ClassDef *category() const override;
-    virtual const MemberDef *categoryRelation() const override;
-    virtual QCString displayName(bool=TRUE) const override;
-    virtual QCString getDeclType() const override;
-    virtual StringVector getLabels(const Definition *container) const override;
-    virtual const ArgumentList &typeConstraints() const override;
-    virtual QCString requiresClause() const override;
-    virtual QCString documentation() const override;
-    virtual QCString briefDescription(bool abbr=FALSE) const override;
-    virtual QCString fieldType() const override;
-    virtual bool isReference() const override;
-    virtual QCString getDeclFileName() const override;
-    virtual int getDeclLine() const override;
-    virtual int getDeclColumn() const override;
-    virtual void setMemberType(MemberType t) override;
-    virtual void setDefinition(const QCString &d) override;
-    virtual void setFileDef(FileDef *fd) override;
-    virtual void setAnchor() override;
-    virtual void setProtection(Protection p) override;
-    virtual void setMemberSpecifiers(TypeSpecifier s) override;
-    virtual void setVhdlSpecifiers(VhdlSpecifier s) override;
-    virtual void mergeMemberSpecifiers(TypeSpecifier s) override;
-    virtual void setInitializer(const QCString &i) override;
-    virtual void setBitfields(const QCString &s) override;
-    virtual void setMaxInitLines(int lines) override;
-    virtual void setMemberClass(ClassDef *cd) override;
-    virtual void setSectionList(const Definition *container,const MemberList *sl) override;
-    virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
+    DefType definitionType() const override        { return TypeMember; }
+          MemberDef *resolveAlias() override       { return this; }
+    const MemberDef *resolveAlias() const override { return this; }
+    CodeSymbolType codeSymbolType() const override;
+    std::unique_ptr<MemberDef> deepCopy() const override;
+    void moveTo(Definition *) override;
+    QCString getOutputFileBase() const override;
+    QCString getReference() const override;
+    QCString anchor() const override;
+    QCString declaration() const override;
+    QCString definition() const override;
+    QCString typeString() const override;
+    QCString argsString() const override;
+    QCString excpString() const override;
+    QCString bitfieldString() const override;
+    QCString extraTypeChars() const override;
+    const QCString &initializer() const override;
+    int initializerLines() const override;
+    TypeSpecifier getMemberSpecifiers() const override;
+    VhdlSpecifier getVhdlSpecifiers() const override;
+    const MemberList *getSectionList(const Definition *) const override;
+    QCString displayDefinition() const override;
+    const ClassDef *getClassDef() const override;
+          ClassDef *getClassDef() override;
+    const FileDef  *getFileDef() const override;
+          FileDef  *getFileDef() override;
+    const NamespaceDef* getNamespaceDef() const override;
+          NamespaceDef* getNamespaceDef() override;
+    const GroupDef *getGroupDef() const override;
+    const ModuleDef *getModuleDef() const override;
+    ClassDef *accessorClass() const override;
+    QCString getReadAccessor() const override;
+    QCString getWriteAccessor() const override;
+    Grouping::GroupPri_t getGroupPri() const override;
+    QCString getGroupFileName() const override;
+    int getGroupStartLine() const override;
+    bool getGroupHasDocs() const override;
+    QCString qualifiedName() const override;
+    QCString objCMethodName(bool localLink,bool showStatic) const override;
+    Protection protection() const override;
+    Specifier virtualness(int count=0) const override;
+    MemberType memberType() const override;
+    QCString memberTypeName() const override;
+    bool isSignal() const override;
+    bool isSlot() const override;
+    bool isVariable() const override;
+    bool isEnumerate() const override;
+    bool isEnumValue() const override;
+    bool isTypedef() const override;
+    bool isSequence() const override;
+    bool isDictionary() const override;
+    bool isFunction() const override;
+    bool isFunctionPtr() const override;
+    bool isDefine() const override;
+    bool isFriend() const override;
+    bool isDCOP() const override;
+    bool isProperty() const override;
+    bool isEvent() const override;
+    bool isRelated() const override;
+    bool isForeign() const override;
+    bool isStatic() const override;
+    bool isInline() const override;
+    bool isExplicit() const override;
+    bool isMutable() const override;
+    bool isGettable() const override;
+    bool isPrivateGettable() const override;
+    bool isProtectedGettable() const override;
+    bool isSettable() const override;
+    bool isPrivateSettable() const override;
+    bool isProtectedSettable() const override;
+    bool isReadable() const override;
+    bool isWritable() const override;
+    bool isAddable() const override;
+    bool isRemovable() const override;
+    bool isRaisable() const override;
+    bool isFinal() const override;
+    bool isAbstract() const override;
+    bool isOverride() const override;
+    bool isInitonly() const override;
+    bool isOptional() const override;
+    bool isRequired() const override;
+    bool isNonAtomic() const override;
+    bool isCopy() const override;
+    bool isAssign() const override;
+    bool isRetain() const override;
+    bool isWeak() const override;
+    bool isStrong() const override;
+    bool isEnumStruct() const override;
+    bool isUnretained() const override;
+    bool isNew() const override;
+    bool isSealed() const override;
+    bool isImplementation() const override;
+    bool isExternal() const override;
+    bool isTypeAlias() const override;
+    bool isDefault() const override;
+    bool isDelete() const override;
+    bool isNoExcept() const override;
+    bool isAttribute() const override;
+    bool isUNOProperty() const override;
+    bool isReadonly() const override;
+    bool isBound() const override;
+    bool isConstrained() const override;
+    bool isTransient() const override;
+    bool isMaybeVoid() const override;
+    bool isMaybeDefault() const override;
+    bool isMaybeAmbiguous() const override;
+    bool isPublished() const override;
+    bool isTemplateSpecialization() const override;
+    bool isObjCMethod() const override;
+    bool isObjCProperty() const override;
+    bool isCSharpProperty() const override;
+    bool isConstructor() const override;
+    bool isDestructor() const override;
+    bool hasOneLineInitializer() const override;
+    bool hasMultiLineInitializer() const override;
+    bool isCallable() const override;
+    bool isStrongEnumValue() const override;
+    bool livesInsideEnum() const override;
+    bool isSliceLocal() const override;
+    bool isConstExpr() const override;
+    int  numberOfFlowKeyWords() const override;
+    bool isFriendToHide() const override;
+    bool isNotFriend() const override;
+    bool isFunctionOrSignalSlot() const override;
+    bool isRelatedOrFriend() const override;
+    bool isLinkableInProject() const override;
+    bool isLinkable() const override;
+    bool hasDocumentation() const override;
+    bool isDeleted() const override;
+    bool isBriefSectionVisible() const override;
+    bool isDetailedSectionVisible(MemberListContainer container) const override;
+    bool hasDetailedDescription() const override;
+    bool isFriendClass() const override;
+    bool isDocumentedFriendClass() const override;
+    const MemberDef *reimplements() const override;
+    const MemberVector &reimplementedBy() const override;
+    bool isReimplementedBy(const ClassDef *cd) const override;
+    ClassDef *relatedAlso() const override;
+    bool hasDocumentedEnumValues() const override;
+    const MemberDef *getAnonymousEnumType() const override;
+    bool isDocsForDefinition() const override;
+    const MemberDef *getEnumScope() const override;
+    const MemberVector &enumFieldList() const override;
+    void setEnumBaseType(const QCString &type) override;
+    QCString enumBaseType() const override;
+    bool hasExamples() const override;
+    const ExampleList &getExamples() const override;
+    bool isPrototype() const override;
+    const ArgumentList &argumentList() const override;
+    const ArgumentList &declArgumentList() const override;
+    const ArgumentList &templateArguments() const override;
+    const ArgumentLists &definitionTemplateParameterLists() const override;
+    int getMemberGroupId() const override;
+    MemberGroup *getMemberGroup() const override;
+    bool fromAnonymousScope() const override;
+    MemberDef *fromAnonymousMember() const override;
+    bool hasCallGraph() const override;
+    bool hasCallerGraph() const override;
+    bool hasReferencesRelation() const override;
+    bool hasReferencedByRelation() const override;
+    bool hasInlineSource() const override;
+    const MemberDef *templateMaster() const override;
+    QCString getScopeString() const override;
+    ClassDef *getClassDefOfAnonymousType() const override;
+    bool isTypedefValCached() const override;
+    const ClassDef *getCachedTypedefVal() const override;
+    QCString getCachedTypedefTemplSpec() const override;
+    QCString getCachedResolvedTypedef() const override;
+    MemberDef *memberDefinition() const override;
+    MemberDef *memberDeclaration() const override;
+    const MemberDef *inheritsDocsFrom() const override;
+    const MemberDef *getGroupAlias() const override;
+    ClassDef *category() const override;
+    const MemberDef *categoryRelation() const override;
+    QCString displayName(bool=TRUE) const override;
+    QCString getDeclType() const override;
+    StringVector getLabels(const Definition *container) const override;
+    const ArgumentList &typeConstraints() const override;
+    QCString requiresClause() const override;
+    QCString documentation() const override;
+    QCString briefDescription(bool abbr=FALSE) const override;
+    QCString fieldType() const override;
+    bool isReference() const override;
+    QCString getDeclFileName() const override;
+    int getDeclLine() const override;
+    int getDeclColumn() const override;
+    void setMemberType(MemberType t) override;
+    void setDefinition(const QCString &d) override;
+    void setFileDef(FileDef *fd) override;
+    void setAnchor() override;
+    void setProtection(Protection p) override;
+    void setMemberSpecifiers(TypeSpecifier s) override;
+    void setVhdlSpecifiers(VhdlSpecifier s) override;
+    void mergeMemberSpecifiers(TypeSpecifier s) override;
+    void setInitializer(const QCString &i) override;
+    void setBitfields(const QCString &s) override;
+    void setMaxInitLines(int lines) override;
+    void setMemberClass(ClassDef *cd) override;
+    void setSectionList(const Definition *container,const MemberList *sl) override;
+    void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0) override;
-    virtual void setReadAccessor(const QCString &r) override;
-    virtual void setWriteAccessor(const QCString &w) override;
-    virtual void setTemplateSpecialization(bool b) override;
-    virtual void makeRelated() override;
-    virtual void makeForeign() override;
-    virtual void setInheritsDocsFrom(const MemberDef *md) override;
-    virtual void setTagInfo(const TagInfo *i) override;
-    virtual void setArgsString(const QCString &as) override;
-    virtual void setReimplements(MemberDef *md) override;
-    virtual void insertReimplementedBy(MemberDef *md) override;
-    virtual void setRelatedAlso(ClassDef *cd) override;
-    virtual void insertEnumField(MemberDef *md) override;
-    virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE) override;
-    virtual void setEnumClassScope(ClassDef *cd) override;
-    virtual void setDocumentedEnumValues(bool value) override;
-    virtual void setAnonymousEnumType(const MemberDef *md) override;
-    virtual bool addExample(const QCString &anchor,const QCString &name,const QCString &file) override;
-    virtual void setPrototype(bool p,const QCString &df,int line, int column) override;
-    virtual void setExplicitExternal(bool b,const QCString &df,int line,int column) override;
-    virtual void setDeclFile(const QCString &df,int line,int column) override;
-    virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) override;
-    virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) override;
-    virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) override;
-    virtual void setTypeConstraints(const ArgumentList &al) override;
-    virtual void setType(const QCString &t) override;
-    virtual void setAccessorType(ClassDef *cd,const QCString &t) override;
-    virtual void setNamespace(NamespaceDef *nd) override;
-    virtual void setMemberGroup(MemberGroup *grp) override;
-    virtual void setMemberGroupId(int id) override;
-    virtual void makeImplementationDetail() override;
-    virtual void setFromAnonymousScope(bool b) override;
-    virtual void setFromAnonymousMember(MemberDef *m) override;
-    virtual void enableCallGraph(bool e) override;
-    virtual void mergeEnableCallGraph(bool other) override;
-    virtual void enableCallerGraph(bool e) override;
-    virtual void mergeEnableCallerGraph(bool other) override;
-    virtual void enableReferencedByRelation(bool e) override;
-    virtual void mergeEnableReferencedByRelation(bool other) override;
-    virtual void enableReferencesRelation(bool e) override;
-    virtual void mergeEnableReferencesRelation(bool other) override;
-    virtual void enableInlineSource(bool e) override;
-    virtual void mergeEnableInlineSource(bool other) override;
-    virtual void setTemplateMaster(MemberDef *mt) override;
-    virtual void addListReference(Definition *d) override;
-    virtual void setDocsForDefinition(bool b) override;
-    virtual void setGroupAlias(const MemberDef *md) override;
-    virtual void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) override;
-    virtual void invalidateTypedefValCache() override;
-    virtual void invalidateCachedArgumentTypes() override;
-    virtual void setMemberDefinition(MemberDef *md) override;
-    virtual void setMemberDeclaration(MemberDef *md) override;
-    virtual void copyArgumentNames(const MemberDef *bmd) override;
-    virtual void setCategory(ClassDef *) override;
-    virtual void setCategoryRelation(const MemberDef *) override;
-    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) override;
-    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) override;
-    virtual void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine) override;
-    virtual void setHidden(bool b) override;
-    virtual void setRequiresClause(const QCString &req) override;
-    virtual void incrementFlowKeyWordCount() override;
-    virtual void writeDeclaration(OutputList &ol,
+    void setReadAccessor(const QCString &r) override;
+    void setWriteAccessor(const QCString &w) override;
+    void setTemplateSpecialization(bool b) override;
+    void makeRelated() override;
+    void makeForeign() override;
+    void setInheritsDocsFrom(const MemberDef *md) override;
+    void setTagInfo(const TagInfo *i) override;
+    void setArgsString(const QCString &as) override;
+    void setReimplements(MemberDef *md) override;
+    void insertReimplementedBy(MemberDef *md) override;
+    void setRelatedAlso(ClassDef *cd) override;
+    void insertEnumField(MemberDef *md) override;
+    void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE) override;
+    void setEnumClassScope(ClassDef *cd) override;
+    void setDocumentedEnumValues(bool value) override;
+    void setAnonymousEnumType(const MemberDef *md) override;
+    bool addExample(const QCString &anchor,const QCString &name,const QCString &file) override;
+    void setPrototype(bool p,const QCString &df,int line, int column) override;
+    void setExplicitExternal(bool b,const QCString &df,int line,int column) override;
+    void setDeclFile(const QCString &df,int line,int column) override;
+    void moveArgumentList(std::unique_ptr<ArgumentList> al) override;
+    void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) override;
+    void setDefinitionTemplateParameterLists(const ArgumentLists &lists) override;
+    void setTypeConstraints(const ArgumentList &al) override;
+    void setType(const QCString &t) override;
+    void setAccessorType(ClassDef *cd,const QCString &t) override;
+    void setNamespace(NamespaceDef *nd) override;
+    void setMemberGroup(MemberGroup *grp) override;
+    void setMemberGroupId(int id) override;
+    void makeImplementationDetail() override;
+    void setFromAnonymousScope(bool b) override;
+    void setFromAnonymousMember(MemberDef *m) override;
+    void enableCallGraph(bool e) override;
+    void mergeEnableCallGraph(bool other) override;
+    void enableCallerGraph(bool e) override;
+    void mergeEnableCallerGraph(bool other) override;
+    void enableReferencedByRelation(bool e) override;
+    void mergeEnableReferencedByRelation(bool other) override;
+    void enableReferencesRelation(bool e) override;
+    void mergeEnableReferencesRelation(bool other) override;
+    void enableInlineSource(bool e) override;
+    void mergeEnableInlineSource(bool other) override;
+    void setTemplateMaster(MemberDef *mt) override;
+    void addListReference(Definition *d) override;
+    void setDocsForDefinition(bool b) override;
+    void setGroupAlias(const MemberDef *md) override;
+    void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) override;
+    void invalidateTypedefValCache() override;
+    void invalidateCachedArgumentTypes() override;
+    void setMemberDefinition(MemberDef *md) override;
+    void setMemberDeclaration(MemberDef *md) override;
+    void copyArgumentNames(const MemberDef *bmd) override;
+    void setCategory(ClassDef *) override;
+    void setCategoryRelation(const MemberDef *) override;
+    void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) override;
+    void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) override;
+    void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine) override;
+    void setHidden(bool b) override;
+    void setRequiresClause(const QCString &req) override;
+    void incrementFlowKeyWordCount() override;
+    void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                    bool inGroup, int indentLevel,const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const override;
-    virtual void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
+    void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
                             const QCString &scopeName,const Definition *container,
                             bool inGroup,bool showEnumValues=FALSE,bool
                             showInline=FALSE) const override;
-    virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const override;
-    virtual void writeEnumDeclaration(OutputList &typeDecl,
+    void writeMemberDocSimple(OutputList &ol,const Definition *container) const override;
+    void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const override;
-    virtual void writeTagFile(TextStream &,bool useQualifiedName,bool showNamespaceMembers) const override;
-    virtual void warnIfUndocumented() const override;
-    virtual void warnIfUndocumentedParams() const override;
-    virtual bool visibleInIndex() const override;
-    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const override;
-    virtual std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
+    void writeTagFile(TextStream &,bool useQualifiedName,bool showNamespaceMembers) const override;
+    void warnIfUndocumented() const override;
+    void warnIfUndocumentedParams() const override;
+    bool visibleInIndex() const override;
+    void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const override;
+    std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const override;
-    virtual void findSectionsInDocumentation() override;
-    virtual void writeLink(OutputList &ol,
+    void findSectionsInDocumentation() override;
+    void writeLink(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                    bool onlyText=FALSE) const override;
-    virtual void resolveUnnamedParameters(const MemberDef *md) override;
-    virtual void addQualifiers(const StringVector &qualifiers) override;
-    virtual StringVector getQualifiers() const override;
-    virtual ClassDefMutable *getClassDefMutable() override;
-    virtual void setModuleDef(ModuleDef *mod) override;
+    void resolveUnnamedParameters(const MemberDef *md) override;
+    void addQualifiers(const StringVector &qualifiers) override;
+    StringVector getQualifiers() const override;
+    ClassDefMutable *getClassDefMutable() override;
+    void setModuleDef(ModuleDef *mod) override;
 
   private:
     void _computeLinkableInProject();
@@ -525,413 +525,413 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
   public:
     MemberDefAliasImpl(const Definition *newScope,const MemberDef *md)
     : DefinitionAliasMixin(newScope,md), m_memberGroup(0) { init(); }
-    virtual ~MemberDefAliasImpl() { deinit(); }
-    virtual DefType definitionType() const { return TypeMember; }
+    ~MemberDefAliasImpl() { deinit(); }
+    DefType definitionType() const override { return TypeMember; }
 
     const MemberDef *getMdAlias() const           { return toMemberDef(getAlias()); }
           MemberDef *getMdAlias()                 { return toMemberDef(const_cast<Definition*>(getAlias())); }
-    virtual       MemberDef *resolveAlias()       { return const_cast<MemberDef*>(getMdAlias()); }
-    virtual const MemberDef *resolveAlias() const { return getMdAlias(); }
+          MemberDef *resolveAlias()       { return const_cast<MemberDef*>(getMdAlias()); }
+    const MemberDef *resolveAlias() const { return getMdAlias(); }
 
-    virtual std::unique_ptr<MemberDef> deepCopy() const  {
+    std::unique_ptr<MemberDef> deepCopy() const override  {
       return createMemberDefAlias(getScope(),getMdAlias());
     }
-    virtual void moveTo(Definition *) {}
+    void moveTo(Definition *) override {}
 
-    virtual const QCString &name() const
+    const QCString &name() const override
     { return getMdAlias()->name(); }
-    virtual CodeSymbolType codeSymbolType() const
+    CodeSymbolType codeSymbolType() const override
     { return getMdAlias()->codeSymbolType(); }
-    virtual QCString getOutputFileBase() const
+    QCString getOutputFileBase() const override
     { return getMdAlias()->getOutputFileBase(); }
-    virtual QCString getReference() const
+    QCString getReference() const override
     { return getMdAlias()->getReference(); }
-    virtual QCString anchor() const
+    QCString anchor() const override
     { return getMdAlias()->anchor(); }
-    virtual QCString declaration() const
+    QCString declaration() const override
     { return getMdAlias()->declaration(); }
-    virtual QCString definition() const
+    QCString definition() const override
     { return getMdAlias()->definition(); }
-    virtual QCString typeString() const
+    QCString typeString() const override
     { return getMdAlias()->typeString(); }
-    virtual QCString argsString() const
+    QCString argsString() const override
     { return getMdAlias()->argsString(); }
-    virtual QCString excpString() const
+    QCString excpString() const override
     { return getMdAlias()->excpString(); }
-    virtual QCString bitfieldString() const
+    QCString bitfieldString() const override
     { return getMdAlias()->bitfieldString(); }
-    virtual QCString extraTypeChars() const
+    QCString extraTypeChars() const override
     { return getMdAlias()->extraTypeChars(); }
-    virtual const QCString &initializer() const
+    const QCString &initializer() const override
     { return getMdAlias()->initializer(); }
-    virtual int initializerLines() const
+    int initializerLines() const override
     { return getMdAlias()->initializerLines(); }
-    virtual TypeSpecifier getMemberSpecifiers() const
+    TypeSpecifier getMemberSpecifiers() const override
     { return getMdAlias()->getMemberSpecifiers(); }
-    virtual VhdlSpecifier getVhdlSpecifiers() const
+    VhdlSpecifier getVhdlSpecifiers() const override
     { return getMdAlias()->getVhdlSpecifiers(); }
-    virtual const MemberList *getSectionList(const Definition *container) const
+    const MemberList *getSectionList(const Definition *container) const override
     { return getMdAlias()->getSectionList(container); }
-    virtual QCString displayDefinition() const
+    QCString displayDefinition() const override
     { return getMdAlias()->displayDefinition(); }
 
-    virtual const ClassDef *getClassDef() const
+    const ClassDef *getClassDef() const override
     { return getMdAlias()->getClassDef(); }
-    virtual       ClassDef *getClassDef()
+          ClassDef *getClassDef() override
     { return getMdAlias()->getClassDef(); }
 
-    virtual const FileDef *getFileDef() const
+    const FileDef *getFileDef() const override
     { return getMdAlias()->getFileDef(); }
-    virtual       FileDef *getFileDef()
+          FileDef *getFileDef() override
     { return getMdAlias()->getFileDef(); }
 
-    virtual const ModuleDef *getModuleDef() const
+    const ModuleDef *getModuleDef() const override
     { return getMdAlias()->getModuleDef(); }
 
-    virtual const NamespaceDef* getNamespaceDef() const
+    const NamespaceDef* getNamespaceDef() const override
     { return getMdAlias()->getNamespaceDef(); }
-    virtual       NamespaceDef* getNamespaceDef()
+          NamespaceDef* getNamespaceDef() override
     { return getMdAlias()->getNamespaceDef(); }
 
-    virtual const ClassDef *accessorClass() const
+    const ClassDef *accessorClass() const override
     { return getMdAlias()->accessorClass(); }
-    virtual QCString getReadAccessor() const
+    QCString getReadAccessor() const override
     { return getMdAlias()->getReadAccessor(); }
-    virtual QCString getWriteAccessor() const
+    QCString getWriteAccessor() const override
     { return getMdAlias()->getWriteAccessor(); }
-    virtual const GroupDef *getGroupDef() const
+    const GroupDef *getGroupDef() const override
     { return getMdAlias()->getGroupDef(); }
-    virtual Grouping::GroupPri_t getGroupPri() const
+    Grouping::GroupPri_t getGroupPri() const override
     { return getMdAlias()->getGroupPri(); }
-    virtual QCString getGroupFileName() const
+    QCString getGroupFileName() const override
     { return getMdAlias()->getGroupFileName(); }
-    virtual int getGroupStartLine() const
+    int getGroupStartLine() const override
     { return getMdAlias()->getGroupStartLine(); }
-    virtual bool getGroupHasDocs() const
+    bool getGroupHasDocs() const override
     { return getMdAlias()->getGroupHasDocs(); }
-    virtual QCString qualifiedName() const
+    QCString qualifiedName() const override
     { return getMdAlias()->qualifiedName(); }
-    virtual QCString objCMethodName(bool localLink,bool showStatic) const
+    QCString objCMethodName(bool localLink,bool showStatic) const override
     { return getMdAlias()->objCMethodName(localLink,showStatic); }
-    virtual Protection protection() const
+    Protection protection() const override
     { return getMdAlias()->protection(); }
-    virtual Specifier virtualness(int /* count */) const
+    Specifier virtualness(int /* count */) const override
     { return getMdAlias()->virtualness(); }
-    virtual MemberType memberType() const
+    MemberType memberType() const override
     { return getMdAlias()->memberType(); }
-    virtual QCString memberTypeName() const
+    QCString memberTypeName() const override
     { return getMdAlias()->memberTypeName(); }
-    virtual bool isSignal() const
+    bool isSignal() const override
     { return getMdAlias()->isSignal(); }
-    virtual bool isSlot() const
+    bool isSlot() const override
     { return getMdAlias()->isSlot(); }
-    virtual bool isVariable() const
+    bool isVariable() const override
     { return getMdAlias()->isVariable(); }
-    virtual bool isEnumerate() const
+    bool isEnumerate() const override
     { return getMdAlias()->isEnumerate(); }
-    virtual bool isEnumValue() const
+    bool isEnumValue() const override
     { return getMdAlias()->isEnumValue(); }
-    virtual bool isTypedef() const
+    bool isTypedef() const override
     { return getMdAlias()->isTypedef(); }
-    virtual bool isSequence() const
+    bool isSequence() const override
     { return getMdAlias()->isSequence(); }
-    virtual bool isDictionary() const
+    bool isDictionary() const override
     { return getMdAlias()->isDictionary(); }
-    virtual bool isFunction() const
+    bool isFunction() const override
     { return getMdAlias()->isFunction(); }
-    virtual bool isFunctionPtr() const
+    bool isFunctionPtr() const override
     { return getMdAlias()->isFunctionPtr(); }
-    virtual bool isDefine() const
+    bool isDefine() const override
     { return getMdAlias()->isDefine(); }
-    virtual bool isFriend() const
+    bool isFriend() const override
     { return getMdAlias()->isFriend(); }
-    virtual bool isDCOP() const
+    bool isDCOP() const override
     { return getMdAlias()->isDCOP(); }
-    virtual bool isProperty() const
+    bool isProperty() const override
     { return getMdAlias()->isProperty(); }
-    virtual bool isEvent() const
+    bool isEvent() const override
     { return getMdAlias()->isEvent(); }
-    virtual bool isRelated() const
+    bool isRelated() const override
     { return getMdAlias()->isRelated(); }
-    virtual bool isForeign() const
+    bool isForeign() const override
     { return getMdAlias()->isForeign(); }
-    virtual bool isStatic() const
+    bool isStatic() const override
     { return getMdAlias()->isStatic(); }
-    virtual bool isInline() const
+    bool isInline() const override
     { return getMdAlias()->isInline(); }
-    virtual bool isExplicit() const
+    bool isExplicit() const override
     { return getMdAlias()->isExplicit(); }
-    virtual bool isMutable() const
+    bool isMutable() const override
     { return getMdAlias()->isMutable(); }
-    virtual bool isGettable() const
+    bool isGettable() const override
     { return getMdAlias()->isGettable(); }
-    virtual bool isPrivateGettable() const
+    bool isPrivateGettable() const override
     { return getMdAlias()->isPrivateGettable(); }
-    virtual bool isProtectedGettable() const
+    bool isProtectedGettable() const override
     { return getMdAlias()->isProtectedGettable(); }
-    virtual bool isSettable() const
+    bool isSettable() const override
     { return getMdAlias()->isSettable(); }
-    virtual bool isPrivateSettable() const
+    bool isPrivateSettable() const override
     { return getMdAlias()->isPrivateSettable(); }
-    virtual bool isProtectedSettable() const
+    bool isProtectedSettable() const override
     { return getMdAlias()->isProtectedSettable(); }
-    virtual bool isReadable() const
+    bool isReadable() const override
     { return getMdAlias()->isReadable(); }
-    virtual bool isWritable() const
+    bool isWritable() const override
     { return getMdAlias()->isWritable(); }
-    virtual bool isAddable() const
+    bool isAddable() const override
     { return getMdAlias()->isAddable(); }
-    virtual bool isRemovable() const
+    bool isRemovable() const override
     { return getMdAlias()->isRemovable(); }
-    virtual bool isRaisable() const
+    bool isRaisable() const override
     { return getMdAlias()->isRaisable(); }
-    virtual bool isFinal() const
+    bool isFinal() const override
     { return getMdAlias()->isFinal(); }
-    virtual bool isAbstract() const
+    bool isAbstract() const override
     { return getMdAlias()->isAbstract(); }
-    virtual bool isOverride() const
+    bool isOverride() const override
     { return getMdAlias()->isOverride(); }
-    virtual bool isInitonly() const
+    bool isInitonly() const override
     { return getMdAlias()->isInitonly(); }
-    virtual bool isOptional() const
+    bool isOptional() const override
     { return getMdAlias()->isOptional(); }
-    virtual bool isRequired() const
+    bool isRequired() const override
     { return getMdAlias()->isRequired(); }
-    virtual bool isNonAtomic() const
+    bool isNonAtomic() const override
     { return getMdAlias()->isNonAtomic(); }
-    virtual bool isCopy() const
+    bool isCopy() const override
     { return getMdAlias()->isCopy(); }
-    virtual bool isAssign() const
+    bool isAssign() const override
     { return getMdAlias()->isAssign(); }
-    virtual bool isRetain() const
+    bool isRetain() const override
     { return getMdAlias()->isRetain(); }
-    virtual bool isWeak() const
+    bool isWeak() const override
     { return getMdAlias()->isWeak(); }
-    virtual bool isStrong() const
+    bool isStrong() const override
     { return getMdAlias()->isStrong(); }
-    virtual bool isEnumStruct() const
+    bool isEnumStruct() const override
     { return getMdAlias()->isEnumStruct(); }
-    virtual bool isUnretained() const
+    bool isUnretained() const override
     { return getMdAlias()->isUnretained(); }
-    virtual bool isNew() const
+    bool isNew() const override
     { return getMdAlias()->isNew(); }
-    virtual bool isSealed() const
+    bool isSealed() const override
     { return getMdAlias()->isSealed(); }
-    virtual bool isImplementation() const
+    bool isImplementation() const override
     { return getMdAlias()->isImplementation(); }
-    virtual bool isExternal() const
+    bool isExternal() const override
     { return getMdAlias()->isExternal(); }
-    virtual bool isTypeAlias() const
+    bool isTypeAlias() const override
     { return getMdAlias()->isTypeAlias(); }
-    virtual bool isDefault() const
+    bool isDefault() const override
     { return getMdAlias()->isDefault(); }
-    virtual bool isDelete() const
+    bool isDelete() const override
     { return getMdAlias()->isDelete(); }
-    virtual bool isNoExcept() const
+    bool isNoExcept() const override
     { return getMdAlias()->isNoExcept(); }
-    virtual bool isAttribute() const
+    bool isAttribute() const override
     { return getMdAlias()->isAttribute(); }
-    virtual bool isUNOProperty() const
+    bool isUNOProperty() const override
     { return getMdAlias()->isUNOProperty(); }
-    virtual bool isReadonly() const
+    bool isReadonly() const override
     { return getMdAlias()->isReadable(); }
-    virtual bool isBound() const
+    bool isBound() const override
     { return getMdAlias()->isBound(); }
-    virtual bool isConstrained() const
+    bool isConstrained() const override
     { return getMdAlias()->isConstrained(); }
-    virtual bool isTransient() const
+    bool isTransient() const override
     { return getMdAlias()->isTransient(); }
-    virtual bool isMaybeVoid() const
+    bool isMaybeVoid() const override
     { return getMdAlias()->isMaybeVoid(); }
-    virtual bool isMaybeDefault() const
+    bool isMaybeDefault() const override
     { return getMdAlias()->isMaybeDefault(); }
-    virtual bool isMaybeAmbiguous() const
+    bool isMaybeAmbiguous() const override
     { return getMdAlias()->isMaybeAmbiguous(); }
-    virtual bool isPublished() const
+    bool isPublished() const override
     { return getMdAlias()->isPublished(); }
-    virtual bool isTemplateSpecialization() const
+    bool isTemplateSpecialization() const override
     { return getMdAlias()->isTemplateSpecialization(); }
-    virtual bool isObjCMethod() const
+    bool isObjCMethod() const override
     { return getMdAlias()->isObjCMethod(); }
-    virtual bool isObjCProperty() const
+    bool isObjCProperty() const override
     { return getMdAlias()->isObjCProperty(); }
-    virtual bool isCSharpProperty() const
+    bool isCSharpProperty() const override
     { return getMdAlias()->isCSharpProperty(); }
-    virtual bool isConstructor() const
+    bool isConstructor() const override
     { return getMdAlias()->isConstructor(); }
-    virtual bool isDestructor() const
+    bool isDestructor() const override
     { return getMdAlias()->isDestructor(); }
-    virtual bool hasOneLineInitializer() const
+    bool hasOneLineInitializer() const override
     { return getMdAlias()->hasOneLineInitializer(); }
-    virtual bool hasMultiLineInitializer() const
+    bool hasMultiLineInitializer() const override
     { return getMdAlias()->hasMultiLineInitializer(); }
-    virtual bool isCallable() const
+    bool isCallable() const override
     { return getMdAlias()->isCallable(); }
-    virtual bool isStrongEnumValue() const
+    bool isStrongEnumValue() const override
     { return getMdAlias()->isStrongEnumValue(); }
-    virtual bool livesInsideEnum() const
+    bool livesInsideEnum() const override
     { return getMdAlias()->livesInsideEnum(); }
-    virtual bool isSliceLocal() const
+    bool isSliceLocal() const override
     { return getMdAlias()->isSliceLocal(); }
-    virtual bool isConstExpr() const
+    bool isConstExpr() const override
     { return getMdAlias()->isConstExpr(); }
-    virtual int  numberOfFlowKeyWords() const
+    int  numberOfFlowKeyWords() const override
     { return getMdAlias()->numberOfFlowKeyWords(); }
-    virtual bool isFriendToHide() const
+    bool isFriendToHide() const override
     { return getMdAlias()->isFriendToHide(); }
-    virtual bool isNotFriend() const
+    bool isNotFriend() const override
     { return getMdAlias()->isNotFriend(); }
-    virtual bool isFunctionOrSignalSlot() const
+    bool isFunctionOrSignalSlot() const override
     { return getMdAlias()->isFunctionOrSignalSlot(); }
-    virtual bool isRelatedOrFriend() const
+    bool isRelatedOrFriend() const override
     { return getMdAlias()->isRelatedOrFriend(); }
-    virtual bool isLinkableInProject() const
+    bool isLinkableInProject() const override
     { return getMdAlias()->isLinkableInProject(); }
-    virtual bool isLinkable() const
+    bool isLinkable() const override
     { return getMdAlias()->isLinkable(); }
-    virtual bool hasDocumentation() const
+    bool hasDocumentation() const override
     { return getMdAlias()->hasDocumentation(); }
-    virtual bool isDeleted() const
+    bool isDeleted() const override
     { return getMdAlias()->isDeleted(); }
-    virtual bool isBriefSectionVisible() const
+    bool isBriefSectionVisible() const override
     { return getMdAlias()->isBriefSectionVisible(); }
-    virtual bool isDetailedSectionVisible(MemberListContainer container) const
+    bool isDetailedSectionVisible(MemberListContainer container) const override
     { return getMdAlias()->isDetailedSectionVisible(container); }
-    virtual bool hasDetailedDescription() const
+    bool hasDetailedDescription() const override
     { return getMdAlias()->hasDetailedDescription(); }
-    virtual bool isFriendClass() const
+    bool isFriendClass() const override
     { return getMdAlias()->isFriendClass(); }
-    virtual bool isDocumentedFriendClass() const
+    bool isDocumentedFriendClass() const override
     { return getMdAlias()->isDocumentedFriendClass(); }
-    virtual const MemberDef *reimplements() const
+    const MemberDef *reimplements() const override
     { return getMdAlias()->reimplements(); }
-    virtual const MemberVector &reimplementedBy() const
+    const MemberVector &reimplementedBy() const override
     { return getMdAlias()->reimplementedBy(); }
-    virtual bool isReimplementedBy(const ClassDef *cd) const
+    bool isReimplementedBy(const ClassDef *cd) const override
     { return getMdAlias()->isReimplementedBy(cd); }
-    virtual ClassDef *relatedAlso() const
+    ClassDef *relatedAlso() const override
     { return getMdAlias()->relatedAlso(); }
-    virtual bool hasDocumentedEnumValues() const
+    bool hasDocumentedEnumValues() const override
     { return getMdAlias()->hasDocumentedEnumValues(); }
-    virtual const MemberDef *getAnonymousEnumType() const
+    const MemberDef *getAnonymousEnumType() const override
     { return getMdAlias()->getAnonymousEnumType(); }
-    virtual bool isDocsForDefinition() const
+    bool isDocsForDefinition() const override
     { return getMdAlias()->isDocsForDefinition(); }
-    virtual const MemberDef *getEnumScope() const
+    const MemberDef *getEnumScope() const override
     { return getMdAlias()->getEnumScope(); }
-    virtual const MemberVector &enumFieldList() const
+    const MemberVector &enumFieldList() const override
     { return getMdAlias()->enumFieldList(); }
-    virtual QCString enumBaseType() const
+    QCString enumBaseType() const override
     { return getMdAlias()->enumBaseType(); }
-    virtual bool hasExamples() const
+    bool hasExamples() const override
     { return getMdAlias()->hasExamples(); }
-    virtual const ExampleList &getExamples() const
+    const ExampleList &getExamples() const override
     { return getMdAlias()->getExamples(); }
-    virtual bool isPrototype() const
+    bool isPrototype() const override
     { return getMdAlias()->isPrototype(); }
-    virtual const ArgumentList &argumentList() const
+    const ArgumentList &argumentList() const override
     { return getMdAlias()->argumentList(); }
-    virtual const ArgumentList &declArgumentList() const
+    const ArgumentList &declArgumentList() const override
     { return getMdAlias()->declArgumentList(); }
-    virtual const ArgumentList &templateArguments() const
+    const ArgumentList &templateArguments() const override
     { return getMdAlias()->templateArguments(); }
-    virtual const ArgumentLists &definitionTemplateParameterLists() const
+    const ArgumentLists &definitionTemplateParameterLists() const override
     { return getMdAlias()->definitionTemplateParameterLists(); }
-    virtual int getMemberGroupId() const
+    int getMemberGroupId() const override
     { return getMdAlias()->getMemberGroupId(); }
-    virtual MemberGroup *getMemberGroup() const
+    MemberGroup *getMemberGroup() const override
     { return m_memberGroup; }
-    virtual bool fromAnonymousScope() const
+    bool fromAnonymousScope() const override
     { return getMdAlias()->fromAnonymousScope(); }
-    virtual MemberDef *fromAnonymousMember() const
+    MemberDef *fromAnonymousMember() const override
     { return getMdAlias()->fromAnonymousMember(); }
-    virtual bool hasCallGraph() const
+    bool hasCallGraph() const override
     { return getMdAlias()->hasCallGraph(); }
-    virtual bool hasCallerGraph() const
+    bool hasCallerGraph() const override
     { return getMdAlias()->hasCallerGraph(); }
-    virtual bool hasReferencesRelation() const
+    bool hasReferencesRelation() const override
     { return getMdAlias()->hasReferencesRelation(); }
-    virtual bool hasReferencedByRelation() const
+    bool hasReferencedByRelation() const override
     { return getMdAlias()->hasReferencedByRelation(); }
-    virtual bool hasInlineSource() const
+    bool hasInlineSource() const override
     { return getMdAlias()->hasInlineSource(); }
-    virtual StringVector getQualifiers() const
+    StringVector getQualifiers() const override
     { return getMdAlias()->getQualifiers(); }
-    virtual const MemberDef *templateMaster() const
+    const MemberDef *templateMaster() const override
     { return getMdAlias()->templateMaster(); }
-    virtual QCString getScopeString() const
+    QCString getScopeString() const override
     { return getMdAlias()->getScopeString(); }
-    virtual ClassDef *getClassDefOfAnonymousType() const
+    ClassDef *getClassDefOfAnonymousType() const override
     { return getMdAlias()->getClassDefOfAnonymousType(); }
-    virtual bool isTypedefValCached() const
+    bool isTypedefValCached() const override
     { return getMdAlias()->isTypedefValCached(); }
-    virtual const ClassDef *getCachedTypedefVal() const
+    const ClassDef *getCachedTypedefVal() const override
     { return getMdAlias()->getCachedTypedefVal(); }
-    virtual QCString getCachedTypedefTemplSpec() const
+    QCString getCachedTypedefTemplSpec() const override
     { return getMdAlias()->getCachedTypedefTemplSpec(); }
-    virtual QCString getCachedResolvedTypedef() const
+    QCString getCachedResolvedTypedef() const override
     { return getMdAlias()->getCachedResolvedTypedef(); }
-    virtual MemberDef *memberDefinition() const
+    MemberDef *memberDefinition() const override
     { return getMdAlias()->memberDefinition(); }
-    virtual MemberDef *memberDeclaration() const
+    MemberDef *memberDeclaration() const override
     { return getMdAlias()->memberDeclaration(); }
-    virtual const MemberDef *inheritsDocsFrom() const
+    const MemberDef *inheritsDocsFrom() const override
     { return getMdAlias()->inheritsDocsFrom(); }
-    virtual const MemberDef *getGroupAlias() const
+    const MemberDef *getGroupAlias() const override
     { return getMdAlias()->getGroupAlias(); }
-    virtual ClassDef *category() const
+    ClassDef *category() const override
     { return getMdAlias()->category(); }
-    virtual const MemberDef *categoryRelation() const
+    const MemberDef *categoryRelation() const override
     { return getMdAlias()->categoryRelation(); }
-    virtual QCString displayName(bool b=TRUE) const
+    QCString displayName(bool b=TRUE) const override
     { return getMdAlias()->displayName(b); }
-    virtual QCString getDeclType() const
+    QCString getDeclType() const override
     { return getMdAlias()->getDeclType(); }
-    virtual StringVector getLabels(const Definition *container) const
+    StringVector getLabels(const Definition *container) const override
     { return getMdAlias()->getLabels(container); }
-    virtual const ArgumentList &typeConstraints() const
+    const ArgumentList &typeConstraints() const override
     { return getMdAlias()->typeConstraints(); }
-    virtual QCString documentation() const
+    QCString documentation() const override
     { return getMdAlias()->documentation(); }
-    virtual QCString briefDescription(bool /* abbr=FALSE */) const
+    QCString briefDescription(bool /* abbr=FALSE */) const override
     { return getMdAlias()->briefDescription(); }
-    virtual QCString fieldType() const
+    QCString fieldType() const override
     { return getMdAlias()->fieldType(); }
-    virtual bool isReference() const
+    bool isReference() const override
     { return getMdAlias()->isReference(); }
-    virtual QCString getDeclFileName() const
+    QCString getDeclFileName() const override
     { return getMdAlias()->getDeclFileName(); }
-    virtual int getDeclLine() const
+    int getDeclLine() const override
     { return getMdAlias()->getDeclLine(); }
-    virtual int getDeclColumn() const
+    int getDeclColumn() const override
     { return getMdAlias()->getDeclColumn(); }
-    virtual QCString requiresClause() const
+    QCString requiresClause() const override
     { return getMdAlias()->requiresClause(); }
-    virtual bool visibleInIndex() const
+    bool visibleInIndex() const override
     { return getMdAlias()->visibleInIndex(); }
 
-    virtual void warnIfUndocumented() const {}
-    virtual void warnIfUndocumentedParams() const {}
-    virtual void detectUndocumentedParams(bool /* hasParamCommand */,bool /* hasReturnCommand */) const {}
-    virtual void setMemberGroup(MemberGroup *grp) { m_memberGroup = grp; }
-    virtual std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
-               const std::unique_ptr<ArgumentList> &actualArgs) const
+    void warnIfUndocumented() const override {}
+    void warnIfUndocumentedParams() const override {}
+    void detectUndocumentedParams(bool /* hasParamCommand */,bool /* hasReturnCommand */) const override {}
+    void setMemberGroup(MemberGroup *grp) override { m_memberGroup = grp; }
+    std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
+               const std::unique_ptr<ArgumentList> &actualArgs) const override
     { return getMdAlias()->createTemplateInstanceMember(formalArgs,actualArgs); }
 
-    virtual void writeDeclaration(OutputList &ol,
+    void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const
+                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const override
     {
       getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritFrom,inheritId);
     }
-    virtual void writeEnumDeclaration(OutputList &typeDecl,
-            const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const
+    void writeEnumDeclaration(OutputList &typeDecl,
+            const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const override
     {
       getMdAlias()->writeEnumDeclaration(typeDecl,cd,nd,fd,gd,mod);
     }
-    virtual void writeLink(OutputList &ol,
+    void writeLink(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-                   bool onlyText=FALSE) const
+                   bool onlyText=FALSE) const override
     {
       getMdAlias()->writeLink(ol,cd,nd,fd,gd,mod,onlyText);
     }

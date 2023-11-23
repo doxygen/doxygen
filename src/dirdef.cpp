@@ -39,42 +39,42 @@ class DirDefImpl : public DefinitionMixin<DirDef>
 {
   public:
     DirDefImpl(const QCString &path);
-    virtual ~DirDefImpl();
+    ~DirDefImpl();
 
-    virtual DefType definitionType() const override { return TypeDir; }
-    virtual CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
-    virtual QCString getOutputFileBase() const override;
-    virtual QCString anchor() const override { return QCString(); }
-    virtual bool isLinkableInProject() const override;
-    virtual bool isLinkable() const override;
-    virtual QCString displayName(bool=TRUE) const override { return m_dispName; }
-    virtual const QCString shortName() const override { return m_shortName; }
-    virtual void addSubDir(DirDef *subdir) override;
-    virtual const FileList &getFiles() const override { return m_fileList; }
-    virtual void addFile(const FileDef *fd) override;
-    virtual const DirList &subDirs() const override { return m_subdirs; }
-    virtual bool hasSubdirs() const override { return !m_subdirs.empty(); }
-    virtual int level() const override { return m_level; }
-    virtual DirDef *parent() const override { return m_parent; }
-    virtual int dirCount() const override { return m_dirCount; }
-    virtual const UsedDirLinkedMap &usedDirs() const override { return m_usedDirs; }
-    virtual bool isParentOf(const DirDef *dir) const override;
-    virtual bool depGraphIsTrivial() const override;
-    virtual QCString shortTitle() const override;
-    virtual bool hasDetailedDescription() const override;
-    virtual void writeDocumentation(OutputList &ol) override;
-    virtual void writeTagFile(TextStream &t) override;
-    virtual void setDiskName(const QCString &name) override { m_diskName = name; }
-    virtual void sort() override;
-    virtual void setParent(DirDef *parent) override;
-    virtual void setDirCount(int count) override;
-    virtual void setLevel() override;
-    virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
+    DefType definitionType() const override { return TypeDir; }
+    CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
+    QCString getOutputFileBase() const override;
+    QCString anchor() const override { return QCString(); }
+    bool isLinkableInProject() const override;
+    bool isLinkable() const override;
+    QCString displayName(bool=TRUE) const override { return m_dispName; }
+    const QCString shortName() const override { return m_shortName; }
+    void addSubDir(DirDef *subdir) override;
+    const FileList &getFiles() const override { return m_fileList; }
+    void addFile(const FileDef *fd) override;
+    const DirList &subDirs() const override { return m_subdirs; }
+    bool hasSubdirs() const override { return !m_subdirs.empty(); }
+    int level() const override { return m_level; }
+    DirDef *parent() const override { return m_parent; }
+    int dirCount() const override { return m_dirCount; }
+    const UsedDirLinkedMap &usedDirs() const override { return m_usedDirs; }
+    bool isParentOf(const DirDef *dir) const override;
+    bool depGraphIsTrivial() const override;
+    QCString shortTitle() const override;
+    bool hasDetailedDescription() const override;
+    void writeDocumentation(OutputList &ol) override;
+    void writeTagFile(TextStream &t) override;
+    void setDiskName(const QCString &name) override { m_diskName = name; }
+    void sort() override;
+    void setParent(DirDef *parent) override;
+    void setDirCount(int count) override;
+    void setLevel() override;
+    void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect) override;
-    virtual void computeDependencies() override;
+    void computeDependencies() override;
 
-    virtual bool hasDirectoryGraph() const override;
-    virtual void enableDirectoryGraph(bool e) override;
+    bool hasDirectoryGraph() const override;
+    void enableDirectoryGraph(bool e) override;
 
   public:
     static DirDef *mergeDirectoryInTree(const QCString &path);

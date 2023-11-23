@@ -54,73 +54,73 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 {
   public:
     GroupDefImpl(const QCString &fileName,int line,const QCString &name,const QCString &title,const QCString &refFileName=QCString());
-    virtual ~GroupDefImpl();
+    ~GroupDefImpl();
 
-    virtual DefType definitionType() const override { return TypeGroup; }
-    virtual CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
-    virtual QCString getOutputFileBase() const override;
-    virtual QCString anchor() const override { return QCString(); }
-    virtual QCString displayName(bool=TRUE) const override { return hasGroupTitle() ? m_title : DefinitionMixin::name(); }
-    virtual QCString groupTitle() const override { return m_title; }
-    virtual void setGroupTitle( const QCString &newtitle ) override;
-    virtual bool hasGroupTitle( ) const override { return m_titleSet; }
-    virtual void addFile(FileDef *def) override;
-    virtual bool containsFile(const FileDef *def) const override;
-    virtual bool addClass(ClassDef *def) override;
-    virtual bool addConcept(ConceptDef *def) override;
-    virtual bool addModule(ModuleDef *def) override;
-    virtual bool addNamespace(NamespaceDef *def) override;
-    virtual void addGroup(GroupDef *def) override;
-    virtual void addPage(PageDef *def) override;
-    virtual void addExample(PageDef *def) override;
-    virtual void addDir(DirDef *dd) override;
-    virtual bool insertMember(MemberDef *def,bool docOnly=FALSE) override;
-    virtual void removeMember(MemberDef *md) override;
-    virtual bool findGroup(const GroupDef *def) const override; // true if def is a subgroup of this group
-    virtual void writeDocumentation(OutputList &ol) override;
-    virtual void writeMemberPages(OutputList &ol, int hierarchyLevel) override;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const override;
-    virtual void writeTagFile(TextStream &) override;
-    virtual size_t numDocMembers() const override;
-    virtual bool isLinkableInProject() const override;
-    virtual bool isLinkable() const override;
-    virtual bool isVisibleInHierarchy() const override;
-    virtual bool isASubGroup() const override;
-    virtual void computeAnchors() override;
-    virtual void countMembers() override;
+    DefType definitionType() const override { return TypeGroup; }
+    CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
+    QCString getOutputFileBase() const override;
+    QCString anchor() const override { return QCString(); }
+    QCString displayName(bool=TRUE) const override { return hasGroupTitle() ? m_title : DefinitionMixin::name(); }
+    QCString groupTitle() const override { return m_title; }
+    void setGroupTitle( const QCString &newtitle ) override;
+    bool hasGroupTitle( ) const override { return m_titleSet; }
+    void addFile(FileDef *def) override;
+    bool containsFile(const FileDef *def) const override;
+    bool addClass(ClassDef *def) override;
+    bool addConcept(ConceptDef *def) override;
+    bool addModule(ModuleDef *def) override;
+    bool addNamespace(NamespaceDef *def) override;
+    void addGroup(GroupDef *def) override;
+    void addPage(PageDef *def) override;
+    void addExample(PageDef *def) override;
+    void addDir(DirDef *dd) override;
+    bool insertMember(MemberDef *def,bool docOnly=FALSE) override;
+    void removeMember(MemberDef *md) override;
+    bool findGroup(const GroupDef *def) const override; // true if def is a subgroup of this group
+    void writeDocumentation(OutputList &ol) override;
+    void writeMemberPages(OutputList &ol, int hierarchyLevel) override;
+    void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const override;
+    void writeTagFile(TextStream &) override;
+    size_t numDocMembers() const override;
+    bool isLinkableInProject() const override;
+    bool isLinkable() const override;
+    bool isVisibleInHierarchy() const override;
+    bool isASubGroup() const override;
+    void computeAnchors() override;
+    void countMembers() override;
 
-    virtual void addMembersToMemberGroup() override;
-    virtual void distributeMemberGroupDocumentation() override;
-    virtual void findSectionsInDocumentation() override;
+    void addMembersToMemberGroup() override;
+    void distributeMemberGroupDocumentation() override;
+    void findSectionsInDocumentation() override;
 
-    virtual void addListReferences() override;
-    virtual void sortMemberLists() override;
-    virtual bool subGrouping() const override { return m_subGrouping; }
+    void addListReferences() override;
+    void sortMemberLists() override;
+    bool subGrouping() const override { return m_subGrouping; }
 
-    virtual void setGroupScope(Definition *d) override { m_groupScope = d; }
-    virtual Definition *getGroupScope() const override { return m_groupScope; }
+    void setGroupScope(Definition *d) override { m_groupScope = d; }
+    Definition *getGroupScope() const override { return m_groupScope; }
 
-    virtual MemberList *getMemberList(MemberListType lt) const override;
-    virtual const MemberLists &getMemberLists() const override { return m_memberLists; }
+    MemberList *getMemberList(MemberListType lt) const override;
+    const MemberLists &getMemberLists() const override { return m_memberLists; }
 
     /* user defined member groups */
-    virtual const MemberGroupList &getMemberGroups() const override { return m_memberGroups; }
+    const MemberGroupList &getMemberGroups() const override { return m_memberGroups; }
 
-    virtual const FileList &getFiles() const override                    { return m_fileList; }
-    virtual const ClassLinkedRefMap &getClasses() const override         { return m_classes; }
-    virtual const ConceptLinkedRefMap &getConcepts() const override      { return m_concepts; }
-    virtual const ModuleLinkedRefMap &getModules() const override        { return m_modules; }
-    virtual const NamespaceLinkedRefMap &getNamespaces() const override  { return m_namespaces; }
-    virtual const GroupList &getSubGroups() const override               { return m_groups; }
-    virtual const PageLinkedRefMap &getPages() const override            { return m_pages; }
-    virtual const DirList & getDirs() const override                     { return m_dirList; }
-    virtual const PageLinkedRefMap &getExamples() const override         { return m_examples; }
-    virtual bool hasDetailedDescription() const override;
-    virtual void sortSubGroups() override;
-    virtual void writeSummaryLinks(OutputList &ol) const override;
+    const FileList &getFiles() const override                    { return m_fileList; }
+    const ClassLinkedRefMap &getClasses() const override         { return m_classes; }
+    const ConceptLinkedRefMap &getConcepts() const override      { return m_concepts; }
+    const ModuleLinkedRefMap &getModules() const override        { return m_modules; }
+    const NamespaceLinkedRefMap &getNamespaces() const override  { return m_namespaces; }
+    const GroupList &getSubGroups() const override               { return m_groups; }
+    const PageLinkedRefMap &getPages() const override            { return m_pages; }
+    const DirList & getDirs() const override                     { return m_dirList; }
+    const PageLinkedRefMap &getExamples() const override         { return m_examples; }
+    bool hasDetailedDescription() const override;
+    void sortSubGroups() override;
+    void writeSummaryLinks(OutputList &ol) const override;
 
-    virtual bool hasGroupGraph() const override;
-    virtual void enableGroupGraph(bool e) override;
+    bool hasGroupGraph() const override;
+    void enableGroupGraph(bool e) override;
   private:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
     void addMemberToList(MemberListType lt,MemberDef *md);
