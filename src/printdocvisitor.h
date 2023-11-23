@@ -214,11 +214,6 @@ class PrintDocVisitor
         case DocInclude::Snippet: printf("snippet"); break;
         case DocInclude::SnippetTrimLeft: printf("snippettrimleft"); break;
         case DocInclude::SnippetWithLines: printf("snipwithlines"); break;
-        case DocInclude::SnippetDoc:
-        case DocInclude::IncludeDoc:
-          err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-              "Please create a bug report\n",__FILE__);
-          break;
       }
       printf("\"/>");
     }

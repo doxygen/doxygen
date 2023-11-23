@@ -166,3 +166,25 @@
 --font-family-icon: Arial,Helvetica;
 --font-family-tooltip: Roboto,sans-serif;
 
+/** special sections */
+--warning-color-bg: #f8d1cc;
+--warning-color-hl: #b61825;
+--warning-color-text: #75070f;
+--note-color-bg: #faf3d8;
+--note-color-hl: #f3a600;
+--note-color-text: #5f4204;
+--todo-color-bg: #e4f3ff;
+--todo-color-hl: #1879C4;
+--todo-color-text: #274a5c;
+--test-color-bg: #e8e8ff;
+--test-color-hl: #3939C4;
+--test-color-text: #1a1a5c;
+--deprecated-color-bg: #ecf0f3;
+--deprecated-color-hl: #5b6269;
+--deprecated-color-text: #43454a;
+--bug-color-bg: #e4dafd;
+--bug-color-hl: #5b2bdd;
+--bug-color-text: #2a0d72;
+--invariant-color-bg: #d8f1e3;
+--invariant-color-hl: #44b86f;
+--invariant-color-text: #265532;

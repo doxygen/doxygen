@@ -494,11 +494,6 @@ DB_VIS_C
                                          );
       m_t << "</computeroutput></literallayout>";
       break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
-      break;
   }
 }
 

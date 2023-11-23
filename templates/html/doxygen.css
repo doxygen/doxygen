@@ -289,12 +289,12 @@ ul.multicol {
   overflow-x: auto;
   overflow-y: hidden;
   position: relative;
-  min-height: 28px;
-  margin: 4px 4px 4px 2px;
-  padding: 2px 2px 3px 2px;
+  min-height: 12px;
+  margin: 10px 0px;
+  padding: 10px 10px;
   border: 1px solid var(--fragment-border-color);
+  border-radius: 4px;
   background-color: var(--fragment-background-color);
-  border-radius : 2px;
   color: var(--fragment-foreground-color);
 }
 
@@ -463,10 +463,6 @@ img.dark-mode-visible {
 }
 img.light-mode-visible {
 	display: none;
-}
-
-img.formulaDsp {
-	
 }
 
 img.formulaInl, img.inline {
@@ -1200,7 +1196,8 @@ dl {
         padding: 0 0 0 0;
 }
 
-/* dl.note, dl.warning, dl.attention, dl.pre, dl.post, dl.invariant, dl.deprecated, dl.todo, dl.test, dl.bug, dl.examples */
+/*
+
 dl.section {
 	margin-left: 0px;
 	padding-left: 0px;
@@ -1255,8 +1252,101 @@ dl.bug {
   border-color: #C08050;
 }
 
+*/
+
+dl.bug dt a, dl.deprecated dt a, dl.todo dt a, dl.test a {
+    font-weight: bold !important;
+}
+
+dl.warning, dl.attention, dl.note, dl.deprecated, dl.bug,
+dl.invariant, dl.pre, dl.post, dl.todo, dl.test, dl.remark {
+    padding: 10px;
+    margin: 10px 0px;
+    overflow: hidden;
+    margin-left: 0;
+    border-radius: 4px;
+}
+
 dl.section dd {
-	margin-bottom: 6px;
+    margin-bottom: 2px;
+}
+
+dl.warning, dl.attention {
+    background: var(--warning-color-bg);
+    border-left: 8px solid var(--warning-color-hl);
+    color: var(--warning-color-text);
+}
+
+dl.warning dt, dl.attention dt {
+    color: var(--warning-color-hl);
+}
+
+dl.note, dl.remark {
+    background: var(--note-color-bg);
+    border-left: 8px solid var(--note-color-hl);
+    color: var(--note-color-text);
+}
+
+dl.note dt, dl.remark dt {
+    color: var(--note-color-hl);
+}
+
+dl.todo {
+    background: var(--todo-color-bg);
+    border-left: 8px solid var(--todo-color-hl);
+    color: var(--todo-color-text);
+}
+
+dl.todo dt {
+    color: var(--todo-color-hl);
+}
+
+dl.test {
+    background: var(--test-color-bg);
+    border-left: 8px solid var(--test-color-hl);
+    color: var(--test-color-text);
+}
+
+dl.test dt {
+    color: var(--test-color-hl);
+}
+
+dl.bug dt a {
+    color: var(--bug-color-hl) !important;
+}
+
+dl.bug {
+    background: var(--bug-color-bg);
+    border-left: 8px solid var(--bug-color-hl);
+    color: var(--bug-color-text);
+}
+
+dl.bug dt a {
+    color: var(--bug-color-hl) !important;
+}
+
+dl.deprecated {
+    background: var(--deprecated-color-bg);
+    border-left: 8px solid var(--deprecated-color-hl);
+    color: var(--deprecated-color-text);
+}
+
+dl.deprecated dt a {
+    color: var(--deprecated-color-hl) !important;
+}
+
+dl.section dd, dl.bug dd, dl.deprecated dd, dl.todo dd, dl.test dd {
+    margin-inline-start: 0px;
+}
+
+dl.invariant, dl.pre, dl.post {
+    background: var(--invariant-color-bg);
+    border-left: 8px solid var(--invariant-color-hl);
+    color: var(--invariant-color-text);
+}
+
+dl.invariant dt, dl.pre dt, dl.post dt {
+    color: var(--invariant-color-hl);
 }
 
 
@@ -1271,12 +1361,12 @@ dl.section dd {
 	vertical-align: bottom;
 	border-collapse: separate;
 }
- 
+
 #projectlogo img
-{ 
+{
 	border: 0px none;
 }
- 
+
 #projectalign
 {
         vertical-align: middle;

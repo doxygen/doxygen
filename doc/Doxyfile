@@ -35,13 +35,13 @@ ENABLE_PREPROCESSING = NO
 HTML_COLORSTYLE   = LIGHT
 CASE_SENSE_NAMES  = NO
 IMAGE_PATH        = . images
-INPUT             = $(INDEX_DOC) install.doc starting.doc docblocks.doc additional_documentation.dox \ 
-					markdown.doc lists.doc grouping.doc formulas.doc tables.doc diagrams.doc preprocessing.doc \
-                    autolink.doc output.doc searching.doc extsearch.doc customize.doc custcmd.doc \
-                    external.doc faq.doc trouble.doc features.doc doxygen_usage.doc doxywizard_usage.doc \
-					config.doc commands.doc htmlcmds.doc xmlcmds.doc emojisup.doc language.doc \
-                    perlmod.doc arch.doc changelog.doc 
-FILE_PATTERNS     = *.cpp *.h *.doc *.dox
+INPUT             = $(INDEX_DOC) install.dox starting.dox doxblocks.dox additional_doxumentation.dox \ 
+					markdown.dox lists.dox grouping.dox formulas.dox tables.dox diagrams.dox preprocessing.dox \
+                    autolink.dox output.dox searching.dox extsearch.dox customize.dox custcmd.dox \
+                    external.dox faq.dox trouble.dox features.dox doxygen_usage.dox doxywizard_usage.dox \
+					config.dox commands.dox htmlcmds.dox xmlcmds.dox emojisup.dox language.dox \
+                    perlmod.dox arch.dox changelog.dox 
+FILE_PATTERNS     = *.cpp *.h
 EXAMPLE_PATH      = ../examples .
 RECURSIVE         = NO
 TAGFILES          =
