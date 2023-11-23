@@ -97,7 +97,7 @@ start to populate our treeview.
 
 If you notice that your tree is more like a pile of leaves then you can remedy this by checking out [subpaging](https://www.doxygen.nl/manual/grouping.html#subpaging).
 
-This disucssion should give you some direction on how to build a scalable manual to enrich your documentation, from here you might want to customize your \ref layout layout.
+This disucssion should give you some direction on how to build a scalable manual to enrich your documentation, from here you might want to customize your \ref layout "layout".
 
 */
 
