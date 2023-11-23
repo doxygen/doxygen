@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 2015-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -34,7 +34,7 @@ Inside such a file doxygen will treat it like any other source file, so one opti
 */
 \endcode
 
-You'll note that the `\mainpage` command was used, which tells doxygen to use this page as, well, the main page. For other pages, preface them with the `\page` command.
+You'll note that the \ref cmdmainpage "\\mainpage" command was used, which tells doxygen to use this page as, well, the main page. For other pages, preface them with the `\page` command.
 
 By default doxygen will not know about these custom files so we'll need to let it know through the `INPUT` attribute in our Doxyfile, that is with our current configuration, would have this line in our Doxyfile:
 
@@ -90,14 +90,14 @@ As your manual scales up, you might want to also have a nice tree view to show y
 GENERATE_TREEVIEW      = YES
 \endcode
 
-In your doxyfile.
+In your `Doxyfile`.
 
 You'll recall that our \c manual/index.dox file is pretty bland, without any links pointing anywhere, by using the `\ref` command we can add links between various topics, and doing so will automatically
 start to populate our treeview.
 
 If you notice that your tree is more like a pile of leaves then you can remedy this by checking out [subpaging](https://www.doxygen.nl/manual/grouping.html#subpaging).
 
-This disucssion should give you some direction on how to build a scalable manual to enrich your documentation, take this and modify it to suit your needs.
+This disucssion should give you some direction on how to build a scalable manual to enrich your documentation, from here you might want to customize your \ref layout layout.
 
 */
 
