@@ -11,7 +11,7 @@ tolower = {}
 
 def writeMapping(file,mapping):
     for k,v in sorted(mapping.items()):
-        file.write(u"    case %s /* %s */: BSEQ(%s) /* %s */;\n" %
+        file.write(u"    case %s /* %s */: BSEQ(%s) /* %s */\n" %
                (hex(ord(k[0])), k, ",".join(f"0x{b:02x}" for b in v.encode('utf-8')), v))
 
 def writePunctuationCodes(file):
