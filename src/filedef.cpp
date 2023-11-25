@@ -121,86 +121,86 @@ class FileDefImpl : public DefinitionMixin<FileDef>
 {
   public:
     FileDefImpl(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());
-    virtual ~FileDefImpl();
+    ~FileDefImpl() override;
 
-    virtual DefType definitionType() const override { return TypeFile; }
-    virtual CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
-    virtual const QCString &name() const override;
+    DefType definitionType() const override { return TypeFile; }
+    CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
+    const QCString &name() const override;
 
-    virtual QCString displayName(bool=TRUE) const override { return localName(); }
-    virtual QCString fileName() const override { return m_fileName; }
-    virtual QCString getOutputFileBase() const override;
-    virtual QCString anchor() const override { return QCString(); }
-    virtual QCString getSourceFileBase() const override;
-    virtual QCString includeName() const override;
-    virtual QCString includeDependencyGraphFileName() const override;
-    virtual QCString includedByDependencyGraphFileName() const override;
-    virtual QCString absFilePath() const override { return m_filePath; }
-    virtual const QCString &docName() const override { return m_docname; }
-    virtual bool isSource() const override { return m_isSource; }
-    virtual bool isDocumentationFile() const override;
-    virtual const Definition *getSourceDefinition(int lineNr) const override;
-    virtual const MemberDef *getSourceMember(int lineNr) const override;
-    virtual QCString getPath() const override { return m_path; }
-    virtual QCString getVersion() const override { return m_fileVersion; }
-    virtual bool isLinkableInProject() const override;
-    virtual bool isLinkable() const override { return isLinkableInProject() || isReference(); }
-    virtual bool isIncluded(const QCString &name) const override;
-    virtual DirDef *getDirDef() const override       { return m_dir; }
-    virtual ModuleDef *getModuleDef() const override { return m_moduleDef; }
-    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const override;
-    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const override  { return m_usingDeclList; }
-    virtual const IncludeInfoList &includeFileList() const override    { return m_includeList; }
-    virtual const IncludeInfoList &includedByFileList() const override { return m_includedByList; }
-    virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const override;
-    virtual MemberList *getMemberList(MemberListType lt) const override;
-    virtual const MemberLists &getMemberLists() const override { return m_memberLists; }
-    virtual const MemberGroupList &getMemberGroups() const override  { return m_memberGroups; }
-    virtual const NamespaceLinkedRefMap &getNamespaces() const override    { return m_namespaces; }
-    virtual const ConceptLinkedRefMap &getConcepts() const override        { return m_concepts; }
-    virtual const ClassLinkedRefMap &getClasses() const override           { return m_classes; }
-    virtual QCString title() const override;
-    virtual bool hasDetailedDescription() const override;
-    virtual QCString fileVersion() const override;
-    virtual bool subGrouping() const override { return m_subGrouping; }
-    virtual void countMembers() override;
-    virtual int numDocMembers() const override;
-    virtual int numDecMembers() const override;
-    virtual void addSourceRef(int line,const Definition *d,const MemberDef *md) override;
-    virtual void writeDocumentation(OutputList &ol) override;
-    virtual void writeMemberPages(OutputList &ol) override;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const override;
-    virtual void writeSummaryLinks(OutputList &ol) const override;
-    virtual void writeTagFile(TextStream &t) override;
-    virtual void writeSourceHeader(OutputList &ol) override;
-    virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser) override;
-    virtual void writeSourceFooter(OutputList &ol) override;
-    virtual void parseSource(ClangTUParser *clangParser) override;
-    virtual void setDiskName(const QCString &name) override;
-    virtual void insertMember(MemberDef *md) override;
-    virtual void insertClass(ClassDef *cd) override;
-    virtual void insertConcept(ConceptDef *cd) override;
-    virtual void insertNamespace(NamespaceDef *nd) override;
-    virtual void computeAnchors() override;
-    virtual void setDirDef(DirDef *dd) override { m_dir=dd; }
-    virtual void setModuleDef(ModuleDef *mod) override { m_moduleDef=mod; }
-    virtual void addUsingDirective(NamespaceDef *nd) override;
-    virtual void addUsingDeclaration(ClassDef *cd) override;
-    virtual void combineUsingRelations() override;
-    virtual bool generateSourceFile() const override;
-    virtual void sortMemberLists() override;
-    virtual void addIncludeDependency(const FileDef *fd,const QCString &incName,IncludeKind kind) override;
-    virtual void addIncludedByDependency(const FileDef *fd,const QCString &incName,IncludeKind kind) override;
-    virtual void addMembersToMemberGroup() override;
-    virtual void distributeMemberGroupDocumentation() override;
-    virtual void findSectionsInDocumentation() override;
-    virtual void addIncludedUsingDirectives(FileDefSet &visitedFiles) override;
-    virtual void addListReferences() override;
+    QCString displayName(bool=TRUE) const override { return localName(); }
+    QCString fileName() const override { return m_fileName; }
+    QCString getOutputFileBase() const override;
+    QCString anchor() const override { return QCString(); }
+    QCString getSourceFileBase() const override;
+    QCString includeName() const override;
+    QCString includeDependencyGraphFileName() const override;
+    QCString includedByDependencyGraphFileName() const override;
+    QCString absFilePath() const override { return m_filePath; }
+    const QCString &docName() const override { return m_docname; }
+    bool isSource() const override { return m_isSource; }
+    bool isDocumentationFile() const override;
+    const Definition *getSourceDefinition(int lineNr) const override;
+    const MemberDef *getSourceMember(int lineNr) const override;
+    QCString getPath() const override { return m_path; }
+    QCString getVersion() const override { return m_fileVersion; }
+    bool isLinkableInProject() const override;
+    bool isLinkable() const override { return isLinkableInProject() || isReference(); }
+    bool isIncluded(const QCString &name) const override;
+    DirDef *getDirDef() const override       { return m_dir; }
+    ModuleDef *getModuleDef() const override { return m_moduleDef; }
+    const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const override;
+    const LinkedRefMap<ClassDef> &getUsedClasses() const override  { return m_usingDeclList; }
+    const IncludeInfoList &includeFileList() const override    { return m_includeList; }
+    const IncludeInfoList &includedByFileList() const override { return m_includedByList; }
+    void getAllIncludeFilesRecursively(StringVector &incFiles) const override;
+    MemberList *getMemberList(MemberListType lt) const override;
+    const MemberLists &getMemberLists() const override { return m_memberLists; }
+    const MemberGroupList &getMemberGroups() const override  { return m_memberGroups; }
+    const NamespaceLinkedRefMap &getNamespaces() const override    { return m_namespaces; }
+    const ConceptLinkedRefMap &getConcepts() const override        { return m_concepts; }
+    const ClassLinkedRefMap &getClasses() const override           { return m_classes; }
+    QCString title() const override;
+    bool hasDetailedDescription() const override;
+    QCString fileVersion() const override;
+    bool subGrouping() const override { return m_subGrouping; }
+    void countMembers() override;
+    int numDocMembers() const override;
+    int numDecMembers() const override;
+    void addSourceRef(int line,const Definition *d,const MemberDef *md) override;
+    void writeDocumentation(OutputList &ol) override;
+    void writeMemberPages(OutputList &ol) override;
+    void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const override;
+    void writeSummaryLinks(OutputList &ol) const override;
+    void writeTagFile(TextStream &t) override;
+    void writeSourceHeader(OutputList &ol) override;
+    void writeSourceBody(OutputList &ol,ClangTUParser *clangParser) override;
+    void writeSourceFooter(OutputList &ol) override;
+    void parseSource(ClangTUParser *clangParser) override;
+    void setDiskName(const QCString &name) override;
+    void insertMember(MemberDef *md) override;
+    void insertClass(ClassDef *cd) override;
+    void insertConcept(ConceptDef *cd) override;
+    void insertNamespace(NamespaceDef *nd) override;
+    void computeAnchors() override;
+    void setDirDef(DirDef *dd) override { m_dir=dd; }
+    void setModuleDef(ModuleDef *mod) override { m_moduleDef=mod; }
+    void addUsingDirective(NamespaceDef *nd) override;
+    void addUsingDeclaration(ClassDef *cd) override;
+    void combineUsingRelations() override;
+    bool generateSourceFile() const override;
+    void sortMemberLists() override;
+    void addIncludeDependency(const FileDef *fd,const QCString &incName,IncludeKind kind) override;
+    void addIncludedByDependency(const FileDef *fd,const QCString &incName,IncludeKind kind) override;
+    void addMembersToMemberGroup() override;
+    void distributeMemberGroupDocumentation() override;
+    void findSectionsInDocumentation() override;
+    void addIncludedUsingDirectives(FileDefSet &visitedFiles) override;
+    void addListReferences() override;
 
-    virtual bool hasIncludeGraph() const override;
-    virtual bool hasIncludedByGraph() const override;
-    virtual void enableIncludeGraph(bool e) override;
-    virtual void enableIncludedByGraph(bool e) override;
+    bool hasIncludeGraph() const override;
+    bool hasIncludedByGraph() const override;
+    void enableIncludeGraph(bool e) override;
+    void enableIncludedByGraph(bool e) override;
 
   private:
     void setDiskNameLocal(const QCString &name);
