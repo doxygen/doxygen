@@ -126,10 +126,13 @@ static void splitSearchTokens(QCString &title,IntVector &indices)
     }
     p = i+1;
   }
-  std::string word = title.mid(p).str();
-  if (wordsFound.find(word)==wordsFound.end())
+  if (p<static_cast<int>(title.length()))
   {
-    indices.push_back(p);
+    std::string word = title.mid(p).str();
+    if (wordsFound.find(word)==wordsFound.end())
+    {
+      indices.push_back(p);
+    }
   }
 }
 
