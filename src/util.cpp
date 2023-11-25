@@ -4274,7 +4274,7 @@ void addMembersToMemberGroup(MemberList *ml,
           auto it = Doxygen::memberGroupInfoMap.find(groupId);
           if (it!=Doxygen::memberGroupInfoMap.end())
           {
-            auto &info = it->second;
+            const auto &info = it->second;
             auto mg_it = std::find_if(pMemberGroups->begin(),
                                       pMemberGroups->end(),
                                       [&groupId](const auto &g)
@@ -4314,7 +4314,7 @@ void addMembersToMemberGroup(MemberList *ml,
       auto it = Doxygen::memberGroupInfoMap.find(groupId);
       if (it!=Doxygen::memberGroupInfoMap.end())
       {
-        auto &info = it->second;
+        const auto &info = it->second;
         auto mg_it = std::find_if(pMemberGroups->begin(),
                                   pMemberGroups->end(),
                                   [&groupId](const auto &g)

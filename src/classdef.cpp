@@ -1722,8 +1722,8 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   {
     auto replaceFunc = [this,&ol](size_t entryIndex)
     {
-      BaseClassDef &bcd=m_impl->inherits[entryIndex];
-      ClassDef *cd=bcd.classDef;
+      const BaseClassDef &bcd=m_impl->inherits[entryIndex];
+      const ClassDef *cd=bcd.classDef;
 
       // use the class name but with the template arguments as given
       // in the inheritance relation
@@ -1757,8 +1757,8 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 
     auto replaceFunc = [this,&ol](size_t entryIndex)
     {
-      BaseClassDef &bcd=m_impl->inheritedBy[entryIndex];
-      ClassDef *cd=bcd.classDef;
+      const BaseClassDef &bcd=m_impl->inheritedBy[entryIndex];
+      const ClassDef *cd=bcd.classDef;
       if (cd->isLinkable())
       {
         ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
@@ -3782,8 +3782,8 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
       if (dstMni) // method is already defined in the class
       {
         //printf("Existing member %s\n",srcMni->memberName());
-        auto &dstMi = dstMni->front();
-        auto &srcMi = srcMni->front();
+        const auto &dstMi = dstMni->front();
+        const auto &srcMi = srcMni->front();
         if (srcMi && dstMi)
         {
           MemberDefMutable *smdm = toMemberDefMutable(srcMi->memberDef());
