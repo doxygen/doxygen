@@ -192,166 +192,166 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
     ClassDef *resolveAlias() { return this; }
-    virtual DefType definitionType() const override { return TypeClass; }
-    virtual CodeSymbolType codeSymbolType() const override;
-    virtual QCString getOutputFileBase() const override;
-    virtual QCString getInstanceOutputFileBase() const override;
-    virtual QCString getSourceFileBase() const override;
-    virtual QCString getReference() const override;
-    virtual bool isReference() const override;
-    virtual bool isLocal() const override;
-    virtual ClassLinkedRefMap getClasses() const override;
-    virtual bool hasDocumentation() const override;
-    virtual bool hasDetailedDescription() const override;
-    virtual QCString collaborationGraphFileName() const override;
-    virtual QCString inheritanceGraphFileName() const override;
-    virtual QCString displayName(bool includeScope=TRUE) const override;
-    virtual CompoundType compoundType() const override;
-    virtual QCString compoundTypeString() const override;
-    virtual const BaseClassList &baseClasses() const override;
-    virtual void updateBaseClasses(const BaseClassList &bcd) override;
-    virtual const BaseClassList &subClasses() const override;
-    virtual void updateSubClasses(const BaseClassList &bcd) override;
-    virtual const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const override;
-    virtual Protection protection() const override;
-    virtual bool isLinkableInProject() const override;
-    virtual bool isLinkable() const override;
-    virtual bool isVisibleInHierarchy() const override;
-    virtual bool visibleInParentsDeclList() const override;
-    virtual const ArgumentList &templateArguments() const override;
-    virtual FileDef *getFileDef() const override;
-    virtual ModuleDef *getModuleDef() const override;
-    virtual const MemberDef *getMemberByName(const QCString &) const override;
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const override;
-    virtual bool isSubClass(ClassDef *bcd,int level=0) const override;
-    virtual bool isAccessibleMember(const MemberDef *md) const override;
-    virtual const TemplateInstanceList &getTemplateInstances() const override;
-    virtual const ClassDef *templateMaster() const override;
-    virtual bool isTemplate() const override;
-    virtual const IncludeInfo *includeInfo() const override;
-    virtual const UsesClassList &usedImplementationClasses() const override;
-    virtual const UsesClassList &usedByImplementationClasses() const override;
-    virtual const ConstraintClassList &templateTypeConstraints() const override;
-    virtual bool isTemplateArgument() const override;
-    virtual const Definition *findInnerCompound(const QCString &name) const override;
-    virtual ArgumentLists getTemplateParameterLists() const override;
-    virtual QCString qualifiedNameWithTemplateParameters(
+    DefType definitionType() const override { return TypeClass; }
+    CodeSymbolType codeSymbolType() const override;
+    QCString getOutputFileBase() const override;
+    QCString getInstanceOutputFileBase() const override;
+    QCString getSourceFileBase() const override;
+    QCString getReference() const override;
+    bool isReference() const override;
+    bool isLocal() const override;
+    ClassLinkedRefMap getClasses() const override;
+    bool hasDocumentation() const override;
+    bool hasDetailedDescription() const override;
+    QCString collaborationGraphFileName() const override;
+    QCString inheritanceGraphFileName() const override;
+    QCString displayName(bool includeScope=TRUE) const override;
+    CompoundType compoundType() const override;
+    QCString compoundTypeString() const override;
+    const BaseClassList &baseClasses() const override;
+    void updateBaseClasses(const BaseClassList &bcd) override;
+    const BaseClassList &subClasses() const override;
+    void updateSubClasses(const BaseClassList &bcd) override;
+    const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const override;
+    Protection protection() const override;
+    bool isLinkableInProject() const override;
+    bool isLinkable() const override;
+    bool isVisibleInHierarchy() const override;
+    bool visibleInParentsDeclList() const override;
+    const ArgumentList &templateArguments() const override;
+    FileDef *getFileDef() const override;
+    ModuleDef *getModuleDef() const override;
+    const MemberDef *getMemberByName(const QCString &) const override;
+    int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const override;
+    bool isSubClass(ClassDef *bcd,int level=0) const override;
+    bool isAccessibleMember(const MemberDef *md) const override;
+    const TemplateInstanceList &getTemplateInstances() const override;
+    const ClassDef *templateMaster() const override;
+    bool isTemplate() const override;
+    const IncludeInfo *includeInfo() const override;
+    const UsesClassList &usedImplementationClasses() const override;
+    const UsesClassList &usedByImplementationClasses() const override;
+    const ConstraintClassList &templateTypeConstraints() const override;
+    bool isTemplateArgument() const override;
+    const Definition *findInnerCompound(const QCString &name) const override;
+    ArgumentLists getTemplateParameterLists() const override;
+    QCString qualifiedNameWithTemplateParameters(
         const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const override;
-    virtual bool isAbstract() const override;
-    virtual bool isObjectiveC() const override;
-    virtual bool isFortran() const override;
-    virtual bool isCSharp() const override;
-    virtual bool isFinal() const override;
-    virtual bool isSealed() const override;
-    virtual bool isPublished() const override;
-    virtual bool isExtension() const override;
-    virtual bool isForwardDeclared() const override;
-    virtual bool isInterface() const override;
-    virtual ClassDef *categoryOf() const override;
-    virtual QCString className() const override;
-    virtual MemberList *getMemberList(MemberListType lt) const override;
-    virtual const MemberLists &getMemberLists() const override;
-    virtual const MemberGroupList &getMemberGroups() const override;
-    virtual const TemplateNameMap &getTemplateBaseClassNames() const override;
-    virtual bool isUsedOnly() const override;
-    virtual QCString anchor() const override;
-    virtual bool isEmbeddedInOuterScope() const override;
-    virtual bool isSimple() const override;
-    virtual const ClassDef *tagLessReference() const override;
-    virtual const MemberDef *isSmartPointer() const override;
-    virtual bool isJavaEnum() const override;
-    virtual QCString title() const override;
-    virtual QCString generatedFromFiles() const override;
-    virtual const FileList &usedFiles() const override;
-    virtual const ArgumentList &typeConstraints() const override;
-    virtual const ExampleList &getExamples() const override;
-    virtual bool hasExamples() const override;
-    virtual QCString getMemberListFileName() const override;
-    virtual bool subGrouping() const override;
-    virtual bool isSliceLocal() const override;
-    virtual bool hasNonReferenceSuperClass() const override;
-    virtual QCString requiresClause() const override;
-    virtual StringVector getQualifiers() const override;
-    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
+    bool isAbstract() const override;
+    bool isObjectiveC() const override;
+    bool isFortran() const override;
+    bool isCSharp() const override;
+    bool isFinal() const override;
+    bool isSealed() const override;
+    bool isPublished() const override;
+    bool isExtension() const override;
+    bool isForwardDeclared() const override;
+    bool isInterface() const override;
+    ClassDef *categoryOf() const override;
+    QCString className() const override;
+    MemberList *getMemberList(MemberListType lt) const override;
+    const MemberLists &getMemberLists() const override;
+    const MemberGroupList &getMemberGroups() const override;
+    const TemplateNameMap &getTemplateBaseClassNames() const override;
+    bool isUsedOnly() const override;
+    QCString anchor() const override;
+    bool isEmbeddedInOuterScope() const override;
+    bool isSimple() const override;
+    const ClassDef *tagLessReference() const override;
+    const MemberDef *isSmartPointer() const override;
+    bool isJavaEnum() const override;
+    QCString title() const override;
+    QCString generatedFromFiles() const override;
+    const FileList &usedFiles() const override;
+    const ArgumentList &typeConstraints() const override;
+    const ExampleList &getExamples() const override;
+    bool hasExamples() const override;
+    QCString getMemberListFileName() const override;
+    bool subGrouping() const override;
+    bool isSliceLocal() const override;
+    bool hasNonReferenceSuperClass() const override;
+    QCString requiresClause() const override;
+    StringVector getQualifiers() const override;
+    ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const override;
 
-    virtual void insertBaseClass(ClassDef *,const QCString &name,Protection p,Specifier s,const QCString &t=QCString()) override;
-    virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const QCString &t=QCString()) override;
-    virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) override;
-    virtual void insertMember(MemberDef *) override;
-    virtual void insertUsedFile(const FileDef *) override;
-    virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file) override;
-    virtual void mergeCategory(ClassDef *category) override;
-    virtual void setFileDef(FileDef *fd) override;
-    virtual void setModuleDef(ModuleDef *mod) override;
-    virtual void setSubGrouping(bool enabled) override;
-    virtual void setProtection(Protection p) override;
-    virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) override;
-    virtual void addInnerCompound(Definition *d) override;
-    virtual void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) override;
-    virtual void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot) override;
-    virtual void setIsStatic(bool b) override;
-    virtual void setCompoundType(CompoundType t) override;
-    virtual void setClassName(const QCString &name) override;
-    virtual void setClassSpecifier(TypeSpecifier spec) override;
-    virtual void addQualifiers(const StringVector &qualifiers) override;
-    virtual void setTemplateArguments(const ArgumentList &al) override;
-    virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) override;
-    virtual void setTemplateMaster(const ClassDef *tm) override;
-    virtual void setTypeConstraints(const ArgumentList &al) override;
-    virtual void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) override;
-    virtual void makeTemplateArgument(bool b=TRUE) override;
-    virtual void setCategoryOf(ClassDef *cd) override;
-    virtual void setUsedOnly(bool b) override;
-    virtual void setTagLessReference(const ClassDef *cd) override;
-    virtual void setMetaData(const QCString &md) override;
-    virtual void findSectionsInDocumentation() override;
-    virtual void addMembersToMemberGroup() override;
-    virtual void addListReferences() override;
-    virtual void addTypeConstraints() override;
-    virtual void computeAnchors() override;
-    virtual void mergeMembers() override;
-    virtual void sortMemberLists() override;
-    virtual void distributeMemberGroupDocumentation() override;
-    virtual void writeDocumentation(OutputList &ol) const override;
-    virtual void writeDocumentationForInnerClasses(OutputList &ol) const override;
-    virtual void writeMemberPages(OutputList &ol) const override;
-    virtual void writeMemberList(OutputList &ol) const override;
-    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,int indentLevel,
+    void insertBaseClass(ClassDef *,const QCString &name,Protection p,Specifier s,const QCString &t=QCString()) override;
+    void insertSubClass(ClassDef *,Protection p,Specifier s,const QCString &t=QCString()) override;
+    void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) override;
+    void insertMember(MemberDef *) override;
+    void insertUsedFile(const FileDef *) override;
+    bool addExample(const QCString &anchor,const QCString &name, const QCString &file) override;
+    void mergeCategory(ClassDef *category) override;
+    void setFileDef(FileDef *fd) override;
+    void setModuleDef(ModuleDef *mod) override;
+    void setSubGrouping(bool enabled) override;
+    void setProtection(Protection p) override;
+    void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) override;
+    void addInnerCompound(Definition *d) override;
+    void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) override;
+    void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot) override;
+    void setIsStatic(bool b) override;
+    void setCompoundType(CompoundType t) override;
+    void setClassName(const QCString &name) override;
+    void setClassSpecifier(TypeSpecifier spec) override;
+    void addQualifiers(const StringVector &qualifiers) override;
+    void setTemplateArguments(const ArgumentList &al) override;
+    void setTemplateBaseClassNames(const TemplateNameMap &templateNames) override;
+    void setTemplateMaster(const ClassDef *tm) override;
+    void setTypeConstraints(const ArgumentList &al) override;
+    void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) override;
+    void makeTemplateArgument(bool b=TRUE) override;
+    void setCategoryOf(ClassDef *cd) override;
+    void setUsedOnly(bool b) override;
+    void setTagLessReference(const ClassDef *cd) override;
+    void setMetaData(const QCString &md) override;
+    void findSectionsInDocumentation() override;
+    void addMembersToMemberGroup() override;
+    void addListReferences() override;
+    void addTypeConstraints() override;
+    void computeAnchors() override;
+    void mergeMembers() override;
+    void sortMemberLists() override;
+    void distributeMemberGroupDocumentation() override;
+    void writeDocumentation(OutputList &ol) const override;
+    void writeDocumentationForInnerClasses(OutputList &ol) const override;
+    void writeMemberPages(OutputList &ol) const override;
+    void writeMemberList(OutputList &ol) const override;
+    void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,int indentLevel,
                           const ClassDef *inheritedFrom,const QCString &inheritId) const override;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const override;
-    virtual void writeSummaryLinks(OutputList &ol) const override;
-    virtual void reclassifyMember(MemberDefMutable *md,MemberType t) override;
-    virtual void writeInlineDocumentation(OutputList &ol) const override;
-    virtual void writeDeclarationLink(OutputList &ol,bool &found,
+    void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const override;
+    void writeSummaryLinks(OutputList &ol) const override;
+    void reclassifyMember(MemberDefMutable *md,MemberType t) override;
+    void writeInlineDocumentation(OutputList &ol) const override;
+    void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const override;
-    virtual void removeMemberFromLists(MemberDef *md) override;
-    virtual void setAnonymousEnumType() override;
-    virtual void countMembers() override;
-    virtual void sortAllMembersList() override;
+    void removeMemberFromLists(MemberDef *md) override;
+    void setAnonymousEnumType() override;
+    void countMembers() override;
+    void sortAllMembersList() override;
 
-    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
+    void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                               const ClassDef *inheritedFrom,const QCString &inheritId) const override;
-    virtual void writeTagFile(TextStream &) const override;
+    void writeTagFile(TextStream &) const override;
 
-    virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const override;
-    virtual int countInheritanceNodes() const override;
-    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
+    int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const override;
+    int countInheritanceNodes() const override;
+    int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
                 int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const override;
-    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+    void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
                  const QCString &subTitle=QCString(),
                  bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const override;
-    virtual void setRequiresClause(const QCString &req) override;
+    void setRequiresClause(const QCString &req) override;
 
     // inheritance graph related members
-    virtual CLASS_GRAPH_t inheritanceGraphType() const override;
-    virtual void setTypeInheritanceGraph(CLASS_GRAPH_t e) override;
+    CLASS_GRAPH_t inheritanceGraphType() const override;
+    void setTypeInheritanceGraph(CLASS_GRAPH_t e) override;
 
     // collaboration graph related members
-    virtual bool hasCollaborationGraph() const override;
-    virtual void enableCollaborationGraph(bool e) override;
+    bool hasCollaborationGraph() const override;
+    void enableCollaborationGraph(bool e) override;
   private:
     void addUsedInterfaceClasses(MemberDef *md,const QCString &typeStr);
     void showUsedFiles(OutputList &ol) const;
@@ -417,214 +417,214 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
   public:
     ClassDefAliasImpl(const Definition *newScope,const ClassDef *cd)
       : DefinitionAliasMixin(newScope,cd) { init(); }
-    virtual ~ClassDefAliasImpl() { deinit(); }
-    virtual DefType definitionType() const { return TypeClass; }
+    ~ClassDefAliasImpl() override { deinit(); }
+    DefType definitionType() const override { return TypeClass; }
 
     const ClassDef *getCdAlias() const { return toClassDef(getAlias()); }
-    virtual ClassDef *resolveAlias() { return const_cast<ClassDef*>(getCdAlias()); }
+    ClassDef *resolveAlias() { return const_cast<ClassDef*>(getCdAlias()); }
 
-    virtual CodeSymbolType codeSymbolType() const
+    CodeSymbolType codeSymbolType() const override
     { return getCdAlias()->codeSymbolType(); }
-    virtual QCString getOutputFileBase() const
+    QCString getOutputFileBase() const override
     { return getCdAlias()->getOutputFileBase(); }
-    virtual QCString getInstanceOutputFileBase() const
+    QCString getInstanceOutputFileBase() const override
     { return getCdAlias()->getInstanceOutputFileBase(); }
-    virtual QCString getSourceFileBase() const
+    QCString getSourceFileBase() const override
     { return getCdAlias()->getSourceFileBase(); }
-    virtual QCString getReference() const
+    QCString getReference() const override
     { return getCdAlias()->getReference(); }
-    virtual bool isReference() const
+    bool isReference() const override
     { return getCdAlias()->isReference(); }
-    virtual bool isLocal() const
+    bool isLocal() const override
     { return getCdAlias()->isLocal(); }
-    virtual ClassLinkedRefMap getClasses() const
+    ClassLinkedRefMap getClasses() const override
     { return getCdAlias()->getClasses(); }
-    virtual bool hasDocumentation() const
+    bool hasDocumentation() const override
     { return getCdAlias()->hasDocumentation(); }
-    virtual bool hasDetailedDescription() const
+    bool hasDetailedDescription() const override
     { return getCdAlias()->hasDetailedDescription(); }
-    virtual QCString collaborationGraphFileName() const
+    QCString collaborationGraphFileName() const override
     { return getCdAlias()->collaborationGraphFileName(); }
-    virtual QCString inheritanceGraphFileName() const
+    QCString inheritanceGraphFileName() const override
     { return getCdAlias()->inheritanceGraphFileName(); }
-    virtual QCString displayName(bool includeScope=TRUE) const
+    QCString displayName(bool includeScope=TRUE) const override
     { return makeDisplayName(this,includeScope); }
-    virtual CompoundType compoundType() const
+    CompoundType compoundType() const override
     { return getCdAlias()->compoundType(); }
-    virtual QCString compoundTypeString() const
+    QCString compoundTypeString() const override
     { return getCdAlias()->compoundTypeString(); }
-    virtual const BaseClassList &baseClasses() const
+    const BaseClassList &baseClasses() const override
     { return getCdAlias()->baseClasses(); }
-    virtual const BaseClassList &subClasses() const
+    const BaseClassList &subClasses() const override
     { return getCdAlias()->subClasses(); }
-    virtual const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const
+    const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const override
     { return getCdAlias()->memberNameInfoLinkedMap(); }
-    virtual Protection protection() const
+    Protection protection() const override
     { return getCdAlias()->protection(); }
-    virtual bool isLinkableInProject() const
+    bool isLinkableInProject() const override
     { return getCdAlias()->isLinkableInProject(); }
-    virtual bool isLinkable() const
+    bool isLinkable() const override
     { return getCdAlias()->isLinkable(); }
-    virtual bool isVisibleInHierarchy() const
+    bool isVisibleInHierarchy() const override
     { return getCdAlias()->isVisibleInHierarchy(); }
-    virtual bool visibleInParentsDeclList() const
+    bool visibleInParentsDeclList() const override
     { return getCdAlias()->visibleInParentsDeclList(); }
-    virtual const ArgumentList &templateArguments() const
+    const ArgumentList &templateArguments() const override
     { return getCdAlias()->templateArguments(); }
-    //virtual NamespaceDef *getNamespaceDef() const
+    //NamespaceDef *getNamespaceDef() const override
     //{ return getCdAlias()->getNamespaceDef(); }
-    virtual FileDef *getFileDef() const
+    FileDef *getFileDef() const override
     { return getCdAlias()->getFileDef(); }
-    virtual ModuleDef *getModuleDef() const
+    ModuleDef *getModuleDef() const override
     { return getCdAlias()->getModuleDef(); }
-    virtual const MemberDef *getMemberByName(const QCString &s) const
+    const MemberDef *getMemberByName(const QCString &s) const override
     { return getCdAlias()->getMemberByName(s); }
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const
+    int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const override
     { return getCdAlias()->isBaseClass(bcd,followInstances,templSpec); }
-    virtual bool isSubClass(ClassDef *bcd,int level=0) const
+    bool isSubClass(ClassDef *bcd,int level=0) const override
     { return getCdAlias()->isSubClass(bcd,level); }
-    virtual bool isAccessibleMember(const MemberDef *md) const
+    bool isAccessibleMember(const MemberDef *md) const override
     { return getCdAlias()->isAccessibleMember(md); }
-    virtual const TemplateInstanceList &getTemplateInstances() const
+    const TemplateInstanceList &getTemplateInstances() const override
     { return getCdAlias()->getTemplateInstances(); }
-    virtual const ClassDef *templateMaster() const
+    const ClassDef *templateMaster() const override
     { return getCdAlias()->templateMaster(); }
-    virtual bool isTemplate() const
+    bool isTemplate() const override
     { return getCdAlias()->isTemplate(); }
-    virtual const IncludeInfo *includeInfo() const
+    const IncludeInfo *includeInfo() const override
     { return getCdAlias()->includeInfo(); }
-    virtual const UsesClassList &usedImplementationClasses() const
+    const UsesClassList &usedImplementationClasses() const override
     { return getCdAlias()->usedImplementationClasses(); }
-    virtual const UsesClassList &usedByImplementationClasses() const
+    const UsesClassList &usedByImplementationClasses() const override
     { return getCdAlias()->usedByImplementationClasses(); }
-    virtual const ConstraintClassList &templateTypeConstraints() const
+    const ConstraintClassList &templateTypeConstraints() const override
     { return getCdAlias()->templateTypeConstraints(); }
-    virtual bool isTemplateArgument() const
+    bool isTemplateArgument() const override
     { return getCdAlias()->isTemplateArgument(); }
-    virtual const Definition *findInnerCompound(const QCString &name) const
+    const Definition *findInnerCompound(const QCString &name) const override
     { return getCdAlias()->findInnerCompound(name); }
-    virtual ArgumentLists getTemplateParameterLists() const
+    ArgumentLists getTemplateParameterLists() const override
     { return getCdAlias()->getTemplateParameterLists(); }
-    virtual QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const
+    QCString qualifiedNameWithTemplateParameters(
+        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const override
     { return makeQualifiedNameWithTemplateParameters(this,actualParams,actualParamIndex); }
-    virtual bool isAbstract() const
+    bool isAbstract() const override
     { return getCdAlias()->isAbstract(); }
-    virtual bool isObjectiveC() const
+    bool isObjectiveC() const override
     { return getCdAlias()->isObjectiveC(); }
-    virtual bool isFortran() const
+    bool isFortran() const override
     { return getCdAlias()->isFortran(); }
-    virtual bool isCSharp() const
+    bool isCSharp() const override
     { return getCdAlias()->isCSharp(); }
-    virtual bool isFinal() const
+    bool isFinal() const override
     { return getCdAlias()->isFinal(); }
-    virtual bool isSealed() const
+    bool isSealed() const override
     { return getCdAlias()->isSealed(); }
-    virtual bool isPublished() const
+    bool isPublished() const override
     { return getCdAlias()->isPublished(); }
-    virtual bool isExtension() const
+    bool isExtension() const override
     { return getCdAlias()->isExtension(); }
-    virtual bool isForwardDeclared() const
+    bool isForwardDeclared() const override
     { return getCdAlias()->isForwardDeclared(); }
-    virtual bool isInterface() const
+    bool isInterface() const override
     { return getCdAlias()->isInterface(); }
-    virtual ClassDef *categoryOf() const
+    ClassDef *categoryOf() const override
     { return getCdAlias()->categoryOf(); }
-    virtual QCString className() const
+    QCString className() const override
     { return getCdAlias()->className(); }
-    virtual MemberList *getMemberList(MemberListType lt) const
+    MemberList *getMemberList(MemberListType lt) const override
     { return getCdAlias()->getMemberList(lt); }
-    virtual const MemberLists &getMemberLists() const
+    const MemberLists &getMemberLists() const override
     { return getCdAlias()->getMemberLists(); }
-    virtual const MemberGroupList &getMemberGroups() const
+    const MemberGroupList &getMemberGroups() const override
     { return getCdAlias()->getMemberGroups(); }
-    virtual const TemplateNameMap &getTemplateBaseClassNames() const
+    const TemplateNameMap &getTemplateBaseClassNames() const override
     { return getCdAlias()->getTemplateBaseClassNames(); }
-    virtual bool isUsedOnly() const
+    bool isUsedOnly() const override
     { return getCdAlias()->isUsedOnly(); }
-    virtual QCString anchor() const
+    QCString anchor() const override
     { return getCdAlias()->anchor(); }
-    virtual bool isEmbeddedInOuterScope() const
+    bool isEmbeddedInOuterScope() const override
     { return getCdAlias()->isEmbeddedInOuterScope(); }
-    virtual bool isSimple() const
+    bool isSimple() const override
     { return getCdAlias()->isSimple(); }
-    virtual const ClassDef *tagLessReference() const
+    const ClassDef *tagLessReference() const override
     { return getCdAlias()->tagLessReference(); }
-    virtual const MemberDef *isSmartPointer() const
+    const MemberDef *isSmartPointer() const override
     { return getCdAlias()->isSmartPointer(); }
-    virtual bool isJavaEnum() const
+    bool isJavaEnum() const override
     { return getCdAlias()->isJavaEnum(); }
-    virtual QCString title() const
+    QCString title() const override
     { return getCdAlias()->title(); }
-    virtual QCString generatedFromFiles() const
+    QCString generatedFromFiles() const override
     { return getCdAlias()->generatedFromFiles(); }
-    virtual const FileList &usedFiles() const
+    const FileList &usedFiles() const override
     { return getCdAlias()->usedFiles(); }
-    virtual const ArgumentList &typeConstraints() const
+    const ArgumentList &typeConstraints() const override
     { return getCdAlias()->typeConstraints(); }
-    virtual const ExampleList &getExamples() const
+    const ExampleList &getExamples() const override
     { return getCdAlias()->getExamples(); }
-    virtual bool hasExamples() const
+    bool hasExamples() const override
     { return getCdAlias()->hasExamples(); }
-    virtual QCString getMemberListFileName() const
+    QCString getMemberListFileName() const override
     { return getCdAlias()->getMemberListFileName(); }
-    virtual bool subGrouping() const
+    bool subGrouping() const override
     { return getCdAlias()->subGrouping(); }
-    virtual bool isSliceLocal() const
+    bool isSliceLocal() const override
     { return getCdAlias()->isSliceLocal(); }
-    virtual bool hasNonReferenceSuperClass() const
+    bool hasNonReferenceSuperClass() const override
     { return getCdAlias()->hasNonReferenceSuperClass(); }
-    virtual QCString requiresClause() const
+    QCString requiresClause() const override
     { return getCdAlias()->requiresClause(); }
-    virtual StringVector getQualifiers() const
+    StringVector getQualifiers() const override
     { return getCdAlias()->getQualifiers(); }
 
-    virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const
+    int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const override
     { return getCdAlias()->countMembersIncludingGrouped(lt,inheritedFrom,additional); }
-    virtual int countInheritanceNodes() const
+    int countInheritanceNodes() const override
     { return getCdAlias()->countInheritanceNodes(); }
-    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const
+    int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
+                int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const override
     { return getCdAlias()->countMemberDeclarations(lt,inheritedFrom,lt2,invert,showAlways,visitedClasses); }
 
-    virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                              const QCString &header,bool localNames) const
+    void writeDeclarationLink(OutputList &ol,bool &found,
+                              const QCString &header,bool localNames) const override
     { getCdAlias()->writeDeclarationLink(ol,found,header,localNames); }
-    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
-                                             const QCString &templSpec,bool &freshInstance) const
+    ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
+                                             const QCString &templSpec,bool &freshInstance) const override
     { return getCdAlias()->insertTemplateInstance(fileName,startLine,startColumn,templSpec,freshInstance); }
 
-    virtual void writeDocumentation(OutputList &ol) const
+    void writeDocumentation(OutputList &ol) const override
     { getCdAlias()->writeDocumentation(ol); }
-    virtual void writeDocumentationForInnerClasses(OutputList &ol) const
+    void writeDocumentationForInnerClasses(OutputList &ol) const override
     { getCdAlias()->writeDocumentationForInnerClasses(ol); }
-    virtual void writeMemberPages(OutputList &ol) const
+    void writeMemberPages(OutputList &ol) const override
     { getCdAlias()->writeMemberPages(ol); }
-    virtual void writeMemberList(OutputList &ol) const
+    void writeMemberList(OutputList &ol) const override
     { getCdAlias()->writeMemberList(ol); }
-    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
-                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const
+    void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const override
     { getCdAlias()->writeDeclaration(ol,md,inGroup,indentLevel,inheritedFrom,inheritId); }
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const
+    void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const override
     { getCdAlias()->writeQuickMemberLinks(ol,md); }
-    virtual void writeSummaryLinks(OutputList &ol) const
+    void writeSummaryLinks(OutputList &ol) const override
     { getCdAlias()->writeSummaryLinks(ol); }
-    virtual void writeInlineDocumentation(OutputList &ol) const
+    void writeInlineDocumentation(OutputList &ol) const override
     { getCdAlias()->writeInlineDocumentation(ol); }
-    virtual void writeTagFile(TextStream &ol) const
+    void writeTagFile(TextStream &ol) const override
     { getCdAlias()->writeTagFile(ol); }
-    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+    void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
                  const QCString &subTitle=QCString(),
                  bool showInline=FALSE,const ClassDef *inheritedFrom=0,
-                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const
+                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const override
     { getCdAlias()->writeMemberDeclarations(ol,visitedClasses,lt,title,subTitle,showInline,inheritedFrom,lt2,invert,showAlways); }
-    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
-                 const ClassDef *inheritedFrom,const QCString &inheritId) const
+    void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
+                 const ClassDef *inheritedFrom,const QCString &inheritId) const override
     { getCdAlias()->addGroupedInheritedMembers(ol,lt,inheritedFrom,inheritId); }
 
-    virtual void updateBaseClasses(const BaseClassList &) {}
-    virtual void updateSubClasses(const BaseClassList &) {}
+    void updateBaseClasses(const BaseClassList &) override {}
+    void updateSubClasses(const BaseClassList &) override {}
 };
 
 std::unique_ptr<ClassDef> createClassDefAlias(const Definition *newScope,const ClassDef *cd)
