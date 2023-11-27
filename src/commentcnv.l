@@ -101,6 +101,7 @@ struct commentcnvYY_state
   std::stack<int> commentStack;
   QCString blockName;
   int      lastCommentContext = 0;
+  int      lastContext = 0;
   bool     inSpecialComment = FALSE;
   bool     inRoseComment= FALSE;
   int      stringContext = 0;
@@ -166,6 +167,7 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 %x IncludeDoc
 %x SnippetDoc
 %x IncludeFile
+%x HtmlComment
 
   //- start: NUMBER -------------------------------------------------------------------------
   // Note same defines in code.l: keep in sync
@@ -229,6 +231,32 @@ SLASHopt [/]*
                                       if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
                                       copyToOutput(yyscanner,yytext,(int)yyleng);
                                     }
+<*>"<!--"                           {
+                                      copyToOutput(yyscanner,yytext,(int)yyleng);
+                                      yyextra->lastContext = YY_START;
+                                      BEGIN(HtmlComment);
+                                    }
+<HtmlComment>"---"[!]?">"{B}*       {
+                                      copyToOutput(yyscanner,yytext,(int)yyleng);
+                                      warn(yyextra->fileName,yyextra->lineNr,
+                                           "incorrect HTML end comment --->"
+                                          );
+                                    }
+<HtmlComment>"--"[!]?">"{B}*        {
+                                      copyToOutput(yyscanner,yytext,(int)yyleng);
+                                      BEGIN( yyextra->lastContext );
+                                    }
+<HtmlComment>\n                     {
+                                      copyToOutput(yyscanner,yytext,(int)yyleng);
+                                      yyextra->lineNr++;
+                                    }
+<HtmlComment>[^\\\n\-]+             {
+                                      copyToOutput(yyscanner,yytext,(int)yyleng);
+                                    }
+<HtmlComment>.                      {
+                                      copyToOutput(yyscanner,yytext,(int)yyleng);
+                                    }
+
 <Scan>[^"'!\/\n\\#,\-=; \t]*        { /* eat anything that is not " / , or \n */
                                        copyToOutput(yyscanner,yytext,(int)yyleng);
                                     }
