@@ -19501,7 +19501,7 @@ class docHeadingType(GeneratedsSuper):
         self.original_tagname_ = None
         self.parent_object_ = kwargs_.get('parent_object_')
         self.ns_prefix_ = None
-        self.level = _cast(int, level)
+        self.level = _cast(None, level)
         self.level_nsprefix_ = None
         if ulink is None:
             self.ulink = []
@@ -20032,7 +20032,7 @@ class docHeadingType(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='docHeadingType'):
         if self.level is not None and 'level' not in already_processed:
             already_processed.add('level')
-            outfile.write(' level="%s"' % self.gds_format_integer(self.level, input_name='level'))
+            outfile.write(' level=%s' % (quote_attrib(self.level), ))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docHeadingType', fromsubclass_=False, pretty_print=True):
         if not fromsubclass_:
             for item_ in self.content_:
@@ -20153,7 +20153,7 @@ class docHeadingType(GeneratedsSuper):
         value = find_attr_value_('level', node)
         if value is not None and 'level' not in already_processed:
             already_processed.add('level')
-            self.level = self.gds_parse_integer(value, node, 'level')
+            self.level = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'ulink':
             obj_ = docURLLink.factory(parent_object_=self)
