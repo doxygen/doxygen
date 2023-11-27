@@ -3861,8 +3861,8 @@ UML notation for the relationships.
       <docs>
 <![CDATA[
  The \c DOT_WRAP_THRESHOLD tag can be used to set the maximum number of characters to display on
- a single line. If the actual line length exceeds this threshold significantly it will wrapped
- across multiple lines. Some heuristics are apply to avoid ugly line breaks.
+ a single line. If the actual line length exceeds this threshold significantly it will be wrapped
+ across multiple lines. Some heuristics are applied to avoid ugly line breaks.
 ]]>
       </docs>
     </option>
