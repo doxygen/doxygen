@@ -1326,7 +1326,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
   if (!fi.exists()) fi = FileInfo(fileName+".txt");
   if (fi.exists() && fi.isFile())
   {
-    QCString lineStr=" \\ilinebr\\ifile \""+fileName+"\" \\iline 1 ";
+    QCString lineStr=" \\ilinebr\\ifile \""+fileName+"\" \\iline 1 \\ilinebr ";
     copyToOutput(yyscanner,lineStr.data(),lineStr.length());
 
     QCString absFileName(fi.absFilePath());
