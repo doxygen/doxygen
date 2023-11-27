@@ -7848,7 +7848,6 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       yyextra->yyLineNr = ce->bodyLine;
       yyextra->yyColNr = ce->bodyColumn;
       yyextra->insideObjC = ce->lang==SrcLangExt_ObjC;
-      //printf("---> Inner block starts at line %d objC=%d\n",yyextra->yyLineNr,yyextra->insideObjC);
       yyextra->current = std::make_shared<Entry>();
       yyextra->isStatic = FALSE;
       initEntry(yyscanner);

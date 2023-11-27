@@ -1078,7 +1078,7 @@ STopt  [^\n@\\]*
 
 <HtmlComment>"---"[!]?">"{B}*           {
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "incorrect HTML end comment --->"
+                                               "incorrect HTML end comment '%s'",yytext
                                               );
                                         }
 <HtmlComment>"--"[!]?">"{B}*            { BEGIN( Comment ); }

@@ -231,6 +231,9 @@ SLASHopt [/]*
                                       if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
                                       copyToOutput(yyscanner,yytext,(int)yyleng);
                                     }
+<*>"\"<!--\""                       {
+                                      copyToOutput(yyscanner,yytext,(int)yyleng);
+                                    }
 <*>"<!--"                           {
                                       copyToOutput(yyscanner,yytext,(int)yyleng);
                                       yyextra->lastContext = YY_START;
@@ -239,7 +242,7 @@ SLASHopt [/]*
 <HtmlComment>"---"[!]?">"{B}*       {
                                       copyToOutput(yyscanner,yytext,(int)yyleng);
                                       warn(yyextra->fileName,yyextra->lineNr,
-                                           "incorrect HTML end comment --->"
+                                           "incorrect HTML end comment '%s'",yytext
                                           );
                                     }
 <HtmlComment>"--"[!]?">"{B}*        {
@@ -1224,7 +1227,6 @@ static inline void copyToOutput(yyscan_t yyscanner,const char *s,int len)
       switch (s[i])
       {
 	case '\n': yyextra->col=0;
-	           //fprintf(stderr,"---> copy %d\n",g_lineNr);
 		   yyextra->lineNr++; break;
 	case '\t': yyextra->col+=tabSize-(yyextra->col%tabSize); break;
 	default:   yyextra->col++; break;
