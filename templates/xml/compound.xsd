@@ -683,9 +683,16 @@
     <xsd:attribute name="id" type="xsd:string" /> 
   </xsd:complexType>
 
+  <xsd:simpleType name="range_1_6">
+    <xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1"/>
+      <xsd:maxInclusive value="6"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
   <xsd:complexType name="docHeadingType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
-    <xsd:attribute name="level" type="xsd:integer" /> <!-- todo: range 1-6 -->
+    <xsd:attribute name="level" type="range_1_6" />
   </xsd:complexType>
 
   <xsd:complexType name="docImageType" mixed="true">
