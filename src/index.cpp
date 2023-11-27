@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -391,12 +391,12 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
                const QCString &altSidebarName, int hierarchyLevel,bool needsFolding)
 {
-  bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool disableIndex = Config_getBool(DISABLE_INDEX);
   ol.startFile(name,manName,title,hierarchyLevel);
   ol.startQuickIndices();
   if (!disableIndex)
   {
-    ol.writeQuickLinks(TRUE,hli,name,needsFolding);
+    ol.writeQuickLinks(hli,name,needsFolding);
   }
   if (!additionalIndices)
   {
@@ -3130,8 +3130,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
     ol.startQuickIndices();
     if (!disableIndex)
     {
-      ol.writeQuickLinks(true,HighlightedItem::Functions,QCString(),false);
-
+      ol.writeQuickLinks(HighlightedItem::Functions,QCString(),false);
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
       {
         startQuickIndexList(ol);
@@ -3299,7 +3298,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
     ol.startQuickIndices();
     if (!disableIndex)
     {
-      ol.writeQuickLinks(true,HighlightedItem::Globals,QCString(),false);
+      ol.writeQuickLinks(HighlightedItem::Globals,QCString(),false);
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
       {
         startQuickIndexList(ol);
@@ -3464,7 +3463,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     ol.startQuickIndices();
     if (!disableIndex)
     {
-      ol.writeQuickLinks(true,HighlightedItem::NamespaceMembers,QCString(),false);
+      ol.writeQuickLinks(HighlightedItem::NamespaceMembers,QCString(),false);
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
       {
         startQuickIndexList(ol);
@@ -3622,7 +3621,7 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
     ol.startQuickIndices();
     if (!disableIndex)
     {
-      ol.writeQuickLinks(true,HighlightedItem::ModuleMembers,QCString(),false);
+      ol.writeQuickLinks(HighlightedItem::ModuleMembers,QCString(),false);
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
       {
         startQuickIndexList(ol);
@@ -4756,7 +4755,7 @@ static void writeIndex(OutputList &ol)
   ol.startQuickIndices();
   if (!Config_getBool(DISABLE_INDEX))
   {
-    ol.writeQuickLinks(true,HighlightedItem::Main,QCString(),false);
+    ol.writeQuickLinks(HighlightedItem::Main,QCString(),false);
   }
   ol.endQuickIndices();
   ol.writeSplitBar(indexName);
@@ -4805,7 +4804,7 @@ static void writeIndex(OutputList &ol)
   ol.startContents();
   if (Config_getBool(DISABLE_INDEX) && Doxygen::mainPage==0)
   {
-    ol.writeQuickLinks(false,HighlightedItem::Main,QCString(),false);
+    ol.writeQuickLinks(HighlightedItem::Main,QCString(),false);
   }
 
   if (Doxygen::mainPage)

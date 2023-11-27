@@ -1801,3 +1801,17 @@ details[open]>summary::before {
     font-size: 80%;
 }
 
+/* make the dynamic menu sticky */
+#main-nav, div.sm {
+  position: sticky;
+  top: 0px;
+  width: 100%;
+  z-index: 100;
+}
+@media(max-width:768px)
+{
+  #main-nav {
+    top: 36px;
+  }
+}
+

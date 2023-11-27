@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -2557,9 +2557,9 @@ void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const 
 
 //---------------- helpers for index generation -----------------------------
 
-static void startQuickIndexList(TextStream &t,bool compact,bool topLevel=TRUE)
+static void startQuickIndexList(TextStream &t,bool topLevel=TRUE)
 {
-  if (compact)
+  if (!Config_getBool(DISABLE_INDEX))
   {
     if (topLevel)
     {
@@ -2577,9 +2577,9 @@ static void startQuickIndexList(TextStream &t,bool compact,bool topLevel=TRUE)
   }
 }
 
-static void endQuickIndexList(TextStream &t,bool compact)
+static void endQuickIndexList(TextStream &t)
 {
-  if (compact)
+  if (!Config_getBool(DISABLE_INDEX))
   {
     t << "    </ul>\n";
     t << "  </div>\n";
@@ -2667,7 +2667,7 @@ static void renderQuickLinksAsTree(TextStream &t,const QCString &relPath,LayoutN
   }
   if (count>0) // at least one item is visible
   {
-    startQuickIndexList(t,FALSE);
+    startQuickIndexList(t);
     for (const auto &entry : root->children())
     {
       if (entry->visible() && quickLinkVisible(entry->kind()))
@@ -2681,7 +2681,7 @@ static void renderQuickLinksAsTree(TextStream &t,const QCString &relPath,LayoutN
         t << "</li>";
       }
     }
-    endQuickIndexList(t,FALSE);
+    endQuickIndexList(t);
   }
 }
 
@@ -2704,7 +2704,7 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
     }
     if (count>0) // at least one item is visible
     {
-      startQuickIndexList(t,TRUE,topLevel);
+      startQuickIndexList(t,topLevel);
       for (const auto &entry : hlEntry->parent()->children())
       {
         if (entry->visible() && quickLinkVisible(entry->kind()))
@@ -2744,18 +2744,18 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
         if (!highlightSearch) // on the search page the index will be ended by the
           // page itself
         {
-          endQuickIndexList(t,TRUE);
+          endQuickIndexList(t);
         }
       }
       else // normal case for other rows than first one
       {
-        endQuickIndexList(t,TRUE);
+        endQuickIndexList(t);
       }
     }
   }
 }
 
-static void writeDefaultQuickLinks(TextStream &t,bool compact,
+static void writeDefaultQuickLinks(TextStream &t,
                                    HighlightedItem hli,
                                    const QCString &file,
                                    const QCString &relPath,
@@ -2814,7 +2814,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
     case HighlightedItem::Search: break;
   }
 
-  if (compact && Config_getBool(HTML_DYNAMIC_MENUS))
+  if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
   {
     QCString searchPage;
     if (externalSearch)
@@ -2851,9 +2851,8 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
     t << "});\n";
     t << "/* @license-end */\n";
     t << "</script>\n";
-    t << "<div id=\"main-nav\"></div>\n";
   }
-  else if (compact) // && !Config_getBool(HTML_DYNAMIC_MENUS)
+  else if (!Config_getBool(DISABLE_INDEX)) // && !Config_getBool(HTML_DYNAMIC_MENUS)
   {
     // find highlighted index item
     LayoutNavEntry *hlEntry = root->find(kind,kind==LayoutNavEntry::UserGroup ? file : QCString());
@@ -2893,7 +2892,17 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
 
 void HtmlGenerator::endQuickIndices()
 {
+  bool dynamicMenuVisible = !Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  if (generateTreeView && dynamicMenuVisible) // place menu inside top section so we don't we don't get extra scrollbars
+  {
+    m_t << "<div id=\"main-nav\"></div>\n";
+  }
   m_t << "</div><!-- top -->\n";
+  if (!generateTreeView && dynamicMenuVisible) // place menu after top section to allow sticky menu
+  {
+    m_t << "<div id=\"main-nav\"></div>\n";
+  }
 }
 
 QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath)
@@ -2962,9 +2971,9 @@ void HtmlGenerator::endPageDoc()
   m_t << "</div><!-- PageDoc -->\n";
 }
 
-void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli,const QCString &file,bool needsFolding)
+void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file,bool needsFolding)
 {
-  writeDefaultQuickLinks(m_t,compact,hli,file,m_relPath,needsFolding);
+  writeDefaultQuickLinks(m_t,hli,file,m_relPath,needsFolding);
 }
 
 // PHP based search script
@@ -3024,7 +3033,7 @@ void HtmlGenerator::writeSearchPage()
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
-      writeDefaultQuickLinks(t,true,HighlightedItem::Search,QCString(),QCString(),false);
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
     else
     {
@@ -3080,7 +3089,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
-      writeDefaultQuickLinks(t,true,HighlightedItem::Search,QCString(),QCString(),false);
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
       if (!Config_getBool(HTML_DYNAMIC_MENUS)) // for dynamic menus, menu.js creates this part
       {
         t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\"" << theTranslator->trSearch() <<

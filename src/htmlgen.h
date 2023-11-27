@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -227,7 +227,7 @@ class HtmlGenerator : public OutputGenerator
     void writeSplitBar(const QCString &name);
     void writeNavigationPath(const QCString &s);
     void writeLogo();
-    void writeQuickLinks(bool compact,HighlightedItem hli,const QCString &file,bool needsFolding);
+    void writeQuickLinks(HighlightedItem hli,const QCString &file,bool needsFolding);
     void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first);
     void startContents();
     void endContents();

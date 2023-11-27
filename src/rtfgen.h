@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Parker Waechter & Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -206,7 +204,7 @@ class RTFGenerator : public OutputGenerator
     void writeSplitBar(const QCString &) {}
     void writeNavigationPath(const QCString &) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem,const QCString &,bool) {}
+    void writeQuickLinks(HighlightedItem,const QCString &,bool) {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) {}
     void startContents() {}
     void endContents() {}
