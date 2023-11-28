@@ -24,7 +24,7 @@ class MemberDef;
 class Sitemap
 {
   public:
-    Sitemap();
+    Sitemap(bool const site);
     ~Sitemap();
     Sitemap(Sitemap &&);
 
@@ -43,6 +43,7 @@ class Sitemap
     void addStyleSheetFile(const QCString & name){}
 
     static inline const QCString sitemapFileName = "sitemap.xml";
+    static inline const QCString crawlFileName = "doxygen_crawl";
 
   private:
     class Private;
