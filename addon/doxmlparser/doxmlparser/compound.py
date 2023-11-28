@@ -19501,7 +19501,7 @@ class docHeadingType(GeneratedsSuper):
         self.original_tagname_ = None
         self.parent_object_ = kwargs_.get('parent_object_')
         self.ns_prefix_ = None
-        self.level = _cast(None, level)
+        self.level = _cast(int, level)
         self.level_nsprefix_ = None
         if ulink is None:
             self.ulink = []
@@ -19969,6 +19969,21 @@ class docHeadingType(GeneratedsSuper):
         self.level = level
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def validate_range_1_6(self, value):
+        # Validate type range_1_6, a restriction on xsd:integer.
+        if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
+            if not isinstance(value, int):
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (int)' % {"value": value, "lineno": lineno, })
+                return False
+            if value < 1:
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd minInclusive restriction on range_1_6' % {"value": value, "lineno": lineno} )
+                result = False
+            if value > 6:
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd maxInclusive restriction on range_1_6' % {"value": value, "lineno": lineno} )
+                result = False
     def hasContent_(self):
         if (
             self.ulink or
@@ -20032,7 +20047,7 @@ class docHeadingType(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='docHeadingType'):
         if self.level is not None and 'level' not in already_processed:
             already_processed.add('level')
-            outfile.write(' level=%s' % (quote_attrib(self.level), ))
+            outfile.write(' level="%s"' % self.gds_format_integer(self.level, input_name='level'))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docHeadingType', fromsubclass_=False, pretty_print=True):
         if not fromsubclass_:
             for item_ in self.content_:
@@ -20153,7 +20168,8 @@ class docHeadingType(GeneratedsSuper):
         value = find_attr_value_('level', node)
         if value is not None and 'level' not in already_processed:
             already_processed.add('level')
-            self.level = value
+            self.level = self.gds_parse_integer(value, node, 'level')
+            self.validate_range_1_6(self.level)    # validate type range_1_6
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'ulink':
             obj_ = docURLLink.factory(parent_object_=self)
