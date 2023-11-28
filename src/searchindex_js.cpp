@@ -487,7 +487,11 @@ void createJavaScriptSearchIndex()
     for (auto &[name,symList] : sii.symbolMap) // for each symbol in the index
     {
       // sort the symbols (first on search term, and then on full name)
-      std::sort(symList.begin(),
+      //
+      // `std::stable_sort` is used here due to reproducibility issues
+      // on key collisions
+      // https://github.com/doxygen/doxygen/issues/10445 
+      std::stable_sort(symList.begin(),
                 symList.end(),
                 [](const auto &t1,const auto &t2)
                 {
