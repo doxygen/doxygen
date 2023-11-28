@@ -1007,10 +1007,10 @@ SLASHopt [/]*
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
 				     if (*yytext=='\n') { yyextra->lineNr++; copyToOutput(yyscanner,"\n",1);}
   				   }
-<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
+<CComment,ReadLine,IncludeFile>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,QCString(yytext));
   				   }
-<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
+<CComment,ReadLine,IncludeFile>[\\@][a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
                                      yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
 				     yyextra->aliasString=yytext;
@@ -1318,18 +1318,35 @@ static QCString extractBlock(const QCString &text,const QCString &marker,int &bl
 static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCString &blockId)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  FileInfo pathFi(yyextra->fileName.str());
-  std::string fileName = pathFi.dirPath(true)+"/"+inc.str();
+  bool ambig;
+  FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,inc,ambig);
+  std::string fileName = inc.str();
   FileInfo fi(fileName);
-  if (!fi.exists()) fi = FileInfo(fileName+".md");
-  if (!fi.exists()) fi = FileInfo(fileName+".dox");
-  if (!fi.exists()) fi = FileInfo(fileName+".txt");
+  if (fd) // found via EXAMPLE_PATH
+  {
+    fi = FileInfo(fd->absFilePath().str());
+  }
+  else if (!fi.exists()) // look on disk
+  {
+    auto tryFileExtensions = [&fi](const std::string &fn) {
+      if (!fi.exists()) fi = FileInfo(fn+".md");
+      if (!fi.exists()) fi = FileInfo(fn+".dox");
+      if (!fi.exists()) fi = FileInfo(fn+".txt");
+    };
+    tryFileExtensions(fileName); // try relative from current dir or absolute path first
+    if (!fi.exists() && !inc.startsWith("/"))
+    {
+      FileInfo pathFi(yyextra->fileName.str()); // try relative to current file as well
+      fileName = pathFi.dirPath(true)+"/"+inc.str();
+      fi = FileInfo(fileName);
+      tryFileExtensions(fileName);
+    }
+  }
   if (fi.exists() && fi.isFile())
   {
+    QCString absFileName(fi.absFilePath());
     QCString lineStr=" \\ilinebr\\ifile \""+fileName+"\" \\iline 1 \\ilinebr ";
     copyToOutput(yyscanner,lineStr.data(),lineStr.length());
-
-    QCString absFileName(fi.absFilePath());
 
     bool alreadyProcessed = std::any_of(
       yyextra->includeStack.begin(),
