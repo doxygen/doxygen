@@ -219,7 +219,7 @@ ANYopt .*
   // Optional white space
 WSopt [ \t\r]*
   // readline non special
-RLopt [^\\@\n\*\/]*
+RLopt [^\\@<\n\*\/]*
   // Optional slash
 SLASHopt [/]*
 
@@ -530,6 +530,12 @@ SLASHopt [/]*
 				     yyextra->lastCommentContext = YY_START;
 				     BEGIN(Verbatim);
   			           }
+<CComment,ReadLine>"<!--"          { /* HTML comment */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+				     yyextra->blockName="-->";
+				     yyextra->lastCommentContext = YY_START;
+                                     BEGIN(Verbatim);
+                                   }
 <CComment,ReadLine>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
 				     yyextra->blockName=&yytext[1];
@@ -556,6 +562,13 @@ SLASHopt [/]*
 				       BEGIN(yyextra->lastCommentContext);
 				     }
                                    }
+<Verbatim>"-->"                    {
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+				     if (yytext==yyextra->blockName) 
+				     {
+				       BEGIN(yyextra->lastCommentContext);
+				     }
+				   }
 <VerbatimCode>"{"		   {
                                      if (yyextra->javaBlock==0)
 				     {
@@ -623,7 +636,7 @@ SLASHopt [/]*
                                        }
                                      }
   				   }
-<Verbatim,VerbatimCode>[^`~@\/\\\n{}]* { /* any character not a backslash or new line or } */
+<Verbatim,VerbatimCode>[^`~@\/\-\\\n{}]* { /* any character not a backslash or new line or } */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
@@ -695,7 +708,7 @@ SLASHopt [/]*
 <CComment,CNComment>[^ `~<\\!@*\n{\"\/]*     { /* anything that is not a '*' or command */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<CComment,CNComment>"*"+[^*\/\\@\n{\"]*      { /* stars without slashes */
+<CComment,CNComment>"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment>"\"\"\""                 { /* end of Python docstring */
@@ -918,6 +931,9 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				     BEGIN(yyextra->readLineCtx);
 				   }
+<CComment,CNComment,ReadLine>"\\<" { /* escaped html comment */
+				     copyToOutput(yyscanner,yytext,(int)yyleng);
+  				   }
 <CComment,CNComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
   				   }
@@ -1420,6 +1436,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
   else
   {
     warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' not found",blockId.isEmpty()?"include":"snippet",qPrint(fileName));
+    return false;
   }
   return true;
 }
