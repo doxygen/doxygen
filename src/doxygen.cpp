@@ -952,6 +952,8 @@ static void addClassToContext(const Entry *root)
 
     cd->setDocumentation(root->doc,root->docFile,root->docLine);
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    cd->enableCollaborationGraph(root->collaborationGraph);
+    cd->setTypeInheritanceGraph(root->inheritanceGraph);
 
     if (!root->spec.isForwardDecl() && cd->isForwardDeclared())
     {
