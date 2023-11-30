@@ -35,7 +35,7 @@ ENABLE_PREPROCESSING = NO
 HTML_COLORSTYLE   = LIGHT
 CASE_SENSE_NAMES  = NO
 IMAGE_PATH        = . images
-INPUT             = $(INDEX_DOC) install.dox starting.dox docblocks.dox additional_documentation.dox \ 
+INPUT             = $(INDEX_DOC) install.dox starting.dox docblocks.dox additional.dox \
 					markdown.dox lists.dox grouping.dox formulas.dox tables.dox diagrams.dox preprocessing.dox \
                     autolink.dox output.dox searching.dox extsearch.dox customize.dox custcmd.dox \
                     external.dox faq.dox trouble.dox features.dox doxygen_usage.dox doxywizard_usage.dox \

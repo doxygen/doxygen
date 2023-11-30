@@ -41,6 +41,7 @@ set(DOC_FILES
         customize.dox
         diagrams.dox
         docblocks.dox
+        additional.dox
         Doxyfile
         doxygen_manual.css
         doxygen_usage.dox
