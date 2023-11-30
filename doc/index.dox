@@ -81,6 +81,7 @@ The first part forms a user manual:
                  supported by doxygen.
 <li>Section \ref searching shows various ways to search in the HTML documentation.
 <li>Section \ref extsearch shows how use the external search and index tools
+<li>Section \ref additional explains how you can create non-api related documentation pages.
 <li>Section \ref customize explains how you can customize the output generated
                  by doxygen.
 <li>Section \ref custcmd show how to define and use custom commands in your comments.
