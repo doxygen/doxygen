@@ -187,8 +187,6 @@ class DocTokenizer
     void setStateQuotedString();
     void setStateShowDate();
 
-    void setStateTitleSize(const bool);
-
   private:
     struct Private;
     std::unique_ptr<Private> p;

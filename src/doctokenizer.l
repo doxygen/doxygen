@@ -80,7 +80,6 @@ struct doctokenizerYY_state
   int sharpCount=0;
   bool markdownSupport=true;
   bool insideHtmlLink=false;
-  bool titleSize=false;
 
   // context for section finding phase
   const Definition  *definition = 0;
@@ -989,7 +988,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_TitleN>{HTMLTAG}   {
                          yyextra->token.name = yytext;
-                         if (!yyextra->titleSize) handleHtmlTag(yyscanner,yytext);
+                         handleHtmlTag(yyscanner,yytext);
                          return TK_HTMLTAG;
                        }
 <St_TitleN>\n          { /* new line => end of title */
@@ -1601,6 +1600,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   QCString tagText(text);
+  yyextra->token.text = tagText;
   yyextra->token.attribs.clear();
   yyextra->token.endTag = FALSE;
   yyextra->token.emptyTag = FALSE;
@@ -1835,13 +1835,6 @@ void DocTokenizer::setStateTitleAttrValue()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_TitleV);
-}
-
-void DocTokenizer::setStateTitleSize(const bool s)
-{
-  yyscan_t yyscanner = p->yyscanner;
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->titleSize = s;
 }
 
 void DocTokenizer::setStateCode()
