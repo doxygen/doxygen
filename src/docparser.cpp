@@ -963,6 +963,7 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
 
   // parse title
   tokenizer.setStateTitle();
+  tokenizer.setStateTitleSize(true);
   int tok;
   while ((tok=tokenizer.lex()))
   {
@@ -1026,6 +1027,7 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
       tokenizer.unputString(context.token->name);
     }
   }
+  tokenizer.setStateTitleSize(false);
   tokenizer.setStatePara();
 
   handlePendingStyleCommands(parent,children);
