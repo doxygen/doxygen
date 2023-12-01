@@ -10718,7 +10718,6 @@ static void devUsage()
 #if ENABLE_TRACING
   msg("  -t [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout)\n");
 #endif
-  msg("  -T          activates output generation via Django like template\n");
   msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
   Debug::printFlags();
 }
