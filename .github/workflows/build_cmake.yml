@@ -173,8 +173,8 @@ jobs:
 
     - name: Install bison/flex (Windows)
       run: |
-        Choco-Install -PackageName winflexbison
-        #choco install winflexbison
+        #Choco-Install -PackageName winflexbison
+        choco install winflexbison
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Graphviz (Linux)
