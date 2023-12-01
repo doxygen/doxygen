@@ -973,7 +973,7 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     }
     else if (tok==TK_HTMLTAG)
     {
-      tokenizer.unputString(context.token->name);
+      tokenizer.unputString(context.token->text);
       break;
     }
     if (!defaultHandleToken(parent,tok,children))
@@ -986,7 +986,7 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
   {
     tok=tokenizer.lex();
   }
-  while (tok==TK_WHITESPACE || tok==TK_WORD) // there are values following the title
+  while (tok==TK_WHITESPACE || tok==TK_WORD || tok==TK_HTMLTAG) // there are values following the title
   {
     if (tok==TK_WORD)
     {
@@ -1004,11 +1004,11 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
       {
         height = context.token->chars;
       }
-      else
+      else // other text after the title -> treat as normal text
       {
         tokenizer.unputString(context.token->name);
-        warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unknown option '%s' after \\%s command, expected 'width' or 'height'",
-                       qPrint(context.token->name), qPrint(Mappers::cmdMapper->find(cmd)));
+        //warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unknown option '%s' after \\%s command, expected 'width' or 'height'",
+        //               qPrint(context.token->name), qPrint(Mappers::cmdMapper->find(cmd)));
         break;
       }
     }
@@ -1020,10 +1020,17 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     {
       tokenizer.unputString(context.token->name);
       tokenizer.unputString(tok==TK_COMMAND_AT ? "@" : "\\");
+      break;
     }
-    else if (tok==TK_SYMBOL || tok==TK_HTMLTAG)
+    else if (tok==TK_SYMBOL)
     {
       tokenizer.unputString(context.token->name);
+      break;
+    }
+    else if (tok==TK_HTMLTAG)
+    {
+      tokenizer.unputString(context.token->text);
+      break;
     }
   }
   tokenizer.setStatePara();

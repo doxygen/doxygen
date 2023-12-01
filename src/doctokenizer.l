@@ -1600,6 +1600,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   QCString tagText(text);
+  yyextra->token.text = tagText;
   yyextra->token.attribs.clear();
   yyextra->token.endTag = FALSE;
   yyextra->token.emptyTag = FALSE;
