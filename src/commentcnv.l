@@ -219,7 +219,7 @@ ANYopt .*
   // Optional white space
 WSopt [ \t\r]*
   // readline non special
-RLopt [^\\@\n\*\/]*
+RLopt [^\\@<\n\*\/]*
   // Optional slash
 SLASHopt [/]*
 
@@ -469,25 +469,25 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
   				   }
-<CComment,CNComment,ReadLine>{MAILADDR}       |
-<CComment,CNComment,ReadLine>"<"{MAILADDR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
+<CComment,CNComment,ReadLine,IncludeFile>{MAILADDR}       |
+<CComment,CNComment,ReadLine,IncludeFile>"<"{MAILADDR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<CComment>"{"[ \t]*"@code"/[ \t\n] {
+<CComment,InludeFile>"{"[ \t]*"@code"/[ \t\n] {
                                      copyToOutput(yyscanner,"@iliteral{code}",15);
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
 				     yyextra->blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
-<CComment>"{"[ \t]*"@literal"/[ \t\n] {
+<CComment,InludeFile>"{"[ \t]*"@literal"/[ \t\n] {
                                      copyToOutput(yyscanner,"@iliteral",9);
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
 				     yyextra->blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,ReadLine>^[ \t]*("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
+<CComment,ReadLine,IncludeFile>^[ \t]*("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
                                      if (!Config_getBool(MARKDOWN_SUPPORT))
                                      {
                                        REJECT;
@@ -498,7 +498,7 @@ SLASHopt [/]*
                                      yyextra->blockName=QCString(yytext).stripWhiteSpace().left(3); // take the ``` or ~~~ part
                                      BEGIN(VerbatimCode);
                                    }
-<CComment,ReadLine>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine,IncludeFile>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=0;
@@ -512,7 +512,7 @@ SLASHopt [/]*
                                      }
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,ReadLine>[\\@]("f$"|"f["|"f{"|"f(") {
+<CComment,ReadLine,IncludeFile>[\\@]("f$"|"f["|"f{"|"f(") {
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
 				     yyextra->blockName=&yytext[1];
 				     if (yyextra->blockName.at(1)=='[')
@@ -530,7 +530,13 @@ SLASHopt [/]*
 				     yyextra->lastCommentContext = YY_START;
 				     BEGIN(Verbatim);
   			           }
-<CComment,ReadLine>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine,IncludeFile>"<!--" { /* HTML comment */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+				     yyextra->blockName="-->";
+				     yyextra->lastCommentContext = YY_START;
+                                     BEGIN(Verbatim);
+                                   }
+<CComment,ReadLine,IncludeFile>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
 				     yyextra->blockName=&yytext[1];
 				     yyextra->lastCommentContext = YY_START;
@@ -556,6 +562,13 @@ SLASHopt [/]*
 				       BEGIN(yyextra->lastCommentContext);
 				     }
                                    }
+<Verbatim>"-->"                    {
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+				     if (yytext==yyextra->blockName) 
+				     {
+				       BEGIN(yyextra->lastCommentContext);
+				     }
+				   }
 <VerbatimCode>"{"		   {
                                      if (yyextra->javaBlock==0)
 				     {
@@ -623,7 +636,7 @@ SLASHopt [/]*
                                        }
                                      }
   				   }
-<Verbatim,VerbatimCode>[^`~@\/\\\n{}]* { /* any character not a backslash or new line or } */
+<Verbatim,VerbatimCode>[^`~@\/\-\\\n{}]* { /* any character not a backslash or new line or } */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
@@ -695,7 +708,7 @@ SLASHopt [/]*
 <CComment,CNComment>[^ `~<\\!@*\n{\"\/]*     { /* anything that is not a '*' or command */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<CComment,CNComment>"*"+[^*\/\\@\n{\"]*      { /* stars without slashes */
+<CComment,CNComment>"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment>"\"\"\""                 { /* end of Python docstring */
@@ -902,10 +915,10 @@ SLASHopt [/]*
                                                                   //   static void handleCondSectionId
 				     BEGIN(Scan);
                                    }
-<ReadLine>{CCS}"*"                    {
+<ReadLine>{CCS}"*"                 {
 				     copyToOutput(yyscanner,"/&zwj;**",8);
 				   }
-<ReadLine>{CCE}                     {
+<ReadLine>{CCE}                    {
 				     copyToOutput(yyscanner,"*&zwj;/",7);
 				   }
 <ReadLine>"*"                      {
@@ -918,6 +931,9 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				     BEGIN(yyextra->readLineCtx);
 				   }
+<CComment,CNComment,ReadLine>"\\<" { /* escaped html comment */
+				     copyToOutput(yyscanner,yytext,(int)yyleng);
+  				   }
 <CComment,CNComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
   				   }
@@ -971,11 +987,11 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
                                      BEGIN(yyextra->includeCtx);
                                    }
-<CComment,ReadLine>[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
+<CComment,ReadLine,IncludeFile>[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
   				     yyextra->condCtx = YY_START;
   				     BEGIN(CondLine);
   				   }
-<CComment,ReadLine>[\\@]"endcond"/[^a-z_A-Z0-9] { // end of conditional section
+<CComment,ReadLine,IncludeFile>[\\@]"endcond"/[^a-z_A-Z0-9] { // end of conditional section
   				     bool oldSkip=yyextra->skip;
   				     endCondSection(yyscanner);
 				     if (YY_START==CComment && oldSkip && !yyextra->skip)
@@ -998,7 +1014,7 @@ SLASHopt [/]*
 <CondLine>[!()&| \ta-z_A-Z0-9.\-]+ {
                                      handleCondSectionId(yyscanner,yytext);
   				   }
-<CComment,ReadLine>[\\@]"cond"{WSopt}/\n {
+<CComment,ReadLine,IncludeFile>[\\@]"cond"{WSopt}/\n {
   				     yyextra->condCtx=YY_START;
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
                                    }
@@ -1420,6 +1436,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
   else
   {
     warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' not found",blockId.isEmpty()?"include":"snippet",qPrint(fileName));
+    return false;
   }
   return true;
 }
