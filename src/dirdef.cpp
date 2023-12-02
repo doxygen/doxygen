@@ -56,7 +56,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     bool hasSubdirs() const override { return !m_subdirs.empty(); }
     int level() const override { return m_level; }
     DirDef *parent() const override { return m_parent; }
-    int dirCount() const override { return m_dirCount; }
+    int dirIndex() const override { return m_dirIndex; }
     const UsedDirLinkedMap &usedDirs() const override { return m_usedDirs; }
     bool isParentOf(const DirDef *dir) const override;
     bool depGraphIsTrivial() const override;
@@ -67,7 +67,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     void setDiskName(const QCString &name) override { m_diskName = name; }
     void sort() override;
     void setParent(DirDef *parent) override;
-    void setDirCount(int count) override;
+    void setDirIndex(int index) override;
     void setLevel() override;
     void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect) override;
@@ -97,7 +97,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     QCString m_shortName;
     QCString m_diskName;
     FileList m_fileList;                 // list of files in the group
-    int m_dirCount = -1;
+    int m_dirIndex = -1;
     int m_level;
     DirDef *m_parent;
     UsedDirLinkedMap m_usedDirs;
@@ -168,9 +168,9 @@ void DirDefImpl::setParent(DirDef *p)
    m_parent=p;
 }
 
-void DirDefImpl::setDirCount(int count)
+void DirDefImpl::setDirIndex(int index)
 {
-  m_dirCount=count;
+  m_dirIndex=index;
 }
 
 void DirDefImpl::addFile(const FileDef *fd)
@@ -1119,11 +1119,11 @@ void buildDirectories()
               return i < 0;
             });
 
-  // set the directory count identifier
-  int dirCount=0;
+  // set the directory index identifier
+  int dirIndex=0;
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
-    dir->setDirCount(dirCount++);
+    dir->setDirIndex(dirIndex++);
   }
 
   computeCommonDirPrefix();
