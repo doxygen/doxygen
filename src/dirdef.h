@@ -127,7 +127,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual bool hasSubdirs() const = 0;
     virtual int level() const = 0;
     virtual DirDef *parent() const = 0;
-    virtual int dirCount() const = 0;
+    virtual int dirIndex() const = 0;
     virtual const UsedDirLinkedMap &usedDirs() const = 0;
     virtual bool isParentOf(const DirDef *dir) const = 0;
     virtual bool depGraphIsTrivial() const = 0;
@@ -139,7 +139,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void setDiskName(const QCString &name) = 0;
-    virtual void setDirCount(int count) = 0;
+    virtual void setDirIndex(int index) = 0;
     virtual void sort() = 0;
     virtual void setParent(DirDef *parent) = 0;
     virtual void setLevel() = 0;
