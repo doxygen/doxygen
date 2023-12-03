@@ -3278,11 +3278,14 @@ QCString findFilePath(const QCString &file,bool &ambig)
   ambig=false;
   QCString result;
   bool found=false;
-  FileInfo fi(file.str());
-  if (fi.exists())
+  if (!found)
   {
-    result=fi.absFilePath();
-    found=true;
+    FileInfo fi(file.str());
+    if (fi.exists())
+    {
+      result=fi.absFilePath();
+      found=true;
+    }
   }
   if (!found)
   {
