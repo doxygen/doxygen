@@ -3273,6 +3273,49 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
 
 //----------------------------------------------------------------------
 
+QCString findFilePath(const QCString &file,bool &ambig)
+{
+  ambig=false;
+  QCString result;
+  bool found=false;
+  if (Portable::isAbsolutePath(file))
+  {
+    FileInfo fi(file.str());
+    if (fi.exists())
+    {
+      result=fi.absFilePath();
+      found=true;
+    }
+  }
+  if (!found)
+  {
+    const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+    for (const auto &s : examplePathList)
+    {
+      std::string absFileName = s+(Portable::pathSeparator()+file).str();
+      FileInfo fi(absFileName);
+      if (fi.exists())
+      {
+        result=fi.absFilePath();
+        found=true;
+      }
+    }
+  }
+
+  if (!found)
+  {
+    // as a fallback we also look in the exampleNameDict
+    FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,file,ambig);
+    if (fd && !ambig)
+    {
+      result=fd->absFilePath();
+    }
+  }
+  return result;
+}
+
+//----------------------------------------------------------------------
+
 QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 {
   QCString result;

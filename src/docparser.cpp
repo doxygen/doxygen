@@ -1640,38 +1640,16 @@ int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &ch
 void DocParser::readTextFileByName(const QCString &file,QCString &text)
 {
   AUTO_TRACE("file={} text={}",file,text);
-  if (Portable::isAbsolutePath(file))
+  bool ambig = false;
+  QCString filePath = findFilePath(file,ambig);
+  if (!filePath.isEmpty())
   {
-    FileInfo fi(file.str());
-    if (fi.exists())
-    {
-      text = fileToString(file,Config_getBool(FILTER_SOURCE_FILES));
-      return;
-    }
-  }
-  const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
-  for (const auto &s : examplePathList)
-  {
-    std::string absFileName = s+(Portable::pathSeparator()+file).str();
-    FileInfo fi(absFileName);
-    if (fi.exists())
-    {
-      text = fileToString(QCString(absFileName),Config_getBool(FILTER_SOURCE_FILES));
-      return;
-    }
-  }
-
-  // as a fallback we also look in the exampleNameDict
-  bool ambig;
-  FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,file,ambig);
-  if (fd)
-  {
-    text = fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
+    text = fileToString(filePath,Config_getBool(FILTER_SOURCE_FILES));
     if (ambig)
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file name '%s' is ambiguous"
-           "Possible candidates:\n%s",qPrint(file),
-           qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,file))
+          "Possible candidates:\n%s",qPrint(file),
+          qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,file))
           );
     }
   }

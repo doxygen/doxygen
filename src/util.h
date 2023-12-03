@@ -191,8 +191,8 @@ void checkBlocks(const QCString& s,const QCString fileName, const SelectionMarke
 QCString removeEmptyLines(const QCString &s);
 
 
-FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,
-                bool &ambig);
+FileDef *findFileDef(const FileNameLinkedMap *fnMap, const QCString &n, bool &ambig);
+QCString findFilePath(const QCString &file, bool &ambig);
 
 QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n);
 

@@ -1333,35 +1333,21 @@ static QCString extractBlock(const QCString &text,const QCString &marker,int &bl
 
 static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCString &blockId)
 {
+  //printf("readIncludeFile(inc=%s,blockId=%s)\n",qPrint(inc),qPrint(blockId));
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool ambig;
-  FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,inc,ambig);
-  std::string fileName = inc.str();
-  FileInfo fi(fileName);
-  if (fd) // found via EXAMPLE_PATH
+  bool ambig = false;
+  QCString absFileName = findFilePath(inc,ambig);
+  FileInfo fi(absFileName.str());
+  if (!absFileName.isEmpty() && fi.exists() && fi.isFile())
   {
-    fi = FileInfo(fd->absFilePath().str());
-  }
-  else if (!fi.exists()) // look on disk
-  {
-    auto tryFileExtensions = [&fi](const std::string &fn) {
-      if (!fi.exists()) fi = FileInfo(fn+".md");
-      if (!fi.exists()) fi = FileInfo(fn+".dox");
-      if (!fi.exists()) fi = FileInfo(fn+".txt");
-    };
-    tryFileExtensions(fileName); // try relative from current dir or absolute path first
-    if (!fi.exists() && !inc.startsWith("/"))
+    if (ambig)
     {
-      FileInfo pathFi(yyextra->fileName.str()); // try relative to current file as well
-      fileName = pathFi.dirPath(true)+"/"+inc.str();
-      fi = FileInfo(fileName);
-      tryFileExtensions(fileName);
+      warn_doc_error(yyextra->fileName,yyextra->lineNr,"included file name '%s' is ambiguous"
+	  "Possible candidates:\n%s",qPrint(inc),
+	  qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,inc))
+	  );
     }
-  }
-  if (fi.exists() && fi.isFile())
-  {
-    QCString absFileName(fi.absFilePath());
-    QCString lineStr=" \\ilinebr\\ifile \""+fileName+"\" \\iline 1 \\ilinebr ";
+    QCString lineStr=" \\ilinebr\\ifile \""+absFileName+"\" \\iline 1 \\ilinebr ";
     copyToOutput(yyscanner,lineStr.data(),lineStr.length());
 
     bool alreadyProcessed = std::any_of(
@@ -1376,11 +1362,11 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       if (!blockId.isEmpty())
       {
         warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\snippet{doc}' block with name '%s' and file name '%s', skipping",
-             qPrint(blockId),qPrint(fileName));
+             qPrint(blockId),qPrint(absFileName));
       }
       else
       {
-        warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\include{doc}' with file name '%s', skipping", qPrint(fileName));
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\include{doc}' with file name '%s', skipping", qPrint(absFileName));
       }
       return false;
     }
@@ -1388,7 +1374,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     auto fs = std::make_unique<commentcnv_FileState>(static_cast<uint32_t>(fi.size()+4096));
     if (!readInputFile(absFileName,fs->fileBuf,false))
     {
-      warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' could not be read",blockId.isEmpty()?"include":"snippet",qPrint(fileName));
+      warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' could not be read",blockId.isEmpty()?"include":"snippet",qPrint(absFileName));
       fs.reset();
       return false;
     }
@@ -1400,7 +1386,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       if (count!=2)
       {
         warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with [%s] for \\snippet{doc} should appear twice in file %s, found it %d times, skipping",
-            qPrint(blockId),qPrint(fileName),count);
+            qPrint(blockId),qPrint(absFileName),count);
         return false;
       }
       lineNr = lineBlock(incText, blockId);
@@ -1426,7 +1412,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     fs->oldFileBufPos = yyextra->inBufPos;
     fs->oldIncludeCtx = yyextra->includeCtx;
     yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner),yyscanner);
-    yyextra->fileName = fileName;
+    yyextra->fileName = absFileName;
     yyextra->lineNr   = lineNr;
     yyextra->inBuf    = &fs->fileBuf;
     yyextra->inBufPos = 0;
@@ -1435,7 +1421,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
   }
   else
   {
-    warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' not found",blockId.isEmpty()?"include":"snippet",qPrint(fileName));
+    warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' not found",blockId.isEmpty()?"include":"snippet",qPrint(inc));
     return false;
   }
   return true;
