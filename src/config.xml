@@ -27,16 +27,8 @@ A configuration file is a free-form ASCII text file with a structure
 that is similar to that of a \c Makefile, with the default name \c Doxyfile. It is
 parsed by \c doxygen. The file may contain tabs and newlines for
 formatting purposes. The statements in the file are case-sensitive.
-Comments may be placed anywhere within the file (except within quotes).
-Comments beginning with two hash characters (\c \#\#) are kept when updating
-the configuration file and are placed in front of the TAG they are in front of.
-Comments beginning with two hash characters (\c \#\#) at the beginning of the
-configuration file are also kept and placed at the beginning of the file.
-Comments beginning with two hash characters (\c \#\#) at the end of the
-configuration file are also kept and placed at the end of the file.
-Comments begin with the hash character (\c \#) and ends at the end of the line.
 
-The file essentially consists of a list of assignment statements.
+The configuration file essentially consists of a list of assignment statements.
 Each statement consists of a \c TAG_NAME written in capitals,
 followed by the equal sign (<code>=</code>) and one or more values. If the same tag
 is assigned more than once, the last assignment overwrites any earlier
@@ -45,7 +37,13 @@ the <code>+=</code> operator can be used instead of <code>=</code> to append
 new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (<code>&quot;...&quot;</code>).
 Multiple lines can be concatenated by inserting a backslash (\c \\)
-as the last character of a line.
+as the last non-whitespace character of a line.
+
+Comments begin with the hash character (\c \#) and end at the end of the line.
+Comments may be placed anywhere within the file (except within quotes).
+Comments beginning with two hash characters (\c \#\#) are kept while updating
+the configuration file when they are placed in front of a \c TAG_NAME, or
+at the beginning or end of the configuration file.
 
 Environment variables can be expanded using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
 A small example:
@@ -2288,7 +2286,10 @@ hr.footer {
 <![CDATA[
  If the \c HTML_COPY_CLIPBOARD tag is set to \c YES then doxygen will show an
  icon in the top right corner of code and text fragments that allows the user
- to copy its content to the clipboard (provided this is supported by the browser).
+ to copy its content to the clipboard.
+ Note this only works if supported by the browser and the web page is served via a
+ <a href="https://www.w3.org/TR/secure-contexts/">secure context</a>, i.e. using the
+ https: or file: protocol.
 ]]>
       </docs>
     </option>
