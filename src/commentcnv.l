@@ -473,14 +473,14 @@ SLASHopt [/]*
 <CComment,CNComment,ReadLine,IncludeFile>"<"{MAILADDR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<CComment,InludeFile>"{"[ \t]*"@code"/[ \t\n] {
+<CComment,IncludeFile>"{"[ \t]*"@code"/[ \t\n] {
                                      copyToOutput(yyscanner,"@iliteral{code}",15);
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
 				     yyextra->blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,InludeFile>"{"[ \t]*"@literal"/[ \t\n] {
+<CComment,IncludeFile>"{"[ \t]*"@literal"/[ \t\n] {
                                      copyToOutput(yyscanner,"@iliteral",9);
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
