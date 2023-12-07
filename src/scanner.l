@@ -203,8 +203,8 @@ struct scannerYY_state
 
   int              column = 0;
 
-  uint32_t             fencedSize = 0;
-  bool             nestedComment = false;
+  uint32_t         fencedSize = 0;
+  int              nestedComment = 0;
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
   QCString         programStr;
 
@@ -6895,28 +6895,28 @@ NONLopt [^\n]*
                                             yyextra->docBlockName.at(1)=')';
                                           }
                                           yyextra->fencedSize=0;
-                                          yyextra->nestedComment=FALSE;
+                                          yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{B}*"<"{PRE}">"               {
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName="<pre>";
                                           yyextra->fencedSize=0;
-                                          yyextra->nestedComment=FALSE;
+                                          yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName="uml";
                                           yyextra->fencedSize=0;
-                                          yyextra->nestedComment=FALSE;
+                                          yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fencedSize=0;
-                                          yyextra->nestedComment=FALSE;
+                                          yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                {
@@ -6925,7 +6925,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="~~~";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
-                                          yyextra->nestedComment=FALSE;
+                                          yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
@@ -6935,7 +6935,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="```";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
-                                          yyextra->nestedComment=FALSE;
+                                          yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{B}*"<code>"                  {
@@ -6943,7 +6943,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->docBlock << yytext;
                                             yyextra->docBlockName="<code>";
-                                            yyextra->nestedComment=FALSE;
+                                            yyextra->nestedComment=0;
                                             BEGIN(DocCopyBlock);
                                           }
                                           else
@@ -7036,7 +7036,7 @@ NONLopt [^\n]*
                                           if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             QCString indent;
-                                            if (yyextra->nestedComment) // keep * it is part of the code
+                                            if (yyextra->nestedComment>0) // keep * it is part of the code
                                             {
                                               indent.fill(' ',computeIndent(yytext,-1));
                                               yyextra->docBlock << indent+"*";
@@ -7068,20 +7068,23 @@ NONLopt [^\n]*
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[^\<@/\*\]~\$\\\n]+       { // any character that is not special
+<DocCopyBlock>[^\<@/\*\]~"\$\\\n]+      { // any character that is not special
                                           yyextra->docBlock << yytext;
                                         }
+<DocCopyBlock>\"                        {
+                                          yyextra->docBlock << yytext;
+                                          yyextra->lastStringContext=YY_START;
+                                          yyextra->pCopyQuotedGString=&yyextra->docBlock;
+                                          BEGIN(CopyGString);
+                                        }
 <DocCopyBlock>{CCS}|{CCE}|{CPPC}        {
-                                          if (!((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral")))
+                                          if (yytext[1]=='*')
                                           {
-                                            if (yytext[1]=='*')
-                                            {
-                                              yyextra->nestedComment=true;
-                                            }
-                                            else if (yytext[0]=='*')
-                                            {
-                                              yyextra->nestedComment=false;
-                                            }
+                                            yyextra->nestedComment++;
+                                          }
+                                          else if (yytext[0]=='*')
+                                          {
+                                            yyextra->nestedComment--;
                                           }
                                           yyextra->docBlock << yytext;
                                         }
