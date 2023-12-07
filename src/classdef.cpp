@@ -2084,9 +2084,9 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
       {
         for (const auto &innerCd : m_impl->innerClasses)
         {
-          if (!innerCd->isAnonymous() && 
+          if (!innerCd->isAnonymous() &&
               !innerCd->isExtension() &&
-              (innerCd->protection()!=Private || extractPrivate) &&
+              (innerCd->protection()!=Protection::Private || extractPrivate) &&
               innerCd->visibleInParentsDeclList()
              )
           {
