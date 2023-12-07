@@ -2068,6 +2068,7 @@ void ClassDefImpl::writeAuthorSection(OutputList &ol) const
 
 void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
 {
+  static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
   bool first=TRUE;
@@ -2081,11 +2082,19 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
           m_impl->innerClasses.declVisible()
          )
       {
-        const LayoutDocEntrySection *ls  = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-        if (ls)
+        for (const auto &innerCd : m_impl->innerClasses)
         {
-          ol.writeSummaryLink(QCString(),"nested-classes",ls->title(lang),first);
-          first=FALSE;
+          if (!innerCd->isAnonymous() && 
+              !innerCd->isExtension() &&
+              (innerCd->protection()!=Private || extractPrivate) &&
+              innerCd->visibleInParentsDeclList()
+             )
+          {
+            const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+            ol.writeSummaryLink(QCString(),"nested-classes",ls->title(lang),first);
+            first=FALSE;
+            break;
+          }
         }
       }
       else if (lde->kind()==LayoutDocEntry::ClassAllMembersLink &&
