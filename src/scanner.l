@@ -7073,16 +7073,21 @@ NONLopt [^\n]*
                                         }
 <DocCopyBlock>\"                        {
                                           yyextra->docBlock << yytext;
-                                          yyextra->lastStringContext=YY_START;
-                                          yyextra->pCopyQuotedGString=&yyextra->docBlock;
-                                          BEGIN(CopyGString);
+                                          if (yyextra->docBlockName=="code" || yyextra->docBlockName=="iliteral") 
+                                            // to support end of comment character sequences inside
+                                            // a string literal of a code block, see #6737
+                                          {
+                                            yyextra->lastStringContext=YY_START;
+                                            yyextra->pCopyQuotedGString=&yyextra->docBlock;
+                                            BEGIN(CopyGString);
+                                          }
                                         }
 <DocCopyBlock>{CCS}|{CCE}|{CPPC}        {
                                           if (yytext[1]=='*')
                                           {
                                             yyextra->nestedComment++;
                                           }
-                                          else if (yytext[0]=='*')
+                                          else if (yytext[0]=='*' && yyextra->nestedComment>0)
                                           {
                                             yyextra->nestedComment--;
                                           }
