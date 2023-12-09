@@ -877,7 +877,10 @@ DB_VIS_C
   if (!s.anchor().isEmpty()) m_t << "_1" << s.anchor();
   m_t << "\">\n";
   m_t << "<title>";
-  filter(s.title());
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   m_t << "</title>\n";
   visitChildren(s);
   m_t << "</section>\n";

@@ -594,7 +594,10 @@ void ManDocVisitor::operator()(const DocSection &s)
   if (!m_firstCol) m_t << "\n";
   if (s.level()==1) m_t << ".SH"; else m_t << ".SS";
   m_t << " \"";
-  filter(s.title());
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   m_t << "\"\n";
   if (s.level()==1) m_t << ".PP\n";
   m_firstCol=TRUE;

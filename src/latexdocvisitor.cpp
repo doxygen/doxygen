@@ -951,10 +951,18 @@ void LatexDocVisitor::operator()(const DocSection &s)
   {
     m_t << "\\texorpdfstring{";
   }
-  filter(convertCharEntitiesToUTF8(s.title()));
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   if (pdfHyperlinks)
   {
-    m_t << "}{" << latexEscapePDFString(convertCharEntitiesToUTF8(s.title())) << "}";
+    m_t << "}{";
+    if (s.title())
+    {
+      std::visit(*this,*s.title());
+    }
+    m_t << "}";
   }
   m_t << "}\\label{" << stripPath(s.file()) << "_" << s.anchor() << "}\n";
   visitChildren(s);

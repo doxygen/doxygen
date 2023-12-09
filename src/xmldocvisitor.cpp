@@ -676,9 +676,10 @@ void XmlDocVisitor::operator()(const DocSection &s)
   m_t << "<sect" << s.level() << " id=\"" << s.file();
   if (!s.anchor().isEmpty()) m_t << "_1" << s.anchor();
   m_t << "\">\n";
-  m_t << "<title>";
-  filter(convertCharEntitiesToUTF8(s.title()));
-  m_t << "</title>\n";
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   visitChildren(s);
   m_t << "</sect" << s.level() << ">\n";
 }

@@ -864,7 +864,11 @@ void PerlModDocVisitor::operator()(const DocSection &s)
 {
   QCString sect = QCString().sprintf("sect%d",s.level());
   openItem(sect);
-  m_output.addFieldQuotedString("title", s.title());
+  //m_output.addFieldQuotedString("title", s.title());
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   openSubBlock("content");
   visitChildren(s);
   closeSubBlock();

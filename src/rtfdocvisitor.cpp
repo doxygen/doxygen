@@ -837,10 +837,16 @@ void RTFDocVisitor::operator()(const DocSection &s)
   // set style
   m_t << rtf_Style[heading.str()].reference() << "\n";
   // make table of contents entry
-  filter(s.title());
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   m_t << "\n\\par" << "}\n";
   m_t << "{\\tc\\tcl" << level << " \\v ";
-  filter(s.title());
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   m_t << "}\n";
   m_lastIsPara=TRUE;
   visitChildren(s);

@@ -381,6 +381,10 @@ class PrintDocVisitor
     {
       indent_pre();
       printf("<sect%d>\n",s.level());
+      if (s.title())
+      {
+        std::visit(*this, *s.title());
+      }
       visitChildren(s);
       indent_post();
       printf("</sect%d>\n",s.level());

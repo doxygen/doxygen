@@ -878,7 +878,7 @@ class DocSection : public DocCompoundNode
     DocSection(DocParser *parser,DocNodeVariant *parent,int level,const QCString &id) :
       DocCompoundNode(parser,parent), m_level(level), m_id(id) {}
     int level() const           { return m_level; }
-    QCString title() const      { return m_title; }
+    const DocNodeVariant *title() const { return m_title.get(); }
     QCString anchor() const     { return m_anchor; }
     QCString id() const         { return m_id; }
     QCString file() const       { return m_file; }
@@ -887,7 +887,7 @@ class DocSection : public DocCompoundNode
   private:
     int       m_level = 0;
     QCString  m_id;
-    QCString  m_title;
+    std::unique_ptr<DocNodeVariant> m_title;
     QCString  m_anchor;
     QCString  m_file;
 };

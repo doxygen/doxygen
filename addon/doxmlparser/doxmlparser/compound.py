@@ -8434,8 +8434,7 @@ class docSect1Type(GeneratedsSuper):
             eol_ = ''
         if self.title is not None:
             namespaceprefix_ = self.title_nsprefix_ + ':' if (UseCapturedNS_ and self.title_nsprefix_) else ''
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%stitle>%s</%stitle>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.title), input_name='title')), namespaceprefix_ , eol_))
+            self.title.export(outfile, level, namespaceprefix_, namespacedef_='', name_='title', pretty_print=pretty_print)
         for para_ in self.para:
             namespaceprefix_ = self.para_nsprefix_ + ':' if (UseCapturedNS_ and self.para_nsprefix_) else ''
             para_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='para', pretty_print=pretty_print)
@@ -8467,14 +8466,16 @@ class docSect1Type(GeneratedsSuper):
             already_processed.add('id')
             self.id = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
-        if nodeName_ == 'title' and child_.text is not None:
-            valuestr_ = child_.text
-            valuestr_ = self.gds_parse_string(valuestr_, node, 'title')
-            valuestr_ = self.gds_validate_string(valuestr_, node, 'title')
-            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
-                MixedContainer.TypeString, 'title', valuestr_)
+        if nodeName_ == 'title':
+            obj_ = docTitleType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'title', obj_)
             self.content_.append(obj_)
-            self.title_nsprefix_ = child_.prefix
+            if hasattr(self, 'add_title'):
+                self.add_title(obj_.value)
+            elif hasattr(self, 'set_title'):
+                self.set_title(obj_.value)
         elif nodeName_ == 'para':
             obj_ = docParaType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -8655,8 +8656,7 @@ class docSect2Type(GeneratedsSuper):
             eol_ = ''
         if self.title is not None:
             namespaceprefix_ = self.title_nsprefix_ + ':' if (UseCapturedNS_ and self.title_nsprefix_) else ''
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%stitle>%s</%stitle>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.title), input_name='title')), namespaceprefix_ , eol_))
+            self.title.export(outfile, level, namespaceprefix_, namespacedef_='', name_='title', pretty_print=pretty_print)
         for para_ in self.para:
             namespaceprefix_ = self.para_nsprefix_ + ':' if (UseCapturedNS_ and self.para_nsprefix_) else ''
             para_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='para', pretty_print=pretty_print)
@@ -8688,14 +8688,16 @@ class docSect2Type(GeneratedsSuper):
             already_processed.add('id')
             self.id = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
-        if nodeName_ == 'title' and child_.text is not None:
-            valuestr_ = child_.text
-            valuestr_ = self.gds_parse_string(valuestr_, node, 'title')
-            valuestr_ = self.gds_validate_string(valuestr_, node, 'title')
-            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
-                MixedContainer.TypeString, 'title', valuestr_)
+        if nodeName_ == 'title':
+            obj_ = docTitleType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'title', obj_)
             self.content_.append(obj_)
-            self.title_nsprefix_ = child_.prefix
+            if hasattr(self, 'add_title'):
+                self.add_title(obj_.value)
+            elif hasattr(self, 'set_title'):
+                self.set_title(obj_.value)
         elif nodeName_ == 'para':
             obj_ = docParaType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -8876,8 +8878,7 @@ class docSect3Type(GeneratedsSuper):
             eol_ = ''
         if self.title is not None:
             namespaceprefix_ = self.title_nsprefix_ + ':' if (UseCapturedNS_ and self.title_nsprefix_) else ''
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%stitle>%s</%stitle>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.title), input_name='title')), namespaceprefix_ , eol_))
+            self.title.export(outfile, level, namespaceprefix_, namespacedef_='', name_='title', pretty_print=pretty_print)
         for para_ in self.para:
             namespaceprefix_ = self.para_nsprefix_ + ':' if (UseCapturedNS_ and self.para_nsprefix_) else ''
             para_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='para', pretty_print=pretty_print)
@@ -8909,14 +8910,16 @@ class docSect3Type(GeneratedsSuper):
             already_processed.add('id')
             self.id = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
-        if nodeName_ == 'title' and child_.text is not None:
-            valuestr_ = child_.text
-            valuestr_ = self.gds_parse_string(valuestr_, node, 'title')
-            valuestr_ = self.gds_validate_string(valuestr_, node, 'title')
-            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
-                MixedContainer.TypeString, 'title', valuestr_)
+        if nodeName_ == 'title':
+            obj_ = docTitleType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'title', obj_)
             self.content_.append(obj_)
-            self.title_nsprefix_ = child_.prefix
+            if hasattr(self, 'add_title'):
+                self.add_title(obj_.value)
+            elif hasattr(self, 'set_title'):
+                self.set_title(obj_.value)
         elif nodeName_ == 'para':
             obj_ = docParaType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -9081,8 +9084,7 @@ class docSect4Type(GeneratedsSuper):
             eol_ = ''
         if self.title is not None:
             namespaceprefix_ = self.title_nsprefix_ + ':' if (UseCapturedNS_ and self.title_nsprefix_) else ''
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%stitle>%s</%stitle>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.title), input_name='title')), namespaceprefix_ , eol_))
+            self.title.export(outfile, level, namespaceprefix_, namespacedef_='', name_='title', pretty_print=pretty_print)
         for para_ in self.para:
             namespaceprefix_ = self.para_nsprefix_ + ':' if (UseCapturedNS_ and self.para_nsprefix_) else ''
             para_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='para', pretty_print=pretty_print)
@@ -9111,14 +9113,16 @@ class docSect4Type(GeneratedsSuper):
             already_processed.add('id')
             self.id = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
-        if nodeName_ == 'title' and child_.text is not None:
-            valuestr_ = child_.text
-            valuestr_ = self.gds_parse_string(valuestr_, node, 'title')
-            valuestr_ = self.gds_validate_string(valuestr_, node, 'title')
-            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
-                MixedContainer.TypeString, 'title', valuestr_)
+        if nodeName_ == 'title':
+            obj_ = docTitleType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'title', obj_)
             self.content_.append(obj_)
-            self.title_nsprefix_ = child_.prefix
+            if hasattr(self, 'add_title'):
+                self.add_title(obj_.value)
+            elif hasattr(self, 'set_title'):
+                self.set_title(obj_.value)
         elif nodeName_ == 'para':
             obj_ = docParaType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)

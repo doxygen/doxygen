@@ -2746,7 +2746,12 @@ void DocTitle::parse()
 
 void DocTitle::parseFromString(DocNodeVariant *parent,const QCString &text)
 {
-  children().append<DocWord>(parser(),parent,text);
+  parser()->context.insideHtmlLink=TRUE;
+  parser()->pushContext(); // this will create a new parser->context.token
+  parser()->internalValidatingParseDoc(thisVariant(),children(),text);
+  parser()->popContext(); // this will restore the old parser->context.token
+  parser()->context.insideHtmlLink=FALSE;
+  flattenParagraphs(thisVariant(),children());
 }
 
 //--------------------------------------------------------------------------
@@ -5460,8 +5465,11 @@ int DocSection::parse()
     {
       m_file   = sec->fileName();
       m_anchor = sec->label();
-      m_title  = sec->title();
-      if (m_title.isEmpty()) m_title = sec->label();
+      QCString titleStr = sec->title();
+      if (titleStr.isEmpty()) titleStr = sec->label();
+      m_title = createDocNode<DocTitle>(parser(),thisVariant());
+      DocTitle *title = &std::get<DocTitle>(*m_title);
+      title->parseFromString(thisVariant(),titleStr);
     }
   }
 

@@ -1440,7 +1440,10 @@ void HtmlDocVisitor::operator()(const DocSection &s)
   m_t << "<h" << s.level() << ">";
   m_t << "<a class=\"anchor\" id=\"" << s.anchor();
   m_t << "\"></a>\n";
-  filter(convertCharEntitiesToUTF8(s.title()));
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   m_t << "</h" << s.level() << ">\n";
   visitChildren(s);
   forceStartParagraph(s);
