@@ -1663,6 +1663,7 @@ STopt  [^\n@\\]*
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
                                         }
+   /*
 <SectionTitle>({CMD}{CMD}){ID}          { // escaped command
                                           yyextra->sectionTitle+=&yytext[1];
                                           addOutput(yyscanner,yytext);
@@ -1671,6 +1672,7 @@ STopt  [^\n@\\]*
                                           yyextra->sectionTitle+=yytext[1];
                                           addOutput(yyscanner,yytext);
                                         }
+   */
 <SectionTitle>.                         { // anything else
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,*yytext);

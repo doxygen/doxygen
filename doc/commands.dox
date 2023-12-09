@@ -273,7 +273,7 @@ Structural indicators
 </h2>
 \htmlonly</p></center><p>\endhtmlonly
 
-\section cmdaddtogroup \\addtogroup <name> [(title)]
+\section cmdaddtogroup \\addtogroup \<name\> [(title)]
   \addindex \\addtogroup
   Defines a group just like \ref cmddefgroup "\\defgroup", but in contrast to
   that command using the same \<name\> more than once will not result in a warning,
@@ -626,7 +626,7 @@ Structural indicators
       option \ref cfg_group_graphs "GROUP_GRAPHS"
 
 <hr>
-\section cmdqualifier \\qualifier <label> | "(text)"
+\section cmdqualifier \\qualifier \<label\> | "(text)"
 
   \addindex \\qualifier
 
@@ -638,7 +638,7 @@ Structural indicators
   one could add `\qualifier test`
 
 <hr>
-\section cmdcategory \\category <name> [<header-file>] [<header-name>]
+\section cmdcategory \\category \<name\> [\<header-file\>] [\<header-name\>]
 
   \addindex \\category
   For Objective-C only: Indicates that a comment block contains documentation
@@ -648,7 +648,7 @@ Structural indicators
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\section cmdclass \\class <name> [<header-file>] [<header-name>]
+\section cmdclass \\class \<name\> [\<header-file\>] [\<header-name\>]
 
   \addindex \\class
   Indicates that a comment block contains documentation for a
@@ -677,7 +677,7 @@ Structural indicators
   \endlatexonly
 
 <hr>
-\section cmdconcept \\concept <name>
+\section cmdconcept \\concept \<name\>
 
   \addindex \\concept
   Indicates that a comment block contains documentation for a
@@ -686,7 +686,7 @@ Structural indicators
   header a user should be included to use the concept.
 
 <hr>
-\section cmddef \\def <name>
+\section cmddef \\def \<name\>
 
   \addindex \\def
   Indicates that a comment block contains documentation for a
@@ -704,7 +704,7 @@ Structural indicators
   \endlatexonly
 
 <hr>
-\section cmddefgroup \\defgroup <name> (group title)
+\section cmddefgroup \\defgroup \<name\> (group title)
 
   \addindex \\defgroup
   Indicates that a comment block contains documentation for a
@@ -719,7 +719,7 @@ Structural indicators
   \ref cmdweakgroup "\\weakgroup".
 
 <hr>
-\section cmddir \\dir [<path fragment>]
+\section cmddir \\dir [\<path fragment\>]
 
   \addindex \\dir
   Indicates that a comment block contains documentation for a directory.
@@ -730,7 +730,7 @@ Structural indicators
   stripped from the full path before it appears in the output.
 
 <hr>
-\section cmdenum \\enum <name>
+\section cmdenum \\enum \<name\>
 
   \addindex \\enum
   Indicates that a comment block contains documentation for an
@@ -756,7 +756,7 @@ Structural indicators
   \endlatexonly
 
 <hr>
-\section cmdexample \\example['{lineno}'] <file-name>
+\section cmdexample \\example['{lineno}'] \<file-name\>
 
   \addindex \\example
   Indicates that a comment block contains documentation for a source code
@@ -803,7 +803,7 @@ Structural indicators
   if \ref cfg_internal_docs "INTERNAL_DOCS" is set to \c YES.
 
 <hr>
-\section cmdextends \\extends <name>
+\section cmdextends \\extends \<name\>
 
   \addindex \\extends
   This command can be used to manually indicate an inheritance relation,
@@ -826,7 +826,7 @@ Structural indicators
       \ref cmdmemberof "\\memberof"
 
 <hr>
-\section cmdfile \\file [<name>]
+\section cmdfile \\file [\<name\>]
 
   \addindex \\file
   Indicates that a comment block contains documentation for a source or
@@ -977,14 +977,14 @@ Structural indicators
   \sa section \ref cmdshowinitializer "\\showinitializer".
 
 <hr>
-\section cmdidlexcept \\idlexcept <name>
+\section cmdidlexcept \\idlexcept \<name\>
   \addindex \\idlexcept
 
   Indicates that a comment block contains documentation for a
   IDL exception with name \<name\>.
 
 <hr>
-\section cmdimplements \\implements <name>
+\section cmdimplements \\implements \<name\>
 
   \addindex \\implements
   This command can be used to manually indicate an inheritance relation,
@@ -1007,7 +1007,7 @@ Structural indicators
       \ref cmdmemberof "\\memberof"
 
 <hr>
-\section cmdingroup \\ingroup (<groupname> [<groupname>]*)
+\section cmdingroup \\ingroup (\<groupname\> [\<groupname\>]*)
 
   \addindex \\ingroup
   If the \c \\ingroup command is placed in a comment block of a compound entity
@@ -1022,7 +1022,7 @@ Structural indicators
   \ref cmdaddtogroup "\\addtogroup", and \ref cmdweakgroup "\\weakgroup"
 
 <hr>
-\section cmdinterface \\interface <name> [<header-file>] [<header-name>]
+\section cmdinterface \\interface \<name\> [\<header-file\>] [\<header-name\>]
 
   \addindex \\interface
   Indicates that a comment block contains documentation for an
@@ -1087,7 +1087,7 @@ Structural indicators
      section \ref cmdpage "\\page".
 
 <hr>
-\section cmdmemberof \\memberof <name>
+\section cmdmemberof \\memberof \<name\>
 
   \addindex \\memberof
   This command makes a function a member of a class in a similar way
@@ -1117,7 +1117,7 @@ Structural indicators
       \ref cmdprivate "\\private".
 
 <hr>
-\section cmdmodule \\module <name>
+\section cmdmodule \\module \<name\>
 
   \addindex \\module
   Indicates that a comment block contains documentation for a
@@ -1135,7 +1135,7 @@ Structural indicators
   See section \ref memgroup for an example.
 
 <hr>
-\section cmdnamespace \\namespace <name>
+\section cmdnamespace \\namespace \<name\>
 
   \addindex \\namespace
   Indicates that a comment block contains documentation for a
@@ -1194,14 +1194,14 @@ Structural indicators
   \endlatexonly
 
 <hr>
-\section cmdpackage \\package <name>
+\section cmdpackage \\package \<name\>
 
   \addindex \\package
   Indicates that a comment block contains documentation for a
   Java package with name \<name\>.
 
 <hr>
-\section cmdpage \\page <name> (title)
+\section cmdpage \\page \<name\> (title)
 
   \addindex \\page
   Indicates that a comment block contains a piece of documentation that is
@@ -1309,7 +1309,7 @@ Structural indicators
       \ref cmdprivate "\\private" and \ref cmdprotected "\\protected".
 
 <hr>
-\section cmdprotocol \\protocol <name> [<header-file>] [<header-name>]
+\section cmdprotocol \\protocol \<name\> [\<header-file\>] [\<header-name\>]
 
   \addindex \\protocol
   Indicates that a comment block contains documentation for a
@@ -1360,7 +1360,7 @@ Structural indicators
   (e.g. C, PHP 4).
 
 <hr>
-\section cmdrelates \\relates <name>
+\section cmdrelates \\relates \<name\>
 
   \addindex \\relates
   This command can be used in the documentation of a non-member function
@@ -1382,13 +1382,13 @@ Structural indicators
   \endlatexonly
 
 <hr>
-\section cmdrelated \\related <name>
+\section cmdrelated \\related \<name\>
 
   \addindex \\related
   Equivalent to \ref cmdrelates "\\relates"
 
 <hr>
-\section cmdrelatesalso \\relatesalso <name>
+\section cmdrelatesalso \\relatesalso \<name\>
 
   \addindex \\relatesalso
   This command can be used in the documentation of a non-member function
@@ -1399,7 +1399,7 @@ Structural indicators
   class. It only works for functions.
 
 <hr>
-\section cmdrelatedalso \\relatedalso <name>
+\section cmdrelatedalso \\relatedalso \<name\>
 
   \addindex \\relatedalso
   Equivalent to \ref cmdrelatesalso "\\relatesalso"
@@ -1430,7 +1430,7 @@ Structural indicators
   the language does not support the concept of static methods natively (e.g. C).
 
 <hr>
-\section cmdstruct \\struct <name> [<header-file>] [<header-name>]
+\section cmdstruct \\struct \<name\> [\<header-file\>] [\<header-name\>]
 
   \addindex \\struct
   Indicates that a comment block contains documentation for a
@@ -1452,7 +1452,7 @@ Structural indicators
               \ref cmdvar "\\var".
 
 <hr>
-\section cmdunion \\union <name> [<header-file>] [<header-name>]
+\section cmdunion \\union \<name\> [\<header-file\>] [\<header-name\>]
 
   \addindex \\union
   Indicates that a comment block contains documentation for a
@@ -1490,7 +1490,7 @@ Description
   \note Currently the flow chart will only appear in the HTML output.
 
 <hr>
-\section cmdweakgroup \\weakgroup <name> [(title)]
+\section cmdweakgroup \\weakgroup \<name\> [(title)]
   \addindex \\weakgroup
   Can be used exactly like \ref cmdaddtogroup "\\addtogroup", but has
   a lower priority when it comes to resolving conflicting grouping
@@ -1693,7 +1693,7 @@ contains \c TEST, or \c DEV
   for an example.
 
 <hr>
-\section cmdshowdate \\showdate "<format>" [ <date_time> ]
+\section cmdshowdate \\showdate "<format>" [ \<date_time\> ]
 
   \addindex \\showdate
   Shows the date and time based on the given \<format\> and \<date_time\>. Where the \<format\> is a string in which the following tokens have a special meaning:
@@ -2207,7 +2207,7 @@ void setPosition(double x,double y,double z,double t)
   Equivalent to \ref cmdreturn "\\return".
 
 <hr>
-\section cmdretval \\retval <return value> { description }
+\section cmdretval \\retval \<return value\> { description }
 
   \addindex \\retval
   Starts a description for a function's return value with name
@@ -2352,7 +2352,7 @@ void setPosition(double x,double y,double z,double t)
   for an example.
 
 <hr>
-\section cmdxrefitem \\xrefitem <key> "heading" "list title" { text }
+\section cmdxrefitem \\xrefitem \<key\> "heading" "list title" { text }
 
  \addindex \\xrefitem
  This command is a generalization of commands such as \ref cmdtodo "\\todo"
@@ -2422,7 +2422,7 @@ Commands to create links
   This command adds (text) to the \LaTeX , DocBook and RTF index.
 
 <hr>
-\section cmdanchor \\anchor <word>
+\section cmdanchor \\anchor \<word\>
 
   \addindex \\anchor
   This command places an invisible, named anchor into the documentation
@@ -2431,7 +2431,7 @@ Commands to create links
   \sa section \ref cmdref "\\ref".
 
 <hr>
-\section cmdcite \\cite <label>
+\section cmdcite \\cite \<label\>
 
   \addindex \\cite
   Adds a bibliographic reference in the text and in the list of bibliographic
@@ -2467,7 +2467,7 @@ Commands to create links
   generated links and valid link-objects.
 
 <hr>
-\section cmdref \\ref <name> ["(text)"]
+\section cmdref \\ref \<name\> ["(text)"]
 
   \addindex \\ref
   Creates a reference to a named symbol, file, section, subsection, page or anchor.
@@ -2489,7 +2489,7 @@ Commands to create links
     Section \ref cmdpage "\\page" for an example of the \c \\ref command.
 
 <hr>
-\section cmdrefitem \\refitem <name>
+\section cmdrefitem \\refitem \<name\>
   \addindex \\refitem
   Just like the \ref cmdref "\\ref" command, this command creates a reference
   to a named section, but this reference appears in a list that is started by
@@ -2510,7 +2510,7 @@ Commands to create links
   End an index list started with \ref cmdsecreflist "\\secreflist".
 
 <hr>
-\section cmdsubpage \\subpage <name> ["(text)"]
+\section cmdsubpage \\subpage \<name\> ["(text)"]
 
   \addindex \\subpage
   This command can be used to create a hierarchy of pages. The
@@ -3065,7 +3065,7 @@ Commands for visual enhancements
 </h2>
 \htmlonly</p></center><p>\endhtmlonly
 
-\section cmda \\a <word>
+\section cmda \\a \<word\>
 
   \addindex \\a
   Displays the argument \<word\> in italics.
@@ -3116,7 +3116,7 @@ Commands for visual enhancements
 
 
 <hr>
-\section cmdb \\b <word>
+\section cmdb \\b \<word\>
 
   \addindex \\b
   Displays the argument \<word\> using a bold font.
@@ -3124,7 +3124,7 @@ Commands for visual enhancements
   To put multiple words in bold use \ref htmltag_B "\<b\>"multiple words\ref htmltag_endB "\</b\>".
 
 <hr>
-\section cmdc \\c <word>
+\section cmdc \\c \<word\>
 
   \addindex \\c
   Displays the argument \<word\> using a typewriter font.
@@ -3143,7 +3143,7 @@ Commands for visual enhancements
   To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
-\section cmdcode \\code['{'<word>'}']
+\section cmdcode \\code['{'\<word\>'}']
 
   \addindex \\code
   Starts a block of code. A code block is treated differently
@@ -3267,7 +3267,7 @@ only copy the detailed documentation, not the brief description.
               \ref cmddocbookinclude "\\docbookinclude".
 
 <hr>
-\section cmddot \\dot ["caption"] [<sizeindication>=<size>]
+\section cmddot \\dot ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\dot
   Starts a text fragment which should contain a valid description of a
@@ -3335,7 +3335,7 @@ text with in between colons, i.e. `\emoji unsupported` will produce
 See also the \ref emojisup "emoji support page" for details.
 
 <hr>
-\section cmdmsc \\msc ["caption"] [<sizeindication>=<size>]
+\section cmdmsc \\msc ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\msc
   Starts a text fragment which should contain a valid description of a
@@ -3398,7 +3398,7 @@ class Receiver
   \sa section \ref cmdmscfile "\\mscfile".
 
 <hr>
-\section cmdstartuml \\startuml ['{'option[,option]'}'] ["caption"] [<sizeindication>=<size>]
+\section cmdstartuml \\startuml ['{'option[,option]'}'] ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\startuml
 
@@ -3488,7 +3488,7 @@ class Receiver
 \endcode
 
 <hr>
-\section cmddotfile \\dotfile <file> ["caption"] [<sizeindication>=<size>]
+\section cmddotfile \\dotfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\dotfile
   Inserts an image generated by dot from \<file\> into the documentation.
@@ -3516,7 +3516,7 @@ class Receiver
   \sa section \ref cmddot "\\dot".
 
 <hr>
-\section cmdmscfile \\mscfile <file> ["caption"] [<sizeindication>=<size>]
+\section cmdmscfile \\mscfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\mscfile
   Inserts an image generated by mscgen from \<file\> into the documentation.
@@ -3547,7 +3547,7 @@ class Receiver
   \sa section \ref cmdmsc "\\msc".
 
 <hr>
-\section cmddiafile \\diafile <file> ["caption"] [<sizeindication>=<size>]
+\section cmddiafile \\diafile \<file\> ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\diafile
   Inserts an image made in dia from \<file\> into the documentation.
@@ -3571,7 +3571,7 @@ class Receiver
   \ref cmdimage "\\image" command.
 
 <hr>
-\section cmddoxyconfig \\doxyconfig <config_option>
+\section cmddoxyconfig \\doxyconfig \<config_option\>
 
   \addindex \\doxyconfig
   Displays the value of the configuration option `<config_option>` as used in doxygen's
@@ -3586,7 +3586,7 @@ class Receiver
   ... Project name = \doxyconfig PROJECT_NAME ...
 
 <hr>
-\section cmde \\e <word>
+\section cmde \\e \<word\>
 
   \addindex \\e
   Displays the argument \<word\> in italics.
@@ -3604,7 +3604,7 @@ class Receiver
   To emphasize multiple words use \ref htmltag_EM "\<em\>"multiple words\ref htmltag_endEM "\</em\>".
 
 <hr>
-\section cmdem \\em <word>
+\section cmdem \\em \<word\>
 
   \addindex \\em
   Displays the argument \<word\> in italics.
@@ -3796,7 +3796,7 @@ class Receiver
               \ref cmdhtmlinclude "\\htmlinclude".
 
 <hr>
-\section cmdimage \\image['{'option[,option]'}'] <format> <file> ["caption"] [<sizeindication>=<size>]
+\section cmdimage \\image['{'option[,option]'}'] \<format\> \<file\> ["caption"] [\<sizeindication\>=\<size\>]
 
   \addindex \\image
   Inserts an image into the documentation. This command is format
@@ -3946,7 +3946,7 @@ class Receiver
   the \c printf function.
 
 <hr>
-\section cmdp \\p <word>
+\section cmdp \\p \<word\>
 
   \addindex \\p
   Displays the parameter \<word\> using a typewriter font.
