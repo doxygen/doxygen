@@ -1650,6 +1650,9 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
                                         }
+<SectionTitle>{STopt}"\\\\ilinebr"      { // escaped end of section title
+                                          yyextra->sectionTitle+=yytext;
+                                        }
 <SectionTitle>{STopt}/"\\ilinebr"       { // end of section title
                                           addSection(yyscanner);
                                           addOutput(yyscanner,yytext);
