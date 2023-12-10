@@ -44,7 +44,7 @@ and the version in which they were introduced.
 \since doxygen version 1.8.19
 
 <hr>
-\section cmdifile \\ifile <filename>
+\section cmdifile \\ifile \<filename\>
   \addindex \\ifile
 
   Internal doxygen command to reset the current filename in a documentation block
@@ -54,7 +54,7 @@ and the version in which they were introduced.
 \since doxygen version 1.9.5
 
 <hr>
-\section cmdiline \\iline <linenr>
+\section cmdiline \\iline \<linenr\>
   \addindex \\iline
 
   Internal doxygen command to reset the current line counter in a documentation block
@@ -64,7 +64,7 @@ and the version in which they were introduced.
 \since doxygen version 1.9.2
 
 <hr>
-\section cmdicode \\icode['{'<word>'}']
+\section cmdicode \\icode['{'\<word\>'}']
 
   \addindex \\icode
   This command has a similar syntax and function as the command `\code`, but is internally used
@@ -84,7 +84,7 @@ and the version in which they were introduced.
 \since doxygen version 1.9.5
 
 <hr>
-\section cmdiliteral \\iliteral['{'<option>'}']
+\section cmdiliteral \\iliteral['{'\<option\>'}']
   \addindex \\iliteral
 
   This command is to replace the Java documentation commands `{@literal .... }` and
