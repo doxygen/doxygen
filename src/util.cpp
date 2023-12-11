@@ -3014,6 +3014,7 @@ bool resolveLink(/* in */ const QCString &scName,
   *resContext=0;
 
   QCString linkRef=lr;
+  QCString linkRefPHP=substitute(lr,"\\","::"); // PHP substitution
   QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
   //printf("ResolveLink linkRef=%s\n",qPrint(lr));
   const FileDef  *fd;
@@ -3067,6 +3068,12 @@ bool resolveLink(/* in */ const QCString &scName,
     return TRUE;
   }
   else if ((cd=getClass(linkRef))) // class link
+  {
+    *resContext=cd;
+    resAnchor=cd->anchor();
+    return TRUE;
+  }
+  else if ((cd=getClass(linkRefPHP)) && (SrcLangExt_PHP==cd->getLanguage())) // class link
   {
     *resContext=cd;
     resAnchor=cd->anchor();
