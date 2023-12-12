@@ -1210,17 +1210,18 @@ WSopt [ \t\r]*
                                         }
 <Include>[^\">\n]+[\">]                 {
                                           yyextra->incName+=yytext;
-                                          readIncludeFile(yyscanner,yyextra->incName);
                                           if (yyextra->isImported)
                                           {
                                             BEGIN(EndImport);
                                           }
                                           else
                                           {
+                                            readIncludeFile(yyscanner,yyextra->incName);
                                             BEGIN(Start);
                                           }
                                         }
-<EndImport>{ENDIMPORTopt}/\n                    {
+<EndImport>{ENDIMPORTopt}/\n            {
+                                          readIncludeFile(yyscanner,yyextra->incName);
                                           BEGIN(Start);
                                         }
 <EndImport>\\[\r]?"\n"                  {
