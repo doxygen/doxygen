@@ -103,6 +103,7 @@ static STLInfo g_stlinfo[] =
   { "deque",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
   { "list",                 0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
   { "forward_list",         0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  }, // C++11
+  { "pair",                 0,                              0,                     "T",           "elements",    "T",          "elements",    FALSE,              TRUE  },
   { "map",                  0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
   { "unordered_map",        0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  }, // C++11
   { "multimap",             0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
