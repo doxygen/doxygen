@@ -7911,6 +7911,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       }
       else if (ce->section.isNamespace() )
       {
+        yyextra->current->protection = yyextra->protection = Protection::Public ;
         yyextra->current->exported = yyextra->exported = ce->exported;
       }
       else // named struct, union, protocol, category

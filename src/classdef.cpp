@@ -3383,6 +3383,16 @@ bool ClassDefImpl::isLinkableInProject() const
   }
   else
   {
+    //printf("%s::isLinkableInProject() conditions: artifical=%d hidden=%d anonymous=%d protection=%d local=%d docs=%d static=%d ref=%d\n",
+    //      qPrint(name()),
+    //      !isArtificial(),
+    //      !isHidden(),
+    //      !isAnonymous(),
+    //      m_impl->prot,
+    //      !m_impl->isLocal   || extractLocal,
+    //      hasDocumentation() || !hideUndoc,
+    //      !m_impl->isStatic  || extractStatic,
+    //      !isReference());
     return
       !isArtificial() && !isHidden() &&            /* not hidden */
       !isAnonymous() &&                            /* not anonymous */
