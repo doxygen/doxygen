@@ -190,7 +190,7 @@ function initNavTree(toroot,relpath) {
         const aname = '#'+link.split('#')[1];
         const srcPage = stripPath(pathName());
         const targetPage = stripPath(link.split('#')[0]);
-        a.href = srcPage!=targetPage ? url : "javascript:void(0)";
+        a.href = srcPage!=targetPage ? url : aname;
         a.onclick = function() {
           storeLink(link);
           aPPar = $(a).parent().parent();
