@@ -3383,7 +3383,7 @@ bool ClassDefImpl::isLinkableInProject() const
   }
   else
   {
-    //printf("%s::isLinkableInProject() conditions: artifical=%d hidden=%d anonymous=%d protection=%d local=%d docs=%d static=%d ref=%d\n",
+    //printf("%s::isLinkableInProject() conditions: artificial=%d hidden=%d anonymous=%d protection=%d local=%d docs=%d static=%d ref=%d\n",
     //      qPrint(name()),
     //      !isArtificial(),
     //      !isHidden(),
