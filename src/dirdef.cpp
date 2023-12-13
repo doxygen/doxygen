@@ -863,8 +863,14 @@ DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
   while ((i=path.find('/',p))!=-1)
   {
     QCString part=path.left(i+1);
-    if (!matchPath(part,Config_getList(STRIP_FROM_PATH)) && (part!="/" && part!="//"))
+    if (!matchPath(part,Config_getList(STRIP_FROM_PATH)) && (part!="/" && part!="//" && part!="//?/"))
     {
+#if defined(_WIN32)
+      if (part.startsWith("//?/")) // strip leading "\\?\" part from path
+      {
+        part=part.mid(4);
+      }
+#endif
       dir=createNewDir(part);
     }
     p=i+1;
@@ -1004,11 +1010,12 @@ static void computeCommonDirPrefix()
         for (const auto &dir : *Doxygen::dirLinkedMap)
         {
           QCString dirName = dir->name();
+          //printf("dirName='%s' (l=%d) path='%s' (l=%d)\n",qPrint(dirName),dirName.length(),qPrint(path),path.length());
           if (dirName.length()>path.length())
           {
             if (dirName.left(l)!=path) // dirName does not start with path
             {
-              i=path.findRev('/',l-2);
+              i = l>=2 ? path.findRev('/',l-2) : -1;
               if (i==-1) // no unique prefix -> stop
               {
                 path="";
