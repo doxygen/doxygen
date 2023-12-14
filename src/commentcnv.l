@@ -1407,7 +1407,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     fs->bufState      = YY_CURRENT_BUFFER;
     fs->oldLineNr     = yyextra->lineNr;
     fs->oldFileName   = yyextra->fileName;
-    fs->oldState      = YY_START;
+    fs->oldState      = yyextra->includeCtx;
     fs->oldFileBuf    = yyextra->inBuf;
     fs->oldFileBufPos = yyextra->inBufPos;
     fs->oldIncludeCtx = yyextra->includeCtx;
