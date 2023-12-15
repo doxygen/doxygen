@@ -2312,7 +2312,6 @@ static MemberDef *addVariableToClass(
   cd->insertMember(md.get());
   mmd->setRefItems(root->sli);
 
-  //TODO: insert FileDef instead of filename strings.
   cd->insertUsedFile(root->fileDef());
   root->markAsProcessed();
 

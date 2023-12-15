@@ -32,7 +32,6 @@
 #include "filedef.h"
 #include "trace.h"
 
-
 //----------------------------------------------------------------------
 
 class DirDefImpl : public DefinitionMixin<DirDef>
@@ -865,13 +864,7 @@ DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
     QCString part=path.left(i+1);
     if (!matchPath(part,Config_getList(STRIP_FROM_PATH)) && (part!="/" && part!="//" && part!="//?/"))
     {
-#if defined(_WIN32)
-      if (part.startsWith("//?/")) // strip leading "\\?\" part from path
-      {
-        part=part.mid(4);
-      }
-#endif
-      dir=createNewDir(part);
+      dir=createNewDir(removeLongPathMarker(part));
     }
     p=i+1;
   }
@@ -993,7 +986,7 @@ static void computeCommonDirPrefix()
   if (!Doxygen::dirLinkedMap->empty()) // we have at least one dir
   {
     // start will full path of first dir
-    path=(*it)->name();
+    path=removeLongPathMarker((*it)->name());
     int i=path.findRev('/',path.length()-2);
     path=path.left(i+1);
     bool done=FALSE;
@@ -1009,7 +1002,7 @@ static void computeCommonDirPrefix()
         size_t count=0;
         for (const auto &dir : *Doxygen::dirLinkedMap)
         {
-          QCString dirName = dir->name();
+          QCString dirName = removeLongPathMarker(dir->name());
           //printf("dirName='%s' (l=%d) path='%s' (l=%d)\n",qPrint(dirName),dirName.length(),qPrint(path),path.length());
           if (dirName.length()>path.length())
           {

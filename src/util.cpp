@@ -292,10 +292,22 @@ QCString generateMarker(int id)
   return result;
 }
 
-static QCString stripFromPath(const QCString &path,const StringVector &l)
+QCString removeLongPathMarker(QCString path)
+{
+#if defined(_WIN32)
+  if (path.startsWith("//?/")) // strip leading "\\?\" part from path
+  {
+    path=path.mid(4);
+  }
+#endif
+  return path;
+}
+
+static QCString stripFromPath(const QCString &p,const StringVector &l)
 {
   // look at all the strings in the list and strip the longest match
   QCString potential;
+  QCString path=removeLongPathMarker(p);
   unsigned int length = 0;
   for (const auto &s : l)
   {
@@ -3222,7 +3234,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
-    path=name.left(slashPos+1);
+    path=removeLongPathMarker(name.left(slashPos+1));
     name=name.right(name.length()-slashPos-1);
   }
   if (name.isEmpty()) return 0;

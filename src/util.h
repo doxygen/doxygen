@@ -362,6 +362,7 @@ QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &in
 void createSubDirs(const Dir &d);
 void clearSubDirs(const Dir &d);
 
+QCString removeLongPathMarker(QCString path);
 QCString stripPath(const QCString &s);
 
 bool containsWord(const QCString &s,const char *word);
