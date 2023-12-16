@@ -3419,7 +3419,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         }
         if (!wasEmpty)
         {
-          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr @ianchor " + mdFileNameId + "\\ilinebr ");
+          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr @ianchor{" + stripFromPath(fileName) + "} " + mdFileNameId + "\\ilinebr ");
         }
         else if (!generatedId.isEmpty())
         {
