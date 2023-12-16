@@ -2329,7 +2329,10 @@ NONLopt [^\n]*
                                             REJECT
                                           }
                                         }
-<RequiresClause>"||"|"&&"             { // "requires A || B" or "requires A && B"
+<RequiresClause>"::"{ID}                {
+                                          yyextra->current->req+=yytext;
+                                        }
+<RequiresClause>"||"|"&&"               { // "requires A || B" or "requires A && B"
                                           yyextra->current->req+=yytext;
                                         }
 <RequiresClause>{BN}+                   {
