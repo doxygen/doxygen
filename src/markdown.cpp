@@ -3389,8 +3389,9 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   QCString fn      = FileInfo(fileName.str()).fileName();
   QCString titleFn = stripExtensionGeneral(fn,getFileNameExtension(fn));
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
+  QCString mdFileNameId = markdownFileNameToId(fileName);
   bool wasEmpty = id.isEmpty();
-  if (wasEmpty) id = markdownFileNameToId(fileName);
+  if (wasEmpty) id = mdFileNameId;
   switch (isExplicitPage(docs))
   {
     case ExplicitPageResult::notExplicit:
@@ -3418,7 +3419,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         }
         if (!wasEmpty)
         {
-          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
+          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr @ianchor " + mdFileNameId + "\\ilinebr ");
         }
         else if (!generatedId.isEmpty())
         {
