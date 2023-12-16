@@ -22,7 +22,7 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
-function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
+function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
   function makeTree(data,relPath) {
     let result='';
     if ('children' in data) {
@@ -130,5 +130,8 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
     $(window).resize(resetState);
   }
   $('#main-menu').smartmenus();
+  if (!treeview) { // make sure we stay under the stick menu
+    $('html').css('scroll-padding-top','36px');
+  }
 }
 /* @license-end */
