@@ -42,8 +42,8 @@ QCString searchName(const Definition *d);
 struct SearchTerm
 {
   using LinkInfo = std::variant<std::monostate,const Definition *,const SectionInfo *>;
-  SearchTerm(const QCString &w,const Definition *d)  : word(convertUTF8ToLower(w.str())), info(d)  { makeTitle(); }
-  SearchTerm(const QCString &w,const SectionInfo *s) : word(convertUTF8ToLower(w.str())), info(s)  { makeTitle(); }
+  SearchTerm(const QCString &w,const Definition *d)  : word(w.str()), info(d)  { makeTitle(); }
+  SearchTerm(const QCString &w,const SectionInfo *s) : word(w.str()), info(s)  { makeTitle(); }
   QCString word;                 //!< lower case word that is indexed (e.g. name of a symbol, or word from a title)
   QCString title;                //!< title to show in the output for this search result
   LinkInfo info;                 //!< definition to link to

@@ -53,6 +53,12 @@ void SearchTerm::makeTitle()
   else if (std::holds_alternative<const SectionInfo *>(info))
   {
     title = std::get<const SectionInfo *>(info)->title();
+
+    // Capitalizing the word as this is not a code entity
+    std::string letter = getUTF8CharAt(word.str(),0);
+    // Uppercase letter could have different size
+    word.remove(0, letter.size());
+    word.prepend(convertUTF8ToUpper(letter));
   }
   else
   {
@@ -425,7 +431,7 @@ void createJavaScriptSearchIndex()
   {
     if (gd->isLinkable())
     {
-      QCString title(convertUTF8ToLower(filterTitle(gd->groupTitle()).str()));
+      QCString title(filterTitle(gd->groupTitle()).str());
       IntVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       for (int index : tokenIndices)
@@ -441,7 +447,7 @@ void createJavaScriptSearchIndex()
   {
     if (pd->isLinkable())
     {
-      QCString title(convertUTF8ToLower(filterTitle(pd->title()).str()));
+      QCString title(filterTitle(pd->title()).str());
       IntVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
       for (int index : tokenIndices)
@@ -455,7 +461,7 @@ void createJavaScriptSearchIndex()
   // main page
   if (Doxygen::mainPage)
   {
-    QCString title(convertUTF8ToLower(filterTitle(Doxygen::mainPage->title()).str()));
+    QCString title(filterTitle(Doxygen::mainPage->title()).str());
     IntVector tokenIndices;
     splitSearchTokens(title,tokenIndices);
     for (int index : tokenIndices)
@@ -839,7 +845,7 @@ void writeJavaScriptSearchIndex()
 
 void SearchIndexInfo::add(const SearchTerm &term)
 {
-  std::string letter = getUTF8CharAt(term.word.str(),0);
+  std::string letter = convertUTF8ToLower(getUTF8CharAt(term.word.str(),0));
   auto &list = symbolMap[letter]; // creates a new entry if not found
   list.push_back(term);
 }
