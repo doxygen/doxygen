@@ -1200,6 +1200,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          return 0;
                        }
+<St_Ref2>{HTMLTAG}     { /* html tag */
+                         lineCount(yytext,yyleng);
+                         handleHtmlTag(yyscanner,yytext);
+                         return TK_HTMLTAG;
+                       }
 <St_Ref2>{SPCMD1}      |
 <St_Ref2>{SPCMD2}      { /* special command */
                          yyextra->token.name = yytext+1;

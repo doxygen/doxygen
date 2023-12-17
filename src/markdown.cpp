@@ -1454,7 +1454,7 @@ int Markdown::processLink(const char *data,int offset,int size)
       }
       else
       {
-        m_out.addStr(substitute(content,"\"","&quot;"));
+        processInline(content.data(),content.length());
       }
       m_out.addStr("\"");
     }
