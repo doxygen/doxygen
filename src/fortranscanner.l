@@ -262,6 +262,7 @@ static inline const char *getLexerFILE() {return __FILE__;}
 
  //-----------------------------------------------------------------------------
  //-----------------------------------------------------------------------------
+CMD       ("\\"|"@")
 IDSYM     [a-z_A-Z0-9]
 NOTIDSYM  [^a-z_A-Z0-9]
 SEPARATE  [:, \t]
@@ -300,6 +301,14 @@ EXTERNAL_STMT (EXTERNAL)
 CONTAINS  CONTAINS
 PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON_)?RECURSIVE|IMPURE|PURE|ELEMENTAL)?
 SCOPENAME ({ID}{BS}"::"{BS})*
+
+LINENR    {B}*[1-9][0-9]*
+FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
+FILEECHAR [a-z_A-Z0-9\-\+=&#@]
+FILECHARS {FILEICHAR}*{FILEECHAR}+
+HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
+VFILEMASK {FILECHARS}("."{FILECHARS})*
+FILEMASK  {VFILEMASK}|{HFILEMASK}
 
 %option noyywrap
 %option stack
@@ -1397,12 +1406,43 @@ private                                 {
                                           //cout << "start DocBlock " << endl;
                                         }
 
-<DocBlock>.*                            { // contents of yyextra->current comment line
+<DocBlock>{CMD}"ifile"{B}+"\""[^\n\"]+"\"" {
+                                          yyextra->fileName = &yytext[6];
+                                          yyextra->fileName = yyextra->fileName.stripWhiteSpace();
+                                          yyextra->fileName = yyextra->fileName.mid(1,yyextra->fileName.length()-2);
+                                          yyextra->docBlock+=yytext;
+                                        }
+<DocBlock>{CMD}"ifile"{B}+{FILEMASK}    {
+                                          yyextra->fileName = &yytext[6];
+                                          yyextra->fileName = yyextra->fileName.stripWhiteSpace();
+                                          yyextra->docBlock+=yytext;
+                                        }
+<DocBlock>{CMD}"iline"{LINENR}/[\n\.]   |
+<DocBlock>{CMD}"iline"{LINENR}{B}       {
+                                          bool ok = false;
+                                          int nr = QCString(&yytext[6]).toInt(&ok);
+                                          if (!ok)
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid line number '%s' for iline command",yytext);
+                                          }
+                                          else
+                                          {
+                                            yyextra->lineNr = nr;
+                                          }
+                                          yyextra->docBlock+=yytext;
+                                        }
+<DocBlock>({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
+                                          yyextra->docBlock+=yytext;
+                                        }
+<DocBlock>[^\\@\n]*                     { // contents of yyextra->current comment line
                                           yyextra->docBlock+=yytext;
                                         }
 <DocBlock>"\n"{BS}"!"(">"|"!"+)         { // comment block (next line is also comment line)
                                           yyextra->docBlock+="\n"; // \n is necessary for lists
                                           newLine(yyscanner);
+                                        }
+<DocBlock>{CMD}                             {
+                                          yyextra->docBlock+=yytext;
                                         }
 <DocBlock>"\n"                          { // comment block ends at the end of this line
                                           //cout <<"3=========> comment block : "<< yyextra->docBlock << endl;
