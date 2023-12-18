@@ -3435,25 +3435,92 @@ static QCString showDate(const QCString &fmt)
   return formatDateTime(fmt,dat,usedFormat);
 }
 
+QCString projectLogoFile()
+{
+  QCString projectLogo = Config_getString(PROJECT_LOGO);
+  if (!projectLogo.isEmpty())
+  {
+    // check for optional width= and height= specifier
+    int wi = projectLogo.find(" width=");
+    if (wi!=-1) // and strip them
+    {
+      projectLogo = projectLogo.left(wi);
+    }
+    int hi = projectLogo.find(" height=");
+    if (hi!=-1)
+    {
+      projectLogo = projectLogo.left(hi);
+    }
+  }
+  //printf("projectlogo='%s'\n",qPrint(projectLogo));
+  return projectLogo;
+}
+
+static QCString projectLogoSize()
+{
+  QCString sizeVal;
+  QCString projectLogo = Config_getString(PROJECT_LOGO);
+  if (!projectLogo.isEmpty())
+  {
+    auto extractDimension = [&projectLogo](const char *startMarker,int startPos,int endPos) -> QCString
+    {
+      QCString result = projectLogo.mid(startPos,endPos-startPos).stripWhiteSpace().quoted();
+      if (result.length()>=2 && result.at(0)!='"' && result.at(result.length()-1)!='"')
+      {
+        result="\""+result+"\"";
+      }
+      result.prepend(startMarker);
+      return result;
+    };
+    // check for optional width= and height= specifier
+    int wi = projectLogo.find(" width=");
+    int hi = projectLogo.find(" height=");
+    if (wi!=-1 && hi!=-1)
+    {
+      if (wi<hi) // "... width=x height=y..."
+      {
+        sizeVal = extractDimension(" width=",  wi+7, hi) + " "
+                + extractDimension(" height=", hi+8, projectLogo.length());
+      }
+      else // "... height=y width=x..."
+      {
+        sizeVal = extractDimension(" height=", hi+8, wi) + " "
+                + extractDimension(" width=",  wi+7, projectLogo.length());
+      }
+    }
+    else if (wi!=-1) // ... width=x..."
+    {
+      sizeVal = extractDimension(" width=", wi+7, projectLogo.length());
+    }
+    else if (hi!=-1) // ... height=x..."
+    {
+      sizeVal = extractDimension(" height=", hi+8, projectLogo.length());
+    }
+  }
+  //printf("projectsize='%s'\n",qPrint(sizeVal));
+  return sizeVal;
+}
+
 QCString substituteKeywords(const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief)
 {
   return substituteKeywords(s,
   {
     // keyword          value getter
-    { "$title",         [&]() { return !title.isEmpty() ? title : projName;       } },
-    { "$datetime",      [&]() { return dateToString(DateTimeType::DateTime);      } },
-    { "$date",          [&]() { return dateToString(DateTimeType::Date);          } },
-    { "$time",          [&]() { return dateToString(DateTimeType::Time);          } },
-    { "$year",          [&]() { return yearToString();                            } },
-    { "$doxygenversion",[&]() { return getDoxygenVersion();                       } },
-    { "$projectname",   [&]() { return projName;                                  } },
-    { "$projectnumber", [&]() { return projNum;                                   } },
-    { "$projectbrief",  [&]() { return projBrief;                                 } },
-    { "$projectlogo",   [&]() { return stripPath(Config_getString(PROJECT_LOGO)); } },
-    { "$projecticon",   [&]() { return stripPath(Config_getString(PROJECT_ICON)); } },
-    { "$langISO",       [&]() { return theTranslator->trISOLang();                } },
-    { "$showdate",      [&](const QCString &fmt) { return showDate(fmt);          } }
+    { "$title",           [&]() { return !title.isEmpty() ? title : projName;       } },
+    { "$datetime",        [&]() { return dateToString(DateTimeType::DateTime);      } },
+    { "$date",            [&]() { return dateToString(DateTimeType::Date);          } },
+    { "$time",            [&]() { return dateToString(DateTimeType::Time);          } },
+    { "$year",            [&]() { return yearToString();                            } },
+    { "$doxygenversion",  [&]() { return getDoxygenVersion();                       } },
+    { "$projectname",     [&]() { return projName;                                  } },
+    { "$projectnumber",   [&]() { return projNum;                                   } },
+    { "$projectbrief",    [&]() { return projBrief;                                 } },
+    { "$projectlogo",     [&]() { return stripPath(projectLogoFile());              } },
+    { "$logosize",        [&]() { return projectLogoSize();                         } },
+    { "$projecticon",     [&]() { return stripPath(Config_getString(PROJECT_ICON)); } },
+    { "$langISO",         [&]() { return theTranslator->trISOLang();                } },
+    { "$showdate",        [&](const QCString &fmt) { return showDate(fmt);          } }
   });
 }
 

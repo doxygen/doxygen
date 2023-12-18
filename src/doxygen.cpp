@@ -9942,7 +9942,7 @@ static void copyStyleSheet()
 
 static void copyLogo(const QCString &outputOption)
 {
-  QCString projectLogo = Config_getString(PROJECT_LOGO);
+  QCString projectLogo = projectLogoFile();
   if (!projectLogo.isEmpty())
   {
     FileInfo fi(projectLogo.str());
