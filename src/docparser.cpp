@@ -738,6 +738,7 @@ int DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
       context.insideHtmlLink=TRUE;
       retval = children.get_last<DocHRef>()->parse();
       context.insideHtmlLink=FALSE;
+      tokenizer.setStatePara();
       break;
     }
     else // unsupported option for tag a

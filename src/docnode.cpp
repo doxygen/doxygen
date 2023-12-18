@@ -828,6 +828,7 @@ void DocRef::parse()
     parser()->internalValidatingParseDoc(thisVariant(),children(),m_text);
     parser()->popContext();
     parser()->context.insideHtmlLink=FALSE;
+    parser()->tokenizer.setStatePara();
     flattenParagraphs(thisVariant(),children());
   }
 
@@ -2751,6 +2752,7 @@ void DocTitle::parseFromString(DocNodeVariant *parent,const QCString &text)
   parser()->internalValidatingParseDoc(thisVariant(),children(),text);
   parser()->popContext(); // this will restore the old parser->context.token
   parser()->context.insideHtmlLink=FALSE;
+  parser()->tokenizer.setStatePara();
   flattenParagraphs(thisVariant(),children());
 }
 
