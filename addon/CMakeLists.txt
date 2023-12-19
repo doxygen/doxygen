@@ -6,6 +6,10 @@ if (build_app)
     add_subdirectory(doxyapp)
 endif ()
 
+if (build_list)
+    add_subdirectory(doxylist)
+endif ()
+
 if (build_parse)
     add_subdirectory(doxyparse)
 endif ()
