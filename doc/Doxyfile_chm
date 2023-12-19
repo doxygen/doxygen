@@ -21,3 +21,9 @@
       HHC_LOCATION           = "$(HTML_HELP_COMPILER)"
       CHM_FILE               = index.chm
       BINARY_TOC             = YES
+      FULL_SIDEBAR           = NO
+      PROJECT_NAME           = "Doxygen"
+      PROJECT_LOGO           =
+      HTML_COLORSTYLE        = LIGHT
+      SEARCHENGINE           = NO
+      HTML_EXTRA_STYLESHEET  = doxygen_manual_chm.css

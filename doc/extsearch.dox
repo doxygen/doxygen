@@ -21,6 +21,7 @@
 With release 1.8.3, doxygen provides the ability to search through HTML using
 an external indexing tool and search engine.
 This has several advantages:
+
 - For large projects it can have significant performance advantages over
   doxygen's built-in search engine, as doxygen uses a rather simple indexing
   algorithm.

@@ -214,6 +214,11 @@ a:hover {
 	background:   linear-gradient(to bottom, transparent 0,transparent calc(100% - 1px), currentColor 100%);
 }
 
+a:hover > span.arrow {
+        text-decoration: none;
+        background : var(--nav-background-color);
+}
+
 a.el {
 	font-weight: bold;
 }

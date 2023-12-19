@@ -12,7 +12,8 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-PROJECT_NAME      = "Doxygen"
+PROJECT_NAME      = "Manual"
+PROJECT_LOGO      = doxygen_logo.svg height=35px
 PROJECT_ICON      = ../doc/doxygen.ico
 OUTPUT_DIRECTORY  = ..
 HTML_HEADER       = 
@@ -32,7 +33,8 @@ GENERATE_XML      = NO
 HTML_COLORSTYLE_SAT = 0
 ENABLED_SECTIONS  = logo_on
 ENABLE_PREPROCESSING = NO
-HTML_COLORSTYLE   = LIGHT
+HTML_COLORSTYLE   = TOGGLE
+FULL_SIDEBAR      = YES
 CASE_SENSE_NAMES  = NO
 IMAGE_PATH        = . images
 INPUT             = $(INDEX_DOC) install.dox starting.dox docblocks.dox additional.dox \
@@ -46,7 +48,7 @@ EXAMPLE_PATH      = ../examples .
 RECURSIVE         = NO
 TAGFILES          =
 ALLEXTERNALS      = NO
-SEARCHENGINE      = NO
+SEARCHENGINE      = YES
 PDF_HYPERLINKS    = YES
 USE_PDFLATEX      = YES
 STRIP_CODE_COMMENTS = NO

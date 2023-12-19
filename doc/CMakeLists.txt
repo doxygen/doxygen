@@ -44,6 +44,7 @@ set(DOC_FILES
         additional.dox
         Doxyfile
         doxygen_manual.css
+        doxygen_manual_chm.css
         doxygen_usage.dox
         doxywizard_expert.png
         doxywizard_main.png
