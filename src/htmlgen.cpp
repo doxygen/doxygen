@@ -345,6 +345,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   bool hasProjectIcon = !Config_getString(PROJECT_ICON).isEmpty();
   bool hasFullSideBar = Config_getBool(FULL_SIDEBAR) && disableIndex && treeView;
   bool hasCopyClipboard = Config_getBool(HTML_COPY_CLIPBOARD);
+  bool hasCookie = treeView || searchEngine || Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE;
   static bool titleArea = (hasProjectName || hasProjectBrief || hasProjectLogo || (disableIndex && searchEngine));
 
   cssFile = Config_getString(HTML_STYLESHEET);
@@ -576,6 +577,12 @@ static QCString substituteHtmlKeywords(const QCString &str,
     darkModeJs="<script type=\"text/javascript\" src=\"$relpath^darkmode_toggle.js\"></script>\n";
   }
 
+  QCString cookieJs;
+  if (hasCookie)
+  {
+    cookieJs="<script type=\"text/javascript\" src=\"$relpath^cookie.js\"></script>\n";
+  }
+
   // first substitute generic keywords
   QCString result = substituteKeywords(str,title,
         convertToHtml(Config_getString(PROJECT_NAME)),
@@ -595,6 +602,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
     { "$darkmode",       [&]() { return darkModeJs;     } },
     { "$generatedby",    [&]() { return generatedBy;    } },
     { "$extrastylesheet",[&]() { return extraCssText;   } },
+    { "$cookie",         [&]() { return cookieJs;       } },
     { "$relpath$",       [&]() { return relPath;        } } //<-- obsolete: for backwards compatibility only
   });
 
@@ -614,7 +622,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
     { "PROJECT_BRIEF",     hasProjectBrief  },
     { "PROJECT_LOGO",      hasProjectLogo   },
     { "PROJECT_ICON",      hasProjectIcon   },
-    { "COPY_CLIPBOARD",    hasCopyClipboard }
+    { "COPY_CLIPBOARD",    hasCopyClipboard },
   },htmlMarkerInfo);
 
   result = removeEmptyLines(result);
@@ -1210,6 +1218,12 @@ void HtmlGenerator::init()
       TextStream t(&f);
       t << substitute(mgr.getAsString("clipboard.js"),"$copy_to_clipboard_text",theTranslator->trCopyToClipboard());
     }
+  }
+
+  bool hasCookie = Config_getBool(GENERATE_TREEVIEW) || Config_getBool(SEARCHENGINE) || Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE;
+  if (hasCookie)
+  {
+    mgr.copyResource("cookie.js",dname);
   }
 
   if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
