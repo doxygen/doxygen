@@ -112,7 +112,7 @@ class ManGenerator : public OutputGenerator
                          const QCString &anchor,const QCString &name);
     void startTextLink(const QCString &,const QCString &) {}
     void endTextLink() {}
-    void startTypewriter() { m_t << "\\fC"; m_firstCol=FALSE; }
+    void startTypewriter() { m_t << "\\fR"; m_firstCol=FALSE; }
     void endTypewriter()   { m_t << "\\fP"; m_firstCol=FALSE; }
     void startGroupHeader(int);
     void endGroupHeader(int);

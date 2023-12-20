@@ -318,7 +318,6 @@ static QCString buildFileName(const QCString &name)
 void ManGenerator::startFile(const QCString &,const QCString &manName,const QCString &,int,int)
 {
   startPlainFile( buildFileName( manName ) );
-  m_t << ".do ftr C R\n";
   m_firstCol=TRUE;
 }
 
@@ -876,7 +875,7 @@ void ManGenerator::startLabels()
 
 void ManGenerator::writeLabel(const QCString &l,bool isLast)
 {
-  m_t << "\\fC [" << l << "]\\fP";
+  m_t << "\\fR [" << l << "]\\fP";
   if (!isLast) m_t << ", ";
 }
 

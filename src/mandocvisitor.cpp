@@ -148,7 +148,7 @@ void ManDocVisitor::operator()(const DocStyleChange &s)
       m_firstCol=FALSE;
       break;
     case DocStyleChange::Code:
-      if (s.enable()) m_t << "\\fC";   else m_t << "\\fP";
+      if (s.enable()) m_t << "\\fR";   else m_t << "\\fP";
       m_firstCol=FALSE;
       break;
     case DocStyleChange::Subscript:
@@ -217,7 +217,7 @@ void ManDocVisitor::operator()(const DocVerbatim &s)
       filter(s.text());
       break;
     case DocVerbatim::JavaDocCode:
-      m_t << "\\fC\n";
+      m_t << "\\fR\n";
       filter(s.text());
       m_t << "\\fP\n";
       break;
@@ -741,7 +741,7 @@ void ManDocVisitor::operator()(const DocInternal &i)
 void ManDocVisitor::operator()(const DocHRef &href)
 {
   if (m_hide) return;
-  m_t << "\\fC";
+  m_t << "\\fR";
   visitChildren(href);
   m_t << "\\fP";
 }
