@@ -318,6 +318,7 @@ static QCString buildFileName(const QCString &name)
 void ManGenerator::startFile(const QCString &,const QCString &manName,const QCString &,int,int)
 {
   startPlainFile( buildFileName( manName ) );
+  m_t << ".do ftr C R\n";
   m_firstCol=TRUE;
 }
 
