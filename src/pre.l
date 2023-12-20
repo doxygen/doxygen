@@ -416,6 +416,7 @@ WSopt [ \t\r]*
 %x      DefName
 %x      DefineArg
 %x      DefineText
+%x      CmakeDefName01
 %x      SkipCPPBlock
 %x      SkipCComment
 %x      ArgCopyCComment
@@ -957,6 +958,12 @@ WSopt [ \t\r]*
                                           yyextra->yyColNr+=(int)yyleng;
                                           BEGIN(DefName);
                                         }
+<Command>"cmakedefine01"{B}+            {
+                                          yyextra->potentialDefine += substitute(yytext,"cmakedefine01","     define");
+                                          //printf("!!!DefName\n");
+                                          yyextra->yyColNr+=(int)yyleng;
+                                          BEGIN(CmakeDefName01);
+                                        }
 <Command>"ifdef"/{B}*"("                {
                                           incrLevel(yyscanner);
                                           yyextra->guardExpr.resize(0);
@@ -1274,7 +1281,7 @@ WSopt [ \t\r]*
                                           }
                                           yyextra->expectGuard=FALSE;
                                         }
-<DefName>{ID}/{B}*"\n"                  { // empty define
+<DefName,CmakeDefName01>{ID}/{B}*"\n"   { // empty define
                                           yyextra->argMap.clear();
                                           yyextra->defArgs = -1;
                                           yyextra->defName = yytext;
@@ -1290,7 +1297,8 @@ WSopt [ \t\r]*
                                             outputString(yyscanner,def);
                                             yyextra->quoteArg=FALSE;
                                             yyextra->insideComment=FALSE;
-                                            if (yyextra->insideCS) yyextra->defText="1"; // for C#, use "1" as define text
+                                            if (YY_START == CmakeDefName01) yyextra->defText = "0";
+                                            else if (yyextra->insideCS) yyextra->defText="1"; // for C#, use "1" as define text
                                             BEGIN(DefineText);
                                           }
                                           else // define is a guard => hide
