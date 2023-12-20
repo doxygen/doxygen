@@ -304,7 +304,7 @@ jobs:
         endif()
 
     - name: Archive build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
@@ -353,7 +353,7 @@ jobs:
         endif()
 
     - name: Archive html documentation artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "Html documentation artifacts"
         path: build/html/
@@ -361,7 +361,7 @@ jobs:
 
 
     - name: Archive Latex documentation artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf
