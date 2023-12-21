@@ -166,7 +166,7 @@ struct Image::Private
     { 0xa7, 0x38, 0x30, 0xff },
     { 0x29, 0x70, 0x18, 0xff },
     { 0x97, 0xCC, 0xE8, 0xff },
-    { 0xc0, 0xc0, 0xc0, 0xff },
+    { 0xe0, 0xe0, 0xe0, 0xff },
     { 0xff, 0xff, 0xff, 0xff }
   };
 };
@@ -342,6 +342,8 @@ void Image::fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_
     for (xp=x,xi=0;xp<x+width;xp++,xi++)
       if (mask&(1<<((xi+yi)&0x1f)))
         setPixel(xp,yp,colIndex);
+      else
+        setPixel(xp,yp,8);
 }
 
 bool Image::save(const QCString &fileName)
