@@ -74,6 +74,7 @@ struct commentcnv_FileState
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
   QCString oldFileName;
+  QCString oldIncPrefix;
   int oldState = 0;
   BufStr fileBuf;
   const BufStr *oldFileBuf = nullptr;
@@ -107,6 +108,7 @@ struct commentcnvYY_state
   int      charContext = 0;
   int      javaBlock = 0;
   bool     specialComment = FALSE;
+  QCString incPrefix;
 
   QCString aliasString;
   int      blockCount = 0;
@@ -269,7 +271,7 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
                                    }
-<Scan>![><!]/.*\n	   {
+<Scan>{B}*![><!]/.*\n              {
                                      if (yyextra->lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
@@ -280,6 +282,7 @@ SLASHopt [/]*
                                        yyextra->nestingCount=0; // Fortran doesn't have an end comment
                                        clearCommentStack(yyscanner); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       yyextra->incPrefix = yytext;
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
   				   }
@@ -297,6 +300,7 @@ SLASHopt [/]*
                                          yyextra->nestingCount=0; // Fortran doesn't have an end comment
                                          clearCommentStack(yyscanner); /*  to be on the save side */
 				         BEGIN(CComment);
+                                         yyextra->incPrefix = yytext;
                                          yyextra->commentStack.push(yyextra->lineNr);
 				       }
 				       else
@@ -455,7 +459,7 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
   				   }
-<Scan>![><!]		           {
+<Scan>{B}*![><!]	           {
                                      if (yyextra->lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
@@ -466,6 +470,7 @@ SLASHopt [/]*
                                        yyextra->nestingCount=0;  // Fortran doesn't have an end comment
                                        clearCommentStack(yyscanner); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       yyextra->incPrefix = yytext;
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
   				   }
@@ -1110,8 +1115,10 @@ SLASHopt [/]*
                                         yyextra->inBuf      = fs->oldFileBuf;
                                         yyextra->inBufPos   = fs->oldFileBufPos;
                                         yyextra->includeCtx = fs->oldIncludeCtx;
-                                        QCString lineStr=" \\ilinebr\\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
+                                        yyextra->incPrefix  = fs->oldIncPrefix;
+                                        QCString lineStr=yyextra->incPrefix + " \\ilinebr\\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
                                         copyToOutput(yyscanner,lineStr.data(),lineStr.length());
+                                        yyextra->incPrefix  = "";
                                         yyextra->includeStack.pop_back();
                                         //printf("<<EOF>> switch back to %s line %d inbufPos=%d outbufPos=%d\n",
                                         //    qPrint(yyextra->fileName),yyextra->lineNr,yyextra->inBufPos,yyextra->outBuf.curPos());
@@ -1411,6 +1418,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     fs->oldFileBuf    = yyextra->inBuf;
     fs->oldFileBufPos = yyextra->inBufPos;
     fs->oldIncludeCtx = yyextra->includeCtx;
+    fs->oldIncPrefix  = yyextra->incPrefix;
     yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner),yyscanner);
     yyextra->fileName = absFileName;
     yyextra->lineNr   = lineNr;
