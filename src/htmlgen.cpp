@@ -2848,8 +2848,7 @@ static void writeDefaultQuickLinks(TextStream &t,
       << (searchEngine?"true":"false") << ","
       << (serverBasedSearch?"true":"false") << ",'"
       << searchPage << "','"
-      << theTranslator->trSearch() << "',"
-      << (Config_getBool(GENERATE_TREEVIEW)?"true":"false") << ");\n";
+      << theTranslator->trSearch() << "');\n";
     if (Config_getBool(SEARCHENGINE))
     {
       if (!serverBasedSearch)
