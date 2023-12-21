@@ -959,7 +959,7 @@ WSopt [ \t\r]*
                                           BEGIN(DefName);
                                         }
 <Command>"cmakedefine01"{B}+            {
-                                          yyextra->potentialDefine += substitute(yytext,"cmakedefine01","     define");
+                                          yyextra->potentialDefine += substitute(yytext,"cmakedefine01","     define  ");
                                           //printf("!!!DefName\n");
                                           yyextra->yyColNr+=(int)yyleng;
                                           BEGIN(CmakeDefName01);
