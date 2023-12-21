@@ -2866,6 +2866,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     t << "});\n";
     t << "/* @license-end */\n";
     t << "</script>\n";
+    t << "<div id=\"main-nav\"></div>\n";
   }
   else if (!Config_getBool(DISABLE_INDEX)) // && !Config_getBool(HTML_DYNAMIC_MENUS)
   {
@@ -2907,17 +2908,7 @@ static void writeDefaultQuickLinks(TextStream &t,
 
 void HtmlGenerator::endQuickIndices()
 {
-  bool dynamicMenuVisible = !Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS);
-  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
-  if (generateTreeView && dynamicMenuVisible) // place menu inside top section so we don't we don't get extra scrollbars
-  {
-    m_t << "<div id=\"main-nav\"></div>\n";
-  }
   m_t << "</div><!-- top -->\n";
-  if (!generateTreeView && dynamicMenuVisible) // place menu after top section to allow sticky menu
-  {
-    m_t << "<div id=\"main-nav\"></div>\n";
-  }
 }
 
 QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath)
