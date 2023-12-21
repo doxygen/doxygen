@@ -140,6 +140,7 @@ struct scannerYY_state
   bool             insideJS    = false;            //!< processing JavaScript code?
   bool             insideSlice = false;            //!< processing Slice code?
   bool             insideCpp   = true;             //!< processing C/C++ code
+  bool             stopAtInvalidString = false;
 
   bool             insideCppQuote = false;
   bool             insideProtocolList = false;
@@ -3082,6 +3083,7 @@ NONLopt [^\n]*
                                             yyextra->lastStringContext=YY_START;
                                             yyextra->current->initializer << yytext;
                                             yyextra->pCopyQuotedGString=&yyextra->current->initializer;
+                                            yyextra->stopAtInvalidString=false;
                                             BEGIN(CopyGString);
                                           }
                                         }
@@ -3225,7 +3227,14 @@ NONLopt [^\n]*
                                         }
 <CopyGString,CopyPHPGString>\n          {
                                           *yyextra->pCopyQuotedGString << *yytext;
-                                          lineCount(yyscanner);
+                                          if (yyextra->stopAtInvalidString)
+                                          {
+                                            BEGIN( yyextra->lastStringContext );
+                                          }
+                                          else
+                                          {
+                                            lineCount(yyscanner);
+                                          }
                                         }
 <CopyGString,CopyPHPGString>.           {
                                           *yyextra->pCopyQuotedGString << *yytext;
@@ -4071,6 +4080,7 @@ NONLopt [^\n]*
 <ReadBody,ReadNSBody,ReadBodyIntf>\"    { yyextra->current->program << yytext ;
                                           yyextra->pCopyQuotedGString = &yyextra->current->program;
                                           yyextra->lastStringContext=YY_START;
+                                          yyextra->stopAtInvalidString=false;
                                           BEGIN( CopyGString );
                                         }
 <ReadBody,ReadNSBody,ReadBodyIntf>{DCOMMC}  { yyextra->doxygenComment=true; REJECT;}
@@ -7115,6 +7125,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->lastStringContext=YY_START;
                                             yyextra->pCopyQuotedGString=&yyextra->docBlock;
+                                            yyextra->stopAtInvalidString=true;
                                             BEGIN(CopyGString);
                                           }
                                         }
