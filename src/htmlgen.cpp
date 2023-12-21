@@ -577,10 +577,9 @@ static QCString substituteHtmlKeywords(const QCString &str,
     darkModeJs="<script type=\"text/javascript\" src=\"$relpath^darkmode_toggle.js\"></script>\n";
   }
 
-  QCString cookieJs;
-  if (hasCookie)
+  if (hasCookie) // extend the $treeview tag to avoid breaking old files used with HTML_HEADER
   {
-    cookieJs="<script type=\"text/javascript\" src=\"$relpath^cookie.js\"></script>\n";
+    treeViewCssJs+="<script type=\"text/javascript\" src=\"$relpath^cookie.js\"></script>\n";
   }
 
   // first substitute generic keywords
@@ -602,7 +601,6 @@ static QCString substituteHtmlKeywords(const QCString &str,
     { "$darkmode",       [&]() { return darkModeJs;     } },
     { "$generatedby",    [&]() { return generatedBy;    } },
     { "$extrastylesheet",[&]() { return extraCssText;   } },
-    { "$cookie",         [&]() { return cookieJs;       } },
     { "$relpath$",       [&]() { return relPath;        } } //<-- obsolete: for backwards compatibility only
   });
 
