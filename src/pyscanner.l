@@ -160,8 +160,7 @@ static inline const char *getLexerFILE() {return __FILE__;}
 
        /* start command character */
 
-
-
+CMD               ("\\"|"@")
 BB                [ \t]+
 B                 [ \t]*
 NEWLINE           \n
@@ -204,6 +203,17 @@ POUNDCOMMENT      "#"[^#\n][^\n]*
 SCRIPTCOMMENT      "#!".*
 
 STARTDOCSYMS      "##"
+
+LINENR            {B}*[1-9][0-9]*
+FILEICHAR         [a-z_A-Z0-9\\:\\\/\-\+=&#@]
+FILEECHAR         [a-z_A-Z0-9\-\+=&#@]
+FILECHARS         {FILEICHAR}*{FILEECHAR}+
+HFILEMASK         {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
+VFILEMASK         {FILECHARS}("."{FILECHARS})*
+FILEMASK          {VFILEMASK}|{HFILEMASK}
+
+IDSYM     [a-z_A-Z0-9]
+ID        [a-z_A-Z%]+{IDSYM}*
 
 %option noyywrap
 
@@ -1419,14 +1429,42 @@ STARTDOCSYMS      "##"
                           else
                             yyextra->docBlock += yytext;
                         }
-    [^"'\n \t\\]+       {
+    [^"'\n \t\\@]+      {
                           yyextra->docBlock += yytext;
                         }
     \n                  {
                           incLineNr(yyscanner);
                           yyextra->docBlock += yytext;
                         }
-    \\.                 { // escaped char
+    {CMD}"ifile"{B}+"\""[^\n\"]+"\"" {
+                                    yyextra->fileName = &yytext[6];
+                                    yyextra->fileName = yyextra->fileName.stripWhiteSpace();
+                                    yyextra->fileName = yyextra->fileName.mid(1,yyextra->fileName.length()-2);
+                                    yyextra->docBlock+=yytext;
+                                  }
+    {CMD}"ifile"{B}+{FILEMASK}    {
+                                    yyextra->fileName = &yytext[6];
+                                    yyextra->fileName = yyextra->fileName.stripWhiteSpace();
+                                    yyextra->docBlock+=yytext;
+                                  }
+    {CMD}"iline"{LINENR}/[\n\.]   |
+    {CMD}"iline"{LINENR}{B}       {
+                                    bool ok = false;
+                                    int nr = QCString(&yytext[6]).toInt(&ok);
+                                    if (!ok)
+                                    {
+                                      warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                                    }
+                                    else
+                                    {
+                                      yyextra->yyLineNr = nr;
+                                    }
+                                    yyextra->docBlock+=yytext;
+                                  }
+    ({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
+                                     yyextra->docBlock+=yytext;
+                                  }
+    \\.                 { // escaped char TO be extended
                           yyextra->docBlock += yytext;
                         }
     .                   {
@@ -1442,7 +1480,35 @@ STARTDOCSYMS      "##"
                           yyextra->docBrief = FALSE;
                           incLineNr(yyscanner);
                         }
-    [^#\n]+             { // any other stuff
+    {CMD}"ifile"{B}+"\""[^\n\"]+"\"" {
+                                    yyextra->fileName = &yytext[6];
+                                    yyextra->fileName = yyextra->fileName.stripWhiteSpace();
+                                    yyextra->fileName = yyextra->fileName.mid(1,yyextra->fileName.length()-2);
+                                    yyextra->docBlock+=yytext;
+                                  }
+    {CMD}"ifile"{B}+{FILEMASK}    {
+                                    yyextra->fileName = &yytext[6];
+                                    yyextra->fileName = yyextra->fileName.stripWhiteSpace();
+                                    yyextra->docBlock+=yytext;
+                                  }
+    {CMD}"iline"{LINENR}/[\n\.]   |
+    {CMD}"iline"{LINENR}{B}       {
+                                    bool ok = false;
+                                    int nr = QCString(&yytext[6]).toInt(&ok);
+                                    if (!ok)
+                                    {
+                                      warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                                    }
+                                    else
+                                    {
+                                      yyextra->yyLineNr = nr;
+                                    }
+                                    yyextra->docBlock+=yytext;
+                                  }
+    ({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
+                                     yyextra->docBlock+=yytext;
+                                  }
+    [^#\\@\n]+          { // any other stuff
                           yyextra->docBlock+=yytext;
                         }
     \n                  { // new line that ends the comment

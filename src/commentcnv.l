@@ -115,6 +115,7 @@ struct commentcnvYY_state
   bool     lastEscaped = FALSE;
   int      lastBlockContext= 0;
   bool     pythonDocString = FALSE;
+  char     pythonDocStringChar = '\0';
   int      nestingCount= 0;
 
   bool     vhdl = FALSE; // for VHDL old style --! comment
@@ -237,6 +238,7 @@ SLASHopt [/]*
 <Scan>[,= ;\t]                      { /* eat , so we have a nice separator in long initialization lines */
                                        copyToOutput(yyscanner,yytext,(int)yyleng);
                                     }
+<Scan>"'''"!                        |
 <Scan>"\"\"\""!                     { /* start of python long comment */
                                      if (yyextra->lang!=SrcLangExt_Python)
 				     {
@@ -245,13 +247,16 @@ SLASHopt [/]*
 				     else
 				     {
                                        yyextra->pythonDocString = TRUE;
+                                       yyextra->pythonDocStringChar = yytext[0];
                                        yyextra->nestingCount=1;
                                        clearCommentStack(yyscanner); /*  to be on the save side */
                                        copyToOutput(yyscanner,yytext,(int)yyleng);
 				       BEGIN(CComment);
+                                       yyextra->incPrefix = "";
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
                                    }
+<Scan>"'''"                        |
 <Scan>"\"\"\""                     { /* start of python long comment */
                                      if (yyextra->lang!=SrcLangExt_Python)
 				     {
@@ -264,10 +269,12 @@ SLASHopt [/]*
 				     else
 				     { /* handle as if """! */
                                        yyextra->pythonDocString = TRUE;
+                                       yyextra->pythonDocStringChar = yytext[0];
                                        yyextra->nestingCount=1;
                                        clearCommentStack(yyscanner); /*  to be on the save side */
                                        copyToOutput(yyscanner,yytext,(int)yyleng);
 				       BEGIN(CComment);
+                                       yyextra->incPrefix = "";
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
                                    }
@@ -710,21 +717,38 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 
-<CComment,CNComment>[^ `~<\\!@*\n{\"\/]*     { /* anything that is not a '*' or command */
-                                     copyToOutput(yyscanner,yytext,(int)yyleng);
-                                   }
-<CComment,CNComment>"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
-                                     copyToOutput(yyscanner,yytext,(int)yyleng);
-                                   }
-<CComment>"\"\"\""                 { /* end of Python docstring */
+<CComment>{B}*"#"("#")?            { 
                                      if (yyextra->lang!=SrcLangExt_Python)
 				     {
 				       REJECT;
 				     }
 				     else
 				     {
+                                       yyextra->incPrefix = yytext;
+                                       copyToOutput(yyscanner,yytext,(int)yyleng);
+                                     }
+                                   }
+<CComment,CNComment>[^ `~<\\!@*\n{\"'\/]*     { /* anything that is not a '*' or command */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
+<CComment,CNComment>"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
+<CComment>"'''"                    |
+<CComment>"\"\"\""                 { /* end of Python docstring */
+                                     if (yyextra->lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+                                     else if (yyextra->pythonDocStringChar != yytext[0])
+                                     {
+				       copyToOutput(yyscanner,yytext,(int)yyleng);
+                                     }
+				     else
+				     {
                                        yyextra->nestingCount--;
                                        yyextra->pythonDocString = FALSE;
+                                       yyextra->pythonDocStringChar = '\0';
 				       copyToOutput(yyscanner,yytext,(int)yyleng);
 				       BEGIN(Scan);
 				     }
