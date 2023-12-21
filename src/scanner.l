@@ -2619,6 +2619,7 @@ NONLopt [^\n]*
                                           yyextra->lastCPPContext = YY_START;
                                           BEGIN( SkipCPP ) ;
                                         }
+<FindMembers,FindFields>{B}*"#"{B}*"cmakedefine01"      |
 <FindMembers,FindFields>{B}*"#"{B}*("cmake")?"define"   {
                                           if (yyextra->insidePHP)
                                             REJECT;
