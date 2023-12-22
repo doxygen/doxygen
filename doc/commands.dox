@@ -2938,7 +2938,7 @@ Commands for displaying examples
   is inserted as-is. When you
   want to insert a HTML fragment that has block scope like a table or list
   which should appear outside \<p\>..\</p\>, this can lead to invalid HTML.
-  You can use \\htmlinclude[block] to make doxygen
+  You can use `\htmlinclude[block]` to make doxygen
   end the current paragraph and restart after the file is included.
 
   Files or directories that doxygen should look for can be specified using the
@@ -3782,7 +3782,7 @@ class Receiver
   \ref cmdendhtmlonly "\\endhtmlonly" is inserted as-is. When you
   want to insert a HTML fragment that has block scope like a table or list
   which should appear outside \<p\>..\</p\>, this can lead to invalid HTML.
-  You can use \\htmlonly[block] to make doxygen
+  You can use `\htmlonly[block]` to make doxygen
   end the current paragraph and restart it after \\endhtmlonly.
 
   \note environment variables (like \$(HOME) ) are resolved inside a
