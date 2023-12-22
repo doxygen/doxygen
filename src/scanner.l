@@ -6069,6 +6069,13 @@ NONLopt [^\n]*
 <CSConstraintType,CSConstraintName>"#"  { // artificially inserted token to signal end of comment block
                                           yyextra->current->typeConstr.back().docs = yyextra->fullArgString;
                                         }
+<CSConstraintType>"=>"                  { // end of type constraint reached
+                                          // parse documentation of the constraints
+                                          handleParametersCommentBlocks(yyscanner,yyextra->current->typeConstr);
+                                          unput('>');
+                                          unput('=');
+                                          BEGIN( yyextra->lastCSConstraint );
+                                        }
 <CSConstraintType>"{"                   { // end of type constraint reached
                                           // parse documentation of the constraints
                                           handleParametersCommentBlocks(yyscanner,yyextra->current->typeConstr);
