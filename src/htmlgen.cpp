@@ -2266,18 +2266,19 @@ void HtmlGenerator::startParameterType(bool first,const QCString &key)
 void HtmlGenerator::endParameterType()
 {
   DBG_HTML(m_t << "<!-- endParameterType -->\n";)
-  m_t << "&#160;</td>\n";
+  m_t << "</td>";
 }
 
 void HtmlGenerator::startParameterName(bool /*oneArgOnly*/)
 {
   DBG_HTML(m_t << "<!-- startParameterName -->\n";)
-  m_t << "          <td class=\"paramname\">";
+  m_t << "          <td class=\"paramname\"><span class=\"paramname\">";
 }
 
 void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
 {
   DBG_HTML(m_t << "<!-- endParameterName -->\n";)
+  m_t << "</span>";
   if (last)
   {
     if (emptyList)
@@ -2297,6 +2298,18 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
     m_t << "</td>\n";
     m_t << "        </tr>\n";
   }
+}
+
+void HtmlGenerator::startParameterDefVal(const char *s)
+{
+  m_t << "<span class=\"paramdefsep\">";
+  docify(s);
+  m_t << "</span><span class=\"paramdefval\">";
+}
+
+void HtmlGenerator::endParameterDefVal()
+{
+  m_t << "</span>";
 }
 
 void HtmlGenerator::endParameterList()

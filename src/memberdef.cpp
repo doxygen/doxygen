@@ -1157,11 +1157,12 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       {
         n=addTemplateNames(n,scope->name(),cName);
       }
-      ol.docify(" = ");
-
-      ol.startTypewriter();
+      ol.startParameterDefVal(" = ");
+      //ol.docify(" = ");
+      //ol.startTypewriter();
       linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n,FALSE,TRUE,TRUE);
-      ol.endTypewriter();
+      //ol.endTypewriter();
+      ol.endParameterDefVal();
 
     }
     ++alIt;

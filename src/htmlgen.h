@@ -270,6 +270,8 @@ class HtmlGenerator : public OutputGenerator
     void endParameterType();
     void startParameterName(bool);
     void endParameterName(bool last,bool emptyList,bool closeBracket);
+    void startParameterDefVal(const char *sep);
+    void endParameterDefVal();
     void startParameterList(bool);
     void endParameterList();
     void exceptionEntry(const QCString &,bool);
