@@ -966,11 +966,11 @@ SLASHopt [/]*
 <CComment,CNComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
   				   }
-<CComment,ReadLine,IncludeFile>[\\@]("include"{B}*"{doc}"|"includedoc") {
+<CComment,ReadLine,IncludeFile>[\\@]("include{"{B}*"doc"{B}*"}"|"includedoc") {
                                      yyextra->includeCtx = YY_START;
                                      BEGIN(IncludeDoc);
                                    }
-<CComment,ReadLine,IncludeFile>[\\@]("snippet"{B}*"{doc}"|"snippetdoc") {
+<CComment,ReadLine,IncludeFile>[\\@]("snippet{"{B}*"doc"{B}*"}"|"snippetdoc") {
                                      yyextra->includeCtx = YY_START;
                                      BEGIN(SnippetDoc);
                                    }
