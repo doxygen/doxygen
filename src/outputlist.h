@@ -492,6 +492,8 @@ namespace OutputGenIntf
   template<class T> struct endParameterType            { static constexpr auto method = &T::endParameterType;            };
   template<class T> struct startParameterName          { static constexpr auto method = &T::startParameterName;          };
   template<class T> struct endParameterName            { static constexpr auto method = &T::endParameterName;            };
+  template<class T> struct startParameterDefVal        { static constexpr auto method = &T::startParameterDefVal;        };
+  template<class T> struct endParameterDefVal          { static constexpr auto method = &T::endParameterDefVal;          };
   template<class T> struct startParameterList          { static constexpr auto method = &T::startParameterList;          };
   template<class T> struct endParameterList            { static constexpr auto method = &T::endParameterList;            };
   template<class T> struct exceptionEntry              { static constexpr auto method = &T::exceptionEntry;              };
@@ -872,6 +874,10 @@ class OutputList
     { foreach<OutputGenIntf::startParameterName>(one); }
     void endParameterName(bool last,bool one,bool bracket)
     { foreach<OutputGenIntf::endParameterName>(last,one,bracket); }
+    void startParameterDefVal(const char *separator)
+    { foreach<OutputGenIntf::startParameterDefVal>(separator); }
+    void endParameterDefVal()
+    { foreach<OutputGenIntf::endParameterDefVal>(); }
     void startParameterList(bool openBracket)
     { foreach<OutputGenIntf::startParameterList>(openBracket); }
     void endParameterList()

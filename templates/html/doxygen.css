@@ -770,17 +770,25 @@ dl.reflist dd {
 
 .paramtype {
 	white-space: nowrap;
+	padding: 0px;
+	padding-bottom: 1px;
 }
 
 .paramname {
-	color: var(--memdef-param-name-color);
 	white-space: nowrap;
+        padding: 0px;
+        padding-bottom: 1px;
+        margin-left: 2px;
 }
+
 .paramname em {
+	color: var(--memdef-param-name-color);
 	font-style: normal;
+	margin-right: 1px;
 }
-.paramname code {
-        line-height: 14px;
+
+.paramname .paramdefval {
+	font-family: var(--font-family-monospace);
 }
 
 .params, .retval, .exception, .tparams {

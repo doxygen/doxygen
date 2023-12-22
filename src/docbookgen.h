@@ -268,6 +268,8 @@ class DocbookGenerator : public OutputGenerator
     void endParameterType(){DB_GEN_EMPTY};
     void startParameterName(bool);
     void endParameterName(bool,bool,bool);
+    void startParameterDefVal(const char *sep);
+    void endParameterDefVal();
     void startParameterList(bool);
     void endParameterList();
     void exceptionEntry(const QCString &,bool);

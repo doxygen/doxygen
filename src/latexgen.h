@@ -263,6 +263,8 @@ class LatexGenerator : public OutputGenerator
     void endParameterType();
     void startParameterName(bool);
     void endParameterName(bool,bool,bool);
+    void startParameterDefVal(const char *s) { docify(s); startTypewriter(); }
+    void endParameterDefVal() { endTypewriter(); }
     void startParameterList(bool);
     void endParameterList();
     void exceptionEntry(const QCString &,bool);

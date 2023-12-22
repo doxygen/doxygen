@@ -2266,18 +2266,19 @@ void HtmlGenerator::startParameterType(bool first,const QCString &key)
 void HtmlGenerator::endParameterType()
 {
   DBG_HTML(m_t << "<!-- endParameterType -->\n";)
-  m_t << "&#160;</td>\n";
+  m_t << "</td>";
 }
 
 void HtmlGenerator::startParameterName(bool /*oneArgOnly*/)
 {
   DBG_HTML(m_t << "<!-- startParameterName -->\n";)
-  m_t << "          <td class=\"paramname\">";
+  m_t << "          <td class=\"paramname\"><span class=\"paramname\">";
 }
 
 void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
 {
   DBG_HTML(m_t << "<!-- endParameterName -->\n";)
+  m_t << "</span>";
   if (last)
   {
     if (emptyList)
@@ -2288,14 +2289,8 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
     }
     else
     {
-      m_t << "&#160;</td>\n";
-      m_t << "        </tr>\n";
-      m_t << "        <tr>\n";
-      m_t << "          <td></td>\n";
-      m_t << "          <td>";
+      m_t << "&#160;";
       if (closeBracket) m_t << ")";
-      m_t << "</td>\n";
-      m_t << "          <td></td><td>";
     }
   }
   else
@@ -2303,6 +2298,18 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
     m_t << "</td>\n";
     m_t << "        </tr>\n";
   }
+}
+
+void HtmlGenerator::startParameterDefVal(const char *s)
+{
+  m_t << "<span class=\"paramdefsep\">";
+  docify(s);
+  m_t << "</span><span class=\"paramdefval\">";
+}
+
+void HtmlGenerator::endParameterDefVal()
+{
+  m_t << "</span>";
 }
 
 void HtmlGenerator::endParameterList()
@@ -2315,15 +2322,18 @@ void HtmlGenerator::endParameterList()
 void HtmlGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
 {
   DBG_HTML(m_t << "<!-- exceptionEntry -->\n";)
+  if (!closeBracket)
+  {
   m_t << "</td>\n";
   m_t << "        </tr>\n";
   m_t << "        <tr>\n";
   m_t << "          <td align=\"right\">";
+  }
   // colspan 2 so it gets both parameter type and parameter name columns
   if (!prefix.isEmpty())
     m_t << prefix << "</td><td>(</td><td colspan=\"2\">";
   else if (closeBracket)
-    m_t << "</td><td>)</td><td></td><td>";
+    m_t << "&#160;)</td><td></td><td></td><td>";
   else
     m_t << "</td><td></td><td colspan=\"2\">";
 }

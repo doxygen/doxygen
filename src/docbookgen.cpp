@@ -1054,11 +1054,13 @@ DB_GEN_C
   }
   m_t << " ";
 }
+
 void DocbookGenerator::startParameterName(bool)
 {
 DB_GEN_C
   m_t << " ";
 }
+
 void DocbookGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
 {
 DB_GEN_C
@@ -1067,6 +1069,20 @@ DB_GEN_C
     if (closeBracket) m_t << ")";
   }
 }
+
+void DocbookGenerator::startParameterDefVal(const char *sep)
+{
+DB_GEN_C
+  m_t << sep;
+  if (!m_denseText) m_t << "<computeroutput>";
+}
+
+void DocbookGenerator::endParameterDefVal()
+{
+DB_GEN_C
+  if (!m_denseText) m_t << "</computeroutput>\n";
+}
+
 void DocbookGenerator::startMemberTemplateParams()
 {
 DB_GEN_C
