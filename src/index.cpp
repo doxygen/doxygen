@@ -4822,7 +4822,13 @@ static void writeIndex(OutputList &ol)
     ol.endPageDoc();
   }
 
+  QCString fn = Sitemap::crawlFileName;
+  addHtmlExtensionIfMissing(fn);
+  ol.writeString("<a href=\"" + fn + "\"/>\n");
+  Doxygen::indexList->addIndexFile(fn);
+
   endFile(ol);
+
   ol.disable(OutputType::Html);
 
   //--------------------------------------------------------------------
