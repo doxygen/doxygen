@@ -11917,9 +11917,10 @@ void parseInput()
     if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
     if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
     if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
-    Doxygen::indexList->addIndex<Sitemap>(generateSitemap);
+    if (generateSitemap)     Doxygen::indexList->addIndex<Sitemap>();
     if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
     if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
+    Doxygen::indexList->addIndex<Crawlmap>();
     Doxygen::indexList->initialize();
   }
 

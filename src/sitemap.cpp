@@ -26,52 +26,80 @@
 #include "sitemap.h"
 #include "textstream.h"
 #include "util.h"
-#include "version.h"
-#include "language.h"
 #include "portable.h"
+#include "language.h"
+#include "version.h"
+
+//-------------------------------------------------------------------------------------------
 
 class Sitemap::Private
 {
   public:
-    bool site;
     std::ofstream docFile;
     TextStream doc;
-    //TextStream index;
-    std::ofstream crawlFile;
-    TextStream crawl;
-    
 };
 
-Sitemap::Sitemap(const bool site) : p(std::make_unique<Private>()) {p->site = site;}
+Sitemap::Sitemap() : p(std::make_unique<Private>()) {}
 Sitemap::~Sitemap() = default;
 Sitemap::Sitemap(Sitemap &&) = default;
 
 void Sitemap::initialize()
 {
   QCString fileName = Config_getString(HTML_OUTPUT) + "/" + sitemapFileName;
-  QCString fileNameCrawl = Config_getString(HTML_OUTPUT) + "/" + crawlFileName;
-  addHtmlExtensionIfMissing(fileNameCrawl);
 
-  if (p->site)
+  p->docFile = Portable::openOutputStream(fileName);
+  if (!p->docFile.is_open())
   {
-    p->docFile = Portable::openOutputStream(fileName);
-    if (!p->docFile.is_open())
-    {
-      term("Could not open file %s for writing\n", fileName.data());
-    }
-    p->doc.setStream(&p->docFile);
-
-    p->doc << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    p->doc << "<urlset\n";
-    p->doc << "  xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n";
-    p->doc << "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n";
-    p->doc << "  xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\n";
-    p->doc << "      http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">\n";
+    term("Could not open file %s for writing\n", qPrint(fileName));
   }
-  p->crawlFile = Portable::openOutputStream(fileNameCrawl);
+  p->doc.setStream(&p->docFile);
+
+  p->doc << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  p->doc << "<urlset\n";
+  p->doc << "  xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n";
+  p->doc << "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n";
+  p->doc << "  xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\n";
+  p->doc << "      http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">\n";
+}
+
+void Sitemap::finalize()
+{
+  p->doc << "</urlset>\n";
+  p->doc.flush();
+  p->docFile.close();
+}
+
+void Sitemap::addIndexFile(const QCString & fileName)
+{
+  QCString fn = fileName;
+  QCString sidemapUrl = Config_getString(SITEMAP_URL);
+  addHtmlExtensionIfMissing(fn);
+  p->doc << "  <url>\n";
+  p->doc << "    <loc>" << convertToXML(sidemapUrl + fn) << "</loc>\n";
+  p->doc << "  </url>\n";
+}
+
+//-------------------------------------------------------------------------------------------
+//
+class Crawlmap::Private
+{
+  public:
+    std::ofstream crawlFile;
+    TextStream crawl;
+};
+
+Crawlmap::Crawlmap() : p(std::make_unique<Private>()) {}
+Crawlmap::~Crawlmap() = default;
+Crawlmap::Crawlmap(Crawlmap &&) = default;
+
+void Crawlmap::initialize()
+{
+  QCString fileName = Config_getString(HTML_OUTPUT) + "/" + crawlFileName;
+  addHtmlExtensionIfMissing(fileName);
+  p->crawlFile = Portable::openOutputStream(fileName);
   if (!p->crawlFile.is_open())
   {
-    term("Could not open file %s for writing\n", fileNameCrawl.data());
+    term("Could not open file %s for writing\n", qPrint(fileName));
   }
   p->crawl.setStream(&p->crawlFile);
   p->crawl << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
@@ -87,30 +115,18 @@ void Sitemap::initialize()
   p->crawl << "<body>\n";
 }
 
-void Sitemap::finalize()
+void Crawlmap::finalize()
 {
-  if (p->site)
-  {
-    p->doc << "</urlset>\n";
-    p->doc.flush();
-    p->docFile.close();
-  }
   p->crawl << "</body>\n";
   p->crawl << "</html>\n";
   p->crawl.flush();
   p->crawlFile.close();
 }
 
-void Sitemap::addIndexFile(const QCString & fileName)
+void Crawlmap::addIndexFile(const QCString & fileName)
 {
   QCString fn = fileName;
   addHtmlExtensionIfMissing(fn);
-  if (p->site)
-  {
-    QCString sidemapUrl = Config_getString(SITEMAP_URL);
-    p->doc << "  <url>\n";
-    p->doc << "    <loc>" << convertToXML(sidemapUrl + fn) << "</loc>\n";
-    p->doc << "  </url>\n";
-  }
-  p->crawl << "    <a href=\"" << fn << "\"/>\n";
+  p->crawl << "<a href=\"" << fn << "\"/>\n";
 }
+
