@@ -11920,6 +11920,7 @@ void parseInput()
     if (generateSitemap)     Doxygen::indexList->addIndex<Sitemap>();
     if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
     if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
+    Doxygen::indexList->addIndex<Crawlmap>();
     Doxygen::indexList->initialize();
   }
 

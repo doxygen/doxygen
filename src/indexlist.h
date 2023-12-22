@@ -59,7 +59,7 @@ namespace IndexIntf
  */
 class IndexList
 {
-    using IndexVariant = std::variant<DocSets, EclipseHelp, FTVHelp, HtmlHelp, Qhp, Sitemap>;
+    using IndexVariant = std::variant<DocSets, EclipseHelp, FTVHelp, HtmlHelp, Qhp, Sitemap, Crawlmap>;
 
     template<template <class> class IndexT, class... As>
     void foreach(As&&... args)
