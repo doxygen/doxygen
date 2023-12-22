@@ -2186,7 +2186,9 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
       {
         tagFile << " virtualness=\"virtual\"";
       }
-      tagFile << ">" << convertToXML(cd->name()) << "</base>\n";
+      QCString displayName = insertTemplateSpecifierInScope(
+          cd->displayName(),ibcd.templSpecifiers);
+      tagFile << ">" << convertToXML(displayName) << "</base>\n";
     }
   }
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
