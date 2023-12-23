@@ -16,7 +16,6 @@ project(doxygen)
 
 option(build_wizard    "Build the GUI frontend for doxygen." OFF)
 option(build_app       "Example showing how to embed doxygen in an application." OFF)
-option(build_list      "Example showing how to list symbols." OFF)
 option(build_parse     "Parses source code and dumps the dependencies between the code elements." OFF)
 option(build_xmlparser "Automatically update the XML parser modules when updating the schema files." OFF)
 option(build_search    "Build external search tools (doxysearch and doxyindexer)" OFF)
