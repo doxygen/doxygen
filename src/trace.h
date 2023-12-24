@@ -47,7 +47,7 @@
 
 extern std::shared_ptr<spdlog::logger> g_tracer;
 
-void initTracing(const QCString &logFile);
+void initTracing(const QCString &logFile, bool timing);
 void exitTracing();
 
 namespace Trace
