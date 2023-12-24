@@ -261,6 +261,7 @@ BNopt     {BN}*
 BL        [ \t\r]*"\n"
 B         [ \t]
 Bopt      {B}*
+NOTopt    (("!"{BNopt})|("not"{BN}+))?
 DIGIT     [0-9]
 HEXDIGIT  ({DIGIT}|[a-f]|[A-F])
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
@@ -2298,20 +2299,10 @@ NONLopt [^\n]*
                                           yyextra->roundCount=0;
                                           BEGIN( CopyRound ) ;
                                         }
-<RequiresClause>{ID}                    { // something like "requires true"
+<RequiresClause>{NOTopt}{SCOPENAME}{BNopt}"("   { // "requires func(x)"
                                           if (startOfRequiresExpression(yyextra->current->req))
                                           {
-                                            yyextra->current->req=yytext;
-                                            BEGIN(yyextra->requiresContext);
-                                          }
-                                          else
-                                          {
-                                            REJECT;
-                                          }
-                                        }
-<RequiresClause>{SCOPENAME}{BNopt}"("   { // "requires func(x)"
-                                          if (startOfRequiresExpression(yyextra->current->req))
-                                          {
+                                            lineCount(yyscanner);
                                             yyextra->current->req+=yytext;
                                             yyextra->lastRoundContext=RequiresClause;
                                             yyextra->pCopyRoundString=&yyextra->current->req;
@@ -2323,9 +2314,10 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
-<RequiresClause>{SCOPENAME}{BNopt}"<"   { // "requires C<S,T>"
+<RequiresClause>{NOTopt}{SCOPENAME}{BNopt}"<"   { // "requires C<S,T>"
                                           if (startOfRequiresExpression(yyextra->current->req))
                                           {
+                                            lineCount(yyscanner);
                                             yyextra->current->req+=yytext;
                                             yyextra->lastSharpContext=RequiresClause;
                                             yyextra->pCopySharpString=&yyextra->current->req;
@@ -2337,10 +2329,24 @@ NONLopt [^\n]*
                                             REJECT
                                           }
                                         }
-<RequiresClause>"::"{ID}                {
+<RequiresClause>{NOTopt}{SCOPENAME}     { // something like "requires true" or "requires !my::value"
+                                          if (startOfRequiresExpression(yyextra->current->req))
+                                          {
+                                            lineCount(yyscanner);
+                                            yyextra->current->req=yytext;
+                                            BEGIN(yyextra->requiresContext);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<RequiresClause>{NOTopt}"::"{ID}        {
+                                          lineCount(yyscanner);
                                           yyextra->current->req+=yytext;
                                         }
-<RequiresClause>"||"|"&&"               { // "requires A || B" or "requires A && B"
+<RequiresClause>"||"|"&&"|"!"|("or"{BN}+)|("and"{BN}+)|("not"{BN}+)  { // "requires A || B" or "requires A && B"
+                                          lineCount(yyscanner);
                                           yyextra->current->req+=yytext;
                                         }
 <RequiresClause>{BN}+                   {
@@ -7506,7 +7512,7 @@ static QCString stripFuncPtr(const QCString &type)
 static bool startOfRequiresExpression(const QCString &req)
 {
   QCString r = req.stripWhiteSpace();
-  return r.isEmpty() || r.endsWith("&&") || r.endsWith("||");
+  return r.isEmpty() || r.endsWith("&&") || r.endsWith("||") || r.endsWith("and") || r.endsWith("or");
 }
 
 //-----------------------------------------------------------------
