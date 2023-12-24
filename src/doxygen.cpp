@@ -10717,7 +10717,9 @@ static void devUsage()
   msg("  -m          dump symbol map\n");
   msg("  -b          making messages output unbuffered\n");
 #if ENABLE_TRACING
-  msg("  -t [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout)\n");
+  msg("  -t        [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout)\n");
+  msg("  -t_notime [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout),\n"
+      "                                   but without time and thread information\n");
 #endif
   msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
   Debug::printFlags();
@@ -10978,10 +10980,11 @@ void readConfiguration(int argc, char **argv)
   QCString formatName;
   QCString listName;
   QCString traceName;
-  bool genConfig=FALSE;
-  bool shortList=FALSE;
+  bool genConfig=false;
+  bool shortList=false;
+  bool traceTiming=true;
   Config::CompareMode diffList=Config::CompareMode::Full;
-  bool updateConfig=FALSE;
+  bool updateConfig=false;
   int retVal;
   bool quiet = false;
   while (optInd<argc && argv[optInd][0]=='-' &&
@@ -11027,6 +11030,14 @@ void readConfiguration(int argc, char **argv)
       case 't':
         {
 #if ENABLE_TRACING
+          if (!strcmp(argv[optInd]+1,"t_notime")) traceTiming = false;
+          else if (!strcmp(argv[optInd]+1,"t")) traceTiming=true;
+          else
+          {
+            err("option should be \"-t\" or \"-t_notime\", found: \"%s\".\n",argv[optInd]);
+            cleanUpDoxygen();
+            exit(1);
+          }
           if (optInd+1>=argc || argv[optInd+1][0] == '-') // no file name given
           {
             traceName="stdout";
@@ -11260,7 +11271,7 @@ void readConfiguration(int argc, char **argv)
    *            Parse or generate the config file                           *
    **************************************************************************/
 
-  initTracing(traceName.data());
+  initTracing(traceName.data(),traceTiming);
   TRACE("Doxygen version used: {}",getFullVersion());
   Config::init();
 
