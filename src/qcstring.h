@@ -134,9 +134,6 @@ class QCString
 
     QCString &operator=( const std::string &s) { m_rep = s; return *this; }
 
-    /** Returns TRUE iff the string is empty. Equivalent to isEmpty(). */
-    bool isNull() const { return m_rep.empty(); }
-
     /** Returns TRUE iff the string is empty */
     bool isEmpty() const { return m_rep.empty(); }
 
