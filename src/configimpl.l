@@ -690,7 +690,7 @@ static QCString configStringRecode(
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
     outputSize-=oLeft;
-    output.resize(outputSize+1);
+    output.resize(outputSize);
     output.at(outputSize)='\0';
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
   }
@@ -1037,22 +1037,22 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                                  break;
                                                case ConfigOption::O_Enum:
                                                  g_string = dynamic_cast<ConfigEnum *>(option)->valueRef();
-                                                 g_string->resize(0);
+                                                 g_string->clear();
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_String:
                                                  g_string = dynamic_cast<ConfigString *>(option)->valueRef();
-                                                 g_string->resize(0);
+                                                 g_string->clear();
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Int:
                                                  g_string = dynamic_cast<ConfigInt *>(option)->valueStringRef();
-                                                 g_string->resize(0);
+                                                 g_string->clear();
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Bool:
                                                  g_string = dynamic_cast<ConfigBool *>(option)->valueStringRef();
-                                                 g_string->resize(0);
+                                                 g_string->clear();
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Obsolete:
@@ -1078,7 +1078,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                                  else
                                                  {
                                                    g_string = dynamic_cast<ConfigObsolete*>(option)->valueStringRef();
-                                                   g_string->resize(0);
+                                                   g_string->clear();
                                                    BEGIN(GetString);
                                                  }
                                                  break;
@@ -1217,7 +1217,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                           g_localStoreRepl += yytext;
                                           processStoreRepl(g_localStoreRepl);
                                           g_config->appendStoreRepl(g_localStoreRepl + "\n");
-                                          g_localStoreRepl.resize(0);
+                                          g_localStoreRepl.clear();
                                           g_yyLineNr++; // end of string
                                           BEGIN(Start);
                                         }

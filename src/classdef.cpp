@@ -4567,8 +4567,8 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
     {
       //printf("  writeDeclaration type=%d count=%d\n",lt,ml->numDecMembers());
       ml->writeDeclarations(ol,this,0,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
-      tt.resize(0);
-      st.resize(0);
+      tt.clear();
+      st.clear();
     }
     if (ml2)
     {

@@ -1075,7 +1075,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     }
     else // no template specifier
     {
-      cName.resize(0);
+      cName.clear();
     }
   }
   //printf("~~~ %s cName=%s\n",qPrint(md->name()),qPrint(cName));
@@ -6028,7 +6028,7 @@ static void invalidateCachedTypesInArgumentList(ArgumentList &al)
 {
   for (Argument &a : al)
   {
-    a.canType.resize(0);
+    a.canType.clear();
   }
 }
 

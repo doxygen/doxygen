@@ -1374,7 +1374,7 @@ bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncodin
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
     outputSize-=static_cast<int>(oLeft);
-    output.resize(outputSize+1);
+    output.resize(outputSize);
     output.at(outputSize)='\0';
     // replace input
     input=output.str();
@@ -1458,7 +1458,7 @@ void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
 
 static void stripIrrelevantString(QCString &target,const QCString &str)
 {
-  if (target==str) { target.resize(0); return; }
+  if (target==str) { target.clear(); return; }
   int i,p=0;
   int l=str.length();
   bool changed=FALSE;
@@ -1992,12 +1992,12 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
     if (srcA.name=="const" || srcA.name=="volatile")
     {
       srcA.type+=" "+srcA.name;
-      srcA.name.resize(0);
+      srcA.name.clear();
     }
     if (dstA.name=="const" || dstA.name=="volatile")
     {
       dstA.type+=" "+dstA.name;
-      dstA.name.resize(0);
+      dstA.name.clear();
     }
 
     if (srcA.type==dstA.type)
@@ -2239,7 +2239,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
   }
 
   // handle special the case where both scope name and member scope are equal
-  if (mScope==scopeName) scopeName.resize(0);
+  if (mScope==scopeName) scopeName.clear();
 
   //printf("mScope='%s' mName='%s'\n",qPrint(mScope),qPrint(mName));
 
@@ -3981,7 +3981,7 @@ void extractNamespaceName(const QCString &scopeName,
   if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==0)
   { // the whole name is a namespace (and not a class)
     namespaceName=nd->name();
-    className.resize(0);
+    className.clear();
     goto done;
   }
   p=clName.length()-2;
@@ -4002,14 +4002,14 @@ void extractNamespaceName(const QCString &scopeName,
 
   // not found, so we just have to guess.
   className=scopeName;
-  namespaceName.resize(0);
+  namespaceName.clear();
 
 done:
   if (className.isEmpty() && !namespaceName.isEmpty() && !allowEmptyClass)
   {
     // class and namespace with the same name, correct to return the class.
     className=namespaceName;
-    namespaceName.resize(0);
+    namespaceName.clear();
   }
   //printf("extractNamespace '%s' => '%s|%s'\n",qPrint(scopeName),
   //       qPrint(className),qPrint(namespaceName));
@@ -4490,8 +4490,8 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
   static const reg::Ex re_fortran(R"(\a[\w:()=]*)");
   const reg::Ex *re = &re_norm;
 
-  name.resize(0);
-  templSpec.resize(0);
+  name.clear();
+  templSpec.clear();
   if (type.isEmpty()) return -1;
   size_t typeLen=type.length();
   if (typeLen>0)
@@ -6306,7 +6306,7 @@ void stripIndentation(QCString &doc,const int indentationLevel)
         break;
     }
   }
-  doc.resize(static_cast<uint32_t>(dst-doc.data())+1);
+  doc.resize(static_cast<uint32_t>(dst-doc.data()));
 }
 
 

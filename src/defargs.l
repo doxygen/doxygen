@@ -407,7 +407,7 @@ CPPC  "/\/"
                                               a.typeConstraint = yyextra->curTypeConstraint.stripWhiteSpace();
 					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
 					      //        qPrint(a->type),qPrint(a->name),i,l);
-					      a.array.resize(0);
+					      a.array.clear();
 					      if (i==l-1 && yyextra->curArgTypeName.at(i)==')') // function argument
 					      {
 						int bi=yyextra->curArgTypeName.find('(');
@@ -447,7 +447,7 @@ CPPC  "/\/"
 						   )
 						{
 						  a.type = a.type + " " + a.name;
-						  a.name.resize(0);
+						  a.name.clear();
 						}
 						//printf(" --> a->type='%s' a->name='%s'\n",qPrint(a->type),qPrint(a->name));
 					      }
@@ -480,12 +480,12 @@ CPPC  "/\/"
 					      //printf("Argument '%s' '%s' adding docs='%s'\n",qPrint(a->type),qPrint(a->name),qPrint(a->docs));
 					      yyextra->argList->push_back(a);
 					    }
-					    yyextra->curArgAttrib.resize(0);
-					    yyextra->curArgTypeName.resize(0);
-					    yyextra->curArgDefValue.resize(0);
-					    yyextra->curArgArray.resize(0);
-					    yyextra->curArgDocs.resize(0);
-                                            yyextra->curTypeConstraint.resize(0);
+					    yyextra->curArgAttrib.clear();
+					    yyextra->curArgTypeName.clear();
+					    yyextra->curArgDefValue.clear();
+					    yyextra->curArgArray.clear();
+					    yyextra->curArgDocs.clear();
+                                            yyextra->curTypeConstraint.clear();
 					    if (*yytext==')')
 					    {
 					      BEGIN(FuncQual);
@@ -504,7 +504,7 @@ CPPC  "/\/"
                                            }
                                            else
                                            {
-                                             yyextra->curTypeConstraint.resize(0);
+                                             yyextra->curTypeConstraint.clear();
                                              yyextra->lastExtendsContext=YY_START;
                                              BEGIN(ReadTypeConstraint);
                                            }
@@ -514,7 +514,7 @@ CPPC  "/\/"
 					  if (YY_START==ReadFuncArgType && yyextra->curArgArray=="[]") // Java style array
 					  {
 					    yyextra->curArgTypeName+=" []";
-					    yyextra->curArgArray.resize(0);
+					    yyextra->curArgArray.clear();
 					  }
 					  //printf("resolveName '%s'->'%s'\n",yytext,qPrint(name));
   					  yyextra->curArgTypeName+=name;

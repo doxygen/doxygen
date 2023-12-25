@@ -116,7 +116,7 @@ static void splitSearchTokens(QCString &title,IntVector &indices)
     }
   }
   if (di>0 && title.at(di-1)==' ') di--; // strip trailing whitespace
-  title.resize(di+1);
+  title.resize(di);
 
   // create a list of start positions within title for
   // each unique word in order of appearance
@@ -496,7 +496,7 @@ void createJavaScriptSearchIndex()
       //
       // `std::stable_sort` is used here due to reproducibility issues
       // on key collisions
-      // https://github.com/doxygen/doxygen/issues/10445 
+      // https://github.com/doxygen/doxygen/issues/10445
       std::stable_sort(symList.begin(),
                 symList.end(),
                 [](const auto &t1,const auto &t2)

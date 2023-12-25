@@ -863,7 +863,7 @@ NONLopt [^\n]*
    */
 <ObjCParams>"("                         {
                                           yyextra->roundCount=0;
-                                          yyextra->current->argList.back().type.resize(0);
+                                          yyextra->current->argList.back().type.clear();
                                           BEGIN( ObjCParamType );
                                         }
 <ObjCParamType>"("                      {
@@ -924,7 +924,7 @@ NONLopt [^\n]*
                                             yyextra->current->fileName = yyextra->fileName ;
                                             yyextra->current->startLine = yyextra->yyLineNr ;
                                             yyextra->current->startColumn = yyextra->yyColNr;
-                                            yyextra->current->args.resize(0);
+                                            yyextra->current->args.clear();
                                             yyextra->current->section = EntryType::makeTypedef();
                                             yyextra->isTypedef = TRUE;
                                             BEGIN( SliceSequence );
@@ -941,7 +941,7 @@ NONLopt [^\n]*
                                             yyextra->current->fileName = yyextra->fileName ;
                                             yyextra->current->startLine = yyextra->yyLineNr ;
                                             yyextra->current->startColumn = yyextra->yyColNr;
-                                            yyextra->current->args.resize(0);
+                                            yyextra->current->args.clear();
                                             yyextra->current->section = EntryType::makeTypedef() ;
                                             yyextra->isTypedef = TRUE;
                                             BEGIN( SliceDictionary );
@@ -1888,7 +1888,7 @@ NONLopt [^\n]*
                                           yyextra->current->section = EntryType::makeUsingDir();
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
-                                          yyextra->aliasName.resize(0);
+                                          yyextra->aliasName.clear();
                                         }
 <PHPUseAs>{BN}+"as"{BN}+                {
                                           lineCount(yyscanner);
@@ -1903,7 +1903,7 @@ NONLopt [^\n]*
                                                  std::string(removeRedundantWhiteSpace(
                                                    substitute(yyextra->aliasName,"\\","::")).str())});
                                           }
-                                          yyextra->aliasName.resize(0);
+                                          yyextra->aliasName.clear();
                                         }
 <PHPUse,PHPUseAs>[,;]                   {
                                           if (*yytext==',')
@@ -1994,7 +1994,7 @@ NONLopt [^\n]*
                                           init.stripPrefix("struct ");
                                           init = init.stripWhiteSpace();
                                           yyextra->current->type = "typedef "+init;
-                                          yyextra->current->args.resize(0);
+                                          yyextra->current->args.clear();
                                           yyextra->current->spec.setAlias(true);
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
@@ -2028,7 +2028,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           addType(yyscanner);
                                           yyextra->current->name=name;
-                                          //yyextra->current->scopeSpec.resize(0);
+                                          //yyextra->current->scopeSpec.clear();
                                           // yyextra->currentTemplateSpec = &yyextra->current->scopeSpec;
                                           if (nameIsOperator(yyextra->current->name))
                                             BEGIN( Operator );
@@ -2040,7 +2040,7 @@ NONLopt [^\n]*
                                           yyextra->roundCount=0;
                                           lineCount(yyscanner);
                                           yyextra->current->name+=((QCString)yytext).stripWhiteSpace();
-                                          //yyextra->current->memberSpec.resize(0);
+                                          //yyextra->current->memberSpec.clear();
                                           // yyextra->currentTemplateSpec = &yyextra->current->memberSpec;
                                           if (nameIsOperator(yyextra->current->name))
                                             BEGIN( Operator );
@@ -2203,7 +2203,7 @@ NONLopt [^\n]*
                                           yyextra->yyBegColNr  = yyextra->yyColNr;
                                           yyextra->current->protection = Protection::Public ; // see bug734245 & bug735462
                                           yyextra->current->mtype = yyextra->mtype = MethodTypes::Property;
-                                          yyextra->current->type.resize(0);
+                                          yyextra->current->type.clear();
                                           BEGIN(QtPropType);
                                         }
 <QtPropType>"("                         { // start of property arguments
@@ -2259,7 +2259,7 @@ NONLopt [^\n]*
                                         }
 <FindMembers>"requires"                 { // C++20 requires clause
                                           if (yyextra->insideJava) REJECT;
-                                          yyextra->current->req.resize(0);
+                                          yyextra->current->req.clear();
                                           yyextra->requiresContext = YY_START;
                                           BEGIN(RequiresClause);
                                         }
@@ -2635,7 +2635,7 @@ NONLopt [^\n]*
                                           yyextra->current->fileName   = yyextra->fileName;
                                           yyextra->current->startLine  = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
-                                          yyextra->current->type.resize(0);
+                                          yyextra->current->type.clear();
                                           yyextra->current->args       = yyextra->current->args.simplifyWhiteSpace();
                                           yyextra->current->name       = yyextra->current->name.stripWhiteSpace();
                                           yyextra->current->section = EntryType::makeDefine();
@@ -2731,7 +2731,7 @@ NONLopt [^\n]*
                                           yyextra->current->fileName   = yyextra->fileName;
                                           yyextra->current->startLine  = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
-                                          yyextra->current->type.resize(0);
+                                          yyextra->current->type.clear();
                                           yyextra->current->type       = "const";
                                           QCString init = yyextra->current->initializer.str();
                                           init = init.simplifyWhiteSpace();
@@ -2809,7 +2809,7 @@ NONLopt [^\n]*
                                           if (YY_START==EnumBaseType && yyextra->current->section.isEnum())
                                           {
                                             yyextra->current->bitfields = ":"+yyextra->current->args;
-                                            yyextra->current->args.resize(0);
+                                            yyextra->current->args.clear();
                                             yyextra->current->section = EntryType::makeVariable();
                                           }
                                           if (yytext[yyleng-3]=='/')
@@ -2838,7 +2838,7 @@ NONLopt [^\n]*
                                           if (YY_START==EnumBaseType && yyextra->current->section.isEnum())
                                           {
                                             yyextra->current->bitfields = ":"+yyextra->current->args;
-                                            yyextra->current->args.resize(0);
+                                            yyextra->current->args.clear();
                                             yyextra->current->section = EntryType::makeVariable();
                                           }
                                           if (yytext[yyleng-3]=='/')
@@ -3584,8 +3584,8 @@ NONLopt [^\n]*
                                               yyextra->current->name=="enum") // see bug 69041, C++11 style anon enum: 'enum : unsigned int {...}'
                                           {
                                             yyextra->current->section = EntryType::makeEnum();
-                                            yyextra->current->name.resize(0);
-                                            yyextra->current->args.resize(0);
+                                            yyextra->current->name.clear();
+                                            yyextra->current->args.clear();
                                             BEGIN(EnumBaseType);
                                           }
                                           else
@@ -3658,12 +3658,12 @@ NONLopt [^\n]*
                                           {
                                             yyextra->current->isStatic = isStatic; // the static attribute holds for all variables
                                             yyextra->current->protection = prot;
-                                            yyextra->current->name.resize(0);
-                                            yyextra->current->args.resize(0);
-                                            yyextra->current->brief.resize(0);
-                                            yyextra->current->doc.resize(0);
+                                            yyextra->current->name.clear();
+                                            yyextra->current->args.clear();
+                                            yyextra->current->brief.clear();
+                                            yyextra->current->doc.clear();
                                             yyextra->current->initializer.str(std::string());
-                                            yyextra->current->bitfields.resize(0);
+                                            yyextra->current->bitfields.clear();
                                             yyextra->current->type = stripFuncPtr(oldType);
                                           }
                                           else
@@ -3693,8 +3693,8 @@ NONLopt [^\n]*
                                           {
                                             yyextra->squareCount=1;
                                             yyextra->lastSquareContext = YY_START;
-                                            yyextra->idlAttr.resize(0);
-                                            yyextra->idlProp.resize(0);
+                                            yyextra->idlAttr.clear();
+                                            yyextra->idlProp.clear();
                                             yyextra->current->mtype = yyextra->mtype;
 
                                             if (Config_getBool(IDL_PROPERTY_SUPPORT) &&
@@ -3713,7 +3713,7 @@ NONLopt [^\n]*
                                             yyextra->lastSquareContext = YY_START;
                                             // Skip the C# attribute
                                             // for this member
-                                            yyextra->current->args.resize(0);
+                                            yyextra->current->args.clear();
                                             BEGIN( SkipSquare );
                                           }
                                           else
@@ -3874,8 +3874,8 @@ NONLopt [^\n]*
                                           yyextra->current->args += " ";
                                           yyextra->current->args += yytext;
                                           yyextra->current->args = yyextra->current->args.left(yyextra->current->args.length() - 1);    // strip comma
-                                          yyextra->idlProp.resize(0);
-                                          yyextra->idlAttr.resize(0);
+                                          yyextra->idlProp.clear();
+                                          yyextra->idlAttr.clear();
                                           BEGIN( IDLProp );
                                         }
 <IDLProp>{BN}*{ID}{BN}*")"{BN}*         {
@@ -4231,8 +4231,8 @@ NONLopt [^\n]*
                                                       !reg::search(yyextra->memspecEntry->name.str(),re)) // not typedef or anonymous type (see bug691071)
                                                   {
                                                     // enabled the next two lines for bug 623424
-                                                    yyextra->current->doc.resize(0);
-                                                    yyextra->current->brief.resize(0);
+                                                    yyextra->current->doc.clear();
+                                                    yyextra->current->brief.clear();
                                                   }
                                                   BEGIN( MemberSpec ) ;
                                                 }
@@ -4440,9 +4440,9 @@ NONLopt [^\n]*
                                                 yyextra->memspecEntry->brief += yyextra->current->brief;
                                               }
                                             }
-                                            yyextra->msType.resize(0);
-                                            yyextra->msName.resize(0);
-                                            yyextra->msArgs.resize(0);
+                                            yyextra->msType.clear();
+                                            yyextra->msName.clear();
+                                            yyextra->msArgs.clear();
                                             yyextra->isTypedef=FALSE;
                                             yyextra->firstTypedefEntry.reset();
                                             yyextra->memspecEntry.reset();
@@ -4452,8 +4452,8 @@ NONLopt [^\n]*
                                           }
                                           else
                                           {
-                                            yyextra->current->doc.resize(0);
-                                            yyextra->current->brief.resize(0);
+                                            yyextra->current->doc.clear();
+                                            yyextra->current->brief.clear();
                                           }
 
                                         }
@@ -5229,7 +5229,7 @@ NONLopt [^\n]*
                                           else if (checkForKnRstyleC(yyscanner)) // K&R style C function
                                           {
                                             yyextra->current->args = yytext;
-                                            yyextra->oldStyleArgType.resize(0);
+                                            yyextra->oldStyleArgType.clear();
                                             BEGIN(OldStyleArgs);
                                           }
                                           else
@@ -5254,8 +5254,8 @@ NONLopt [^\n]*
                                           }
                                           addKnRArgInfo(yyscanner,yyextra->oldStyleArgType+oldStyleArgPtr,
                                                         oldStyleArgName,brief,doc);
-                                          yyextra->current->args.resize(0);
-                                          if (*yytext==';') yyextra->oldStyleArgType.resize(0);
+                                          yyextra->current->args.clear();
+                                          if (*yytext==';') yyextra->oldStyleArgType.clear();
                                         }
 <OldStyleArgs>{ID}                      { yyextra->current->args += yytext; }
 <OldStyleArgs>"{"                       {
@@ -5613,7 +5613,7 @@ NONLopt [^\n]*
                                           yyextra->delimiter = raw.mid(2);
                                           yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
                                           yyextra->lastRawStringContext = YY_START;
-                                          yyextra->dummyRawString.resize(0);
+                                          yyextra->dummyRawString.clear();
                                           yyextra->pCopyRawString = &yyextra->dummyRawString;
                                           *yyextra->pCopyRawString += yytext;
                                           BEGIN(RawString);
@@ -5705,9 +5705,9 @@ NONLopt [^\n]*
                                         }
 <CompoundName>";"                       {
                                           yyextra->current->section = EntryType::makeEmpty() ;
-                                          yyextra->current->type.resize(0) ;
-                                          yyextra->current->name.resize(0) ;
-                                          yyextra->current->args.resize(0) ;
+                                          yyextra->current->type.clear() ;
+                                          yyextra->current->name.clear() ;
+                                          yyextra->current->args.clear() ;
                                           yyextra->current->argList.clear();
                                           BEGIN( FindMembers ) ;
                                         }
@@ -5726,7 +5726,7 @@ NONLopt [^\n]*
                                             {
                                               yyextra->current->extends.push_back(
                                                 BaseInfo(yyextra->baseName,Protection::Public,Specifier::Normal));
-                                              yyextra->baseName.resize(0);
+                                              yyextra->baseName.clear();
                                             }
                                             yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
                                             initEntry(yyscanner);
@@ -5734,9 +5734,9 @@ NONLopt [^\n]*
                                           else
                                           {
                                             yyextra->current->section = EntryType::makeEmpty() ;
-                                            yyextra->current->type.resize(0) ;
-                                            yyextra->current->name.resize(0) ;
-                                            yyextra->current->args.resize(0) ;
+                                            yyextra->current->type.clear() ;
+                                            yyextra->current->name.clear() ;
+                                            yyextra->current->args.clear() ;
                                             yyextra->current->argList.clear();
                                           }
                                           BEGIN( FindMembers ) ;
@@ -6004,10 +6004,10 @@ NONLopt [^\n]*
                                           }
                                           else if ((yyextra->insideJava || yyextra->insidePHP || yyextra->insideJS || yyextra->insideSlice) && (qstrcmp(yytext,"implements")==0 || qstrcmp(yytext,"extends")==0))
                                           {
-                                            yyextra->current->type.resize(0);
+                                            yyextra->current->type.clear();
                                             yyextra->baseProt = Protection::Public;
                                             yyextra->baseVirt = Specifier::Normal;
-                                            yyextra->baseName.resize(0);
+                                            yyextra->baseName.clear();
                                             BEGIN( BasesProt ) ;
                                           }
                                           else if (yyextra->insideCS && qstrcmp(yytext,"where")==0) // C# type constraint
@@ -6064,7 +6064,7 @@ NONLopt [^\n]*
                                         }
 <CSConstraintType,CSConstraintName>{CCS}{CCE} { /* empty comment */ }
 <CSConstraintType,CSConstraintName>({CCS}[*!]|{CPPC}[/!])("<"?)    { // special comment
-                                          yyextra->fullArgString.resize(0);
+                                          yyextra->fullArgString.clear();
                                           yyextra->lastCopyArgChar='#'; // end marker
                                           yyextra->lastCommentInArgContext=YY_START;
                                           if (yytext[1]=='/')
@@ -6151,18 +6151,18 @@ NONLopt [^\n]*
                                           if (yyextra->current->section.isVariable()) // enum A B:2, see bug 748208
                                           {
                                             yyextra->current->bitfields+=":";
-                                            yyextra->current->args.resize(0);
+                                            yyextra->current->args.clear();
                                             BEGIN(BitFields);
                                           }
                                           else if (yyextra->current->section.isEnum()) // enum E:2, see bug 313527,
                                                                                  // or C++11 style enum: 'E : unsigned int {...}'
                                           {
-                                            yyextra->current->args.resize(0);
+                                            yyextra->current->args.clear();
                                             BEGIN(EnumBaseType);
                                           }
                                           else
                                           {
-                                            yyextra->current->type.resize(0);
+                                            yyextra->current->type.clear();
                                             if (yyextra->current->spec.isInterface() ||
                                                 yyextra->current->spec.isStruct()    ||
                                                 yyextra->current->spec.isRef()       ||
@@ -6177,7 +6177,7 @@ NONLopt [^\n]*
                                               yyextra->baseProt = Protection::Private;
                                             }
                                             yyextra->baseVirt = Specifier::Normal;
-                                            yyextra->baseName.resize(0);
+                                            yyextra->baseName.clear();
                                             BEGIN( BasesProt ) ;
                                           }
                                         }
@@ -6475,7 +6475,7 @@ NONLopt [^\n]*
                                             yyextra->baseProt=Protection::Private;
                                           }
                                           yyextra->baseVirt=Specifier::Normal;
-                                          yyextra->baseName.resize(0);
+                                          yyextra->baseName.clear();
                                           if (*yytext=='>')
                                           { // end of a ObjC protocol list
                                             yyextra->insideProtocolList=FALSE;
@@ -6727,7 +6727,7 @@ NONLopt [^\n]*
                                               if (yyextra->current->isStatic)
                                               {
                                                 yyextra->current->name="[static initializer]";
-                                                yyextra->current->type.resize(0);
+                                                yyextra->current->type.clear();
                                               }
                                               else
                                               {
@@ -6740,9 +6740,9 @@ NONLopt [^\n]*
                                             {
                                               // pre C++11 code -> ignore the initializer
                                               //yyextra->needsSemi = TRUE;
-                                              //yyextra->current->type.resize(0);
-                                              //yyextra->current->name.resize(0);
-                                              //yyextra->current->args.resize(0);
+                                              //yyextra->current->type.clear();
+                                              //yyextra->current->name.clear();
+                                              //yyextra->current->args.clear();
                                               //yyextra->current->argList.clear();
                                               //yyextra->curlyCount=0;
                                               //BEGIN( SkipCurlyBlock );
@@ -7189,7 +7189,7 @@ NONLopt [^\n]*
                                           else
                                           {
                                             yyextra->current->type+=yyextra->current->name+yytext;
-                                            yyextra->current->name.resize(0);
+                                            yyextra->current->name.clear();
                                             BEGIN( PrototypePtr );
                                           }
                                         }
@@ -7370,7 +7370,7 @@ static void initParser(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->outerScopeEntries.clear();
-  yyextra->baseName.resize(0);
+  yyextra->baseName.clear();
   yyextra->protection = Protection::Public;
   yyextra->baseProt = Protection::Public;
   yyextra->sharpCount = 0;
@@ -7453,9 +7453,9 @@ static inline void initMethodProtection(yyscan_t yyscanner,Protection prot)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->protection = yyextra->protection = prot;
   yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-  yyextra->current->type.resize(0);
-  yyextra->current->name.resize(0);
-  yyextra->current->args.resize(0);
+  yyextra->current->type.clear();
+  yyextra->current->name.clear();
+  yyextra->current->args.clear();
   yyextra->current->argList.clear();
   lineCount(yyscanner) ;
 }
@@ -7469,14 +7469,14 @@ static void addType(yyscan_t yyscanner)
     yyextra->current->type += ' ' ;
   }
   yyextra->current->type += yyextra->current->name;
-  yyextra->current->name.resize(0) ;
+  yyextra->current->name.clear() ;
   tl=yyextra->current->type.length();
   if( tl>0 && !yyextra->current->args.isEmpty() && yyextra->current->type.at(tl-1)!='.')
   {
     yyextra->current->type += ' ' ;
   }
   yyextra->current->type += yyextra->current->args ;
-  yyextra->current->args.resize(0) ;
+  yyextra->current->args.clear() ;
   yyextra->current->argList.clear();
 }
 
@@ -7725,7 +7725,7 @@ void fixArgumentListForJavaScript(ArgumentList &al)
     if (!a.type.isEmpty() && a.name.isEmpty())
     { // a->type is actually the (typeless) parameter name, so move it
       a.name=a.type;
-      a.type.resize(0);
+      a.type.clear();
     }
   }
 }
@@ -7845,8 +7845,8 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
       int orgDocLine    = yyextra->current->docLine;
       int orgBriefLine  = yyextra->current->briefLine;
 
-      yyextra->current->doc.resize(0);
-      yyextra->current->brief.resize(0);
+      yyextra->current->doc.clear();
+      yyextra->current->brief.clear();
 
       //printf("handleParametersCommentBlock [%s]\n",qPrint(doc));
       int lineNr = orgDocLine;
@@ -7984,8 +7984,8 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       //printf("name=%s yyextra->current->isStatic=%d yyextra->isStatic=%d\n",qPrint(ce->name),yyextra->current->isStatic,yyextra->isStatic);
 
       //memberGroupId = DOX_NOGROUP;
-      //memberGroupRelates.resize(0);
-      //memberGroupInside.resize(0);
+      //memberGroupRelates.clear();
+      //memberGroupInside.clear();
       QCString name = ce->name;
       yyextra->commentScanner.enterCompound(yyextra->fileName,yyextra->yyLineNr,name);
 
@@ -7995,7 +7995,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
 
       yyextra->commentScanner.leaveCompound(yyextra->fileName,yyextra->yyLineNr,name);
 
-      yyextra->programStr.resize(0);
+      yyextra->programStr.clear();
       ce->program.str(std::string());
 
 
@@ -8084,7 +8084,7 @@ static void parseMain(yyscan_t yyscanner,
   //forceEndGroup();
   yyextra->commentScanner.leaveFile(yyextra->fileName,yyextra->yyLineNr);
 
-  yyextra->programStr.resize(0);
+  yyextra->programStr.clear();
   rt->program.str(std::string());
 
   parseCompounds(yyscanner,rt);

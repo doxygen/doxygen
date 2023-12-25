@@ -509,7 +509,7 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
         QCString s1(qlist[0]);
         QCString s2(qlist[1]);
         s1.stripPrefix("_");
-        if (ql.size()==1) s1.resize(0);
+        if (ql.size()==1) s1.clear();
         ClassDef *cc = getClass(s);
         if (cc)
         {
@@ -1499,7 +1499,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         QCString name=theTranslator_vhdlType(VhdlSpecifier::PACKAGE,TRUE);
         ol.startBold();
         ol.docify(name);
-        name.resize(0);
+        name.clear();
         ol.endBold();
         name+=" <"+mdef->name()+">";
         ol.startEmphasis();
@@ -2017,7 +2017,7 @@ static void initUCF(Entry* root,const QCString &type,QCString &qcs,
     current->brief=brief;
     current->briefLine=line;
     current->briefFile=fileName;
-    brief.resize(0);
+    brief.clear();
   }
 
   root->moveToSubEntryAndKeep(current);

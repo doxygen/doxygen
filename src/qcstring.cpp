@@ -32,10 +32,10 @@ QCString &QCString::sprintf( const char *format, ... )
   va_start( ap, format );
   const int minlen=256;
   int l = length();
-  if (l<minlen) { resize(minlen); l=minlen; }
+  if (l<minlen) { resize(minlen+1); l=minlen; }
   int n=vsnprintf( rawData(), l, format, ap);
   if (n<0) n=l;
-  resize(n+1);
+  resize(n);
   va_end( ap );
   return *this;
 }
@@ -205,7 +205,7 @@ QCString QCString::simplifyWhiteSpace() const
   if ( to > first && *(to-1) == 0x20 )
     to--;
   *to = '\0';
-  result.resize( static_cast<int>(to - result.data()) + 1 );
+  result.resize( static_cast<int>(to - result.data()) );
   return result;
 }
 
@@ -567,7 +567,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     r+=dstLen;
   }
   qstrcpy(r,p);
-  result.resize(static_cast<int>(strlen(result.data())+1));
+  result.resize(static_cast<int>(strlen(result.data())));
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }

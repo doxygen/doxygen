@@ -374,7 +374,7 @@ NONLopt [^\n]*
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer.data());
-                             yyextra->rulesPatternBuffer.resize(0);
+                             yyextra->rulesPatternBuffer.clear();
                              endFontClass(yyscanner);
                            }
                          }
@@ -429,7 +429,7 @@ NONLopt [^\n]*
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
-                             yyextra->rulesPatternBuffer.resize(0);
+                             yyextra->rulesPatternBuffer.clear();
                              endFontClass(yyscanner);
                            }
                            codifyLines(yyscanner,yytext);
@@ -449,7 +449,7 @@ NONLopt [^\n]*
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
-                             yyextra->rulesPatternBuffer.resize(0);
+                             yyextra->rulesPatternBuffer.clear();
                              endFontClass(yyscanner);
                            }
                            yyextra->startCCodeLine=yyextra->yyLineNr;
@@ -464,7 +464,7 @@ NONLopt [^\n]*
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
-                             yyextra->rulesPatternBuffer.resize(0);
+                             yyextra->rulesPatternBuffer.clear();
                              endFontClass(yyscanner);
                            }
                            yyextra->CCodeBuffer += yytext;
@@ -1161,7 +1161,7 @@ static void handleCCode(yyscan_t yyscanner)
                yyextra->searchCtx,
                yyextra->collectXRefs
               );
-  yyextra->CCodeBuffer.resize(0);
+  yyextra->CCodeBuffer.clear();
   yyextra->insideCodeLine = yyextra->ccodeParser.insideCodeLine();
   yyextra->yyLineNr--;
   codifyLines(yyscanner,"\n");

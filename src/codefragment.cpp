@@ -222,7 +222,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     // copy part after the last indented block
     while (s < e) *d++=*s++;
     // shrink the string for the indentation that was removed
-    fileContentsTrimLeft.resize(d-fileContentsTrimLeft.data()+1);
+    fileContentsTrimLeft.resize(d-fileContentsTrimLeft.data());
     //printf("result after trimming:\n=====%s=====\n",qPrint(fileContentsTrimLeft));
     recorderCodeListTrimLeft.add<OutputCodeRecorder>();
   }

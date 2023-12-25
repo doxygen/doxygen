@@ -4551,7 +4551,7 @@ static bool findClassRelation(
           {
             // use the template instance instead of the template base.
             baseClass = templClass;
-            templSpec.resize(0);
+            templSpec.clear();
           }
         }
 
@@ -6348,7 +6348,7 @@ static void findMember(const Entry *root,
        )
      )
   {
-    funcSpec.resize(0);
+    funcSpec.clear();
   }
 
   // split scope into a namespace and a class part
@@ -6360,7 +6360,7 @@ static void findMember(const Entry *root,
 
   //printf("namespaceName='%s' className='%s'\n",qPrint(namespaceName),qPrint(className));
   // merge class and namespace scopes again
-  scopeName.resize(0);
+  scopeName.clear();
   if (!namespaceName.isEmpty())
   {
     if (className.isEmpty())
@@ -11482,7 +11482,7 @@ void adjustConfiguration()
 
   // store number of spaces in a tab into Doxygen::spaces
   int tabSize = Config_getInt(TAB_SIZE);
-  Doxygen::spaces.resize(tabSize+1);
+  Doxygen::spaces.resize(tabSize);
   int sp;for (sp=0;sp<tabSize;sp++) Doxygen::spaces.at(sp)=' ';
   Doxygen::spaces.at(tabSize)='\0';
 }

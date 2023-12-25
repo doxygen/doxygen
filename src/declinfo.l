@@ -151,7 +151,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				  {
   				    yyextra->scope = yyextra->name; // yyextra->scope becomes yyextra->name
 				  }
-				  yyextra->name.resize(0);
+				  yyextra->name.clear();
   				}
 <Start>{B}*":"			{ // Objective-C argument separator
   				  yyextra->name+=yytext;
@@ -273,8 +273,8 @@ static void addType(yyscan_t yyscanner)
   if (!yyextra->type.isEmpty()) yyextra->type+=" ";
   if (!yyextra->scope.isEmpty()) yyextra->type+=yyextra->scope+"::";
   yyextra->type+=yyextra->name;
-  yyextra->scope.resize(0);
-  yyextra->name.resize(0);
+  yyextra->scope.clear();
+  yyextra->name.clear();
 }
 
 static void addTypeName(yyscan_t yyscanner)
@@ -289,7 +289,7 @@ static void addTypeName(yyscan_t yyscanner)
   }
   if (!yyextra->type.isEmpty()) yyextra->type+=' ';
   yyextra->type+=yyextra->name;
-  yyextra->name.resize(0);
+  yyextra->name.clear();
 }
 
 static int yyread(char *buf,int max_size, yyscan_t yyscanner)
@@ -331,14 +331,14 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   yyextra->funcTempListFound  = FALSE;
   yyextra->insideObjC = lang==SrcLangExt_ObjC;
   yyextra->insidePHP  = lang==SrcLangExt_PHP;
-  yyextra->scope.resize(0);
-  yyextra->className.resize(0);
-  yyextra->classTempList.resize(0);
-  yyextra->funcTempList.resize(0);
-  yyextra->name.resize(0);
-  yyextra->type.resize(0);
-  yyextra->args.resize(0);
-  yyextra->exceptionString.resize(0);
+  yyextra->scope.clear();
+  yyextra->className.clear();
+  yyextra->classTempList.clear();
+  yyextra->funcTempList.clear();
+  yyextra->name.clear();
+  yyextra->type.clear();
+  yyextra->args.clear();
+  yyextra->exceptionString.clear();
   // first we try to find the yyextra->type, yyextra->scope, yyextra->name and arguments
   declinfoYYrestart( yyin, g_yyscanner );
   BEGIN( Start );

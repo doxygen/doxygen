@@ -76,7 +76,7 @@ class ArgumentList
       m_constSpecifier = FALSE;
       m_volatileSpecifier = FALSE;
       m_pureSpecifier = FALSE;
-      m_trailingReturnType.resize(0);
+      m_trailingReturnType.clear();
       m_isDeleted = FALSE;
       m_refQualifier = RefQualifierNone;
       m_noParameters = FALSE;

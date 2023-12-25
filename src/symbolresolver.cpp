@@ -101,9 +101,9 @@ struct SymbolResolver::Private
     void reset()
     {
       m_resolvedTypedefs.clear();
-      resolvedType.resize(0);
+      resolvedType.clear();
       typeDef = 0;
-      templateSpec.resize(0);
+      templateSpec.clear();
     }
     void setFileScope(const FileDef *fileScope)
     {
@@ -602,7 +602,7 @@ void SymbolResolver::Private::getResolvedType(
             minDistance=distance;
             bestMatch = cd;
             bestTypedef = 0;
-            bestTemplSpec.resize(0);
+            bestTemplSpec.clear();
             bestResolvedType = cd->qualifiedName();
           }
           else if (distance==minDistance &&
@@ -624,7 +624,7 @@ void SymbolResolver::Private::getResolvedType(
             minDistance=distance;
             bestMatch = cd;
             bestTypedef = 0;
-            bestTemplSpec.resize(0);
+            bestTemplSpec.clear();
             bestResolvedType = cd->qualifiedName();
           }
         }
@@ -682,8 +682,8 @@ void SymbolResolver::Private::getResolvedType(
                 AUTO_TRACE_ADD("no match");
                 bestMatch = 0;
                 bestTypedef = md;
-                bestTemplSpec.resize(0);
-                bestResolvedType.resize(0);
+                bestTemplSpec.clear();
+                bestResolvedType.clear();
               }
             }
             else
@@ -760,7 +760,7 @@ void SymbolResolver::Private::getResolvedSymbol(
           minDistance=distance;
           bestMatch = d;
           bestTypedef = 0;
-          bestTemplSpec.resize(0);
+          bestTemplSpec.clear();
           bestResolvedType = cd->qualifiedName();
         }
         else if (distance==minDistance &&
@@ -782,7 +782,7 @@ void SymbolResolver::Private::getResolvedSymbol(
           minDistance=distance;
           bestMatch = d;
           bestTypedef = 0;
-          bestTemplSpec.resize(0);
+          bestTemplSpec.clear();
           bestResolvedType = cd->qualifiedName();
         }
       }
@@ -826,8 +826,8 @@ void SymbolResolver::Private::getResolvedSymbol(
         minDistance=distance;
         bestMatch = d;
         bestTypedef = 0;
-        bestTemplSpec.resize(0);
-        bestResolvedType.resize(0);
+        bestTemplSpec.clear();
+        bestResolvedType.clear();
       }
     }
   } // if definition accessible

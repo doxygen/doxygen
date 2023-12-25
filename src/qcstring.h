@@ -153,15 +153,9 @@ class QCString
      */
     char *rawData() { return &m_rep[0]; }
 
-    /** Resizes the string to hold \a newlen characters
-     *  (this value should also count the 0-terminator).
-     *  If the string is enlarged the contents will
-     *  be left unmodified.
-     */
-    bool resize( size_t newlen ) { m_rep.resize( newlen>0 ? newlen-1 : 0 ); return TRUE; }
+    void resize( size_t newlen) { m_rep.resize(newlen); }
 
-    /** Truncates the string at position \a pos. */
-    bool truncate( size_t pos ) { return resize( pos + 1 ); }
+    void clear() { m_rep.clear(); }
 
     /** Reserve space for \a size bytes without changing the string contents */
     void reserve( size_t size ) { m_rep.reserve(size); }

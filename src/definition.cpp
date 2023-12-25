@@ -932,7 +932,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
       int braceIndex   = result.findRev('}');
       if (braceIndex > newLineIndex)
       {
-        result.truncate(static_cast<size_t>(braceIndex+1));
+        result.resize(static_cast<size_t>(braceIndex+1));
       }
       endLine=lineNr-1;
     }
@@ -1356,7 +1356,7 @@ void DefinitionImpl::setOuterScope(Definition *d)
   }
   if (!found)
   {
-    m_impl->qualifiedName.resize(0); // flush cached scope name
+    m_impl->qualifiedName.clear(); // flush cached scope name
     m_impl->outerScope = d;
   }
   m_impl->hidden = m_impl->hidden || d->isHidden();

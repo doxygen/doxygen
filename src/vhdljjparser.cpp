@@ -177,7 +177,7 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
   if (!inLine)
   mapLibPackage(root.get());
 
-  p->yyFileName.resize(0);
+  p->yyFileName.clear();
   p->libUse.clear();
 }
 
@@ -381,7 +381,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
     gBlock.type = "misc"; // global code like library ieee...
     s->current_root->copyToSubEntry(&gBlock);
   }
-  p->strComment.resize(0);
+  p->strComment.clear();
   return 1;
 }
 
@@ -397,7 +397,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 
   if (checkMultiComment(doc, p->yyLineNr))
   {
-    p->strComment.resize(0);
+    p->strComment.clear();
     return;
   }
 
@@ -465,7 +465,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
     newEntry();
   }
   p->iDocLine = -1;
-  p->strComment.resize(0);
+  p->strComment.clear();
 }
 
 void VHDLOutlineParser::parsePrototype(const QCString &text)

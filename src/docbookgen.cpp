@@ -199,8 +199,8 @@ void DocbookCodeGenerator::endCodeLine()
   if (m_insideCodeLine) *m_t << "\n";
   Docbook_DB(("(endCodeLine)\n"));
   m_lineNumber = -1;
-  m_refId.resize(0);
-  m_external.resize(0);
+  m_refId.clear();
+  m_external.clear();
   m_insideCodeLine=FALSE;
 }
 

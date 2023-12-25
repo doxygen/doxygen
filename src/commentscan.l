@@ -1340,7 +1340,7 @@ STopt  [^\n@\\]*
                                           {
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-5);
                                           }
-                                          yyextra->current->type.resize(0);
+                                          yyextra->current->type.clear();
                                           BEGIN(GroupDocArg2);
                                         }
 <GroupDocArg1>"\\"{B}*"\n"              { // line continuation
@@ -1628,7 +1628,7 @@ STopt  [^\n@\\]*
 <SectionLabel>{LABELID}                 { // first argument
                                           yyextra->sectionLabel=yytext;
                                           addOutput(yyscanner,yytext);
-                                          yyextra->sectionTitle.resize(0);
+                                          yyextra->sectionTitle.clear();
                                           BEGIN(SectionTitle);
                                         }
 <SectionLabel>{DOCNL}                   { // missing argument
@@ -1850,7 +1850,7 @@ STopt  [^\n@\\]*
                                         }
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
-                                          yyextra->spaceBeforeIf.resize(0);
+                                          yyextra->spaceBeforeIf.clear();
                                           addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
@@ -1859,7 +1859,7 @@ STopt  [^\n@\\]*
                                           {
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
-                                          yyextra->spaceBeforeIf.resize(0);
+                                          yyextra->spaceBeforeIf.clear();
                                           addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
@@ -2314,7 +2314,7 @@ static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMemberDoc());
-  yyextra->functionProto.resize(0);
+  yyextra->functionProto.clear();
   yyextra->braceCount=0;
   BEGIN(FnParam);
   return stop;
@@ -2324,7 +2324,7 @@ static bool handleDef(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,EntryType::makeDefineDoc());
-  yyextra->functionProto.resize(0);
+  yyextra->functionProto.clear();
   BEGIN(FnParam);
   return stop;
 }
@@ -2332,7 +2332,7 @@ static bool handleDef(yyscan_t yyscanner,const QCString &, const StringVector &)
 static bool handleOverload(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->functionProto.resize(0);
+  yyextra->functionProto.clear();
   BEGIN(OverloadParam);
   return FALSE;
 }
@@ -2657,7 +2657,7 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVect
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,"@parblock ");
   yyextra->insideParBlock = TRUE;
@@ -2755,7 +2755,7 @@ static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVect
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,"@"+s+" ");
   BEGIN(SubpageLabel);
@@ -2809,7 +2809,7 @@ static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector 
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,"@"+s+" ");
   BEGIN(CiteLabel);
@@ -2822,7 +2822,7 @@ static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const String
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   if (optList.empty())
   {
@@ -2863,7 +2863,7 @@ static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVect
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   bool first = true;
   FileInfo fi(yyextra->fileName.str());
@@ -2910,7 +2910,7 @@ static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVect
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
   addOutput(yyscanner," ");
@@ -3029,7 +3029,7 @@ static bool handleEndIf(yyscan_t yyscanner,const QCString &, const StringVector 
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   if (yyextra->guards.empty())
   {
@@ -3280,7 +3280,7 @@ static bool handleInternal(yyscan_t yyscanner,const QCString &, const StringVect
     // is not treated as "documentation"
     if (yyextra->current->doc.stripWhiteSpace().isEmpty())
     {
-      yyextra->current->doc.resize(0);
+      yyextra->current->doc.clear();
     }
     yyextra->condCount=0;
     BEGIN( SkipInternal );
@@ -3437,7 +3437,7 @@ static bool handleCopyBrief(yyscan_t yyscanner,const QCString &, const StringVec
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,"\\copybrief ");
   return FALSE;
@@ -3450,7 +3450,7 @@ static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringV
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,"\\copydetails ");
   return FALSE;
@@ -3468,10 +3468,10 @@ static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVecto
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
-    yyextra->spaceBeforeCmd.resize(0);
+    yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,"\\copybrief ");
-  yyextra->copyDocArg.resize(0);
+  yyextra->copyDocArg.clear();
   yyextra->braceCount = 0;
   BEGIN(CopyDoc);
   return FALSE;
@@ -3482,8 +3482,8 @@ static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVecto
 static void initParser(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->sectionLabel.resize(0);
-  yyextra->sectionTitle.resize(0);
+  yyextra->sectionLabel.clear();
+  yyextra->sectionTitle.clear();
   yyextra->docGroup.clearHeader();
   yyextra->insideParBlock = FALSE;
 }
@@ -3615,7 +3615,7 @@ static void addXRefItem(yyscan_t yyscanner,
       }
     }
   }
-  yyextra->outputXRef.resize(0);
+  yyextra->outputXRef.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -3728,7 +3728,7 @@ static void stripTrailingWhiteSpace(QCString &s)
   //printf("stripTrailingWhitespace(%s) i=%d len=%d\n",qPrint(s),i,len);
   if (i!=(int)len-1)
   {
-    s.resize(i+2); // string up to and including char at pos i and \0 terminator
+    s.resize(i+1); // string up to and including char at pos i
   }
 }
 
@@ -4040,7 +4040,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->parseMore      = FALSE;
   yyextra->inBody         = isInbody;
   yyextra->markdownSupport= markdownSupport;
-  yyextra->outputXRef.resize(0);
+  yyextra->outputXRef.clear();
   if (!isBrief && !isAutoBriefOn && !yyextra->current->doc.isEmpty())
   { // add newline separator between detailed comment blocks
     yyextra->current->doc += '\n';
@@ -4049,8 +4049,8 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->briefEndsAtDot = isAutoBriefOn;
   yyextra->condCount    = 0;
   yyextra->sectionLevel = 0;
-  yyextra->spaceBeforeCmd.resize(0);
-  yyextra->spaceBeforeIf.resize(0);
+  yyextra->spaceBeforeCmd.clear();
+  yyextra->spaceBeforeIf.clear();
 
   DebugLex debugLex(Debug::Lex_commentscan, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments

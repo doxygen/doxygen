@@ -1798,7 +1798,7 @@ static int isLinkRef(const char *data,int size,
     link+=refArg;
   }
 
-  title.resize(0);
+  title.clear();
 
   // format: (whitespace* \n? whitespace* ( 'title' | "title" | (title) ))?
   int eol=0;

@@ -989,7 +989,7 @@ static void handleCCode(yyscan_t yyscanner)
                                      yyextra->cCodeBuffer.data(),
                                      yyextra->current_root,
                                      yyextra->clangParser);
-  yyextra->cCodeBuffer.resize(0);
+  yyextra->cCodeBuffer.clear();
   return;
 }
 //----------------------------------------------------------------------------

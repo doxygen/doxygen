@@ -307,8 +307,8 @@ void XMLCodeGenerator::endCodeLine()
   }
   *m_t << "</codeline>\n"; // non DocBook
   m_lineNumber = -1;
-  m_refId.resize(0);
-  m_external.resize(0);
+  m_refId.clear();
+  m_external.clear();
   m_insideCodeLine=FALSE;
 }
 void XMLCodeGenerator::startFontClass(const QCString &colorClass)
@@ -521,7 +521,7 @@ static void stripAnonymousMarkers(QCString &s)
       }
     }
     // resize resulting string
-    s.resize(j+1);
+    s.resize(j);
   }
 }
 

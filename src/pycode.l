@@ -428,7 +428,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(var)));
 
                                       // Reset class-parsing variables.
-                                      yyextra->curClassName.resize(0);
+                                      yyextra->curClassName.clear();
                                       yyextra->curClassBases.clear();
 
                                       yyextra->noSuiteFound = TRUE;

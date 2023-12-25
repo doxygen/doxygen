@@ -799,7 +799,7 @@ private                                 {
 "\n"                                    {
                                           yyextra->currentModifiers = SymbolModifiers();
                                           newLine(yyscanner);
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                         }
 }
 
@@ -1080,8 +1080,8 @@ private                                 {
                                             // any accumulated doc for argument should be emptied,
                                             // because it is handled other way and this doc can be
                                             // unexpectedly passed to the next member.
-                                            yyextra->current->doc.resize(0);
-                                            yyextra->current->brief.resize(0);
+                                            yyextra->current->doc.clear();
+                                            yyextra->current->brief.clear();
                                           }
                                         }
 <FVariable>{ARGS}                        { /* dimension of the previous entry. */
@@ -1103,11 +1103,11 @@ private                                 {
 <FVariable>"\n"                          { yyextra->currentModifiers = SymbolModifiers();
                                           pop_state(yyscanner); // end variable declaration list
                                           newLine(yyscanner);
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                         }
 <FVariable>";".*"\n"                     { yyextra->currentModifiers = SymbolModifiers();
                                           pop_state(yyscanner); // end variable declaration list
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                           yyextra->inputStringSemi = " \n"+QCString(yytext+1);
                                           yyextra->lineNr--;
                                           pushBuffer(yyscanner,yyextra->inputStringSemi);
@@ -1188,8 +1188,8 @@ private                                 {
                                           yyextra->typeMode = true;
 
                                           yyextra->current->spec.setStruct(true);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
+                                          yyextra->current->name.clear();
+                                          yyextra->current->args.clear();
                                           yyextra->current->name.sprintf("@%d",yyextra->anonCount++);
 
                                           yyextra->current->section = EntryType::makeEnum();
@@ -1332,7 +1332,7 @@ private                                 {
                                           {
                                             yyextra->current->docLine  = yyextra->lineNr;
                                             yyextra->docBlockJavaStyle = FALSE;
-                                            yyextra->docBlock.resize(0);
+                                            yyextra->docBlock.clear();
                                             yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
                                             startCommentBlock(yyscanner,TRUE);
                                             yy_push_state(DocBackLine,yyscanner);
@@ -1391,7 +1391,7 @@ private                                 {
                                             subrHandleCommentBlockResult(yyscanner,yyextra->docBlock,TRUE);
                                           }
                                           pop_state(yyscanner);
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                         }
 
 <Start,SubprogBody,ModuleBody,TypedefBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains,TypedefBodyContains,FEnum>"!>"  {
@@ -1399,7 +1399,7 @@ private                                 {
                                           yyextra->current->docLine  = yyextra->lineNr;
                                           yyextra->docBlockJavaStyle = FALSE;
                                           if (YY_START==SubprogBody) yyextra->docBlockInBody = TRUE;
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                           yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
                                           startCommentBlock(yyscanner,TRUE);
                                           BEGIN(DocBlock);
@@ -1649,7 +1649,7 @@ void truncatePrepass(yyscan_t yyscanner,int index)
       yyextra->comments.emplace_back(index, yyextra->inputStringPrepass.right(length-i-2));
     }
   }
-  yyextra->inputStringPrepass.truncate(index);
+  yyextra->inputStringPrepass.resize(index);
 }
 
 /* This function assumes that contents has at least size=length+1 */
@@ -2755,9 +2755,9 @@ static void addSubprogram(yyscan_t yyscanner,const QCString &text)
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->bodyLine  = yyextra->lineNr; // used for source reference start of body of routine
   yyextra->current->startLine  = yyextra->lineNr; // used for source reference start of definition
-  yyextra->current->args.resize(0);
+  yyextra->current->args.clear();
   yyextra->current->argList.clear();
-  yyextra->docBlock.resize(0);
+  yyextra->docBlock.clear();
 }
 
 /*! Adds interface to the root entry.
