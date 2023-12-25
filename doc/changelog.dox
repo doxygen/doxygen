@@ -101,7 +101,7 @@
 <li>Properties in python &quot;namespaces&quot; [<a href="https://github.com/doxygen/doxygen/commit/01ac2dc4eb6ef1e73b999d7a68c9512afe9e1a5e">view</a>]</li>
 <li>Recognition of `&lt;=` inside template construct [<a href="https://github.com/doxygen/doxygen/commit/bfd627da25cf0122c4ebe390c4c738e2e3709924">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/db977cc6dfb68c9b5fc4dc1d5e52294026b6c92d">view</a>]</li>
 <li>Recognition of `&gt;=` inside template construct [<a href="https://github.com/doxygen/doxygen/commit/71f650373b5359538c6350d54ba55f88bdcd2a1d">view</a>]</li>
-<li>Recognition of `&gt;=` inside inintializer construct [<a href="https://github.com/doxygen/doxygen/commit/6182fa384b4ab1a06cb511d84487d4c7caba7a8b">view</a>]</li>
+<li>Recognition of `&gt;=` inside initializer construct [<a href="https://github.com/doxygen/doxygen/commit/6182fa384b4ab1a06cb511d84487d4c7caba7a8b">view</a>]</li>
 <li>Reduce code duplication [<a href="https://github.com/doxygen/doxygen/commit/1108dde1ce7aac7bfb2461d024380f2e5dbee190">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/66e3e94112ed9814d575f16cf4e41aa4d06cb7df">view</a>]</li>
 <li>Reduce the number of calls to stripWhiteSpace() [<a href="https://github.com/doxygen/doxygen/commit/00e9110914f6ba45349cff2f67398cb9641d578f">view</a>]</li>
 <li>Regression fix broken link to source code when CREATE_SUBDIRS is enabled [<a href="https://github.com/doxygen/doxygen/commit/d788d9d88a01b80ed63e712cef6cc944d05a54ed">view</a>]</li>
@@ -162,13 +162,13 @@
 <li>Add overflow guard to the dispatcher [<a href="https://github.com/doxygen/doxygen/commit/fa59e8d9a547833446f1967ef8ee430901992e56">view</a>]</li>
 <li>Added const to a couple for references [<a href="https://github.com/doxygen/doxygen/commit/332323e6116438b6542147bac1387afe5c38ca73">view</a>]</li>
 <li>Remove double entries [<a href="https://github.com/doxygen/doxygen/commit/6e3b88270f55e69c832ece36d17257762a914f08">view</a>]</li>
-<li>Remove double mentioning of &#39;module&#39;  in compouund.xsd [<a href="https://github.com/doxygen/doxygen/commit/91627fa9016fa3a945b8d75cd3efb21f687bce3e">view</a>]</li>
+<li>Remove double mentioning of &#39;module&#39;  in compound.xsd [<a href="https://github.com/doxygen/doxygen/commit/91627fa9016fa3a945b8d75cd3efb21f687bce3e">view</a>]</li>
 <li>Remove double resetting for htmlhelp [<a href="https://github.com/doxygen/doxygen/commit/3ca14d71f601d76d26222b2e818aa973d1184137">view</a>]</li>
 <li>Remove obsolete parts from cmake configuration files [<a href="https://github.com/doxygen/doxygen/commit/cf8c72a232baf268c1c9c5d29fd06b0644834c2f">view</a>]</li>
 <li>Remove obsolete tag test [<a href="https://github.com/doxygen/doxygen/commit/a318807bce7735871854938d3ea68a35a8e55909">view</a>]</li>
 <li>Remove obsolete vhdl functions [<a href="https://github.com/doxygen/doxygen/commit/8ecb23350ffb5ad4b49c885d519463f5e2ce3a37">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/dcd67b95bb3dc3717c10ba8aee4e272e21971fbe">view</a>]</li>
 <li>Remove unused css entry [<a href="https://github.com/doxygen/doxygen/commit/f6cfcac7c52969a58fcee889f95d6afafa899ce3">view</a>]</li>
-<li>Rename `.doc` to `.dox in doxygen documentation [<a href="https://github.com/doxygen/doxygen/commit/14af967ac489eea3fd3e6a6154f2e75e4a8617c7">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/28cffb8de3b469ddba343890c47617622c396e65">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/c3ff1e442cf386ce6c71c885af39a223f842b210">view</a>]</li>
+<li>Rename `.doc` to `.dox` in doxygen documentation [<a href="https://github.com/doxygen/doxygen/commit/14af967ac489eea3fd3e6a6154f2e75e4a8617c7">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/28cffb8de3b469ddba343890c47617622c396e65">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/c3ff1e442cf386ce6c71c885af39a223f842b210">view</a>]</li>
 <li>Give functions override attribute [<a href="https://github.com/doxygen/doxygen/commit/079ddb370a11d955e9df5a325641e3044f0f7e31">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/85db09eee0c94592da43a531d4339af2a1da8e9f">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/9cc1be077b69f6bf57210f2f7f3ee59e6e6a6492">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/a15fd7b004a10a10f886f642a5a978c7fc3f8f3b">view</a>]</li>
 <li>Use system FindSQlite3.cmake [<a href="https://github.com/doxygen/doxygen/commit/e5c75032987e4b45b04ac978df1e28751f1d08c6">view</a>]</li>
 </ul>
@@ -10485,7 +10485,7 @@ make sure you add the following:
        used.</li>
 <li>   An error was given for import statements in Java sources.</li>
 <li>   The "list of all members" was no longer generated for nested classes.</li>
-<li>   Fixed bug in XML output causing mis matched &lt;para&gt; tags.</li>
+<li>   Fixed bug in XML output causing mismatched &lt;para&gt; tags.</li>
 <li>   Fixed parse problem for enum initializers like: "enumVal = A&lt;T,C&gt;::val" </li>
 <li>   \hideinitializer did not hide the initializer of enum values.</li>
 <li>   Undocumented enums and enum values now behave correctly when
