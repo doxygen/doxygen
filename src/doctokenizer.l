@@ -74,7 +74,7 @@ struct doctokenizerYY_state
   int commentState;
   TokenInfo token;
   yy_size_t inputPos = 0;
-  const char *inputString = 0;
+  const char *inputString = nullptr;
   QCString fileName;
   bool insidePre = false;
   int sharpCount=0;
@@ -82,7 +82,7 @@ struct doctokenizerYY_state
   bool insideHtmlLink=false;
 
   // context for section finding phase
-  const Definition  *definition = 0;
+  const Definition  *definition = nullptr;
   QCString     secLabel;
   QCString     secTitle;
   SectionType  secType;

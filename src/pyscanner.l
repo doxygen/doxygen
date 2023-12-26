@@ -69,8 +69,8 @@ typedef yyguts_t *yyscan_t;
 struct pyscannerYY_state
 {
   CommentScanner          commentScanner;
-  OutlineParserInterface *thisParser = 0;
-  const char *            inputString = 0;
+  OutlineParserInterface *thisParser = nullptr;
+  const char *            inputString = nullptr;
   int                     inputPosition = 0;
   Protection              protection = Protection::Public;
   std::shared_ptr<Entry>  current_root;
@@ -91,7 +91,7 @@ struct pyscannerYY_state
   bool                    doubleQuote = FALSE;
   bool                    specialBlock = FALSE;
   int                     stringContext = 0;
-  TextStream *            copyString = 0;
+  TextStream *            copyString = nullptr;
   int                     indent = 0;
   int                     curIndent = 0;
   int                     commentIndent = 0;

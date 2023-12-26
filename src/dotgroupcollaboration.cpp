@@ -64,7 +64,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Write parents
   for (const auto &d : gd->partOfGroups())
   {
-    DotNode *nnode = 0;
+    DotNode *nnode = nullptr;
     auto it = m_usedNodes.find(d->name().str());
     if ( it==m_usedNodes.end())
     { // add node
@@ -85,7 +85,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Add subgroups
   for (const auto &def : gd->getSubGroups())
   {
-    DotNode *nnode = 0;
+    DotNode *nnode = nullptr;
     auto it = m_usedNodes.find(def->name().str());
     if ( it==m_usedNodes.end())
     { // add node

@@ -30,7 +30,7 @@ class DefinitionImpl
     DefinitionImpl(
         Definition *def,
         const QCString &defFileName,int defLine,int defColumn,
-        const QCString &name,const char *b=0,const char *d=0,
+        const QCString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=TRUE);
     ~DefinitionImpl();
 
@@ -148,7 +148,7 @@ class DefinitionMixin : public Base
     /*! Create a new definition */
     DefinitionMixin(
         const QCString &defFileName,int defLine,int defColumn,
-        const QCString &name,const char *b=0,const char *d=0,
+        const QCString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=TRUE) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
     ~DefinitionMixin() = default;
 

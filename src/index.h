@@ -221,7 +221,7 @@ class Index
 
 void writeGraphInfo(OutputList &ol);
 void writeIndexHierarchy(OutputList &ol);
-void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=0);
+void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=nullptr);
 void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli=HighlightedItem::None,

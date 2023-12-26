@@ -122,7 +122,7 @@ static bool parentIsVisible(LayoutNavEntry *parent)
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
     const QCString &file) const
 {
-  LayoutNavEntry *result=0;
+  LayoutNavEntry *result=nullptr;
   for (const auto &entry : m_children)
   {
     // depth first search, needed to find the entry furthest from the
@@ -703,7 +703,7 @@ class LayoutParser
   private:
     QCString m_scope;
     LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
-    LayoutNavEntry *m_rootNav = 0;
+    LayoutNavEntry *m_rootNav = nullptr;
     bool m_invalidEntry = false;
     bool m_visible = true;
     static int m_userGroupCount;

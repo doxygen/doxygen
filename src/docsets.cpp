@@ -275,9 +275,9 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
 {
   if (md==0 && context==0) return;
 
-  const FileDef *fd      = 0;
-  const ClassDef *cd     = 0;
-  const NamespaceDef *nd = 0;
+  const FileDef *fd      = nullptr;
+  const ClassDef *cd     = nullptr;
+  const NamespaceDef *nd = nullptr;
 
   if (md)
   {

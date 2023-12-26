@@ -95,7 +95,7 @@ struct ObjCCallCtx
 
 struct codeYY_state
 {
-  OutputCodeList * code = 0;
+  OutputCodeList * code = nullptr;
 
   std::unordered_map< std::string, ScopedTypeVariant > codeClassMap;
   QCString      curClassName;
@@ -104,7 +104,7 @@ struct codeYY_state
   QCString      parmType;
   QCString      parmName;
 
-  const char *  inputString = 0;     //!< the code fragment as text
+  const char *  inputString = nullptr;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
   QCString      absFileName;
@@ -127,12 +127,12 @@ struct codeYY_state
                                    //   2 for internal blocks
   int           anchorCount = 0;
   std::unique_ptr<FileDef> exampleFileDef;
-  const FileDef *     sourceFileDef = 0;
+  const FileDef *     sourceFileDef = nullptr;
   bool          lineNumbers = FALSE;
-  const Definition *  currentDefinition = 0;
-  const MemberDef *   currentMemberDef = 0;
+  const Definition *  currentDefinition = nullptr;
+  const MemberDef *   currentMemberDef = nullptr;
   bool          includeCodeFragment = FALSE;
-  const char *  currentFontClass = 0;
+  const char *  currentFontClass = nullptr;
   bool          searchingForBody = FALSE;
   bool          insideBody = FALSE;
   int           bodyCurlyCount = 0;
@@ -165,10 +165,10 @@ struct codeYY_state
   std::stack<int>  classScopeLengthStack;
 
   int           isPrefixedWithThis = FALSE;
-  const Definition *searchCtx = 0;
+  const Definition *searchCtx = nullptr;
   bool          collectXRefs = FALSE;
 
-  ObjCCallCtx * currentCtx=0;
+  ObjCCallCtx * currentCtx=nullptr;
   int           currentCtxId=0;
   int           currentNameId=0;
   int           currentObjId=0;
@@ -811,7 +811,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                               // insert base classes.
                                               for (const auto &s : yyextra->curClassBases)
                                               {
-                                                const ClassDef *bcd=0;
+                                                const ClassDef *bcd=nullptr;
                                                 auto it = yyextra->codeClassMap.find(s);
                                                 if (it!=yyextra->codeClassMap.end())
                                                 {
@@ -1486,7 +1486,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                     if (yyextra->currentCtx==0)
                                     {
                                       // end of call
-                                      ObjCCallCtx *ctx = 0;
+                                      ObjCCallCtx *ctx = nullptr;
                                       auto it = yyextra->contextMap.find(0);
                                       if (it!=yyextra->contextMap.end())
                                       {
@@ -2776,7 +2776,7 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,const
   while (extractClassNameFromType(type,pos,className,templSpec)!=-1)
   {
     QCString clName=className+templSpec;
-    const ClassDef *cd=0;
+    const ClassDef *cd=nullptr;
     if (!yyextra->classScope.isEmpty())
     {
       cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName,true);
@@ -3040,9 +3040,9 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   {
     className = substitute(className,".","::"); // for C#/Java namespaces
   }
-  const ScopedTypeVariant *lcd=0;
-  const ClassDef *cd=0;
-  const MemberDef *md=0;
+  const ScopedTypeVariant *lcd=nullptr;
+  const ClassDef *cd=nullptr;
+  const MemberDef *md=nullptr;
   bool isLocal=FALSE;
 
   DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",qPrint(className)));
@@ -3443,7 +3443,7 @@ static void generatePHPVariableLink(yyscan_t yyscanner,OutputCodeList &ol,const 
 static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &funcName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //CodeClassDef *ccd=0;
+  //CodeClassDef *ccd=nullptr;
   QCString locScope=yyextra->classScope;
   QCString locFunc=removeRedundantWhiteSpace(funcName);
   if (yyextra->lang==SrcLangExt_PHP && locFunc.startsWith("self::")) locFunc=locFunc.mid(4);

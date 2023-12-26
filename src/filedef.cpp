@@ -244,8 +244,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     MemberDefLineMap      m_srcMemberMap;
     bool                  m_isSource;
     QCString              m_fileVersion;
-    DirDef               *m_dir = 0;
-    ModuleDef            *m_moduleDef = 0;
+    DirDef               *m_dir = nullptr;
+    ModuleDef            *m_moduleDef = nullptr;
     MemberLists           m_memberLists;
     MemberGroupList       m_memberGroups;
     NamespaceLinkedRefMap m_namespaces;

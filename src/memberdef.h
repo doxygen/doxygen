@@ -288,7 +288,7 @@ class MemberDef : public Definition
                const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void writeDeclaration(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *md,
-                 bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
+                 bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=nullptr,const QCString &inheritId=QCString()) const = 0;
     virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
                 const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const = 0;
     virtual void writeLink(OutputList &ol,
@@ -328,7 +328,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setSectionList(const Definition *container,const MemberList *sl) = 0;
     virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
-                     MemberDef *member=0) = 0;
+                     MemberDef *member=nullptr) = 0;
     virtual void setReadAccessor(const QCString &r) = 0;
     virtual void setWriteAccessor(const QCString &w) = 0;
     virtual void setTemplateSpecialization(bool b) = 0;

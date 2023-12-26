@@ -111,7 +111,7 @@ struct GetDefInput
   QCString memberName;
   QCString args;
   bool forceEmptyScope = false;
-  const FileDef *currentFile = 0;
+  const FileDef *currentFile = nullptr;
   bool checkCV = false;
   bool insideCode = false;
 };
@@ -119,11 +119,11 @@ struct GetDefInput
 struct GetDefResult
 {
   bool found = false;
-  const MemberDef    *md=0;
-  const ClassDef     *cd=0;
-  const FileDef      *fd=0;
-  const NamespaceDef *nd=0;
-  const GroupDef     *gd=0;
+  const MemberDef    *md=nullptr;
+  const ClassDef     *cd=nullptr;
+  const FileDef      *fd=nullptr;
+  const NamespaceDef *nd=nullptr;
+  const GroupDef     *gd=nullptr;
 };
 
 GetDefResult getDefs(const GetDefInput &input);
@@ -136,7 +136,7 @@ bool resolveRef(/* in */  const QCString &scName,
                 /* out */ const Definition **resContext,
                 /* out */ const MemberDef  **resMember,
                 /* in */  bool lookForSpecializations = TRUE,
-                /* in */  const FileDef *currentFile = 0,
+                /* in */  const FileDef *currentFile = nullptr,
                 /* in */  bool checkScope = FALSE
                );
 
@@ -290,10 +290,10 @@ QCString substituteTemplateArgumentsInString(
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
-                                          QCString *lastScopeStripped=0);
+                                          QCString *lastScopeStripped=nullptr);
 
 QCString resolveTypeDef(const Definition *d,const QCString &name,
-                        const Definition **typedefContext=0);
+                        const Definition **typedefContext=nullptr);
 
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);
 
@@ -314,8 +314,8 @@ PageDef *addRelatedPage(const QCString &name,
                         int docLine,
                         int startLine,
                         const RefItemVector &sli = RefItemVector(),
-                        GroupDef *gd=0,
-                        const TagInfo *tagInfo=0,
+                        GroupDef *gd=nullptr,
+                        const TagInfo *tagInfo=nullptr,
                         bool xref=FALSE,
                         SrcLangExt lang=SrcLangExt_Unknown
                        );

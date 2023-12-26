@@ -76,7 +76,7 @@ struct IncludeInfo
   IncludeInfo() {}
   IncludeInfo(const FileDef *fd,const QCString &in,IncludeKind k)
     : fileDef(fd), includeName(in), kind(k) {}
-  const FileDef *fileDef = 0;
+  const FileDef *fileDef = nullptr;
   QCString includeName;
   IncludeKind kind = IncludeKind::IncludeSystem;
 };

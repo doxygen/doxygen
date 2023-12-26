@@ -689,7 +689,7 @@ void DocInternalRef::parse()
 DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context) :
    DocCompoundNode(parser,parent), m_refType(Unknown), m_isSubPage(FALSE)
 {
-  const Definition  *compound = 0;
+  const Definition  *compound = nullptr;
   QCString     anchor;
   //printf("DocRef::DocRef(target=%s,context=%s)\n",qPrint(target),qPrint(context));
   ASSERT(!target.isEmpty());
@@ -702,7 +702,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   }
   if (sec) // ref to section or anchor
   {
-    PageDef *pd = 0;
+    PageDef *pd = nullptr;
     if (sec->type()==SectionType::Page)
     {
       pd = Doxygen::pageLinkedMap->find(target);
@@ -877,7 +877,7 @@ DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target
 
 DocLink::DocLink(DocParser *parser,DocNodeVariant *parent,const QCString &target) : DocCompoundNode(parser,parent)
 {
-  const Definition *compound = 0;
+  const Definition *compound = nullptr;
   QCString anchor;
   m_refText = target;
   m_relPath = parser->context.relPath;
@@ -1313,7 +1313,7 @@ int DocHtmlDetails::parse()
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
-  DocPara *par=0;
+  DocPara *par=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -1402,7 +1402,7 @@ int DocInternal::parse(int level)
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
-  DocPara *lastPar=0;
+  DocPara *lastPar=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -1629,7 +1629,7 @@ int DocHtmlCell::parse()
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
-  DocPara *par=0;
+  DocPara *par=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -1663,7 +1663,7 @@ int DocHtmlCell::parseXml()
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
-  DocPara *par=0;
+  DocPara *par=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -1796,7 +1796,7 @@ int DocHtmlRow::parse()
 
   bool isHeading=FALSE;
   bool isFirst=TRUE;
-  DocHtmlCell *cell=0;
+  DocHtmlCell *cell=nullptr;
 
   // get next token
   int tok=parser()->tokenizer.lex();
@@ -1860,7 +1860,7 @@ int DocHtmlRow::parseXml(bool isHeading)
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   bool isFirst=TRUE;
-  DocHtmlCell *cell=0;
+  DocHtmlCell *cell=nullptr;
 
   // get next token
   int tok=parser()->tokenizer.lex();
@@ -2280,7 +2280,7 @@ int DocHtmlDescData::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   bool isFirst=TRUE;
-  DocPara *par=0;
+  DocPara *par=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -2373,7 +2373,7 @@ int DocHtmlListItem::parse()
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
-  DocPara *par=0;
+  DocPara *par=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -2396,7 +2396,7 @@ int DocHtmlListItem::parseXml()
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
-  DocPara *par=0;
+  DocPara *par=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -2570,7 +2570,7 @@ int DocHtmlBlockQuote::parse()
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
-  DocPara *par=0;
+  DocPara *par=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -2595,7 +2595,7 @@ int DocParBlock::parse()
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
-  DocPara *par=0;
+  DocPara *par=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -2659,7 +2659,7 @@ int DocAutoListItem::parse()
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
-  DocPara *lastPar=0;
+  DocPara *lastPar=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -2860,7 +2860,7 @@ int DocSimpleSect::parseXml()
 
 void DocSimpleSect::appendLinkWord(const QCString &word)
 {
-  DocPara *p=0;
+  DocPara *p=nullptr;
   if (children().empty() || (p=std::get_if<DocPara>(&children().back()))==0)
   {
     children().append<DocPara>(parser(),thisVariant());
@@ -2911,7 +2911,7 @@ int DocParamList::parse(const QCString &cmdName)
   AUTO_TRACE();
   int retval=RetVal_OK;
   auto ns = AutoNodeStack(parser(),thisVariant());
-  DocPara *par=0;
+  DocPara *par=nullptr;
   QCString saveCmdName = cmdName;
 
   int tok=parser()->tokenizer.lex();
@@ -3106,7 +3106,7 @@ DocPara::DocPara(DocParser *parser,DocNodeVariant *parent) :
 int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
 {
   AUTO_TRACE();
-  DocSimpleSect *ss=0;
+  DocSimpleSect *ss=nullptr;
   bool needsSeparator = FALSE;
   if (!children().empty() &&                                         // has previous element
       (ss=children().get_last<DocSimpleSect>()) &&                   // was a simple sect
@@ -3139,7 +3139,7 @@ int DocPara::handleParamSection(const QCString &cmdName,
                                 int direction=DocParamSect::Unspecified)
 {
   AUTO_TRACE();
-  DocParamSect   *ps = 0;
+  DocParamSect   *ps = nullptr;
   if (!children().empty() &&                                       // previous element
       (ps=children().get_last<DocParamSect>()) &&                  // was a param sect
       ps->type()==t)                                               // of same type
@@ -4885,7 +4885,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         {
           unescapeCRef(cref);
           // Look for an existing "see" section
-          DocNodeVariant *vss=0;
+          DocNodeVariant *vss=nullptr;
           for (auto &n : children())
           {
             DocSimpleSect *candidate = std::get_if<DocSimpleSect>(&n);
@@ -5477,7 +5477,7 @@ int DocSection::parse()
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
-  DocPara *lastPar=0;
+  DocPara *lastPar=nullptr;
   do
   {
     children().append<DocPara>(parser(),thisVariant());

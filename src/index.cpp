@@ -2732,7 +2732,7 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
   bool first=TRUE;
   bool firstSection=TRUE;
   bool firstItem=TRUE;
-  const Index::MemberIndexList *mil = 0;
+  const Index::MemberIndexList *mil = nullptr;
   std::string letter;
   for (const auto &kv : memberIndexMap)
   {
@@ -2820,7 +2820,7 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
 void Index::addClassMemberNameToIndex(const MemberDef *md)
 {
   bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
-  const ClassDef *cd=0;
+  const ClassDef *cd=nullptr;
 
   if (md->isLinkableInProject() &&
       (cd=md->getClassDef())    &&
@@ -4158,7 +4158,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       {
         for (const auto &pd : gd->getPages())
         {
-          const SectionInfo *si=0;
+          const SectionInfo *si=nullptr;
           if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
           hasSubPages = pd->hasSubPages();
           bool hasSections = pd->hasSections();

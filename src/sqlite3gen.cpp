@@ -506,9 +506,9 @@ const char * table_schema[][2] = {
 
 //////////////////////////////////////////////////////
 struct SqlStmt {
-  const char   *query = 0;
-  sqlite3_stmt *stmt = 0;
-  sqlite3 *db = 0;
+  const char   *query = nullptr;
+  sqlite3_stmt *stmt = nullptr;
+  sqlite3 *db = nullptr;
 };
 //////////////////////////////////////////////////////
 /* If you add a new statement below, make sure to add it to
@@ -1028,7 +1028,7 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
     for (const Argument &a : declAl)
     {
       //const Argument *defArg = defAli.current();
-      const Argument *defArg = 0;
+      const Argument *defArg = nullptr;
       if (defIt!=defAl.end())
       {
         defArg = &(*defIt);
@@ -1194,19 +1194,19 @@ static int prepareStatements(sqlite3 *db)
 
 static void beginTransaction(sqlite3 *db)
 {
-  char * sErrMsg = 0;
+  char * sErrMsg = nullptr;
   sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, &sErrMsg);
 }
 
 static void endTransaction(sqlite3 *db)
 {
-  char * sErrMsg = 0;
+  char * sErrMsg = nullptr;
   sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &sErrMsg);
 }
 
 static void pragmaTuning(sqlite3 *db)
 {
-  char * sErrMsg = 0;
+  char * sErrMsg = nullptr;
   sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, &sErrMsg);
   sqlite3_exec(db, "PRAGMA journal_mode = MEMORY", NULL, NULL, &sErrMsg);
   sqlite3_exec(db, "PRAGMA temp_store = MEMORY;", NULL, NULL, &sErrMsg);

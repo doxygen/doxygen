@@ -114,7 +114,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
       auto it = m_usedNodes.find(bClass->name().str());
       //printf("  Node '%s' Found visible class='%s'\n",qPrint(n->label()),
       //                                              qPrint(bClass->name()));
-      DotNode *root = 0;
+      DotNode *root = nullptr;
       if (it!=m_usedNodes.end()) // node already present
       {
         const auto &bn = it->second;

@@ -111,13 +111,13 @@ class CodeParserInterface
                            SrcLangExt lang,
                            bool isExampleBlock,
                            const QCString &exampleName=QCString(),
-                           const FileDef *fileDef=0,
+                           const FileDef *fileDef=nullptr,
                            int startLine=-1,
                            int endLine=-1,
                            bool inlineFragment=FALSE,
-                           const MemberDef *memberDef=0,
+                           const MemberDef *memberDef=nullptr,
                            bool showLineNumbers=TRUE,
-                           const Definition *searchCtx=0,
+                           const Definition *searchCtx=nullptr,
                            bool collectXRefs=TRUE
                           ) = 0;
 

@@ -152,7 +152,7 @@ static void generateDEFForMember(const MemberDef *md,
     auto defIt = defAl.begin();
     for (const Argument &a : declAl)
     {
-      const Argument *defArg = 0;
+      const Argument *defArg = nullptr;
       if (defIt!=defAl.end())
       {
         defArg = &(*defIt);

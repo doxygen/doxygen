@@ -699,7 +699,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
   //printf("MemberList count=%d enumValues=%d\n",numDocMembers(),numDocEnumValues());
   if (numDocMembers()<=numDocEnumValues()) return; // only enum values and they should be excluded
 
-  const ClassDef *cd = 0;
+  const ClassDef *cd = nullptr;
   if (container && container->definitionType()==Definition::TypeClass)
   {
     cd = toClassDef(container);

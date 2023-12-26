@@ -195,7 +195,7 @@ const Definition *MemberGroup::memberContainer() const
   // Note this can be different from container() in case
   // the member is rendered as part of a file but the members
   // are actually of a namespace.
-  const Definition *ctx = 0;
+  const Definition *ctx = nullptr;
   if (memberList && !memberList->empty())
   {
     const MemberDef *md = memberList->front();
@@ -215,7 +215,7 @@ int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
 void MemberGroup::distributeMemberGroupDocumentation()
 {
   //printf("MemberGroup::distributeMemberGroupDocumentation() %s\n",qPrint(grpHeader));
-  const MemberDef *md = 0;
+  const MemberDef *md = nullptr;
   for (const auto &smd : *memberList)
   {
     //printf("checking md=%s\n",qPrint(md->name()));

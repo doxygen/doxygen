@@ -388,13 +388,13 @@ class QCString
 
     QCString &replace( size_t index, size_t len, const char *s);
 
-    short         toShort(  bool *ok=0, int base=10 ) const;
-    uint16_t      toUShort( bool *ok=0, int base=10 ) const;
-    int	          toInt(    bool *ok=0, int base=10 ) const;
-    uint32_t      toUInt(   bool *ok=0, int base=10 ) const;
-    long          toLong(   bool *ok=0, int base=10 ) const;
-    unsigned long toULong(  bool *ok=0, int base=10 ) const;
-    uint64_t      toUInt64( bool *ok=0, int base=10 ) const;
+    short         toShort(  bool *ok=nullptr, int base=10 ) const;
+    uint16_t      toUShort( bool *ok=nullptr, int base=10 ) const;
+    int	          toInt(    bool *ok=nullptr, int base=10 ) const;
+    uint32_t      toUInt(   bool *ok=nullptr, int base=10 ) const;
+    long          toLong(   bool *ok=nullptr, int base=10 ) const;
+    unsigned long toULong(  bool *ok=nullptr, int base=10 ) const;
+    uint64_t      toUInt64( bool *ok=nullptr, int base=10 ) const;
 
     QCString &setNum(short n)
     {

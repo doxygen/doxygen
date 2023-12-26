@@ -68,7 +68,7 @@ struct scannerYY_state
 {
   OutlineParserInterface *thisParser;
   CommentScanner   commentScanner;
-  const char *     inputString = 0;
+  const char *     inputString = nullptr;
   int              inputPosition = 0;
   int              lastContext = 0;
   int              lastCContext = 0;
@@ -127,7 +127,7 @@ struct scannerYY_state
   QCString         templateStr;
   QCString         aliasName;
   QCString         baseName;
-  QCString*        specName = 0;
+  QCString*        specName = nullptr;
 
   SrcLangExt       language = SrcLangExt_Unknown;
   bool             insideIDL   = false;                //!< processing IDL code?
@@ -153,27 +153,27 @@ struct scannerYY_state
   int              lastCopyArgStringContext = 0;
   int              lastCopyArgContext = 0;
   int              requiresContext = 0;
-  QCString        *copyArgString = 0;
+  QCString        *copyArgString = nullptr;
   QCString         fullArgString;
   QCString         dummyRawString;
 
-  ArgumentList    *currentArgumentList = 0;
+  ArgumentList    *currentArgumentList = nullptr;
   char             lastCopyArgChar = '\0';
 
-  QCString *pCopyQuotedString = 0;
-  QCString *pCopyRoundString = 0;
-  QCString *pCopyCurlyString = 0;
-  QCString *pCopySharpString = 0;
-  QCString *pCopyRawString = 0;
-  TextStream *pCopyCurlyGString = 0;
-  TextStream *pCopyRoundGString = 0;
-  TextStream *pCopySquareGString = 0;
-  TextStream *pCopyQuotedGString = 0;
-  TextStream *pCopyHereDocGString = 0;
-  TextStream *pCopyRawGString = 0;
-  TextStream *pSkipVerbString = 0;
-  TextStream *pSkipInterpString = 0;
-  TextStream *pSkipInterpVerbString = 0;
+  QCString *pCopyQuotedString = nullptr;
+  QCString *pCopyRoundString = nullptr;
+  QCString *pCopyCurlyString = nullptr;
+  QCString *pCopySharpString = nullptr;
+  QCString *pCopyRawString = nullptr;
+  TextStream *pCopyCurlyGString = nullptr;
+  TextStream *pCopyRoundGString = nullptr;
+  TextStream *pCopySquareGString = nullptr;
+  TextStream *pCopyQuotedGString = nullptr;
+  TextStream *pCopyHereDocGString = nullptr;
+  TextStream *pCopyRawGString = nullptr;
+  TextStream *pSkipVerbString = nullptr;
+  TextStream *pSkipInterpString = nullptr;
+  TextStream *pSkipInterpVerbString = nullptr;
 
   bool             insideFormula = false;
   bool             insideTryBlock = false;
@@ -209,7 +209,7 @@ struct scannerYY_state
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
   QCString         programStr;
 
-  ClangTUParser   *clangParser = 0;
+  ClangTUParser   *clangParser = nullptr;
 
   int              fakeNS  = 0; //<! number of file scoped namespaces in CSharp file
   TextStream       dummyTextStream;
@@ -7484,7 +7484,7 @@ static void addType(yyscan_t yyscanner)
 static QCString stripQuotes(const char *s)
 {
   QCString name;
-  if (s==0 || *s==0) return name;
+  if (s==nullptr || *s==0) return name;
   name=s;
   if (name.at(0)=='"' && name.at(name.length()-1)=='"')
   {

@@ -73,20 +73,20 @@ struct pycodeYY_state
   QCString      curClassName;
   StringVector  curClassBases;
 
-  OutputCodeList * code = 0;
-  const char *  inputString = 0;     //!< the code fragment as text
+  OutputCodeList * code = nullptr;
+  const char *  inputString = nullptr;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
-  const char *  currentFontClass = 0;
+  const char *  currentFontClass = nullptr;
   bool          insideCodeLine = FALSE;
-  const Definition *searchCtx = 0;
+  const Definition *searchCtx = nullptr;
   bool          collectXRefs = FALSE;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   std::unique_ptr<FileDef> exampleFileDef;
-  const FileDef *    sourceFileDef = 0;
-  const Definition * currentDefinition = 0;
-  const MemberDef *  currentMemberDef = 0;
+  const FileDef *    sourceFileDef = nullptr;
+  const Definition * currentDefinition = nullptr;
+  const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = FALSE;
   QCString      realScope;
   int           bodyCurlyCount = 0;
@@ -407,7 +407,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       ScopedTypeVariant var(yyextra->curClassName);
                                       for (const auto &s : yyextra->curClassBases)
                                       {
-                                        const ClassDef *baseDefToAdd = 0;
+                                        const ClassDef *baseDefToAdd = nullptr;
                                         // find class in the local scope
                                         auto it = yyextra->codeClassMap.find(s);
                                         if (it != yyextra->codeClassMap.end())
@@ -968,7 +968,7 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,Defin
   while (extractClassNameFromType(type,pos,className,templSpec)!=-1)
   {
     QCString clName=className+templSpec;
-    const ClassDef *cd=0;
+    const ClassDef *cd=nullptr;
     if (!yyextra->classScope.isEmpty())
     {
       cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName,true);
@@ -1326,9 +1326,9 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
 
   DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",qPrint(className)));
 
-  const ScopedTypeVariant *lcd = 0;
-  const ClassDef *cd=0;             // Class def that we may find 
-  const MemberDef *md=0;            // Member def that we may find 
+  const ScopedTypeVariant *lcd = nullptr;
+  const ClassDef *cd=nullptr;             // Class def that we may find 
+  const MemberDef *md=nullptr;            // Member def that we may find 
   //bool isLocal=FALSE;
 
   if ((lcd=yyextra->theVarContext.findVariable(className))==0) // not a local variable
