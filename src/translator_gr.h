@@ -20,7 +20,7 @@
  *               Harry Kalogirou <no email>
  *
  * 01 Jan 2009 : Greek maintenance by
- *               Paul Gessos <gessos.paul@gmail.com>
+ *               Pavlos Gkesos <gessos.paul@gmail.com>
  *
  *
  * Δουλεύω με C, C++, Java, PHP και Python. Άλλες γλώσσες (π.χ. VHDL) μου είναι
@@ -42,6 +42,8 @@
 	concept -> έννοια
 	signal -> σήμα
 	instantiation -> ενσάρκωση
+	definition -> ορισμός
+ 	declaration -> δήλωση
 */
 
 
@@ -2613,6 +2615,89 @@ class TranslatorGreek : public TranslatorAdapter_1_9_6
       else
         result+="στους χώρους ονομάτων που ανήκουν:";
       return result;
+    }
+    QCString trDefinition() override  { return "Ορισμός";}
+    QCString trDeclaration() override { return "Δήλωση";}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "Θέματα"; }
+    QCString trTopicDocumentation() override
+    { return "Τεκμηρίωση Θέματος"; }
+    QCString trTopicList() override
+    { return "Λίστα Θεμάτων"; }
+    QCString trTopicIndex() override
+    { return "Ευρετήριο Θεμάτων"; }
+    QCString trTopicListDescription() override
+    { return "Μια λίστα με όλα τα θέματα με σύντομες περιγραφές:"; }
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Μια λίστα με ";
+      QCString singularResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="μέλος";
+          result+="όλα ";
+          if (!extractAll) result+="τα τεκμηριωμένα ";
+          result+="μέλη";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="συνάρτηση";
+          result+="όλες ";
+          if (!extractAll) result+="τις τεκμηριωμένες ";
+          result+="συναρτήσεις";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="μεταβλητή";
+          result+="όλες ";
+          if (!extractAll) result+="τις τεκμηριωμένες ";
+          result+="μεταβλητές";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="ορισμό τύπου";
+          result+="όλους ";
+          if (!extractAll) result+="τους τεκμηριωμένους ";
+          result+="ορισμούς τύπων";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="απαρίθμηση";
+          result+="όλες ";
+          if (!extractAll) result+="τις τεκμηριωμένες ";
+          result+="απαριθμήσεις";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="τιμή απαρίθμησης";
+          result+="όλες ";
+          if (!extractAll) result+="τις τεκμηριωμένες ";
+          result+="τιμές απαριθμήσεων";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" υπομονάδων, με συνδέσμους στην ";
+      if (extractAll)
+        result+="τεκμηρίωση της υπομονάδας για κάθε " + singularResult + ":";
+      else
+        result+="υπομονάδα στην οποία ανοίκουν:";
+      return result;
+    }
+    QCString trExportedModules() override
+    {
+      return "Εξαγόμενες Υπομονάδες";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    {
+      return "Αντιγραφή στο πρόχειρο";
     }
 };
 
