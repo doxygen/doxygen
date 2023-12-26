@@ -1897,7 +1897,7 @@ static struct emojiEntityCompatibility
 static const size_t g_numEmojiEntities = sizeof(g_emojiEntities)/sizeof(*g_emojiEntities);
 static const size_t g_numEmojiCompatibilityEntities = sizeof(g_emojiCompatibilityEntities)/sizeof(*g_emojiCompatibilityEntities);
 
-EmojiEntityMapper *EmojiEntityMapper::s_instance = 0;
+EmojiEntityMapper *EmojiEntityMapper::s_instance = nullptr;
 
 EmojiEntityMapper::EmojiEntityMapper()
 {

@@ -373,7 +373,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
   }
   if (count>0 && (prot!=Protection::Private || !doBases))
   {
-    DiagramRow *row=0;
+    DiagramRow *row=nullptr;
     if (m_diagram->numRows()<=m_level+1) /* add new row */
     {
       row=m_diagram->addRow(m_level+1);
@@ -466,7 +466,7 @@ void TreeDiagram::computeLayout()
   {
     const auto &row = *it;
     //printf("computeLayout() list row at %d\n",row->number());
-    DiagramItem *opi=0;
+    DiagramItem *opi=nullptr;
     int delta=0;
     bool first=TRUE;
     for (const auto &di : *row)
@@ -526,7 +526,7 @@ uint32_t TreeDiagram::computeRows()
     const auto &row = *it;
     uint32_t maxListLen=0;
     uint32_t curListLen=0;
-    DiagramItem *opi=0;
+    DiagramItem *opi=nullptr;
     for (const auto &di : *row) // for each item in a row
     {
       if (di->parentItem()!=opi) curListLen=1; else curListLen++;
@@ -612,7 +612,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
     DiagramItem *firstDi = dr->item(0);
     if (firstDi->isInList()) // put boxes in a list
     {
-      DiagramItem *opi=0;
+      DiagramItem *opi=nullptr;
       DualDirIterator<DiagramRow,const std::unique_ptr<DiagramItem>&> dit(*dr,!doBase);
       while (!dit.atEnd())
       {

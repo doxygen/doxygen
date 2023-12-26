@@ -409,7 +409,7 @@ class GuardedSection
 
 struct commentscanYY_state
 {
-  OutlineParserInterface *langParser = 0;  // the language parser that is calling us
+  OutlineParserInterface *langParser = nullptr;  // the language parser that is calling us
   QCString         inputString;            // input string
   QCString         currentCmd;             // the command used
   int              inputPosition = 0;      // read pointer
@@ -421,7 +421,7 @@ struct commentscanYY_state
   QCString         formulaText;            // Running text of a formula
   QCString         formulaEnv;             // environment name
   int              formulaNewLines = 0;    // amount of new lines in the formula
-  QCString        *pOutputString = 0;      // pointer to string to which the output is appended.
+  QCString        *pOutputString = nullptr;      // pointer to string to which the output is appended.
   QCString         outputXRef;               // temp argument of todo/test/../xrefitem commands
   QCString         blockName;                // preformatted block name (e.g. verbatim, latexonly,...)
   XRefKind         xrefKind    = XRef_Item;  // kind of cross-reference command
@@ -429,7 +429,7 @@ struct commentscanYY_state
   GuardType        guardType = Guard_If;     // kind of guards for conditional section
   QCString         functionProto;          // function prototype
   std::stack<GuardedSection> guards;             // tracks nested conditional sections (if,ifnot,..)
-  Entry           *current = 0;              // working entry
+  Entry           *current = nullptr;              // working entry
 
   bool             needNewEntry = FALSE;
 
@@ -3523,7 +3523,7 @@ static void lineCount(yyscan_t yyscanner)
 static QCString stripQuotes(const char *s)
 {
   QCString name;
-  if (s==0 || *s==0) return name;
+  if (s==nullptr || *s==0) return name;
   name=s;
   if (name.at(0)=='"' && name.at(name.length()-1)=='"')
   {
@@ -3545,7 +3545,7 @@ static void addXRefItem(yyscan_t yyscanner,
   std::unique_lock<std::mutex> lock(g_sectionMutex);
 
   RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
-  RefItem *item = 0;
+  RefItem *item = nullptr;
   for (auto it = yyextra->current->sli.rbegin(); it != yyextra->current->sli.rend(); ++it)
   {
     RefItem *i = *it;

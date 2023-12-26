@@ -103,7 +103,7 @@ class VariableContext
     }
     const ScopedTypeVariant *findVariable(const QCString &name)
     {
-      const ScopedTypeVariant *result = 0;
+      const ScopedTypeVariant *result = nullptr;
       if (name.isEmpty()) return result;
 
       // search from inner to outer scope

@@ -284,7 +284,7 @@ class DocStyleChange : public DocNode
                };
 
     DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,
-                   const QCString &tagName,bool enable, const HtmlAttribList *attribs=0)
+                   const QCString &tagName,bool enable, const HtmlAttribList *attribs=nullptr)
       : DocNode(parser,parent), m_position(position), m_style(s), m_enable(enable)
     {
       if (attribs) m_attribs=*attribs;
@@ -535,8 +535,8 @@ class DocIndexEntry : public DocNode
 
   private:
     QCString     m_entry;
-    const Definition *m_scope = 0;
-    const MemberDef  *m_member = 0;
+    const Definition *m_scope = nullptr;
+    const MemberDef  *m_member = nullptr;
 };
 
 //-----------------------------------------------------------------------

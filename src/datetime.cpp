@@ -184,7 +184,7 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
   const char *p            = format.data();
   const char *fmt_zero     = "%02d";
   const char *fmt_nonzero  = "%d";
-  const char *fmt_selected = 0;
+  const char *fmt_selected = nullptr;
   if (p==0) return QCString();
   while ((c=*p++))
   {

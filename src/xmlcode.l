@@ -60,13 +60,13 @@ struct xmlcodeYY_state
   QCString      curClassName;
   QCString      parmType;
   QCString      parmName;
-  const char *  inputString = 0;     //!< the code fragment as text
+  const char *  inputString = nullptr;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   bool          insideCodeLine = false;
-  const Definition   *searchCtx = 0;
+  const Definition   *searchCtx = nullptr;
 
   bool          exampleBlock = false;
   QCString      exampleName;
@@ -80,11 +80,11 @@ struct xmlcodeYY_state
   QCString      CurrScope;
 
   std::unique_ptr<FileDef> exampleFileDef;
-  const FileDef *     sourceFileDef = 0;
-  const Definition *  currentDefinition = 0;
-  const MemberDef *   currentMemberDef = 0;
+  const FileDef *     sourceFileDef = nullptr;
+  const Definition *  currentDefinition = nullptr;
+  const MemberDef *   currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
-  const char *  currentFontClass = 0;
+  const char *  currentFontClass = nullptr;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);

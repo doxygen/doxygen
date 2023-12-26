@@ -92,7 +92,7 @@ class MemberGroup
   private:
     const Definition *m_container;
     std::unique_ptr<MemberList> memberList;      // list of all members in the group
-    MemberList *inDeclSection = 0;
+    MemberList *inDeclSection = nullptr;
     int grpId = 0;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file

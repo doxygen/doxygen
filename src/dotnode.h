@@ -72,7 +72,7 @@ class DotNode
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& , bool htmlLike=false);
     DotNode(DotGraph *graph,const QCString &lab,const QCString &tip,const QCString &url,
-        bool rootNode=FALSE,const ClassDef *cd=0);
+        bool rootNode=FALSE,const ClassDef *cd=nullptr);
     ~DotNode();
 
     enum TruncState { Unknown, Truncated, Untruncated };

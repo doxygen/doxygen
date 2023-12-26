@@ -357,11 +357,11 @@ QCString Portable::getenv(const QCString &variable)
 FILE *Portable::fopen(const QCString &fileName,const QCString &mode)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  uint16_t *fn = 0;
+  uint16_t *fn = nullptr;
   size_t fn_len = recodeUtf8StringToW(fileName,&fn);
-  uint16_t *m  = 0;
+  uint16_t *m  = nullptr;
   size_t m_len = recodeUtf8StringToW(mode,&m);
-  FILE *result = 0;
+  FILE *result = nullptr;
   if (fn_len!=(size_t)-1 && m_len!=(size_t)-1)
   {
     result = _wfopen((wchar_t*)fn,(wchar_t*)m);

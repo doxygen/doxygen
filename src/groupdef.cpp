@@ -1039,7 +1039,7 @@ void GroupDefImpl::writePageDocumentation(OutputList &ol)
   {
     if (!pd->isReference())
     {
-      const SectionInfo *si=0;
+      const SectionInfo *si=nullptr;
       if (pd->hasTitle() && !pd->name().isEmpty() &&
           (si=SectionManager::instance().find(pd->name()))!=0)
       {
@@ -1411,7 +1411,7 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
 {
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd=0;
+    GroupDef *gd=nullptr;
     if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
     if (gd && gd->addClass(cd))
     {
@@ -1482,7 +1482,7 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
   //printf("root->groups.size()=%zu\n",root->groups.size());
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd=0;
+    GroupDef *gd=nullptr;
     if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
     //printf("group '%s' gd=%p\n",qPrint(g.groupname),(void*)gd);
     if (gd && gd->addNamespace(nd))
@@ -1569,10 +1569,10 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
 
   // Search entry's group list for group with highest pri.
   Grouping::GroupPri_t pri = Grouping::GROUPING_LOWEST;
-  GroupDef *fgd=0;
+  GroupDef *fgd=nullptr;
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd=0;
+    GroupDef *gd=nullptr;
     if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
     if (gd && g.pri >= pri)
     {

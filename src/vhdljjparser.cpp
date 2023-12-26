@@ -58,8 +58,8 @@ struct VHDLOutlineParser::Private
 {
   void parseVhdlfile(const QCString &fileName,const char* inputBuffer,bool inLine);
 
-  VHDLOutlineParser      *thisParser = 0;
-  VhdlParser             *vhdlParser = 0;
+  VHDLOutlineParser      *thisParser = nullptr;
+  VhdlParser             *vhdlParser = nullptr;
   CommentScanner          commentScanner;
 
   QCString                yyFileName;
@@ -67,11 +67,11 @@ struct VHDLOutlineParser::Private
   IntVector               lineParse;
   int                     iDocLine      = -1;
   QCString                inputString;
-  Entry*                  gBlock        = 0;
-  Entry*                  previous      = 0;
+  Entry*                  gBlock        = nullptr;
+  Entry*                  previous      = nullptr;
 //-------------------------------------------------------
 
-  Entry*                  oldEntry = 0;
+  Entry*                  oldEntry = nullptr;
   bool                    varr = FALSE;
   QCString                varName;
   EntryList               libUse;

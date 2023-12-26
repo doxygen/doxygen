@@ -111,7 +111,7 @@ struct SymbolResolver::Private
     }
 
     QCString          resolvedType;
-    const MemberDef  *typeDef = 0;
+    const MemberDef  *typeDef = nullptr;
     QCString          templateSpec;
 
     const ClassDef *getResolvedTypeRec(
@@ -202,7 +202,7 @@ struct SymbolResolver::Private
                                 );
     QCString substTypedef(StringUnorderedSet &visitedKeys,
                           const Definition *scope,const QCString &name,
-                          const MemberDef **pTypeDef=0);
+                          const MemberDef **pTypeDef=nullptr);
 
     const FileDef    *m_fileScope;
     std::unordered_map<std::string,const MemberDef*> m_resolvedTypedefs;
@@ -293,7 +293,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
   }
   *pk='\0';
 
-  const ClassDef *bestMatch=0;
+  const ClassDef *bestMatch=nullptr;
   {
     if (visitedKeys.find(key.str())!=visitedKeys.end())
     {
@@ -305,7 +305,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
     // remember the key
     visitedKeys.insert(key.str());
 
-    LookupInfo *pval = 0;
+    LookupInfo *pval = nullptr;
     {
       std::lock_guard lock(g_cacheMutex);
       pval = Doxygen::typeLookupCache->find(key.str());
@@ -325,7 +325,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
       return toClassDef(pval->definition);
     }
 
-    const MemberDef *bestTypedef=0;
+    const MemberDef *bestTypedef=nullptr;
     QCString bestTemplSpec;
     QCString bestResolvedType;
     int minDistance=10000; // init at "infinite"
@@ -472,7 +472,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   }
   *pk='\0';
 
-  const Definition *bestMatch=0;
+  const Definition *bestMatch=nullptr;
   {
     if (visitedKeys.find(key.str())!=visitedKeys.end())
     {
@@ -482,7 +482,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     }
     // remember the key
     visitedKeys.insert(key.str());
-    LookupInfo *pval = 0;
+    LookupInfo *pval = nullptr;
     {
       std::lock_guard lock(g_cacheMutex);
       pval = Doxygen::symbolLookupCache->find(key.str());
@@ -501,7 +501,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
       return pval->definition;
     }
 
-    const MemberDef *bestTypedef=0;
+    const MemberDef *bestTypedef=nullptr;
     QCString bestTemplSpec;
     QCString bestResolvedType;
     int minDistance=10000; // init at "infinite"
@@ -651,7 +651,7 @@ void SymbolResolver::Private::getResolvedType(
               QCString spec;
               QCString type;
               minDistance=distance;
-              const MemberDef *enumType = 0;
+              const MemberDef *enumType = nullptr;
               const ClassDef *cd = newResolveTypedef(visitedKeys,scope,md,&enumType,&spec,&type,actTemplParams);
               if (cd)  // type resolves to a class
               {
@@ -896,7 +896,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   int sp=0;
   tl=static_cast<int>(type.length()); // length may have been changed
   while (sp<tl && type.at(sp)==' ') sp++;
-  const MemberDef *memTypeDef = 0;
+  const MemberDef *memTypeDef = nullptr;
   const ClassDef *result = getResolvedTypeRec(visitedKeys,md->getOuterScope(),type,
                                                 &memTypeDef,0,pResolvedType);
   // if type is a typedef then return what it resolves to.
@@ -1155,7 +1155,7 @@ const Definition *SymbolResolver::Private::followPath(StringUnorderedSet &visite
   while ((is=getScopeFragment(path,ps,&l))!=-1)
   {
     // try to resolve the part if it is a typedef
-    const MemberDef *memTypeDef=0;
+    const MemberDef *memTypeDef=nullptr;
     QCString qualScopePart = substTypedef(visitedKeys,current,path.mid(is,l),&memTypeDef);
     AUTO_TRACE_ADD("qualScopePart={}",qualScopePart);
     if (memTypeDef)
@@ -1489,7 +1489,7 @@ QCString SymbolResolver::Private::substTypedef(
   if (range.empty())
     return result; // no matches
 
-  MemberDef *bestMatch=0;
+  MemberDef *bestMatch=nullptr;
   int minDistance=10000; // init at "infinite"
 
   for (Definition *d : range)
@@ -1557,7 +1557,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   {
     scope=Doxygen::globalScope;
   }
-  const ClassDef *result=0;
+  const ClassDef *result=nullptr;
   if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
   {
     result = getClass(name);

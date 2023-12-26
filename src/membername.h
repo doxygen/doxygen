@@ -92,7 +92,7 @@ class MemberInfo
     bool           m_inherited;
     QCString       m_scopePath;
     QCString       m_ambiguityResolutionScope;
-    const ClassDef *m_ambigClass = 0;
+    const ClassDef *m_ambigClass = nullptr;
 };
 
 class MemberNameInfo

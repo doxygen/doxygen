@@ -411,7 +411,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
       return result;
     }
   }
-  const MemberDef *md=0;
+  const MemberDef *md=nullptr;
   while (mContext && md==0)
   {
     // step 1: get the right scope
@@ -443,7 +443,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     {
       //printf("scope found: %s, look for typedef %s\n",
       //     qPrint(resScope->qualifiedName()),qPrint(resName));
-      MemberNameLinkedMap *mnd=0;
+      MemberNameLinkedMap *mnd=nullptr;
       if (resScope->definitionType()==Definition::TypeClass)
       {
         mnd=Doxygen::memberNameLinkedMap;
@@ -567,7 +567,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   // We use a static character array to
   // improve the performance of this function
   // and thread_local is needed to make it multi-thread safe
-  static THREAD_LOCAL char *growBuf = 0;
+  static THREAD_LOCAL char *growBuf = nullptr;
   static THREAD_LOCAL size_t growBufLen = 0;
   if (s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
   {
@@ -967,8 +967,8 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     bool found=FALSE;
     if (!insideString)
     {
-      const ClassDef     *cd=0;
-      const ConceptDef   *cnd=0;
+      const ClassDef     *cd=nullptr;
+      const ConceptDef   *cnd=nullptr;
       //printf("** Match word '%s'\n",qPrint(matchWord));
 
       SymbolResolver resolver(fileScope);
@@ -2203,7 +2203,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
   QCString memberName;
   QCString mName;
   QCString mScope;
-  MemberName *mn = 0;
+  MemberName *mn = nullptr;
   int is,im=0,pm=0;
 
   if (input.memberName.isEmpty()) goto exit; /* empty name => nothing to link */
@@ -2396,7 +2396,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
   if (mn && input.scopeName.isEmpty() && mScope.isEmpty()) // Maybe a related function?
   {
     //printf("Global symbol\n");
-    const MemberDef *fuzzy_mmd = 0;
+    const MemberDef *fuzzy_mmd = nullptr;
     std::unique_ptr<ArgumentList> argList;
     bool hasEmptyArgs = input.args=="()";
 
@@ -2452,7 +2452,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
   if ((mn=Doxygen::functionNameLinkedMap->find(mName))) // name is known
   {
     //printf("  >symbol name found\n");
-    NamespaceDef *fnd=0;
+    NamespaceDef *fnd=nullptr;
     int scopeOffset = static_cast<int>(scopeName.length());
     do
     {
@@ -2838,14 +2838,14 @@ bool resolveRef(/* in */  const QCString &scName,
                        );
 
   // default result values
-  *resContext=0;
-  *resMember=0;
+  *resContext=nullptr;
+  *resMember=nullptr;
 
   if (bracePos==-1) // simple name
   {
-    ClassDef *cd=0;
-    NamespaceDef *nd=0;
-    ConceptDef *cnd=0;
+    ClassDef *cd=nullptr;
+    NamespaceDef *nd=nullptr;
+    ConceptDef *cnd=nullptr;
 
     // the following if() was commented out for releases in the range
     // 1.5.2 to 1.6.1, but has been restored as a result of bug report 594787.
@@ -2916,8 +2916,8 @@ bool resolveRef(/* in */  const QCString &scName,
 
   QCString scopeStr=scName;
 
-  const GroupDef     *gd = 0;
-  const ConceptDef   *cnd = 0;
+  const GroupDef     *gd = nullptr;
+  const ConceptDef   *cnd = nullptr;
 
   // check if nameStr is a member or global.
   //printf("getDefs(scope=%s,name=%s,args=%s checkScope=%d)\n",
@@ -2938,8 +2938,8 @@ bool resolveRef(/* in */  const QCString &scName,
       // looking for a scoped variable. See bug 616387 for an example why this check is needed.
       // note we do need to support autolinking to "::symbol" hence the >0
       //printf("not global member!\n");
-      *resContext=0;
-      *resMember=0;
+      *resContext=nullptr;
+      *resMember=nullptr;
       return FALSE;
     }
     //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
@@ -2948,7 +2948,7 @@ bool resolveRef(/* in */  const QCString &scName,
     else if (result.nd) *resContext=result.nd;
     else if (result.fd) *resContext=result.fd;
     else if (result.gd) *resContext=result.gd;
-    else         { *resContext=0; *resMember=0; return FALSE; }
+    else         { *resContext=nullptr; *resMember=nullptr; return FALSE; }
     //printf("member=%s (md=%p) anchor=%s linkable()=%d context=%s\n",
     //    qPrint(md->name()), md, qPrint(md->anchor()), md->isLinkable(), qPrint((*resContext)->name()));
     return TRUE;
@@ -3023,7 +3023,7 @@ bool resolveLink(/* in */ const QCString &scName,
     /* out */ QCString &resAnchor
     )
 {
-  *resContext=0;
+  *resContext=nullptr;
 
   QCString linkRef=lr;
   QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
@@ -3035,7 +3035,7 @@ bool resolveLink(/* in */ const QCString &scName,
   const DirDef   *dir;
   const ConceptDef *cnd;
   const NamespaceDef *nd;
-  const SectionInfo *si=0;
+  const SectionInfo *si=nullptr;
   bool ambig;
   if (linkRef.isEmpty()) // no reference name!
   {
@@ -3115,7 +3115,7 @@ bool resolveLink(/* in */ const QCString &scName,
   }
   else // probably a member reference
   {
-    const MemberDef *md = 0;
+    const MemberDef *md = nullptr;
     bool res = resolveRef(scName,lr,TRUE,resContext,&md);
     if (md) resAnchor=md->anchor();
     return res;
@@ -3134,8 +3134,8 @@ bool generateLink(OutputList &ol,const QCString &clName,
     const QCString &lr,bool inSeeBlock,const QCString &lt)
 {
   //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
-  const Definition *compound = 0;
-  //PageDef *pageDef=0;
+  const Definition *compound = nullptr;
+  //PageDef *pageDef=nullptr;
   QCString anchor,linkText=linkToText(SrcLangExt_Unknown,lt,FALSE);
   //printf("generateLink linkText=%s\n",qPrint(linkText));
   if (resolveLink(clName,lr,inSeeBlock,&compound,anchor))
@@ -3257,7 +3257,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
     else // file name alone is ambiguous
     {
       int count=0;
-      FileDef *lastMatch=0;
+      FileDef *lastMatch=nullptr;
       QCString pathStripped = stripFromIncludePath(path);
       for (const auto &fd_p : *fn)
       {
@@ -3383,7 +3383,7 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
             if (expectParam && *startArg=='(') // $key(value)
             {
               size_t j=1;
-              const char *endArg = 0;
+              const char *endArg = nullptr;
               while ((c=*(startArg+j)) && c!=')' && c!='\n' && c!=0) j++;
               if (c==')') endArg=startArg+j;
               if (endArg)
@@ -3977,7 +3977,7 @@ void extractNamespaceName(const QCString &scopeName,
 {
   int i,p;
   QCString clName=scopeName;
-  NamespaceDef *nd = 0;
+  NamespaceDef *nd = nullptr;
   if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==0)
   { // the whole name is a namespace (and not a class)
     namespaceName=nd->name();
@@ -4026,7 +4026,7 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
   if (!templ.isEmpty() && scope.find('<')==-1)
   {
     int si,pi=0;
-    ClassDef *cd=0;
+    ClassDef *cd=nullptr;
     while (
         (si=scope.find("::",pi))!=-1 && !getClass(scope.left(si)+templ) &&
         ((cd=getClass(scope.left(si)))==0 || cd->templateArguments().empty())
@@ -4338,7 +4338,7 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
     }
     QCString entity(match.str());
     HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance().name2sym(entity);
-    const char *code=0;
+    const char *code=nullptr;
     if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance().utf8(symType)))
     {
       growBuf.addStr(code);
@@ -4402,7 +4402,7 @@ void addMembersToMemberGroup(MemberList *ml,
                                       [&groupId](const auto &g)
                                       { return g->groupId()==groupId; }
                                      );
-            MemberGroup *mg_ptr = 0;
+            MemberGroup *mg_ptr = nullptr;
             if (mg_it==pMemberGroups->end())
             {
               auto mg = std::make_unique<MemberGroup>(
@@ -4442,7 +4442,7 @@ void addMembersToMemberGroup(MemberList *ml,
                                   [&groupId](const auto &g)
                                   { return g->groupId()==groupId; }
                                  );
-        MemberGroup *mg_ptr = 0;
+        MemberGroup *mg_ptr = nullptr;
         if (mg_it==pMemberGroups->end())
         {
           auto mg = std::make_unique<MemberGroup>(
@@ -4919,7 +4919,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     SrcLangExt lang
     )
 {
-  PageDef *pd=0;
+  PageDef *pd=nullptr;
   //printf("addRelatedPage(name=%s gd=%p)\n",qPrint(name),gd);
   QCString title=ptitle.stripWhiteSpace();
   bool newPage = true;
@@ -5058,7 +5058,7 @@ void addRefItem(const RefItemVector &sli,
 
 static ModuleDef *findModuleDef(const Definition *d)
 {
-  ModuleDef *mod = 0;
+  ModuleDef *mod = nullptr;
   if (d->definitionType()==Definition::TypeFile)
   {
     const FileDef *fd = toFileDef(d);
@@ -5528,7 +5528,7 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
   //printf("explicitScopePart=%s\n",qPrint(explicitScopePart));
 
   int minDistance = 10000;
-  MemberDef *bestMatch = 0;
+  MemberDef *bestMatch = nullptr;
 
   for (Definition *d : range)
   {

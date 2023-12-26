@@ -914,7 +914,7 @@ void XmlDocVisitor::operator()(const DocImage &img)
                 altValue, img.isInlineImage());
 
   // copy the image to the output dir
-  FileDef *fd = 0;
+  FileDef *fd = nullptr;
   bool ambig;
   if (url.isEmpty() && (fd=findFileDef(Doxygen::imageNameLinkedMap,img.name(),ambig)))
   {

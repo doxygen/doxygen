@@ -91,7 +91,7 @@ class SectionInfo
     QCString    m_fileName;
     bool        m_generated = false;
     int         m_level;
-    Definition *m_definition = 0;
+    Definition *m_definition = nullptr;
 };
 
 //! class that represents a list of constant references to sections.

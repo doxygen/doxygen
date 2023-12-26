@@ -494,7 +494,7 @@ void PerlModDocVisitor::operator()(const DocWhiteSpace &)
 void PerlModDocVisitor::operator()(const DocSymbol &sy)
 {
   const HtmlEntityMapper::PerlSymb *res = HtmlEntityMapper::instance().perl(sy.symbol());
-  const char *accent=0;
+  const char *accent=nullptr;
   if (res->symb)
   {
     switch (res->type)
@@ -594,7 +594,7 @@ void PerlModDocVisitor::operator()(const DocHorRuler &)
 
 void PerlModDocVisitor::operator()(const DocStyleChange &s)
 {
-  const char *style = 0;
+  const char *style = nullptr;
   switch (s.style())
   {
     case DocStyleChange::Bold:          style = "bold"; break;
@@ -622,7 +622,7 @@ void PerlModDocVisitor::operator()(const DocStyleChange &s)
 
 void PerlModDocVisitor::operator()(const DocVerbatim &s)
 {
-  const char *type = 0;
+  const char *type = nullptr;
   switch (s.type())
   {
     case DocVerbatim::Code:
@@ -666,7 +666,7 @@ void PerlModDocVisitor::operator()(const DocAnchor &anc)
 
 void PerlModDocVisitor::operator()(const DocInclude &inc)
 {
-  const char *type = 0;
+  const char *type = nullptr;
   switch (inc.type())
   {
     case DocInclude::IncWithLines:
@@ -793,7 +793,7 @@ void PerlModDocVisitor::operator()(const DocRoot &r)
 
 void PerlModDocVisitor::operator()(const DocSimpleSect &s)
 {
-  const char *type = 0;
+  const char *type = nullptr;
   switch (s.type())
   {
   case DocSimpleSect::See:		type = "see"; break;
@@ -1164,7 +1164,7 @@ void PerlModDocVisitor::operator()(const DocSecRefList &l)
 void PerlModDocVisitor::operator()(const DocParamSect &s)
 {
   leaveText();
-  const char *type = 0;
+  const char *type = nullptr;
   switch(s.type())
   {
     case DocParamSect::Param:     type = "params"; break;
@@ -1509,7 +1509,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
       auto defIt = al.begin();
       for (const Argument &a : declAl)
       {
-	const Argument *defArg = 0;
+	const Argument *defArg = nullptr;
         if (defIt!=al.end())
         {
           defArg = &(*defIt);

@@ -33,11 +33,11 @@ static std::mutex g_clangMutex;
 ClangParser *ClangParser::instance()
 {
   std::lock_guard<std::mutex> lock(g_clangMutex);
-  if (!s_instance) s_instance = new ClangParser;
+  if (s_instance!=nullptr) s_instance = new ClangParser;
   return s_instance;
 }
 
-ClangParser *ClangParser::s_instance = 0;
+ClangParser *ClangParser::s_instance = nullptr;
 
 //--------------------------------------------------------------------------
 #if USE_LIBCLANG
@@ -81,13 +81,13 @@ class ClangTUParser::Private
     std::vector<CXCursor> cursors;
     std::unordered_map<std::string,uint32_t> fileMapping;
     CXTranslationUnit tu = 0;
-    CXToken *tokens = 0;
+    CXToken *tokens = nullptr;
     uint32_t numTokens = 0;
     StringVector filesInSameTU;
     TooltipManager tooltipManager;
 
     // state while parsing sources
-    const MemberDef  *currentMemberDef=0;
+    const MemberDef  *currentMemberDef=nullptr;
     uint32_t          currentLine=0;
     bool              searchForBody=FALSE;
     bool              insideBody=FALSE;
@@ -559,7 +559,7 @@ void ClangTUParser::linkInclude(OutputCodeList &ol,const FileDef *fd,
 {
   QCString incName = text;
   incName = incName.mid(1,incName.length()-2); // strip ".." or  <..>
-  FileDef *ifd=0;
+  FileDef *ifd=nullptr;
   if (!incName.isEmpty())
   {
     FileName *fn = Doxygen::inputNameLinkedMap->find(incName);
@@ -629,7 +629,7 @@ void ClangTUParser::linkIdentifier(OutputCodeList &ol,const FileDef *fd,
   CXString usr = clang_getCursorUSR(c);
   const char *usrStr = clang_getCString(usr);
 
-  const Definition *d = 0;
+  const Definition *d = nullptr;
   auto kv = Doxygen::clangUsrMap->find(usrStr);
   if (kv!=Doxygen::clangUsrMap->end())
   {

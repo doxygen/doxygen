@@ -86,7 +86,7 @@ class DefinitionImpl::IMPL
     void init(const QCString &df, const QCString &n);
     void setDefFileName(const QCString &df);
 
-    Definition *def = 0;
+    Definition *def = nullptr;
 
     SectionRefs sectionRefs;
 
@@ -112,7 +112,7 @@ class DefinitionImpl::IMPL
     bool isAnonymous = FALSE;
     bool isExported = FALSE;
 
-    Definition *outerScope = 0;  // not owner
+    Definition *outerScope = nullptr;  // not owner
 
     // where the item was defined
     QCString defFileName;
@@ -1070,7 +1070,7 @@ bool DefinitionImpl::hasSources() const
 /*! Write code of this definition into the documentation */
 void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) const
 {
-  const MemberDef *thisMd = 0;
+  const MemberDef *thisMd = nullptr;
   if (m_impl->def->definitionType()==Definition::TypeMember)
   {
     thisMd = toMemberDef(m_impl->def);

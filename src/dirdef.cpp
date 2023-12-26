@@ -858,7 +858,7 @@ DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
 {
   AUTO_TRACE("path={}",path);
   int p=0,i=0;
-  DirDef *dir=0;
+  DirDef *dir=nullptr;
   while ((i=path.find('/',p))!=-1)
   {
     QCString part=path.left(i+1);

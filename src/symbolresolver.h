@@ -30,7 +30,7 @@ class MemberDef;
 class SymbolResolver
 {
   public:
-    explicit SymbolResolver(const FileDef *fileScope = 0);
+    explicit SymbolResolver(const FileDef *fileScope = nullptr);
    ~SymbolResolver();
 
     // actions
