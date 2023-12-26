@@ -260,7 +260,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void setSectionList(const Definition *container,const MemberList *sl) override;
     void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
-                     MemberDef *member=0) override;
+                     MemberDef *member=nullptr) override;
     void setReadAccessor(const QCString &r) override;
     void setWriteAccessor(const QCString &w) override;
     void setTemplateSpecialization(bool b) override;
@@ -323,7 +323,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void incrementFlowKeyWordCount() override;
     void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-                   bool inGroup, int indentLevel,const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const override;
+                   bool inGroup, int indentLevel,const ClassDef *inheritFrom=nullptr,const QCString &inheritId=QCString()) const override;
     void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
                             const QCString &scopeName,const Definition *container,
                             bool inGroup,bool showEnumValues=FALSE,bool
@@ -388,28 +388,28 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     uint8_t m_isConstructorCached; // 0 = not cached, 1=FALSE, 2=TRUE
     uint8_t m_isDestructorCached;  // 1 = not cached, 1=FALSE, 2=TRUE
 
-    ClassDef     *m_classDef = 0; // member of or related to
-    FileDef      *m_fileDef  = 0; // member of file definition
-    NamespaceDef *m_nspace   = 0; // the namespace this member is in.
-    ModuleDef    *m_moduleDef = 0;
+    ClassDef     *m_classDef = nullptr; // member of or related to
+    FileDef      *m_fileDef  = nullptr; // member of file definition
+    NamespaceDef *m_nspace   = nullptr; // the namespace this member is in.
+    ModuleDef    *m_moduleDef = nullptr;
 
-    const MemberDef  *m_enumScope = 0;    // the enclosing scope, if this is an enum field
+    const MemberDef  *m_enumScope = nullptr;    // the enclosing scope, if this is an enum field
     bool        m_livesInsideEnum = false;
-    const MemberDef  *m_annEnumType = 0;  // the anonymous enum that is the type of this member
+    const MemberDef  *m_annEnumType = nullptr;  // the anonymous enum that is the type of this member
     MemberVector m_enumFields;              // enumeration fields
 
-    MemberDef  *m_redefines = 0;    // the members that this member redefines
+    MemberDef  *m_redefines = nullptr;    // the members that this member redefines
     MemberVector m_redefinedBy;             // the list of members that redefine this one
 
-    MemberDef  *m_memDef = 0;       // member definition for this declaration
-    MemberDef  *m_memDec = 0;       // member declaration for this definition
-    ClassDef   *m_relatedAlso = 0;  // points to class marked by relatedAlso
+    MemberDef  *m_memDef = nullptr;       // member definition for this declaration
+    MemberDef  *m_memDec = nullptr;       // member declaration for this definition
+    ClassDef   *m_relatedAlso = nullptr;  // points to class marked by relatedAlso
 
     ExampleList m_examples;     // a dictionary of all examples for quick access
 
     QCString m_type;            // return actual type
     QCString m_accessorType;    // return type that tell how to get to this member
-    ClassDef *m_accessorClass = 0;  // class that this member accesses (for anonymous types)
+    ClassDef *m_accessorClass = nullptr;  // class that this member accesses (for anonymous types)
     QCString m_args;            // function arguments/variable array specifiers
     QCString m_def;             // member definition in code (fully qualified name)
     QCString m_anc;             // HTML anchor name
@@ -432,41 +432,41 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     MemberType m_mtype = MemberType_Define; // returns the kind of member
     int m_maxInitLines = 0;         // when the initializer will be displayed
     int m_userInitLines = 0;        // result of explicit \hideinitializer or \showinitializer
-    MemberDef  *m_annMemb = 0;
+    MemberDef  *m_annMemb = nullptr;
 
     ArgumentList m_defArgList;    // argument list of this member definition
     ArgumentList m_declArgList;   // argument list of this member declaration
 
     ArgumentList m_tArgList;      // template argument list of function template
     ArgumentList m_typeConstraints; // type constraints for template parameters
-    MemberDef *m_templateMaster = 0;
+    MemberDef *m_templateMaster = nullptr;
     ArgumentLists m_defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
 
     QCString m_metaData;        // Slice metadata.
 
-    mutable ClassDef *m_cachedAnonymousType = 0; // if the member has an anonymous compound
+    mutable ClassDef *m_cachedAnonymousType = nullptr; // if the member has an anonymous compound
                                    // as its type then this is computed by
                                    // getClassDefOfAnonymousType() and
                                    // cached here.
     std::map<const Definition *,const MemberList *> m_sectionMap;
 
-    const MemberDef *m_groupAlias = 0;    // Member containing the definition
+    const MemberDef *m_groupAlias = nullptr;    // Member containing the definition
     int m_grpId = 0;                // group id
-    MemberGroup *m_memberGroup = 0; // group's member definition
-    const GroupDef *m_group = 0;          // group in which this member is in
+    MemberGroup *m_memberGroup = nullptr; // group's member definition
+    const GroupDef *m_group = nullptr;          // group in which this member is in
     Grouping::GroupPri_t m_grouppri = Grouping::GROUPING_AUTO_DEF; // priority of this definition
     QCString m_groupFileName;   // file where this grouping was defined
     int m_groupStartLine = 0;       // line  "      "      "     "     "
-    MemberDef *m_groupMember = 0;
+    MemberDef *m_groupMember = nullptr;
 
     bool m_isTypedefValCached = false;
-    const ClassDef *m_cachedTypedefValue = 0;
+    const ClassDef *m_cachedTypedefValue = nullptr;
     QCString m_cachedTypedefTemplSpec;
     QCString m_cachedResolvedType;
 
     // documentation inheritance
-    const MemberDef *m_docProvider = 0;
+    const MemberDef *m_docProvider = nullptr;
 
     // to store the output file base from tag files
     QCString m_explicitOutputFileBase;
@@ -500,8 +500,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool m_docsForDefinition = false;   // TRUE => documentation block is put before
                                       //         definition.
                                       // FALSE => block is put before declaration.
-    ClassDef *m_category = 0;
-    const MemberDef *m_categoryRelation = 0;
+    ClassDef *m_category = nullptr;
+    const MemberDef *m_categoryRelation = nullptr;
     QCString m_declFileName;
     int m_declLine = -1;
     int m_declColumn = -1;
@@ -920,7 +920,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 
     void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const override
+                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=nullptr,const QCString &inheritId=QCString()) const override
     {
       getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritFrom,inheritId);
     }
@@ -1976,7 +1976,7 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
   ltype.stripPrefix("friend ");
 
   // search for the last anonymous scope in the member type
-  ClassDef *annoClassDef=0;
+  ClassDef *annoClassDef=nullptr;
 
   // match expression if it contains at least one @1 marker, e.g.
   // 'struct A::@1::@2::B' matches 'A::@1::@2::B' but 'struct A::B' does not match.
@@ -2203,7 +2203,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // are explicitly grouped.
   if (!inGroup && m_mtype==MemberType_EnumValue) return;
 
-  const Definition *d=0;
+  const Definition *d=nullptr;
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0 || mod!=0); // member should belong to something
   if (cd) d=cd;
   else if (nd) d=nd;
@@ -2940,7 +2940,7 @@ void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
 bool MemberDefImpl::_isReimplements() const
 {
   const MemberDef *bmd=reimplements();
-  const ClassDef *bcd=0;
+  const ClassDef *bcd=nullptr;
   if (bmd && (bcd=bmd->getClassDef()))
   {
     // write class that contains a member that is reimplemented by this one
@@ -2954,7 +2954,7 @@ bool MemberDefImpl::_isReimplements() const
 void MemberDefImpl::_writeReimplements(OutputList &ol) const
 {
   const MemberDef *bmd=reimplements();
-  const ClassDef *bcd=0;
+  const ClassDef *bcd=nullptr;
   if (bmd && (bcd=bmd->getClassDef()))
   {
     // write class that contains a member that is reimplemented by this one
@@ -3038,8 +3038,8 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
       size_t cnt=0;
       auto it = bml.begin();
       // find the entryIndex-th documented entry in the inheritance list.
-      const MemberDef *bmd = 0;
-      const ClassDef *bcd = 0;
+      const MemberDef *bmd = nullptr;
+      const ClassDef *bcd = nullptr;
       while (it!=bml.end())
       {
         bmd = *it;
@@ -4007,7 +4007,7 @@ void MemberDefImpl::warnIfUndocumented() const
   const NamespaceDef *nd = getNamespaceDef();
   const FileDef      *fd = getFileDef();
   const GroupDef     *gd = getGroupDef();
-  const Definition *d=0;
+  const Definition *d=nullptr;
   QCString t;
   if (cd)
     t=cd->compoundTypeString(), d=cd;
@@ -4212,7 +4212,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
 
 bool MemberDefImpl::isDocumentedFriendClass() const
 {
-  ClassDef *fcd=0;
+  ClassDef *fcd=nullptr;
   QCString baseName=name();
   int i=baseName.find('<');
   if (i!=-1) baseName=baseName.left(i);

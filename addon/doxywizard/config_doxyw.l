@@ -58,20 +58,20 @@ struct ConfigFileState
   QString fileName;
 };
 
-static const QHash<QString,Input*>   *g_options;
-static FILE                          *g_file;
+static const QHash<QString,Input*>   *g_options=nullptr;
+static FILE                          *g_file=nullptr;
 static QString                        g_yyFileName;
 static QString                        g_includeName;
 static QVariant                       g_includePathList;
 static QStack<ConfigFileState*>       g_includeStack;
-static int                            g_includeDepth;
-static QVariant                      *g_arg;
-static Input                         *g_curOption=0;
+static int                            g_includeDepth=0;
+static QVariant                      *g_arg=nullptr;
+static Input                         *g_curOption=nullptr;
 static QByteArray                     g_str;
 static std::unique_ptr<TextCodecAdapter> g_codec = std::make_unique<TextCodecAdapter>("UTF-8");
 static QString                        g_codecName = QString::fromLatin1("UTF-8");
 static QString                        g_cmd;
-static bool                           g_isEnum;
+static bool                           g_isEnum=false;
 
 static const char *stateToString(int state);
 
@@ -405,7 +405,7 @@ static const char *stateToString(int state);
                                            g_cmd = g_codec->decode(yytext);
                                            g_cmd=g_cmd.left(g_cmd.length()-1).trimmed();
 					   g_curOption = g_options->value(g_cmd);
-					   if (g_curOption==0) // oops not known
+					   if (g_curOption==nullptr) // oops not known
 					   {
 					     config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
 						 qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
@@ -464,7 +464,7 @@ static const char *stateToString(int state);
                                           g_cmd=g_codec->decode(yytext);
                                           g_cmd=g_cmd.left(g_cmd.length()-2).trimmed();
 					  g_curOption = g_options->value(g_cmd);
-					  if (g_curOption==0) // oops not known
+					  if (g_curOption==nullptr) // oops not known
 					  {
 					    config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
 						yytext,yylineno,qPrintable(g_yyFileName));
@@ -741,7 +741,7 @@ bool parseConfig(
   config_open();
   QHashIterator<QString, Input*> i(options);
   g_file = fopen(fileName.toLocal8Bit(),"r");
-  if (g_file==NULL) return false;
+  if (g_file==nullptr) return false;
 
   // reset all values
   i.toFront();

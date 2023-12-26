@@ -80,9 +80,9 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
   private:
     QCString                     m_fileName;
     std::unique_ptr<IncludeInfo> m_incInfo;
-    NamespaceDef                *m_nspace = 0;
-    FileDef                     *m_fileDef = 0;
-    ModuleDef                   *m_moduleDef = 0;
+    NamespaceDef                *m_nspace = nullptr;
+    FileDef                     *m_fileDef = nullptr;
+    ModuleDef                   *m_moduleDef = nullptr;
     ArgumentList                 m_tArgList;
     QCString                     m_initializer;
     int                          m_groupId = -1;
@@ -788,7 +788,7 @@ ConceptDef *getConcept(const QCString &n)
 
 ConceptDef *getResolvedConcept(const Definition *d,const QCString &name)
 {
-  ConceptDef *cd=0;
+  ConceptDef *cd=nullptr;
   while (d && d!=Doxygen::globalScope)
   {
     cd = getConcept(d->name()+"::"+name);

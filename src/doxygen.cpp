@@ -126,23 +126,23 @@ extern void initResources();
 #endif
 
 // globally accessible variables
-ClassLinkedMap       *Doxygen::classLinkedMap = 0;
-ClassLinkedMap       *Doxygen::hiddenClassLinkedMap = 0;
-ConceptLinkedMap     *Doxygen::conceptLinkedMap = 0;
-NamespaceLinkedMap   *Doxygen::namespaceLinkedMap = 0;
-MemberNameLinkedMap  *Doxygen::memberNameLinkedMap = 0;
-MemberNameLinkedMap  *Doxygen::functionNameLinkedMap = 0;
-FileNameLinkedMap    *Doxygen::inputNameLinkedMap = 0;
-GroupLinkedMap       *Doxygen::groupLinkedMap = 0;
-PageLinkedMap        *Doxygen::pageLinkedMap = 0;
-PageLinkedMap        *Doxygen::exampleLinkedMap = 0;
+ClassLinkedMap       *Doxygen::classLinkedMap = nullptr;
+ClassLinkedMap       *Doxygen::hiddenClassLinkedMap = nullptr;
+ConceptLinkedMap     *Doxygen::conceptLinkedMap = nullptr;
+NamespaceLinkedMap   *Doxygen::namespaceLinkedMap = nullptr;
+MemberNameLinkedMap  *Doxygen::memberNameLinkedMap = nullptr;
+MemberNameLinkedMap  *Doxygen::functionNameLinkedMap = nullptr;
+FileNameLinkedMap    *Doxygen::inputNameLinkedMap = nullptr;
+GroupLinkedMap       *Doxygen::groupLinkedMap = nullptr;
+PageLinkedMap        *Doxygen::pageLinkedMap = nullptr;
+PageLinkedMap        *Doxygen::exampleLinkedMap = nullptr;
 StringSet             Doxygen::inputPaths;
-FileNameLinkedMap    *Doxygen::includeNameLinkedMap = 0;     // include names
-FileNameLinkedMap    *Doxygen::exampleNameLinkedMap = 0;     // examples
-FileNameLinkedMap    *Doxygen::imageNameLinkedMap = 0;       // images
-FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = 0;     // dot files
-FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = 0;     // msc files
-FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = 0;     // dia files
+FileNameLinkedMap    *Doxygen::includeNameLinkedMap = nullptr;     // include names
+FileNameLinkedMap    *Doxygen::exampleNameLinkedMap = nullptr;     // examples
+FileNameLinkedMap    *Doxygen::imageNameLinkedMap = nullptr;       // images
+FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = nullptr;     // dot files
+FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = nullptr;     // msc files
+FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = nullptr;     // dia files
 StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace aliases
 StringMap             Doxygen::tagDestinationMap;            // all tag locations
 StringSet             Doxygen::tagFileSet;                   // all tag file names
@@ -154,12 +154,12 @@ NamespaceDefMutable  *Doxygen::globalScope;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
 std::unique_ptr<SearchIndexIntf> Doxygen::searchIndex;
 SymbolMap<Definition>*Doxygen::symbolMap;
-ClangUsrMap          *Doxygen::clangUsrMap = 0;
+ClangUsrMap          *Doxygen::clangUsrMap = nullptr;
 Cache<std::string,LookupInfo> *Doxygen::typeLookupCache;
 Cache<std::string,LookupInfo> *Doxygen::symbolLookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
 DirRelationLinkedMap  Doxygen::dirRelations;
-ParserManager        *Doxygen::parserManager = 0;
+ParserManager        *Doxygen::parserManager = nullptr;
 QCString              Doxygen::htmlFileExtension;
 bool                  Doxygen::suppressDocWarnings = FALSE;
 QCString              Doxygen::filterDBFileName;
@@ -179,7 +179,7 @@ StaticInitMap         Doxygen::staticInitMap;
 static std::multimap< std::string, const Entry* > g_classEntries;
 static StringVector     g_inputFiles;
 static StringSet        g_compoundKeywords;        // keywords recognised as compounds
-static OutputList      *g_outputList = 0;          // list of output generating objects
+static OutputList      *g_outputList = nullptr;          // list of output generating objects
 static StringSet        g_usingDeclarations; // used classes
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
@@ -311,7 +311,7 @@ static void addPageToContext(PageDef *pd,Entry *root)
 
 static void addRelatedPage(Entry *root)
 {
-  GroupDef *gd=0;
+  GroupDef *gd=nullptr;
   for (const Grouping &g : root->groups)
   {
     if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname))) break;
@@ -518,7 +518,7 @@ static void buildFileList(const Entry *root)
       fd->enableIncludedByGraph(root->includedByGraph);
       for (const Grouping &g : root->groups)
       {
-        GroupDef *gd=0;
+        GroupDef *gd=nullptr;
         if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname)))
         {
           if (!gd->containsFile(fd))
@@ -587,7 +587,7 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
     }
 
     bool ambig;
-    FileDef *fd=0;
+    FileDef *fd=nullptr;
     // see if we need to include a verbatim copy of the header file
     //printf("root->includeFile=%s\n",qPrint(root->includeFile));
     if (!includeFile.isEmpty() &&
@@ -705,7 +705,7 @@ static Definition *buildScopeFromQualifiedName(const QCString &name_,SrcLangExt 
     fullScope+=nsName;
     NamespaceDef *nd=Doxygen::namespaceLinkedMap->find(fullScope);
     DefinitionMutable *innerScope = toDefinitionMutable(nd);
-    ClassDef *cd=0;
+    ClassDef *cd=nullptr;
     if (nd==0) cd = getClass(fullScope);
     if (nd==0 && cd) // scope is a class
     {
@@ -1806,7 +1806,7 @@ static void buildNamespaceList(const Entry *root)
 static NamespaceDef *findUsedNamespace(const LinkedRefMap<NamespaceDef> &unl,
                               const QCString &name)
 {
-  NamespaceDef *usingNd =0;
+  NamespaceDef *usingNd =nullptr;
   for (auto &und : unl)
   {
     QCString uScope=und->name()+"::";
@@ -1828,8 +1828,8 @@ static void findUsingDirectives(const Entry *root)
     }
     if (!name.isEmpty())
     {
-      NamespaceDef *usingNd = 0;
-      NamespaceDefMutable *nd = 0;
+      NamespaceDef *usingNd = nullptr;
+      NamespaceDefMutable *nd = nullptr;
       FileDef      *fd = root->fileDef();
       QCString nsName;
 
@@ -1933,7 +1933,7 @@ static void findUsingDirectives(const Entry *root)
 
           for (const Grouping &g : root->groups)
           {
-            GroupDef *gd=0;
+            GroupDef *gd=nullptr;
             if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname)))
               gd->addNamespace(nd);
           }
@@ -1982,8 +1982,8 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
        root->name,root->startLine,root->fileName,root->parent()->section);
     if (!root->name.isEmpty())
     {
-      ClassDefMutable *usingCd = 0;
-      NamespaceDefMutable *nd = 0;
+      ClassDefMutable *usingCd = nullptr;
+      NamespaceDefMutable *nd = nullptr;
       FileDef      *fd = root->fileDef();
       QCString scName;
 
@@ -2368,7 +2368,7 @@ static MemberDef *addVariableToFile(
   }
 
   // see if the function is inside a namespace
-  NamespaceDefMutable *nd = 0;
+  NamespaceDefMutable *nd = nullptr;
   if (!scope.isEmpty())
   {
     if (scope.find('@')!=-1) return 0; // anonymous scope!
@@ -2432,7 +2432,7 @@ static MemberDef *addVariableToFile(
   if (mn)
   {
     //QCString nscope=removeAnonymousScopes(scope);
-    //NamespaceDef *nd=0;
+    //NamespaceDef *nd=nullptr;
     //if (!nscope.isEmpty())
     if (!scope.isEmpty())
     {
@@ -2563,7 +2563,7 @@ static MemberDef *addVariableToFile(
  *  \returns -1 if this is not a function pointer variable or
  *           the index at which the closing brace of (...*name) was found.
  */
-static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength=0)
+static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength=nullptr)
 {
   AUTO_TRACE("type='{}' lang={}",type,lang);
   if (lang == SrcLangExt_Fortran || lang == SrcLangExt_VHDL)
@@ -2626,7 +2626,7 @@ static bool isVarWithConstructor(const Entry *root)
   bool typeIsClass = false;
   bool typePtrType = false;
   QCString type;
-  Definition *ctx = 0;
+  Definition *ctx = nullptr;
   FileDef *fd = root->fileDef();
   int ti;
   SymbolResolver resolver(fd);
@@ -2830,7 +2830,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
   MemberType mtype;
   type=type.stripWhiteSpace();
-  ClassDefMutable *cd=0;
+  ClassDefMutable *cd=nullptr;
   bool isRelated=FALSE;
   bool isMemberOf=FALSE;
 
@@ -2905,7 +2905,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   if (cd==0 && classScope!=scope) cd=getClassMutable(classScope);
   if (cd)
   {
-    MemberDef *md=0;
+    MemberDef *md=nullptr;
 
     // if cd is an anonymous (=tag less) scope we insert the member
     // into a non-anonymous parent scope as well. This is needed to
@@ -2923,7 +2923,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     if (si!=-1 && !inlineSimpleStructs) // anonymous scope or type
     {
       QCString pScope;
-      ClassDefMutable *pcd=0;
+      ClassDefMutable *pcd=nullptr;
       pScope = scope.left(std::max(si-2,0)); // scope without tag less parts
       if (!pScope.isEmpty())
         pScope.prepend(annScopePrefix);
@@ -3361,7 +3361,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   mmd->setRequiresClause(root->req);
   mmd->setExplicitExternal(root->explicitExternal,root->fileName,root->startLine,root->startColumn);
 
-  NamespaceDefMutable *nd = 0;
+  NamespaceDefMutable *nd = nullptr;
   // see if the function is inside a namespace that was not part of
   // the name already (in that case nd should be non-zero already)
   if (root->parent()->section.isNamespace())
@@ -3469,7 +3469,7 @@ static void buildFunctionList(const Entry *root)
     }
     if (!rname.isEmpty() && scope.find('@')==-1)
     {
-      ClassDefMutable *cd=0;
+      ClassDefMutable *cd=nullptr;
       // check if this function's parent is a class
       scope=stripTemplateSpecifiersFromScope(scope,FALSE);
 
@@ -3529,7 +3529,7 @@ static void buildFunctionList(const Entry *root)
          */
         bool found=FALSE;
         MemberName *mn;
-        MemberDef *md_found=0;
+        MemberDef *md_found=nullptr;
         if ((mn=Doxygen::functionNameLinkedMap->find(rname)))
         {
           AUTO_TRACE_ADD("function '{}' already found",rname);
@@ -3539,7 +3539,7 @@ static void buildFunctionList(const Entry *root)
             if (md)
             {
               const NamespaceDef *mnd = md->getNamespaceDef();
-              NamespaceDef *rnd = 0;
+              NamespaceDef *rnd = nullptr;
               //printf("root namespace=%s\n",qPrint(rootNav->parent()->name()));
               QCString fullScope = scope;
               QCString parentScope = root->parent()->name;
@@ -3598,7 +3598,7 @@ static void buildFunctionList(const Entry *root)
                   !staticsInDifferentFiles
                  )
               {
-                GroupDef *gd=0;
+                GroupDef *gd=nullptr;
                 if (!root->groups.empty() && !root->groups.front().groupname.isEmpty())
                 {
                   gd = Doxygen::groupLinkedMap->find(root->groups.front().groupname);
@@ -3866,7 +3866,7 @@ static void transferFunctionReferences()
   AUTO_TRACE();
   for (const auto &mn : *Doxygen::functionNameLinkedMap)
   {
-    MemberDefMutable *mdef=0,*mdec=0;
+    MemberDefMutable *mdef=nullptr,*mdec=nullptr;
     /* find a matching function declaration and definition for this function */
     for (const auto &imd : *mn)
     {
@@ -4025,7 +4025,7 @@ static TemplateNameMap getTemplateArgumentsInName(const ArgumentList &templateAr
  */
 static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,const QCString &name)
 {
-  ClassDef *result=0;
+  ClassDef *result=nullptr;
   if (cd==0)
   {
     return result;
@@ -5310,7 +5310,7 @@ static bool findGlobalMember(const Entry *root,
       {
         continue;
       }
-      const NamespaceDef *nd=0;
+      const NamespaceDef *nd=nullptr;
       if (md->isAlias() && md->getOuterScope() &&
           md->getOuterScope()->definitionType()==Definition::TypeNamespace)
       {
@@ -5384,7 +5384,7 @@ static bool findGlobalMember(const Entry *root,
       {
         AUTO_TRACE_ADD("Try to add member '{}' to scope '{}'",md->name(),namespaceName);
 
-        NamespaceDef *rnd = 0;
+        NamespaceDef *rnd = nullptr;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceLinkedMap->find(namespaceName);
 
         const ArgumentList &mdAl = const_cast<const MemberDef *>(md.get())->argumentList();
@@ -5537,7 +5537,7 @@ static QCString substituteTemplatesInString(
     auto dstIt = dstTempArgLists.begin();
     while (srcIt!=srcTempArgLists.end() && !found)
     {
-      const ArgumentList *tdAli = 0;
+      const ArgumentList *tdAli = nullptr;
       std::vector<Argument>::const_iterator tdaIt;
       if (dstIt!=dstTempArgLists.end())
       {
@@ -5550,7 +5550,7 @@ static QCString substituteTemplatesInString(
       for (auto tsaIt = tsaLi.begin(); tsaIt!=tsaLi.end() && !found; ++tsaIt)
       {
         Argument tsa = *tsaIt;
-        const Argument *tda = 0;
+        const Argument *tda = nullptr;
         if (tdAli && tdaIt!=tdAli->end())
         {
           tda = &(*tdaIt);
@@ -5648,7 +5648,7 @@ static void addLocalObjCMethod(const Entry *root,
 {
   AUTO_TRACE();
   //printf("scopeName='%s' className='%s'\n",qPrint(scopeName),qPrint(className));
-  ClassDefMutable *cd=0;
+  ClassDefMutable *cd=nullptr;
   if (Config_getBool(EXTRACT_LOCAL_METHODS) && (cd=getClassMutable(scopeName)))
   {
     AUTO_TRACE_ADD("Local objective C method '{}' scopeName='{}'",root->name,scopeName);
@@ -5730,7 +5730,7 @@ static void addMemberFunction(const Entry *root,
     //AUTO_TRACE_ADD("member definition found, scope needed='{}' scope='{}' args='{}' fileName='{}'",
     //    scopeName, cd->name(), md->argsString(), root->fileName);
     FileDef *fd=root->fileDef();
-    NamespaceDef *nd=0;
+    NamespaceDef *nd=nullptr;
     if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
 
     //printf("scopeName %s->%s\n",qPrint(scopeName),
@@ -5917,8 +5917,8 @@ static void addMemberFunction(const Entry *root,
   if (count==0 && !(isFriend && funcType=="class"))
   {
     int candidates=0;
-    const ClassDef *ecd = 0, *ucd = 0;
-    MemberDef *emd = 0, *umd = 0;
+    const ClassDef *ecd = nullptr, *ucd = nullptr;
+    MemberDef *emd = nullptr, *umd = nullptr;
     //printf("Assume template class\n");
     for (const auto &md : *mn)
     {
@@ -5996,7 +5996,7 @@ static void addMemberFunction(const Entry *root,
     {
       warnMsg+="\nPossible candidates:";
 
-      NamespaceDef *nd=0;
+      NamespaceDef *nd=nullptr;
       if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
       FileDef *fd=root->fileDef();
 
@@ -6051,7 +6051,7 @@ static void addMemberSpecialization(const Entry *root,
                              TypeSpecifier spec
                             )
 {
-  MemberDef *declMd=0;
+  MemberDef *declMd=nullptr;
   for (const auto &md : *mn)
   {
     if (md->getClassDef()==cd)
@@ -6468,7 +6468,7 @@ static void findMember(const Entry *root,
     // check if 'className' is actually a scoped enum, in which case we need to
     // process it as a global, see issue #6471
     bool strongEnum = false;
-    MemberName *mn=0;
+    MemberName *mn=nullptr;
     if (!className.isEmpty() && (mn=Doxygen::functionNameLinkedMap->find(className)))
     {
       for (const auto &imd : *mn)
@@ -6553,7 +6553,7 @@ static void findMember(const Entry *root,
       if ((cd=getClassMutable(scopeName)))
       {
         bool newMember=TRUE; // assume we have a new member
-        MemberDefMutable *mdDefine=0;
+        MemberDefMutable *mdDefine=nullptr;
         {
           mn = Doxygen::functionNameLinkedMap->find(funcName);
           if (mn)
@@ -6579,7 +6579,7 @@ static void findMember(const Entry *root,
         else
         {
           // see if we got another member with matching arguments
-          MemberDefMutable *rmd_found = 0;
+          MemberDefMutable *rmd_found = nullptr;
           for (const auto &irmd : *mn)
           {
             MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
@@ -6680,7 +6680,7 @@ static void findMember(const Entry *root,
             MemberName *rmn=Doxygen::functionNameLinkedMap->find(funcName);
             if (rmn)
             {
-              const MemberDefMutable *rmd_found=0;
+              const MemberDefMutable *rmd_found=nullptr;
               for (const auto &irmd : *rmn)
               {
                 MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
@@ -7020,10 +7020,10 @@ static void findEnums(const Entry *root)
 {
   if (root->section.isEnum())
   {
-    ClassDefMutable *cd=0;
-    FileDef         *fd=0;
-    NamespaceDefMutable *nd=0;
-    MemberNameLinkedMap *mnsd=0;
+    ClassDefMutable *cd=nullptr;
+    FileDef         *fd=nullptr;
+    NamespaceDefMutable *nd=nullptr;
+    MemberNameLinkedMap *mnsd=nullptr;
     bool isGlobal;
     bool isRelated=FALSE;
     bool isMemberOf=FALSE;
@@ -7194,10 +7194,10 @@ static void addEnumValuesToEnums(const Entry *root)
   if (root->section.isEnum())
     // non anonymous enumeration
   {
-    ClassDefMutable     *cd=0;
-    FileDef             *fd=0;
-    NamespaceDefMutable *nd=0;
-    MemberNameLinkedMap *mnsd=0;
+    ClassDefMutable     *cd=nullptr;
+    FileDef             *fd=nullptr;
+    NamespaceDefMutable *nd=nullptr;
+    MemberNameLinkedMap *mnsd=nullptr;
     bool isGlobal;
     bool isRelated=FALSE;
     //printf("Found enum with name '%s' relates=%s\n",qPrint(root->name),qPrint(root->relates));
@@ -7336,7 +7336,7 @@ static void addEnumValuesToEnums(const Entry *root)
               else
               {
                 //printf("e->name=%s isRelated=%d\n",qPrint(e->name),isRelated);
-                MemberName *fmn=0;
+                MemberName *fmn=nullptr;
                 MemberNameLinkedMap *emnsd = isRelated ? Doxygen::functionNameLinkedMap : mnsd;
                 if (!e->name.isEmpty() && (fmn=emnsd->find(e->name)))
                   // get list of members with the same name as the field
@@ -7775,7 +7775,7 @@ static void addToIndices()
 
   auto getScope = [](const MemberDef *md)
   {
-    const Definition *scope = 0;
+    const Definition *scope = nullptr;
     if (md->getGroupDef())          scope = md->getGroupDef();
     else if (md->getClassDef())     scope = md->getClassDef();
     else if (md->getNamespaceDef()) scope = md->getNamespaceDef();
@@ -9109,7 +9109,7 @@ static void findDirDocumentation(const Entry *root)
     {
       normalizedName+='/';
     }
-    DirDef *matchingDir=0;
+    DirDef *matchingDir=nullptr;
     for (const auto &dir : *Doxygen::dirLinkedMap)
     {
       //printf("Dir: %s<->%s\n",qPrint(dir->name()),qPrint(normalizedName));
@@ -9318,7 +9318,7 @@ static void resolveUserReferences()
     //printf("si->label='%s' si->definition=%s si->fileName='%s'\n",
     //        qPrint(si->label),si->definition?qPrint(si->definition->name()):"<none>",
     //        qPrint(si->fileName));
-    PageDef *pd=0;
+    PageDef *pd=nullptr;
 
     // hack: the items of a todo/test/bug/deprecated list are all fragments from
     // different files, so the resulting section's all have the wrong file
@@ -9352,7 +9352,7 @@ static void resolveUserReferences()
       {
         // TODO: there should be one function in Definition that returns
         // the file to link to, so we can avoid the following tests.
-        const GroupDef *gd=0;
+        const GroupDef *gd=nullptr;
         if (si->definition()->definitionType()==Definition::TypeMember)
         {
           gd = (toMemberDef(si->definition()))->getGroupDef();
@@ -10554,7 +10554,7 @@ static void readDir(FileInfo *fi,
         if (fnMap)
         {
           auto fd = createFileDef(QCString(path),QCString(name));
-          FileName *fn=0;
+          FileName *fn=nullptr;
           if (!name.empty())
           {
             fn = fnMap->add(QCString(name),QCString(fullName));
@@ -10802,7 +10802,7 @@ static void usage(const QCString &name,const QCString &versionString)
 
 static const char *getArg(int argc,char **argv,int &optInd)
 {
-  char *s=0;
+  char *s=nullptr;
   if (qstrlen(&argv[optInd][2])>0)
     s=&argv[optInd][2];
   else if (optInd+1<argc && argv[optInd+1][0]!='-')

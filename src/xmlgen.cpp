@@ -933,7 +933,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       for (const Argument &a : declAl)
       {
         //const Argument *defArg = defAli.current();
-        const Argument *defArg = 0;
+        const Argument *defArg = nullptr;
         if (defIt!=defAl.end())
         {
           defArg = &(*defIt);

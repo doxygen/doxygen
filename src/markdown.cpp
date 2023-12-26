@@ -1384,7 +1384,7 @@ int Markdown::processLink(const char *data,int offset,int size)
   else if (isImageLink)
   {
     bool ambig;
-    FileDef *fd=0;
+    FileDef *fd=nullptr;
     if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1 ||
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
         // assume doxygen symbol link or local image link

@@ -237,7 +237,7 @@ static void mergeHtmlAttributes(const HtmlAttribList &attribs, HtmlAttribList &m
   }
 }
 
-static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAltValue = 0)
+static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAltValue = nullptr)
 {
   QCString result;
   for (const auto &att : attribs)
@@ -1104,7 +1104,7 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       // hierarchy: node N -> para -> parblock -> para
       // adapt return value to kind of N
-      const DocNodeVariant *p3 = 0;
+      const DocNodeVariant *p3 = nullptr;
       if (::parent(p.parent()) && ::parent(::parent(p.parent())) )
       {
         p3 = ::parent(::parent(p.parent()));
@@ -2356,7 +2356,7 @@ template<class Node>
 void HtmlDocVisitor::forceStartParagraph(const Node &n)
 {
   //printf("> forceStartParagraph(%s)\n",docNodeName(n));
-  const DocPara *para=0;
+  const DocPara *para=nullptr;
   if (n.parent() && (para = std::get_if<DocPara>(n.parent()))) // if we are inside a paragraph
   {
     const DocNodeList &children = para->children();

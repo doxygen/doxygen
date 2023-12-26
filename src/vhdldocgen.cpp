@@ -70,7 +70,7 @@ static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
 static void addInstance(ClassDefMutable* entity, ClassDefMutable* arch, ClassDefMutable *inst,
                         const std::shared_ptr<Entry> &cur);
 
-static const MemberDef *flowMember=0;
+static const MemberDef *flowMember=nullptr;
 
 void VhdlDocGen::setFlowMember( const MemberDef* mem)
 {
@@ -221,8 +221,8 @@ static std::map<ClassDef*,std::vector<ClassDef*> > g_packages;
 
 const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& memName)
 {
-  ClassDef* cd,*ecd=0;
-  const MemberDef *mdef=0;
+  ClassDef* cd,*ecd=nullptr;
+  const MemberDef *mdef=nullptr;
 
   cd=getClass(className);
   //printf("VhdlDocGen::findMember(%s,%s)=%p\n",qPrint(className),qPrint(memName),cd);
@@ -1392,7 +1392,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
     bool /*inGroup*/)
 {
-  const Definition *d=0;
+  const Definition *d=nullptr;
 
   ASSERT(cd!=0 || nd!=0 || fd!=0 || gd!=0 || mod!=0 ||
       mdef->getVhdlSpecifiers()==VhdlSpecifier::LIBRARY ||
@@ -1416,7 +1416,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   QCString cname  = d->name();
   QCString cfname = d->getOutputFileBase();
 
-  //HtmlHelp *htmlHelp=0;
+  //HtmlHelp *htmlHelp=nullptr;
   //  bool hasHtmlHelp = Config_getBool(GENERATE_HTML) && Config_getBool(GENERATE_HTMLHELP);
   //  if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
@@ -1455,7 +1455,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   QCString ltype(mdef->typeString());
   QCString largs(mdef->argsString());
 
-  ClassDef *kl=0;
+  ClassDef *kl=nullptr;
   const ArgumentList &al = mdef->argumentList();
   QCString nn;
   //VhdlDocGen::adjustRecordMember(mdef);
@@ -2397,7 +2397,7 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   if (mdef==0) return;
 
   QCString codeFragment;
-  const MemberDef* mm=0;
+  const MemberDef* mm=nullptr;
   if ((mm=findMemFlow(mdef))!=0)
   {
     // don't create the same flowchart twice

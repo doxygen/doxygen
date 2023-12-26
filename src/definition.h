@@ -63,7 +63,7 @@ struct BodyInfo
     int      defLine = -1;     //!< line number of the start of the definition
     int      startLine = -1;   //!< line number of the start of the definition's body
     int      endLine = -1;     //!< line number of the end of the definition's body
-    const FileDef *fileDef = 0;      //!< file definition containing the function body
+    const FileDef *fileDef = nullptr;      //!< file definition containing the function body
 };
 
 /** The common base class of all entity definitions found in the sources.

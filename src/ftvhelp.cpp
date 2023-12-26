@@ -435,7 +435,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
     }
     else // leaf node
     {
-      const FileDef *srcRef=0;
+      const FileDef *srcRef=nullptr;
       if (n->def && n->def->definitionType()==Definition::TypeFile &&
           (toFileDef(n->def))->generateSourceFile())
       {

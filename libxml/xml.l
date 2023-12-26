@@ -40,8 +40,8 @@ struct xmlYY_state
 {
   std::string   fileName;
   int           lineNr = 1;
-  const char *  inputString = 0;     //!< the code fragment as text
-  int           inputPosition = 0;   //!< read offset during parsing
+  const char *  inputString = nullptr; //!< the code fragment as text
+  int           inputPosition = 0;     //!< read offset during parsing
   std::string   name;
   bool          isEnd = false;
   bool          selfClose = false;

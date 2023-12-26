@@ -86,7 +86,7 @@ struct FileState
   int lineNr = 1;
   int curlyCount = 0;
   BufStr fileBuf;
-  BufStr *oldFileBuf = 0;
+  BufStr *oldFileBuf = nullptr;
   int oldFileBufPos = 0;
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
@@ -249,8 +249,8 @@ struct preYY_state
   int                yyMLines       = 1;
   int                yyColNr        = 1;
   QCString           fileName;
-  FileDef           *yyFileDef      = 0;
-  FileDef           *inputFileDef   = 0;
+  FileDef           *yyFileDef      = nullptr;
+  FileDef           *inputFileDef   = nullptr;
   int                ifcount        = 0;
   int                defArgs        = -1;
   QCString           defName;
@@ -262,9 +262,9 @@ struct preYY_state
   bool               defVarArgs     = false;
   int                lastCContext   = 0;
   int                lastCPPContext = 0;
-  BufStr            *inputBuf       = 0;
+  BufStr            *inputBuf       = nullptr;
   int                inputBufPos    = 0;
-  BufStr            *outputBuf      = 0;
+  BufStr            *outputBuf      = nullptr;
   int                roundCount     = 0;
   bool               quoteArg       = false;
   bool               idStart        = false;
@@ -515,7 +515,7 @@ WSopt [ \t\r]*
                                           if (pos<0) pos=0; // should never happen
                                           name=name.left(pos).stripWhiteSpace();
 
-                                          Define *def=0;
+                                          Define *def=nullptr;
                                           if (skipFuncMacros && !yyextra->insideFtn &&
                                               name!="Q_PROPERTY" &&
                                               !(
@@ -652,7 +652,7 @@ WSopt [ \t\r]*
                                         }
 <CopyLine,LexCopyLine>{ID}/{BN}{0,80}"("        {
                                           yyextra->expectGuard = FALSE;
-                                          Define *def=0;
+                                          Define *def=nullptr;
                                           //def=yyextra->globalDefineDict->find(yytext);
                                           //def=isDefined(yyscanner,yytext);
                                           //printf("Search for define %s found=%d yyextra->includeStack.empty()=%d "
@@ -815,7 +815,7 @@ WSopt [ \t\r]*
                                         }
   /* end lex rule handling */
 <CopyLine,LexCopyLine>{ID}              {
-                                          Define *def=0;
+                                          Define *def=nullptr;
                                           if ((yyextra->includeStack.empty() || yyextra->curlyCount>0) &&
                                               yyextra->macroExpansion &&
                                               (def=isDefined(yyscanner,yytext)) &&
@@ -1846,7 +1846,7 @@ WSopt [ \t\r]*
                                           }
                                           outputChar(yyscanner,'\n');
                                           yyextra->defLitText+=yytext;
-                                          Define *def=0;
+                                          Define *def=nullptr;
                                           //printf("Define name='%s' text='%s' litTexti='%s'\n",qPrint(yyextra->defName),qPrint(yyextra->defText),qPrint(yyextra->defLitText));
                                           if (yyextra->includeStack.empty() || yyextra->curlyCount>0)
                                           {
@@ -3744,7 +3744,7 @@ static Define *isDefined(yyscan_t yyscanner,const QCString &name)
   bool undef = false;
   auto findDefine = [&undef,&name](DefineMap &map)
   {
-    Define *d=0;
+    Define *d=nullptr;
     auto it = map.find(name.str());
     if (it!=map.end())
     {

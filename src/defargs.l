@@ -82,7 +82,7 @@ struct defargsYY_state
   std::unique_ptr<ArgumentList> &argList;
   SrcLangExt       lang;
   int              inputPosition = 0;
-  QCString        *copyArgValue = 0;
+  QCString        *copyArgValue = nullptr;
   QCString         curArgTypeName;
   QCString         curArgDefValue;
   QCString         curArgName;

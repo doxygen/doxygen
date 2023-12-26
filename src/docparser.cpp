@@ -395,13 +395,13 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   //printf("findDocsForMemberOrCompound(%s)\n",commandName);
   *pDoc="";
   *pBrief="";
-  *pDef=0;
+  *pDef=nullptr;
   QCString cmdArg=commandName;
   if (cmdArg.isEmpty()) return FALSE;
 
-  const FileDef      *fd=0;
-  const GroupDef     *gd=0;
-  const PageDef      *pd=0;
+  const FileDef      *fd=nullptr;
+  const GroupDef     *gd=nullptr;
+  const PageDef      *pd=nullptr;
   gd = Doxygen::groupLinkedMap->find(cmdArg);
   if (gd) // group
   {
@@ -776,10 +776,10 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
 
   // ------- try to turn the word 'name' into a link
 
-  const Definition *compound=0;
-  const MemberDef  *member=0;
+  const Definition *compound=nullptr;
+  const MemberDef  *member=nullptr;
   size_t len = context.token->name.length();
-  ClassDef *cd=0;
+  ClassDef *cd=nullptr;
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,context.fileName,ambig);
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
@@ -1801,7 +1801,7 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
         while (j<len && (data[j]==' ' || data[j]=='\t')) j++;
         // extract the argument
         QCString id = extractCopyDocId(data,j,len);
-        const Definition *def = 0;
+        const Definition *def = nullptr;
         QCString doc,brief;
         //printf("resolving docs='%s'\n",qPrint(id));
         if (findDocsForMemberOrCompound(id,&doc,&brief,&def))

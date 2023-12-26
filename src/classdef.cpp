@@ -236,7 +236,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     const Definition *findInnerCompound(const QCString &name) const override;
     ArgumentLists getTemplateParameterLists() const override;
     QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const override;
+        const ArgumentLists *actualParams=nullptr,uint32_t *actualParamIndex=nullptr) const override;
     bool isAbstract() const override;
     bool isObjectiveC() const override;
     bool isFortran() const override;
@@ -341,7 +341,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
                  const QCString &subTitle=QCString(),
-                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const override;
     void setRequiresClause(const QCString &req) override;
 
@@ -506,7 +506,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     ArgumentLists getTemplateParameterLists() const override
     { return getCdAlias()->getTemplateParameterLists(); }
     QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const override
+        const ArgumentLists *actualParams=nullptr,uint32_t *actualParamIndex=nullptr) const override
     { return makeQualifiedNameWithTemplateParameters(this,actualParams,actualParamIndex); }
     bool isAbstract() const override
     { return getCdAlias()->isAbstract(); }
@@ -616,7 +616,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
                  const QCString &subTitle=QCString(),
-                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const override
     { getCdAlias()->writeMemberDeclarations(ol,visitedClasses,lt,title,subTitle,showInline,inheritedFrom,lt2,invert,showAlways); }
     void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
@@ -677,13 +677,13 @@ class ClassDefImpl::IMPL
     /*! Namespace this class is part of
      *  (this is the inner most namespace in case of nested namespaces)
      */
-    //NamespaceDef  *nspace = 0;
+    //NamespaceDef  *nspace = nullptr;
 
     /*! File this class is defined in */
-    FileDef *fileDef = 0;
+    FileDef *fileDef = nullptr;
 
     /*! Module this class is defined in */
-    ModuleDef *moduleDef = 0;
+    ModuleDef *moduleDef = nullptr;
 
     /*! List of all members (including inherited members) */
     MemberNameInfoLinkedMap allMemberNameInfoLinkedMap;
@@ -728,7 +728,7 @@ class ClassDefImpl::IMPL
     TemplateNameMap templBaseClassNames;
 
     /*! The class this class is an instance of. */
-    const ClassDef *templateMaster = 0;
+    const ClassDef *templateMaster = nullptr;
 
     /*! local class name which could be a typedef'ed alias name. */
     QCString className;
@@ -736,7 +736,7 @@ class ClassDefImpl::IMPL
     /*! If this class is a Objective-C category, then this points to the
      *  class which is extended.
      */
-    ClassDef *categoryOf = 0;
+    ClassDef *categoryOf = nullptr;
 
     MemberLists memberLists;
 
@@ -773,9 +773,9 @@ class ClassDefImpl::IMPL
     bool isSimple = false;
 
     /** Does this class overloaded the -> operator? */
-    const MemberDef *arrowOperator = 0;
+    const MemberDef *arrowOperator = nullptr;
 
-    const ClassDef *tagLessRef = 0;
+    const ClassDef *tagLessRef = nullptr;
 
     /** Does this class represent a Java style enum? */
     bool isJavaEnum = false;
@@ -1318,7 +1318,7 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
 //ArgumentList *ClassDefImpl::outerTemplateArguments() const
 //{
 //  int ti;
-//  ClassDef *pcd=0;
+//  ClassDef *pcd=nullptr;
 //  int pi=0;
 //  if (m_impl->tempArgs) return m_impl->tempArgs;
 //  // find the outer most class scope
@@ -3943,7 +3943,7 @@ QCString ClassDefImpl::getOutputFileBase() const
   bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
   if (!Doxygen::generatingXmlOutput)
   {
-    Definition *scope=0;
+    Definition *scope=nullptr;
     if (inlineGroupedClasses && !partOfGroups().empty())
     {
       // point to the group that embeds this class
@@ -4033,7 +4033,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
   auto it = std::find_if(m_impl->templateInstances.begin(),
                          m_impl->templateInstances.end(),
                          [&templSpec](const auto &ti) { return templSpec==ti.templSpec; });
-  ClassDefMutable *templateClass=0;
+  ClassDefMutable *templateClass=nullptr;
   if (it!=m_impl->templateInstances.end())
   {
     templateClass = toClassDefMutable((*it).classDef);
@@ -4229,7 +4229,7 @@ void ClassDefImpl::addListReferences()
 
 const MemberDef *ClassDefImpl::getMemberByName(const QCString &name) const
 {
-  const MemberDef *xmd = 0;
+  const MemberDef *xmd = nullptr;
   MemberNameInfo *mni = m_impl->allMemberNameInfoLinkedMap.find(name);
   if (mni)
   {

@@ -278,7 +278,7 @@ class ClassDef : public Definition
     virtual ArgumentLists getTemplateParameterLists() const = 0;
 
     virtual QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const = 0;
+        const ArgumentLists *actualParams=nullptr,uint32_t *actualParamIndex=nullptr) const = 0;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.
@@ -397,7 +397,7 @@ class ClassDef : public Definition
     virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
                  const QCString &subTitle=QCString(),
-                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;

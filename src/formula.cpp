@@ -118,7 +118,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
       }
 
       auto it = p->formulaIdMap.find(id);
-      Formula *formula=0;
+      Formula *formula=nullptr;
       if (it!=p->formulaIdMap.end()) // formula already found in a repository for another output format
       {
         formula = it->second;

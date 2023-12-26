@@ -134,31 +134,31 @@ struct fortrancodeYY_state
   bool          isExternal = false;
   QCString      str=QCString();             //!< contents of fortran string
 
-  OutputCodeList * code = 0;
+  OutputCodeList * code = nullptr;
 
-  const char *  inputString = 0;     //!< the code fragment as text
+  const char *  inputString = nullptr;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
   QCString      fileName;
   int           yyLineNr = 0;        //!< current line number
   int           contLineNr = 0;      //!< current, local, line number for continuation determination
-  int          *hasContLine = 0;     //!< signals whether or not a line has a continuation line (fixed source form)
+  int          *hasContLine = nullptr;     //!< signals whether or not a line has a continuation line (fixed source form)
   bool          insideCodeLine = false;
-  const Definition *searchCtx = 0;
+  const Definition *searchCtx = nullptr;
   bool          collectXRefs = false;
   bool          isFixedForm = false;
 
   bool          insideBody = false;      //!< inside subprog/program body? => create links
-  const char *  currentFontClass = 0;
+  const char *  currentFontClass = nullptr;
 
   bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
 
   std::unique_ptr<FileDef> exampleFileDef;
-  const FileDef *    sourceFileDef = 0;
-  const Definition * currentDefinition = 0;
-  const MemberDef *  currentMemberDef = 0;
+  const FileDef *    sourceFileDef = nullptr;
+  const Definition * currentDefinition = nullptr;
+  const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
 
   char          stringStartSymbol = '\0'; // single or double quote
@@ -1272,7 +1272,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
                     const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  MemberDef *md=0;
+  MemberDef *md=nullptr;
   QCString memberName= removeRedundantWhiteSpace(memberText);
 
   if ((md=getFortranDefs(yyscanner,memberName, yyextra->currentModule, useMap)) && md->isLinkable())
@@ -1302,8 +1302,8 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
 static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const QCString &lname)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  ClassDef *cd=0;
-  NamespaceDef *nsd=0;
+  ClassDef *cd=nullptr;
+  NamespaceDef *nsd=nullptr;
   QCString name = lname;
   name = removeRedundantWhiteSpace(name.lower());
 

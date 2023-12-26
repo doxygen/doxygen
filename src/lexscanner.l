@@ -57,7 +57,7 @@ typedef yyguts_t *yyscan_t;
 struct lexscannerYY_state
 {
   COutlineParser   cOutlineParser;
-  const char *     inputString = 0;
+  const char *     inputString = nullptr;
   int              inputPosition = 0;
 
   int              lastContext = 0;
@@ -82,7 +82,7 @@ struct lexscannerYY_state
   int              roundCount = 0;
 
   QCString         fileName;
-  ClangTUParser   *clangParser = 0;
+  ClangTUParser   *clangParser = nullptr;
 
   std::shared_ptr<Entry> current;
   std::shared_ptr<Entry> current_root;

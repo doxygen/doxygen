@@ -127,7 +127,7 @@ class MemberList : public MemberVector
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                const QCString &title,const QCString &subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
-               const ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods) const;
+               const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType_pubMethods) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,const QCString &title,
                bool showEnumValues=FALSE,bool showInline=FALSE) const;

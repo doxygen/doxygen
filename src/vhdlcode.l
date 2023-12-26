@@ -84,17 +84,17 @@ struct vhdlcodeYY_state
   std::unordered_set<std::string> vhdlKeyDict;
   QCString      tempComp;
   QCString      PortMapComp;
-  const MemberDef *   vhdlMember = 0;
+  const MemberDef *   vhdlMember = nullptr;
   QCString      funcProto;
 
-  OutputCodeList * code = 0;
-  const char *  inputString = 0;     //!< the code fragment as text
+  OutputCodeList * code = nullptr;
+  const char *  inputString = nullptr;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   bool          insideCodeLine = false;
-  const Definition *searchCtx = 0;
+  const Definition *searchCtx = nullptr;
 
   bool          exampleBlock = false;
   QCString      exampleName;
@@ -103,11 +103,11 @@ struct vhdlcodeYY_state
   bool          currArch = false;
 
   std::unique_ptr<FileDef> exampleFileDef;
-  const FileDef *     sourceFileDef = 0;
-  const Definition *  currentDefinition = 0;
-  const MemberDef *   currentMemberDef = 0;
+  const FileDef *     sourceFileDef = nullptr;
+  const Definition *  currentDefinition = nullptr;
+  const MemberDef *   currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
-  const char *  currentFontClass = 0;
+  const char *  currentFontClass = nullptr;
 
   bool          lexInit = false;
   int           braceCount = 0;
@@ -1337,7 +1337,7 @@ static void generateMemLink(yyscan_t yyscanner,OutputCodeList &ol,QCString &clNa
 
   QCString className=clName;
 
-  //MemberDef *comp=0;
+  //MemberDef *comp=nullptr;
   //bool isLocal=false;
 
   const MemberDef *md=VhdlDocGen::findMember(className,memberName);
@@ -1369,8 +1369,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,
 
   if (className.isEmpty()) return;
 
-  ClassDef *cd=0;
-  //MemberDef *md=0;
+  ClassDef *cd=nullptr;
+  //MemberDef *md=nullptr;
   //bool isLocal=false;
   className.stripPrefix("_");
   cd = getClass(className);

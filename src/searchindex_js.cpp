@@ -204,10 +204,10 @@ static void addMemberToSearchIndex(const MemberDef *md)
 {
   bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
   bool isLinkable = md->isLinkable();
-  const ClassDef *cd=0;
-  const NamespaceDef *nd=0;
-  const FileDef *fd=0;
-  const GroupDef *gd=0;
+  const ClassDef *cd=nullptr;
+  const NamespaceDef *nd=nullptr;
+  const FileDef *fd=nullptr;
+  const GroupDef *gd=nullptr;
   if (isLinkable &&
       (
        ((cd=md->getClassDef()) && cd->isLinkable() && cd->templateMaster()==0) ||
@@ -614,7 +614,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
 
   int childCount=0;
   QCString lastWord;
-  const Definition *prevScope = 0;
+  const Definition *prevScope = nullptr;
   for (auto it = list.begin(); it!=list.end();)
   {
     const SearchTerm &term = *it;

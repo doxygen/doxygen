@@ -171,8 +171,8 @@ struct fortranscannerYY_state
   QCString                 fileName;
   int                      lineNr     = 1 ;
   int                      colNr     = 0 ;
-  Entry                   *current_root = 0;
-  Entry                   *global_scope = 0;
+  Entry                   *current_root = nullptr;
+  Entry                   *global_scope = nullptr;
   std::shared_ptr<Entry>   global_root;
   std::shared_ptr<Entry>   file_root;
   std::shared_ptr<Entry>   last_entry;
@@ -2816,7 +2816,7 @@ static Argument *getParameter(yyscan_t yyscanner,const QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isEmpty()?QCString("null"):docs)<<"\n";
-  Argument *ret = 0;
+  Argument *ret = nullptr;
   for (Argument &a:yyextra->current_root->argList)
   {
     if (a.name.lower()==name.lower())

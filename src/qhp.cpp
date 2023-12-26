@@ -50,7 +50,7 @@ class QhpSectionTree
       Node(Node *parent_, const QCString &title_,const QCString &ref_)
                           : type(Type::Section), parent(parent_), title(title_), ref(ref_) {}
       Type type;
-      Node *parent = 0;
+      Node *parent = nullptr;
       QCString title;
       QCString ref;
       std::vector<std::unique_ptr<Node>> children;

@@ -68,7 +68,7 @@
 #include "translator_bg.h"
 #include "configimpl.h"
 
-Translator *theTranslator=0;
+Translator *theTranslator=nullptr;
 
 void setTranslator(OUTPUT_LANGUAGE_t langName)
 {

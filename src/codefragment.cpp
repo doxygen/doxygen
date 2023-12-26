@@ -65,7 +65,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
   const char *s=fileContents.data();
   int lineNr=1;
   char c;
-  const char *foundOpen=0;
+  const char *foundOpen=nullptr;
   std::unordered_map<std::string,BlockMarker> candidates;
   while ((c=*s))
   {

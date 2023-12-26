@@ -57,8 +57,8 @@ struct LookupInfo
   LookupInfo() = default;
   LookupInfo(const Definition *d,const MemberDef *td,const QCString &ts,const QCString &rt)
     : definition(d), typeDef(td), templSpec(ts), resolvedType(rt) {}
-  const Definition  *definition = 0;
-  const MemberDef *typeDef = 0;
+  const Definition  *definition = nullptr;
+  const MemberDef *typeDef = nullptr;
   QCString   templSpec;
   QCString   resolvedType;
 };
@@ -150,8 +150,8 @@ void readFileOrDirectory(const QCString &s,
                         StringUnorderedSet *resultSet,
                         bool recursive,
                         bool errorIfNotExist=TRUE,
-                        StringUnorderedSet *killSet = 0,
-                        StringSet *paths = 0
+                        StringUnorderedSet *killSet = nullptr,
+                        StringSet *paths = nullptr
                        );
 
 #endif
