@@ -64,7 +64,7 @@ class HtmlCodeGenerator
                         const QCString &tooltip);
     void docify(const QCString &str);
     TextStream *m_t;
-    int m_col = 0;
+    size_t m_col = 0;
     QCString m_relPath;
     QCString m_fileName;
     bool m_lineOpen = false;

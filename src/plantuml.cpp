@@ -38,7 +38,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   Debug::print(Debug::Plantuml,0,"*** %s outDir: %s\n","writePlantUMLSource",qPrint(outDir));
 
   // strip any trailing slashes and backslashes
-  uint32_t l;
+  size_t l;
   while ((l=outDir.length())>0 && (outDir.at(l-1)=='/' || outDir.at(l-1)=='\\'))
   {
     outDir = outDir.left(l-1);

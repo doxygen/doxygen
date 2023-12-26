@@ -966,13 +966,13 @@ WSopt [ \t\r]*
                                         }
 <Command>"ifdef"/{B}*"("                {
                                           incrLevel(yyscanner);
-                                          yyextra->guardExpr.resize(0);
+                                          yyextra->guardExpr.clear();
                                           BEGIN(DefinedExpr2);
                                         }
 <Command>"ifdef"/{B}+                   {
                                           //printf("Pre.l: ifdef\n");
                                           incrLevel(yyscanner);
-                                          yyextra->guardExpr.resize(0);
+                                          yyextra->guardExpr.clear();
                                           BEGIN(DefinedExpr1);
                                         }
 <Command>"ifndef"/{B}*"("               {
@@ -987,13 +987,13 @@ WSopt [ \t\r]*
                                         }
 <Command>"if"/[ \t(!]                   {
                                           incrLevel(yyscanner);
-                                          yyextra->guardExpr.resize(0);
+                                          yyextra->guardExpr.clear();
                                           BEGIN(Guard);
                                         }
 <Command>("elif"|"else"{B}*"if")/[ \t(!]        {
                                           if (!otherCaseDone(yyscanner))
                                           {
-                                            yyextra->guardExpr.resize(0);
+                                            yyextra->guardExpr.clear();
                                             BEGIN(Guard);
                                           }
                                           else
@@ -1019,7 +1019,7 @@ WSopt [ \t\r]*
 <Command>("elif"|"else"{B}*"if")/[ \t(!]        {
                                           if (!otherCaseDone(yyscanner))
                                           {
-                                            yyextra->guardExpr.resize(0);
+                                            yyextra->guardExpr.clear();
                                             BEGIN(Guard);
                                           }
                                         }
@@ -1146,8 +1146,8 @@ WSopt [ \t\r]*
                                           {
                                             if (!otherCaseDone(yyscanner))
                                             {
-                                              yyextra->guardExpr.resize(0);
-                                              yyextra->lastGuardName.resize(0);
+                                              yyextra->guardExpr.clear();
+                                              yyextra->lastGuardName.clear();
                                               BEGIN(Guard);
                                             }
                                             else
@@ -1241,12 +1241,12 @@ WSopt [ \t\r]*
                                           //printf("Define() '%s'\n",yytext);
                                           yyextra->argMap.clear();
                                           yyextra->defArgs = 0;
-                                          yyextra->defArgsStr.resize(0);
-                                          yyextra->defText.resize(0);
-                                          yyextra->defLitText.resize(0);
+                                          yyextra->defArgsStr.clear();
+                                          yyextra->defText.clear();
+                                          yyextra->defLitText.clear();
                                           yyextra->defName = yytext;
                                           yyextra->defVarArgs = FALSE;
-                                          yyextra->defExtraSpacing.resize(0);
+                                          yyextra->defExtraSpacing.clear();
                                           yyextra->defContinue = false;
                                           BEGIN(DefineArg);
                                         }
@@ -1254,7 +1254,7 @@ WSopt [ \t\r]*
                                           //printf("Define '%s'\n",yytext);
                                           yyextra->argMap.clear();
                                           yyextra->defArgs = -1;
-                                          yyextra->defArgsStr.resize(0);
+                                          yyextra->defArgsStr.clear();
                                           yyextra->defName = QCString(yytext).left(yyleng-1).stripWhiteSpace();
                                           yyextra->defVarArgs = FALSE;
                                           //printf("Guard check: %s!=%s || %d\n",
@@ -1267,7 +1267,7 @@ WSopt [ \t\r]*
                                             outputSpaces(yyscanner,yytext+yyextra->defName.length());
                                             yyextra->quoteArg=FALSE;
                                             yyextra->insideComment=FALSE;
-                                            yyextra->lastGuardName.resize(0);
+                                            yyextra->lastGuardName.clear();
                                             yyextra->defText="1";
                                             yyextra->defLitText="1";
                                             BEGIN(DefineText);
@@ -1275,8 +1275,8 @@ WSopt [ \t\r]*
                                           else // define is a guard => hide
                                           {
                                             //printf("Found a guard %s\n",yytext);
-                                            yyextra->defText.resize(0);
-                                            yyextra->defLitText.resize(0);
+                                            yyextra->defText.clear();
+                                            yyextra->defLitText.clear();
                                             BEGIN(Start);
                                           }
                                           yyextra->expectGuard=FALSE;
@@ -1285,9 +1285,9 @@ WSopt [ \t\r]*
                                           yyextra->argMap.clear();
                                           yyextra->defArgs = -1;
                                           yyextra->defName = yytext;
-                                          yyextra->defArgsStr.resize(0);
-                                          yyextra->defText.resize(0);
-                                          yyextra->defLitText.resize(0);
+                                          yyextra->defArgsStr.clear();
+                                          yyextra->defText.clear();
+                                          yyextra->defLitText.clear();
                                           yyextra->defVarArgs = FALSE;
                                           //printf("Guard check: %s!=%s || %d\n",
                                           //    qPrint(yyextra->defName),qPrint(yyextra->lastGuardName),yyextra->expectGuard);
@@ -1305,7 +1305,7 @@ WSopt [ \t\r]*
                                           {
                                             //printf("Found a guard %s\n",yytext);
                                             yyextra->guardName = yytext;
-                                            yyextra->lastGuardName.resize(0);
+                                            yyextra->lastGuardName.clear();
                                             BEGIN(Start);
                                           }
                                           yyextra->expectGuard=FALSE;
@@ -1314,9 +1314,9 @@ WSopt [ \t\r]*
                                           //printf("Define '%s'\n",yytext);
                                           yyextra->argMap.clear();
                                           yyextra->defArgs = -1;
-                                          yyextra->defArgsStr.resize(0);
-                                          yyextra->defText.resize(0);
-                                          yyextra->defLitText.resize(0);
+                                          yyextra->defArgsStr.clear();
+                                          yyextra->defText.clear();
+                                          yyextra->defLitText.clear();
                                           yyextra->defName = yytext;
                                           yyextra->defVarArgs = FALSE;
                                           QCString def = yyextra->potentialDefine +
@@ -1881,7 +1881,7 @@ WSopt [ \t\r]*
                                           yyextra->argMap.clear();
                                           yyextra->yyLineNr++;
                                           yyextra->yyColNr=1;
-                                          yyextra->lastGuardName.resize(0);
+                                          yyextra->lastGuardName.clear();
                                           BEGIN(Start);
                                         }
 <DefineText>{B}*                        { outputString(yyscanner,yytext);
@@ -2026,7 +2026,7 @@ WSopt [ \t\r]*
                                             if (yyleng==3)
                                             {
                                               yyextra->isSpecialComment = true;
-                                              yyextra->lastGuardName.resize(0); // reset guard in case the #define is documented!
+                                              yyextra->lastGuardName.clear(); // reset guard in case the #define is documented!
                                             }
                                             else
                                             {
@@ -2051,7 +2051,7 @@ WSopt [ \t\r]*
                                             if (yyleng==3)
                                             {
                                               yyextra->isSpecialComment = true;
-                                              yyextra->lastGuardName.resize(0); // reset guard in case the #define is documented!
+                                              yyextra->lastGuardName.clear(); // reset guard in case the #define is documented!
                                             }
                                             else
                                             {
@@ -2501,7 +2501,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
   //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%d\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),state->levelGuard.size());
   uint32_t j=pos;
   len=0;
-  result.resize(0);
+  result.clear();
   int cc;
 
   skipCommentMacroName(yyscanner, expr, rest, cc, j, len);
@@ -2577,7 +2577,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
           arg=arg.stripWhiteSpace();
           // add argument to the lookup table
           argTable.emplace(toStdString(argKey), toStdString(arg));
-          arg.resize(0);
+          arg.clear();
           if (c==')') // end of the argument list
           {
             done=TRUE;
@@ -3955,9 +3955,9 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   BEGIN( Start );
 
   state->expectGuard = guessSection(fileName).isHeader();
-  state->guardName.resize(0);
-  state->lastGuardName.resize(0);
-  state->guardExpr.resize(0);
+  state->guardName.clear();
+  state->lastGuardName.clear();
+  state->guardExpr.clear();
 
   preYYlex(yyscanner);
 

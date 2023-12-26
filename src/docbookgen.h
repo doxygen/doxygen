@@ -86,7 +86,7 @@ class DocbookCodeGenerator
     QCString    m_refId;
     QCString    m_external;
     int         m_lineNumber = -1;
-    int         m_col = 0;
+    size_t      m_col = 0;
     bool        m_insideCodeLine = false;
     bool        m_insideSpecialHL = false;
     QCString    m_relPath;

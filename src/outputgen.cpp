@@ -46,7 +46,7 @@ void OutputGenerator::endPlainFile()
   m_t.flush();
   m_t.setStream(nullptr);
   Portable::fclose(m_file);
-  m_fileName.resize(0);
+  m_fileName.clear();
 }
 
 QCString OutputGenerator::dir() const

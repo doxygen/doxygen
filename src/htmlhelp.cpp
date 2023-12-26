@@ -78,7 +78,7 @@ class HtmlHelpRecoder
       if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
       {
         oSize -= oLeft;
-        output.resize(oSize+1);
+        output.resize(oSize);
         output.at(oSize)='\0';
         return output;
       }

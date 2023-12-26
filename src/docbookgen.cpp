@@ -80,7 +80,7 @@ inline void writeDocbookString(TextStream &t,const QCString &s)
   t << convertToDocBook(s);
 }
 
-inline void writeDocbookCodeString(TextStream &t,const QCString &str, int &col)
+inline void writeDocbookCodeString(TextStream &t,const QCString &str, size_t &col)
 {
   if (str.isEmpty()) return;
   const char *s = str.data();
@@ -199,8 +199,8 @@ void DocbookCodeGenerator::endCodeLine()
   if (m_insideCodeLine) *m_t << "\n";
   Docbook_DB(("(endCodeLine)\n"));
   m_lineNumber = -1;
-  m_refId.resize(0);
-  m_external.resize(0);
+  m_refId.clear();
+  m_external.clear();
   m_insideCodeLine=FALSE;
 }
 

@@ -474,7 +474,7 @@ void VhdlParser::architecture_body() {QCString s,s1;
     }
     if (!hasError) {
 QCString t=s1+"::"+s;
-    m_sharedState->genLabels.resize(0);
+    m_sharedState->genLabels.clear();
     outlineParser()->pushLabel(m_sharedState->genLabels,s1);
     m_sharedState->lastCompound=m_sharedState->current;
     outlineParser()->addVhdlType(t.data(),outlineParser()->getLine(ARCHITECTURE_T),
@@ -530,7 +530,7 @@ outlineParser()->error_skipto(BEGIN_T);
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0);
+m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.clear();
 }
 
 
@@ -3021,7 +3021,7 @@ m_sharedState->confName=s+"::"+s1;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-m_sharedState->genLabels.resize(0); m_sharedState->confName="";
+m_sharedState->genLabels.clear(); m_sharedState->confName="";
 }
 
 
@@ -4154,7 +4154,7 @@ m_sharedState->lastEntity=m_sharedState->current;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0);
+m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.clear();
 }
 
 
@@ -4700,7 +4700,7 @@ QCString VhdlParser::exit_statement() {QCString s,s1,s2;Token *t=0;Token *t1=0;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-m_sharedState->lab.resize(0);
+m_sharedState->lab.clear();
   if(t) s+=":";
   if(t1) s2.prepend(" when ");
    FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",s2,s1);
@@ -8406,7 +8406,7 @@ QCString VhdlParser::next_statement() {QCString s,s1,s2;Token *t=0;Token *t1=0;
     }
 if(t) s+=":";
    FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",s2,s1);
-    m_sharedState->lab.resize(0);
+    m_sharedState->lab.clear();
   if(t1) s2.prepend("when ");
   return s+s1+s2+";";
 assert(false);
@@ -8645,7 +8645,7 @@ m_sharedState->lastCompound=m_sharedState->current;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0);
+m_sharedState->lastCompound=0; m_sharedState->genLabels.clear();
 }
 
 
@@ -8885,7 +8885,7 @@ m_sharedState->lastCompound=m_sharedState->current;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0);
+m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.clear();
 }
 
 

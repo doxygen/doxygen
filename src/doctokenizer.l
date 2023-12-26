@@ -198,7 +198,7 @@ static int computeIndent(const char *str,size_t length)
 static QCString stripEmptyLines(const QCString &s)
 {
   if (s.isEmpty()) return QCString();
-  int end=s.length();
+  int end=static_cast<int>(s.length());
   int start=0,p=0;
   // skip leading empty lines
   for (;;)
@@ -639,12 +639,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          if (index<0) index=0; // should never happen
                          yyextra->token.name = tagName.left(index);
                          int text_begin = index+2;
-                         int text_end = tagName.length()-1;
+                         int text_end = static_cast<int>(tagName.length())-1;
                          if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
                          {
-                                 ++text_begin;
-                                 if (tagName[text_end-1]=='#')
-                                         --text_end;
+                           ++text_begin;
+                           if (tagName[text_end-1]=='#')
+                           {
+                             --text_end;
+                           }
                          }
                          yyextra->token.text = tagName.mid(text_begin,text_end-text_begin);
                          return TK_RCSTAG;
@@ -652,9 +654,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name(&yytext[2]);
-                         name = name.left(name.length()-1);
+                         name = name.left(static_cast<int>(name.length())-1);
                          QCString value = Portable::getenv(name);
-                         for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
+                         for (int i=static_cast<int>(value.length())-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */
                          lineCount(yytext,yyleng);
@@ -2147,9 +2149,9 @@ void DocTokenizer::pushBackHtmlTag(const QCString &tag)
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString tagName = tag;
-  int i,l = tagName.length();
+  int l = static_cast<int>(tagName.length());
   unput('>');
-  for (i=l-1;i>=0;i--)
+  for (int i=l-1;i>=0;i--)
   {
     unput(tag[i]);
   }

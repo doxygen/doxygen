@@ -661,11 +661,11 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
 
 QCString stripTemplateSpecifiers(const QCString &s)
 {
-  int l = s.length();
+  size_t l = s.length();
   int count=0;
   int round=0;
   QCString result;
-  for (int i=0;i<l;i++)
+  for (size_t i=0;i<l;i++)
   {
     char c=s.at(i);
     if      (c=='(') round++;
@@ -1850,7 +1850,7 @@ static void findUsingDirectives(const Entry *root)
       // the possible scopes in which the using statement was found, starting
       // with the most inner scope and going to the most outer scope (i.e.
       // file scope).
-      int scopeOffset = nsName.length();
+      int scopeOffset = static_cast<int>(nsName.length());
       do
       {
         QCString scope=scopeOffset>0 ?
@@ -4345,13 +4345,13 @@ static bool isRecursiveBaseClass(const QCString &scope,const QCString &name)
  *    Class<(")<")>
  *  \endcode
  */
-static int findEndOfTemplate(const QCString &s,int startPos)
+static int findEndOfTemplate(const QCString &s,size_t startPos)
 {
   // locate end of template
-  int e=startPos;
+  size_t e=startPos;
   int brCount=1;
   int roundCount=0;
-  int len = s.length();
+  size_t len = s.length();
   bool insideString=FALSE;
   bool insideChar=FALSE;
   char pc = 0;
@@ -4408,7 +4408,7 @@ static int findEndOfTemplate(const QCString &s,int startPos)
     pc = c;
     e++;
   }
-  return brCount==0 ? e : -1;
+  return brCount==0 ? static_cast<int>(e) : -1;
 }
 
 static int findTemplateSpecializationPosition(const QCString &name)
@@ -4467,7 +4467,7 @@ static bool findClassRelation(
      // (in case of nested classes)
   {
     QCString scopeName= parentNode ? parentNode->name : QCString();
-    int scopeOffset=explicitGlobalScope ? 0 : scopeName.length();
+    int scopeOffset=explicitGlobalScope ? 0 : static_cast<int>(scopeName.length());
     do // try all parent scope prefixes, starting with the largest scope
     {
       //printf("scopePrefix='%s' biName='%s'\n",
@@ -4518,7 +4518,7 @@ static bool findClassRelation(
         int i=findTemplateSpecializationPosition(baseClassName);
         int si=baseClassName.findRev("::",i);
         if (si==-1) si=0;
-        if (baseClass==0 && static_cast<uint32_t>(i)!=baseClassName.length())
+        if (baseClass==0 && static_cast<size_t>(i)!=baseClassName.length())
           // base class has template specifiers
         {
           // TODO: here we should try to find the correct template specialization
@@ -4551,7 +4551,7 @@ static bool findClassRelation(
           {
             // use the template instance instead of the template base.
             baseClass = templClass;
-            templSpec.resize(0);
+            templSpec.clear();
           }
         }
 
@@ -6348,7 +6348,7 @@ static void findMember(const Entry *root,
        )
      )
   {
-    funcSpec.resize(0);
+    funcSpec.clear();
   }
 
   // split scope into a namespace and a class part
@@ -6360,7 +6360,7 @@ static void findMember(const Entry *root,
 
   //printf("namespaceName='%s' className='%s'\n",qPrint(namespaceName),qPrint(className));
   // merge class and namespace scopes again
-  scopeName.resize(0);
+  scopeName.clear();
   if (!namespaceName.isEmpty())
   {
     if (className.isEmpty())
@@ -9743,8 +9743,8 @@ static void computeVerifiedDotPath()
       }
     }
 #if defined(_WIN32) // convert slashes
-    uint32_t i=0,l=dotPath.length();
-    for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
+    size_t l=dotPath.length();
+    for (size_t i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
 #endif
   }
   else
@@ -11482,7 +11482,7 @@ void adjustConfiguration()
 
   // store number of spaces in a tab into Doxygen::spaces
   int tabSize = Config_getInt(TAB_SIZE);
-  Doxygen::spaces.resize(tabSize+1);
+  Doxygen::spaces.resize(tabSize);
   int sp;for (sp=0;sp<tabSize;sp++) Doxygen::spaces.at(sp)=' ';
   Doxygen::spaces.at(tabSize)='\0';
 }
@@ -11766,7 +11766,7 @@ void searchInputFiles()
   for (const auto &s : inputList)
   {
     QCString path=s.c_str();
-    uint32_t l = path.length();
+    size_t l = path.length();
     if (l>0)
     {
       // strip trailing slashes

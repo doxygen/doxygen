@@ -436,7 +436,7 @@ bool DefinitionImpl::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
   // to avoid mismatches due to differences in indenting, we first remove
   // double whitespaces...
   QCString docStr = doc.simplifyWhiteSpace();
-  MD5Buffer(docStr.data(),docStr.length(),md5_sig);
+  MD5Buffer(docStr.data(),static_cast<unsigned int>(docStr.length()),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   //printf("%s:_docsAlreadyAdded doc='%s' sig='%s' docSigs='%s'\n",
   //    qPrint(name()),qPrint(doc),qPrint(sigStr),qPrint(sigList));
@@ -510,7 +510,7 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
   brief = stripLeadingAndTrailingEmptyLines(brief,briefLine);
   brief = brief.stripWhiteSpace();
   if (brief.isEmpty()) return;
-  uint32_t bl = brief.length();
+  size_t bl = brief.length();
   if (bl>0)
   {
     if (!theTranslator || theTranslator->needsPunctuation()) // add punctuation if needed
@@ -932,7 +932,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
       int braceIndex   = result.findRev('}');
       if (braceIndex > newLineIndex)
       {
-        result.truncate(static_cast<size_t>(braceIndex+1));
+        result.resize(static_cast<size_t>(braceIndex+1));
       }
       endLine=lineNr-1;
     }
@@ -1356,7 +1356,7 @@ void DefinitionImpl::setOuterScope(Definition *d)
   }
   if (!found)
   {
-    m_impl->qualifiedName.resize(0); // flush cached scope name
+    m_impl->qualifiedName.clear(); // flush cached scope name
     m_impl->outerScope = d;
   }
   m_impl->hidden = m_impl->hidden || d->isHidden();
@@ -1868,7 +1868,7 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
     if (it!=Doxygen::tagDestinationMap.end())
     {
       QCString result(it->second);
-      uint32_t l = result.length();
+      size_t l = result.length();
       if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
       { // relative path -> prepend relPath.
         result.prepend(relPath);

@@ -47,7 +47,7 @@ TooltipManager::~TooltipManager()
 static QCString escapeId(const QCString &s)
 {
   QCString res=s;
-  for (uint32_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
+  for (size_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
   return res;
 }
 

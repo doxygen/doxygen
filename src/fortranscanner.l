@@ -407,14 +407,14 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                               yy_push_state(Prepass,yyscanner);
                                             }
 
-                                            int length = yyextra->inputStringPrepass.length();
+                                            size_t length = yyextra->inputStringPrepass.length();
 
                                             // Only take input after initial ampersand
                                             yyextra->inputStringPrepass+=(const char*)(yytext+(indexStart+1));
                                             yyextra->lineCountPrepass ++;
 
                                             // cut off & and remove following comment if present
-                                            truncatePrepass(yyscanner,length+indexEnd-(indexStart+1));
+                                            truncatePrepass(yyscanner,static_cast<int>(length) + indexEnd - indexStart - 1);
                                           }
                                         }
 
@@ -799,7 +799,7 @@ private                                 {
 "\n"                                    {
                                           yyextra->currentModifiers = SymbolModifiers();
                                           newLine(yyscanner);
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                         }
 }
 
@@ -1018,8 +1018,8 @@ private                                 {
                                             if (parameter)
                                             {
                                               yyextra->vtype= V_PARAMETER;
-                                              if (!yyextra->argType.isNull()) parameter->type=yyextra->argType.stripWhiteSpace();
-                                              if (!yyextra->docBlock.isNull())
+                                              if (!yyextra->argType.isEmpty()) parameter->type=yyextra->argType.stripWhiteSpace();
+                                              if (!yyextra->docBlock.isEmpty())
                                               {
                                                 subrHandleCommentBlock(yyscanner,yyextra->docBlock,TRUE);
                                               }
@@ -1060,7 +1060,7 @@ private                                 {
                                                   }
                                                   if (yyextra->current_root->type.length() > 0) yyextra->current_root->type += " ";
                                                   yyextra->current_root->type += "function";
-                                                  if (!yyextra->docBlock.isNull())
+                                                  if (!yyextra->docBlock.isEmpty())
                                                   {
                                                     subrHandleCommentBlockResult(yyscanner,yyextra->docBlock,TRUE);
                                                   }
@@ -1080,8 +1080,8 @@ private                                 {
                                             // any accumulated doc for argument should be emptied,
                                             // because it is handled other way and this doc can be
                                             // unexpectedly passed to the next member.
-                                            yyextra->current->doc.resize(0);
-                                            yyextra->current->brief.resize(0);
+                                            yyextra->current->doc.clear();
+                                            yyextra->current->brief.clear();
                                           }
                                         }
 <FVariable>{ARGS}                        { /* dimension of the previous entry. */
@@ -1103,11 +1103,11 @@ private                                 {
 <FVariable>"\n"                          { yyextra->currentModifiers = SymbolModifiers();
                                           pop_state(yyscanner); // end variable declaration list
                                           newLine(yyscanner);
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                         }
 <FVariable>";".*"\n"                     { yyextra->currentModifiers = SymbolModifiers();
                                           pop_state(yyscanner); // end variable declaration list
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                           yyextra->inputStringSemi = " \n"+QCString(yytext+1);
                                           yyextra->lineNr--;
                                           pushBuffer(yyscanner,yyextra->inputStringSemi);
@@ -1188,8 +1188,8 @@ private                                 {
                                           yyextra->typeMode = true;
 
                                           yyextra->current->spec.setStruct(true);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
+                                          yyextra->current->name.clear();
+                                          yyextra->current->args.clear();
                                           yyextra->current->name.sprintf("@%d",yyextra->anonCount++);
 
                                           yyextra->current->section = EntryType::makeEnum();
@@ -1332,7 +1332,7 @@ private                                 {
                                           {
                                             yyextra->current->docLine  = yyextra->lineNr;
                                             yyextra->docBlockJavaStyle = FALSE;
-                                            yyextra->docBlock.resize(0);
+                                            yyextra->docBlock.clear();
                                             yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
                                             startCommentBlock(yyscanner,TRUE);
                                             yy_push_state(DocBackLine,yyscanner);
@@ -1391,7 +1391,7 @@ private                                 {
                                             subrHandleCommentBlockResult(yyscanner,yyextra->docBlock,TRUE);
                                           }
                                           pop_state(yyscanner);
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                         }
 
 <Start,SubprogBody,ModuleBody,TypedefBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains,TypedefBodyContains,FEnum>"!>"  {
@@ -1399,7 +1399,7 @@ private                                 {
                                           yyextra->current->docLine  = yyextra->lineNr;
                                           yyextra->docBlockJavaStyle = FALSE;
                                           if (YY_START==SubprogBody) yyextra->docBlockInBody = TRUE;
-                                          yyextra->docBlock.resize(0);
+                                          yyextra->docBlock.clear();
                                           yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
                                           startCommentBlock(yyscanner,TRUE);
                                           BEGIN(DocBlock);
@@ -1643,13 +1643,13 @@ static int getAmpOrExclAtTheEnd(const char *buf, int length, char ch)
 void truncatePrepass(yyscan_t yyscanner,int index)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int length = yyextra->inputStringPrepass.length();
-  for (int i=index+1; i<length; i++) {
+  size_t length = yyextra->inputStringPrepass.length();
+  for (size_t i=index+1; i<length; i++) {
     if (yyextra->inputStringPrepass[i]=='!' && i<length-1 && yyextra->inputStringPrepass[i+1]=='<') { // save comment
       yyextra->comments.emplace_back(index, yyextra->inputStringPrepass.right(length-i-2));
     }
   }
-  yyextra->inputStringPrepass.truncate(index);
+  yyextra->inputStringPrepass.resize(index);
 }
 
 /* This function assumes that contents has at least size=length+1 */
@@ -2018,7 +2018,7 @@ static QCString extractFromParens(const QCString &name)
   int end = extracted.findRev(")");
   if (end != -1)
   {
-    int length = extracted.length();
+    size_t length = extracted.length();
     extracted.remove(end, length);
   }
   extracted = extracted.stripWhiteSpace();
@@ -2055,7 +2055,7 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   if (mdfs.protection!=NONE_P) protection = mdfs.protection;
   if (mdfs.direction!=NONE_D) direction = mdfs.direction;
   optional |= mdfs.optional;
-  if (!mdfs.dimension.isNull()) dimension = mdfs.dimension;
+  if (!mdfs.dimension.isEmpty()) dimension = mdfs.dimension;
   allocatable |= mdfs.allocatable;
   external |= mdfs.external;
   intrinsic |= mdfs.intrinsic;
@@ -2185,7 +2185,7 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
 //ostream& operator<<(ostream& out, const SymbolModifiers& mdfs)
 //{
 //  out<<mdfs.protection<<", "<<mdfs.direction<<", "<<mdfs.optional<<
-//    ", "<<(mdfs.dimension.isNull() ? "" : mdfs.dimension.latin1())<<
+//    ", "<<(mdfs.dimension.isEmpty() ? "" : mdfs.dimension.latin1())<<
 //    ", "<<mdfs.allocatable<<", "<<mdfs.external<<", "<<mdfs.intrinsic;
 //
 //  return out;
@@ -2211,7 +2211,7 @@ static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = F
 /*! Apply yyextra->modifiers stored in \a mdfs to the \a typeName string. */
 static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs)
 {
-  if (!mdfs.dimension.isNull())
+  if (!mdfs.dimension.isEmpty())
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += mdfs.dimension;
@@ -2755,9 +2755,9 @@ static void addSubprogram(yyscan_t yyscanner,const QCString &text)
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->bodyLine  = yyextra->lineNr; // used for source reference start of body of routine
   yyextra->current->startLine  = yyextra->lineNr; // used for source reference start of definition
-  yyextra->current->args.resize(0);
+  yyextra->current->args.clear();
   yyextra->current->argList.clear();
-  yyextra->docBlock.resize(0);
+  yyextra->docBlock.clear();
 }
 
 /*! Adds interface to the root entry.
@@ -2815,7 +2815,7 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type)
 static Argument *getParameter(yyscan_t yyscanner,const QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QCString("null"):docs)<<"\n";
+  // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isEmpty()?QCString("null"):docs)<<"\n";
   Argument *ret = 0;
   for (Argument &a:yyextra->current_root->argList)
   {

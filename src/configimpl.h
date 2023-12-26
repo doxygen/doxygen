@@ -572,7 +572,7 @@ class ConfigImpl
     QCString takeStartComment()
     {
       QCString result=m_startComment;
-      m_startComment.resize(0);
+      m_startComment.clear();
       return substitute(result,"\r","");
     }
     /*! Take the user comment and reset it internally
@@ -581,7 +581,7 @@ class ConfigImpl
     QCString takeUserComment()
     {
       QCString result=m_userComment;
-      m_userComment.resize(0);
+      m_userComment.clear();
       return substitute(result,"\r","");
     }
     /*! Take the replacement string
@@ -590,7 +590,7 @@ class ConfigImpl
     QCString takeStoreRepl()
     {
       QCString result=m_storeRepl;
-      m_storeRepl.resize(0);
+      m_storeRepl.clear();
       return substitute(result,"\r","");
     }
 

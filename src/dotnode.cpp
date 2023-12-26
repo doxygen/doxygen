@@ -202,8 +202,7 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   QCString result;
   char c,pc=0;
   uint32_t idx = 0;
-  int len=p.length();
-  int charsLeft=len;
+  int charsLeft=static_cast<int>(p.length());
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
   QCString br;

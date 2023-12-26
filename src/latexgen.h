@@ -76,7 +76,7 @@ class LatexCodeGenerator
     TextStream *m_t;
     QCString m_relPath;
     QCString m_sourceFileName;
-    int m_col = 0;
+    size_t m_col = 0;
     bool m_doxyCodeLineOpen = false;
     int m_usedTableLevel = 0;
     bool m_insideTabbing = false;

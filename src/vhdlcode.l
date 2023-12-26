@@ -466,7 +466,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 
 <ClassesName>{FUNCNAME}             {
                                       appStringLower(yyextra->prevString,yytext);
-                                      yyextra->currClass.resize(0);
+                                      yyextra->currClass.clear();
                                       yyextra->currClass.append(yytext);
                                       yyextra->currClass=yyextra->currClass.stripWhiteSpace();
 
@@ -486,7 +486,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       yyextra->code->codify(yytext);
                                       if (yyextra->braceCount==0 && !yyextra->isComponent)
                                       {
-                                        yyextra->tempComp.resize(0);
+                                        yyextra->tempComp.clear();
                                         BEGIN(Bases);
                                       }
                                       else
@@ -664,7 +664,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 
 
 <Bases>{ARCHITECTURE}               { // found architecture
-                                      yyextra->PortMapComp.resize(0);
+                                      yyextra->PortMapComp.clear();
                                       QCString temp = VhdlDocGen::getIndexWord(yytext,3);
                                       yyextra->currArch = true;
                                       temp+="::";
@@ -685,7 +685,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       temp=temp.stripWhiteSpace();
                                       temp.prepend("_");
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,temp);
-                                      yyextra->currClass.resize(0);
+                                      yyextra->currClass.clear();
                                       yyextra->currClass=temp;
                                       yyextra->isProto=false;
                                       yyextra->isPackageBody=true;
@@ -693,7 +693,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 
 <Bases>{PROCESS}                    { // found process
                                       yyextra->isFuncProto=true;
-                                      yyextra->funcProto.resize(0);
+                                      yyextra->funcProto.clear();
                                       yyextra->funcProto.append(yytext);
                                       yyextra->vhdlKeyDict.clear();
                                       appStringLower(yyextra->prevString,yytext);
@@ -732,7 +732,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 
 <Bases>{FUNC}                       {  // found function|procedure
                                       yyextra->vhdlKeyDict.clear();
-                                      yyextra->funcProto.resize(0);
+                                      yyextra->funcProto.clear();
                                       yyextra->isProto=false;
                                       yyextra->funcProto.append(yytext);
                                       yyextra->braceCount=1;
@@ -956,8 +956,8 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (name.isEmpty()) return false;
 
-  int len=name.length();
-  if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
+  size_t len=name.length();
+  if (len>2 && name.at(0)=='"' && name.at(len-1)=='"')
   {
     std::string inside = name.str().substr(1,len-2);
     static const reg::Ex regg(R"(\s+)"); // any number of whitespace
@@ -1170,7 +1170,7 @@ static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &cu
             }
           }
         }
-        temp.resize(0);
+        temp.clear();
         found=false;
       }
 
@@ -1470,7 +1470,7 @@ static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text)
 
 static void appStringLower(QCString& qcs,const char* text)
 {
-  qcs.resize(0);
+  qcs.clear();
   qcs.append(text);
   qcs=qcs.stripWhiteSpace();
 }
@@ -1525,8 +1525,8 @@ static void codifyMapLines(yyscan_t yyscanner,const QCString &text)
     }
     ctemp.fill(c,1);
     codifyLines(yyscanner,ctemp);
-    ctemp.resize(0);
-    temp.resize(0);
+    ctemp.clear();
+    temp.clear();
   }//while
 }//codifyMapLines
 
@@ -1549,7 +1549,7 @@ static void writeFuncProto(yyscan_t yyscanner)
   QCString temp(qlist[0]);
   codifyLines(yyscanner,temp,yyextra->currClass);
   yyextra->funcProto.stripPrefix(temp);
-  temp.resize(0);
+  temp.clear();
   temp=yyextra->currClass;
   if (yyextra->isPackageBody)
   {

@@ -965,7 +965,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
   while ((i=s.find(clRealName,p))!=-1)
   {
     result+=s.mid(p,i-p);
-    uint32_t j=clRealName.length()+i;
+    size_t j=clRealName.length()+i;
     if (s.length()==j || (s.at(j)!='<' && !isId(s.at(j))))
     { // add template names
       //printf("Adding %s+%s\n",qPrint(clRealName),qPrint(t));
@@ -976,7 +976,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
       //printf("Adding %s\n",qPrint(clRealName));
       result+=clRealName;
     }
-    p=i+clRealName.length();
+    p=i+static_cast<int>(clRealName.length());
   }
   result+=s.right(s.length()-p);
   //printf("addTemplateNames(%s,%s,%s)=%s\n",qPrint(s),qPrint(n),qPrint(t),qPrint(result));
@@ -1075,7 +1075,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     }
     else // no template specifier
     {
-      cName.resize(0);
+      cName.clear();
     }
   }
   //printf("~~~ %s cName=%s\n",qPrint(md->name()),qPrint(cName));
@@ -3282,7 +3282,7 @@ QCString MemberDefImpl::displayDefinition() const
     {
       ldef=ldef.left(dp+1);
     }
-    int l=ldef.length();
+    int l=static_cast<int>(ldef.length());
     //printf("start >%s<\n",qPrint(ldef));
     int i=l-1;
     while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
@@ -3611,7 +3611,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       {
         ldef=ldef.left(dp+1);
       }
-      int dl=ldef.length();
+      int dl=static_cast<int>(ldef.length());
       //printf("start >%s<\n",qPrint(ldef));
       int i=dl-1;
       while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
@@ -4277,7 +4277,7 @@ void MemberDefImpl::setAnchor()
   // convert to md5 hash
   uint8_t md5_sig[16];
   char sigStr[33];
-  MD5Buffer(memAnchor.data(),memAnchor.length(),md5_sig);
+  MD5Buffer(memAnchor.data(),static_cast<unsigned int>(memAnchor.length()),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   m_anc = QCString("a")+sigStr;
 }
@@ -4390,7 +4390,7 @@ bool MemberDefImpl::hasMultiLineInitializer() const
 void MemberDefImpl::setInitializer(const QCString &initializer)
 {
   m_initializer=initializer;
-  int l=m_initializer.length();
+  int l=static_cast<int>(m_initializer.length());
   int p=l-1;
   while (p>=0 && isspace(static_cast<uint8_t>(m_initializer.at(p)))) p--;
   m_initializer=m_initializer.left(p+1);
@@ -6028,7 +6028,7 @@ static void invalidateCachedTypesInArgumentList(ArgumentList &al)
 {
   for (Argument &a : al)
   {
-    a.canType.resize(0);
+    a.canType.clear();
   }
 }
 

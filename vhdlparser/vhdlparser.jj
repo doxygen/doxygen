@@ -434,7 +434,7 @@ void architecture_body() : {QCString s,s1;}
   <ARCHITECTURE_T> s=identifier() <OF_T> s1=name() <IS_T>
   {
     QCString t=s1+"::"+s;
-    m_sharedState->genLabels.resize(0);
+    m_sharedState->genLabels.clear();
     outlineParser()->pushLabel(m_sharedState->genLabels,s1);
     m_sharedState->lastCompound=m_sharedState->current;
     outlineParser()->addVhdlType(t.data(),outlineParser()->getLine(ARCHITECTURE_T),
@@ -451,7 +451,7 @@ void architecture_body() : {QCString s,s1;}
   <BEGIN_T>
   architecture_statement_part()
   <END_T> [<ARCHITECTURE_T>] [name()] <SEMI_T>
-  { m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0); }
+  { m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.clear(); }
 }
 
 void anonymous_type_indication() : {}
@@ -993,7 +993,7 @@ void configuration_declaration() :  {QCString s,s1;}
     configuration_declarative_part()
     block_configuration()
  <END_T> [ <CONFIGURATION_T> ] [ name() ] <SEMI_T>
- { m_sharedState->genLabels.resize(0); m_sharedState->confName="";}
+ { m_sharedState->genLabels.clear(); m_sharedState->confName="";}
 }
 
 void configuration_declarative_item() : {}
@@ -1261,7 +1261,7 @@ void entity_declaration() :  {QCString s;}
        <END_T> [ <ENTITY_T> ] [ name() ]
      //    }catch(...){outlineParser()->error_skipto(SEMI_T);}
      <SEMI_T>
-     { m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0); }
+     { m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.clear(); }
 }
 
 void entity_declarative_item() : {}
@@ -1366,7 +1366,7 @@ QCString exit_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 [ s=identifier() t=<COLON_T> ] <EXIT_T> [ s1=identifier() ]
 [ t1=<WHEN_T> s2=condition() ] <SEMI_T>
 {
-  m_sharedState->lab.resize(0);
+  m_sharedState->lab.clear();
   if(t) s+=":";
   if(t1) s2.prepend(" when ");
    FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",s2,s1);
@@ -2198,7 +2198,7 @@ QCString next_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 {
   if(t) s+=":";
    FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",s2,s1);
-    m_sharedState->lab.resize(0);
+    m_sharedState->lab.clear();
   if(t1) s2.prepend("when ");
   return s+s1+s2+";";
 }
@@ -2248,7 +2248,7 @@ void package_body() :  {QCString s;}
                       }
  package_body_declarative_part()
 
-<END_T> [<PACKAGE_T> <BODY_T>  ] [ name() ] <SEMI_T> { m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0); }
+<END_T> [<PACKAGE_T> <BODY_T>  ] [ name() ] <SEMI_T> { m_sharedState->lastCompound=0; m_sharedState->genLabels.clear(); }
 }
 
 void package_body_declarative_item() :  {}
@@ -2303,7 +2303,7 @@ void package_declaration():  {QCString s;}
     package_header()  
     package_declarative_part()
 <END_T> [ <PACKAGE_T>] [ name() ] <SEMI_T>
-{ m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.resize(0); }
+{ m_sharedState->lastEntity=0;m_sharedState->lastCompound=0; m_sharedState->genLabels.clear(); }
 }
 
 

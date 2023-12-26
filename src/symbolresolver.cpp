@@ -101,9 +101,9 @@ struct SymbolResolver::Private
     void reset()
     {
       m_resolvedTypedefs.clear();
-      resolvedType.resize(0);
+      resolvedType.clear();
       typeDef = 0;
-      templateSpec.resize(0);
+      templateSpec.clear();
     }
     void setFileScope(const FileDef *fileScope)
     {
@@ -263,10 +263,10 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
   // result of a lookup is deterministic. As the key we use the concatenated
   // scope, the name to search for and the explicit scope prefix. The speedup
   // achieved by this simple cache can be enormous.
-  int scopeNameLen = scope->name().length()+1;
-  int nameLen = name.length()+1;
-  int explicitPartLen = explicitScopePart.length();
-  int fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
+  size_t scopeNameLen = scope->name().length()+1;
+  size_t nameLen = name.length()+1;
+  size_t explicitPartLen = explicitScopePart.length();
+  size_t fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
 
   // below is a more efficient coding of
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
@@ -436,11 +436,11 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   // result of a lookup is deterministic. As the key we use the concatenated
   // scope, the name to search for and the explicit scope prefix. The speedup
   // achieved by this simple cache can be enormous.
-  int scopeNameLen = scope->name().length()+1;
-  int nameLen = name.length()+1;
-  int explicitPartLen = explicitScopePart.length();
-  int fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
-  int argsLen = args.length()+1;
+  size_t scopeNameLen = scope->name().length()+1;
+  size_t nameLen = name.length()+1;
+  size_t explicitPartLen = explicitScopePart.length();
+  size_t fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
+  size_t argsLen = args.length()+1;
 
   // below is a more efficient coding of
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
@@ -602,7 +602,7 @@ void SymbolResolver::Private::getResolvedType(
             minDistance=distance;
             bestMatch = cd;
             bestTypedef = 0;
-            bestTemplSpec.resize(0);
+            bestTemplSpec.clear();
             bestResolvedType = cd->qualifiedName();
           }
           else if (distance==minDistance &&
@@ -624,7 +624,7 @@ void SymbolResolver::Private::getResolvedType(
             minDistance=distance;
             bestMatch = cd;
             bestTypedef = 0;
-            bestTemplSpec.resize(0);
+            bestTemplSpec.clear();
             bestResolvedType = cd->qualifiedName();
           }
         }
@@ -682,8 +682,8 @@ void SymbolResolver::Private::getResolvedType(
                 AUTO_TRACE_ADD("no match");
                 bestMatch = 0;
                 bestTypedef = md;
-                bestTemplSpec.resize(0);
-                bestResolvedType.resize(0);
+                bestTemplSpec.clear();
+                bestResolvedType.clear();
               }
             }
             else
@@ -760,7 +760,7 @@ void SymbolResolver::Private::getResolvedSymbol(
           minDistance=distance;
           bestMatch = d;
           bestTypedef = 0;
-          bestTemplSpec.resize(0);
+          bestTemplSpec.clear();
           bestResolvedType = cd->qualifiedName();
         }
         else if (distance==minDistance &&
@@ -782,7 +782,7 @@ void SymbolResolver::Private::getResolvedSymbol(
           minDistance=distance;
           bestMatch = d;
           bestTypedef = 0;
-          bestTemplSpec.resize(0);
+          bestTemplSpec.clear();
           bestResolvedType = cd->qualifiedName();
         }
       }
@@ -826,8 +826,8 @@ void SymbolResolver::Private::getResolvedSymbol(
         minDistance=distance;
         bestMatch = d;
         bestTypedef = 0;
-        bestTemplSpec.resize(0);
-        bestResolvedType.resize(0);
+        bestTemplSpec.clear();
+        bestResolvedType.clear();
       }
     }
   } // if definition accessible
@@ -882,7 +882,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
             typeClass->templateArguments(),actTemplParams);
   }
   QCString typedefValue = type;
-  int tl=type.length();
+  int tl=static_cast<int>(type.length());
   int ip=tl-1; // remove * and & at the end
   while (ip>=0 && (type.at(ip)=='*' || type.at(ip)=='&' || type.at(ip)==' '))
   {
@@ -894,7 +894,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   type.stripPrefix("struct "); // strip leading "struct"
   type.stripPrefix("union ");  // strip leading "union"
   int sp=0;
-  tl=type.length(); // length may have been changed
+  tl=static_cast<int>(type.length()); // length may have been changed
   while (sp<tl && type.at(sp)==' ') sp++;
   const MemberDef *memTypeDef = 0;
   const ClassDef *result = getResolvedTypeRec(visitedKeys,md->getOuterScope(),type,
@@ -926,7 +926,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
       i=type.find('<',si);
       if (i==-1) // Something like A<T>::B => lookup A::B
       {
-        i=type.length();
+        i=static_cast<int>(type.length());
       }
       else // Something like A<T>::B<S> => lookup A::B, spec=<S>
       {

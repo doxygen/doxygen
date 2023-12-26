@@ -690,7 +690,7 @@ static QCString configStringRecode(
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
     outputSize-=oLeft;
-    output.resize(outputSize+1);
+    output.resize(outputSize);
     output.at(outputSize)='\0';
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
   }
@@ -713,8 +713,8 @@ static QCString stripComment(const QCString &s)
 {
   // check if there is a comment at the end of the string
   bool insideQuote=false;
-  int l = s.length();
-  for (int i=0;i<l;i++)
+  size_t l = s.length();
+  for (size_t i=0;i<l;i++)
   {
     char c = s.at(i);
     if (c=='\\') // skip over escaped characters
@@ -749,7 +749,7 @@ static void processString()
 {
   // strip leading and trailing whitespace
   QCString s = stripComment(g_string->stripWhiteSpace());
-  int l = s.length();
+  size_t l = s.length();
 
   // remove surrounding quotes if present (and not escaped)
   if (l>=2 && s.at(0)=='"' && s.at(l-1)=='"' && // remove quotes
@@ -762,7 +762,7 @@ static void processString()
   // check for invalid and/or escaped quotes
   bool warned=false;
   QCString result;
-  for (int i=0;i<l;i++)
+  for (size_t i=0;i<l;i++)
   {
     char c = s.at(i);
     if (c=='\\') // escaped character
@@ -810,7 +810,7 @@ static void processList()
   bool allowCommaAsSeparator = g_cmd!="PREDEFINED";
 
   QCString s = stripComment(g_listStr.stripWhiteSpace());
-  int l = s.length();
+  size_t l = s.length();
 
   QCString elemStr;
   bool wasQuote=false;
@@ -832,7 +832,7 @@ static void processList()
   bool needsSeparator=false;
   bool insideQuote=false;
   bool warned=false;
-  for (int i=0;i<l;i++)
+  for (size_t i=0;i<l;i++)
   {
     char c = s.at(i);
     if (!needsSeparator && c=='\\') // escaped character
@@ -944,7 +944,7 @@ static void readIncludeFile(const QCString &incName)
   QCString inc = incName;
   substEnvVarsInString(inc);
   inc = inc.stripWhiteSpace();
-  uint32_t incLen = inc.length();
+  size_t incLen = inc.length();
   if (incLen>0 && inc.at(0)=='"' && inc.at(incLen-1)=='"') // strip quotes
   {
     inc=inc.mid(1,incLen-2);
@@ -1037,22 +1037,22 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                                  break;
                                                case ConfigOption::O_Enum:
                                                  g_string = dynamic_cast<ConfigEnum *>(option)->valueRef();
-                                                 g_string->resize(0);
+                                                 g_string->clear();
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_String:
                                                  g_string = dynamic_cast<ConfigString *>(option)->valueRef();
-                                                 g_string->resize(0);
+                                                 g_string->clear();
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Int:
                                                  g_string = dynamic_cast<ConfigInt *>(option)->valueStringRef();
-                                                 g_string->resize(0);
+                                                 g_string->clear();
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Bool:
                                                  g_string = dynamic_cast<ConfigBool *>(option)->valueStringRef();
-                                                 g_string->resize(0);
+                                                 g_string->clear();
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Obsolete:
@@ -1078,7 +1078,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                                  else
                                                  {
                                                    g_string = dynamic_cast<ConfigObsolete*>(option)->valueStringRef();
-                                                   g_string->resize(0);
+                                                   g_string->clear();
                                                    BEGIN(GetString);
                                                  }
                                                  break;
@@ -1217,7 +1217,7 @@ REGEX_w [a-z_A-Z0-9\x80-\xFF]
                                           g_localStoreRepl += yytext;
                                           processStoreRepl(g_localStoreRepl);
                                           g_config->appendStoreRepl(g_localStoreRepl + "\n");
-                                          g_localStoreRepl.resize(0);
+                                          g_localStoreRepl.clear();
                                           g_yyLineNr++; // end of string
                                           BEGIN(Start);
                                         }
@@ -1417,7 +1417,7 @@ static void substEnvVarsInStrList(StringVector &sl)
                        contained multiple elements no further
                        splitting is done to allow quoted items with spaces! */
     {
-      int l=result.length();
+      int l = static_cast<int>(result.length());
       int i,p=0;
       // skip spaces
       // search for a "word"
@@ -2023,7 +2023,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       diaPath=dp.dirPath(TRUE)+"/";
 #if defined(_WIN32) // convert slashes
-      uint32_t i=0,l=diaPath.length();
+      size_t i=0,l=diaPath.length();
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
 #endif
     }

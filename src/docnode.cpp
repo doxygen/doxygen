@@ -158,7 +158,7 @@ DocEmoji::DocEmoji(DocParser *parser,DocNodeVariant *parent,const QCString &symN
       DocNode(parser,parent), m_symName(symName), m_index(-1)
 {
   QCString locSymName = symName;
-  uint32_t len=locSymName.length();
+  size_t len=locSymName.length();
   if (len>0)
   {
     if (locSymName.at(len-1)!=':') locSymName.append(":");
@@ -324,11 +324,11 @@ void DocIncOperator::parse()
 
   m_includeFileName = parser()->context.includeFileName;
   const char *p = parser()->context.includeFileText.data();
-  uint32_t l = parser()->context.includeFileLength;
-  uint32_t o = parser()->context.includeFileOffset;
+  size_t l = parser()->context.includeFileLength;
+  size_t o = parser()->context.includeFileOffset;
   int il = parser()->context.includeFileLine;
   AUTO_TRACE("text={} off={} len={}",Trace::trunc(p),o,l);
-  uint32_t so = o,bo;
+  size_t so = o,bo;
   bool nonEmpty = FALSE;
   switch(type())
   {
@@ -964,11 +964,11 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
             }
             else if ((p=w.find('}'))!=-1)
             {
-              uint32_t l=w.length();
+              int l = static_cast<int>(w.length());
               children().append<DocWord>(parser(),thisVariant(),w.left(p));
-              if (static_cast<uint32_t>(p)<l-1) // something left after the } (for instance a .)
+              if (p<l-1) // something left after the } (for instance a .)
               {
-                result=w.right(static_cast<int>(l)-p-1);
+                result=w.right(l-p-1);
               }
               goto endlink;
             }
@@ -3765,7 +3765,7 @@ int DocPara::handleStartCode()
     parser()->context.token->verb = substitute(substitute(parser()->context.token->verb,"&lt;","<"),"&gt;",">");
   }
   // search for the first non-whitespace line, index is stored in li
-  int i=0,li=0,l=parser()->context.token->verb.length();
+  size_t i=0,li=0,l=parser()->context.token->verb.length();
   while (i<l && (parser()->context.token->verb.at(i)==' ' || parser()->context.token->verb.at(i)=='\n'))
   {
     if (parser()->context.token->verb.at(i)=='\n') li=i+1;
