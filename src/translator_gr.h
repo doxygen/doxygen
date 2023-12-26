@@ -2683,7 +2683,7 @@ class TranslatorGreek : public TranslatorAdapter_1_9_6
       if (extractAll)
         result+="τεκμηρίωση της υπομονάδας για κάθε " + singularResult + ":";
       else
-        result+="υπομονάδα στην οποία ανοίκουν:";
+        result+="υπομονάδα στην οποία ανήκουν:";
       return result;
     }
     QCString trExportedModules() override
