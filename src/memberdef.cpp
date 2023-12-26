@@ -1112,6 +1112,11 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         {
           n=addTemplateNames(n,scope->name(),cName);
         }
+        QCString sep = getLanguageSpecificSeparator(md->getLanguage(),true);
+        if (sep!="::")
+        {
+          n=substitute(n,"::",sep);
+        }
         linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
       }
     }
