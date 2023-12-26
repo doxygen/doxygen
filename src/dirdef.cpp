@@ -190,7 +190,7 @@ static QCString encodeDirName(const QCString &anchor)
   // convert to md5 hash
   uint8_t md5_sig[16];
   char sigStr[33];
-  MD5Buffer(anchor.data(),anchor.length(),md5_sig);
+  MD5Buffer(anchor.data(),static_cast<unsigned int>(anchor.length()),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   AUTO_TRACE_EXIT("result={}",sigStr);
   return sigStr;
@@ -987,7 +987,7 @@ static void computeCommonDirPrefix()
   {
     // start will full path of first dir
     path=removeLongPathMarker((*it)->name());
-    int i=path.findRev('/',path.length()-2);
+    int i=path.findRev('/',static_cast<int>(path.length())-2);
     path=path.left(i+1);
     bool done=FALSE;
     if (i==-1)
@@ -998,7 +998,7 @@ static void computeCommonDirPrefix()
     {
       while (!done)
       {
-        uint32_t l = path.length();
+        int l = static_cast<int>(path.length());
         size_t count=0;
         for (const auto &dir : *Doxygen::dirLinkedMap)
         {
@@ -1024,7 +1024,7 @@ static void computeCommonDirPrefix()
           else // dir is shorter than path -> take path of dir as new start
           {
             path=dir->name();
-            l=path.length();
+            l=static_cast<int>(path.length());
             i=path.findRev('/',l-2);
             if (i==-1) // no unique prefix -> stop
             {
@@ -1083,7 +1083,7 @@ void buildDirectories()
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     QCString name = dir->name();
-    int i=name.findRev('/',name.length()-2);
+    int i=name.findRev('/',static_cast<int>(name.length())-2);
     if (i>0)
     {
       DirDef *parent = Doxygen::dirLinkedMap->find(name.left(i+1));

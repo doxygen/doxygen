@@ -428,12 +428,7 @@ class DocInclude : public DocNode
       m_isExample(isExample), m_isBlock(isBlock),
       m_exampleFile(exampleFile), m_blockId(blockId) {}
     QCString file() const        { return m_file; }
-    QCString extension() const   { int i=m_file.findRev('.');
-                                   if (i!=-1)
-                                     return m_file.right(m_file.length()-static_cast<uint32_t>(i));
-                                   else
-                                     return QCString();
-                                 }
+    QCString extension() const   { int i=m_file.findRev('.'); return i!=-1 ? m_file.mid(i) : QCString(); }
     Type type() const            { return m_type; }
     QCString text() const        { return m_text; }
     QCString context() const     { return m_context; }

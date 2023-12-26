@@ -337,7 +337,7 @@ QCString stripExtensionGeneral(const QCString &fName, const QCString &ext);
 
 QCString stripExtension(const QCString &fName);
 
-void replaceNamespaceAliases(QCString &scope,int i);
+void replaceNamespaceAliases(QCString &scope,size_t i);
 
 //! Return the index of the last :: in the string \a name that is still before the first <
 inline int computeQualifiedIndex(const QCString &name)

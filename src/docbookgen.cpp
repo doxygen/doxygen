@@ -80,7 +80,7 @@ inline void writeDocbookString(TextStream &t,const QCString &s)
   t << convertToDocBook(s);
 }
 
-inline void writeDocbookCodeString(TextStream &t,const QCString &str, int &col)
+inline void writeDocbookCodeString(TextStream &t,const QCString &str, size_t &col)
 {
   if (str.isEmpty()) return;
   const char *s = str.data();

@@ -207,10 +207,13 @@ CPPC  "/\/"
 					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgPtr>")"			{ // redundant braces detected / remove them
-					  int i=yyextra->curArgTypeName.findRev('('),l=yyextra->curArgTypeName.length();
+					  int i=yyextra->curArgTypeName.findRev('(');
+                                          int l=static_cast<int>(yyextra->curArgTypeName.length());
 					  if (i!=-1)
+                                          {
 					    yyextra->curArgTypeName=yyextra->curArgTypeName.left(i)+
 					                   yyextra->curArgTypeName.right(l-i-1);
+                                          }
 					  yyextra->curArgTypeName+=yyextra->curArgName;
 					  BEGIN( ReadFuncArgType );
 					}
@@ -396,7 +399,7 @@ CPPC  "/\/"
 					    yyextra->curArgTypeName=removeRedundantWhiteSpace(yyextra->curArgTypeName);
 					    yyextra->curArgDefValue=yyextra->curArgDefValue.stripWhiteSpace();
 					    //printf("curArgType='%s' curArgDefVal='%s'\n",qPrint(yyextra->curArgTypeName),qPrint(yyextra->curArgDefValue));
-					    int l=yyextra->curArgTypeName.length();
+					    int l = static_cast<int>(yyextra->curArgTypeName.length());
 					    if (l>0)
 					    {
 					      int i=l-1;
@@ -462,7 +465,7 @@ CPPC  "/\/"
                                               }
 					      a.array  += removeRedundantWhiteSpace(yyextra->curArgArray);
 					      //printf("array=%s\n",qPrint(a->array));
-					      int alen = a.array.length();
+					      size_t alen = a.array.length();
 					      if (alen>2 && a.array.at(0)=='(' && 
 						            a.array.at(alen-1)==')') // fix-up for int *(a[10])
 					      {
@@ -684,13 +687,12 @@ void
 class KeywordHash
 {
   private:
-    static inline unsigned int hash (const char *str, unsigned int len);
+    static inline size_t hash (const char *str, size_t len);
   public:
-    static const char *find (const char *str, unsigned int len);
+    static const char *find (const char *str, size_t len);
 };
 
-inline unsigned int
-KeywordHash::hash (const char *str, unsigned int len)
+inline size_t KeywordHash::hash (const char *str, size_t len)
 {
   static const unsigned char asso_values[] =
   {
@@ -721,7 +723,7 @@ KeywordHash::hash (const char *str, unsigned int len)
     49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
     49, 49, 49, 49, 49, 49
   };
-  unsigned int hval = len;
+  size_t hval = len;
 
   switch (hval)
   {
@@ -737,8 +739,7 @@ KeywordHash::hash (const char *str, unsigned int len)
   return hval;
 }
 
-const char *
-KeywordHash::find (const char *str, unsigned int len)
+const char * KeywordHash::find (const char *str, size_t len)
 {
   static const char * const wordlist[] =
   {
@@ -782,7 +783,7 @@ KeywordHash::find (const char *str, unsigned int len)
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
   {
-    unsigned int key = hash (str, len);
+    size_t key = hash (str, len);
 
     if (key <= MAX_HASH_VALUE)
     {

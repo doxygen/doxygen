@@ -648,7 +648,7 @@ int Markdown::findEmphasisChar(const char *data, int size, char c, int c_size)
       if (!endBlockName.isEmpty())
       {
         i++;
-        int l = endBlockName.length();
+        int l = static_cast<int>(endBlockName.length());
         while (i<size-l)
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
@@ -1454,7 +1454,7 @@ int Markdown::processLink(const char *data,int offset,int size)
       }
       else
       {
-        processInline(content.data(),content.length());
+        processInline(content.data(),static_cast<int>(content.length()));
       }
       m_out.addStr("\"");
     }
@@ -1484,7 +1484,7 @@ int Markdown::processLink(const char *data,int offset,int size)
         m_out.addStr(externalLinkTarget());
         m_out.addStr(">");
         content = substitute(content.simplifyWhiteSpace(),"\"","\\\"");
-        processInline(content.data(),content.length());
+        processInline(content.data(),static_cast<int>(content.length()));
         m_out.addStr("</a>");
       }
     }
@@ -1595,7 +1595,7 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
   if (!endBlockName.isEmpty())
   {
     AUTO_TRACE_ADD("endBlockName={}",endBlockName);
-    int l = endBlockName.length();
+    int l = static_cast<int>(endBlockName.length());
     while (i<size-l)
     {
       if ((data[i]=='\\' || data[i]=='@') && // command
@@ -1936,7 +1936,7 @@ int Markdown::isAtxHeader(const char *data,int size,
   id = extractTitleId(header, level, pIsIdGenerated);
   if (!id.isEmpty()) // strip #'s between title and id
   {
-    i=header.length()-1;
+    i=static_cast<int>(header.length())-1;
     while (i>=0 && (header.at(i)=='#' || header.at(i)==' ')) i--;
     header=header.left(i+1);
   }
@@ -2753,7 +2753,7 @@ void Markdown::findEndOfLine(const char *data,int size,
       end++;
       if (!endBlockName.isEmpty())
       {
-        int l = endBlockName.length();
+        int l = static_cast<int>(endBlockName.length());
         for (;end<size-l-1;end++) // search for end of block marker
         {
           if ((data[end]=='\\' || data[end]=='@') &&
@@ -2833,7 +2833,7 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
   AUTO_TRACE("s='{}' refIndex='{}'",Trace::trunc(s),refIndent);
   m_out.clear();
   const char *data = s.data();
-  int size = s.length();
+  int size = static_cast<int>(s.length());
   int i=0,end=0,pi=-1;
   int blockStart,blockEnd,blockOffset;
   bool newBlock = false;
@@ -2928,7 +2928,7 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
             addNewLines = true;
           }
           if (addNewLines) for (int j=0;j<nl;j++) m_out.addChar('\n');
-          processSpecialCommand(pl.data()+ii,0,pl.length()-ii);
+          processSpecialCommand(pl.data()+ii,0,static_cast<int>(pl.length()-ii));
           if (addNewLines) m_out.addChar('\n');
         };
 
@@ -2993,7 +2993,7 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
   AUTO_TRACE("s='{}' indent={}",Trace::trunc(s),indent);
   m_out.clear();
   const char *data = s.data();
-  int size = s.length();
+  int size = static_cast<int>(s.length());
   int i=0,end=0,pi=-1,ref,level;
   QCString id,link,title;
 
@@ -3082,7 +3082,7 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
         }
         m_out.addChar(data[i]);
         i++;
-        int l = endBlockName.length();
+        int l = static_cast<int>(endBlockName.length());
         while (i<size-l)
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
@@ -3202,7 +3202,7 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
   const char *data = docs.data();
   if (data)
   {
-    int size=docs.size();
+    int size = static_cast<int>(docs.size());
     while (i<size && (data[i]==' ' || data[i]=='\n'))
     {
       i++;
@@ -3235,7 +3235,7 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
   prepend = 0;
   QCString title;
   int i=0;
-  int size=docs.size();
+  int size = static_cast<int>(docs.size());
   QCString docs_org(docs);
   const char *data = docs_org.data();
   docs = "";
@@ -3302,7 +3302,7 @@ QCString Markdown::process(const QCString &input, int &startNewlines, bool fromP
 
   // finally process the inline markup (links, emphasis and code spans)
   m_out.clear();
-  processInline(s.data(),s.length());
+  processInline(s.data(),static_cast<int>(s.length()));
   m_out.addChar(0);
   if (fromParseInput)
   {

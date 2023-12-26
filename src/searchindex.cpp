@@ -250,8 +250,8 @@ static void writeInt(std::ostream &f,size_t index)
 
 static void writeString(std::ostream &f,const QCString &s)
 {
-  uint32_t l = s.length();
-  for (uint32_t i=0;i<l;i++) f.put(s[i]);
+  size_t l = s.length();
+  for (size_t i=0;i<l;i++) f.put(s[i]);
   f.put(0);
 }
 
@@ -269,7 +269,7 @@ void SearchIndex::write(const QCString &fileName)
     {
       for (const auto &iw : wlist)
       {
-        int ws = iw.word().length()+1;
+        size_t ws = iw.word().length()+1;
         size+=ws+4; // word + url info list offset
       }
       size+=1; // zero list terminator

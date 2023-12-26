@@ -116,7 +116,7 @@ inline void writeXMLString(TextStream &t,const QCString &s)
   t << convertToXML(s);
 }
 
-inline void writeXMLCodeString(TextStream &t,const QCString &str, int &col)
+inline void writeXMLCodeString(TextStream &t,const QCString &str, size_t &col)
 {
   if (str.isEmpty()) return;
   const char *s = str.data();

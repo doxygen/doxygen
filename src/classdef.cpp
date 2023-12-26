@@ -1817,7 +1817,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
     {
       QCString abs = m_impl->incInfo->fileDef->absFilePath();
       QCString potential;
-      unsigned int length = 0;
+      size_t length = 0;
       for (const auto &s : paths)
       {
         FileInfo info(s);
@@ -3529,7 +3529,7 @@ void ClassDefImpl::mergeMembers()
   //bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   SrcLangExt lang = getLanguage();
   QCString sep=getLanguageSpecificSeparator(lang,TRUE);
-  uint32_t sepLen = sep.length();
+  size_t sepLen = sep.length();
 
   m_impl->membersMerged=TRUE;
   //printf("  mergeMembers for %s\n",qPrint(name()));

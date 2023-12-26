@@ -30,11 +30,11 @@ QCString &QCString::sprintf( const char *format, ... )
 {
   va_list ap;
   va_start( ap, format );
-  const int minlen=256;
-  int l = length();
+  const size_t minlen=256;
+  size_t l = length();
   if (l<minlen) { resize(minlen+1); l=minlen; }
   int n=vsnprintf( rawData(), l, format, ap);
-  if (n<0) n=l;
+  if (n<0) n=static_cast<int>(l);
   resize(n);
   va_end( ap );
   return *this;
@@ -60,7 +60,7 @@ int QCString::find( char c, int index, bool cs ) const
 
 int QCString::find( const char *str, int index, bool cs ) const
 {
-  int l = length();
+  int l = static_cast<int>(length());
   if (index<0 || index>=l) return -1; // index outside string
   if (!str)  return -1;               // no string to search for
   if (!*str) return index;           // empty string matching at index
@@ -92,7 +92,7 @@ int QCString::findRev( char c, int index, bool cs) const
 {
   const char *b = data();
   const char *pos;
-  int len = length();
+  int len = static_cast<int>(length());
   if (len==0) return -1; // empty string
   if (index<0) // start from end
   {
@@ -122,8 +122,8 @@ int QCString::findRev( char c, int index, bool cs) const
 
 int QCString::findRev( const char *str, int index, bool cs) const
 {
-  int slen = qstrlen(str);
-  int len = length();
+  int slen = static_cast<int>(qstrlen(str));
+  int len = static_cast<int>(length());
   if (index<0) index = len-slen; // start from end
   else if (index>len) return -1; // bad index
   else if (index+slen>len) index=len-slen; // str would be too long
@@ -261,7 +261,7 @@ long QCString::toLong(bool *ok,int base) const
 {
   const char *p = data();
   long val=0;
-  int l = length();
+  int l = static_cast<int>(length());
   const long max_mult = INT_MAX / base;
   bool is_ok = FALSE;
   int neg = 0;
@@ -313,7 +313,7 @@ unsigned long QCString::toULong(bool *ok,int base) const
 {
   const char *p = data();
   unsigned long val=0;
-  int l = length();
+  int l = static_cast<int>(length());
   const unsigned long max_mult = 429496729;		// UINT_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
@@ -357,7 +357,7 @@ uint64_t QCString::toUInt64(bool *ok,int base) const
 {
   const char *p = data();
   uint64_t val=0;
-  int l = length();
+  int l = static_cast<int>(length());
   const uint64_t max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
@@ -480,9 +480,9 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
 {
   if (s.isEmpty() || src.isEmpty()) return s;
   const char *p, *q;
-  int srcLen = src.length();
-  int dstLen = dst.length();
-  int resLen;
+  size_t srcLen = src.length();
+  size_t dstLen = dst.length();
+  size_t resLen;
   if (srcLen!=dstLen)
   {
     int count;
@@ -521,9 +521,9 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
 {
   if (s.isEmpty() || src.isEmpty()) return s;
   const char *p, *q;
-  int srcLen = src.length();
-  int dstLen = dst.length();
-  int resLen;
+  size_t srcLen = src.length();
+  size_t dstLen = dst.length();
+  size_t resLen;
   if (srcLen!=dstLen)
   {
     int count;
@@ -567,7 +567,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     r+=dstLen;
   }
   qstrcpy(r,p);
-  result.resize(static_cast<int>(strlen(result.data())));
+  result.resize(strlen(result.data()));
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }

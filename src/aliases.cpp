@@ -247,11 +247,11 @@ struct Marker
  *  - s=="a{2,3} b" returns 6
  *  = s=="#"        returns 0
  */
-static int findEndOfCommand(const char *s)
+static size_t findEndOfCommand(const char *s)
 {
   const char *p = s;
   char c;
-  int i=0;
+  size_t i=0;
   if (p)
   {
     while ((c=*p) && isId(c)) p++;
@@ -260,7 +260,7 @@ static int findEndOfCommand(const char *s)
       QCString args = extractAliasArgs(p,0);
       i+=args.length();
     }
-    i+=static_cast<int>(p-s);
+    i+=p-s;
   }
   return i;
 }

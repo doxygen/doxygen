@@ -71,7 +71,7 @@ struct lexscannerYY_state
   bool             insideCode = FALSE;
   QCString         delimiter;
   QCString         docBlockName;
-  uint32_t         fencedSize = 0;
+  size_t           fencedSize = 0;
   bool             nestedComment = false;
 
   QCString         prefix = "yy";

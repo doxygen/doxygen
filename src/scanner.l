@@ -204,7 +204,7 @@ struct scannerYY_state
 
   int              column = 0;
 
-  uint32_t         fencedSize = 0;
+  size_t           fencedSize = 0;
   int              nestedComment = 0;
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
   QCString         programStr;
@@ -7463,7 +7463,7 @@ static inline void initMethodProtection(yyscan_t yyscanner,Protection prot)
 static void addType(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  uint32_t tl=yyextra->current->type.length();
+  size_t tl=yyextra->current->type.length();
   if( tl>0 && !yyextra->current->name.isEmpty() && yyextra->current->type.at(tl-1)!='.')
   {
     yyextra->current->type += ' ' ;
@@ -7497,7 +7497,7 @@ static QCString stripFuncPtr(const QCString &type)
 {
   // we need to strip any trailing * and & (see bugs 623023 and 649103 for test cases)
   // also needed to reset the type for 'arr' to 'int' in 'typedef int (&fp)(), arr[2]'
-  int i=type.length();
+  size_t i=type.length();
   bool funcPtr = i>0 && type[i-1]==')';
   if (funcPtr) i--;
   while (i>0 && (type[i-1]=='*' || type[i-1]=='&' || type[i-1]==' ')) i--;
@@ -7602,7 +7602,7 @@ static void setJavaProtection(yyscan_t yyscanner)
 static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &oldStyleArgName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int si = yyextra->current->args.length();
+  int si = static_cast<int>(yyextra->current->args.length());
   if (yyextra->oldStyleArgType.isEmpty()) // new argument
   {
     std::string args = yyextra->current->args.str();

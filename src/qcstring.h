@@ -138,10 +138,10 @@ class QCString
     bool isEmpty() const { return m_rep.empty(); }
 
     /** Returns the length of the string, not counting the 0-terminator. Equivalent to size(). */
-    uint32_t length() const { return static_cast<uint32_t>(m_rep.size()); }
+    size_t length() const { return m_rep.size(); }
 
     /** Returns the length of the string, not counting the 0-terminator. */
-    uint32_t size() const { return static_cast<uint32_t>(m_rep.size()); }
+    size_t size() const { return m_rep.size(); }
 
     /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
     const char *data() const { return m_rep.c_str(); }
@@ -163,11 +163,10 @@ class QCString
      *  @note the string will be resized to contain \a len characters. The contents of the
      *  string will be lost.
      */
-    bool fill( char c, int len = -1 )
+    void fill( char c, int len = -1 )
     {
       int l = len==-1 ? static_cast<int>(m_rep.size()) : len;
       m_rep = std::string(l,c);
-      return TRUE;
     }
 
     QCString &sprintf( const char *format, ... );
@@ -175,15 +174,12 @@ class QCString
     int	find( char c, int index=0, bool cs=TRUE ) const;
     int	find( const char *str, int index=0, bool cs=TRUE ) const;
     int find( const QCString &str, int index=0, bool cs=TRUE ) const;
-    //int	find( const QRegExp &rx, int index=0 ) const;
 
     int	findRev( char c, int index=-1, bool cs=TRUE) const;
     int	findRev( const char *str, int index=-1, bool cs=TRUE) const;
-    //int	findRev( const QRegExp &rx, int index=-1 ) const;
 
     int	contains( char c, bool cs=TRUE ) const;
     int	contains( const char *str, bool cs=TRUE ) const;
-    //int contains( const QRegExp &rx ) const;
 
     bool stripPrefix(const QCString &prefix)
     {
@@ -195,6 +191,7 @@ class QCString
       }
       return FALSE;
     }
+
     bool stripPrefix(const char *prefix)
     {
       return stripPrefix(QCString(prefix));
@@ -212,7 +209,7 @@ class QCString
              *this;
     }
 
-    QCString mid( size_t index, size_t len=static_cast<size_t>(-1)) const
+    QCString mid( size_t index, size_t len=static_cast<size_t>(-1) ) const
     {
       size_t slen = m_rep.size();
       if (len==static_cast<uint32_t>(-1)) len = slen-index;
@@ -319,6 +316,7 @@ class QCString
       }
       return *this;
     }
+
     QCString &insert( size_t index, const char *s )
     {
       size_t len = s ? qstrlen(s) : 0;
@@ -389,7 +387,6 @@ class QCString
     }
 
     QCString &replace( size_t index, size_t len, const char *s);
-    //QCString &replace( const QRegExp &rx, const char *str );
 
     short         toShort(  bool *ok=0, int base=10 ) const;
     uint16_t      toUShort( bool *ok=0, int base=10 ) const;
@@ -527,12 +524,12 @@ class QCString
     }
 
     /** Indexing operator. Equivalent to at(). */
-    char &operator[]( int i )
+    char &operator[]( size_t i )
     {
       return m_rep[i];
     }
 
-    const char &operator[]( int i ) const
+    const char &operator[]( size_t i ) const
     {
       return m_rep[i];
     }

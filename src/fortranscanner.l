@@ -407,14 +407,14 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                               yy_push_state(Prepass,yyscanner);
                                             }
 
-                                            int length = yyextra->inputStringPrepass.length();
+                                            size_t length = yyextra->inputStringPrepass.length();
 
                                             // Only take input after initial ampersand
                                             yyextra->inputStringPrepass+=(const char*)(yytext+(indexStart+1));
                                             yyextra->lineCountPrepass ++;
 
                                             // cut off & and remove following comment if present
-                                            truncatePrepass(yyscanner,length+indexEnd-(indexStart+1));
+                                            truncatePrepass(yyscanner,static_cast<int>(length) + indexEnd - indexStart - 1);
                                           }
                                         }
 
@@ -1643,8 +1643,8 @@ static int getAmpOrExclAtTheEnd(const char *buf, int length, char ch)
 void truncatePrepass(yyscan_t yyscanner,int index)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int length = yyextra->inputStringPrepass.length();
-  for (int i=index+1; i<length; i++) {
+  size_t length = yyextra->inputStringPrepass.length();
+  for (size_t i=index+1; i<length; i++) {
     if (yyextra->inputStringPrepass[i]=='!' && i<length-1 && yyextra->inputStringPrepass[i+1]=='<') { // save comment
       yyextra->comments.emplace_back(index, yyextra->inputStringPrepass.right(length-i-2));
     }
@@ -2018,7 +2018,7 @@ static QCString extractFromParens(const QCString &name)
   int end = extracted.findRev(")");
   if (end != -1)
   {
-    int length = extracted.length();
+    size_t length = extracted.length();
     extracted.remove(end, length);
   }
   extracted = extracted.stripWhiteSpace();

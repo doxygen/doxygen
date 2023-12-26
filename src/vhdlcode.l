@@ -956,8 +956,8 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (name.isEmpty()) return false;
 
-  int len=name.length();
-  if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
+  size_t len=name.length();
+  if (len>2 && name.at(0)=='"' && name.at(len-1)=='"')
   {
     std::string inside = name.str().substr(1,len-2);
     static const reg::Ex regg(R"(\s+)"); // any number of whitespace

@@ -79,8 +79,8 @@ struct DocParserContext
 
   QCString     includeFileName;
   QCString     includeFileText;
-  uint32_t     includeFileOffset = 0;
-  uint32_t     includeFileLength = 0;
+  size_t       includeFileOffset = 0;
+  size_t       includeFileLength = 0;
   int          includeFileLine;
   bool         includeFileShowLineNo = false;
 

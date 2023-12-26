@@ -861,12 +861,10 @@ void VhdlDocGen::formatString(const QCString &s, OutputList& ol,const MemberDef*
   qcs.stripPrefix("of");
   qcs.stripPrefix("OF");
 
-  // VhdlDocGen::deleteCharRev(qcs,';');
-  //char white='\t';
-  int len = qcs.length();
-  unsigned int index=1;//temp.length();
+  size_t len = qcs.length();
+  size_t index=1;
 
-  for (int j=0;j<len;j++)
+  for (size_t j=0;j<len;j++)
   {
     char c=qcs[j];
     char b=c;
@@ -2714,7 +2712,7 @@ void FlowChart::delFlowList()
 
 void FlowChart::alignCommentNode(TextStream &t,QCString com)
 {
-  uint32_t max=0;
+  size_t max=0;
   QCString s;
   StringVector ql=split(com.str(),"\n");
   for (size_t j=0;j<ql.size();j++)
@@ -2724,9 +2722,9 @@ void FlowChart::alignCommentNode(TextStream &t,QCString com)
   }
 
   s=ql.back();
-  int diff=max-s.length();
+  int diff=static_cast<int>(max-s.length());
 
-  QCString n(1);
+  QCString n;
   if (diff>0)
   {
     n.fill(' ',2*diff);
@@ -3280,9 +3278,9 @@ void FlowChart::alignFuncProc( QCString & q,const ArgumentList &al,bool isFunc)
   size_t index=al.size();
   if (index==0) return;
 
-  int len=q.length()+VhdlDocGen::getFlowMember()->name().length();
+  size_t len=q.length()+VhdlDocGen::getFlowMember()->name().length();
   QCString prev,temp;
-  prev.fill(' ',len+1);
+  prev.fill(' ',static_cast<int>(len)+1);
 
   q+="\n";
   for (const Argument &arg : al)

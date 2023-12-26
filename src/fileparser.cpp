@@ -34,11 +34,11 @@ void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
               )
 {
   int lineNr = startLine!=-1 ? startLine : 1;
-  int length = input.length();
-  int i=0;
+  size_t length = input.length();
+  size_t i=0;
   while (i<length && (endLine==-1 || lineNr<=endLine))
   {
-    int j=i;
+    size_t j=i;
     while (j<length && input[j]!='\n') j++;
     QCString lineStr = input.mid(i,j-i);
     codeOutIntf.startCodeLine(lineNr);

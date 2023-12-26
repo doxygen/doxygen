@@ -314,7 +314,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   p->code = findRe(p->inputString,csRe, p->code + 1);
   int com = p->inputString.find(p->strComment.data());
   int ref = findRe(p->inputString,cendRe, p->code + 1);
-  int len = p->strComment.size();
+  int len = static_cast<int>(p->strComment.size());
 
   int ll = com + len;
   int diff = ref - ll - 3;

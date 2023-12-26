@@ -1368,7 +1368,7 @@ void LayoutParser::endElement( const std::string &name )
   //printf("endElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
   auto it=g_elementHandlers.end();
 
-  if (!m_scope.isEmpty() && m_scope.right(static_cast<uint32_t>(name.length())+1)==name+"/")
+  if (!m_scope.isEmpty() && m_scope.right(name.length()+1)==name+"/")
   { // element ends current scope
     it = g_elementHandlers.find(m_scope.left(m_scope.length()-1).str());
   }
@@ -1514,7 +1514,7 @@ QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
     SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
     if (key==lang) // found matching key
     {
-      if (e==-1) e=input.length();
+      if (e==-1) e=static_cast<int>(input.length());
       return input.mid(i+1,e-i-1);
     }
   }
