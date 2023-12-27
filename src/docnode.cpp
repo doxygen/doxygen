@@ -5380,6 +5380,47 @@ reparsetoken:
           }
           else // found an end tag
           {
+            const DocNodeVariant *n=parent();
+            int indent = 0;
+            bool rerun = false;
+            while (n)
+            {
+              if (std::get_if<DocAutoListItem>(n))
+              {
+                continue;
+              }
+              else if (std::get_if<DocAutoList>(n))
+              {
+                const DocAutoList *al = std::get_if<DocAutoList>(n);
+                indent = al->indent();
+              }
+              else if (std::get_if<DocPara>(n))
+              {
+                QCString tagNameLower = QCString(parser()->context.token->name).lower();
+                auto topStyleChange = [](const DocStyleChangeStack &stack) -> const DocStyleChange &
+                {
+                  return std::get<DocStyleChange>(*stack.top());
+                };
+  
+                if (parser()->context.styleStack.empty() ||                            // no style change
+                    topStyleChange(parser()->context.styleStack).tagName()!=tagNameLower ||  // wrong style change
+                    topStyleChange(parser()->context.styleStack).position()!=parser()->context.nodeStack.size() // wrong position
+                   )
+                {
+                  QCString indentStr;
+                  indentStr.fill(' ',indent);
+                  parser()->tokenizer.unputString("\\ilinebr.\\ilinebr"+indentStr+"</"+parser()->context.token->name+">");
+                  rerun = true;
+                  break;
+                }
+              }
+              else
+              {
+                break;
+              }
+              n=::parent(n);
+            }
+            if (rerun) break;
             retval = handleHtmlEndTag(parser()->context.token->name);
           }
           if (retval!=RetVal_OK)
