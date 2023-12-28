@@ -5385,11 +5385,7 @@ reparsetoken:
             bool rerun = false;
             while (n)
             {
-              if (std::get_if<DocAutoListItem>(n))
-              {
-                continue;
-              }
-              else if (std::get_if<DocAutoList>(n))
+              if (std::get_if<DocAutoList>(n))
               {
                 const DocAutoList *al = std::get_if<DocAutoList>(n);
                 indent = al->indent();
@@ -5414,7 +5410,7 @@ reparsetoken:
                   break;
                 }
               }
-              else
+              else if (!std::get_if<DocAutoListItem>(n))
               {
                 break;
               }
