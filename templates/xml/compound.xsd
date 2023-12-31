@@ -1078,6 +1078,7 @@
       <xsd:enumeration value="hcl"/>
       <xsd:enumeration value="regex"/>
       <xsd:enumeration value="ebnf"/>
+      <xsd:enumeration value="files"/>
     </xsd:restriction>
   </xsd:simpleType>
 
