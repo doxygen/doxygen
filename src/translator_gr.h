@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_9_6
+class TranslatorGreek : public Translator
 {
   public:
 
@@ -74,16 +74,6 @@ class TranslatorGreek : public TranslatorAdapter_1_9_6
     QCString trISOLang() override
     {
       return "el";
-    }
-
-    QCString latexFontenc() override
-    {
-      return "";
-    }
-    QCString latexFont() override
-    {
-      return "\\setmainfont{Libertinus Sans}\n"
-             "\\setmonofont{Courier New}\n";
     }
 
     // --- Language translation methods -------------------
@@ -1171,17 +1161,6 @@ class TranslatorGreek : public TranslatorAdapter_1_9_6
     QCString trRTFansicp() override
     {
       return "1253";
-    }
-
-    QCString latexCommandName() override
-    {
-      QCString latex_command = Config_getString(LATEX_CMD_NAME);
-      if (latex_command.isEmpty()) latex_command = "latex";
-      if (Config_getBool(USE_PDFLATEX))
-      {
-        if (latex_command == "latex") latex_command = "xelatex";
-      }
-      return latex_command;
     }
 
     /*! Used as ansicpg for RTF fcharset
