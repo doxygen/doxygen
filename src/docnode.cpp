@@ -5155,6 +5155,58 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
   return retval;
 }
 
+static bool checkIfHtmlEndTagEndsAutoList(DocParser *parser,const DocNodeVariant *n)
+{
+  // expected hierarchy:
+  // 1.    DocAutoListItem <- n
+  // 2.  DocAutoList       <- parent(n)
+  // 3. DocPara            <- parent(parent(n))
+
+  // step 1
+  if (!std::get_if<DocAutoListItem>(n)) // not inside a auto list item
+  {
+    return false;
+  }
+
+  // step 2
+  n = parent(n);
+  int indent = 0;
+  const auto docAutoList = std::get_if<DocAutoList>(n);
+  if (docAutoList) // capture indent
+  {
+    indent = docAutoList->indent();
+  }
+  else
+  {
+    return false;
+  }
+
+  // step 3
+  n = parent(n);
+  const auto docPara = std::get_if<DocPara>(n);
+  if (docPara)
+  {
+    QCString tagNameLower = QCString(parser->context.token->name).lower();
+    auto topStyleChange = [](const DocStyleChangeStack &stack) -> const DocStyleChange &
+    {
+      return std::get<DocStyleChange>(*stack.top());
+    };
+
+    if (parser->context.styleStack.empty() ||                                                   // no style change
+        topStyleChange(parser->context.styleStack).tagName()!=tagNameLower ||                   // wrong style change
+        topStyleChange(parser->context.styleStack).position()!=parser->context.nodeStack.size() // wrong position
+       )
+    {
+      // insert an artificial 'end of autolist' marker and parse again
+      QCString indentStr;
+      indentStr.fill(' ',indent);
+      parser->tokenizer.unputString("\\ilinebr.\\ilinebr"+indentStr+"</"+parser->context.token->name+">");
+      return true;
+    }
+  }
+  return false;
+}
+
 int DocPara::parse()
 {
   AUTO_TRACE();
@@ -5380,43 +5432,10 @@ reparsetoken:
           }
           else // found an end tag
           {
-            const DocNodeVariant *n=parent();
-            int indent = 0;
-            bool rerun = false;
-            while (n)
+            if (checkIfHtmlEndTagEndsAutoList(parser(),parent()))
             {
-              if (std::get_if<DocAutoList>(n))
-              {
-                const DocAutoList *al = std::get_if<DocAutoList>(n);
-                indent = al->indent();
-              }
-              else if (std::get_if<DocPara>(n))
-              {
-                QCString tagNameLower = QCString(parser()->context.token->name).lower();
-                auto topStyleChange = [](const DocStyleChangeStack &stack) -> const DocStyleChange &
-                {
-                  return std::get<DocStyleChange>(*stack.top());
-                };
-  
-                if (parser()->context.styleStack.empty() ||                            // no style change
-                    topStyleChange(parser()->context.styleStack).tagName()!=tagNameLower ||  // wrong style change
-                    topStyleChange(parser()->context.styleStack).position()!=parser()->context.nodeStack.size() // wrong position
-                   )
-                {
-                  QCString indentStr;
-                  indentStr.fill(' ',indent);
-                  parser()->tokenizer.unputString("\\ilinebr.\\ilinebr"+indentStr+"</"+parser()->context.token->name+">");
-                  rerun = true;
-                  break;
-                }
-              }
-              else if (!std::get_if<DocAutoListItem>(n))
-              {
-                break;
-              }
-              n=::parent(n);
+              break; // new code has been pushed back to the scanner, need to reparse
             }
-            if (rerun) break;
             retval = handleHtmlEndTag(parser()->context.token->name);
           }
           if (retval!=RetVal_OK)
