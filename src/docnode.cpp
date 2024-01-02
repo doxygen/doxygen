@@ -70,7 +70,7 @@ static const std::set<std::string> g_plantumlEngine {
   "uml", "bpm", "wire", "dot", "ditaa",
   "salt", "math", "latex", "gantt", "mindmap",
   "wbs", "yaml", "creole", "json", "flow",
-  "board", "git", "hcl", "regex", "ebnf"
+  "board", "git", "hcl", "regex", "ebnf", "files"
 };
 
 //---------------------------------------------------------------------------
@@ -5200,7 +5200,7 @@ static bool checkIfHtmlEndTagEndsAutoList(DocParser *parser,const DocNodeVariant
       // insert an artificial 'end of autolist' marker and parse again
       QCString indentStr;
       indentStr.fill(' ',indent);
-      parser->tokenizer.unputString("\\ilinebr.\\ilinebr"+indentStr+"</"+parser->context.token->name+">");
+      parser->tokenizer.unputString("\\ilinebr "+indentStr+".\\ilinebr"+indentStr+"</"+parser->context.token->name+">");
       return true;
     }
   }
