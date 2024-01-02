@@ -238,7 +238,7 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
   }
 }
 
-static bool createDVIFile(const QCString &fileName)
+static bool createDVIFile(const Dir &thisDir, const QCString &fileName)
 {
   QCString latexCmd = "latex";
   const size_t argsLen = 4096;
@@ -251,7 +251,7 @@ static bool createDVIFile(const QCString &fileName)
     if ((Portable::system(latexCmd,args)!=0) || (Portable::system(latexCmd,args)!=0))
     {
       err("Problems running latex. Check your installation or look "
-          "for typos in %s.tex and check %s.log!\n",qPrint(fileName),qPrint(fileName));
+          "for typos in '%s/%s.tex' and check '%s/%s.log'!\n",qPrint(thisDir.absPath()),qPrint(fileName),qPrint(thisDir.absPath()),qPrint(fileName));
       return false;
     }
     // check the log file if we need to run latex again to resolve references
