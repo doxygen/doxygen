@@ -1329,7 +1329,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          unput(*yytext);
                          return 0;
                        }
-<St_ILine>{LINENR}/[\n\.]     |
+<St_ILine>{LINENR}/[\\@\n\.]  |
 <St_ILine>{LINENR}{BLANK}     {
                          bool ok = false;
                          int nr = QCString(yytext).toInt(&ok);
