@@ -5200,7 +5200,7 @@ static bool checkIfHtmlEndTagEndsAutoList(DocParser *parser,const DocNodeVariant
       // insert an artificial 'end of autolist' marker and parse again
       QCString indentStr;
       indentStr.fill(' ',indent);
-      parser->tokenizer.unputString("\\ilinebr.\\ilinebr"+indentStr+"</"+parser->context.token->name+">");
+      parser->tokenizer.unputString("\\ilinebr "+indentStr+".\\ilinebr"+indentStr+"</"+parser->context.token->name+">");
       return true;
     }
   }
