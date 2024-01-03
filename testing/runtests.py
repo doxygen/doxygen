@@ -207,7 +207,19 @@ class Tester:
         cmd = '%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir)
         if self.args.verbose:
             print('cmd=%s' % cmd)
-        if os.system(cmd)!=0:
+        result = os.system(cmd)
+        should_fail = self.args.should_fail
+        if self.args.should_fail_ids:
+            for id in list(itertools.chain.from_iterable(self.args.should_fail_ids)):
+                if id in self.test:
+                    should_fail = id
+        if should_fail:
+            if result != 0:
+                sys.exit(0)
+            elif result == 0:
+                print('Error: run %s on %s/Doxyfile should fail' % (self.args.doxygen,self.test_out))
+                sys.exit(1)
+        elif result != 0:
             print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
             sys.exit(1)
 
@@ -661,6 +673,9 @@ def main():
         'create xml output and check with xmllint against xsd',action="store_true")
     parser.add_argument('--pdf',help='create LaTeX output and create pdf from it',
         action="store_true")
+    parser.add_argument('--should_fail_id',nargs='+',dest='should_fail_ids',action='append',help=
+        'test number n should fail (the option can be specified multiple times)')
+    parser.add_argument('--should_fail',help='Running doxygen should fail', action="store_true")
     parser.add_argument('--subdirs',help='use the configuration parameter CREATE_SUBDIRS=YES',
         action="store_true")
     parser.add_argument('--clang',help='use CLANG_ASSISTED_PARSING, works only when '
