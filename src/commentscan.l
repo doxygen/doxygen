@@ -469,6 +469,7 @@ struct commentscanYY_state
   QCString         anchorTitle;
   QCString         htmlAnchorStr;
   bool             htmlAnchor = false;
+  bool             CScode = false;
 };
 
 
@@ -529,12 +530,14 @@ IMG       [iI][mM][gG]
 HR        [hH][rR]
 PARA      [pP][aA][rR][aA]
 CODE      [cC][oO][dD][eE]
+ENDCODE   "/"{CODE}
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 CENTER    [cC][eE][nN][tT][eE][rR]
 DIV       [dD][iI][vV]
 DETAILS   [dD][eE][tT][aA][iI][lL][sS]
 DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
 DETAILEDHTMLOPT {CODE}
+DETAILEDHTMLOPTEND {ENDCODE}
 SUMMARY   [sS][uU][mM][mM][aA][rR][yY]
 REMARKS   [rR][eE][mM][aA][rR][kK][sS]
 AHTML     [aA]{BN}*
@@ -668,7 +671,35 @@ STopt  [^\n@\\]*
                                           // continue with the same input
                                           REJECT;
                                         }
-<Comment>"<"{DETAILEDHTMLOPT}{ATTR}">"  { // HTML command that ends a brief description
+<Comment>"<"{DETAILEDHTMLOPT}">"        { // HTML <code> command that ends a brief description
+                                          // without attributes
+                                          if (yyextra->current->lang==SrcLangExt_CSharp)
+                                          {
+                                            yyextra->CScode=true;
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner,"@code{cs}");
+                                          }
+                                          else
+                                          {
+                                            // continue with the same input
+                                            REJECT;
+                                          }
+                                        }
+<Comment>"<"{DETAILEDHTMLOPTEND}">"     { // HTML command that ends a brief description
+                                          if (yyextra->CScode)
+                                          {
+                                            addOutput(yyscanner,"@endcode");
+                                            yyextra->CScode=false;
+                                          }
+                                          else
+                                          {
+                                            yyextra->CScode=false;
+                                            // continue with the same input
+                                            REJECT;
+                                          }
+                                        }
+<Comment>"<"{DETAILEDHTMLOPT}{ATTR}">"  { // HTML <code> command that ends a brief description
+                                          // with attributes, so cannot be CS.
                                           if (yyextra->current->lang==SrcLangExt_CSharp)
                                           {
                                             setOutput(yyscanner,OutputDoc);
