@@ -9,7 +9,7 @@ config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
 hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
 pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
-
+verbose = False
 
 def xopen(fname, mode='r', encoding='utf-8'):
     '''Unified file opening for Python 2 an Python 3.
@@ -27,6 +27,10 @@ def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
 
     Python 2 does not have the encoding argument. Python 3 has one. and
     '''
+    global verbose
+
+    if verbose:
+        print('cmd=%s' % cmd)
 
     if sys.version_info[0] == 2:
         return os.popen(cmd).read() # Python 2 without encoding
@@ -200,10 +204,12 @@ class Tester:
         if (self.args.noredir):
             redir=''
 
-        if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
+        cmd = '%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir)
+        if self.args.verbose:
+            print('cmd=%s' % cmd)
+        if os.system(cmd)!=0:
             print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
             sys.exit(1)
-
 
     def check_link_rtf_file(self,fil):
         bkmk_res = []
@@ -612,6 +618,7 @@ def split_and_keep(s,sep):
     return s
 
 def main():
+    global verbose
     # argument handling
     parser = argparse.ArgumentParser(description='run doxygen tests')
     parser.add_argument('--updateref',help=
@@ -664,10 +671,12 @@ def main():
     parser.add_argument('--cfg',nargs='+',dest='cfgs',action='append',help=
         'run test with extra doxygen configuration settings '
         '(the option may be specified multiple times)')
+    parser.add_argument('--verbose',help='Show commands to run', action="store_true")
 
     test_flags = split_and_keep(os.getenv('TEST_FLAGS', default=''), '--')
 
     args = parser.parse_args(test_flags + sys.argv[1:])
+    verbose = args.verbose
 
     # sanity check
     if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
