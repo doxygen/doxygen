@@ -558,7 +558,8 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
 
   if (!formulasToGenerate.empty()) // there are new formulas
   {
-    if (!createDVIFile(formulaFileName)) return;
+    if (!createDVIFile(thisDir, formulaFileName))
+        term("\n");
 
     auto getFormula = [this](int pageNum) -> Formula *
     {
