@@ -3841,26 +3841,23 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
         }
         else
         {
-          static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr *\n)");
-          static const reg::Ex nonBrief1(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *\d+ *[\\@]ilinebr *)");
+          static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr *([\n]?))");
           std::string str = yyextra->current->brief.str();
           reg::Match match;
-          reg::Match match1;
           if (reg::match(str,match,nonBrief)) // match found
           {
-            yyextra->current->brief = yyextra->current->brief.left(yyextra->current->brief.length()-1);
-            // set warning line correct
-            yyextra->current->brief += "\\iline " + QCString().setNum(1 + static_cast<int>(std::stoul(match[1].str()))) + " \\ilinebr ";
-            foundMatch = true;
-          }
-          else if (reg::match(str,match1,nonBrief1)) // match found
-          {
+            if (QCString(match[2].str()) == "\n")
+            {
+              yyextra->current->brief = yyextra->current->brief.left(yyextra->current->brief.length()-1);
+              // set warning line correct
+              yyextra->current->brief += "\\iline " + QCString().setNum(1 + static_cast<int>(std::stoul(match[1].str()))) + " \\ilinebr ";
+            }
             foundMatch = true;
           }
         }
         if (foundMatch)
         {
-          yyextra->pOutputString = &yyextra->current->brief;
+            yyextra->pOutputString = &yyextra->current->brief;
         }
         else
         {
