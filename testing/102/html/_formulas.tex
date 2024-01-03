@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage{ifthen}
+\usepackage{epsfig}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+  \makeatletter
+    \def\doxynewunicodechar#1#2{%
+    \@tempswafalse
+    \edef\nuc@tempa{\detokenize{#1}}%
+    \if\relax\nuc@tempa\relax
+      \nuc@emptyargerr
+    \else
+      \edef\@tempb{\expandafter\@car\nuc@tempa\@nil}%
+      \nuc@check
+      \if@tempswa
+        \@namedef{u8:\nuc@tempa}{#2}%
+      \fi
+    \fi
+  }
+  \makeatother
+  \doxynewunicodechar{⁻}{${}^{-}$}% Superscript minus
+  \doxynewunicodechar{²}{${}^{2}$}% Superscript two
+  \doxynewunicodechar{³}{${}^{3}$}% Superscript three
+
+\pagestyle{empty}
+\begin{document}
+$ \e $
+\pagebreak
+
+\[ \e \]
+\pagebreak
+
+\begin{eqnarray*} \e
+ \end{eqnarray*}
+\pagebreak
+
+\end{document}
