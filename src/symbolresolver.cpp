@@ -270,7 +270,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
 
   // below is a more efficient coding of
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
-  QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+1);
+  QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen, QCString::ExplicitSize);
   char *pk=key.rawData();
   qstrcpy(pk,scope->name().data()); *(pk+scopeNameLen-1)='+';
   pk+=scopeNameLen;
@@ -444,7 +444,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 
   // below is a more efficient coding of
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
-  QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+argsLen+1);
+  QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+argsLen, QCString::ExplicitSize);
   char *pk=key.rawData();
   qstrcpy(pk,scope->name().data()); *(pk+scopeNameLen-1)='+';
   pk+=scopeNameLen;
@@ -1433,7 +1433,7 @@ int SymbolResolver::Private::isAccessibleFrom(StringUnorderedSet &visitedKeys,
         goto done;
       }
       StringUnorderedSet visitedNamespaces;
-      if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaces,nscope->getUsedNamespaces(),item,0))
+      if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaces,nscope->getUsedNamespaces(),item,QCString()))
       {
         AUTO_TRACE_ADD("found via used namespace");
         goto done;
@@ -1448,7 +1448,7 @@ int SymbolResolver::Private::isAccessibleFrom(StringUnorderedSet &visitedKeys,
         goto done;
       }
       StringUnorderedSet visitedNamespaces;
-      if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaces,nfile->getUsedNamespaces(),item,0))
+      if (accessibleViaUsingNamespace(visitedKeys,visitedNamespaces,nfile->getUsedNamespaces(),item,QCString()))
       {
         AUTO_TRACE_ADD("found via used namespace");
         goto done;

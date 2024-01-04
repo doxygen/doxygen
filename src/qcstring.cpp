@@ -187,7 +187,7 @@ QCString QCString::simplifyWhiteSpace() const
   if ( isEmpty() )                            // nothing to do
     return *this;
 
-  QCString result( length()+1 );
+  QCString result( length(), ExplicitSize );
   const char *from  = data();
   char *to    = result.rawData();
   char *first = to;
@@ -493,7 +493,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   {
     resLen = s.length();
   }
-  QCString result(resLen+1);
+  QCString result(resLen, QCString::ExplicitSize);
   char *r;
   for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
   {
@@ -534,7 +534,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   {
     resLen = s.length();
   }
-  QCString result(resLen+1);
+  QCString result(resLen, QCString::ExplicitSize);
   char *r;
   for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
   {

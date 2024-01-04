@@ -889,13 +889,13 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       {
                                         if (!Config_getBool(STRIP_CODE_COMMENTS))
                                         {
-                                          codifyLines(yyscanner,text,0,false,true);
+                                          codifyLines(yyscanner,text,QCString(),false,true);
                                         }
                                         else yyextra->yyLineNr++; // skip complete line, but count line
                                       }
                                       else // normal comment
                                       {
-                                        codifyLines(yyscanner,text,0,false,true);
+                                        codifyLines(yyscanner,text,QCString(),false,true);
                                       }
                                     }
 <*>{TEXTT}                          { // found normal or special comment after something
@@ -906,12 +906,12 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                         // hide special comment
                                         if (!Config_getBool(STRIP_CODE_COMMENTS))
                                         {
-                                          codifyLines(yyscanner,text,0,false,true);
+                                          codifyLines(yyscanner,text,QCString(),false,true);
                                         }
                                       }
                                       else // normal comment
                                       {
-                                        codifyLines(yyscanner,text,0,false,true);
+                                        codifyLines(yyscanner,text,QCString(),false,true);
                                       }
                                     }
 

@@ -103,6 +103,8 @@ class QCString
 
     QCString( std::string &&s) : m_rep(std::move(s)) {}
 
+    QCString( int ) = delete;
+
     /** For converting a JavaCC string */
     QCString( const JavaCCString &s)
     {
@@ -119,7 +121,8 @@ class QCString
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (also counting the 0-terminator!)
      */
-    explicit QCString( size_t size ) { m_rep.resize(size>0 ? size-1 : 0); }
+    enum SizeTag { ExplicitSize };
+    explicit QCString( size_t size, SizeTag t) { m_rep.resize(size); }
 
     /** creates a string from a plain C string.
      *  @param[in] str A zero terminated C string. When 0 an empty string is created.
@@ -289,7 +292,7 @@ class QCString
     // Returns a copy of this string repeated n times
     QCString repeat(unsigned int n) const
     {
-      QCString result(n * size() + 1);
+      QCString result(n * size(), ExplicitSize);
       size_t offset = 0;
       for (offset = 0; offset < n * size(); offset += size())
       {

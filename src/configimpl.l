@@ -674,8 +674,8 @@ static QCString configStringRecode(
 {
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
   size_t inputSize=str.length();
-  size_t outputSize=inputSize*4+1;
-  QCString output(outputSize);
+  size_t outputSize=inputSize*4;
+  QCString output(outputSize, QCString::ExplicitSize);
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {

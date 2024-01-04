@@ -56,7 +56,7 @@ static EntryList g_instFiles;
 
 struct VHDLOutlineParser::Private
 {
-  void parseVhdlfile(const QCString &fileName,const char* inputBuffer,bool inLine);
+  void parseVhdlfile(const QCString &fileName,const QCString &inputBuffer,bool inLine);
 
   VHDLOutlineParser      *thisParser = nullptr;
   VhdlParser             *vhdlParser = nullptr;
@@ -86,7 +86,7 @@ struct VHDLOutlineParser::Private
 };
 
 void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
-                                               const char* inputBuffer,bool inLine)
+                                               const QCString &inputBuffer,bool inLine)
 {
   QCString s =inputBuffer;
   CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(s.data()), (int)s.size(), 1, 1);
@@ -474,7 +474,7 @@ void VHDLOutlineParser::parsePrototype(const QCString &text)
   p->varr=TRUE;
 }
 
-void VHDLOutlineParser::addCompInst(const char *n, const char* instName, const char* comp,int iLine)
+void VHDLOutlineParser::addCompInst(const QCString &n, const QCString &instName, const QCString &comp,int iLine)
 {
   VhdlParser::SharedState *s = &p->shared;
   s->current->vhdlSpec=VhdlSpecifier::INSTANTIATION;
@@ -516,8 +516,8 @@ void VHDLOutlineParser::addCompInst(const char *n, const char* instName, const c
   }
 }
 
-void VHDLOutlineParser::addVhdlType(const char *n,int startLine,EntryType section,
-    VhdlSpecifier spec,const char* args,const char* type,Protection prot)
+void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType section,
+    VhdlSpecifier spec,const QCString &args,const QCString &type,Protection prot)
 {
   VhdlParser::SharedState *s = &p->shared;
   QCString name(n);
@@ -629,8 +629,8 @@ QCString VHDLOutlineParser::popLabel(QCString & q)
 
 
 
-void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
-                          const char *s4,const char *s5,const char *s6)
+void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCString &s3,
+                                 const QCString &s4,const QCString &s5,const QCString &s6)
 {
   VhdlParser::SharedState *s = &p->shared;
   (void)s5; // avoid unused warning
@@ -641,13 +641,13 @@ void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
   {
     Argument arg;
     arg.name=n;
-    if (s3)
+    if (!s3.isEmpty())
     {
       arg.type=s3;
     }
     arg.type+=" ";
     arg.type+=s4;
-    if (s6)
+    if (!s6.isEmpty())
     {
       arg.type+=s6;
     }

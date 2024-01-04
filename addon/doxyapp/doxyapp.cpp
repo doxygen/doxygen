@@ -129,11 +129,11 @@ static void findXRefSymbols(FileDef *fd)
 
   // parse the source code
   intf->parseCode(xrefList,
-                0,
+                QCString(),
                 fileToString(fd->absFilePath()),
                 lang,
                 FALSE,
-                0,
+                QCString(),
                 fd);
 }
 

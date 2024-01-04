@@ -539,7 +539,7 @@ static void buildFileList(const Entry *root)
     }
     else
     {
-      QCString text(4096);
+      QCString text(4096, QCString::ExplicitSize);
       text.sprintf("the name '%s' supplied as "
           "the argument in the \\file statement ",
           qPrint(root->name));

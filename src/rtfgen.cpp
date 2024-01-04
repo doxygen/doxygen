@@ -2174,7 +2174,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   }
 
   const int maxLineLength = 10240;
-  static QCString lineBuf(maxLineLength);
+  static QCString lineBuf(maxLineLength, QCString::ExplicitSize);
 
   // scan until find end of header
   // this is EXTREEEEEEEMLY brittle.  It works on OUR rtf

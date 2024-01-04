@@ -182,14 +182,14 @@ static void do_warn(bool enabled, const QCString &file, int line, const char *pr
   // format + arguments
   // prefix
   // 1 position for `\0`
-  size_t bufSize = vsnprintf(NULL, 0, fmt, args) + l + 1;
-  QCString text(bufSize);
+  size_t bufSize = vsnprintf(NULL, 0, fmt, args) + l;
+  QCString text(bufSize, QCString::ExplicitSize);
   if (prefix)
   {
     qstrncpy(text.rawData(),prefix,bufSize);
   }
   vsnprintf(text.rawData()+l, bufSize-l, fmt, argsCopy);
-  text[static_cast<int>(bufSize)-1]='\0';
+  text[bufSize]='\0';
   format_warn(file,line,text);
 
   va_end(argsCopy);

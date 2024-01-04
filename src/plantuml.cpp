@@ -292,7 +292,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
           for (const auto &str : files_kv->second)
           {
             const int maxCmdLine = 40960;
-            QCString epstopdfArgs(maxCmdLine);
+            QCString epstopdfArgs(maxCmdLine, QCString::ExplicitSize);
             epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",
                 pumlOutDir.data(),str.c_str(), pumlOutDir.data(),str.c_str());
             if ((exitCode=Portable::system("epstopdf",epstopdfArgs.data()))!=0)

@@ -2441,7 +2441,7 @@ QCString latexEscapeLabelName(const QCString &s)
 {
   //printf("latexEscapeLabelName(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
-  QCString tmp(s.length()+1);
+  QCString tmp(s.length(), QCString::ExplicitSize);
   TextStream t;
   const char *p=s.data();
   char c;
@@ -2485,7 +2485,7 @@ QCString latexEscapeIndexChars(const QCString &s)
 {
   //printf("latexEscapeIndexChars(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
-  QCString tmp(s.length()+1);
+  QCString tmp(s.length(), QCString::ExplicitSize);
   TextStream t;
   const char *p=s.data();
   char c;
