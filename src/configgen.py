@@ -666,7 +666,7 @@ def parseOptionDoc(node, first):
 def parseGroupsDoc(node):
     name = node.getAttribute('name')
     doc = node.getAttribute('docs')
-    print("\section config_%s %s" % (name.lower(), doc))
+    print("\\section config_%s %s" % (name.lower(), doc))
     # Start of list has been moved to the first option for better
     # anchor placement
     #  print "<dl>"

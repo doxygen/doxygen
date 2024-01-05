@@ -58,7 +58,7 @@
              - [any mark] introduced instead of [unreachable] only
              - marks highlighted in HTML
   2010/08/30 - Highlighting in what will be the table in langhowto.html modified.
-  2010/09/27 - The underscore in \latexonly part of the generated language.dox
+  2010/09/27 - The underscore in \\latexonly part of the generated language.dox
                was prefixed by backslash (was LaTeX related error).
   2013/02/19 - Better diagnostics when translator_xx.h is too crippled.
   2013/06/25 - TranslatorDecoder checks removed after removing the class.
@@ -1471,7 +1471,7 @@ class TrManager:
         # Remove the items for identifiers that were found in the file.
         while lst_in:
             item = lst_in.pop(0)
-            rexItem = re.compile('.*' + item + ' *\(')
+            rexItem = re.compile(r'.*' + item + r' *\(')
             if rexItem.match(cont):
                 del dic[item]
 
