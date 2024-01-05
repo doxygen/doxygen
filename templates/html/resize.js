@@ -91,8 +91,27 @@ function initResizable(treeview) {
   content = $("#doc-content");
   footer  = $("#nav-path");
   sidenav = $("#side-nav");
-  if (treeview)
-  {
+  if (!treeview) {
+    title   = $("#titlearea");
+    titleH  = $(title).height();
+    let animating = false;
+    content.on("scroll", function() {
+      slideOpts = { duration: 200,
+                    step: function() {
+                        contentHeight = $(window).height() - header.outerHeight();
+                        content.css({ height : contentHeight + "px" });
+                      },
+                    done: function() { animating=false; }
+                  };
+      if (content.scrollTop()>titleH && title.css('display')!='none' && !animating) {
+        title.slideUp(slideOpts);
+        animating=true;
+      } else if (content.scrollTop()<=titleH && title.css('display')=='none' && !animating) {
+        title.slideDown(slideOpts);
+        animating=true;
+      }
+    });
+  } else {
     navtree = $("#nav-tree");
     $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(); } });
     $(sidenav).resizable({ minWidth: 0 });
