@@ -871,28 +871,6 @@ void FTVHelp::generateTreeViewScripts()
 
   // generate navtree.js & navtreeindex.js
   generateJSNavTree(p->indentNodes[0]);
-
-  // copy resize.js & navtree.css
-  auto &mgr = ResourceMgr::instance();
-  {
-    std::ofstream f = Portable::openOutputStream(htmlOutput+"/resize.js");
-    if (f.is_open())
-    {
-      TextStream t(&f);
-      t << substitute(
-             substitute(mgr.getAsString("resize.js"),
-                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
-                "$PROJECTID",      getProjectId());
-    }
-  }
-  {
-    std::ofstream f = Portable::openOutputStream(htmlOutput+"/navtree.css");
-    if (f.is_open())
-    {
-      TextStream t(&f);
-      t << HtmlGenerator::getNavTreeCss();
-    }
-  }
 }
 
 // write tree inside page
