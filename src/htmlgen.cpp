@@ -406,16 +406,13 @@ static QCString substituteHtmlKeywords(const QCString &str,
       generatedBy = theTranslator->trGeneratedBy();
       break;
   }
+  treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   if (treeView)
   {
-    treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
-    //                    "<script type=\"text/javascript\">var page_layout=";
-    //treeViewCssJs += Config_getBool(DISABLE_INDEX) ? "1" : "0";
-    //treeViewCssJs += ";</script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
+    treeViewCssJs += "<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
+                     "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
   }
+  treeViewCssJs += "<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n";
 
   if (searchEngine)
   {
@@ -1208,6 +1205,29 @@ void HtmlGenerator::init()
     mgr.copyResource("menu.js",dname);
   }
 
+  // copy navtree.css
+  {
+    std::ofstream f = Portable::openOutputStream(dname+"/navtree.css");
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << getNavTreeCss();
+    }
+  }
+
+  // copy resize.js
+  {
+    std::ofstream f = Portable::openOutputStream(dname+"/resize.js");
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << substitute(
+             substitute(mgr.getAsString("resize.js"),
+                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
+                "$PROJECTID",      getProjectId());
+    }
+  }
+
   if (Config_getBool(HTML_COPY_CLIPBOARD))
   {
     std::ofstream f = Portable::openOutputStream(dname+"/clipboard.js");
@@ -1609,6 +1629,8 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
 
     Doxygen::indexList->addStyleSheetFile("jquery.js");
+    Doxygen::indexList->addStyleSheetFile("resize.js");
+    Doxygen::indexList->addStyleSheetFile("navtree.css");
 
     Doxygen::indexList->addStyleSheetFile("dynsections.js");
 
@@ -2786,6 +2808,7 @@ static void writeDefaultQuickLinks(TextStream &t,
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool searchEngine = Config_getBool(SEARCHENGINE);
   bool externalSearch = Config_getBool(EXTERNAL_SEARCH);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
   LayoutNavEntry::Kind kind = LayoutNavEntry::None;
   LayoutNavEntry::Kind altKind = LayoutNavEntry::None; // fall back for the old layout file
@@ -2856,7 +2879,9 @@ static void writeDefaultQuickLinks(TextStream &t,
       << (searchEngine?"true":"false") << ","
       << (serverBasedSearch?"true":"false") << ",'"
       << searchPage << "','"
-      << theTranslator->trSearch() << "');\n";
+      << theTranslator->trSearch() << "',"
+      << (generateTreeView?"true":"false")
+      << ");\n";
     if (Config_getBool(SEARCHENGINE))
     {
       if (!serverBasedSearch)
@@ -2915,7 +2940,12 @@ static void writeDefaultQuickLinks(TextStream &t,
 
 void HtmlGenerator::endQuickIndices()
 {
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   m_t << "</div><!-- top -->\n";
+  if (!generateTreeView)
+  {
+    m_t << "<div id=\"doc-content\">\n";
+  }
 }
 
 QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath)
@@ -2946,10 +2976,18 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
      "$(function(){initNavTree('") + fn +
      QCString("','") + relpath +
-     QCString("'); initResizable(); });\n"
+     QCString("'); initResizable(true); });\n"
      "/* @license-end */\n"
      "</script>\n"
      "<div id=\"doc-content\">\n");
+  }
+  else
+  {
+     result += "<script type=\"text/javascript\">\n"
+     "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
+     "$(function(){ initResizable(false); });\n"
+     "/* @license-end */\n"
+     "</script>\n";
   }
   return result;
 }
