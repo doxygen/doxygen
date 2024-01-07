@@ -16,12 +16,10 @@
 #ifndef MARKDOWN_H
 #define MARKDOWN_H
 
-#include <array>
-#include <functional>
+#include <memory>
 
 #include "qcstring.h"
 #include "parserintf.h"
-#include "growbuf.h"
 
 class Entry;
 
@@ -34,61 +32,14 @@ class Markdown
 {
   public:
     Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
+   ~Markdown();
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
     QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
-    void setIndentLevel(int level) { m_indentLevel = level; }
+    void setIndentLevel(int level);
 
   private:
-    QCString processQuotations(const QCString &s,int refIndent);
-    QCString processBlocks(const QCString &s,int indent);
-    QCString isBlockCommand(const char *data,int offset,int size);
-    int isSpecialCommand(const char *data,int offset,int size);
-    void findEndOfLine(const char *data,int size,int &pi,int&i,int &end);
-    int processHtmlTagWrite(const char *data,int offset,int size,bool doWrite);
-    int processHtmlTag(const char *data,int offset,int size);
-    int processEmphasis(const char *data,int offset,int size);
-    int processEmphasis1(const char *data, int size, char c);
-    int processEmphasis2(const char *data, int size, char c);
-    int processEmphasis3(const char *data, int size, char c);
-    int processNmdash(const char *data,int off,int size);
-    int processQuoted(const char *data,int,int size);
-    int processCodeSpan(const char *data, int /*offset*/, int size);
-    void addStrEscapeUtf8Nbsp(const char *s,int len);
-    int processSpecialCommand(const char *data, int offset, int size);
-    int processLink(const char *data,int,int size);
-    int findEmphasisChar(const char *data, int size, char c, int c_size);
-    void processInline(const char *data,int size);
-    void writeMarkdownImage(const char *fmt, bool inline_img, bool explicitTitle,
-                            const QCString &title, const QCString &content,
-                            const QCString &link, const QCString &attributes,
-                            const FileDef *fd);
-    int isHeaderline(const char *data, int size, bool allowAdjustLevel);
-    int isAtxHeader(const char *data,int size,
-                       QCString &header,QCString &id,bool allowAdjustLevel,
-                       bool *pIsIdGenerated=nullptr);
-    void writeOneLineHeaderOrRuler(const char *data,int size);
-    void writeFencedCodeBlock(const char *data,const char *lng,
-                int blockStart,int blockEnd);
-    int writeBlockQuote(const char *data,int size);
-    int writeCodeBlock(const char *data,int size,int refIndent);
-    int writeTableBlock(const char *data, int size);
-    QCString extractTitleId(QCString &title, int level,bool *pIsIdGenerated=nullptr);
-
-  private:
-    struct LinkRef
-    {
-      LinkRef(const QCString &l,const QCString &t) : link(l), title(t) {}
-      QCString link;
-      QCString title;
-    };
-    using Action_t = std::function<int(const char *,int,int)>;
-
-    std::unordered_map<std::string,LinkRef> m_linkRefs;
-    QCString       m_fileName;
-    int            m_lineNr = 0;
-    int            m_indentLevel=0;  // 0 is outside markdown, -1=page level
-    GrowBuf        m_out;
-    std::array<Action_t,256> m_actions;
+    struct Private;
+    std::unique_ptr<Private> prv;
 };
 
 class MarkdownOutlineParser : public OutlineParserInterface
