@@ -2928,7 +2928,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     }
     renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HighlightedItem::Search);
   }
-  else
+  else if (!Config_getBool(GENERATE_TREEVIEW))
   {
     renderQuickLinksAsTree(t,relPath,root);
   }
