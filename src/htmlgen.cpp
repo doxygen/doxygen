@@ -1306,9 +1306,13 @@ void HtmlGenerator::writeTabData()
   mgr.copyResource("nav_g.png",dname);
   Doxygen::indexList->addImageFile("nav_g.png");
   mgr.copyResource("plus.svg",dname);
+  Doxygen::indexList->addImageFile("plus.svg");
   mgr.copyResource("minus.svg",dname);
+  Doxygen::indexList->addImageFile("minus.svg");
   mgr.copyResource("plusd.svg",dname);
+  Doxygen::indexList->addImageFile("plusd.svg");
   mgr.copyResource("minusd.svg",dname);
+  Doxygen::indexList->addImageFile("minusd.svg");
 }
 
 void HtmlGenerator::writeSearchData(const QCString &dname)

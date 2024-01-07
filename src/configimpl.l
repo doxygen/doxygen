@@ -1947,7 +1947,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(  depOption, "SEARCHENGINE",         false  );
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_MENUS",   false  );
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_SECTIONS",false  );
-    adjustBoolSetting(  depOption, "HTML_CODE_FOLDING",    false  );
     adjustBoolSetting(  depOption, "HTML_COPY_CLIPBOARD",  false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
     adjustColorStyleSetting(depOption);
