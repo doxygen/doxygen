@@ -72,7 +72,7 @@ static constexpr const char *contexts(contexts_t type)
     case contexts_t::INTERTD: return "intertd";
     default:                  return nullptr;
   }
-};
+}
 static const char *hex="0123456789ABCDEF";
 
 static QCString convertIndexWordToAnchor(const QCString &word)
