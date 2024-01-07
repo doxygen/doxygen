@@ -777,6 +777,15 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
            qPrint(target));
 }
 
+void DocNodeList::move_append(DocNodeList &elements)
+{
+  for (auto &&elem : elements)
+  {
+    emplace_back(std::move(elem));
+  }
+  elements.clear();
+}
+
 static void flattenParagraphs(DocNodeVariant *root,DocNodeList &children)
 {
   DocNodeList newChildren;
@@ -797,6 +806,15 @@ static void flattenParagraphs(DocNodeVariant *root,DocNodeList &children)
   for (auto &cn : children)
   {
     setParent(&cn,root);
+    // we also need to set the parent for each child of cn, as cn's address may have changed.
+    auto *innerChildren = ::children(&cn);
+    if (innerChildren)
+    {
+      for (auto &ccn : *innerChildren)
+      {
+        setParent(&ccn,&cn);
+      }
+    }
   }
 }
 
