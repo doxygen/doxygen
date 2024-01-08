@@ -1483,6 +1483,14 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
     m_t << "/* @license-end */\n";
     m_t << "</script>\n";
   }
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    m_t << "<script type=\"text/javascript\">\n";
+    m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
+    m_t << "$(function() { codefold.init(" << (m_relPath.isEmpty() ? "0" : "1") << "); });\n";
+    m_t << "/* @license-end */\n";
+    m_t << "</script>\n";
+  }
   m_sectionCount=0;
 }
 
@@ -2806,8 +2814,7 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
 static void writeDefaultQuickLinks(TextStream &t,
                                    HighlightedItem hli,
                                    const QCString &file,
-                                   const QCString &relPath,
-                                   bool needsFolding)
+                                   const QCString &relPath)
 {
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool searchEngine = Config_getBool(SEARCHENGINE);
@@ -2932,14 +2939,6 @@ static void writeDefaultQuickLinks(TextStream &t,
   {
     renderQuickLinksAsTree(t,relPath,root);
   }
-  if (needsFolding && Config_getBool(HTML_CODE_FOLDING))
-  {
-    t << "<script type=\"text/javascript\">\n";
-    t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-    t << "$(function() { codefold.init(" << (relPath.isEmpty() ? "0" : "1") << "); });\n";
-    t << "/* @license-end */\n";
-    t << "</script>\n";
-  }
 }
 
 void HtmlGenerator::endQuickIndices()
@@ -3026,9 +3025,9 @@ void HtmlGenerator::endPageDoc()
   m_t << "</div><!-- PageDoc -->\n";
 }
 
-void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file,bool needsFolding)
+void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file)
 {
-  writeDefaultQuickLinks(m_t,hli,file,m_relPath,needsFolding);
+  writeDefaultQuickLinks(m_t,hli,file,m_relPath);
 }
 
 // PHP based search script
@@ -3088,7 +3087,7 @@ void HtmlGenerator::writeSearchPage()
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
     }
     else
     {
@@ -3144,7 +3143,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
       if (!Config_getBool(HTML_DYNAMIC_MENUS)) // for dynamic menus, menu.js creates this part
       {
         t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\"" << theTranslator->trSearch() <<
