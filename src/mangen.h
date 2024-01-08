@@ -194,7 +194,7 @@ class ManGenerator : public OutputGenerator
     void writeSplitBar(const QCString &) {}
     void writeNavigationPath(const QCString &) {}
     void writeLogo() {}
-    void writeQuickLinks(HighlightedItem,const QCString &,bool) {}
+    void writeQuickLinks(HighlightedItem,const QCString &) {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) {}
     void startContents() {}
     void endContents() {}
