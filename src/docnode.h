@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 #include <variant>
+#include <type_traits>
 
 #include "qcstring.h"
 #include "docvisitor.h"
@@ -40,43 +41,37 @@ class DocParser;
 /*  0 */  DN(DocWord)           DN_SEP DN(DocLinkedWord)    DN_SEP DN(DocURL)            DN_SEP DN(DocLineBreak)    DN_SEP DN(DocHorRuler)    DN_SEP   \
 /*  5 */  DN(DocAnchor)         DN_SEP DN(DocCite)          DN_SEP DN(DocStyleChange)    DN_SEP DN(DocSymbol)       DN_SEP DN(DocEmoji)       DN_SEP   \
 /* 10 */  DN(DocWhiteSpace)     DN_SEP DN(DocSeparator)     DN_SEP DN(DocVerbatim)       DN_SEP DN(DocInclude)      DN_SEP DN(DocIncOperator) DN_SEP   \
-/* 15 */  DN(DocFormula)        DN_SEP DN(DocIndexEntry)    DN_SEP DC(DocAutoList)       DN_SEP DC(DocAutoListItem) DN_SEP DC(DocTitle)       DN_SEP   \
-/* 20 */  DC(DocXRefItem)       DN_SEP DC(DocImage)         DN_SEP DC(DocDotFile)        DN_SEP DC(DocMscFile)      DN_SEP DC(DocDiaFile)     DN_SEP   \
-/* 25 */  DC(DocVhdlFlow)       DN_SEP DC(DocLink)          DN_SEP DC(DocRef)            DN_SEP DC(DocInternalRef)  DN_SEP DC(DocHRef)        DN_SEP   \
-/* 30 */  DC(DocHtmlHeader)     DN_SEP DC(DocHtmlDescTitle) DN_SEP DC(DocHtmlDescList)   DN_SEP DC(DocSection)      DN_SEP DC(DocSecRefItem)  DN_SEP   \
-/* 35 */  DC(DocSecRefList)     DN_SEP DC(DocInternal)      DN_SEP DC(DocParBlock)       DN_SEP DC(DocSimpleList)   DN_SEP DC(DocHtmlList)    DN_SEP   \
-/* 40 */  DC(DocSimpleSect)     DN_SEP DN(DocSimpleSectSep) DN_SEP DC(DocParamSect)      DN_SEP DC(DocPara)         DN_SEP DN(DocParamList)   DN_SEP   \
-/* 45 */  DN(DocSimpleListItem) DN_SEP DC(DocHtmlListItem)  DN_SEP DC(DocHtmlDescData)   DN_SEP DC(DocHtmlCell)     DN_SEP DC(DocHtmlCaption) DN_SEP   \
-/* 50 */  DC(DocHtmlRow)        DN_SEP DC(DocHtmlTable)     DN_SEP DC(DocHtmlBlockQuote) DN_SEP DC(DocText)         DN_SEP DC(DocRoot)        DN_SEP   \
-/* 55 */  DC(DocHtmlDetails)    DN_SEP DC(DocHtmlSummary)                                                                                              \
+/* 15 */  DN(DocFormula)        DN_SEP DN(DocIndexEntry)    DN_SEP DN(DocAutoList)       DN_SEP DN(DocAutoListItem) DN_SEP DN(DocTitle)       DN_SEP   \
+/* 20 */  DN(DocXRefItem)       DN_SEP DN(DocImage)         DN_SEP DN(DocDotFile)        DN_SEP DN(DocMscFile)      DN_SEP DN(DocDiaFile)     DN_SEP   \
+/* 25 */  DN(DocVhdlFlow)       DN_SEP DN(DocLink)          DN_SEP DN(DocRef)            DN_SEP DN(DocInternalRef)  DN_SEP DN(DocHRef)        DN_SEP   \
+/* 30 */  DN(DocHtmlHeader)     DN_SEP DN(DocHtmlDescTitle) DN_SEP DN(DocHtmlDescList)   DN_SEP DN(DocSection)      DN_SEP DN(DocSecRefItem)  DN_SEP   \
+/* 35 */  DN(DocSecRefList)     DN_SEP DN(DocInternal)      DN_SEP DN(DocParBlock)       DN_SEP DN(DocSimpleList)   DN_SEP DN(DocHtmlList)    DN_SEP   \
+/* 40 */  DN(DocSimpleSect)     DN_SEP DN(DocSimpleSectSep) DN_SEP DN(DocParamSect)      DN_SEP DN(DocPara)         DN_SEP DN(DocParamList)   DN_SEP   \
+/* 45 */  DN(DocSimpleListItem) DN_SEP DN(DocHtmlListItem)  DN_SEP DN(DocHtmlDescData)   DN_SEP DN(DocHtmlCell)     DN_SEP DN(DocHtmlCaption) DN_SEP   \
+/* 50 */  DN(DocHtmlRow)        DN_SEP DN(DocHtmlTable)     DN_SEP DN(DocHtmlBlockQuote) DN_SEP DN(DocText)         DN_SEP DN(DocRoot)        DN_SEP   \
+/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)                                                                                              \
 
 // forward declarations
 #define DN(x) class x;
-#define DC(x) class x;
 #define DN_SEP
 DOC_NODES
 #undef DN
-#undef DC
 #undef DN_SEP
 
 // define a variant type
 #define DN(x) x
-#define DC(x) x
 #define DN_SEP ,
 using DocNodeVariant = std::variant<
 DOC_NODES
 >;
 #undef DN
-#undef DC
 #undef DN_SEP
 
 // getter functions to return the name of a doc node type
 #define DN(x) constexpr const char *docNodeName(const x &/* n */) { return #x; }
-#define DC(x) DN(x)
 #define DN_SEP
 DOC_NODES
 #undef DN
-#undef DC
 #undef DN_SEP
 
 /** Abstract node interface with type information. */
@@ -1300,18 +1295,6 @@ constexpr const DocNodeVariant *parent(const DocNodeVariant *n)
   return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;
 }
 
-constexpr DocNodeList *children(DocNodeVariant *n)
-{
-#define DN(x)
-#define DC(x) { auto *compNode = std::get_if<x>(n); if (compNode) return &compNode->children(); }
-#define DN_SEP
-  DOC_NODES
-#undef DN
-#undef DC
-#undef DN_SEP
-  return nullptr;
-}
-
 namespace details
 {
 
@@ -1333,13 +1316,38 @@ struct Impl<T>
   }
 };
 
-}
+} // namespace details
 
 /// returns true iff \a v holds one of types passed as template parameters
 template<class... Ts>
 constexpr bool holds_one_of_alternatives(const DocNodeVariant &v)
 {
   return details::Impl<Ts...>::holds_one_of_alternatives(v);
+}
+
+namespace details
+{
+
+// Helper type trait to check if a type has member function children(). Default case is false.
+template <typename T, typename = void>
+struct has_method_children : std::false_type {};
+
+// Use SFINAE to have a partial template specialization derived from std::true_type in case T has method children()
+template <typename T>
+struct has_method_children<T, std::void_t<decltype(std::declval<T>().children())>> : std::true_type {};
+
+} // namespace details
+
+// Call children() on variant v if the contained type has this method, otherwise return nullptr
+inline DocNodeList* call_method_children(DocNodeVariant *v)
+{
+  return std::visit([](auto&& value) -> DocNodeList* {
+    if constexpr (details::has_method_children<decltype(value)>::value) {
+      return &value.children();
+    } else {
+      return nullptr;
+    }
+  }, *v);
 }
 
 //----------------- DocNodeList ---------------------------------------
@@ -1364,7 +1372,6 @@ inline T *DocNodeList::get_last()
 // ---------------- Debug helpers -------------------------------
 
 #define DN(x)  #x
-#define DC(x)  #x
 #define DN_SEP ,
 inline const char *docNodeName(const DocNodeVariant &v)
 {
@@ -1372,25 +1379,20 @@ inline const char *docNodeName(const DocNodeVariant &v)
   return table[v.index()];
 }
 #undef DN
-#undef DC
 #undef DN_SEP
 
 inline void dumpDocNodeSizes()
 {
 #define DN(x)  #x
-#define DC(x)  #x
 #define DN_SEP ,
   static const char *tableWithNames[] = { DOC_NODES };
 #undef DN
-#undef DC
 #undef DN_SEP
 
 #define DN(x)  sizeof(x)
-#define DC(x)  sizeof(x)
 #define DN_SEP ,
   static size_t tableWithSizes[] = { DOC_NODES };
 #undef DN
-#undef DC
 #undef DN_SEP
 
   size_t maxSize=0;

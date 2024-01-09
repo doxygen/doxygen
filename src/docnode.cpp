@@ -807,10 +807,10 @@ static void flattenParagraphs(DocNodeVariant *root,DocNodeList &children)
   {
     setParent(&cn,root);
     // we also need to set the parent for each child of cn, as cn's address may have changed.
-    auto *innerChildren = ::children(&cn);
-    if (innerChildren)
+    auto opt_children = call_method_children(&cn);
+    if (opt_children)
     {
-      for (auto &ccn : *innerChildren)
+      for (auto &ccn : *opt_children)
       {
         setParent(&ccn,&cn);
       }
