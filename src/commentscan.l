@@ -1708,7 +1708,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner," \\ilinebr ");
                                           addSection(yyscanner);
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "'\\f[' command is not supported in section title.",
+                                               "'\\f[' command is not supported in section title."
                                               );
                                           BEGIN(Comment);
                                         }
