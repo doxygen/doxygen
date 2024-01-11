@@ -406,6 +406,11 @@ class GuardedSection
  *
  *        statics
  */
+ enum class FormulaMode
+ {
+   Normal,
+   Section
+ };
 
 struct commentscanYY_state
 {
@@ -421,6 +426,7 @@ struct commentscanYY_state
   QCString         formulaText;            // Running text of a formula
   QCString         formulaEnv;             // environment name
   int              formulaNewLines = 0;    // amount of new lines in the formula
+  FormulaMode      formulaMode=FormulaMode::Normal;
   QCString        *pOutputString = nullptr;      // pointer to string to which the output is appended.
   QCString         outputXRef;               // temp argument of todo/test/../xrefitem commands
   QCString         blockName;                // preformatted block name (e.g. verbatim, latexonly,...)
@@ -921,6 +927,7 @@ STopt  [^\n@\\]*
 <Comment>{B}*{CMD}"f$"                  { // start of a inline formula
                                           yyextra->formulaText="$";
                                           yyextra->formulaNewLines=0;
+                                          yyextra->formulaMode=FormulaMode::Normal;
                                           BEGIN(ReadFormulaShort);
                                         }
 <Comment>{B}*{CMD}"f("                  { // start of a inline formula
@@ -1116,22 +1123,42 @@ STopt  [^\n@\\]*
 
 <ReadFormulaShort>{CMD}"f$"             { // end of inline formula
                                           yyextra->formulaText+="$";
-                                          addOutput(yyscanner," "+addFormula(yyscanner));
-                                          BEGIN(Comment);
+                                          QCString form = addFormula(yyscanner);
+                                          addOutput(yyscanner," "+form);
+                                          if (yyextra->formulaMode==FormulaMode::Normal)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+= " "+form;
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
 <ReadFormulaRound>{CMD}"f)"             { // end of inline formula
-                                          addOutput(yyscanner," "+addFormula(yyscanner));
-                                          BEGIN(Comment);
+                                          QCString form = addFormula(yyscanner);
+                                          addOutput(yyscanner," "+form);
+                                          if (yyextra->formulaMode==FormulaMode::Normal)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+= " "+form;
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
 <ReadFormulaLong>{CMD}"f]"              { // end of block formula
                                           yyextra->formulaText+="\\]";
-                                          addOutput(yyscanner," "+addFormula(yyscanner));
+                                          QCString form = addFormula(yyscanner);
+                                          addOutput(yyscanner," "+form);
                                           BEGIN(Comment);
                                         }
 <ReadFormulaLong>{CMD}"f}"              { // end of custom env formula
                                           yyextra->formulaText+="\\end";
                                           yyextra->formulaText+=yyextra->formulaEnv;
-                                          addOutput(yyscanner," "+addFormula(yyscanner));
+                                          QCString form = addFormula(yyscanner);
+                                          addOutput(yyscanner," "+form);
                                           BEGIN(Comment);
                                         }
 <ReadFormulaLong,ReadFormulaShort,ReadFormulaRound>[^\\@\n]+ { // any non-special character
@@ -1669,6 +1696,36 @@ STopt  [^\n@\\]*
 <SectionTitle>{B}*{CMD}{CMD}            {
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
+                                        }
+<SectionTitle>{B}*{CMD}"f$"             {
+                                          yyextra->formulaText="$";
+                                          yyextra->formulaNewLines=0;
+                                          yyextra->formulaMode=FormulaMode::Section;
+                                          BEGIN(ReadFormulaShort);
+                                        }
+<SectionTitle>{B}*/{CMD}"f["            {
+                                          setOutput(yyscanner,OutputDoc);
+                                          addOutput(yyscanner," \\ilinebr ");
+                                          addSection(yyscanner);
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                               "'\\f[' command is not supported in section title.",
+                                              );
+                                          BEGIN(Comment);
+                                        }
+<SectionTitle>{B}*/{CMD}"f{"            {
+                                          setOutput(yyscanner,OutputDoc);
+                                          addOutput(yyscanner," \\ilinebr ");
+                                          addSection(yyscanner);
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                               "'\\f{' command is not supported in section title."
+                                              );
+                                          BEGIN(Comment);
+                                        }
+<SectionTitle>{B}*{CMD}"f("             { // start of a inline formula
+                                          yyextra->formulaText="";
+                                          yyextra->formulaNewLines=0;
+                                          yyextra->formulaMode=FormulaMode::Section;
+                                          BEGIN(ReadFormulaRound);
                                         }
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+{B}*   { // potentially not allowed command in section title
                                           QCString cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
