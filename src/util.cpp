@@ -1359,8 +1359,8 @@ bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncodin
   const char *outputEncoding = "UTF-8";
   if (inputEncoding==0 || qstricmp(inputEncoding,outputEncoding)==0) return true;
   size_t inputSize=input.length();
-  size_t outputSize=inputSize*4+1;
-  QCString output(outputSize);
+  size_t outputSize=inputSize*4;
+  QCString output(outputSize, QCString::ExplicitSize);
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==reinterpret_cast<void *>(-1))
   {

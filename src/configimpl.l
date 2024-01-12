@@ -674,8 +674,8 @@ static QCString configStringRecode(
 {
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
   size_t inputSize=str.length();
-  size_t outputSize=inputSize*4+1;
-  QCString output(outputSize);
+  size_t outputSize=inputSize*4;
+  QCString output(outputSize, QCString::ExplicitSize);
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {
@@ -1947,7 +1947,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(  depOption, "SEARCHENGINE",         false  );
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_MENUS",   false  );
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_SECTIONS",false  );
-    adjustBoolSetting(  depOption, "HTML_CODE_FOLDING",    false  );
     adjustBoolSetting(  depOption, "HTML_COPY_CLIPBOARD",  false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
     adjustColorStyleSetting(depOption);

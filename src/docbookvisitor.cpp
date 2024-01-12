@@ -359,7 +359,7 @@ DB_VIS_C
     case DocVerbatim::Dot:
       {
         static int dotindex = 1;
-        QCString baseName(4096);
+        QCString baseName(4096, QCString::ExplicitSize);
         QCString name;
         QCString stext = s.text();
         m_t << "<para>\n";
@@ -384,7 +384,7 @@ DB_VIS_C
     case DocVerbatim::Msc:
       {
         static int mscindex = 1;
-        QCString baseName(4096);
+        QCString baseName(4096, QCString::ExplicitSize);
         QCString name;
         QCString stext = s.text();
         m_t << "<para>\n";

@@ -5,7 +5,7 @@ import argparse, glob, itertools, re, shutil, os, sys
 import subprocess
 import shlex
 
-config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
+config_reg = re.compile(r'.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
 hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
 pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')

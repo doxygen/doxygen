@@ -539,7 +539,7 @@ static void buildFileList(const Entry *root)
     }
     else
     {
-      QCString text(4096);
+      QCString text(4096, QCString::ExplicitSize);
       text.sprintf("the name '%s' supplied as "
           "the argument in the \\file statement ",
           qPrint(root->name));
@@ -2592,7 +2592,9 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
   size_t be=type.rfind('>');
   bool templFp = false;
   if (be!=std::string::npos) {
-    templFp = type.find("::*")>be || type.find("::&")>be; // hack to find, e.g 'B<X>(A<int>::*)'
+    size_t cc_ast = type.find("::*");
+    size_t cc_amp = type.find("::&");
+    templFp = (cc_ast != std::string::npos && cc_ast>be) || (cc_amp != std::string::npos && cc_amp>be); // hack to find, e.g 'B<X>(A<int>::*)'
   }
 
   if (!type.empty()                            &&  // return type is non-empty

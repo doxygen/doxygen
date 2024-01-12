@@ -176,7 +176,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
     { // we have an .eps image in pdflatex mode => convert it to a pdf.
       QCString outputDir = Config_getString(LATEX_OUTPUT);
       QCString baseName  = fd->name().left(fd->name().length()-4);
-      QCString epstopdfArgs(4096);
+      QCString epstopdfArgs(4096, QCString::ExplicitSize);
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            qPrint(outputDir), qPrint(baseName),
 			   qPrint(outputDir), qPrint(baseName));

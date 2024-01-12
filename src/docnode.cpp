@@ -70,7 +70,7 @@ static const std::set<std::string> g_plantumlEngine {
   "uml", "bpm", "wire", "dot", "ditaa",
   "salt", "math", "latex", "gantt", "mindmap",
   "wbs", "yaml", "creole", "json", "flow",
-  "board", "git", "hcl", "regex", "ebnf"
+  "board", "git", "hcl", "regex", "ebnf", "files"
 };
 
 //---------------------------------------------------------------------------
@@ -777,6 +777,15 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
            qPrint(target));
 }
 
+void DocNodeList::move_append(DocNodeList &elements)
+{
+  for (auto &&elem : elements)
+  {
+    emplace_back(std::move(elem));
+  }
+  elements.clear();
+}
+
 static void flattenParagraphs(DocNodeVariant *root,DocNodeList &children)
 {
   DocNodeList newChildren;
@@ -797,6 +806,15 @@ static void flattenParagraphs(DocNodeVariant *root,DocNodeList &children)
   for (auto &cn : children)
   {
     setParent(&cn,root);
+    // we also need to set the parent for each child of cn, as cn's address may have changed.
+    auto opt_children = call_method_children(&cn);
+    if (opt_children)
+    {
+      for (auto &ccn : *opt_children)
+      {
+        setParent(&ccn,&cn);
+      }
+    }
   }
 }
 
@@ -5155,6 +5173,58 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
   return retval;
 }
 
+static bool checkIfHtmlEndTagEndsAutoList(DocParser *parser,const DocNodeVariant *n)
+{
+  // expected hierarchy:
+  // 1.    DocAutoListItem <- n
+  // 2.  DocAutoList       <- parent(n)
+  // 3. DocPara            <- parent(parent(n))
+
+  // step 1
+  if (!std::get_if<DocAutoListItem>(n)) // not inside a auto list item
+  {
+    return false;
+  }
+
+  // step 2
+  n = parent(n);
+  int indent = 0;
+  const auto docAutoList = std::get_if<DocAutoList>(n);
+  if (docAutoList) // capture indent
+  {
+    indent = docAutoList->indent();
+  }
+  else
+  {
+    return false;
+  }
+
+  // step 3
+  n = parent(n);
+  const auto docPara = std::get_if<DocPara>(n);
+  if (docPara)
+  {
+    QCString tagNameLower = QCString(parser->context.token->name).lower();
+    auto topStyleChange = [](const DocStyleChangeStack &stack) -> const DocStyleChange &
+    {
+      return std::get<DocStyleChange>(*stack.top());
+    };
+
+    if (parser->context.styleStack.empty() ||                                                   // no style change
+        topStyleChange(parser->context.styleStack).tagName()!=tagNameLower ||                   // wrong style change
+        topStyleChange(parser->context.styleStack).position()!=parser->context.nodeStack.size() // wrong position
+       )
+    {
+      // insert an artificial 'end of autolist' marker and parse again
+      QCString indentStr;
+      indentStr.fill(' ',indent);
+      parser->tokenizer.unputString("\\ilinebr "+indentStr+".\\ilinebr"+indentStr+"</"+parser->context.token->name+">");
+      return true;
+    }
+  }
+  return false;
+}
+
 int DocPara::parse()
 {
   AUTO_TRACE();
@@ -5380,6 +5450,10 @@ reparsetoken:
           }
           else // found an end tag
           {
+            if (checkIfHtmlEndTagEndsAutoList(parser(),parent()))
+            {
+              break; // new code has been pushed back to the scanner, need to reparse
+            }
             retval = handleHtmlEndTag(parser()->context.token->name);
           }
           if (retval!=RetVal_OK)

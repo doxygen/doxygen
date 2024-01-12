@@ -191,7 +191,7 @@ class VhdlDocGen
     static bool isNumber(const std::string& s);
     static QCString getProtectionName(int prot);
 
-    static void parseUCF(const char*  input,Entry* entity,const QCString &f,bool vendor);
+    static void parseUCF(const QCString &input,Entry* entity,const QCString &f,bool vendor);
 
     static const ClassDef*  findArchitecture(const ClassDef *cd);
 

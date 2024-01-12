@@ -1973,7 +1973,7 @@ WSopt [ \t\r]*
 
                                             // Deal with file changes due to
                                             // #include's within { .. } blocks
-                                            QCString lineStr(15+yyextra->fileName.length());
+                                            QCString lineStr(15+yyextra->fileName.length(), QCString::ExplicitSize);
                                             lineStr.sprintf("# %d \"%s\" 2",yyextra->yyLineNr,qPrint(yyextra->fileName));
                                             outputString(yyscanner,lineStr);
 
@@ -3528,7 +3528,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 
       // Deal with file changes due to
       // #include's within { .. } blocks
-      QCString lineStr(state->fileName.length()+20);
+      QCString lineStr(state->fileName.length()+20, QCString::ExplicitSize);
       lineStr.sprintf("# 1 \"%s\" 1\n",qPrint(state->fileName));
       outputString(yyscanner,lineStr);
 

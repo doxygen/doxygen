@@ -140,7 +140,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
           std::ofstream t = Portable::openOutputStream(pathName,append);
           if (t.is_open())
           {
-            QCString buf(res->size+1);
+            QCString buf(res->size, QCString::ExplicitSize);
             memcpy(buf.rawData(),res->data,res->size);
             buf = replaceColorMarkers(buf);
             if (name=="navtree.css")
@@ -160,7 +160,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
           std::ofstream t = Portable::openOutputStream(pathName,append);
           if (t.is_open())
           {
-            QCString buf(res->size+1);
+            QCString buf(res->size, QCString::ExplicitSize);
             memcpy(buf.rawData(),res->data,res->size);
             t << replaceColorMarkers(buf);
             return TRUE;
@@ -192,7 +192,7 @@ QCString ResourceMgr::getAsString(const QCString &name) const
   const Resource *res = get(name);
   if (res)
   {
-    QCString result(res->size+1);
+    QCString result(res->size, QCString::ExplicitSize);
     memcpy(result.rawData(),res->data,res->size);
     return result;
   }

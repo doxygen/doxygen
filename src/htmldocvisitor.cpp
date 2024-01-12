@@ -42,7 +42,7 @@
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
-enum contexts_t
+enum class contexts_t
 {
     NONE,      // 0
     STARTLI,   // 1
@@ -55,18 +55,24 @@ enum contexts_t
     INTERDD,   // 8
     INTERTD    // 9
 };
-static const char *contexts[10] =
-{ "",          // 0
-  "startli",   // 1
-  "startdd",   // 2
-  "endli",     // 3
-  "enddd",     // 4
-  "starttd",   // 5
-  "endtd",     // 6
-  "interli",   // 7
-  "interdd",   // 8
-  "intertd"    // 9
-};
+
+static constexpr const char *contexts(contexts_t type)
+{
+  switch (type)
+  {
+    case contexts_t::NONE:    return nullptr;
+    case contexts_t::STARTLI: return "startli";
+    case contexts_t::STARTDD: return "startdd";
+    case contexts_t::ENDLI:   return "endli";
+    case contexts_t::ENDDD:   return "enddd";
+    case contexts_t::STARTTD: return "starttd";
+    case contexts_t::ENDTD:   return "endtd";
+    case contexts_t::INTERLI: return "interli";
+    case contexts_t::INTERDD: return "interdd";
+    case contexts_t::INTERTD: return "intertd";
+    default:                  return nullptr;
+  }
+}
 static const char *hex="0123456789ABCDEF";
 
 static QCString convertIndexWordToAnchor(const QCString &word)
@@ -601,7 +607,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Dot:
       {
         static int dotindex = 1;
-        QCString fileName(4096);
+        QCString fileName(4096, QCString::ExplicitSize);
 
         forceEndParagraph(s);
         fileName.sprintf("%s%d%s",
@@ -635,7 +641,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         forceEndParagraph(s);
 
         static int mscindex = 1;
-        QCString baseName(4096);
+        QCString baseName(4096, QCString::ExplicitSize);
 
         baseName.sprintf("%s%d",
             qPrint(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_"),
@@ -1092,9 +1098,9 @@ bool isSeparatedParagraph(const DocSimpleSect &parent,const DocPara &par)
   return false;
 }
 
-static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
+static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
 {
-  int t=0;
+  contexts_t t=contexts_t::NONE;
   isFirst=FALSE;
   isLast=FALSE;
   if (p.parent())
@@ -1114,18 +1120,18 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
       bool isLI = p3!=0 && holds_one_of_alternatives<DocHtmlListItem,DocSecRefItem>(*p3);
       bool isDD = p3!=0 && holds_one_of_alternatives<DocHtmlDescData,DocXRefItem,DocSimpleSect>(*p3);
       bool isTD = p3!=0 && holds_one_of_alternatives<DocHtmlCell,DocParamList>(*p3);
-      t=NONE;
+      t=contexts_t::NONE;
       if (isFirst)
       {
-        if (isLI) t=STARTLI; else if (isDD) t=STARTDD; else if (isTD) t=STARTTD;
+        if (isLI) t=contexts_t::STARTLI; else if (isDD) t=contexts_t::STARTDD; else if (isTD) t=contexts_t::STARTTD;
       }
       if (isLast)
       {
-        if (isLI) t=ENDLI;   else if (isDD) t=ENDDD;   else if (isTD) t=ENDTD;
+        if (isLI) t=contexts_t::ENDLI;   else if (isDD) t=contexts_t::ENDDD;   else if (isTD) t=contexts_t::ENDTD;
       }
       if (!isFirst && !isLast)
       {
-        if (isLI) t=INTERLI; else if (isDD) t=INTERDD; else if (isTD) t=INTERTD;
+        if (isLI) t=contexts_t::INTERLI; else if (isDD) t=contexts_t::INTERDD; else if (isTD) t=contexts_t::INTERTD;
       }
       return t;
     }
@@ -1134,7 +1140,7 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=isFirstChildNode(docAutoListItem,p);
       isLast =isLastChildNode (docAutoListItem,p);
-      t=STARTLI; // not used
+      t=contexts_t::STARTLI; // not used
       return t;
     }
     const auto docSimpleListItem = std::get_if<DocSimpleListItem>(p.parent());
@@ -1142,7 +1148,7 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=TRUE;
       isLast =TRUE;
-      t=STARTLI; // not used
+      t=contexts_t::STARTLI; // not used
       return t;
     }
     const auto docParamList = std::get_if<DocParamList>(p.parent());
@@ -1150,7 +1156,7 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=TRUE;
       isLast =TRUE;
-      t=STARTLI; // not used
+      t=contexts_t::STARTLI; // not used
       return t;
     }
     const auto docHtmlListItem = std::get_if<DocHtmlListItem>(p.parent());
@@ -1158,9 +1164,9 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=isFirstChildNode(docHtmlListItem,p);
       isLast =isLastChildNode (docHtmlListItem,p);
-      if (isFirst) t=STARTLI;
-      if (isLast)  t=ENDLI;
-      if (!isFirst && !isLast) t = INTERLI;
+      if (isFirst) t=contexts_t::STARTLI;
+      if (isLast)  t=contexts_t::ENDLI;
+      if (!isFirst && !isLast) t = contexts_t::INTERLI;
       return t;
     }
     const auto docSecRefItem = std::get_if<DocSecRefItem>(p.parent());
@@ -1168,9 +1174,9 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=isFirstChildNode(docSecRefItem,p);
       isLast =isLastChildNode (docSecRefItem,p);
-      if (isFirst) t=STARTLI;
-      if (isLast)  t=ENDLI;
-      if (!isFirst && !isLast) t = INTERLI;
+      if (isFirst) t=contexts_t::STARTLI;
+      if (isLast)  t=contexts_t::ENDLI;
+      if (!isFirst && !isLast) t = contexts_t::INTERLI;
       return t;
     }
     const auto docHtmlDescData = std::get_if<DocHtmlDescData>(p.parent());
@@ -1178,9 +1184,9 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=isFirstChildNode(docHtmlDescData,p);
       isLast =isLastChildNode (docHtmlDescData,p);
-      if (isFirst) t=STARTDD;
-      if (isLast)  t=ENDDD;
-      if (!isFirst && !isLast) t = INTERDD;
+      if (isFirst) t=contexts_t::STARTDD;
+      if (isLast)  t=contexts_t::ENDDD;
+      if (!isFirst && !isLast) t = contexts_t::INTERDD;
       return t;
     }
     const auto docXRefItem = std::get_if<DocXRefItem>(p.parent());
@@ -1188,9 +1194,9 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=isFirstChildNode(docXRefItem,p);
       isLast =isLastChildNode (docXRefItem,p);
-      if (isFirst) t=STARTDD;
-      if (isLast)  t=ENDDD;
-      if (!isFirst && !isLast) t = INTERDD;
+      if (isFirst) t=contexts_t::STARTDD;
+      if (isLast)  t=contexts_t::ENDDD;
+      if (!isFirst && !isLast) t = contexts_t::INTERDD;
       return t;
     }
     const auto docSimpleSect = std::get_if<DocSimpleSect>(p.parent());
@@ -1198,8 +1204,8 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=isFirstChildNode(docSimpleSect,p);
       isLast =isLastChildNode (docSimpleSect,p);
-      if (isFirst) t=STARTDD;
-      if (isLast)  t=ENDDD;
+      if (isFirst) t=contexts_t::STARTDD;
+      if (isLast)  t=contexts_t::ENDDD;
       if (isSeparatedParagraph(*docSimpleSect,p))
         // if the paragraph is enclosed with separators it will
         // be included in <dd>..</dd> so avoid addition paragraph
@@ -1207,7 +1213,7 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
       {
         isFirst=isLast=TRUE;
       }
-      if (!isFirst && !isLast) t = INTERDD;
+      if (!isFirst && !isLast) t = contexts_t::INTERDD;
       return t;
     }
     const auto docHtmlCell = std::get_if<DocHtmlCell>(p.parent());
@@ -1215,9 +1221,9 @@ static int getParagraphContext(const DocPara &p,bool &isFirst,bool &isLast)
     {
       isFirst=isFirstChildNode(docHtmlCell,p);
       isLast =isLastChildNode (docHtmlCell,p);
-      if (isFirst) t=STARTTD;
-      if (isLast)  t=ENDTD;
-      if (!isFirst && !isLast) t = INTERTD;
+      if (isFirst) t=contexts_t::STARTTD;
+      if (isLast)  t=contexts_t::ENDTD;
+      if (!isFirst && !isLast) t = contexts_t::INTERTD;
       return t;
     }
   }
@@ -1286,7 +1292,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   // check if this paragraph is the first or last or intermediate child of a <li> or <dd>.
   // this allows us to mark the tag with a special class so we can
   // fix the otherwise ugly spacing.
-  int t;
+  contexts_t t;
   bool isFirst;
   bool isLast;
   t = getParagraphContext(p,isFirst,isLast);
@@ -1297,8 +1303,8 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   // write the paragraph tag (if needed)
   if (needsTagBefore)
   {
-    if (strlen(contexts[t]))
-      m_t << "<p class=\"" << contexts[t] << "\"" << htmlAttribsToString(p.attribs()) << ">";
+    if (contexts(t))
+      m_t << "<p class=\"" << contexts(t) << "\"" << htmlAttribsToString(p.attribs()) << ">";
     else
       m_t << "<p" << htmlAttribsToString(p.attribs()) << ">";
   }

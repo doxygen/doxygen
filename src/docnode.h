@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 #include <variant>
+#include <type_traits>
 
 #include "qcstring.h"
 #include "docvisitor.h"
@@ -1315,13 +1316,38 @@ struct Impl<T>
   }
 };
 
-}
+} // namespace details
 
 /// returns true iff \a v holds one of types passed as template parameters
 template<class... Ts>
 constexpr bool holds_one_of_alternatives(const DocNodeVariant &v)
 {
   return details::Impl<Ts...>::holds_one_of_alternatives(v);
+}
+
+namespace details
+{
+
+// Helper type trait to check if a type has member function children(). Default case is false.
+template <typename T, typename = void>
+struct has_method_children : std::false_type {};
+
+// Use SFINAE to have a partial template specialization derived from std::true_type in case T has method children()
+template <typename T>
+struct has_method_children<T, std::void_t<decltype(std::declval<T>().children())>> : std::true_type {};
+
+} // namespace details
+
+// Call children() on variant v if the contained type has this method, otherwise return nullptr
+inline DocNodeList* call_method_children(DocNodeVariant *v)
+{
+  return std::visit([](auto&& value) -> DocNodeList* {
+    if constexpr (details::has_method_children<decltype(value)>::value) {
+      return &value.children();
+    } else {
+      return nullptr;
+    }
+  }, *v);
 }
 
 //----------------- DocNodeList ---------------------------------------
@@ -1335,15 +1361,6 @@ inline void DocNodeList::append(Args&&... args)
   // Since DocNodeList is a GrowVector this reference will remain valid even if new
   // elements are added (which would not be the case if a std::vector was used)
   std::get_if<T>(&back())->setThisVariant(&back());
-}
-
-inline void DocNodeList::move_append(DocNodeList &elements)
-{
-  for (auto &&elem : elements)
-  {
-    emplace_back(std::move(elem));
-  }
-  elements.clear();
 }
 
 template<class T>

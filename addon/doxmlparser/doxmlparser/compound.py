@@ -1123,6 +1123,7 @@ class DoxPlantumlEngine(str, Enum):
     HCL='hcl'
     REGEX='regex'
     EBNF='ebnf'
+    FILES='files'
 
 
 class DoxProtectionKind(str, Enum):
@@ -23998,7 +23999,7 @@ class docPlantumlType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['uml', 'bpm', 'wire', 'dot', 'ditaa', 'salt', 'math', 'latex', 'gantt', 'mindmap', 'wbs', 'yaml', 'creole', 'json', 'flow', 'board', 'git', 'hcl', 'regex', 'ebnf']
+            enumerations = ['uml', 'bpm', 'wire', 'dot', 'ditaa', 'salt', 'math', 'latex', 'gantt', 'mindmap', 'wbs', 'yaml', 'creole', 'json', 'flow', 'board', 'git', 'hcl', 'regex', 'ebnf', 'files']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxPlantumlEngine' % {"value" : encode_str_2_3(value), "lineno": lineno} )

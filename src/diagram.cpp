@@ -1354,7 +1354,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   if (Config_getBool(USE_PDFLATEX))
   {
-    QCString epstopdfArgs(4096);
+    QCString epstopdfArgs(4096, QCString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    qPrint(epsBaseName),qPrint(epsBaseName));
     //printf("Converting eps using '%s'\n",qPrint(epstopdfArgs));

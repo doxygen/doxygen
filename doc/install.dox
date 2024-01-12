@@ -170,7 +170,7 @@ but other version might also work.
 Alternatively, you can compile doxygen
 \ref install_src_unix "the UNIX way" using
 <a href="https://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
-or <a href="http://www.mingw.org/">MinGW</a>.
+or <a href="https://www.mingw-w64.org/">MinGW</a>.
 
 \addindex flex
 \addindex bison

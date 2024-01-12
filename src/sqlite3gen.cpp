@@ -1431,7 +1431,7 @@ QCString getSQLDocBlock(const Definition *scope,
                 doc,
                 FALSE,
                 FALSE,
-                0,
+                QCString(),
                 FALSE,
                 FALSE,
                 Config_getBool(MARKDOWN_SUPPORT))

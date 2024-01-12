@@ -1908,7 +1908,7 @@ QCString VhdlDocGen::convertFileNameToClassName(const QCString &name)
   return n;
 }
 
-void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,const QCString &fileName,bool altera)
+void VhdlDocGen::parseUCF(const QCString &input,Entry* entity,const QCString &fileName,bool altera)
 {
   QCString ucFile(input);
   int lineNo=0;

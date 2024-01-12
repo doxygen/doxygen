@@ -69,8 +69,8 @@ class HtmlHelpRecoder
     QCString recode(const QCString &s)
     {
       size_t iSize     = s.length();
-      size_t oSize     = iSize*4+1;
-      QCString output(oSize);
+      size_t oSize     = iSize*4;
+      QCString output(oSize, QCString::ExplicitSize);
       size_t iLeft     = iSize;
       size_t oLeft     = oSize;
       const char *iPtr = s.data();
