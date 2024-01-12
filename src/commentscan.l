@@ -1666,16 +1666,42 @@ STopt  [^\n@\\]*
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
                                         }
-   /*
-<SectionTitle>({CMD}{CMD}){ID}          { // escaped command
-                                          yyextra->sectionTitle+=&yytext[1];
+<SectionTitle>{B}*{CMD}{CMD}            {
+                                          yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
                                         }
-<SectionTitle>{CMD}[$@\\&~<>#%]         { // unescaped character
-                                          yyextra->sectionTitle+=yytext[1];
-                                          addOutput(yyscanner,yytext);
+<SectionTitle>{B}*{CMD}[a-z_A-Z]+{B}*   { // potentially not allowed command in section title
+                                          QCString cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
+                                          auto it = docCmdMap.find(cmdName.str());
+                                          if (it!=docCmdMap.end()) // special action is required
+                                          {
+                                            CommandSpacing spacing = it->second.spacing;
+                                            if (spacing==CommandSpacing::Block || spacing==CommandSpacing::XRef)
+                                            {
+                                              int i=0;
+                                              while (yytext[i]==' ' || yytext[i]=='\t') i++;
+                                              yyextra->sectionTitle+=QCString(yytext).left(i);
+                                              yyextra->sectionTitle+='@';
+                                              yyextra->sectionTitle+=QCString(yytext).mid(i);
+                                              addOutput(yyscanner,qPrint(QCString(yytext).left(i)));
+                                              addOutput(yyscanner,'@');
+                                              addOutput(yyscanner,qPrint(QCString(yytext).mid(i)));
+                                              warn(yyextra->fileName,yyextra->lineNr,
+                                                "'\\%s' command is not allowed in section title.",qPrint(cmdName)
+                                              );
+                                            }
+                                            else
+                                            {
+                                              yyextra->sectionTitle+=yytext;
+                                              addOutput(yyscanner,yytext);
+                                            }
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+=yytext;
+                                            addOutput(yyscanner,yytext);
+                                          }
                                         }
-   */
 <SectionTitle>.                         { // anything else
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,*yytext);

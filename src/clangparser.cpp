@@ -33,7 +33,7 @@ static std::mutex g_clangMutex;
 ClangParser *ClangParser::instance()
 {
   std::lock_guard<std::mutex> lock(g_clangMutex);
-  if (s_instance!=nullptr) s_instance = new ClangParser;
+  if (s_instance==nullptr) s_instance = new ClangParser;
   return s_instance;
 }
 
