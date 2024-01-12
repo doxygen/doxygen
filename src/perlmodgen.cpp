@@ -1496,9 +1496,6 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
       md->memberType()!=MemberType_Enumeration)
     m_output.addFieldQuotedString("type", md->typeString());
 
-if (md->memberType()==MemberType_Enumeration)
-    m_output.addFieldQuotedString("type", md->enumBaseType());
-
   const ArgumentList &al = md->argumentList();
   if (isFunc) //function
   {
@@ -1571,6 +1568,7 @@ if (md->memberType()==MemberType_Enumeration)
   if (md->memberType()==MemberType_Enumeration) // enum
   {
     const MemberVector &enumFields = md->enumFieldList();
+    m_output.addFieldQuotedString("type", md->enumBaseType());
     if (!enumFields.empty())
     {
       m_output.openList("values");
