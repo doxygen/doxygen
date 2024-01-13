@@ -18,6 +18,7 @@
 #define QCSTRING_H
 
 #include <string>
+#include <string_view>
 #include <algorithm>
 
 #include <cctype>
@@ -103,6 +104,13 @@ class QCString
 
     QCString( std::string &&s) : m_rep(std::move(s)) {}
 
+    QCString( std::string_view sv) : m_rep(sv) {}
+
+    QCString &operator=(std::string_view sv) {
+      m_rep=sv;
+      return *this;
+    }
+
     QCString( int ) = delete;
 
     /** For converting a JavaCC string */
@@ -148,6 +156,8 @@ class QCString
 
     /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
     const char *data() const { return m_rep.c_str(); }
+
+    std::string_view view() const { return m_rep; }
 
     /** Returns a writable pointer to the data.
      */
@@ -320,6 +330,25 @@ class QCString
       return *this;
     }
 
+    QCString &insert( size_t index, std::string_view s)
+    {
+      if (s.length()>0)
+      {
+        size_t ol = m_rep.size();
+        if (index>ol) // insert beyond end of string and fill gap with spaces
+        {
+          m_rep.resize(index+s.length());
+          std::memset(&m_rep[ol],' ',index-ol);
+          std::memcpy(&m_rep[index],s.data(),s.length()+1);
+        }
+        else // insert inside the string
+        {
+          m_rep.insert(index,s);
+        }
+      }
+      return *this;
+    }
+
     QCString &insert( size_t index, const char *s )
     {
       size_t len = s ? qstrlen(s) : 0;
@@ -367,6 +396,11 @@ class QCString
       return operator+=(s);
     }
 
+    QCString &append( std::string_view s)
+    {
+      return operator+=(s);
+    }
+
     QCString &prepend( const char *s )
     {
       return insert(0,s);
@@ -380,6 +414,11 @@ class QCString
     QCString &prepend( const std::string &s )
     {
       return insert(0,s.c_str());
+    }
+
+    QCString &prepend( std::string_view s)
+    {
+      return insert(0,s);
     }
 
     QCString &remove( size_t index, size_t len )
@@ -493,6 +532,12 @@ class QCString
     }
 
     QCString &operator+=( const std::string &s)
+    {
+      m_rep+=s;
+      return *this;
+    }
+
+    QCString &operator+=(std::string_view s)
     {
       m_rep+=s;
       return *this;

@@ -215,7 +215,7 @@ void ClangTUParser::parse()
   p->numFiles = numUnsavedFiles;
   p->sources.resize(numUnsavedFiles);
   p->ufs.resize(numUnsavedFiles);
-  int refIndent = 0;
+  size_t refIndent = 0;
   p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,TRUE),refIndent);
   p->ufs[0].Filename = qstrdup(fileName.data());
   p->ufs[0].Contents = p->sources[0].data();

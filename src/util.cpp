@@ -7039,7 +7039,7 @@ QCString integerToRoman(int n, bool upper)
   return result;
 }
 
-QCString detab(const QCString &s,int &refIndent)
+QCString detab(const QCString &s,size_t &refIndent)
 {
   int tabSize = Config_getInt(TAB_SIZE);
   size_t size = s.length();
