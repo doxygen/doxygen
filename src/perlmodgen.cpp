@@ -1568,6 +1568,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   if (md->memberType()==MemberType_Enumeration) // enum
   {
     const MemberVector &enumFields = md->enumFieldList();
+    m_output.addFieldQuotedString("type", md->enumBaseType());
     if (!enumFields.empty())
     {
       m_output.openList("values");
