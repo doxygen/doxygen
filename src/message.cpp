@@ -188,7 +188,7 @@ static void do_warn(bool enabled, const QCString &file, int line, const char *pr
   {
     qstrncpy(text.rawData(),prefix,bufSize);
   }
-  vsnprintf(text.rawData()+l, bufSize-l, fmt, argsCopy);
+  vsnprintf(text.rawData()+l, bufSize-l+1, fmt, argsCopy);
   text[bufSize]='\0';
   format_warn(file,line,text);
 
