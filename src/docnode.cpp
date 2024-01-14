@@ -841,9 +841,17 @@ void DocRef::parse()
 
   if (children().empty() && !m_text.isEmpty())
   {
+    QCString text = m_text;
+    if (parser()->context.insideHtmlLink)
+    {
+      // we already in a link/title only output anchor
+      text = m_anchor;
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+          "Potential recursion while resolving \\ref command!");
+    }
     parser()->context.insideHtmlLink=TRUE;
     parser()->pushContext();
-    parser()->internalValidatingParseDoc(thisVariant(),children(),m_text);
+    parser()->internalValidatingParseDoc(thisVariant(),children(),text);
     parser()->popContext();
     parser()->context.insideHtmlLink=FALSE;
     parser()->tokenizer.setStatePara();
