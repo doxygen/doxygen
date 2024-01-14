@@ -594,7 +594,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation() override
-    { return "Dokumentation över egenuppräknande typer"; ; }
+    { return "Dokumentation över egenuppräknande typer"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions

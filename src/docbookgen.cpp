@@ -393,7 +393,7 @@ DB_GEN_C
   m_codeGen->setSourceFileName(stripPath(fileName));
   m_pageLinks = QCString();
 
-  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
+  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
   m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
   if (!pageName.isEmpty()) m_t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
   m_t << " xml:lang=\"" << theTranslator->trISOLang() << "\"";

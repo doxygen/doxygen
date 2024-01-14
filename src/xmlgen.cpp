@@ -154,7 +154,7 @@ inline void writeXMLCodeString(TextStream &t,const QCString &str, size_t &col)
 
 static void writeXMLHeader(TextStream &t)
 {
-  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
+  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
   t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"compound.xsd\" ";
   t << "version=\"" << getDoxygenVersion() << "\" ";
@@ -872,7 +872,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "</type>\n";
   }
 
-  QCString qualifiedNameStr = md->qualifiedName();;
+  QCString qualifiedNameStr = md->qualifiedName();
   stripAnonymousMarkers(qualifiedNameStr);
   t << "        <name>" << convertToXML(nameStr) << "</name>\n";
   if (nameStr!=qualifiedNameStr)
