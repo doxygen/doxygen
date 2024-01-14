@@ -2331,7 +2331,6 @@ static bool isCodeBlock(std::string_view data, size_t offset,size_t &indent)
 /** Finds the location of the table's contains in the string \a data.
  *  Only one line will be inspected.
  *  @param[in] data pointer to the string buffer.
- *  @param[in] size the size of the buffer.
  *  @param[out] start offset of the first character of the table content
  *  @param[out] end   offset of the last character of the table content
  *  @param[out] columns number of table columns found
