@@ -590,13 +590,13 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
   for (const auto &bcd : bcl)
   {
     ClassDef *cd=bcd.classDef;
-    if (cd->getLanguage()==SrcLangExt_VHDL && VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS)
+    if (cd->getLanguage()==SrcLangExt::VHDL && VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS)
     {
       continue;
     }
 
     bool b;
-    if (cd->getLanguage()==SrcLangExt_VHDL)
+    if (cd->getLanguage()==SrcLangExt::VHDL)
     {
       b=classHasVisibleRoot(cd->subClasses());
     }
@@ -643,7 +643,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
         }
         if (ftv)
         {
-          if (cd->getLanguage()==SrcLangExt_VHDL)
+          if (cd->getLanguage()==SrcLangExt::VHDL)
           {
             ftv->addContentsItem(hasChildren,bcd.usedName,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd);
           }
@@ -671,7 +671,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
       {
         //printf("Class %s at %p visited=%d\n",qPrint(cd->name()),cd,cd->visited);
         visitedClasses.insert(cd);
-        if (cd->getLanguage()==SrcLangExt_VHDL)
+        if (cd->getLanguage()==SrcLangExt::VHDL)
         {
           writeClassTreeToOutput(ol,cd->baseClasses(),level+1,ftv,addToIndex,visitedClasses);
         }
@@ -948,7 +948,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
     //              cd->isVisibleInHierarchy()
     //      );
     bool b;
-    if (cd->getLanguage()==SrcLangExt_VHDL)
+    if (cd->getLanguage()==SrcLangExt::VHDL)
     {
       if (VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS)
       {
@@ -997,7 +997,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
           }
           if (addToIndex)
           {
-            if (cd->getLanguage()!=SrcLangExt_VHDL) // prevents double insertion in Design Unit List
+            if (cd->getLanguage()!=SrcLangExt::VHDL) // prevents double insertion in Design Unit List
             	  Doxygen::indexList->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE);
           }
           if (ftv)
@@ -1019,7 +1019,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
             ftv->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE,cd.get());
           }
         }
-        if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren)
+        if (cd->getLanguage()==SrcLangExt::VHDL && hasChildren)
         {
           writeClassTreeToOutput(ol,cd->baseClasses(),1,ftv,addToIndex,visitedClasses);
           visitedClasses.insert(cd.get());
@@ -1677,7 +1677,7 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
   for (const auto &cdi : cl)
   {
     const ClassDef *cd = get_pointer(cdi);
-    if (cd->getLanguage()==SrcLangExt_VHDL)
+    if (cd->getLanguage()==SrcLangExt::VHDL)
     {
       if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKAGECLASS ||
           VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS
@@ -1812,7 +1812,7 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
     {
       ref  = nd->getReference();
       file = nd->getOutputFileBase();
-      if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
+      if (nd->getLanguage()==SrcLangExt::VHDL) // UGLY HACK
       {
         file=file.replace(0,qstrlen("namespace"),"class");
       }
@@ -1895,7 +1895,7 @@ static void writeClassTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHelp 
     {
       ref  = nd->getReference();
       file = nd->getOutputFileBase();
-      if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
+      if (nd->getLanguage()==SrcLangExt::VHDL) // UGLY HACK
       {
         file=file.replace(0,qstrlen("namespace"),"class");
       }
@@ -2005,7 +2005,7 @@ static void writeNamespaceIndex(OutputList &ol)
       }
       //ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       ol.startIndexKey();
-      if (nd->getLanguage()==SrcLangExt_VHDL)
+      if (nd->getLanguage()==SrcLangExt::VHDL)
       {
         ol.writeObjectLink(QCString(), nd->getOutputFileBase().replace(0,qstrlen("namespace"),"class"),QCString(),nd->displayName());
       }
@@ -2108,7 +2108,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
 
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    if (cd->getLanguage()==SrcLangExt_VHDL &&
+    if (cd->getLanguage()==SrcLangExt::VHDL &&
         (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKAGECLASS ||
          VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS)
        ) // no architecture
@@ -2136,7 +2136,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       ol.startIndexKey();
-      if (cd->getLanguage()==SrcLangExt_VHDL)
+      if (cd->getLanguage()==SrcLangExt::VHDL)
       {
         QCString prot= VhdlDocGen::getProtectionName(VhdlDocGen::convert(cd->protection()));
         ol.docify(prot);
@@ -2240,7 +2240,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
       continue;
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
-      if (cd->getLanguage()==SrcLangExt_VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
+      if (cd->getLanguage()==SrcLangExt::VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
         continue;
 
       // get the first UTF8 character (after the part that should be ignored)
@@ -2277,7 +2277,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   {
     if (sliceOpt && cd->compoundType() != ct)
       continue;
-    if (cd->getLanguage()==SrcLangExt_VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
+    if (cd->getLanguage()==SrcLangExt::VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
       continue;
 
     if (cd->isLinkableInProject() && cd->templateMaster()==0)

@@ -926,7 +926,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   {
     const ArgumentList &declAl = md->declArgumentList();
     const ArgumentList &defAl = md->argumentList();
-    bool isFortran = md->getLanguage()==SrcLangExt_Fortran;
+    bool isFortran = md->getLanguage()==SrcLangExt::Fortran;
     if (declAl.hasParameters())
     {
       auto defIt = defAl.begin();

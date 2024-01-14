@@ -503,7 +503,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->section=EntryType::makeUsingDir();
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
-                                          yyextra->current->lang = SrcLangExt_Fortran;
+                                          yyextra->current->lang = SrcLangExt::Fortran;
                                           pop_state(yyscanner);
                                         }
 <Use>{ID}/,                             {
@@ -519,7 +519,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->section=EntryType::makeUsingDecl();
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
-                                          yyextra->current->lang = SrcLangExt_Fortran;
+                                          yyextra->current->lang = SrcLangExt::Fortran;
                                         }
 <Use,UseOnly>"\n"                       {
                                           yyextra->colNr -= 1;
@@ -2846,7 +2846,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->mtype      = MethodTypes::Method;
   yyextra->current->virt       = Specifier::Normal;
   yyextra->current->isStatic   = false;
-  yyextra->current->lang       = SrcLangExt_Fortran;
+  yyextra->current->lang       = SrcLangExt::Fortran;
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
 }
 
@@ -3241,12 +3241,12 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   // add entry for the file
   yyextra->current          = std::make_shared<Entry>();
-  yyextra->current->lang    = SrcLangExt_Fortran;
+  yyextra->current->lang    = SrcLangExt::Fortran;
   yyextra->current->name    = yyextra->fileName;
   yyextra->current->section = EntryType::makeSource();
   yyextra->file_root        = yyextra->current;
   yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
-  yyextra->current->lang    = SrcLangExt_Fortran;
+  yyextra->current->lang    = SrcLangExt::Fortran;
 
   fortranscannerYYrestart( 0, yyscanner );
   {

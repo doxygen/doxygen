@@ -276,7 +276,7 @@ void addMembersToMemberGroup(/* in,out */ MemberList *ml,
                              /* in */     const Definition *context);
 
 int extractClassNameFromType(const QCString &type,int &pos,
-                              QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt_Unknown);
+                              QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt::Unknown);
 
 QCString normalizeNonTemplateArgumentsInString(
        const QCString &name,
@@ -317,7 +317,7 @@ PageDef *addRelatedPage(const QCString &name,
                         GroupDef *gd=nullptr,
                         const TagInfo *tagInfo=nullptr,
                         bool xref=FALSE,
-                        SrcLangExt lang=SrcLangExt_Unknown
+                        SrcLangExt lang=SrcLangExt::Unknown
                        );
 
 bool getCaseSenseNames();
@@ -372,7 +372,7 @@ bool findAndRemoveWord(QCString &s,const char *word);
 QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine);
 
 bool updateLanguageMapping(const QCString &extension,const QCString &parser);
-SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang=SrcLangExt_Cpp);
+SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang=SrcLangExt::Cpp);
 SrcLangExt getLanguageFromCodeLang(QCString &fileName);
 QCString getFileNameExtension(const QCString &fn);
 void initDefaultExtensionMapping();

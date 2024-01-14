@@ -540,7 +540,7 @@ void DocSecRefItem::parse()
   {
     SrcLangExt lang = getLanguageFromFileName(m_target);
     const SectionInfo *sec = SectionManager::instance().find(m_target);
-    if (sec==0 && lang==SrcLangExt_Markdown) // lookup as markdown file
+    if (sec==0 && lang==SrcLangExt::Markdown) // lookup as markdown file
     {
       sec = SectionManager::instance().find(markdownFileNameToId(m_target));
     }
@@ -696,7 +696,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   SrcLangExt lang = getLanguageFromFileName(target);
   m_relPath = parser->context.relPath;
   const SectionInfo *sec = SectionManager::instance().find(target);
-  if (sec==0 && lang==SrcLangExt_Markdown) // lookup as markdown file
+  if (sec==0 && lang==SrcLangExt::Markdown) // lookup as markdown file
   {
     sec = SectionManager::instance().find(markdownFileNameToId(target));
   }
@@ -737,7 +737,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
                  (compound->definitionType()==Definition::TypeFile ||
                   compound->definitionType()==Definition::TypePage ? TRUE : FALSE) :
                  FALSE;
-    m_text = linkToText(compound?compound->getLanguage():SrcLangExt_Unknown,target,isFile);
+    m_text = linkToText(compound?compound->getLanguage():SrcLangExt::Unknown,target,isFile);
     m_anchor = anchor;
     if (compound && compound->isLinkable()) // ref to compound
     {
@@ -4590,7 +4590,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_CODE:
       if (parser()->context.token->emptyTag) break;
-      if (/*getLanguageFromFileName(parser()->context.fileName)==SrcLangExt_CSharp ||*/ parser()->context.xmlComment)
+      if (/*getLanguageFromFileName(parser()->context.fileName)==SrcLangExt::CSharp ||*/ parser()->context.xmlComment)
         // for C# source or inside a <summary> or <remark> section we
         // treat <code> as an XML tag (so similar to @code)
       {

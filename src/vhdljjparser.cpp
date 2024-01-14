@@ -200,7 +200,7 @@ void VHDLOutlineParser::lineCount(const QCString &text)
 void VHDLOutlineParser::initEntry(Entry *e)
 {
   e->fileName = p->yyFileName;
-  e->lang     = SrcLangExt_VHDL;
+  e->lang     = SrcLangExt::VHDL;
   if (p->str_doc.pending)
   {
     p->str_doc.pending=FALSE;
@@ -362,7 +362,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   gBlock.vhdlSpec = VhdlSpecifier::MISCELLANEOUS;
   gBlock.fileName = p->yyFileName;
   gBlock.endBodyLine = p->yyLineNr + val +iLine;
-  gBlock.lang = SrcLangExt_VHDL;
+  gBlock.lang = SrcLangExt::VHDL;
   std::shared_ptr<Entry> compound;
 
   if (s->lastEntity)

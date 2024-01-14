@@ -226,13 +226,13 @@ void DocParser::checkArgumentName()
   {
     const auto &match = *it;
     QCString aName=match.str();
-    if (lang==SrcLangExt_Fortran) aName=aName.lower();
+    if (lang==SrcLangExt::Fortran) aName=aName.lower();
     //printf("aName='%s'\n",qPrint(aName));
     bool found=FALSE;
     for (const Argument &a : al)
     {
       QCString argName = context.memberDef->isDefine() ? a.type : a.name;
-      if (lang==SrcLangExt_Fortran) argName=argName.lower();
+      if (lang==SrcLangExt::Fortran) argName=argName.lower();
       argName=argName.stripWhiteSpace();
       //printf("argName='%s' aName=%s\n",qPrint(argName),qPrint(aName));
       if (argName.endsWith("...")) argName=argName.left(argName.length()-3);
@@ -309,11 +309,11 @@ void DocParser::checkUnOrMultipleDocumentedParams()
       for (const Argument &a: al)
       {
         QCString argName = context.memberDef->isDefine() ? a.type : a.name;
-        if (lang==SrcLangExt_Fortran) argName = argName.lower();
+        if (lang==SrcLangExt::Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
         QCString aName = argName;
         if (argName.endsWith("...")) argName=argName.left(argName.length()-3);
-        if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
+        if (lang==SrcLangExt::Python && (argName=="self" || argName=="cls"))
         {
           // allow undocumented self / cls parameter for Python
         }
@@ -348,7 +348,7 @@ void DocParser::checkUnOrMultipleDocumentedParams()
         for (const Argument &a : undocParams)
         {
           QCString argName = context.memberDef->isDefine() ? a.type : a.name;
-          if (lang==SrcLangExt_Fortran) argName = argName.lower();
+          if (lang==SrcLangExt::Fortran) argName = argName.lower();
           argName=argName.stripWhiteSpace();
           if (!first) errMsg+="\n";
           first=FALSE;
@@ -765,7 +765,7 @@ void DocParser::handleUnclosedStyleCommands()
 
 void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
 {
-  QCString name = linkToText(SrcLangExt_Unknown,context.token->name,TRUE);
+  QCString name = linkToText(SrcLangExt::Unknown,context.token->name,TRUE);
   AUTO_TRACE("word={}",name);
   bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word

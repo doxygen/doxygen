@@ -1384,7 +1384,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->args       = tmi.arglist;
     if (!me->args.isEmpty())
     {
-      me->argList = *stringToArgumentList(SrcLangExt_Cpp,me->args);
+      me->argList = *stringToArgumentList(SrcLangExt::Cpp,me->args);
     }
     if (tmi.enumValues.size()>0)
     {
@@ -1531,7 +1531,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ce->startLine            = tci->lineNr;
       ce->hasTagInfo           = TRUE;
       ce->id                   = tci->clangId;
-      ce->lang                 = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
+      ce->lang                 = tci->isObjC ? SrcLangExt::ObjC : SrcLangExt::Unknown;
       // transfer base class list
       ce->extends  = tci->bases;
       if (!tci->templateArguments.empty())

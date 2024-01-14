@@ -1864,7 +1864,7 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
   intf->parseCode(     codeOL,           // codeOutIntf
                        QCString(),       // scope
                        codeFragment,     // input
-                       SrcLangExt_VHDL,  // lang
+                       SrcLangExt::VHDL,  // lang
                        FALSE,            // isExample
                        QCString(),       // exampleName
                        const_cast<FileDef*>(mdef->getFileDef()), // fileDef
@@ -1998,7 +1998,7 @@ static void initUCF(Entry* root,const QCString &type,QCString &qcs,
   current->fileName=fileName;
   current->type="ucf_const";
   current->args+=qcs;
-  current->lang=  SrcLangExt_VHDL ;
+  current->lang=  SrcLangExt::VHDL ;
 
   // adding dummy name for constraints like VOLTAGE=5,TEMPERATURE=20 C
   if (n.isEmpty())
@@ -2215,7 +2215,7 @@ static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
   if (!VhdlDocGen::isSubClass(classEntity,cd,true,0))
   {
     classEntity->insertSubClass(cd,Protection::Public,Specifier::Normal,QCString());
-    classEntity->setLanguage(SrcLangExt_VHDL);
+    classEntity->setLanguage(SrcLangExt::VHDL);
   }
 
 ferr:
@@ -2244,7 +2244,7 @@ ferr:
 
   //fprintf(stderr,"\n%s%s%s\n",qPrint(md->name()),qPrint(cur->brief),qPrint(cur->doc));
 
-  mmd->setLanguage(SrcLangExt_VHDL);
+  mmd->setLanguage(SrcLangExt::VHDL);
   mmd->setVhdlSpecifiers(VhdlSpecifier::INSTANTIATION);
   mmd->setBriefDescription(cur->brief,cur->briefFile,cur->briefLine);
   mmd->setBodySegment(cur->startLine,cur->startLine,-1) ;

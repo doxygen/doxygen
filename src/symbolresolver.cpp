@@ -1270,7 +1270,7 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(
       AUTO_TRACE_EXIT("true");
       return true;
     }
-    if (item->getLanguage()==SrcLangExt_Cpp)
+    if (item->getLanguage()==SrcLangExt::Cpp)
     {
       QCString key=und->qualifiedName();
       if (!und->getUsedNamespaces().empty() && visitedNamespaces.insert(key.str()).second)
@@ -1552,7 +1552,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
        scope->definitionType()!=Definition::TypeNamespace
       ) ||
       (name.stripWhiteSpace().startsWith("::")) ||
-      (scope->getLanguage()==SrcLangExt_Java && QCString(name).find("::")!=-1)
+      (scope->getLanguage()==SrcLangExt::Java && QCString(name).find("::")!=-1)
      )
   {
     scope=Doxygen::globalScope;

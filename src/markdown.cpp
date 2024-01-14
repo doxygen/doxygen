@@ -1481,7 +1481,7 @@ int Markdown::Private::processLink(const char *data,int offset,int size)
   {
     SrcLangExt lang = getLanguageFromFileName(link);
     int lp=-1;
-    if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt_Markdown && !isURL(link)))
+    if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt::Markdown && !isURL(link)))
         // assume doxygen symbol link
     {
       if (lp==-1) // link to markdown page
@@ -3430,7 +3430,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
 {
   std::shared_ptr<Entry> current = std::make_shared<Entry>();
   int prepend = 0; // number of empty lines in front
-  current->lang = SrcLangExt_Markdown;
+  current->lang = SrcLangExt::Markdown;
   current->fileName = fileName;
   current->docFile  = fileName;
   current->docLine  = 1;
@@ -3544,7 +3544,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
     {
       QCString docFile = current->docFile;
       root->moveToSubEntryAndRefresh(current);
-      current->lang = SrcLangExt_Markdown;
+      current->lang = SrcLangExt::Markdown;
       current->docFile = docFile;
       current->docLine = lineNr;
     }

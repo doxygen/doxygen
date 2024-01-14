@@ -400,7 +400,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 ol.writeString("local ");
               }
               ol.writeString("enum ");
-              if (md->getLanguage()==SrcLangExt_Cpp && md->isStrong())
+              if (md->getLanguage()==SrcLangExt::Cpp && md->isStrong())
               {
                 if (md->isEnumStruct())
                 {
@@ -917,7 +917,7 @@ void MemberList::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool sho
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
     {
-      if (md->getLanguage()!=SrcLangExt_VHDL)
+      if (md->getLanguage()!=SrcLangExt::VHDL)
       {
         md->writeTagFile(tagFile,useQualifiedName,showNamespaceMembers);
         if (md->memberType()==MemberType_Enumeration && !md->isStrong())

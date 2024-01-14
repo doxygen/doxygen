@@ -1479,7 +1479,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     case MemberType_Dictionary:  memType="dictionary"; break;
   }
 
-  bool isFortran = md->getLanguage()==SrcLangExt_Fortran;
+  bool isFortran = md->getLanguage()==SrcLangExt::Fortran;
   name = md->name();
   if (md->isAnonymous()) name = "__unnamed" + name.right(name.length() - 1)+"__";
 
