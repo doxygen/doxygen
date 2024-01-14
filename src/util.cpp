@@ -5450,7 +5450,7 @@ SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang)
   if (it!=g_extLookup.end()) // listed extension
   {
     //printf("getLanguageFromFileName(%s)=%x\n",qPrint(fi.extension()),*pVal);
-    return static_cast<SrcLangExt>(it->second);
+    return it->second;
   }
   //printf("getLanguageFromFileName(%s) not found!\n",qPrint(fileName));
   return defLang; // not listed => assume C-ish language.

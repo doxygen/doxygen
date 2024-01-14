@@ -2151,7 +2151,7 @@ void generateXML()
     TextStream t(&f);
 
     // write index header
-    t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
+    t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
     t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
     t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
     t << "version=\"" << getDoxygenVersion() << "\" ";
