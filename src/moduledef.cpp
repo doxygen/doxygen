@@ -931,7 +931,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
       if (fd)
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(fd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
+        ol.startMemberItem(fd->anchor(),OutputGenerator::MemberItemType::Normal);
         ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         QCString path=fd->getPath();
