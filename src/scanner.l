@@ -6997,7 +6997,7 @@ NONLopt [^\n]*
                                           yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>{B}*"<code>"                  {
+<DocBlock>{B}*"<"{CODE}">"              {
                                           if (yyextra->insideCS)
                                           {
                                             yyextra->docBlock << yytext;
