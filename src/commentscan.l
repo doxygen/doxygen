@@ -59,6 +59,7 @@ typedef yyguts_t *yyscan_t;
 #include "parserintf.h"
 #include "reflist.h"
 #include "section.h"
+#include "regex.h"
 #include "util.h"
 #include "reflist.h"
 #include "trace.h"
@@ -1096,7 +1097,7 @@ STopt  [^\n@\\]*
                                             yyextra->briefEndsAtDot=FALSE;
                                           }
                                         }
-<Comment>{DOCNL}                             { // newline
+<Comment>{DOCNL}                        { // newline
                                           addOutput(yyscanner,yytext);
                                           if (*yytext == '\n') yyextra->lineNr++;
                                         }
@@ -3878,29 +3879,52 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
       yyextra->pOutputString = &yyextra->current->doc;
       break;
     case OutputBrief:
-      if (oldContext!=yyextra->inContext)
       {
-        if (yyextra->current->brief.isEmpty()) yyextra->current->briefLine = yyextra->lineNr;
-        if (yyextra->current->briefFile.isEmpty())
+        if (oldContext!=yyextra->inContext)
         {
-          yyextra->current->briefFile = yyextra->fileName;
-          yyextra->current->briefLine = yyextra->lineNr;
+          if (yyextra->current->brief.isEmpty()) yyextra->current->briefLine = yyextra->lineNr;
+          if (yyextra->current->briefFile.isEmpty())
+          {
+            yyextra->current->briefFile = yyextra->fileName;
+            yyextra->current->briefLine = yyextra->lineNr;
+          }
         }
-      }
-      if (yyextra->current->brief.stripWhiteSpace().isEmpty()) // we only want one brief
-        // description even if multiple
-        // are given...
-      {
-        yyextra->pOutputString = &yyextra->current->brief;
-      }
-      else
-      {
-        if (!yyextra->current->doc.isEmpty()) // when appending parts add a new line
+        bool foundMatch = false;
+        if (yyextra->current->brief.stripWhiteSpace().isEmpty()) // we only want one brief
+          // description even if multiple
+          // are given...
         {
-          yyextra->current->doc += "\n";
+          foundMatch = true;
         }
-        yyextra->pOutputString = &yyextra->current->doc;
-        yyextra->inContext = OutputDoc; // need to switch to detailed docs, see bug 631380
+        else
+        {
+          static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr *([\n]?))");
+          std::string str = yyextra->current->brief.str();
+          reg::Match match;
+          if (reg::match(str,match,nonBrief)) // match found
+          {
+            if (QCString(match[2].str()) == "\n")
+            {
+              yyextra->current->brief = yyextra->current->brief.left(yyextra->current->brief.length()-1);
+              // set warning line correct
+              yyextra->current->brief += "\\iline " + QCString().setNum(1 + static_cast<int>(std::stoul(match[1].str()))) + " \\ilinebr ";
+            }
+            foundMatch = true;
+          }
+        }
+        if (foundMatch)
+        {
+            yyextra->pOutputString = &yyextra->current->brief;
+        }
+        else
+        {
+          if (!yyextra->current->doc.isEmpty()) // when appending parts add a new line
+          {
+            yyextra->current->doc += "\n";
+          }
+          yyextra->pOutputString = &yyextra->current->doc;
+          yyextra->inContext = OutputDoc; // need to switch to detailed docs, see bug 631380
+        }
       }
       break;
     case OutputXRef:
