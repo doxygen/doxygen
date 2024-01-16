@@ -5298,14 +5298,15 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
 
 static std::unordered_map<std::string,SrcLangExt> g_extLookup;
 
-static struct Lang2ExtMap
+struct Lang2ExtMap
 {
   const char *langName;
   const char *parserName;
   SrcLangExt parserId;
   const char *defExt;
-}
-g_lang2extMap[] =
+};
+
+static std::vector<Lang2ExtMap> g_lang2extMap =
 {
 //  language       parser           parser option
   { "idl",         "c",             SrcLangExt::IDL,      ".idl" },
@@ -5327,36 +5328,31 @@ g_lang2extMap[] =
   { "sql",         "sql",           SrcLangExt::SQL,      ".sql" },
   { "md",          "md",            SrcLangExt::Markdown, ".md"  },
   { "lex",         "lex",           SrcLangExt::Lex,      ".l"   },
-  { 0,             0,               static_cast<SrcLangExt>(0),0}
 };
 
 bool updateLanguageMapping(const QCString &extension,const QCString &language)
 {
-  const Lang2ExtMap *p = g_lang2extMap;
   QCString langName = language.lower();
-  while (p->langName)
-  {
-    if (langName==p->langName) break;
-    p++;
-  }
-  if (!p->langName) return FALSE;
+  auto it1 = std::find_if(g_lang2extMap.begin(),g_lang2extMap.end(),
+                        [&langName](const auto &info) { return info.langName==langName; });
+  if (it1 == g_lang2extMap.end()) return false;
 
   // found the language
-  SrcLangExt parserId = p->parserId;
+  SrcLangExt parserId = it1->parserId;
   QCString extName = extension.lower();
   if (extName.isEmpty()) return FALSE;
   if (extName.at(0)!='.') extName.prepend(".");
-  auto it = g_extLookup.find(extName.str());
-  if (it!=g_extLookup.end())
+  auto it2 = g_extLookup.find(extName.str());
+  if (it2!=g_extLookup.end())
   {
-    g_extLookup.erase(it); // language was already register for this ext
+    g_extLookup.erase(it2); // language was already register for this ext
   }
   //printf("registering extension %s\n",qPrint(extName));
   g_extLookup.insert(std::make_pair(extName.str(),parserId));
-  if (!Doxygen::parserManager->registerExtension(extName,p->parserName))
+  if (!Doxygen::parserManager->registerExtension(extName,it1->parserName))
   {
     err("Failed to assign extension %s to parser %s for language %s\n",
-        extName.data(),p->parserName,qPrint(language));
+        extName.data(),it1->parserName,qPrint(language));
   }
   else
   {
@@ -5460,25 +5456,20 @@ SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang)
 SrcLangExt getLanguageFromCodeLang(QCString &fileName)
 {
   // try the extension
-  SrcLangExt lang = getLanguageFromFileName(fileName, SrcLangExt::Unknown);
+  auto lang = getLanguageFromFileName(fileName, SrcLangExt::Unknown);
   if (lang == SrcLangExt::Unknown)
   {
     // try the language names
-    const Lang2ExtMap *p = g_lang2extMap;
     QCString langName = fileName.lower();
     if (langName.at(0)=='.') langName = langName.mid(1);
-    while (p->langName)
+    auto it = std::find_if(g_lang2extMap.begin(),g_lang2extMap.end(),
+                        [&langName](const auto &info) { return info.langName==langName; });
+    if (it != g_lang2extMap.end())
     {
-      if (langName==p->langName)
-      {
-        // found the language
-        lang     = p->parserId;
-        fileName = p->defExt;
-        break;
-      }
-      p++;
+      lang     = it->parserId;
+      fileName = it->defExt;
     }
-    if (!p->langName)
+    else // default to C++
     {
       return SrcLangExt::Cpp;
     }
