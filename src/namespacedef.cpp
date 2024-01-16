@@ -59,7 +59,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual ~NamespaceDefImpl();
     DefType definitionType() const override { return TypeNamespace; }
     CodeSymbolType codeSymbolType() const override
-    { return getLanguage()==SrcLangExt_Java ? CodeSymbolType::Package : CodeSymbolType::Namespace; }
+    { return getLanguage()==SrcLangExt::Java ? CodeSymbolType::Package : CodeSymbolType::Namespace; }
     QCString getOutputFileBase() const override;
     QCString anchor() const override { return QCString(); }
     void insertUsedFile(FileDef *fd) override;
@@ -534,7 +534,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         addMemberToList(MemberListType_docDefineMembers,md);
         break;
       case MemberType_Property:
-        if (md->getLanguage() == SrcLangExt_Python)
+        if (md->getLanguage() == SrcLangExt::Python)
         {
           addMemberToList(MemberListType_propertyMembers,md);
           addMemberToList(MemberListType_properties,md);
@@ -754,7 +754,7 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
   }
 
   // Write a summary of the Slice definition including metadata.
-  if (getLanguage() == SrcLangExt_Slice)
+  if (getLanguage() == SrcLangExt::Slice)
   {
     ol.startParagraph();
     ol.startTypewriter();
@@ -921,7 +921,7 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
 void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
 {
   // UNO IDL constant groups may be published
-  if (getLanguage()==SrcLangExt_IDL && isConstantGroup() && m_isPublished)
+  if (getLanguage()==SrcLangExt::IDL && isConstantGroup() && m_isPublished)
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
@@ -1256,7 +1256,7 @@ void NamespaceDefImpl::addListReferences()
     const RefItemVector &xrefItems = xrefListItems();
     addRefItem(xrefItems,
         qualifiedName(),
-        getLanguage()==SrcLangExt_Fortran ?
+        getLanguage()==SrcLangExt::Fortran ?
           theTranslator->trModule(TRUE,TRUE) :
           theTranslator->trNamespace(TRUE,TRUE),
         getOutputFileBase(),displayName(),
@@ -1351,7 +1351,7 @@ bool NamespaceLinkedRefMap::declVisible(bool isConstantGroup) const
     if (nd->isLinkable() && nd->hasDocumentation())
     {
       SrcLangExt lang = nd->getLanguage();
-      if (SrcLangExt_IDL==lang)
+      if (SrcLangExt::IDL==lang)
       {
         if (isConstantGroup == nd->isConstantGroup())
         {
@@ -1396,7 +1396,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
     if (nd->isLinkable() && nd->hasDocumentation())
     {
       SrcLangExt lang = nd->getLanguage();
-      if (lang==SrcLangExt_IDL && (isConstantGroup != nd->isConstantGroup()))
+      if (lang==SrcLangExt::IDL && (isConstantGroup != nd->isConstantGroup()))
           continue; // will be output in another pass, see layout_default.xml
       ol.startMemberDeclaration();
       ol.startMemberItem(nd->anchor(),OutputGenerator::MemberItemType::Normal);
@@ -1543,7 +1543,7 @@ bool NamespaceDefImpl::isLinkableInProject() const
     return TRUE;
   }
   return !name().isEmpty() && name().at(i)!='@' && // not anonymous
-    (hasDocumentation() || getLanguage()==SrcLangExt_CSharp) &&  // documented
+    (hasDocumentation() || getLanguage()==SrcLangExt::CSharp) &&  // documented
     !isReference() &&      // not an external reference
     !isHidden() &&         // not hidden
     !isArtificial();       // or artificial
@@ -1563,15 +1563,15 @@ QCString NamespaceDefImpl::title() const
 {
   SrcLangExt lang = getLanguage();
   QCString pageTitle;
-  if (lang==SrcLangExt_Java)
+  if (lang==SrcLangExt::Java)
   {
     pageTitle = theTranslator->trPackage(displayName());
   }
-  else if (lang==SrcLangExt_Fortran || lang==SrcLangExt_Slice)
+  else if (lang==SrcLangExt::Fortran || lang==SrcLangExt::Slice)
   {
     pageTitle = theTranslator->trModuleReference(displayName());
   }
-  else if (lang==SrcLangExt_IDL)
+  else if (lang==SrcLangExt::IDL)
   {
     pageTitle = isConstantGroup()
         ? theTranslator->trConstantGroupReference(displayName())
@@ -1587,19 +1587,19 @@ QCString NamespaceDefImpl::title() const
 QCString NamespaceDefImpl::compoundTypeString() const
 {
   SrcLangExt lang = getLanguage();
-  if (lang==SrcLangExt_Java)
+  if (lang==SrcLangExt::Java)
   {
     return "package";
   }
-  else if(lang==SrcLangExt_CSharp)
+  else if(lang==SrcLangExt::CSharp)
   {
     return "namespace";
   }
-  else if (lang==SrcLangExt_Fortran)
+  else if (lang==SrcLangExt::Fortran)
   {
     return "module";
   }
-  else if (lang==SrcLangExt_IDL)
+  else if (lang==SrcLangExt::IDL)
   {
     if (isModule())
     {

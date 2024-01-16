@@ -674,7 +674,7 @@ STopt  [^\n@\\]*
                                         }
 <Comment>"<"{DETAILEDHTMLOPT}">"        { // HTML <code> command that ends a brief description
                                           // without attributes
-                                          if (yyextra->current->lang==SrcLangExt_CSharp)
+                                          if (yyextra->current->lang==SrcLangExt::CSharp)
                                           {
                                             yyextra->CScode=true;
                                             setOutput(yyscanner,OutputDoc);
@@ -701,7 +701,7 @@ STopt  [^\n@\\]*
                                         }
 <Comment>"<"{DETAILEDHTMLOPT}{ATTR}">"  { // HTML <code> command that ends a brief description
                                           // with attributes, so cannot be CS.
-                                          if (yyextra->current->lang==SrcLangExt_CSharp)
+                                          if (yyextra->current->lang==SrcLangExt::CSharp)
                                           {
                                             setOutput(yyscanner,OutputDoc);
                                           }

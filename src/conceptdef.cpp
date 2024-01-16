@@ -364,8 +364,8 @@ void ConceptDefImpl::writeIncludeFiles(OutputList &ol) const
     {
       ol.startParagraph();
       ol.startTypewriter();
-      ol.docify(::includeStatement(SrcLangExt_Cpp,m_incInfo->kind));
-      ol.docify(::includeOpen(SrcLangExt_Cpp,m_incInfo->kind));
+      ol.docify(::includeStatement(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.docify(::includeOpen(SrcLangExt::Cpp,m_incInfo->kind));
       ol.pushGeneratorState();
       ol.disable(OutputType::Html);
       ol.docify(nm);
@@ -380,7 +380,7 @@ void ConceptDefImpl::writeIncludeFiles(OutputList &ol) const
         ol.docify(nm);
       }
       ol.popGeneratorState();
-      ol.docify(::includeClose(SrcLangExt_Cpp,m_incInfo->kind));
+      ol.docify(::includeClose(SrcLangExt::Cpp,m_incInfo->kind));
       ol.endTypewriter();
       ol.endParagraph();
     }
@@ -434,7 +434,7 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
     if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
     TextStream conceptDef;
     conceptDef << m_initializer;
-    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt_Cpp,false,QCString(),
+    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt::Cpp,false,QCString(),
                     m_fileDef, -1,-1,true,0,false,this);
     codeOL.endCodeFragment("DoxyCode");
 }

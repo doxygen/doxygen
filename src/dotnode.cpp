@@ -461,7 +461,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,lineWritten,TRUE);
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef,lineWritten);
       }
-      if (m_classDef->getLanguage()!=SrcLangExt_Fortran)
+      if (m_classDef->getLanguage()!=SrcLangExt::Fortran)
       {
         for (const auto &mg : m_classDef->getMemberGroups())
         {

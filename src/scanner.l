@@ -129,7 +129,7 @@ struct scannerYY_state
   QCString         baseName;
   QCString*        specName = nullptr;
 
-  SrcLangExt       language = SrcLangExt_Unknown;
+  SrcLangExt       language = SrcLangExt::Unknown;
   bool             insideIDL   = false;                //!< processing IDL code?
   bool             insideJava  = false;                //!< processing Java code?
   bool             insideCS    = false;                //!< processing C# code?
@@ -789,7 +789,7 @@ NONLopt [^\n]*
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
                                             yyextra->current->section = EntryType::makeFunction();
-                                            yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                            yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                             yyextra->insideObjC = TRUE;
                                             yyextra->current->virt = Specifier::Virtual;
 
@@ -1472,7 +1472,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = EntryType::makeObjcImpl();
-                                          yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                          yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                           yyextra->insideObjC = TRUE;
                                           yyextra->current->protection = yyextra->protection = Protection::Public ;
                                           addType(yyscanner);
@@ -1490,7 +1490,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec = TypeSpecifier().setInterface(true);
                                           if (!yyextra->insideJava)
                                           {
-                                            yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                            yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                             yyextra->insideObjC = TRUE;
                                           }
                                           yyextra->current->protection = yyextra->protection = Protection::Public ;
@@ -1508,7 +1508,7 @@ NONLopt [^\n]*
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = EntryType::makeClass();
                                           yyextra->current->spec = TypeSpecifier().setProtocol(true);
-                                          yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                          yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                           yyextra->insideObjC = TRUE;
                                           yyextra->current->protection = yyextra->protection = Protection::Public ;
                                           addType(yyscanner);
@@ -1572,7 +1572,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           if (yytext[0]=='@')
                                           {
-                                            yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                            yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                             yyextra->insideObjC = TRUE;
                                           }
                                           lineCount(yyscanner) ;
@@ -4480,7 +4480,7 @@ NONLopt [^\n]*
 <ReadBodyIntf>"@end"/[^a-z_A-Z0-9]      { // end of Objective C block
                                           yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
                                           initEntry(yyscanner);
-                                          yyextra->language = yyextra->current->lang = SrcLangExt_Cpp; // see bug746361
+                                          yyextra->language = yyextra->current->lang = SrcLangExt::Cpp; // see bug746361
                                           yyextra->insideObjC=FALSE;
                                           BEGIN( FindMembers );
                                         }
@@ -5865,7 +5865,7 @@ NONLopt [^\n]*
                                             initEntry(yyscanner);
                                             if (yyextra->insideObjC) // see bug746361
                                             {
-                                              yyextra->language = yyextra->current->lang = SrcLangExt_Cpp;
+                                              yyextra->language = yyextra->current->lang = SrcLangExt::Cpp;
                                               yyextra->insideObjC = FALSE;
                                               }
                                             if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
@@ -7532,16 +7532,16 @@ static void setContext(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->language    = getLanguageFromFileName(yyextra->fileName);
-  yyextra->insideIDL   = yyextra->language==SrcLangExt_IDL;
-  yyextra->insideJava  = yyextra->language==SrcLangExt_Java;
-  yyextra->insideCS    = yyextra->language==SrcLangExt_CSharp;
-  yyextra->insideD     = yyextra->language==SrcLangExt_D;
-  yyextra->insidePHP   = yyextra->language==SrcLangExt_PHP;
-  yyextra->insideObjC  = yyextra->language==SrcLangExt_ObjC;
-  yyextra->insideJS    = yyextra->language==SrcLangExt_JS;
-  yyextra->insideSlice = yyextra->language==SrcLangExt_Slice;
-  yyextra->insideCpp   = (yyextra->language==SrcLangExt_Cpp ||
-                          yyextra->language==SrcLangExt_Lex);
+  yyextra->insideIDL   = yyextra->language==SrcLangExt::IDL;
+  yyextra->insideJava  = yyextra->language==SrcLangExt::Java;
+  yyextra->insideCS    = yyextra->language==SrcLangExt::CSharp;
+  yyextra->insideD     = yyextra->language==SrcLangExt::D;
+  yyextra->insidePHP   = yyextra->language==SrcLangExt::PHP;
+  yyextra->insideObjC  = yyextra->language==SrcLangExt::ObjC;
+  yyextra->insideJS    = yyextra->language==SrcLangExt::JS;
+  yyextra->insideSlice = yyextra->language==SrcLangExt::Slice;
+  yyextra->insideCpp   = (yyextra->language==SrcLangExt::Cpp ||
+                          yyextra->language==SrcLangExt::Lex);
   //printf("setContext(%s) yyextra->insideIDL=%d yyextra->insideJava=%d yyextra->insideCS=%d "
   //       "yyextra->insideD=%d yyextra->insidePHP=%d yyextra->insideObjC=%d\n",
   //       qPrint(yyextra->fileName),yyextra->insideIDL,yyextra->insideJava,yyextra->insideCS,yyextra->insideD,yyextra->insidePHP,yyextra->insideObjC
@@ -7915,7 +7915,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       //setContext();
       yyextra->yyLineNr = ce->bodyLine;
       yyextra->yyColNr = ce->bodyColumn;
-      yyextra->insideObjC = ce->lang==SrcLangExt_ObjC;
+      yyextra->insideObjC = ce->lang==SrcLangExt::ObjC;
       //printf("---> Inner block starts at line %d objC=%d\n",yyextra->yyLineNr,yyextra->insideObjC);
       yyextra->current = std::make_shared<Entry>();
       yyextra->isStatic = FALSE;
@@ -7942,7 +7942,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
         }
         else if (ce->spec.isInterface() || ce->spec.isRef() || ce->spec.isValue() || ce->spec.isStruct() || ce->spec.isUnion())
         {
-          if (ce->lang==SrcLangExt_ObjC)
+          if (ce->lang==SrcLangExt::ObjC)
           {
             yyextra->current->protection = yyextra->protection = Protection::Protected ;
           }
@@ -8192,7 +8192,7 @@ bool COutlineParser::needsPreprocessing(const QCString &extension) const
 {
   QCString fe=extension.lower();
   SrcLangExt lang = getLanguageFromFileName(extension);
-  return (SrcLangExt_Cpp == lang) || (SrcLangExt_Lex == lang) ||
+  return (SrcLangExt::Cpp == lang) || (SrcLangExt::Lex == lang) ||
    !( fe==".java" || fe==".as"  || fe==".d"    || fe==".php" ||
       fe==".php4" || fe==".inc" || fe==".phtml"|| fe==".php5"
     );

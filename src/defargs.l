@@ -501,7 +501,7 @@ CPPC  "/\/"
 					  }
   					}
 <ReadFuncArgType,ReadFuncArgPtr>"extends" {
-                                           if (yyextra->lang!=SrcLangExt_Java)
+                                           if (yyextra->lang!=SrcLangExt::Java)
                                            {
                                              REJECT;
                                            }

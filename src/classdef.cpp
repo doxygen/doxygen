@@ -112,7 +112,7 @@ static QCString makeDisplayName(const ClassDef *cd,bool includeScope)
   SrcLangExt lang = cd->getLanguage();
   //bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   QCString n;
-  if (lang==SrcLangExt_VHDL)
+  if (lang==SrcLangExt::VHDL)
   {
     n = VhdlDocGen::getClassName(cd);
   }
@@ -147,7 +147,7 @@ static QCString makeDisplayName(const ClassDef *cd,bool includeScope)
 
 static QCString getCompoundTypeString(SrcLangExt lang,ClassDef::CompoundType compType,bool isJavaEnum)
 {
-  if (lang==SrcLangExt_Fortran)
+  if (lang==SrcLangExt::Fortran)
   {
     switch (compType)
     {
@@ -168,7 +168,7 @@ static QCString getCompoundTypeString(SrcLangExt lang,ClassDef::CompoundType com
       case ClassDef::Class:     return isJavaEnum ? "enum" : "class";
       case ClassDef::Struct:    return "struct";
       case ClassDef::Union:     return "union";
-      case ClassDef::Interface: return lang==SrcLangExt_ObjC ? "class" : "interface";
+      case ClassDef::Interface: return lang==SrcLangExt::ObjC ? "class" : "interface";
       case ClassDef::Protocol:  return "protocol";
       case ClassDef::Category:  return "category";
       case ClassDef::Exception: return "exception";
@@ -826,7 +826,7 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
 
   // we cannot use getLanguage at this point, as setLanguage has not been called.
   SrcLangExt lang = getLanguageFromFileName(defFileName);
-  if ((lang==SrcLangExt_Cpp || lang==SrcLangExt_ObjC) && guessSection(defFileName).isSource())
+  if ((lang==SrcLangExt::Cpp || lang==SrcLangExt::ObjC) && guessSection(defFileName).isSource())
   {
     isLocal=TRUE;
   }
@@ -923,7 +923,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
   //printf("%s:insertInternalMember(%s) isHidden()=%d\n",qPrint(name()),qPrint(md->name()),md->isHidden());
   if (md->isHidden()) return;
 
-  if (getLanguage()==SrcLangExt_VHDL)
+  if (getLanguage()==SrcLangExt::VHDL)
   {
     QCString title=theTranslator->trVhdlType(md->getVhdlSpecifiers(),FALSE);
     m_impl->vhdlSummaryTitles.insert(title.str());
@@ -1457,7 +1457,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
 
   ol.startTextBlock();
 
-  if (getLanguage()==SrcLangExt_Cpp)
+  if (getLanguage()==SrcLangExt::Cpp)
   {
     writeTemplateSpec(ol,this,compoundTypeString(),getLanguage());
   }
@@ -1549,10 +1549,10 @@ QCString ClassDefImpl::generatedFromFiles() const
   QCString result;
   SrcLangExt lang = getLanguage();
   size_t numFiles = m_impl->files.size();
-  if (lang==SrcLangExt_Fortran)
+  if (lang==SrcLangExt::Fortran)
   {
     result = theTranslator->trGeneratedFromFilesFortran(
-          getLanguage()==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
+          getLanguage()==SrcLangExt::ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           numFiles==1);
   }
   else if (isJavaEnum())
@@ -1570,7 +1570,7 @@ QCString ClassDefImpl::generatedFromFiles() const
   else
   {
     result = theTranslator->trGeneratedFromFiles(
-          getLanguage()==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
+          getLanguage()==SrcLangExt::ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           numFiles==1);
   }
   return result;
@@ -2074,7 +2074,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
   bool first=TRUE;
   SrcLangExt lang = getLanguage();
 
-  if (lang!=SrcLangExt_VHDL)
+  if (lang!=SrcLangExt::VHDL)
   {
     for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
     {
@@ -2454,13 +2454,13 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       {
         ol.parseText(header);
       }
-      else if (lang==SrcLangExt_VHDL)
+      else if (lang==SrcLangExt::VHDL)
       {
         ol.parseText(theTranslator->trVhdlType(VhdlSpecifier::ARCHITECTURE,FALSE));
       }
       else
       {
-        ol.parseText(lang==SrcLangExt_Fortran ?
+        ol.parseText(lang==SrcLangExt::Fortran ?
             theTranslator->trDataTypes() :
             theTranslator->trCompounds());
       }
@@ -2473,7 +2473,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     QCString ctype = compoundTypeString();
     QCString cname = displayName(!localNames);
 
-    if (lang!=SrcLangExt_VHDL) // for VHDL we swap the name and the type
+    if (lang!=SrcLangExt::VHDL) // for VHDL we swap the name and the type
     {
       if (isSliceLocal())
       {
@@ -2497,7 +2497,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       ol.docify(cname);
       ol.endBold();
     }
-    if (lang==SrcLangExt_VHDL) // now write the type
+    if (lang==SrcLangExt::VHDL) // now write the type
     {
       ol.writeString(" ");
       ol.insertMemberAlign();
@@ -2535,7 +2535,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isSealed())   sl.push_back("sealed");
   if (isAbstract()) sl.push_back("abstract");
   if (isExported()) sl.push_back("export");
-  if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
+  if (getLanguage()==SrcLangExt::IDL && isPublished()) sl.push_back("published");
 
   for (const auto &sx : m_impl->qualifiers)
   {
@@ -2583,7 +2583,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         writeBriefDescription(ol,exampleFlag);
         break;
       case LayoutDocEntry::ClassIncludes:
-        if (lang==SrcLangExt_Slice)
+        if (lang==SrcLangExt::Slice)
         {
           writeIncludeFilesForSlice(ol);
         }
@@ -2714,19 +2714,19 @@ QCString ClassDefImpl::title() const
   QCString pageTitle;
   SrcLangExt lang = getLanguage();
 
-  if (lang==SrcLangExt_Fortran)
+  if (lang==SrcLangExt::Fortran)
   {
     pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
               m_impl->compType,
               !m_impl->tempArgs.empty());
   }
-  else if (lang==SrcLangExt_Slice)
+  else if (lang==SrcLangExt::Slice)
   {
     pageTitle = theTranslator->trCompoundReferenceSlice(displayName(),
               m_impl->compType,
               isSliceLocal());
   }
-  else if (lang==SrcLangExt_VHDL)
+  else if (lang==SrcLangExt::VHDL)
   {
     pageTitle = theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
   }
@@ -2751,7 +2751,7 @@ QCString ClassDefImpl::title() const
     else
     {
       pageTitle = theTranslator->trCompoundReference(displayName(),
-                m_impl->compType == Interface && getLanguage()==SrcLangExt_ObjC ? Class : m_impl->compType,
+                m_impl->compType == Interface && getLanguage()==SrcLangExt::ObjC ? Class : m_impl->compType,
                 !m_impl->tempArgs.empty());
     }
   }
@@ -3110,18 +3110,18 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
         }
         SrcLangExt lang = md->getLanguage();
         if (
-            (prot!=Protection::Public || (virt!=Specifier::Normal && getLanguage()!=SrcLangExt_ObjC) ||
+            (prot!=Protection::Public || (virt!=Specifier::Normal && getLanguage()!=SrcLangExt::ObjC) ||
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool(INLINE_INFO)) ||
              md->isSignal() || md->isSlot() ||
-             (getLanguage()==SrcLangExt_IDL &&
+             (getLanguage()==SrcLangExt::IDL &&
               (md->isOptional() || md->isAttribute() || md->isUNOProperty())) ||
-             md->isStatic() || lang==SrcLangExt_VHDL
+             md->isStatic() || lang==SrcLangExt::VHDL
             )
             && memberWritten)
         {
           StringVector sl;
-          if (lang==SrcLangExt_VHDL)
+          if (lang==SrcLangExt::VHDL)
           {
             sl.push_back(theTranslator->trVhdlType(md->getVhdlSpecifiers(),TRUE).str()); //append vhdl type
           }
@@ -3136,7 +3136,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
             if (prot==Protection::Protected)       sl.push_back("protected");
             else if (prot==Protection::Private)    sl.push_back("private");
             else if (prot==Protection::Package)    sl.push_back("package");
-            if (virt==Specifier::Virtual && getLanguage()!=SrcLangExt_ObjC)
+            if (virt==Specifier::Virtual && getLanguage()!=SrcLangExt::ObjC)
                                                    sl.push_back("virtual");
             else if (virt==Specifier::Pure)        sl.push_back("pure virtual");
             if (md->isStatic())                    sl.push_back("static");
@@ -3542,7 +3542,7 @@ void ClassDefImpl::mergeMembers()
     {
       // merge the members in the base class of this inheritance branch first
       bClass->mergeMembers();
-      if (bClass->getLanguage()==SrcLangExt_Python) continue; // python does not have member overloading, see issue 8480
+      if (bClass->getLanguage()==SrcLangExt::Python) continue; // python does not have member overloading, see issue 8480
 
       const MemberNameInfoLinkedMap &srcMnd  = bClass->memberNameInfoLinkedMap();
       MemberNameInfoLinkedMap &dstMnd        = m_impl->allMemberNameInfoLinkedMap;
@@ -4311,7 +4311,7 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inhe
   int count=0;
   MemberList * ml  = getMemberList(lt);
   MemberList * ml2 = getMemberList(static_cast<MemberListType>(lt2));
-  if (getLanguage()!=SrcLangExt_VHDL) // use specific declarations function
+  if (getLanguage()!=SrcLangExt::VHDL) // use specific declarations function
   {
     if (ml)
     {
@@ -4546,7 +4546,7 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
   //printf("%s: ClassDefImpl::writeMemberDeclarations lt=%d lt2=%d\n",qPrint(name()),lt,lt2);
   MemberList * ml = getMemberList(lt);
   MemberList * ml2 = getMemberList(static_cast<MemberListType>(lt2));
-  if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
+  if (getLanguage()==SrcLangExt::VHDL) // use specific declarations function
   {
     static const ClassDef *cdef;
     if (cdef!=this)
@@ -4771,17 +4771,17 @@ bool ClassDefImpl::isInterface() const
 
 bool ClassDefImpl::isObjectiveC() const
 {
-  return getLanguage()==SrcLangExt_ObjC;
+  return getLanguage()==SrcLangExt::ObjC;
 }
 
 bool ClassDefImpl::isFortran() const
 {
-  return getLanguage()==SrcLangExt_Fortran;
+  return getLanguage()==SrcLangExt::Fortran;
 }
 
 bool ClassDefImpl::isCSharp() const
 {
-  return getLanguage()==SrcLangExt_CSharp;
+  return getLanguage()==SrcLangExt::CSharp;
 }
 
 ClassDef *ClassDefImpl::categoryOf() const
@@ -4817,7 +4817,7 @@ void ClassDefImpl::setSubGrouping(bool enabled)
 void ClassDefImpl::setProtection(Protection p)
 {
   m_impl->prot=p;
-  if (getLanguage()==SrcLangExt_VHDL && VhdlDocGen::convert(p)==VhdlDocGen::ARCHITECTURECLASS)
+  if (getLanguage()==SrcLangExt::VHDL && VhdlDocGen::convert(p)==VhdlDocGen::ARCHITECTURECLASS)
   {
     m_impl->className = name();
   }
@@ -5135,7 +5135,7 @@ bool classHasVisibleChildren(const ClassDef *cd)
 {
   BaseClassList bcl;
 
-  if (cd->getLanguage()==SrcLangExt_VHDL) // reverse baseClass/subClass relation
+  if (cd->getLanguage()==SrcLangExt::VHDL) // reverse baseClass/subClass relation
   {
     if (cd->baseClasses().empty()) return FALSE;
     bcl=cd->baseClasses();

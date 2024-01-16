@@ -649,7 +649,7 @@ void ModuleDefImpl::addListReferences()
   const RefItemVector &xrefItems = xrefListItems();
   addRefItem(xrefItems,
       qualifiedName(),
-      getLanguage()==SrcLangExt_Fortran ?
+      getLanguage()==SrcLangExt::Fortran ?
       theTranslator->trModule(TRUE,TRUE) :
       theTranslator->trNamespace(TRUE,TRUE),
       getOutputFileBase(),displayName(),

@@ -463,7 +463,7 @@ WSopt [ \t\r]*
                                           BEGIN(Command);
                                         }
 <Start>^("%top{"|"%{")                  {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Lex) REJECT
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(LexCopyLine);
                                         }
@@ -582,13 +582,13 @@ WSopt [ \t\r]*
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyLine,LexCopyLine>@\"               {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_CSharp) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::CSharp) REJECT;
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN( CopyStringCs );
                                         }
 <CopyLine,LexCopyLine>\"                {
                                           outputChar(yyscanner,*yytext);
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran)
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran)
                                           {
                                             BEGIN( CopyString );
                                           }
@@ -598,7 +598,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <CopyLine,LexCopyLine>\'                {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
                                           outputChar(yyscanner,*yytext);
                                           BEGIN( CopyStringFtn );
                                         }
@@ -689,7 +689,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <CopyLine>{RulesDelim}                  {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Lex) REJECT;
                                           yyextra->lexRulesPart = !yyextra->lexRulesPart;
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
@@ -834,7 +834,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <CopyLine,LexCopyLine>"\\"\r?/\n        { // strip line continuation characters
-                                          if (getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran) outputChar(yyscanner,*yytext);
+                                          if (getLanguageFromFileName(yyextra->fileName)==SrcLangExt::Fortran) outputChar(yyscanner,*yytext);
                                         }
 <CopyLine,LexCopyLine>\\.               {
                                           outputArray(yyscanner,yytext,(int)yyleng);
@@ -889,7 +889,7 @@ WSopt [ \t\r]*
                                           BEGIN(ReadString);
                                         }
 <FindDefineArgs>'                       {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(ReadString);
                                         }
@@ -924,7 +924,7 @@ WSopt [ \t\r]*
                                           BEGIN(FindDefineArgs);
                                         }
 <ReadString>"'"                         {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(FindDefineArgs);
                                         }
@@ -2036,7 +2036,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <*>{CPPC}[/!]?                          {
-                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
+                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt::Fortran || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -2098,9 +2098,9 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   //printf("setFileName(%s) state->fileName=%s state->yyFileDef=%p\n",
   //    name,qPrint(state->fileName),state->yyFileDef);
   if (state->yyFileDef && state->yyFileDef->isReference()) state->yyFileDef=0;
-  state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
-  state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
-  state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
+  state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt::IDL;
+  state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt::CSharp;
+  state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt::Fortran;
   EntryType section = guessSection(state->fileName);
   state->isSource = section.isHeader() || section.isSource();
 }

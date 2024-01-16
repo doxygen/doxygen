@@ -2376,7 +2376,7 @@ class TranslatorEnglish : public Translator
       switch(compType)
       {
         case ClassDef::Class:
-          if (lang == SrcLangExt_Fortran) trType(true,true);
+          if (lang == SrcLangExt::Fortran) trType(true,true);
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Struct"; break;

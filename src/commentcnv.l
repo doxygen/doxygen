@@ -120,7 +120,7 @@ struct commentcnvYY_state
 
   bool     vhdl = FALSE; // for VHDL old style --! comment
 
-  SrcLangExt lang = SrcLangExt_Unknown;
+  SrcLangExt lang = SrcLangExt::Unknown;
   bool       isFixedForm = FALSE; // For Fortran
   std::deque<std::unique_ptr<commentcnv_FileState>> includeStack;
 };
@@ -229,7 +229,7 @@ SLASHopt [/]*
 %%
 
 <Scan>{NUMBER}			    { //Note similar code in code.l
-                                      if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+                                      if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
                                       copyToOutput(yyscanner,yytext,yyleng);
                                     }
 <Scan>[^"'!\/\n\\#,\-=; \t]*        { /* eat anything that is not " / , or \n */
@@ -240,7 +240,7 @@ SLASHopt [/]*
                                     }
 <Scan>"'''"!                        |
 <Scan>"\"\"\""!                     { /* start of python long comment */
-                                     if (yyextra->lang!=SrcLangExt_Python)
+                                     if (yyextra->lang!=SrcLangExt::Python)
 				     {
 				       REJECT;
 				     }
@@ -258,7 +258,7 @@ SLASHopt [/]*
                                    }
 <Scan>"'''"                        |
 <Scan>"\"\"\""                     { /* start of python long comment */
-                                     if (yyextra->lang!=SrcLangExt_Python)
+                                     if (yyextra->lang!=SrcLangExt::Python)
 				     {
 				       REJECT;
 				     }
@@ -279,7 +279,7 @@ SLASHopt [/]*
 				     }
                                    }
 <Scan>{B}*![><!]/.*\n              {
-                                     if (yyextra->lang!=SrcLangExt_Fortran)
+                                     if (yyextra->lang!=SrcLangExt::Fortran)
 				     {
 				       REJECT;
 				     }
@@ -294,7 +294,7 @@ SLASHopt [/]*
 				     }
   				   }
 <Scan>[Cc\*][><!]/.*\n	   {
-                                     if (yyextra->lang!=SrcLangExt_Fortran)
+                                     if (yyextra->lang!=SrcLangExt::Fortran)
 				     {
 				       REJECT;
 				     }
@@ -317,7 +317,7 @@ SLASHopt [/]*
 				     }
   				   }
 <Scan>!.*\n		   {
-  			             if (yyextra->lang!=SrcLangExt_Fortran)
+  			             if (yyextra->lang!=SrcLangExt::Fortran)
 				     {
 				       REJECT;
 				     }
@@ -327,7 +327,7 @@ SLASHopt [/]*
 				     }
                                    }
 <Scan>[Cc\*].*\n		   {
-  			             if (yyextra->lang!=SrcLangExt_Fortran)
+  			             if (yyextra->lang!=SrcLangExt::Fortran)
 				     {
 				       REJECT;
 				     }
@@ -351,7 +351,7 @@ SLASHopt [/]*
 <Scan>'				   {
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->charContext = YY_START;
-                                     if (yyextra->lang!=SrcLangExt_VHDL)
+                                     if (yyextra->lang!=SrcLangExt::VHDL)
                                      {
 				       BEGIN(SkipChar);
                                      }
@@ -406,7 +406,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <Scan>{CCS}[*!]?			   { /* start of a C comment */
-                                     if (yyextra->lang==SrcLangExt_Python)
+                                     if (yyextra->lang==SrcLangExt::Python)
 				     {
 				       REJECT;
                                      }
@@ -421,14 +421,14 @@ SLASHopt [/]*
                                      yyextra->commentStack.push(yyextra->lineNr);
                                    }
 <Scan>"#"[^\n]*\n                  {
-                                     if (yyextra->lang!=SrcLangExt_PHP)
+                                     if (yyextra->lang!=SrcLangExt::PHP)
 				     {
 				       REJECT;
 				     }
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <Scan>"#"("#")?		           {
-                                     if (yyextra->lang!=SrcLangExt_Python)
+                                     if (yyextra->lang!=SrcLangExt::Python)
 				     {
 				       REJECT;
 				     }
@@ -442,7 +442,7 @@ SLASHopt [/]*
 				     }
   				   }
 <Scan>"--"[^!][^\n]*		   {
-                                     if (yyextra->lang!=SrcLangExt_VHDL)
+                                     if (yyextra->lang!=SrcLangExt::VHDL)
 				     {
 				       REJECT;
 				     }
@@ -452,7 +452,7 @@ SLASHopt [/]*
 				     }
   				   }
 <Scan>"--!"		           {
-                                     if (yyextra->lang!=SrcLangExt_VHDL)
+                                     if (yyextra->lang!=SrcLangExt::VHDL)
 				     {
 				       REJECT;
 				     }
@@ -467,7 +467,7 @@ SLASHopt [/]*
 				     }
   				   }
 <Scan>{B}*![><!]	           {
-                                     if (yyextra->lang!=SrcLangExt_Fortran)
+                                     if (yyextra->lang!=SrcLangExt::Fortran)
 				     {
 				       REJECT;
 				     }
@@ -675,7 +675,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <SkipString>\\.                    { /* escaped character in string */
-                                     if (yyextra->lang==SrcLangExt_Fortran || yyextra->lang==SrcLangExt_VHDL)
+                                     if (yyextra->lang==SrcLangExt::Fortran || yyextra->lang==SrcLangExt::VHDL)
                                      {
                                        unput(yytext[1]);
                                        copyToOutput(yyscanner,yytext,1);
@@ -696,7 +696,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <SkipChar>\\.		           { /* escaped character */
-                                     if (yyextra->lang==SrcLangExt_Fortran || yyextra->lang==SrcLangExt_VHDL)
+                                     if (yyextra->lang==SrcLangExt::Fortran || yyextra->lang==SrcLangExt::VHDL)
                                      {
                                        unput(yytext[1]);
                                        copyToOutput(yyscanner,yytext,1);
@@ -718,7 +718,7 @@ SLASHopt [/]*
                                    }
 
 <CComment>{B}*"#"("#")?            { 
-                                     if (yyextra->lang!=SrcLangExt_Python)
+                                     if (yyextra->lang!=SrcLangExt::Python)
 				     {
 				       REJECT;
 				     }
@@ -736,7 +736,7 @@ SLASHopt [/]*
                                    }
 <CComment>"'''"                    |
 <CComment>"\"\"\""                 { /* end of Python docstring */
-                                     if (yyextra->lang!=SrcLangExt_Python)
+                                     if (yyextra->lang!=SrcLangExt::Python)
 				     {
 				       REJECT;
 				     }
@@ -756,7 +756,7 @@ SLASHopt [/]*
 <CComment,CNComment>\n                       { /* new line in comment */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                      /* in case of Fortran always end of comment */
-  				     if (yyextra->lang==SrcLangExt_Fortran)
+  				     if (yyextra->lang==SrcLangExt::Fortran)
 				     {
 				       BEGIN(Scan);
 				     }
@@ -766,8 +766,8 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <CComment,CNComment>"/"+"*"                  { /* nested C comment */
-                                     if (yyextra->lang==SrcLangExt_Python ||
-                                         yyextra->lang==SrcLangExt_Markdown)
+                                     if (yyextra->lang==SrcLangExt::Python ||
+                                         yyextra->lang==SrcLangExt::Markdown)
 				     {
 				       REJECT;
                                      }
@@ -776,8 +776,8 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <CComment,CNComment>"*"+"/"                  { /* end of C comment */
-                                     if (yyextra->lang==SrcLangExt_Python ||
-                                         yyextra->lang==SrcLangExt_Markdown)
+                                     if (yyextra->lang==SrcLangExt::Python ||
+                                         yyextra->lang==SrcLangExt::Markdown)
 				     {
 				       REJECT;
 				     }
@@ -798,7 +798,7 @@ SLASHopt [/]*
                                    }
   /* Python an VHDL share CComment,CNComment, so special attention for ending comments is required */
 <CComment,CNComment>"\n"/[ \t]*"#" 	   {
-                                     if (yyextra->lang!=SrcLangExt_VHDL)
+                                     if (yyextra->lang!=SrcLangExt::VHDL)
                                      {
                                        REJECT;
                                      }
@@ -817,7 +817,7 @@ SLASHopt [/]*
                                      }
                                    }
 <CComment,CNComment>"\n"/[ \t]*"-" 	   {
-                                     if (yyextra->lang!=SrcLangExt_Python || yyextra->pythonDocString)
+                                     if (yyextra->lang!=SrcLangExt::Python || yyextra->pythonDocString)
 				     {
 				       REJECT;
 				     }
@@ -828,7 +828,7 @@ SLASHopt [/]*
 				     }
                                    }
 <CComment,CNComment>"\n"/[ \t]*[^ \t#\-] 	   {
-                                     if (yyextra->lang==SrcLangExt_Python)
+                                     if (yyextra->lang==SrcLangExt::Python)
                                      {
                                        if (yyextra->pythonDocString)
                                        {
@@ -840,7 +840,7 @@ SLASHopt [/]*
 				         BEGIN(Scan);
                                        }
                                      }
-                                     else if (yyextra->lang==SrcLangExt_VHDL)
+                                     else if (yyextra->lang==SrcLangExt::VHDL)
                                      {
                                        if (yyextra->vhdl) // inside --! comment
                                        {
@@ -1026,10 +1026,10 @@ SLASHopt [/]*
 				     if (YY_START==CComment && oldSkip && !yyextra->skip)
     			             {
 				       //printf("** Adding start of comment!\n");
-				       if (yyextra->lang!=SrcLangExt_Python &&
-					   yyextra->lang!=SrcLangExt_VHDL &&
-					   yyextra->lang!=SrcLangExt_Markdown &&
-					   yyextra->lang!=SrcLangExt_Fortran)
+				       if (yyextra->lang!=SrcLangExt::Python &&
+					   yyextra->lang!=SrcLangExt::VHDL &&
+					   yyextra->lang!=SrcLangExt::Markdown &&
+					   yyextra->lang!=SrcLangExt::Fortran)
 				       {
  				         ADDCHAR('/');
      				         ADDCHAR('*');
@@ -1065,7 +1065,7 @@ SLASHopt [/]*
 <ReadAliasArgs>^[ \t]*{CPPC}[/!]/[^\n]+   { // skip leading special comments (see bug 618079)
   				   }
 <ReadAliasArgs>{CCE}		   { // oops, end of comment in the middle of an alias?
-                                     if (yyextra->lang==SrcLangExt_Python)
+                                     if (yyextra->lang==SrcLangExt::Python)
 				     {
 				       REJECT;
 				     }
@@ -1295,10 +1295,10 @@ static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
   if ((yyextra->condCtx==CComment || yyextra->readLineCtx==SComment) &&
       !oldSkip && yyextra->skip)
   {
-    if (yyextra->lang!=SrcLangExt_Python &&
-        yyextra->lang!=SrcLangExt_VHDL &&
-        yyextra->lang!=SrcLangExt_Markdown &&
-        yyextra->lang!=SrcLangExt_Fortran)
+    if (yyextra->lang!=SrcLangExt::Python &&
+        yyextra->lang!=SrcLangExt::VHDL &&
+        yyextra->lang!=SrcLangExt::Markdown &&
+        yyextra->lang!=SrcLangExt::Fortran)
     {
       ADDCHAR('*');
       ADDCHAR('/');
@@ -1534,13 +1534,13 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
 
   DebugLex debugLex(Debug::Lex_commentcnv,__FILE__, qPrint(fileName));
   yyextra->isFixedForm = FALSE;
-  if (yyextra->lang==SrcLangExt_Fortran)
+  if (yyextra->lang==SrcLangExt::Fortran)
   {
     FortranFormat fmt = convertFileNameFortranParserCode(fileName);
     yyextra->isFixedForm = recognizeFixedForm(QCString(inBuf.data()),fmt);
   }
 
-  if (yyextra->lang==SrcLangExt_Markdown)
+  if (yyextra->lang==SrcLangExt::Markdown)
   {
     yyextra->nestingCount=0;
     BEGIN(CComment);
@@ -1560,7 +1560,7 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
     yyextra->condStack.pop();
   }
-  if (yyextra->nestingCount>0 && yyextra->lang!=SrcLangExt_Markdown && yyextra->lang!=SrcLangExt_Fortran)
+  if (yyextra->nestingCount>0 && yyextra->lang!=SrcLangExt::Markdown && yyextra->lang!=SrcLangExt::Fortran)
   {
     QCString tmp("(probable line reference: ");
     bool first = TRUE;

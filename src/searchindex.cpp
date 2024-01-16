@@ -86,7 +86,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   if (ctx->definitionType()==Definition::TypeMember)
   {
     const MemberDef *md = toMemberDef(ctx);
-    name.prepend((md->getLanguage()==SrcLangExt_Fortran  ?
+    name.prepend((md->getLanguage()==SrcLangExt::Fortran  ?
                  theTranslator->trSubprogram(TRUE,TRUE) :
                  theTranslator->trMember(TRUE,TRUE))+" ");
   }
@@ -121,11 +121,11 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
         break;
       case Definition::TypeNamespace:
         {
-          if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+          if (lang==SrcLangExt::Java || lang==SrcLangExt::CSharp)
           {
             name = theTranslator->trPackage(name);
           }
-          else if (lang==SrcLangExt_Fortran)
+          else if (lang==SrcLangExt::Fortran)
           {
             name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
           }
