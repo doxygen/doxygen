@@ -3898,16 +3898,21 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
         }
         else
         {
-          static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr *([\n]?))");
+          static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr( *\n*))");
           std::string str = yyextra->current->brief.str();
           reg::Match match;
           if (reg::match(str,match,nonBrief)) // match found
           {
-            if (QCString(match[2].str()) == "\n")
+            size_t cnt = 0;
+            for (size_t i = 0; i < match[2].str().size(); i++)
             {
-              yyextra->current->brief = yyextra->current->brief.left(yyextra->current->brief.length()-1);
+                 if (match[2].str()[i] == '\n') cnt++;
+            }
+            if (cnt)
+            {
+              yyextra->current->brief = yyextra->current->brief.left(yyextra->current->brief.length()-cnt);
               // set warning line correct
-              yyextra->current->brief += "\\iline " + QCString().setNum(1 + static_cast<int>(std::stoul(match[1].str()))) + " \\ilinebr ";
+              yyextra->current->brief += "\\iline " + QCString().setNum(cnt + static_cast<int>(std::stoul(match[1].str()))) + " \\ilinebr ";
             }
             foundMatch = true;
           }
