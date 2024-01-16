@@ -1700,7 +1700,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->mtype      = yyextra->mtype;
   yyextra->current->virt       = yyextra->virt;
   yyextra->current->isStatic   = yyextra->isStatic;
-  yyextra->current->lang       = SrcLangExt_Python;
+  yyextra->current->lang       = SrcLangExt::Python;
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
   yyextra->isStatic = FALSE;
 }
@@ -2018,7 +2018,7 @@ static void searchFoundDef(yyscan_t yyscanner)
   yyextra->current->startLine = yyextra->yyLineNr;
   yyextra->current->bodyLine  = yyextra->yyLineNr;
   yyextra->current->section = EntryType::makeFunction();
-  yyextra->current->lang = SrcLangExt_Python;
+  yyextra->current->lang = SrcLangExt::Python;
   yyextra->current->virt = Specifier::Normal;
   yyextra->current->isStatic = yyextra->isStatic;
   yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;

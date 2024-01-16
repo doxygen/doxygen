@@ -118,7 +118,7 @@ class DefinitionImpl::IMPL
     QCString defFileName;
     QCString defFileExt;
 
-    SrcLangExt lang = SrcLangExt_Unknown;
+    SrcLangExt lang = SrcLangExt::Unknown;
 
     QCString id; // clang unique id
 
@@ -168,7 +168,7 @@ void DefinitionImpl::IMPL::init(const QCString &df, const QCString &n)
   hidden          = FALSE;
   isArtificial    = FALSE;
   isExported      = FALSE;
-  lang            = SrcLangExt_Unknown;
+  lang            = SrcLangExt::Unknown;
 }
 
 void DefinitionImpl::setDefFile(const QCString &df,int defLine,int defCol)
@@ -830,9 +830,9 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
                                           static_cast<size_t>(std::max({1,startLine,endLine})),str);
   //printf("readCodeFragment(%s,startLine=%d,endLine=%d)=\n[[[\n%s]]]\n",qPrint(fileName),startLine,endLine,qPrint(str));
 
-  bool found = lang==SrcLangExt_VHDL   ||
-               lang==SrcLangExt_Python ||
-               lang==SrcLangExt_Fortran ||
+  bool found = lang==SrcLangExt::VHDL   ||
+               lang==SrcLangExt::Python ||
+               lang==SrcLangExt::Fortran ||
                isMacro;
                // for VHDL, Python, and Fortran no bracket search is possible
   char *p=str.data();

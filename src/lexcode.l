@@ -1149,7 +1149,7 @@ static void handleCCode(yyscan_t yyscanner)
   yyextra->ccodeParser.parseCode(*yyextra->code,
                yyextra->classScope,
                yyextra->CCodeBuffer,
-               SrcLangExt_Cpp,
+               SrcLangExt::Cpp,
                yyextra->exampleBlock,
                yyextra->exampleName,
                yyextra->sourceFileDef,

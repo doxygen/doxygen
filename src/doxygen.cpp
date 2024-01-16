@@ -1012,7 +1012,7 @@ static void addClassToContext(const Entry *root)
       }
     }
     std::unique_ptr<ArgumentList> tArgList;
-    if ((root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java) && (i=fullName.findRev('<'))!=-1)
+    if ((root->lang==SrcLangExt::CSharp || root->lang==SrcLangExt::Java) && (i=fullName.findRev('<'))!=-1)
     {
       // a Java/C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
@@ -1669,7 +1669,7 @@ static void buildNamespaceList(const Entry *root)
           nd->setName(fullName); // change name to match docs
           nd->addSectionsToDefinition(root->anchors);
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-          if (nd->getLanguage()==SrcLangExt_Unknown)
+          if (nd->getLanguage()==SrcLangExt::Unknown)
           {
             nd->setLanguage(root->lang);
           }
@@ -1836,7 +1836,7 @@ static void findUsingDirectives(const Entry *root)
       // see if the using statement was found inside a namespace or inside
       // the global file scope.
       if (root->parent() && root->parent()->section.isNamespace() &&
-          (fd==0 || fd->getLanguage()!=SrcLangExt_Java) // not a .java file
+          (fd==0 || fd->getLanguage()!=SrcLangExt::Java) // not a .java file
          )
       {
         nsName=stripAnonymousNamespaceScope(root->parent()->name);
@@ -1975,7 +1975,7 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
 {
   if (root->section.isUsingDecl() &&
       !root->parent()->section.isCompound() && // not a class/struct member
-      (!filterPythonPackages || (root->lang==SrcLangExt_Python && root->fileName.endsWith("__init__.py")))
+      (!filterPythonPackages || (root->lang==SrcLangExt::Python && root->fileName.endsWith("__init__.py")))
      )
   {
     AUTO_TRACE("Found using declaration '{}' at line {} of {} inside section {}",
@@ -2181,7 +2181,7 @@ static MemberDef *addVariableToClass(
   QCString qualScope = cd->qualifiedNameWithTemplateParameters();
   QCString scopeSeparator="::";
   SrcLangExt lang = cd->getLanguage();
-  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+  if (lang==SrcLangExt::Java || lang==SrcLangExt::CSharp)
   {
     qualScope = substitute(qualScope,"::",".");
     scopeSeparator=".";
@@ -2245,7 +2245,7 @@ static MemberDef *addVariableToClass(
         // member already in the scope
       {
 
-        if (root->lang==SrcLangExt_ObjC &&
+        if (root->lang==SrcLangExt::ObjC &&
             root->mtype==MethodTypes::Property &&
             md->memberType()==MemberType_Variable)
         { // Objective-C 2.0 property
@@ -2452,7 +2452,7 @@ static MemberDef *addVariableToFile(
          )
         // variable already in the scope
       {
-        bool isPHPArray = md->getLanguage()==SrcLangExt_PHP &&
+        bool isPHPArray = md->getLanguage()==SrcLangExt::PHP &&
                           md->argsString()!=args &&
                           args.find('[')!=-1;
         bool staticsInDifferentFiles =
@@ -2566,7 +2566,7 @@ static MemberDef *addVariableToFile(
 static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength=nullptr)
 {
   AUTO_TRACE("type='{}' lang={}",type,lang);
-  if (lang == SrcLangExt_Fortran || lang == SrcLangExt_VHDL)
+  if (lang == SrcLangExt::Fortran || lang == SrcLangExt::VHDL)
   {
     return -1; // Fortran and VHDL do not have function pointers
   }
@@ -3174,8 +3174,8 @@ static void buildInterfaceAndServiceList(const Entry *root)
   // can only have these in IDL anyway
   switch (root->lang)
   {
-    case SrcLangExt_Unknown: // fall through (root node always is Unknown)
-    case SrcLangExt_IDL:
+    case SrcLangExt::Unknown: // fall through (root node always is Unknown)
+    case SrcLangExt::IDL:
         for (const auto &e : root->children()) buildInterfaceAndServiceList(e.get());
         break;
     default:
@@ -3213,7 +3213,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   // strip redundant template specifier for constructors
   int i = -1;
   int j = -1;
-  if ((fd==0 || fd->getLanguage()==SrcLangExt_Cpp) &&
+  if ((fd==0 || fd->getLanguage()==SrcLangExt::Cpp) &&
       !name.startsWith("operator ") &&   // not operator
       (i=name.find('<'))!=-1    &&   // containing <
       (j=name.find('>'))!=-1    &&   // or >
@@ -3271,7 +3271,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   {
     qualScope = substitute(qualScope,"::",scopeSeparator);
   }
-  if (lang==SrcLangExt_PHP)
+  if (lang==SrcLangExt::PHP)
   {
     // for PHP we use Class::method and Namespace\method
     scopeSeparator="::";
@@ -4080,7 +4080,7 @@ static void findUsedClassesForClass(const Entry *root,
       {
         AUTO_TRACE_ADD("Found variable '{}' in class '{}'",md->name(),masterCd->name());
         QCString type = normalizeNonTemplateArgumentsInString(md->typeString(),masterCd,formalArgs);
-        QCString typedefValue = md->getLanguage()==SrcLangExt_Java ? type : resolveTypeDef(masterCd,type);
+        QCString typedefValue = md->getLanguage()==SrcLangExt::Java ? type : resolveTypeDef(masterCd,type);
         if (!typedefValue.isEmpty())
         {
           type = typedefValue;
@@ -4509,7 +4509,7 @@ static bool findClassRelation(
           || explicitGlobalScope
           // sadly isRecursiveBaseClass always true for UNO IDL ifc/svc members
           // (i.e. this is needed for addInterfaceOrServiceToServiceOrSingleton)
-          || (root->lang==SrcLangExt_IDL &&
+          || (root->lang==SrcLangExt::IDL &&
               (root->section.isExportedInterface() ||
                root->section.isIncludedService()))
          )
@@ -4818,7 +4818,7 @@ static QCString extractClassName(const Entry *root)
   QCString bName=stripAnonymousNamespaceScope(root->name);
   bName=stripTemplateSpecifiersFromScope(bName);
   int i;
-  if ((root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java) &&
+  if ((root->lang==SrcLangExt::CSharp || root->lang==SrcLangExt::Java) &&
       (i=bName.find('<'))!=-1)
   {
     // a Java/C# generic class looks like a C++ specialization, so we need to strip the
@@ -5826,7 +5826,7 @@ static void addMemberFunction(const Entry *root,
             cd,fd,&root->argList,
             TRUE,root->lang);
 
-      if (md->getLanguage()==SrcLangExt_ObjC && md->isVariable() && root->section.isFunction())
+      if (md->getLanguage()==SrcLangExt::ObjC && md->isVariable() && root->section.isFunction())
       {
         matching = FALSE; // don't match methods and attributes with the same name
       }
@@ -7283,7 +7283,7 @@ static void addEnumValuesToEnums(const Entry *root)
             for (const auto &e : root->children())
             {
               SrcLangExt sle = root->lang;
-              bool isJavaLike = sle==SrcLangExt_CSharp || sle==SrcLangExt_Java || sle==SrcLangExt_XML;
+              bool isJavaLike = sle==SrcLangExt::CSharp || sle==SrcLangExt::Java || sle==SrcLangExt::XML;
               if ( isJavaLike || root->spec.isStrong())
               {
                 // Unlike classic C/C++ enums, for C++11, C# & Java enum
@@ -7881,9 +7881,9 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
               if (bmd) // not part of an inline namespace
               {
                 if (bmd->virtualness()!=Specifier::Normal     ||
-                    bmd->getLanguage()==SrcLangExt_Python     ||
-                    bmd->getLanguage()==SrcLangExt_Java       ||
-                    bmd->getLanguage()==SrcLangExt_PHP        ||
+                    bmd->getLanguage()==SrcLangExt::Python     ||
+                    bmd->getLanguage()==SrcLangExt::Java       ||
+                    bmd->getLanguage()==SrcLangExt::PHP        ||
                     mbcd->compoundType()==ClassDef::Interface ||
                     mbcd->compoundType()==ClassDef::Protocol)
                 {
@@ -7894,7 +7894,7 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
                   //        qPrint(argListToString(mdAl))
                   //      );
                   if (
-                      bmd->getLanguage()==SrcLangExt_Python ||
+                      bmd->getLanguage()==SrcLangExt::Python ||
                       matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
                         md->getOuterScope(), md->getFileDef(), &mdAl,
                         TRUE,bmd->getLanguage()
@@ -8064,7 +8064,7 @@ static void generateFileSources()
       {
         for (const auto &fd : *fn)
         {
-          if (fd->isSource() && !fd->isReference() && fd->getLanguage()==SrcLangExt_Cpp &&
+          if (fd->isSource() && !fd->isReference() && fd->getLanguage()==SrcLangExt::Cpp &&
               (fd->generateSourceFile() ||
                (!fd->isReference() && Doxygen::parseSourcesNeeded)
               )
@@ -8101,7 +8101,7 @@ static void generateFileSources()
         {
           if (processedFiles.find(fd->absFilePath().str())==processedFiles.end()) // not yet processed
           {
-            if (fd->getLanguage()==SrcLangExt_Cpp) // C/C++ file, use clang parser
+            if (fd->getLanguage()==SrcLangExt::Cpp) // C/C++ file, use clang parser
             {
               auto clangParser = ClangParser::instance()->createTUParser(fd.get());
               clangParser->parse();
@@ -8347,7 +8347,7 @@ static void buildDefineList()
 
         if (!def.args.isEmpty())
         {
-          mmd->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def.args));
+          mmd->moveArgumentList(stringToArgumentList(SrcLangExt::Cpp, def.args));
         }
         mmd->setInitializer(def.definition);
         mmd->setFileDef(def.fileDef);
@@ -9474,8 +9474,8 @@ static void generateExampleDocs()
   for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
     msg("Generating docs for example %s...\n",qPrint(pd->name()));
-    SrcLangExt lang = getLanguageFromFileName(pd->name(), SrcLangExt_Unknown);
-    if (lang != SrcLangExt_Unknown)
+    SrcLangExt lang = getLanguageFromFileName(pd->name(), SrcLangExt::Unknown);
+    if (lang != SrcLangExt::Unknown)
     {
       QCString ext = getFileNameExtension(pd->name());
       auto intf = Doxygen::parserManager->getCodeParser(ext);
@@ -10204,7 +10204,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
       bool ambig;
       FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
       ASSERT(fd!=0);
-      if (fd->isSource() && !fd->isReference() && fd->getLanguage()==SrcLangExt_Cpp) // this is a source file
+      if (fd->isSource() && !fd->isReference() && fd->getLanguage()==SrcLangExt::Cpp) // this is a source file
       {
         // lambda representing the work to executed by a thread
         auto processFile = [s,&filesToProcess,&processedFilesLock,&processedFiles]() {
@@ -10267,7 +10267,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
           std::vector< std::shared_ptr<Entry> > roots;
           FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
           auto parser { getParserForFile(s.c_str()) };
-          bool useClang = getLanguageFromFileName(s.c_str())==SrcLangExt_Cpp;
+          bool useClang = getLanguageFromFileName(s.c_str())==SrcLangExt::Cpp;
           if (useClang)
           {
             auto clangParser = ClangParser::instance()->createTUParser(fd);
@@ -10345,7 +10345,7 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
       bool ambig;
       FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
       ASSERT(fd!=0);
-      if (fd->isSource() && !fd->isReference() && getLanguageFromFileName(s.c_str())==SrcLangExt_Cpp) // this is a source file
+      if (fd->isSource() && !fd->isReference() && getLanguageFromFileName(s.c_str())==SrcLangExt::Cpp) // this is a source file
       {
         auto clangParser = ClangParser::instance()->createTUParser(fd);
         auto parser { getParserForFile(s.c_str()) };
@@ -10380,7 +10380,7 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
       {
         bool ambig;
         FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
-        if (getLanguageFromFileName(s.c_str())==SrcLangExt_Cpp) // not yet processed
+        if (getLanguageFromFileName(s.c_str())==SrcLangExt::Cpp) // not yet processed
         {
           auto clangParser = ClangParser::instance()->createTUParser(fd);
           auto parser { getParserForFile(s.c_str()) };

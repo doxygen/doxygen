@@ -2109,7 +2109,7 @@ QCString MemberDefImpl::getDeclType() const
 {
   SrcLangExt lang = getLanguage();
   QCString ltype(m_type);
-  if (lang==SrcLangExt_Cpp && isEnumerate() && isStrong())
+  if (lang==SrcLangExt::Cpp && isEnumerate() && isStrong())
   {
     if (isEnumStruct())
     {
@@ -2120,7 +2120,7 @@ QCString MemberDefImpl::getDeclType() const
       ltype+=" class";
     }
   }
-  if (isTypedef() && getLanguage() != SrcLangExt_Slice)
+  if (isTypedef() && getLanguage() != SrcLangExt::Slice)
   {
     ltype.prepend("typedef ");
   }
@@ -2283,7 +2283,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
 
   // *** write template lists
-  if (m_tArgList.hasParameters() && getLanguage()==SrcLangExt_Cpp)
+  if (m_tArgList.hasParameters() && getLanguage()==SrcLangExt::Cpp)
   {
     if (!isAnonType) ol.startMemberTemplateParams();
     _writeTemplatePrefix(ol,d,m_tArgList);
@@ -2293,7 +2293,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // *** write type
   QCString ltype(m_type);
-  if (isTypedef() && getLanguage() != SrcLangExt_Slice)
+  if (isTypedef() && getLanguage() != SrcLangExt::Slice)
   {
     ltype.prepend("typedef ");
   }
@@ -2787,7 +2787,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
     //ol.startTypewriter();
     //ol.docify(" [");
     SrcLangExt lang = getLanguage();
-    bool optVhdl = lang==SrcLangExt_VHDL;
+    bool optVhdl = lang==SrcLangExt::VHDL;
     bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     if (optVhdl)
     {
@@ -2837,7 +2837,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
         else if (isCopy())                              sl.push_back("copy");
         else if (isRetain())                            sl.push_back("retain");
         else if (isWeak())                              sl.push_back("weak");
-        else if (lang!=SrcLangExt_CSharp && isStrong()) sl.push_back("strong");
+        else if (lang!=SrcLangExt::CSharp && isStrong()) sl.push_back("strong");
         else if (isUnretained())                        sl.push_back("unsafe_unretained");
 
         if (!isObjCMethod())
@@ -3318,7 +3318,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
     ol.startParagraph();
     ol.startTypewriter();
     SrcLangExt lang = getLanguage();
-    bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+    bool isIDLorJava = lang==SrcLangExt::IDL || lang==SrcLangExt::Java;
     if (isIDLorJava)
     {
       ol.docify("import ");
@@ -3357,10 +3357,10 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
     ol.endBold();
     QCString langCorrected = getDefFileExtension();
     SrcLangExt srcLangExt = getLanguageFromFileName(getDefFileExtension());
-    if (srcLangExt == SrcLangExt_Lex)
+    if (srcLangExt == SrcLangExt::Lex)
     {
       langCorrected = ".doxygen_lex_c";
-      srcLangExt = SrcLangExt_Cpp;
+      srcLangExt = SrcLangExt::Cpp;
     }
     auto intf = Doxygen::parserManager->getCodeParser(langCorrected);
     intf->resetCodeParserState();
@@ -3395,7 +3395,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   SrcLangExt lang = getLanguage();
   //printf("member=%s lang=%d\n",qPrint(name()),lang);
-  bool optVhdl = lang==SrcLangExt_VHDL;
+  bool optVhdl = lang==SrcLangExt::VHDL;
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
 
   QCString scopeName = scName;
@@ -3442,7 +3442,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     else
     {
-      if (lang==SrcLangExt_Cpp)
+      if (lang==SrcLangExt::Cpp)
       {
         if (isEnumStruct()) ldef.prepend("struct ");
         else if (isStrong()) ldef.prepend("class ");
@@ -3465,7 +3465,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   {
     title += "()";
   }
-  if (lang == SrcLangExt_Slice)
+  if (lang == SrcLangExt::Slice)
   {
     // Remove the container scope from the member name.
     QCString prefix = scName + sep;
@@ -3535,7 +3535,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
 
-    if (!m_metaData.isEmpty() && getLanguage()==SrcLangExt_Slice)
+    if (!m_metaData.isEmpty() && getLanguage()==SrcLangExt::Slice)
     {
       ol.startMemberDocPrefixItem();
       ol.docify(m_metaData);
@@ -3545,7 +3545,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     const ClassDef *cd=getClassDef();
     const NamespaceDef *nd=getNamespaceDef();
     bool first=TRUE;
-    if (!m_defTmpArgLists.empty() && lang==SrcLangExt_Cpp)
+    if (!m_defTmpArgLists.empty() && lang==SrcLangExt::Cpp)
       // definition has explicit template parameter declarations
     {
       for (const ArgumentList &tal : m_defTmpArgLists)
@@ -3562,7 +3562,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     else // definition gets it template parameters from its class
       // (since no definition was found)
     {
-      if (cd && lang==SrcLangExt_Cpp && !isTemplateSpecialization())
+      if (cd && lang==SrcLangExt::Cpp && !isTemplateSpecialization())
       {
         for (const ArgumentList &tal : cd->getTemplateParameterLists())
         {
@@ -3575,7 +3575,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
           }
         }
       }
-      if (m_tArgList.hasParameters() && lang==SrcLangExt_Cpp) // function template prefix
+      if (m_tArgList.hasParameters() && lang==SrcLangExt::Cpp) // function template prefix
       {
         ol.startMemberDocPrefixItem();
         _writeTemplatePrefix(ol,scopedContainer,m_tArgList);
@@ -3634,7 +3634,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     {
       hasParameterList=VhdlDocGen::writeVHDLTypeDocumentation(this,scopedContainer,ol);
     }
-    else if (lang==SrcLangExt_Slice)
+    else if (lang==SrcLangExt::Slice)
     {
       // Eliminate the self-reference.
       int pos = ldef.findRev(' ');
@@ -3866,7 +3866,7 @@ QCString MemberDefImpl::fieldType() const
     type = m_type;
   }
 
-  if (isTypedef() && getLanguage() != SrcLangExt_Slice) type.prepend("typedef ");
+  if (isTypedef() && getLanguage() != SrcLangExt::Slice) type.prepend("typedef ");
   return simplifyTypeForTable(type);
 }
 
@@ -4097,7 +4097,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   // documentation blocks, which could be handled by multiple threads, hence this guard.
   std::lock_guard<std::mutex> lock(g_detectUndocumentedParamsMutex);
 
-  bool isPython = getLanguage()==SrcLangExt_Python;
+  bool isPython = getLanguage()==SrcLangExt::Python;
 
   if (!m_hasDocumentedParams && hasParamCommand)
   {
@@ -4161,7 +4161,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
 void MemberDefImpl::warnIfUndocumentedParams() const
 {
   QCString returnType = typeString();
-  bool isFortran = getLanguage()==SrcLangExt_Fortran;
+  bool isFortran = getLanguage()==SrcLangExt::Fortran;
   bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
 
   bool isVoidReturn =   returnType=="void" || returnType.endsWith(" void");
@@ -4416,7 +4416,7 @@ void MemberDefImpl::addListReference(Definition *)
   {
     memLabel=theTranslator->trGlobal(TRUE,TRUE);
   }
-  else if (lang==SrcLangExt_Fortran)
+  else if (lang==SrcLangExt::Fortran)
   {
     memLabel=theTranslator->trSubprogram(TRUE,TRUE);
   }
@@ -4583,13 +4583,13 @@ void MemberDefImpl::_computeIsConstructor()
       m_isConstructorCached = name()=="this" ? 2 : 1;
       return;
     }
-    else if (getLanguage()==SrcLangExt_PHP) // for PHP
+    else if (getLanguage()==SrcLangExt::PHP) // for PHP
     {
       m_isConstructorCached = name()=="__construct" ? 2 : 1;
       return;
     }
     else if (name()=="__init__" &&
-             getLanguage()==SrcLangExt_Python) // for Python
+             getLanguage()==SrcLangExt::Python) // for Python
     {
       m_isConstructorCached = 2; // TRUE
       return;
@@ -4630,16 +4630,16 @@ void MemberDefImpl::_computeIsDestructor()
   {
     isDestructor = name()=="~this";
   }
-  else if (getLanguage()==SrcLangExt_PHP) // for PHP
+  else if (getLanguage()==SrcLangExt::PHP) // for PHP
   {
     isDestructor = name()=="__destruct";
   }
   else if (name()=="__del__" &&
-           getLanguage()==SrcLangExt_Python) // for Python
+           getLanguage()==SrcLangExt::Python) // for Python
   {
     isDestructor=TRUE;
   }
-  else if (getLanguage()==SrcLangExt_Fortran) // for Fortran
+  else if (getLanguage()==SrcLangExt::Fortran) // for Fortran
   {
     isDestructor = typeString()=="final";
   }

@@ -1933,7 +1933,7 @@ bool GroupDefImpl::isLinkable() const
 // First item that has an associated languages determines the language for the whole group.
 void GroupDefImpl::updateLanguage(const Definition *d)
 {
-  if (getLanguage()==SrcLangExt_Unknown && d->getLanguage()!=SrcLangExt_Unknown)
+  if (getLanguage()==SrcLangExt::Unknown && d->getLanguage()!=SrcLangExt::Unknown)
   {
     setLanguage(d->getLanguage());
   }

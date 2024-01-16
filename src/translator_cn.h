@@ -2216,7 +2216,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       switch(compType)
       {
         case ClassDef::Class:
-          if (lang == SrcLangExt_Fortran) trType(true,true);
+          if (lang == SrcLangExt::Fortran) trType(true,true);
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="结构体"; break;

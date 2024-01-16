@@ -1277,7 +1277,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
 
   if ((md=getFortranDefs(yyscanner,memberName, yyextra->currentModule, useMap)) && md->isLinkable())
   {
-    if (md->isVariable() && (md->getLanguage()!=SrcLangExt_Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
+    if (md->isVariable() && (md->getLanguage()!=SrcLangExt::Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
                                                                                    // see also linkifyText in util.cpp
 
     const Definition *d = md->getOuterScope()==Doxygen::globalScope ?

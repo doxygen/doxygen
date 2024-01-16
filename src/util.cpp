@@ -373,7 +373,7 @@ EntryType guessSection(const QCString &name)
   }
   else
   {
-    if (getLanguageFromFileName(name,SrcLangExt_Unknown) == SrcLangExt_Cpp) return EntryType::makeHeader();
+    if (getLanguageFromFileName(name,SrcLangExt::Unknown) == SrcLangExt::Cpp) return EntryType::makeHeader();
   }
   return EntryType::makeEmpty();
 }
@@ -1053,9 +1053,9 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
              * see also getLink in fortrancode.l
              */
             if (!(scope &&
-                 (scope->getLanguage() == SrcLangExt_Fortran) &&
+                 (scope->getLanguage() == SrcLangExt::Fortran) &&
                  result.md->isVariable() &&
-                 (result.md->getLanguage() != SrcLangExt_Fortran)
+                 (result.md->getLanguage() != SrcLangExt::Fortran)
                 )
                )
             {
@@ -1212,7 +1212,7 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
       if (!first) result+=", ";
       if (!a.name.isEmpty()) // add template argument name
       {
-        if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+        if (lang==SrcLangExt::Java || lang==SrcLangExt::CSharp)
         {
           result+=a.type+" ";
         }
@@ -1235,7 +1235,7 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
           result+=a.type;
         }
       }
-      if (!a.typeConstraint.isEmpty() && lang==SrcLangExt_Java)
+      if (!a.typeConstraint.isEmpty() && lang==SrcLangExt::Java)
       {
         result+=" extends "; // TODO: now Java specific, C# has where...
         result+=a.typeConstraint;
@@ -1549,7 +1549,7 @@ static QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,c
   {
     templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace(),lang);
   }
-  QCString resolvedType = lang==SrcLangExt_Java ? templSpec : resolveTypeDef(d,templSpec);
+  QCString resolvedType = lang==SrcLangExt::Java ? templSpec : resolveTypeDef(d,templSpec);
   if (!resolvedType.isEmpty()) // not known as a typedef either
   {
     templSpec = resolvedType;
@@ -1691,7 +1691,7 @@ static QCString getCanonicalTypeForIdentifier(
   }
   else // fallback
   {
-    resolvedType = lang==SrcLangExt_Java ? word : resolveTypeDef(d,word);
+    resolvedType = lang==SrcLangExt::Java ? word : resolveTypeDef(d,word);
     //printf("typedef [%s]->[%s]\n",qPrint(word),qPrint(resolvedType));
     if (resolvedType.isEmpty()) // not known as a typedef either
     {
@@ -2402,7 +2402,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
 
     if (!input.args.isEmpty())
     {
-      argList = stringToArgumentList(SrcLangExt_Cpp, input.args);
+      argList = stringToArgumentList(SrcLangExt::Cpp, input.args);
     }
 
     for (const auto &mmd_p : *mn)
@@ -3136,7 +3136,7 @@ bool generateLink(OutputList &ol,const QCString &clName,
   //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
   const Definition *compound = nullptr;
   //PageDef *pageDef=nullptr;
-  QCString anchor,linkText=linkToText(SrcLangExt_Unknown,lt,FALSE);
+  QCString anchor,linkText=linkToText(SrcLangExt::Unknown,lt,FALSE);
   //printf("generateLink linkText=%s\n",qPrint(linkText));
   if (resolveLink(clName,lr,inSeeBlock,&compound,anchor))
   {
@@ -4496,7 +4496,7 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
   size_t typeLen=type.length();
   if (typeLen>0)
   {
-    if (lang == SrcLangExt_Fortran)
+    if (lang == SrcLangExt::Fortran)
     {
       if (type[pos]==',') return -1;
       if (!type.lower().startsWith("type"))
@@ -5296,67 +5296,63 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
 
 //--------------------------------------------------------------------------
 
-static std::unordered_map<std::string,int> g_extLookup;
+static std::unordered_map<std::string,SrcLangExt> g_extLookup;
 
-static struct Lang2ExtMap
+struct Lang2ExtMap
 {
   const char *langName;
   const char *parserName;
   SrcLangExt parserId;
   const char *defExt;
-}
-g_lang2extMap[] =
+};
+
+static std::vector<Lang2ExtMap> g_lang2extMap =
 {
 //  language       parser           parser option
-  { "idl",         "c",             SrcLangExt_IDL,      ".idl" },
-  { "java",        "c",             SrcLangExt_Java,     ".java"},
-  { "javascript",  "c",             SrcLangExt_JS,       ".js"  },
-  { "csharp",      "c",             SrcLangExt_CSharp,   ".cs"  },
-  { "d",           "c",             SrcLangExt_D,        ".d"   },
-  { "php",         "c",             SrcLangExt_PHP,      ".php" },
-  { "objective-c", "c",             SrcLangExt_ObjC,     ".m"   },
-  { "c",           "c",             SrcLangExt_Cpp,      ".c"   },
-  { "c++",         "c",             SrcLangExt_Cpp,      ".cpp" },
-  { "slice",       "c",             SrcLangExt_Slice,    ".ice" },
-  { "python",      "python",        SrcLangExt_Python,   ".py"  },
-  { "fortran",     "fortran",       SrcLangExt_Fortran,  ".f"   },
-  { "fortranfree", "fortranfree",   SrcLangExt_Fortran,  ".f90" },
-  { "fortranfixed", "fortranfixed", SrcLangExt_Fortran,  ".f"   },
-  { "vhdl",        "vhdl",          SrcLangExt_VHDL,     ".vhdl"},
-  { "xml",         "xml",           SrcLangExt_XML,      ".xml" },
-  { "sql",         "sql",           SrcLangExt_SQL,      ".sql" },
-  { "md",          "md",            SrcLangExt_Markdown, ".md"  },
-  { "lex",         "lex",           SrcLangExt_Lex,      ".l"   },
-  { 0,             0,               static_cast<SrcLangExt>(0),0}
+  { "idl",         "c",             SrcLangExt::IDL,      ".idl" },
+  { "java",        "c",             SrcLangExt::Java,     ".java"},
+  { "javascript",  "c",             SrcLangExt::JS,       ".js"  },
+  { "csharp",      "c",             SrcLangExt::CSharp,   ".cs"  },
+  { "d",           "c",             SrcLangExt::D,        ".d"   },
+  { "php",         "c",             SrcLangExt::PHP,      ".php" },
+  { "objective-c", "c",             SrcLangExt::ObjC,     ".m"   },
+  { "c",           "c",             SrcLangExt::Cpp,      ".c"   },
+  { "c++",         "c",             SrcLangExt::Cpp,      ".cpp" },
+  { "slice",       "c",             SrcLangExt::Slice,    ".ice" },
+  { "python",      "python",        SrcLangExt::Python,   ".py"  },
+  { "fortran",     "fortran",       SrcLangExt::Fortran,  ".f"   },
+  { "fortranfree", "fortranfree",   SrcLangExt::Fortran,  ".f90" },
+  { "fortranfixed", "fortranfixed", SrcLangExt::Fortran,  ".f"   },
+  { "vhdl",        "vhdl",          SrcLangExt::VHDL,     ".vhdl"},
+  { "xml",         "xml",           SrcLangExt::XML,      ".xml" },
+  { "sql",         "sql",           SrcLangExt::SQL,      ".sql" },
+  { "md",          "md",            SrcLangExt::Markdown, ".md"  },
+  { "lex",         "lex",           SrcLangExt::Lex,      ".l"   },
 };
 
 bool updateLanguageMapping(const QCString &extension,const QCString &language)
 {
-  const Lang2ExtMap *p = g_lang2extMap;
   QCString langName = language.lower();
-  while (p->langName)
-  {
-    if (langName==p->langName) break;
-    p++;
-  }
-  if (!p->langName) return FALSE;
+  auto it1 = std::find_if(g_lang2extMap.begin(),g_lang2extMap.end(),
+                        [&langName](const auto &info) { return info.langName==langName; });
+  if (it1 == g_lang2extMap.end()) return false;
 
   // found the language
-  SrcLangExt parserId = p->parserId;
+  SrcLangExt parserId = it1->parserId;
   QCString extName = extension.lower();
   if (extName.isEmpty()) return FALSE;
   if (extName.at(0)!='.') extName.prepend(".");
-  auto it = g_extLookup.find(extName.str());
-  if (it!=g_extLookup.end())
+  auto it2 = g_extLookup.find(extName.str());
+  if (it2!=g_extLookup.end())
   {
-    g_extLookup.erase(it); // language was already register for this ext
+    g_extLookup.erase(it2); // language was already register for this ext
   }
   //printf("registering extension %s\n",qPrint(extName));
   g_extLookup.insert(std::make_pair(extName.str(),parserId));
-  if (!Doxygen::parserManager->registerExtension(extName,p->parserName))
+  if (!Doxygen::parserManager->registerExtension(extName,it1->parserName))
   {
     err("Failed to assign extension %s to parser %s for language %s\n",
-        extName.data(),p->parserName,qPrint(language));
+        extName.data(),it1->parserName,qPrint(language));
   }
   else
   {
@@ -5450,7 +5446,7 @@ SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang)
   if (it!=g_extLookup.end()) // listed extension
   {
     //printf("getLanguageFromFileName(%s)=%x\n",qPrint(fi.extension()),*pVal);
-    return static_cast<SrcLangExt>(it->second);
+    return it->second;
   }
   //printf("getLanguageFromFileName(%s) not found!\n",qPrint(fileName));
   return defLang; // not listed => assume C-ish language.
@@ -5460,27 +5456,22 @@ SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang)
 SrcLangExt getLanguageFromCodeLang(QCString &fileName)
 {
   // try the extension
-  SrcLangExt lang = getLanguageFromFileName(fileName, SrcLangExt_Unknown);
-  if (lang == SrcLangExt_Unknown)
+  auto lang = getLanguageFromFileName(fileName, SrcLangExt::Unknown);
+  if (lang == SrcLangExt::Unknown)
   {
     // try the language names
-    const Lang2ExtMap *p = g_lang2extMap;
     QCString langName = fileName.lower();
     if (langName.at(0)=='.') langName = langName.mid(1);
-    while (p->langName)
+    auto it = std::find_if(g_lang2extMap.begin(),g_lang2extMap.end(),
+                        [&langName](const auto &info) { return info.langName==langName; });
+    if (it != g_lang2extMap.end())
     {
-      if (langName==p->langName)
-      {
-        // found the language
-        lang     = p->parserId;
-        fileName = p->defExt;
-        break;
-      }
-      p++;
+      lang     = it->parserId;
+      fileName = it->defExt;
     }
-    if (!p->langName)
+    else // default to C++
     {
-      return SrcLangExt_Cpp;
+      return SrcLangExt::Cpp;
     }
   }
   return lang;
@@ -6121,23 +6112,23 @@ QCString langToString(SrcLangExt lang)
 {
   switch(lang)
   {
-    case SrcLangExt_Unknown:  return "Unknown";
-    case SrcLangExt_IDL:      return "IDL";
-    case SrcLangExt_Java:     return "Java";
-    case SrcLangExt_CSharp:   return "C#";
-    case SrcLangExt_D:        return "D";
-    case SrcLangExt_PHP:      return "PHP";
-    case SrcLangExt_ObjC:     return "Objective-C";
-    case SrcLangExt_Cpp:      return "C++";
-    case SrcLangExt_JS:       return "JavaScript";
-    case SrcLangExt_Python:   return "Python";
-    case SrcLangExt_Fortran:  return "Fortran";
-    case SrcLangExt_VHDL:     return "VHDL";
-    case SrcLangExt_XML:      return "XML";
-    case SrcLangExt_SQL:      return "SQL";
-    case SrcLangExt_Markdown: return "Markdown";
-    case SrcLangExt_Slice:    return "Slice";
-    case SrcLangExt_Lex:      return "Lex";
+    case SrcLangExt::Unknown:  return "Unknown";
+    case SrcLangExt::IDL:      return "IDL";
+    case SrcLangExt::Java:     return "Java";
+    case SrcLangExt::CSharp:   return "C#";
+    case SrcLangExt::D:        return "D";
+    case SrcLangExt::PHP:      return "PHP";
+    case SrcLangExt::ObjC:     return "Objective-C";
+    case SrcLangExt::Cpp:      return "C++";
+    case SrcLangExt::JS:       return "JavaScript";
+    case SrcLangExt::Python:   return "Python";
+    case SrcLangExt::Fortran:  return "Fortran";
+    case SrcLangExt::VHDL:     return "VHDL";
+    case SrcLangExt::XML:      return "XML";
+    case SrcLangExt::SQL:      return "SQL";
+    case SrcLangExt::Markdown: return "Markdown";
+    case SrcLangExt::Slice:    return "Slice";
+    case SrcLangExt::Lex:      return "Lex";
   }
   return "Unknown";
 }
@@ -6145,11 +6136,11 @@ QCString langToString(SrcLangExt lang)
 /** Returns the scope separator to use given the programming language \a lang */
 QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
 {
-  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp || lang==SrcLangExt_VHDL || lang==SrcLangExt_Python)
+  if (lang==SrcLangExt::Java || lang==SrcLangExt::CSharp || lang==SrcLangExt::VHDL || lang==SrcLangExt::Python)
   {
     return ".";
   }
-  else if (lang==SrcLangExt_PHP && !classScope)
+  else if (lang==SrcLangExt::PHP && !classScope)
   {
     return "\\";
   }

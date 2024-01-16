@@ -156,7 +156,7 @@ struct codeYY_state
   int           lastCContext = 0;
   int           skipInlineInitContext = 0;
 
-  SrcLangExt    lang = SrcLangExt_Unknown;
+  SrcLangExt    lang = SrcLangExt::Unknown;
   bool          insideObjC = FALSE;
   bool          insideProtocolList = FALSE;
 
@@ -661,7 +661,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN(Body);
                                         }
 <ClassName,ClassVar>";"                 {
-                                          if (yyextra->lang==SrcLangExt_CSharp)
+                                          if (yyextra->lang==SrcLangExt::CSharp)
                                           {
                                             yyextra->code->codify(yytext);
                                             yyextra->skipCodify = true;
@@ -687,7 +687,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <ClassName>{ID}("."{ID})*               |
 <ClassName>{ID}("::"{ID})*              {
-                                          if (yyextra->lang==SrcLangExt_CSharp)
+                                          if (yyextra->lang==SrcLangExt::CSharp)
                                             yyextra->curClassName=substitute(yytext,".","::");
                                           else
                                             yyextra->curClassName=yytext;
@@ -952,14 +952,14 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN(UsingName);
                                         }
 <Body>"module"/{B}*[:;]?                { // 'module X' or 'module : private' or 'module;'
-                                          if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+                                          if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           BEGIN(ModuleName);
                                         }
 <Body>"import"/{B}*[<":]?               {
-                                          if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+                                          if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -980,7 +980,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->isPrefixedWithThis = TRUE;
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9])         {
-                                          if (yyextra->lang==SrcLangExt_Java && qstrcmp("internal",yytext) ==0) REJECT;
+                                          if (yyextra->lang==SrcLangExt::Java && qstrcmp("internal",yytext) ==0) REJECT;
                                           if (skipLanguageSpecificKeyword(yyscanner,yytext)) REJECT;
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
@@ -1090,7 +1090,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->name+=yytext;
                                         }
 <Body,TemplDecl,ObjCMethod>{TYPEKWSL}/{B}* {
-                                          if (yyextra->lang!=SrcLangExt_Slice)
+                                          if (yyextra->lang!=SrcLangExt::Slice)
                                           {
                                             REJECT;
                                           }
@@ -1215,7 +1215,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->name+=yytext;
                                         }
 <Body>{ID}("."{ID})+/{BN}+              { // CSharp/Java scope
-                                          if (yyextra->lang==SrcLangExt_CSharp || yyextra->lang==SrcLangExt_Java)
+                                          if (yyextra->lang==SrcLangExt::CSharp || yyextra->lang==SrcLangExt::Java)
                                           {
                                             addType(yyscanner);
                                             generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
@@ -1227,7 +1227,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <Body>"export"/{B}*                     {
-                                          if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+                                          if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -1279,7 +1279,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN( SkipString );
                                         }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{NUMBER} { //Note similar code in commentcnv.l
-                                          if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
+                                          if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
                                           yyextra->code->codify(yytext);
                                         }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\'   {
@@ -1593,7 +1593,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           endFontClass(yyscanner);
                                         }
 <MemberCall2,FuncCall,OldStyleArgs,TemplCast>{TYPEKWSL}/([^a-z_A-Z0-9]) {
-                                          if (yyextra->lang!=SrcLangExt_Slice)
+                                          if (yyextra->lang!=SrcLangExt::Slice)
                                           {
                                             REJECT;
                                           }
@@ -3032,11 +3032,11 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   {
     className+="-p";
   }
-  if (yyextra->lang==SrcLangExt_PHP)
+  if (yyextra->lang==SrcLangExt::PHP)
   {
     className = substitute(className,"\\","::"); // for PHP namespaces
   }
-  else if (yyextra->lang==SrcLangExt_CSharp || yyextra->lang==SrcLangExt_Java)
+  else if (yyextra->lang==SrcLangExt::CSharp || yyextra->lang==SrcLangExt::Java)
   {
     className = substitute(className,".","::"); // for C#/Java namespaces
   }
@@ -3446,7 +3446,7 @@ static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const QCS
   //CodeClassDef *ccd=nullptr;
   QCString locScope=yyextra->classScope;
   QCString locFunc=removeRedundantWhiteSpace(funcName);
-  if (yyextra->lang==SrcLangExt_PHP && locFunc.startsWith("self::")) locFunc=locFunc.mid(4);
+  if (yyextra->lang==SrcLangExt::PHP && locFunc.startsWith("self::")) locFunc=locFunc.mid(4);
   QCString funcScope;
   QCString funcWithScope=locFunc;
   QCString funcWithFullScope=locFunc;
@@ -3966,10 +3966,10 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
   bool retval;
   switch (yyextra->lang)
   {
-    case SrcLangExt_Cpp:
+    case SrcLangExt::Cpp:
       retval = (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
       break;
-    case SrcLangExt_Java:
+    case SrcLangExt::Java:
       retval = (non_java_keywords.find(keyword) != non_java_keywords.end());
       break;
     default: 
@@ -4155,7 +4155,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const Q
     yyextra->sourceFileDef  = yyextra->exampleFileDef.get();
   }
   yyextra->lang        = lang;
-  yyextra->insideObjC  = lang==SrcLangExt_ObjC;
+  yyextra->insideObjC  = lang==SrcLangExt::ObjC;
   if (yyextra->sourceFileDef)
   {
     setCurrentDoc(yyscanner,"l00001");

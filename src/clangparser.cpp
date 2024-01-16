@@ -180,7 +180,7 @@ void ClangTUParser::parse()
     // we use the source file to detected the language. Detection will fail if you
     // pass a bunch of .h files containing ObjC code, and no sources :-(
     SrcLangExt lang = getLanguageFromFileName(fileName);
-    if (lang==SrcLangExt_ObjC || p->detectedLang!=DetectedLang::Cpp)
+    if (lang==SrcLangExt::ObjC || p->detectedLang!=DetectedLang::Cpp)
     {
       QCString fn = fileName.lower();
       if (p->detectedLang!=DetectedLang::Cpp &&

@@ -251,7 +251,7 @@ void Entry::reset()
   explicitExternal = false;
   spec.reset();
   vhdlSpec = VhdlSpecifier::UNKNOWN;
-  lang = SrcLangExt_Unknown;
+  lang = SrcLangExt::Unknown;
   hidden = false;
   artificial = false;
   subGrouping = true;

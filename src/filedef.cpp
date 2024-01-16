@@ -55,7 +55,7 @@
 
 QCString includeStatement(SrcLangExt lang,IncludeKind kind)
 {
-  bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+  bool isIDLorJava = lang==SrcLangExt::IDL || lang==SrcLangExt::Java;
   if (isIDLorJava || (kind & IncludeKind_ImportMask))
   {
     return "import ";
@@ -72,7 +72,7 @@ QCString includeStatement(SrcLangExt lang,IncludeKind kind)
 
 QCString includeOpen(SrcLangExt lang,IncludeKind kind)
 {
-  if (lang==SrcLangExt_Java || kind==IncludeKind::ImportModule) return "";
+  if (lang==SrcLangExt::Java || kind==IncludeKind::ImportModule) return "";
   if (kind & IncludeKind_LocalMask)
   {
     return "\"";
@@ -85,7 +85,7 @@ QCString includeOpen(SrcLangExt lang,IncludeKind kind)
 
 QCString includeClose(SrcLangExt lang,IncludeKind kind)
 {
-  if (lang==SrcLangExt_Java || lang==SrcLangExt_IDL) return ";";
+  if (lang==SrcLangExt::Java || lang==SrcLangExt::IDL) return ";";
   switch (kind)
   {
     case IncludeKind::ImportLocal:       return "\";";
@@ -102,7 +102,7 @@ QCString includeClose(SrcLangExt lang,IncludeKind kind)
 QCString includeTagFileAttributes(SrcLangExt lang,IncludeKind kind)
 {
   QCString result;
-  bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+  bool isIDLorJava = lang==SrcLangExt::IDL || lang==SrcLangExt::Java;
   result.sprintf("local=\"%s\" import=\"%s\" module=\"%s\" objc=\"%s\"",
            (kind & IncludeKind_LocalMask)  ? "yes" : "no",
            (isIDLorJava || (kind & IncludeKind_ImportMask)) ? "yes" : "no",
@@ -584,7 +584,7 @@ void FileDefImpl::writeIncludeFiles(OutputList &ol)
     {
       const FileDef *fd=ii.fileDef;
       ol.startTypewriter();
-      SrcLangExt lang = fd ? fd->getLanguage() : SrcLangExt_Cpp;
+      SrcLangExt lang = fd ? fd->getLanguage() : SrcLangExt::Cpp;
       ol.docify(::includeStatement(lang,ii.kind));
       ol.docify(::includeOpen(lang,ii.kind));
       ol.disable(OutputType::Html);
@@ -1162,7 +1162,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
   devNullList.add<DevNullCodeGenerator>();
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
-      (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
+      (getLanguage()==SrcLangExt::Cpp || getLanguage()==SrcLangExt::ObjC))
   {
     auto &codeOL = ol.codeGenerators();
     codeOL.startCodeFragment("DoxyCode");
@@ -1223,7 +1223,7 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
   devNullList.add<DevNullCodeGenerator>();
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
-      (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
+      (getLanguage()==SrcLangExt::Cpp || getLanguage()==SrcLangExt::ObjC))
   {
     clangParser->switchToFile(this);
     clangParser->writeSources(devNullList,this);
@@ -1284,7 +1284,7 @@ void FileDefImpl::insertMember(MemberDef *md)
   switch (md->memberType())
   {
     case MemberType_Property:
-      if (md->getLanguage() == SrcLangExt_Python)
+      if (md->getLanguage() == SrcLangExt::Python)
       {
         addMemberToList(MemberListType_propertyMembers,md);
         addMemberToList(MemberListType_properties,md);
@@ -1572,7 +1572,7 @@ bool FileDefImpl::isDocumentationFile() const
 
   int lastDot = name().findRev('.');
   return (lastDot!=-1 && docExtensions.find(name().mid(lastDot+1).str())!=docExtensions.end()) ||
-         getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt_Markdown;
+         getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt::Markdown;
 }
 
 void FileDefImpl::acquireFileVersion()

@@ -293,7 +293,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
 
   // determine language
   QCString lang;
-  SrcLangExt langExt = SrcLangExt_Cpp;
+  SrcLangExt langExt = SrcLangExt::Cpp;
   if (md)
   {
     langExt = md->getLanguage();
@@ -304,8 +304,8 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   }
   switch (langExt)
   {
-    case SrcLangExt_Cpp:
-    case SrcLangExt_ObjC:
+    case SrcLangExt::Cpp:
+    case SrcLangExt::ObjC:
       {
         if (md && (md->isObjCMethod() || md->isObjCProperty()))
           lang="occ";  // Objective C/C++
@@ -317,21 +317,21 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
           lang="cpp";  // C++
       }
       break;
-    case SrcLangExt_IDL:     lang="idl"; break;        // IDL
-    case SrcLangExt_CSharp:  lang="csharp"; break;     // C#
-    case SrcLangExt_PHP:     lang="php"; break;        // PHP4/5
-    case SrcLangExt_D:       lang="d"; break;          // D
-    case SrcLangExt_Java:    lang="java"; break;       // Java
-    case SrcLangExt_JS:      lang="javascript"; break; // JavaScript
-    case SrcLangExt_Python:  lang="python"; break;     // Python
-    case SrcLangExt_Fortran: lang="fortran"; break;    // Fortran
-    case SrcLangExt_VHDL:    lang="vhdl"; break;       // VHDL
-    case SrcLangExt_XML:     lang="xml"; break;        // DBUS XML
-    case SrcLangExt_SQL:     lang="sql"; break;        // Sql
-    case SrcLangExt_Markdown:lang="markdown"; break;   // Markdown
-    case SrcLangExt_Slice:   lang="slice"; break;      // Slice
-    case SrcLangExt_Lex:     lang="lex"; break;        // Lex
-    case SrcLangExt_Unknown: lang="unknown"; break;    // should not happen!
+    case SrcLangExt::IDL:     lang="idl"; break;        // IDL
+    case SrcLangExt::CSharp:  lang="csharp"; break;     // C#
+    case SrcLangExt::PHP:     lang="php"; break;        // PHP4/5
+    case SrcLangExt::D:       lang="d"; break;          // D
+    case SrcLangExt::Java:    lang="java"; break;       // Java
+    case SrcLangExt::JS:      lang="javascript"; break; // JavaScript
+    case SrcLangExt::Python:  lang="python"; break;     // Python
+    case SrcLangExt::Fortran: lang="fortran"; break;    // Fortran
+    case SrcLangExt::VHDL:    lang="vhdl"; break;       // VHDL
+    case SrcLangExt::XML:     lang="xml"; break;        // DBUS XML
+    case SrcLangExt::SQL:     lang="sql"; break;        // Sql
+    case SrcLangExt::Markdown:lang="markdown"; break;   // Markdown
+    case SrcLangExt::Slice:   lang="slice"; break;      // Slice
+    case SrcLangExt::Lex:     lang="lex"; break;        // Lex
+    case SrcLangExt::Unknown: lang="unknown"; break;    // should not happen!
   }
 
   if (md)

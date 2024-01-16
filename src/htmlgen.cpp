@@ -2123,7 +2123,7 @@ void HtmlGenerator::startMemberDescription(const QCString &anchor,const QCString
   m_t << "\">";
   m_t << "<td class=\"mdescLeft\">&#160;</td>";
   if (typ) m_t << "<td class=\"mdescLeft\">&#160;</td>";
-  m_t << "<td class=\"mdescRight\">";;
+  m_t << "<td class=\"mdescRight\">";
 }
 
 void HtmlGenerator::endMemberDescription()

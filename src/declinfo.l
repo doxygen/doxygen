@@ -329,8 +329,8 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   yyextra->inputPosition      = 0;
   yyextra->classTempListFound = FALSE;
   yyextra->funcTempListFound  = FALSE;
-  yyextra->insideObjC = lang==SrcLangExt_ObjC;
-  yyextra->insidePHP  = lang==SrcLangExt_PHP;
+  yyextra->insideObjC = lang==SrcLangExt::ObjC;
+  yyextra->insidePHP  = lang==SrcLangExt::PHP;
   yyextra->scope.clear();
   yyextra->className.clear();
   yyextra->classTempList.clear();
