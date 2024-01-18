@@ -877,8 +877,8 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
   size_t sl=scope.length();
   size_t nl=name.length();
   return (name==scope || // equal
-          (scope.left(nl)==name && // substring
-           sl>nl+1 && scope.at(nl)==':' && scope.at(nl+1)==':' // scope
+          (name.left(sl)==scope && // substring
+           nl>sl+1 && name.at(sl)==':' && name.at(sl+1)==':' // scope
           )
          );
 }
@@ -2890,6 +2890,7 @@ bool resolveRef(/* in */  const QCString &scName,
   QCString nameStr=fullName.left(endNamePos);
   if (explicitScope) nameStr=nameStr.mid(2);
 
+
   // extract arguments
   QCString argsStr;
   if (bracePos!=-1) argsStr=fullName.right(fullName.length()-bracePos);
@@ -2915,6 +2916,10 @@ bool resolveRef(/* in */  const QCString &scName,
   }
 
   QCString scopeStr=scName;
+  if (nameStr.length()>scopeStr.length() && leftScopeMatch(scopeStr,nameStr))
+  {
+    nameStr=nameStr.mid(scopeStr.length()+2);
+  }
 
   const GroupDef     *gd = nullptr;
   const ConceptDef   *cnd = nullptr;
@@ -7106,4 +7111,21 @@ QCString getProjectId()
   MD5SigToString(md5_sig,sigStr);
   sigStr[32]='_'; sigStr[33]=0;
   return sigStr;
+}
+
+//! Return the index of the last :: in the string \a name that is still before the first <
+int computeQualifiedIndex(const QCString &name)
+{
+  int l = static_cast<int>(name.length());
+  int lastSepPos = -1;
+  const char *p = name.data();
+  int ts = name.findRev(">::");
+  if (ts==-1) ts=0; else lastSepPos=ts+1;
+  for (int i=ts;i<l-1;i++)
+  {
+    char c=*p++;
+    if (c==':' && *p==':') lastSepPos=i;
+    if (c=='<') break;
+  }
+  return lastSepPos;
 }
