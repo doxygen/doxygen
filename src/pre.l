@@ -2261,6 +2261,19 @@ static std::unique_ptr<FileState> findFile(yyscan_t yyscanner, const QCString &f
       return nullptr;
     }
   }
+  bool ambig;
+  FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,fileName,ambig);
+  if (fd && !ambig) // fallback in case the file is uniquely named in the input, use that one
+  {
+    auto fs = checkAndOpenFile(yyscanner,fd->absFilePath(),alreadyProcessed);
+    if (fs)
+    {
+      setFileName(yyscanner,fd->absFilePath());
+      state->yyLineNr=1;
+      //printf("  -> found it\n");
+      return fs;
+    }
+  }
   return nullptr;
 }
 
