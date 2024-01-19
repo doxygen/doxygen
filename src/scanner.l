@@ -7114,7 +7114,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
-                                          if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                                          if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                                           {
                                             BEGIN(DocBlock);
                                           }
@@ -7122,7 +7122,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
-                                          if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                                          if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                                           {
                                             BEGIN(DocBlock);
                                           }
@@ -7448,6 +7448,7 @@ static inline int computeIndent(const char *s,int startIndent)
   }
   return col;
 }
+
 static inline void initMethodProtection(yyscan_t yyscanner,Protection prot)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
