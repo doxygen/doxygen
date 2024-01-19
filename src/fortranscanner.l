@@ -1571,7 +1571,7 @@ private                                 {
 <DocCopyBlock>"~~~"[~]*                 {
                                           QCString pat = yytext;
                                           yyextra->docBlock += pat;
-                                          if (yyextra->fencedSize==pat.length())
+                                          if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.length())
                                           {
                                             BEGIN(DocBlock);
                                           }
@@ -1579,7 +1579,7 @@ private                                 {
 <DocCopyBlock>"```"[`]*                 {
                                           QCString pat = yytext;
                                           yyextra->docBlock += pat;
-                                          if (yyextra->fencedSize==pat.length())
+                                          if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.length())
                                           {
                                             BEGIN(DocBlock);
                                           }
