@@ -222,7 +222,8 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
   if (n.isEmpty()) return 0;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams);
+  QCString scopeName=scope && scope!=Doxygen::globalScope ? scope->name() : QCString();
+  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -382,7 +383,8 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   if (n.isEmpty()) return 0;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams);
+  QCString scopeName=scope && scope!=Doxygen::globalScope ? scope->name() : QCString();
+  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -399,6 +401,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
     name=name.mid(qualifierIndex+2);
   }
+  AUTO_TRACE_ADD("qualifierIndex={} name={} explicitScopePart={}",qualifierIndex,name,explicitScopePart);
 
   if (name.isEmpty())
   {
@@ -425,6 +428,10 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
       return 0;
     }
   }
+  else
+  {
+    AUTO_TRACE_ADD("{} candidates",range.size());
+  }
 
   bool hasUsingStatements =
     (m_fileScope && (!m_fileScope->getUsedNamespaces().empty() ||
@@ -436,7 +443,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   // result of a lookup is deterministic. As the key we use the concatenated
   // scope, the name to search for and the explicit scope prefix. The speedup
   // achieved by this simple cache can be enormous.
-  size_t scopeNameLen = scope->name().length()+1;
+  size_t scopeNameLen = scope!=Doxygen::globalScope ? scope->name().length()+1 : 0;
   size_t nameLen = name.length()+1;
   size_t explicitPartLen = explicitScopePart.length();
   size_t fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
@@ -446,8 +453,11 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
   std::string key;
   key.reserve(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+argsLen);
-  key+=scope->name().str();
-  key+='+';
+  if (scope!=Doxygen::globalScope)
+  {
+    key+=scope->name().str();
+    key+='+';
+  }
   key+=name.str();
   key+='+';
   key+=explicitScopePart.str();

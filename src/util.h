@@ -290,7 +290,8 @@ QCString substituteTemplateArgumentsInString(
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
-                                          QCString *lastScopeStripped=nullptr);
+                                          QCString *lastScopeStripped=nullptr,
+                                          QCString scopeName=QCString());
 
 QCString resolveTypeDef(const Definition *d,const QCString &name,
                         const Definition **typedefContext=nullptr);
