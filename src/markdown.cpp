@@ -1523,7 +1523,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
       }
       else
       {
-        processInline(std::string_view(content.str()));
+        processInline(std::string_view(substitute(content,"\"","&quot;").str()));
       }
       out+="\"";
     }
