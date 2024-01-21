@@ -67,7 +67,7 @@ enum Tokens
   RetVal_EndHtmlDetails = 0x10018
 };
 
-#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? "@" : "\\")
+#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
 
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo

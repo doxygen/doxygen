@@ -1044,7 +1044,7 @@ class DocPara : public DocCompoundNode
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
 
-    int handleCommand(const QCString &cmdName,const int tok);
+    int handleCommand(const QCString &cmdName,char cmdChar);
     int handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs);
     int handleHtmlEndTag(const QCString &tagName);
     int handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=FALSE);
@@ -1054,16 +1054,16 @@ class DocPara : public DocCompoundNode
     template<class T> void handleFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
-    void handleCite(const QCString &cmdName,const int tokIn);
-    void handleDoxyConfig(const QCString &cmdName,const int tokIn);
-    void handleEmoji(const QCString &cmdName,const int tokIn);
-    void handleRef(const QCString &cmdName,const int tokIn);
-    void handleSection(const QCString &cmdName,const int tokIn);
+    void handleCite(const QCString &cmdName,char cmdChar);
+    void handleDoxyConfig(const QCString &cmdName,char cmdChar);
+    void handleEmoji(const QCString &cmdName,char cmdChar);
+    void handleRef(const QCString &cmdName,char cmdChar);
+    void handleSection(const QCString &cmdName,char cmdChar);
     void handleInheritDoc();
     void handleVhdlFlow();
-    void handleILine(const QCString &cmdName,const int tokIn);
-    void handleIFile(const QCString &cmdName,const int tokIn);
-    void handleShowDate(const QCString &cmdName,const int tokIn);
+    void handleILine(const QCString &cmdName,char cmdChar);
+    void handleIFile(const QCString &cmdName,char cmdChar);
+    void handleShowDate(const QCString &cmdName,char cmdChar);
     int handleStartCode();
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 

@@ -629,7 +629,7 @@ void DocSecRefList::parse()
         case CMD_ENDSECREFLIST:
           return;
         default:
-          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%s%s' as part of a \\secreflist",
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%c%s' as part of a \\secreflist",
               TK_COMMAND_CHAR(tok),qPrint(parser()->context.token->name));
           return;
       }
@@ -955,12 +955,12 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
             case CMD_ENDLINK:
               if (isJavaLink)
               {
-                warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'{@link...' ended with '%s%s' command",
+                warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'{@link...' ended with '%c%s' command",
                   TK_COMMAND_CHAR(tok),qPrint(parser()->context.token->name));
               }
               goto endlink;
             default:
-              warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%s%s' as part of a \\link",
+              warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%c%s' as part of a \\link",
                   TK_COMMAND_CHAR(tok),qPrint(parser()->context.token->name));
               break;
           }
@@ -2172,7 +2172,7 @@ int DocHtmlDescTitle::parse()
                   tok=parser()->tokenizer.lex();
                   if (tok!=TK_WHITESPACE)
                   {
-                    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%s%s' command",
+                    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
                         TK_COMMAND_CHAR(tok),qPrint(cmdName));
                   }
                   else
@@ -2181,7 +2181,7 @@ int DocHtmlDescTitle::parse()
                     tok=parser()->tokenizer.lex(); // get the reference id
                     if (tok!=TK_WORD)
                     {
-                      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%s%s' command",
+                      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s' command",
                           DocTokenizer::tokToString(tok),TK_COMMAND_CHAR(tok),qPrint(cmdName));
                     }
                     else
@@ -2229,7 +2229,7 @@ int DocHtmlDescTitle::parse()
 
                 break;
               default:
-                warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%s%s' found as part of a <dt> tag",
+                warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%c%s' found as part of a <dt> tag",
                   TK_COMMAND_CHAR(tok),qPrint(cmdName));
             }
           }
@@ -3178,15 +3178,15 @@ int DocPara::handleParamSection(const QCString &cmdName,
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
-void DocPara::handleCite(const QCString &cmdName, const int tokIn)
+void DocPara::handleCite(const QCString &cmdName, char cmdChar)
 {
   AUTO_TRACE();
   // get the argument of the cite command.
   int tok=parser()->tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%s%s' command",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
+      cmdChar,qPrint(cmdName));
     return;
   }
   parser()->tokenizer.setStateCite();
@@ -3194,13 +3194,13 @@ void DocPara::handleCite(const QCString &cmdName, const int tokIn)
   if (tok==0)
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command '%s%s'",TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+        "argument of command '%c%s'",cmdChar,qPrint(cmdName));
     return;
   }
   else if (tok!=TK_WORD && tok!=TK_LNKWORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%s%s'",
-        DocTokenizer::tokToString(tok),TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
+        DocTokenizer::tokToString(tok),cmdChar,qPrint(cmdName));
     return;
   }
   parser()->context.token->sectionId = parser()->context.token->name;
@@ -3210,15 +3210,15 @@ void DocPara::handleCite(const QCString &cmdName, const int tokIn)
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleEmoji(const QCString &cmdName, const int tokIn)
+void DocPara::handleEmoji(const QCString &cmdName, char cmdChar)
 {
   AUTO_TRACE();
   // get the argument of the emoji command.
   int tok=parser()->tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%s%s' command",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
+      cmdChar,qPrint(cmdName));
     return;
   }
   parser()->tokenizer.setStateEmoji();
@@ -3226,14 +3226,14 @@ void DocPara::handleEmoji(const QCString &cmdName, const int tokIn)
   if (tok==0)
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"no emoji name given or unexpected end of comment block while parsing the "
-        "argument of command '%s%s'",TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+        "argument of command '%c%s'",cmdChar,qPrint(cmdName));
     parser()->tokenizer.setStatePara();
     return;
   }
   else if (tok!=TK_WORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%s%s'",
-        DocTokenizer::tokToString(tok),TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
+        DocTokenizer::tokToString(tok),cmdChar,qPrint(cmdName));
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3241,14 +3241,14 @@ void DocPara::handleEmoji(const QCString &cmdName, const int tokIn)
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleDoxyConfig(const QCString &cmdName, const int tokIn)
+void DocPara::handleDoxyConfig(const QCString &cmdName, char cmdChar)
 {
   // get the argument of the cite command.
   int tok=parser()->tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%s%s' command",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
+      cmdChar,qPrint(cmdName));
     return;
   }
   parser()->tokenizer.setStateDoxyConfig();
@@ -3256,13 +3256,13 @@ void DocPara::handleDoxyConfig(const QCString &cmdName, const int tokIn)
   if (tok==0)
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command '%s%s'",TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+        "argument of command '%c%s'",cmdChar,qPrint(cmdName));
     return;
   }
   else if (tok!=TK_WORD && tok!=TK_LNKWORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%s%s'",
-        DocTokenizer::tokToString(tok),TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
+        DocTokenizer::tokToString(tok),cmdChar,qPrint(cmdName));
     return;
   }
   ConfigOption * opt = ConfigImpl::instance()->get(parser()->context.token->name);
@@ -3313,13 +3313,13 @@ void DocPara::handleDoxyConfig(const QCString &cmdName, const int tokIn)
         }
         break;
       case ConfigOption::O_Obsolete:
-        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Obsolete setting for '%s%s': '%s'",
-              TK_COMMAND_CHAR(tokIn),qPrint(cmdName),qPrint(parser()->context.token->name));
+        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Obsolete setting for '%c%s': '%s'",
+              cmdChar,qPrint(cmdName),qPrint(parser()->context.token->name));
         break;
       case ConfigOption::O_Disabled:
         warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),
-              "Disabled setting (i.e. not supported in this doxygen executable) for '%s%s': '%s'",
-              TK_COMMAND_CHAR(tokIn),qPrint(cmdName),qPrint(parser()->context.token->name));
+              "Disabled setting (i.e. not supported in this doxygen executable) for '%c%s': '%s'",
+              cmdChar,qPrint(cmdName),qPrint(parser()->context.token->name));
         break;
       case ConfigOption::O_Info:
         // nothing to show here
@@ -3332,8 +3332,8 @@ void DocPara::handleDoxyConfig(const QCString &cmdName, const int tokIn)
   }
   else
   {
-    warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown option for '%s%s': '%s'",
-         TK_COMMAND_CHAR(tokIn),qPrint(cmdName),qPrint(parser()->context.token->name));
+    warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown option for '%c%s': '%s'",
+         cmdChar,qPrint(cmdName),qPrint(parser()->context.token->name));
     children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
   }
   parser()->tokenizer.setStatePara();
@@ -3360,7 +3360,7 @@ int DocPara::handleXRefItem()
   return retval;
 }
 
-void DocPara::handleShowDate(const QCString &cmdName, const int tokIn)
+void DocPara::handleShowDate(const QCString &cmdName, char cmdChar)
 {
   AUTO_TRACE();
   QCString fmt;
@@ -3368,16 +3368,16 @@ void DocPara::handleShowDate(const QCString &cmdName, const int tokIn)
   int tok=parser()->tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%s%s' command",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
+      cmdChar,qPrint(cmdName));
     return;
   }
   parser()->tokenizer.setStateQuotedString();
   tok = parser()->tokenizer.lex();
   if (tok!=TK_WORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <format> argument for command '%s%s'",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <format> argument for command '%c%s'",
+      cmdChar,qPrint(cmdName));
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3391,8 +3391,8 @@ void DocPara::handleShowDate(const QCString &cmdName, const int tokIn)
   bool specDateOnlyWS  = !specDateRaw.isEmpty() && specDate.isEmpty();
   if (!specDate.isEmpty() && tok!=TK_WORD && tok!=0)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '%s%s'",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '%c%s'",
+      cmdChar,qPrint(cmdName));
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3402,8 +3402,8 @@ void DocPara::handleShowDate(const QCString &cmdName, const int tokIn)
   QCString err = dateTimeFromString(specDate,dat,specFormat);
   if (!err.isEmpty())
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '%s%s': %s",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName),qPrint(err));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '%c%s': %s",
+      cmdChar,qPrint(cmdName),qPrint(err));
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3417,8 +3417,8 @@ void DocPara::handleShowDate(const QCString &cmdName, const int tokIn)
     int bitMask = 1<<i;
     if ((usedFormat&bitMask) && !(specFormat&bitMask)) // a part was used in the format string but its value was not specified.
     {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'%s%s' <format> parameter '%s' has %s related markers which are not specified in the <date_time> parameter '%s'. Filling in the current value for %s instead.",
-          TK_COMMAND_CHAR(tokIn),qPrint(cmdName),
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'%c%s' <format> parameter '%s' has %s related markers which are not specified in the <date_time> parameter '%s'. Filling in the current value for %s instead.",
+          cmdChar,qPrint(cmdName),
           qPrint(fmt),SF_bit2str(i),qPrint(specDate),SF_bit2str(i));
     }
   }
@@ -3431,28 +3431,28 @@ void DocPara::handleShowDate(const QCString &cmdName, const int tokIn)
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleILine(const QCString &cmdName, const int tokIn)
+void DocPara::handleILine(const QCString &cmdName, char cmdChar)
 {
   AUTO_TRACE();
   parser()->tokenizer.setStateILine();
   int tok = parser()->tokenizer.lex();
   if (tok!=TK_WORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid argument for command '%s%s'",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid argument for command '%c%s'",
+      cmdChar,qPrint(cmdName));
     return;
   }
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleIFile(const QCString &cmdName, const int tokIn)
+void DocPara::handleIFile(const QCString &cmdName, char cmdChar)
 {
   AUTO_TRACE();
   int tok=parser()->tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%s%s' command",
-      TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
+      cmdChar,qPrint(cmdName));
     return;
   }
   parser()->tokenizer.setStateFile();
@@ -3460,8 +3460,8 @@ void DocPara::handleIFile(const QCString &cmdName, const int tokIn)
   parser()->tokenizer.setStatePara();
   if (tok!=TK_WORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%s%s'",
-      DocTokenizer::tokToString(tok),TK_COMMAND_CHAR(tokIn),qPrint(cmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
+      DocTokenizer::tokToString(tok),cmdChar,qPrint(cmdName));
     return;
   }
   parser()->context.fileName = parser()->context.token->name;
@@ -3605,23 +3605,23 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
   }
 }
 
-void DocPara::handleRef(const QCString &cmdName,const int tokIn)
+void DocPara::handleRef(const QCString &cmdName,char cmdChar)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
   int tok=parser()->tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%s%s' command",
-      TK_COMMAND_CHAR(tokIn),qPrint(saveCmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
+      cmdChar,qPrint(saveCmdName));
     return;
   }
   parser()->tokenizer.setStateRef();
   tok=parser()->tokenizer.lex(); // get the reference id
   if (tok!=TK_WORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%s%s'",
-        DocTokenizer::tokToString(tok),TK_COMMAND_CHAR(tokIn),qPrint(saveCmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
+        DocTokenizer::tokToString(tok),cmdChar,qPrint(saveCmdName));
     goto endref;
   }
   children().append<DocRef>(parser(),thisVariant(),
@@ -3731,7 +3731,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   children().get_last<DocInclude>()->parse();
 }
 
-void DocPara::handleSection(const QCString &cmdName,const int tokIn)
+void DocPara::handleSection(const QCString &cmdName,char cmdChar)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
@@ -3739,21 +3739,21 @@ void DocPara::handleSection(const QCString &cmdName,const int tokIn)
   int tok=parser()->tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%s%s' command",
-        TK_COMMAND_CHAR(tokIn),qPrint(saveCmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
+        cmdChar,qPrint(saveCmdName));
     return;
   }
   tok=parser()->tokenizer.lex();
   if (tok==0)
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command '%s%s'", TK_COMMAND_CHAR(tokIn),qPrint(saveCmdName));
+        "argument of command '%c%s'", cmdChar,qPrint(saveCmdName));
     return;
   }
   else if (tok!=TK_WORD && tok!=TK_LNKWORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%s%s'",
-        DocTokenizer::tokToString(tok),TK_COMMAND_CHAR(tokIn),qPrint(saveCmdName));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
+        DocTokenizer::tokToString(tok),cmdChar,qPrint(saveCmdName));
     return;
   }
   parser()->context.token->sectionId = parser()->context.token->name;
@@ -3850,7 +3850,7 @@ void DocPara::handleInheritDoc()
 }
 
 
-int DocPara::handleCommand(const QCString &cmdName, const int tok)
+int DocPara::handleCommand(const QCString &cmdName, char cmdChar)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   int retval = RetVal_OK;
@@ -3858,14 +3858,18 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
   switch (cmdId)
   {
     case CMD_UNKNOWN:
-      children().append<DocWord>(parser(),thisVariant(),TK_COMMAND_CHAR(tok) + cmdName);
-      if (isAliasCmd(cmdName))
+      //std::string delimiterString(1, cmdChar)
       {
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Found unexpanded alias '%s%s'. Check if number of arguments passed is correct.",TK_COMMAND_CHAR(tok),qPrint(cmdName));
-      }
-      else
-      {
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Found unknown command '%s%s'",TK_COMMAND_CHAR(tok),qPrint(cmdName));
+        std::string str{cmdChar};
+        children().append<DocWord>(parser(),thisVariant(),str.c_str() + cmdName);
+        if (isAliasCmd(cmdName))
+        {
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Found unexpanded alias '%c%s'. Check if number of arguments passed is correct.",cmdChar,qPrint(cmdName));
+        }
+        else
+        {
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Found unknown command '%c%s'",cmdChar,qPrint(cmdName));
+        }
       }
       break;
     case CMD_EMPHASIS:
@@ -3999,25 +4003,25 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_SECTION:
       {
-        handleSection(cmdName,tok);
+        handleSection(cmdName,cmdChar);
         retval = RetVal_Section;
       }
       break;
     case CMD_SUBSECTION:
       {
-        handleSection(cmdName,tok);
+        handleSection(cmdName,cmdChar);
         retval = RetVal_Subsection;
       }
       break;
     case CMD_SUBSUBSECTION:
       {
-        handleSection(cmdName,tok);
+        handleSection(cmdName,cmdChar);
         retval = RetVal_Subsubsection;
       }
       break;
     case CMD_PARAGRAPH:
       {
-        handleSection(cmdName,tok);
+        handleSection(cmdName,cmdChar);
         retval = RetVal_Paragraph;
       }
       break;
@@ -4450,17 +4454,17 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       handleLink(cmdName,TRUE);
       break;
     case CMD_CITE:
-      handleCite(cmdName,tok);
+      handleCite(cmdName,cmdChar);
       break;
     case CMD_EMOJI:
-      handleEmoji(cmdName,tok);
+      handleEmoji(cmdName,cmdChar);
       break;
     case CMD_DOXYCONFIG:
-      handleDoxyConfig(cmdName,tok);
+      handleDoxyConfig(cmdName,cmdChar);
       break;
     case CMD_REF: // fall through
     case CMD_SUBPAGE:
-      handleRef(cmdName,tok);
+      handleRef(cmdName,cmdChar);
       break;
     case CMD_SECREFLIST:
       {
@@ -4469,10 +4473,10 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       }
       break;
     case CMD_SECREFITEM:
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command '%s%s'",TK_COMMAND_CHAR(tok),qPrint(parser()->context.token->name));
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command '%c%s'",cmdChar,qPrint(parser()->context.token->name));
       break;
     case CMD_ENDSECREFLIST:
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command '%s%s'",TK_COMMAND_CHAR(tok),qPrint(parser()->context.token->name));
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command '%c%s'",cmdChar,qPrint(parser()->context.token->name));
       break;
     case CMD_FORMULA:
       {
@@ -4493,13 +4497,13 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       handleInheritDoc();
       break;
     case CMD_SHOWDATE:
-      handleShowDate(cmdName,tok);
+      handleShowDate(cmdName,cmdChar);
       break;
     case CMD_ILINE:
-      handleILine(cmdName,tok);
+      handleILine(cmdName,cmdChar);
       break;
     case CMD_IFILE:
-      handleIFile(cmdName,tok);
+      handleIFile(cmdName,cmdChar);
       break;
     default:
       // we should not get here!
@@ -5417,7 +5421,7 @@ reparsetoken:
           }
 
           // handle the command
-          retval=handleCommand(parser()->context.token->name,tok);
+          retval=handleCommand(parser()->context.token->name,TK_COMMAND_CHAR(tok));
           AUTO_TRACE_ADD("handleCommand returns {}",DocTokenizer::retvalToString(retval));
 
           // check the return value
