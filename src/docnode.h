@@ -1054,16 +1054,16 @@ class DocPara : public DocCompoundNode
     template<class T> void handleFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
-    void handleCite();
-    void handleDoxyConfig();
-    void handleEmoji();
-    void handleRef(const QCString &cmdName);
-    void handleSection(const QCString &cmdName);
+    void handleCite(const QCString &cmdName,const int tokIn);
+    void handleDoxyConfig(const QCString &cmdName,const int tokIn);
+    void handleEmoji(const QCString &cmdName,const int tokIn);
+    void handleRef(const QCString &cmdName,const int tokIn);
+    void handleSection(const QCString &cmdName,const int tokIn);
     void handleInheritDoc();
     void handleVhdlFlow();
-    void handleILine();
-    void handleIFile();
-    void handleShowDate();
+    void handleILine(const QCString &cmdName,const int tokIn);
+    void handleIFile(const QCString &cmdName,const int tokIn);
+    void handleShowDate(const QCString &cmdName,const int tokIn);
     int handleStartCode();
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 
