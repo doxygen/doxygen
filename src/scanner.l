@@ -5988,6 +5988,29 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
+<ClassVar>({ID}{BN}*"::"{BN}*)+{ID}     {
+                                          yyextra->yyBegColNr=yyextra->yyColNr;
+                                          yyextra->yyBegLineNr=yyextra->yyLineNr;
+
+                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
+                                          {
+                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
+                                          }
+
+                                          lineCount(yyscanner);
+                                          if (yyextra->current->section.isEnum())
+                                          { // found "enum a N::b" -> variable
+                                            yyextra->current->section = EntryType::makeVariable() ;
+                                          }
+                                          yyextra->current->type += ' ' ;
+                                          yyextra->current->type += yyextra->current->name ;
+                                          yyextra->current->name = QCString(yytext).simplifyWhiteSpace();
+
+                                          if (nameIsOperator(yyextra->current->name))
+                                          {
+                                            BEGIN( Operator );
+                                          }
+                                        }
 <ClassVar>{ID}                          {
                                           yyextra->yyBegColNr=yyextra->yyColNr;
                                           yyextra->yyBegLineNr=yyextra->yyLineNr;
