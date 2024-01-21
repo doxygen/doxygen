@@ -164,6 +164,8 @@ static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 [[maybe_unused]] static const char *stateToString(int state);
 
@@ -350,7 +352,9 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }},
   { "iliteral",        { &handleFormatBlock,      CommandSpacing::Inline    }},
   { "fileinfo",        { &handleFileInfo,         CommandSpacing::Inline    }},
-  { "lineinfo",        { &handleLineInfo,         CommandSpacing::Inline    }}
+  { "lineinfo",        { &handleLineInfo,         CommandSpacing::Inline    }},
+  { "ifile",           { &handleIFile,            CommandSpacing::Invisible }},
+  { "iline",           { &handleILine,            CommandSpacing::Invisible }}
 };
 
 #define YY_NO_INPUT 1
@@ -566,6 +570,7 @@ TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 MODULE_ID ({ID}".")*{ID}
+LINENR    {Bopt}[1-9][0-9]*
 
   // C start comment 
 CCS   "/\*"
@@ -632,6 +637,8 @@ STopt  [^\n@\\]*
 %x      Noop
 %x      RaiseWarning
 %x      Qualifier
+%x      IFile
+%x      ILine
 
 %%
 
@@ -1633,6 +1640,35 @@ STopt  [^\n@\\]*
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
+  /* ----- handle arguments of the iline command ----- */
+<ILine>{LINENR}/[\\@\n\.]               |
+<ILine>{LINENR}{B}                      {
+                                          bool ok = false;
+                                          int nr = QCString(yytext).toInt(&ok);
+                                          if (!ok)
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid line number '%s' for iline command",yytext);
+                                          }
+                                          else
+                                          {
+                                            yyextra->lineNr = nr;
+                                          }
+                                          addOutput(yyscanner,yytext);
+                                          BEGIN(Comment);
+                                        }
+<ILine>.                                {
+                                          addOutput(yyscanner,yytext);
+                                          BEGIN(Comment);
+                                        }
+
+<IFile>{FILE}                           {
+                                          addOutput(yyscanner,yytext);
+                                          QCString text(yytext);
+                                          if (yytext[0] == '\"') yyextra->fileName = text.mid(1,text.length()-2);
+                                          else yyextra->fileName = yytext;
+                                          BEGIN(Comment);
+                                        }
+
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
 
 <LineParam>{CMD}{CMD}                   { // escaped command
@@ -2972,6 +3008,22 @@ static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVect
   }
   addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
   addOutput(yyscanner," ");
+  return FALSE;
+}
+
+static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner,yytext);
+  BEGIN(ILine);
+  return FALSE;
+}
+
+static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner,yytext);
+  BEGIN(IFile);
   return FALSE;
 }
 

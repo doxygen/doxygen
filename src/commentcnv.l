@@ -1377,9 +1377,6 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
 	  qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,inc))
 	  );
     }
-    QCString lineStr=" \\ilinebr\\ifile \""+absFileName+"\" \\iline 1 \\ilinebr ";
-    copyToOutput(yyscanner,lineStr.data(),lineStr.length());
-
     bool alreadyProcessed = std::any_of(
       yyextra->includeStack.begin(),
       yyextra->includeStack.end(),
@@ -1432,6 +1429,8 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     {
       fs->fileBuf.shrink(fs->fileBuf.curPos()-1);
     }
+    QCString lineStr=" \\ilinebr\\ifile \""+absFileName+"\" \\iline " + QCString().setNum(lineNr) + " \\ilinebr ";
+    copyToOutput(yyscanner,lineStr.data(),lineStr.length());
 
     fs->fileName      = absFileName;
     fs->bufState      = YY_CURRENT_BUFFER;
