@@ -1,10 +1,19 @@
   % Handle batch mode
   $latex_batchmode
 
+  \RequirePackage{iftex}
   % to overcome problems with too many open files
   \let\mypdfximage\pdfximage\def\pdfximage{\immediate\mypdfximage}
 
+  \ifluatex
+  \directlua{pdf.setminorversion(7)}
+  \fi
+  \ifxetex
+  \special{pdf:minorversion 7}
+  \fi
+  \ifpdftex
   \pdfminorversion=7
+  \fi
 
   % Set document class depending on configuration
 %%BEGIN COMPACT_LATEX
@@ -33,19 +42,26 @@
   \let\protected@wlog\@@protected@wlog
   \makeatother
   \IfFormatAtLeastTF{2016/01/01}{}{\usepackage{fixltx2e}} % for \textsubscript
+  \ifpdftex
   \IfFormatAtLeastTF{2015/01/01}{\pdfsuppresswarningpagegroup=1}{}
+  \fi
 
   \usepackage{doxygen}
 
   $extralatexstylesheet
 
   \usepackage{graphicx}
+  \iftutex
+  \usepackage{fontspec}
+  \defaultfontfeatures{Ligatures={TeX}}
+  \usepackage{unicode-math}
+  \else
   \usepackage[utf8]{inputenc}
+  \fi
   \usepackage{makeidx}
   \PassOptionsToPackage{warn}{textcomp}
   \usepackage{textcomp}
   \usepackage[nointegrals]{wasysym}
-  \usepackage{ifxetex}
 
   % NLS support packages
   $languagesupport
@@ -53,7 +69,10 @@
   % Define default fonts
   % Font selection
 %%BEGIN LATEX_FONTENC
+  \iftutex
+  \else
   \usepackage[$latexfontenc]{fontenc}
+  \fi
 %%END LATEX_FONTENC
 
   % set main and monospaced font
@@ -166,24 +185,28 @@
 
   % Hyperlinks
 %%BEGIN PDF_HYPERLINKS
-    % Hyperlinks (required, but should be loaded last)
-    \ifpdf
-      \usepackage[pdftex,pagebackref=true]{hyperref}
-    \else
-      \ifxetex
-        \usepackage[pagebackref=true]{hyperref}
-      \else
-        \usepackage[ps2pdf,pagebackref=true]{hyperref}
-      \fi
-    \fi
+  % Hyperlinks (required, but should be loaded last)
+  \ifpdftex
+  \usepackage[pdftex,pagebackref=true]{hyperref}
+  \else
+  \ifxetex
+  \usepackage[xetex,pagebackref=true]{hyperref}
+  \else
+  \ifluatex
+  \usepackage[luatex,pagebackref=true]{hyperref}
+  \else
+  \usepackage[ps2pdf,pagebackref=true]{hyperref}
+  \fi
+  \fi
+  \fi
 
-    \hypersetup{%
-      colorlinks=true,%
-      linkcolor=blue,%
-      citecolor=blue,%
-      unicode,%
-      pdftitle={$projectname},%
-      pdfsubject={$projectbrief}%
+  \hypersetup{%
+  colorlinks=true,%
+  linkcolor=blue,%
+  citecolor=blue,%
+  unicode,%
+  pdftitle={$projectname},%
+  pdfsubject={$projectbrief}%
     }
 
 %%END PDF_HYPERLINKS
@@ -267,4 +290,3 @@
 %%END PDF_HYPERLINKS
 
 %--- Begin generated contents ---
-
