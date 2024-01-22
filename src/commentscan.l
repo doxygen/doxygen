@@ -3199,8 +3199,6 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
       addOutput(yyscanner,yyextra->fileName);
     }
   }
-  if (isSection) yyextra->sectionTitle+=" ";
-  addOutput(yyscanner," ");
   return false;
 }
 
@@ -3213,7 +3211,6 @@ static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVect
     yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
-  addOutput(yyscanner," ");
   return FALSE;
 }
 

@@ -293,6 +293,7 @@ struct preYY_state
   bool               isSource       = false;
 
   yy_size_t          fenceSize      = 0;
+  char               fenceChar      = ' ';
   bool               ccomment       = false;
   QCString           delimiter;
   bool               isSpecialComment = false;
@@ -340,6 +341,7 @@ static void         setFileName(yyscan_t yyscanner,const QCString &name);
 static int               yyread(yyscan_t yyscanner,char *buf,int max_size);
 static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
 static void  determineBlockName(yyscan_t yyscanner);
+static yy_size_t   getFenceSize(char *txt, yy_size_t leng);
 
 /* ----------------------------------------------------------------- */
 
@@ -1422,7 +1424,8 @@ WSopt [ \t\r]*
                                           }
                                           else
                                           {
-                                            yyextra->fenceSize=(int)yyleng;
+                                            yyextra->fenceChar='~';
+                                            yyextra->fenceSize=(int)getFenceSize(yytext,yyleng);
                                             BEGIN(SkipCondVerbatim);
                                           }
                                         }
@@ -1434,7 +1437,8 @@ WSopt [ \t\r]*
                                           }
                                           else
                                           {
-                                            yyextra->fenceSize=(int)yyleng;
+                                            yyextra->fenceChar='`';
+                                            yyextra->fenceSize=(int)getFenceSize(yytext,yyleng);
                                             BEGIN(SkipCondVerbatim);
                                           }
                                         }
@@ -1447,7 +1451,8 @@ WSopt [ \t\r]*
                                           else
                                           {
                                             outputArray(yyscanner,yytext,yyleng);
-                                            yyextra->fenceSize=(int)yyleng;
+                                            yyextra->fenceChar='~';
+                                            yyextra->fenceSize=(int)getFenceSize(yytext,yyleng);
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
@@ -1460,7 +1465,8 @@ WSopt [ \t\r]*
                                           else
                                           {
                                             outputArray(yyscanner,yytext,yyleng);
-                                            yyextra->fenceSize=(int)yyleng;
+                                            yyextra->fenceChar='`';
+                                            yyextra->fenceSize=(int)getFenceSize(yytext,yyleng);
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
@@ -1626,27 +1632,27 @@ WSopt [ \t\r]*
                                           }
                                         }
 <SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
-                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='~') 
                                           {
                                             BEGIN(SkipCond);
                                           }
                                         }
 <SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
-                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='`')
                                           {
                                             BEGIN(SkipCond);
                                           }
                                         }
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
                                           outputArray(yyscanner,yytext,yyleng);
-                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='~')
                                           {
                                             BEGIN(SkipCComment);
                                           }
                                         }
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
                                           outputArray(yyscanner,yytext,yyleng);
-                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='`')
                                           {
                                             BEGIN(SkipCComment);
                                           }
@@ -2083,6 +2089,17 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
   return bytesToCopy;
 }
 
+static yy_size_t getFenceSize(char *txt, yy_size_t leng)
+{
+  yy_size_t fenceSize = 0;
+  for (size_t i = 0; i < leng; i++)
+  {
+     if (txt[i] != ' ' && txt[i] != '*' && txt[i] != '\t') break;
+     fenceSize++;
+  }
+  return leng-fenceSize;
+}
+
 static void setFileName(yyscan_t yyscanner,const QCString &name)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
@@ -2259,6 +2276,19 @@ static std::unique_ptr<FileState> findFile(yyscan_t yyscanner, const QCString &f
     else if (alreadyProcessed)
     {
       return nullptr;
+    }
+  }
+  bool ambig;
+  FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,fileName,ambig);
+  if (fd && !ambig) // fallback in case the file is uniquely named in the input, use that one
+  {
+    auto fs = checkAndOpenFile(yyscanner,fd->absFilePath(),alreadyProcessed);
+    if (fs)
+    {
+      setFileName(yyscanner,fd->absFilePath());
+      state->yyLineNr=1;
+      //printf("  -> found it\n");
+      return fs;
     }
   }
   return nullptr;

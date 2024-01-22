@@ -290,7 +290,8 @@ QCString substituteTemplateArgumentsInString(
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
-                                          QCString *lastScopeStripped=nullptr);
+                                          QCString *lastScopeStripped=nullptr,
+                                          QCString scopeName=QCString());
 
 QCString resolveTypeDef(const Definition *d,const QCString &name,
                         const Definition **typedefContext=nullptr);
@@ -339,20 +340,7 @@ QCString stripExtension(const QCString &fName);
 
 void replaceNamespaceAliases(QCString &scope,size_t i);
 
-//! Return the index of the last :: in the string \a name that is still before the first <
-inline int computeQualifiedIndex(const QCString &name)
-{
-  int l = static_cast<int>(name.length());
-  int lastSepPos = -1;
-  const char *p = name.data();
-  for (int i=0;i<l-1;i++)
-  {
-    char c=*p++;
-    if (c==':' && *p==':') lastSepPos=i;
-    if (c=='<') break;
-  }
-  return lastSepPos;
-}
+int computeQualifiedIndex(const QCString &name);
 
 void addDirPrefix(QCString &fileName);
 

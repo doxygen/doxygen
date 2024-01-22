@@ -860,7 +860,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                             yyextra->cCodeBuffer += yytext;
                             QCString pat = substitute(yytext,"*"," ");
-                            if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                            if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
                             }
@@ -868,7 +868,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                             yyextra->cCodeBuffer += yytext;
                             QCString pat = substitute(yytext,"*"," ");
-                            if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                            if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
                             }

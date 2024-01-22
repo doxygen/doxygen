@@ -4106,7 +4106,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           }
         }
       }
-      else if (lde->kind()==LayoutDocEntry::GroupNamespaces && addToIndex)
+      else if (lde->kind()==LayoutDocEntry::GroupNamespaces && addToIndex && Config_getBool(SHOW_NAMESPACES))
       {
         for (const auto &nd : gd->getNamespaces())
         {
@@ -4114,7 +4114,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           {
             Doxygen::indexList->addContentsItem(FALSE,
                 nd->displayName(),nd->getReference(),
-                nd->getOutputFileBase(),QCString(),FALSE,!Config_getBool(SHOW_NAMESPACES));
+                nd->getOutputFileBase(),QCString(),FALSE,Config_getBool(SHOW_NAMESPACES));
           }
         }
       }

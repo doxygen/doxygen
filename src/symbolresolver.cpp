@@ -218,11 +218,12 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
            QCString *pTemplSpec,
            QCString *pResolvedType)
 {
-  AUTO_TRACE("scope={} name={}",scope?scope->name():QCString(),n);
+  AUTO_TRACE("scope={} name={}",scope->name(),n);
   if (n.isEmpty()) return 0;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams);
+  QCString scopeName=scope!=Doxygen::globalScope ? scope->name() : QCString();
+  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -378,11 +379,12 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
            QCString *pResolvedType)
 {
   AUTO_TRACE("scope={} name={} args={} checkCV={} insideCode={}",
-      scope?scope->name():QCString(),n,args,checkCV,insideCode);
+      scope->name(),n,args,checkCV,insideCode);
   if (n.isEmpty()) return 0;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams);
+  QCString scopeName=scope!=Doxygen::globalScope ? scope->name() : QCString();
+  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -399,6 +401,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
     name=name.mid(qualifierIndex+2);
   }
+  AUTO_TRACE_ADD("qualifierIndex={} name={} explicitScopePart={}",qualifierIndex,name,explicitScopePart);
 
   if (name.isEmpty())
   {
@@ -425,6 +428,10 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
       return 0;
     }
   }
+  else
+  {
+    AUTO_TRACE_ADD("{} candidates",range.size());
+  }
 
   bool hasUsingStatements =
     (m_fileScope && (!m_fileScope->getUsedNamespaces().empty() ||
@@ -436,7 +443,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   // result of a lookup is deterministic. As the key we use the concatenated
   // scope, the name to search for and the explicit scope prefix. The speedup
   // achieved by this simple cache can be enormous.
-  size_t scopeNameLen = scope->name().length()+1;
+  size_t scopeNameLen = scope!=Doxygen::globalScope ? scope->name().length()+1 : 0;
   size_t nameLen = name.length()+1;
   size_t explicitPartLen = explicitScopePart.length();
   size_t fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
@@ -444,14 +451,16 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 
   // below is a more efficient coding of
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
-  QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+argsLen, QCString::ExplicitSize);
-  char *pk=key.rawData();
-  qstrcpy(pk,scope->name().data()); *(pk+scopeNameLen-1)='+';
-  pk+=scopeNameLen;
-  qstrcpy(pk,name.data()); *(pk+nameLen-1)='+';
-  pk+=nameLen;
-  qstrcpy(pk,explicitScopePart.data());
-  pk+=explicitPartLen;
+  std::string key;
+  key.reserve(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+argsLen);
+  if (scope!=Doxygen::globalScope)
+  {
+    key+=scope->name().str();
+    key+='+';
+  }
+  key+=name.str();
+  key+='+';
+  key+=explicitScopePart.str();
 
   // if a file scope is given and it contains using statements we should
   // also use the file part in the key (as a class name can be in
@@ -461,31 +470,29 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   {
     // below is a more efficient coding of
     // key+="+"+m_fileScope->name();
-    *pk++='+';
-    qstrcpy(pk,m_fileScope->absFilePath().data());
-    pk+=fileScopeLen-1;
+    key+='+';
+    key+=m_fileScope->absFilePath().str();
   }
   if (argsLen>0)
   {
-    qstrcpy(pk,args.data());
-    pk+=argsLen-1;
+    key+='+';
+    key+=args.str();
   }
-  *pk='\0';
 
   const Definition *bestMatch=nullptr;
   {
-    if (visitedKeys.find(key.str())!=visitedKeys.end())
+    if (visitedKeys.find(key)!=visitedKeys.end())
     {
       // we are already in the middle of find the definition for this key.
       // avoid recursion
       return 0;
     }
     // remember the key
-    visitedKeys.insert(key.str());
+    visitedKeys.insert(key);
     LookupInfo *pval = nullptr;
     {
       std::lock_guard lock(g_cacheMutex);
-      pval = Doxygen::symbolLookupCache->find(key.str());
+      pval = Doxygen::symbolLookupCache->find(key);
     }
     AUTO_TRACE_ADD("key={} found={}",key,pval!=nullptr);
     if (pval)
@@ -541,10 +548,10 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     {
       std::lock_guard lock(g_cacheMutex);
       // we need to insert the item in the cache again, as it could be removed in the meantime
-      Doxygen::symbolLookupCache->insert(key.str(),
+      Doxygen::symbolLookupCache->insert(key,
                             LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
     }
-    visitedKeys.erase(key.str());
+    visitedKeys.erase(key);
 
     AUTO_TRACE_EXIT("found name={} templSpec={} typeDef={} resolvedTypedef={}",
         bestMatch?bestMatch->name():QCString(),
