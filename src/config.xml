@@ -738,7 +738,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  include (a tag file for) the STL sources as input, then you should
  set this tag to \c YES in order to let doxygen match functions declarations and
  definitions whose arguments contain STL classes (e.g. `func(std::string`); versus
- `func(std::string) {}`). This also make the inheritance and collaboration
+ `func(std::string) {}`). This also makes the inheritance and collaboration
  diagrams that involve STL classes more complete and accurate.
 ]]>
       </docs>
@@ -2213,11 +2213,11 @@ hr.footer {
  a dark or light theme.
 ]]>
       </docs>
-      <value name="LIGHT" desc="always generate light mode output"/>
-      <value name="DARK" desc="always generate dark mode output"/>
-      <value name="AUTO_LIGHT" desc="automatically set the mode according to the user preference, use light mode if no preference is set (the default)"/>
-      <value name="AUTO_DARK" desc="automatically set the mode according to the user preference, use dark mode if no preference is set"/>
-      <value name="TOGGLE" desc="allow to user to switch between light and dark mode via a button"/>
+      <value name="LIGHT" desc="always generates light mode output"/>
+      <value name="DARK" desc="always generates dark mode output"/>
+      <value name="AUTO_LIGHT" desc="automatically sets the mode according to the user preference, uses light mode if no preference is set (the default)"/>
+      <value name="AUTO_DARK" desc="automatically sets the mode according to the user preference, uses dark mode if no preference is set"/>
+      <value name="TOGGLE" desc="allows a user to switch between light and dark mode via a button"/>
     </option>
     <option type='int' id='HTML_COLORSTYLE_HUE' minval='0' maxval='359' defval='220' depends='GENERATE_HTML'>
       <docs>
@@ -2729,7 +2729,7 @@ obfuscate email addresses.
 ]]>
       </docs>
       <value name="HTML-CSS" desc="(which is slower, but has the best compatibility. This is the name for Mathjax version 2, for MathJax version 3 this will be translated into \c chtml)"/>
-      <value name="NativeMML" desc="(i.e. MathML. Only supported for NathJax 2. For MathJax version 3 \c chtml will be used instead.)"/>
+      <value name="NativeMML" desc="(i.e. MathML. Only supported for MathJax 2. For MathJax version 3 \c chtml will be used instead.)"/>
       <value name="chtml" desc="(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into \c HTML-CSS)"/>
       <value name="SVG"/>
     </option>
@@ -4068,7 +4068,7 @@ to be found in the default search path.
  The \c DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of
  nodes that will be shown in the graph. If the number of nodes in a graph
  becomes larger than this value, doxygen will truncate the graph, which is
- visualized by representing a node as a red box. Note that doxygen if the number
+ visualized by representing a node as a red box. Note that if the number
  of direct children of the root node in a graph is already larger than
  \c DOT_GRAPH_MAX_NODES then the graph will not be shown at all. Also note
  that the size of a graph can be further restricted by \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH".
