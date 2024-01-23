@@ -533,19 +533,20 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
 void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,int tok,
                                         DocNodeList &children,const QCString &txt)
 {
-  const char *cmd_start = "\\";
   switch (tok)
   {
     case TK_COMMAND_AT:
-      cmd_start = "@";
       // fall through
     case TK_COMMAND_BS:
-      children.append<DocWord>(this,parent,TK_COMMAND_CHAR(tok) + context.token->name);
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Illegal command %s found as part of a %s",
-       qPrint(cmd_start + context.token->name),qPrint(txt));
+      {
+        std::string str{TK_COMMAND_CHAR(tok)};
+        children.append<DocWord>(this,parent,str.c_str() + context.token->name);
+        warn_doc_error(context.fileName,tokenizer.getLineNr(),"Illegal command '%c%s' found as part of a %s",
+         TK_COMMAND_CHAR(tok),qPrint(context.token->name),qPrint(txt));
+      }
       break;
     case TK_SYMBOL:
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol %s found as part of a %s",
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol '%s' found as part of a %s",
            qPrint(context.token->name), qPrint(txt));
       break;
     case TK_HTMLTAG:
