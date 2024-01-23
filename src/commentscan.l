@@ -2058,11 +2058,10 @@ STopt  [^\n@\\]*
                                           handleGuard(yyscanner,QCString(yytext));
                                         }
 <GuardParam>{DOCNL}                     { // end of argument
-                                          if (*yytext=='\n') yyextra->lineNr++;
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
                                           addIlineBreak(yyscanner,yyextra->lineNr);
-                                          unput(*yytext);
+                                          unput_string(yytext,yyleng);
                                           handleGuard(yyscanner,QCString());
                                         }
 <GuardParam>{LC}                        { // line continuation
