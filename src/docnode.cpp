@@ -3178,7 +3178,7 @@ int DocPara::handleParamSection(const QCString &cmdName,
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
-void DocPara::handleCite(const QCString &cmdName, char cmdChar)
+void DocPara::handleCite(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   // get the argument of the cite command.
@@ -3210,7 +3210,7 @@ void DocPara::handleCite(const QCString &cmdName, char cmdChar)
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleEmoji(const QCString &cmdName, char cmdChar)
+void DocPara::handleEmoji(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   // get the argument of the emoji command.
@@ -3241,7 +3241,7 @@ void DocPara::handleEmoji(const QCString &cmdName, char cmdChar)
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleDoxyConfig(const QCString &cmdName, char cmdChar)
+void DocPara::handleDoxyConfig(char cmdChar,const QCString &cmdName)
 {
   // get the argument of the cite command.
   int tok=parser()->tokenizer.lex();
@@ -3360,7 +3360,7 @@ int DocPara::handleXRefItem()
   return retval;
 }
 
-void DocPara::handleShowDate(const QCString &cmdName, char cmdChar)
+void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   QCString fmt;
@@ -3431,7 +3431,7 @@ void DocPara::handleShowDate(const QCString &cmdName, char cmdChar)
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleILine(const QCString &cmdName, char cmdChar)
+void DocPara::handleILine(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   parser()->tokenizer.setStateILine();
@@ -3445,7 +3445,7 @@ void DocPara::handleILine(const QCString &cmdName, char cmdChar)
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleIFile(const QCString &cmdName, char cmdChar)
+void DocPara::handleIFile(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   int tok=parser()->tokenizer.lex();
@@ -3605,7 +3605,7 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
   }
 }
 
-void DocPara::handleRef(const QCString &cmdName,char cmdChar)
+void DocPara::handleRef(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
@@ -3731,7 +3731,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   children().get_last<DocInclude>()->parse();
 }
 
-void DocPara::handleSection(const QCString &cmdName,char cmdChar)
+void DocPara::handleSection(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
@@ -3850,7 +3850,7 @@ void DocPara::handleInheritDoc()
 }
 
 
-int DocPara::handleCommand(const QCString &cmdName, char cmdChar)
+int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   int retval = RetVal_OK;
@@ -3858,7 +3858,6 @@ int DocPara::handleCommand(const QCString &cmdName, char cmdChar)
   switch (cmdId)
   {
     case CMD_UNKNOWN:
-      //std::string delimiterString(1, cmdChar)
       {
         std::string str{cmdChar};
         children().append<DocWord>(parser(),thisVariant(),str.c_str() + cmdName);
@@ -4003,25 +4002,25 @@ int DocPara::handleCommand(const QCString &cmdName, char cmdChar)
       break;
     case CMD_SECTION:
       {
-        handleSection(cmdName,cmdChar);
+        handleSection(cmdChar,cmdName);
         retval = RetVal_Section;
       }
       break;
     case CMD_SUBSECTION:
       {
-        handleSection(cmdName,cmdChar);
+        handleSection(cmdChar,cmdName);
         retval = RetVal_Subsection;
       }
       break;
     case CMD_SUBSUBSECTION:
       {
-        handleSection(cmdName,cmdChar);
+        handleSection(cmdChar,cmdName);
         retval = RetVal_Subsubsection;
       }
       break;
     case CMD_PARAGRAPH:
       {
-        handleSection(cmdName,cmdChar);
+        handleSection(cmdChar,cmdName);
         retval = RetVal_Paragraph;
       }
       break;
@@ -4454,17 +4453,17 @@ int DocPara::handleCommand(const QCString &cmdName, char cmdChar)
       handleLink(cmdName,TRUE);
       break;
     case CMD_CITE:
-      handleCite(cmdName,cmdChar);
+      handleCite(cmdChar,cmdName);
       break;
     case CMD_EMOJI:
-      handleEmoji(cmdName,cmdChar);
+      handleEmoji(cmdChar,cmdName);
       break;
     case CMD_DOXYCONFIG:
-      handleDoxyConfig(cmdName,cmdChar);
+      handleDoxyConfig(cmdChar,cmdName);
       break;
     case CMD_REF: // fall through
     case CMD_SUBPAGE:
-      handleRef(cmdName,cmdChar);
+      handleRef(cmdChar,cmdName);
       break;
     case CMD_SECREFLIST:
       {
@@ -4497,13 +4496,13 @@ int DocPara::handleCommand(const QCString &cmdName, char cmdChar)
       handleInheritDoc();
       break;
     case CMD_SHOWDATE:
-      handleShowDate(cmdName,cmdChar);
+      handleShowDate(cmdChar,cmdName);
       break;
     case CMD_ILINE:
-      handleILine(cmdName,cmdChar);
+      handleILine(cmdChar,cmdName);
       break;
     case CMD_IFILE:
-      handleIFile(cmdName,cmdChar);
+      handleIFile(cmdChar,cmdName);
       break;
     default:
       // we should not get here!
@@ -5421,7 +5420,7 @@ reparsetoken:
           }
 
           // handle the command
-          retval=handleCommand(parser()->context.token->name,TK_COMMAND_CHAR(tok));
+          retval=handleCommand(TK_COMMAND_CHAR(tok),parser()->context.token->name);
           AUTO_TRACE_ADD("handleCommand returns {}",DocTokenizer::retvalToString(retval));
 
           // check the return value
