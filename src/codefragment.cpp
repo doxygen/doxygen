@@ -92,7 +92,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
   for (auto &kv : candidates)
   {
     auto &marker = kv.second;
-    if (marker.lines.size()==2 && marker.lines[0]+1<marker.lines[1]-1)
+    if (marker.lines.size()==2 && marker.lines[0]+1<=marker.lines[1]-1)
     {
       marker.key = kv.first;
       int startLine = marker.lines[0];

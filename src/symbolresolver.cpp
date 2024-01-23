@@ -218,11 +218,11 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
            QCString *pTemplSpec,
            QCString *pResolvedType)
 {
-  AUTO_TRACE("scope={} name={}",scope?scope->name():QCString(),n);
+  AUTO_TRACE("scope={} name={}",scope->name(),n);
   if (n.isEmpty()) return 0;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  QCString scopeName=scope && scope!=Doxygen::globalScope ? scope->name() : QCString();
+  QCString scopeName=scope!=Doxygen::globalScope ? scope->name() : QCString();
   QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
@@ -379,11 +379,11 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
            QCString *pResolvedType)
 {
   AUTO_TRACE("scope={} name={} args={} checkCV={} insideCode={}",
-      scope?scope->name():QCString(),n,args,checkCV,insideCode);
+      scope->name(),n,args,checkCV,insideCode);
   if (n.isEmpty()) return 0;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  QCString scopeName=scope && scope!=Doxygen::globalScope ? scope->name() : QCString();
+  QCString scopeName=scope!=Doxygen::globalScope ? scope->name() : QCString();
   QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams,scopeName);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
