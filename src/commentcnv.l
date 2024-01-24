@@ -1140,7 +1140,7 @@ SLASHopt [/]*
                                         yyextra->inBufPos   = fs->oldFileBufPos;
                                         yyextra->includeCtx = fs->oldIncludeCtx;
                                         yyextra->incPrefix  = fs->oldIncPrefix;
-                                        QCString lineStr=yyextra->incPrefix + " \\ilinebr\\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
+                                        QCString lineStr=yyextra->incPrefix + " \\ilinebr \\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
                                         copyToOutput(yyscanner,lineStr.data(),lineStr.length());
                                         yyextra->incPrefix  = "";
                                         yyextra->includeStack.pop_back();
@@ -1429,7 +1429,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     {
       fs->fileBuf.shrink(fs->fileBuf.curPos()-1);
     }
-    QCString lineStr=" \\ilinebr\\ifile \""+absFileName+"\" \\iline " + QCString().setNum(lineNr) + " \\ilinebr ";
+    QCString lineStr=" \\ilinebr \\ifile \""+absFileName+"\" \\iline " + QCString().setNum(lineNr) + " \\ilinebr ";
     copyToOutput(yyscanner,lineStr.data(),lineStr.length());
 
     fs->fileName      = absFileName;

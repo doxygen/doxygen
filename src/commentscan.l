@@ -386,8 +386,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "endmanonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endrtfonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endxmlonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Escape  }}
+  { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }}
 };
 
 #define YY_NO_INPUT 1
@@ -675,7 +675,9 @@ STopt  [^\n@\\]*
 %x      RaiseWarningSection
 %x      Qualifier
 %x      IFile
+%x      IFileSection
 %x      ILine
+%x      ILineSection
 
 %%
 
@@ -1709,19 +1711,43 @@ STopt  [^\n@\\]*
                                             yyextra->lineNr = nr;
                                           }
                                           addOutput(yyscanner,yytext);
-                                          BEGIN(Comment);
+                                          if (YY_START == ILine)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+=yytext;
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
-<ILine>.                                {
+<ILine,ILineSection>.                   {
                                           addOutput(yyscanner,yytext);
-                                          BEGIN(Comment);
+                                          if (YY_START == ILine)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+=yytext;
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
 
-<IFile>{FILE}                           {
+<IFile,IFileSection>{FILE}              {
                                           addOutput(yyscanner,yytext);
                                           QCString text(yytext);
                                           if (yytext[0] == '\"') yyextra->fileName = text.mid(1,text.length()-2);
                                           else yyextra->fileName = yytext;
-                                          BEGIN(Comment);
+                                          if (YY_START == IFile)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+=yytext;
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
 
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
@@ -1913,6 +1939,18 @@ STopt  [^\n@\\]*
                                                     yyextra->sectionTitle+=yytext;
                                                     addOutput(yyscanner,yytext);
                                                     BEGIN(CiteLabelSection);
+                                                  }
+                                                  else if (cmdName == "iline")
+                                                  {
+                                                    yyextra->sectionTitle+=yytext;
+                                                    addOutput(yyscanner,yytext);
+                                                    BEGIN(ILineSection);
+                                                  }
+                                                  else if (cmdName == "ifile")
+                                                  {
+                                                    yyextra->sectionTitle+=yytext;
+                                                    addOutput(yyscanner,yytext);
+                                                    BEGIN(IFileSection);
                                                   }
                                                   else
                                                   {

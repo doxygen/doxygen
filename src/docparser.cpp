@@ -1814,7 +1814,7 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
             context.copyStack.push_back(def);
             auto addDocs = [&](const QCString &file_,int line_,const QCString &doc_)
             {
-              buf.addStr(" \\ilinebr\\ifile \""+file_+"\" ");
+              buf.addStr(" \\ilinebr \\ifile \""+file_+"\" ");
               buf.addStr("\\iline "+QCString().setNum(line_)+" ");
               size_t len_ = doc_.length();
               buf.addStr(processCopyDoc(doc_.data(),len_));
@@ -1836,7 +1836,7 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
               }
             }
             context.copyStack.pop_back();
-            buf.addStr(" \\ilinebr\\ifile \""+context.fileName+"\" ");
+            buf.addStr(" \\ilinebr \\ifile \""+context.fileName+"\" ");
             buf.addStr("\\iline "+QCString().setNum(lineNr)+" ");
           }
           else
