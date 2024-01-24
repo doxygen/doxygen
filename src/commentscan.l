@@ -173,18 +173,18 @@ typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const String
 
 enum class CommandSpacing
 {
-  Invisible, // command sets some property but does not appear in the output.
-  Inline,    // command appears inline in the output which can be a brief description.
-  Block,     // command starts a new paragraphs / ends a brief description.
-  XRef       // command is a cross reference (todo, bug, test, xrefitem).
+  Invisible, //!< command sets some property but does not appear in the output.
+  Inline,    //!< command appears inline in the output which can be a brief description.
+  Block,     //!< command starts a new paragraphs / ends a brief description.
+  XRef       //!< command is a cross reference (todo, bug, test, deprecated, xrefitem).
 };
 
 enum class SectionHandling
 {
-  Allowed, // command is allowed without restictions in section title
-  Replace, // command will be handled in here / needs special handling here
-  Escape,  // command is not-allowed in section title, it will be escaped
-  Break    // command is not-allowed in section title, it will end the section title
+  Allowed, //!< command is allowed without restrictions in section title
+  Replace, //!< command will be handled in here / needs special handling here
+  Escape,  //!< command is not-allowed in section title, it will be escaped
+  Break    //!< command is not-allowed in section title, it will end the section title
 };
 
 struct DocCmdMap
