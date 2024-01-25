@@ -157,6 +157,7 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 
 %x Scan
 %x SkipString
+%x SkipVerbString
 %x SkipChar
 %x SComment
 %x CComment
@@ -232,7 +233,7 @@ SLASHopt [/]*
                                       if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
                                       copyToOutput(yyscanner,yytext,yyleng);
                                     }
-<Scan>[^"'!\/\n\\#,\-=; \t]*        { /* eat anything that is not " / , or \n */
+<Scan>[^"'!\/\n\\#,\-=; \t@$]*      { /* eat anything that is not " / , or \n */
                                        copyToOutput(yyscanner,yytext,yyleng);
                                     }
 <Scan>[,= ;\t]                      { /* eat , so we have a nice separator in long initialization lines */
@@ -342,6 +343,12 @@ SLASHopt [/]*
 				         REJECT;
 				       }
 				     }
+                                   }
+<Scan>[$]?"@\""                    { /* start of an interpolated verbatim C# string */
+                                     if (yyextra->lang!=SrcLangExt::CSharp) REJECT
+                                     copyToOutput(yyscanner,yytext,yyleng);
+				     yyextra->stringContext = YY_START;
+				     BEGIN(SkipVerbString);
                                    }
 <Scan>"\""                         { /* start of a string */
                                      copyToOutput(yyscanner,yytext,yyleng);
@@ -693,6 +700,22 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <SkipString>\n                     { /* new line inside string (illegal for some compilers) */
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
+<SkipVerbString>[^"\n]+            {
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
+<SkipVerbString>\"\"               { // escaped quote
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
+<SkipVerbString>"\""       	   { /* end of string */
+                                     copyToOutput(yyscanner,yytext,yyleng);
+				     BEGIN(yyextra->stringContext);
+                                   }
+<SkipVerbString>.                  {
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
+<SkipVerbString>\n                 {
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <SkipChar>\\.		           { /* escaped character */
