@@ -166,6 +166,8 @@ static bool handleFileInfoSection(yyscan_t yyscanner,const QCString &cmdName, co
 static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, bool isSection);
 static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 [[maybe_unused]] static const char *stateToString(int state);
 
@@ -173,18 +175,18 @@ typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const String
 
 enum class CommandSpacing
 {
-  Invisible, // command sets some property but does not appear in the output.
-  Inline,    // command appears inline in the output which can be a brief description.
-  Block,     // command starts a new paragraphs / ends a brief description.
-  XRef       // command is a cross reference (todo, bug, test, xrefitem).
+  Invisible, //!< command sets some property but does not appear in the output.
+  Inline,    //!< command appears inline in the output which can be a brief description.
+  Block,     //!< command starts a new paragraphs / ends a brief description.
+  XRef       //!< command is a cross reference (todo, bug, test, deprecated, xrefitem).
 };
 
 enum class SectionHandling
 {
-  Allowed, // command is allowed without restictions in section title
-  Replace, // command will be handled in here / needs special handling here
-  Escape,  // command is not-allowed in section title, it will be escaped
-  Break    // command is not-allowed in section title, it will end the section title
+  Allowed, //!< command is allowed without restrictions in section title
+  Replace, //!< command will be handled in here / needs special handling here
+  Escape,  //!< command is not-allowed in section title, it will be escaped
+  Break    //!< command is not-allowed in section title, it will end the section title
 };
 
 struct DocCmdMap
@@ -383,7 +385,9 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "endlatexonly",           { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endmanonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endrtfonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "endxmlonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }}
+  { "endxmlonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }}
 };
 
 #define YY_NO_INPUT 1
@@ -599,6 +603,7 @@ TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 MODULE_ID ({ID}".")*{ID}
+LINENR    {Bopt}[1-9][0-9]*
 
   // C start comment 
 CCS   "/\*"
@@ -669,6 +674,10 @@ STopt  [^\n@\\]*
 %x      RaiseWarning
 %x      RaiseWarningSection
 %x      Qualifier
+%x      IFile
+%x      IFileSection
+%x      ILine
+%x      ILineSection
 
 %%
 
@@ -1688,6 +1697,59 @@ STopt  [^\n@\\]*
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
+  /* ----- handle arguments of the iline command ----- */
+<ILine>{LINENR}/[\\@\n\.]               |
+<ILine>{LINENR}{B}                      {
+                                          bool ok = false;
+                                          int nr = QCString(yytext).toInt(&ok);
+                                          if (!ok)
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid line number '%s' for iline command",yytext);
+                                          }
+                                          else
+                                          {
+                                            yyextra->lineNr = nr;
+                                          }
+                                          addOutput(yyscanner,yytext);
+                                          if (YY_START == ILine)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+=yytext;
+                                            BEGIN(SectionTitle);
+                                          }
+                                        }
+<ILine,ILineSection>.                   {
+                                          addOutput(yyscanner,yytext);
+                                          if (YY_START == ILine)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+=yytext;
+                                            BEGIN(SectionTitle);
+                                          }
+                                        }
+
+<IFile,IFileSection>{FILE}              {
+                                          addOutput(yyscanner,yytext);
+                                          QCString text(yytext);
+                                          if (yytext[0] == '\"') yyextra->fileName = text.mid(1,text.length()-2);
+                                          else yyextra->fileName = yytext;
+                                          if (YY_START == IFile)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            yyextra->sectionTitle+=yytext;
+                                            BEGIN(SectionTitle);
+                                          }
+                                        }
+
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
 
 <LineParam>{CMD}{CMD}                   { // escaped command
@@ -1877,6 +1939,18 @@ STopt  [^\n@\\]*
                                                     yyextra->sectionTitle+=yytext;
                                                     addOutput(yyscanner,yytext);
                                                     BEGIN(CiteLabelSection);
+                                                  }
+                                                  else if (cmdName == "iline")
+                                                  {
+                                                    yyextra->sectionTitle+=yytext;
+                                                    addOutput(yyscanner,yytext);
+                                                    BEGIN(ILineSection);
+                                                  }
+                                                  else if (cmdName == "ifile")
+                                                  {
+                                                    yyextra->sectionTitle+=yytext;
+                                                    addOutput(yyscanner,yytext);
+                                                    BEGIN(IFileSection);
                                                   }
                                                   else
                                                   {
@@ -3210,6 +3284,22 @@ static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVect
     yyextra->spaceBeforeCmd.clear();
   }
   addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
+  return FALSE;
+}
+
+static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner,yytext);
+  BEGIN(ILine);
+  return FALSE;
+}
+
+static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner,yytext);
+  BEGIN(IFile);
   return FALSE;
 }
 
