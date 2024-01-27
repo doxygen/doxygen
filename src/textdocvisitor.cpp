@@ -39,7 +39,7 @@ void TextDocVisitor::operator()(const DocSymbol &s)
 
 void TextDocVisitor::operator()(const DocEmoji &s)
 {
-  // the TextDocVisitor is only invokated for the JS part of the HTML output
+  // the TextDocVisitor is only invoked for the JS part of the HTML output
   const char *res = EmojiEntityMapper::instance().unicode(s.index());
   if (res)
   {
