@@ -4313,7 +4313,9 @@ QCString convertToJSString(const QCString &s)
     switch (c)
     {
       case '"':  growBuf.addStr("\\\""); break;
-      case '\\': growBuf.addStr("\\\\"); break;
+      case '\\': if (*p=='u' && *(p+1)=='{') growBuf.addStr("\\");
+                 else growBuf.addStr("\\\\");
+                 break;
       default:   growBuf.addChar(c);   break;
     }
   }
@@ -5635,7 +5637,8 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
       if (result.at(i)==',' ||
           result.at(i)=='.' ||
           result.at(i)=='!' ||
-          result.at(i)=='?')
+          result.at(i)=='?' ||
+          result.at(i)=='}')    // good for UTF-16 characters and } otherwise also a good point to stop the string
       {
         i++; // we want to be "behind" last inspected character
         break;
