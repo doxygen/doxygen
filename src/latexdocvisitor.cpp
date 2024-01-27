@@ -320,9 +320,9 @@ void LatexDocVisitor::operator()(const DocEmoji &s)
   if (!emojiName.isEmpty())
   {
     QCString imageName=emojiName.mid(1,emojiName.length()-2); // strip : at start and end
-    m_t << "\\doxygenemoji{";
+    if (m_texOrPdf != TexOrPdf::PDF) m_t << "\\doxygenemoji{";
     filter(emojiName);
-    m_t << "}{" << imageName << "}";
+    if (m_texOrPdf != TexOrPdf::PDF) m_t << "}{" << imageName << "}";
   }
   else
   {
@@ -953,14 +953,18 @@ void LatexDocVisitor::operator()(const DocSection &s)
   }
   if (s.title())
   {
+    if (pdfHyperlinks) m_texOrPdf = TexOrPdf::TEX;
     std::visit(*this,*s.title());
+    m_texOrPdf = TexOrPdf::NO;
   }
   if (pdfHyperlinks)
   {
     m_t << "}{";
     if (s.title())
     {
+      if (pdfHyperlinks) m_texOrPdf = TexOrPdf::PDF;
       std::visit(*this,*s.title());
+      m_texOrPdf = TexOrPdf::NO;
     }
     m_t << "}";
   }
@@ -1808,7 +1812,8 @@ void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
                    );
 }
 
-void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable,bool refToSection)
+void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,
+                                bool refToTable,bool refToSection)
 {
   bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
@@ -1819,16 +1824,22 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
     }
     else if (refToSection)
     {
-      m_t << "\\doxysectlink{";
+      if (m_texOrPdf == TexOrPdf::TEX) m_t << "\\protect";
+      if (m_texOrPdf != TexOrPdf::PDF) m_t << "\\doxysectlink{";
     }
     else
     {
-      m_t << "\\doxylink{";
+      if (m_texOrPdf == TexOrPdf::TEX) m_t << "\\protect";
+      if (m_texOrPdf != TexOrPdf::PDF) m_t << "\\doxylink{";
     }
-    if (!file.isEmpty()) m_t << stripPath(file);
-    if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
-    if (!anchor.isEmpty()) m_t << anchor;
-    m_t << "}{";
+    if (refToTable || m_texOrPdf != TexOrPdf::PDF)
+    {
+      if (!file.isEmpty()) m_t << stripPath(file);
+      if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
+      if (!anchor.isEmpty()) m_t << anchor;
+      m_t << "}";
+    }
+    m_t << "{";
   }
   else if (ref.isEmpty() && refToSection)
   {
@@ -1868,7 +1879,7 @@ void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCS
   {
     if (refToSection)
     {
-      m_t << "{" << static_cast<int>(sectionType) << "}";
+      if (m_texOrPdf != TexOrPdf::PDF) m_t << "{" << static_cast<int>(sectionType) << "}";
     }
   }
 }

@@ -5224,9 +5224,9 @@ static bool checkIfHtmlEndTagEndsAutoList(DocParser *parser,const DocNodeVariant
       return std::get<DocStyleChange>(*stack.top());
     };
 
-    if (parser->context.styleStack.empty() ||                                                   // no style change
-        topStyleChange(parser->context.styleStack).tagName()!=tagNameLower ||                   // wrong style change
-        topStyleChange(parser->context.styleStack).position()!=parser->context.nodeStack.size() // wrong position
+    if (parser->context.styleStack.empty() ||                                                     // no style change
+        (topStyleChange(parser->context.styleStack).tagName()==tagNameLower &&                    // correct style change
+         topStyleChange(parser->context.styleStack).position()!=parser->context.nodeStack.size()) // wrong position, so normal close
        )
     {
       // insert an artificial 'end of autolist' marker and parse again
