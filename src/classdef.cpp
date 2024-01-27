@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2024 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -272,6 +270,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     bool hasNonReferenceSuperClass() const override;
     QCString requiresClause() const override;
     StringVector getQualifiers() const override;
+    bool containsOverload(const MemberDef *md) const override;
     ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const override;
 
@@ -578,6 +577,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->requiresClause(); }
     StringVector getQualifiers() const override
     { return getCdAlias()->getQualifiers(); }
+    bool containsOverload(const MemberDef *md) const override
+    { return getCdAlias()->containsOverload(md); }
 
     int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const override
     { return getCdAlias()->countMembersIncludingGrouped(lt,inheritedFrom,additional); }
@@ -4969,6 +4970,30 @@ void ClassDefImpl::addQualifiers(const StringVector &qualifiers)
 StringVector ClassDefImpl::getQualifiers() const
 {
   return m_impl->qualifiers;
+}
+
+bool ClassDefImpl::containsOverload(const MemberDef *md) const
+{
+  const auto &mni = m_impl->allMemberNameInfoLinkedMap.find(md->name());
+  if (mni)
+  {
+    for (const auto &mi : *mni)
+    {
+      const MemberDef *classMd = mi->memberDef();
+      ArgumentList &classAl = const_cast<ArgumentList&>(classMd->argumentList());
+      ArgumentList &al      = const_cast<ArgumentList&>(md->argumentList());
+      bool found = matchArguments2(
+          classMd->getOuterScope(),classMd->getFileDef(),&classAl,
+          md->getOuterScope(),md->getFileDef(),&al,
+          true,getLanguage()
+          );
+      if (found)
+      {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 bool ClassDefImpl::isExtension() const

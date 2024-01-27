@@ -2058,7 +2058,7 @@ static void findUsingDeclImports(const Entry *root)
       root->parent()->section.isCompound() // in a class/struct member
      )
   {
-    AUTO_TRACE("Found using declaration '{}' inside section {:#10x}", root->name, root->parent()->section);
+    AUTO_TRACE("Found using declaration '{}' inside section {}", root->name, root->parent()->section);
     QCString fullName=removeRedundantWhiteSpace(root->parent()->name);
     fullName=stripAnonymousNamespaceScope(fullName);
     fullName=stripTemplateSpecifiersFromScope(fullName);
@@ -2093,49 +2093,53 @@ static void findUsingDeclImports(const Entry *root)
                 }
                 const ArgumentList &templAl = md->templateArguments();
                 const ArgumentList &al = md->argumentList();
-                auto newMd = createMemberDef(
-                    fileName,root->startLine,root->startColumn,
-                    md->typeString(),memName,md->argsString(),
-                    md->excpString(),root->protection,root->virt,
-                    md->isStatic(),Relationship::Member,md->memberType(),
-                    templAl,al,root->metaData
-                    );
-                auto newMmd = toMemberDefMutable(newMd.get());
-                newMmd->setMemberClass(cd);
-                cd->insertMember(newMd.get());
-                if (!root->doc.isEmpty() || !root->brief.isEmpty())
+
+                if (!cd->containsOverload(md))
                 {
-                  newMmd->setDocumentation(root->doc,root->docFile,root->docLine);
-                  newMmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-                  newMmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+                  auto newMd = createMemberDef(
+                      fileName,root->startLine,root->startColumn,
+                      md->typeString(),memName,md->argsString(),
+                      md->excpString(),root->protection,root->virt,
+                      md->isStatic(),Relationship::Member,md->memberType(),
+                      templAl,al,root->metaData
+                      );
+                  auto newMmd = toMemberDefMutable(newMd.get());
+                  newMmd->setMemberClass(cd);
+                  cd->insertMember(newMd.get());
+                  if (!root->doc.isEmpty() || !root->brief.isEmpty())
+                  {
+                    newMmd->setDocumentation(root->doc,root->docFile,root->docLine);
+                    newMmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                    newMmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+                  }
+                  else
+                  {
+                    newMmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+                    newMmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+                    newMmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+                  }
+                  newMmd->setDefinition(md->definition());
+                  newMmd->enableCallGraph(root->callGraph);
+                  newMmd->enableCallerGraph(root->callerGraph);
+                  newMmd->enableReferencedByRelation(root->referencedByRelation);
+                  newMmd->enableReferencesRelation(root->referencesRelation);
+                  newMmd->enableInlineSource(root->inlineSource);
+                  newMmd->addQualifiers(root->qualifiers);
+                  newMmd->setBitfields(md->bitfieldString());
+                  newMmd->addSectionsToDefinition(root->anchors);
+                  newMmd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
+                  newMmd->setBodyDef(md->getBodyDef());
+                  newMmd->setInitializer(md->initializer());
+                  newMmd->setRequiresClause(md->requiresClause());
+                  newMmd->setMaxInitLines(md->initializerLines());
+                  newMmd->setMemberGroupId(root->mGrpId);
+                  newMmd->setMemberSpecifiers(md->getMemberSpecifiers());
+                  newMmd->setVhdlSpecifiers(md->getVhdlSpecifiers());
+                  newMmd->setLanguage(root->lang);
+                  newMmd->setId(root->id);
+                  MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
+                  mn->push_back(std::move(newMd));
                 }
-                else
-                {
-                  newMmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
-                  newMmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
-                  newMmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
-                }
-                newMmd->setDefinition(md->definition());
-                newMmd->enableCallGraph(root->callGraph);
-                newMmd->enableCallerGraph(root->callerGraph);
-                newMmd->enableReferencedByRelation(root->referencedByRelation);
-                newMmd->enableReferencesRelation(root->referencesRelation);
-                newMmd->enableInlineSource(root->inlineSource);
-                newMmd->addQualifiers(root->qualifiers);
-                newMmd->setBitfields(md->bitfieldString());
-                newMmd->addSectionsToDefinition(root->anchors);
-                newMmd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
-                newMmd->setBodyDef(md->getBodyDef());
-                newMmd->setInitializer(md->initializer());
-                newMmd->setRequiresClause(md->requiresClause());
-                newMmd->setMaxInitLines(md->initializerLines());
-                newMmd->setMemberGroupId(root->mGrpId);
-                newMmd->setMemberSpecifiers(md->getMemberSpecifiers());
-                newMmd->setVhdlSpecifiers(md->getVhdlSpecifiers());
-                newMmd->setLanguage(root->lang);
-                newMmd->setId(root->id);
-                MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
-                mn->push_back(std::move(newMd));
               }
             }
           }
@@ -6813,7 +6817,7 @@ static void findMember(const Entry *root,
 static void filterMemberDocumentation(const Entry *root,const QCString &relates)
 {
   int i=-1,l;
-  AUTO_TRACE("root->type='{}' root->inside='{}' root->name='{}' root->args='{}' section={:#x} root->spec={} root->mGrpId={}",
+  AUTO_TRACE("root->type='{}' root->inside='{}' root->name='{}' root->args='{}' section={} root->spec={} root->mGrpId={}",
       root->type,root->inside,root->name,root->args,root->section,root->spec,root->mGrpId);
   //printf("root->parent()->name=%s\n",qPrint(root->parent()->name));
   bool isFunc=TRUE;

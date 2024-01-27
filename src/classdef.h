@@ -361,6 +361,8 @@ class ClassDef : public Definition
     virtual QCString requiresClause() const = 0;
     virtual StringVector getQualifiers() const = 0;
 
+    virtual bool containsOverload(const MemberDef *md) const = 0;
+
     //-----------------------------------------------------------------------------------
     // --- count members ----
     //-----------------------------------------------------------------------------------
