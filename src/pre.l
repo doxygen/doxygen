@@ -583,7 +583,7 @@ WSopt [ \t\r]*
 <CopyLine,LexCopyLine>"'"."'"           {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
-<CopyLine,LexCopyLine>@\"               {
+<CopyLine,LexCopyLine>[$]?@\"           {
                                           if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::CSharp) REJECT;
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN( CopyStringCs );
@@ -608,6 +608,9 @@ WSopt [ \t\r]*
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyStringCs>[^\"\r\n]+                {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<CopyStringCs>\"\"                      {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyString>\\.                         {

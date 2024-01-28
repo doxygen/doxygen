@@ -2229,7 +2229,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                           BEGIN( SkipComment ) ;
                                         }
-<*>@\"                                  { // C# verbatim string
+<*>[$]?@\"                                  { // C# (interpolated) verbatim string
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastVerbStringContext=YY_START;

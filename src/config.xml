@@ -1525,7 +1525,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  encoding instead of the default \ref cfg_input_encoding "INPUT_ENCODING") if there is a match.
  The character encodings are a list of the form: pattern=encoding (like `*.php=ISO-8859-1`).
 
- See cfg_input_encoding "INPUT_ENCODING" for further information on supported encodings.
+ \sa \ref cfg_input_encoding "INPUT_ENCODING" for further information on supported encodings.
 ]]>
       </docs>
     </option>
