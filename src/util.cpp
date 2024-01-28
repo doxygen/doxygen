@@ -76,6 +76,7 @@
 #include "indexlist.h"
 #include "datetime.h"
 #include "moduledef.h"
+#include "trace.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1517,12 +1518,6 @@ void stripIrrelevantConstVolatile(QCString &s)
 }
 
 
-// a bit of debug support for matchArguments
-#define MATCH
-#define NOMATCH
-//#define MATCH printf("Match at line %d\n",__LINE__);
-//#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
-
 static QCString stripDeclKeywords(const QCString &s)
 {
   int i=s.find(" class ");
@@ -1806,23 +1801,60 @@ static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,co
 
 static std::mutex g_matchArgsMutex;
 
+// a bit of debug support for matchArguments
+#define MATCH
+#define NOMATCH
+//#define MATCH   printf("Match at line %d\n",__LINE__);
+//#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
+//#define MATCH   AUTO_TRACE_EXIT("match at line {}",__LINE__);
+//#define NOMATCH AUTO_TRACE_EXIT("no match at line {}",__LINE__);
+
+static bool matchCanonicalTypes(
+    const Definition *srcScope,const FileDef *srcFileScope,const QCString &srcType,
+    const Definition *dstScope,const FileDef *dstFileScope,const QCString &dstType,
+    SrcLangExt lang)
+{
+  if (srcType==dstType) return true;
+
+  // check if the types are function pointers
+  int i1=srcType.find(")(");
+  if (i1==-1) return false;
+  int i2=dstType.find(")(");
+  if (i1!=i2) return false;
+
+  // check if the result part of the function pointer types matches
+  int j1=srcType.find("(");
+  if (j1==-1 || j1>i1) return false;
+  int j2=dstType.find("(");
+  if (j2!=j1) return false;
+  if (srcType.left(j1)!=dstType.left(j2)) return false; // different return types
+
+  // if srcType and dstType are both function pointers with the same return type,
+  // then match against the parameter lists.
+  // This way srcType='void (*fptr)(int x)' will match against `void (*fptr)(int y)' because
+  // 'int x' matches 'int y'. A simple literal string match would treat these as different.
+  auto srcAl = stringToArgumentList(lang,srcType.mid(i1+1));
+  auto dstAl = stringToArgumentList(lang,dstType.mid(i2+1));
+  return matchArguments2(srcScope,srcFileScope,srcAl.get(),
+                         dstScope,dstFileScope,dstAl.get(),
+                         true,lang);
+}
+
 static bool matchArgument2(
     const Definition *srcScope,const FileDef *srcFileScope,Argument &srcA,
     const Definition *dstScope,const FileDef *dstFileScope,Argument &dstA,
     SrcLangExt lang
     )
 {
+  AUTO_TRACE("src: scope={} type={} name={} canType={}, dst: scope={} type={} name={} canType={}",
+      srcScope?srcScope->name():"",srcA.type,srcA.name,srcA.canType,
+      dstScope?dstScope->name():"",dstA.type,dstA.name,dstA.canType);
   //printf(">> match argument: %s::'%s|%s' (%s) <-> %s::'%s|%s' (%s)\n",
   //    srcScope ? qPrint(srcScope->name()) : "",
   //    qPrint(srcA.type), qPrint(srcA.name), qPrint(srcA.canType),
   //    dstScope ? qPrint(dstScope->name()) : "",
   //    qPrint(dstA.type), qPrint(dstA.name), qPrint(dstA.canType));
 
-  //if (srcA->array!=dstA->array) // nomatch for char[] against char
-  //{
-  //  NOMATCH
-  //  return FALSE;
-  //}
   QCString sSrcName = " "+srcA.name;
   QCString sDstName = " "+dstA.name;
   QCString srcType  = srcA.type;
@@ -1854,7 +1886,9 @@ static bool matchArgument2(
     }
   }
 
-  if (srcA.canType==dstA.canType)
+  if (matchCanonicalTypes(srcScope,srcFileScope,srcA.canType,
+                          dstScope,dstFileScope,dstA.canType,
+                          lang))
   {
     MATCH
     return TRUE;
@@ -1875,6 +1909,9 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
                                bool checkCV,SrcLangExt lang)
 {
   ASSERT(srcScope!=0 && dstScope!=0);
+
+  AUTO_TRACE("srcScope='{}' dstScope='{}' srcArgs='{}' dstArgs='{}' checkCV={} lang={}",
+      srcScope->name(),dstScope->name(),srcAl?argListToString(*srcAl):"",dstAl?argListToString(*dstAl):"",checkCV,lang);
 
   if (srcAl==0 || dstAl==0)
   {
@@ -1956,6 +1993,8 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
   return TRUE; // all arguments match
 }
 
+#undef MATCH
+#undef NOMATCH
 
 // merges the initializer of two argument lists
 // pre:  the types of the arguments in the list should match.

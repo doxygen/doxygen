@@ -8,6 +8,7 @@ struct Foo {
     void foo(signed long);
     void foo(const struct Foo);
     void foo(const char * const, const double param2);
+    void foo(void(*fptr)(int x,int));
 };
 
 /** @brief Float */
@@ -28,3 +29,5 @@ void Foo::foo(const struct Foo) {}
 /** @brief Unnamed const pointer */
 void Foo::foo(const char * const, const double param2) {}
 
+/** @brief Function pointer */
+void Foo::foo(void(*fptr)(int y,int z)) {}
