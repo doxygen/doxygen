@@ -20,6 +20,7 @@
 #include "message.h"
 #include "util.h"
 #include "htmlentity.h"
+#include "cite.h"
 #include "emoji.h"
 
 //-------------------------------------------------------------------------
@@ -66,6 +67,21 @@ void TextDocVisitor::operator()(const DocEmoji &s)
   else
   {
     filter(s.name());
+  }
+}
+
+void TextDocVisitor::operator()(const DocCite &cite)
+{
+  if (!cite.file().isEmpty())
+  {
+    QCString anchor = cite.anchor();
+    QCString anchorPrefix = CitationManager::instance().anchorPrefix();
+    anchor = anchor.mid(anchorPrefix.length()); // strip prefix
+    m_t << anchor;
+  }
+  else
+  {
+    filter(cite.text());
   }
 }
 
