@@ -2315,8 +2315,8 @@ class TranslatorPolish : public Translator
     { return "Dokumentacja przyjaciół i powiązanych symboli"; }
 
     /*! the compound type as used for the xrefitems */
-    /*!
-      * \todo Check usecase of this function and verify if noun case is correct  
+    /*
+      * TODO Check usecase of this function and verify if noun case is correct  
       * At the moment only Czech language is available for cross-reference but its cases are mixed
     */
     QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
@@ -2527,8 +2527,8 @@ class TranslatorPolish : public Translator
 // new since 1.9.8
 //////////////////////////////////////////////////////////////////////////
 
-    /*!
-      * \todo Verify which one fits best:
+    /*
+      * TODO Verify which one fits best:
       * * Podrozdział - subchapter
       * * Sekcja - section
       * * Temat - topic (doesn't fit well as a standalone word)
