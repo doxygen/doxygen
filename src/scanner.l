@@ -3160,9 +3160,11 @@ NONLopt [^\n]*
                                           *yyextra->pSkipVerbString << yytext;
                                         }
 <SkipVerbString>"\\\\"                  { // escaped backslash
+                                          if (yyextra->insideCS) REJECT
                                           *yyextra->pSkipVerbString << yytext;
                                         }
 <SkipVerbString>"\\\""                  { // backslash escaped quote
+                                          if (yyextra->insideCS) REJECT
                                           *yyextra->pSkipVerbString << yytext;
                                         }
 <SkipVerbString>"\"\""                  { // quote escape
