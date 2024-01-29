@@ -17,12 +17,14 @@
  * Piotr Kaminski (Piotr.Kaminski@ctm.gdynia.pl)
  * Polish translation was updated since version 1.4.6 by
  * Krzysztof Kral (krzysztof.kral@gmail.com)
+ * Polish translation was updated to version 1.11.0 by
+ * Marek Ledworowski (mledworo@gmail.com)
  */
 
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public TranslatorAdapter_1_8_2
+class TranslatorPolish : public Translator
 {
   public:
 
@@ -91,7 +93,16 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation() override
-    { return "Dokumentacja funkcji składowych"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Dokumentacja funkcji/procedur/procesów składowych";
+      }
+      else
+      {
+        return "Dokumentacja funkcji składowych";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation() override
@@ -205,7 +216,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages() override
-    { return "Dodatkowe strony"; }
+    { return "Powiązane strony"; }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples() override
@@ -226,7 +237,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       QCString result="Tutaj znajduje się lista wszystkich ";
       if (!extractAll) result+="udokumentowanych ";
-      result+="plików z ich krótkimi opisami:";
+      result+="plików wraz z ich krótkimi opisami:";
       return result;
     }
 
@@ -298,7 +309,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       if (!extractAll) result+="udokumentowanych ";
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="funkcji, zmiennych, makr, wyliczeń i definicji typów";
+        result+="funkcji, zmiennych, definicji, wyliczeń i definicji typów";
       }
       else
       {
@@ -318,7 +329,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription() override
-    { return "Tutaj znajduje się lista wszystkich stron dokumentacji:"; }
+    { return "Tutaj znajduje się lista wszystkich powiązanych stron dokumentacji:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription() override
@@ -487,7 +498,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       QCString result="Wygenerowano "+date;
       if (!projName.isEmpty()) result+=" dla "+projName;
-      result+=" programem";
+      result+=" za pomocą";
       return result;
     }
 
@@ -527,7 +538,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy() override
-    { return "Wygenerowano przez"; }
+    { return "Wygenerowano za pomocą"; }
 
     // new since 0.49-990307
 
@@ -558,7 +569,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      * related classes
      */
     QCString trRelatedFunctionDocumentation() override
-    { return "Dokumentacja przyjaciół i funkcji związanych"; }
+    { return "Dokumentacja przyjaciół i powiązanych funkcji"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -1041,7 +1052,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! Used as the header of the test list */
     QCString trTestList() override
     {
-      return "Lista testu";
+      return "Lista testów";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1062,11 +1073,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    QCString trInterfaces() override
-    {
-      return "Interfejsy";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses() override
     {
@@ -1087,7 +1093,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! The description of the package index page */
     QCString trPackageListDescription() override
     {
-      return "Oto lista pakietów wraz z krótkim opisem (o ile jest dostępny):";
+      return "Oto lista pakietów wraz z ich krótkimi opisami (jeśli są dostępne):";
     }
     /*! The link name in the Quick links header for each page */
     QCString trPackages() override
@@ -1482,7 +1488,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      *  of documentation blocks for enumeration values
      */
     QCString trEnumerationValueDocumentation() override
-    { return "Dokumentacja wyliczeń"; } //TODO check if it is correct translation
+    { return "Dokumentacja wyliczeń"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
@@ -1502,7 +1508,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     QCString trCompoundListDescriptionFortran() override
-    { return "Tutaj znajdują się typy danych z ich krótkimi opisami:"; }
+    { return "Tutaj znajdują się typy danych wraz z ich krótkimi opisami:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     QCString trCompoundMembersDescriptionFortran(bool extractAll) override
@@ -1564,7 +1570,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       QCString result="Tutaj znajduje się lista wszystkich ";
       if (!extractAll) result+="udokumentowanych ";
-      result+="modułów z ich krótkimi opisami:";
+      result+="modułów wraz z ich krótkimi opisami:";
       return result;
     }
 
@@ -1681,7 +1687,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! C# Type Constraint list */
     QCString trTypeConstraints() override
     {
-      return "Więzy typów"; //TODO check if it is correct translation
+      return "Ograniczenia typów";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1843,8 +1849,758 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      *  base class(es)
      */
     QCString trAdditionalInheritedMembers() override
-    { return "Dodatkowe Dziedziczone Składowe"; }
+    { return "Dodatkowe dziedziczone składowe"; }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    QCString trPanelSynchronisationTooltip(bool enable) override
+    {
+      QCString opt = enable ? "włączyć" : "wyłączyć";
+      return "kliknij żeby "+opt+" pokazywanie otwartego elementu w drzewie zawartości";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    QCString trProvidedByCategory() override
+    {
+      return "Dostarczany przez kategorię @0.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    QCString trExtendsClass() override
+    {
+      return "Rozszerza klasę @0.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    QCString trClassMethods() override
+    {
+      return "Metody klasy";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    QCString trInstanceMethods() override
+    {
+      return "Metody instancji";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    QCString trMethodDocumentation() override
+    {
+      return "Dokumentacja metod";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    QCString trInterfaces() override
+    { return "Eksportowane interfejsy"; }
+
+    /** old style UNO IDL services: inherited services */
+    QCString trServices() override
+    { return "Załączone usługi"; }
+
+    /** UNO IDL constant groups */
+    QCString trConstantGroups() override
+    { return "Grupy stałych"; }
+
+    /** UNO IDL constant groups */
+    QCString trConstantGroupReference(const QCString &namespaceName) override
+    {
+      QCString result=namespaceName;
+      result+=" Dokumentacja grup stałych";
+      return result;
+    }
+    /** UNO IDL service page title */
+    QCString trServiceReference(const QCString &sName) override
+    {
+      QCString result=sName;
+      result+=" Dokumentacja usług";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    QCString trSingletonReference(const QCString &sName) override
+    {
+      QCString result=sName;
+      result+=" Dokumentacja wzorców projektowych";
+      return result;
+    }
+    /** UNO IDL service page */
+    QCString trServiceGeneratedFromFiles(bool single) override
+    {
+      // single is true implies a single file
+      QCString result="Dokumentacja dla tej usługi "
+                      "została wygenerowana z plik";
+      if (single) result+="u:"; else result+="ów:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    QCString trSingletonGeneratedFromFiles(bool single) override
+    {
+      // single is true implies a single file
+      QCString result="Dokumentacja dla tego wzorca projektowego "
+                      "została wygenerowana z plik";
+      if (single) result+="u:"; else result+="ów:";
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    QCString trDesignUnitHierarchy() override
+    { return "Hierarchia jednostek projektowych"; }
+    /** VHDL design unit list */
+    QCString trDesignUnitList() override
+    { return "Lista jednostek projektowych"; }
+    /** VHDL design unit members */
+    QCString trDesignUnitMembers() override
+    { return "Składowe jednostki projektowej"; }
+    /** VHDL design unit list description */
+    QCString trDesignUnitListDescription() override
+    {
+        return "Tu znajduje się lista wszystkich składowych jednostek projektowych "
+        "związanych z Jednostkami Nadrzędnymi do których należą:";
+    }
+    /** VHDL design unit index */
+    QCString trDesignUnitIndex() override
+    { return "Indeks jednostek projektowych"; }
+    /** VHDL design units */
+    QCString trDesignUnits() override
+    { return "Jednostki projektowe"; }
+    /** VHDL functions/procedures/processes */
+    QCString trFunctionAndProc() override
+    { return "Funkcje/Procedury/Procesy"; }
+    /** VHDL type */
+    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    {
+      switch(type)
+      {
+        case VhdlSpecifier::LIBRARY:
+          if (single) return "Biblioteka";
+          else        return "Biblioteki";
+        case VhdlSpecifier::PACKAGE:
+          if (single) return "Pakiet";
+          else        return "Pakiety";
+        case VhdlSpecifier::SIGNAL:
+          if (single) return "Sygnał";
+          else        return "Sygnały";
+        case VhdlSpecifier::COMPONENT:
+          if (single) return "Komponent";
+          else        return "Komponenty";
+        case VhdlSpecifier::CONSTANT:
+          if (single) return "Stała";
+          else        return "Stałe";
+        case VhdlSpecifier::ENTITY:
+          if (single) return "Jednostka";
+          else        return "Jednostki";
+        case VhdlSpecifier::TYPE:
+          if (single) return "Typ";
+          else        return "Typy";
+        case VhdlSpecifier::SUBTYPE:
+          if (single) return "Podtyp";
+          else        return "Podtypy";
+        case VhdlSpecifier::FUNCTION:
+          if (single) return "Funkcja";
+          else        return "Funkcje";
+        case VhdlSpecifier::RECORD:
+          if (single) return "Rekord";
+          else        return "Rekordy";
+        case VhdlSpecifier::PROCEDURE:
+          if (single) return "Procedura";
+          else        return "Procedury";
+        case VhdlSpecifier::ARCHITECTURE:
+          if (single) return "Architektura";
+          else        return "Architektury";
+        case VhdlSpecifier::ATTRIBUTE:
+          if (single) return "Atrybut";
+          else        return "Atrybuty";
+        case VhdlSpecifier::PROCESS:
+          if (single) return "Proces";
+          else        return "Procesy";
+        case VhdlSpecifier::PORT:
+          if (single) return "Port";
+          else        return "Porty";
+        case VhdlSpecifier::USE:
+          if (single) return "Klauzula użycia";
+          else        return "Klauzule użycia";
+        case VhdlSpecifier::GENERIC:
+          if (single) return "Generyczny";
+          else        return "Generyczne";
+        case VhdlSpecifier::PACKAGE_BODY:
+          return "Ciało pakietu";
+        case VhdlSpecifier::UNITS:
+          return "Jednostki";
+        case VhdlSpecifier::SHAREDVARIABLE:
+          if (single) return "Współdzielona zmienna";
+          else        return "Współdzielone zmienne";
+        case VhdlSpecifier::VFILE:
+          if (single) return "Plik";
+          else        return "Pliki";
+        case VhdlSpecifier::GROUP:
+          if (single) return "Grupa";
+          else        return "Grupy";
+        case VhdlSpecifier::INSTANTIATION:
+          if (single) return "Utworzona instancja";
+          else        return "Utworzone instancje";
+        case VhdlSpecifier::ALIAS:
+          if (single) return "Alias";
+          else        return "Aliasy";
+        case VhdlSpecifier::CONFIG:
+          if (single) return "Konfiguracja";
+          else        return "Konfiguracje";
+        case VhdlSpecifier::MISCELLANEOUS:
+          return "Różne";
+        case VhdlSpecifier::UCF_CONST:
+          return "Ograniczenia";
+        default:
+          return "Klasa";
+      }
+    }
+    QCString trCustomReference(const QCString &name) override
+    { return "Dokumentacja "+name; }
+
+    /* Slice */
+    QCString trConstants() override
+    {
+        return "Stałe";
+    }
+    QCString trConstantDocumentation() override
+    {
+        return "Dokumentacja stałych";
+    }
+    QCString trSequences() override
+    {
+        return "Sekwencje";
+    }
+    QCString trSequenceDocumentation() override
+    {
+        return "Dokumentacja sekwencji";
+    }
+    QCString trDictionaries() override
+    {
+        return "Słowniki";
+    }
+    QCString trDictionaryDocumentation() override
+    {
+        return "Dokumentacja słowników";
+    }
+    QCString trSliceInterfaces() override
+    {
+        return "Interfejsy";
+    }
+    QCString trInterfaceIndex() override
+    {
+        return "Indeks interfejsów";
+    }
+    QCString trInterfaceList() override
+    {
+        return "Lista interfejsów";
+    }
+    QCString trInterfaceListDescription() override
+    {
+        return "Tutaj znajduje się lista interfejsów wraz z ich krótkimi opisami:";
+    }
+    QCString trInterfaceHierarchy() override
+    {
+        return "Hierarchia interfejsów";
+    }
+    QCString trInterfaceHierarchyDescription() override
+    {
+        return "Ta lista dziedziczenia posortowana jest z grubsza, "
+        "choć nie całkowicie, alfabetycznie:";
+    }
+    QCString trInterfaceDocumentation() override
+    {
+        return "Dokumentacja interfejsów";
+    }
+    QCString trStructs() override
+    {
+        return "Struktury";
+    }
+    QCString trStructIndex() override
+    {
+        return "Indeks struktur";
+    }
+    QCString trStructList() override
+    {
+        return "Lista struktur";
+    }
+    QCString trStructListDescription() override
+    {
+        return "Tutaj znajdują się struktury wraz z ich krótkimi opisami:";
+    }
+    QCString trStructDocumentation() override
+    {
+        return "Dokumentacja struktur";
+    }
+    QCString trExceptionIndex() override
+    {
+        return "Indeks wyjątków";
+    }
+    QCString trExceptionList() override
+    {
+        return "Lista wyjątków";
+    }
+    QCString trExceptionListDescription() override
+    {
+        return "Tutaj znajdują się wyjątki wraz z ich krótkimi opisami:";
+    }
+    QCString trExceptionHierarchy() override
+    {
+        return "Hierarchia wyjątków";
+    }
+    QCString trExceptionHierarchyDescription() override
+    {
+        return "Ta lista dziedziczenia posortowana jest z grubsza, "
+        "choć nie całkowicie, alfabetycznie:";
+    }
+    QCString trExceptionDocumentation() override
+    {
+        return "Dokumentacja wyjątków";
+    }
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result=clName;
+      result+= "Dokumentacja";
+      if (isLocal) result+=" Lokal";
+      switch(compType)
+      {
+        case ClassDef::Class:      if (isLocal) result+="nej"; result+=" Klasy"; break;
+        case ClassDef::Struct:     if (isLocal) result+="nej"; result+=" Struktury"; break;
+        case ClassDef::Union:      if (isLocal) result+="nej"; result+=" Unii"; break;
+        case ClassDef::Interface:  if (isLocal) result+="nego"; result+=" Interfejsu"; break;
+        case ClassDef::Protocol:   if (isLocal) result+="nego"; result+=" Protokołu"; break;
+        case ClassDef::Category:   if (isLocal) result+="nej"; result+=" Kategorii"; break;
+        case ClassDef::Exception:  if (isLocal) result+="nego"; result+=" Wyjątku"; break;
+        default: break;
+      }
+      result+=" " + clName;
+      return result;
+    }
+    QCString trOperations() override
+    {
+        return "Operacje";
+    }
+    QCString trOperationDocumentation() override
+    {
+        return "Dokumentacja operacji";
+    }
+    QCString trDataMembers() override
+    {
+        return "Pola klasy";
+    }
+    QCString trDataMemberDocumentation() override
+    {
+        return "Dokumentacja pól klasy";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    QCString trDesignUnitDocumentation() override
+    { return "Dokumentacja jednostek projektowych"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    QCString trConcept(bool first_capital, bool singular) override
+    {
+      QCString result((first_capital ? "Koncept" : "koncept"));
+      if (!singular) result+="y";
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    QCString trConceptReference(const QCString &conceptName) override
+    {
+      QCString result="Dokumentacja konceptu " + conceptName;
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    QCString trConceptList() override
+    { return "Lista konceptów"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    QCString trConceptIndex() override
+    { return "Indeks konceptów"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    QCString trConceptDocumentation() override
+    { return "Dokumentacja konceptów"; }
+
+    /*! used as an introduction to the concept list */
+    QCString trConceptListDescription(bool extractAll) override
+    {
+      QCString result="Tutaj znajduje się lista wszystkich ";
+      if (!extractAll) result+="udokumentowanych ";
+      result+="konceptów wraz z ich krótkimi opisami:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    QCString trConceptDefinition() override
+    {
+      return "Definicja konceptu";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "Lista pakietów"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "Schemat blokowy: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    QCString trRelatedSymbols() override
+    { return "Powiązane symbole"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    QCString trRelatedSymbolsSubscript() override
+    { return "(Zauważ, że te symbole nie są składowymi.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    QCString trRelatedSymbolDocumentation() override
+    { return "Dokumentacja przyjaciół i powiązanych symboli"; }
+
+    /*! the compound type as used for the xrefitems */
+    /*
+      * TODO Check usecase of this function and verify if noun case is correct  
+      * At the moment only Czech language is available for cross-reference but its cases are mixed
+    */
+    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt::Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Struktura"; break;
+        case ClassDef::Union:      result="Unia"; break;
+        case ClassDef::Interface:  result="Interfejs"; break;
+        case ClassDef::Protocol:   result="Protokół"; break;
+        case ClassDef::Category:   result="Kategoria"; break;
+        case ClassDef::Exception:  result="Wyjątek"; break;
+        case ClassDef::Service:    result="Usługa"; break;
+        case ClassDef::Singleton:  result="Wzorzec Projektowy"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Tutaj jest lista wszystkich ";
+      if (!extractAll) result+="udokumentowanych ";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="funkcji, zmiennych, definicji, wyliczeń, i definicji typów";
+          }
+          else
+          {
+            result+="dołączonych plików";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="funkcji";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="zmiennych";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="definicji typów";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="sekwencji";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="słowników";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="wyliczeń";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="wartości wyliczeń";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="definicji";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" związanych z ";
+      if (extractAll)
+        result+="plikami do których należą:";
+      else
+        result+="dokumentacją:";
+      return result;
+    }
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Tutaj jest lista wszystkich ";
+      if (!extractAll)
+      {
+        result+="udokumentowanych ";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="struktur i pól unii";
+          }
+          else
+          {
+            result+="składowych klasy";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="funkcji";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="zmiennych";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="definicji typów";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="wyliczeń";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="wartości wyliczeń";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="właściwości";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="zdarzeń";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="powiązanych symboli";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" związanych z";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+=" dokumentacją każdego pola struktury/unii:";
+        }
+        else
+        {
+          result+=" dokumentacją każdej składowej klasy:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="e strukturą/unią do której należą:";
+        }
+        else
+        {
+          result+=" klasą do której należą:";
+        }
+      }
+      return result;
+    }
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Tutaj jest lista wszystkich ";
+      if (!extractAll) result+="udokumentowanych ";
+      result+="przestrzeni nazw ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult="każdej składowej";
+          pluralResult="wszystkich składowych";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult="każdej funkcji";
+          pluralResult="wszystkich funkcji";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult="każdej zmiennej";
+          pluralResult="wszystkich zmiennych";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult="każdej definicji typu";
+          pluralResult="wszystkich definicji typów";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult="każdej sekwencji";
+          pluralResult="wszystkich sekwencji";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult="każdego słownika";
+          pluralResult="wszystkich słowników";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult="każdego wyliczenia";
+          pluralResult="wszystkich wyliczeń";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult="każdej wartości wyliczenia";
+          pluralResult="wszystkich wartości wyliczeń";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=pluralResult;
+      result+=" związanych z ";
+      if (extractAll)
+        result+="przestrzenią nazw dla " + singularResult + ":";
+      else
+        result+="przestrzenią nazw do której należą:";
+      return result;
+    }
+    QCString trDefinition() override  { return "Definicja";}
+    QCString trDeclaration() override { return "Deklaracja";}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*
+      * TODO Verify which one fits best:
+      * * Podrozdział - subchapter
+      * * Sekcja - section
+      * * Temat - topic (doesn't fit well as a standalone word)
+    */
+    QCString trTopics() override
+    { return "Sekcje"; }
+    QCString trTopicDocumentation() override
+    { return "Dokumentacja sekcji"; }
+    QCString trTopicList() override
+    { return "Lista sekcji"; }
+    QCString trTopicIndex() override
+    { return "Indeks sekcji"; }
+    QCString trTopicListDescription() override
+    { return "Tutaj jest lista wszystkich sekcji wraz z ich krótkimi opisami:"; }
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Tutaj jest lista wszystkich ";
+      if (!extractAll) result+="udokumentowanych ";
+      result+="modułów ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="każdej składowej";
+          pluralResult = "wszystkich składowych";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="każdej funkcji";
+          pluralResult = "wszystkich funkcji";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="każdej zmiennej";
+          pluralResult = "wszystkich zmiennych";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="każdej definicji typu";
+          pluralResult = "wszystkich definicji typów";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="każdego wyliczenia";
+          pluralResult = "wszystkich wyliczeń";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="każdej wartości wyliczeń";
+          pluralResult = "wszystkich wartości wyliczeń";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=pluralResult;
+      result+=" związanych z ";
+      if (extractAll)
+        result+="dokumentacją modułu dla " + singularResult + ":";
+      else
+        result+="modułem do którego należą:";
+      return result;
+    }
+    QCString trExportedModules() override
+    {
+      return "Eksportowane moduły";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    {
+      return "Kopiuj do schowka";
+    }
 };
 
 #endif
