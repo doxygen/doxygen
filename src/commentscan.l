@@ -203,8 +203,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   // command name             handler function                   command spacing            section handling
   { "addindex",               { &handleAddIndex,                 CommandSpacing::Invisible, SectionHandling::Allowed }},
   { "addtogroup",             { &handleAddToGroup,               CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "anchor",                 { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
-  { "ianchor",                { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "anchor",                 { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "ianchor",                { &handleAnchor,                   CommandSpacing::Invisible, SectionHandling::Replace }},
   { "arg",                    { 0,                               CommandSpacing::Block,     SectionHandling::Break   }},
   { "attention",              { 0,                               CommandSpacing::Block,     SectionHandling::Break   }},
   { "author",                 { 0,                               CommandSpacing::Block,     SectionHandling::Break   }},
@@ -664,6 +664,7 @@ STopt  [^\n@\\]*
 %x      ReadFormulaRoundSection
 %x      ReadFormulaLong
 %x      AnchorLabel
+%x      AnchorLabelSection
 %x      HtmlComment
 %x      HtmlA
 %x      SkipLang
@@ -1980,6 +1981,21 @@ STopt  [^\n@\\]*
                                                     addOutput(yyscanner,yytext);
                                                     BEGIN(IFileSection);
                                                   }
+                                                  else if ((cmdName == "anchor") || (cmdName == "ianchor"))
+                                                  {
+                                                    addOutput(yyscanner,"@"+cmdName);
+                                                    if (optList.empty())
+                                                    {
+                                                      yyextra -> anchorTitle = "";
+                                                    }
+                                                    else
+                                                    {
+                                                      addOutput(yyscanner,"{"+join(optList," ")+"}");
+                                                      yyextra -> anchorTitle = join(optList," ");
+                                                    }
+                                                    addOutput(yyscanner," ");
+                                                    BEGIN(AnchorLabelSection);
+                                                  }
                                                   else if (cmdName == "link")
                                                   {
                                                     yyextra->sectionTitle+=yytext;
@@ -2049,24 +2065,46 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the anchor command ------- */
 
-<AnchorLabel>{LABELID}                  { // found argument
+<AnchorLabel,AnchorLabelSection>{LABELID} { // found argument
                                           addAnchor(yyscanner,QCString(yytext), yyextra->anchorTitle);
                                           addOutput(yyscanner,yytext);
-                                          BEGIN( Comment );
+                                          if (YY_START == AnchorLabel)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
-<AnchorLabel>{DOCNL}                    { // missing argument
+<AnchorLabel,AnchorLabelSection>{DOCNL} { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
                                               "\\anchor command has no label"
                                               );
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                          BEGIN( Comment );
+                                          if (YY_START == AnchorLabel)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
-<AnchorLabel>.                          { // invalid character for anchor label
+<AnchorLabel,AnchorLabelSection>.       { // invalid character for anchor label
                                           warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing anchor label"
                                               );
-                                          BEGIN(Comment);
+                                          addOutput(yyscanner,yytext);
+                                          if (YY_START == AnchorLabel)
+                                          {
+                                            BEGIN(Comment);
+                                          }
+                                          else
+                                          {
+                                            BEGIN(SectionTitle);
+                                          }
                                         }
 
 
