@@ -386,6 +386,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "endmanonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endrtfonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "endxmlonly",             { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "link",                   { 0,                               CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "endlink",                { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
   { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }}
 };
@@ -674,6 +676,7 @@ STopt  [^\n@\\]*
 %x      RaiseWarning
 %x      RaiseWarningSection
 %x      Qualifier
+%x      LinkSection
 %x      IFile
 %x      IFileSection
 %x      ILine
@@ -1750,6 +1753,31 @@ STopt  [^\n@\\]*
                                           }
                                         }
 
+<LinkSection>[^\\@\n]*                  {
+                                          yyextra->sectionTitle+=yytext;
+                                        }
+<LinkSection>{CMD}{CMD}                 {
+                                          yyextra->sectionTitle+=yytext;
+                                        }
+<LinkSection>{DOCNL}                    {
+                                          addOutput(yyscanner,yytext);
+                                          if (*yytext == '\n') yyextra->lineNr++;
+                                          yyextra->sectionTitle+=yytext;
+                                        }
+<LinkSection>{CMD}"endlink"             {
+                                          yyextra->sectionTitle+=yytext;
+                                          BEGIN(SectionTitle);
+                                        }
+<LinkSection>.                          {
+                                          yyextra->sectionTitle+=yytext;
+                                        }
+<LinkSection><<EOF>>                    {
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                            "reached end of comment while inside a '\\%s' command, missing '\\%s' command",
+                                            "link","endlink"
+                                          );
+                                          yyterminate();
+                                        }
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
 
 <LineParam>{CMD}{CMD}                   { // escaped command
@@ -1951,6 +1979,11 @@ STopt  [^\n@\\]*
                                                     yyextra->sectionTitle+=yytext;
                                                     addOutput(yyscanner,yytext);
                                                     BEGIN(IFileSection);
+                                                  }
+                                                  else if (cmdName == "link")
+                                                  {
+                                                    yyextra->sectionTitle+=yytext;
+                                                    BEGIN(LinkSection);
                                                   }
                                                   else
                                                   {
