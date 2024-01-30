@@ -1,0 +1,48 @@
+* text=auto eol=lf
+
+### Source code
+*.cpp text
+*.hpp text
+*.cc text
+*.c text
+*.h text
+*.py text
+*.pl text
+
+### LaTeX files
+*.tex text
+*.sty text
+
+*.luma text
+*.lum text
+
+### XML Files
+*.xml text
+*.xsd text
+*.l	text
+
+### Webpage files
+*.html text
+*.xhtml text
+*.css text
+*.js text
+
+### Git files
+*.md text
+LICENSE text
+INSTALL text
+VERSION text
+
+### Cmake
+*.cmake
+*.in text
+
+### Protected
+*.exe binary
+*.pyc binary
+*.pdf binary
+*.ico binary
+*.jpg binary
+*.bmp binary
+*.png binary
+*.lib binary 
