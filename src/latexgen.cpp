@@ -2001,9 +2001,19 @@ void LatexGenerator::startParameterName(bool /*oneArgOnly*/)
   m_t << "{";
 }
 
-void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
+void LatexGenerator::endParameterName()
 {
-  m_t << " }";
+  m_t << "}";
+}
+
+void LatexGenerator::startParameterExtra()
+{
+  m_t << "{";
+}
+
+void LatexGenerator::endParameterExtra(bool last,bool /*emptyList*/,bool closeBracket)
+{
+  m_t << "}";
   if (last)
   {
     m_t << "\\end{DoxyParamCaption}";

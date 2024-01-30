@@ -1136,10 +1136,14 @@ bool VhdlDocGen::writeFuncProcDocu(
     else
     {
       //    ol.docify(" ) ");
-      ol.endParameterName(TRUE,FALSE,TRUE);
+      ol.endParameterName();
+      ol.startParameterExtra();
+      ol.endParameterExtra(true,false,true);
       break;
     }
-    ol.endParameterName(FALSE,FALSE,FALSE);
+    ol.endParameterName();
+    ol.startParameterExtra();
+    ol.endParameterExtra(false,false,false);
 
     //sem=TRUE;
     first=FALSE;
@@ -2296,13 +2300,15 @@ void VhdlDocGen::writeRecUnitDocu(
     ol.endParameterType();
     ol.startParameterName(TRUE);
     VhdlDocGen::formatString(n,ol,md);
+    ol.endParameterName();
+    ol.startParameterExtra();
     if ((len-i)>1)
     {
-      ol.endParameterName(FALSE,FALSE,FALSE);
+      ol.endParameterExtra(false,false,false);
     }
     else
     {
-      ol.endParameterName(TRUE,FALSE,TRUE);
+      ol.endParameterExtra(true,false,true);
     }
 
     first=FALSE;

@@ -996,12 +996,18 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 //     ol.startParameterType(first=TRUE)
 //     ol.endParameterType
 //     ol.startParameterName
-//     ol.endParameterName(last==FALSE)
+//     ol.endParameterName
+//     ol.startParameterExtra
+//     ol.startParameterDefVal       [optional]
+//     ol.endParameterDefVal         [optional]
+//     ol.endParameterExtra(last==FALSE)
 //     ...
 //     ol.startParameterType(first=FALSE)
 //     ol.endParameterType
 //     ol.startParameterName
-//     ol.endParameterName(last==TRUE)
+//     ol.endParameterName
+//     ol.startParameterExtra
+//     ol.endParameterExtra(last==TRUE)
 //     ...
 //   --- leave writeDefArgumentList with return value TRUE
 //   ol.endParameterList
@@ -1030,30 +1036,8 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   if (!md->isDefine()) ol.docify(" ");
 
   //printf("writeDefArgList(%d)\n",defArgList->count());
-  ol.pushGeneratorState();
-  //ol.disableAllBut(OutputType::Html);
-  bool htmlOn  = ol.isEnabled(OutputType::Html);
-  bool latexOn = ol.isEnabled(OutputType::Latex);
-  bool docbookOn = ol.isEnabled(OutputType::Docbook);
-  {
-    // html and latex
-    if (htmlOn)  ol.enable(OutputType::Html);
-    if (latexOn) ol.enable(OutputType::Latex);
-    if (docbookOn) ol.enable(OutputType::Docbook);
-
-    ol.endMemberDocName();
-    ol.startParameterList(!md->isObjCMethod());
-  }
-  ol.enableAll();
-  ol.disable(OutputType::Html);
-  ol.disable(OutputType::Latex);
-  ol.disable(OutputType::Docbook);
-  {
-    // other formats
-    if (!md->isObjCMethod()) ol.docify("("); // start argument list
-    ol.endMemberDocName();
-  }
-  ol.popGeneratorState();
+  ol.endMemberDocName();
+  ol.startParameterList(!md->isObjCMethod());
   //printf("===> name=%s isDefine=%d\n",qPrint(md->name()),md->isDefine());
 
   QCString cName;
@@ -1080,6 +1064,8 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   }
   //printf("~~~ %s cName=%s\n",qPrint(md->name()),qPrint(cName));
 
+  QCString sep = getLanguageSpecificSeparator(md->getLanguage(),true);
+
   bool first=TRUE;
   bool paramTypeStarted=FALSE;
   bool isDefine = md->isDefine();
@@ -1090,7 +1076,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     if (isDefine || first)
     {
       ol.startParameterType(first,QCString());
-      paramTypeStarted=TRUE;
+      paramTypeStarted=true;
       if (isDefine)
       {
         ol.endParameterType();
@@ -1103,21 +1089,22 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       ol.docify(a.attrib+" ");
     }
 
+    QCString atype = a.type;
+    if (sep!="::") { atype=substitute(atype,"::",sep); }
+
+    int funcPtrPos=-1;
     {
-      QCString n=a.type;
-      if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
-      if (a.type!="...")
+      if (md->isObjCMethod()) { atype.prepend("("); atype.append(")"); }
+      if (atype!="...")
       {
         if (!cName.isEmpty() && scope && scope!=Doxygen::globalScope)
         {
-          n=addTemplateNames(n,scope->name(),cName);
+          atype=addTemplateNames(atype,scope->name(),cName);
         }
-        QCString sep = getLanguageSpecificSeparator(md->getLanguage(),true);
-        if (sep!="::")
-        {
-          n=substitute(n,"::",sep);
-        }
-        linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
+        funcPtrPos = atype.find("*)(");
+        if (funcPtrPos!=-1) funcPtrPos++;
+        linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,
+                    funcPtrPos==-1 ? atype : atype.left(funcPtrPos));
       }
     }
 
@@ -1130,26 +1117,32 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       }
       ol.startParameterName(defArgList.size()<2);
     }
-    if (!a.name.isEmpty() || a.type=="...") // argument has a name
+    else
     {
-      ol.disable(OutputType::Latex);
-      ol.disable(OutputType::Docbook);
-      ol.disable(OutputType::Html);
-      ol.docify(" "); /* man page */
-      if (htmlOn) ol.enable(OutputType::Html);
-      ol.disable(OutputType::Man);
-      ol.startEmphasis();
-      ol.enable(OutputType::Man);
-      if (latexOn) ol.enable(OutputType::Latex);
-      if (docbookOn) ol.enable(OutputType::Docbook);
-      if (a.name.isEmpty()) ol.docify(a.type); else ol.docify(a.name);
-      ol.disable(OutputType::Man);
-      ol.disable(OutputType::Latex);
-      ol.disable(OutputType::Docbook);
-      ol.endEmphasis();
-      ol.enable(OutputType::Man);
-      if (latexOn) ol.enable(OutputType::Latex);
-      if (docbookOn) ol.enable(OutputType::Docbook);
+      ol.endParameterName();
+    }
+
+    if (atype=="...")
+    {
+      ol.docify(atype);
+    }
+    else if (!a.name.isEmpty()) // argument has a name
+    {
+      ol.docify(a.name);
+    }
+    if (!isDefine)
+    {
+      if (funcPtrPos!=-1)
+      {
+        ol.writeNonBreakableSpace(1);
+      }
+      ol.endParameterName();
+    }
+    ol.startParameterExtra();
+    if (funcPtrPos!=-1)
+    {
+      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,
+                  atype.mid(funcPtrPos));
     }
     if (!a.array.isEmpty())
     {
@@ -1163,12 +1156,8 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         n=addTemplateNames(n,scope->name(),cName);
       }
       ol.startParameterDefVal(" = ");
-      //ol.docify(" = ");
-      //ol.startTypewriter();
       linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n,FALSE,TRUE,TRUE);
-      //ol.endTypewriter();
       ol.endParameterDefVal();
-
     }
     ++alIt;
     if (alIt!=defArgList.end())
@@ -1185,7 +1174,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
           key=a.attrib.mid(1,a.attrib.length()-2);
           if (key!=",") key+=":"; // for normal keywords add colon
         }
-        ol.endParameterName(FALSE,FALSE,!md->isObjCMethod());
+        ol.endParameterExtra(false,false,!md->isObjCMethod());
         if (paramTypeStarted)
         {
           ol.endParameterType();
@@ -1195,23 +1184,15 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       }
       else // isDefine
       {
-        ol.endParameterName(FALSE,FALSE,TRUE);
+        ol.endParameterExtra(false,false,true);
       }
     }
     first=FALSE;
   }
-  ol.pushGeneratorState();
-  ol.disable(OutputType::Html);
-  ol.disable(OutputType::Latex);
-  ol.disable(OutputType::Docbook);
-  if (!md->isObjCMethod()) ol.docify(")"); // end argument list
-  ol.enableAll();
-  if (htmlOn) ol.enable(OutputType::Html);
-  if (latexOn) ol.enable(OutputType::Latex);
-  if (docbookOn) ol.enable(OutputType::Docbook);
   if (first) ol.startParameterName(defArgList.size()<2);
-  ol.endParameterName(TRUE,defArgList.size()<2,!md->isObjCMethod());
-  ol.popGeneratorState();
+  ol.endParameterName();
+  ol.startParameterExtra();
+  ol.endParameterExtra(TRUE,defArgList.size()<2,!md->isObjCMethod());
   if (!md->extraTypeChars().isEmpty())
   {
     ol.docify(md->extraTypeChars());

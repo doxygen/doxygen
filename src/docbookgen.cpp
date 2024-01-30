@@ -1061,14 +1061,25 @@ DB_GEN_C
   m_t << " ";
 }
 
-void DocbookGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
+void DocbookGenerator::endParameterName()
 {
 DB_GEN_C
-  if (last)
+}
+
+void DocbookGenerator::startParameterExtra()
+{
+DB_GEN_C
+}
+
+void DocbookGenerator::endParameterExtra(bool last,bool /*emptyList*/,bool closeBracket)
+{
+DB_GEN_C
+  if (last && closeBracket)
   {
-    if (closeBracket) m_t << ")";
+    m_t << ")";
   }
 }
+
 
 void DocbookGenerator::startParameterDefVal(const char *sep)
 {

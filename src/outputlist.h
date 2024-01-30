@@ -492,6 +492,8 @@ namespace OutputGenIntf
   template<class T> struct endParameterType            { static constexpr auto method = &T::endParameterType;            };
   template<class T> struct startParameterName          { static constexpr auto method = &T::startParameterName;          };
   template<class T> struct endParameterName            { static constexpr auto method = &T::endParameterName;            };
+  template<class T> struct startParameterExtra         { static constexpr auto method = &T::startParameterExtra;         };
+  template<class T> struct endParameterExtra           { static constexpr auto method = &T::endParameterExtra;           };
   template<class T> struct startParameterDefVal        { static constexpr auto method = &T::startParameterDefVal;        };
   template<class T> struct endParameterDefVal          { static constexpr auto method = &T::endParameterDefVal;          };
   template<class T> struct startParameterList          { static constexpr auto method = &T::startParameterList;          };
@@ -872,8 +874,12 @@ class OutputList
     { foreach<OutputGenIntf::endParameterType>(); }
     void startParameterName(bool one)
     { foreach<OutputGenIntf::startParameterName>(one); }
-    void endParameterName(bool last,bool one,bool bracket)
-    { foreach<OutputGenIntf::endParameterName>(last,one,bracket); }
+    void endParameterName()
+    { foreach<OutputGenIntf::endParameterName>(); }
+    void startParameterExtra()
+    { foreach<OutputGenIntf::startParameterExtra>(); }
+    void endParameterExtra(bool last,bool one,bool bracket)
+    { foreach<OutputGenIntf::endParameterExtra>(last,one,bracket); }
     void startParameterDefVal(const char *separator)
     { foreach<OutputGenIntf::startParameterDefVal>(separator); }
     void endParameterDefVal()

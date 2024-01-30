@@ -269,7 +269,9 @@ class HtmlGenerator : public OutputGenerator
     void startParameterType(bool first,const QCString &key);
     void endParameterType();
     void startParameterName(bool);
-    void endParameterName(bool last,bool emptyList,bool closeBracket);
+    void endParameterName();
+    void startParameterExtra();
+    void endParameterExtra(bool last,bool emptyList,bool closeBracket);
     void startParameterDefVal(const char *sep);
     void endParameterDefVal();
     void startParameterList(bool);

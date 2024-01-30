@@ -2306,13 +2306,23 @@ void HtmlGenerator::endParameterType()
 void HtmlGenerator::startParameterName(bool /*oneArgOnly*/)
 {
   DBG_HTML(m_t << "<!-- startParameterName -->\n";)
-  m_t << "          <td class=\"paramname\"><span class=\"paramname\">";
+  m_t << "          <td class=\"paramname\"><span class=\"paramname\"><em>";
 }
 
-void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
+void HtmlGenerator::endParameterName()
 {
   DBG_HTML(m_t << "<!-- endParameterName -->\n";)
-  m_t << "</span>";
+  m_t << "</em></span>";
+}
+
+void HtmlGenerator::startParameterExtra()
+{
+  DBG_HTML(m_t << "<!-- startParameterExtra -->\n";)
+}
+
+void HtmlGenerator::endParameterExtra(bool last,bool emptyList, bool closeBracket)
+{
+  DBG_HTML(m_t << "<!-- endParameterExtra -->\n";)
   if (last)
   {
     if (emptyList)

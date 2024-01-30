@@ -232,7 +232,9 @@ class ManGenerator : public OutputGenerator
     void startParameterType(bool,const QCString &) {}
     void endParameterType() {}
     void startParameterName(bool) {}
-    void endParameterName(bool,bool,bool) {}
+    void endParameterName() {}
+    void startParameterExtra() {}
+    void endParameterExtra(bool,bool,bool) {}
     void startParameterDefVal(const char *s) { docify(s); startTypewriter(); }
     void endParameterDefVal() { endTypewriter(); }
     void startParameterList(bool) {}
