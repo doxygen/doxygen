@@ -124,6 +124,7 @@ TranslatorPolish
 Piotr Kaminski: [unreachable] Piotr dot Kaminski at ctm dot gdynia dot pl
 Grzegorz Kowal: [unreachable] g_kowal at poczta dot onet dot pl
 Krzysztof Kral: krzysztof dot kral at gmail dot com
+Marek Ledworowski: mledworo at gmail dot com
 
 TranslatorPortuguese
 Rui Godinho Lopes: [resigned] rgl at ruilopes dot com
