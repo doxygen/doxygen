@@ -34,7 +34,7 @@ INSTALL text
 VERSION text
 
 ### Cmake
-*.cmake
+*.cmake text
 *.in text
 
 ### Protected
