@@ -268,6 +268,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "ifnot",                  { &handleIfNot,                    CommandSpacing::Inline,    SectionHandling::Break   }},
   { "image",                  { &handleImage,                    CommandSpacing::Block,     SectionHandling::Break   }},
   { "implements",             { &handleExtends,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "important",              { 0,                               CommandSpacing::Block,     SectionHandling::Break   }},
   { "include",                { 0,                               CommandSpacing::Block,     SectionHandling::Break   }},
   { "includedbygraph",        { &handleIncludedBygraph,          CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "includegraph",           { &handleIncludegraph,             CommandSpacing::Invisible, SectionHandling::Escape  }},

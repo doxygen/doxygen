@@ -811,6 +811,7 @@ void PerlModDocVisitor::operator()(const DocSimpleSect &s)
   case DocSimpleSect::Invar:		type = "invariant"; break;
   case DocSimpleSect::Remark:		type = "remark"; break;
   case DocSimpleSect::Attention:	type = "attention"; break;
+  case DocSimpleSect::Important:	type = "important"; break;
   case DocSimpleSect::User:		type = "par"; break;
   case DocSimpleSect::Rcs:		type = "rcs"; break;
   case DocSimpleSect::Unknown:

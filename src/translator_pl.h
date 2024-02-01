@@ -17,14 +17,14 @@
  * Piotr Kaminski (Piotr.Kaminski@ctm.gdynia.pl)
  * Polish translation was updated since version 1.4.6 by
  * Krzysztof Kral (krzysztof.kral@gmail.com)
- * Polish translation was updated to version 1.11.0 by
+ * Polish translation was updated to version 1.10.0 by
  * Marek Ledworowski (mledworo@gmail.com)
  */
 
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public Translator
+class TranslatorPolish : public TranslatorAdapter_1_11_0
 {
   public:
 

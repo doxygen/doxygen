@@ -1198,6 +1198,7 @@ class DoxSimpleSectKind(str, Enum):
     INVARIANT='invariant'
     REMARK='remark'
     ATTENTION='attention'
+    IMPORTANT='important'
     PAR='par'
     RCS='rcs'
 
@@ -16726,7 +16727,7 @@ class docSimpleSectType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['see', 'return', 'author', 'authors', 'version', 'since', 'date', 'note', 'warning', 'pre', 'post', 'copyright', 'invariant', 'remark', 'attention', 'par', 'rcs']
+            enumerations = ['see', 'return', 'author', 'authors', 'version', 'since', 'date', 'note', 'warning', 'pre', 'post', 'copyright', 'invariant', 'remark', 'attention', 'important', 'par', 'rcs']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxSimpleSectKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )

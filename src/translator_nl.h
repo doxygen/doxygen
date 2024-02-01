@@ -2312,6 +2312,15 @@ class TranslatorDutch : public Translator
     {
       return "Kopiëren naar het klembord";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    {
+      return "Belangrijk";
+    }
 };
 
 #endif
