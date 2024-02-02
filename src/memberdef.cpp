@@ -1189,9 +1189,12 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     }
     first=FALSE;
   }
-  if (first) ol.startParameterName(defArgList.size()<2);
-  ol.endParameterName();
-  ol.startParameterExtra();
+  if (first)
+  {
+    ol.startParameterName(defArgList.size()<2);
+    ol.endParameterName();
+    ol.startParameterExtra();
+  }
   ol.endParameterExtra(TRUE,defArgList.size()<2,!md->isObjCMethod());
   if (!md->extraTypeChars().isEmpty())
   {
