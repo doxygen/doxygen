@@ -834,6 +834,10 @@ void LatexDocVisitor::operator()(const DocSimpleSect &s)
       m_t << "\\begin{DoxyAttention}{";
       filter(theTranslator->trAttention());
       break;
+    case DocSimpleSect::Important:
+      m_t << "\\begin{DoxyImportant}{";
+      filter(theTranslator->trImportant());
+      break;
     case DocSimpleSect::User:
       m_t << "\\begin{DoxyParagraph}{";
       break;
@@ -898,6 +902,9 @@ void LatexDocVisitor::operator()(const DocSimpleSect &s)
       break;
     case DocSimpleSect::Attention:
       m_t << "\n\\end{DoxyAttention}\n";
+      break;
+    case DocSimpleSect::Important:
+      m_t << "\n\\end{DoxyImportant}\n";
       break;
     case DocSimpleSect::User:
       m_t << "\n\\end{DoxyParagraph}\n";

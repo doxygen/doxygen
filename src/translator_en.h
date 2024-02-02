@@ -2632,6 +2632,13 @@ class TranslatorEnglish : public Translator
     {
       return "Copy to clipboard";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Important";
+    }
 };
 
 #endif

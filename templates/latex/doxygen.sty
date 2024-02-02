@@ -236,6 +236,13 @@
   \end{DoxyDesc}%
 }
 
+% Used by @important
+\newenvironment{DoxyImportant}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
 % Used by @author and @authors
 \newenvironment{DoxyAuthor}[1]{%
   \begin{DoxyDesc}{#1}%

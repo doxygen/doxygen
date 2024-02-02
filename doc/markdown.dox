@@ -758,6 +758,28 @@ new lines are allowed.
 Also for links there are limits; the link text, and link title each can
 contain only one new line, the URL may not contain any newlines.
 
+\subsection mddox_github_alerts Support for GitHub Alerts
+
+In the GitHub version of markdown there is the support for so called alerts, the
+syntax is similar to a one level block quote followied by `[!<alert>]` where
+`<alert>` can be one of `note`, `warning`, `tip`, `caution` or `important`.
+In doxygen these alerts are translated into normal doxygen commands:
+- `> [!note]` is translated to \ref cmdnote "\\note"
+- `> [!warning]` is translated to \ref cmdwarning "\\warning"
+- `> [!tip]` is translated to \ref cmdremark "\\remark"
+- `> [!caution]` is translated to \ref cmdattention "\\attention"
+- `> [!important]` is translated to \ref cmdimportant "\\important"
+
+Example:
+```
+> [!note]
+> The special text for the note
+```
+which will render as:
+
+> [!note]
+> The special text for the note
+
 \section markdown_debug Debugging problems
 
 When doxygen parses the source code it first extracts the comments blocks,

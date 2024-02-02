@@ -1224,7 +1224,7 @@ dl.note {
   border-color: #D0C000;
 }
 
-dl.warning, dl.attention {
+dl.warning, dl.attention, dl.important {
   margin-left: -7px;
   padding-left: 3px;
   border-left: 4px solid;
@@ -1272,7 +1272,7 @@ dl.bug dt a, dl.deprecated dt a, dl.todo dt a, dl.test a {
     font-weight: bold !important;
 }
 
-dl.warning, dl.attention, dl.note, dl.deprecated, dl.bug,
+dl.warning, dl.attention, dl.important, dl.note, dl.deprecated, dl.bug,
 dl.invariant, dl.pre, dl.post, dl.todo, dl.test, dl.remark {
     padding: 10px;
     margin: 10px 0px;
@@ -1285,13 +1285,13 @@ dl.section dd {
     margin-bottom: 2px;
 }
 
-dl.warning, dl.attention {
+dl.warning, dl.attention, dl.important {
     background: var(--warning-color-bg);
     border-left: 8px solid var(--warning-color-hl);
     color: var(--warning-color-text);
 }
 
-dl.warning dt, dl.attention dt {
+dl.warning dt, dl.attention dt, dl.important dt {
     color: var(--warning-color-hl);
 }
 
@@ -1350,7 +1350,7 @@ dl.deprecated dt a {
 }
 
 dl.note dd, dl.warning dd, dl.pre dd, dl.post dd,
-dl.remark dd, dl.attention dd, dl.invariant dd,
+dl.remark dd, dl.attention dd, dl.important dd, dl.invariant dd,
 dl.bug dd, dl.deprecated dd, dl.todo dd, dl.test dd {
     margin-inline-start: 0px;
 }

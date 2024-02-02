@@ -138,6 +138,7 @@ documentation:
 \refitem cmdifnot \\ifnot
 \refitem cmdimage \\image
 \refitem cmdimplements \\implements
+\refitem cmdimportant \\important
 \refitem cmdinclude \\include
 \refitem cmdincludedoc \\includedoc
 \refitem cmdincludedbygraph \\includedbygraph
@@ -835,7 +836,7 @@ Structural indicators
   (i.e. the line after \c \\file is left blank) then the documentation block that
   contains the \c \\file command will belong to the file it is located in.
 
-  \par Important:
+  \important
   The documentation of global functions, variables, typedefs, and enums will
   only be included in the output if the file they are in is documented as well
   or if \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES.
@@ -1983,6 +1984,18 @@ ALIASES  = "english=\if english" \
                \ref cmdelse "\\else", and \ref cmdelseif "\\elseif",
                \ref cmdcond "\\cond", \ref cmdendcond "\\endcond", and
                \ref cfg_enabled_sections "ENABLED_SECTIONS".
+
+<hr>
+\section cmdimportant \\important { important text }
+
+  \addindex \\important
+  Starts a paragraph where a message that needs important may be entered.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\important commands will be joined into a single paragraph.
+  The \c \\important command ends when a blank line or some other
+  sectioning command is encountered.
 
 <hr>
 \section cmdinvariant \\invariant { description of invariant }
