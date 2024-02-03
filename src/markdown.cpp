@@ -2703,6 +2703,8 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   int curLevel=0;
   size_t end=0;
   const size_t size = data.size();
+  QCString startCmd;
+  int isGitHubAlert = false;
   while (i<size)
   {
     // find end of this line
@@ -2726,29 +2728,66 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       j--;
     }
     if (!level && data[j-1]!='\n') level=curLevel; // lazy
+    if (level == 1) 
+    {
+      QCString txt = data.substr(indent,end-indent);
+      txt = txt.lower().stripWhiteSpace();
+      if (txt == "[!note]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\note ";
+      }
+      else if (txt == "[!warning]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\warning ";
+      }
+      else if (txt == "[!tip]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\remark ";
+      }
+      else if (txt == "[!caution]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\attention ";
+      }
+      else if (txt == "[!important]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\important ";
+      }
+    }
     if (level>curLevel) // quote level increased => add start markers
     {
-      for (int l=curLevel;l<level-1;l++)
+      if (level != 1 || !isGitHubAlert)
       {
-        out+="<blockquote>";
+        for (int l=curLevel;l<level-1;l++)
+        {
+          out+="<blockquote>";
+        }
       }
-      out+="<blockquote>&zwj;"; // empty blockquotes are also shown
+      if (level != 1 || !isGitHubAlert) out+="<blockquote>&zwj;"; // empty blockquotes are also shown
+      else out += startCmd;
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
-      for (int l=level;l<curLevel;l++)
+      int decrLevel = curLevel - (level==0 && isGitHubAlert ? 1 : 0);
+      for (int l=level;l<decrLevel;l++)
       {
         out+="</blockquote>";
       }
     }
-    curLevel=level;
     if (level==0) break; // end of quote block
     // copy line without quotation marks
-    out+=data.substr(indent,end-indent);
+    if (curLevel != 0 || !isGitHubAlert) out+=data.substr(indent,end-indent);
+    else out+= "\n";
+    curLevel=level;
     // proceed with next line
     i=end;
   }
   // end of comment within blockquote => add end markers
+  if (isGitHubAlert) curLevel--;
   for (int l=0;l<curLevel;l++)
   {
     out+="</blockquote>";

@@ -54,6 +54,7 @@ static const CommandMap g_cmdMap =
   { "htmlinclude",   CMD_HTMLINCLUDE },
   { "htmlonly",      CMD_HTMLONLY },
   { "image",         CMD_IMAGE },
+  { "important",     CMD_IMPORTANT },
   { "include",       CMD_INCLUDE },
   { "internal",      CMD_INTERNAL },
   { "invariant",     CMD_INVARIANT },

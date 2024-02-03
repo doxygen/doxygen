@@ -2920,6 +2920,7 @@ QCString DocSimpleSect::typeString() const
     case Invar:      return "invariant";
     case Remark:     return "remark";
     case Attention:  return "attention";
+    case Important:  return "important";
     case User:       return "user";
     case Rcs:        return "rcs";
   }
@@ -3990,6 +3991,9 @@ int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CMD_ATTENTION:
       retval = handleSimpleSection(DocSimpleSect::Attention);
+      break;
+    case CMD_IMPORTANT:
+      retval = handleSimpleSection(DocSimpleSect::Important);
       break;
     case CMD_PAR:
       retval = handleSimpleSection(DocSimpleSect::User);

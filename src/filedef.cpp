@@ -548,7 +548,7 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
       ol.enable(OutputType::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
-          !documentation().isEmpty()
+          !documentation().stripWhiteSpace().isEmpty()
          )
       {
         ol.disableAllBut(OutputType::Html);

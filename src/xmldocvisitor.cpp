@@ -66,6 +66,8 @@ static void startSimpleSect(TextStream &t,const DocSimpleSect &s)
       t << "remark"; break;
     case DocSimpleSect::Attention:
       t << "attention"; break;
+    case DocSimpleSect::Important:
+      t << "important"; break;
     case DocSimpleSect::User:
       t << "par"; break;
     case DocSimpleSect::Rcs:

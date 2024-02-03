@@ -154,6 +154,7 @@ enum CommandType
   CMD_ENDIVERBATIM = 124,
   CMD_IANCHOR      = 125,
   CMD_DOXYCONFIG   = 126,
+  CMD_IMPORTANT    = 127 | SIMPLESECT_BIT,
 };
 
 enum HtmlTagType

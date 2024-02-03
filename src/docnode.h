@@ -977,7 +977,8 @@ class DocSimpleSect : public DocCompoundNode
     enum Type
     {
        Unknown, See, Return, Author, Authors, Version, Since, Date,
-       Note, Warning, Copyright, Pre, Post, Invar, Remark, Attention, User, Rcs
+       Note, Warning, Copyright, Pre, Post, Invar, Remark, Attention, Important,
+       User, Rcs
     };
     DocSimpleSect(DocParser *parser,DocNodeVariant *parent,Type t);
     Type type() const       { return m_type; }
