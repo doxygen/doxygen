@@ -5261,23 +5261,23 @@ static const ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
 // Returns TRUE, if the entry belongs to the group of the member definition,
 // otherwise FALSE.
 
-static bool isEntryInGroupOfMember(const Entry *root,const MemberDef *md)
+static bool isEntryInGroupOfMember(const Entry *root,const MemberDef *md,bool allowNoGroup=false)
 {
   const GroupDef *gd = md->getGroupDef();
   if (!gd)
   {
-    return FALSE;
+    return allowNoGroup;
   }
 
   for (const auto &g : root->groups)
   {
     if (g.groupname == gd->name())
     {
-      return TRUE;
+      return true; // matching group
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 //----------------------------------------------------------------------
@@ -5311,11 +5311,13 @@ static bool findGlobalMember(const Entry *root,
     for (const auto &md : *mn)
     {
       // If the entry has groups, then restrict the search to members which are
-      // in one of the groups of the entry.
-      if (!root->groups.empty() && !isEntryInGroupOfMember(root, md.get()))
+      // in one of the groups of the entry. If md is not associated with a group yet,
+      // allow this documentation entry to add the group info.
+      if (!root->groups.empty() && !isEntryInGroupOfMember(root, md.get(), true))
       {
         continue;
       }
+
       const NamespaceDef *nd=nullptr;
       if (md->isAlias() && md->getOuterScope() &&
           md->getOuterScope()->definitionType()==Definition::TypeNamespace)
