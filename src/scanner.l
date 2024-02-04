@@ -1238,6 +1238,20 @@ NONLopt [^\n]*
                                           }
                                           REJECT;
                                         }
+<FindMembers>{B}*"consteval"{BN}+       {
+                                          if (yyextra->insideCpp)
+                                          {
+                                            yyextra->current->spec.setConstEval(true);
+                                          }
+                                          REJECT;
+                                        }
+<FindMembers>{B}*"constinit"{BN}+       {
+                                          if (yyextra->insideCpp)
+                                          {
+                                            yyextra->current->spec.setConstInit(true);
+                                          }
+                                          REJECT;
+                                        }
 <FindMembers>{B}*"published"{BN}+       { // UNO IDL published keyword
                                           if (yyextra->insideIDL)
                                           {
@@ -2504,6 +2518,30 @@ NONLopt [^\n]*
                                                 else
                                                 {
                                                   yyextra->current->type+="constexpr ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(10);
+                                              }
+                                              else if (yyextra->current->name.startsWith("consteval "))
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="consteval";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="consteval ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(10);
+                                              }
+                                              else if (yyextra->current->name.startsWith("constinit "))
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="constinit";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="constinit ";
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(10);
                                               }
