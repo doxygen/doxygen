@@ -32,6 +32,7 @@ typedef yyguts_t *yyscan_t;
 #include <stack>
 #include <algorithm>
 #include <deque>
+#include <string_view>
 
 #include "bufstr.h"
 #include "debug.h"
@@ -133,7 +134,7 @@ static inline void copyToOutput(yyscan_t yyscanner,const char *s,size_t len);
 static void startCondSection(yyscan_t yyscanner,const QCString &sectId);
 static void endCondSection(yyscan_t yyscanner);
 static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
-static void replaceAliases(yyscan_t yyscanner,const QCString &s);
+static void replaceAliases(yyscan_t yyscanner,std::string_view s);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
@@ -381,7 +382,7 @@ SLASHopt [/]*
 				       }
 				       yyextra->blockHeadCol=yyextra->col;
 				       copyToOutput(yyscanner,"/**",3);
-				       replaceAliases(yyscanner,QCString(yytext+i));
+				       replaceAliases(yyscanner,yytext+i);
 				       yyextra->inSpecialComment=TRUE;
 				       //BEGIN(SComment);
 				       yyextra->readLineCtx=SComment;
@@ -393,7 +394,7 @@ SLASHopt [/]*
                                      int i=17; //=strlen("//##Documentation");
 				     yyextra->blockHeadCol=yyextra->col;
 				     copyToOutput(yyscanner,"/**",3);
-				     replaceAliases(yyscanner,QCString(yytext+i));
+				     replaceAliases(yyscanner,yytext+i);
 				     yyextra->inRoseComment=TRUE;
 				     BEGIN(SComment);
   				   }
@@ -1076,7 +1077,7 @@ SLASHopt [/]*
 				     if (*yytext=='\n') { yyextra->lineNr++; copyToOutput(yyscanner,"\n",1);}
   				   }
 <CComment,ReadLine,IncludeFile>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
-				     replaceAliases(yyscanner,QCString(yytext));
+				     replaceAliases(yyscanner,yytext);
   				   }
 <CComment,ReadLine,IncludeFile>[\\@][a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
                                      yyextra->lastBlockContext=YY_START;
@@ -1123,7 +1124,7 @@ SLASHopt [/]*
 				     if (!yyextra->lastEscaped) yyextra->blockCount--;
 				     if (yyextra->blockCount==0)
 				     {
-				       replaceAliases(yyscanner,yyextra->aliasString);
+				       replaceAliases(yyscanner,yyextra->aliasString.view());
 				       BEGIN( yyextra->lastBlockContext );
 				     }
 				     yyextra->lastEscaped=FALSE;
@@ -1483,9 +1484,9 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
 /** copies string \a s with length \a len to the output, while
  *  replacing any alias commands found in the string.
  */
-static void replaceAliases(yyscan_t yyscanner,const QCString &s)
+static void replaceAliases(yyscan_t yyscanner,std::string_view s)
 {
-  QCString result = resolveAliasCmd(s);
+  std::string result = resolveAliasCmd(s);
   //printf("replaceAliases(%s)->'%s'\n",qPrint(s),qPrint(result));
   copyToOutput(yyscanner,result.data(),result.length());
 }

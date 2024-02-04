@@ -3862,7 +3862,7 @@ int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       {
         std::string str{cmdChar};
         children().append<DocWord>(parser(),thisVariant(),str.c_str() + cmdName);
-        if (isAliasCmd(cmdName))
+        if (isAliasCmd(cmdName.view()))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Found unexpanded alias '%c%s'. Check if number of arguments passed is correct.",cmdChar,qPrint(cmdName));
         }
