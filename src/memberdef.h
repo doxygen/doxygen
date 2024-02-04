@@ -187,6 +187,8 @@ class MemberDef : public Definition
     virtual bool livesInsideEnum() const = 0;
     virtual bool isSliceLocal() const = 0;
     virtual bool isConstExpr() const = 0;
+    virtual bool isConstEval() const = 0;
+    virtual bool isConstInit() const = 0;
     virtual int  numberOfFlowKeyWords() const = 0;
 
     // derived getters

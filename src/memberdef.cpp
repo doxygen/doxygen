@@ -179,6 +179,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool livesInsideEnum() const override;
     bool isSliceLocal() const override;
     bool isConstExpr() const override;
+    bool isConstEval() const override;
+    bool isConstInit() const override;
     int  numberOfFlowKeyWords() const override;
     bool isFriendToHide() const override;
     bool isNotFriend() const override;
@@ -775,6 +777,10 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isSliceLocal(); }
     bool isConstExpr() const override
     { return getMdAlias()->isConstExpr(); }
+    bool isConstEval() const override
+    { return getMdAlias()->isConstEval(); }
+    bool isConstInit() const override
+    { return getMdAlias()->isConstInit(); }
     int  numberOfFlowKeyWords() const override
     { return getMdAlias()->numberOfFlowKeyWords(); }
     bool isFriendToHide() const override
@@ -2798,6 +2804,8 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
           if    (isPrivateSettable())                   sl.push_back("private set");
         }
         if      (isConstExpr())                         sl.push_back("constexpr");
+        if      (isConstEval())                         sl.push_back("consteval");
+        if      (isConstInit())                         sl.push_back("constinit");
         if      (isAddable())                           sl.push_back("add");
         if      (!isUNOProperty() && isRemovable())     sl.push_back("remove");
         if      (isRaisable())                          sl.push_back("raise");
@@ -5489,6 +5497,16 @@ bool MemberDefImpl::isSliceLocal() const
 bool MemberDefImpl::isConstExpr() const
 {
   return m_memSpec.isConstExpr();
+}
+
+bool MemberDefImpl::isConstEval() const
+{
+  return m_memSpec.isConstEval();
+}
+
+bool MemberDefImpl::isConstInit() const
+{
+  return m_memSpec.isConstInit();
 }
 
 const MemberVector &MemberDefImpl::enumFieldList() const
