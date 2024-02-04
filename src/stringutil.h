@@ -23,7 +23,7 @@
  *  @brief Some helper functions for std::string
  */
 
-/** Replaces occurences of substring \a toReplace in string \a s with string \a replaceWith.
+/** Replaces occurrences of substring \a toReplace in string \a s with string \a replaceWith.
  *  Modifies \a s in place.
  */
 inline void substituteInplace(std::string &s,
@@ -44,7 +44,7 @@ inline void substituteInplace(std::string &s,
   s.swap(buf);
 }
 
-/** Returns a new string where occurences of substring \a toReplace in string \a s are replaced by
+/** Returns a new string where occurrences of substring \a toReplace in string \a s are replaced by
  *  string \a replaceWith.
  */
 inline std::string substituteStringView(std::string_view &s,
