@@ -26,6 +26,8 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20240204:
+ *  - Updated to 1.11.0:
  * 20231107:
  *  - Updated to 1.10.0:
  * 20230817:
@@ -79,7 +81,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public TranslatorAdapter_1_11_0
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -2713,6 +2715,13 @@ class TranslatorPortuguese : public TranslatorAdapter_1_11_0
     QCString trCopyToClipboard() override
     {
       return "Copiado para a área de transferência";
+    }    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Importante";
     }    
 };
 

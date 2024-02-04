@@ -19,6 +19,8 @@
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
+ * 20240204:
+ *  - Updated to 1.11.0:
  * 20231107:
  *  - Updated to 1.10.0:
  * 20230817:
@@ -166,7 +168,7 @@ namespace PortugueseTranslatorUtils
     }
 }
 
-class TranslatorBrazilian : public TranslatorAdapter_1_11_0
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -2851,6 +2853,13 @@ class TranslatorBrazilian : public TranslatorAdapter_1_11_0
     {
       return "Copiado para a área de transferência";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Importante";
+    }    
 };
 
 #endif
