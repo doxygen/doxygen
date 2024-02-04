@@ -44,6 +44,28 @@ inline void substituteInplace(std::string &s,
   s.swap(buf);
 }
 
+/** Returns a new string where occurences of substring \a toReplace in string \a s are replaced by
+ *  string \a replaceWith.
+ */
+inline std::string substituteStringView(std::string_view &s,
+                              std::string_view toReplace,std::string_view replaceWith)
+{
+  std::string buf;
+  size_t pos = 0;
+  size_t prevPos = 0;
+  buf.reserve(s.length());
+
+  while ((pos=s.find(toReplace, prevPos))!=std::string::npos)
+  {
+    buf.append(s, prevPos, pos - prevPos);
+    buf += replaceWith;
+    prevPos = pos + toReplace.length();
+  }
+  buf.append(s, prevPos, s.size() - prevPos);
+  return buf;
+}
+
+
 /** Given a string view \a s, returns a new, narrower view on that string, skipping over any
  *  leading or trailing whitespace characters.
  */

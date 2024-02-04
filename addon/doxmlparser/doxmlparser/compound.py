@@ -3964,7 +3964,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -4000,6 +4000,10 @@ class memberdefType(GeneratedsSuper):
         self.noexcept_nsprefix_ = None
         self.constexpr = _cast(None, constexpr)
         self.constexpr_nsprefix_ = None
+        self.consteval = _cast(None, consteval)
+        self.consteval_nsprefix_ = None
+        self.constinit = _cast(None, constinit)
+        self.constinit_nsprefix_ = None
         self.readable = _cast(None, readable)
         self.readable_nsprefix_ = None
         self.writable = _cast(None, writable)
@@ -4332,6 +4336,14 @@ class memberdefType(GeneratedsSuper):
         return self.constexpr
     def set_constexpr(self, constexpr):
         self.constexpr = constexpr
+    def get_consteval(self):
+        return self.consteval
+    def set_consteval(self, consteval):
+        self.consteval = consteval
+    def get_constinit(self):
+        return self.constinit
+    def set_constinit(self, constinit):
+        self.constinit = constinit
     def get_readable(self):
         return self.readable
     def set_readable(self, readable):
@@ -4620,6 +4632,12 @@ class memberdefType(GeneratedsSuper):
         if self.constexpr is not None and 'constexpr' not in already_processed:
             already_processed.add('constexpr')
             outfile.write(' constexpr=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.constexpr), input_name='constexpr')), ))
+        if self.consteval is not None and 'consteval' not in already_processed:
+            already_processed.add('consteval')
+            outfile.write(' consteval=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.consteval), input_name='consteval')), ))
+        if self.constinit is not None and 'constinit' not in already_processed:
+            already_processed.add('constinit')
+            outfile.write(' constinit=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.constinit), input_name='constinit')), ))
         if self.readable is not None and 'readable' not in already_processed:
             already_processed.add('readable')
             outfile.write(' readable=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.readable), input_name='readable')), ))
@@ -4872,6 +4890,16 @@ class memberdefType(GeneratedsSuper):
             already_processed.add('constexpr')
             self.constexpr = value
             self.validate_DoxBool(self.constexpr)    # validate type DoxBool
+        value = find_attr_value_('consteval', node)
+        if value is not None and 'consteval' not in already_processed:
+            already_processed.add('consteval')
+            self.consteval = value
+            self.validate_DoxBool(self.consteval)    # validate type DoxBool
+        value = find_attr_value_('constinit', node)
+        if value is not None and 'constinit' not in already_processed:
+            already_processed.add('constinit')
+            self.constinit = value
+            self.validate_DoxBool(self.constinit)    # validate type DoxBool
         value = find_attr_value_('readable', node)
         if value is not None and 'readable' not in already_processed:
             already_processed.add('readable')

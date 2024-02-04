@@ -647,6 +647,16 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << " constexpr=\"yes\"";
   }
 
+  if (md->isConstEval())
+  {
+    t << " consteval=\"yes\"";
+  }
+
+  if (md->isConstInit())
+  {
+    t << " constinit=\"yes\"";
+  }
+
   if (md->isExternal())
   {
     t << " extern=\"yes\"";

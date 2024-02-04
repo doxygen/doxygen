@@ -2941,7 +2941,7 @@ void Markdown::Private::writeFencedCodeBlock(std::string_view data,std::string_v
     out+="{"+lang+"}";
   }
   out+=" ";
-  addStrEscapeUtf8Nbsp(data.substr(blockStart,blockEnd-blockStart));
+  addStrEscapeUtf8Nbsp(data.substr(blockStart+i,blockEnd-blockStart));
   out+="@endicode ";
 }
 
