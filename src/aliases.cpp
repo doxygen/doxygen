@@ -77,7 +77,7 @@ static void addValidAliasToMap(std::string_view alias)
     size_t j = name.find('{');
     if (j!=std::string::npos) // alias with parameters
     {
-      if (name.at(l-1)=='}')
+      if (name[l-1]=='}')
       {
         separator=",";
         size_t k=j+1;
@@ -88,7 +88,7 @@ static void addValidAliasToMap(std::string_view alias)
           if (k<l-1) // we have a separator
           {
             size_t m=k;
-            while (isValidSeparator(name[m])) m++;
+            while (m<l && isValidSeparator(name[m])) m++;
             if (m<l-1)
             {
               err("Invalid alias '%s': invalid separator character '%c' (code %d), allowed characters: %s. Check your config file.\n",qPrint(alias),name[m],name[m],qPrint(std::string{separators}));
@@ -451,9 +451,9 @@ static int countAliasArguments(std::string_view args, std::string_view sep)
   size_t l = args.length();
   for (size_t i=0;i<l;i++)
   {
-    char c = args.at(i);
+    char c = args[i];
     if (c==sep[0] && // start with separator character
-        (i==0 || args.at(i-1)!='\\') && // is not escaped
+        (i==0 || args[i-1]!='\\') && // is not escaped
         args.substr(i,sep.length())==sep) // whole separator matches
     {
       count++;
@@ -473,7 +473,7 @@ static std::string extractAliasArgs(std::string_view args)
   size_t i;
   int bc = 0;
   char prevChar = 0;
-  if (!args.empty() && args.at(0)=='{') // alias has argument
+  if (!args.empty() && args[0]=='{') // alias has argument
   {
     for (i=0;i<args.length();i++)
     {

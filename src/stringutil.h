@@ -73,7 +73,7 @@ inline std::string_view stripWhiteSpace(std::string_view s)
 {
   static auto isspace = [](char c){ return c==' ' || c=='\t' || c=='\n' || c=='\r'; };
   size_t sl = s.length();
-  if (sl==0 || !isspace(s[0]) || !isspace(s[sl-1])) return s;
+  if (sl==0 || (!isspace(s[0]) && !isspace(s[sl-1]))) return s;
   size_t start=0, end=sl-1;
   while (start<sl && isspace(s[start])) start++;
   if (start==sl) return s.substr(0,0); // only whitespace
