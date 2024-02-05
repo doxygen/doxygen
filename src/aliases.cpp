@@ -212,7 +212,7 @@ struct Marker
  */
 static size_t findEndOfCommand(std::string_view s)
 {
-  char c;
+  char c=' ';
   size_t i=0;
   if (!s.empty())
   {
