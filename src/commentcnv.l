@@ -124,6 +124,7 @@ struct commentcnvYY_state
   SrcLangExt lang = SrcLangExt::Unknown;
   bool       isFixedForm = FALSE; // For Fortran
   std::deque<std::unique_ptr<commentcnv_FileState>> includeStack;
+  std::set<std::string> expandedAliases;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -382,7 +383,7 @@ SLASHopt [/]*
 				       }
 				       yyextra->blockHeadCol=yyextra->col;
 				       copyToOutput(yyscanner,"/**",3);
-				       replaceAliases(yyscanner,yytext+i);
+				       if (i<yyleng) replaceAliases(yyscanner,yytext+i);
 				       yyextra->inSpecialComment=TRUE;
 				       //BEGIN(SComment);
 				       yyextra->readLineCtx=SComment;
@@ -394,7 +395,7 @@ SLASHopt [/]*
                                      int i=17; //=strlen("//##Documentation");
 				     yyextra->blockHeadCol=yyextra->col;
 				     copyToOutput(yyscanner,"/**",3);
-				     replaceAliases(yyscanner,yytext+i);
+				     if (i<yyleng) replaceAliases(yyscanner,yytext+i);
 				     yyextra->inRoseComment=TRUE;
 				     BEGIN(SComment);
   				   }
@@ -1486,9 +1487,39 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
  */
 static void replaceAliases(yyscan_t yyscanner,std::string_view s)
 {
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (s.empty()) return;
+  size_t pos = s.find('{');
+  std::string cmd { s.substr(1, pos!=std::string::npos ? pos-1 : s.length()-1) };
+  if (yyextra->expandedAliases.find(cmd)!=yyextra->expandedAliases.end())
+  {
+    copyToOutput(yyscanner,s.data(),s.length());
+    return; // prevent recursive expansion
+  }
+  else if (cmd=="ialias")
+  {
+    if (s.length()>cmd.length()+3) // \cmd{value}
+    {
+      std::string value { s.substr(cmd.length()+2,s.length()-cmd.length()-3) };
+      //printf("removing value '%s'\n",qPrint(value));
+      yyextra->expandedAliases.erase(value);
+    }
+    return;
+  }
   std::string result = resolveAliasCmd(s);
   //printf("replaceAliases(%s)->'%s'\n",qPrint(s),qPrint(result));
-  copyToOutput(yyscanner,result.data(),result.length());
+  if (result!=s)
+  {
+    yyextra->expandedAliases.insert(cmd);
+    result += " \\ialias{";
+    result += cmd;
+    result += "}";
+    for (int i=(int)result.length()-1;i>=0;i--) unput(result[i]);
+  }
+  else
+  {
+    copyToOutput(yyscanner,result.data(),result.length());
+  }
 }
 
 
@@ -1551,6 +1582,7 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   yyextra->lang = getLanguageFromFileName(fileName);
   yyextra->pythonDocString = FALSE;
   yyextra->lineNr   = 1;
+  yyextra->expandedAliases.clear();
   while (!yyextra->condStack.empty()) yyextra->condStack.pop();
   clearCommentStack(yyscanner);
   yyextra->vhdl = FALSE;

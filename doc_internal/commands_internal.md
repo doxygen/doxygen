@@ -4,6 +4,7 @@ The following table gives an overview of the doxygen internal special commands
 and the version in which they were introduced.
 
 \secreflist
+\refitem cmdialias \\ialias
 \refitem cmdendicode \\endicode
 \refitem cmdendiliteral \\endiliteral
 \refitem cmdendiverbatim \\endiverbatim
@@ -15,6 +16,16 @@ and the version in which they were introduced.
 \refitem cmdiliteral \\iliteral
 \refitem cmdiverbatim \\iverbatim
 \endsecreflist
+
+<hr>
+\section cmdialias \\ialias{name}
+
+ \addindex \\ialias
+ This command is used to prevent endless recursive expansion of aliases. For an alias `name` the command `\ialias{name}` is 
+ inserted after its expansion, and then the expanded string is reparsed, but until the `\ialias` is processed the `name` 
+ is not considered for further alias expansion.
+
+\since doxygen version 1.11.0
 
 <hr>
 \section cmdianchor \\ianchor{title} anchor
