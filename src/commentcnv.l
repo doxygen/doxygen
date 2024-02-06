@@ -1111,7 +1111,7 @@ SLASHopt [/]*
                                      yyextra->aliasString+=yytext;
                                    }
 <ReadAliasArgs>\n		   {
-                                     yyextra->aliasString+=yytext;
+                                     yyextra->aliasString+=' ';
                                      yyextra->lineNr++;
 				     yyextra->lastEscaped=FALSE;
   				   }
