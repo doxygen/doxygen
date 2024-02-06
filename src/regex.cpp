@@ -488,36 +488,37 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,M
                           &isStartIdChar,&isIdChar,&match,&level,&pos](SequenceType type) -> bool
   {
     size_t startIndex = index;
+    size_t len = str.length();
     PToken tok = data[++tokenPos];
     if (tok.kind()==PToken::Kind::Character) // 'x*' -> eat x's
     {
       char c_tok = tok.asciiValue();
-      while (index<=str.length() && str[index]==c_tok) { index++; if (type==Optional) break; }
+      while (index<len && str[index]==c_tok) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.isCharClass()) // '[a-f0-4]* -> eat matching characters
     {
-      while (index<=str.length() && matchCharClass(tokenPos,str[index])) { index++; if (type==Optional) break; }
+      while (index<len && matchCharClass(tokenPos,str[index])) { index++; if (type==Optional) break; }
       tokenPos+=tok.value()+1; // skip over character ranges + end token
     }
     else if (tok.kind()==PToken::Kind::Alpha) // '\a*' -> eat start id characters
     {
-      while (index<=str.length() && isStartIdChar(str[index])) { index++; if (type==Optional) break; }
+      while (index<len && isStartIdChar(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::AlphaNum) // '\w*' -> eat id characters
     {
-      while (index<=str.length() && isIdChar(str[index])) { index++; if (type==Optional) break; }
+      while (index<len && isIdChar(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::WhiteSpace) // '\s*' -> eat spaces
     {
-      while (index<=str.length() && isspace(str[index])) { index++; if (type==Optional) break; }
+      while (index<len && isspace(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::Digit) // '\d*' -> eat digits
     {
-      while (index<=str.length() && isdigit(str[index])) { index++; if (type==Optional) break; }
+      while (index<len && isdigit(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::Any) // '.*' -> eat all
