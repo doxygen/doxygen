@@ -1022,6 +1022,7 @@ SLASHopt [/]*
                                      QCString blockId = "["+fileName.mid(i+1)+"]";
                                      fileName=fileName.left(i).stripWhiteSpace();
                                      //printf("yytext='%s' i=%d fileName='%s' blockId='%s'\n",yytext,i,qPrint(fileName),qPrint(blockId));
+                                     if (fileName == "this") fileName=yyextra->fileName;
                                      if (readIncludeFile(yyscanner,fileName,blockId))
                                      {
                                        BEGIN(IncludeFile);
