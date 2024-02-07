@@ -239,7 +239,8 @@ static std::string replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   for (i=0;i<l;i++)
   {
     char c = argList[i];
-    if (c==sep[0] &&                         // start with separator character
+    if (!sep.empty() &&
+        c==sep[0] &&                         // start with separator character
         (i==0 || argList[i-1]!='\\') &&      // is not escaped
         argList.substr(i,sep.length())==sep) // whole separator matches
     {
@@ -452,7 +453,8 @@ static int countAliasArguments(std::string_view args, std::string_view sep)
   for (size_t i=0;i<l;i++)
   {
     char c = args[i];
-    if (c==sep[0] && // start with separator character
+    if (!sep.empty() &&
+        c==sep[0] && // start with separator character
         (i==0 || args[i-1]!='\\') && // is not escaped
         args.substr(i,sep.length())==sep) // whole separator matches
     {
