@@ -953,7 +953,7 @@ static void addClassToContext(const Entry *root)
     cd->setDocumentation(root->doc,root->docFile,root->docLine);
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->enableCollaborationGraph(root->collaborationGraph);
-    cd->setTypeInheritanceGraph(root->inheritanceGraph);
+    cd->setTypeInheritanceGraph(root->inheritanceGraph, root->inheritanceGraphExplicit);
 
     if (!root->spec.isForwardDecl() && cd->isForwardDeclared())
     {
@@ -1043,7 +1043,7 @@ static void addClassToContext(const Entry *root)
       cd->addQualifiers(root->qualifiers);
       cd->setTypeConstraints(root->typeConstr);
       cd->enableCollaborationGraph(root->collaborationGraph);
-      cd->setTypeInheritanceGraph(root->inheritanceGraph);
+      cd->setTypeInheritanceGraph(root->inheritanceGraph, root->inheritanceGraphExplicit);
 
       if (tArgList)
       {

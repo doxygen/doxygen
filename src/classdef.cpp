@@ -346,7 +346,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
 
     // inheritance graph related members
     CLASS_GRAPH_t inheritanceGraphType() const override;
-    void setTypeInheritanceGraph(CLASS_GRAPH_t e) override;
+    void setTypeInheritanceGraph(CLASS_GRAPH_t e, bool explicitSet) override;
 
     // collaboration graph related members
     bool hasCollaborationGraph() const override;
@@ -5045,9 +5045,9 @@ QCString ClassDefImpl::inheritanceGraphFileName() const
   return m_impl->inheritFileName;
 }
 
-void ClassDefImpl::setTypeInheritanceGraph(CLASS_GRAPH_t e)
+void ClassDefImpl::setTypeInheritanceGraph(CLASS_GRAPH_t e, bool explicitSet)
 {
-  m_impl->typeInheritanceGraph=e;
+  if (explicitSet) m_impl->typeInheritanceGraph=e;
 }
 
 CLASS_GRAPH_t ClassDefImpl::inheritanceGraphType() const

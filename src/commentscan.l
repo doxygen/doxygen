@@ -3652,6 +3652,7 @@ static bool handleInheritanceGraph(yyscan_t yyscanner,const QCString &, const St
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->inheritanceGraph = CLASS_GRAPH_t::YES;
+  yyextra->current->inheritanceGraphExplicit = true;
   for (const auto &opt_ : optList)
   {
     QCString opt = QCString(opt_).stripWhiteSpace().lower();
@@ -3690,6 +3691,7 @@ static bool handleHideInheritanceGraph(yyscan_t yyscanner,const QCString &, cons
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->inheritanceGraph = CLASS_GRAPH_t::NO; // OFF
+  yyextra->current->inheritanceGraphExplicit = true;
   return FALSE;
 }
 
