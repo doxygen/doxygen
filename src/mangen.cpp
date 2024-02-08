@@ -115,13 +115,13 @@ ManCodeGenerator::ManCodeGenerator(TextStream *t) : m_t(t)
 void ManCodeGenerator::startCodeFragment(const QCString &)
 {
   *m_t << "\n";
-  *m_t << ".PP\n";
   *m_t << ".nf\n";
 }
 
 void ManCodeGenerator::endCodeFragment(const QCString &)
 {
   if (m_col>0) *m_t << "\n";
+  *m_t << ".PP\n";
   *m_t << ".fi\n";
   m_col=0;
 }
