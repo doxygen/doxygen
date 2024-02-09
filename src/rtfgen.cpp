@@ -184,6 +184,7 @@ void RTFCodeGenerator::startCodeFragment(const QCString &)
 {
   DBG_RTF(*m_t << "{\\comment (startCodeFragment) }\n")
   *m_t << "{\n";
+  *m_t << "\\par\n";
   *m_t << rtf_Style_Reset << rtf_Code_DepthStyle();
 }
 
@@ -2758,6 +2759,19 @@ void RTFGenerator::writeInheritedSectionTitle(
   m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(ref, file, anchor, name));
   m_t << "\\par\n";
   m_t << rtf_Style_Reset << "\n";
+}
+
+void RTFGenerator::startParameterList(bool openBracket)
+{
+  if (openBracket) m_t << "(";
+}
+
+void RTFGenerator::endParameterExtra(bool last,bool /* emptyList */, bool closeBracket)
+{
+  if (last && closeBracket)
+  {
+    m_t << ")";
+  }
 }
 
 //----------------------------------------------------------------------

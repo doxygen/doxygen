@@ -251,10 +251,10 @@ class RTFGenerator : public OutputGenerator
     void startParameterName(bool) {}
     void endParameterName() {}
     void startParameterExtra() {}
-    void endParameterExtra(bool,bool,bool) {}
+    void endParameterExtra(bool,bool,bool);
     void startParameterDefVal(const char *s) { docify(s); startTypewriter(); }
     void endParameterDefVal() { endTypewriter(); }
-    void startParameterList(bool) {}
+    void startParameterList(bool);
     void endParameterList() {}
     void exceptionEntry(const QCString &,bool);
 

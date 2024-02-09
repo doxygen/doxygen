@@ -6687,6 +6687,11 @@ NONLopt [^\n]*
                                             BEGIN( Comment ) ;
                                           }
                                         }
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>^{B}+({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
+                                          lineCount(yyscanner);
+                                          yyextra->yyColNr=1;
+                                          REJECT;
+                                        }
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
                                           yyextra->lastDocContext = YY_START;
 
