@@ -189,18 +189,28 @@ class Entry
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?
-    bool callGraph;           //!< do we need to draw the call graph?
-    bool callerGraph;         //!< do we need to draw the caller graph?
-    bool referencedByRelation;//!< do we need to show the referenced by relation?
-    bool referencesRelation;  //!< do we need to show the references relation?
-    bool inlineSource;        //!< do we need to show the inline source?
-    bool includeGraph;        //!< do we need to draw the include graph?
-    bool includedByGraph;     //!< do we need to draw the included by graph?
-    bool directoryGraph;      //!< do we need to draw the directory graph?
-    bool collaborationGraph;  //!< do we need to draw the collaboration graph?
-    CLASS_GRAPH_t inheritanceGraph;   //!< type of inheritance graph?
-    bool inheritanceGraphExplicitSet; //!< type of inheritance graph set implicit or explicit?
-    bool groupGraph;          //!< do we need to draw the group graph?
+    bool callGraph;                      //!< do we need to draw the call graph?
+    bool callGraphExplicitSet;           //!< do we need to draw the call graph set implicit or explicit?
+    bool callerGraph;                    //!< do we need to draw the caller graph?
+    bool callerGraphExplicitSet;         //!< do we need to draw the caller graph set implicit or explicit?
+    bool referencedByRelation;           //!< do we need to show the referenced by relation?
+    bool referencedByRelationExplicitSet;//!< do we need to show the referenced by relation set implicit or explicit?
+    bool referencesRelation;             //!< do we need to show the references relation?
+    bool referencesRelationExplicitSet;  //!< do we need to show the references relation set implicit or explicit?
+    bool inlineSource;                   //!< do we need to show the inline source?
+    bool inlineSourceExplicitSet;        //!< do we need to show the inline source set implicit or explicit?
+    bool includeGraph;                   //!< do we need to draw the include graph?
+    bool includeGraphExplicitSet;        //!< do we need to draw the include graph set implicit or explicit?
+    bool includedByGraph;                //!< do we need to draw the included by graph?
+    bool includedByGraphExplicitSet;     //!< do we need to draw the included by graph set implicit or explicit?
+    bool directoryGraph;                 //!< do we need to draw the directory graph?
+    bool directoryGraphExplicitSet;      //!< do we need to draw the directory graph set implicit or explicit?
+    bool collaborationGraph;             //!< do we need to draw the collaboration graph?
+    bool collaborationGraphExplicitSet;  //!< do we need to draw the collaboration graph set implicit or explicit?
+    CLASS_GRAPH_t inheritanceGraph;      //!< type of inheritance graph?
+    bool inheritanceGraphExplicitSet;    //!< type of inheritance graph set implicit or explicit?
+    bool groupGraph;                     //!< do we need to draw the group graph?
+    bool groupGraphExplicitSet;          //!< do we need to draw the group graph set implicit or explicit?
     bool exported;            //!< is the symbol exported from a C++20 module
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string

@@ -3539,112 +3539,128 @@ static bool handleHideInitializer(yyscan_t yyscanner,const QCString &, const Str
 static bool handleCallgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->callGraph = TRUE; // ON
+  yyextra->current->callGraph = true; // ON
+  yyextra->current->callGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideCallgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->callGraph = FALSE; // OFF
+  yyextra->current->callGraph = false; // OFF
+  yyextra->current->callGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->callerGraph = TRUE; // ON
+  yyextra->current->callerGraph = true; // ON
+  yyextra->current->callerGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->callerGraph = FALSE; // OFF
+  yyextra->current->callerGraph = false; // OFF
+  yyextra->current->callerGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleShowInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->inlineSource = TRUE; // ON
+  yyextra->current->inlineSource = true; // ON
+  yyextra->current->inlineSourceExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->inlineSource = FALSE; // OFF
+  yyextra->current->inlineSource = false; // OFF
+  yyextra->current->inlineSourceExplicitSet = true;
   return FALSE;
 }
 
 static bool handleIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->includeGraph = TRUE; // ON
+  yyextra->current->includeGraph = true; // ON
+  yyextra->current->includeGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->includedByGraph = TRUE; // ON
+  yyextra->current->includedByGraph = true; // ON
+  yyextra->current->includedByGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->includeGraph = FALSE; // OFF
+  yyextra->current->includeGraph = false; // OFF
+  yyextra->current->includeGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->includedByGraph = FALSE; // OFF
+  yyextra->current->includedByGraph = false; // OFF
+  yyextra->current->includedByGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->directoryGraph = TRUE; // ON
+  yyextra->current->directoryGraph = true; // ON
+  yyextra->current->directoryGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideDirectoryGraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->directoryGraph = FALSE; // OFF
+  yyextra->current->directoryGraph = false; // OFF
+  yyextra->current->directoryGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleCollaborationgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->collaborationGraph = TRUE; // ON
+  yyextra->current->collaborationGraph = true; // ON
+  yyextra->current->collaborationGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideCollaborationgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->collaborationGraph = FALSE; // OFF
+  yyextra->current->collaborationGraph = false; // OFF
+  yyextra->current->collaborationGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleGroupgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->groupGraph = TRUE; // ON
+  yyextra->current->groupGraph = true; // ON
+  yyextra->current->groupGraphExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideGroupgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->groupGraph = FALSE; // OFF
+  yyextra->current->groupGraph = false; // OFF
+  yyextra->current->groupGraphExplicitSet = true;
   return FALSE;
 }
 
@@ -3706,28 +3722,32 @@ static bool handleQualifier(yyscan_t yyscanner,const QCString &cmd, const String
 static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->referencedByRelation = TRUE; // ON
+  yyextra->current->referencedByRelation = true; // ON
+  yyextra->current->referencedByRelationExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->referencedByRelation = FALSE; // OFF
+  yyextra->current->referencedByRelation = false; // OFF
+  yyextra->current->referencedByRelationExplicitSet = true;
   return FALSE;
 }
 
 static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->referencesRelation = TRUE; // ON
+  yyextra->current->referencesRelation = true; // ON
+  yyextra->current->referencesRelationExplicitSet = true;
   return FALSE;
 }
 
 static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->referencesRelation = FALSE; // OFF
+  yyextra->current->referencesRelation = false; // OFF
+  yyextra->current->referencesRelationExplicitSet = true;
   return FALSE;
 }
 
