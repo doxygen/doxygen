@@ -3661,11 +3661,11 @@ static void buildFunctionList(const Entry *root)
 
                   md->addSectionsToDefinition(root->anchors);
 
-                  md->mergeEnableCallGraph(root->callGraph);
-                  md->mergeEnableCallerGraph(root->callerGraph);
-                  md->mergeEnableReferencedByRelation(root->referencedByRelation);
-                  md->mergeEnableReferencesRelation(root->referencesRelation);
-                  md->mergeEnableInlineSource(root->inlineSource);
+                  if (root->callGraphExplicitSet)            md->mergeEnableCallGraph(root->callGraph);
+                  if (root->callerGraphExplicitSet)          md->mergeEnableCallerGraph(root->callerGraph);
+                  if (root->referencedByRelationExplicitSet) md->mergeEnableReferencedByRelation(root->referencedByRelation);
+                  if (root->referencesRelationExplicitSet)   md->mergeEnableReferencesRelation(root->referencesRelation);
+                  if (root->inlineSourceExplicitSet)         md->mergeEnableInlineSource(root->inlineSource);
                   md->addQualifiers(root->qualifiers);
 
                   // merge ingroup specifiers
@@ -5209,11 +5209,11 @@ static void addMemberDocs(const Entry *root,
     md->setRefItems(root->sli);
   }
 
-  md->mergeEnableCallGraph(root->callGraph);
-  md->mergeEnableCallerGraph(root->callerGraph);
-  md->mergeEnableReferencedByRelation(root->referencedByRelation);
-  md->mergeEnableReferencesRelation(root->referencesRelation);
-  md->mergeEnableInlineSource(root->inlineSource);
+  if (root->callGraphExplicitSet)            md->mergeEnableCallGraph(root->callGraph);
+  if (root->callerGraphExplicitSet)          md->mergeEnableCallerGraph(root->callerGraph);
+  if (root->referencedByRelationExplicitSet) md->mergeEnableReferencedByRelation(root->referencedByRelation);
+  if (root->referencesRelationExplicitSet)   md->mergeEnableReferencesRelation(root->referencesRelation);
+  if (root->inlineSourceExplicitSet)         md->mergeEnableInlineSource(root->inlineSource);
   md->addQualifiers(root->qualifiers);
 
   md->mergeMemberSpecifiers(spec);
