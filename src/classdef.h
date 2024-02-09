@@ -434,7 +434,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
         // inheritance graph related members
     virtual CLASS_GRAPH_t inheritanceGraphType() const = 0;
-    virtual void setTypeInheritanceGraph(CLASS_GRAPH_t e, bool explicitSet) = 0;
+    virtual void setTypeInheritanceGraph(CLASS_GRAPH_t e) = 0;
 
     // collaboration graph related members
     virtual bool hasCollaborationGraph() const = 0;

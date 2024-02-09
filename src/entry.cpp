@@ -69,7 +69,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   directoryGraph = e.directoryGraph;
   collaborationGraph = e.collaborationGraph;
   inheritanceGraph = e.inheritanceGraph;
-  inheritanceGraphExplicit = e.inheritanceGraphExplicit;
+  inheritanceGraphExplicitSet = e.inheritanceGraphExplicitSet;
   groupGraph  = e.groupGraph;
   referencedByRelation = e.referencedByRelation;
   referencesRelation   = e.referencesRelation;
@@ -200,8 +200,8 @@ void Entry::reset()
   bool entryIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
   bool entryDirectoryGraph  = Config_getBool(DIRECTORY_GRAPH);
   bool entryCollaborationGraph = Config_getBool(COLLABORATION_GRAPH);
-  CLASS_GRAPH_t entryInheritanceGraph  = Config_getBool(CLASS_GRAPH);
-  bool entryInheritanceGraphExplicit  = false;
+  CLASS_GRAPH_t entryInheritanceGraph   = Config_getBool(CLASS_GRAPH);
+  bool entryInheritanceGraphExplicitSet = false;
   bool entryGroupGraph  = Config_getBool(GROUP_GRAPHS);
   //printf("Entry::reset()\n");
   name.clear();
@@ -240,7 +240,7 @@ void Entry::reset()
   directoryGraph = entryDirectoryGraph;
   collaborationGraph = entryCollaborationGraph;
   inheritanceGraph = entryInheritanceGraph;
-  inheritanceGraphExplicit = entryInheritanceGraphExplicit;
+  inheritanceGraphExplicitSet = entryInheritanceGraphExplicitSet;
   groupGraph = entryGroupGraph;
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
