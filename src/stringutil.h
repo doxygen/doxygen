@@ -47,7 +47,7 @@ inline void substituteInplace(std::string &s,
 /** Returns a new string where occurrences of substring \a toReplace in string \a s are replaced by
  *  string \a replaceWith.
  */
-inline std::string substituteStringView(std::string_view &s,
+inline std::string substituteStringView(std::string_view s,
                               std::string_view toReplace,std::string_view replaceWith)
 {
   std::string buf;

@@ -43,6 +43,7 @@ typedef yyguts_t *yyscan_t;
 #include "aliases.h"
 #include "condparser.h"
 #include "fileinfo.h"
+#include "stringutil.h"
 
 #include <assert.h>
 
@@ -112,7 +113,6 @@ struct commentcnvYY_state
   QCString incPrefix;
 
   QCString aliasString;
-  int      aliasLines = 0;
   int      blockCount = 0;
   bool     lastEscaped = FALSE;
   int      lastBlockContext= 0;
@@ -136,7 +136,7 @@ static inline void copyToOutput(yyscan_t yyscanner,const char *s,size_t len);
 static void startCondSection(yyscan_t yyscanner,const QCString &sectId);
 static void endCondSection(yyscan_t yyscanner);
 static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
-static void replaceAliases(yyscan_t yyscanner,std::string_view s);
+static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceComment=false);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
@@ -168,6 +168,7 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 %x Verbatim
 %x VerbatimCode
 %x ReadLine
+%x CopyLine
 %x CondLine
 %x ReadAliasArgs
 %x IncludeDoc
@@ -406,16 +407,16 @@ SLASHopt [/]*
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<Scan>{CPPC}/.*\n	                   { /* one line C++ comment */
+<Scan>{CPPC}/.*\n                  { /* one line C++ comment */
 				     yyextra->inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->readLineCtx=YY_START;
-				     BEGIN(ReadLine);
+				     BEGIN(CopyLine);
 				   }
-<Scan>{CCS}{CCE}                       { /* avoid matching next rule for empty C comment, see bug 711723 */
+<Scan>{CCS}{CCE}                   { /* avoid matching next rule for empty C comment, see bug 711723 */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
-<Scan>{CCS}[*!]?			   { /* start of a C comment */
+<Scan>{CCS}[*!]?                   { /* start of a C comment */
                                      if (yyextra->lang==SrcLangExt::Python)
 				     {
 				       REJECT;
@@ -976,13 +977,13 @@ SLASHopt [/]*
 <ReadLine>{CCE}                    {
 				     copyToOutput(yyscanner,"*&zwj;/",7);
 				   }
-<ReadLine>"*"                      {
+<ReadLine,CopyLine>"*"             {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				   }
-<ReadLine>{RLopt}                  {
+<ReadLine,CopyLine>{RLopt}         {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				   }
-<ReadLine>{RLopt}/\n               {
+<ReadLine,CopyLine>{RLopt}/\n      {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				     BEGIN(yyextra->readLineCtx);
 				   }
@@ -1079,31 +1080,18 @@ SLASHopt [/]*
 				     if (*yytext=='\n') { copyToOutput(yyscanner,"\n",1);}
   				   }
 <CComment,ReadLine,IncludeFile>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
-				     replaceAliases(yyscanner,yytext);
+				     replaceAliases(yyscanner,yytext,YY_START==ReadLine && yyextra->readLineCtx==SComment);
   				   }
 <CComment,ReadLine,IncludeFile>[\\@][a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
                                      yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
 				     yyextra->aliasString=yytext;
-                                     yyextra->aliasLines=0;
 				     yyextra->lastEscaped=0;
 				     BEGIN( ReadAliasArgs );
   				   }
 <ReadAliasArgs>^[ \t]*"*"          { // skip leading *
                                    }
-<ReadAliasArgs>^[ \t]*{CPPC}[/!]/[^\n]+   { // skip leading special comments (see bug 618079)
-  				   }
-<ReadAliasArgs>{CCE}		   { // oops, end of comment in the middle of an alias?
-                                     if (yyextra->lang==SrcLangExt::Python)
-				     {
-				       REJECT;
-				     }
-				     else // abort the alias, restart scanning
-				     {
-				       copyToOutput(yyscanner,yyextra->aliasString.data(),yyextra->aliasString.length());
-				       copyToOutput(yyscanner,yytext,yyleng);
-				       BEGIN(Scan);
-				     }
+<ReadAliasArgs>^[ \t]*{CPPC}[/!]/[^\n]*   { // skip leading special comments (see bug 618079)
   				   }
 <ReadAliasArgs>[^{}\n\\\*]+	   {
                                      yyextra->aliasString+=yytext;
@@ -1115,8 +1103,7 @@ SLASHopt [/]*
                                      yyextra->aliasString+=yytext;
                                    }
 <ReadAliasArgs>\n		   {
-                                     yyextra->aliasString+=" ";
-                                     yyextra->aliasLines++;
+                                     yyextra->aliasString+=yytext;
 				     yyextra->lastEscaped=FALSE;
   				   }
 <ReadAliasArgs>"{"		   {
@@ -1129,7 +1116,8 @@ SLASHopt [/]*
 				     if (!yyextra->lastEscaped) yyextra->blockCount--;
 				     if (yyextra->blockCount==0)
 				     {
-				       replaceAliases(yyscanner,yyextra->aliasString.view());
+				       replaceAliases(yyscanner,yyextra->aliasString.view(),
+                                           yyextra->lastBlockContext==ReadLine && yyextra->readLineCtx==SComment);
 				       BEGIN( yyextra->lastBlockContext );
 				     }
 				     yyextra->lastEscaped=FALSE;
@@ -1138,6 +1126,13 @@ SLASHopt [/]*
                                      yyextra->aliasString+=yytext;
 				     yyextra->lastEscaped=FALSE;
   				   }
+<CopyLine>.                        {
+  				     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
+<CopyLine>\n                       {
+  				     copyToOutput(yyscanner,yytext,yyleng);
+                                     BEGIN(yyextra->readLineCtx);
+                                   }
 <ReadLine>.			   {
   				     copyToOutput(yyscanner,yytext,yyleng);
   				   }
@@ -1489,7 +1484,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
 /** copies string \a s with length \a len to the output, while
  *  replacing any alias commands found in the string.
  */
-static void replaceAliases(yyscan_t yyscanner,std::string_view s)
+static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (s.empty()) return;
@@ -1511,20 +1506,23 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s)
     return;
   }
   std::string result = resolveAliasCmd(s);
-  //printf("replaceAliases(%s)->'%s' lines=%d\n",qPrint(s),qPrint(result),yyextra->aliasLines);
+  //printf("replaceAliases(%s)->'%s' replaceComment=%d\n",qPrint(s),qPrint(result),replaceComment);
   if (result!=s)
   {
+    if (replaceComment) // In case we are replacing a multiline /// comment by a C style comment
+                        // and we have new lines in the alias argument, we need to place back a /// for each new line
+                        // to prevent breaking the multiline comment into multiple C style comments
+    {
+      result = substituteStringView(result,"\n","\n///");
+    }
     yyextra->expandedAliases.insert(cmd);
     result += " \\ialias{";
     result += cmd;
     result += "}";
-    if (yyextra->aliasLines>0)
+    for (int i=(int)result.length()-1;i>=0;i--)
     {
-      yyextra->lineNr+=yyextra->aliasLines;
-      //printf("yyextra->lineNr=%d\n",yyextra->lineNr);
-      result += std::string{"\\ifile \""}+yyextra->fileName.str()+"\" \\iline "+std::to_string(yyextra->lineNr)+" ";
+      unput(result[i]);
     }
-    for (int i=(int)result.length()-1;i>=0;i--) unput(result[i]);
   }
   else
   {
@@ -1592,7 +1590,6 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   yyextra->lang = getLanguageFromFileName(fileName);
   yyextra->pythonDocString = FALSE;
   yyextra->lineNr   = 1;
-  yyextra->aliasLines = 0;
   yyextra->expandedAliases.clear();
   while (!yyextra->condStack.empty()) yyextra->condStack.pop();
   clearCommentStack(yyscanner);
