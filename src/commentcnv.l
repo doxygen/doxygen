@@ -407,8 +407,14 @@ SLASHopt [/]*
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<Scan>{CPPC}/.*\n                  { /* one line C++ comment */
-				     yyextra->inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
+<Scan>{CPPC}/[!/].*\n              { /* one line special C++ comment */
+				     yyextra->inSpecialComment=true;
+  				     copyToOutput(yyscanner,yytext,yyleng);
+				     yyextra->readLineCtx=YY_START;
+				     BEGIN(ReadLine);
+                                   }
+<Scan>{CPPC}/.*\n                  { /* one line normal C++ comment */
+				     yyextra->inSpecialComment=false;
   				     copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(CopyLine);
