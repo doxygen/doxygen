@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 #include <sstream>
+#include <functional>
 
 #include "types.h"
 #include "arguments.h"
