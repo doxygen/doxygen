@@ -17,7 +17,7 @@ std::string getGitVersion()
     {
       gitVersion+="*";
     }
-    if (gitVersion=="GIT_NOTFOUND")
+    if (gitVersion=="GIT-NOTFOUND")
     {
       gitVersion="";
     }
