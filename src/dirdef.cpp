@@ -73,7 +73,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     void computeDependencies() override;
 
     bool hasDirectoryGraph() const override;
-    void enableDirectoryGraph(bool e) override;
+    void overrideDirectoryGraph(bool e) override;
 
   public:
     static DirDef *mergeDirectoryInTree(const QCString &path);
@@ -871,7 +871,7 @@ DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
   return dir;
 }
 
-void DirDefImpl::enableDirectoryGraph(bool e)
+void DirDefImpl::overrideDirectoryGraph(bool e)
 {
   m_hasDirectoryGraph=e;
 }

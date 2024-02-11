@@ -345,12 +345,12 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void setRequiresClause(const QCString &req) override;
 
     // inheritance graph related members
-    CLASS_GRAPH_t inheritanceGraphType() const override;
-    void setTypeInheritanceGraph(CLASS_GRAPH_t e) override;
+    CLASS_GRAPH_t hasInheritanceGraph() const override;
+    void overrideInheritanceGraph(CLASS_GRAPH_t e) override;
 
     // collaboration graph related members
     bool hasCollaborationGraph() const override;
-    void enableCollaborationGraph(bool e) override;
+    void overrideCollaborationGraph(bool e) override;
   private:
     void addUsedInterfaceClasses(MemberDef *md,const QCString &typeStr);
     void showUsedFiles(OutputList &ol) const;
@@ -5045,12 +5045,12 @@ QCString ClassDefImpl::inheritanceGraphFileName() const
   return m_impl->inheritFileName;
 }
 
-void ClassDefImpl::setTypeInheritanceGraph(CLASS_GRAPH_t e)
+void ClassDefImpl::overrideInheritanceGraph(CLASS_GRAPH_t e)
 {
   m_impl->typeInheritanceGraph=e;
 }
 
-CLASS_GRAPH_t ClassDefImpl::inheritanceGraphType() const
+CLASS_GRAPH_t ClassDefImpl::hasInheritanceGraph() const
 {
   return m_impl->typeInheritanceGraph;
 }
@@ -5072,7 +5072,7 @@ CodeSymbolType ClassDefImpl::codeSymbolType() const
   return CodeSymbolType::Class;
 }
 
-void ClassDefImpl::enableCollaborationGraph(bool e)
+void ClassDefImpl::overrideCollaborationGraph(bool e)
 {
   m_impl->hasCollaborationGraph=e;
 }

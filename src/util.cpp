@@ -7174,3 +7174,20 @@ int computeQualifiedIndex(const QCString &name)
   }
   return lastSepPos;
 }
+
+void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2)
+{
+  if (Config_getBool(CALL_GRAPH)  !=md1->hasCallGraph())   md2->overrideCallGraph(md1->hasCallGraph());
+  if (Config_getBool(CALLER_GRAPH)!=md1->hasCallerGraph()) md2->overrideCallerGraph(md1->hasCallerGraph());
+  if (Config_getBool(CALL_GRAPH)  !=md2->hasCallGraph())   md1->overrideCallGraph( md2->hasCallGraph());
+  if (Config_getBool(CALLER_GRAPH)!=md2->hasCallerGraph()) md1->overrideCallerGraph(md2->hasCallerGraph());
+
+  if (Config_getBool(REFERENCED_BY_RELATION)!=md1->hasReferencedByRelation()) md2->overrideReferencedByRelation(md1->hasReferencedByRelation());
+  if (Config_getBool(REFERENCES_RELATION)   !=md1->hasReferencesRelation())   md2->overrideReferencesRelation(md1->hasReferencesRelation());
+  if (Config_getBool(REFERENCED_BY_RELATION)!=md2->hasReferencedByRelation()) md1->overrideReferencedByRelation(md2->hasReferencedByRelation());
+  if (Config_getBool(REFERENCES_RELATION)   !=md2->hasReferencesRelation())   md1->overrideReferencesRelation(md2->hasReferencesRelation());
+
+  if (Config_getBool(INLINE_SOURCES)!=md1->hasInlineSource()) md2->overrideInlineSource(md1->hasInlineSource());
+  if (Config_getBool(INLINE_SOURCES)!=md2->hasInlineSource()) md1->overrideInlineSource(md2->hasInlineSource());
+}
+

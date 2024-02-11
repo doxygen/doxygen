@@ -464,4 +464,6 @@ QCString detab(const QCString &s,size_t &refIndent);
 QCString getProjectId();
 QCString projectLogoFile();
 
+void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
+
 #endif
