@@ -199,8 +199,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
 
     bool hasIncludeGraph() const override;
     bool hasIncludedByGraph() const override;
-    void enableIncludeGraph(bool e) override;
-    void enableIncludedByGraph(bool e) override;
+    void overrideIncludeGraph(bool e) override;
+    void overrideIncludedByGraph(bool e) override;
 
   private:
     void setDiskNameLocal(const QCString &name);
@@ -255,9 +255,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     ClassLinkedRefMap     m_exceptions;
     ConceptLinkedRefMap   m_concepts;
     bool                  m_subGrouping;
-    bool                  m_hasIncludeGraph = false;
-    bool                  m_hasIncludedByGraph = false;
-
+    bool                  m_hasIncludeGraph = Config_getBool(INCLUDE_GRAPH);
+    bool                  m_hasIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
 };
 
 std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const QCString &ref,const QCString &dn)
@@ -1800,12 +1799,12 @@ int FileDefImpl::numDecMembers() const
   return ml ? ml->numDecMembers() : 0;
 }
 
-void FileDefImpl::enableIncludeGraph(bool e)
+void FileDefImpl::overrideIncludeGraph(bool e)
 {
   m_hasIncludeGraph=e;
 }
 
-void FileDefImpl::enableIncludedByGraph(bool e)
+void FileDefImpl::overrideIncludedByGraph(bool e)
 {
   m_hasIncludedByGraph=e;
 }

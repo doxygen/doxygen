@@ -120,7 +120,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     void writeSummaryLinks(OutputList &ol) const override;
 
     bool hasGroupGraph() const override;
-    void enableGroupGraph(bool e) override;
+    void overrideGroupGraph(bool e) override;
   private:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
     void addMemberToList(MemberListType lt,MemberDef *md);
@@ -1948,7 +1948,7 @@ bool GroupDefImpl::hasDetailedDescription() const
          (m_pages.size()!=numDocMembers());
 }
 
-void GroupDefImpl::enableGroupGraph(bool e)
+void GroupDefImpl::overrideGroupGraph(bool e)
 {
   m_hasGroupGraph=e;
 }

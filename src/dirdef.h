@@ -149,7 +149,7 @@ class DirDef : public DefinitionMutable, public Definition
 
     // directory graph related members
     virtual bool hasDirectoryGraph() const = 0;
-    virtual void enableDirectoryGraph(bool e) = 0;
+    virtual void overrideDirectoryGraph(bool e) = 0;
 };
 
 // --- Cast functions

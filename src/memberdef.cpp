@@ -295,16 +295,11 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void makeImplementationDetail() override;
     void setFromAnonymousScope(bool b) override;
     void setFromAnonymousMember(MemberDef *m) override;
-    void enableCallGraph(bool e) override;
-    void mergeEnableCallGraph(bool other) override;
-    void enableCallerGraph(bool e) override;
-    void mergeEnableCallerGraph(bool other) override;
-    void enableReferencedByRelation(bool e) override;
-    void mergeEnableReferencedByRelation(bool other) override;
-    void enableReferencesRelation(bool e) override;
-    void mergeEnableReferencesRelation(bool other) override;
-    void enableInlineSource(bool e) override;
-    void mergeEnableInlineSource(bool other) override;
+    void overrideCallGraph(bool e) override;
+    void overrideCallerGraph(bool e) override;
+    void overrideReferencedByRelation(bool e) override;
+    void overrideReferencesRelation(bool e) override;
+    void overrideInlineSource(bool e) override;
     void setTemplateMaster(MemberDef *mt) override;
     void addListReference(Definition *d) override;
     void setDocsForDefinition(bool b) override;
@@ -1322,11 +1317,11 @@ void MemberDefImpl::init(Definition *d,
   m_grpId=-1;
   m_enumScope=0;
   m_livesInsideEnum=FALSE;
-  m_hasCallGraph = FALSE;
-  m_hasCallerGraph = FALSE;
-  m_hasReferencedByRelation = FALSE;
-  m_hasReferencesRelation = FALSE;
-  m_hasInlineSource = FALSE;
+  m_hasCallGraph            = Config_getBool(CALL_GRAPH);
+  m_hasCallerGraph          = Config_getBool(CALLER_GRAPH);
+  m_hasReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
+  m_hasReferencesRelation   = Config_getBool(REFERENCES_RELATION);
+  m_hasInlineSource         = Config_getBool(INLINE_SOURCES);
   m_initLines=0;
   m_type=t;
   if (mt==MemberType_Typedef) m_type.stripPrefix("typedef ");
@@ -4817,93 +4812,33 @@ void MemberDefImpl::findSectionsInDocumentation()
   docFindSections(documentation(),this,docFile());
 }
 
-void MemberDefImpl::enableCallGraph(bool e)
+void MemberDefImpl::overrideCallGraph(bool e)
 {
   m_hasCallGraph=e;
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-void MemberDefImpl::mergeEnableCallGraph(bool other)
-{
-  if (Config_getBool(CALL_GRAPH))
-  {
-    enableCallGraph(m_hasCallGraph && other); // enabled if neither deviate from config value
-  }
-  else
-  {
-    enableCallGraph(m_hasCallGraph || other); // enabled if either deviate from config value
-  }
-}
-
-void MemberDefImpl::enableCallerGraph(bool e)
+void MemberDefImpl::overrideCallerGraph(bool e)
 {
   m_hasCallerGraph=e;
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-void MemberDefImpl::mergeEnableCallerGraph(bool other)
-{
-  if (Config_getBool(CALLER_GRAPH))
-  {
-    enableCallerGraph(m_hasCallerGraph && other); // enabled if neither deviate from config value
-  }
-  else
-  {
-    enableCallerGraph(m_hasCallerGraph || other); // enabled if either deviate from config value
-  }
-}
-
-void MemberDefImpl::enableReferencedByRelation(bool e)
+void MemberDefImpl::overrideReferencedByRelation(bool e)
 {
   m_hasReferencedByRelation=e;
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-void MemberDefImpl::mergeEnableReferencedByRelation(bool other)
-{
-  if (Config_getBool(REFERENCED_BY_RELATION))
-  {
-    enableReferencedByRelation(m_hasReferencedByRelation && other); // enabled if neither deviate from config value
-  }
-  else
-  {
-    enableReferencedByRelation(m_hasReferencedByRelation || other); // enabled if either deviate from config value
-  }
-}
-
-void MemberDefImpl::enableReferencesRelation(bool e)
+void MemberDefImpl::overrideReferencesRelation(bool e)
 {
   m_hasReferencesRelation=e;
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-void MemberDefImpl::mergeEnableReferencesRelation(bool other)
-{
-  if (Config_getBool(REFERENCES_RELATION))
-  {
-    enableReferencesRelation(m_hasReferencesRelation && other); // enabled if neither deviate from config value
-  }
-  else
-  {
-    enableReferencesRelation(m_hasReferencesRelation || other); // enabled if either deviate from config value
-  }
-}
-
-void MemberDefImpl::enableInlineSource(bool e)
+void MemberDefImpl::overrideInlineSource(bool e)
 {
   m_hasInlineSource=e;
-}
-
-void MemberDefImpl::mergeEnableInlineSource(bool other)
-{
-  if (Config_getBool(INLINE_SOURCES))
-  {
-    enableInlineSource(m_hasInlineSource && other); // enabled if neither deviate from config value
-  }
-  else
-  {
-    enableInlineSource(m_hasInlineSource || other); // enabled if either deviate from config value
-  }
 }
 
 bool MemberDefImpl::isObjCMethod() const
@@ -6211,18 +6146,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       mdef->setMemberDeclaration(mdec);
       mdec->setMemberDefinition(mdef);
 
-      mdef->mergeEnableCallGraph(mdec->hasCallGraph());
-      mdef->mergeEnableCallerGraph(mdec->hasCallerGraph());
-      mdec->mergeEnableCallGraph( mdef->hasCallGraph());
-      mdec->mergeEnableCallerGraph(mdef->hasCallerGraph());
-
-      mdef->mergeEnableReferencedByRelation(mdec->hasReferencedByRelation());
-      mdef->mergeEnableReferencesRelation(mdec->hasReferencesRelation());
-      mdec->mergeEnableReferencedByRelation(mdef->hasReferencedByRelation());
-      mdec->mergeEnableReferencesRelation(mdef->hasReferencesRelation());
-
-      mdef->mergeEnableInlineSource(mdec->hasInlineSource());
-      mdec->mergeEnableInlineSource(mdef->hasInlineSource());
+      mergeMemberOverrideOptions(mdec,mdef);
 
       mdef->addQualifiers(mdec->getQualifiers());
       mdec->addQualifiers(mdef->getQualifiers());

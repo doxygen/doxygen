@@ -218,8 +218,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool hasIncludeGraph() const = 0;
     virtual bool hasIncludedByGraph() const = 0;
 
-    virtual void enableIncludeGraph(bool e) = 0;
-    virtual void enableIncludedByGraph(bool e) = 0;
+    virtual void overrideIncludeGraph(bool e) = 0;
+    virtual void overrideIncludedByGraph(bool e) = 0;
 };
 
 std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());

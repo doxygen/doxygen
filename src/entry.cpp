@@ -62,17 +62,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
   subGrouping = e.subGrouping;
-  callGraph   = e.callGraph;
-  callerGraph = e.callerGraph;
-  includeGraph = e.includeGraph;
-  includedByGraph = e.includedByGraph;
-  directoryGraph = e.directoryGraph;
-  collaborationGraph = e.collaborationGraph;
-  inheritanceGraph = e.inheritanceGraph;
-  groupGraph  = e.groupGraph;
-  referencedByRelation = e.referencedByRelation;
-  referencesRelation   = e.referencesRelation;
-  inlineSource = e.inlineSource;
+  commandOverrides = e.commandOverrides;
   exported    = e.exported;
   virt        = e.virt;
   args        = e.args;
@@ -190,17 +180,6 @@ void Entry::removeSubEntry(const Entry *e)
 
 void Entry::reset()
 {
-  bool entryCallGraph   = Config_getBool(CALL_GRAPH);
-  bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
-  bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
-  bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
-  bool entryInlineSource    = Config_getBool(INLINE_SOURCES);
-  bool entryIncludeGraph    = Config_getBool(INCLUDE_GRAPH);
-  bool entryIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
-  bool entryDirectoryGraph  = Config_getBool(DIRECTORY_GRAPH);
-  bool entryCollaborationGraph = Config_getBool(COLLABORATION_GRAPH);
-  CLASS_GRAPH_t entryInheritanceGraph  = Config_getBool(CLASS_GRAPH);
-  bool entryGroupGraph  = Config_getBool(GROUP_GRAPHS);
   //printf("Entry::reset()\n");
   name.clear();
   type.clear();
@@ -231,17 +210,7 @@ void Entry::reset()
   bodyColumn = 1;
   endBodyLine = -1;
   mGrpId = -1;
-  callGraph   = entryCallGraph;
-  callerGraph = entryCallerGraph;
-  includeGraph = entryIncludeGraph;
-  includedByGraph = entryIncludedByGraph;
-  directoryGraph = entryDirectoryGraph;
-  collaborationGraph = entryCollaborationGraph;
-  inheritanceGraph = entryInheritanceGraph;
-  groupGraph = entryGroupGraph;
-  referencedByRelation = entryReferencedByRelation;
-  referencesRelation   = entryReferencesRelation;
-  inlineSource = entryInlineSource;
+  commandOverrides.reset();
   exported = false;
   section = EntryType::makeEmpty();
   mtype   = MethodTypes::Method;
