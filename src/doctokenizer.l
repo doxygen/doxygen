@@ -1135,6 +1135,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name=yytext;
                          return TK_WORD;
                        }
+<St_Ref>"{"{REFWORD}"}"{REFWORD} |
 <St_Ref>{REFWORD}      { // label to refer to
                          yyextra->token.name=yytext;
                          return TK_WORD;

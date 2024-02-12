@@ -969,6 +969,15 @@ class TagFileParser
       }
     }
 
+    void startTagFile(const XMLHandlers::Attributes& attrib )
+    {
+      m_tagFileNameTag = XMLHandlers::value(attrib,"tag");
+    }
+
+    void endTagFile()
+    {
+    }
+
     void startIgnoreElement(const XMLHandlers::Attributes& )
     {
     }
@@ -978,7 +987,7 @@ class TagFileParser
     }
 
     void buildMemberList(const std::shared_ptr<Entry> &ce,const std::vector<TagMemberInfo> &members);
-    void addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l);
+    void addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l, QCString tag = QCString());
 
 
     enum State { Invalid,
@@ -1026,6 +1035,7 @@ class TagFileParser
     State                      m_state = Invalid;
     std::stack<State>          m_stateStack;
     const XMLLocator          *m_locator = nullptr;
+    QCString                   m_tagFileNameTag;
 };
 
 //---------------------------------------------------------------------------------------------------------------
@@ -1075,7 +1085,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "page",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endPage         ) } },
   { "subpage",     { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endSubpage      ) } },
   { "docanchor",   { startCb(&TagFileParser::startDocAnchor    ), endCb(&TagFileParser::endDocAnchor    ) } },
-  { "tagfile",     { startCb(&TagFileParser::startIgnoreElement), endCb(&TagFileParser::endIgnoreElement) } },
+  { "tagfile",     { startCb(&TagFileParser::startTagFile      ), endCb(&TagFileParser::endTagFile      ) } },
   { "templarg",    { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endTemplateArg  ) } },
   { "type",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endType         ) } }
 };
@@ -1354,22 +1364,25 @@ void TagFileParser::dump()
   Debug::print(Debug::Tag,0,"-------------------------\n");
 }
 
-void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l)
+void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l, QCString tag)
 {
   for (const auto &ta : l)
   {
-    if (SectionManager::instance().find(QCString(ta.label))==0)
+    QCString label = QCString(ta.label);
+    if (!tag.isEmpty()) label = "{" + tag + "}" + label;
+    if (SectionManager::instance().find(label)==0)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
-      //    qPrint(ta->fileName),qPrint(ta->label));
+      //    qPrint(ta->fileName),qPrint(label));
       SectionInfo *si=SectionManager::instance().add(
-          ta.label,ta.fileName,-1,ta.title,
+          label,ta.fileName,-1,ta.title,
           SectionType::Anchor,0,m_tagName);
       e->anchors.push_back(si);
     }
     else
     {
-      p_warn("Duplicate anchor %s found",qPrint(ta.label));
+      SectionManager::instance().addDeleteSection(label);
+      //p_warn("Duplicate anchor %s found",qPrint(label));
     }
   }
 }
@@ -1634,7 +1647,8 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
           }
           else
           {
-            p_warn("Duplicate anchor %s found",qPrint(ta.label));
+            SectionManager::instance().addDeleteSection(ta.label);
+            //p_warn("Duplicate anchor %s found",qPrint(ta.label));
           }
         }
         mod->addSectionsToDefinition(anchorList);
@@ -1747,6 +1761,26 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       pe->startLine   = tpi->lineNr;
       pe->hasTagInfo  = TRUE;
       root->moveToSubEntryAndKeep(pe);
+
+      if (!isIndex && !m_tagFileNameTag.isEmpty()) // main page should be excluded as well as when no tag file name tag is included
+      {
+        pe = std::make_shared<Entry>();
+        pe->section  = EntryType::makePageDoc();
+        pe->name     = "{" + m_tagFileNameTag + "}" + tpi->name;
+        pe->args     = tpi->title;
+        for (const auto &subpage : tpi->subpages)
+        {
+          // we add subpage labels as a kind of "inheritance" relation to prevent
+          // needing to add another list to the Entry class.
+          pe->extends.push_back(BaseInfo(stripExtension(QCString(subpage)),Protection::Public,Specifier::Normal));
+        }
+        addDocAnchors(pe,tpi->docAnchors,m_tagFileNameTag);
+        pe->tagInfoData.tagName  = m_tagName;
+        pe->tagInfoData.fileName = stripExtension(tpi->filename);
+        pe->startLine   = tpi->lineNr;
+        pe->hasTagInfo  = TRUE;
+        root->moveToSubEntryAndKeep(pe);
+      }
     }
   }
 }

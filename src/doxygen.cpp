@@ -183,6 +183,8 @@ static OutputList      *g_outputList = nullptr;          // list of output gener
 static StringSet        g_usingDeclarations; // used classes
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
+static std::vector<QCString>  g_pageDocs;
+static std::map<QCString,int> g_pageDocsMap;
 
 void clearAll()
 {
@@ -9414,6 +9416,75 @@ void printSectionsTree()
   }
 }
 
+void checkRemovePageDoc(Entry *root, QCString name)
+{
+  if (!root) return;
+  if (root->section.isPageDoc() && root->hasTagInfo && root->name == name)
+  {
+     root->parent()->removeSubEntry(root);
+     root=0;
+  }
+  else
+  {
+    for (const auto &e : root->children())
+    {
+      checkRemovePageDoc(e.get(), name);
+    }
+  }
+}
+
+void getPageDoc(Entry *root)
+{
+  if (!root) return;
+  if (root->section.isPageDoc() && !root->hasTagInfo)
+  {
+    g_pageDocs.push_back(root->name);
+  }
+  else
+  {
+    for (const auto &e : root->children())
+    {
+      getPageDoc(e.get());
+    }
+  }
+}
+
+void countPageDocTag(Entry *root, QCString name)
+{
+  if (!root) return;
+  if (root->section.isPageDoc() && root->hasTagInfo && root->name == name)
+  {
+    auto it = g_pageDocsMap.find(name);
+    if (it==g_pageDocsMap.end())
+      g_pageDocsMap.insert(std::make_pair(name,1));
+    else
+      it->second = it->second + 1;
+  }
+  else
+  {
+    for (const auto &e : root->children())
+    {
+      countPageDocTag(e.get(), name);
+    }
+  }
+}
+
+void getPageDocTag(Entry *root)
+{
+  if (!root) return;
+  if (root->section.isPageDoc() && root->hasTagInfo)
+  {
+    countPageDocTag(root, root->name);
+  }
+  else
+  {
+    for (const auto &e : root->children())
+    {
+      getPageDocTag(e.get());
+    }
+  }
+}
+
 
 //----------------------------------------------------------------------------
 // generate the example documentation
@@ -11459,7 +11530,21 @@ static void stopDoxygen(int)
 
 static void writeTagFile()
 {
-  QCString generateTagFile = Config_getString(GENERATE_TAGFILE);
+  QCString tagLine = Config_getString(GENERATE_TAGFILE);
+  if (tagLine.isEmpty()) return;
+  QCString generateTagFile;
+  QCString generateTagFileTag;
+  int eqPos = tagLine.find('=');
+  if (eqPos!=-1) // tag command contains a tagfileTag
+  {
+    generateTagFile = tagLine.left(eqPos).stripWhiteSpace();
+    generateTagFileTag = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
+  }
+  else
+  {
+    generateTagFile = tagLine;
+    generateTagFileTag = substitute(tagLine,'\\','/');
+  }
   if (generateTagFile.isEmpty()) return;
 
   std::ofstream f = Portable::openOutputStream(generateTagFile);
@@ -11478,6 +11563,8 @@ static void writeTagFile()
   {
     tagFile << " doxygen_gitid=\"" << gitVersion << "\"";
   }
+  tagFile << " tag=\"" << convertToXML(generateTagFileTag) << "\"";
+
   tagFile << ">\n";
 
   // for each file
@@ -12029,7 +12116,6 @@ void parseInput()
   {
     readTagFile(root,s.c_str());
   }
-
   /**************************************************************************
    *             Parse source files                                         *
    **************************************************************************/
@@ -12046,6 +12132,25 @@ void parseInput()
     parseFilesMultiThreading(root);
   }
   g_s.end();
+
+  if (tagFileList.size() > 0)
+  {
+    getPageDoc(root.get());
+    for (auto & element : g_pageDocs) {
+      checkRemovePageDoc(root.get(), element);
+    }
+    g_pageDocs.clear();
+    getPageDocTag(root.get());
+    for (auto it : g_pageDocsMap)
+    {
+      if (it.second > 1)
+      {
+        checkRemovePageDoc(root.get(), it.first);
+      }
+    }
+    g_pageDocsMap.clear();
+    SectionManager::instance().cleanDeleteSection();
+  }
 
   /**************************************************************************
    *             Gather information                                         *
