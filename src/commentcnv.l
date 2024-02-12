@@ -227,7 +227,7 @@ ANYopt .*
   // Optional white space
 WSopt [ \t\r]*
   // readline non special
-RLopt [^\\@<\n\*\/]*
+RLopt [^\\@<\n\*\/`]*
   // Optional slash
 SLASHopt [/]*
 
@@ -1140,10 +1140,15 @@ SLASHopt [/]*
   				     copyToOutput(yyscanner,yytext,yyleng);
                                      BEGIN(yyextra->readLineCtx);
                                    }
+<ReadLine>```                      {
+  				     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
+<ReadLine>`[^`]+`                  {
+  				     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
 <ReadLine>.			   {
   				     copyToOutput(yyscanner,yytext,yyleng);
   				   }
-
 <IncludeFile>.                     {
   				     copyToOutput(yyscanner,yytext,yyleng);
                                    }
