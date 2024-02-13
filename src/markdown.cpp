@@ -711,7 +711,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
       {
         i++;
         size_t l = endBlockName.length();
-        while (i<size-l)
+        while (i+l<size)
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
               data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -965,7 +965,7 @@ int Markdown::Private::processHtmlTagWrite(std::string_view data,size_t offset,b
   if (tagName.lower()=="pre") // found <pre> tag
   {
     bool insideStr=FALSE;
-    while (i<size-6)
+    while (i+6<size)
     {
       char c=data[i];
       if (!insideStr && c=='<') // potential start of html tag
@@ -1663,7 +1663,7 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
   {
     AUTO_TRACE_ADD("endBlockName={}",endBlockName);
     size_t l = endBlockName.length();
-    while (i<size-l)
+    while (i+l<size)
     {
       if ((data[i]=='\\' || data[i]=='@') && // command
           data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -2594,7 +2594,7 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
       // empty strings, which would indicate the sequence "||", used
       // to signify spanning columns.
       size_t colSpan = 1;
-      while ((c < columns-1) && tableContents[row][c+1].colSpan)
+      while ((c+1 < columns) && tableContents[row][c+1].colSpan)
       {
         c++;
         colSpan++;
@@ -3199,7 +3199,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
         out+=data[i];
         i++;
         size_t l = endBlockName.length();
-        while (i<data.size()-l)
+        while (i+l<data.size())
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
               data[i-1]!='\\' && data[i-1]!='@') // not escaped
