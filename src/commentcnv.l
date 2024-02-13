@@ -407,7 +407,7 @@ SLASHopt [/]*
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<Scan>{CPPC}/[!/].*\n              { /* one line special C++ comment */
+<Scan>{CPPC}[!/]/.*\n              { /* one line special C++ comment */
 				     yyextra->inSpecialComment=true;
   				     copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->readLineCtx=YY_START;
@@ -643,7 +643,7 @@ SLASHopt [/]*
 				     }
                                    }
 <VerbatimCode>^[ \t]*{CPPC}[\!\/]?   { /* skip leading comments */
-  				     if (!yyextra->inSpecialComment)
+  				     if (!yyextra->inSpecialComment || yyextra->mlBrief)
 				     {
                                        copyToOutput(yyscanner,yytext,yyleng);
 				     }
