@@ -77,7 +77,9 @@ has its own advantages and disadvantages:
    of choice. To make life easier doxygen ships with an example indexer 
    (doxyindexer) and search engine (doxysearch.cgi) based on 
    the <a href="https://xapian.org/">Xapian</a> open source search engine 
-   library.
+   library. Both binaries are included in the distribution but not installed
+   by default; they can be manually copied from the `bin` folder to i.e.
+   `/usr/local/bin` or `/var/www/cgi-bin` as desired.
 
    To enable this search method set 
    \ref cfg_searchengine "SEARCHENGINE",
