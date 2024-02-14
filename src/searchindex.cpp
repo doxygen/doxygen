@@ -468,6 +468,14 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
     {
       e.args = (toMemberDef(ctx))->argsString();
     }
+    else if (ctx->definitionType()==Definition::TypeGroup)
+    {
+      const GroupDef *gd = toGroupDef(ctx);
+      if (!gd->groupTitle().isEmpty())
+      {
+        e.name = filterTitle(gd->groupTitle());
+      }
+    }
     e.extId = extId;
     e.url  = url;
     it = m_docEntries.insert({key.str(),e}).first;
