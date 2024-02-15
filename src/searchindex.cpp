@@ -476,6 +476,14 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
         e.name = filterTitle(gd->groupTitle());
       }
     }
+    else if (ctx->definitionType()==Definition::TypePage)
+    {
+      const PageDef *pd = toPageDef(ctx);
+      if (pd->hasTitle())
+      {
+        e.name = filterTitle(pd->title());
+      }
+    }
     e.extId = extId;
     e.url  = url;
     it = m_docEntries.insert({key.str(),e}).first;
