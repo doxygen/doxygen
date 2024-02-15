@@ -2097,7 +2097,6 @@ void generateXML()
 
   ResourceMgr::instance().copyResource("xml.xsd",outputDirectory);
   ResourceMgr::instance().copyResource("index.xsd",outputDirectory);
-  ResourceMgr::instance().copyResource("doxyfile.xsd",outputDirectory);
 
   QCString fileName=outputDirectory+"/compound.xsd";
   std::ofstream f = Portable::openOutputStream(fileName);
@@ -2124,6 +2123,42 @@ void generateXML()
         if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
         {
           HtmlEntityMapper::instance().writeXMLSchema(t);
+        }
+        else
+        {
+          t.write(startLine,len);
+        }
+      }
+      startLine=endLine;
+    }
+  }
+  f.close();
+
+  fileName=outputDirectory+"/doxyfile.xsd";
+  f = Portable::openOutputStream(fileName);
+  if (!f.is_open())
+  {
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    return;
+  }
+  {
+    TextStream t(&f);
+
+    // write doxyfile.xsd, but replace special marker with the entities
+    QCString doxyfile_xsd = ResourceMgr::instance().getAsString("doxyfile.xsd");
+    const char *startLine = doxyfile_xsd.data();
+    while (*startLine)
+    {
+      // find end of the line
+      const char *endLine = startLine+1;
+      while (*endLine && *(endLine-1)!='\n') endLine++; // skip to end of the line including \n
+      int len=static_cast<int>(endLine-startLine);
+      if (len>0)
+      {
+        QCString s(startLine,len);
+        if (s.find("<!-- Automatically insert here the configuration settings -->")!=-1)
+        {
+          Config::writeXSDDoxyfile(t);
         }
         else
         {

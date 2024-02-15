@@ -448,6 +448,11 @@ void ConfigList::writeXMLDoxyfile(TextStream &t)
   t << "  </option>\n";
 }
 
+void ConfigList::writeXSDDoxyfile(TextStream &t)
+{
+  t << "      <xsd:enumeration value=\"" << m_name << "\"/>\n";
+}
+
 void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
 {
   if (!sl)
@@ -480,6 +485,11 @@ void ConfigEnum::writeXMLDoxyfile(TextStream &t)
   writeStringValue(t,m_value,false);
   t << "</value>";
   t << "</option>\n";
+}
+
+void ConfigEnum::writeXSDDoxyfile(TextStream &t)
+{
+  t << "      <xsd:enumeration value=\"" << m_name << "\"/>\n";
 }
 
 void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
@@ -516,6 +526,11 @@ void ConfigString::writeXMLDoxyfile(TextStream &t)
   t << "]]>";
   t << "</value>";
   t << "</option>\n";
+}
+
+void ConfigString::writeXSDDoxyfile(TextStream &t)
+{
+  t << "      <xsd:enumeration value=\"" << m_name << "\"/>\n";
 }
 
 void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
@@ -557,6 +572,11 @@ void ConfigInt::writeXMLDoxyfile(TextStream &t)
   writeIntValue(t,m_value,false);
   t << "</value>";
   t << "</option>\n";
+}
+
+void ConfigInt::writeXSDDoxyfile(TextStream &t)
+{
+  t << "      <xsd:enumeration value=\"" << m_name << "\"/>\n";
 }
 
 void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
@@ -601,8 +621,18 @@ void ConfigBool::writeXMLDoxyfile(TextStream &t)
   t << "</option>\n";
 }
 
+void ConfigBool::writeXSDDoxyfile(TextStream &t)
+{
+  t << "      <xsd:enumeration value=\"" << m_name << "\"/>\n";
+}
+
 void ConfigObsolete::writeTemplate(TextStream &,bool,bool) {}
+
 void ConfigDisabled::writeTemplate(TextStream &,bool,bool) {}
+void ConfigDisabled::writeXSDDoxyfile(TextStream &t)
+{
+  t << "      <xsd:enumeration value=\"" << m_name << "\"/>\n";
+}
 
 /* -----------------------------------------------------------------
  *
@@ -1335,6 +1365,18 @@ void ConfigImpl::writeXMLDoxyfile(TextStream &t)
     option->writeXMLDoxyfile(t);
   }
   t << "</doxyfile>\n";
+}
+
+void ConfigImpl::writeXSDDoxyfile(TextStream &t)
+{
+  for (const auto &option : m_options)
+  {
+    option->writeXSDDoxyfile(t);
+  }
+  for (const auto &option : m_disabled)
+  {
+    option->writeXSDDoxyfile(t);
+  }
 }
 
 void ConfigImpl::convertStrToVal(Config::CompareMode compareMode)
@@ -2280,6 +2322,11 @@ void Config::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 void Config::writeXMLDoxyfile(TextStream &t)
 {
   ConfigImpl::instance()->writeXMLDoxyfile(t);
+}
+
+void Config::writeXSDDoxyfile(TextStream &t)
+{
+  ConfigImpl::instance()->writeXSDDoxyfile(t);
 }
 
 bool Config::parse(const QCString &fileName,bool update, Config::CompareMode compareMode)
