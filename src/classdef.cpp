@@ -3020,7 +3020,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
                 md->anchor(),name);
 
             if ( md->isFunction() || md->isSignal() || md->isSlot() ||
-                (md->isFriend() && md->argsString().isEmpty()))
+                (md->isFriend() && !md->argsString().isEmpty()))
               ol.docify(md->argsString());
             else if (md->isEnumerate())
               ol.parseText(" "+theTranslator->trEnumName());
