@@ -4796,6 +4796,7 @@ QCString substituteTemplateArgumentsInString(
     p=i+l;
   }
   result+=name.substr(p);
+  result=result.simplifyWhiteSpace();
   //printf("      Inheritance relation %s -> %s\n",
   //    qPrint(name),qPrint(result));
   return result.stripWhiteSpace();
