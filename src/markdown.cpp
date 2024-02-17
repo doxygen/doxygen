@@ -1527,12 +1527,12 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
       }
       out+="\"";
     }
-    else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1)
+    else if ((lp=link.find('#'))!=-1 || link.find('/')!=-1 || link.find('.')!=-1)
     { // file/url link
-      if (link.at(0) == '#')
+      if (lp!=-1 && !isURL(link))
       {
         out+="@ref \"";
-        out+=AnchorGenerator::addPrefixIfNeeded(link.mid(1).str());
+        out+=AnchorGenerator::addPrefixIfNeeded(link.mid(lp+1).str());
         out+="\" \"";
         out+=substitute(content.simplifyWhiteSpace(),"\"","&quot;");
         out+="\"";
