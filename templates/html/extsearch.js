@@ -78,16 +78,60 @@ function searchFor(query,page,count) {
       $.each(data.items, function(i,item){
         let prefix = tagMap[item.tag];
         if (prefix) prefix+='/'; else prefix='';
+
+        icon = "asterisk";
+
+        if (item.type == "dir")
+          icon = "folder";
+        else if (item.type == "package")
+          icon = "folder_zip";
+        else if (item.type == "namespace")
+          icon = "clarify";
+
+        else if (item.type == "file")
+          icon = "description";
+        else if (item.type == "page")
+          icon = "article";
+        else if (item.type == "group")
+          icon = "full_coverage";
+        else if (item.type == "source")
+          icon = "code";
+
+        else if (item.type == "function")
+          icon = "data_object";
+        else if (item.type == "variable")
+          icon = "variables";
+        else if (item.type == "property")
+          icon = "list_alt";
+        else if (item.type == "typedef")
+          icon = "numbers";
+        else if (item.type == "define")
+          icon = "numbers";
+        else if (item.type == "enum")
+          icon = "data_array";
+        else if (item.type == "enumvalue")
+          icon = "data_array";
+
+        else if (item.type == "event")
+          icon = "overview";
+        else if (item.type == "related")
+          icon = "read_more";
+        else if (item.type == "friend")
+          icon = "contact_page";
+        else if (item.type == "slot")
+          icon = "location_chip";
+        else if (item.type == "signal")
+          icon = "data_alert";
+
         r+='<tr class="searchresult">'+
            '<td align="right">'+(data.first+i+1)+'.</td>'+
-           '<td>'+escapeHtml(item.type)+'&#160;'+
-                '<a href="'+escapeHtml(prefix+item.url)+
+           '<td><a href="'+escapeHtml(prefix+item.url)+
                 '">'+escapeHtml(item.name)+'</a>';
         if (item.type=="source") {
           const l=item.url.match(/[1-9][0-9]*$/);
           if (l) r+=' at line '+parseInt(l[0]);
         }
-        r+='</td>';
+        r+='<span class="material-symbols-outlined">'+icon+'</span></td>';
         for (let i=0;i<item.fragments.length;i++) {
           r+='<tr><td></td><td>'+item.fragments[i]+'</td></tr>';
         }

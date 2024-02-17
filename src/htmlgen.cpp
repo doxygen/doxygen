@@ -420,6 +420,8 @@ static QCString substituteHtmlKeywords(const QCString &str,
     if (!serverBasedSearch)
     {
       searchCssJs += "<script type=\"text/javascript\" src=\"$relpath^search/searchdata.js\"></script>\n";
+    } else {
+      searchCssJs += "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0\" />";
     }
     searchCssJs += "<script type=\"text/javascript\" src=\"$relpath^search/search.js\"></script>\n";
 
