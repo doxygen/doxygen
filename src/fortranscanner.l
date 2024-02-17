@@ -92,7 +92,6 @@ struct blockState
   QCString blockString;
   int      blockLineNr = -1;
 };
-std::stack<blockState> g_blockStack;
 // {{{ ----- Helper structs -----
 //! Holds yyextra->modifiers (ie attributes) for one symbol (variable, function, etc)
 struct SymbolModifiers
@@ -194,6 +193,7 @@ struct fortranscannerYY_state
   QCString                 docBlockName;
   QCString                 blockString;
   int                      blockLineNr=-1;
+  std::stack<blockState>   blockStack;
   QCString                 debugStr;
   size_t                   fencedSize = 0;
 //  Argument                *parameter; // element of parameter list
@@ -506,7 +506,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                             yyextra->blockString=yytext;
                                             yyextra->blockString+=" (anonymous program)";
                                             yyextra->blockLineNr=yyextra->lineNr;
-                                            g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           yy_push_state(Use,yyscanner);
@@ -669,7 +669,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           yyextra->blockString="module ";
                                           yyextra->blockString+=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(ModuleBody);
                                         }
 <Program>{ID}                           {
@@ -677,7 +677,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           yyextra->blockString="program ";
                                           yyextra->blockString+=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(ModuleBody);
                                         }
 
@@ -702,7 +702,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                             yyextra->blockString=yytext;
                                             yyextra->blockString+=" (anonymous program)";
                                             yyextra->blockLineNr=yyextra->lineNr;
-                                            g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
 
@@ -912,7 +912,7 @@ private                                 {
                                             yyextra->blockString=yytext;
                                             yyextra->blockString+=" (anonymous program)";
                                             yyextra->blockLineNr=yyextra->lineNr;
-                                            g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           yy_push_state(AttributeList,yyscanner);
@@ -925,7 +925,7 @@ private                                 {
                                             yyextra->blockString=yytext;
                                             yyextra->blockString+=" (anonymous program)";
                                             yyextra->blockLineNr=yyextra->lineNr;
-                                            g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           QCString tmp = yytext;
@@ -943,7 +943,7 @@ private                                 {
                                             yyextra->blockString=yytext;
                                             yyextra->blockString+=" (anonymous program)";
                                             yyextra->blockLineNr=yyextra->lineNr;
-                                            g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           QCString tmp = yytext;
@@ -959,7 +959,7 @@ private                                 {
                                             yyextra->blockString=yytext;
                                             yyextra->blockString+=" (anonymous program)";
                                             yyextra->blockLineNr=yyextra->lineNr;
-                                            g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                         }
@@ -970,7 +970,7 @@ private                                 {
                                             yyextra->blockString=yytext;
                                             yyextra->blockString+=" (anonymous program)";
                                             yyextra->blockLineNr=yyextra->lineNr;
-                                            g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                         }
@@ -1241,7 +1241,7 @@ private                                 {
                                             yyextra->blockString=yytext;
                                             yyextra->blockString+=" (anonymous program)";
                                             yyextra->blockLineNr=yyextra->lineNr;
-                                            g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                            yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
 
@@ -1491,7 +1491,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"ifile"{B}+"\""[^\n\"]+"\"" {
@@ -1525,7 +1525,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{B}*"<"<CODE>">"              {
@@ -1534,7 +1534,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-]     { // verbatim command
@@ -1543,7 +1543,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command
@@ -1552,7 +1552,7 @@ private                                 {
                                           yyextra->fencedSize=0;
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"~~~"[~]*                     {
@@ -1562,7 +1562,7 @@ private                                 {
                                           yyextra->fencedSize=pat.length();
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
@@ -1574,7 +1574,7 @@ private                                 {
                                           yyextra->fencedSize=pat.length();
                                           yyextra->blockString=yytext;
                                           yyextra->blockLineNr=yyextra->lineNr;
-                                          g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+                                          yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>[^@*`~\/\\\n]+                { // any character that isn't special
@@ -2998,7 +2998,7 @@ static void addSubprogram(yyscan_t yyscanner,const QCString &text)
   yyextra->current->argList.clear();
   yyextra->blockString=text;
   yyextra->blockLineNr=yyextra->lineNr;
-  g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+  yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
   yyextra->docBlock.clear();
 }
 
@@ -3015,7 +3015,7 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type)
     yyextra->blockString=yytext;
     yyextra->blockString+=" (anonymous program)";
     yyextra->blockLineNr=yyextra->lineNr;
-    g_blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
+    yyextra->blockStack.push(blockState(yyextra->blockString,yyextra->blockLineNr));
     yy_push_state(ModuleBody,yyscanner); //anon program
   }
 
@@ -3443,7 +3443,7 @@ static void scanner_abort(yyscan_t yyscanner)
   fprintf(stderr,"********************************************************************\n");
 
   // emty the stack
-  while (!g_blockStack.empty()) g_blockStack.pop();
+  while (!yyextra->blockStack.empty()) yyextra->blockStack.pop();
 
   bool start=FALSE;
 
@@ -3471,16 +3471,16 @@ static inline void pop_state(yyscan_t yyscanner)
 static inline void popBlockStack(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  g_blockStack.pop();
-  if (g_blockStack.empty())
+  yyextra->blockStack.pop();
+  if (yyextra->blockStack.empty())
   {
     yyextra->blockString.clear();
     yyextra->blockLineNr=-1;
   }
   else
   {
-    yyextra->blockString=g_blockStack.top().blockString;
-    yyextra->blockLineNr=g_blockStack.top().blockLineNr;
+    yyextra->blockString=yyextra->blockStack.top().blockString;
+    yyextra->blockLineNr=yyextra->blockStack.top().blockLineNr;
   }
 }
 //----------------------------------------------------------------------------
