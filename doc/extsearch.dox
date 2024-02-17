@@ -216,7 +216,7 @@ Each field has a name. The following field names are supported:
 - *type*: the type of the search entry; can be one of: source, function, slot, 
           signal, variable, typedef, enum, enumvalue, property, event, related, 
           friend, define, file, namespace, concept, group, package, page, dir, module,
-          constatnts, library, type, union, interface, protocol category, exception, class,
+          constants, library, type, union, interface, protocol category, exception, class,
           struct, service, singleton
 - *name*: the name of the search entry; for a method this is the qualified name of the method,
           for a class it is the name of the class, etc.
