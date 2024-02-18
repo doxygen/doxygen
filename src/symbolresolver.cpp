@@ -807,7 +807,7 @@ void SymbolResolver::Private::getResolvedSymbol(
       if (md->isCallable() && !args.isEmpty())
       {
         QCString actArgs;
-        if (md->isArtificial() && md->formalTemplateArguments()) // for members of an instatiated template we need to replace
+        if (md->isArtificial() && md->formalTemplateArguments()) // for members of an instantiated template we need to replace
                                                                  // the formal arguments by the actual ones before matching
                                                                  // See issue #10640
         {
