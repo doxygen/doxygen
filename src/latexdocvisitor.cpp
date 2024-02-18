@@ -1151,26 +1151,24 @@ static void writeStartTableCommand(TextStream &t,const DocNodeVariant *n,size_t 
 {
   if (tableIsNested(n))
   {
-    t << "{\\begin{tabularx}{\\linewidth}{|*{" << cols << "}{>{\\raggedright\\arraybackslash}X|}}";
+    t << "\\begin{DoxyNestedTable}{" << cols << "}\n";
   }
   else
   {
-    t << "\\tabulinesep=1mm\n\\begin{longtabu}spread 0pt [c]{*{" << cols << "}{|X[-1]}|}\n";
+    t << "\\begin{DoxyTable}{" << cols << "}\n";
   }
-  //return isNested ? "TabularNC" : "TabularC";
 }
 
 static void writeEndTableCommand(TextStream &t,const DocNodeVariant *n)
 {
   if (tableIsNested(n))
   {
-    t << "\\end{tabularx}}\n";
+    t << "\\end{DoxyNestedTable}}\n";
   }
   else
   {
-    t << "\\end{longtabu}\n";
+    t << "\\end{DoxyTable}\n";
   }
-  //return isNested ? "TabularNC" : "TabularC";
 }
 
 void LatexDocVisitor::operator()(const DocHtmlTable &t)

@@ -510,14 +510,15 @@
 
 % Used by tables
 \newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}%
-\newenvironment{TabularC}[1]%
-{\tabulinesep=1mm
-\begin{longtabu*}spread 0pt [c]{*#1{|X[-1]}|}}%
-{\end{longtabu*}\par}%
 
-\newenvironment{TabularNC}[1]%
-{\begin{tabu}spread 0pt [l]{*#1{|X[-1]}|}}%
-{\end{tabu}\par}%
+\newenvironment{DoxyTable}[1]%
+{\tabulinesep=1mm%
+\begin{longtabu}spread 0pt [c]{*{#1}{|X[-1]}|}}%
+{\end{longtabu}}%
+
+\newenvironment{DoxyNestedTable}[1]%
+{\begin{tabularx}{\linewidth}{|*{#1}{>{\raggedright\arraybackslash}X|}}}%
+{\end{tabularx}}%
 
 % Used for member group headers
 \newenvironment{Indent}{%
