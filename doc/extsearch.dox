@@ -74,7 +74,7 @@ You should get the following message:
 If you use Internet Explorer you may be prompted to download a file,
 which will then contain this message. 
 
-Since we didn't create or install a doxysearch.db it is OK for the test to
+Since we didn't create or install a `doxysearch.db` it is OK for the test to
 fail for this reason. How to correct this is discussed in the next section.
 
 Before continuing with the next section add the above 
@@ -104,7 +104,7 @@ line:
     doxyindexer searchdata.xml
 
 This will create a directory called `doxysearch.db` with some files in it.
-By default the directory will be created at the location from which doxyindexer
+By default the directory will be created at the location from which `doxyindexer`
 was started, but you can change the directory using the `-o` option.
 
 Copy the `doxysearch.db` directory to the same directory as where 
@@ -168,7 +168,7 @@ and the search results will link to the right documentation set.
 
 \section extsearch_update Updating the index
 
-When you modify the source code, you should re-run doxygen to get up to date
+When you modify the source code, you should re-run `doxygen` to get up to date
 documentation again. When using external searching you also need to update the
 search index by re-running `doxyindexer`. You could wrap the call to `doxygen`
 and `doxyindexer` together in a script to make this process easier.
@@ -215,7 +215,9 @@ one method:
 Each field has a name. The following field names are supported:
 - *type*: the type of the search entry; can be one of: source, function, slot, 
           signal, variable, typedef, enum, enumvalue, property, event, related, 
-          friend, define, file, namespace, group, package, page, dir
+          friend, define, file, namespace, concept, group, package, page, dir, module,
+          constants, library, type, union, interface, protocol category, exception, class,
+          struct, service, singleton
 - *name*: the name of the search entry; for a method this is the qualified name of the method,
           for a class it is the name of the class, etc.
 - *args*: the parameter list (in case of functions or methods)
