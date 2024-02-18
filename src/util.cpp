@@ -7165,9 +7165,21 @@ int computeQualifiedIndex(const QCString &name)
   int l = static_cast<int>(name.length());
   int lastSepPos = -1;
   const char *p = name.data();
-  int ts = name.findRev(">::");
+  int i=l-2;
+  // --- begin optimized version of ts=name.findRev(">::");
+  int ts = -1;
+  while (i>=0)
+  {
+    if (p[i]=='>' && p[i+1]==':' && p[i+2]==':')
+    {
+      ts=i;
+      break;
+    }
+    i--;
+  }
+  // --- end optimized version
   if (ts==-1) ts=0; else p+=++ts;
-  for (int i=ts;i<l-1;i++)
+  for (i=ts;i<l-1;i++)
   {
     char c=*p++;
     if (c==':' && *p==':') lastSepPos=i;
