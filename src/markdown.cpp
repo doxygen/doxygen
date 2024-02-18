@@ -1529,7 +1529,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
     }
     else if ((lp=link.find('#'))!=-1 || link.find('/')!=-1 || link.find('.')!=-1)
     { // file/url link
-      if (lp!=-1 && !isURL(link))
+      if (lp!=-1 && !isURL(link) && Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB)
       {
         out+="@ref \"";
         out+=AnchorGenerator::addPrefixIfNeeded(link.mid(lp+1).str());
