@@ -213,6 +213,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     const ArgumentList &declArgumentList() const override;
     const ArgumentList &templateArguments() const override;
     const ArgumentLists &definitionTemplateParameterLists() const override;
+    std::optional<ArgumentList> formalTemplateArguments() const override;
     int getMemberGroupId() const override;
     MemberGroup *getMemberGroup() const override;
     bool fromAnonymousScope() const override;
@@ -301,6 +302,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void overrideReferencesRelation(bool e) override;
     void overrideInlineSource(bool e) override;
     void setTemplateMaster(MemberDef *mt) override;
+    void setFormalTemplateArguments(const ArgumentList &al) override;
     void addListReference(Definition *d) override;
     void setDocsForDefinition(bool b) override;
     void setGroupAlias(const MemberDef *md) override;
@@ -437,6 +439,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     ArgumentList m_tArgList;      // template argument list of function template
     ArgumentList m_typeConstraints; // type constraints for template parameters
     MemberDef *m_templateMaster = nullptr;
+    std::optional<ArgumentList> m_formalTemplateArguments;
     ArgumentLists m_defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
 
@@ -838,6 +841,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->templateArguments(); }
     const ArgumentLists &definitionTemplateParameterLists() const override
     { return getMdAlias()->definitionTemplateParameterLists(); }
+    std::optional<ArgumentList> formalTemplateArguments() const override
+    { return getMdAlias()->formalTemplateArguments(); }
     int getMemberGroupId() const override
     { return getMdAlias()->getMemberGroupId(); }
     MemberGroup *getMemberGroup() const override
@@ -1464,6 +1469,7 @@ MemberDefImpl::MemberDefImpl(const MemberDefImpl &md) : DefinitionMixin(md)
   m_tArgList                       = md.m_tArgList                       ;
   m_typeConstraints                = md.m_typeConstraints                ;
   m_templateMaster                 = md.m_templateMaster                 ;
+  m_formalTemplateArguments        = md.m_formalTemplateArguments        ;
   m_defTmpArgLists                 = md.m_defTmpArgLists                 ;
   m_metaData                       = md.m_metaData                       ;
   m_cachedAnonymousType            = md.m_cachedAnonymousType            ;
@@ -4327,33 +4333,33 @@ std::unique_ptr<MemberDef> MemberDefImpl::createTemplateInstanceMember(
     // replace formal arguments with actuals
     for (Argument &arg : *actualArgList)
     {
-      arg.type = substituteTemplateArgumentsInString(arg.type,formalArgs,actualArgs);
+      arg.type = substituteTemplateArgumentsInString(arg.type,formalArgs,actualArgs.get());
     }
     actualArgList->setTrailingReturnType(
-       substituteTemplateArgumentsInString(actualArgList->trailingReturnType(),formalArgs,actualArgs));
+       substituteTemplateArgumentsInString(actualArgList->trailingReturnType(),formalArgs,actualArgs.get()));
   }
 
   QCString methodName=name();
   if (methodName.startsWith("operator ")) // conversion operator
   {
-    methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
+    methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs.get());
   }
 
   auto imd = createMemberDef(
                        getDefFileName(),getDefLine(),getDefColumn(),
-                       substituteTemplateArgumentsInString(m_type,formalArgs,actualArgs),
+                       substituteTemplateArgumentsInString(m_type,formalArgs,actualArgs.get()),
                        methodName,
-                       substituteTemplateArgumentsInString(m_args,formalArgs,actualArgs),
+                       substituteTemplateArgumentsInString(m_args,formalArgs,actualArgs.get()),
                        m_exception, m_prot,
                        m_virt, m_stat, m_related, m_mtype,
                        ArgumentList(), ArgumentList(), ""
                    );
   auto mmd = toMemberDefMutable(imd.get());
   mmd->moveArgumentList(std::move(actualArgList));
-  mmd->setDefinition(substituteTemplateArgumentsInString(m_def,formalArgs,actualArgs));
+  mmd->setDefinition(substituteTemplateArgumentsInString(m_def,formalArgs,actualArgs.get()));
   mmd->setBodyDef(getBodyDef());
   mmd->setBodySegment(getDefLine(),getStartBodyLine(),getEndBodyLine());
-  //imd->setBodyMember(this);
+  mmd->setFormalTemplateArguments(formalArgs);
 
   // TODO: init other member variables (if needed).
   // TODO: reimplemented info
@@ -5598,6 +5604,11 @@ const MemberDef *MemberDefImpl::templateMaster() const
   return m_templateMaster;
 }
 
+std::optional<ArgumentList> MemberDefImpl::formalTemplateArguments() const
+{
+  return m_formalTemplateArguments;
+}
+
 bool MemberDefImpl::isTypedefValCached() const
 {
   return m_isTypedefValCached;
@@ -5817,7 +5828,6 @@ void MemberDefImpl::setExplicitExternal(bool b,const QCString &df,int line,int c
   }
 }
 
-
 void MemberDefImpl::setDeclFile(const QCString &df,int line,int column)
 {
   m_declFileName = df;
@@ -5854,6 +5864,11 @@ void MemberDefImpl::setTemplateMaster(MemberDef *mt)
 {
   m_templateMaster=mt;
   m_isLinkableCached = 0;
+}
+
+void MemberDefImpl::setFormalTemplateArguments(const ArgumentList &al)
+{
+  m_formalTemplateArguments = al;
 }
 
 void MemberDefImpl::setDocsForDefinition(bool b)

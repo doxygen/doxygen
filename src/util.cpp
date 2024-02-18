@@ -4672,7 +4672,7 @@ QCString normalizeNonTemplateArgumentsInString(
 QCString substituteTemplateArgumentsInString(
     const QCString &nm,
     const ArgumentList &formalArgs,
-    const std::unique_ptr<ArgumentList> &actualArgs)
+    const ArgumentList *actualArgs)
 {
   //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
   //    qPrint(nm),qPrint(argListToString(formalArgs)),actualArgs ? qPrint(argListToString(*actualArgs)): "");
@@ -4692,7 +4692,7 @@ QCString substituteTemplateArgumentsInString(
     size_t l = match.length();
     if (i>p) result += name.substr(p,i-p);
     QCString n(match.str());
-    ArgumentList::iterator actIt;
+    ArgumentList::const_iterator actIt;
     if (actualArgs)
     {
       actIt = actualArgs->begin();

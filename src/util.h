@@ -286,7 +286,7 @@ QCString normalizeNonTemplateArgumentsInString(
 QCString substituteTemplateArgumentsInString(
        const QCString &name,
        const ArgumentList &formalArgs,
-       const std::unique_ptr<ArgumentList> &actualArgs);
+       const ArgumentList *actualArgs);
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,

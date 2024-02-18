@@ -4115,6 +4115,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
       mmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       mmd->setMemberSpecifiers(md->getMemberSpecifiers());
       mmd->setMemberGroupId(md->getMemberGroupId());
+      mmd->setArtificial(true);
       insertMember(imd.get());
       //printf("Adding member=%s %s%s to class %s templSpec %s\n",
       //    imd->typeString(),qPrint(imd->name()),imd->argsString(),

@@ -151,7 +151,7 @@ struct SymbolResolver::Private
                            const Definition *scope,                             // in
                            const Definition *d,                                 // in
                            const QCString &explicitScopePart,                   // in
-                           const std::unique_ptr<ArgumentList> &actTemplParams, // in
+                           const ArgumentList *actTemplParams,                  // in
                            int &minDistance,                                    // input
                            const ClassDef *&bestMatch,                          // out
                            const MemberDef *&bestTypedef,                       // out
@@ -181,7 +181,7 @@ struct SymbolResolver::Private
                            const MemberDef **pMemType,                          // out
                            QCString *pTemplSpec,                                // out
                            QCString *pResolvedType,                             // out
-                           const std::unique_ptr<ArgumentList> &actTemplParams = std::unique_ptr<ArgumentList>()
+                           const ArgumentList *actTemplParams = nullptr
                           );
 
     const Definition *followPath(StringUnorderedSet &visitedKeys,
@@ -333,7 +333,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
 
     for (Definition *d : range)
     {
-      getResolvedType(visitedKeys,scope,d,explicitScopePart,actTemplParams,
+      getResolvedType(visitedKeys,scope,d,explicitScopePart,actTemplParams.get(),
           minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
     }
@@ -567,7 +567,7 @@ void SymbolResolver::Private::getResolvedType(
                          const Definition *scope,                             // in
                          const Definition *d,                                 // in
                          const QCString &explicitScopePart,                   // in
-                         const std::unique_ptr<ArgumentList> &actTemplParams, // in
+                         const ArgumentList *actTemplParams,                  // in
                          int &minDistance,                                    // inout
                          const ClassDef *&bestMatch,                          // out
                          const MemberDef *&bestTypedef,                       // out
@@ -803,10 +803,21 @@ void SymbolResolver::Private::getResolvedSymbol(
       const MemberDef *md = toMemberDef(d);
 
       bool match = true;
-      AUTO_TRACE_ADD("member={}",md->name());
+      AUTO_TRACE_ADD("member={} args={}",md->name(),argListToString(md->argumentList()));
       if (md->isCallable() && !args.isEmpty())
       {
-        std::unique_ptr<ArgumentList> argList = stringToArgumentList(md->getLanguage(),args);
+        QCString actArgs;
+        if (md->isArtificial() && md->formalTemplateArguments()) // for members of an instatiated template we need to replace
+                                                                 // the formal arguments by the actual ones before matching
+                                                                 // See issue #10640
+        {
+          actArgs = substituteTemplateArgumentsInString(args,md->formalTemplateArguments().value(),&md->argumentList());
+        }
+        else
+        {
+          actArgs = args;
+        }
+        std::unique_ptr<ArgumentList> argList = stringToArgumentList(md->getLanguage(),actArgs);
         const ArgumentList &mdAl = md->argumentList();
         match = matchArguments2(md->getOuterScope(),md->getFileDef(),&mdAl,
               scope, md->getFileDef(),argList.get(),
@@ -854,7 +865,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
                   const MemberDef **pMemType,                          // out
                   QCString *pTemplSpec,                                // out
                   QCString *pResolvedType,                             // out
-                  const std::unique_ptr<ArgumentList> &actTemplParams) // in
+                  const ArgumentList *actTemplParams)                  // in
 {
   AUTO_TRACE("md={}",md->qualifiedName());
   std::lock_guard<std::recursive_mutex> lock(g_cacheTypedefMutex);

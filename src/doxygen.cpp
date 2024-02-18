@@ -4043,7 +4043,7 @@ static void findUsedClassesForClass(const Entry *root,
                            ClassDefMutable *masterCd,
                            ClassDefMutable *instanceCd,
                            bool isArtificial,
-                           const std::unique_ptr<ArgumentList> &actualArgs = std::unique_ptr<ArgumentList>(),
+                           const ArgumentList *actualArgs = nullptr,
                            const TemplateNameMap &templateNames = TemplateNameMap()
                            )
 {
@@ -4207,7 +4207,7 @@ static void findBaseClassesForClass(
       ClassDefMutable *instanceCd,
       FindBaseClassRelation_Mode mode,
       bool isArtificial,
-      const std::unique_ptr<ArgumentList> &actualArgs = std::unique_ptr<ArgumentList>(),
+      const ArgumentList *actualArgs = nullptr,
       const TemplateNameMap &templateNames=TemplateNameMap()
     )
 {
@@ -4287,10 +4287,10 @@ static void findTemplateInstanceRelation(const Entry *root,
         AUTO_TRACE_ADD("template root found '{}' templSpec='{}'",templateRoot->name,templSpec);
         std::unique_ptr<ArgumentList> templArgs = stringToArgumentList(root->lang,templSpec);
         findBaseClassesForClass(templateRoot,context,templateClass,instanceClass,
-            TemplateInstances,isArtificial,templArgs,templateNames);
+            TemplateInstances,isArtificial,templArgs.get(),templateNames);
 
         findUsedClassesForClass(templateRoot,context,templateClass,instanceClass,
-            isArtificial,templArgs,templateNames);
+            isArtificial,templArgs.get(),templateNames);
       }
     }
     else
@@ -4931,7 +4931,7 @@ static void computeTemplateClassRelations()
                 }
               }
 
-              tbi.name = substituteTemplateArgumentsInString(bi.name,tl,templArgs);
+              tbi.name = substituteTemplateArgumentsInString(bi.name,tl,templArgs.get());
               // find a documented base class in the correct scope
               if (!findClassRelation(root,cd,tcd,&tbi,actualTemplateNames,DocumentedOnly,FALSE))
               {
@@ -8381,7 +8381,7 @@ static void computeTooltipTexts()
       for (const auto &def : symList)
       {
         DefinitionMutable *dm = toDefinitionMutable(def);
-        if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+        if (dm && !isSymbolHidden(def) && !def->isArtificial() && def->isLinkableInProject())
         {
           auto processTooltip = [dm]() {
             dm->computeTooltip();
@@ -8403,7 +8403,7 @@ static void computeTooltipTexts()
       for (const auto &def : symList)
       {
         DefinitionMutable *dm = toDefinitionMutable(def);
-        if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+        if (dm && !isSymbolHidden(def) && !def->isArtificial() && def->isLinkableInProject())
         {
           dm->computeTooltip();
         }

@@ -392,12 +392,16 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
                                             QCString *pBrief,
                                             const Definition **pDef)
 {
-  //printf("findDocsForMemberOrCompound(%s)\n",commandName);
+  AUTO_TRACE("commandName={}",commandName);
   *pDoc="";
   *pBrief="";
   *pDef=nullptr;
   QCString cmdArg=commandName;
-  if (cmdArg.isEmpty()) return FALSE;
+  if (cmdArg.isEmpty())
+  {
+    AUTO_TRACE_EXIT("empty");
+    return false;
+  }
 
   const FileDef      *fd=nullptr;
   const GroupDef     *gd=nullptr;
@@ -408,7 +412,8 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
     *pDoc=gd->documentation();
     *pBrief=gd->briefDescription();
     *pDef=gd;
-    return TRUE;
+    AUTO_TRACE_EXIT("group");
+    return true;
   }
   pd = Doxygen::pageLinkedMap->find(cmdArg);
   if (pd) // page
@@ -416,7 +421,8 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
     *pDoc=pd->documentation();
     *pBrief=pd->briefDescription();
     *pDef=pd;
-    return TRUE;
+    AUTO_TRACE_EXIT("page");
+    return true;
   }
   bool ambig;
   fd = findFileDef(Doxygen::inputNameLinkedMap,cmdArg,ambig);
@@ -425,7 +431,8 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
     *pDoc=fd->documentation();
     *pBrief=fd->briefDescription();
     *pDef=fd;
-    return TRUE;
+    AUTO_TRACE_EXIT("file");
+    return true;
   }
 
   // for symbols we need to normalize the separator, so A#B, or A\B, or A.B becomes A::B
@@ -475,16 +482,17 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   GetDefInput input(
       context.context.find('.')==-1 ? context.context : QCString(), // find('.') is a hack to detect files
       name,
-      args.isEmpty() ? QCString() : args);
+      args);
   input.checkCV=true;
   GetDefResult result = getDefs(input);
-  //printf("found=%d context=%s name=%s\n",found,qPrint(context.context),qPrint(name));
+  //printf("found=%d context=%s name=%s\n",result.found,qPrint(context.context),qPrint(name));
   if (result.found && result.md)
   {
     *pDoc=result.md->documentation();
     *pBrief=result.md->briefDescription();
     *pDef=result.md;
-    return TRUE;
+    AUTO_TRACE_EXIT("member");
+    return true;
   }
 
   int scopeOffset=static_cast<int>(context.context.length());
@@ -504,7 +512,8 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
       *pDoc=cd->documentation();
       *pBrief=cd->briefDescription();
       *pDef=cd;
-      return TRUE;
+      AUTO_TRACE_EXIT("class");
+      return true;
     }
     const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(fullName);
     if (nd) // namespace
@@ -512,7 +521,8 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
       *pDoc=nd->documentation();
       *pBrief=nd->briefDescription();
       *pDef=nd;
-      return TRUE;
+      AUTO_TRACE_EXIT("namespace");
+      return true;
     }
     if (scopeOffset==0)
     {
@@ -525,7 +535,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
     }
   } while (scopeOffset>=0);
 
-
+  AUTO_TRACE_EXIT("not found");
   return FALSE;
 }
 

@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <memory>
+#include <optional>
 
 #include <sys/types.h>
 
@@ -231,6 +232,7 @@ class MemberDef : public Definition
     virtual const ArgumentList &declArgumentList() const = 0;
     virtual const ArgumentList &templateArguments() const = 0;
     virtual const ArgumentLists &definitionTemplateParameterLists() const = 0;
+    virtual std::optional<ArgumentList> formalTemplateArguments() const = 0;
 
     // member group related members
     virtual int getMemberGroupId() const = 0;
@@ -390,6 +392,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void overrideInlineSource(bool e) = 0;
 
     virtual void setTemplateMaster(MemberDef *mt) = 0;
+    virtual void setFormalTemplateArguments(const ArgumentList &al) = 0;
     virtual void addListReference(Definition *d) = 0;
     virtual void setDocsForDefinition(bool b) = 0;
     virtual void setGroupAlias(const MemberDef *md) = 0;
