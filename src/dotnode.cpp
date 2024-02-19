@@ -49,8 +49,8 @@ static const char *normalArrowStyleMap[] =
   "empty",         // Protected
   "empty",         // Private
   "open",          // "use" relation
-  0,               // Undocumented
-  0                // template relation
+  nullptr,         // Undocumented
+  nullptr          // template relation
 };
 
 static const char *normalEdgeStyleMap[] =
@@ -76,8 +76,8 @@ static const char *umlArrowStyleMap[] =
   "onormal",         // Protected
   "onormal",         // Private
   "odiamond",        // "use" relation
-  0,                 // Undocumented
-  0                  // template relation
+  nullptr,           // Undocumented
+  nullptr           // template relation
 };
 
 static const char *umlEdgeStyleMap[] =

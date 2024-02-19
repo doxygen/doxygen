@@ -226,9 +226,9 @@ Rtf_Style_Default rtf_Style_Default[] =
   RTF_ListEnum(12,152,153,4680),
   RTF_ListEnum(13,153,153,5040),
 
-  { 0,
-    0,
-    0
+  { nullptr,
+    nullptr,
+    nullptr
   }
 };
 

@@ -182,7 +182,7 @@ static void do_warn(bool enabled, const QCString &file, int line, const char *pr
   // format + arguments
   // prefix
   // 1 position for `\0`
-  size_t bufSize = vsnprintf(NULL, 0, fmt, args) + l;
+  size_t bufSize = vsnprintf(nullptr, 0, fmt, args) + l;
   QCString text(bufSize, QCString::ExplicitSize);
   if (prefix)
   {

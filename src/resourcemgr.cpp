@@ -111,8 +111,8 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
           images[0].width   = width;
           images[0].height  = height;
           images[0].content = &data[4];
-          images[0].alpha   = 0;
-          images[1].name    = 0; // terminator
+          images[0].alpha   = nullptr;
+          images[1].name    = nullptr; // terminator
           writeColoredImgData(targetDir,images);
           return TRUE;
         }
@@ -130,7 +130,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
           images[0].height  = height;
           images[0].content = &data[4];
           images[0].alpha   = &data[4+width*height];
-          images[1].name    = 0; // terminator
+          images[1].name    = nullptr; // terminator
           writeColoredImgData(targetDir,images);
           return TRUE;
         }
@@ -184,7 +184,7 @@ const Resource *ResourceMgr::get(const QCString &name) const
 {
   auto it = p->resources.find(name.str());
   if (it!=p->resources.end()) return &it->second;
-  return 0;
+  return nullptr;
 }
 
 QCString ResourceMgr::getAsString(const QCString &name) const

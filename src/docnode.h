@@ -88,7 +88,7 @@ class DocNode
     DocNode &operator=(DocNode &&) = default;
    ~DocNode() = default;
 
-    /*! Returns the parent of this node or 0 for the root node. */
+    /*! Returns the parent of this node or nullptr for the root node. */
     DocNodeVariant *parent() { return m_parent; }
     const DocNodeVariant *parent() const { return m_parent; }
 
@@ -1261,7 +1261,7 @@ class DocHtmlBlockQuote : public DocCompoundNode
 class DocText : public DocCompoundNode
 {
   public:
-    DocText(DocParser *parser) : DocCompoundNode(parser,0) {}
+    DocText(DocParser *parser) : DocCompoundNode(parser,nullptr) {}
     void parse();
     bool isEmpty() const    { return children().empty(); }
 };
@@ -1271,7 +1271,7 @@ class DocRoot : public DocCompoundNode
 {
   public:
     DocRoot(DocParser *parser,bool indent,bool sl)
-      : DocCompoundNode(parser,0), m_indent(indent), m_singleLine(sl) {}
+      : DocCompoundNode(parser,nullptr), m_indent(indent), m_singleLine(sl) {}
     void parse();
     bool indent() const { return m_indent; }
     bool singleLine() const { return m_singleLine; }
@@ -1284,13 +1284,13 @@ class DocRoot : public DocCompoundNode
 
 //--------------------------------------------------------------------------------------
 
-/// returns the parent node of a given node \a n or 0 if the node has no parent.
+/// returns the parent node of a given node \a n or nullptr if the node has no parent.
 constexpr DocNodeVariant *parent(DocNodeVariant *n)
 {
   return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;
 }
 
-/// returns the parent node of a given node \a n or 0 if the node has no parent.
+/// returns the parent node of a given node \a n or nullptr if the node has no parent.
 constexpr const DocNodeVariant *parent(const DocNodeVariant *n)
 {
   return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;

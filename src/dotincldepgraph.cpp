@@ -64,7 +64,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
                          tooltip,           // tip
                          tmp_url,           // url
                          FALSE,             // rootNode
-                         0);                // cd
+                         nullptr);                // cd
         n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         m_usedNodes.insert(std::make_pair(in.str(),bn));
@@ -123,7 +123,7 @@ void DotInclDepGraph::determineTruncatedNodes(DotNodeDeque &queue)
 DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
 {
   m_inverse = inverse;
-  ASSERT(fd!=0);
+  ASSERT(fd!=nullptr);
   m_inclDepFileName   = fd->includeDependencyGraphFileName();
   m_inclByDepFileName = fd->includedByDependencyGraphFileName();
   QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();

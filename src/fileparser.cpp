@@ -42,7 +42,7 @@ void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
     while (j<length && input[j]!='\n') j++;
     QCString lineStr = input.mid(i,j-i);
     codeOutIntf.startCodeLine(lineNr);
-    if (fileDef != 0 && showLineNumbers)
+    if (fileDef != nullptr && showLineNumbers)
     {
       codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr,!inlineFragment);
     }

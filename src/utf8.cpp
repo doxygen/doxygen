@@ -68,7 +68,7 @@ static inline uint32_t decode_utf8( const char* data , int numBytes ) noexcept
 
 static inline uint32_t convertUTF8CharToUnicode(const char *s,size_t bytesLeft,int &len)
 {
-  if (s==0 || bytesLeft==0)
+  if (s==nullptr || bytesLeft==0)
   {
     len=0;
     return 0;
@@ -196,7 +196,7 @@ std::string convertUTF8ToUpper(const std::string &input)
 
 const char *writeUTF8Char(TextStream &t,const char *s)
 {
-  if (s==0) return 0;
+  if (s==nullptr) return nullptr;
   uint8_t len = getUTF8CharNumBytes(*s);
   for (uint8_t i=0;i<len;i++)
   {

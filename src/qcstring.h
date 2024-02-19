@@ -488,7 +488,7 @@ class QCString
 
     bool startsWith( const char *s ) const
     {
-      if (m_rep.empty() || s==0) return s==0;
+      if (m_rep.empty() || s==nullptr) return s==nullptr;
       return m_rep.rfind(s,0)==0; // looking "backward" starting and ending at index 0
     }
 
@@ -500,7 +500,7 @@ class QCString
 
     bool endsWith(const char *s) const
     {
-      if (m_rep.empty() || s==0) return s==0;
+      if (m_rep.empty() || s==nullptr) return s==nullptr;
       size_t l = strlen(s);
       return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s, l)==0;
     }

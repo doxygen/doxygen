@@ -632,7 +632,7 @@ DB_GEN_C2("IndexSection " << is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )

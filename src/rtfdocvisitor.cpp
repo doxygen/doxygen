@@ -456,7 +456,7 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
-                                           0,     // memberDef
+                                           nullptr,     // memberDef
                                            TRUE   // show line numbers
 					   );
          m_t << "\\par";
@@ -470,11 +470,11 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                         inc.text(),langExt,inc.isExample(),
                                         inc.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         FALSE  // show line numbers
 				       );
       m_t << "\\par";
@@ -542,7 +542,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
     m_hide = popHidden();
     if (!m_hide)
     {
-      std::unique_ptr<FileDef> fd = 0;
+      std::unique_ptr<FileDef> fd = nullptr;
       if (!op.includeFileName().isEmpty())
       {
         FileInfo cfi( op.includeFileName().str() );
@@ -555,7 +555,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
     }

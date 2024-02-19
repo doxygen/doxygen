@@ -114,7 +114,7 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
 
 static bool parentIsVisible(LayoutNavEntry *parent)
 {
-  return parent==0 || parent->visible();
+  return parent==nullptr || parent->visible();
 }
 
 //---------------------------------------------------------------------------------
@@ -539,7 +539,7 @@ class LayoutParser
           break;
         i++;
       }
-      if (mapping[i].typeStr==0)
+      if (mapping[i].typeStr==nullptr)
       {
         std::string fileName = m_locator->fileName();
         if (type.isEmpty())
@@ -1439,7 +1439,7 @@ LayoutNavEntry* LayoutDocManager::rootNavEntry() const
 LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry *parent,LayoutNavEntry::Kind k,bool vs,const QCString &bf,
                                                       const QCString &tl,const QCString &intro)
 {
-  if (parent==0) parent = &d->rootNav;
+  if (parent==nullptr) parent = &d->rootNav;
   auto ptr = std::make_unique<LayoutNavEntry>(parent,k,vs,bf,tl,intro);
   auto child = ptr.get();
   parent->addChild(std::move(ptr));

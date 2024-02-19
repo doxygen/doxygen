@@ -524,7 +524,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 {
   public:
     MemberDefAliasImpl(const Definition *newScope,const MemberDef *md)
-    : DefinitionAliasMixin(newScope,md), m_memberGroup(0) { init(); }
+    : DefinitionAliasMixin(newScope,md), m_memberGroup(nullptr) { init(); }
     ~MemberDefAliasImpl() override { deinit(); }
     DefType definitionType() const override { return TypeMember; }
 
@@ -1309,18 +1309,18 @@ void MemberDefImpl::init(Definition *d,
                      const ArgumentList &al,const QCString &meta
                     )
 {
-  m_classDef=0;
-  m_fileDef=0;
-  m_moduleDef=0;
-  m_redefines=0;
-  m_relatedAlso=0;
-  m_accessorClass=0;
-  m_nspace=0;
-  m_memDef=0;
-  m_memDec=0;
-  m_group=0;
+  m_classDef=nullptr;
+  m_fileDef=nullptr;
+  m_moduleDef=nullptr;
+  m_redefines=nullptr;
+  m_relatedAlso=nullptr;
+  m_accessorClass=nullptr;
+  m_nspace=nullptr;
+  m_memDef=nullptr;
+  m_memDec=nullptr;
+  m_group=nullptr;
   m_grpId=-1;
-  m_enumScope=0;
+  m_enumScope=nullptr;
   m_livesInsideEnum=FALSE;
   m_hasCallGraph            = Config_getBool(CALL_GRAPH);
   m_hasCallerGraph          = Config_getBool(CALLER_GRAPH);
@@ -1338,7 +1338,7 @@ void MemberDefImpl::init(Definition *d,
   m_args=removeRedundantWhiteSpace(m_args);
   if (m_type.isEmpty()) m_decl=d->name()+m_args; else m_decl=m_type+" "+d->name()+m_args;
 
-  m_memberGroup=0;
+  m_memberGroup=nullptr;
   m_virt=v;
   m_prot=p;
   m_related=r;
@@ -1349,12 +1349,12 @@ void MemberDefImpl::init(Definition *d,
   m_annScope=FALSE;
   m_memSpec=TypeSpecifier();
   m_vhdlSpec=VhdlSpecifier::UNKNOWN;
-  m_annMemb=0;
-  m_annEnumType=0;
-  m_groupAlias=0;
+  m_annMemb=nullptr;
+  m_annEnumType=nullptr;
+  m_groupAlias=nullptr;
   m_explExt=FALSE;
   m_tspec=FALSE;
-  m_cachedAnonymousType=0;
+  m_cachedAnonymousType=nullptr;
   m_maxInitLines=Config_getInt(MAX_INITIALIZER_LINES);
   m_userInitLines=-1;
   m_docEnumValues=FALSE;
@@ -1371,15 +1371,15 @@ void MemberDefImpl::init(Definition *d,
     //    qPrint(argListToString(declArgList)),declArgList->constSpecifier);
   }
   m_metaData = meta;
-  m_templateMaster = 0;
+  m_templateMaster = nullptr;
   m_docsForDefinition = TRUE;
   m_isTypedefValCached = FALSE;
-  m_cachedTypedefValue = 0;
+  m_cachedTypedefValue = nullptr;
   m_implOnly=FALSE;
-  m_groupMember = 0;
+  m_groupMember = nullptr;
   m_hasDocumentedParams = FALSE;
   m_hasDocumentedReturnType = FALSE;
-  m_docProvider = 0;
+  m_docProvider = nullptr;
   m_isDMember = d->getDefFileName().lower().endsWith(".d");
 }
 
@@ -1808,7 +1808,7 @@ void MemberDefImpl::_computeLinkableInProject()
   const NamespaceDef *nspace = getNamespaceDef();
   const FileDef *fileDef = getFileDef();
   if (!groupDef && nspace && m_related==Relationship::Member && !nspace->isLinkableInProject()
-      && (fileDef==0 || !fileDef->isLinkableInProject()))
+      && (fileDef==nullptr || !fileDef->isLinkableInProject()))
   {
     //printf("in a namespace but namespace not linkable!\n");
     m_isLinkableCached = 1; // in namespace but namespace not linkable
@@ -1829,7 +1829,7 @@ void MemberDefImpl::_computeLinkableInProject()
     m_isLinkableCached = 1; // hidden due to protection
     return;
   }
-  if (m_stat && classDef==0 && !extractStatic)
+  if (m_stat && classDef==nullptr && !extractStatic)
   {
     //printf("static and invisible!\n");
     m_isLinkableCached = 1; // hidden due to staticness
@@ -1905,7 +1905,7 @@ void MemberDefImpl::writeLink(OutputList &ol,
   const NamespaceDef *nspace = getNamespaceDef();
   if (!hideScopeNames)
   {
-    if (m_enumScope && m_livesInsideEnum && getGroupDef()!=0)
+    if (m_enumScope && m_livesInsideEnum && getGroupDef()!=nullptr)
     {
       n.prepend(m_enumScope->displayName()+sep);
     }
@@ -1925,7 +1925,7 @@ void MemberDefImpl::writeLink(OutputList &ol,
   }
   if (!onlyText && (isLinkable() || hasDetailedDescription())) // write link
   {
-    if (m_mtype==MemberType_EnumValue && getGroupDef()==0 &&          // enum value is not grouped
+    if (m_mtype==MemberType_EnumValue && getGroupDef()==nullptr &&          // enum value is not grouped
         getEnumScope() && getEnumScope()->getGroupDef()) // but its container is
     {
       const GroupDef *enumValGroup = getEnumScope()->getGroupDef();
@@ -1959,11 +1959,11 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
   if (m_cachedAnonymousType) return m_cachedAnonymousType;
 
   QCString cname;
-  if (getClassDef()!=0)
+  if (getClassDef()!=nullptr)
   {
     cname=getClassDef()->name();
   }
-  else if (getNamespaceDef()!=0)
+  else if (getNamespaceDef()!=nullptr)
   {
     cname=getNamespaceDef()->name();
   }
@@ -1990,7 +1990,7 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
       annoClassDef=getClass(ts);
     }
     // if not found yet, try without scope name
-    if (annoClassDef==0)
+    if (annoClassDef==nullptr)
     {
       QCString ts=stripAnonymousNamespaceScope(annName);
       annoClassDef=getClass(ts);
@@ -2022,7 +2022,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
 
   // only include static members with file/namespace scope if
   // explicitly enabled in the config file
-  bool visibleIfStatic = !(getClassDef()==0 &&
+  bool visibleIfStatic = !(getClassDef()==nullptr &&
                            isStatic() &&
                            !extractStatic
                           );
@@ -2200,7 +2200,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   if (!inGroup && m_mtype==MemberType_EnumValue) return;
 
   const Definition *d=nullptr;
-  ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0 || mod!=0); // member should belong to something
+  ASSERT (cd!=nullptr || nd!=nullptr || fd!=nullptr || gd!=nullptr || mod!=nullptr); // member should belong to something
   if (cd) d=cd;
   else if (nd) d=nd;
   else if (mod) d=mod;
@@ -2216,7 +2216,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   {
     if (getNamespaceDef()) d = getNamespaceDef();
   }
-  if (d==0)
+  if (d==nullptr)
   {
     err("No context could be derived for member '%s'\n",qPrint(name()));
     return; // should not happen
@@ -2240,7 +2240,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = hasDetailedDescription();
-  bool writeAnchor = (inGroup || getGroupDef()==0) &&     // only write anchors for member that have no details and are
+  bool writeAnchor = (inGroup || getGroupDef()==nullptr) &&     // only write anchors for member that have no details and are
                      !detailsVisible && !m_annMemb && // rendered inside the group page or are not grouped at all
                      inheritId.isEmpty();
   if (writeAnchor)
@@ -2419,7 +2419,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     if (!name().isEmpty() && // name valid
         (hasDetailedDescription() || isReference()) && // has docs
         visibleIfPrivate &&
-        !(isStatic() && getClassDef()==0 && !extractStatic) // hidden due to static-ness
+        !(isStatic() && getClassDef()==nullptr && !extractStatic) // hidden due to static-ness
        )
     {
       if (annMemb)
@@ -2444,7 +2444,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       // if the member is an undocumented friend declaration for some class,
       // then maybe we can link to the class
     {
-      writeLink(ol,getClass(name()),0,0,0,0);
+      writeLink(ol,getClass(name()),nullptr,nullptr,nullptr,nullptr);
     }
     else
       // there is a brief member description and brief member
@@ -2469,7 +2469,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                 isTypedef() ?
                    substitute(argsString(),")(",") (") :
                    combineArgsAndException(argsString(),excpString()), // text
-                m_annMemb!=0,      // autoBreak
+                m_annMemb!=nullptr,      // autoBreak
                 TRUE,                    // external
                 FALSE,                   // keepSpaces
                 indentLevel
@@ -2716,7 +2716,7 @@ bool MemberDefImpl::hasDetailedDescription() const
     }
 
     // this is not a global static or global statics should be extracted
-    bool staticFilter = getClassDef()!=0 || !isStatic() || extractStatic;
+    bool staticFilter = getClassDef()!=nullptr || !isStatic() || extractStatic;
 
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a   group
@@ -2742,10 +2742,10 @@ bool MemberDefImpl::isDetailedSectionVisible(MemberListContainer container) cons
   bool separateMemPages = Config_getBool(SEPARATE_MEMBER_PAGES);
   bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
   bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
-  bool groupFilter = getGroupDef()==0 || container==MemberListContainer::Group || separateMemPages;
-  bool fileFilter  = getNamespaceDef()==0 || !getNamespaceDef()->isLinkable() || container!=MemberListContainer::File;
+  bool groupFilter = getGroupDef()==nullptr || container==MemberListContainer::Group || separateMemPages;
+  bool fileFilter  = getNamespaceDef()==nullptr || !getNamespaceDef()->isLinkable() || container!=MemberListContainer::File;
   bool simpleFilter = (hasBriefDescription() || !hideUndocMembers) && inlineSimpleStructs &&
-                      getClassDef()!=0 && getClassDef()->isSimple();
+                      getClassDef()!=nullptr && getClassDef()->isSimple();
 
   bool visible = hasDetailedDescription() && groupFilter && fileFilter &&
                  !isReference();
@@ -3643,7 +3643,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       }
       ol.docify(ldef.mid(pos));
       const Definition *scope = cd;
-      if (scope==0) scope = nd;
+      if (scope==nullptr) scope = nd;
       hasParameterList=writeDefArgumentList(ol,scope,this);
     }
     else
@@ -3655,7 +3655,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                   substitute(ldef,"::",sep)
                  );
       const Definition *scope = cd;
-      if (scope==0) scope = nd;
+      if (scope==nullptr) scope = nd;
       hasParameterList=writeDefArgumentList(ol,scope,this);
     }
 
@@ -3892,7 +3892,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
       // so we add a link to it from the type column.
     {
       int i=0;
-      const char *prefixes[] = { "struct ","union ","class ", 0 };
+      const char *prefixes[] = { "struct ","union ","class ", nullptr };
       const char **p = prefixes;
       while (*p)
       {
@@ -4459,7 +4459,7 @@ void MemberDefImpl::addListReference(Definition *)
 const MemberList *MemberDefImpl::getSectionList(const Definition *container) const
 {
   auto it = m_sectionMap.find(container);
-  return it!=m_sectionMap.end() ? it->second : 0;
+  return it!=m_sectionMap.end() ? it->second : nullptr;
 }
 
 void MemberDefImpl::setSectionList(const Definition *container,const MemberList *sl)
@@ -4759,7 +4759,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
         }
         else
         {
-          fmd=0;
+          fmd=nullptr;
         }
         if (prevVisible)
         {
@@ -6133,7 +6133,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
 
       // copy group info.
-      if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)
+      if (mdec->getGroupDef()==nullptr && mdef->getGroupDef()!=nullptr)
       {
         mdec->setGroupDef(mdef->getGroupDef(),
             mdef->getGroupPri(),
@@ -6143,7 +6143,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
             mdef
             );
       }
-      else if (mdef->getGroupDef()==0 && mdec->getGroupDef()!=0)
+      else if (mdef->getGroupDef()==nullptr && mdec->getGroupDef()!=nullptr)
       {
         mdef->setGroupDef(mdec->getGroupDef(),
             mdec->getGroupPri(),
@@ -6270,7 +6270,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
 {
   MemberDefMutable *src = toMemberDefMutable(const_cast<MemberDef*>(s));
   MemberDefMutable *dst = toMemberDefMutable(const_cast<MemberDef*>(d));
-  if (src==0 || dst==0) return;
+  if (src==nullptr || dst==nullptr) return;
   std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
   //printf("--> addDocCrossReference src=%s,dst=%s\n",qPrint(src->name()),qPrint(dst->name()));
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
@@ -6318,7 +6318,7 @@ MemberDef *toMemberDef(Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -6331,7 +6331,7 @@ MemberDef *toMemberDef(DefinitionMutable *md)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -6343,7 +6343,7 @@ const MemberDef *toMemberDef(const Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -6355,7 +6355,7 @@ MemberDefMutable *toMemberDefMutable(Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 

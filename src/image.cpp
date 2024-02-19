@@ -444,7 +444,7 @@ ColoredImage::ColoredImage(uint32_t width,uint32_t height,
            const uint8_t *greyLevels,const uint8_t *alphaLevels,
            int saturation,int hue,int gamma) : p(std::make_unique<Private>())
 {
-  p->hasAlpha = alphaLevels!=0;
+  p->hasAlpha = alphaLevels!=nullptr;
   p->width    = width;
   p->height   = height;
   p->data.resize(width*height*4);

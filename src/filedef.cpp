@@ -269,11 +269,11 @@ std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const
 
 /*! create a new file definition, where \a p is the file path,
     \a nm the file name, and \a lref is an HTML anchor name if the
-    file was read from a tag file or 0 otherwise
+    file was read from a tag file or nullptr otherwise
 */
 FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
                  const QCString &lref,const QCString &dn)
-   : DefinitionMixin(QCString(p)+nm,1,1,nm,0,0,!p.isEmpty())
+   : DefinitionMixin(QCString(p)+nm,1,1,nm,nullptr,nullptr,!p.isEmpty())
 {
   m_path=removeLongPathMarker(p);
   m_filePath=p+nm;
@@ -283,7 +283,7 @@ FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
   setDiskNameLocal(!dn.isEmpty() ? dn : nm);
   m_isSource          = guessSection(nm).isSource();
   m_docname           = nm;
-  m_dir               = 0;
+  m_dir               = nullptr;
   if (Config_getBool(FULL_PATH_NAMES))
   {
     m_docname.prepend(stripFromPath(m_path));
@@ -481,7 +481,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
-      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+      ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
                      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
@@ -498,7 +498,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     }
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE,
+      ol.generateDoc(docFile(),docLine(),this,nullptr,documentation()+"\n",TRUE,FALSE,
                      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     //printf("Writing source ref for file %s\n",qPrint(name()));
@@ -530,7 +530,7 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
-                                     briefFile(),briefLine(),this,0,
+                                     briefFile(),briefLine(),this,nullptr,
                                      briefDescription(),TRUE,FALSE,
                                      QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (!ast->isEmpty())
@@ -540,7 +540,7 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
       ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(ast.get(),this,0);
+      ol.writeDoc(ast.get(),this,nullptr);
       ol.pushGeneratorState();
       ol.disable(OutputType::RTF);
       ol.writeString(" \n");
@@ -699,7 +699,7 @@ void FileDefImpl::writeNamespaceDeclarations(OutputList &ol,const QCString &titl
 void FileDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title,const ClassLinkedRefMap &list)
 {
   // write list of classes
-  list.writeDeclaration(ol,0,title,FALSE);
+  list.writeDeclaration(ol,nullptr,title,FALSE);
 }
 
 void FileDefImpl::writeConcepts(OutputList &ol,const QCString &title)
@@ -756,7 +756,7 @@ void FileDefImpl::writeMemberGroups(OutputList &ol)
   {
     if (!mg->allMembersInSameSection() || !m_subGrouping)
     {
-      mg->writeDeclarations(ol,0,0,this,0,0);
+      mg->writeDeclarations(ol,nullptr,nullptr,this,nullptr,nullptr);
     }
   }
 }
@@ -1069,7 +1069,7 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
   {
     for (const auto &md : *allMemberList)
     {
-      if (md->getFileDef()==this && md->getNamespaceDef()==0 && md->isLinkable() && !md->isEnumValue())
+      if (md->getFileDef()==this && md->getNamespaceDef()==nullptr && md->isLinkable() && !md->isEnumValue())
       {
         if (md->isLinkableInProject())
         {
@@ -1199,9 +1199,9 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
         -1,                 // startLine
         -1,                 // endLine
         FALSE,              // inlineFragment
-        0,                  // memberDef
+        nullptr,                  // memberDef
         TRUE,               // showLineNumbers
-        0,                  // searchCtx
+        nullptr,                  // searchCtx
         !needs2PassParsing  // collectXRefs
         );
     codeOL.endCodeFragment("DoxyCode");
@@ -1274,7 +1274,7 @@ void FileDefImpl::insertMember(MemberDef *md)
     return;
   }
 
-  if (allMemberList==0)
+  if (allMemberList==nullptr)
   {
     m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::File));
     allMemberList = m_memberLists.back().get();
@@ -1393,14 +1393,14 @@ const Definition *FileDefImpl::getSourceDefinition(int lineNr) const
 {
   auto it = m_srcDefMap.find(lineNr);
   //printf("%s::getSourceDefinition(%d)=%s\n",qPrint(name()),lineNr,it!=m_srcDefMap.end()?qPrint(it->second->name()):"none");
-  return it!=m_srcDefMap.end() ? it->second : 0;
+  return it!=m_srcDefMap.end() ? it->second : nullptr;
 }
 
 const MemberDef *FileDefImpl::getSourceMember(int lineNr) const
 {
   auto it = m_srcMemberMap.find(lineNr);
   //printf("%s::getSourceMember(%d)=%s\n",qPrint(name()),lineNr,it!=m_srcMemberMap.end()?qPrint(it->second->name()):"none");
-  return it!=m_srcMemberMap.end() ? it->second : 0;
+  return it!=m_srcMemberMap.end() ? it->second : nullptr;
 }
 
 
@@ -1518,7 +1518,7 @@ void FileDefImpl::addListReferences()
                theTranslator->trFile(TRUE,TRUE),
                getOutputFileBase(),name(),
                QCString(),
-               0
+               nullptr
               );
   }
   for (const auto &mg : m_memberGroups)
@@ -1698,7 +1698,7 @@ MemberList *FileDefImpl::getMemberList(MemberListType lt) const
       return ml.get();
     }
   }
-  return 0;
+  return nullptr;
 }
 
 void FileDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
@@ -1710,11 +1710,11 @@ void FileDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const
     if (optVhdl) // use specific declarations function
     {
 
-      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,0,this,0,0);
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,nullptr,nullptr,this,nullptr,nullptr);
     }
     else
     {
-      ml->writeDeclarations(ol,0,0,this,0,0,title,QCString());
+      ml->writeDeclarations(ol,nullptr,nullptr,this,nullptr,nullptr,title,QCString());
     }
   }
 }
@@ -1830,27 +1830,27 @@ bool compareFileDefs(const FileDef *fd1, const FileDef *fd2)
 
 FileDef *toFileDef(Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   if (d && typeid(*d)==typeid(FileDefImpl))
   {
     return static_cast<FileDef*>(d);
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
 const FileDef *toFileDef(const Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   if (d && typeid(*d)==typeid(FileDefImpl))
   {
     return static_cast<const FileDef*>(d);
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 

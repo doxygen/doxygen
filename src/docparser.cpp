@@ -210,7 +210,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
 void DocParser::checkArgumentName()
 {
   if (!(Config_getBool(WARN_IF_DOC_ERROR) || Config_getBool(WARN_IF_INCOMPLETE_DOC))) return;
-  if (context.memberDef==0) return; // not a member
+  if (context.memberDef==nullptr) return; // not a member
   std::string name = context.token->name.str();
   const ArgumentList &al=context.memberDef->isDocsForDefinition() ?
 	                 context.memberDef->argumentList() :
@@ -276,7 +276,7 @@ void DocParser::checkRetvalName()
 {
   QCString name = context.token->name;
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
-  if (context.memberDef==0 || name.isEmpty()) return; // not a member or no valid name
+  if (context.memberDef==nullptr || name.isEmpty()) return; // not a member or no valid name
   if (context.retvalsFound.count(name.str())==1) // only report the first double entry
   {
      warn_doc_error(context.memberDef->getDefFileName(),
@@ -699,7 +699,7 @@ void DocParser::handlePendingStyleCommands(DocNodeVariant *parent,DocNodeList &c
                                            sc->style(),sc->tagName(),FALSE);
       context.initialStyleStack.push(context.styleStack.top());
       context.styleStack.pop();
-      sc = !context.styleStack.empty() ? &std::get<DocStyleChange>(*context.styleStack.top()) : 0;
+      sc = !context.styleStack.empty() ? &std::get<DocStyleChange>(*context.styleStack.top()) : nullptr;
     }
   }
 }
@@ -797,7 +797,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   if (!context.insideHtmlLink &&
       (resolveRef(context.context,context.token->name,context.inSeeBlock,&compound,&member,TRUE,fd,TRUE)
        || (!context.context.isEmpty() &&  // also try with global scope
-           resolveRef("",context.token->name,context.inSeeBlock,&compound,&member,FALSE,0,TRUE))
+           resolveRef("",context.token->name,context.inSeeBlock,&compound,&member,FALSE,nullptr,TRUE))
       )
      )
   {
@@ -1620,7 +1620,7 @@ int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &ch
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
-  DocPara *lastPar=!children.empty() ? std::get_if<DocPara>(&children.back()): 0;
+  DocPara *lastPar=!children.empty() ? std::get_if<DocPara>(&children.back()): nullptr;
   if (lastPar)
   { // last child item was a paragraph
     isFirst=FALSE;
@@ -1909,8 +1909,8 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
                             bool markdownSupport)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
-  assert(parser!=0);
-  if (parser==0) return 0;
+  assert(parser!=nullptr);
+  if (parser==nullptr) return nullptr;
   //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?qPrint(ctx->name()):"<none>",
   //                                     md?qPrint(md->name()):"<none>",
   //                                     input);
@@ -1998,7 +1998,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
                          parser->context.markdownSupport,parser->context.insideHtmlLink);
 
   // build abstract syntax tree
-  auto ast = std::make_unique<DocNodeAST>(DocRoot(parser,md!=0,singleLine));
+  auto ast = std::make_unique<DocNodeAST>(DocRoot(parser,md!=nullptr,singleLine));
   std::get<DocRoot>(ast->root).parse();
 
   if (Debug::isFlagSet(Debug::PrintTree))
@@ -2025,8 +2025,8 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
 IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
-  assert(parser!=0);
-  if (parser==0) return 0;
+  assert(parser!=nullptr);
+  if (parser==nullptr) return nullptr;
 
   // set initial token
   parser->context.token = parser->tokenizer.resetToken();
@@ -2037,7 +2037,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   parser->context.context = "";
   parser->context.fileName = "<parseText>";
   parser->context.relPath = "";
-  parser->context.memberDef = 0;
+  parser->context.memberDef = nullptr;
   while (!parser->context.nodeStack.empty()) parser->context.nodeStack.pop();
   while (!parser->context.styleStack.empty()) parser->context.styleStack.pop();
   while (!parser->context.initialStyleStack.empty()) parser->context.initialStyleStack.pop();
@@ -2081,14 +2081,14 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
 IDocNodeASTPtr createRef(IDocParser &parserIntf,const QCString &target,const QCString &context, const QCString &srcFile, int srcLine )
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
-  assert(parser!=0);
-  if (parser==0) return 0;
+  assert(parser!=nullptr);
+  if (parser==nullptr) return nullptr;
   if (!srcFile.isEmpty())
   {
     parser->context.fileName = srcFile;
     parser->tokenizer.setLineNr(srcLine);
   }
-  return std::make_unique<DocNodeAST>(DocRef(parser,0,target,context));
+  return std::make_unique<DocNodeAST>(DocRef(parser,nullptr,target,context));
 }
 
 void docFindSections(const QCString &input,

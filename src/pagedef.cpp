@@ -85,7 +85,7 @@ PageDefImpl::PageDefImpl(const QCString &f,int l,const QCString &n,
  : DefinitionMixin(f,l,1,n), m_title(!t.isEmpty() ? t : n)
 {
   setDocumentation(d,f,l);
-  m_pageScope = 0;
+  m_pageScope = nullptr;
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
   m_showLineNo = FALSE;
@@ -103,7 +103,7 @@ void PageDefImpl::findSectionsInDocumentation()
 
 const GroupDef *PageDefImpl::getGroupDef() const
 {
-  return !partOfGroups().empty() ? partOfGroups().front() : 0;
+  return !partOfGroups().empty() ? partOfGroups().front() : nullptr;
 }
 
 QCString PageDefImpl::getOutputFileBase() const
@@ -235,7 +235,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
     if (si->title() != manPageName)
     {
-      ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
+      ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),TRUE,FALSE,
                      QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       ol.endSection(si->label(),si->type());
     }
@@ -252,7 +252,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   else
     title = m_title;
 
-  if (!title.isEmpty() && !name().isEmpty() && si!=0)
+  if (!title.isEmpty() && !name().isEmpty() && si!=nullptr)
   {
     ol.startPageDoc(si->title());
     //ol.startSection(si->label,si->title,si->type);
@@ -262,7 +262,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     ol.endTitleHead(getOutputFileBase(),title);
     ol.endHeaderSection();
 
-    /*ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
+    /*ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),TRUE,FALSE,
                    QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));*/
   }
   else
@@ -309,7 +309,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
       docFile(),           // fileName
       docLine(),           // startLine
       this,                // context
-      0,                   // memberdef
+      nullptr,                   // memberdef
       docStr,              // docStr
       TRUE,                // index words
       FALSE,               // not an example
@@ -395,27 +395,27 @@ void PageDefImpl::setTitle(const QCString &title)
 
 PageDef *toPageDef(Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   if (d && typeid(*d)==typeid(PageDefImpl))
   {
     return static_cast<PageDef*>(d);
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
 const PageDef *toPageDef(const Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   if (d && typeid(*d)==typeid(PageDefImpl))
   {
     return static_cast<const PageDef*>(d);
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 

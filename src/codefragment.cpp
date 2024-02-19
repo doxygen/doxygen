@@ -80,7 +80,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     }
     else if (c=='\n')
     {
-      foundOpen=0;
+      foundOpen=nullptr;
       lineNr++;
     }
     s++;
