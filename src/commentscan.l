@@ -172,6 +172,7 @@ static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector 
 [[maybe_unused]] static const char *stateToString(int state);
 
 typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const StringVector &optList);
+typedef EntryType (*MakeEntryType)();
 
 enum class CommandSpacing
 {
@@ -453,6 +454,7 @@ struct commentscanYY_state
   OutlineParserInterface *langParser = nullptr;  // the language parser that is calling us
   QCString         inputString;            // input string
   QCString         currentCmd;             // the command used
+  MakeEntryType    currentMakeEntryType = nullptr;
   int              inputPosition = 0;      // read pointer
   QCString         fileName;               // file name that is read from
   int              lineNr = 0;             // line number in the input
@@ -525,7 +527,8 @@ static SectionType sectionLevelToType(int level);
 static void stripTrailingWhiteSpace(QCString &s);
 
 static void initParser(yyscan_t yyscanner);
-static bool makeStructuralIndicator(yyscan_t yyscanner,EntryType t);
+static bool checkStructuralIndicator(yyscan_t yyscanner);
+[[maybe_unused]] static bool makeStructuralIndicator(yyscan_t yyscanner,MakeEntryType maker);
 static void lineCount(yyscan_t yyscanner);
 static void addXRefItem(yyscan_t yyscanner,
                         const QCString &listName,const QCString &itemTitle,
@@ -1251,6 +1254,7 @@ STopt  [^\n@\\]*
   /* ------------ handle argument of enum command --------------- */
 
 <EnumDocArg1>{SCOPEID}                  { // handle argument
+                                          makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           yyextra->current->name = yytext;
                                           BEGIN( Comment );
                                         }
@@ -1260,11 +1264,9 @@ STopt  [^\n@\\]*
                                         }
 <EnumDocArg1>{DOCNL}                    { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "missing argument after \\enum."
+                                               "missing argument after '\\enum'."
                                               );
                                           unput_string(yytext,yyleng);
-                                          //addOutput(yyscanner,'\n');
-                                          //if (*yytext=='\n') yyextra->lineNr++;
                                           BEGIN( Comment );
                                         }
 <EnumDocArg1>.                          { // ignore other stuff
@@ -1273,6 +1275,7 @@ STopt  [^\n@\\]*
   /* ------------ handle argument of namespace command --------------- */
 
 <NameSpaceDocArg1>{SCOPENAME}           { // handle argument
+                                          makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
                                           yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),QCString("."),QCString("::"));
                                           BEGIN( Comment );
@@ -1284,11 +1287,9 @@ STopt  [^\n@\\]*
 <NameSpaceDocArg1>{DOCNL}               { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
-                                               "\\namespace."
+                                               "'\\namespace'."
                                               );
                                           unput_string(yytext,yyleng);
-                                          //addOutput(yyscanner,'\n');
-                                          //if (*yytext=='\n') yyextra->lineNr++;
                                           BEGIN( Comment );
                                         }
 <NameSpaceDocArg1>.                     { // ignore other stuff
@@ -1320,6 +1321,7 @@ STopt  [^\n@\\]*
   /* ------------ handle argument of concept command --------------- */
 
 <ConceptDocArg1>{SCOPEID}               { // handle argument
+                                          makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           yyextra->current->name = yytext;
                                           BEGIN( Comment );
                                         }
@@ -1330,7 +1332,7 @@ STopt  [^\n@\\]*
 <ConceptDocArg1>{DOCNL}                 { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
-                                               "\\concept."
+                                               "'\\concept'."
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
@@ -1339,18 +1341,19 @@ STopt  [^\n@\\]*
                                         }
 
   /* ------------ handle argument of module command --------------- */
-<ModuleDocArg1>{MODULE_ID}             { // handle argument
-                                         yyextra->current->name = yytext;
-                                         BEGIN( Comment );
-                                       }
-<ModuleDocArg1>{LC}                    { // line continuation
+<ModuleDocArg1>{MODULE_ID}              { // handle argument
+                                          makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
+                                          yyextra->current->name = yytext;
+                                          BEGIN( Comment );
+                                        }
+<ModuleDocArg1>{LC}                     { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<ModuleDocArg1>{DOCNL}                 { // missing argument
+<ModuleDocArg1>{DOCNL}                  { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
-                                               "\\module."
+                                               "'\\module'."
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
@@ -1361,11 +1364,13 @@ STopt  [^\n@\\]*
   /* ------ handle argument of class/struct/union command --------------- */
 
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
+                                          makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
                                           yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1>{SCOPENAME}               { // first argument
+                                          makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           if (yyextra->current->section.isProtocolDoc())
@@ -1376,6 +1381,7 @@ STopt  [^\n@\\]*
                                           BEGIN( ClassDocArg2 );
                                         }
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
+                                          makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
@@ -1389,8 +1395,6 @@ STopt  [^\n@\\]*
                                                "missing argument after "
                                                "'\\%s'.",qPrint(yyextra->currentCmd)
                                               );
-                                          //addOutput(yyscanner,'\n');
-                                          //if (*yytext=='\n') yyextra->lineNr++;
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
@@ -1398,8 +1402,6 @@ STopt  [^\n@\\]*
                                         }
 
 <ClassDocArg2>{DOCNL}                   {
-                                          //addOutput(yyscanner,'\n');
-                                          //if (*yytext=='\n') yyextra->lineNr++;
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
@@ -2489,10 +2491,19 @@ STopt  [^\n@\\]*
 <FnParam>{DOCNL}                        { // end of argument
                                           if (yyextra->braceCount==0)
                                           {
-                                            //if (*yytext=='\n') yyextra->lineNr++;
-                                            //addOutput(yyscanner,'\n');
+                                            if (yyextra->functionProto.stripWhiteSpace().isEmpty())
+                                            {
+                                              warn(yyextra->fileName,yyextra->lineNr,
+                                                   "missing argument after "
+                                                   "'\\%s'.",qPrint(yyextra->currentCmd)
+                                                  );
+                                            }
+                                            else
+                                            {
+                                              makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
+                                              yyextra->langParser->parsePrototype(yyextra->functionProto);
+                                            }
                                             unput_string(yytext,yyleng);
-                                            yyextra->langParser->parsePrototype(yyextra->functionProto);
                                             BEGIN( Comment );
                                           }
                                         }
@@ -2528,7 +2539,7 @@ STopt  [^\n@\\]*
                                           }
                                           else // overload declaration
                                           {
-                                            makeStructuralIndicator(yyscanner,EntryType::makeOverloadDoc());
+                                            makeStructuralIndicator(yyscanner,EntryType::makeOverloadDoc);
                                             yyextra->langParser->parsePrototype(yyextra->functionProto);
                                           }
                                           BEGIN( Comment );
@@ -2713,23 +2724,26 @@ static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector 
   return FALSE;
 }
 
-static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &)
+static bool handleFn(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMemberDoc());
-  yyextra->functionProto.clear();
   yyextra->braceCount=0;
-  BEGIN(FnParam);
-  return stop;
+  yyextra->functionProto.clear();
+  yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeMemberDoc;
+  BEGIN( FnParam );
+  return checkStructuralIndicator(yyscanner);
 }
 
-static bool handleDef(yyscan_t yyscanner,const QCString &, const StringVector &)
+static bool handleDef(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeDefineDoc());
   yyextra->functionProto.clear();
-  BEGIN(FnParam);
-  return stop;
+  yyextra->braceCount=0;
+  yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeDefineDoc;
+  BEGIN( FnParam );
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleOverload(yyscan_t yyscanner,const QCString &, const StringVector &)
@@ -2743,15 +2757,15 @@ static bool handleOverload(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleEnum(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeEnumDoc());
-  BEGIN(EnumDocArg1);
-  return stop;
+  yyextra->currentMakeEntryType = EntryType::makeEnumDoc;
+  BEGIN( EnumDocArg1 );
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc);
   yyextra->current->groupDocType = Entry::GROUPDOC_NORMAL;
   BEGIN( GroupDocArg1 );
   return stop;
@@ -2760,7 +2774,7 @@ static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc);
   yyextra->current->groupDocType = Entry::GROUPDOC_ADD;
   BEGIN( GroupDocArg1 );
   return stop;
@@ -2769,7 +2783,7 @@ static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVe
 static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeGroupDoc);
   yyextra->current->groupDocType = Entry::GROUPDOC_WEAK;
   BEGIN( GroupDocArg1 );
   return stop;
@@ -2778,15 +2792,15 @@ static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVec
 static bool handleNamespace(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeNamespaceDoc());
+  yyextra->currentMakeEntryType = EntryType::makeNamespaceDoc;
   BEGIN( NameSpaceDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makePackageDoc());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makePackageDoc);
   BEGIN( PackageDocArg1 );
   return stop;
 }
@@ -2794,30 +2808,29 @@ static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVecto
 static bool handleClass(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeClassDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeClassDoc;
   BEGIN( ClassDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleConcept(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeConceptDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeConceptDoc;
   BEGIN( ConceptDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleModule(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeModuleDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeModuleDoc;
   BEGIN( ModuleDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
-
 
 static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
@@ -2829,61 +2842,61 @@ static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const StringVe
 static bool handleProtocol(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 { // Obj-C protocol
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeProtocolDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeProtocolDoc;
   BEGIN( ClassDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleCategory(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 { // Obj-C category
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeCategoryDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeCategoryDoc;
   BEGIN( CategoryDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleUnion(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeUnionDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeUnionDoc;
   BEGIN( ClassDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleStruct(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeStructDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeStructDoc;
   BEGIN( ClassDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleInterface(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeInterfaceDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeInterfaceDoc;
   BEGIN( ClassDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handleIdlException(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeExceptionDoc());
   yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeExceptionDoc;
   BEGIN( ClassDocArg1 );
-  return stop;
+  return checkStructuralIndicator(yyscanner);
 }
 
 static bool handlePage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makePageDoc());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makePageDoc);
   BEGIN( PageDocArg1 );
   return stop;
 }
@@ -2891,7 +2904,7 @@ static bool handlePage(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMainpageDoc());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMainpageDoc);
   if (!stop)
   {
     yyextra->current->name = "mainpage";
@@ -2904,7 +2917,7 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleFile(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeFileDoc());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeFileDoc);
   if (!stop)
   {
     yyextra->current->name = yyextra->fileName;
@@ -2934,7 +2947,7 @@ static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handleDir(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeDirDoc());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeDirDoc);
   if (!stop) yyextra->current->name = yyextra->fileName;
   BEGIN( FileDocArg1 );
   return stop;
@@ -2943,12 +2956,12 @@ static bool handleDir(yyscan_t yyscanner,const QCString &, const StringVector &)
 static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  EntryType section = EntryType::makeExample();
+  MakeEntryType sectionMaker = EntryType::makeExample;
   for (const auto &opt : optList)
   {
     if (opt=="lineno")
     {
-      section=EntryType::makeExampleLineno();
+      sectionMaker=EntryType::makeExampleLineno;
     }
     else
     {
@@ -2956,7 +2969,7 @@ static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const StringVe
           "unsupported option '%s' for command '\\%s'",opt.c_str(),qPrint(cmd));
     }
   }
-  bool stop=makeStructuralIndicator(yyscanner,section);
+  bool stop=makeStructuralIndicator(yyscanner,sectionMaker);
   if (!stop) yyextra->current->name = yyextra->fileName;
   BEGIN( FileDocArg1 );
   return stop;
@@ -2992,7 +3005,7 @@ static bool handleNoop(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleName(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMemberGrp());
+  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeMemberGrp);
   if (!stop)
   {
     yyextra->docGroup.clearHeader();
@@ -3948,22 +3961,34 @@ static void initParser(yyscan_t yyscanner)
 
 //-----------------------------------------------------------------------------
 
-static bool makeStructuralIndicator(yyscan_t yyscanner,EntryType t)
+static bool checkStructuralIndicator(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("yyextra->current->section=%x\n",yyextra->current->section);
+  return yyextra->current->section.isDoc();
+}
+
+static bool makeStructuralIndicator(yyscan_t yyscanner,MakeEntryType maker)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  assert(maker!=nullptr); // detect programming error
+  //printf("yyextra->current->section=%x\n",yyextra->current->section);
   if (yyextra->current->section.isDoc())
   {
-    return TRUE;
+    return true;
   }
-  else
+  else if (maker)
   {
-    yyextra->needNewEntry = TRUE;
-    yyextra->current->section = t;
+    yyextra->needNewEntry = true;
+    yyextra->current->section = maker();
     yyextra->current->fileName = yyextra->fileName;
     yyextra->current->startLine = yyextra->lineNr;
     if (yyextra->current->docLine == -1) yyextra->current->docLine = yyextra->lineNr;
-    return FALSE;
+    return false;
+  }
+  else
+  {
+    return false;
   }
 }
 
