@@ -82,7 +82,7 @@ void LatexCodeGenerator::codify(const QCString &str)
     //char cs[5];
     int spacesToNextTabStop;
     int tabSize = Config_getInt(TAB_SIZE);
-    static THREAD_LOCAL char *result = NULL;
+    static THREAD_LOCAL char *result = nullptr;
     static THREAD_LOCAL int lresult = 0;
     int i;
     while ((c=*p))
@@ -940,7 +940,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
               !cd->isEmbeddedInOuterScope() &&
               !cd->isAlias()
              )
@@ -1112,7 +1112,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )

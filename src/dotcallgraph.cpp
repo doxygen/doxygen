@@ -23,7 +23,7 @@
 static QCString getUniqueId(const MemberDef *md)
 {
   const MemberDef *def = md->memberDefinition();
-  if (def==0) def = md;
+  if (def==nullptr) def = md;
   QCString result = def->getReference()+"$"+
          def->getOutputFileBase()+"#"+
          def->anchor();

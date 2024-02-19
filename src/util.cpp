@@ -244,7 +244,7 @@ QCString stripAnonymousNamespaceScope(const QCString &s)
   while ((i=getScopeFragment(s,p,&l))!=-1)
   {
     //printf("Scope fragment %s\n",qPrint(s.mid(i,l)));
-    if (Doxygen::namespaceLinkedMap->find(s.left(i+l))!=0)
+    if (Doxygen::namespaceLinkedMap->find(s.left(i+l))!=nullptr)
     {
       if (s.at(i)!='@')
       {
@@ -413,7 +413,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     }
   }
   const MemberDef *md=nullptr;
-  while (mContext && md==0)
+  while (mContext && md==nullptr)
   {
     // step 1: get the right scope
     const Definition *resScope=mContext;
@@ -433,7 +433,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
         if (!tmp.isEmpty()) qualScopePart=tmp;
         resScope = resScope->findInnerCompound(qualScopePart);
         //printf("qualScopePart='%s' resScope=%p\n",qPrint(qualScopePart),resScope);
-        if (resScope==0) break;
+        if (resScope==nullptr) break;
         ps=is+l;
       }
     }
@@ -467,7 +467,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
           {
             SymbolResolver resolver;
             int dist=resolver.isAccessibleFrom(resScope,tmd);
-            if (dist!=-1 && (md==0 || dist<minDist))
+            if (dist!=-1 && (md==nullptr || dist<minDist))
             {
               md = tmd;
               minDist = dist;
@@ -575,7 +575,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     growBufLen = s.length()*3;
     growBuf = static_cast<char *>(realloc(growBuf,growBufLen+1)); // add 1 for 0-terminator
   }
-  if (growBuf==0) return s; // should not happen, only we run out of memory
+  if (growBuf==nullptr) return s; // should not happen, only we run out of memory
 
   const char *src=s.data();
   char *dst=growBuf;
@@ -1047,7 +1047,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           //printf("Found ref scope=%s\n",d ? qPrint(d->name()) : "<global>");
           //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
           //                       md->anchor(),word);
-          if (result.md!=self && (self==0 || result.md->name()!=self->name()))
+          if (result.md!=self && (self==nullptr || result.md->name()!=self->name()))
             // name check is needed for overloaded members, where getDefs just returns one
           {
             /* in case of Fortran scope and the variable is a non Fortran variable: don't link,
@@ -1358,7 +1358,7 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncoding)
 {
   const char *outputEncoding = "UTF-8";
-  if (inputEncoding==0 || qstricmp(inputEncoding,outputEncoding)==0) return true;
+  if (inputEncoding==nullptr || qstricmp(inputEncoding,outputEncoding)==0) return true;
   size_t inputSize=input.length();
   size_t outputSize=inputSize*4;
   QCString output(outputSize, QCString::ExplicitSize);
@@ -1593,7 +1593,7 @@ static QCString getCanonicalTypeForIdentifier(
     ts           = resolver.getTemplateSpec();
     resolvedType = resolver.getResolvedType();
   }
-  if (cd && cd->isUsedOnly()) cd=0; // ignore types introduced by usage relations
+  if (cd && cd->isUsedOnly()) cd=nullptr; // ignore types introduced by usage relations
 
   //printf("cd=%p mtype=%p\n",cd,mType);
   //printf("  getCanonicalTypeForIdentifier: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
@@ -1762,7 +1762,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
         size_t tl = match.length();
         std::string matchStr = match.str();
         canType += ts.substr(tp,ti-tp);
-        canType += getCanonicalTypeForIdentifier(d,fs,matchStr.c_str(),lang,0);
+        canType += getCanonicalTypeForIdentifier(d,fs,matchStr.c_str(),lang,nullptr);
         tp=ti+tl;
       }
       canType+=ts.substr(tp);
@@ -1908,12 +1908,12 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
                                const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
                                bool checkCV,SrcLangExt lang)
 {
-  ASSERT(srcScope!=0 && dstScope!=0);
+  ASSERT(srcScope!=nullptr && dstScope!=nullptr);
 
   AUTO_TRACE("srcScope='{}' dstScope='{}' srcArgs='{}' dstArgs='{}' checkCV={} lang={}",
       srcScope->name(),dstScope->name(),srcAl?argListToString(*srcAl):"",dstAl?argListToString(*dstAl):"",checkCV,lang);
 
-  if (srcAl==0 || dstAl==0)
+  if (srcAl==nullptr || dstAl==nullptr)
   {
     bool match = srcAl==dstAl;
     if (match)
@@ -2154,9 +2154,9 @@ static void findMembersWithSpecificName(const MemberName *mn,
     //    qPrint(md->name()),args,fd,gd,currentFile,qPrint(md->getReference()));
     if (
         ((gd && gd->isLinkable()) || (fd && fd->isLinkable()) || md->isReference()) &&
-        md->getNamespaceDef()==0 && md->isLinkable() &&
+        md->getNamespaceDef()==nullptr && md->isLinkable() &&
         (!checkStatics || (!md->isStatic() && !md->isDefine()) ||
-         currentFile==0 || fd==currentFile) // statics must appear in the same file
+         currentFile==nullptr || fd==currentFile) // statics must appear in the same file
        )
     {
       bool match=TRUE;
@@ -2205,8 +2205,8 @@ GetDefResult getDefsNew(const GetDefInput &input)
   {
     result.md = toMemberDef(symbol);
     result.cd = result.md->getClassDef();
-    if (result.cd==0) result.nd = result.md->getNamespaceDef();
-    if (result.cd==0 && result.nd==0) result.fd = result.md->getFileDef();
+    if (result.cd==nullptr) result.nd = result.md->getNamespaceDef();
+    if (result.cd==nullptr && result.nd==nullptr) result.fd = result.md->getFileDef();
     result.gd = result.md->getGroupDef();
     result.found = true;
   }
@@ -2306,7 +2306,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
       const ClassDef *fcd=resolver.resolveClass(Doxygen::globalScope,className);
       const MemberDef *tmd=resolver.getTypedef();
 
-      if (fcd==0 && className.find('<')!=-1) // try without template specifiers as well
+      if (fcd==nullptr && className.find('<')!=-1) // try without template specifiers as well
       {
          QCString nameWithoutTemplates = stripTemplateSpecifiersFromScope(className,FALSE);
          fcd=resolver.resolveClass(Doxygen::globalScope,nameWithoutTemplates);
@@ -2382,15 +2382,15 @@ GetDefResult getDefsOld(const GetDefInput &input)
         {
           if (!result.md->isLinkable() || result.md->isStrongEnumValue())
           {
-            result.md = 0; // avoid returning things we cannot link to
-            result.cd = 0;
+            result.md = nullptr; // avoid returning things we cannot link to
+            result.cd = nullptr;
             result.found = false; // match found, but was not linkable
             goto exit;
           }
           else
           {
             result.gd = result.md->getGroupDef();
-            if (result.gd) result.cd=0;
+            if (result.gd) result.cd=nullptr;
             result.found=true; /* found match */
             goto exit;
           }
@@ -2412,8 +2412,8 @@ GetDefResult getDefsOld(const GetDefInput &input)
             }
             else
             {
-              result.cd = 0;
-              result.md = 0;
+              result.cd = nullptr;
+              result.md = nullptr;
               result.found = false;
               goto exit;
             }
@@ -2533,8 +2533,8 @@ GetDefResult getDefsOld(const GetDefInput &input)
             }
             else
             {
-              result.md=0;
-              result.cd=0;
+              result.md=nullptr;
+              result.cd=nullptr;
               result.found=false;
               goto exit;
             }
@@ -2580,15 +2580,15 @@ GetDefResult getDefsOld(const GetDefInput &input)
         {
           if (!result.md->isLinkable())
           {
-            result.md=0; // avoid returning things we cannot link to
-            result.nd=0;
+            result.md=nullptr; // avoid returning things we cannot link to
+            result.nd=nullptr;
             result.found=false; // match found but not linkable
             goto exit;
           }
           else
           {
             result.gd=result.md->resolveAlias()->getGroupDef();
-            if (result.gd && result.gd->isLinkable()) result.nd=0; else result.gd=0;
+            if (result.gd && result.gd->isLinkable()) result.nd=nullptr; else result.gd=nullptr;
             result.found = true;
             goto exit;
           }
@@ -2604,7 +2604,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
           //printf("try member %s tmd=%s\n",qPrint(mmd->name()),tmd ? qPrint(tmd->name()) : "<none>");
           int ni=namespaceName.findRev("::");
           //printf("namespaceName=%s ni=%d\n",qPrint(namespaceName),ni);
-          bool notInNS = tmd && ni==-1 && tmd->getNamespaceDef()==0 && (mScope.isEmpty() || mScope==tmd->name());
+          bool notInNS = tmd && ni==-1 && tmd->getNamespaceDef()==nullptr && (mScope.isEmpty() || mScope==tmd->name());
           bool sameNS  = tmd && ni>=0 && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name() && namespaceName.mid(ni+2)==tmd->name();
           //printf("notInNS=%d sameNS=%d\n",notInNS,sameNS);
           if (tmd && tmd->isStrong() && // C++11 enum class
@@ -2615,7 +2615,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
             result.md=mmd;
             result.fd=mmd->getFileDef();
             result.gd=mmd->getGroupDef();
-            if (result.gd && result.gd->isLinkable()) result.fd=0; else result.gd=0;
+            if (result.gd && result.gd->isLinkable()) result.fd=nullptr; else result.gd=nullptr;
             //printf("Found scoped enum %s fd=%p gd=%p\n",
             //    qPrint(mmd->name()),result.fd,result.gd);
             result.found = true;
@@ -2692,13 +2692,13 @@ GetDefResult getDefsOld(const GetDefInput &input)
           result.md = members.back();
         }
       }
-      if (result.md && (result.md->getEnumScope()==0 || !result.md->getEnumScope()->isStrong()))
+      if (result.md && (result.md->getEnumScope()==nullptr || !result.md->getEnumScope()->isStrong()))
            // found a matching global member, that is not a scoped enum value (or uniquely matches)
       {
         result.fd = result.md->getFileDef();
         result.gd = result.md->getGroupDef();
         //printf("fd=%p gd=%p gd->isLinkable()=%d\n",fd,gd,gd->isLinkable());
-        if (result.gd && result.gd->isLinkable()) result.fd=0; else result.gd=0;
+        if (result.gd && result.gd->isLinkable()) result.fd=nullptr; else result.gd=nullptr;
         result.found = true;
         goto exit;
       }
@@ -2780,7 +2780,7 @@ GetDefResult getDefs(const GetDefInput &input)
 static bool getScopeDefs(const QCString &docScope,const QCString &scope,
     ClassDef *&cd, ConceptDef *&cnd, NamespaceDef *&nd)
 {
-  cd=0;nd=0;
+  cd=nullptr;nd=nullptr;
 
   QCString scopeName=scope;
   //printf("getScopeDefs: docScope='%s' scope='%s'\n",qPrint(docScope),qPrint(scope));
@@ -2909,7 +2909,7 @@ bool resolveRef(/* in */  const QCString &scName,
       }
       else // scope matches that of a namespace
       {
-        ASSERT(nd!=0);
+        ASSERT(nd!=nullptr);
         *resContext = nd;
       }
       return TRUE;
@@ -3020,7 +3020,7 @@ bool resolveRef(/* in */  const QCString &scName,
 
   if (tryUnspecializedVersion)
   {
-    return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,0,checkScope);
+    return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,nullptr,checkScope);
   }
   if (bracePos!=-1) // Try without parameters as well, could be a constructor invocation
   {
@@ -3248,7 +3248,7 @@ static std::mutex g_findFileDefMutex;
 FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambig)
 {
   ambig=FALSE;
-  if (n.isEmpty()) return 0;
+  if (n.isEmpty()) return nullptr;
 
 
   const int maxAddrSize = 20;
@@ -3268,20 +3268,20 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   }
   else
   {
-    cachedResult = g_findFileDefCache.insert(key.str(),FindFileCacheElem(0,FALSE));
+    cachedResult = g_findFileDefCache.insert(key.str(),FindFileCacheElem(nullptr,FALSE));
   }
 
   QCString name=Dir::cleanDirPath(n.str());
   QCString path;
   int slashPos;
-  if (name.isEmpty()) return 0;
+  if (name.isEmpty()) return nullptr;
   slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
     path=removeLongPathMarker(name.left(slashPos+1));
     name=name.right(name.length()-slashPos-1);
   }
-  if (name.isEmpty()) return 0;
+  if (name.isEmpty()) return nullptr;
   const FileName *fn = fnMap->find(name);
   if (fn)
   {
@@ -3324,7 +3324,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   {
     //printf("not found!\n");
   }
-  return 0;
+  return nullptr;
 }
 
 //----------------------------------------------------------------------
@@ -4022,7 +4022,7 @@ void extractNamespaceName(const QCString &scopeName,
   int i,p;
   QCString clName=scopeName;
   NamespaceDef *nd = nullptr;
-  if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==0)
+  if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==nullptr)
   { // the whole name is a namespace (and not a class)
     namespaceName=nd->name();
     className.clear();
@@ -4033,7 +4033,7 @@ void extractNamespaceName(const QCString &scopeName,
     // see if the first part is a namespace (and not a class)
   {
     //printf("Trying %s\n",qPrint(clName.left(i)));
-    if (i>0 && (nd=getResolvedNamespace(clName.left(i))) && getClass(clName.left(i))==0)
+    if (i>0 && (nd=getResolvedNamespace(clName.left(i))) && getClass(clName.left(i))==nullptr)
     {
       //printf("found!\n");
       namespaceName=nd->name();
@@ -4073,7 +4073,7 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
     ClassDef *cd=nullptr;
     while (
         (si=scope.find("::",pi))!=-1 && !getClass(scope.left(si)+templ) &&
-        ((cd=getClass(scope.left(si)))==0 || cd->templateArguments().empty())
+        ((cd=getClass(scope.left(si)))==nullptr || cd->templateArguments().empty())
         )
     {
       //printf("Tried '%s'\n",qPrint((scope.left(si)+templ)));
@@ -4416,9 +4416,9 @@ void addMembersToMemberGroup(MemberList *ml,
     MemberGroupList *pMemberGroups,
     const Definition *context)
 {
-  ASSERT(context!=0);
+  ASSERT(context!=nullptr);
   //printf("addMemberToMemberGroup() context=%s\n",qPrint(context->name()));
-  if (ml==0) return;
+  if (ml==nullptr) return;
 
   struct MoveMemberInfo
   {
@@ -4847,7 +4847,7 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
 
     result+=fullName.mid(p,i-p);
     //printf("  trying %s\n",qPrint(mergeScopes(scopeName,result+fullName.mid(i,e-i))));
-    if (getClass(mergeScopes(scopeName,result+fullName.mid(i,e-i)))!=0)
+    if (getClass(mergeScopes(scopeName,result+fullName.mid(i,e-i)))!=nullptr)
     {
       result+=fullName.mid(i,e-i);
       //printf("  2:result+=%s\n",qPrint(fullName.mid(i,e-i-1)));
@@ -5012,7 +5012,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       pd->setFileName(::convertNameToFile(baseName,FALSE,TRUE));
       pd->setShowLineNo(FALSE);
       pd->setNestingLevel(0);
-      pd->setPageScope(0);
+      pd->setPageScope(nullptr);
       pd->setTitle(title);
     }
     else // newPage
@@ -5137,7 +5137,7 @@ static ModuleDef *findModuleDef(const Definition *d)
 
 static bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root)
 {
-  ModuleDef *mod = root ? findModuleDef(d) : 0;
+  ModuleDef *mod = root ? findModuleDef(d) : nullptr;
   if (!d->partOfGroups().empty() || mod!=nullptr) // write list of group to which this definition belongs
   {
     if (root)
@@ -5248,7 +5248,7 @@ QCString stripPath(const QCString &s)
 /** returns \c TRUE iff string \a s contains word \a w */
 bool containsWord(const QCString &str,const char *word)
 {
-  if (str.isEmpty() || word==0) return false;
+  if (str.isEmpty() || word==nullptr) return false;
   static const reg::Ex re(R"(\a+)");
   std::string s = str.str();
   for (reg::Iterator it(s,re) ; it!=reg::Iterator() ; ++it)
@@ -5540,7 +5540,7 @@ QCString getFileNameExtension(const QCString &fn)
 static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
                                 const QCString &n)
 {
-  if (scope==0 ||
+  if (scope==nullptr ||
       (scope->definitionType()!=Definition::TypeClass &&
        scope->definitionType()!=Definition::TypeNamespace
       )
@@ -5551,11 +5551,11 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
 
   QCString name = n;
   if (name.isEmpty())
-    return 0; // no name was given
+    return nullptr; // no name was given
 
   auto &range = Doxygen::symbolMap->find(name);
   if (range.empty())
-    return 0; // could not find any matching symbols
+    return nullptr; // could not find any matching symbols
 
   // mostly copied from getResolvedClassRec()
   QCString explicitScopePart;
@@ -5607,7 +5607,7 @@ static int nextUTF8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t st
   if (c=='&') // skip over character entities
   {
     bytes=1;
-    int (*matcher)(int) = 0;
+    int (*matcher)(int) = nullptr;
     c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
     if (c=='#') // numerical entity?
     {
@@ -5701,10 +5701,10 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
     ol.parseText(a.name);
     ol.endConstraintParam();
     ol.startConstraintType();
-    linkifyText(TextGeneratorOLImpl(ol),d,0,0,a.type);
+    linkifyText(TextGeneratorOLImpl(ol),d,nullptr,nullptr,a.type);
     ol.endConstraintType();
     ol.startConstraintDocs();
-    ol.generateDoc(d->docFile(),d->docLine(),d,0,a.docs,TRUE,FALSE,
+    ol.generateDoc(d->docFile(),d->docLine(),d,nullptr,a.docs,TRUE,FALSE,
                    QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endConstraintDocs();
   }
@@ -6669,7 +6669,7 @@ void convertProtectionLevel(
 
 bool mainPageHasTitle()
 {
-  return Doxygen::mainPage!=0 && Doxygen::mainPage->hasTitle();
+  return Doxygen::mainPage!=nullptr && Doxygen::mainPage->hasTitle();
 }
 
 QCString getDotImageExtension()

@@ -234,7 +234,7 @@ void DocSets::addContentsItem(bool isDir,
 {
   (void)isDir;
   //printf("DocSets::addContentsItem(%s) depth=%zu\n",name,p->indentStack.size());
-  if (ref==0)
+  if (ref==nullptr)
   {
     if (!p->indentStack.top())
     {
@@ -273,7 +273,7 @@ void DocSets::addContentsItem(bool isDir,
 void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
                            const QCString &,const QCString &)
 {
-  if (md==0 && context==0) return;
+  if (md==nullptr && context==nullptr) return;
 
   const FileDef *fd      = nullptr;
   const ClassDef *cd     = nullptr;
@@ -311,7 +311,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
           lang="occ";  // Objective C/C++
         else if (fd && fd->name().lower().endsWith(".c"))
           lang="c";    // Plain C
-        else if (cd==0 && nd==0)
+        else if (cd==nullptr && nd==nullptr)
           lang="c";    // Plain C symbol outside any class or namespace
         else
           lang="cpp";  // C++
@@ -336,14 +336,14 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
 
   if (md)
   {
-    if (context==0)
+    if (context==nullptr)
     {
       if (md->getGroupDef())
         context = md->getGroupDef();
       else if (md->getFileDef())
         context = md->getFileDef();
     }
-    if (context==0) return; // should not happen
+    if (context==nullptr) return; // should not happen
 
     switch (md->memberType())
     {
@@ -422,15 +422,15 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   }
   else if (context && context->isLinkable())
   {
-    if (fd==0 && context->definitionType()==Definition::TypeFile)
+    if (fd==nullptr && context->definitionType()==Definition::TypeFile)
     {
       fd = toFileDef(context);
     }
-    if (cd==0 && context->definitionType()==Definition::TypeClass)
+    if (cd==nullptr && context->definitionType()==Definition::TypeClass)
     {
       cd = toClassDef(context);
     }
-    if (nd==0 && context->definitionType()==Definition::TypeNamespace)
+    if (nd==nullptr && context->definitionType()==Definition::TypeNamespace)
     {
       nd = toNamespaceDef(context);
     }

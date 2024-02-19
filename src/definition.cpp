@@ -325,11 +325,11 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
     SectionManager &sm = SectionManager::instance();
     SectionInfo *gsi=sm.find(si->label());
     //printf("===== label=%s gsi=%p\n",qPrint(si->label),gsi);
-    if (gsi==0)
+    if (gsi==nullptr)
     {
       gsi = sm.add(*si);
     }
-    if (m_impl->sectionRefs.find(gsi->label())==0)
+    if (m_impl->sectionRefs.find(gsi->label())==nullptr)
     {
       m_impl->sectionRefs.add(gsi);
       gsi->setDefinition(m_impl->def);
@@ -382,7 +382,7 @@ void DefinitionImpl::addSectionsToIndex()
       }
       QCString title = si->title();
       if (title.isEmpty()) title = si->label();
-      const MemberDef *md = m_impl->def->definitionType()==Definition::TypeMember ? toMemberDef(m_impl->def) : 0;
+      const MemberDef *md = m_impl->def->definitionType()==Definition::TypeMember ? toMemberDef(m_impl->def) : nullptr;
       const Definition *scope = m_impl->def->definitionType()==Definition::TypeMember ? m_impl->def->getOuterScope() : m_impl->def;
       title = parseCommentAsText(scope,md,title,si->fileName(),si->lineNr());
       // determine if there is a next level inside this item, but be aware of the anchor and table section references.
@@ -647,7 +647,7 @@ class FilterCache
         QCString cmd=filter+" \""+fileName+"\"";
         Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
         FILE *f = Portable::popen(cmd,"r");
-        if (f==0)
+        if (f==nullptr)
         {
           // handle error
           err("Error opening filter pipe command '%s'\n",qPrint(cmd));
@@ -657,7 +657,7 @@ class FilterCache
         FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
         FilterCacheItem item;
         item.filePos = m_endPos;
-        if (bf==0)
+        if (bf==nullptr)
         {
           // handle error
           err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
@@ -1296,7 +1296,7 @@ void DefinitionImpl::addSourceReferences(MemberDef *md)
 
 const Definition *DefinitionImpl::findInnerCompound(const QCString &) const
 {
-  return 0;
+  return nullptr;
 }
 
 void DefinitionImpl::addInnerCompound(Definition *)
@@ -1315,7 +1315,7 @@ QCString DefinitionImpl::qualifiedName() const
   }
 
   //printf("start %s::qualifiedName() localName=%s\n",qPrint(name()),qPrint(m_impl->localName));
-  if (m_impl->outerScope==0)
+  if (m_impl->outerScope==nullptr)
   {
     if (m_impl->localName=="<globalScope>")
     {
@@ -1626,7 +1626,7 @@ void DefinitionImpl::computeTooltip()
 {
   if (m_impl->brief && m_impl->brief->tooltip.isEmpty() && !m_impl->brief->doc.isEmpty())
   {
-    const MemberDef *md = m_impl->def->definitionType()==Definition::TypeMember ? toMemberDef(m_impl->def) : 0;
+    const MemberDef *md = m_impl->def->definitionType()==Definition::TypeMember ? toMemberDef(m_impl->def) : nullptr;
     const Definition *scope = m_impl->def->definitionType()==Definition::TypeMember ? m_impl->def->getOuterScope() : m_impl->def;
     m_impl->brief->tooltip = parseCommentAsText(scope,md,
                                 m_impl->brief->doc, m_impl->brief->file, m_impl->brief->line);
@@ -1730,7 +1730,7 @@ int DefinitionImpl::getEndBodyLine() const
 
 const FileDef *DefinitionImpl::getBodyDef() const
 {
-  return m_impl->body ? m_impl->body->fileDef : 0;
+  return m_impl->body ? m_impl->body->fileDef : nullptr;
 }
 
 const GroupList &DefinitionImpl::partOfGroups() const
@@ -1937,7 +1937,7 @@ void DefinitionAliasImpl::updateQualifiedName() const
   if (m_qualifiedName.isEmpty())
   {
     //printf("start %s::qualifiedName() localName=%s\n",qPrint(name()),qPrint(m_impl->localName));
-    if (m_scope==0)
+    if (m_scope==nullptr)
     {
       m_qualifiedName = m_def->localName();
     }
@@ -1966,13 +1966,13 @@ const QCString &DefinitionAliasImpl::name() const
 
 Definition *toDefinition(DefinitionMutable *dm)
 {
-  if (dm==0) return 0;
+  if (dm==nullptr) return nullptr;
   return dm->toDefinition_();
 }
 
 DefinitionMutable *toDefinitionMutable(Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   return d->toDefinitionMutable_();
 }
 

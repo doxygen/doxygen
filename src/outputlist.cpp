@@ -218,7 +218,7 @@ void OutputList::parseText(const QCString &textStr)
     auto parser { createDocParser() };
     auto ast { validatingParseText(*parser.get(), textStr) };
 
-    if (ast) writeDoc(ast.get(),0,0);
+    if (ast) writeDoc(ast.get(),nullptr,nullptr);
   }
 }
 

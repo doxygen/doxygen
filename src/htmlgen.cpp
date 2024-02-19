@@ -2762,7 +2762,7 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
   }
   if (hlEntry->parent() && !hlEntry->parent()->children().empty()) // draw tabs for row containing hlEntry
   {
-    bool topLevel = hlEntry->parent()->parent()==0;
+    bool topLevel = hlEntry->parent()->parent()==nullptr;
     int count=0;
     for (const auto &entry : hlEntry->parent()->children())
     {
@@ -2930,7 +2930,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     {
       highlightParent=TRUE;
       hlEntry = root->children().front().get();
-      if (hlEntry==0)
+      if (hlEntry==nullptr)
       {
         return; // argl, empty index!
       }

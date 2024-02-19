@@ -437,8 +437,8 @@ class DefinitionAliasMixin : public Base
 
   private:
     virtual Definition *toDefinition_() { return this; }
-    DefinitionMutable *toDefinitionMutable_() override { return 0; }
-    const DefinitionImpl *toDefinitionImpl_() const override { return 0; }
+    DefinitionMutable *toDefinitionMutable_() override { return nullptr; }
+    const DefinitionImpl *toDefinitionImpl_() const override { return nullptr; }
 
     void _setSymbolName(const QCString &name) override { m_symbolName = name; }
     QCString _symbolName() const override { return m_symbolName; }

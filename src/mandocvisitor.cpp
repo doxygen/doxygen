@@ -274,7 +274,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
-                                           0,     // memberDef
+                                           nullptr,     // memberDef
                                            TRUE
 					   );
          if (!m_firstCol) m_t << "\n";
@@ -292,11 +292,11 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         FALSE
 				       );
       if (!m_firstCol) m_t << "\n";
@@ -382,7 +382,7 @@ void ManDocVisitor::operator()(const DocIncOperator &op)
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
     }

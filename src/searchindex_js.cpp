@@ -210,7 +210,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
   const GroupDef *gd=nullptr;
   if (isLinkable &&
       (
-       ((cd=md->getClassDef()) && cd->isLinkable() && cd->templateMaster()==0) ||
+       ((cd=md->getClassDef()) && cd->isLinkable() && cd->templateMaster()==nullptr) ||
        ((gd=md->getGroupDef()) && gd->isLinkable())
       )
      )
@@ -650,7 +650,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
       }
       ti << "',[";
       childCount=0;
-      prevScope=0;
+      prevScope=nullptr;
     }
 
     if (childCount>0)
@@ -686,7 +686,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
       else if (md)
       {
         const FileDef *fd = md->getBodyDef();
-        if (fd==0) fd = md->getFileDef();
+        if (fd==nullptr) fd = md->getFileDef();
         if (fd)
         {
           ti << "'" << convertToXML(fd->localName()) << "'";
@@ -700,7 +700,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
     else // multiple entries with the same name
     {
       bool found=FALSE;
-      bool overloadedFunction = ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope)) &&
+      bool overloadedFunction = ((prevScope!=nullptr && scope==prevScope) || (scope && scope==nextScope)) &&
                                  md && md->isCallable();
       QCString prefix;
       if (md) prefix=convertToXML(md->localName());
@@ -724,12 +724,12 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
           case Definition::TypePage:      name = convertToXML(filterTitle(toPageDef(d)->title()));                found=true; break;
           case Definition::TypeGroup:     name = convertToXML(filterTitle(toGroupDef(d)->groupTitle()));          found=true; break;
           default:
-            if (scope==0 || scope==Doxygen::globalScope) // in global scope
+            if (scope==nullptr || scope==Doxygen::globalScope) // in global scope
             {
               if (md)
               {
                 const FileDef *fd = md->getBodyDef();
-                if (fd==0) fd = md->resolveAlias()->getFileDef();
+                if (fd==nullptr) fd = md->resolveAlias()->getFileDef();
                 if (fd)
                 {
                   if (!prefix.isEmpty()) prefix+=":&#160;";

@@ -206,11 +206,11 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
     // initialized before ShellExecuteEx is called. Some Shell extensions
     // require the COM single-threaded apartment (STA) type.
     // For that case COM is initialized as follows
-    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-    uint16_t *commandw = NULL;
+    uint16_t *commandw = nullptr;
     recodeUtf8StringToW( commandCorrectedPath, &commandw );
-    uint16_t *argsw = NULL;
+    uint16_t *argsw = nullptr;
     recodeUtf8StringToW( args, &argsw );
 
     // gswin32 is a GUI api which will pop up a window and run
@@ -223,19 +223,19 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
                                                        *  handle so we can wait till it's done |
                                                        *  do not display msg box if error
                                                        */
-      NULL,                       /* window handle */
-      NULL,                       /* action to perform: open */
+      nullptr,                       /* window handle */
+      nullptr,                       /* action to perform: open */
       (LPCWSTR)commandw,          /* file to execute */
       (LPCWSTR)argsw,             /* argument list */
-      NULL,                       /* use current working dir */
+      nullptr,                       /* use current working dir */
       SW_HIDE,                    /* minimize on start-up */
       0,                          /* application instance handle */
-      NULL,                       /* ignored: id list */
-      NULL,                       /* ignored: class name */
-      NULL,                       /* ignored: key class */
+      nullptr,                       /* ignored: id list */
+      nullptr,                       /* ignored: class name */
+      nullptr,                       /* ignored: key class */
       0,                          /* ignored: hot key */
-      NULL,                       /* ignored: icon */
-      NULL                        /* resulting application handle */
+      nullptr,                       /* ignored: icon */
+      nullptr                        /* resulting application handle */
     };
 
     if (!ShellExecuteExW(&sInfo))
@@ -276,12 +276,12 @@ uint32_t Portable::pid()
 #if !defined(_WIN32) || defined(__CYGWIN__)
 void loadEnvironment()
 {
-  if(environ != NULL)
+  if(environ != nullptr)
   {
     unsigned int i = 0;
     char* current = environ[i];
 
-    while(current != NULL)                            // parse all strings contained by environ til the last element (NULL)
+    while(current != nullptr)                            // parse all strings contained by environ til the last element (nullptr)
     {
       std::string env_var(current);                   // load current environment variable string
       size_t pos = env_var.find("=");
@@ -445,7 +445,7 @@ bool Portable::checkForExecutable(const QCString &fileName)
 const char *Portable::ghostScriptCommand()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    static const char *gsexe = NULL;
+    static const char *gsexe = nullptr;
     if (!gsexe)
     {
         const char *gsExec[] = {"gswin32c.exe","gswin64c.exe"};
@@ -544,9 +544,9 @@ void Portable::setShortDir()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   long     length = 0;
-  TCHAR*   buffer = NULL;
-  // First obtain the size needed by passing NULL and 0.
-  length = GetShortPathName(Dir::currentDirPath().c_str(), NULL, 0);
+  TCHAR*   buffer = nullptr;
+  // First obtain the size needed by passing nullptr and 0.
+  length = GetShortPathName(Dir::currentDirPath().c_str(), nullptr, 0);
   // Dynamically allocate the correct size
   // (terminating null char was included in length)
   buffer = new TCHAR[length];
@@ -573,7 +573,7 @@ static const char * portable_memmem (const char *haystack, size_t haystack_len,
   // Sanity check
   if (haystack_len < needle_len)
   {
-    return 0;
+    return nullptr;
   }
 
   for (const char *begin = haystack; begin <= last_possible; ++begin)
@@ -584,7 +584,7 @@ static const char * portable_memmem (const char *haystack, size_t haystack_len,
     }
   }
 
-  return 0;
+  return nullptr;
 }
 
 const char *Portable::strnstr(const char *haystack, const char *needle, size_t haystack_len)
@@ -598,7 +598,7 @@ const char *Portable::strnstr(const char *haystack, const char *needle, size_t h
       return x;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 const char *Portable::devNull()
@@ -612,7 +612,7 @@ const char *Portable::devNull()
 
 size_t Portable::recodeUtf8StringToW(const QCString &inputStr,uint16_t **outBuf)
 {
-  if (inputStr.isEmpty() || outBuf==0) return 0; // empty input or invalid output
+  if (inputStr.isEmpty() || outBuf==nullptr) return 0; // empty input or invalid output
   void *handle = portable_iconv_open("UTF-16LE","UTF-8");
   if (handle==reinterpret_cast<void *>(-1)) return 0; // invalid encoding
   size_t len = inputStr.length();

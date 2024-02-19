@@ -120,7 +120,7 @@ class Entry
     Entry(const Entry &);
    ~Entry();
 
-    /*! Returns the parent for this Entry or 0 if this entry has no parent. */
+    /*! Returns the parent for this Entry or nullptr if this entry has no parent. */
     Entry *parent() const { return m_parent; }
 
     /*! Returns the list of children for this Entry
@@ -164,7 +164,7 @@ class Entry
     QCString	 name;        //!< member name
     bool         hasTagInfo;  //!< is tag info valid
     TagInfo      tagInfoData; //!< tag file info data
-    const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : 0; }
+    const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : nullptr; }
 
     // content
     Protection protection;    //!< class protection
