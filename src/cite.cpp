@@ -91,7 +91,7 @@ const CiteInfo *CitationManager::find(const QCString &label) const
   {
     return it->second.get();
   }
-  return 0;
+  return nullptr;
 }
 
 void CitationManager::clear()
@@ -463,7 +463,7 @@ void CitationManager::generatePage()
     int              pos = 0;
     Protection       prot;
     commentScanner.parseCommentBlock(
-        NULL,
+        nullptr,
         &current,
         doc,          // text
         fileName(),   // file

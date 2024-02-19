@@ -34,7 +34,7 @@ Entry::Entry() : section(EntryType::makeEmpty()), program(static_cast<size_t>(0)
 {
   //printf("Entry::Entry(%p)\n",this);
   g_num++;
-  m_parent=0;
+  m_parent=nullptr;
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
   hasTagInfo = false;
@@ -237,7 +237,7 @@ void Entry::reset()
   typeConstr.reset();
   sli.clear();
   req.clear();
-  m_fileDef = 0;
+  m_fileDef = nullptr;
   qualifiers.clear();
 }
 

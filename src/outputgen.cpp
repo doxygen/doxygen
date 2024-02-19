@@ -34,7 +34,7 @@ void OutputGenerator::startPlainFile(const QCString &name)
   //printf("startPlainFile(%s)\n",qPrint(name));
   m_fileName=m_dir+"/"+name;
   m_file = Portable::fopen(m_fileName.data(),"wb");
-  if (m_file==0)
+  if (m_file==nullptr)
   {
     term("Could not open file %s for writing\n",qPrint(m_fileName));
   }

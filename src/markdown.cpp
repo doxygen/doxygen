@@ -1643,7 +1643,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
 void Markdown::Private::addStrEscapeUtf8Nbsp(std::string_view data)
 {
   AUTO_TRACE("{}",Trace::trunc(data));
-  if (Portable::strnstr(data.data(),g_doxy_nbsp,data.size())==0) // no escape needed -> fast
+  if (Portable::strnstr(data.data(),g_doxy_nbsp,data.size())==nullptr) // no escape needed -> fast
   {
     out+=data;
   }

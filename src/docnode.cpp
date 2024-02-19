@@ -464,7 +464,7 @@ bool DocXRefItem::parse()
   if (refList && refList->isEnabled())
   {
     RefItem *item = refList->find(m_id);
-    ASSERT(item!=0);
+    ASSERT(item!=nullptr);
     if (item)
     {
       if (parser()->context.memberDef && parser()->context.memberDef->name().at(0)=='@')
@@ -540,7 +540,7 @@ void DocSecRefItem::parse()
   {
     SrcLangExt lang = getLanguageFromFileName(m_target);
     const SectionInfo *sec = SectionManager::instance().find(m_target);
-    if (sec==0 && lang==SrcLangExt::Markdown) // lookup as markdown file
+    if (sec==nullptr && lang==SrcLangExt::Markdown) // lookup as markdown file
     {
       sec = SectionManager::instance().find(markdownFileNameToId(m_target));
     }
@@ -695,7 +695,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   SrcLangExt lang = getLanguageFromFileName(target);
   m_relPath = parser->context.relPath;
   const SectionInfo *sec = SectionManager::instance().find(target);
-  if (sec==0 && lang==SrcLangExt::Markdown) // lookup as markdown file
+  if (sec==nullptr && lang==SrcLangExt::Markdown) // lookup as markdown file
   {
     sec = SectionManager::instance().find(markdownFileNameToId(target));
   }
@@ -886,7 +886,7 @@ DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target
   {
     warn_doc_error(parser->context.fileName,parser->tokenizer.getLineNr(),"\\cite command found but no bib files specified via CITE_BIB_FILES!");
   }
-  else if (cite==0)
+  else if (cite==nullptr)
   {
     warn_doc_error(parser->context.fileName,parser->tokenizer.getLineNr(),"unable to resolve reference to '%s' for \\cite command",
              qPrint(target));
@@ -1040,7 +1040,7 @@ bool DocDotFile::parse()
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && !p->name.endsWith(".dot")) // try with .dot extension as well
+  if (fd==nullptr && !p->name.endsWith(".dot")) // try with .dot extension as well
   {
     fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name+".dot",ambig);
   }
@@ -1078,7 +1078,7 @@ bool DocMscFile::parse()
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && !p->name.endsWith(".msc")) // try with .msc extension as well
+  if (fd==nullptr && !p->name.endsWith(".msc")) // try with .msc extension as well
   {
     fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name+".msc",ambig);
   }
@@ -1118,7 +1118,7 @@ bool DocDiaFile::parse()
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && !p->name.endsWith(".dia")) // try with .dia extension as well
+  if (fd==nullptr && !p->name.endsWith(".dia")) // try with .dia extension as well
   {
     fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name+".dia",ambig);
   }
@@ -1954,7 +1954,7 @@ const DocNodeVariant *DocHtmlTable::firstRow() const
   {
     return &children().front();
   }
-  return 0;
+  return nullptr;
 }
 
 int DocHtmlTable::parse()
@@ -2883,7 +2883,7 @@ int DocSimpleSect::parseXml()
 void DocSimpleSect::appendLinkWord(const QCString &word)
 {
   DocPara *p=nullptr;
-  if (children().empty() || (p=std::get_if<DocPara>(&children().back()))==0)
+  if (children().empty() || (p=std::get_if<DocPara>(&children().back()))==nullptr)
   {
     children().append<DocPara>(parser(),thisVariant());
     p = children().get_last<DocPara>();
@@ -3498,8 +3498,8 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   }
   auto it1 = children().size()>=1 ? std::prev(children().end()) : children().end();
   auto it2 = children().size()>=2 ? std::prev(it1)              : children().end();
-  DocNodeVariant *n1 = it1!=children().end() ? &(*it1) : 0;
-  DocNodeVariant *n2 = it2!=children().end() ? &(*it2) : 0;
+  DocNodeVariant *n1 = it1!=children().end() ? &(*it1) : nullptr;
+  DocNodeVariant *n2 = it2!=children().end() ? &(*it2) : nullptr;
   children().append<DocIncOperator>(parser(),thisVariant(),t,
                                     parser()->context.token->name,
                                     parser()->context.context,
@@ -4356,7 +4356,7 @@ int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CMD_ADDINDEX:
       {
         children().append<DocIndexEntry>(parser(),thisVariant(),
-                     parser()->context.scope!=Doxygen::globalScope?parser()->context.scope:0,
+                     parser()->context.scope!=Doxygen::globalScope?parser()->context.scope:nullptr,
                      parser()->context.memberDef);
         retval = children().get_last<DocIndexEntry>()->parse();
       }

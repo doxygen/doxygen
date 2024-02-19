@@ -72,7 +72,7 @@ class ClangTUParser::Private
       : parser(p), fileDef(fd) {}
     const ClangParser &parser;
     const FileDef *fileDef;
-    CXIndex index = 0;
+    CXIndex index = nullptr;
     uint32_t curToken = 0;
     DetectedLang detectedLang = DetectedLang::Cpp;
     size_t numFiles = 0;
@@ -80,7 +80,7 @@ class ClangTUParser::Private
     std::vector<CXUnsavedFile> ufs;
     std::vector<CXCursor> cursors;
     std::unordered_map<std::string,uint32_t> fileMapping;
-    CXTranslationUnit tu = 0;
+    CXTranslationUnit tu = nullptr;
     CXToken *tokens = nullptr;
     uint32_t numTokens = 0;
     StringVector filesInSameTU;
@@ -119,8 +119,8 @@ void ClangTUParser::parse()
   const StringVector &clangOptions = Config_getList(CLANG_OPTIONS);
   if (!clangAssistedParsing) return;
   //printf("ClangParser::start(%s)\n",fileName);
-  assert(p->index==0);
-  assert(p->tokens==0);
+  assert(p->index==nullptr);
+  assert(p->tokens==nullptr);
   assert(p->numTokens==0);
   p->index    = clang_createIndex(0, 0);
   p->curToken = 0;
@@ -235,7 +235,7 @@ void ClangTUParser::parse()
 
   // let libclang do the actual parsing
   //for (i=0;i<argv.size();i++) printf("Argument %d: %s\n",i,argv[i]);
-  p->tu = clang_parseTranslationUnit(p->index, 0,
+  p->tu = clang_parseTranslationUnit(p->index, nullptr,
                                      argv.data(), static_cast<int>(argv.size()), p->ufs.data(), numUnsavedFiles,
                                      CXTranslationUnit_DetailedPreprocessingRecord);
   //printf("  tu=%p\n",p->tu);
@@ -277,7 +277,7 @@ ClangTUParser::~ClangTUParser()
     clang_disposeTranslationUnit(p->tu);
     clang_disposeIndex(p->index);
     p->fileMapping.clear();
-    p->tokens    = 0;
+    p->tokens    = nullptr;
     p->numTokens = 0;
   }
   for (size_t i=0;i<p->numFiles;i++)
@@ -287,7 +287,7 @@ ClangTUParser::~ClangTUParser()
   p->ufs.clear();
   p->sources.clear();
   p->numFiles  = 0;
-  p->tu        = 0;
+  p->tu        = nullptr;
 }
 
 void ClangTUParser::switchToFile(const FileDef *fd)
@@ -297,7 +297,7 @@ void ClangTUParser::switchToFile(const FileDef *fd)
   {
     p->cursors.clear();
     clang_disposeTokens(p->tu,p->tokens,p->numTokens);
-    p->tokens    = 0;
+    p->tokens    = nullptr;
     p->numTokens = 0;
 
     CXFile f = clang_getFile(p->tu, fd->absFilePath().data());
@@ -337,7 +337,7 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
     // guard against filters that reduce the number of lines
     if (p->curToken>=p->numTokens) p->curToken=p->numTokens-1;
     CXSourceLocation start = clang_getTokenLocation(p->tu,p->tokens[p->curToken]);
-    clang_getSpellingLocation(start, 0, &l, &c, 0);
+    clang_getSpellingLocation(start, nullptr, &l, &c, nullptr);
     return l;
   };
 
@@ -432,7 +432,7 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
 
 void ClangTUParser::writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_t line,bool writeLineAnchor)
 {
-  const Definition *d = fd ? fd->getSourceDefinition(line) : 0;
+  const Definition *d = fd ? fd->getSourceDefinition(line) : nullptr;
   if (d && fd->isLinkable())
   {
     p->currentLine=line;
@@ -453,7 +453,7 @@ void ClangTUParser::writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_
     }
     else // link to compound
     {
-      p->currentMemberDef=0;
+      p->currentMemberDef=nullptr;
       ol.writeLineNumber(d->getReference(),
                          d->getOutputFileBase(),
                          d->anchor(),
@@ -697,7 +697,7 @@ void ClangTUParser::detectFunctionBody(const char *s)
 void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
 {
   // (re)set global parser state
-  p->currentMemberDef=0;
+  p->currentMemberDef=nullptr;
   p->currentLine=0;
   p->searchForBody=FALSE;
   p->insideBody=FALSE;
@@ -712,7 +712,7 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
   {
     CXSourceLocation start = clang_getTokenLocation(p->tu, p->tokens[i]);
     unsigned int l, c;
-    clang_getSpellingLocation(start, 0, &l, &c, 0);
+    clang_getSpellingLocation(start, nullptr, &l, &c, nullptr);
     if (l > line) column = 1;
     while (line<l)
     {

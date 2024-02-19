@@ -30,7 +30,7 @@ class BufStr
 {
   public:
     BufStr(size_t size)
-      : m_size(size), m_writeOffset(0), m_spareRoom(10240), m_buf(0)
+      : m_size(size), m_writeOffset(0), m_spareRoom(10240), m_buf(nullptr)
     {
       m_buf = static_cast<char *>(calloc(size,1));
     }

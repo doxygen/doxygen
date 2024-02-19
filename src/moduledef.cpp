@@ -50,7 +50,7 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
   public:
     ModuleDefImpl(const QCString &fileName,int startLine,int startColom,
                   const QCString &name, Type type, const QCString &partitionName)
-      : DefinitionMixin<ModuleDef>(fileName,startLine,startColom,name,0,0,true),
+      : DefinitionMixin<ModuleDef>(fileName,startLine,startColom,name,nullptr,nullptr,true),
         m_type(type), m_partitionName(partitionName) {}
 
     // --- Definition
@@ -239,7 +239,7 @@ MemberList *ModuleDefImpl::getMemberList(MemberListType lt) const
       return ml.get();
     }
   }
-  return 0;
+  return nullptr;
 }
 
 void ModuleDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
@@ -268,7 +268,7 @@ void ModuleDefImpl::addMemberToModule(const Entry *root,MemberDef *md)
       qPrint(md->qualifiedName()),qPrint(name()),
       root->exported);
   MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
-  if (allMemberList==0)
+  if (allMemberList==nullptr)
   {
     m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::Module));
     allMemberList = m_memberLists.back().get();
@@ -477,7 +477,7 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
 
 void ModuleDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title)
 {
-  m_classes.writeDeclaration(ol,0,title,FALSE);
+  m_classes.writeDeclaration(ol,nullptr,title,FALSE);
 }
 
 void ModuleDefImpl::writeConcepts(OutputList &ol,const QCString &title)
@@ -532,7 +532,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
     ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
-      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+      ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
                      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
@@ -549,7 +549,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
     }
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE,
+      ol.generateDoc(docFile(),docLine(),this,nullptr,documentation()+"\n",TRUE,FALSE,
                      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     ol.endTextBlock();
@@ -562,7 +562,7 @@ void ModuleDefImpl::writeBriefDescription(OutputList &ol)
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
-                                     briefFile(),briefLine(),this,0,
+                                     briefFile(),briefLine(),this,nullptr,
                                      briefDescription(),TRUE,FALSE,
                                      QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (!ast->isEmpty())
@@ -572,7 +572,7 @@ void ModuleDefImpl::writeBriefDescription(OutputList &ol)
       ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(ast.get(),this,0);
+      ol.writeDoc(ast.get(),this,nullptr);
       ol.pushGeneratorState();
       ol.disable(OutputType::RTF);
       ol.writeString(" \n");
@@ -596,14 +596,14 @@ void ModuleDefImpl::writeMemberGroups(OutputList &ol)
 {
   for (const auto &mg : m_memberGroups)
   {
-    mg->writeDeclarations(ol,0,0,0,0,this);
+    mg->writeDeclarations(ol,nullptr,nullptr,nullptr,nullptr,this);
   }
 }
 
 void ModuleDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDeclarations(ol,0,0,0,0,this,title,QCString());
+  if (ml) ml->writeDeclarations(ol,nullptr,nullptr,nullptr,nullptr,this,title,QCString());
 }
 
 void ModuleDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
@@ -861,13 +861,13 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(
-                                *parser.get(),briefFile(),briefLine(),this,0,
+                                *parser.get(),briefFile(),briefLine(),this,nullptr,
                                 briefDescription(),FALSE,FALSE,
                                 QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(ast.get(),this,0);
+        ol.writeDoc(ast.get(),this,nullptr);
         ol.endMemberDescription();
       }
     }
@@ -906,7 +906,7 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
       if (mod && !mod->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(mod->getOutputFileBase());
-        ol.generateDoc(briefFile(),briefLine(),mod,0,mod->briefDescription(),FALSE,FALSE,
+        ol.generateDoc(briefFile(),briefLine(),mod,nullptr,mod->briefDescription(),FALSE,FALSE,
             QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
         ol.endMemberDescription();
       }
@@ -953,7 +953,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
         if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(fd->getOutputFileBase());
-          ol.generateDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE,
+          ol.generateDoc(briefFile(),briefLine(),fd,nullptr,fd->briefDescription(),FALSE,FALSE,
               QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           ol.endMemberDescription();
         }
@@ -1240,7 +1240,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
   else // import outside of a module
   {
     AUTO_TRACE_ADD("outside module");
-    p->externalImports.insert(std::make_pair(moduleFile.str(),ImportInfo(0,importName,line,partitionName)));
+    p->externalImports.insert(std::make_pair(moduleFile.str(),ImportInfo(nullptr,importName,line,partitionName)));
   }
 }
 
@@ -1365,7 +1365,7 @@ void ModuleManager::resolveImports()
       for (const auto &[fileName,importInfo] : mod->getImports())
       {
         ModuleDef *importedModule = getPrimaryInterface(importInfo.importName);
-        const FileDef *importedFd = importedModule ? importedModule->getFileDef() : 0;
+        const FileDef *importedFd = importedModule ? importedModule->getFileDef() : nullptr;
         AUTO_TRACE_ADD("module: addIncludeDependency {}->{}:{} fd={}",
              mod->qualifiedName(), importInfo.qualifiedName(), importInfo.line, fd?fd->absFilePath():"");
         fd->addIncludeDependency(importedFd,importInfo.qualifiedName(),IncludeKind::ImportModule);
@@ -1521,7 +1521,7 @@ ModuleDef *ModuleManager::getPrimaryInterface(const QCString &moduleName) const
       }
     }
   }
-  return 0;
+  return nullptr;
 }
 
 void ModuleManager::addListReferences()

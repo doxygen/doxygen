@@ -272,7 +272,7 @@ constexpr const char *codeSymbolType2Str(CodeSymbolType type)
     case CodeSymbolType::Sequence:    return "sequence";
     case CodeSymbolType::Dictionary:  return "dictionary";
     default:
-      return 0;
+      return nullptr;
   }
 }
 

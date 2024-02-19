@@ -603,14 +603,14 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
   if (md)
   {
     bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    if (context==0) // global member
+    if (context==nullptr) // global member
     {
       if (md->getGroupDef())
         context = md->getGroupDef();
       else if (md->getFileDef())
         context = md->getFileDef();
     }
-    if (context==0) return; // should not happen
+    if (context==nullptr) return; // should not happen
 
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();

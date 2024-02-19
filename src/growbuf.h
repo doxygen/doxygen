@@ -27,7 +27,7 @@
 class GrowBuf
 {
   public:
-    GrowBuf() : m_str(0), m_pos(0), m_len(0) {}
+    GrowBuf() : m_str(nullptr), m_pos(0), m_len(0) {}
     GrowBuf(size_t initialSize) : m_pos(0), m_len(initialSize) { m_str=static_cast<char*>(malloc(m_len)); }
    ~GrowBuf()         { free(m_str); }
     GrowBuf(const GrowBuf &other)
@@ -50,7 +50,7 @@ class GrowBuf
       return *this;
     }
     GrowBuf(GrowBuf &&other)
-      : m_str(std::exchange(other.m_str,static_cast<char*>(0)))
+      : m_str(std::exchange(other.m_str,static_cast<char*>(nullptr)))
       , m_pos(std::exchange(other.m_pos,0))
       , m_len(std::exchange(other.m_len,0))
     {
@@ -61,7 +61,7 @@ class GrowBuf
         return *this;
       m_len = std::exchange(other.m_len,0);
       m_pos = std::exchange(other.m_pos,0);
-      m_str = std::exchange(other.m_str,static_cast<char*>(0));
+      m_str = std::exchange(other.m_str,static_cast<char*>(nullptr));
       return *this;
     }
     void reserve(size_t size) { if (m_len<size) { m_len = size; m_str = static_cast<char*>(realloc(m_str,m_len)); } }

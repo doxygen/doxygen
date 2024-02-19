@@ -806,20 +806,20 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
     fileName=ctStr+name;
   }
   prot=Protection::Public;
-  //nspace=0;
-  fileDef=0;
-  moduleDef=0;
+  //nspace=nullptr;
+  fileDef=nullptr;
+  moduleDef=nullptr;
   subGrouping=Config_getBool(SUBGROUPING);
-  templateMaster =0;
+  templateMaster =nullptr;
   isAbstract = FALSE;
   isStatic = FALSE;
   isTemplArg = FALSE;
   membersMerged = FALSE;
-  categoryOf = 0;
+  categoryOf = nullptr;
   usedOnly = FALSE;
   isSimple = Config_getBool(INLINE_SIMPLE_STRUCTS);
-  arrowOperator = 0;
-  tagLessRef = 0;
+  arrowOperator = nullptr;
+  tagLessRef = nullptr;
   spec=TypeSpecifier();
   //QCString ns;
   //extractNamespaceName(name,className,ns);
@@ -847,7 +847,7 @@ ClassDefImpl::ClassDefImpl(
     const QCString &nm,CompoundType ct,
     const QCString &lref,const QCString &fName,
     bool isSymbol,bool isJavaEnum)
- : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),0,0,isSymbol),
+ : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),nullptr,nullptr,isSymbol),
   m_impl(std::make_unique<IMPL>())
 {
   setReference(lref);
@@ -1256,7 +1256,7 @@ void ClassDefImpl::findSectionsInDocumentation()
 // add a file name to the used files set
 void ClassDefImpl::insertUsedFile(const FileDef *fd)
 {
-  if (fd==0) return;
+  if (fd==nullptr) return;
   auto it = std::find(m_impl->files.begin(),m_impl->files.end(),fd);
   if (it==m_impl->files.end())
   {
@@ -1300,7 +1300,7 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
   //printf("ClassDefImpl::setIncludeFile(%p,%s,%d,%d)\n",fd,includeName,local,force);
   if (!m_impl->incInfo) m_impl->incInfo = std::make_unique<IncludeInfo>();
   if ((!includeName.isEmpty() && m_impl->incInfo->includeName.isEmpty()) ||
-      (fd!=0 && m_impl->incInfo->fileDef==0)
+      (fd!=nullptr && m_impl->incInfo->fileDef==nullptr)
      )
   {
     //printf("Setting file info\n");
@@ -1330,7 +1330,7 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
 //  {
 //    return pcd->templateArguments();
 //  }
-//  return 0;
+//  return nullptr;
 //}
 
 static void searchTemplateSpecs(/*in*/  const Definition *d,
@@ -1433,7 +1433,7 @@ void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag) const
     ol.disableAllBut(OutputType::Man);
     ol.writeString(" - ");
     ol.popGeneratorState();
-    ol.generateDoc(briefFile(),briefLine(),this,0,
+    ol.generateDoc(briefFile(),briefLine(),this,nullptr,
                    briefDescription(),TRUE,FALSE,QCString(),
                    TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.pushGeneratorState();
@@ -1466,7 +1466,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   // repeat brief description
   if (!briefDescription().isEmpty() && repeatBrief)
   {
-    ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+    ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
                    QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   }
   if (!briefDescription().isEmpty() && repeatBrief &&
@@ -1480,7 +1480,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   // write documentation
   if (!documentation().isEmpty())
   {
-    ol.generateDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE,
+    ol.generateDoc(docFile(),docLine(),this,nullptr,documentation(),TRUE,FALSE,
                    QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   }
   // write type constraints
@@ -1993,7 +1993,7 @@ void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline) const
   {
     if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
     {
-      mg->writeDeclarations(ol,this,0,0,0,0,showInline);
+      mg->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,showInline);
     }
     else // add this group to the corresponding member section
     {
@@ -2006,7 +2006,7 @@ void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline) const
 void ClassDefImpl::writeNestedClasses(OutputList &ol,const QCString &title) const
 {
   // nested classes
-  m_impl->innerClasses.writeDeclaration(ol,0,title,TRUE);
+  m_impl->innerClasses.writeDeclaration(ol,nullptr,title,TRUE);
 }
 
 void ClassDefImpl::writeInlineClasses(OutputList &ol) const
@@ -2200,7 +2200,7 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
         {
           for (const auto &innerCd : m_impl->innerClasses)
           {
-            if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+            if (innerCd->isLinkableInProject() && innerCd->templateMaster()==nullptr &&
                 protectionLevelVisible(innerCd->protection()) &&
                 !innerCd->isEmbeddedInOuterScope()
                )
@@ -2511,13 +2511,13 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(*parser.get(),
-                                briefFile(),briefLine(),this,0,
+                                briefFile(),briefLine(),this,nullptr,
                                 briefDescription(),FALSE,FALSE,
                                 QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(ast.get(),this,0);
+        ol.writeDoc(ast.get(),this,nullptr);
         if (isLinkableInProject())
         {
           writeMoreLink(ol,anchor());
@@ -2890,7 +2890,7 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
   for (const auto &innerCd : m_impl->innerClasses)
   {
     if (
-        innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+        innerCd->isLinkableInProject() && innerCd->templateMaster()==nullptr &&
         protectionLevelVisible(innerCd->protection()) &&
         !innerCd->isEmbeddedInOuterScope()
        )
@@ -3014,7 +3014,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
           else
           {
             //Definition *bd = md->getGroupDef();
-            //if (bd==0) bd=cd;
+            //if (bd==nullptr) bd=cd;
             ol.writeObjectLink(md->getReference(),
                 md->getOutputFileBase(),
                 md->anchor(),name);
@@ -3207,7 +3207,7 @@ void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCStri
   if (typeConstraint.isEmpty() || type.isEmpty()) return;
   SymbolResolver resolver(getFileDef());
   ClassDefMutable *cd = resolver.resolveClassMutable(this,typeConstraint);
-  if (cd==0 && !hideUndocRelation)
+  if (cd==nullptr && !hideUndocRelation)
   {
     cd = toClassDefMutable(
            Doxygen::hiddenClassLinkedMap->add(typeConstraint,
@@ -3358,7 +3358,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   // write user defined member groups
   for (const auto &mg : m_impl->memberGroups)
   {
-    mg->writePlainDeclarations(ol,inGroup,this,0,0,0,0,indentLevel,inheritedFrom,inheritId);
+    mg->writePlainDeclarations(ol,inGroup,this,nullptr,nullptr,nullptr,nullptr,indentLevel,inheritedFrom,inheritId);
   }
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
@@ -3451,7 +3451,7 @@ bool ClassDefImpl::hasDocumentation() const
 //----------------------------------------------------------------------
 // recursive function:
 // returns the distance to the base class definition 'bcd' represents an (in)direct base
-// class of class definition 'cd' or 0 if it does not.
+// class of class definition 'cd' or nullptr if it does not.
 
 int ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances,const QCString &templSpec) const
 {
@@ -3686,7 +3686,7 @@ void ClassDefImpl::mergeMembers()
               }
               if (hidden)
               {
-                if (srcMi->ambigClass()==0)
+                if (srcMi->ambigClass()==nullptr)
                 {
                   newMi->setAmbigClass(bClass);
                   newMi->setAmbiguityResolutionScope(bClass->name()+sep);
@@ -4039,7 +4039,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
   {
     templateClass = toClassDefMutable((*it).classDef);
   }
-  if (templateClass==0)
+  if (templateClass==nullptr)
   {
     QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
     AUTO_TRACE("New template instance class name='{}' templSpec='{}' inside '{}' hidden={}",
@@ -4268,7 +4268,7 @@ MemberList *ClassDefImpl::getMemberList(MemberListType lt) const
       return ml.get();
     }
   }
-  return 0;
+  return nullptr;
 }
 
 void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
@@ -4558,7 +4558,7 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
     }
     if (ml)
     {
-      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0,0,0);
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,nullptr,this,nullptr,nullptr,nullptr);
     }
   }
   else
@@ -4568,14 +4568,14 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
     if (ml)
     {
       //printf("  writeDeclaration type=%d count=%d\n",lt,ml->numDecMembers());
-      ml->writeDeclarations(ol,this,0,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
+      ml->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,tt,st,FALSE,showInline,inheritedFrom,lt);
       tt.clear();
       st.clear();
     }
     if (ml2)
     {
       //printf("  writeDeclaration type=%d count=%d\n",lt2,ml2->numDecMembers());
-      ml2->writeDeclarations(ol,this,0,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
+      ml2->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,tt,st,FALSE,showInline,inheritedFrom,lt);
     }
     bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
     if (!inlineInheritedMembers) // show inherited members as separate lists
@@ -4622,7 +4622,7 @@ void ClassDefImpl::writePlainMemberDeclaration(OutputList &ol,
   MemberList * ml = getMemberList(lt);
   if (ml)
   {
-    ml->writePlainDeclarations(ol,inGroup,this,0,0,0,0,indentLevel,inheritedFrom,inheritId);
+    ml->writePlainDeclarations(ol,inGroup,this,nullptr,nullptr,nullptr,nullptr,indentLevel,inheritedFrom,inheritId);
   }
 }
 
@@ -5094,7 +5094,7 @@ ClassDef *toClassDef(Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -5107,7 +5107,7 @@ ClassDef *toClassDef(DefinitionMutable *md)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -5119,7 +5119,7 @@ const ClassDef *toClassDef(const Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -5131,18 +5131,18 @@ ClassDefMutable *toClassDefMutable(Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
 // --- Helpers
 
 /*! Get a class definition given its name.
- *  Returns 0 if the class is not found.
+ *  Returns nullptr if the class is not found.
  */
 ClassDef *getClass(const QCString &n)
 {
-  if (n.isEmpty()) return 0;
+  if (n.isEmpty()) return nullptr;
   return Doxygen::classLinkedMap->find(n);
 }
 

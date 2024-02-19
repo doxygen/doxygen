@@ -251,14 +251,14 @@ class TagCompoundVariant
     R *get()
     {
       std::unique_ptr<R> *p = std::get_if<std::unique_ptr<R>>(&m_variant);
-      return p ? p->get() : 0;
+      return p ? p->get() : nullptr;
     }
     /** Generic const getter */
     template<class R>
     const R *get() const
     {
       const std::unique_ptr<R> *p = std::get_if<std::unique_ptr<R>>(&m_variant);
-      return p ? p->get() : 0;
+      return p ? p->get() : nullptr;
     }
 
     /** Generic factory method to create a variant holding a unique pointer to a given compound type */
@@ -296,7 +296,7 @@ class TagCompoundVariant
     {
       switch(type())
       {
-        case Type::Uninitialized: return 0;
+        case Type::Uninitialized: return nullptr;
         case Type::Class:         return getClassInfo();
         case Type::Concept:       return getConceptInfo();
         case Type::Namespace:     return getNamespaceInfo();
@@ -307,7 +307,7 @@ class TagCompoundVariant
         case Type::Dir:           return getDirInfo();
         case Type::Module:        return getModuleInfo();
       }
-      return 0;
+      return nullptr;
     }
     Type type() const
     {
@@ -1358,7 +1358,7 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vec
 {
   for (const auto &ta : l)
   {
-    if (SectionManager::instance().find(QCString(ta.label))==0)
+    if (SectionManager::instance().find(QCString(ta.label))==nullptr)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
       //    qPrint(ta->fileName),qPrint(ta->label));
@@ -1623,7 +1623,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
         std::vector<const SectionInfo *> anchorList;
         for (const auto &ta : tmi->docAnchors)
         {
-          if (SectionManager::instance().find(QCString(ta.label))==0)
+          if (SectionManager::instance().find(QCString(ta.label))==nullptr)
           {
             //printf("New sectionInfo file=%s anchor=%s\n",
             //    qPrint(ta->fileName),qPrint(ta->label));
@@ -1772,7 +1772,7 @@ void TagFileParser::addIncludes()
             {
               //printf("ii->name='%s'\n",qPrint(ii->name));
               FileName *ifn = Doxygen::inputNameLinkedMap->find(ii.name);
-              ASSERT(ifn!=0);
+              ASSERT(ifn!=nullptr);
               if (ifn)
               {
                 for (const auto &ifd : *ifn)
