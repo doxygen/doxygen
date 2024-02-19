@@ -121,7 +121,7 @@ void ClangTUParser::parse()
   //printf("ClangParser::start(%s)\n",fileName);
   assert(p->index==nullptr);
   assert(p->tokens==nullptr);
-  assert(p->numTokens==nullptr);
+  assert(p->numTokens==0);
   p->index    = clang_createIndex(0, 0);
   p->curToken = 0;
   p->cursors.clear();
