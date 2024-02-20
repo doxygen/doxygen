@@ -34,24 +34,24 @@ class FileDef;
 
 //--------------------------------------------------------------
 
-#define COMMAND_OVERRIDES                                 \
-  OVERRIDE_ENTRY(bool,          1, callGraph            ) \
-  OVERRIDE_ENTRY(bool,          1, callerGraph          ) \
-  OVERRIDE_ENTRY(bool,          1, referencedByRelation ) \
-  OVERRIDE_ENTRY(bool,          1, referencesRelation   ) \
-  OVERRIDE_ENTRY(bool,          1, inlineSource         ) \
-  OVERRIDE_ENTRY(bool,          1, includeGraph         ) \
-  OVERRIDE_ENTRY(bool,          1, includedByGraph      ) \
-  OVERRIDE_ENTRY(bool,          1, directoryGraph       ) \
-  OVERRIDE_ENTRY(bool,          1, collaborationGraph   ) \
-  OVERRIDE_ENTRY(bool,          1, groupGraph           ) \
-  OVERRIDE_ENTRY(CLASS_GRAPH_t, 3, inheritanceGraph     )
+#define COMMAND_OVERRIDES                                       \
+  OVERRIDE_ENTRY(bool,          bool, 1, callGraph            ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, callerGraph          ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, referencedByRelation ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, referencesRelation   ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, inlineSource         ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, includeGraph         ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, includedByGraph      ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, directoryGraph       ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, collaborationGraph   ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, groupGraph           ) \
+  OVERRIDE_ENTRY(CLASS_GRAPH_t, int,  3, inheritanceGraph     )
 
 class CommandOverrides
 {
   private:
-#define OVERRIDE_ENTRY(type,bits,name)  \
-    type m_##name                : bits;       \
+#define OVERRIDE_ENTRY(type,store_type,bits,name)  \
+    store_type m_##name          : bits;       \
     bool m_##name##ExplicitlySet : 1;
     COMMAND_OVERRIDES
 #undef OVERRIDE_ENTRY
@@ -60,15 +60,21 @@ class CommandOverrides
     CommandOverrides() { reset(); }
     void reset() { std::memset(this, 0, sizeof(*this)); }
 
-#define OVERRIDE_ENTRY(type,bits,name)                         \
+    // conversions between type and store_type
+    bool          to_store_type(bool t)           const { return t;                             }
+    int           to_store_type(CLASS_GRAPH_t t)  const { return static_cast<int>(t);           }
+    bool          from_store_type(bool t)         const { return t;                             }
+    CLASS_GRAPH_t from_store_type(int t)          const { return static_cast<CLASS_GRAPH_t>(t); }
+
+#define OVERRIDE_ENTRY(type,store_type,bits,name)              \
     void override_##name(type value) {                         \
-      m_##name = value;                                        \
+      m_##name = to_store_type(value);                         \
       m_##name##ExplicitlySet = true;                          \
       /* printf("overrule_%s(%d) isSet=%d\n",#name,value,m_##name##ExplicitlySet); */ \
     }                                                          \
     void apply_##name(std::function<void(type)> func) const {  \
       /* printf("apply_%s(%d) isSet=%d\n",#name,m_##name,m_##name##ExplicitlySet); */ \
-      if (m_##name##ExplicitlySet) func(m_##name);             \
+      if (m_##name##ExplicitlySet) func(from_store_type(m_##name)); \
     }
     COMMAND_OVERRIDES
 #undef OVERRIDE_ENTRY
