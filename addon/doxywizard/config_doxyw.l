@@ -302,12 +302,12 @@ static FILE *tryPath(const QString &path,const QString &fileName)
   if (fi.exists() && fi.isFile())
   {
     FILE *f = fopen(absName.toLocal8Bit(),"r");
-    if (f==NULL)
+    if (f==nullptr)
       config_err("could not open file %s for reading\n",qPrintable(absName));
     else
       return f;
   }
-  return NULL;
+  return nullptr;
 }
 
 static FILE *findFile(const QString &fileName)

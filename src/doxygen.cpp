@@ -1865,7 +1865,7 @@ static void findUsingDirectives(const Entry *root)
         {
           scopeOffset=0;
         }
-      } while (scopeOffset>=0 && usingNd==0);
+      } while (scopeOffset>=0 && usingNd==nullptr);
 
       if (usingNd==nullptr && nd) // not found, try used namespaces in this scope
                             // or in one of the parent namespace scopes
