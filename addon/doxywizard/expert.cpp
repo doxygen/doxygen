@@ -143,7 +143,7 @@ void Expert::createTopics(const QDomElement &rootElem)
       QString setting = childElem.attribute(SA("setting"));
       if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
       {
-        items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
+        items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(name)));
         QWidget *widget = createTopicWidget(childElem);
         m_topics[name] = widget;
         m_topicStack->addWidget(widget);
@@ -704,7 +704,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1())))
     {
        Input *parentOption = m_options[dependsOn];
-       if (parentOption==0)
+       if (parentOption==nullptr)
        {
          printf("%s has depends=%s that is not valid\n",
              qPrintable(id),qPrintable(dependsOn));
@@ -940,7 +940,7 @@ static bool getBoolOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return stringVariantToBool(option->value());
 }
 
@@ -948,7 +948,7 @@ static QString getStringOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return option->value().toString();
 }
 

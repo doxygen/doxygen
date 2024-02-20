@@ -669,7 +669,7 @@ void MainWindow::showHtmlOutput()
   // TODO: the following doesn't seem to work with IE
 #ifdef _WIN32
   //QString indexUrl(QString::fromLatin1("file:///"));
-  ShellExecute(NULL, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
+  ShellExecute(nullptr, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), nullptr, nullptr, SW_SHOWNORMAL);
 #else
   QString indexUrl(QString::fromLatin1("file://"));
   indexUrl+=fi.absoluteFilePath();
@@ -693,7 +693,7 @@ void MainWindow::saveLog()
     }
     else
     {
-      QMessageBox::warning(0,tr("Warning"),
+      QMessageBox::warning(nullptr,tr("Warning"),
           tr("Cannot open file ")+fn+tr(" for writing. Nothing saved!"),tr("ok"));
     }
   }

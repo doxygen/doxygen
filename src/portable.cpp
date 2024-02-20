@@ -229,7 +229,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
       (LPCWSTR)argsw,             /* argument list */
       nullptr,                       /* use current working dir */
       SW_HIDE,                    /* minimize on start-up */
-      0,                          /* application instance handle */
+      nullptr,                          /* application instance handle */
       nullptr,                       /* ignored: id list */
       nullptr,                       /* ignored: class name */
       nullptr,                       /* ignored: key class */
@@ -317,7 +317,7 @@ void Portable::setenv(const QCString &name,const QCString &value)
 void Portable::unsetenv(const QCString &variable)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    SetEnvironmentVariable(variable.data(),0);
+    SetEnvironmentVariable(variable.data(),nullptr);
 #else
     /* Some systems don't have unsetenv(), so we do it ourselves */
     if (variable.isEmpty() || variable.find('=')!=-1)

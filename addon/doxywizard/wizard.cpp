@@ -1323,10 +1323,10 @@ Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
   m_treeWidget->setColumnCount(1);
   m_treeWidget->setHeaderLabels(QStringList() << QString::fromLatin1("Topics"));
   QList<QTreeWidgetItem*> items;
-  items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Project"))));
-  items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Mode"))));
-  items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Output"))));
-  items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Diagrams"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Project"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Mode"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Output"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Diagrams"))));
   m_treeWidget->insertTopLevelItems(0,items);
 
   m_topicStack = new QStackedWidget;

@@ -4533,7 +4533,7 @@ static void writeConceptRootList(FTVHelp *ftv,bool addToIndex)
 {
   for (const auto &cd : *Doxygen::conceptLinkedMap)
   {
-    if ((cd->getOuterScope()==0 ||
+    if ((cd->getOuterScope()==nullptr ||
         cd->getOuterScope()==Doxygen::globalScope) && cd->isLinkableInProject()
        )
     {
@@ -4861,7 +4861,7 @@ static void writeIndex(OutputList &ol)
   if (!Config_getString(PROJECT_NUMBER).isEmpty())
   {
     ol.startProjectNumber();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),0,Config_getString(PROJECT_NUMBER),FALSE,FALSE,
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,Config_getString(PROJECT_NUMBER),FALSE,FALSE,
                    QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endProjectNumber();
   }

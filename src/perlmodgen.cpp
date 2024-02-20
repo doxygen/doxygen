@@ -238,7 +238,7 @@ void PerlModOutput::iaddFieldQuotedChar(const QCString &field, char content)
 
 void PerlModOutput::iaddFieldQuotedString(const QCString &field, const QCString &content)
 {
-  if (content == 0)
+  if (content == nullptr)
     return;
   iaddField(field);
   m_stream->add('\'');
@@ -248,7 +248,7 @@ void PerlModOutput::iaddFieldQuotedString(const QCString &field, const QCString 
 
 void PerlModOutput::iopen(char c, const QCString &s)
 {
-  if (s != 0)
+  if (s != nullptr)
     iaddField(s);
   else
     continueBlock();

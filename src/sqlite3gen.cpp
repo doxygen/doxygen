@@ -910,7 +910,7 @@ static int step(SqlStmt &s,bool getRowId=FALSE, bool select=FALSE)
 static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=1)
 {
   int rowid=-1;
-  if (name==0) return rowid;
+  if (name==nullptr) return rowid;
 
   name = stripFromPath(name);
 
@@ -1149,7 +1149,7 @@ static void stripQualifiers(QCString &typeStr)
 static int prepareStatement(sqlite3 *db, SqlStmt &s)
 {
   int rc;
-  rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,0);
+  rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,nullptr);
   if (rc!=SQLITE_OK)
   {
     err("prepare failed for:\n  %s\n  %s\n", s.query, sqlite3_errmsg(db));
@@ -2563,7 +2563,7 @@ static sqlite3* openDbConnection()
     fi.absFilePath().c_str(),
     &db,
     SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
-    0
+    nullptr
   );
   if (rc != SQLITE_OK)
   {
