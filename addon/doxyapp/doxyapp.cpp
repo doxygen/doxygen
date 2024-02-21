@@ -237,6 +237,24 @@ std::string join(Iter begin, Iter end, std::string const& separator)
   return result.str();
 }
 
+static std::map<std::string, int> getSymbolInfo(const Definition *def)
+{
+  std::map<std::string, int> ret;
+  if (def->hasDocumentation())
+  {
+    if (def->hasBriefDescription())
+      ret["briefLine"] = def->briefLine();
+    ret["docLine"] = def->docLine();
+  }
+  ret["defLine"] = def->getDefLine();
+  ret["defColumn"] = def->getDefColumn();
+  ret["startDefLine"] = def->getStartDefLine();
+  ret["startBodyLine"] = def->getStartBodyLine();
+  ret["endBodyLine"] = def->getEndBodyLine();
+  ret["inbodyLine"] = def->inbodyLine();
+  return ret;
+}
+
 static void locateSymbols()
 {
   std::map<std::string, std::map<std::string, std::map<std::string, std::map<std::string, int>>>> ret;
@@ -244,30 +262,16 @@ static void locateSymbols()
   {
     for (const auto &def : kv.second)
     {
-      if (def != Doxygen::globalScope && def->name().at(0) != '@')
-      {
-        std::map<std::string, int> item;
-        if (def->hasDocumentation())
-        {
-          if (def->hasBriefDescription())
-            item["briefLine"] = def->briefLine();
-          item["docLine"] = def->docLine();
-        }
-        item["defLine"] = def->getDefLine();
-        item["defColumn"] = def->getDefColumn();
-        item["startDefLine"] = def->getStartDefLine();
-        item["startBodyLine"] = def->getStartBodyLine();
-        item["endBodyLine"] = def->getEndBodyLine();
-        item["inbodyLine"] = def->inbodyLine();
+      if (def == Doxygen::globalScope || def->name().at(0) == '@')
+        continue;
 
-        QCString args = "";
-        if (def->definitionType() == Definition::TypeMember)
-        {
-          MemberDef *md = dynamic_cast<MemberDef*>(def);
-          args = md->argsString();
-        }
-        ret[def->getDefFileName().data()][def->qualifiedName().data()][args.data()] = item;
+      QCString args = "";
+      if (def->definitionType() == Definition::TypeMember)
+      {
+        auto *md = dynamic_cast<MemberDef*>(def);
+        args = md->argsString();
       }
+      ret[def->getDefFileName().data()][def->qualifiedName().data()][args.data()] = getSymbolInfo(def);
     }
   }
 
