@@ -239,7 +239,7 @@ std::string join(Iter begin, Iter end, std::string const& separator)
 
 static void locateSymbols()
 {
-  std::map<std::string, std::map<std::string, std::map<std::string, int>>> ret;
+  std::map<std::string, std::map<std::string, std::map<std::string, std::map<std::string, int>>>> ret;
   for (const auto &kv : *Doxygen::symbolMap)
   {
     for (const auto &def : kv.second)
@@ -259,7 +259,14 @@ static void locateSymbols()
         item["startBodyLine"] = def->getStartBodyLine();
         item["endBodyLine"] = def->getEndBodyLine();
         item["inbodyLine"] = def->inbodyLine();
-        ret[def->getDefFileName().data()][def->qualifiedName().data()] = item;
+
+        QCString args = "";
+        if (def->definitionType() == Definition::TypeMember)
+        {
+          MemberDef *md = dynamic_cast<MemberDef*>(def);
+          args = md->argsString();
+        }
+        ret[def->getDefFileName().data()][def->qualifiedName().data()][args.data()] = item;
       }
     }
   }
@@ -270,18 +277,25 @@ static void locateSymbols()
   {
     out.push_back(std::string(4, ' ') + "\"" + file_field.first + "\": {\n");
     std::vector<std::string> file;
-    for (const auto &field_type : file_field.second)
+    for (const auto &field_args : file_field.second)
     {
-      file.push_back(std::string(8, ' ') + "\"" + field_type.first + "\": {\n");
-      std::vector<std::string> item;
-      for (const auto &type_value : field_type.second)
+      file.push_back(std::string(8, ' ') + "\"" + field_args.first + "\": {\n");
+      std::vector<std::string> name;
+      for (const auto &args_type : field_args.second)
       {
-        item.push_back(
-          std::string(12, ' ') +
-          "\"" + type_value.first + "\": " +
-          std::to_string(type_value.second));
+        name.push_back(std::string(12, ' ') + "\"" + args_type.first + "\": {\n");
+        std::vector<std::string> item;
+        for (const auto &type_value : args_type.second)
+        {
+          item.push_back(
+            std::string(16, ' ') +
+            "\"" + type_value.first + "\": " +
+            std::to_string(type_value.second));
+        }
+        name.back() += join(item.begin(), item.end(), ",\n");
+        name.back() += "\n" + std::string(12, ' ') + "}";
       }
-      file.back() += join(item.begin(), item.end(), ",\n");
+      file.back() += join(name.begin(), name.end(), ",\n");
       file.back() += "\n" + std::string(8, ' ') + "}";
     }
     out.back() += join(file.begin(), file.end(), ",\n");
