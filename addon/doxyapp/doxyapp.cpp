@@ -237,7 +237,7 @@ std::string join(Iter begin, Iter end, std::string const& separator)
   return result.str();
 }
 
-static std::map<std::string, int> getSymbolInfo(const Definition *def)
+static auto symbolInfo(const Definition *def)
 {
   std::map<std::string, int> ret;
   if (def->hasDocumentation())
@@ -268,33 +268,30 @@ static void locateSymbols()
       QCString args = "";
       if (def->definitionType() == Definition::TypeMember)
       {
-        auto *md = dynamic_cast<MemberDef*>(def);
+        const auto *md = dynamic_cast<MemberDef*>(def);
         args = md->argsString();
       }
-      ret[def->getDefFileName().data()][def->qualifiedName().data()][args.data()] = getSymbolInfo(def);
+      ret[def->getDefFileName().data()][def->qualifiedName().data()][args.data()] = symbolInfo(def);
     }
   }
 
   // print as json
   std::vector<std::string> out;
-  for (const auto &file_field : ret)
+  for (const auto &[fname, qmap] : ret)
   {
-    out.push_back(std::string(4, ' ') + "\"" + file_field.first + "\": {\n");
+    out.push_back(std::string(4, ' ') + "\"" + fname + "\": {\n");
     std::vector<std::string> file;
-    for (const auto &field_args : file_field.second)
+    for (const auto &[qname, arg_map] : qmap)
     {
-      file.push_back(std::string(8, ' ') + "\"" + field_args.first + "\": {\n");
+      file.push_back(std::string(8, ' ') + "\"" + qname + "\": {\n");
       std::vector<std::string> name;
-      for (const auto &args_type : field_args.second)
+      for (const auto &[args, imap] : arg_map)
       {
-        name.push_back(std::string(12, ' ') + "\"" + args_type.first + "\": {\n");
+        name.push_back(std::string(12, ' ') + "\"" + args + "\": {\n");
         std::vector<std::string> item;
-        for (const auto &type_value : args_type.second)
+        for (const auto &[key, value] : imap)
         {
-          item.push_back(
-            std::string(16, ' ') +
-            "\"" + type_value.first + "\": " +
-            std::to_string(type_value.second));
+          item.push_back(std::string(16, ' ') + "\"" + key + "\": " + std::to_string(value));
         }
         name.back() += join(item.begin(), item.end(), ",\n");
         name.back() += "\n" + std::string(12, ' ') + "}";
