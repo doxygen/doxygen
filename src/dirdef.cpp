@@ -695,7 +695,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
   if (usedDir) // dir dependency already present
   {
      const FilePair *usedPair = usedDir->findFilePair(FilePair::key(srcFd,dstFd));
-     if (usedPair==0) // new file dependency
+     if (usedPair==nullptr) // new file dependency
      {
        AUTO_TRACE_ADD("{} => {} new file dependency",srcFd->name(),dstFd->name());
        usedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);

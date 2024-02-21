@@ -367,7 +367,7 @@ void RTFGenerator::writeStyleSheetFile(TextStream &t)
   t << "# Remove a hash to activate a line.\n\n";
 
   int i;
-  for ( i=0 ; rtf_Style_Default[i].reference!=0 ; i++ )
+  for ( i=0 ; rtf_Style_Default[i].reference!=nullptr ; i++ )
   {
     t << "# " << rtf_Style_Default[i].name << " = "
               << rtf_Style_Default[i].reference
@@ -440,7 +440,7 @@ void RTFGenerator::init()
   const struct Rtf_Style_Default* def = rtf_Style_Default;
   while (def->reference)
   {
-    if (def->definition == 0)
+    if (def->definition == nullptr)
     {
       err("Internal: rtf_Style_Default[%s] has no definition.\n", def->name);
     }
@@ -568,13 +568,13 @@ void RTFGenerator::beginRTFDocument()
     uint32_t index = data.index();
     if (index > maxIndex) maxIndex = index;
   }
-  std::vector<const StyleData*> array(maxIndex + 1, 0);
+  std::vector<const StyleData*> array(maxIndex + 1, nullptr);
   ASSERT(maxIndex < array.size());
 
   for (const auto &[name,data] : rtf_Style)
   {
     uint32_t index = data.index();
-    if (array[index] != 0)
+    if (array[index] != nullptr)
     {
       msg("Style '%s' redefines \\s%d.\n", name.c_str(), index);
     }
@@ -811,7 +811,7 @@ void RTFGenerator::startIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -917,7 +917,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
           if (ast)
           {
             m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-            writeDoc(ast.get(),0,0,0);
+            writeDoc(ast.get(),nullptr,nullptr,0);
             m_t << "}}\\par\n";
           }
         }
@@ -1142,7 +1142,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -2102,7 +2102,7 @@ bool isLeadBytes(int c)
 // note: function is not reentrant!
 static void encodeForOutput(TextStream &t,const QCString &s)
 {
-  if (s==0) return;
+  if (s==nullptr) return;
   QCString encoding;
   bool converted=FALSE;
   size_t l = s.length();

@@ -326,7 +326,7 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
 {
   //printf("ClangParser::lookup(%d,%s)\n",line,symbol);
   std::string result;
-  if (symbol==0) return result;
+  if (symbol==nullptr) return result;
   bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return result;
 

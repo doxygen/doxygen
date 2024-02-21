@@ -2873,7 +2873,7 @@ bool resolveRef(/* in */  const QCString &scName,
   bool explicitScope = fullName.startsWith("::") &&   // ::scope or #scope
                        (scopePos>2 ||                 // ::N::A
                         tsName.startsWith("::") ||    // ::foo in local scope
-                        scName==0                     // #foo  in global scope
+                        scName==nullptr                     // #foo  in global scope
                        );
 
   // default result values
