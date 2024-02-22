@@ -121,24 +121,16 @@ static void splitSearchTokens(QCString &title,IntVector &indices)
   // create a list of start positions within title for
   // each unique word in order of appearance
   int p=0,i;
-  StringSet wordsFound;
   while ((i=title.find(' ',p))!=-1)
   {
     std::string word = title.mid(p,i-p).str();
-    if (wordsFound.find(word)==wordsFound.end())
-    {
-      indices.push_back(p);
-      wordsFound.insert(word);
-    }
+    indices.push_back(p);
     p = i+1;
   }
   if (p<static_cast<int>(title.length()))
   {
     std::string word = title.mid(p).str();
-    if (wordsFound.find(word)==wordsFound.end())
-    {
-      indices.push_back(p);
-    }
+    indices.push_back(p);
   }
 }
 
