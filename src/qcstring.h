@@ -81,6 +81,9 @@ inline int qstrncmp( const char *str1, const char *str2, size_t len )
 inline bool qisspace(char c)
 { return c==' ' || c=='\t' || c=='\n' || c=='\r'; }
 
+inline bool qisrealspace(char c)
+{ return c==' ' || c=='\t'; }
+
 int qstricmp( const char *str1, const char *str2 );
 
 int qstrnicmp( const char *str1, const char *str2, size_t len );
@@ -241,14 +244,16 @@ class QCString
     }
 
     /// returns a copy of this string with leading and trailing whitespace removed
-    QCString stripWhiteSpace() const
+    QCString stripWhiteSpace(bool realWhiteSpace = false) const
     {
       size_t sl = m_rep.size();
-      if (sl==0 || (!qisspace(m_rep[0]) && !qisspace(m_rep[sl-1]))) return *this;
+      bool (*whiteSpaceFie)(char c) = qisspace;
+      if (realWhiteSpace) whiteSpaceFie =qisrealspace;
+      if (sl==0 || (!whiteSpaceFie(m_rep[0]) && !whiteSpaceFie(m_rep[sl-1]))) return *this;
       size_t start=0,end=sl-1;
-      while (start<sl && qisspace(m_rep[start])) start++;
+      while (start<sl && whiteSpaceFie(m_rep[start])) start++;
       if (start==sl) return QCString(); // only whitespace
-      while (end>start && qisspace(m_rep[end])) end--;
+      while (end>start && whiteSpaceFie(m_rep[end])) end--;
       return QCString(m_rep.substr(start,1+end-start));
     }
 
