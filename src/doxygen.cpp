@@ -7701,6 +7701,20 @@ static void addToIndices()
     if (pd->isLinkableInProject())
     {
       Doxygen::indexList->addIndexItem(pd.get(),nullptr,QCString(),filterTitle(pd->title()));
+      if (Doxygen::searchIndex)
+      {
+        Doxygen::searchIndex->setCurrentDoc(pd.get(),pd->anchor(),FALSE);
+        std::string title = pd->title().str();
+        static const reg::Ex re(R"(\a[\w-]*)");
+        reg::Iterator it(title,re);
+        reg::Iterator end;
+        for (; it!=end ; ++it)
+        {
+          const auto &match = *it;
+          std::string matchStr = match.str();
+          Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
+        }
+      }
     }
   }
 
