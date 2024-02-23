@@ -237,51 +237,66 @@ std::string join(Iter begin, Iter end, std::string const& separator)
   return result.str();
 }
 
+static auto symbolInfo(const Definition *def)
+{
+  std::map<std::string, int> ret;
+  if (def->hasDocumentation())
+  {
+    if (def->hasBriefDescription())
+      ret["briefLine"] = def->briefLine();
+    ret["docLine"] = def->docLine();
+  }
+  ret["defLine"] = def->getDefLine();
+  ret["defColumn"] = def->getDefColumn();
+  ret["startDefLine"] = def->getStartDefLine();
+  ret["startBodyLine"] = def->getStartBodyLine();
+  ret["endBodyLine"] = def->getEndBodyLine();
+  ret["inbodyLine"] = def->inbodyLine();
+  return ret;
+}
+
 static void locateSymbols()
 {
-  std::map<std::string, std::map<std::string, std::map<std::string, int>>> ret;
+  std::map<std::string, std::map<std::string, std::map<std::string, std::map<std::string, int>>>> ret;
   for (const auto &kv : *Doxygen::symbolMap)
   {
     for (const auto &def : kv.second)
     {
-      if (def != Doxygen::globalScope && def->name().at(0) != '@')
+      if (def == Doxygen::globalScope || def->name().at(0) == '@')
+        continue;
+
+      QCString args = "";
+      if (def->definitionType() == Definition::TypeMember)
       {
-        std::map<std::string, int> item;
-        if (def->hasDocumentation())
-        {
-          if (def->hasBriefDescription())
-            item["briefLine"] = def->briefLine();
-          item["docLine"] = def->docLine();
-        }
-        item["defLine"] = def->getDefLine();
-        item["defColumn"] = def->getDefColumn();
-        item["startDefLine"] = def->getStartDefLine();
-        item["startBodyLine"] = def->getStartBodyLine();
-        item["endBodyLine"] = def->getEndBodyLine();
-        item["inbodyLine"] = def->inbodyLine();
-        ret[def->getDefFileName().data()][def->qualifiedName().data()] = item;
+        const auto *md = dynamic_cast<MemberDef*>(def);
+        args = md->argsString();
       }
+      ret[def->getDefFileName().data()][def->qualifiedName().data()][args.data()] = symbolInfo(def);
     }
   }
 
   // print as json
   std::vector<std::string> out;
-  for (const auto &file_field : ret)
+  for (const auto &[fname, qmap] : ret)
   {
-    out.push_back(std::string(4, ' ') + "\"" + file_field.first + "\": {\n");
+    out.push_back(std::string(4, ' ') + "\"" + fname + "\": {\n");
     std::vector<std::string> file;
-    for (const auto &field_type : file_field.second)
+    for (const auto &[qname, arg_map] : qmap)
     {
-      file.push_back(std::string(8, ' ') + "\"" + field_type.first + "\": {\n");
-      std::vector<std::string> item;
-      for (const auto &type_value : field_type.second)
+      file.push_back(std::string(8, ' ') + "\"" + qname + "\": {\n");
+      std::vector<std::string> name;
+      for (const auto &[args, imap] : arg_map)
       {
-        item.push_back(
-          std::string(12, ' ') +
-          "\"" + type_value.first + "\": " +
-          std::to_string(type_value.second));
+        name.push_back(std::string(12, ' ') + "\"" + args + "\": {\n");
+        std::vector<std::string> item;
+        for (const auto &[key, value] : imap)
+        {
+          item.push_back(std::string(16, ' ') + "\"" + key + "\": " + std::to_string(value));
+        }
+        name.back() += join(item.begin(), item.end(), ",\n");
+        name.back() += "\n" + std::string(12, ' ') + "}";
       }
-      file.back() += join(item.begin(), item.end(), ",\n");
+      file.back() += join(name.begin(), name.end(), ",\n");
       file.back() += "\n" + std::string(8, ' ') + "}";
     }
     out.back() += join(file.begin(), file.end(), ",\n");
