@@ -305,19 +305,36 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
     ol.writeString(" - ");
     ol.popGeneratorState();
   }
-  ol.generateDoc(
+  ol.disableAllBut(OutputType::Html);
+    ol.generateDoc(
       docFile(),           // fileName
       docLine(),           // startLine
       this,                // context
-      nullptr,                   // memberdef
+      nullptr,             // memberdef
       docStr,              // docStr
-      TRUE,                // index words
-      FALSE,               // not an example
-      QCString(),                   // exampleName
-      FALSE,               // singleLine
-      FALSE,               // linkFromIndex
+      true,                // index words
+      false,               // not an example
+      QCString(),          // exampleName
+      false,               // singleLine
+      false,               // linkFromIndex
       TRUE                 // markdown support
       );
+  ol.enableAll();
+  ol.disable(OutputType::Html);
+    ol.generateDoc(
+      docFile(),           // fileName
+      docLine(),           // startLine
+      this,                // context
+      nullptr,             // memberdef
+      docStr,              // docStr
+      false,               // index words
+      false,               // not an example
+      QCString(),          // exampleName
+      false,               // singleLine
+      false,               // linkFromIndex
+      TRUE                 // markdown support
+      );
+  ol.enable(OutputType::Html);
   ol.endTextBlock();
 
   if (hasSubPages())
