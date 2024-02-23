@@ -7674,44 +7674,30 @@ static void addToIndices()
     }
   }
 
-  for (const auto &gd : *Doxygen::groupLinkedMap)
+  auto addWordsForTitle = [](const Definition *d,const QCString &anchor,const QCString &title)
   {
-    if (gd->isLinkableInProject())
-    {
-      Doxygen::indexList->addIndexItem(gd.get(),nullptr,QCString(),gd->groupTitle());
+      Doxygen::indexList->addIndexItem(d,nullptr,QCString(),filterTitle(title));
       if (Doxygen::searchIndex)
       {
-        Doxygen::searchIndex->setCurrentDoc(gd.get(),gd->anchor(),FALSE);
-        std::string title = gd->groupTitle().str();
+        Doxygen::searchIndex->setCurrentDoc(d,anchor,false);
+        std::string s = title.str();
         static const reg::Ex re(R"(\a[\w-]*)");
-        reg::Iterator it(title,re);
+        reg::Iterator it(s,re);
         reg::Iterator end;
         for (; it!=end ; ++it)
         {
           const auto &match = *it;
           std::string matchStr = match.str();
-          Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
+          Doxygen::searchIndex->addWord(matchStr.c_str(),true);
         }
       }
-    }
-  }
+  };
 
-  if (Doxygen::mainPage)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
-    Doxygen::indexList->addIndexItem(Doxygen::mainPage.get(),nullptr,QCString(),filterTitle(Doxygen::mainPage->title()));
-    if (Doxygen::searchIndex)
+    if (gd->isLinkableInProject())
     {
-      Doxygen::searchIndex->setCurrentDoc(Doxygen::mainPage.get(),Doxygen::mainPage->anchor(),FALSE);
-      std::string title = Doxygen::mainPage->title().str();
-      static const reg::Ex re(R"(\a[\w-]*)");
-      reg::Iterator it(title,re);
-      reg::Iterator end;
-      for (; it!=end ; ++it)
-      {
-        const auto &match = *it;
-        std::string matchStr = match.str();
-        Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
-      }
+      addWordsForTitle(gd.get(),gd->anchor(),gd->groupTitle());
     }
   }
 
@@ -7719,22 +7705,13 @@ static void addToIndices()
   {
     if (pd->isLinkableInProject())
     {
-      Doxygen::indexList->addIndexItem(pd.get(),nullptr,QCString(),filterTitle(pd->title()));
-      if (Doxygen::searchIndex)
-      {
-        Doxygen::searchIndex->setCurrentDoc(pd.get(),pd->anchor(),FALSE);
-        std::string title = pd->title().str();
-        static const reg::Ex re(R"(\a[\w-]*)");
-        reg::Iterator it(title,re);
-        reg::Iterator end;
-        for (; it!=end ; ++it)
-        {
-          const auto &match = *it;
-          std::string matchStr = match.str();
-          Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
-        }
-      }
+      addWordsForTitle(pd.get(),pd->anchor(),pd->title());
     }
+  }
+
+  if (Doxygen::mainPage)
+  {
+    addWordsForTitle(Doxygen::mainPage.get(),Doxygen::mainPage->anchor(),Doxygen::mainPage->title());
   }
 
   auto addMemberToSearchIndex = [](const MemberDef *md)
