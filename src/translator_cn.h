@@ -2298,6 +2298,53 @@ class TranslatorChinese : public Translator
       return "概念定义";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "包列表"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "流程图:" CN_SPC; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    QCString trRelatedSymbols() override
+    { return "相关符号"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    QCString trRelatedSymbolsSubscript() override
+    { return "(注意: 这些不是成员符号.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    QCString trRelatedSymbolDocumentation() override
+    { return "友元及相关符号说明"; }
+
     /*! the compound type as used for the xrefitems */
     QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
     {
@@ -2321,6 +2368,254 @@ class TranslatorChinese : public Translator
       return result;
     }
 
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="这里是所有";
+      if (!extractAll) result+="文档化的";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="函数、变量、定义、枚举和类型定义";
+          }
+          else
+          {
+            result+="文件成员";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="函数";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="变量";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="类型定义";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="序列";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="字典";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="枚举";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="枚举值";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="宏";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=", 及指向";
+      if (extractAll)
+        result+="其所属文件";
+      else
+        result+="其文档";
+      result+="的链接:" CN_SPC;
+      return result;
+    }
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="这里是所有";
+      if (!extractAll)
+      {
+        result+="文档化的";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="结构体及联合体成员";
+          }
+          else
+          {
+            result+="类成员";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="函数";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="变量";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="类型定义";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="枚举";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="枚举值";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="属性";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="事件";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="相关符号";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=", 及指向";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="结构体 (或联合体) 中所有成员文档";
+        }
+        else
+        {
+          result+="类中所有成员文档";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="其所属结构体 (或联合体)";
+        }
+        else
+        {
+          result+="其所属类";
+        }
+      }
+      result+="的链接:" CN_SPC;
+      return result;
+    }
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="这里是所有";
+      if (!extractAll) result+="文档化的";
+      result+="命名空间";
+      QCString singularResult = "";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult="成员";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult="函数";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult="变量";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult="类型定义";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult="序列";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult="字典";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult="枚举";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult="枚举值";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=singularResult;
+      result+=", 及指向";
+      if (extractAll)
+        result+="每个" + singularResult + "所属命名空间文档";
+      else
+        result+="其所属命名空间";
+      result+="的链接:" CN_SPC;
+      return result;
+    }
+    QCString trDefinition() override  { return "定义";}
+    QCString trDeclaration() override { return "声明";}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "专题"; }
+    QCString trTopicDocumentation() override
+    { return "专题文档"; }
+    QCString trTopicList() override
+    { return "专题列表"; }
+    QCString trTopicIndex() override
+    { return "专题索引"; }
+    QCString trTopicListDescription() override
+    { return "这里是所有专题及其简介:"; }
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="这里是所有";
+      if (!extractAll) result+="文档化的";
+      result+="模块";
+      QCString singularResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="成员";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="函数";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="变量";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="类型定义";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="枚举";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="枚举值";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=singularResult;
+      result+=", 及指向";
+      if (extractAll)
+        result+="每个" + singularResult + "的模块文档";
+      else
+        result+="其所属模块";
+      result+="的链接:" CN_SPC;
+      return result;
+    }
+    QCString trExportedModules() override
+    {
+      return "导出的模块";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    {
+      return "复制到剪贴板";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "重要事项";
+    }
 };
 
 #endif
