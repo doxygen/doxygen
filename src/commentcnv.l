@@ -112,6 +112,7 @@ struct commentcnvYY_state
   bool     specialComment = FALSE;
   QCString incPrefix;
 
+  QCString aliasCmd;
   QCString aliasString;
   int      blockCount = 0;
   bool     lastEscaped = FALSE;
@@ -1093,6 +1094,7 @@ SLASHopt [/]*
                                      yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
 				     yyextra->aliasString=yytext;
+				     yyextra->aliasCmd=yytext;
 				     yyextra->lastEscaped=0;
 				     BEGIN( ReadAliasArgs );
   				   }
@@ -1161,6 +1163,12 @@ SLASHopt [/]*
 <<EOF>>                            {
                                       if (yyextra->includeStack.empty())
                                       {
+                                        if (YY_START == ReadAliasArgs)
+                                        {
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                            "Reached end of file while still searching closing '}' of an alias argument (probable start: '%s')",
+                                            qPrint(yyextra->aliasCmd));
+                                        }
                                         yyterminate();
                                       }
                                       else // switch back to parent file
