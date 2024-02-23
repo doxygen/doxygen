@@ -7696,6 +7696,25 @@ static void addToIndices()
     }
   }
 
+  if (Doxygen::mainPage)
+  {
+    Doxygen::indexList->addIndexItem(Doxygen::mainPage.get(),nullptr,QCString(),filterTitle(Doxygen::mainPage->title()));
+    if (Doxygen::searchIndex)
+    {
+      Doxygen::searchIndex->setCurrentDoc(Doxygen::mainPage.get(),Doxygen::mainPage->anchor(),FALSE);
+      std::string title = Doxygen::mainPage->title().str();
+      static const reg::Ex re(R"(\a[\w-]*)");
+      reg::Iterator it(title,re);
+      reg::Iterator end;
+      for (; it!=end ; ++it)
+      {
+        const auto &match = *it;
+        std::string matchStr = match.str();
+        Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
+      }
+    }
+  }
+
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (pd->isLinkableInProject())

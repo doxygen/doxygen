@@ -4780,8 +4780,8 @@ static void writeIndex(OutputList &ol)
       ol.startHeaderSection();
       ol.startTitleHead(QCString());
       ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->getStartBodyLine(),
-                  Doxygen::mainPage.get(),nullptr,Doxygen::mainPage->title(),TRUE,FALSE,
-                  QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                  Doxygen::mainPage.get(),nullptr,Doxygen::mainPage->title(),false,false,
+                  QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT));
       headerWritten = TRUE;
     }
   }
@@ -4816,8 +4816,8 @@ static void writeIndex(OutputList &ol)
 
     ol.startTextBlock();
     ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,
-                Doxygen::mainPage->documentation(),TRUE,FALSE,
-                QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                Doxygen::mainPage->documentation(),true,false,
+                QCString(),false,false,Config_getBool(MARKDOWN_SUPPORT));
     ol.endTextBlock();
     ol.endPageDoc();
   }
@@ -4861,8 +4861,8 @@ static void writeIndex(OutputList &ol)
   if (!Config_getString(PROJECT_NUMBER).isEmpty())
   {
     ol.startProjectNumber();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,Config_getString(PROJECT_NUMBER),FALSE,FALSE,
-                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,Config_getString(PROJECT_NUMBER),false,false,
+                   QCString(),false,false,Config_getBool(MARKDOWN_SUPPORT));
     ol.endProjectNumber();
   }
   ol.endIndexSection(IndexSection::isTitlePageStart);
