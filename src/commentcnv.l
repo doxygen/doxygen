@@ -1166,7 +1166,7 @@ SLASHopt [/]*
                                         if (YY_START == ReadAliasArgs)
                                         {
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                            "Reached end of file while still searching closing '}' of (probable start: '%s')",
+                                            "Reached end of file while still searching closing '}' of an alias argument (probable start: '%s')",
                                             qPrint(yyextra->aliasCmd));
                                         }
                                         yyterminate();
