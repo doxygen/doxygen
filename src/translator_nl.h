@@ -1645,7 +1645,7 @@ class TranslatorDutch : public Translator
     QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "in" : "uit";
-      return "klik hier de paneel synchronisatie "+opt+" the schakelen";
+      return "klik hier om de paneel synchronisatie "+opt+" te schakelen";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
