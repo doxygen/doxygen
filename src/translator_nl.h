@@ -541,7 +541,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Exception:  result+="deze exceptie"; break;
         default: break;
       }
-      result+=" is gegenereerd op grond van ";
+      result+=" is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1449,7 +1449,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Exception:  result+="deze exception"; break;
         default: break;
       }
-      result+=" is gegenereerd op grond van ";
+      result+=" is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1613,7 +1613,7 @@ class TranslatorDutch : public Translator
 
     /*! Used file list for a Java enum */
     QCString trEnumGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze enum is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze enum is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1728,7 +1728,7 @@ class TranslatorDutch : public Translator
     }
     /** UNO IDL service page */
     QCString trServiceGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze service is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze service is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1736,7 +1736,7 @@ class TranslatorDutch : public Translator
     }
     /** UNO IDL singleton page */
     QCString trSingletonGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze singleton is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze singleton is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
