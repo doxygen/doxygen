@@ -6021,6 +6021,7 @@ static void addMemberSpecialization(const Entry *root,
                              TypeSpecifier spec
                             )
 {
+  AUTO_TRACE("funcType={} funcName={} funcArgs={} funcDecl={} spec={}",funcType,funcName,funcArgs,funcDecl,spec);
   MemberDef *declMd=nullptr;
   for (const auto &md : *mn)
   {
@@ -6298,7 +6299,7 @@ static void findMember(const Entry *root,
      }
   }
   scopeName=stripTemplateSpecifiersFromScope(
-      removeRedundantWhiteSpace(scopeName),FALSE,&funcSpec);
+      removeRedundantWhiteSpace(scopeName),false,&funcSpec,QCString(),false);
 
   // funcSpec contains the last template specifiers of the given scope.
   // If this method does not have any template arguments or they are

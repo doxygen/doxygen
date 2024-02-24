@@ -291,7 +291,8 @@ QCString substituteTemplateArgumentsInString(
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
                                           QCString *lastScopeStripped=nullptr,
-                                          QCString scopeName=QCString());
+                                          QCString scopeName=QCString(),
+                                          bool allowArtificial=true);
 
 QCString resolveTypeDef(const Definition *d,const QCString &name,
                         const Definition **typedefContext=nullptr);

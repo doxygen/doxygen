@@ -4813,7 +4813,8 @@ QCString substituteTemplateArgumentsInString(
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
     bool parentOnly,
     QCString *pLastScopeStripped,
-    QCString scopeName)
+    QCString scopeName,
+    bool allowArtificial)
 {
   //printf("stripTemplateSpecifiersFromScope(name=%s,scopeName=%s)\n",qPrint(fullName),qPrint(scopeName));
   int i=fullName.find('<');
@@ -4847,7 +4848,8 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
 
     result+=fullName.mid(p,i-p);
     //printf("  trying %s\n",qPrint(mergeScopes(scopeName,result+fullName.mid(i,e-i))));
-    if (getClass(mergeScopes(scopeName,result+fullName.mid(i,e-i)))!=nullptr)
+    ClassDef *cd = getClass(mergeScopes(scopeName,result+fullName.mid(i,e-i)));
+    if (cd!=nullptr && (allowArtificial || !cd->isArtificial()))
     {
       result+=fullName.mid(i,e-i);
       //printf("  2:result+=%s\n",qPrint(fullName.mid(i,e-i-1)));
