@@ -1452,7 +1452,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Αρχείο κώδικα " + filename;
     }
@@ -1826,10 +1826,10 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "π.μ.", "μ.μ." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

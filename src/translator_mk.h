@@ -1440,7 +1440,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Изворен код на датотеката " + filename;
     }
@@ -1730,10 +1730,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "претпл.", "попл." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

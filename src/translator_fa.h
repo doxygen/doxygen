@@ -1450,7 +1450,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " کد و پرونده منبع";
     }
@@ -1789,10 +1789,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "قبل‌ازظهر", "بعدازظهر" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 };

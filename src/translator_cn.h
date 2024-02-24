@@ -1405,7 +1405,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       /* return filename + " Source File"; */
       return filename + CN_SPC "源文件";
@@ -1769,10 +1769,10 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     static const char *months_full[]  = { "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月" };
     return full? months_full[month-1] : months_short[month-1];
   }
-  QCString trDayPeriod(int period) override
+  QCString trDayPeriod(bool period) override
   {
     static const char *dayPeriod[] = { "上午", "下午" };
-    return dayPeriod[period];
+    return dayPeriod[period?1:0];
   }
 
 //////////////////////////////////////////////////////////////////////////
