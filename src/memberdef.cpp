@@ -3888,6 +3888,9 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
 
     QCString ts = fieldType();
 
+    if (isFunctionPtr())
+        ts = m_type + m_args;
+
     if (cd) // cd points to an anonymous struct pointed to by this member
       // so we add a link to it from the type column.
     {
@@ -3923,7 +3926,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
 
   ol.startInlineMemberName();
   ol.docify(doxyName);
-  if (isVariable() && !argsString().isEmpty() && !isObjCMethod())
+  if (isVariable() && !argsString().isEmpty() && !isObjCMethod() && !isFunctionPtr())
   {
     linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,argsString());
   }
