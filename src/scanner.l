@@ -7046,11 +7046,30 @@ NONLopt [^\n]*
                                           yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                {
-
+<DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"~~~"[~]* {
+                                          QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
+                                          yyextra->docBlock << "\\ilinebr ";
+                                          yyextra->docBlock << pat;
+                                          yyextra->docBlockName="~~~";
+                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
+                                          yyextra->nestedComment=0;
+                                          BEGIN(DocCopyBlock);
+                                        }
+<DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="~~~";
+                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
+                                          yyextra->nestedComment=0;
+                                          BEGIN(DocCopyBlock);
+                                        }
+<DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
+<DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]*/"{"[^}]+"}" |
+<DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]* {
+                                          QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
+                                          yyextra->docBlock << "\\ilinebr ";
+                                          yyextra->docBlock << pat;
+                                          yyextra->docBlockName="```";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);

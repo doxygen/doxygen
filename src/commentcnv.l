@@ -520,6 +520,18 @@ SLASHopt [/]*
                                      yyextra->inVerbatim=true;
                                      BEGIN(VerbatimCode);
   				   }
+<CComment,ReadLine,IncludeFile>"\\ilinebr"[ \t]+("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
+                                     if (!Config_getBool(MARKDOWN_SUPPORT))
+                                     {
+                                       REJECT;
+                                     }
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                     yyextra->lastCommentContext = YY_START;
+                                     yyextra->javaBlock=0;
+                                     yyextra->blockName=QCString(yytext).stripWhiteSpace().right(3); // take the ``` or ~~~ part
+                                     yyextra->inVerbatim=true;
+                                     BEGIN(VerbatimCode);
+                                     }
 <CComment,ReadLine,IncludeFile>^[ \t]*("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
                                      if (!Config_getBool(MARKDOWN_SUPPORT))
                                      {
@@ -1571,6 +1583,7 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCom
               (i>0 && (result[i-1]=='\\' || result[i-1]=='@') && !isId(result[i+blk.length()]));  // e.g. '@endcode' but not ~endcode or @endcodex
       p = i+yyextra->blockName.length();
     }
+    //printf("blk=%s result=%s found=%d\n",qPrint(blk),qPrint(result),found);
     if (!found) // treat alias as part of the verbatim block
     {
       copyToOutput(yyscanner,s.data(),s.length());
