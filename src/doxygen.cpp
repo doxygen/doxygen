@@ -61,7 +61,6 @@
 #include "perlmodgen.h"
 #include "reflist.h"
 #include "pagedef.h"
-#include "bufstr.h"
 #include "commentcnv.h"
 #include "cmdmapper.h"
 #include "searchindex.h"
@@ -110,6 +109,7 @@
 #include "conceptdef.h"
 #include "trace.h"
 #include "moduledef.h"
+#include "stringutil.h"
 
 #include <sqlite3.h>
 
@@ -10093,7 +10093,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
   }
 
   FileInfo fi(fileName.str());
-  BufStr preBuf(fi.size()+4096);
+  std::string preBuf;
 
   if (Config_getBool(ENABLE_PREPROCESSING) &&
       parser.needsPreprocessing(extension))
@@ -10105,25 +10105,24 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
       std::string absPath = FileInfo(s).absFilePath();
       preprocessor.addSearchDir(absPath.c_str());
     }
-    BufStr inBuf(fi.size()+4096);
+    std::string inBuf;
     msg("Preprocessing %s...\n",qPrint(fn));
     readInputFile(fileName,inBuf);
-    inBuf.addTerminalCharIfMissing('\n');
+    addTerminalCharIfMissing(inBuf,'\n');
     preprocessor.processFile(fileName,inBuf,preBuf);
   }
   else // no preprocessing
   {
     msg("Reading %s...\n",qPrint(fn));
     readInputFile(fileName,preBuf);
-    preBuf.addTerminalCharIfMissing('\n');
+    addTerminalCharIfMissing(preBuf,'\n');
   }
 
-  BufStr convBuf(preBuf.curPos()+1024);
+  std::string convBuf;
+  convBuf.reserve(preBuf.size()+1024);
 
   // convert multi-line C++ comments to C style comments
   convertCppComments(preBuf,convBuf,fileName);
-
-  convBuf.addChar('\0');
 
   std::shared_ptr<Entry> fileRoot = std::make_shared<Entry>();
   // use language parse to parse the file

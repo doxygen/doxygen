@@ -81,4 +81,16 @@ inline std::string_view stripWhiteSpace(std::string_view s)
   return s.substr(start,end+1-start);
 }
 
+inline void addTerminalCharIfMissing(std::string &s,char c)
+{
+  if (s.empty())
+  {
+    s+=c;
+  }
+  else
+  {
+    if (s[s.length()-1]!=c) s+=c;
+  }
+}
+
 #endif // STRINGUTIL_H
