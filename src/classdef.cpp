@@ -1037,7 +1037,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   break;
                 case Protection::Public:
                   addMemberToList(MemberListType_pubAttribs,md,TRUE);
-                  isSimple=!md->isFunctionPtr();
+                  isSimple=TRUE;
                   break;
                 case Protection::Private:
                   addMemberToList(MemberListType_priAttribs,md,TRUE);

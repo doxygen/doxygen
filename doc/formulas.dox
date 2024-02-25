@@ -55,7 +55,7 @@ There are four ways to include formulas in the documentation.
   The LaTeX and Tex logos are: \f(\LaTeX \f) and \f(\TeX \f).
 \endverbatim results in:
 
-  The LaTeX and Tex logos are: \f(\LaTeX \f) and \f(\TeX \f).
+  The LaTeX and Tex logos are: \LaTeX and \TeX.
 <br>
 <li>Unnumbered displayed formulas that are centered on a separate line.
     These formulas should be put between \ref cmdfbropen "\\f[" and
