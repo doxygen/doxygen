@@ -171,9 +171,7 @@ Thanks go to:
 <li>My brother Frank
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.
-<li>Wouter Slegers of
-    <a href="https://yourcreativesolutions.nl">Your Creative Solutions</a>
-    for registering the www.doxygen.org domain.
+<li>Wouter Slegers for registering the www.doxygen.org domain.
 <li>Martin Kreis for adding VHDL support.
 <li>Parker Waechter for adding the RTF output generator.
 <li>Joerg Baumann, for adding conditional documentation blocks,
