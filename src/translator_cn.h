@@ -24,7 +24,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public TranslatorAdapter_1_9_4
+class TranslatorChinese : public Translator
 {
   public:
     /*! Used for identification of the language. The identification
@@ -79,6 +79,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     {
       return false;
     }
+    // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions.
      */
@@ -109,7 +110,16 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 
     /*! header that is put before the list of member function. */
     QCString trMemberFunctionDocumentation() override
-    { return "成员函数说明"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "成员函数/过程/进程说明";
+      }
+      else
+      {
+        return "成员函数说明";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation() override
@@ -223,12 +233,24 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     QCString trExamples() override
     { return "示例"; }
 
+    /*! This is put above each page as a link to the search engine. */
     QCString trSearch() override
     { return "搜索"; }
 
+    /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription() override
-    { return "此继承关系列表按字典顺序粗略的排序:" CN_SPC; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "这里给出了所有实体的层次化列表:";
+      }
+      else
+      {
+        return "此继承关系列表按字典顺序粗略的排序:" CN_SPC;
+      }
+    }
 
+    /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll) override
     {
       QCString result="这里列出了所有";
@@ -237,11 +259,16 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return result;
     }
 
+    /*! This is an introduction to the annotated compound list. */
     QCString trCompoundListDescription() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "这里列出了所有结构体，并附带简要说明:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "这里列出了所有类并附带简要说明:";
       }
       else
       {
@@ -249,6 +276,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       }
     }
 
+    /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll) override
     {
       QCString result="这里列出了所有";
@@ -256,12 +284,12 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
         result+="文档化的";
       }
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
-        result+="结构体和联合体的成员变量，并附带";
+        result+="结构体和联合体的成员变量";
       }
       else {
-        result+="类成员，并附带";
+        result+="类成员";
       }
-      //result+=" with links to ";
+      result+="，并附带";
       if (extractAll) {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
           result+="结构体或联合的详细说明:";
@@ -281,17 +309,19 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return result;
     }
 
+    /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll) override
     {
       QCString result="这里列出了所有";
       if (!extractAll)
         result +="文档化的";
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
-        result +="函数,变量,宏,枚举和类型定义等,并附带";
+        result +="函数、变量、宏、枚举和类型定义等";
       }
       else {
-        result +="文件成员,并附带";
+        result +="文件成员";
       }
+      result+="，并附带";
 
       if (extractAll)
         result+="其所属的文件:";
@@ -300,24 +330,39 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return result;
     }
 
+    /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription() override
     { return "这里列出了所有示例:"; }
 
+    /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription() override
     { return "这里列出了所有相关页面:"; }
 
+    /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription() override
     { return "这里列出了所有模块:"; }
 
+    // index titles (the project name is prepended for these)
+
+    /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation() override
     { return "文档"; }
 
+    /*! This is used in LaTeX as the title of the chapter with the
+     * index of all groups.
+     */
     QCString trModuleIndex() override
     { return "模块索引"; }
 
+    /*! This is used in LaTeX as the title of the chapter with the
+     * class hierarchy.
+     */
     QCString trHierarchicalIndex() override
     { return "继承关系索引"; }
 
+    /*! This is used in LaTeX as the title of the chapter with the
+     * annotated compound index.
+     */
     QCString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -329,12 +374,21 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       }
     }
 
+    /*! This is used in LaTeX as the title of the chapter with the
+     * list of all files.
+     */
     QCString trFileIndex() override
     { return "文件索引"; }
 
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all groups.
+     */
     QCString trModuleDocumentation() override
     { return "模块说明"; }
 
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all classes, structs and unions.
+     */
     QCString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -350,46 +404,85 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       }
     }
 
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all classes, structs and unions.
+     */
     QCString trFileDocumentation() override
     { return "文件说明"; }
 
+    /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual() override
     { return "参考手册"; }
 
+    /*! This is used in the documentation of a file as a header before the
+     *  list of defines
+     */
     QCString trDefines() override
     { return "宏定义"; }
 
+    /*! This is used in the documentation of a file as a header before the
+     *  list of typedefs
+     */
     QCString trTypedefs() override
     { return "类型定义"; }
 
+    /*! This is used in the documentation of a file as a header before the
+     *  list of enumerations
+     */
     QCString trEnumerations() override
     { return "枚举"; }
 
+    /*! This is used in the documentation of a file as a header before the
+     *  list of (global) functions
+     */
     QCString trFunctions() override
     { return "函数"; }
 
+    /*! This is used in the documentation of a file as a header before the
+     *  list of (global) variables
+     */
     QCString trVariables() override
     { return "变量"; }
 
+    /*! This is used in the documentation of a file as a header before the
+     *  list of (global) variables
+     */
     QCString trEnumerationValues() override
     { return "枚举值"; }
 
-
+    /*! This is used in the documentation of a file before the list of
+     *  documentation blocks for defines
+     */
     QCString trDefineDocumentation() override
     { return "宏定义说明"; }
 
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for typedefs
+     */
     QCString trTypedefDocumentation() override
     { return "类型定义说明"; }
 
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for enumeration types
+     */
     QCString trEnumerationTypeDocumentation() override
     { return "枚举类型说明"; }
 
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for functions
+     */
     QCString trFunctionDocumentation() override
     { return "函数说明"; }
 
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for variables
+     */
     QCString trVariableDocumentation() override
     { return "变量说明"; }
 
+    /*! This is used in the documentation of a file/namespace/group before
+     *  the list of links to documented compounds
+     */
     QCString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -401,77 +494,98 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       }
     }
 
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
+     */
     QCString trGeneratedAt(const QCString &date,const QCString &projName) override
-    { QCString result="生成于" CN_SPC+date;
+    {
+      QCString result="生成于" CN_SPC+date;
       if (!projName.isEmpty()) result+=CN_SPC ", 为" CN_SPC+projName;
       result+="使用" CN_SPC;
       return result;
     }
 
+    /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName) override
     {
       return "类" CN_SPC+clName+CN_SPC "继承关系图:";
     }
 
-     QCString trWarning() override
+    /*! this text is generated when the \\warning command is used. */
+    QCString trWarning() override
     { return "警告"; }
 
-     QCString trVersion() override
+    /*! this text is generated when the \\version command is used. */
+    QCString trVersion() override
     { return "版本"; }
 
-     QCString trDate() override
+    /*! this text is generated when the \\date command is used. */
+    QCString trDate() override
     { return "日期"; }
 
-     QCString trReturns() override
+    /*! this text is generated when the \\return command is used. */
+    QCString trReturns() override
     { return "返回"; }
 
-     QCString trSeeAlso() override
+    /*! this text is generated when the \\sa command is used. */
+    QCString trSeeAlso() override
     { return "参见"; }
 
-     QCString trParameters() override
+    /*! this text is generated when the \\param command is used. */
+    QCString trParameters() override
     { return "参数"; }
 
-     QCString trExceptions() override
+    /*! this text is generated when the \\exception command is used. */
+    QCString trExceptions() override
     { return "异常"; }
 
-     QCString trGeneratedBy() override
+    /*! this text is used in the title page of a LaTeX document. */
+    QCString trGeneratedBy() override
     { return "制作者"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
 
-     QCString trNamespaceList() override
+    /*! used as the title of page containing all the index of all namespaces. */
+    QCString trNamespaceList() override
     { return "命名空间列表"; }
 
-     QCString trNamespaceListDescription(bool extractAll) override
+    /*! used as an introduction to the namespace list */
+    QCString trNamespaceListDescription(bool extractAll) override
     {
-       QCString result="这里列出了所有";
+      QCString result="这里列出了所有";
       if (!extractAll) result+="文档化的";
-      result+="命名空间定义,附带简要说明:";
+      result+="命名空间定义，附带简要说明:";
       return result;
     }
 
-     QCString trFriends() override
+    /*! used in the class documentation as a header before the list of all
+     *  friends of a class
+     */
+    QCString trFriends() override
     { return "友元"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
 
-     QCString trRelatedFunctionDocumentation() override
+    /*! used in the class documentation as a header before the list of all
+     * related classes
+     */
+    QCString trRelatedFunctionDocumentation() override
     { return "友元及相关函数文档"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
-     QCString trCompoundReference(const QCString &clName,
+    /*! used as the title of the HTML page of a class/struct/union */
+    QCString trCompoundReference(const QCString &clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate) override
-      // used as the title of the HTML page of a class/struct/union
     {
-       QCString result=clName;
+      QCString result=clName;
       if (isTemplate) result+=CN_SPC "模板";
       switch(compType)
       {
@@ -535,10 +649,12 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     { return "静态 Private 成员函数"; }
 
     // end of member sections
+
+    /*! this function is used to produce a comma-separated list of items.
+     *  use generateMarker(i) to indicate where item i should be put.
+     */
     QCString trWriteList(int numEntries) override
     {
-      // this function is used to produce a comma-separated list of items.
-      // use generateMarker(i) to indicate where item i should be put.
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
@@ -596,13 +712,13 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll) override
     {
-       QCString result="这里列出了所有";
+      QCString result="这里列出了所有";
       if (!extractAll) result+="文档化的";
       result+="命名空间成员，并附带";
       if (extractAll)
-        result+="其说明文档:";
+        result+="其对应命名空间的说明文档:";
       else
-        result+="其所属的文件:";
+        result+="其所属的命名空间:";
       return result;
     }
 
@@ -639,12 +755,12 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool) override
-    { // here s is one of " Class", " Struct" or " Union"
-      // single is true implies a single file
-       QCString result="该";
+    { // single is true implies a single file
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      QCString result="该";
       switch(compType)
       {
-        case ClassDef::Class:      result+="类"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"设计单元":"类"; break;
         case ClassDef::Struct:     result+="结构体"; break;
         case ClassDef::Union:      result+="联合体"; break;
         case ClassDef::Interface:  result+="接口"; break;
@@ -724,7 +840,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     /*! Used in the file documentation to point to the corresponding sources. */
     QCString trGotoSourceCode() override
     {
-      return "浏览源代码.";
+      return "浏览该文件的源代码.";
     }
 
     /*! Used in the file sources to point to the corresponding documentation. */
@@ -803,7 +919,8 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
        {
          return "成员变量";
        }
-       else {
+       else
+       {
          return "Public 属性";
        }
     }
@@ -881,7 +998,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 
     QCString trInclByDepGraph() override
     {
-      return "此图展示该文件直接或间接的被哪些文件引用了:";
+      return "此图展示该文件被哪些文件直接或间接地引用了:";
     }
 
     QCString trSince() override
@@ -899,27 +1016,30 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return "图例";
     }
 
-    /*! page explaining how the dot graph's should be interpreted */
+    /*! page explaining how the dot graph's should be interpreted
+     *  The %A in the text below are to prevent link to classes called "A".
+     */
     QCString trLegendDocs() override
     {
-      return "本页将向您解释如何理解由" CN_SPC "doxygen" CN_SPC "生成的图.<p>\n"
+      return
+        "本页将向您解释如何理解由" CN_SPC "doxygen" CN_SPC "生成的图.<p>\n"
         "考虑如下例子:\n"
         "\\code\n"
-        "/*! 由于截断而使 Invisible 不可见 */\n"
+        "/*! 由于截断而使" CN_SPC "Invisible" CN_SPC "不可见 */\n"
         "class Invisible { };\n\n"
-        "/*! Truncated 的继承关系将被隐藏 */\n"
+        "/*! Truncated" CN_SPC "的继承关系将被隐藏 */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/* 没有被doxygen文档化的类 */\n"
+        "/* 没有被" CN_SPC "doxygen" CN_SPC "文档化的类 */\n"
         "class Undocumented { };\n\n"
-        "/*! public 继承关系的类 */\n"
+        "/*! public" CN_SPC "继承关系的基类 */\n"
         "class PublicBase : public Truncated { };\n\n"
         "/*! 一个模板类 */\n"
         "template<class T> class Templ { };\n\n"
-        "/*! protected 继承关系的类 */\n"
+        "/*! protected" CN_SPC "继承关系的基类 */\n"
         "class ProtectedBase { };\n\n"
-        "/*! private 继承关系的类 */\n"
+        "/*! private" CN_SPC "继承关系的基类 */\n"
         "class PrivateBase { };\n\n"
-        "/*! 被 Inherited 使用的类 */\n"
+        "/*! 被" CN_SPC "Inherited" CN_SPC "使用的类 */\n"
         "class Used { };\n\n"
         "/*! 继承自其它若干类的超级类 */\n"
         "class Inherited : public PublicBase,\n"
@@ -935,24 +1055,24 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
         "结果将会生成以下图:"
         "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
-        "上图中的矩形有如下意义:\n"
+        "上图中的矩形含义为:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>%灰色填充的矩形 表示上图是由该结构体或类生成.</li>\n"
+        "<li>%灰色填充的矩形 表示生成上图的结构体或类.</li>\n"
         "<li>%黑色边框的矩形 表示已经被文档化的结构体或类.</li>\n"
         "<li>%灰色边框的矩形 表示未被文档化的结构体或类.</li>\n"
         "<li>%红色边框的矩形 表示该结构体或类的关系没有被完全显示."
-        "%如果生成的图不能调整到制定的尺寸，有一些关系就会被截断而不显示出来.</li>\n"
+        "%如果生成的图超出了指定的尺寸范围，有一些关系就会被截断而无法显示.</li>\n"
         "</ul>\n"
         "<p>\n"
-        "箭头有如下意义:\n"
+        "箭头的含义为:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>%深蓝色的箭头被用于展示 public 的继承关系.</li>\n"
-        "<li>%深绿色的箭头表示 protected 的继承关系.</li>\n"
-        "<li>%深红色的箭头说明了是 privated 的继承关系.</li>\n"
-        "<li>%紫色虚线箭头用来表示两个类之间的聚合关系. 被箭头指向的类的类型的变量,可以通过箭头旁标明的变量去访问.</li>\n"
-        "<li>%黄色虚线箭头表示模板类实例和模板类之间的关系. 箭头旁边标明了模板类实例化的参数.</li>\n"
+        "<li>%蓝色的箭头 表示" CN_SPC "public" CN_SPC "继承关系.</li>\n"
+        "<li>%深绿色的箭头 表示" CN_SPC "protected" CN_SPC "继承关系.</li>\n"
+        "<li>%深红色的箭头 表示" CN_SPC "private" CN_SPC "继承关系.</li>\n"
+        "<li>%紫色虚线箭头 表示两个类之间的聚合关系. 可以通过箭头旁标明的变量访问箭头指向的类或结构体实例.</li>\n"
+        "<li>%黄色虚线箭头 表示模板类实例和模板类之间的关系. 箭头旁边标明了模板类实例化时所用的模板参数.</li>\n"
         "</ul>\n";
     }
 
@@ -1039,11 +1159,12 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 ////////////////////////////////////////////////////////////////////////////
 //// new since 1.2.6
 ////////////////////////////////////////////////////////////////////////////
+    /*! Used as a marker that is put before a \\bug item */
     QCString trBug () override
     {
       return "Bug";
     }
-
+    /*! Used as the header of the bug list */
     QCString trBugList () override
     {
       return "Bug" CN_SPC "列表";
@@ -1098,6 +1219,9 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return "索引";
     }
 
+    // Following translations (from trClass to trAuthor) are used for languages
+    // having plural / singular form for nouns, but Chinese does not distinguish
+    // plural form from singular form, so the returned value is constant.
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1105,11 +1229,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trClass(bool /*first_capital*/, bool /*singular*/) override
     {
-      /*
-       QCString result((first_capital ? "Class" : "class"));
-      if (!singular)  result+="es";
-      return result;
-      */
       return "类";
     }
 
@@ -1119,11 +1238,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trFile(bool /*first_capital*/, bool /*singular*/) override
     {
-      /*
-       QCString result((first_capital ? "File" : "file"));
-      if (!singular)  result+="s";
-      return result;
-      */
       return "文件";
 
     }
@@ -1134,11 +1248,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trNamespace(bool /*first_capital*/, bool /*singular*/) override
     {
-      /*
-       QCString result((first_capital ? "Namespace" : "namespace"));
-      if (!singular)  result+="s";
-      return result;
-      */
       return "命名空间";
     }
 
@@ -1148,11 +1257,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trGroup(bool /*first_capital*/, bool /*singular*/) override
     {
-      /*
-       QCString result((first_capital ? "Group" : "group"));
-      if (!singular)  result+="s";
-      return result;
-      */
       return "组";
     }
 
@@ -1162,11 +1266,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trPage(bool /*first_capital*/, bool /*singular*/) override
     {
-      /*
-       QCString result((first_capital ? "Page" : "page"));
-      if (!singular)  result+="s";
-      return result;
-      */
       return "页";
     }
 
@@ -1176,11 +1275,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trMember(bool /*first_capital*/, bool /*singular*/) override
     {
-      /*
-       QCString result((first_capital ? "Member" : "member"));
-      if (!singular)  result+="s";
-      return result;
-      */
       return "成员";
     }
 
@@ -1190,11 +1284,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trGlobal(bool /*first_capital*/, bool /*singular*/) override
     {
-      /*
-       QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";
-      return result;
-      */
       return "全局";
     }
 
@@ -1206,11 +1295,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      *  for the author section in man pages. */
     QCString trAuthor(bool /*first_capital*/, bool /*singular*/) override
     {
-      /*
-       QCString result((first_capital ? "Author" : "author"));
-      if (!singular)  result+="s";
-      return result;
-      */
       return "作者";
     }
 
@@ -1234,7 +1318,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trImplementedFromList(int numEntries) override
     {
-      /* return "Implements "+trWriteList(numEntries)+"."; */
       return "实现了" CN_SPC+trWriteList(numEntries)+".";
     }
 
@@ -1243,7 +1326,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trImplementedInList(int numEntries) override
     {
-      /* return "Implemented in "+trWriteList(numEntries)+"."; */
       return "在" CN_SPC+trWriteList(numEntries)+CN_SPC "内被实现.";
     }
 
@@ -1256,7 +1338,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trRTFTableOfContents() override
     {
-      /* return "Table of Contents"; */
       return "目录";
     }
 
@@ -1407,7 +1488,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trSourceFile(QCString& filename) override
     {
-      /* return filename + " Source File"; */
       return filename + CN_SPC "源文件";
     }
 //////////////////////////////////////////////////////////////////////////
@@ -1430,7 +1510,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return "目录说明";
     }
 
-		/*! This is used as the title of the directory index and also in the
+    /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     QCString trDirectories() override
@@ -1514,14 +1594,13 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
         result+="文档化的";
       }
       result+="数据类型成员,并附带";
-      //result+=" with links to ";
       if (!extractAll)
       {
-        result+="其说明文档:";
+        result+="其数据结构说明文档:";
       }
       else
       {
-        result+="其所属的文件:";
+        result+="其所属的数据类型:";
       }
       return result;
     }
@@ -1608,20 +1687,8 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     /*! This is an introduction to the page with all modules members (Fortran) */
     QCString trModulesMemberDescription(bool extractAll) override
     {
-      // QCString result="Here is a list of all ";
-      // if (!extractAll) result+="documented ";
-      // result+="module members with links to ";
-      // if (extractAll)
-      // {
-      //   result+="the module documentation for each member:";
-      // }
-      // else
-      // {
-      //   result+="the modules they belong to:";
-      // }
-      // return result;
       if(!extractAll) {
-        return "这里是有文档的模块成员列表，含有到每个成员所在模块的文档的链接:";
+        return "这里是所有文档化的模块成员列表，含有到每个成员所在模块的文档的链接:";
       } else {
         return "这里是模块成员列表，含有到成员所属的模块的链接:";
       }
@@ -1631,18 +1698,14 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      *  index of all modules (Fortran).
      */
     QCString trModulesIndex() override
-    // { return "Modules Index"; }
     { return "模块索引"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trModule(bool, bool) override
+    QCString trModule(bool /*first_capital*/, bool /*singular*/) override
     {
-      // QCString result((first_capital ? "Module" : "module"));
-      // if (!singular)  result+="s";
-      // return result;
       return "模块";
     }
     /*! This is put at the bottom of a module documentation page and is
@@ -1671,7 +1734,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trType(bool, bool) override
+    QCString trType(bool /*first_capital*/, bool /*singular*/) override
     {
       return "类型";
     }
@@ -1680,7 +1743,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trSubprogram(bool, bool) override
+    QCString trSubprogram(bool /*first_capital*/, bool /*singular*/) override
     {
       return "子程序";
     }
@@ -1694,86 +1757,110 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.0
 //////////////////////////////////////////////////////////////////////////
-  QCString trDirRelation(const QCString &name) override
-  {
-    // return QCString(name)+" Relation";
-    // unsure
-    return QCString(name)+CN_SPC "关系";
-  }
 
+    /*! directory relation for \a name */
+    QCString trDirRelation(const QCString &name) override
+    {
+      // return QCString(name)+" Relation";
+      // unsure
+      return QCString(name)+CN_SPC "关系";
+    }
+
+    /*! Loading message shown when loading search results */
     QCString trLoading() override
-  {
-    return "载入中...";
-  }
+    {
+      return "载入中...";
+    }
 
-  QCString trGlobalNamespace() override
-  {
-    return "全局命名空间";
-  }
+    /*! Label used for search results in the global namespace */
+    QCString trGlobalNamespace() override
+    {
+      return "全局命名空间";
+    }
 
+    /*! Message shown while searching */
     QCString trSearching() override
-  {
-    return "搜索中...";
-  }
+    {
+      return "搜索中...";
+    }
 
-  QCString trNoMatches() override
-  {
-    return "未找到";
-  }
+    /*! Text shown when no search results are found */
+    QCString trNoMatches() override
+    {
+      return "未找到";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3
 //////////////////////////////////////////////////////////////////////////
 
-  QCString trFileIn(const QCString &name) override
-  {
-    return QCString("文件在")+CN_SPC+name;
-  }
-
-  QCString trIncludesFileIn(const QCString &name) override
-  {
-    return "在" CN_SPC+name+CN_SPC "中引用";
-  }
-
-  QCString trDateTime(int year,int month,int day,int dayOfWeek,
-                                int hour,int minutes,int seconds,
-                                DateTimeType includeTime) override
-  {
-    static const char *days[]   = { "一","二","三","四","五","六","日" };
-    static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
-
-    QCString sdate;
-
-    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    QCString trFileIn(const QCString &name) override
     {
-      sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
+      return QCString("文件在")+CN_SPC+name;
     }
-    if (includeTime == DateTimeType::DateTime) sdate += " ";
-    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    QCString trIncludesFileIn(const QCString &name) override
     {
-      QCString stime;
-      stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
-      sdate+=stime;
+      return "在" CN_SPC+name+CN_SPC "中引用";
     }
-    return sdate;
-  }
-  QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
-  {
-    static const char *days_short[]   = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
-    static const char *days_full[]    = { "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
-    return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
-  }
-  QCString trMonth(int month, bool, bool full) override
-  {
-    static const char *months_short[] = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
-    static const char *months_full[]  = { "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月" };
-    return full? months_full[month-1] : months_short[month-1];
-  }
-  QCString trDayPeriod(int period) override
-  {
-    static const char *dayPeriod[] = { "上午", "下午" };
-    return dayPeriod[period];
-  }
+
+    /** Compiles a date string.
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                  int hour,int minutes,int seconds,
+                                  DateTimeType includeTime) override
+    {
+      static const char *days[]   = { "一","二","三","四","五","六","日" };
+      static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
+
+      QCString sdate;
+
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
+      {
+        QCString stime;
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+    QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
+    {
+      static const char *days_short[]   = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+      static const char *days_full[]    = { "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
+      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+    }
+    QCString trMonth(int month, bool, bool full) override
+    {
+      static const char *months_short[] = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
+      static const char *months_full[]  = { "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月" };
+      return full? months_full[month-1] : months_short[month-1];
+    }
+    QCString trDayPeriod(int period) override
+    {
+      static const char *dayPeriod[] = { "上午", "下午" };
+      return dayPeriod[period];
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
@@ -1781,7 +1868,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 
     /*! Header for the page with bibliographic citations */
     QCString trCiteReferences() override
-    { return "参考书目"; }
+    { return "参考文献"; }
 
     /*! Text for copyright paragraph */
     QCString trCopyright() override
@@ -1874,14 +1961,14 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
      */
     QCString trInstanceMethods() override
     {
-      return "构造函数";
+      return "实例方法";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
     QCString trMethodDocumentation() override
     {
-      return "函数文档";
+      return "成员函数文档";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1962,7 +2049,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     QCString trFunctionAndProc() override
     { return "函数/调用过程/进程语句"; }
     /** VHDL type */
-    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    QCString trVhdlType(VhdlSpecifier type,bool /*single*/) override
     {
       switch(type)
       {
@@ -1997,8 +2084,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
         case VhdlSpecifier::PORT:
           return "端口";
         case VhdlSpecifier::USE:
-          if (single) return "使用语句";
-          else        return "使用语句";
+          return "使用语句";
         case VhdlSpecifier::GENERIC:
           return "类属";
         case VhdlSpecifier::PACKAGE_BODY:
@@ -2075,7 +2161,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     }
     QCString trInterfaceHierarchyDescription() override
     {
-        return "此继承列表按字母顺序粗略排序:";
+        return "此继承列表大致按字母顺序排序:";
     }
     QCString trInterfaceDocumentation() override
     {
@@ -2119,7 +2205,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     }
     QCString trExceptionHierarchyDescription() override
     {
-        return "此继承列表按字母顺序粗略排序:";
+        return "此继承列表大致按字母顺序排序:";
     }
     QCString trExceptionDocumentation() override
     {
@@ -2128,19 +2214,19 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
     {
       QCString result=clName;
-      if (isLocal) result+=" 局部";
+      if (isLocal) result+=CN_SPC "局部";
       switch(compType)
       {
-        case ClassDef::Class:      result+=" 类"; break;
-        case ClassDef::Struct:     result+=" 结构"; break;
-        case ClassDef::Union:      result+=" 联合"; break;
-        case ClassDef::Interface:  result+=" 接口"; break;
-        case ClassDef::Protocol:   result+=" 协议"; break;
-        case ClassDef::Category:   result+=" 类别"; break;
-        case ClassDef::Exception:  result+=" 异常"; break;
+        case ClassDef::Class:      result+=CN_SPC "类"; break;
+        case ClassDef::Struct:     result+=CN_SPC "结构"; break;
+        case ClassDef::Union:      result+=CN_SPC "联合"; break;
+        case ClassDef::Interface:  result+=CN_SPC "接口"; break;
+        case ClassDef::Protocol:   result+=CN_SPC "协议"; break;
+        case ClassDef::Category:   result+=CN_SPC "类别"; break;
+        case ClassDef::Exception:  result+=CN_SPC "异常"; break;
         default: break;
       }
-      result+=" 引用";
+      result+="引用";
       return result;
     }
     QCString trOperations() override
@@ -2181,7 +2267,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     QCString trConceptReference(const QCString &conceptName) override
     {
       QCString result=conceptName;
-      result+=" 概念引用";
+      result+=CN_SPC "概念参考";
       return result;
     }
 
@@ -2198,9 +2284,12 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     { return "概念文档"; }
 
     /*! used as an introduction to the concept list */
-    QCString trConceptListDescription(bool /* extractAll */) override
+    QCString trConceptListDescription(bool extractAll) override
     {
-      return "以下是带有简要说明的概念";
+      QCString result="这里是所有";
+      if (!extractAll) result+="文档化的";
+      result+="概念, 并附有简要说明:";
+      return result;
     }
 
     /*! used to introduce the definition of the C++20 concept */
@@ -2208,6 +2297,53 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     {
       return "概念定义";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "包列表"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "流程图:" CN_SPC; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    QCString trRelatedSymbols() override
+    { return "相关符号"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    QCString trRelatedSymbolsSubscript() override
+    { return "(注意: 这些不是成员符号.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    QCString trRelatedSymbolDocumentation() override
+    { return "友元及相关符号说明"; }
 
     /*! the compound type as used for the xrefitems */
     QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
@@ -2225,13 +2361,261 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
         case ClassDef::Protocol:   result="协议"; break;
         case ClassDef::Category:   result="分类"; break;
         case ClassDef::Exception:  result="异常"; break;
-        case ClassDef::Service:    result="Service"; break;
-        case ClassDef::Singleton:  result="Singleton"; break;
+        case ClassDef::Service:    result="服务"; break;
+        case ClassDef::Singleton:  result="单例"; break;
         default: break;
       }
       return result;
     }
 
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="这里是所有";
+      if (!extractAll) result+="文档化的";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="函数、变量、定义、枚举和类型定义";
+          }
+          else
+          {
+            result+="文件成员";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="函数";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="变量";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="类型定义";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="序列";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="字典";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="枚举";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="枚举值";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="宏";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=", 及指向";
+      if (extractAll)
+        result+="其所属文件";
+      else
+        result+="其文档";
+      result+="的链接:" CN_SPC;
+      return result;
+    }
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="这里是所有";
+      if (!extractAll)
+      {
+        result+="文档化的";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="结构体及联合体成员";
+          }
+          else
+          {
+            result+="类成员";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="函数";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="变量";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="类型定义";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="枚举";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="枚举值";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="属性";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="事件";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="相关符号";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=", 及指向";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="结构体 (或联合体) 中所有成员文档";
+        }
+        else
+        {
+          result+="类中所有成员文档";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="其所属结构体 (或联合体)";
+        }
+        else
+        {
+          result+="其所属类";
+        }
+      }
+      result+="的链接:" CN_SPC;
+      return result;
+    }
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="这里是所有";
+      if (!extractAll) result+="文档化的";
+      result+="命名空间";
+      QCString singularResult = "";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult="成员";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult="函数";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult="变量";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult="类型定义";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult="序列";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult="字典";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult="枚举";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult="枚举值";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=singularResult;
+      result+=", 及指向";
+      if (extractAll)
+        result+="每个" + singularResult + "所属命名空间文档";
+      else
+        result+="其所属命名空间";
+      result+="的链接:" CN_SPC;
+      return result;
+    }
+    QCString trDefinition() override  { return "定义";}
+    QCString trDeclaration() override { return "声明";}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trTopics() override
+    { return "专题"; }
+    QCString trTopicDocumentation() override
+    { return "专题文档"; }
+    QCString trTopicList() override
+    { return "专题列表"; }
+    QCString trTopicIndex() override
+    { return "专题索引"; }
+    QCString trTopicListDescription() override
+    { return "这里是所有专题及其简介:"; }
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="这里是所有";
+      if (!extractAll) result+="文档化的";
+      result+="模块";
+      QCString singularResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="成员";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="函数";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="变量";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="类型定义";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="枚举";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="枚举值";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=singularResult;
+      result+=", 及指向";
+      if (extractAll)
+        result+="每个" + singularResult + "的模块文档";
+      else
+        result+="其所属模块";
+      result+="的链接:" CN_SPC;
+      return result;
+    }
+    QCString trExportedModules() override
+    {
+      return "导出的模块";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    {
+      return "复制到剪贴板";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "重要事项";
+    }
 };
 
 #endif
