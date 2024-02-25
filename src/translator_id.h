@@ -124,7 +124,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Berikut ini daftar lengkap anggota untuk "; }
+    { return "Berikut ini daftar lengkap anggota untuk"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

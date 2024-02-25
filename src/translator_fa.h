@@ -157,7 +157,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "اين ليستی کامل از همه اعضای  "; }
+    { return "اين ليستی کامل از همه اعضای"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

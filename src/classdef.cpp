@@ -2956,6 +2956,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
   ol.startContents();
   ol.startParagraph();
   ol.parseText(theTranslator->trThisIsTheListOfAllMembers());
+  ol.docify(" ");
   ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),displayName());
   ol.parseText(theTranslator->trIncludingInheritedMembers());
   ol.endParagraph();

@@ -160,7 +160,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Danh sách các thành viên đầy đủ cho "; }
+    { return "Danh sách các thành viên đầy đủ cho"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

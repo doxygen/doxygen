@@ -1996,7 +1996,7 @@ class TranslatorDutch : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Stroomschema: "; }
+    { return "Stroomschema:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for

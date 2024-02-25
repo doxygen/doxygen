@@ -148,7 +148,7 @@ class TranslatorChinese : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "成员的完整列表，这些成员属于" CN_SPC; }
+    { return "成员的完整列表，这些成员属于"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -2313,7 +2313,7 @@ class TranslatorChinese : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "流程图:" CN_SPC; }
+    { return "流程图:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for

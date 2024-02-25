@@ -185,7 +185,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Tämä on lista kaikista jäsenistä luokassa "; } // "This is the complete list of members for "
+    { return "Tämä on lista kaikista jäsenistä luokassa"; } // "This is the complete list of members for "
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

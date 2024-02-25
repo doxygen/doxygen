@@ -128,7 +128,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "هذه فائمة بكل الأعضاء في "; }
+    { return "هذه فائمة بكل الأعضاء في"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

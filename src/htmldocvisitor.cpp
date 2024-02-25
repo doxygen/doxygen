@@ -2024,6 +2024,7 @@ void HtmlDocVisitor::operator()(const DocVhdlFlow &vf)
     QCString fname=FlowChart::convertNameToFileName();
     m_t << "<p>";
     m_t << theTranslator->trFlowchart();
+    m_t << " ";
     m_t << "<a href=\"";
     m_t << fname;
     m_t << ".svg\">";

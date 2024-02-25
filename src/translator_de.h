@@ -230,7 +230,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Vollständige Aufstellung aller Elemente für "; }
+    { return "Vollständige Aufstellung aller Elemente für"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

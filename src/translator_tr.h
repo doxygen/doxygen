@@ -139,7 +139,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Şu sınıfın tüm üyelerinin listesidir: "; }
+    { return "Şu sınıfın tüm üyelerinin listesidir:"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
