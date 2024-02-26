@@ -543,7 +543,7 @@ class Translator
 // new since 1.3.8
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSourceFile(QCString& filename) = 0;
+    virtual QCString trSourceFile(const QCString& filename) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.9
@@ -619,7 +619,7 @@ class Translator
                                 DateTimeType includeTime) = 0;
     virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) = 0;
     virtual QCString trMonth(int month, bool first_capital, bool full) = 0;
-    virtual QCString trDayPeriod(int period) = 0;
+    virtual QCString trDayPeriod(bool period) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5

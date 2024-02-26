@@ -1528,7 +1528,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return " Fichier source de " + filename;
     }
@@ -1905,10 +1905,10 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
