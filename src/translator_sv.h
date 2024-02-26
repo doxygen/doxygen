@@ -262,7 +262,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Det här är en fullständig lista över medlemmar för "; }
+    { return "Det här är en fullständig lista över medlemmar för"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -1576,7 +1576,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Källkodsfilen " + filename;
     }
@@ -1954,10 +1954,10 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "fm", "em" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2443,7 +2443,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     QCString trFlowchart() override
-    { return "Flödesdiagram: "; }
+    { return "Flödesdiagram:"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.7

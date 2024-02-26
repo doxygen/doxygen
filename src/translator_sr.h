@@ -127,7 +127,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Ovo je spisak svih članova "; }
+    { return "Ovo je spisak svih članova"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -1439,7 +1439,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Izvorni kod datoteke " + filename;
     }
@@ -1734,10 +1734,10 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "pre podne", "po podne" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

@@ -245,7 +245,7 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Zde naleznete úplný seznam členů třídy "; }
+    { return "Zde naleznete úplný seznam členů třídy"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -1609,7 +1609,7 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Zdrojový soubor " + filename;
     }
@@ -1988,10 +1988,10 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "dop.", "odp." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2483,7 +2483,7 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Vývojový diagram: "; }
+    { return "Vývojový diagram:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for

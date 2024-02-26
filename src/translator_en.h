@@ -149,7 +149,7 @@ class TranslatorEnglish : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "This is the complete list of members for "; }
+    { return "This is the complete list of members for"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -1474,7 +1474,7 @@ class TranslatorEnglish : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Source File";
     }
@@ -1848,10 +1848,10 @@ class TranslatorEnglish : public Translator
       static const char *months_full[]  = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
       return full? months_full[month-1] : months_short[month-1];
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2337,7 +2337,7 @@ class TranslatorEnglish : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Flowchart: "; }
+    { return "Flowchart:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for

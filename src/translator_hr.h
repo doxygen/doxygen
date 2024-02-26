@@ -1161,7 +1161,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Izvorni kod datoteke " + filename;
     }
@@ -1530,10 +1530,10 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 

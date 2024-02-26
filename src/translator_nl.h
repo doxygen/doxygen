@@ -1227,7 +1227,7 @@ class TranslatorDutch : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Bron Bestand";
     }
@@ -1573,10 +1573,10 @@ class TranslatorDutch : public Translator
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "a.m.", "p.m." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1996,7 +1996,7 @@ class TranslatorDutch : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Stroomschema: "; }
+    { return "Stroomschema:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for

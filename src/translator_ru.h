@@ -108,7 +108,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /*! this is the first part of a sentence that is followed by a class name */
     /* Isn't used when optimization for C is on. */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Полный список членов класса "; }
+    { return "Полный список членов класса"; }
 
     /*! this is the remainder of the sentence after the class name */
     /* Isn't used when optimization for C is on. */
@@ -1418,7 +1418,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Исходный файл " + filename;
     }
@@ -1806,10 +1806,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 ///////////////////////////////////////////////////////////////////////

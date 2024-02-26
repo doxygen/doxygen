@@ -279,7 +279,7 @@ class TranslatorBrazilian : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Esta é a lista de todos os membros de "; }
+    { return "Esta é a lista de todos os membros de"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -1638,7 +1638,7 @@ class TranslatorBrazilian : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return  "Código-Fonte de " + filename;
     }
@@ -2025,10 +2025,10 @@ class TranslatorBrazilian : public Translator
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2536,7 +2536,7 @@ class TranslatorBrazilian : public Translator
      */
     QCString trFlowchart() override
     {
-        return "Fluxograma: ";
+        return "Fluxograma:";
     }
 
     /*! Please translate also updated body of the method

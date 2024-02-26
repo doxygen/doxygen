@@ -143,7 +143,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Tiu ĉi estas la kompleta membraro de "; }
+    { return "Tiu ĉi estas la kompleta membraro de"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -1457,7 +1457,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Fonta Dosiero";
     }
@@ -1840,10 +1840,10 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "atm", "ptm" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

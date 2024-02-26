@@ -131,7 +131,7 @@ class TranslatorPolish : public TranslatorAdapter_1_11_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "To jest kompletna lista składowych dla "; }
+    { return "To jest kompletna lista składowych dla"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -1417,7 +1417,7 @@ class TranslatorPolish : public TranslatorAdapter_1_11_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Plik źródłowy " + filename;
     }
@@ -1792,10 +1792,10 @@ class TranslatorPolish : public TranslatorAdapter_1_11_0
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2282,7 +2282,7 @@ class TranslatorPolish : public TranslatorAdapter_1_11_0
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Schemat blokowy: "; }
+    { return "Schemat blokowy:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
