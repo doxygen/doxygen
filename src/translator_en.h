@@ -149,7 +149,7 @@ class TranslatorEnglish : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "This is the complete list of members for "; }
+    { return "This is the complete list of members for"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -2337,7 +2337,7 @@ class TranslatorEnglish : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Flowchart: "; }
+    { return "Flowchart:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for

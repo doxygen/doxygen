@@ -144,7 +144,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Ово је списак свих чланова од "; }
+    { return "Ово је списак свих чланова од"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

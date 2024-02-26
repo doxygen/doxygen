@@ -145,7 +145,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Това е пълен списък с членове за "; }
+    { return "Това е пълен списък с членове за"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

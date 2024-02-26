@@ -65,7 +65,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     QCString trMemberList() override
     { return " - seznam metod in atributov."; }
     QCString trThisIsTheListOfAllMembers() override
-    { return "Seznam metod razreda "; }
+    { return "Seznam metod razreda"; }
     QCString trIncludingInheritedMembers() override
     { return ", vključujoč dedovane metode in atribute."; }
     QCString trGeneratedAutomatically(const QCString &s) override

@@ -125,7 +125,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Hierdie is 'n volledige lys van lede vir "; }
+    { return "Hierdie is 'n volledige lys van lede vir"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

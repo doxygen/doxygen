@@ -141,7 +141,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Lista completă a membrilor din "; }
+    { return "Lista completă a membrilor din"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

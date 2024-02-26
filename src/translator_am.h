@@ -106,7 +106,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! this is the first part of a sentence that is followed by a class name */
     /* Isn't used when optimization for C is on. */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Սա դասի անդամների ամբողջական ցուցակն է "; }
+    { return "Սա դասի անդամների ամբողջական ցուցակն է"; }
 
     /*! this is the remainder of the sentence after the class name */
     /* Isn't used when optimization for C is on. */

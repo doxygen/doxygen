@@ -262,7 +262,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Det här är en fullständig lista över medlemmar för "; }
+    { return "Det här är en fullständig lista över medlemmar för"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -2443,7 +2443,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
 //////////////////////////////////////////////////////////////////////////
 
     QCString trFlowchart() override
-    { return "Flödesdiagram: "; }
+    { return "Flödesdiagram:"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.7

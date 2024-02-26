@@ -191,7 +191,7 @@ class TranslatorPortuguese : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Lista completa de todos os membros de "; }
+    { return "Lista completa de todos os membros de"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -2398,7 +2398,7 @@ class TranslatorPortuguese : public Translator
      */
     QCString trFlowchart() override
     {
-        return "Fluxograma: ";
+        return "Fluxograma:";
     }
 
     /*! Please translate also updated body of the method

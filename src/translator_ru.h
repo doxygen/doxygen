@@ -108,7 +108,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /*! this is the first part of a sentence that is followed by a class name */
     /* Isn't used when optimization for C is on. */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Полный список членов класса "; }
+    { return "Полный список членов класса"; }
 
     /*! this is the remainder of the sentence after the class name */
     /* Isn't used when optimization for C is on. */

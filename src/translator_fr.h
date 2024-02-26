@@ -201,7 +201,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Liste complète des membres de "; }
+    { return "Liste complète des membres de"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

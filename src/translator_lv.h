@@ -146,7 +146,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Šis ir pilns elementu saraksts klasei "; }
+    { return "Šis ir pilns elementu saraksts klasei"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

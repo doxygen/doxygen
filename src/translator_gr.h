@@ -2338,7 +2338,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Διάγραμμα ροής: "; }
+    { return "Διάγραμμα ροής:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for

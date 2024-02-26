@@ -184,7 +184,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Dette er den komplette liste over medlemmer i "; }
+    { return "Dette er den komplette liste over medlemmer i"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override

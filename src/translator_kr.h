@@ -163,7 +163,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "다음에 대한 모든 멤버의 목록입니다 : "; }
+    { return "다음에 대한 모든 멤버의 목록입니다 :"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
