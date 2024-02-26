@@ -34,7 +34,6 @@ typedef yyguts_t *yyscan_t;
 #include <deque>
 #include <string_view>
 
-#include "bufstr.h"
 #include "debug.h"
 #include "message.h"
 #include "config.h"
@@ -50,8 +49,8 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define ADDCHAR(c)    yyextra->outBuf.addChar(c)
-#define ADDARRAY(a,s) yyextra->outBuf.addArray(a,s)
+#define ADDCHAR(c)    yyextra->outBuf+=c
+#define ADDARRAY(a,s) yyextra->outBuf+=std::string_view(a,s)
 
 struct commentcnvYY_CondCtx
 {
@@ -71,15 +70,14 @@ struct CommentCtx
 
 struct commentcnv_FileState
 {
-  commentcnv_FileState(size_t size) : fileBuf(size) {}
   int oldLineNr = 1;
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
   QCString oldFileName;
   QCString oldIncPrefix;
   int oldState = 0;
-  BufStr fileBuf;
-  const BufStr *oldFileBuf = nullptr;
+  std::string fileBuf;
+  const std::string *oldFileBuf = nullptr;
   int oldFileBufPos = 0;
   int oldIncludeCtx = 0;
 };
@@ -87,9 +85,9 @@ struct commentcnv_FileState
 
 struct commentcnvYY_state
 {
-  commentcnvYY_state(const BufStr *i,BufStr &o) : inBuf(i), outBuf(o) {}
-  const BufStr *inBuf;
-  BufStr &outBuf;
+  commentcnvYY_state(const std::string *i,std::string &o) : inBuf(i), outBuf(o) {}
+  const std::string *inBuf;
+  std::string &outBuf;
   int      inBufPos = 0;
   int      col = 0;
   int      blockHeadCol = 0;
@@ -1484,7 +1482,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       return false;
     }
 
-    auto fs = std::make_unique<commentcnv_FileState>(fi.size()+4096);
+    auto fs = std::make_unique<commentcnv_FileState>();
     if (!readInputFile(absFileName,fs->fileBuf,false))
     {
       warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' could not be read",blockId.isEmpty()?"include":"snippet",qPrint(absFileName));
@@ -1494,7 +1492,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     int lineNr=1;
     if (!blockId.isEmpty())
     {
-      QCString incText = fs->fileBuf.data();
+      QCString incText { fs->fileBuf };
       int count = incText.contains(blockId.data());
       if (count!=2)
       {
@@ -1505,15 +1503,11 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       lineNr = lineBlock(incText, blockId);
       int blockPos;
       incText = extractBlock(incText, blockId, blockPos);
-      fs->fileBuf.shrink(0);
+      fs->fileBuf.clear();
       if (!incText.isEmpty())
       {
-        fs->fileBuf.addArray(incText.data(),incText.length());
+        fs->fileBuf.append(incText.str());
       }
-    }
-    else if (fs->fileBuf.curPos()>0) // remove '\0' terminator
-    {
-      fs->fileBuf.shrink(fs->fileBuf.curPos()-1);
     }
     QCString lineStr=" \\ilinebr \\ifile \""+absFileName+"\" \\iline " + QCString().setNum(lineNr) + " \\ilinebr ";
     copyToOutput(yyscanner,lineStr.data(),lineStr.length());
@@ -1619,7 +1613,7 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCom
 static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int bytesInBuf = static_cast<int>(yyextra->inBuf->curPos())-yyextra->inBufPos;
+  int bytesInBuf = static_cast<int>(yyextra->inBuf->size())-yyextra->inBufPos;
   int bytesToCopy = std::min(max_size,bytesInBuf);
   memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
@@ -1657,7 +1651,7 @@ static void replaceComment(yyscan_t yyscanner,int offset)
  *  -# It replaces aliases with their definition (see ALIASES)
  *  -# It handles conditional sections (cond...endcond blocks)
  */
-void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileName)
+void convertCppComments(const std::string &inBuf,std::string &outBuf,const QCString &fileName)
 {
   yyscan_t yyscanner;
   commentcnvYY_state extra(&inBuf,outBuf);
@@ -1685,7 +1679,7 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   if (yyextra->lang==SrcLangExt::Fortran)
   {
     FortranFormat fmt = convertFileNameFortranParserCode(fileName);
-    yyextra->isFixedForm = recognizeFixedForm(QCString(inBuf.data()),fmt);
+    yyextra->isFixedForm = recognizeFixedForm(QCString(inBuf),fmt);
   }
 
   if (yyextra->lang==SrcLangExt::Markdown)
@@ -1727,9 +1721,8 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   yyextra->nestingCount = 0;
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
-    yyextra->outBuf.at(yyextra->outBuf.curPos())='\0';
-    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s curPos=%zu\n"
-                 "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf.curPos(),yyextra->outBuf.data()
+    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
+                 "output=[\n%s]\n-----------\n",qPrint(fileName),qPrint(yyextra->outBuf)
                 );
   }
   commentcnvYYlex_destroy(yyscanner);

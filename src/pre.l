@@ -53,9 +53,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "defargs.h"
 #include "debug.h"
-#include "bufstr.h"
 #include "portable.h"
-#include "bufstr.h"
 #include "arguments.h"
 #include "entry.h"
 #include "condparser.h"
@@ -82,11 +80,10 @@ struct preYY_CondCtx
 
 struct FileState
 {
-  FileState(uint32_t size) : fileBuf(size) {}
   int lineNr = 1;
   int curlyCount = 0;
-  BufStr fileBuf;
-  BufStr *oldFileBuf = nullptr;
+  std::string fileBuf;
+  const std::string *oldFileBuf = nullptr;
   int oldFileBufPos = 0;
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
@@ -262,9 +259,9 @@ struct preYY_state
   bool               defVarArgs     = false;
   int                lastCContext   = 0;
   int                lastCPPContext = 0;
-  BufStr            *inputBuf       = nullptr;
+  const std::string *inputBuf       = nullptr;
   int                inputBufPos    = 0;
-  BufStr            *outputBuf      = nullptr;
+  std::string       *outputBuf      = nullptr;
   int                roundCount     = 0;
   bool               quoteArg       = false;
   bool               idStart        = false;
@@ -2085,7 +2082,7 @@ WSopt [ \t\r]*
 static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  int bytesInBuf = static_cast<int>(state->inputBuf->curPos())-state->inputBufPos;
+  int bytesInBuf = static_cast<int>(state->inputBuf->size())-state->inputBufPos;
   int bytesToCopy = std::min(max_size,bytesInBuf);
   memcpy(buf,state->inputBuf->data()+state->inputBufPos,bytesToCopy);
   state->inputBufPos+=bytesToCopy;
@@ -2208,7 +2205,7 @@ static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const QCSt
     }
     //printf("#include %s\n",qPrint(absName));
 
-    fs = std::make_unique<FileState>(static_cast<uint32_t>(fi.size())+4096);
+    fs = std::make_unique<FileState>();
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
@@ -3393,19 +3390,19 @@ static void addMacroDefinition(yyscan_t yyscanner)
 static inline void outputChar(yyscan_t yyscanner,char c)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addChar(c);
+  if (state->includeStack.empty() || state->curlyCount>0) (*state->outputBuf)+=c;
 }
 
 static inline void outputArray(yyscan_t yyscanner,const char *a,yy_size_t len)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint32_t>(len));
+  if (state->includeStack.empty() || state->curlyCount>0) (*state->outputBuf)+=std::string_view(a,len);
 }
 
 static inline void outputString(yyscan_t yyscanner,const QCString &a)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a.data(),a.length());
+  if (state->includeStack.empty() || state->curlyCount>0) (*state->outputBuf)+=a.str();
 }
 
 static inline void outputSpace(yyscan_t yyscanner,char c)
@@ -3944,7 +3941,7 @@ Preprocessor::~Preprocessor()
   preYYlex_destroy(p->yyscanner);
 }
 
-void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &output)
+void Preprocessor::processFile(const QCString &fileName,const std::string &input,std::string &output)
 {
   AUTO_TRACE("fileName={}",fileName);
   yyscan_t yyscanner = p->yyscanner;
@@ -3956,7 +3953,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
 #endif
 
   DebugLex debugLex(Debug::Lex_pre, __FILE__, qPrint(fileName));
-  size_t orgOffset=output.curPos();
+  size_t orgOffset=output.size();
   //printf("##########################\n%s\n####################\n",
   //    qPrint(input));
 
@@ -4010,7 +4007,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   {
     std::lock_guard<std::mutex> lock(g_debugMutex);
     char *orgPos=output.data()+orgOffset;
-    char *newPos=output.data()+output.curPos();
+    char *newPos=output.data()+output.size();
     Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %d bytes):\n",qPrint(fileName),newPos-orgPos);
     int line=1;
     Debug::print(Debug::Preprocessor,0,"---------\n");

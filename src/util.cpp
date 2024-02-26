@@ -55,7 +55,6 @@
 #include "latexdocvisitor.h"
 #include "portable.h"
 #include "parserintf.h"
-#include "bufstr.h"
 #include "image.h"
 #include "growbuf.h"
 #include "entry.h"
@@ -77,6 +76,7 @@
 #include "datetime.h"
 #include "moduledef.h"
 #include "trace.h"
+#include "stringutil.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1256,28 +1256,30 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
  * converted content (i.e. the same as \a len (Unix, MAC) or
  * smaller (DOS).
  */
-static size_t filterCRLF(char *buf,size_t len)
+static void filterCRLF(std::string &contents)
 {
-  size_t src = 0;    // source index
+  size_t src  = 0;    // source index
   size_t dest = 0;   // destination index
-  char c;         // current character
+  size_t len  = contents.length();
 
   while (src<len)
   {
-    c = buf[src++];            // Remember the processed character.
+    char c = contents[src++];  // Remember the processed character.
     if (c == '\r')             // CR to be solved (MAC, DOS)
     {
       c = '\n';                // each CR to LF
-      if (src<len && buf[src] == '\n')
+      if (src<len && contents[src] == '\n')
+      {
         ++src;                 // skip LF just after CR (DOS)
+      }
     }
     else if ( c == '\0' && src<len-1) // filter out internal \0 characters, as it will confuse the parser
     {
       c = ' ';                 // turn into a space
     }
-    buf[dest++] = c;           // copy the (modified) character to dest
+    contents[dest++] = c;      // copy the (modified) character to dest
   }
-  return dest;                 // length of the valid part of the buf
+  contents.resize(dest);
 }
 
 static QCString getFilterFromList(const QCString &name,const StringVector &filterList,bool &found)
@@ -1415,17 +1417,12 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
       err("file '%s' not found\n",qPrint(name));
       return "";
     }
-    BufStr buf(fi.size());
+    std::string buf;
     fileOpened=readInputFile(name,buf,filter,isSourceCode);
     if (fileOpened)
     {
-      size_t s = buf.size();
-      if (s>1 && buf.at(s-2)!='\n')
-      {
-        buf.at(s-1)='\n';
-        buf.addChar(0);
-      }
-      return buf.data();
+      addTerminalCharIfMissing(buf,'\n');
+      return buf;
     }
   }
   if (!fileOpened)
@@ -5743,11 +5740,11 @@ void stackTrace()
 #endif
 }
 
-static size_t transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,size_t size,
+static void transcodeCharacterBuffer(const QCString &fileName,std::string &contents,
            const QCString &inputEncoding,const QCString &outputEncoding)
 {
-  if (inputEncoding.isEmpty() || outputEncoding.isEmpty()) return size;
-  if (qstricmp(inputEncoding,outputEncoding)==0) return size;
+  if (inputEncoding.isEmpty() || outputEncoding.isEmpty()) return; // no encoding specified
+  if (qstricmp(inputEncoding,outputEncoding)==0) return;           // input encoding same as output encoding
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {
@@ -5755,18 +5752,19 @@ static size_t transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,s
         "Check the INPUT_ENCODING setting in the config file!\n",
         qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno));
   }
-  size_t tmpBufSize=size*4+1;
-  BufStr tmpBuf(tmpBufSize);
-  size_t iLeft=size;
-  size_t oLeft=tmpBufSize;
-  const char *srcPtr = srcBuf.data();
-  char *dstPtr = tmpBuf.data();
+  size_t      iLeft      = contents.size();
+  const char *srcPtr     = contents.data();
+  size_t      tmpBufSize = contents.size()*4+1;
+  size_t      oLeft      = tmpBufSize;
+  std::string tmpBuf;
+  tmpBuf.resize(tmpBufSize);
+  char *dstPtr           = tmpBuf.data();
   size_t newSize=0;
   if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))
   {
     newSize = tmpBufSize-oLeft;
-    srcBuf.shrink(newSize);
-    strncpy(srcBuf.data(),tmpBuf.data(),newSize);
+    tmpBuf.resize(newSize);
+    std::swap(contents,tmpBuf);
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
   }
   else
@@ -5775,15 +5773,12 @@ static size_t transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,s
         qPrint(fileName),qPrint(inputEncoding),qPrint(outputEncoding));
   }
   portable_iconv_close(cd);
-  return newSize;
 }
 
 //! read a file name \a fileName and optionally filter and transcode it
-bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSourceCode)
+bool readInputFile(const QCString &fileName,std::string &contents,bool filter,bool isSourceCode)
 {
   // try to open file
-  size_t size=0;
-
   FileInfo fi(fileName.str());
   if (!fi.exists()) return FALSE;
   QCString filterName = getFileFilter(fileName,isSourceCode);
@@ -5795,10 +5790,9 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
       err("could not open file %s\n",qPrint(fileName));
       return FALSE;
     }
-    size=fi.size();
     // read the file
-    inBuf.skip(size);
-    f.read(inBuf.data(),size);
+    contents.resize(fi.size());
+    f.read(contents.data(),fi.size());
     if (f.fail())
     {
       err("problems while reading file %s\n",qPrint(fileName));
@@ -5815,65 +5809,49 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
       err("could not execute filter %s\n",qPrint(filterName));
       return FALSE;
     }
-    const int bufSize=1024;
+    const int bufSize=4096;
     char buf[bufSize];
     int numRead;
     while ((numRead=static_cast<int>(fread(buf,1,bufSize,f)))>0)
     {
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
-      inBuf.addArray(buf,numRead),size+=numRead;
+      contents.append(buf,numRead);
     }
     Portable::pclose(f);
-    inBuf.at(inBuf.curPos()) ='\0';
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-    Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(inBuf));
+    Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(contents));
   }
 
-  int start=0;
-  if (size>=2 &&
-      static_cast<uint8_t>(inBuf.at(0))==0xFF &&
-      static_cast<uint8_t>(inBuf.at(1))==0xFE // Little endian BOM
+  if (contents.size()>=2 &&
+      static_cast<uint8_t>(contents[0])==0xFF &&
+      static_cast<uint8_t>(contents[1])==0xFE // Little endian BOM
      ) // UCS-2LE encoded file
   {
-    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        "UCS-2LE","UTF-8");
+    transcodeCharacterBuffer(fileName,contents,"UCS-2LE","UTF-8");
   }
-  else if (size>=2 &&
-           static_cast<uint8_t>(inBuf.at(0))==0xFE &&
-           static_cast<uint8_t>(inBuf.at(1))==0xFF // big endian BOM
+  else if (contents.size()>=2 &&
+           static_cast<uint8_t>(contents[0])==0xFE &&
+           static_cast<uint8_t>(contents[1])==0xFF // big endian BOM
          ) // UCS-2BE encoded file
   {
-    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        "UCS-2BE","UTF-8");
+    transcodeCharacterBuffer(fileName,contents,"UCS-2BE","UTF-8");
   }
-  else if (size>=3 &&
-           static_cast<uint8_t>(inBuf.at(0))==0xEF &&
-           static_cast<uint8_t>(inBuf.at(1))==0xBB &&
-           static_cast<uint8_t>(inBuf.at(2))==0xBF
+  else if (contents.size()>=3 &&
+           static_cast<uint8_t>(contents[0])==0xEF &&
+           static_cast<uint8_t>(contents[1])==0xBB &&
+           static_cast<uint8_t>(contents[2])==0xBF
      ) // UTF-8 encoded file
   {
-    inBuf.dropFromStart(3); // remove UTF-8 BOM: no translation needed
+    contents.erase(0,3); // remove UTF-8 BOM: no translation needed
   }
   else // transcode according to the INPUT_ENCODING setting
   {
     // do character transcoding if needed.
-    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        getEncoding(fi),"UTF-8");
+    transcodeCharacterBuffer(fileName,contents,getEncoding(fi),"UTF-8");
   }
 
-  //inBuf.addChar('\n'); /* to prevent problems under Windows ? */
-
-  // and translate CR's
-  size=inBuf.curPos()-start;
-  size_t newSize=filterCRLF(inBuf.data()+start,size);
-  //printf("filter char at %p size=%d newSize=%d\n",qPrint(dest)+oldPos,size,newSize);
-  if (newSize!=size) // we removed chars
-  {
-    inBuf.shrink(newSize); // resize the array
-    //printf(".......resizing from %d to %d result=[%s]\n",oldPos+size,oldPos+newSize,qPrint(dest));
-  }
-  inBuf.addChar(0);
-  return TRUE;
+  filterCRLF(contents);
+  return true;
 }
 
 // Replace %word by word in title
@@ -6951,7 +6929,8 @@ void checkBlocks(const QCString &s, const QCString fileName,const SelectionMarke
 
 QCString removeEmptyLines(const QCString &s)
 {
-  BufStr out(s.length()+1);
+  std::string out;
+  out.reserve(s.length());
   const char *p=s.data();
   if (p)
   {
@@ -6966,17 +6945,16 @@ QCString removeEmptyLines(const QCString &s)
         {
           p=e;
         }
-        else out.addChar(c);
+        else out+=c;
       }
       else
       {
-        out.addChar(c);
+        out+=c;
       }
     }
   }
-  out.addChar('\0');
   //printf("removeEmptyLines(%s)=%s\n",qPrint(s),qPrint(out));
-  return out.data();
+  return out;
 }
 
 /// split input string \a s by string delimiter \a delimiter.

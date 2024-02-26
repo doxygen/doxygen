@@ -46,7 +46,6 @@
 #include "filedef.h"
 #include "dirdef.h"
 #include "pagedef.h"
-#include "bufstr.h"
 #include "reflist.h"
 #include "utf8.h"
 #include "indexlist.h"
@@ -609,7 +608,7 @@ class FilterCache
     //! buffer \a str. Applies filtering if FILTER_SOURCE_FILES is enabled and the file extension
     //! matches a filter. Caches file information so that subsequent extraction of blocks from
     //! the same file can be performed efficiently
-    bool getFileContents(const QCString &fileName,size_t startLine,size_t endLine, BufStr &str)
+    bool getFileContents(const QCString &fileName,size_t startLine,size_t endLine, std::string &str)
     {
       std::lock_guard<std::mutex> lock(m_mutex);
       bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
@@ -620,7 +619,7 @@ class FilterCache
     }
   private:
     bool getFileContentsPipe(const QCString &fileName,const QCString &filter,
-                             size_t startLine,size_t endLine,BufStr &str)
+                             size_t startLine,size_t endLine,std::string &str)
     {
       auto it = m_cache.find(fileName.str());
       if (it!=m_cache.end()) // cache hit: reuse stored result
@@ -651,7 +650,6 @@ class FilterCache
         {
           // handle error
           err("Error opening filter pipe command '%s'\n",qPrint(cmd));
-          str.addChar('\0');
           return false;
         }
         FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
@@ -661,7 +659,6 @@ class FilterCache
         {
           // handle error
           err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
-          str.addChar('\0');
           Portable::pclose(f);
           return false;
         }
@@ -678,15 +675,13 @@ class FilterCache
             // handle error
             err("Failed to write to filter database %s. Wrote %zu out of %zu bytes\n",
                 qPrint(Doxygen::filterDBFileName),bytesWritten,bytesRead);
-            str.addChar('\0');
             Portable::pclose(f);
             fclose(bf);
             return false;
           }
           size+=bytesWritten;
-          str.addArray(buf,static_cast<uint32_t>(bytesWritten));
+          str+=std::string_view(buf,bytesWritten);
         }
-        str.addChar('\0');
         item.fileSize = size;
         // add location entry to the dictionary
         m_cache.insert(std::make_pair(fileName.str(),item));
@@ -705,7 +700,7 @@ class FilterCache
 
     //! reads the fragment start at \a startLine and ending at \a endLine from file \a fileName
     //! into buffer \a str
-    bool getFileContentsDisk(const QCString &fileName,size_t startLine,size_t endLine,BufStr &str)
+    bool getFileContentsDisk(const QCString &fileName,size_t startLine,size_t endLine,std::string &str)
     {
       // normal file
       //printf("getFileContents(%s): no filter\n",qPrint(fileName));
@@ -729,11 +724,11 @@ class FilterCache
 
     //! computes the starting offset for each line for file \a fileName, whose contents should
     //! already be stored in buffer \a str.
-    void compileLineOffsets(const QCString &fileName,const BufStr &str)
+    void compileLineOffsets(const QCString &fileName,const std::string &str)
     {
-      const char *p=str.data();
       // line 1 (index 0) is at offset 0
       auto it = m_lineOffsets.insert(std::make_pair(fileName.data(),LineOffsets{0})).first;
+      const char *p=str.data();
       while (*p)
       {
         char c;
@@ -759,7 +754,7 @@ class FilterCache
 
     //! Shrinks buffer \a str which should hold the contents of \a fileName to the
     //! fragment starting a line \a startLine and ending at line \a endLine
-    void shrinkBuffer(BufStr &str,const QCString &fileName,size_t startLine,size_t endLine)
+    void shrinkBuffer(std::string &str,const QCString &fileName,size_t startLine,size_t endLine)
     {
       // compute offsets from start for each line
       compileLineOffsets(fileName,str);
@@ -769,23 +764,20 @@ class FilterCache
       auto [ startLineOffset, fragmentSize] = getFragmentLocation(lineOffsets,startLine,endLine);
       //printf("%s: new file [%zu-%zu]->[%zu-%zu] size=%zu\n",
       //    qPrint(fileName),startLine,endLine,startLineOffset,endLineOffset,fragmentSize);
-      str.dropFromStart(startLineOffset);
-      str.resize(fragmentSize+1);
-      str.at(fragmentSize)='\0';
+      str.erase(0,startLineOffset);
+      str.resize(fragmentSize);
     }
 
     //! Reads the fragment start at byte offset \a startOffset of file \a fileName into buffer \a str.
     //! Result will be a null terminated. If size==0 the whole file will be read and startOffset is ignored.
     //! If size>0, size bytes will be read.
-    void readFragmentFromFile(BufStr &str,const QCString &fileName,size_t startOffset,size_t size=0)
+    void readFragmentFromFile(std::string &str,const QCString &fileName,size_t startOffset,size_t size=0)
     {
       std::ifstream ifs = Portable::openInputStream(fileName,true,true);
       if (size==0) { startOffset=0; size = static_cast<size_t>(ifs.tellg()); }
       ifs.seekg(startOffset, std::ios::beg);
-      str.resize(size+1);
+      str.resize(size);
       ifs.read(str.data(), size);
-      str.skip(size);
-      str.addChar('\0');
     }
 
     FilterCache() : m_endPos(0) { }
@@ -824,7 +816,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
   int tabSize = Config_getInt(TAB_SIZE);
   SrcLangExt lang = getLanguageFromFileName(fileName);
   const int blockSize = 4096;
-  BufStr str(blockSize);
+  std::string str;
   FilterCache::instance().getFileContents(fileName,
                                           static_cast<size_t>(std::max(1,startLine)),
                                           static_cast<size_t>(std::max({1,startLine,endLine})),str);

@@ -18,11 +18,12 @@
 #ifndef COMMENTCNV_H
 #define COMMENTCNV_H
 
+#include <string>
+
 /** @file
  *  @brief First pass comment processing.
  */
 
-class BufStr;
 class QCString;
 
 /** Converts the comments in a file.
@@ -35,7 +36,7 @@ class QCString;
  *  - conditional sections are processed.
  *  - aliases are expanded.
  */
-void convertCppComments(const BufStr &inBuf,BufStr &outBuf,
+void convertCppComments(const std::string &inBuf,std::string &outBuf,
                         const QCString &fileName);
 
 #endif
