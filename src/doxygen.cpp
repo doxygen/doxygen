@@ -10122,7 +10122,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
   convBuf.reserve(preBuf.size()+1024);
 
   // convert multi-line C++ comments to C style comments
-  convertCppComments(preBuf,convBuf,fileName);
+  convertCppComments(preBuf,convBuf,fileName.str());
 
   std::shared_ptr<Entry> fileRoot = std::make_shared<Entry>();
   // use language parse to parse the file

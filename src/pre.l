@@ -3953,7 +3953,6 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
 #endif
 
   DebugLex debugLex(Debug::Lex_pre, __FILE__, qPrint(fileName));
-  size_t orgOffset=output.size();
   //printf("##########################\n%s\n####################\n",
   //    qPrint(input));
 
@@ -4006,17 +4005,16 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
   if (Debug::isFlagSet(Debug::Preprocessor))
   {
     std::lock_guard<std::mutex> lock(g_debugMutex);
-    char *orgPos=output.data()+orgOffset;
-    char *newPos=output.data()+output.size();
-    Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %d bytes):\n",qPrint(fileName),newPos-orgPos);
+    Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %zu bytes):\n",qPrint(fileName),output.size());
     int line=1;
     Debug::print(Debug::Preprocessor,0,"---------\n");
     if (!Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"00001 ");
-    while (orgPos<newPos)
+    size_t pos=0;
+    while (pos<output.size())
     {
-      putchar(*orgPos);
-      if (*orgPos=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
-      orgPos++;
+      putchar(output[pos]);
+      if (output[pos]=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
+      pos++;
     }
     Debug::print(Debug::Preprocessor,0,"\n---------\n");
     if (yyextra->contextDefines.size()>0)

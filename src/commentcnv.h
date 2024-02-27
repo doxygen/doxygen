@@ -24,8 +24,6 @@
  *  @brief First pass comment processing.
  */
 
-class QCString;
-
 /** Converts the comments in a file.
  *  @param inBuf    input buffer holding the file content.
  *  @param outBuf   output buffer to which the results after conversion are written to.
@@ -37,7 +35,7 @@ class QCString;
  *  - aliases are expanded.
  */
 void convertCppComments(const std::string &inBuf,std::string &outBuf,
-                        const QCString &fileName);
+                        const std::string &fileName);
 
 #endif
 

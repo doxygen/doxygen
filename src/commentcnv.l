@@ -49,9 +49,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define ADDCHAR(c)    yyextra->outBuf+=c
-#define ADDARRAY(a,s) yyextra->outBuf+=std::string_view(a,s)
-
 struct commentcnvYY_CondCtx
 {
   commentcnvYY_CondCtx(int line,const QCString &id,bool b)
@@ -110,7 +107,6 @@ struct commentcnvYY_state
   bool     specialComment = FALSE;
   bool     inVerbatim = false;
   QCString incPrefix;
-
   QCString aliasCmd;
   QCString aliasString;
   int      blockCount = 0;
@@ -119,9 +115,7 @@ struct commentcnvYY_state
   bool     pythonDocString = FALSE;
   char     pythonDocStringChar = '\0';
   int      nestingCount= 0;
-
   bool     vhdl = FALSE; // for VHDL old style --! comment
-
   SrcLangExt lang = SrcLangExt::Unknown;
   bool       isFixedForm = FALSE; // For Fortran
   std::deque<std::unique_ptr<commentcnv_FileState>> includeStack;
@@ -131,8 +125,9 @@ struct commentcnvYY_state
 [[maybe_unused]] static const char *stateToString(int state);
 static inline int computeIndent(const char *s);
 
-static void replaceCommentMarker(yyscan_t yyscanner,const char *s,size_t len);
-static inline void copyToOutput(yyscan_t yyscanner,const char *s,size_t len);
+static void replaceCommentMarker(yyscan_t yyscanner,std::string_view s);
+static inline void copyToOutput(yyscan_t yyscanner,std::string_view s);
+static inline void copyToOutput(yyscan_t yyscanner,const char *s,int len);
 static void startCondSection(yyscan_t yyscanner,const QCString &sectId);
 static void endCondSection(yyscan_t yyscanner);
 static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
@@ -141,9 +136,6 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
 static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCString &blockId);
-
-
-
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
@@ -384,7 +376,7 @@ SLASHopt [/]*
 					 while (i<(int)yyleng && yytext[i]=='/') i++;
 				       }
 				       yyextra->blockHeadCol=yyextra->col;
-				       copyToOutput(yyscanner,"/**",3);
+				       copyToOutput(yyscanner,"/**");
 				       if (i<yyleng) replaceAliases(yyscanner,yytext+i);
 				       yyextra->inSpecialComment=TRUE;
 				       //BEGIN(SComment);
@@ -396,7 +388,7 @@ SLASHopt [/]*
                                      if (yyextra->mlBrief) REJECT;
                                      int i=17; //=strlen("//##Documentation");
 				     yyextra->blockHeadCol=yyextra->col;
-				     copyToOutput(yyscanner,"/**",3);
+				     copyToOutput(yyscanner,"/**");
 				     if (i<yyleng) replaceAliases(yyscanner,yytext+i);
 				     yyextra->inRoseComment=TRUE;
 				     BEGIN(SComment);
@@ -503,7 +495,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <CComment,IncludeFile>"{"[ \t]*"@code"/[ \t\n] {
-                                     copyToOutput(yyscanner,"@iliteral{code}",15);
+                                     copyToOutput(yyscanner,"@iliteral{code}");
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
 				     yyextra->blockName=QCString("end")+&yytext[1];
@@ -511,7 +503,7 @@ SLASHopt [/]*
                                      BEGIN(VerbatimCode);
   				   }
 <CComment,IncludeFile>"{"[ \t]*"@literal"/[ \t\n] {
-                                     copyToOutput(yyscanner,"@iliteral",9);
+                                     copyToOutput(yyscanner,"@iliteral");
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
 				     yyextra->blockName=QCString("end")+&yytext[1];
@@ -636,7 +628,7 @@ SLASHopt [/]*
 				       yyextra->javaBlock--;
 				       if (yyextra->javaBlock==0)
 				       {
-                                         copyToOutput(yyscanner," @endiliteral ",14);
+                                         copyToOutput(yyscanner," @endiliteral ");
                                          yyextra->inVerbatim=false;
 				         BEGIN(yyextra->lastCommentContext);
 				       }
@@ -669,7 +661,7 @@ SLASHopt [/]*
 				     }
                                      else
                                      {
-                                       size_t l=0;
+                                       int l=0;
                                        while (yytext[l]==' ' || yytext[l]=='\t')
                                        {
                                          l++;
@@ -677,11 +669,11 @@ SLASHopt [/]*
                                        copyToOutput(yyscanner,yytext,l);
                                        if (yyleng-l==3) // ends with //! or ///
                                        {
-                                         copyToOutput(yyscanner," * ",3);
+                                         copyToOutput(yyscanner," * ");
                                        }
                                        else // ends with //
                                        {
-                                         copyToOutput(yyscanner,"//",2);
+                                         copyToOutput(yyscanner,"//");
                                        }
                                      }
   				   }
@@ -695,13 +687,13 @@ SLASHopt [/]*
   				     if (yyextra->blockName=="enddot" || yyextra->blockName=="endmsc" || yyextra->blockName=="enduml" || yyextra->blockName.at(0)=='f')
 				     {
 				       // see bug 487871, strip /// from dot images and formulas.
-                                       size_t l=0;
+                                       int l=0;
                                        while (yytext[l]==' ' || yytext[l]=='\t')
                                        {
                                          l++;
                                        }
                                        copyToOutput(yyscanner,yytext,l);
-				       copyToOutput(yyscanner,"   ",3);
+				       copyToOutput(yyscanner,"   ");
 				     }
 				     else // even slashes are verbatim (e.g. \verbatim, \code)
 				     {
@@ -939,7 +931,7 @@ SLASHopt [/]*
   				   }
 <SComment>\n[ \t]*{CPPC}[\/!]("<")?[ \t]*[\\@]"}".*\n {
                                      /* See Bug 752712: end the multiline comment when finding a @} or \} command */
-                                     copyToOutput(yyscanner," */",3);
+                                     copyToOutput(yyscanner," */");
 				     copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->inSpecialComment=FALSE;
 				     yyextra->inRoseComment=FALSE;
@@ -989,7 +981,7 @@ SLASHopt [/]*
 				     }
                                    }
 <SComment>\n			   { /* end of special comment */
-                                     copyToOutput(yyscanner," */",3);
+                                     copyToOutput(yyscanner," */");
 				     copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->inSpecialComment=FALSE;
 				     yyextra->inRoseComment=FALSE;
@@ -998,10 +990,10 @@ SLASHopt [/]*
 				     BEGIN(Scan);
                                    }
 <ReadLine>{CCS}"*"                 {
-				     copyToOutput(yyscanner,"/&zwj;**",8);
+				     copyToOutput(yyscanner,"/&zwj;**");
 				   }
 <ReadLine>{CCE}                    {
-				     copyToOutput(yyscanner,"*&zwj;/",7);
+				     copyToOutput(yyscanner,"*&zwj;/");
 				   }
 <ReadLine,CopyLine>"*"             {
 				     copyToOutput(yyscanner,yytext,yyleng);
@@ -1085,11 +1077,11 @@ SLASHopt [/]*
 					   yyextra->lang!=SrcLangExt::Markdown &&
 					   yyextra->lang!=SrcLangExt::Fortran)
 				       {
- 				         ADDCHAR('/');
-     				         ADDCHAR('*');
+ 				         yyextra->outBuf+='/';
+     				         yyextra->outBuf+='*';
 					 if (yyextra->specialComment)
 					 {
-					   ADDCHAR('*');
+					   yyextra->outBuf+='*';
 					 }
 				       }
     				     }
@@ -1104,7 +1096,7 @@ SLASHopt [/]*
 <CondLine>\n			   |
 <CondLine>.			   { // forgot section id?
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
-				     if (*yytext=='\n') { copyToOutput(yyscanner,"\n",1);}
+				     if (*yytext=='\n') { copyToOutput(yyscanner,"\n");}
   				   }
 <CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,yytext,YY_START==ReadLine && yyextra->readLineCtx==SComment);
@@ -1140,7 +1132,7 @@ SLASHopt [/]*
                                                               // the scanner would try to find a matching closing brace for noalign and then
                                                               // skip over the \endlatexonly command.
                                      {
-                                       copyToOutput(yyscanner,yyextra->aliasString.data(),yyextra->aliasString.length());
+                                       copyToOutput(yyscanner,yyextra->aliasString.view());
                                        yyextra->inVerbatim=false;
 				       BEGIN(yyextra->lastCommentContext);
                                      }
@@ -1151,7 +1143,7 @@ SLASHopt [/]*
                                      if (yyextra->inVerbatim) // for verbatim sections we do not support multi-line
                                                               // alias arguments.
                                      {
-                                       copyToOutput(yyscanner,yyextra->aliasString.data(),yyextra->aliasString.length());
+                                       copyToOutput(yyscanner,yyextra->aliasString.view());
 				       BEGIN( yyextra->lastBlockContext );
                                      }
   				   }
@@ -1225,7 +1217,7 @@ SLASHopt [/]*
                                        yyextra->includeCtx = fs->oldIncludeCtx;
                                        yyextra->incPrefix  = fs->oldIncPrefix;
                                        QCString lineStr=yyextra->incPrefix + " \\ilinebr \\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
-                                       copyToOutput(yyscanner,lineStr.data(),lineStr.length());
+                                       copyToOutput(yyscanner,lineStr.view());
                                        yyextra->incPrefix  = "";
                                        yyextra->includeStack.pop_back();
                                        //printf("<<EOF>> switch back to %s line %d inbufPos=%d outbufPos=%d\n",
@@ -1237,25 +1229,27 @@ SLASHopt [/]*
   */
 %%
 
-static void replaceCommentMarker(yyscan_t yyscanner,const char *s,size_t len)
+static void replaceCommentMarker(yyscan_t yyscanner,std::string_view s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  const char *p=s;
+  if (s.empty()) return;
+  size_t p   = 0;
+  size_t len = s.length();
   char c;
   // copy leading blanks
-  while ((c=*p) && (c==' ' || c=='\t' || c=='\n'))
+  while (p<len && (c=s[p]) && (c==' ' || c=='\t' || c=='\n'))
   {
-    ADDCHAR(c);
-    yyextra->lineNr += c=='\n';
+    yyextra->outBuf+=c;
+    if (c=='\n') yyextra->lineNr++;
     p++;
   }
   // replace start of comment marker by blanks and the last character by a *
   int blanks=0;
-  while ((c=*p) && (c=='/' || c=='!' || c=='#'))
+  while (p<len && (c=s[p]) && (c=='/' || c=='!' || c=='#'))
   {
     blanks++;
     p++;
-    if (*p=='<') // comment-after-item marker
+    if (p<len && s[p]=='<') // comment-after-item marker
     {
       blanks++;
       p++;
@@ -1269,14 +1263,14 @@ static void replaceCommentMarker(yyscan_t yyscanner,const char *s,size_t len)
   {
     while (blanks>2)
     {
-      ADDCHAR(' ');
+      yyextra->outBuf+=' ';
       blanks--;
     }
-    if (blanks>1) ADDCHAR('*');
-    ADDCHAR(' ');
+    if (blanks>1) yyextra->outBuf+='*';
+    yyextra->outBuf+=' ';
   }
   // copy comment line to output
-  ADDARRAY(p,len-(p-s));
+  yyextra->outBuf+=s.substr(p);
 }
 
 static inline int computeIndent(const char *s)
@@ -1294,10 +1288,11 @@ static inline int computeIndent(const char *s)
   return col;
 }
 
-static inline void copyToOutput(yyscan_t yyscanner,const char *s,size_t len)
+static inline void copyToOutput(yyscan_t yyscanner,std::string_view s)
 {
   int tabSize=Config_getInt(TAB_SIZE);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  size_t len = s.length();
   if (yyextra->skip) // only add newlines.
   {
     for (size_t i=0;i<len;i++)
@@ -1305,7 +1300,7 @@ static inline void copyToOutput(yyscan_t yyscanner,const char *s,size_t len)
       switch(s[i])
       {
         case '\n':
-	  ADDCHAR('\n');
+	  yyextra->outBuf+='\n';
 	  yyextra->lineNr++;
           yyextra->col=0;
           break;
@@ -1320,7 +1315,7 @@ static inline void copyToOutput(yyscan_t yyscanner,const char *s,size_t len)
   }
   else if (len>0)
   {
-    ADDARRAY(s,len);
+    yyextra->outBuf+=s;
     for (size_t i=0;i<len;i++)
     {
       switch (s[i])
@@ -1333,6 +1328,11 @@ static inline void copyToOutput(yyscan_t yyscanner,const char *s,size_t len)
       }
     }
   }
+}
+
+static inline void copyToOutput(yyscan_t yyscanner,const char *s,int len)
+{
+  copyToOutput(yyscanner,std::string_view{s,(size_t)len});
 }
 
 static void clearCommentStack(yyscan_t yyscanner)
@@ -1384,8 +1384,8 @@ static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
         yyextra->lang!=SrcLangExt::Markdown &&
         yyextra->lang!=SrcLangExt::Fortran)
     {
-      ADDCHAR('*');
-      ADDCHAR('/');
+      yyextra->outBuf+='*';
+      yyextra->outBuf+='/';
     }
   }
   if (yyextra->readLineCtx==SComment)
@@ -1510,7 +1510,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       }
     }
     QCString lineStr=" \\ilinebr \\ifile \""+absFileName+"\" \\iline " + QCString().setNum(lineNr) + " \\ilinebr ";
-    copyToOutput(yyscanner,lineStr.data(),lineStr.length());
+    copyToOutput(yyscanner,lineStr.view());
 
     fs->fileName      = absFileName;
     fs->bufState      = YY_CURRENT_BUFFER;
@@ -1549,7 +1549,7 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCom
   auto &expAlias = yyextra->expandedAliases;
   if (std::find(expAlias.begin(),expAlias.end(),cmd)!=std::end(expAlias))
   {
-    copyToOutput(yyscanner,s.data(),s.length());
+    copyToOutput(yyscanner,s);
     return; // prevent recursive expansion
   }
   else if (cmd=="ialias")
@@ -1580,7 +1580,7 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCom
     //printf("blk=%s result=%s found=%d\n",qPrint(blk),qPrint(result),found);
     if (!found) // treat alias as part of the verbatim block
     {
-      copyToOutput(yyscanner,s.data(),s.length());
+      copyToOutput(yyscanner,s);
       return;
     }
   }
@@ -1605,7 +1605,7 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCom
   }
   else
   {
-    copyToOutput(yyscanner,result.data(),result.length());
+    copyToOutput(yyscanner,result);
   }
 }
 
@@ -1633,11 +1633,11 @@ static void replaceComment(yyscan_t yyscanner,int offset)
     int i=computeIndent(&yytext[offset]);
     if (i==yyextra->blockHeadCol)
     {
-      replaceCommentMarker(yyscanner,yytext,yyleng);
+      replaceCommentMarker(yyscanner,std::string_view(yytext,yyleng));
     }
     else
     {
-      copyToOutput(yyscanner," */",3);
+      copyToOutput(yyscanner," */");
       for (i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
       yyextra->inSpecialComment=FALSE;
       BEGIN(Scan);
@@ -1651,8 +1651,9 @@ static void replaceComment(yyscan_t yyscanner,int offset)
  *  -# It replaces aliases with their definition (see ALIASES)
  *  -# It handles conditional sections (cond...endcond blocks)
  */
-void convertCppComments(const std::string &inBuf,std::string &outBuf,const QCString &fileName)
+void convertCppComments(const std::string &inBuf,std::string &outBuf,const std::string &fn)
 {
+  QCString fileName { fn };
   yyscan_t yyscanner;
   commentcnvYY_state extra(&inBuf,outBuf);
   commentcnvYYlex_init_extra(&extra,&yyscanner);
@@ -1660,7 +1661,7 @@ void convertCppComments(const std::string &inBuf,std::string &outBuf,const QCStr
   commentcnvYYset_debug(Debug::isFlagSet(Debug::Lex_commentcnv)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("convertCppComments(%s)\n",fileName);
+  //printf("convertCppComments(%s)\n",qPrint(fileName));
   yyextra->inBufPos = 0;
   yyextra->col      = 0;
   yyextra->mlBrief = Config_getBool(MULTILINE_CPP_IS_BRIEF);
