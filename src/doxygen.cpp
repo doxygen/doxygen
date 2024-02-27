@@ -11108,10 +11108,10 @@ void readConfiguration(int argc, char **argv)
         else if (qstricmp(formatName.data(),"html")==0)
         {
           Config::init();
-          if (optInd+4<argc || FileInfo("Doxyfile").exists())
+          if (optInd+4<argc || FileInfo("Doxyfile").exists() || FileInfo("doxyfile").exists())
              // explicit config file mentioned or default found on disk
           {
-            QCString df = optInd+4<argc ? argv[optInd+4] : QCString("Doxyfile");
+            QCString df = optInd+4<argc ? argv[optInd+4] : (FileInfo("Doxyfile").exists() ? QCString("Doxyfile") : QCString("doxyfile"));
             if (!Config::parse(df)) // parse the config file
             {
               err("error opening or reading configuration file %s!\n",argv[optInd+4]);
@@ -11138,9 +11138,9 @@ void readConfiguration(int argc, char **argv)
         else if (qstricmp(formatName.data(),"latex")==0)
         {
           Config::init();
-          if (optInd+4<argc || FileInfo("Doxyfile").exists())
+          if (optInd+4<argc || FileInfo("Doxyfile").exists() || FileInfo("doxyfile").exists())
           {
-            QCString df = optInd+4<argc ? argv[optInd+4] : QCString("Doxyfile");
+            QCString df = optInd+4<argc ? argv[optInd+4] : (FileInfo("Doxyfile").exists() ? QCString("Doxyfile") : QCString("doxyfile"));
             if (!Config::parse(df))
             {
               err("error opening or reading configuration file %s!\n",argv[optInd+4]);
