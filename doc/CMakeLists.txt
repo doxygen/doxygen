@@ -15,11 +15,40 @@ include (${TOP}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
 string(TIMESTAMP YEAR "%Y")
 
+# Always install man pages
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
+
+
+include(GNUInstallDirs)
+install(FILES
+    "${PROJECT_BINARY_DIR}/man/doxygen.1"
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+
+if (build_search)
+    install(FILES
+        "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
+        "${PROJECT_BINARY_DIR}/man/doxysearch.1"
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+endif()
+if (build_wizard)
+    install(FILES
+        "${PROJECT_BINARY_DIR}/man/doxywizard.1"
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+endif()
+
+# The rest of this file is only for when built documentation is requested.
+if (NOT build_doc)
+    return()
+endif()
+
 find_package(Python REQUIRED)
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(PDFLATEX NAMES pdflatex )
 find_program(MAKEINDEX NAMES makeindex )
-include(GNUInstallDirs)
 
 if (doxygen_BINARY_DIR)
     set(DOXYGEN_EXECUTABLE ${doxygen_BINARY_DIR}/bin/doxygen)
@@ -122,8 +151,7 @@ endif ()
 
 file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
 
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
-                    ${PROJECT_BINARY_DIR}/src
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src
                     ${PROJECT_BINARY_DIR}/doc
                     ${PROJECT_BINARY_DIR}/doc/images)
 
@@ -156,10 +184,6 @@ endforeach()
 
 configure_file(${PROJECT_SOURCE_DIR}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty COPYONLY)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen_manual.tex ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex COPYONLY)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
-configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
 configure_file(${PROJECT_SOURCE_DIR}/templates/icon/doxygen.ico ${PROJECT_BINARY_DIR}/doc/doxygen.ico COPYONLY)
 
 # Call the main page "Introduction" in LaTeX, which is more appropriate for that format.
@@ -247,14 +271,6 @@ add_custom_target(docs_chm
 )
 endif ()
 ################################################################################
-install(FILES
-        "${PROJECT_BINARY_DIR}/man/doxygen.1"
-        "${PROJECT_BINARY_DIR}/man/doxywizard.1"
-        "${PROJECT_BINARY_DIR}/man/doxysearch.1"
-        "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
-        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
-)
-
 install(CODE "if(NOT EXISTS \"${PROJECT_BINARY_DIR}/latex/doxygen_manual.pdf\")
     message(FATAL_ERROR \"\nTerminating:\n    documentation has not been generated, \n    create documentation by using the 'docs' target followed by an 'install'\n\")
 endif()"

@@ -27,7 +27,7 @@
 /** Converts the comments in a file.
  *  @param inBuf    input buffer holding the file content.
  *  @param outBuf   output buffer to which the results after conversion are written to.
- *  @param fileName the name of the file from which the comments originate.
+ *  @param fn       the name of the file from which the comments originate.
  *
  *  The following is converted:
  *  - C++ style multiline doxygen comments are converted to C style doxygen comments.
@@ -35,7 +35,7 @@
  *  - aliases are expanded.
  */
 void convertCppComments(const std::string &inBuf,std::string &outBuf,
-                        const std::string &fileName);
+                        const std::string &fn);
 
 #endif
 

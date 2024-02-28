@@ -1694,7 +1694,7 @@ contains \c TEST, or \c DEV
   for an example.
 
 <hr>
-\section cmdshowdate \\showdate "<format>" [ \<date_time\> ]
+\section cmdshowdate \\showdate \"\<format\>\" [ \<date_time\> ]
 
   \addindex \\showdate
   Shows the date and time based on the given \<format\> and \<date_time\>. Where the \<format\> is a string in which the following tokens have a special meaning:
