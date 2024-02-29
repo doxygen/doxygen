@@ -88,6 +88,7 @@ struct commentcnvYY_state
   int      inBufPos = 0;
   int      col = 0;
   int      blockHeadCol = 0;
+  int      insertCommentCol = 0;
   bool     mlBrief = FALSE;
   int      readLineCtx = 0;
   int      includeCtx = 0;
@@ -136,6 +137,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
 static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCString &blockId);
+static void insertCommentStart(yyscan_t yyscanner);
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
@@ -682,6 +684,7 @@ SLASHopt [/]*
                                    }
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
+                                     insertCommentStart(yyscanner);
                                    }
 <Verbatim>^[ \t]*{CPPC}[/!]          {
   				     if (yyextra->blockName=="enddot" || yyextra->blockName=="endmsc" || yyextra->blockName=="enduml" || yyextra->blockName.at(0)=='f')
@@ -1026,6 +1029,14 @@ SLASHopt [/]*
                                      {
                                        fileName=fileName.mid(1,fileName.length()-2); // strip quotes
                                      }
+                                     if (yyextra->includeCtx==ReadLine)
+                                     {
+                                       yyextra->insertCommentCol = yyextra->blockHeadCol+3;
+                                     }
+                                     else
+                                     {
+                                       yyextra->insertCommentCol = 0;
+                                     }
                                      if (readIncludeFile(yyscanner,fileName,""))
                                      {
                                        BEGIN(IncludeFile);
@@ -1043,6 +1054,14 @@ SLASHopt [/]*
                                      fileName=fileName.left(i).stripWhiteSpace();
                                      //printf("yytext='%s' i=%d fileName='%s' blockId='%s'\n",yytext,i,qPrint(fileName),qPrint(blockId));
                                      if (fileName == "this") fileName=yyextra->fileName;
+                                     if (yyextra->includeCtx==ReadLine)
+                                     {
+                                       yyextra->insertCommentCol = yyextra->blockHeadCol+3;
+                                     }
+                                     else
+                                     {
+                                       yyextra->insertCommentCol = 0;
+                                     }
                                      if (readIncludeFile(yyscanner,fileName,blockId))
                                      {
                                        BEGIN(IncludeFile);
@@ -1054,6 +1073,7 @@ SLASHopt [/]*
                                    }
 <IncludeDoc,SnippetDoc>\n          {
 				     copyToOutput(yyscanner,yytext,yyleng);
+                                     insertCommentStart(yyscanner);
                                      // missing file name
                                      //warn(yyextra->fileName,yyextra->lineNr,"Found \\include{doc} command without valid file name argument");
                                      BEGIN(yyextra->includeCtx);
@@ -1188,6 +1208,7 @@ SLASHopt [/]*
                                    }
 <IncludeFile>\n                    {
   				     copyToOutput(yyscanner,yytext,yyleng);
+                                     insertCommentStart(yyscanner);
                                    }
 <*>.                               {
   				     copyToOutput(yyscanner,yytext,yyleng);
@@ -1444,6 +1465,18 @@ static QCString extractBlock(const QCString &text,const QCString &marker,int &bl
   return l2>l1 ? text.mid(l1,l2-l1) : QCString();
 }
 
+static void insertCommentStart(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->insertCommentCol>=3)
+  {
+    for (int i=0;i<yyextra->insertCommentCol-3;i++)
+    {
+      copyToOutput(yyscanner," ");
+    }
+    copyToOutput(yyscanner," * ");
+  }
+}
 
 static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCString &blockId)
 {
@@ -1527,6 +1560,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     yyextra->inBuf    = &fs->fileBuf;
     yyextra->inBufPos = 0;
     yyextra->includeStack.push_back(std::move(fs));
+    insertCommentStart(yyscanner);
     //printf("switched to %s\n",qPrint(fileName));
   }
   else

@@ -6958,8 +6958,12 @@ NONLopt [^\n]*
                                           handleCommentBlock(yyscanner,yyextra->docBlock.str(),FALSE);
                                           BEGIN(yyextra->docBlockContext);
                                         }
+<DocBlock>"\\ilinebr "{B}*"*"/[^/]      {
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext+8,yyextra->column));
+                                          yyextra->docBlock << "\\ilinebr " << indent;
+                                        }
 <DocBlock>^{B}*"*"+/[^/]                {
-
                                           QCString indent;
                                           indent.fill(' ',computeIndent(yytext,yyextra->column));
                                           yyextra->docBlock << indent;
