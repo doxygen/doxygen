@@ -25,7 +25,7 @@
 
 struct AnchorGenerator::Private
 {
-  StringSet anchorsUsed;
+  StringUnorderedSet anchorsUsed;
   int anchorCount=0;
   std::mutex mutex;
   std::unordered_map<std::string,int> idCount;

@@ -18,7 +18,7 @@
 
 #include <memory>
 #include <vector>
-#include <set>
+#include <unordered_set>
 
 #include "containers.h"
 #include "definition.h"
@@ -92,7 +92,7 @@ using TemplateInstanceList = std::vector<TemplateInstanceDef>;
 
 using TemplateNameMap = std::map<std::string,int>;
 
-using ClassDefSet = std::set<const ClassDef*>;
+using ClassDefSet = std::unordered_set<const ClassDef*>;
 
 
 /** A abstract class representing of a compound symbol.

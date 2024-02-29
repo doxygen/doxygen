@@ -26,6 +26,7 @@
 #include <string.h>
 #include <map>
 #include <algorithm>
+#include <unordered_set>
 
 /* --------------------------------------------------------------- */
 
@@ -128,7 +129,7 @@ VhdlDocGen::~VhdlDocGen()
 }
 
  // vhdl keywords included VHDL 2008
-static const std::set< std::string > g_vhdlKeyWordSet0 =
+static const std::unordered_set< std::string > g_vhdlKeyWordSet0 =
 {
   "abs","access","after","alias","all","and","architecture","array","assert","assume","assume_guarantee","attribute",
   "begin","block","body","buffer","bus",
@@ -154,7 +155,7 @@ static const std::set< std::string > g_vhdlKeyWordSet0 =
 
 
 // type
-static const std::set< std::string> g_vhdlKeyWordSet1 =
+static const std::unordered_set< std::string> g_vhdlKeyWordSet1 =
 {
   "natural","unsigned","signed","string","boolean", "bit","bit_vector","character",
   "std_ulogic","std_ulogic_vector","std_logic","std_logic_vector","integer",
@@ -162,13 +163,13 @@ static const std::set< std::string> g_vhdlKeyWordSet1 =
 };
 
 // logic
-static const std::set< std::string > g_vhdlKeyWordSet2 =
+static const std::unordered_set< std::string > g_vhdlKeyWordSet2 =
 {
   "abs","and","or","not","mod","xor","rem","xnor","ror","rol","sla","sll"
 };
 
 // predefined attributes
-static const std::set< std::string > g_vhdlKeyWordSet3 =
+static const std::unordered_set< std::string > g_vhdlKeyWordSet3 =
 {
   "base","left","right","high","low","ascending",
   "image","value","pos","val","succ","pred","leftof","rightof","left","right","high","low",

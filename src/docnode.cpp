@@ -66,7 +66,7 @@ static const char *g_sectionLevelToName[] =
 
 //---------------------------------------------------------------------------
 
-static const std::set<std::string> g_plantumlEngine {
+static const StringUnorderedSet g_plantumlEngine {
   "uml", "bpm", "wire", "dot", "ditaa",
   "salt", "math", "latex", "gantt", "mindmap",
   "wbs", "yaml", "creole", "json", "flow",

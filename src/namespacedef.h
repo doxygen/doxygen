@@ -17,7 +17,7 @@
 #define NAMESPACEDEF_H
 
 #include <memory>
-#include <set>
+#include <unordered_set>
 
 #include "definition.h"
 #include "filedef.h"
@@ -36,7 +36,7 @@ class NamespaceDefMutable;
 
 // --- Set of namespaces
 
-using NamespaceDefSet = std::set<const NamespaceDef*>;
+using NamespaceDefSet = std::unordered_set<const NamespaceDef*>;
 
 class NamespaceLinkedMap : public LinkedMap<NamespaceDef>
 {

@@ -19,7 +19,7 @@
 #define FILEDEF_H
 
 #include <memory>
-#include <set>
+#include <unordered_set>
 
 #include "definition.h"
 #include "memberlist.h"
@@ -41,7 +41,7 @@ class ClangTUParser;
 
 // --- Set of files
 
-using FileDefSet = std::set<const FileDef*>;
+using FileDefSet = std::unordered_set<const FileDef*>;
 
 enum class IncludeKind : uint32_t
 {

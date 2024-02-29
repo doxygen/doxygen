@@ -137,10 +137,10 @@ class DefineManager
         }
         void retrieve(DefineMap &toMap)
         {
-          StringSet includeStack;
+          StringUnorderedSet includeStack;
           retrieveRec(toMap,includeStack);
         }
-        void retrieveRec(DefineMap &toMap,StringSet &includeStack)
+        void retrieveRec(DefineMap &toMap,StringUnorderedSet &includeStack)
         {
           //printf("  retrieveRec #includedFiles=%zu\n",m_includedFiles.size());
           for (auto incFile : m_includedFiles)
@@ -162,7 +162,7 @@ class DefineManager
       private:
         DefineManager *m_parent;
         DefineMap m_defines;
-        StringSet m_includedFiles;
+        StringUnorderedSet m_includedFiles;
         bool m_stored = false;
     };
 

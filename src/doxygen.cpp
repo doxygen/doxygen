@@ -136,7 +136,7 @@ FileNameLinkedMap    *Doxygen::inputNameLinkedMap = nullptr;
 GroupLinkedMap       *Doxygen::groupLinkedMap = nullptr;
 PageLinkedMap        *Doxygen::pageLinkedMap = nullptr;
 PageLinkedMap        *Doxygen::exampleLinkedMap = nullptr;
-StringSet             Doxygen::inputPaths;
+StringUnorderedSet    Doxygen::inputPaths;
 FileNameLinkedMap    *Doxygen::includeNameLinkedMap = nullptr;     // include names
 FileNameLinkedMap    *Doxygen::exampleNameLinkedMap = nullptr;     // examples
 FileNameLinkedMap    *Doxygen::imageNameLinkedMap = nullptr;       // images
@@ -145,7 +145,7 @@ FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = nullptr;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = nullptr;     // dia files
 StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace aliases
 StringMap             Doxygen::tagDestinationMap;            // all tag locations
-StringSet             Doxygen::tagFileSet;                   // all tag file names
+StringUnorderedSet    Doxygen::tagFileSet;                   // all tag file names
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
 MemberGroupInfoMap    Doxygen::memberGroupInfoMap;           // dictionary of the member groups heading
 std::unique_ptr<PageDef> Doxygen::mainPage;
@@ -178,11 +178,14 @@ StaticInitMap         Doxygen::staticInitMap;
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
 static StringVector     g_inputFiles;
-static StringSet        g_compoundKeywords;        // keywords recognised as compounds
 static OutputList      *g_outputList = nullptr;          // list of output generating objects
 static StringSet        g_usingDeclarations; // used classes
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
+
+// keywords recognised as compounds
+static const StringUnorderedSet g_compoundKeywords =
+{ "template class", "template struct", "class", "struct", "union", "interface", "exception" };
 
 void clearAll()
 {
@@ -10378,8 +10381,8 @@ static std::string resolveSymlink(const std::string &path)
 {
   int sepPos=0;
   int oldPos=0;
-  StringSet nonSymlinks;
-  StringSet known;
+  StringUnorderedSet nonSymlinks;
+  StringUnorderedSet known;
   QCString result(path);
   QCString oldPrefix = "/";
   do
@@ -10456,7 +10459,7 @@ static void readDir(FileInfo *fi,
             bool errorIfNotExist,
             bool recursive,
             StringUnorderedSet *killSet,
-            StringSet *paths
+            StringUnorderedSet *paths
            )
 {
   std::string dirName = fi->absFilePath();
@@ -10566,7 +10569,7 @@ void readFileOrDirectory(const QCString &s,
                         bool recursive,
                         bool errorIfNotExist,
                         StringUnorderedSet *killSet,
-                        StringSet *paths
+                        StringUnorderedSet *paths
                        )
 {
   //printf("killSet count=%d\n",killSet ? (int)killSet->size() : -1);
@@ -10857,17 +10860,6 @@ void initDoxygen()
   Doxygen::mscFileNameLinkedMap = nullptr;
   Doxygen::diaFileNameLinkedMap = nullptr;
 
-  /**************************************************************************
-   *            Initialize some global constants
-   **************************************************************************/
-
-  g_compoundKeywords.insert("template class");
-  g_compoundKeywords.insert("template struct");
-  g_compoundKeywords.insert("class");
-  g_compoundKeywords.insert("struct");
-  g_compoundKeywords.insert("union");
-  g_compoundKeywords.insert("interface");
-  g_compoundKeywords.insert("exception");
 }
 
 void cleanUpDoxygen()

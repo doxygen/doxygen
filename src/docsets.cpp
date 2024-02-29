@@ -13,7 +13,7 @@
  *
  */
 
-#include <set>
+#include <unordered_set>
 #include <stack>
 
 #include "docsets.h"
@@ -37,7 +37,7 @@ struct DocSets::Private
   std::ofstream ttf;
   TextStream    tts;
   std::stack<bool> indentStack;
-  std::set<std::string> scopes;
+  std::unordered_set<std::string> scopes;
 };
 
 

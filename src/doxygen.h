@@ -92,7 +92,7 @@ class Doxygen
     static std::unique_ptr<PageDef>  mainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;
-    static StringSet                 inputPaths;
+    static StringUnorderedSet        inputPaths;
     static FileNameLinkedMap        *inputNameLinkedMap;
     static FileNameLinkedMap        *imageNameLinkedMap;
     static FileNameLinkedMap        *dotFileNameLinkedMap;
@@ -104,7 +104,7 @@ class Doxygen
     static GroupLinkedMap           *groupLinkedMap;
     static NamespaceLinkedMap       *namespaceLinkedMap;
     static StringMap                 tagDestinationMap;
-    static StringSet                 tagFileSet;
+    static StringUnorderedSet        tagFileSet;
     static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
     static std::unique_ptr<NamespaceDef> globalNamespaceDef;
@@ -151,7 +151,7 @@ void readFileOrDirectory(const QCString &s,
                         bool recursive,
                         bool errorIfNotExist=TRUE,
                         StringUnorderedSet *killSet = nullptr,
-                        StringSet *paths = nullptr
+                        StringUnorderedSet *paths = nullptr
                        );
 
 #endif
