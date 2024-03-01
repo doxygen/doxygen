@@ -926,6 +926,7 @@ STopt  [^\n@\\]*
                                           {
                                             cmdName = fullMatch.left(idx).stripWhiteSpace().mid(1); // to remove {CMD}
                                             QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+                                            optStr = substitute(substitute(optStr,"\\iopen","{"),"\\iclose","}");
                                             optList = split(optStr.str(),",");
                                           }
                                           auto it = docCmdMap.find(cmdName.str());

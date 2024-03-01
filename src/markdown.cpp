@@ -52,6 +52,7 @@
 #include "fileinfo.h"
 #include "trace.h"
 #include "anchor.h"
+#include "growbuf.h"
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE
@@ -2638,6 +2639,24 @@ static bool hasLineBreak(std::string_view data)
   return res;
 }
 
+static QCString convertOptionToText(const QCString &s)
+{
+  if (s.isEmpty()) return s;
+  GrowBuf growBuf;
+  const char *p=s.data();
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '{':  growBuf.addStr("\\iopen");  break;
+      case '}':  growBuf.addStr("\\iclose"); break;
+      default:   growBuf.addChar(c);         break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
 
 void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
 {
@@ -2674,7 +2693,7 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
     {
       if (!id.isEmpty())
       {
-        out+="\\ianchor{" + header + "} "+id+"\\ilinebr ";
+        out+="\\ianchor{" + convertOptionToText(header) + "} "+id+"\\ilinebr ";
       }
       hTag.sprintf("h%d",level);
       out+="<"+hTag+">";
