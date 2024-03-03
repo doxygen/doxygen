@@ -1335,25 +1335,25 @@ void FileDefImpl::insertClass(ClassDef *cd)
 {
   if (cd->isHidden()) return;
 
-  ClassLinkedRefMap &list = m_classes;
+  ClassLinkedRefMap *list = &m_classes;
 
   if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
     if (cd->compoundType()==ClassDef::Interface)
     {
-      list = m_interfaces;
+      list = &m_interfaces;
     }
     else if (cd->compoundType()==ClassDef::Struct)
     {
-      list = m_structs;
+      list = &m_structs;
     }
     else if (cd->compoundType()==ClassDef::Exception)
     {
-      list = m_exceptions;
+      list = &m_exceptions;
     }
   }
 
-  list.add(cd->name(),cd);
+  list->add(cd->name(),cd);
 }
 
 void FileDefImpl::insertConcept(ConceptDef *cd)
