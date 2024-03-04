@@ -1022,6 +1022,27 @@ SLASHopt [/]*
 <CComment,CNComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yyscanner,yytext,yyleng);
   				   }
+
+<CComment,ReadLine,IncludeFile>[ \t][ \t][ \t][ \t][\\@]("include{"{B}*"doc"{B}*"}"|"includedoc") { // Markdown code section
+                                     if (Config_getBool(MARKDOWN_SUPPORT))
+                                     {
+				       copyToOutput(yyscanner,yytext,yyleng);
+                                     }
+                                     else
+                                     {
+                                       REJECT;
+                                     }
+                                   }
+<CComment,ReadLine,IncludeFile>[ \t][ \t][ \t][ \t][\\@]("snippet{"{B}*"doc"{B}*"}"|"snippetdoc") { // Markdown code section
+                                     if (Config_getBool(MARKDOWN_SUPPORT))
+                                     {
+				       copyToOutput(yyscanner,yytext,yyleng);
+                                     }
+                                     else
+                                     {
+                                       REJECT;
+                                     }
+                                   }
 <CComment,ReadLine,IncludeFile>[\\@]("include{"{B}*"doc"{B}*"}"|"includedoc") {
                                      yyextra->includeCtx = YY_START;
                                      yyextra->firstIncludeLine = true;

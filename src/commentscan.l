@@ -4337,7 +4337,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
             {
               yyextra->current->brief = yyextra->current->brief.left(yyextra->current->brief.length()-cnt);
               // set warning line correct
-              yyextra->current->brief += "\\iline " + QCString().setNum(cnt + static_cast<int>(std::stoul(match[1].str()))) + " \\ilinebr ";
+              yyextra->current->brief += " \\iline " + QCString().setNum(cnt + static_cast<int>(std::stoul(match[1].str()))) + " \\ilinebr ";
             }
             foundMatch = true;
           }
@@ -4427,14 +4427,14 @@ static inline void addOutput(yyscan_t yyscanner,char c)
 static void addIline(yyscan_t yyscanner,int lineNr)
 {
   char cmd[20];
-  qsnprintf(cmd,20,"\\iline %d ",lineNr);
+  qsnprintf(cmd,20," \\iline %d ",lineNr);
   addOutput(yyscanner, cmd);
 }
 
 static void addIlineBreak(yyscan_t yyscanner,int lineNr)
 {
   char cmd[30];
-  qsnprintf(cmd,30,"\\iline %d \\ilinebr ",lineNr);
+  qsnprintf(cmd,30," \\iline %d \\ilinebr ",lineNr);
   addOutput(yyscanner, cmd);
 }
 
