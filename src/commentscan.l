@@ -1121,7 +1121,7 @@ STopt  [^\n@\\]*
                                             for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
-                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner,"\\ilinebr"),i+=8;
+                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner," \\ilinebr"),i+=8;
                                               else i++;
                                             }
                                           }
@@ -1131,7 +1131,7 @@ STopt  [^\n@\\]*
                                             for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
-                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner,"\\ilinebr"),i+=8;
+                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner," \\ilinebr"),i+=8;
                                               else i++;
                                             }
                                             setOutput(yyscanner,OutputDoc);
@@ -2980,7 +2980,7 @@ static bool handleDetails(yyscan_t yyscanner,const QCString &, const StringVecto
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->inContext!=OutputBrief)
   {
-    addOutput(yyscanner,"\\ilinebr\\ilinebr "); // treat @details outside brief description
+    addOutput(yyscanner," \\ilinebr\\ilinebr "); // treat @details outside brief description
                                                 // as a new paragraph
   }
   setOutput(yyscanner,OutputDoc);
