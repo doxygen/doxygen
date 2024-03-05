@@ -491,13 +491,10 @@ void ClangTUParser::codifyLines(OutputCodeList &ol,const FileDef *fd,const char 
     if (c=='\n')
     {
       line++;
-      int l = static_cast<int>(p-sp-1);
+      size_t l = static_cast<size_t>(p-sp-1);
       column=l+1;
-      char *tmp = static_cast<char *>(malloc(l+1));
-      memcpy(tmp,sp,l);
-      tmp[l]='\0';
-      ol.codify(tmp);
-      free(tmp);
+      std::string tmp(sp,l);
+      ol.codify(tmp.c_str());
       if (fontClass) ol.endFontClass();
       ol.endCodeLine();
       ol.startCodeLine(line);
