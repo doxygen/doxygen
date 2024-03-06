@@ -4426,8 +4426,8 @@ static inline void addOutput(yyscan_t yyscanner,char c)
 
 static void addIline(yyscan_t yyscanner,int lineNr)
 {
-  char cmd[20];
-  qsnprintf(cmd,20," \\iline %d ",lineNr);
+  char cmd[30];
+  qsnprintf(cmd,30," \\iline %d ",lineNr);
   addOutput(yyscanner, cmd);
 }
 
