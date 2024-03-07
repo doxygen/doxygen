@@ -542,6 +542,10 @@ void ManGenerator::startDoxyAnchor(const QCString &,const QCString &manName,
     }
 }
 
+void ManGenerator::addLabel(const QCString &,const QCString &)
+{
+}
+
 void ManGenerator::endMemberDoc(bool)
 {
     m_t << "\"\n";

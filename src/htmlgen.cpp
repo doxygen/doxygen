@@ -1675,6 +1675,10 @@ void HtmlGenerator::endDoxyAnchor(const QCString &,const QCString &)
 {
 }
 
+void HtmlGenerator::addLabel(const QCString &,const QCString &)
+{
+}
+
 void HtmlGenerator::startParagraph(const QCString &classDef)
 {
   if (!classDef.isEmpty())

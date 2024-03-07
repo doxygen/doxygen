@@ -936,6 +936,10 @@ void DocbookGenerator::endDoxyAnchor(const QCString &,const QCString &)
 {
 DB_GEN_C
 }
+void DocbookGenerator::addLabel(const QCString &,const QCString &)
+{
+DB_GEN_C
+}
 void DocbookGenerator::startMemberDocName(bool)
 {
 DB_GEN_C

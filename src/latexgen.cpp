@@ -1565,15 +1565,19 @@ void LatexGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
     if (!anchor.isEmpty()) m_t << "_" << anchor;
     m_t << "}";
   }
+}
+
+void LatexGenerator::endDoxyAnchor(const QCString &/* fName */,const QCString &/* anchor */)
+{
+}
+
+void LatexGenerator::addLabel(const QCString &fName, const QCString &anchor)
+{
   m_t << "\\label{";
   if (!fName.isEmpty()) m_t << stripPath(fName);
   if (!anchor.isEmpty()) m_t << "_" << anchor;
   if (m_insideTableEnv) m_t << "}";
   m_t << "} \n";
-}
-
-void LatexGenerator::endDoxyAnchor(const QCString &/* fName */,const QCString &/* anchor */)
-{
 }
 
 void LatexGenerator::writeAnchor(const QCString &fName,const QCString &name)

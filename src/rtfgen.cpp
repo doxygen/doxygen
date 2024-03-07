@@ -1676,6 +1676,12 @@ void RTFGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
   m_t << "}\n";
 }
 
+void RTFGenerator::addLabel(const QCString &,const QCString &)
+{
+  DBG_RTF(m_t << "{\\comment addLabel}\n")
+}
+
+
 void RTFGenerator::addIndexItem(const QCString &s1,const QCString &s2)
 {
   if (!s1.isEmpty())
