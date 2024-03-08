@@ -2745,9 +2745,11 @@ Commands for displaying examples
   - The `option` `local` can be used make doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
 
-  \note When using the `{doc}` option,
-       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
-       this command due to the moment of parsing.
+  When using option `doc`, there is an second option `raise` that can be specified to raise
+  all sections found in the referenced file by a certain amount. For example `\\include{doc,raise=1} file.dox` will
+  treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
+  into a level 3 \c \\subsubsection, etc.
+  Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
 
   \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.
@@ -2881,9 +2883,11 @@ Commands for displaying examples
  - The `option` `local` can be used make doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
 
- \note When using the `{doc}` option,
-       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
-       this command due to the moment of parsing.
+ When using option `doc`, there is an second option `raise` that can be specified to raise
+ all sections found in the referenced file by a certain amount. For example `\\snippet{doc,raise=1} file.dox XXX` will
+ treat any level 1 \c \\section found the snippet as a level 2 \c \\subsection, and any level 2 \c \\subsection
+ into a level 3 \c \\subsubsection, etc.
+ Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
 
  \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.

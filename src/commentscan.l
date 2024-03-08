@@ -37,6 +37,7 @@ typedef yyguts_t *yyscan_t;
 #include <mutex>
 #include <functional>
 #include <unordered_map>
+#include <algorithm>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -168,6 +169,7 @@ static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIRaise(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 [[maybe_unused]] static const char *stateToString(int state);
 
@@ -344,6 +346,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "static",                 { &handleStatic,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "struct",                 { &handleStruct,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "subpage",                { &handleSubpage,                  CommandSpacing::Inline,    SectionHandling::Allowed }},
+  { "subparagraph",           { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "subsection",             { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "subsubsection",          { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "tableofcontents",        { &handleToc,                      CommandSpacing::Invisible, SectionHandling::Break   }},
@@ -391,7 +394,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "link",                   { 0,                               CommandSpacing::Invisible, SectionHandling::Replace }},
   { "endlink",                { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }}
+  { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }}
 };
 
 #define YY_NO_INPUT 1
@@ -458,6 +462,7 @@ struct commentscanYY_state
   int              inputPosition = 0;      // read pointer
   QCString         fileName;               // file name that is read from
   int              lineNr = 0;             // line number in the input
+  int              raiseLevel = 0;         // section level raise amount
   bool             inBody = FALSE;         // was the comment found inside the body of a function?
   OutputContext    inContext;              // are we inside the brief, details or xref part
   bool             briefEndsAtDot = FALSE; // does the brief description stop at a dot?
@@ -686,6 +691,7 @@ STopt  [^\n@\\]*
 %x      IFileSection
 %x      ILine
 %x      ILineSection
+%x      IRaise
 
 %%
 
@@ -1740,6 +1746,29 @@ STopt  [^\n@\\]*
                                             BEGIN(SectionTitle);
                                           }
                                         }
+
+  /* ----- handle arguments of the iraise command ----- */
+<IRaise>{B}*[0-9]+/[\\@\n\.]               |
+<IRaise>{B}*[0-9]+{B}                      {
+                                          bool ok = false;
+                                          int nr = QCString(yytext).toInt(&ok);
+                                          if (!ok)
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid level '%s' for iraise command",yytext);
+                                          }
+                                          else
+                                          {
+                                            yyextra->raiseLevel = nr;
+                                          }
+                                          BEGIN(Comment);
+                                        }
+<IRaise>.                               {
+                                          unput(yytext[0]);
+                                          BEGIN(Comment);
+                                        }
+
+
+  /* ----- handle arguments of the ifile command ----- */
 
 <IFile,IFileSection>{FILE}              {
                                           addOutput(yyscanner,yytext);
@@ -3148,12 +3177,26 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   setOutput(yyscanner,OutputDoc);
-  addOutput(yyscanner,"@"+s+" ");
+  //printf("handleSection(%s) raiseLevel=%d\n",qPrint(s),yyextra->raiseLevel);
   BEGIN(SectionLabel);
+  // determine natural section level
   if      (s=="section")       yyextra->sectionLevel=1;
   else if (s=="subsection")    yyextra->sectionLevel=2;
   else if (s=="subsubsection") yyextra->sectionLevel=3;
   else if (s=="paragraph")     yyextra->sectionLevel=4;
+  else if (s=="subparagraph")  yyextra->sectionLevel=5;
+  // raise it if requested
+  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,5);
+  // rewrite the update section level to the output
+  switch (yyextra->sectionLevel)
+  {
+    case 1:  addOutput(yyscanner,"@section ");       break;
+    case 2:  addOutput(yyscanner,"@subsection ");    break;
+    case 3:  addOutput(yyscanner,"@subsubsection "); break;
+    case 4:  addOutput(yyscanner,"@paragraph ");     break;
+    case 5:  addOutput(yyscanner,"@subparagraph ");  break;
+    default: addOutput(yyscanner,"@"+s+" ");         break;
+  }
   return FALSE;
 }
 
@@ -3387,6 +3430,14 @@ static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector 
   BEGIN(IFile);
   return FALSE;
 }
+
+static bool handleIRaise(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(IRaise);
+  return FALSE;
+}
+
 
 static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
