@@ -1048,7 +1048,10 @@ SLASHopt [/]*
                                      yyextra->firstIncludeLine = true;
                                      if (!yyextra->insertCppCommentMarker && (yyextra->includeCtx==ReadLine || yyextra->includeCtx==IncludeFile))
                                      {
-                                       yyextra->insertCommentCol = yyextra->blockHeadCol+3;
+                                       if (yyextra->includeCtx==ReadLine)
+                                       {
+                                         yyextra->insertCommentCol = yyextra->blockHeadCol+3;
+                                       }
                                        yyextra->insertCppCommentMarker = yyextra->mlBrief;
                                      }
                                      BEGIN(IncludeDoc);
@@ -1058,7 +1061,10 @@ SLASHopt [/]*
                                      yyextra->firstIncludeLine = true;
                                      if (!yyextra->insertCppCommentMarker && (yyextra->includeCtx==ReadLine || yyextra->includeCtx==IncludeFile))
                                      {
-                                       yyextra->insertCommentCol = yyextra->blockHeadCol+3;
+                                       if (yyextra->includeCtx==ReadLine)
+                                       {
+                                         yyextra->insertCommentCol = yyextra->blockHeadCol+3;
+                                       }
                                        yyextra->insertCppCommentMarker = yyextra->mlBrief;
                                      }
                                      BEGIN(SnippetDoc);
