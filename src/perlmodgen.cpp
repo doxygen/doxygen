@@ -1409,6 +1409,8 @@ public:
   QCString pathDoxyLatexPL;
   QCString pathDoxyLatexStructurePL;
   QCString pathDoxyRules;
+  // perlmodPython PerlModGenerator path define <start>
+  // perlmodPython PerlModGenerator path define <end>
   QCString pathMakefile;
 
   inline PerlModGenerator(bool pretty) : m_output(pretty) { }
@@ -1435,6 +1437,8 @@ public:
   bool generateDoxyLatexPL();
   bool generateDoxyLatexStructurePL();
   bool generateDoxyRules();
+  // perlmodPython PerlModGenerator declare function <start>
+  // perlmodPython PerlModGenerator declare function <end>
   bool generateMakefile();
   bool generatePerlModOutput();
 
@@ -2509,6 +2513,9 @@ bool PerlModGenerator::generateDoxyRules()
   return true;
 }
 
+// perlmodPython PerlModGenerator file creation code <start>
+// perlmodPython PerlModGenerator file creation code <end>
+
 bool PerlModGenerator::generateMakefile()
 {
   std::ofstream makefileStream;
@@ -2923,6 +2930,10 @@ void PerlModGenerator::generate()
 	  && generateDoxyFormatTex()))
       return;
   }
+
+  // perlmodPython PerlModGenerator code in generate function <staart>
+  // perlmodPython PerlModGenerator code in generate function <end>
+
 }
 
 void generatePerlMod()
