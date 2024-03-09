@@ -878,12 +878,12 @@ class Transl:
 
                         assert(uniPrototype not in self.prototypeDic)
                         # Insert new dictionary item, unless they have a default in translator.h
-                        if (not (prototype=="virtual QCString latexDocumentPost()" or
-                                 prototype=="virtual QCString latexDocumentPre()" or
-                                 prototype=="virtual QCString latexCommandName()" or
-                                 prototype=="virtual QCString latexFont()" or
-                                 prototype=="virtual QCString latexFontenc()" or
-                                 prototype=="virtual bool needsPunctuation()")):
+                        if (not (prototype=="QCString latexDocumentPost()" or
+                                 prototype=="QCString latexDocumentPre()" or
+                                 prototype=="QCString latexCommandName()" or
+                                 prototype=="QCString latexFont()" or
+                                 prototype=="QCString latexFontenc()" or
+                                 prototype=="bool needsPunctuation()")):
                             self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method
