@@ -27,6 +27,7 @@
 #include <map>
 #include <algorithm>
 #include <unordered_set>
+#include <mutex>
 
 /* --------------------------------------------------------------- */
 
@@ -216,12 +217,14 @@ ClassDef* VhdlDocGen::getPackageName(const QCString & name)
   return getClass(name);
 }
 
+static std::recursive_mutex                        g_vhdlMutex;
 static std::map<std::string,const MemberDef*>      g_varMap;
 static std::vector<ClassDef*>                      g_classList;
 static std::map<ClassDef*,std::vector<ClassDef*> > g_packages;
 
 const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& memName)
 {
+  std::lock_guard lock(g_vhdlMutex);
   ClassDef* cd,*ecd=nullptr;
   const MemberDef *mdef=nullptr;
 
@@ -322,6 +325,7 @@ const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCStrin
  */
 const MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberListType type)
 {
+  std::lock_guard lock(g_vhdlMutex);
   QCString keyType=cd->symbolName()+"@"+key;
   //printf("\n %s | %s | %s",qPrint(cd->symbolName()),key.data(,),qPrint(keyType));
 
@@ -365,6 +369,7 @@ const MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,Memb
 
 void VhdlDocGen::findAllPackages( ClassDef *cdef)
 {
+  std::lock_guard lock(g_vhdlMutex);
   if (g_packages.find(cdef)!=g_packages.end()) return;
   std::vector<ClassDef*> cList;
   MemberList *mem=cdef->getMemberList(MemberListType_variableMembers);
@@ -2433,6 +2438,7 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
 
 void VhdlDocGen::resetCodeVhdlParserState()
 {
+  std::lock_guard lock(g_vhdlMutex);
   g_varMap.clear();
   g_classList.clear();
   g_packages.clear();
