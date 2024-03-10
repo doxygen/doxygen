@@ -69,7 +69,7 @@ typedef yyguts_t *yyscan_t;
 #include "moduledef.h"
 
 // Toggle for some debugging info
-//#define DBG_CTX(x) fprintf x
+//#define DBG_CTX(x) do {fprintf(stderr, "line %d %s() :", __LINE__, __func__); fprintf x;} while(0)
 #define DBG_CTX(x) do { } while(0)
 
 #define YY_NO_UNISTD_H 1
@@ -3067,8 +3067,9 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
         }
       }
     };
+
     const Definition *d = yyextra->currentDefinition;
-    DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",d?qPrint(d->name()):"<none>",yyextra->sourceFileDef?qPrint(yyextra->sourceFileDef->name()):"<none>"));
+    DBG_CTX((stderr,"currentDefinition=%s yyextra->sourceFileDef=%s\n",d?qPrint(d->name()):"<none>",yyextra->sourceFileDef?qPrint(yyextra->sourceFileDef->name()):"<none>"));
     checkForClass(d,cd,md);
     if (cd==0 && md==0 && d && d->definitionType()==Definition::TypeClass)
     {
@@ -3540,7 +3541,9 @@ static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const QCS
   }
   if (!getLink(yyscanner,locScope,funcWithScope,ol,funcName))
   {
-    generateClassOrGlobalLink(yyscanner,ol,funcName);
+    DBG_CTX((stderr,"link not found!\n"));
+    codifyLines(yyscanner,funcName);
+    addToSearchIndex(yyscanner,funcName);
   }
 exit:
   return;
@@ -4102,7 +4105,8 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const Q
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  DBG_CTX((stderr,"***parseCode() exBlock=%d exName=%s fd=%p className=%s searchCtx=%s\n",
+  DBG_CTX((stderr,"***parseCode() fileName=%s exBlock=%d exName=%s fd=%p className=%s searchCtx=%s\n",
+           fd?qPrint(fd->fileName()):"<none>",
            exBlock,qPrint(exName),(void*)fd,qPrint(className),searchCtx?qPrint(searchCtx->name()):"<none>"));
 
   if (s.isEmpty()) return;
