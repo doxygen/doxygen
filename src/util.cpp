@@ -6686,6 +6686,24 @@ bool openOutputFile(const QCString &outFile,std::ofstream &f)
   return fileOpened;
 }
 
+static bool keyWordsFortranC(const char *contents)
+{
+  static const std::unordered_set<std::string> fortran_C_keywords = {
+    "character", "call", "close", "common", "continue",
+    "case", "contains", "cycle", "class", "codimension",
+    "concurrent", "contiguous", "critical"
+  };
+
+  if (*contents != 'c' && *contents != 'C') return false;
+
+  const char *c = contents;
+  QCString keyword;
+  while (*c && *c != ' ') {keyword += *c; c++;}
+  keyword = keyword.lower();
+
+  return (fortran_C_keywords.find(keyword.str()) != fortran_C_keywords.end());
+}
+
 //------------------------------------------------------
 // simplified way to know if this is fixed form
 bool recognizeFixedForm(const QCString &contents, FortranFormat format)
@@ -6721,6 +6739,11 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
         break;
       case 'C':
       case 'c':
+        if (column==1)
+        {
+          return !keyWordsFortranC(contents.data()+i);
+        }
+        // fallthrough
       case '*':
         if (column==1) return TRUE;
         if (skipLine) break;
