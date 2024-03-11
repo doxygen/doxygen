@@ -1319,10 +1319,10 @@ QCString DefinitionImpl::qualifiedName() const
     bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
     if (hideInlineNamespaces && m_impl->def->definitionType() == Definition::DefType::TypeNamespace)
     {
-      DefinitionMutable* x = m_impl->def->toDefinitionMutable_();
-      Definition* y = toDefinition(x);
-      NamespaceDef* z = reinterpret_cast<NamespaceDef*>(y);
-      if (z->isInline())
+      DefinitionMutable* defMut = m_impl->def->toDefinitionMutable_();
+      Definition* def = toDefinition(defMut);
+      NamespaceDef* nsDef = reinterpret_cast<NamespaceDef*>(def);
+      if (nsDef->isInline())
       {
         return rStripInlineNamespaceScope(m_impl->qualifiedName);
       }
@@ -1350,8 +1350,8 @@ QCString DefinitionImpl::qualifiedName() const
   else
   {
     m_impl->qualifiedName = m_impl->outerScope->qualifiedName()+
-          getLanguageSpecificSeparator(getLanguage())+
-          m_impl->localName;
+           getLanguageSpecificSeparator(getLanguage())+
+           m_impl->localName;
   }
   //printf("end %s::qualifiedName()=%s\n",qPrint(name()),qPrint(m_impl->qualifiedName));
   //count--;
@@ -1491,10 +1491,10 @@ QCString DefinitionImpl::navigationPathAsString() const
   bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
   if (hideInlineNamespaces && m_impl->def->definitionType() == Definition::DefType::TypeNamespace)
   {
-    DefinitionMutable* x = m_impl->def->toDefinitionMutable_();
-    Definition* y = toDefinition(x);
-    NamespaceDef* z = reinterpret_cast<NamespaceDef*>(y);
-    if (z->isInline())
+    DefinitionMutable* defMut = m_impl->def->toDefinitionMutable_();
+    Definition* def = toDefinition(defMut);
+    NamespaceDef* nsDef = reinterpret_cast<NamespaceDef*>(def);
+    if (nsDef->isInline())
     {
       return result;
     }
@@ -1550,10 +1550,10 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 
   QCString navPath;
   navPath += "<div id=\"nav-path\" class=\"navpath\">\n"
-    "  <ul>\n";
+             "  <ul>\n";
   navPath += navigationPathAsString();
   navPath += "  </ul>\n"
-    "</div>\n";
+             "</div>\n";
   ol.writeNavigationPath(navPath);
 
   ol.popGeneratorState();
@@ -1982,8 +1982,8 @@ void DefinitionAliasImpl::updateQualifiedName() const
     else
     {
       m_qualifiedName = m_scope->qualifiedName()+
-       getLanguageSpecificSeparator(m_scope->getLanguage())+
-       m_def->localName();
+        getLanguageSpecificSeparator(m_scope->getLanguage())+
+        m_def->localName();
     }
   }
 }
