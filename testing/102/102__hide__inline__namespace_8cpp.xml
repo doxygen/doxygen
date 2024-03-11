@@ -2,20 +2,15 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="102__hide__inline__namespace_8cpp" kind="file" language="C++">
     <compoundname>102_hide_inline_namespace.cpp</compoundname>
-    <innerclass refid="class_size" prot="public">Size</innerclass>
-    <innerclass refid="class_point" prot="public">Point</innerclass>
-    <innerclass refid="structfoo_1_1_image" prot="public">foo::Image</innerclass>
-    <innerclass refid="structfoo_1_1__v1_1_1_image" prot="public">foo</innerclass>
-    <innerclass refid="structfoo_1_1__v1_1_1_tensor" prot="public">foo</innerclass>
-    <innerclass refid="structfoo_1_1__v1_1_1_bar" prot="public">foo</innerclass>
-    <innerclass refid="structfoo_1_1__v1_1_1_yoho_1_1_yahoo" prot="public">foo::_v1::Yoho::Yahoo</innerclass>
-    <innerclass refid="structfoo_1_1__v2_1_1_music" prot="public">foo</innerclass>
-    <innerclass refid="structrock_1_1_entity" prot="public">rock::Entity</innerclass>
+    <innerclass refid="structfoo_1_1v1_1_1_size" prot="public">foo</innerclass>
+    <innerclass refid="structfoo_1_1v1_1_1cv_1_1_image" prot="public">foo::v1::cv::Image</innerclass>
+    <innerclass refid="structfoo_1_1v1_1_1nn_1_1_tensor" prot="public">foo::v1::nn::Tensor</innerclass>
+    <innerclass refid="structfoo_1_1v1_1_1nn_1_1v1_1_1_conv_param" prot="public">foo</innerclass>
     <innernamespace refid="namespacefoo">foo</innernamespace>
-    <innernamespace refid="namespacefoo_1_1__v1" inline="yes">foo::_v1</innernamespace>
-    <innernamespace refid="namespacefoo_1_1__v1_1_1_yoho">foo</innernamespace>
-    <innernamespace refid="namespacefoo_1_1__v2" inline="yes">foo::_v2</innernamespace>
-    <innernamespace refid="namespacerock">rock</innernamespace>
+    <innernamespace refid="namespacefoo_1_1v1" inline="yes">foo::v1</innernamespace>
+    <innernamespace refid="namespacefoo_1_1v1_1_1cv">foo</innernamespace>
+    <innernamespace refid="namespacefoo_1_1v1_1_1nn">foo</innernamespace>
+    <innernamespace refid="namespacefoo_1_1v1_1_1nn_1_1v1" inline="yes">foo::v1::nn::v1</innernamespace>
     <briefdescription>
     </briefdescription>
     <detaileddescription>

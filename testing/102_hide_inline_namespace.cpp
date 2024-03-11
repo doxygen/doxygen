@@ -3,45 +3,51 @@
 // config: HIDE_INLINE_NAMESPACE = YES
 // config: EXTRACT_ALL = YES
 
-class Size
+namespace foo {
+
+inline namespace v1 {
+
+struct Size
 {
-public:
     int width;
     int height;
 };
 
-class Point
+namespace cv {
+
+struct Image
 {
-public:
-    float x;
-    float y;
+    int height;
+    int width;
+    unsigned char* data;
 };
 
-namespace foo {
+} // namespace cv
 
-/// @brief the official API
-struct Image { };
+namespace nn {
 
-inline namespace _v1 {
+struct Tensor
+{
+    int width;
+    int height;
+    int channel;
+    float* data;
+};
 
-/// @brief for compatability
-struct Image { };
+inline namespace v1 {
 
-struct Tensor { };
+struct ConvParam
+{
+    int pad;
+    int stride;
+    int kernel_len;
+};
 
-struct Bar { };
+} // namespace v1
 
-namespace Yoho {
-struct Yahoo { };
-}
-} // inline namespace _v1
+} // namespace nn
 
-inline namespace _v2 {
-struct Music { };
-} // inline namespace _v2
+} // namespace v1
+
 } // namespace foo
 
-namespace rock {
-/// @brief entity
-struct Entity { };
-} // namespace rock
