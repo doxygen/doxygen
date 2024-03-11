@@ -317,9 +317,7 @@ void createJavaScriptSearchIndex()
       {
         NamespaceDef* outerDefReal = reinterpret_cast<NamespaceDef*>(outerDef);
         if (outerDefReal->isInline())
-        {
           continue;
-        }
       }
       QCString n = cd->localName();
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,cd.get()));

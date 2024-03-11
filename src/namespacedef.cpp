@@ -1397,9 +1397,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
     if (nd->isLinkable() && nd->hasDocumentation())
     {
       if (hideInlineNamespaces && nd->isInline())
-      {
         continue;
-      }
 
       SrcLangExt lang = nd->getLanguage();
       if (lang==SrcLangExt::IDL && (isConstantGroup != nd->isConstantGroup()))
