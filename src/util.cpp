@@ -6698,7 +6698,7 @@ static bool keyWordsFortranC(const char *contents)
 
   const char *c = contents;
   QCString keyword;
-  while (*c && *c != ' ') {keyword += *c; c++;};
+  while (*c && *c != ' ') {keyword += *c; c++;}
   keyword = keyword.lower();
 
   return (fortran_C_keywords.find(keyword.str()) != fortran_C_keywords.end());
