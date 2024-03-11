@@ -14,6 +14,7 @@ and the version in which they were introduced.
 \refitem cmdiline \\iline
 \refitem cmdilinebr \\ilinebr
 \refitem cmdiliteral \\iliteral
+\refitem cmdiraise \\iraise
 \refitem cmdiverbatim \\iverbatim
 \endsecreflist
 
@@ -127,6 +128,16 @@ and the version in which they were introduced.
   a `\endverbatim` as this would terminate the `\verbatim` block.
 
 \since doxygen version 1.9.5
+
+<hr>
+\section cmdiraise \\iraise \<amount\>
+  \addindex \\iraise
+
+  Internal doxygen command to increase the section level by a given amount.
+  After processing `\iraise 1` for instance, a `\section` will be treated as a `\subsection`.
+  Inserted when processing `\include{doc}` with the `raise` option.
+
+\since doxygen version 1.11.0
 
 <hr>
 \section cmdendiverbatim \\endiverbatim

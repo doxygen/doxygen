@@ -2746,8 +2746,10 @@ Commands for displaying examples
                class or namespace in which the include command appears, rather than the global namespace.
 
   When using option `doc`, there is an second option `raise` that can be specified to raise
-  all sections found in the referenced file by a certain amount. For example `\\include{doc,raise=1} file.dox` will
-  treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
+  all sections found in the referenced file by a certain amount. For example 
+  \verbatim
+  \include{doc,raise=1} file.dox
+  \endverbatim will treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
   into a level 3 \c \\subsubsection, etc.
   Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
 
@@ -2884,7 +2886,10 @@ Commands for displaying examples
                class or namespace in which the include command appears, rather than the global namespace.
 
  When using option `doc`, there is an second option `raise` that can be specified to raise
- all sections found in the referenced file by a certain amount. For example `\\snippet{doc,raise=1} file.dox XXX` will
+ all sections found in the referenced file by a certain amount. For example 
+ \verbatim
+ \snippet{doc,raise=1} file.dox XXX
+ \endverbatim will
  treat any level 1 \c \\section found the snippet as a level 2 \c \\subsection, and any level 2 \c \\subsection
  into a level 3 \c \\subsubsection, etc.
  Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
