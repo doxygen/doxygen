@@ -2423,7 +2423,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   //bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
   SrcLangExt lang = getLanguage();
   if (visibleInParentsDeclList())
   {

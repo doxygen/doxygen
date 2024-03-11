@@ -1316,7 +1316,7 @@ QCString DefinitionImpl::qualifiedName() const
   std::lock_guard<std::recursive_mutex> lock(g_qualifiedNameMutex);
   if (!m_impl->qualifiedName.isEmpty())
   {
-    bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
+    bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
     if (hideInlineNamespaces && m_impl->def->definitionType() == Definition::DefType::TypeNamespace)
     {
       DefinitionMutable* defMut = m_impl->def->toDefinitionMutable_();
@@ -1488,7 +1488,7 @@ QCString DefinitionImpl::navigationPathAsString() const
   {
     result+=(toFileDef(m_impl->def))->getDirDef()->navigationPathAsString();
   }
-  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
   if (hideInlineNamespaces && m_impl->def->definitionType() == Definition::DefType::TypeNamespace)
   {
     DefinitionMutable* defMut = m_impl->def->toDefinitionMutable_();
@@ -1912,7 +1912,7 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
 const QCString &DefinitionImpl::name() const
 {
   Definition* outerDef = getOuterScope();
-  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
   if (hideInlineNamespaces && outerDef && outerDef->definitionType() == Definition::DefType::TypeNamespace)
   {
     NamespaceDef* outerDefReal = reinterpret_cast<NamespaceDef*>(outerDef);

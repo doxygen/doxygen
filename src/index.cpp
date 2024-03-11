@@ -1821,7 +1821,7 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
     bool isDir = hasChildren || visibleMembers>0;
     if (isLinkable || isDir)
     {
-      bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
+      bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
       if (hideInlineNamespaces && nd->isModule() && nd->isInline())
         return;
       ftv->addContentsItem(hasChildren,nd->localName(),ref,file,QCString(),FALSE,nd->partOfGroups().empty(),nd);

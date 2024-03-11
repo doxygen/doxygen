@@ -306,7 +306,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
 
 void createJavaScriptSearchIndex()
 {
-  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
   // index classes
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
