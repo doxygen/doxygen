@@ -1486,6 +1486,7 @@ WSopt [ \t\r]*
                                           BEGIN(SkipVerbatim);
                                         }
 <SkipCond>[\\@][\\@]"cond"[ \t]+        {}// escaped cond command
+<SkipCond>[\\@]"cond"/\n                |  
 <SkipCond>[\\@]"cond"[ \t]+             { // cond command in a skipped cond section, this section has to be skipped as well
                                           // but has to be recorded to match the endcond command
                                           startCondSection(yyscanner," ");
