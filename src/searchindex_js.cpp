@@ -311,6 +311,15 @@ void createJavaScriptSearchIndex()
   {
     if (cd->isLinkable())
     {
+      Definition* outerDef = cd->getOuterScope();
+      if (outerDef && outerDef->definitionType() == Definition::DefType::TypeNamespace)
+      {
+        NamespaceDef* outerDefReal = reinterpret_cast<NamespaceDef*>(outerDef);
+        if (outerDefReal->isInline())
+        {
+          continue;
+        }
+      }
       QCString n = cd->localName();
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,cd.get()));
       if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
