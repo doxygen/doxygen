@@ -1271,7 +1271,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='HIDE_INLINE_NAMESPACES' defval='0'>
       <docs>
 <![CDATA[
- Set the \c HIDE_INLINE_NAMESPACES tag to \c NO to show inline namespaces and
+ Set the \c HIDE_INLINE_NAMESPACES tag to \c YES to hide inline namespaces and
  classes inside inline namespaces in Class, Namespace, File page, search index,
  and from the Folder Tree View (if specified).
 ]]>
