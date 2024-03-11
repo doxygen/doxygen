@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="102__hide__inline__namespace_8cpp" kind="file" language="C++">
+    <compoundname>102_hide_inline_namespace.cpp</compoundname>
+    <innerclass refid="class_size" prot="public">Size</innerclass>
+    <innerclass refid="class_point" prot="public">Point</innerclass>
+    <innerclass refid="structfoo_1_1_image" prot="public">foo::Image</innerclass>
+    <innerclass refid="structfoo_1_1__v1_1_1_image" prot="public">foo</innerclass>
+    <innerclass refid="structfoo_1_1__v1_1_1_tensor" prot="public">foo</innerclass>
+    <innerclass refid="structfoo_1_1__v1_1_1_bar" prot="public">foo</innerclass>
+    <innerclass refid="structfoo_1_1__v1_1_1_yoho_1_1_yahoo" prot="public">foo::_v1::Yoho::Yahoo</innerclass>
+    <innerclass refid="structfoo_1_1__v2_1_1_music" prot="public">foo</innerclass>
+    <innerclass refid="structrock_1_1_entity" prot="public">rock::Entity</innerclass>
+    <innernamespace refid="namespacefoo">foo</innernamespace>
+    <innernamespace refid="namespacefoo_1_1__v1" inline="yes">foo::_v1</innernamespace>
+    <innernamespace refid="namespacefoo_1_1__v1_1_1_yoho">foo</innernamespace>
+    <innernamespace refid="namespacefoo_1_1__v2" inline="yes">foo::_v2</innernamespace>
+    <innernamespace refid="namespacerock">rock</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="102_hide_inline_namespace.cpp"/>
+  </compounddef>
+</doxygen>
