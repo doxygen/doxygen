@@ -1,3 +1,8 @@
+// objective: test collapse of inline namespace
+// check: 102__hide__inline__namespace_8cpp.xml
+// config: HIDE_INLINE_NAMESPACE = YES
+// config: EXTRACT_ALL = YES
+
 class Size
 {
 public:
