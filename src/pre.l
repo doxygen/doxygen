@@ -698,6 +698,7 @@ WSopt [ \t\r]*
   /* start lex rule handling */
 <CopyLine>{RulesSharp}                  {
                                           if (!yyextra->lexRulesPart) REJECT;
+                                          if (yyextra->curlyCount) REJECT;
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(RulesPattern);
                                         }
