@@ -3504,6 +3504,16 @@ If set to \c NO, doxygen will warn if a database file is already found and not m
 ]]>
       </docs>
     </option>
+    <option type='bool' id='PERLMOD_PYTHON' defval='0' depends='GENERATE_PERLMOD'>
+      <docs>
+<![CDATA[
+ If the \c PERLMOD_PYTHON tag is set to \c YES, doxygen will generate
+ the necessary \c Makefile rules, \c Python scripts and code to be able
+ to generate print and markdown output from the Perl module output.
+ experiment is using mako python library.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='PERLMOD_PRETTY' defval='1' depends='GENERATE_PERLMOD'>
       <docs>
 <![CDATA[

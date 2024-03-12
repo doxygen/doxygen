@@ -1410,6 +1410,7 @@ public:
   QCString pathDoxyLatexStructurePL;
   QCString pathDoxyRules;
   // perlmodPython PerlModGenerator path define <start>
+  QCString pathPythonPut2cpp;
   // perlmodPython PerlModGenerator path define <end>
   QCString pathMakefile;
 
@@ -1438,6 +1439,7 @@ public:
   bool generateDoxyLatexStructurePL();
   bool generateDoxyRules();
   // perlmodPython PerlModGenerator declare function <start>
+  bool generatePythonPut2cpp();
   // perlmodPython PerlModGenerator declare function <end>
   bool generateMakefile();
   bool generatePerlModOutput();
@@ -2514,6 +2516,225 @@ bool PerlModGenerator::generateDoxyRules()
 }
 
 // perlmodPython PerlModGenerator file creation code <start>
+bool PerlModGenerator::generatePythonPut2cpp()
+{
+  std::ofstream pythonStream;
+  if (!createOutputFile(pythonStream, pathPythonPut2cpp))
+    return false;
+
+  pythonStream <<
+    "import sys\n"
+    "import argparse\n"
+    "import re\n"
+    "import os\n"
+    "\n"
+    "class Solution:\n"
+    "    def __init__(self,inputdir,out,perlmodgen,debug):\n"
+    "        self.inputdir = inputdir\n"
+    "        self.out = out\n"
+    "        self.perlmodgen = perlmodgen\n"
+    "        self.debug = debug\n"
+    "        if self.perlmodgen and not os.path.exists(self.perlmodgen):\n"
+    "            print(\'error:  not exist file :\', self.perlmodgen)\n"
+    "            print(\' !! set --perlmodgen option with the location of perlmodgen.cpp\')\n"
+    "            quit(4)\n"
+    "        files = os.listdir(self.inputdir)\n"
+    "        self.p = []\n"
+    "        self.o = {}\n"
+    "        self.o[\'path define\'] = []\n"
+    "        self.o[\'declare function\'] = []\n"
+    "        self.o[\'file creation code\'] = []\n"
+    "        self.o[\'code in generate function\'] = []\n"
+    "        self.o[\'Makefile\'] = []\n"
+    "        self.p.append(\'\'\'class PerlModGenerator\'\'\')\n"
+    "        self.p.append(\'\'\'{\'\'\')\n"
+    "        self.p.append(\'\'\'  QCString pathDoxyRules;\'\'\')\n"
+    "        self.p.append(\'\'\'  // perlmodPython code\'\'\')\n"
+    "        for file in files:\n"
+    "            self.o[\'path define\'].append(\'\'\'  QCString path{f};\'\'\'.format(f=self.createPythonName(file)))\n"
+    "        self.p += self.o[\'path define\']\n"
+    "        self.p.append(\'\'\'  QCString pathMakefile;\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "        self.p.append(\'\'\'  bool generateDoxyRules();\'\'\')\n"
+    "        self.p.append(\'\'\'  // perlmodPython code\'\'\')\n"
+    "        for file in files:\n"
+    "            self.o[\'declare function\'].append(\'\'\'  bool generate{f}();\'\'\'.format(f=self.createPythonName(file)))\n"
+    "        self.p += self.o[\'declare function\']\n"
+    "        self.p.append(\'\'\'  bool generateMakefile();\'\'\')\n"
+    "        self.p.append(\'\'\'}\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "\n"
+    "        self.p.append(\'\'\'bool PerlModGenerator::generateDoxyRules()\'\'\')\n"
+    "        self.p.append(\'\'\'{\'\'\')\n"
+    "        self.p.append(\'\'\'}\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "        self.p.append(\'\'\'// perlmodPython code\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "        for file in files:\n"
+    "            filepath = self.inputdir+\'/\'+file\n"
+    "            ff = self.createPythonName(file)\n"
+    "            cpp = []\n"
+    "            with open(filepath,\'r\', encoding=\'utf-8\', errors=\'ignore\') as f:\n"
+    "                lines = f.readlines()\n"
+    "                 #bs = \' \\ \'\n"
+    "                 #bs = bs.replace(\' \',\'\')\n"
+    "                for line in lines:\n"
+    "                    cpp.append(self.line2cpp(4,line))\n"
+    "            self.o[\'file creation code\'].append(\'\'\'bool PerlModGenerator::generate{ff}()\'\'\'.format(ff=ff))\n"
+    "            self.o[\'file creation code\'].append(\'\'\'{\'\'\')\n"
+    "            self.o[\'file creation code\'].append(\'\'\'  std::ofstream pythonStream;\'\'\')\n"
+    "            self.o[\'file creation code\'].append(\'\'\'  if (!createOutputFile(pythonStream, path{ff}))\'\'\'.format(ff=ff))\n"
+    "            self.o[\'file creation code\'].append(\'\'\'    return false;\'\'\')\n"
+    "            self.o[\'file creation code\'].append(\'\')\n"
+    "            self.o[\'file creation code\'].append(\'\'\'  pythonStream <<\'\'\')\n"
+    "            self.o[\'file creation code\'].append(\'\\n\'.join(cpp) + \';\')\n"
+    "            self.o[\'file creation code\'].append(\'\')\n"
+    "            self.o[\'file creation code\'].append(\'\'\'  return true;\'\'\')\n"
+    "            self.o[\'file creation code\'].append(\'\'\'}\'\'\')\n"
+    "            self.o[\'file creation code\'].append(\'\')\n"
+    "        self.p += self.o[\'file creation code\']\n"
+    "        self.p.append(\'\'\'bool PerlModGenerator::generateMakefile()\'\'\')\n"
+    "        self.p.append(\'\'\'{\'\'\')\n"
+    "        self.p.append(\'\'\'}\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "\n"
+    "        self.p.append(\'\'\'void PerlModGenerator::generate()\'\'\')\n"
+    "        self.p.append(\'\'\'{\'\'\')\n"
+    "        self.p.append(\'\'\'  bool perlmodLatex = Config_getBool(PERLMOD_LATEX);\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "        self.p.append(\'\'\'  if (perlmodLatex) {\'\'\')\n"
+    "        self.p.append(\'\'\'  }\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "        self.p.append(\'  // perlmodPython code\')\n"
+    "        self.p.append(\'\')\n"
+    "        generateList = []\n"
+    "        for file in files:\n"
+    "            ff = self.createPythonName(file)\n"
+    "            self.o[\'code in generate function\'].append(\'\'\'    path{ff} = perlModAbsPath + \"/{f}\";\'\'\'.format(f=file,ff=ff))\n"
+    "            generateList.append(\'generate\' + ff + \'()\')\n"
+    "        print(\'generateList\',generateList)\n"
+    "        self.o[\'code in generate function\'].append(\'\'\'    if (!(\'\'\' + \'\'\'\\n      && \'\'\'.join(generateList) + \'\'\'))\'\'\')\n"
+    "        self.o[\'code in generate function\'].append(\'\'\'      return;\'\'\')\n"
+    "        self.p += self.o[\'code in generate function\']\n"
+    "        self.p.append(\'\'\'}\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "        self.p.append(\'\'\'void generatePerlMod()\'\'\')\n"
+    "        self.p.append(\'\'\'{\'\'\')\n"
+    "        self.p.append(\'\'\'}\'\'\')\n"
+    "        self.p.append(\'\')\n"
+    "        self.p.append(\'\'\'  bool perlmodPython = Config_getBool(PERLMOD_PYTHON);\'\'\')\n"
+    "        self.p.append(\'\'\'  if (perlmodPython) {\'\'\')\n"
+    "        self.o[\'Makefile\'].append(\'\'\'    makefileStream <<\'\'\')\n"
+    "        mk = []\n"
+    "        mk.append(\'\'\'# python2cpp init\'\'\')\n"
+    "        mk.append(\'\'\'python2cpp_init:\'\'\')\n"
+    "        mk.append(\'\'\'\\trm -rf input_python_files\'\'\')\n"
+    "        mk.append(\'\'\'\\tmkdir -p input_python_files\'\'\')\n"
+    "        for file in files:\n"
+    "            mk.append(\'\'\'\\tcd input_python_files; ln -s ../{f} {f}\'\'\'.format(f=file))\n"
+    "        mk.append(\'\')\n"
+    "        mk.append(\'\'\'# if you want to add python file into perlmodgen.cpp , you can use it.\'\'\')\n"
+    "        mk.append(\'\'\'# first of all, you add your py in input_python_files directory\'\'\')\n"
+    "        mk.append(\'\'\'python2cpp_run:\'\'\')\n"
+    "        mk.append(\'\'\'\\t# please change ??? to location of src/perlmodgen.cpp\'\'\')\n"
+    "        mk.append(\'\'\'\\t# output filename : perlmodgen.cpp.mod\'\'\')\n"
+    "        mk.append(\'\'\'\\tpython3 put2cpp.py --inputdir=input_python_files --perlmodgen=???\'\'\')\n"
+    "        self.o[\'Makefile\'].append(\'\\n\'.join([self.line2cpp(6,item) for item in mk]) + \';\')\n"
+    "        self.p += self.o[\'Makefile\']\n"
+    "        self.p.append(\'\'\'  }\'\'\')\n"
+    "        with open(self.out ,\"w\") as f:\n"
+    "            print(\'write:\',self.out)\n"
+    "            f.write(\'\\n\'.join(self.p))\n"
+    "        startRe = re.compile(\'^\\s*//\\s+perlmodPython\\s+PerlModGenerator\\s+(?P<key>[^<>]+)<start>\\s*\')\n"
+    "        endRe = re.compile(\'^\\s*//\\s+perlmodPython\\s+PerlModGenerator\\s+(?P<key>[^<>]+)<end>\\s*\')\n"
+    "        if self.perlmodgen:\n"
+    "            pmg = []\n"
+    "            lines = []\n"
+    "            with open(self.perlmodgen,\'r\', encoding=\'utf-8\', errors=\'ignore\') as f:\n"
+    "                lines = f.readlines()\n"
+    "            flag = 0\n"
+    "            startKey = \'\'\n"
+    "            endKey = \'-\'\n"
+    "            for line in lines:\n"
+    "                line = line.rstrip()\n"
+    "                grpStart = startRe.search(line)\n"
+    "                grpEnd = endRe.search(line)\n"
+    "                if grpStart:\n"
+    "                    if flag == 1:\n"
+    "                        print(\'error: already you were in  perlmodpython pair\')\n"
+    "                        print(\'  !! please chek <start> ~ <end> pair\')\n"
+    "                        quit(4)\n"
+    "                    print(\'start [\',grpStart.group(\'key\').strip(),\']\',line)\n"
+    "                    startKey = grpStart.group(\'key\').strip()\n"
+    "                    flag = 1\n"
+    "                    pmg.append(line)\n"
+    "                elif grpEnd:\n"
+    "                    if flag == 0:\n"
+    "                        print(\'error: already you were out of perlmodpython pair\')\n"
+    "                        print(\'  !! please chek <start> ~ <end> pair\')\n"
+    "                        quit(4)\n"
+    "                    print(\'end [\',grpEnd.group(\'key\').strip(),\']\',line)\n"
+    "                    endKey = grpEnd.group(\'key\').strip()\n"
+    "                    flag = 0\n"
+    "                    pmg += self.o[endKey]\n"
+    "                    pmg.append(line)\n"
+    "                else:\n"
+    "                    if flag == 0:\n"
+    "                        pmg.append(line)\n"
+    "            with open(self.perlmodgen + \'.mod\',\'w\') as f:\n"
+    "                print(\'! output perlmodgen file:\',self.perlmodgen + \'.mod\')\n"
+    "                s = \"\\n\".join(pmg)\n"
+    "                f.write(s)\n"
+    "\n"
+    "    def createPythonName(self,file):\n"
+    "        if not file:\n"
+    "            return file\n"
+    "        file2 = file.replace(\'.py\',\'\')\n"
+    "        fileList = list(file2)\n"
+    "        ff = \'Python\' + fileList[0].upper() + \'\'.join(fileList[1:])\n"
+    "        return ff\n"
+    "\n"
+    "    def line2cpp(self,indent,line):\n"
+    "        line = line.rstrip()\n"
+    "        line = line.replace(\'\\\\\',\'\\\\\\\\\')\n"
+    "        line = line.replace(\"\'\", \"\\\\\'\")\n"
+    "        line = line.replace(\'\"\', \'\\\\\"\')\n"
+    "        return \' \'*indent + \'\"\' + line + str(\'\\\\n\') + \'\"\'\n"
+    "\n"
+    "if (__name__ == \"__main__\"):\n"
+    "    parser = argparse.ArgumentParser(\n"
+    "        prog=sys.argv[0],\n"
+    "        description=\n"
+    "        \'put python code into cpp code and edit perlmodgen.cpp to add python code\'\n"
+    "    )\n"
+    "    parser.add_argument( \'--debug\', \'-d\' , action=\'store_const\' , const=1 , help=\'debug on\')\n"
+    "    parser.add_argument( \'--inputdir\',\n"
+    "        metavar=\"<str>\",\n"
+    "        type=str,\n"
+    "        default=\'input_python_files\',\n"
+    "        help=\'input directory with python code. this python code will be inserted in cpp\')\n"
+    "    parser.add_argument( \'--perlmodgen\',\n"
+    "        metavar=\"<str>\",\n"
+    "        type=str,\n"
+    "        default=\'./perlmodgen.cpp\',\n"
+    "        help=\'location of perlmodgen.cpp.  python codes in inputdir will be updated.\')\n"
+    "    parser.add_argument( \'--out\',\n"
+    "        metavar=\"<str>\",\n"
+    "        type=str,\n"
+    "        default=\'out.mod\',\n"
+    "        help=\'insert python code into cpp (perlmodgen.cpp)\')\n"
+    "\n"
+    "    args = parser.parse_args()\n"
+    "    debug = args.debug\n"
+    "\n"
+    "    print(\'inputdir:\',args.inputdir)\n"
+    "    print(\'input location of perlmodegen.cpp:\',args.perlmodgen)\n"
+    "    S = Solution(args.inputdir,args.out,args.perlmodgen,args.debug)\n"
+    "\n";
+
+  return true;
+}
+
 // perlmodPython PerlModGenerator file creation code <end>
 
 bool PerlModGenerator::generateMakefile()
@@ -2537,6 +2758,25 @@ bool PerlModGenerator::generateMakefile()
     makefileStream <<
       "pdf: $(" << prefix << "DOXYLATEX_PDF)\n"
       "dvi: $(" << prefix << "DOXYLATEX_DVI)\n";
+  }
+
+  bool perlmodPython = Config_getBool(PERLMOD_PYTHON);
+  if (perlmodPython) {
+    // perlmodPython PerlModGenerator Makefile <start>
+    makefileStream <<
+      "# python2cpp init\n"
+      "python2cpp_init:\n"
+      "	rm -rf input_python_files\n"
+      "	mkdir -p input_python_files\n"
+      "	cd input_python_files; ln -s ../put2cpp.py put2cpp.py\n"
+      "\n"
+      "# if you want to add python file into perlmodgen.cpp , you can use it.\n"
+      "# first of all, you add your py in input_python_files directory\n"
+      "python2cpp_run:\n"
+      "	# please change ??? to location of src/perlmodgen.cpp\n"
+      "	# output filename : perlmodgen.cpp.mod\n"
+      "	python3 put2cpp.py --inputdir=input_python_files --perlmodgen=???\n";
+    // perlmodPython PerlModGenerator Makefile <end>
   }
 
   return true;
@@ -2931,8 +3171,14 @@ void PerlModGenerator::generate()
       return;
   }
 
-  // perlmodPython PerlModGenerator code in generate function <staart>
-  // perlmodPython PerlModGenerator code in generate function <end>
+  bool perlmodPython = Config_getBool(PERLMOD_PYTHON);
+  if (perlmodPython) {
+    // perlmodPython PerlModGenerator code in generate function <start>
+    pathPythonPut2cpp = perlModAbsPath + "/put2cpp.py";
+    if (!(generatePythonPut2cpp()))
+      return;
+    // perlmodPython PerlModGenerator code in generate function <end>
+  }
 
 }
 
