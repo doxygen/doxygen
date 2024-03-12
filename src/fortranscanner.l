@@ -445,6 +445,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           }
                                           pop_state(yyscanner);
                                         }
+<String>[\x80-\xFF]*                    |
 <String>.                               { if (yy_top_state(yyscanner) == Initialization ||
                                               yy_top_state(yyscanner) == ArrayInitializer)
                                           {
@@ -485,6 +486,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 <StrIgnore>.?/\n                        { pop_state(yyscanner); // comment ends with endline character
                                           DBG_CTX((stderr,"end comment %d %s\n",yyextra->lineNr,qPrint(yyextra->debugStr)));
                                         } // comment line ends
+<StrIgnore>[\x80-\xFF]*                 |
 <StrIgnore>.                            { yyextra->debugStr+=yytext; }
 
 
