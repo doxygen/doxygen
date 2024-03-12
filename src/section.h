@@ -32,8 +32,9 @@ enum class SectionType
   Subsection    = 2,
   Subsubsection = 3,
   Paragraph     = 4,
-  Anchor        = 5,
-  Table         = 6
+  Subparagraph  = 5,
+  Anchor        = 6,
+  Table         = 7
 };
 
 //! return true if type is a section, and false if it is a page, anchor or table.
@@ -42,7 +43,8 @@ inline constexpr bool isSection(SectionType type)
   return (type==SectionType::Section       ||
           type==SectionType::Subsection    ||
           type==SectionType::Subsubsection ||
-          type==SectionType::Paragraph);
+          type==SectionType::Paragraph     ||
+          type==SectionType::Subparagraph);
 }
 
 //! class that provide information about a section.

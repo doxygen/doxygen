@@ -89,6 +89,7 @@ static const CommandMap g_cmdMap =
   { "subsection",    CMD_SUBSECTION },
   { "subsubsection", CMD_SUBSUBSECTION },
   { "paragraph",     CMD_PARAGRAPH },
+  { "subparagraph",  CMD_SUBPARAGRAPH },
   { "see",           CMD_SA },
   { "since",         CMD_SINCE },
   { "skip",          CMD_SKIP },

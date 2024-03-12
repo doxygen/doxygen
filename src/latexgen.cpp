@@ -1641,6 +1641,7 @@ void LatexGenerator::startSection(const QCString &lab,const QCString &,SectionTy
       case SectionType::Subsection:    m_t << "doxyparagraph"; break;
       case SectionType::Subsubsection: m_t << "doxysubparagraph"; break;
       case SectionType::Paragraph:     m_t << "doxysubparagraph"; break;
+      case SectionType::Subparagraph:  m_t << "doxysubparagraph"; break;
       default: ASSERT(0); break;
     }
     m_t << "{";
@@ -1654,6 +1655,7 @@ void LatexGenerator::startSection(const QCString &lab,const QCString &,SectionTy
       case SectionType::Subsection:    m_t << "doxysubsubsection"; break;
       case SectionType::Subsubsection: m_t << "doxyparagraph"; break;
       case SectionType::Paragraph:     m_t << "doxysubparagraph"; break;
+      case SectionType::Subparagraph:  m_t << "doxysubparagraph"; break;
       default: ASSERT(0); break;
     }
     m_t << "{";

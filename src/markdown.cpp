@@ -610,6 +610,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "snippetlineno",  endOfLine  },
     { "struct",         endOfLine  },
     { "subpage",        endOfLabel },
+    { "subparagraph",   endOfLabel },
     { "subsection",     endOfLabel },
     { "subsubsection",  endOfLabel },
     { "throw",          endOfLabel },
@@ -2652,7 +2653,7 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   else if ((level=isAtxHeader(data,header,id,TRUE)))
   {
     QCString hTag;
-    if (level<5 && !id.isEmpty())
+    if (level<6 && !id.isEmpty())
     {
       switch(level)
       {
@@ -2662,7 +2663,9 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
                  break;
         case 3:  out+="@subsubsection ";
                  break;
-        default: out+="@paragraph ";
+        case 4:  out+="@paragraph ";
+                 break;
+        default: out+="@subparagraph ";
                  break;
       }
       out+=id;
@@ -2728,7 +2731,7 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       j--;
     }
     if (!level && data[j-1]!='\n') level=curLevel; // lazy
-    if (level == 1) 
+    if (level == 1)
     {
       QCString txt = data.substr(indent,end-indent);
       txt = txt.lower().stripWhiteSpace();

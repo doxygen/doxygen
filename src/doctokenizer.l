@@ -1435,6 +1435,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                       yyextra->secType = SectionType::Paragraph;
                                       BEGIN(St_SecLabel2);
                                     }
+<St_Sections>{CMD}"subparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subparagraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
                                       yyextra->endMarker="endverbatim";
                                       BEGIN(St_SecSkip);

@@ -223,6 +223,7 @@ documentation:
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
+\refitem cmdsubparagraph \\subparagraph
 \refitem cmdsubsection \\subsection
 \refitem cmdsubsubsection \\subsubsection
 \refitem cmdtableofcontents \\tableofcontents
@@ -2650,6 +2651,18 @@ Make sure you have first read \ref intro "the introduction".
   \c \\paragraph command.
 
   \warning This command only works inside a subsubsection of a
+           related page documentation block and
+           \e not in other documentation blocks!
+
+<hr>
+\section cmdsubparagraph \\subparagraph <subparagraph-name> (subparagraph title)
+
+  \addindex \\subparagraph
+  Creates a named subparagraph with name \<subparagraph-name\>. The title of the
+  subparagraph should be specified as the second argument of the
+  \c \\subparagraph command.
+
+  \warning This command only works inside a paragraph of a
            related page documentation block and
            \e not in other documentation blocks!
 

@@ -1451,6 +1451,7 @@ int DocInternal::parse(int level)
            retval!=RetVal_Subsection &&
            retval!=RetVal_Subsubsection &&
            retval!=RetVal_Paragraph &&
+           retval!=RetVal_SubParagraph &&
            retval!=RetVal_EndInternal
           );
   if (lastPar) lastPar->markLast();
@@ -1459,7 +1460,8 @@ int DocInternal::parse(int level)
   while ((level==1 && retval==RetVal_Section) ||
          (level==2 && retval==RetVal_Subsection) ||
          (level==3 && retval==RetVal_Subsubsection) ||
-         (level==4 && retval==RetVal_Paragraph)
+         (level==4 && retval==RetVal_Paragraph) ||
+         (level==5 && retval==RetVal_SubParagraph)
         )
   {
     children().append<DocSection>(parser(),thisVariant(),
@@ -4028,6 +4030,12 @@ int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         retval = RetVal_Paragraph;
       }
       break;
+    case CMD_SUBPARAGRAPH:
+      {
+        handleSection(cmdChar,cmdName);
+        retval = RetVal_SubParagraph;
+      }
+      break;
     case CMD_ISTARTCODE:
       {
         parser()->tokenizer.setStateICode();
@@ -5603,6 +5611,7 @@ int DocSection::parse()
            retval!=RetVal_Subsection    &&
            retval!=RetVal_Subsubsection &&
            retval!=RetVal_Paragraph     &&
+           retval!=RetVal_SubParagraph  &&
            retval!=RetVal_EndInternal
           );
 
@@ -5661,6 +5670,25 @@ int DocSection::parse()
       }
       if (!(m_level<3 && (retval == RetVal_Subsection || retval == RetVal_Subsubsection))) break;
     }
+    else if (retval==RetVal_SubParagraph && m_level<=4)
+    {
+      if ((m_level <= 3) &&
+          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+                       "Unexpected subparagraph command found inside %s!",
+                       g_sectionLevelToName[m_level]);
+      }
+      // then parse any number of nested sections
+      while (retval==RetVal_SubParagraph) // more sections follow
+      {
+        children().append<DocSection>(parser(),thisVariant(),
+                                5,
+                                parser()->context.token->sectionId);
+        retval = children().get_last<DocSection>()->parse();
+      }
+      if (!(m_level<4 && (retval == RetVal_Subsection || retval == RetVal_Subsubsection))) break;
+    }
     else
     {
       break;
@@ -5672,6 +5700,7 @@ int DocSection::parse()
                   retval==RetVal_Subsection ||
                   retval==RetVal_Subsubsection ||
                   retval==RetVal_Paragraph ||
+                  retval==RetVal_SubParagraph ||
                   retval==RetVal_Internal ||
                   retval==RetVal_EndInternal
                  );
@@ -5813,6 +5842,40 @@ void DocRoot::parse()
       else
       {
         lastPar = par;
+      }
+    }
+    if (retval == RetVal_SubParagraph)
+    {
+      if (!AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
+        warn_doc_error(parser()->context.fileName,
+                       parser()->tokenizer.getLineNr(),
+                       "found subparagraph command (id: '%s') outside of paragraph context!",
+                       qPrint(parser()->context.token->sectionId));
+      }
+      while (retval==RetVal_SubParagraph)
+      {
+        if (!parser()->context.token->sectionId.isEmpty())
+        {
+          const SectionInfo *sec=SectionManager::instance().find(parser()->context.token->sectionId);
+          if (sec)
+          {
+            children().append<DocSection>(parser(),thisVariant(),
+                                    5,
+                                    parser()->context.token->sectionId);
+            retval = children().get_last<DocSection>()->parse();
+          }
+          else
+          {
+            warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Invalid subparagraph id '%s'; ignoring subparagraph",qPrint(parser()->context.token->sectionId));
+            retval = 0;
+          }
+        }
+        else
+        {
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Missing id for subparagraph; ignoring subparagraph");
+          retval = 0;
+        }
       }
     }
     if (retval == RetVal_Paragraph)
