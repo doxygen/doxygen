@@ -167,7 +167,14 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     {
       if (!inlineImage)
       {
-        t << "\n\\doxyfigcaption{";
+        if (Config_getBool(PDF_HYPERLINKS))
+        {
+          t << "\n\\doxyfigcaption{";
+        }
+        else
+        {
+          t << "\n\\doxyfigcaptionnolink{";
+        }
       }
       else
       {
