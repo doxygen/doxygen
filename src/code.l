@@ -3668,9 +3668,28 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
   if (!ctx->format.isEmpty())
   {
     const char *p = ctx->format.data();
+    bool skip = false;
+    char skipChar = ' ';
     while ((c=*p++)) // for each character in ctx->format
     {
-      if (c=='$')
+      if (skip)
+      {
+        char s[2];
+        s[0]=c;s[1]=0;
+        codifyLines(yyscanner,s);
+        if (c==skipChar)
+        {
+          skip = false;
+          skipChar = ' ';
+        }
+        else if (c=='\\')
+        {
+          c = *p++;
+          s[0]=c;
+          codifyLines(yyscanner,s);
+        }
+      }
+      else if (c=='$')
       {
         char nc=*p++;
         if (nc=='$') // escaped $
@@ -3877,6 +3896,14 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
             ASSERT(0); // "invalid escape sequence"
           }
         }
+      }
+      else if (c=='\'' || c == '"')
+      {
+        char s[2];
+        s[0]=c;s[1]=0;
+        codifyLines(yyscanner,s);
+        skip = true;
+        skipChar = c;
       }
       else // normal non-marker character
       {
