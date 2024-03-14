@@ -2377,6 +2377,7 @@ STopt  [^\n@\\]*
                                         }
 <SkipGuardedSection>[^ \\@\n]+          { // skip non-special characters
                                         }
+<SkipGuardedSection>{CMD}{CMD}          | 
 <SkipGuardedSection>.                   { // any other character
                                         }
 
