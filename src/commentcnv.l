@@ -932,6 +932,7 @@ SLASHopt [/]*
 				     BEGIN(SkipString);
   				   }
    */
+<CComment,CNComment>{CMD}{CMD}     |
 <CComment,CNComment>.	           {
                                      copyToOutput(yyscanner,yytext,yyleng);
   				   }
