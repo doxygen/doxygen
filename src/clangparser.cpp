@@ -235,8 +235,23 @@ void ClangTUParser::parse()
 
   // let libclang do the actual parsing
   //for (i=0;i<argv.size();i++) printf("Argument %d: %s\n",i,argv[i]);
-  p->tu = clang_parseTranslationUnit(p->index, nullptr,
-                                     argv.data(), static_cast<int>(argv.size()), p->ufs.data(), numUnsavedFiles,
+  const char * filename_arg = nullptr;
+  auto num_args = argv.size();
+  // Usually, the last compile command (last entry of argv) is the filename of the source
+  // file to parse. It does not matter to clang_parseTranslationUnit if we pass the file name
+  // separately in its second argument or if we just pass it a nullptr as the second
+  // argument and pass the file name with the other compile commands.
+  // However, in some cases (e.g., starting from Clang 14, if we are parsing a header file, see
+  // https://github.com/doxygen/doxygen/issues/10733), argv includes a "--" as second to
+  // last argument (which is supposed to make it easier to parse the argument list). If we
+  // pass this "--", clang_parseTranslationUnit returns an error. To avoid this, we check if
+  // the second to last argument is "--" and if so, we pass the file name separately.
+  if (std::string(argv[argv.size() - 2]) == "--") {
+    filename_arg = argv[argv.size() - 1];
+    num_args = argv.size() - 2;
+  }
+  p->tu = clang_parseTranslationUnit(p->index, filename_arg,
+                                     argv.data(), static_cast<int>(num_args), p->ufs.data(), numUnsavedFiles,
                                      CXTranslationUnit_DetailedPreprocessingRecord);
   //printf("  tu=%p\n",p->tu);
   // free arguments
