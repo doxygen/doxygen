@@ -147,24 +147,25 @@ const char *DocTokenizer::retvalToString(int retval)
 {
   switch (retval)
   {
-    case RetVal_OK:            return "RetVal_OK";
-    case RetVal_SimpleSec:     return "RetVal_SimpleSec";
-    case RetVal_ListItem:      return "RetVal_ListItem";
-    case RetVal_Section:       return "RetVal_Section";
-    case RetVal_Subsection:    return "RetVal_Subsection";
-    case RetVal_Subsubsection: return "RetVal_Subsubsection";
-    case RetVal_Paragraph:     return "RetVal_Paragraph";
-    case RetVal_SubParagraph:  return "RetVal_SubParagraph";
-    case RetVal_EndList:       return "RetVal_EndList";
-    case RetVal_EndPre:        return "RetVal_EndPre";
-    case RetVal_DescData:      return "RetVal_DescData";
-    case RetVal_DescTitle :    return "RetVal_DescTitle";
-    case RetVal_EndDesc:       return "RetVal_EndDesc";
-    case RetVal_TableRow:      return "RetVal_TableRow";
-    case RetVal_TableCell:     return "RetVal_TableCell";
-    case RetVal_TableHCell:    return "RetVal_TableHCell";
-    case RetVal_EndTable:      return "RetVal_EndTable";
-    case RetVal_Internal:      return "RetVal_Internal";
+    case RetVal_OK:              return "RetVal_OK";
+    case RetVal_SimpleSec:       return "RetVal_SimpleSec";
+    case RetVal_ListItem:        return "RetVal_ListItem";
+    case RetVal_Section:         return "RetVal_Section";
+    case RetVal_Subsection:      return "RetVal_Subsection";
+    case RetVal_Subsubsection:   return "RetVal_Subsubsection";
+    case RetVal_Paragraph:       return "RetVal_Paragraph";
+    case RetVal_SubParagraph:    return "RetVal_SubParagraph";
+    case RetVal_SubSubParagraph: return "RetVal_SubSubParagraph";
+    case RetVal_EndList:         return "RetVal_EndList";
+    case RetVal_EndPre:          return "RetVal_EndPre";
+    case RetVal_DescData:        return "RetVal_DescData";
+    case RetVal_DescTitle:       return "RetVal_DescTitle";
+    case RetVal_EndDesc:         return "RetVal_EndDesc";
+    case RetVal_TableRow:        return "RetVal_TableRow";
+    case RetVal_TableCell:       return "RetVal_TableCell";
+    case RetVal_TableHCell:      return "RetVal_TableHCell";
+    case RetVal_EndTable:        return "RetVal_EndTable";
+    case RetVal_Internal:        return "RetVal_Internal";
   }
   return "ERROR";
 }

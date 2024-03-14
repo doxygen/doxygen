@@ -225,6 +225,7 @@ documentation:
 \refitem cmdsubpage \\subpage
 \refitem cmdsubparagraph \\subparagraph
 \refitem cmdsubsection \\subsection
+\refitem cmdsubsubparagraph \\subsubparagraph
 \refitem cmdsubsubsection \\subsubsection
 \refitem cmdtableofcontents \\tableofcontents
 \refitem cmdtest \\test
@@ -2663,6 +2664,18 @@ Make sure you have first read \ref intro "the introduction".
   \c \\subparagraph command.
 
   \warning This command only works inside a paragraph of a
+           related page documentation block and
+           \e not in other documentation blocks!
+
+<hr>
+\section cmdsubsubparagraph \\subsubparagraph <subsubparagraph-name> (subsubparagraph title)
+
+  \addindex \\subsubparagraph
+  Creates a named subsubparagraph with name \<subsubparagraph-name\>. The title of the
+  subsubparagraph should be specified as the second argument of the
+  \c \\subsubparagraph command.
+
+  \warning This command only works inside a subparagraph of a
            related page documentation block and
            \e not in other documentation blocks!
 

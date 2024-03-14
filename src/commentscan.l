@@ -347,6 +347,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "struct",                 { &handleStruct,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "subpage",                { &handleSubpage,                  CommandSpacing::Inline,    SectionHandling::Allowed }},
   { "subparagraph",           { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
+  { "subsubparagraph",        { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "subsection",             { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "subsubsection",          { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "tableofcontents",        { &handleToc,                      CommandSpacing::Invisible, SectionHandling::Break   }},
@@ -3180,22 +3181,24 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   //printf("handleSection(%s) raiseLevel=%d\n",qPrint(s),yyextra->raiseLevel);
   BEGIN(SectionLabel);
   // determine natural section level
-  if      (s=="section")       yyextra->sectionLevel=1;
-  else if (s=="subsection")    yyextra->sectionLevel=2;
-  else if (s=="subsubsection") yyextra->sectionLevel=3;
-  else if (s=="paragraph")     yyextra->sectionLevel=4;
-  else if (s=="subparagraph")  yyextra->sectionLevel=5;
+  if      (s=="section")         yyextra->sectionLevel=1;
+  else if (s=="subsection")      yyextra->sectionLevel=2;
+  else if (s=="subsubsection")   yyextra->sectionLevel=3;
+  else if (s=="paragraph")       yyextra->sectionLevel=4;
+  else if (s=="subparagraph")    yyextra->sectionLevel=5;
+  else if (s=="subsubparagraph") yyextra->sectionLevel=6;
   // raise it if requested
-  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,5);
+  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,6);
   // rewrite the update section level to the output
   switch (yyextra->sectionLevel)
   {
-    case 1:  addOutput(yyscanner,"@section ");       break;
-    case 2:  addOutput(yyscanner,"@subsection ");    break;
-    case 3:  addOutput(yyscanner,"@subsubsection "); break;
-    case 4:  addOutput(yyscanner,"@paragraph ");     break;
-    case 5:  addOutput(yyscanner,"@subparagraph ");  break;
-    default: addOutput(yyscanner,"@"+s+" ");         break;
+    case 1:  addOutput(yyscanner,"@section ");         break;
+    case 2:  addOutput(yyscanner,"@subsection ");      break;
+    case 3:  addOutput(yyscanner,"@subsubsection ");   break;
+    case 4:  addOutput(yyscanner,"@paragraph ");       break;
+    case 5:  addOutput(yyscanner,"@subparagraph ");    break;
+    case 6:  addOutput(yyscanner,"@subsubparagraph "); break;
+    default: addOutput(yyscanner,"@"+s+" ");           break;
   }
   return FALSE;
 }

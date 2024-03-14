@@ -611,6 +611,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "struct",         endOfLine  },
     { "subpage",        endOfLabel },
     { "subparagraph",   endOfLabel },
+    { "subsubparagraph",endOfLabel },
     { "subsection",     endOfLabel },
     { "subsubsection",  endOfLabel },
     { "throw",          endOfLabel },
@@ -2653,7 +2654,7 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   else if ((level=isAtxHeader(data,header,id,TRUE)))
   {
     QCString hTag;
-    if (level<6 && !id.isEmpty())
+    if (level<=6 && !id.isEmpty())
     {
       switch(level)
       {
@@ -2665,7 +2666,9 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
                  break;
         case 4:  out+="@paragraph ";
                  break;
-        default: out+="@subparagraph ";
+        case 5:  out+="@subparagraph ";
+                 break;
+        default: out+="@subsubparagraph ";
                  break;
       }
       out+=id;

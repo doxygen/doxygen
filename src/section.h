@@ -27,14 +27,15 @@ class Definition;
 //! enum representing the various types of sections and entities that can be referred to.
 enum class SectionType
 {
-  Page          = 0,
-  Section       = 1,
-  Subsection    = 2,
-  Subsubsection = 3,
-  Paragraph     = 4,
-  Subparagraph  = 5,
-  Anchor        = 6,
-  Table         = 7
+  Page            = 0,
+  Section         = 1,
+  Subsection      = 2,
+  Subsubsection   = 3,
+  Paragraph       = 4,
+  Subparagraph    = 5,
+  Subsubparagraph = 6,
+  Anchor          = 7,
+  Table           = 8
 };
 
 //! return true if type is a section, and false if it is a page, anchor or table.
@@ -44,7 +45,8 @@ inline constexpr bool isSection(SectionType type)
           type==SectionType::Subsection    ||
           type==SectionType::Subsubsection ||
           type==SectionType::Paragraph     ||
-          type==SectionType::Subparagraph);
+          type==SectionType::Subparagraph  ||
+          type==SectionType::Subsubparagraph);
 }
 
 //! class that provide information about a section.

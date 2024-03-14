@@ -1303,7 +1303,7 @@ static void parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
   reg::Match match;
   if (reg::search(s,match,re))
   {
-    const int maxLevel = 5;
+    const int maxLevel = 6;
     yyextra->raiseIncrement = atoi(match[1].str().c_str());
     if (yyextra->raiseLevel+yyextra->raiseIncrement>maxLevel) // check range
     {

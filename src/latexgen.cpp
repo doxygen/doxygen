@@ -1636,12 +1636,13 @@ void LatexGenerator::startSection(const QCString &lab,const QCString &,SectionTy
   {
     switch(type)
     {
-      case SectionType::Page:          m_t << "doxysubsection"; break;
-      case SectionType::Section:       m_t << "doxysubsubsection"; break;
-      case SectionType::Subsection:    m_t << "doxyparagraph"; break;
-      case SectionType::Subsubsection: m_t << "doxysubparagraph"; break;
-      case SectionType::Paragraph:     m_t << "doxysubparagraph"; break;
-      case SectionType::Subparagraph:  m_t << "doxysubparagraph"; break;
+      case SectionType::Page:             m_t << "doxysubsection"; break;
+      case SectionType::Section:          m_t << "doxysubsubsection"; break;
+      case SectionType::Subsection:       m_t << "doxysubsubsubsection"; break;
+      case SectionType::Subsubsection:    m_t << "doxysubsubsubsubsection"; break;
+      case SectionType::Paragraph:        m_t << "doxysubsubsubsubsubsection"; break;
+      case SectionType::Subparagraph:     m_t << "doxysubsubsubsubsubsubsection"; break;
+      case SectionType::Subsubparagraph:  m_t << "doxysubsubsubsubsubsubsection"; break;
       default: ASSERT(0); break;
     }
     m_t << "{";
@@ -1650,12 +1651,13 @@ void LatexGenerator::startSection(const QCString &lab,const QCString &,SectionTy
   {
     switch(type)
     {
-      case SectionType::Page:          m_t << "doxysection"; break;
-      case SectionType::Section:       m_t << "doxysubsection"; break;
-      case SectionType::Subsection:    m_t << "doxysubsubsection"; break;
-      case SectionType::Subsubsection: m_t << "doxyparagraph"; break;
-      case SectionType::Paragraph:     m_t << "doxysubparagraph"; break;
-      case SectionType::Subparagraph:  m_t << "doxysubparagraph"; break;
+      case SectionType::Page:             m_t << "doxysection"; break;
+      case SectionType::Section:          m_t << "doxysubsection"; break;
+      case SectionType::Subsection:       m_t << "doxysubsubsection"; break;
+      case SectionType::Subsubsection:    m_t << "doxysubsubsubsection"; break;
+      case SectionType::Paragraph:        m_t << "doxysubsubsubsubsection"; break;
+      case SectionType::Subparagraph:     m_t << "doxysubsubsubsubsubsection"; break;
+      case SectionType::Subsubparagraph:  m_t << "doxysubsubsubsubsubsubsection"; break;
       default: ASSERT(0); break;
     }
     m_t << "{";
