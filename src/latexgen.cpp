@@ -375,7 +375,11 @@ static void writeLatexMakefile()
     t << "\tps2pdf $(MANUAL_FILE).ps $(MANUAL_FILE).pdf\n\n";
     t << "$(MANUAL_FILE).dvi: clean $(MANUAL_FILE).tex doxygen.sty\n"
       << "\techo \"Running latex...\"\n"
-      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex || \\\n"
+      << "\tif [ $$? != 0 ] ; then \\\n"
+      << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+      << "\t        false; \\\n"
+      << "\tfi\n"
       << "\techo \"Running makeindex...\"\n"
       << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n";
     if (generateBib)
@@ -383,7 +387,11 @@ static void writeLatexMakefile()
       t << "\techo \"Running bibtex...\"\n";
       t << "\t$(BIBTEX_CMD) $(MANUAL_FILE)\n";
       t << "\techo \"Rerunning latex....\"\n";
-      t << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n";
+      t << "\t$(LATEX_CMD) $(MANUAL_FILE).tex || \\\n"
+        << "\tif [ $$? != 0 ] ; then \\\n"
+        << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+        << "\t        false; \\\n"
+        << "\tfi\n";
     }
     t << "\techo \"Rerunning latex....\"\n"
       << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
@@ -392,10 +400,19 @@ static void writeLatexMakefile()
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
       << "\t      $(LATEX_CMD) $(MANUAL_FILE).tex ; \\\n"
+      << "\t      $(LATEX_CMD) $(MANUAL_FILE).tex || \\\n"
+      << "\t      if [ $$? != 0 ] ; then \\\n"
+      << "\t              \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+      << "\t              false; \\\n"
+      << "\t      fi; \\\n"
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
       << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n"
-      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex || \\\n"
+      << "\tif [ $$? != 0 ] ; then \\\n"
+      << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+      << "\t        false; \\\n"
+      << "\tfi\n"
       << "$(MANUAL_FILE).ps: $(MANUAL_FILE).ps\n"
       << "\tpsnup -2 $(MANUAL_FILE).ps >$(MANUAL_FILE).ps\n"
       << "\n"
@@ -407,23 +424,43 @@ static void writeLatexMakefile()
     t << "all: $(MANUAL_FILE).pdf\n\n"
       << "pdf: $(MANUAL_FILE).pdf\n\n";
     t << "$(MANUAL_FILE).pdf: clean $(MANUAL_FILE).tex\n";
-    t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n";
+    t << "\t$(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+      << "\tif [ $$? != 0 ] ; then \\\n"
+      << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+      << "\t        false; \\\n"
+      << "\tfi\n";
     t << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n";
     if (generateBib)
     {
       t << "\t$(BIBTEX_CMD) $(MANUAL_FILE)\n";
-      t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n";
+      t << "\t$(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+        << "\tif [ $$? != 0 ] ; then \\\n"
+        << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+        << "\t        false; \\\n"
+        << "\tfi\n";
     }
-    t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n"
+    t << "\t$(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+      << "\tif [ $$? != 0 ] ; then \\\n"
+      << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+      << "\t        false; \\\n"
+      << "\tfi\n"
       << "\tlatex_count=$(LATEX_COUNT) ; \\\n"
       << "\twhile grep -E -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
-      << "\t      $(LATEX_CMD) $(MANUAL_FILE) ;\\\n"
+      << "\t      $(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+      << "\t      if [ $$? != 0 ] ; then \\\n"
+      << "\t              \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+      << "\t              false; \\\n"
+      << "\t      fi; \\\n"
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
       << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n"
-      << "\t$(LATEX_CMD) $(MANUAL_FILE)\n\n";
+      << "\t$(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+      << "\tif [ $$? != 0 ] ; then \\\n"
+      << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
+      << "\t        false; \\\n"
+      << "\tfi\n";
   }
 
   t << "\n"
@@ -467,6 +504,7 @@ static void writeMakeBat()
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
     t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+    t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "echo ----\r\n";
     t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     if (generateBib)
@@ -474,6 +512,7 @@ static void writeMakeBat()
       t << "%BIBTEX_CMD% %MANUAL_FILE%\r\n";
       t << "echo ----\r\n";
       t << "\t%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+      t << "@if ERRORLEVEL 1 goto :error\r\n";
     }
     t << "setlocal enabledelayedexpansion\r\n";
     t << "set count=%LAT#EX_COUNT%\r\n";
@@ -487,11 +526,13 @@ static void writeMakeBat()
     t << "if !count! EQU 0 goto :skip\r\n\r\n";
     t << "echo ----\r\n";
     t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+    t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
     t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+    t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "dvips -o %MANUAL_FILE%.ps %MANUAL_FILE%.dvi\r\n";
     t << Portable::ghostScriptCommand();
     t << " -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
@@ -500,15 +541,19 @@ static void writeMakeBat()
   else // use pdflatex
   {
     t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+    t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "echo ----\r\n";
     t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     if (generateBib)
     {
       t << "%BIBTEX_CMD% %MANUAL_FILE%\r\n";
       t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+      t << "@if ERRORLEVEL 1 goto :error\r\n";
     }
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% %MANUAL_FILE%\r\n\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+    t << "@if ERRORLEVEL 1 goto :error\r\n";
+    t << "\r\n";
     t << "setlocal enabledelayedexpansion\r\n";
     t << "set count=%LATEX_COUNT%\r\n";
     t << ":repeat\r\n";
@@ -521,12 +566,20 @@ static void writeMakeBat()
     t << "if !count! EQU 0 goto :skip\r\n\r\n";
     t << "echo ----\r\n";
     t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+    t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
     t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+    t << "@if ERRORLEVEL 1 goto :error\r\n";
   }
+  t<< "\r\n";
+  t << "goto :end\r\n";
+  t << ":error\r\n";
+  t << "@echo ===============\r\n";
+  t << "@echo Please consult %MANUAL_FILE%.log to see the error messages\r\n";
+  t << "@echo ===============\r\n";
   t<< "\r\n";
   t<< "@REM reset environment\r\n";
   t<< "popd\r\n";

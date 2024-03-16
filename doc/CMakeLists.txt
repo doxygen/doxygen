@@ -228,11 +228,11 @@ add_custom_target(doxygen_pdf
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf  .
         COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex" "${PROJECT_BINARY_DIR}/latex/doxygen_manual.tex" "${VERSION}"
         COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/manual.sty" "${PROJECT_BINARY_DIR}/latex/manual.sty" "${VERSION}"
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
         COMMAND ${MAKEINDEX} doxygen_manual.idx
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
         COMMAND ${MAKEINDEX} doxygen_manual.idx
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex || (${CMAKE_COMMAND} -E echo "See ${PROJECT_BINARY_DIR}/latex/doxygen_manual.log for error messages" && ${CMAKE_COMMAND} -E false)
         DEPENDS ${PROJECT_BINARY_DIR}/doc/manual.sty ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf
         DEPENDS run_doxygen ${PROJECT_SOURCE_DIR}/doc/replace_version.py ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
