@@ -176,6 +176,7 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 %x SnippetDoc
 %x IncludeFile
 
+CMD ("\\"|"@")
   //- start: NUMBER -------------------------------------------------------------------------
   // Note same defines in code.l: keep in sync
 DECIMAL_INTEGER  [1-9][0-9']*[0-9]?[uU]?[lL]?[lL]?
@@ -932,6 +933,7 @@ SLASHopt [/]*
 				     BEGIN(SkipString);
   				   }
    */
+<CComment,CNComment>{CMD}{CMD}     |
 <CComment,CNComment>.	           {
                                      copyToOutput(yyscanner,yytext,yyleng);
   				   }
@@ -954,7 +956,7 @@ SLASHopt [/]*
 				     yyextra->inRoseComment=false;
 				     BEGIN(Scan);
                                    }
-<SComment>\n[ \t]*{CPPC}"/"[^\/\n]/.*\n  {
+<SComment>\n[ \t]*{CPPC}"/"[^\\@\/\n]/.*\n  {
                                      replaceComment(yyscanner,1);
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
@@ -1242,6 +1244,7 @@ SLASHopt [/]*
 <ReadLine>`[^`]+`                  {
   				     copyToOutput(yyscanner,yytext,yyleng);
                                    }
+<ReadLine>{CMD}{CMD}               |
 <ReadLine>.			   {
   				     copyToOutput(yyscanner,yytext,yyleng);
   				   }
