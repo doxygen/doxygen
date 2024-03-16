@@ -4190,7 +4190,7 @@ static QCString addFormula(yyscan_t yyscanner)
 
 static SectionType sectionLevelToType(int level)
 {
-  if (level>=0 && level<5) return (SectionType)level;
+  if (level>=0 && level<Section::MaxLevel) return (SectionType)level;
   return SectionType::Anchor;
 }
 
