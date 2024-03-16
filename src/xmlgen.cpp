@@ -2008,8 +2008,8 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   {
     t << "    <tableofcontents>\n";
     int level=1,l;
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = pd->localToc().xmlLevel();
+    BoolVector inLi(maxLevel+1,false);
     for (const SectionInfo *si : sectionRefs)
     {
       if (isSection(si->type()))
@@ -2028,7 +2028,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
           for (l=level;l>nextLevel;l--)
           {
             if (l <= maxLevel && inLi[l]) t << "    </tocsect>\n";
-            inLi[l]=FALSE;
+            inLi[l]=false;
             if (l <= maxLevel) t << "    </tableofcontents>\n";
           }
         }
@@ -2041,7 +2041,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
           t << "      <tocsect>\n";
           t << "        <name>" << titleDoc << "</name>\n";
           t << "        <reference>"  <<  convertToXML(pageName) << "_1" << label << "</reference>\n";
-          inLi[nextLevel]=TRUE;
+          inLi[nextLevel]=true;
           level = nextLevel;
         }
       }
@@ -2049,12 +2049,12 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     while (level>1 && level <= maxLevel)
     {
       if (inLi[level]) t << "    </tocsect>\n";
-      inLi[level]=FALSE;
+      inLi[level]=false;
       t << "    </tableofcontents>\n";
       level--;
     }
     if (level <= maxLevel && inLi[level]) t << "    </tocsect>\n";
-    inLi[level]=FALSE;
+    inLi[level]=false;
     t << "    </tableofcontents>\n";
   }
   t << "    <briefdescription>\n";

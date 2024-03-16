@@ -24,6 +24,11 @@
 
 class Definition;
 
+namespace Section
+{
+  const int MaxLevel = 6;
+}
+
 //! enum representing the various types of sections and entities that can be referred to.
 enum class SectionType
 {
@@ -33,7 +38,7 @@ enum class SectionType
   Subsubsection   = 3,
   Paragraph       = 4,
   Subparagraph    = 5,
-  Subsubparagraph = 6,
+  Subsubparagraph = Section::MaxLevel, // =6
   Anchor          = 7,
   Table           = 8
 };

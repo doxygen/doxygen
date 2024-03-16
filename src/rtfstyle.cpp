@@ -104,8 +104,12 @@ Rtf_Style_Default rtf_Style_Default[] =
     "\\sbasedon0 \\snext0 heading 4;}{\\*\\cs10 \\additive Default Paragraph Font"
   },
   { "Heading5",
-    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid ",
+    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs16\\cgrid ",
     "\\sbasedon0 \\snext0 heading 5;}{\\*\\cs10 \\additive Default Paragraph Font"
+  },
+  { "Heading6",
+    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs12\\cgrid ",
+    "\\sbasedon0 \\snext0 heading 6;}{\\*\\cs10 \\additive Default Paragraph Font"
   },
   { "Title",
     "\\s15\\qc\\sb240\\sa60\\widctlpar\\outlinelevel0\\adjustright \\b\\f1\\fs32\\kerning28\\cgrid ",

@@ -3499,10 +3499,11 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
     BoolVector inLi(maxLevel+1,false);
     for (const SectionInfo *si : sectionRefs)
     {
+      //printf("Section: label=%s type=%d isSection()=%d\n",qPrint(si->label()),si->type(),isSection(si->type()));
       SectionType type = si->type();
       if (isSection(type))
       {
-        //printf("  level=%d title=%s\n",level,qPrint(si->title));
+        //printf("  level=%d title=%s maxLevel=%d\n",level,qPrint(si->title()),maxLevel);
         int nextLevel = static_cast<int>(type);
         if (nextLevel>level)
         {

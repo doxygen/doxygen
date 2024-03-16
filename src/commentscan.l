@@ -2430,6 +2430,20 @@ STopt  [^\n@\\]*
                                             BEGIN(Comment);
                                           }
                                         }
+<SkipInternal>[@\\]/"subparagraph"[ \t] {
+                                          if (yyextra->sectionLevel>4)
+                                          {
+                                            unput('\\');
+                                            BEGIN(Comment);
+                                          }
+                                        }
+<SkipInternal>[@\\]/"subsubparagraph"[ \t] {
+                                          if (yyextra->sectionLevel>5)
+                                          {
+                                            unput('\\');
+                                            BEGIN(Comment);
+                                          }
+                                        }
 <SkipInternal>[@\\]"endinternal"[ \t]*  {
                                           BEGIN(Comment);
                                         }
@@ -3188,7 +3202,7 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   else if (s=="subparagraph")    yyextra->sectionLevel=5;
   else if (s=="subsubparagraph") yyextra->sectionLevel=6;
   // raise it if requested
-  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,6);
+  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,Section::MaxLevel);
   // rewrite the update section level to the output
   switch (yyextra->sectionLevel)
   {
@@ -3885,7 +3899,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
     {
       QCString opt = QCString(opt_).stripWhiteSpace().lower();
       char dum;
-      int level = 5;
+      int level = Section::MaxLevel;
       int i = opt.find(':');
       if (i>0)  // found ':' but not on position 0 what would mean just a level
       {
@@ -3896,8 +3910,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
         }
         else
         {
-          level = (level > 5 ? 5 : level);
-          level = (level <= 0 ? 5 : level);
+          level = level<=0 ? Section::MaxLevel : std::min(level,Section::MaxLevel);
           opt = opt.left(i).stripWhiteSpace();
         }
       }
@@ -3928,8 +3941,8 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
     if (yyextra->current->localToc.nothingEnabled())
     {
       // for backward compatibility
-      yyextra->current->localToc.enableHtml(5);
-      yyextra->current->localToc.enableXml(5);
+      yyextra->current->localToc.enableHtml(Section::MaxLevel);
+      yyextra->current->localToc.enableXml(Section::MaxLevel);
     }
   }
   return FALSE;

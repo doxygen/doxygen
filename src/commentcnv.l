@@ -44,6 +44,7 @@ typedef yyguts_t *yyscan_t;
 #include "fileinfo.h"
 #include "stringutil.h"
 #include "regex.h"
+#include "section.h"
 
 #include <assert.h>
 
@@ -1303,13 +1304,12 @@ static void parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
   reg::Match match;
   if (reg::search(s,match,re))
   {
-    const int maxLevel = 6;
     yyextra->raiseIncrement = atoi(match[1].str().c_str());
-    if (yyextra->raiseLevel+yyextra->raiseIncrement>maxLevel) // check range
+    if (yyextra->raiseLevel+yyextra->raiseIncrement>=Section::MaxLevel) // check range
     {
-      warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-5], adjusting",
-                yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement);
-      yyextra->raiseIncrement = std::max(0,maxLevel-yyextra->raiseLevel);
+      warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
+                yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,Section::MaxLevel-1);
+      yyextra->raiseIncrement = std::max(0,Section::MaxLevel-1-yyextra->raiseLevel);
     }
   }
 }

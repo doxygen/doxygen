@@ -1445,7 +1445,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   if (isToc) // special case for [TOC]
   {
     int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
-    if (toc_level>0 && toc_level<=5)
+    if (toc_level>0 && toc_level<=Section::MaxLevel)
     {
       out+="@tableofcontents{html:";
       out+=QCString().setNum(toc_level);

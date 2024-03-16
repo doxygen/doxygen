@@ -1147,9 +1147,7 @@ void RTFDocVisitor::operator()(const DocHtmlHeader &header)
   m_t << "{" // start section
       << rtf_Style_Reset;
   QCString heading;
-  int level = std::min(header.level()+m_hierarchyLevel,5);
-  if (level <= 0)
-    level = 1;
+  int level = std::clamp(header.level()+m_hierarchyLevel,1,Section::MaxLevel);
   heading.sprintf("Heading%d",level);
   // set style
   m_t << rtf_Style[heading.str()].reference();
