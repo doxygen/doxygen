@@ -684,9 +684,15 @@
                                           \doxysubparagraphfont{#1}%
                                           \doxyminisecfont{#1}}%
 % Define caption that is also suitable in a table
+% for usage with hyperlinks
 \makeatletter
 \def\doxyfigcaption{%
 \H@refstepcounter{figure}%
+\@dblarg{\@caption{figure}}}
+
+% for usage without hyperlinks
+\def\doxyfigcaptionnolink{%
+\refstepcounter{figure}%
 \@dblarg{\@caption{figure}}}
 \makeatother
 
