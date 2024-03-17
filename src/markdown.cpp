@@ -1445,7 +1445,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   if (isToc) // special case for [TOC]
   {
     int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
-    if (toc_level>0 && toc_level<=Section::MaxLevel)
+    if (toc_level>=SectionType::MinLevel && toc_level<=SectionType::MaxLevel)
     {
       out+="@tableofcontents{html:";
       out+=QCString().setNum(toc_level);
@@ -1990,7 +1990,11 @@ int Markdown::Private::isAtxHeader(std::string_view data,
   {
     return 0;
   }
-  while (i<size && level<6 && data[i]=='#') i++,level++;
+  while (i<size && data[i]=='#') i++,level++;
+  if (level>SectionType::MaxLevel) // too many #'s -> no section
+  {
+    return 0;
+  }
   while (i<size && data[i]==' ') i++,blanks++;
   if (level==1 && blanks==0)
   {
@@ -2654,22 +2658,16 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   else if ((level=isAtxHeader(data,header,id,TRUE)))
   {
     QCString hTag;
-    if (level<=6 && !id.isEmpty())
+    if (level>=SectionType::MinLevel && level<=SectionType::MaxLevel && !id.isEmpty())
     {
-      switch(level)
+      switch (level)
       {
-        case 1:  out+="@section ";
-                 break;
-        case 2:  out+="@subsection ";
-                 break;
-        case 3:  out+="@subsubsection ";
-                 break;
-        case 4:  out+="@paragraph ";
-                 break;
-        case 5:  out+="@subparagraph ";
-                 break;
-        default: out+="@subsubparagraph ";
-                 break;
+        case SectionType::Section:         out+="@section ";         break;
+        case SectionType::Subsection:      out+="@subsection ";      break;
+        case SectionType::Subsubsection:   out+="@subsubsection ";   break;
+        case SectionType::Paragraph:       out+="@paragraph ";       break;
+        case SectionType::Subparagraph:    out+="@subparagraph ";    break;
+        case SectionType::Subsubparagraph: out+="@subsubparagraph "; break;
       }
       out+=id;
       out+=" ";

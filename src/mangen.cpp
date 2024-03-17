@@ -661,13 +661,15 @@ void ManGenerator::startSection(const QCString &,const QCString &,SectionType ty
 {
   if( !m_inHeader )
   {
-    switch(type)
+    switch(type.level())
     {
-      case SectionType::Page:          startGroupHeader(0); break;
-      case SectionType::Section:       startGroupHeader(0); break;
-      case SectionType::Subsection:    startMemberHeader(QCString(), -1); break;
-      case SectionType::Subsubsection: startMemberHeader(QCString(), -1); break;
-      case SectionType::Paragraph:     startMemberHeader(QCString(), -1); break;
+      case SectionType::Page:             // fall through
+      case SectionType::Section:          startGroupHeader(0); break;
+      case SectionType::Subsection:       // fall through
+      case SectionType::Subsubsection:    // fall through
+      case SectionType::Paragraph:        // fall through
+      case SectionType::Subparagraph:     // fall through
+      case SectionType::Subsubparagraph:  startMemberHeader(QCString(), -1); break;
       default: ASSERT(0); break;
     }
   }
@@ -677,13 +679,15 @@ void ManGenerator::endSection(const QCString &,SectionType type)
 {
   if( !m_inHeader )
   {
-    switch(type)
+    switch(type.level())
     {
-      case SectionType::Page:          endGroupHeader(0); break;
-      case SectionType::Section:       endGroupHeader(0); break;
-      case SectionType::Subsection:    endMemberHeader(); break;
-      case SectionType::Subsubsection: endMemberHeader(); break;
-      case SectionType::Paragraph:     endMemberHeader(); break;
+      case SectionType::Page:            // fall through
+      case SectionType::Section:         endGroupHeader(0); break;
+      case SectionType::Subsection:      // fall through
+      case SectionType::Subsubsection:   // fall through
+      case SectionType::Paragraph:       // fall through
+      case SectionType::Subparagraph:    // fall through
+      case SectionType::Subsubparagraph: endMemberHeader(); break;
       default: ASSERT(0); break;
     }
   }

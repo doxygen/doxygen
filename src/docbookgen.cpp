@@ -1389,10 +1389,10 @@ void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalT
     for (const SectionInfo *si : sectionRefs)
     {
       SectionType type = si->type();
-      if (isSection(type))
+      if (type.isSection())
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = static_cast<int>(type);
+        int nextLevel = type.level();
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)

@@ -343,7 +343,7 @@ bool DefinitionImpl::hasSections() const
   if (m_impl->sectionRefs.empty()) return FALSE;
   for (const SectionInfo *si : m_impl->sectionRefs)
   {
-    if (isSection(si->type()))
+    if (si->type().isSection())
     {
       return TRUE;
     }
@@ -360,10 +360,10 @@ void DefinitionImpl::addSectionsToIndex()
   {
     const SectionInfo *si = *it;
     SectionType type = si->type();
-    if (isSection(type))
+    if (type.isSection())
     {
       //printf("  level=%d title=%s\n",level,qPrint(si->title));
-      int nextLevel = static_cast<int>(type);
+      int nextLevel = type.level();
       int i;
       if (nextLevel>level)
       {
@@ -387,13 +387,13 @@ void DefinitionImpl::addSectionsToIndex()
       // determine if there is a next level inside this item, but be aware of the anchor and table section references.
       auto it_next = std::next(it);
       bool isDir = (it_next!=m_impl->sectionRefs.end()) ?
-                       (isSection((*it_next)->type()) && static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
+                       ((*it_next)->type().isSection() && (*it_next)->type().level() > nextLevel) : false;
       Doxygen::indexList->addContentsItem(isDir,title,
                                          getReference(),
                                          m_impl->def->getOutputFileBase(),
                                          si->label(),
-                                         FALSE,
-                                         TRUE);
+                                         false,
+                                         true);
       level = nextLevel;
     }
   }

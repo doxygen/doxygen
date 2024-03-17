@@ -1308,11 +1308,11 @@ static void parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
   if (reg::search(s,match,re))
   {
     yyextra->raiseIncrement = atoi(match[1].str().c_str());
-    if (yyextra->raiseLevel+yyextra->raiseIncrement>=Section::MaxLevel) // check range
+    if (yyextra->raiseLevel+yyextra->raiseIncrement>=SectionType::MaxLevel) // check range
     {
       warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
-                yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,Section::MaxLevel-1);
-      yyextra->raiseIncrement = std::max(0,Section::MaxLevel-1-yyextra->raiseLevel);
+                yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
+      yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
     }
   }
 }

@@ -3196,23 +3196,23 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   //printf("handleSection(%s) raiseLevel=%d\n",qPrint(s),yyextra->raiseLevel);
   BEGIN(SectionLabel);
   // determine natural section level
-  if      (s=="section")         yyextra->sectionLevel=1;
-  else if (s=="subsection")      yyextra->sectionLevel=2;
-  else if (s=="subsubsection")   yyextra->sectionLevel=3;
-  else if (s=="paragraph")       yyextra->sectionLevel=4;
-  else if (s=="subparagraph")    yyextra->sectionLevel=5;
-  else if (s=="subsubparagraph") yyextra->sectionLevel=6;
+  if      (s=="section")         yyextra->sectionLevel=SectionType::Section;
+  else if (s=="subsection")      yyextra->sectionLevel=SectionType::Subsection;
+  else if (s=="subsubsection")   yyextra->sectionLevel=SectionType::Subsubsection;
+  else if (s=="paragraph")       yyextra->sectionLevel=SectionType::Paragraph;
+  else if (s=="subparagraph")    yyextra->sectionLevel=SectionType::Subparagraph;
+  else if (s=="subsubparagraph") yyextra->sectionLevel=SectionType::Subsubparagraph;
   // raise it if requested
-  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,Section::MaxLevel);
+  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
   // rewrite the update section level to the output
   switch (yyextra->sectionLevel)
   {
-    case 1:  addOutput(yyscanner,"@section ");         break;
-    case 2:  addOutput(yyscanner,"@subsection ");      break;
-    case 3:  addOutput(yyscanner,"@subsubsection ");   break;
-    case 4:  addOutput(yyscanner,"@paragraph ");       break;
-    case 5:  addOutput(yyscanner,"@subparagraph ");    break;
-    case 6:  addOutput(yyscanner,"@subsubparagraph "); break;
+    case SectionType::Section:         addOutput(yyscanner,"@section ");         break;
+    case SectionType::Subsection:      addOutput(yyscanner,"@subsection ");      break;
+    case SectionType::Subsubsection:   addOutput(yyscanner,"@subsubsection ");   break;
+    case SectionType::Paragraph:       addOutput(yyscanner,"@paragraph ");       break;
+    case SectionType::Subparagraph:    addOutput(yyscanner,"@subparagraph ");    break;
+    case SectionType::Subsubparagraph: addOutput(yyscanner,"@subsubparagraph "); break;
     default: addOutput(yyscanner,"@"+s+" ");           break;
   }
   return FALSE;
@@ -3900,7 +3900,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
     {
       QCString opt = QCString(opt_).stripWhiteSpace().lower();
       char dum;
-      int level = Section::MaxLevel;
+      int level = SectionType::MaxLevel;
       int i = opt.find(':');
       if (i>0)  // found ':' but not on position 0 what would mean just a level
       {
@@ -3911,7 +3911,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
         }
         else
         {
-          level = level<=0 ? Section::MaxLevel : std::min(level,Section::MaxLevel);
+          level = level<=0 ? SectionType::MaxLevel : std::min(level,SectionType::MaxLevel);
           opt = opt.left(i).stripWhiteSpace();
         }
       }
@@ -3942,8 +3942,8 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
     if (yyextra->current->localToc.nothingEnabled())
     {
       // for backward compatibility
-      yyextra->current->localToc.enableHtml(Section::MaxLevel);
-      yyextra->current->localToc.enableXml(Section::MaxLevel);
+      yyextra->current->localToc.enableHtml(SectionType::MaxLevel);
+      yyextra->current->localToc.enableXml(SectionType::MaxLevel);
     }
   }
   return FALSE;
@@ -4190,7 +4190,7 @@ static QCString addFormula(yyscan_t yyscanner)
 
 static SectionType sectionLevelToType(int level)
 {
-  if (level>=0 && level<Section::MaxLevel) return (SectionType)level;
+  if (level>=0 && level<SectionType::MaxLevel) return SectionType(level);
   return SectionType::Anchor;
 }
 

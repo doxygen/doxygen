@@ -2012,10 +2012,10 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     BoolVector inLi(maxLevel+1,false);
     for (const SectionInfo *si : sectionRefs)
     {
-      if (isSection(si->type()))
+      if (si->type().isSection())
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = static_cast<int>(si->type());
+        int nextLevel = si->type().level();
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)
