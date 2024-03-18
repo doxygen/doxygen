@@ -159,7 +159,8 @@ jobs:
 
     - name: Install xmllint (MacOS)
       run: |
-         #brew install --force --overwrite python@3.12 # temp hack
+         brew install --force --overwrite python@3.11 # temp hack
+         brew install --force --overwrite python@3.12 # temp hack
          brew update
          brew install libxml2
       if: matrix.config.os == 'macos-latest'
