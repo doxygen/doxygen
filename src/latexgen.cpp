@@ -1687,7 +1687,7 @@ void LatexGenerator::startSection(const QCString &lab,const QCString &,SectionTy
   m_t << "\\";
   if (Config_getBool(COMPACT_LATEX))
   {
-    switch(type)
+    switch(type.level())
     {
       case SectionType::Page:             m_t << "doxysubsection"; break;
       case SectionType::Section:          m_t << "doxysubsubsection"; break;
@@ -1702,7 +1702,7 @@ void LatexGenerator::startSection(const QCString &lab,const QCString &,SectionTy
   }
   else
   {
-    switch(type)
+    switch(type.level())
     {
       case SectionType::Page:             m_t << "doxysection"; break;
       case SectionType::Section:          m_t << "doxysubsection"; break;

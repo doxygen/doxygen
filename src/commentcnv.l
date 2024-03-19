@@ -1347,11 +1347,11 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
       if (option == "raise")
       {
         yyextra->raiseIncrement = atoi(value.data());
-        if (yyextra->raiseLevel+yyextra->raiseIncrement>=Section::MaxLevel) // check range
+        if (yyextra->raiseLevel+yyextra->raiseIncrement>=SectionType::MaxLevel) // check range
         {
           warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
-                    yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,Section::MaxLevel-1);
-          yyextra->raiseIncrement = std::max(0,Section::MaxLevel-1-yyextra->raiseLevel);
+                    yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
+          yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
         }
       }
       else if (option == "label")

@@ -1886,14 +1886,14 @@ void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCS
     m_t << anchor << "}";
     if (refToSection)
     {
-      m_t << "{" << static_cast<int>(sectionType) << "}";
+      m_t << "{" << sectionType.level() << "}";
     }
   }
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
   {
     if (refToSection)
     {
-      if (m_texOrPdf != TexOrPdf::PDF) m_t << "{" << static_cast<int>(sectionType) << "}";
+      if (m_texOrPdf != TexOrPdf::PDF) m_t << "{" << sectionType.level() << "}";
     }
   }
 }

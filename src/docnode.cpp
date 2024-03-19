@@ -553,7 +553,7 @@ void DocSecRefItem::parse()
       m_anchor    = sec->label();
       m_isSubPage = false;
       // adjust if needed
-      switch (sec->type())
+      switch (sec->type().level())
       {
         case SectionType::Page:
           {
@@ -702,7 +702,8 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   if (sec) // ref to section or anchor
   {
     PageDef *pd = nullptr;
-    if (sec->type()==SectionType::Page)
+    int secLevel = sec->type().level();
+    if (secLevel==SectionType::Page)
     {
       pd = Doxygen::pageLinkedMap->find(target);
     }
@@ -711,11 +712,11 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
 
     m_ref          = sec->ref();
     m_file         = stripKnownExtensions(sec->fileName());
-    if (sec->type()==SectionType::Anchor)
+    if (secLevel==SectionType::Anchor)
     {
       m_refType = Anchor;
     }
-    else if (sec->type()==SectionType::Table)
+    else if (secLevel==SectionType::Table)
     {
       m_refType = Table;
     }
@@ -724,7 +725,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
       m_refType = Section;
     }
     m_isSubPage    = pd && pd->hasParentPage();
-    if (sec->type()!=SectionType::Page || m_isSubPage) m_anchor = sec->label();
+    if (secLevel!=SectionType::Page || m_isSubPage) m_anchor = sec->label();
     m_sectionType = sec->type();
     //printf("m_text=%s,m_ref=%s,m_file=%s,type=%d\n",
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);

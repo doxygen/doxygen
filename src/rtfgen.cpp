@@ -17,6 +17,7 @@
 
 #include <mutex>
 #include <stdlib.h>
+#include <algorithm>
 
 #include "rtfgen.h"
 #include "config.h"
@@ -1740,18 +1741,19 @@ void RTFGenerator::startSection(const QCString &,const QCString &title,SectionTy
   DBG_RTF(m_t << "{\\comment (startSection)}\n")
   m_t << "{";
   m_t << rtf_Style_Reset;
-  int num=4;
-  switch(type)
+  int num=SectionType::MaxLevel;
+  switch(type.level())
   {
-    case SectionType::Page:          num=2+m_hierarchyLevel; break;
-    case SectionType::Section:       num=3+m_hierarchyLevel; break;
-    case SectionType::Subsection:    num=4+m_hierarchyLevel; break;
-    case SectionType::Subsubsection: num=4+m_hierarchyLevel; break;
-    case SectionType::Paragraph:     num=4+m_hierarchyLevel; break;
+    case SectionType::Page:             num=2+m_hierarchyLevel; break;
+    case SectionType::Section:          num=3+m_hierarchyLevel; break;
+    case SectionType::Subsection:       // fall through
+    case SectionType::Subsubsection:    // fall through
+    case SectionType::Paragraph:        // fall through
+    case SectionType::Subparagraph:     // fall through
+    case SectionType::Subsubparagraph:  num=4+m_hierarchyLevel; break;
     default: ASSERT(0); break;
   }
-  if (num > 5)
-    num = 5;
+  num = std::clamp(num, SectionType::MinLevel, SectionType::MaxLevel);
   QCString heading;
   heading.sprintf("Heading%d",num);
   // set style

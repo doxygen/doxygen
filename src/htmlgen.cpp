@@ -1832,13 +1832,15 @@ void HtmlGenerator::endGroupHeader(int extraIndentLevel)
 
 void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionType type)
 {
-  switch(type)
+  switch(type.level())
   {
-    case SectionType::Page:          m_t << "\n\n<h1>"; break;
-    case SectionType::Section:       m_t << "\n\n<h2>"; break;
-    case SectionType::Subsection:    m_t << "\n\n<h3>"; break;
-    case SectionType::Subsubsection: m_t << "\n\n<h4>"; break;
-    case SectionType::Paragraph:     m_t << "\n\n<h5>"; break;
+    case SectionType::Page:             m_t << "\n\n<h1>"; break;
+    case SectionType::Section:          m_t << "\n\n<h2>"; break;
+    case SectionType::Subsection:       m_t << "\n\n<h3>"; break;
+    case SectionType::Subsubsection:    m_t << "\n\n<h4>"; break;
+    case SectionType::Paragraph:        m_t << "\n\n<h5>"; break;
+    case SectionType::Subparagraph:     m_t << "\n\n<h6>"; break;
+    case SectionType::Subsubparagraph:  m_t << "\n\n<h6>"; break;
     default: ASSERT(0); break;
   }
   m_t << "<a id=\"" << lab << "\" name=\"" << lab << "\"></a>";
@@ -1846,13 +1848,15 @@ void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionTyp
 
 void HtmlGenerator::endSection(const QCString &,SectionType type)
 {
-  switch(type)
+  switch(type.level())
   {
-    case SectionType::Page:          m_t << "</h1>"; break;
-    case SectionType::Section:       m_t << "</h2>"; break;
-    case SectionType::Subsection:    m_t << "</h3>"; break;
-    case SectionType::Subsubsection: m_t << "</h4>"; break;
-    case SectionType::Paragraph:     m_t << "</h5>"; break;
+    case SectionType::Page:             m_t << "</h1>"; break;
+    case SectionType::Section:          m_t << "</h2>"; break;
+    case SectionType::Subsection:       m_t << "</h3>"; break;
+    case SectionType::Subsubsection:    m_t << "</h4>"; break;
+    case SectionType::Paragraph:        m_t << "</h5>"; break;
+    case SectionType::Subparagraph:     m_t << "</h6>"; break;
+    case SectionType::Subsubparagraph:  m_t << "</h6>"; break;
     default: ASSERT(0); break;
   }
 }
@@ -3501,10 +3505,10 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
     {
       //printf("Section: label=%s type=%d isSection()=%d\n",qPrint(si->label()),si->type(),isSection(si->type()));
       SectionType type = si->type();
-      if (isSection(type))
+      if (type.isSection())
       {
         //printf("  level=%d title=%s maxLevel=%d\n",level,qPrint(si->title()),maxLevel);
-        int nextLevel = static_cast<int>(type);
+        int nextLevel = type.level();
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)
