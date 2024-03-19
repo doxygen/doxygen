@@ -198,6 +198,11 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     }
   }
 
+  int i=std::max(imgName.findRev('/'),imgName.findRev('\\'));
+  if (i!=-1) // strip path
+  {
+    imgName=imgName.right(imgName.length()-i-1);
+  }
   Doxygen::indexList->addImageFile(imgName);
 
 }
