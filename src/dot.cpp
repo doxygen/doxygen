@@ -229,7 +229,7 @@ bool DotManager::run()
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,GraphOutputFormat format,
-                           const QCString &srcFile,int srcLine)
+                           const QCString &srcFile,int srcLine, bool isRtf)
 {
   Dir d(outDir.str());
   if (!d.exists())
@@ -237,7 +237,14 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
     term("Output dir %s does not exist!\n",qPrint(outDir));
   }
 
+  QCString jobFormat = Config_getEnumAsString(DOT_IMAGE_FORMAT);
   QCString imgExt = getDotImageExtension();
+  if(isRtf && format == GOF_BITMAP && Config_getBool(RTF_USE_PNG))
+  {
+    imgExt = "png";
+    jobFormat = "png";
+  }
+
   QCString imgName = QCString(outFile)+"."+imgExt;
   QCString absImgName = QCString(d.absPath())+"/"+imgName;
   QCString absOutFile = QCString(d.absPath())+"/"+outFile;
@@ -245,7 +252,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   DotRunner dotRun(inFile);
   if (format==GOF_BITMAP)
   {
-    dotRun.addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
+    dotRun.addJob(jobFormat,absImgName,srcFile,srcLine);
   }
   else // format==GOF_EPS
   {

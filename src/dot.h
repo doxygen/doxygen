@@ -49,7 +49,7 @@ class DotManager
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,GraphOutputFormat format,
-                           const QCString &srcFile,int srcLine);
+                           const QCString &srcFile,int srcLine, bool isRtf);
 void writeDotImageMapFromFile(TextStream &t,
                               const QCString &inFile, const QCString& outDir,
                               const QCString &relPath,const QCString& baseName,

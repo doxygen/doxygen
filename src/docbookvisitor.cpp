@@ -1619,7 +1619,7 @@ DB_VIS_C
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP,s.srcFile(),s.srcLine());
+  writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP,s.srcFile(),s.srcLine(),false);
   visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + "." + getDotImageExtension(), s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -1648,7 +1648,7 @@ DB_VIS_C
   baseName.prepend("dot_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   QCString imgExt = getDotImageExtension();
-  writeDotGraphFromFile(fileName,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+  writeDotGraphFromFile(fileName,outDir,baseName,GOF_BITMAP,srcFile,srcLine,false);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, baseName + "." + imgExt,  width,  height);
 }

@@ -2233,6 +2233,18 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   return TRUE;
 }
 
+QCString RTFGenerator::getDotImageExtension()
+{
+  if(Config_getBool(RTF_USE_PNG))
+  {
+    return "png";
+  }
+  else
+  {
+    return ::getDotImageExtension();
+  }
+}
+
 void RTFGenerator::startDotGraph()
 {
   DBG_RTF(m_t << "{\\comment (startDotGraph)}\n")
