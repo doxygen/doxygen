@@ -110,7 +110,7 @@ struct FTVHelp::Private
   bool topLevelIndex;
 
   void generateTree(TextStream &t,const FTVNodes &nl,int level,int maxLevel,int &index);
-  void generateLink(TextStream &t,const FTVNodePtr &n);
+  void generateLink(TextStream &t,const FTVNodePtr &n,const QCString &sourceFileHref);
 };
 
 /*! Constructs an ftv help object.
@@ -276,14 +276,16 @@ static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
   }
 }
 
-void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
+void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n,const QCString &sourceFileHref)
 {
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
   bool setTarget = FALSE;
   if (n->file.isEmpty()) // no link
   {
+    t << "<a href=\"" << sourceFileHref << "\">";
     t << "<b>" << convertToHtml(n->name) << "</b>";
+    t << "</a>";
   }
   else // link into other frame
   {
@@ -423,7 +425,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
           << "\" onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0)
           << "')\">&#160;</span>";
       }
-      generateLink(t,n);
+      generateLink(t,n,"");
       t << "</td><td class=\"desc\">";
       if (n->def)
       {
@@ -441,11 +443,12 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       {
         srcRef = toFileDef(n->def);
       }
+      QCString sourceFileHref;
       if (srcRef)
       {
-        QCString fn=srcRef->getSourceFileBase();
-        addHtmlExtensionIfMissing(fn);
-        t << "<a href=\"" << fn << "\">";
+        sourceFileHref=srcRef->getSourceFileBase();
+        addHtmlExtensionIfMissing(sourceFileHref);
+        t << "<a href=\"" << sourceFileHref << "\">";
       }
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
       {
@@ -495,7 +498,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       {
         t << "</a>";
       }
-      generateLink(t,n);
+      generateLink(t,n,sourceFileHref);
       t << "</td><td class=\"desc\">";
       if (n->def)
       {
