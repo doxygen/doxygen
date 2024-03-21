@@ -1039,12 +1039,15 @@ class TranslatorEnglish : public Translator
         "This will result in the following graph:"
         "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
-        "The boxes in the above graph have the following meaning:\n"
+        "The nodes in the above graph have the following meaning:\n"
         "</p>\n"
         "<ul>\n"
         "<li>%A filled gray box represents the struct or class for which the "
-        "graph is generated.</li>\n"
-        "<li>%A box with a black border denotes a documented struct or class.</li>\n"
+        "graph is generated.</li>\n" +
+        (Config_getString(DOT_NODE_ATTR).contains("shape=plain") ?
+          "<li>Name in regular font "
+          : "<li>%A box with a black border ") +
+        "denotes a documented struct or class.</li>\n"
         "<li>%A box with a gray border denotes an undocumented struct or class.</li>\n"
         "<li>%A box with a red border denotes a documented struct or class for"
         "which not all inheritance/containment relations are shown. %A graph is "
