@@ -196,9 +196,9 @@ void ClangTUParser::parse()
     // we use the source file to detected the language. Detection will fail if you
     // pass a bunch of .h files containing ObjC code, and no sources :-(
     SrcLangExt lang = getLanguageFromFileName(fileName);
+    QCString fn = fileName.lower();
     if (lang==SrcLangExt::ObjC || p->detectedLang!=DetectedLang::Cpp)
     {
-      QCString fn = fileName.lower();
       if (p->detectedLang!=DetectedLang::Cpp &&
           (fn.endsWith(".cpp") || fn.endsWith(".cxx") ||
            fn.endsWith(".cc")  || fn.endsWith(".c")))
@@ -216,7 +216,13 @@ void ClangTUParser::parse()
     }
     switch (p->detectedLang)
     {
-      case DetectedLang::Cpp:    argv.push_back(qstrdup("c++"));           break;
+      case DetectedLang::Cpp:
+        if (fn.endsWith(".hpp") || fn.endsWith(".hxx") ||
+            fn.endsWith(".hh")  || fn.endsWith(".h"))
+          argv.push_back(qstrdup("c++-header"));
+        else
+          argv.push_back(qstrdup("c++"));
+        break;
       case DetectedLang::ObjC:   argv.push_back(qstrdup("objective-c"));   break;
       case DetectedLang::ObjCpp: argv.push_back(qstrdup("objective-c++")); break;
     }
