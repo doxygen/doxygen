@@ -54,6 +54,7 @@ typedef yyguts_t *yyscan_t;
 #include "markdown.h"
 #include "fileinfo.h"
 #include "debug.h"
+#include "stringutil.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -1347,7 +1348,10 @@ ID        [a-z_A-Z%]+{IDSYM}*
 <VariableEnd>{
     \n                {
                         incLineNr(yyscanner);
-                        newVariable(yyscanner);
+                        if (!stripWhiteSpace(yyextra->current->initializer.str()).empty())
+                        {
+                          newVariable(yyscanner);
+                        }
                         BEGIN(Search);
                       }
     .                 {
