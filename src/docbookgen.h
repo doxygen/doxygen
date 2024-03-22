@@ -220,6 +220,7 @@ class DocbookGenerator : public OutputGenerator
                          const QCString &anchor,const QCString &name,
                          const QCString &args);
     void endDoxyAnchor(const QCString &fileName,const QCString &anchor);
+    void addLabel(const QCString &,const QCString &);
     void writeLatexSpacing(){DB_GEN_EMPTY}
     void writeStartAnnoItem(const QCString &,const QCString &,
                             const QCString &,const QCString &){DB_GEN_NEW};

@@ -203,6 +203,7 @@ class HtmlGenerator : public OutputGenerator
                          const QCString &anchor,const QCString &name,
                          const QCString &args);
     void endDoxyAnchor(const QCString &fName,const QCString &anchor);
+    void addLabel(const QCString &,const QCString &);
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name);

@@ -170,6 +170,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
     void endDoxyAnchor(const QCString &,const QCString &);
+    void addLabel(const QCString &,const QCString &);
     void writeChar(char c);
     void writeLatexSpacing() {};//{ m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
