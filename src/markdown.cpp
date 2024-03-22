@@ -1554,7 +1554,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
         out+=" ";
         out+=externalLinkTarget();
         out+=">";
-        content = substitute(content.simplifyWhiteSpace(),"\"","\\\"");
+        content = content.simplifyWhiteSpace();
         processInline(std::string_view(content.str()));
         out+="</a>";
       }
