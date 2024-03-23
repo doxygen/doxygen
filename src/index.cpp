@@ -1821,6 +1821,9 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
     bool isDir = hasChildren || visibleMembers>0;
     if (isLinkable || isDir)
     {
+      bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
+      if (hideInlineNamespaces && nd->isModule() && nd->isInline())
+        return;
       ftv->addContentsItem(hasChildren,nd->localName(),ref,file,QCString(),FALSE,nd->partOfGroups().empty(),nd);
 
       if (addToIndex)
@@ -1903,6 +1906,11 @@ static void writeClassTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHelp 
 
     if (isDir)
     {
+      // feature: skip inline namespace
+      if (nd->isModule() && nd->isInline())
+      {
+        return;
+      }
       ftv->addContentsItem(isDir,nd->localName(),ref,file,QCString(),FALSE,TRUE,nd);
 
       if (addToIndex)

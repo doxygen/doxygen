@@ -1268,6 +1268,15 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HIDE_INLINE_NAMESPACE' defval='0'>
+      <docs>
+<![CDATA[
+ Set the \c HIDE_INLINE_NAMESPACE tag to \c YES to hide inline namespaces and
+ classes inside inline namespaces in Class, Namespace, File page, search index,
+ and from the Folder Tree View (if specified).
+]]>
+      </docs>
+    </option>
     <option type='string' id='FILE_VERSION_FILTER' format='file' defval=''>
       <docs>
 <![CDATA[

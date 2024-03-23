@@ -75,6 +75,7 @@
 #define STR_HTML_COLORSTYLE_HUE   QString::fromLatin1("HTML_COLORSTYLE_HUE")
 #define STR_HTML_COLORSTYLE_SAT   QString::fromLatin1("HTML_COLORSTYLE_SAT")
 #define STR_HTML_COLORSTYLE_GAMMA QString::fromLatin1("HTML_COLORSTYLE_GAMMA")
+#define STR_HIDE_INLINE_NAMESPACE QString::fromLatin1("HIDE_INLINE_NAMESPACE")
 
 static bool g_optimizeMapping[7][7] =
 {
