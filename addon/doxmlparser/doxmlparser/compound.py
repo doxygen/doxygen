@@ -3964,7 +3964,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3998,6 +3998,10 @@ class memberdefType(GeneratedsSuper):
         self.mutable_nsprefix_ = None
         self.noexcept = _cast(None, noexcept)
         self.noexcept_nsprefix_ = None
+        self.noexceptexpression = _cast(None, noexceptexpression)
+        self.noexceptexpression_nsprefix_ = None
+        self.nodiscard = _cast(None, nodiscard)
+        self.nodiscard_nsprefix_ = None
         self.constexpr = _cast(None, constexpr)
         self.constexpr_nsprefix_ = None
         self.consteval = _cast(None, consteval)
@@ -4332,6 +4336,14 @@ class memberdefType(GeneratedsSuper):
         return self.noexcept
     def set_noexcept(self, noexcept):
         self.noexcept = noexcept
+    def get_noexceptexpression(self):
+        return self.noexceptexpression
+    def set_noexceptexpression(self, noexceptexpression):
+        self.noexceptexpression = noexceptexpression
+    def get_nodiscard(self):
+        return self.nodiscard
+    def set_nodiscard(self, nodiscard):
+        self.nodiscard = nodiscard
     def get_constexpr(self):
         return self.constexpr
     def set_constexpr(self, constexpr):
@@ -4629,6 +4641,12 @@ class memberdefType(GeneratedsSuper):
         if self.noexcept is not None and 'noexcept' not in already_processed:
             already_processed.add('noexcept')
             outfile.write(' noexcept=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.noexcept), input_name='noexcept')), ))
+        if self.noexceptexpression is not None and 'noexceptexpression' not in already_processed:
+            already_processed.add('noexceptexpression')
+            outfile.write(' noexceptexpression=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.noexceptexpression), input_name='noexceptexpression')), ))
+        if self.nodiscard is not None and 'nodiscard' not in already_processed:
+            already_processed.add('nodiscard')
+            outfile.write(' nodiscard=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.nodiscard), input_name='nodiscard')), ))
         if self.constexpr is not None and 'constexpr' not in already_processed:
             already_processed.add('constexpr')
             outfile.write(' constexpr=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.constexpr), input_name='constexpr')), ))
@@ -4885,6 +4903,15 @@ class memberdefType(GeneratedsSuper):
             already_processed.add('noexcept')
             self.noexcept = value
             self.validate_DoxBool(self.noexcept)    # validate type DoxBool
+        value = find_attr_value_('noexceptexpression', node)
+        if value is not None and 'noexceptexpression' not in already_processed:
+            already_processed.add('noexceptexpression')
+            self.noexceptexpression = value
+        value = find_attr_value_('nodiscard', node)
+        if value is not None and 'nodiscard' not in already_processed:
+            already_processed.add('nodiscard')
+            self.nodiscard = value
+            self.validate_DoxBool(self.nodiscard)    # validate type DoxBool
         value = find_attr_value_('constexpr', node)
         if value is not None and 'constexpr' not in already_processed:
             already_processed.add('constexpr')
