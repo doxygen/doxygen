@@ -178,6 +178,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool isStrongEnumValue() const override;
     bool livesInsideEnum() const override;
     bool isSliceLocal() const override;
+    bool isNoDiscard() const override;
     bool isConstExpr() const override;
     bool isConstEval() const override;
     bool isConstInit() const override;
@@ -773,6 +774,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->livesInsideEnum(); }
     bool isSliceLocal() const override
     { return getMdAlias()->isSliceLocal(); }
+    bool isNoDiscard() const override
+    { return getMdAlias()->isNoDiscard(); }
     bool isConstExpr() const override
     { return getMdAlias()->isConstExpr(); }
     bool isConstEval() const override
@@ -2805,6 +2808,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
           if    (isPrivateGettable())                   sl.push_back("private get");
           if    (isPrivateSettable())                   sl.push_back("private set");
         }
+        if      (isNoDiscard())                         sl.push_back("nodiscard");
         if      (isConstExpr())                         sl.push_back("constexpr");
         if      (isConstEval())                         sl.push_back("consteval");
         if      (isConstInit())                         sl.push_back("constinit");
@@ -3470,6 +3474,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       ldef.remove(pos, prefix.length());
     }
   }
+  ldef.stripPrefix("constexpr ");
+  ldef.stripPrefix("consteval ");
+  ldef.stripPrefix("constinit ");
 
   //----------------------------------------
 
@@ -5442,6 +5449,11 @@ bool MemberDefImpl::livesInsideEnum() const
 bool MemberDefImpl::isSliceLocal() const
 {
   return m_memSpec.isLocal();
+}
+
+bool MemberDefImpl::isNoDiscard() const
+{
+  return m_memSpec.isNoDiscard();
 }
 
 bool MemberDefImpl::isConstExpr() const

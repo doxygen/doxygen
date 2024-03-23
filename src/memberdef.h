@@ -190,6 +190,7 @@ class MemberDef : public Definition
     virtual bool isConstExpr() const = 0;
     virtual bool isConstEval() const = 0;
     virtual bool isConstInit() const = 0;
+    virtual bool isNoDiscard() const = 0;
     virtual int  numberOfFlowKeyWords() const = 0;
 
     // derived getters

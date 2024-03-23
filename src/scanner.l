@@ -5725,6 +5725,12 @@ NONLopt [^\n]*
                                             BEGIN(SkipPHPString);
                                           }
                                         }
+<SkipC11Attribute>{ID}                  {
+                                          if (QCString(yytext)=="nodiscard")
+                                          {
+                                            yyextra->current->spec.setNoDiscard(true);
+                                          }
+                                        }
 <SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>.       { }
 <SkipString,SkipPHPString>\\.           { }
 <SkipString>\"                          {

@@ -531,8 +531,11 @@ static void stripQualifiers(QCString &typeStr)
   typeStr.stripPrefix("friend ");
   while (!done)
   {
-    if (typeStr.stripPrefix("static "));
-    else if (typeStr.stripPrefix("virtual "));
+    if (typeStr.stripPrefix("static "))         {}
+    else if (typeStr.stripPrefix("constexpr ")) {}
+    else if (typeStr.stripPrefix("consteval ")) {}
+    else if (typeStr.stripPrefix("constinit ")) {}
+    else if (typeStr.stripPrefix("virtual "))   {}
     else if (typeStr=="virtual") typeStr="";
     else done=TRUE;
   }
@@ -555,6 +558,49 @@ static QCString memberOutputFileBase(const MemberDef *md)
   //else
   //  return md->getOutputFileBase();
   return md->getOutputFileBase();
+}
+
+static QCString extractNoExcept(QCString &argsStr)
+{
+  QCString expr;
+  //printf("extractNoExcept(%s)\n",qPrint(argsStr));
+  int i = argsStr.find("noexcept(");
+  if (i!=-1)
+  {
+    int  bracketCount = 1;
+    size_t p = i+9;
+    bool found = false;
+    bool insideString = false;
+    bool insideChar = false;
+    char pc = 0;
+    while (!found && p<argsStr.length())
+    {
+      char c = argsStr[p++];
+      if (insideString)
+      {
+        if (c=='"' && pc!='\\') insideString=false;
+      }
+      else if (insideChar)
+      {
+        if (c=='\'' && pc!='\\') insideChar=false;
+      }
+      else
+      {
+        switch (c)
+        {
+          case '(':  bracketCount++;      break;
+          case ')':  bracketCount--;      found = bracketCount==0; break;
+          case '"':  insideString = true; break;
+          case '\'': insideChar   = true; break;
+        }
+      }
+      pc = c;
+    }
+    expr = argsStr.mid(i+9,p-i-10);
+    argsStr = (argsStr.left(i) + argsStr.mid(p)).stripWhiteSpace();
+  }
+  //printf("extractNoExcept -> argsStr='%s', expr='%s'\n",qPrint(argsStr),qPrint(expr));
+  return expr;
 }
 
 
@@ -605,6 +651,30 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   }
 
   QCString nameStr = md->name();
+  QCString typeStr = md->typeString();
+  QCString argsStr = md->argsString();
+  QCString defStr = md->definition();
+  defStr.stripPrefix("constexpr ");
+  defStr.stripPrefix("consteval ");
+  defStr.stripPrefix("constinit ");
+  stripAnonymousMarkers(typeStr);
+  stripQualifiers(typeStr);
+  if (typeStr=="auto")
+  {
+    int i=argsStr.findRev("->");
+    if (i!=-1) // move trailing return type into type and strip it from argsStr
+    {
+      typeStr=argsStr.mid(i+2).stripWhiteSpace();
+      argsStr=argsStr.left(i).stripWhiteSpace();
+      i=defStr.find("auto ");
+      if (i!=-1)
+      {
+        defStr=defStr.left(i)+typeStr+defStr.mid(i+4);
+      }
+    }
+  }
+  QCString noExceptExpr = extractNoExcept(argsStr);
+
   stripAnonymousMarkers(nameStr);
   ti << "    <member refid=\"" << memberOutputFileBase(md)
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
@@ -641,6 +711,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   t << " static=\"";
   if (md->isStatic()) t << "yes"; else t << "no";
   t << "\"";
+
+  if (md->isNoDiscard())
+  {
+    t << " nodiscard=\"yes\"";
+  }
 
   if (md->isConstExpr())
   {
@@ -712,6 +787,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     if (md->isNoExcept())
     {
       t << " noexcept=\"yes\"";
+    }
+
+    if (!noExceptExpr.isEmpty())
+    {
+      t << " noexceptexpression=\"" << convertToXML(noExceptExpr) << "\"";
     }
 
     if (al.volatileSpecifier())
@@ -859,20 +939,16 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
      )
   {
     writeMemberTemplateLists(md,t);
-    QCString typeStr = md->typeString();
-    stripAnonymousMarkers(typeStr);
-    stripQualifiers(typeStr);
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,typeStr);
     t << "</type>\n";
-    QCString defStr = md->definition();
     if (md->isTypeAlias())
     {
       defStr+=" = "+md->initializer();
     }
     stripAnonymousMarkers(defStr);
     t << "        <definition>" << convertToXML(defStr) << "</definition>\n";
-    t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>\n";
+    t << "        <argsstring>" << convertToXML(argsStr) << "</argsstring>\n";
   }
 
   if (md->memberType() == MemberType_Enumeration)

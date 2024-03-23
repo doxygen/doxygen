@@ -220,6 +220,8 @@
     <xsd:attribute name="volatile" type="DoxBool" use="optional"/>
     <xsd:attribute name="mutable" type="DoxBool" use="optional"/>
     <xsd:attribute name="noexcept" type="DoxBool" use="optional"/>
+    <xsd:attribute name="noexceptexpression" type="xsd:string" use="optional"/>
+    <xsd:attribute name="nodiscard" type="DoxBool" use="optional"/>
     <xsd:attribute name="constexpr" type="DoxBool" use="optional"/>
     <xsd:attribute name="consteval" type="DoxBool" use="optional"/>
     <xsd:attribute name="constinit" type="DoxBool" use="optional"/>
