@@ -1451,6 +1451,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     if (!cname.isEmpty()) doxyName.prepend(cname+"::");
     QCString doxyArgs=mdef->argsString();
     ol.startDoxyAnchor(cfname,cname,mdef->anchor(),doxyName,doxyArgs);
+    ol.addLabel(cfname,mdef->anchor());
 
     ol.pushGeneratorState();
     ol.disable(OutputType::Man);

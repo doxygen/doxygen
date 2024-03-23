@@ -423,6 +423,7 @@ namespace OutputGenIntf
   template<class T> struct endMemberDoc                { static constexpr auto method = &T::endMemberDoc;                };
   template<class T> struct startDoxyAnchor             { static constexpr auto method = &T::startDoxyAnchor;             };
   template<class T> struct endDoxyAnchor               { static constexpr auto method = &T::endDoxyAnchor;               };
+  template<class T> struct addLabel                    { static constexpr auto method = &T::addLabel;                    };
   template<class T> struct writeLatexSpacing           { static constexpr auto method = &T::writeLatexSpacing;           };
   template<class T> struct startDescForItem            { static constexpr auto method = &T::startDescForItem;            };
   template<class T> struct endDescForItem              { static constexpr auto method = &T::endDescForItem;              };
@@ -735,6 +736,8 @@ class OutputList
     { foreach<OutputGenIntf::startDoxyAnchor>(fName,manName,anchor,name,args); }
     void endDoxyAnchor(const QCString &fn,const QCString &anchor)
     { foreach<OutputGenIntf::endDoxyAnchor>(fn,anchor); }
+    void addLabel(const QCString &fName,const QCString &anchor)
+    { foreach<OutputGenIntf::addLabel>(fName,anchor); }
     void writeLatexSpacing()
     { foreach<OutputGenIntf::writeLatexSpacing>(); }
     void startDescForItem()

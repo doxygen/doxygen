@@ -394,6 +394,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               if (!detailsLinkable)
               {
                 ol.startDoxyAnchor(md->getOutputFileBase(),QCString(),md->anchor(),md->name(),QCString());
+                ol.addLabel(md->getOutputFileBase(),md->anchor());
               }
               if (md->isSliceLocal())
               {
