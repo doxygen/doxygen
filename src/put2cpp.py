@@ -4,7 +4,18 @@ import re
 import os
 
 class Solution:
+    '''
+    we replace several points.
+    - path define
+    - declare function
+    - file creation code
+    - code in generate function
+    - Makefile
+    '''
     def __init__(self,inputdir,out,perlmodgen,debug):
+        '''
+            This is  init funciton """ test """
+        '''
         self.inputdir = inputdir
         self.out = out
         self.perlmodgen = perlmodgen
@@ -101,19 +112,24 @@ class Solution:
         self.p.append('''  if (perlmodPython) {''')
         self.o['Makefile'].append('''    makefileStream <<''')
         mk = []
-        mk.append('''# python2cpp init''')
-        mk.append('''python2cpp_init:''')
-        mk.append('''\trm -rf input_python_files''')
-        mk.append('''\tmkdir -p input_python_files''')
-        for file in files:
-            mk.append('''\tcd input_python_files; ln -s ../{f} {f}'''.format(f=file))
         mk.append('')
-        mk.append('''# if you want to add python file into perlmodgen.cpp , you can use it.''')
-        mk.append('''# first of all, you add your py in input_python_files directory''')
-        mk.append('''python2cpp_run:''')
-        mk.append('''\t# please change ??? to location of src/perlmodgen.cpp''')
+        mk.append('''# code2cpp''')
+        mk.append('''code2cpp:''')
+        mk.append('''\trm -rf input_perlmodgen_files''')
+        mk.append('''\tmkdir -p input_perlmodgen_files''')
+        for file in files:
+            mk.append('''\tcd input_perlmodgen_files; ln -s ../{f} {f}'''.format(f=file))
+        mk.append('''\t# if you want to add python file into perlmodgen.cpp , you can use it.''')
+        mk.append('''\t# first of all, you add your py in input_perlmodgen_files directory''')
+        mk.append('''\t# please change ../../../../src/perlmodgen.cpp to location of src/perlmodgen.cpp''')
         mk.append('''\t# output filename : perlmodgen.cpp.mod''')
-        mk.append('''\tpython3 put2cpp.py --inputdir=input_python_files --perlmodgen=???''')
+        mk.append('''\tpython3 put2cpp.py --inputdir=input_perlmodgen_files --perlmodgen=../../../../src/perlmodgen.cpp''')
+        mk.append('')
+        mk.append('''# run python code with DoxyDocs''')
+        mk.append('''python:''')
+        mk.append('''\tperl doxy2py.pl''')
+        mk.append('''\tpython3 sample.py''')
+        mk.append('')
         self.o['Makefile'].append('\n'.join([self.line2cpp(6,item) for item in mk]) + ';')
         self.p += self.o['Makefile']
         self.p.append('''  }''')
@@ -162,14 +178,20 @@ class Solution:
                 f.write(s)
 
     def createPythonName(self,file):
+        '''
+        create new path name
+        '''
         if not file:
             return file
-        file2 = file.replace('.py','')
+        file2 = file.replace('.','_')
         fileList = list(file2)
         ff = 'Python' + fileList[0].upper() + ''.join(fileList[1:])
         return ff
 
     def line2cpp(self,indent,line):
+        '''
+        change characters for C++
+        '''
         line = line.rstrip()
         line = line.replace('\\','\\\\')
         line = line.replace("'", "\\'")
@@ -186,8 +208,8 @@ if (__name__ == "__main__"):
     parser.add_argument( '--inputdir',
         metavar="<str>",
         type=str,
-        default='input_python_files',
-        help='input directory with python code. this python code will be inserted in cpp')
+        default='input_perlmodgen_files',
+        help='input directory with python code. files of this directory will be inserted in cpp')
     parser.add_argument( '--perlmodgen',
         metavar="<str>",
         type=str,

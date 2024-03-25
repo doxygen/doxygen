@@ -1410,7 +1410,9 @@ public:
   QCString pathDoxyLatexStructurePL;
   QCString pathDoxyRules;
   // perlmodPython PerlModGenerator path define <start>
-  QCString pathPythonPut2cpp;
+  QCString pathPythonPut2cpp_py;
+  QCString pathPythonSample_py;
+  QCString pathPythonDoxy2py_pl;
   // perlmodPython PerlModGenerator path define <end>
   QCString pathMakefile;
 
@@ -1439,7 +1441,9 @@ public:
   bool generateDoxyLatexStructurePL();
   bool generateDoxyRules();
   // perlmodPython PerlModGenerator declare function <start>
-  bool generatePythonPut2cpp();
+  bool generatePythonPut2cpp_py();
+  bool generatePythonSample_py();
+  bool generatePythonDoxy2py_pl();
   // perlmodPython PerlModGenerator declare function <end>
   bool generateMakefile();
   bool generatePerlModOutput();
@@ -2516,10 +2520,10 @@ bool PerlModGenerator::generateDoxyRules()
 }
 
 // perlmodPython PerlModGenerator file creation code <start>
-bool PerlModGenerator::generatePythonPut2cpp()
+bool PerlModGenerator::generatePythonPut2cpp_py()
 {
   std::ofstream pythonStream;
-  if (!createOutputFile(pythonStream, pathPythonPut2cpp))
+  if (!createOutputFile(pythonStream, pathPythonPut2cpp_py))
     return false;
 
   pythonStream <<
@@ -2529,7 +2533,18 @@ bool PerlModGenerator::generatePythonPut2cpp()
     "import os\n"
     "\n"
     "class Solution:\n"
+    "    \'\'\'\n"
+    "    we replace several points.\n"
+    "    - path define\n"
+    "    - declare function\n"
+    "    - file creation code\n"
+    "    - code in generate function\n"
+    "    - Makefile\n"
+    "    \'\'\'\n"
     "    def __init__(self,inputdir,out,perlmodgen,debug):\n"
+    "        \'\'\'\n"
+    "            This is  init funciton \"\"\" test \"\"\"\n"
+    "        \'\'\'\n"
     "        self.inputdir = inputdir\n"
     "        self.out = out\n"
     "        self.perlmodgen = perlmodgen\n"
@@ -2626,19 +2641,24 @@ bool PerlModGenerator::generatePythonPut2cpp()
     "        self.p.append(\'\'\'  if (perlmodPython) {\'\'\')\n"
     "        self.o[\'Makefile\'].append(\'\'\'    makefileStream <<\'\'\')\n"
     "        mk = []\n"
-    "        mk.append(\'\'\'# python2cpp init\'\'\')\n"
-    "        mk.append(\'\'\'python2cpp_init:\'\'\')\n"
-    "        mk.append(\'\'\'\\trm -rf input_python_files\'\'\')\n"
-    "        mk.append(\'\'\'\\tmkdir -p input_python_files\'\'\')\n"
-    "        for file in files:\n"
-    "            mk.append(\'\'\'\\tcd input_python_files; ln -s ../{f} {f}\'\'\'.format(f=file))\n"
     "        mk.append(\'\')\n"
-    "        mk.append(\'\'\'# if you want to add python file into perlmodgen.cpp , you can use it.\'\'\')\n"
-    "        mk.append(\'\'\'# first of all, you add your py in input_python_files directory\'\'\')\n"
-    "        mk.append(\'\'\'python2cpp_run:\'\'\')\n"
-    "        mk.append(\'\'\'\\t# please change ??? to location of src/perlmodgen.cpp\'\'\')\n"
+    "        mk.append(\'\'\'# code2cpp\'\'\')\n"
+    "        mk.append(\'\'\'code2cpp:\'\'\')\n"
+    "        mk.append(\'\'\'\\trm -rf input_perlmodgen_files\'\'\')\n"
+    "        mk.append(\'\'\'\\tmkdir -p input_perlmodgen_files\'\'\')\n"
+    "        for file in files:\n"
+    "            mk.append(\'\'\'\\tcd input_perlmodgen_files; ln -s ../{f} {f}\'\'\'.format(f=file))\n"
+    "        mk.append(\'\'\'\\t# if you want to add python file into perlmodgen.cpp , you can use it.\'\'\')\n"
+    "        mk.append(\'\'\'\\t# first of all, you add your py in input_perlmodgen_files directory\'\'\')\n"
+    "        mk.append(\'\'\'\\t# please change ../../../../src/perlmodgen.cpp to location of src/perlmodgen.cpp\'\'\')\n"
     "        mk.append(\'\'\'\\t# output filename : perlmodgen.cpp.mod\'\'\')\n"
-    "        mk.append(\'\'\'\\tpython3 put2cpp.py --inputdir=input_python_files --perlmodgen=???\'\'\')\n"
+    "        mk.append(\'\'\'\\tpython3 put2cpp.py --inputdir=input_perlmodgen_files --perlmodgen=../../../../src/perlmodgen.cpp\'\'\')\n"
+    "        mk.append(\'\')\n"
+    "        mk.append(\'\'\'# run python code with DoxyDocs\'\'\')\n"
+    "        mk.append(\'\'\'python:\'\'\')\n"
+    "        mk.append(\'\'\'\\tperl doxy2py.pl\'\'\')\n"
+    "        mk.append(\'\'\'\\tpython3 sample.py\'\'\')\n"
+    "        mk.append(\'\')\n"
     "        self.o[\'Makefile\'].append(\'\\n\'.join([self.line2cpp(6,item) for item in mk]) + \';\')\n"
     "        self.p += self.o[\'Makefile\']\n"
     "        self.p.append(\'\'\'  }\'\'\')\n"
@@ -2687,14 +2707,20 @@ bool PerlModGenerator::generatePythonPut2cpp()
     "                f.write(s)\n"
     "\n"
     "    def createPythonName(self,file):\n"
+    "        \'\'\'\n"
+    "        create new path name\n"
+    "        \'\'\'\n"
     "        if not file:\n"
     "            return file\n"
-    "        file2 = file.replace(\'.py\',\'\')\n"
+    "        file2 = file.replace(\'.\',\'_\')\n"
     "        fileList = list(file2)\n"
     "        ff = \'Python\' + fileList[0].upper() + \'\'.join(fileList[1:])\n"
     "        return ff\n"
     "\n"
     "    def line2cpp(self,indent,line):\n"
+    "        \'\'\'\n"
+    "        change characters for C++\n"
+    "        \'\'\'\n"
     "        line = line.rstrip()\n"
     "        line = line.replace(\'\\\\\',\'\\\\\\\\\')\n"
     "        line = line.replace(\"\'\", \"\\\\\'\")\n"
@@ -2711,8 +2737,8 @@ bool PerlModGenerator::generatePythonPut2cpp()
     "    parser.add_argument( \'--inputdir\',\n"
     "        metavar=\"<str>\",\n"
     "        type=str,\n"
-    "        default=\'input_python_files\',\n"
-    "        help=\'input directory with python code. this python code will be inserted in cpp\')\n"
+    "        default=\'input_perlmodgen_files\',\n"
+    "        help=\'input directory with python code. files of this directory will be inserted in cpp\')\n"
     "    parser.add_argument( \'--perlmodgen\',\n"
     "        metavar=\"<str>\",\n"
     "        type=str,\n"
@@ -2730,6 +2756,107 @@ bool PerlModGenerator::generatePythonPut2cpp()
     "    print(\'inputdir:\',args.inputdir)\n"
     "    print(\'input location of perlmodegen.cpp:\',args.perlmodgen)\n"
     "    S = Solution(args.inputdir,args.out,args.perlmodgen,args.debug)\n"
+    "\n";
+
+  return true;
+}
+
+bool PerlModGenerator::generatePythonSample_py()
+{
+  std::ofstream pythonStream;
+  if (!createOutputFile(pythonStream, pathPythonSample_py))
+    return false;
+
+  pythonStream <<
+    "import DoxyDocs\n"
+    "\n"
+    "docs = DoxyDocs.D\n"
+    "for k,v in docs.items():\n"
+    "    for k1,v2 in v.items():\n"
+    "        print(k,k1)\n";
+
+  return true;
+}
+
+bool PerlModGenerator::generatePythonDoxy2py_pl()
+{
+  std::ofstream pythonStream;
+  if (!createOutputFile(pythonStream, pathPythonDoxy2py_pl))
+    return false;
+
+  pythonStream <<
+    "# BEGIN {push @INC, \'..\'}\n"
+    "use lib \'.\';\n"
+    "use DoxyDocs;\n"
+    "\n"
+    "our %init4py;\n"
+    "\n"
+    "sub change_special_code {\n"
+    "	my ($s) = @_;\n"
+    "	$s =~ s/\\\'/\\\\\\\'/g;\n"
+    "	return $s;\n"
+    "}\n"
+    "\n"
+    "sub generate_cc($$) {\n"
+    "	my $str = $_[0];\n"
+    "	my $doc = $_[1];\n"
+    "	my $cnt = 1;\n"
+    "\n"
+    "	my $ps = $str;\n"
+    "	$ps =~ s/\\{\\s*/\\[\\\'/g;\n"
+    "	$ps =~ s/\\s*\\}/\\\'\\]/g;\n"
+    "	$ps =~ s/^\\$//;\n"
+    "\n"
+    "	#print \"generate_cc $doc\\n\";\n"
+    "	if($doc =~ /^HASH\\(/){\n"
+    "		#print PH \"=== $ps\\n\";\n"
+    "		if($init4py{$ps} eq \"\"){\n"
+    "			print PH \"$ps={}\\n\";\n"
+    "			$init4py{$ps} = \"init\";\n"
+    "		}\n"
+    "		#print \"HASH \" . %{$doc} . \"\\n\";\n"
+    "		foreach $key (keys %{$doc}) {\n"
+    "			if( not ( (${$doc}{$key} =~ /^ARRAY\\(/) || (${$doc}{$key} =~ /^HASH\\(/) ) ){\n"
+    "				#print \"hash $str { $key } = value( ${$doc}{$key} )\\n\";\n"
+    "				print PH \"$ps [\'$key\'] =  \\\'\\\'\\\'\" . change_special_code(${$doc}{$key}) . \"\\\'\\\'\\\'\\n\";\n"
+    "				 #print PH \"$ps [\'$key\'] =  \\\"\" . change_special_code(${$doc}{$key}) . \"\\\"\\n\";\n"
+    "			} else {\n"
+    "				generate_cc(\"$str { $key }\",  ${$doc}{$key});\n"
+    "			}\n"
+    "		}\n"
+    "	} elsif($doc =~ /^ARRAY\\(/){\n"
+    "		#print \"ARRAY @$doc\\n\";\n"
+    "		#print PH \"=== $ps\\n\";\n"
+    "		if($init4py{$ps} eq \"\"){\n"
+    "			print PH \"$ps={}\\n\";\n"
+    "			$init4py{$ps} = \"init\";\n"
+    "		}\n"
+    "		foreach $key (@{$doc}) {\n"
+    "			#print \"array $cnt key( $key )\\n\";\n"
+    "			#print \"array $doc->{$key}\\n\";\n"
+    "			if( not ( ($key =~ /^ARRAY\\(/) || ($key =~ /^HASH\\(/) ) ){\n"
+    "				#print \"hash $str { $key } = value( ${$doc}{$key} )\\n\";\n"
+    "				print  \"ARRAY $str [ $key ] =  \\\'\\\'\\\'\" . change_special_code(${$doc}[$key]) . \"\\\'\\\'\\\'\\n\";\n"
+    "			} else {\n"
+    "				generate_cc(\"$str { $cnt }\",$key);\n"
+    "				$cnt ++;\n"
+    "			}\n"
+    "		}\n"
+    "	} else {\n"
+    "		print PH \">>> $ps\\n\";\n"
+    "		#print \"DOC $str $doc\\n\";\n"
+    "		#print \"DOC $str @{$doc}\\n\";\n"
+    "		#print \"DOC $str %{$doc}\\n\";\n"
+    "	}\n"
+    "}\n"
+    "\n"
+    "\n"
+    "print STDERR \"input DoxyDocs.pm  output filename = DoxyDocs.py\\n\";\n"
+    "open(PH, \">\",\"DoxyDocs.py\") or die \"Can\'t open < DoxyDocs.py : $!\";\n"
+    "#generate($doxydocs, $doxystructure);\n"
+    "generate_cc(\"\\$D\",$doxydocs);\n"
+    "close PH;\n"
+    "print STDERR \"DoxyDocs.py has variable of D dictionary including all DoxyDocs.pm\\n\";\n"
     "\n";
 
   return true;
@@ -2764,18 +2891,25 @@ bool PerlModGenerator::generateMakefile()
   if (perlmodPython) {
     // perlmodPython PerlModGenerator Makefile <start>
     makefileStream <<
-      "# python2cpp init\n"
-      "python2cpp_init:\n"
-      "	rm -rf input_python_files\n"
-      "	mkdir -p input_python_files\n"
-      "	cd input_python_files; ln -s ../put2cpp.py put2cpp.py\n"
       "\n"
-      "# if you want to add python file into perlmodgen.cpp , you can use it.\n"
-      "# first of all, you add your py in input_python_files directory\n"
-      "python2cpp_run:\n"
-      "	# please change ??? to location of src/perlmodgen.cpp\n"
+      "# code2cpp\n"
+      "code2cpp:\n"
+      "	rm -rf input_perlmodgen_files\n"
+      "	mkdir -p input_perlmodgen_files\n"
+      "	cd input_perlmodgen_files; ln -s ../put2cpp.py put2cpp.py\n"
+      "	cd input_perlmodgen_files; ln -s ../sample.py sample.py\n"
+      "	cd input_perlmodgen_files; ln -s ../doxy2py.pl doxy2py.pl\n"
+      "	# if you want to add python file into perlmodgen.cpp , you can use it.\n"
+      "	# first of all, you add your py in input_perlmodgen_files directory\n"
+      "	# please change ../../../../src/perlmodgen.cpp to location of src/perlmodgen.cpp\n"
       "	# output filename : perlmodgen.cpp.mod\n"
-      "	python3 put2cpp.py --inputdir=input_python_files --perlmodgen=???\n";
+      "	python3 put2cpp.py --inputdir=input_perlmodgen_files --perlmodgen=../../../../src/perlmodgen.cpp\n"
+      "\n"
+      "# run python code with DoxyDocs\n"
+      "python:\n"
+      "	perl doxy2py.pl\n"
+      "	python3 sample.py\n"
+      "\n";
     // perlmodPython PerlModGenerator Makefile <end>
   }
 
@@ -3174,8 +3308,12 @@ void PerlModGenerator::generate()
   bool perlmodPython = Config_getBool(PERLMOD_PYTHON);
   if (perlmodPython) {
     // perlmodPython PerlModGenerator code in generate function <start>
-    pathPythonPut2cpp = perlModAbsPath + "/put2cpp.py";
-    if (!(generatePythonPut2cpp()))
+    pathPythonPut2cpp_py = perlModAbsPath + "/put2cpp.py";
+    pathPythonSample_py = perlModAbsPath + "/sample.py";
+    pathPythonDoxy2py_pl = perlModAbsPath + "/doxy2py.pl";
+    if (!(generatePythonPut2cpp_py()
+      && generatePythonSample_py()
+      && generatePythonDoxy2py_pl()))
       return;
     // perlmodPython PerlModGenerator code in generate function <end>
   }
