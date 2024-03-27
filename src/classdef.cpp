@@ -395,6 +395,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void addTypeConstraint(const QCString &typeConstraint,const QCString &type);
     void writeTemplateSpec(OutputList &ol,const Definition *d,
             const QCString &type,SrcLangExt lang) const;
+    void mergeMembersFromBaseClasses(bool mergeVirtualBaseClass);
 
     // PIMPL idiom
     class IMPL;
@@ -1201,7 +1202,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
     //printf("=======> adding member %s to class %s\n",qPrint(md->name()),qPrint(name()));
 
     MemberNameInfo *mni = m_impl->allMemberNameInfoLinkedMap.add(md->name());
-    mni->push_back(std::make_unique<MemberInfo>(md,prot,md->virtualness(),FALSE));
+    mni->push_back(std::make_unique<MemberInfo>(md,prot,md->virtualness(),false,false));
   }
 }
 
@@ -3518,40 +3519,26 @@ static bool isStandardFunc(const MemberDef *md)
          md->isDestructor();        // destructor
 }
 
-/*!
- * recursively merges the 'all members' lists of a class base
- * with that of this class. Must only be called for classes without
- * subclasses!
- */
-void ClassDefImpl::mergeMembers()
+void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
 {
-  if (m_impl->membersMerged) return;
-
-  //bool optimizeOutputForJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-  //bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   SrcLangExt lang = getLanguage();
   QCString sep=getLanguageSpecificSeparator(lang,TRUE);
   size_t sepLen = sep.length();
-
-  m_impl->membersMerged=TRUE;
-  //printf("  mergeMembers for %s\n",qPrint(name()));
   bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
   bool extractPrivate         = Config_getBool(EXTRACT_PRIVATE);
+
+  //printf("  mergeMembers for %s mergeVirtualBaseClass=%d\n",qPrint(name()),mergeVirtualBaseClass);
+  // the merge the base members with this class' members
   for (const auto &bcd : baseClasses())
   {
     ClassDefMutable *bClass=toClassDefMutable(bcd.classDef);
     if (bClass)
     {
-      // merge the members in the base class of this inheritance branch first
-      bClass->mergeMembers();
-      if (bClass->getLanguage()==SrcLangExt::Python) continue; // python does not have member overloading, see issue 8480
-
       const MemberNameInfoLinkedMap &srcMnd  = bClass->memberNameInfoLinkedMap();
       MemberNameInfoLinkedMap &dstMnd        = m_impl->allMemberNameInfoLinkedMap;
 
       for (auto &srcMni : srcMnd)
       {
-        //printf("    Base member name %s\n",srcMni->memberName());
         MemberNameInfo *dstMni;
         if ((dstMni=dstMnd.find(srcMni->memberName())))
           // a member with that name is already in the class.
@@ -3559,6 +3546,7 @@ void ClassDefImpl::mergeMembers()
           // or there may be another path to the base class that is already
           // visited via another branch in the class hierarchy.
         {
+          //printf("    %s hides member name %s\n",qPrint(bClass->name()),qPrint(srcMni->memberName()));
           for (auto &srcMi : *srcMni)
           {
             MemberDef *srcMd = srcMi->memberDef();
@@ -3583,19 +3571,19 @@ void ClassDefImpl::mergeMembers()
                       dstMd->getOuterScope(),dstMd->getFileDef(),&dstAl,
                       TRUE,getLanguage()
                       );
-                  //printf("  Yes, matching (%s<->%s): %d\n",
+                  //printf("      Yes, matching (%s<->%s): %d\n",
                   //    qPrint(argListToString(srcMd->argumentList())),
                   //    qPrint(argListToString(dstMd->argumentList())),
                   //    found);
                   hidden = hidden  || !found;
                 }
                 else // member is in a non base class => multiple inheritance
-                  // using the same base class.
+                     // using the same base class.
                 {
-                  //printf("$$ Existing member %s %s add scope %s\n",
-                  //    qPrint(dstMi->ambiguityResolutionScope),
+                  //printf("       $$ Existing member %s %s add scope %s\n",
+                  //    qPrint(dstMi->ambiguityResolutionScope()),
                   //    qPrint(dstMd->name()),
-                  //    qPrint(dstMi->scopePath.left(dstMi->scopePath.find("::")+2));
+                  //    qPrint(dstMi->scopePath().left(dstMi->scopePath().find("::")+2)));
 
                   QCString scope=dstMi->scopePath().left(dstMi->scopePath().find(sep)+sepLen);
                   if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
@@ -3610,7 +3598,7 @@ void ClassDefImpl::mergeMembers()
                 // do not add if base class is virtual or
                 // if scope paths are equal or
                 // if base class is an interface (and thus implicitly virtual).
-                //printf("same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt,dstMi->virt);
+                //printf("      same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt(),dstMi->virt());
                 if ((srcMi->virt()!=Specifier::Normal && dstMi->virt()!=Specifier::Normal) ||
                     bClass->name()+sep+srcMi->scopePath() == dstMi->scopePath() ||
                     dstMd->getClassDef()->compoundType()==Interface
@@ -3619,12 +3607,12 @@ void ClassDefImpl::mergeMembers()
                   found=TRUE;
                 }
                 else // member can be reached via multiple paths in the
-                  // inheritance tree
+                     // inheritance tree
                 {
-                  //printf("$$ Existing member %s %s add scope %s\n",
-                  //    qPrint(dstMi->ambiguityResolutionScope),
+                  //printf("      $$ Existing member %s %s add scope %s\n",
+                  //    qPrint(dstMi->ambiguityResolutionScope()),
                   //    qPrint(dstMd->name()),
-                  //    qPrint(dstMi->scopePath.left(dstMi->scopePath.find("::")+2));
+                  //    qPrint(dstMi->scopePath().left(dstMi->scopePath().find("::")+2)));
 
                   QCString scope=dstMi->scopePath().left(dstMi->scopePath().find(sep)+sepLen);
                   if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
@@ -3636,8 +3624,9 @@ void ClassDefImpl::mergeMembers()
               }
               if (found) break;
             }
-            //printf("member %s::%s hidden %d ambiguous %d srcMi->ambigClass=%p\n",
-            //    qPrint(srcCd->name()),qPrint(srcMd->name()),hidden,ambiguous,srcMi->ambigClass);
+            //printf("      member %s::%s hidden %d ambiguous %d srcMi->ambigClass=%p found=%d\n",
+            //    qPrint(srcCd->name()),qPrint(srcMd->name()),hidden,ambiguous,
+            //    (void*)srcMi->ambigClass(),found);
 
             // TODO: fix the case where a member is hidden by inheritance
             //       of a member with the same name but with another prototype,
@@ -3646,7 +3635,7 @@ void ClassDefImpl::mergeMembers()
             //       it seems that the member is not reachable by prefixing a
             //       scope name either (according to my compiler). Currently,
             //       this case is shown anyway.
-            if (!found && srcMd->protection()!=Protection::Private && !srcMd->isFriend())
+            if (!found && srcMd->protection()!=Protection::Private && !srcMd->isFriend() && srcMi->virtualBaseClass()==mergeVirtualBaseClass)
             {
               Protection prot = srcMd->protection();
               if (bcd.prot==Protection::Protected && prot==Protection::Public)
@@ -3662,15 +3651,16 @@ void ClassDefImpl::mergeMembers()
               {
                 if (!isStandardFunc(srcMd))
                 {
-                  //printf("    insertMember '%s'\n",qPrint(srcMd->name()));
+                  //printf("      %s::insertMember(%s)\n",qPrint(name()),qPrint(srcMd->name()));
                   internalInsertMember(srcMd,prot,FALSE);
                 }
               }
 
               Specifier virt=srcMi->virt();
               if (virt==Specifier::Normal && bcd.virt!=Specifier::Normal) virt=bcd.virt;
+              bool virtualBaseClass = bcd.virt!=Specifier::Normal;
 
-              std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(srcMd,prot,virt,TRUE);
+              std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(srcMd,prot,virt,TRUE,virtualBaseClass);
               newMi->setScopePath(bClass->name()+sep+srcMi->scopePath());
               if (ambiguous)
               {
@@ -3704,6 +3694,7 @@ void ClassDefImpl::mergeMembers()
         }
         else // base class has a member that is not in the sub class => copy
         {
+          //printf("    %s adds member name %s\n",qPrint(bClass->name()),qPrint(srcMni->memberName()));
           // create a deep copy of the list (only the MemberInfo's will be
           // copied, not the actual MemberDef's)
           MemberNameInfo *newMni = dstMnd.add(srcMni->memberName());
@@ -3711,7 +3702,7 @@ void ClassDefImpl::mergeMembers()
           // copy the member(s) from the base to the sub class
           for (auto &mi : *srcMni)
           {
-            if (!mi->memberDef()->isFriend()) // don't inherit friends
+            if (mi->virtualBaseClass()==mergeVirtualBaseClass && !mi->memberDef()->isFriend()) // don't inherit friends
             {
               Protection prot = mi->prot();
               if (bcd.prot==Protection::Protected)
@@ -3722,25 +3713,29 @@ void ClassDefImpl::mergeMembers()
               {
                 prot=Protection::Private;
               }
-              //printf("%s::%s: prot=%d bcd.prot=%d result=%d\n",
-              //    qPrint(name()),qPrint(mi->memberDef->name()),mi->prot,
-              //    bcd.prot,prot);
+              Specifier virt=mi->virt();
+              bool virtualBaseClass = bcd.virt!=Specifier::Normal || mi->virtualBaseClass();
+              if (virt==Specifier::Normal && bcd.virt!=Specifier::Normal) virt=bcd.virt;
+              //printf("      %s::%s: [mi.prot=%d, bcd.prot=%d => prot=%d], [mi.virt=%d, bcd.virt=%d => virt=%d] virtualBase=%d\n",
+              //    qPrint(name()),qPrint(mi->memberDef()->name()),
+              //    mi->prot(),bcd.prot,prot,
+              //    mi->virt(),bcd.virt,virt,
+              //    virtualBaseClass
+              //    );
 
               if (prot!=Protection::Private || extractPrivate)
               {
-                Specifier virt=mi->virt();
-                if (virt==Specifier::Normal && bcd.virt!=Specifier::Normal) virt=bcd.virt;
 
                 if (inlineInheritedMembers)
                 {
                   if (!isStandardFunc(mi->memberDef()))
                   {
-                    //printf("    insertMember '%s'\n",qPrint(mi->memberDef->name()));
+                    //printf("      %s::insertMember '%s'\n",qPrint(name()),qPrint(mi->memberDef()->name()));
                     internalInsertMember(mi->memberDef(),prot,FALSE);
                   }
                 }
                 //printf("Adding!\n");
-                std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(mi->memberDef(),prot,virt,TRUE);
+                std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(mi->memberDef(),prot,virt,TRUE,virtualBaseClass);
                 newMi->setScopePath(bClass->name()+sep+mi->scopePath());
                 newMi->setAmbigClass(mi->ambigClass());
                 newMi->setAmbiguityResolutionScope(mi->ambiguityResolutionScope());
@@ -3752,7 +3747,41 @@ void ClassDefImpl::mergeMembers()
       }
     }
   }
-  //printf("  end mergeMembers\n");
+}
+
+/*!
+ * recursively merges the 'all members' lists of a class base
+ * with that of this class. Must only be called for classes without
+ * subclasses!
+ */
+void ClassDefImpl::mergeMembers()
+{
+  if (m_impl->membersMerged) return;
+  if (getLanguage()==SrcLangExt::Python) return; // python does not have member overloading, see issue 8480
+
+  //printf("> %s::mergeMembers()\n",qPrint(name()));
+
+  m_impl->membersMerged=TRUE;
+
+  // first merge the members of the base class recursively
+  for (const auto &bcd : baseClasses())
+  {
+    ClassDefMutable *bClass=toClassDefMutable(bcd.classDef);
+    if (bClass)
+    {
+      // merge the members in the base class of this inheritance branch first
+      bClass->mergeMembers();
+    }
+  }
+
+  // first merge the member that are not inherited via a virtual base class
+  // (as this can end up reimplemented via multiple paths, see #10717 for examples)
+  mergeMembersFromBaseClasses(false);
+  // then process the member that are inherited via a virtual base class to add the
+  // ones that are not reimplemented via any path
+  mergeMembersFromBaseClasses(true);
+
+  //printf("< %s::mergeMembers()\n",qPrint(name()));
 }
 
 //----------------------------------------------------------------------------
@@ -3839,7 +3868,7 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
             //printf("Copying member %s\n",qPrint(mi->memberDef->name()));
             mmd->moveTo(this);
 
-            auto newMi=std::make_unique<MemberInfo>(newMd.get(),prot,mi->virt(),mi->inherited());
+            auto newMi=std::make_unique<MemberInfo>(newMd.get(),prot,mi->virt(),mi->inherited(),mi->virtualBaseClass());
             newMi->setScopePath(mi->scopePath());
             newMi->setAmbigClass(mi->ambigClass());
             newMi->setAmbiguityResolutionScope(mi->ambiguityResolutionScope());
@@ -4042,7 +4071,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
   }
   if (templateClass==nullptr)
   {
-    QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
+    QCString tcname = removeRedundantWhiteSpace(name()+templSpec);
     AUTO_TRACE("New template instance class name='{}' templSpec='{}' inside '{}' hidden={}",
         name(),templSpec,name(),isHidden());
 

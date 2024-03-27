@@ -395,7 +395,7 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
       return FALSE; // member is the same as one that is already added
     }
   }
-  mni->push_back(std::make_unique<MemberInfo>(md,md->protection(),md->virtualness(),FALSE));
+  mni->push_back(std::make_unique<MemberInfo>(md,md->protection(),md->virtualness(),false,false));
   //printf("Added member!\n");
   m_allMemberList.push_back(md);
   switch(md->memberType())

@@ -4676,7 +4676,7 @@ QCString substituteTemplateArgumentsInString(
   if (formalArgs.empty()) return nm;
   QCString result;
 
-  static const reg::Ex re(R"(\a[\w:]*)");
+  static const reg::Ex re(R"(\a[\w:.]*)");
   std::string name = nm.str();
   reg::Iterator it(name,re);
   reg::Iterator end;
@@ -4714,10 +4714,20 @@ QCString substituteTemplateArgumentsInString(
         formArg.name = formArg.type.mid(6);
         formArg.type = "class";
       }
-      if (formArg.type.startsWith("typename ") && formArg.name.isEmpty())
+      else if (formArg.type.startsWith("typename ") && formArg.name.isEmpty())
       {
         formArg.name = formArg.type.mid(9);
         formArg.type = "typename";
+      }
+      else if (formArg.type.startsWith("class...")) // match 'class... name' to 'name...'
+      {
+        formArg.name += "...";
+        formArg.type = formArg.type.left(5)+formArg.type.mid(8);
+      }
+      else if (formArg.type.startsWith("typename...")) // match 'typename... name' to 'name...'
+      {
+        formArg.name += "...";
+        formArg.type = formArg.type.left(8)+formArg.type.mid(11);
       }
       //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s' actArg->type='%s' actArg->name='%s' \n",
       //  qPrint(n),qPrint(formArg.type),qPrint(formArg.name),qPrint(formArg.defval),qPrint(actArg.type),qPrint(actArg.name));

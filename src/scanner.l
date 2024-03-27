@@ -6379,7 +6379,7 @@ NONLopt [^\n]*
                                             yyextra->current->args += yytext;
                                           }
                                         }
-<Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}    {
+<Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}("...")? {
                                           lineCount(yyscanner);
                                           QCString baseScope = yytext;
                                           if (yyextra->insideCS && baseScope.stripWhiteSpace()=="where")
