@@ -2,7 +2,7 @@
 add_custom_target(tests
   COMMENT "Running doxygen tests..."
   COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/testing/runtests.py --doxygen ${PROJECT_BINARY_DIR}/bin/doxygen --inputdir ${PROJECT_SOURCE_DIR}/testing --outputdir ${PROJECT_BINARY_DIR}/testing
-  DEPENDS doxygen
+  DEPENDS doxygen ${update_doxmlparser_dependency}
 )
 
 # get the files in the testing directory starting with 3 digits and an underscore
