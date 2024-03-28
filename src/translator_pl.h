@@ -339,8 +339,8 @@ class TranslatorPolish : public TranslatorAdapter_1_11_0
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokumentacja"; }
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacja"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.

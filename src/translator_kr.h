@@ -373,8 +373,8 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "문서화"; }
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "문서화"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.

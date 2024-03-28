@@ -345,8 +345,8 @@ class TranslatorChinese : public Translator
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "文档"; }
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "文档"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
