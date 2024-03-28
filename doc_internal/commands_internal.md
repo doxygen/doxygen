@@ -130,12 +130,13 @@ and the version in which they were introduced.
 \since doxygen version 1.9.5
 
 <hr>
-\section cmdiraise \\iraise \<amount\>
+\section cmdiraise \\iraise \<amount\> "<label>"
   \addindex \\iraise
 
-  Internal doxygen command to increase the section level by a given amount.
-  After processing `\iraise 1` for instance, a `\section` will be treated as a `\subsection`.
-  Inserted when processing `\include{doc}` with the `raise` option.
+  Internal doxygen command to increase the section level by a given `amount` and append the
+  `label` to the label of the `\section` type of commands and the the `\anchor` command.
+  After processing `\iraise 1 "_lab"` for instance, a `\section s1` will be treated as a `\subsection s1_lab`.
+  Inserted when processing `\include{doc}` with the `raise` or `label` option.
 
 \since doxygen version 1.11.0
 
