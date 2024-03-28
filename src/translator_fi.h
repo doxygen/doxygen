@@ -399,8 +399,8 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokumentaatio"; } // "Documentation"
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentaatio"; } // "Documentation"
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.

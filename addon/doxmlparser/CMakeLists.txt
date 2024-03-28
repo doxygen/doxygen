@@ -1,4 +1,3 @@
-find_package(generateDS)
 if (GENERATEDS_FOUND)
   add_custom_command(
 	  COMMENT "Updating index.py from index.xsd..."
@@ -19,7 +18,7 @@ if (GENERATEDS_FOUND)
 	  OUTPUT  ${PROJECT_SOURCE_DIR}/addon/doxmlparser/doxmlparser/compound.py
   )
   add_custom_target(
-	  update_doxmlparser_files ALL
+	  ${update_doxmlparser_dependency} ALL
 	  DEPENDS ${PROJECT_SOURCE_DIR}/addon/doxmlparser/doxmlparser/index.py
 	  DEPENDS ${PROJECT_SOURCE_DIR}/addon/doxmlparser/doxmlparser/compound.py
 	  COMMENT "Updating doxmlparser module..."

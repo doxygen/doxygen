@@ -226,8 +226,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     QCString trModulesDescription() override
     { return "Popis svih modula:"; }
 
-    QCString trDocumentation() override
-    { return "Dokumentacija"; }
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacija"; }
     QCString trModuleIndex() override
     { return "Kazalo modula"; }
     QCString trHierarchicalIndex() override
