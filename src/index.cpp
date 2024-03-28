@@ -4791,7 +4791,7 @@ static void writeIndex(OutputList &ol)
     {
       ol.startHeaderSection();
       ol.startTitleHead(QCString());
-      ol.parseText(projPrefix+theTranslator->trDocumentation());
+      ol.parseText(theTranslator->trDocumentation(projectName));
       headerWritten = TRUE;
     }
   }

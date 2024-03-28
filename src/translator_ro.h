@@ -358,8 +358,8 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Documentaţie"; }
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Documentaţie"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.

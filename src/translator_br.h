@@ -486,13 +486,8 @@ class TranslatorBrazilian : public Translator
     { return "Lista de todos os módulos:"; }
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    {
-      // TODO In the future, I think I'll suggest the replacement of this
-      // method to something like trDocumentationOf(projPrefix). This will allow
-      // the latin construction "Documentação de ProjA"
-      return "Documentação";
-    }
+    QCString trDocumentation(const QCString projName) override
+    { return "Documentação" + (!projName.isEmpty()? " de " + projName : ""); }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.

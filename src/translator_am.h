@@ -299,8 +299,8 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return " - Փաստագրություն"; }
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + " - Փաստագրություն"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.

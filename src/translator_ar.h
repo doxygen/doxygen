@@ -332,8 +332,8 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "التوثيق"; }
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "التوثيق"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.

@@ -385,8 +385,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     { return "全モジュールの一覧です。"; }
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "詳解"; }
+    QCString trDocumentation(const QCString projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "詳解"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
