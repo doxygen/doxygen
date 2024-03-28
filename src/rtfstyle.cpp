@@ -104,8 +104,12 @@ Rtf_Style_Default rtf_Style_Default[] =
     "\\sbasedon0 \\snext0 heading 4;}{\\*\\cs10 \\additive Default Paragraph Font"
   },
   { "Heading5",
-    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid ",
+    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs16\\cgrid ",
     "\\sbasedon0 \\snext0 heading 5;}{\\*\\cs10 \\additive Default Paragraph Font"
+  },
+  { "Heading6",
+    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs12\\cgrid ",
+    "\\sbasedon0 \\snext0 heading 6;}{\\*\\cs10 \\additive Default Paragraph Font"
   },
   { "Title",
     "\\s15\\qc\\sb240\\sa60\\widctlpar\\outlinelevel0\\adjustright \\b\\f1\\fs32\\kerning28\\cgrid ",
@@ -226,9 +230,9 @@ Rtf_Style_Default rtf_Style_Default[] =
   RTF_ListEnum(12,152,153,4680),
   RTF_ListEnum(13,153,153,5040),
 
-  { 0,
-    0,
-    0
+  { nullptr,
+    nullptr,
+    nullptr
   }
 };
 
@@ -254,7 +258,7 @@ bool StyleData::setStyle(const std::string &command, const std::string &styleNam
   reg::Match match;
   if (!reg::search(command,match,s_clause))
   {
-    err("Style sheet '%s' contains no '\\s' clause.\n{%s}", styleName.c_str(), command.c_str());
+    err("Style sheet '%s' contains no '\\s' clause.\n{%s}\n", styleName.c_str(), command.c_str());
     return false;
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
@@ -275,7 +279,7 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF style sheet file %s. Using defaults.",qPrint(name));
+    err("Can't open RTF style sheet file %s. Using defaults.\n",qPrint(name));
     return;
   }
   msg("Loading RTF style sheet %s...\n",qPrint(name));
@@ -317,7 +321,7 @@ void loadExtensions(const QCString &name)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF extensions file %s. Using defaults.",qPrint(name));
+    err("Can't open RTF extensions file %s. Using defaults.\n",qPrint(name));
     return;
   }
   msg("Loading RTF extensions %s...\n",qPrint(name));

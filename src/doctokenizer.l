@@ -51,8 +51,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 #define TK_COMMAND_SEL() (yytext[0] == '@' ? TK_COMMAND_AT : TK_COMMAND_BS)
 
 //--------------------------------------------------------------------------
@@ -76,7 +74,7 @@ struct doctokenizerYY_state
   int commentState;
   TokenInfo token;
   yy_size_t inputPos = 0;
-  const char *inputString = 0;
+  const char *inputString = nullptr;
   QCString fileName;
   bool insidePre = false;
   int sharpCount=0;
@@ -84,7 +82,7 @@ struct doctokenizerYY_state
   bool insideHtmlLink=false;
 
   // context for section finding phase
-  const Definition  *definition = 0;
+  const Definition  *definition = nullptr;
   QCString     secLabel;
   QCString     secTitle;
   SectionType  secType;
@@ -98,10 +96,7 @@ struct doctokenizerYY_state
 #define lineCount(s,len) do { for(int i=0;i<(int)len;i++) if (s[i]=='\n') yyextra->yyLineNr++; } while(0)
 
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
-
+[[maybe_unused]] static const char *stateToString(int state);
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void handleHtmlTag(yyscan_t yyscanner,const char *text);
@@ -152,24 +147,25 @@ const char *DocTokenizer::retvalToString(int retval)
 {
   switch (retval)
   {
-    case RetVal_OK:            return "RetVal_OK";
-    case RetVal_SimpleSec:     return "RetVal_SimpleSec";
-    case RetVal_ListItem:      return "RetVal_ListItem";
-    case RetVal_Section:       return "RetVal_Section";
-    case RetVal_Subsection:    return "RetVal_Subsection";
-    case RetVal_Subsubsection: return "RetVal_Subsubsection";
-    case RetVal_Paragraph:     return "RetVal_Paragraph";
-    case RetVal_SubParagraph:  return "RetVal_SubParagraph";
-    case RetVal_EndList:       return "RetVal_EndList";
-    case RetVal_EndPre:        return "RetVal_EndPre";
-    case RetVal_DescData:      return "RetVal_DescData";
-    case RetVal_DescTitle :    return "RetVal_DescTitle";
-    case RetVal_EndDesc:       return "RetVal_EndDesc";
-    case RetVal_TableRow:      return "RetVal_TableRow";
-    case RetVal_TableCell:     return "RetVal_TableCell";
-    case RetVal_TableHCell:    return "RetVal_TableHCell";
-    case RetVal_EndTable:      return "RetVal_EndTable";
-    case RetVal_Internal:      return "RetVal_Internal";
+    case RetVal_OK:              return "RetVal_OK";
+    case RetVal_SimpleSec:       return "RetVal_SimpleSec";
+    case RetVal_ListItem:        return "RetVal_ListItem";
+    case RetVal_Section:         return "RetVal_Section";
+    case RetVal_Subsection:      return "RetVal_Subsection";
+    case RetVal_Subsubsection:   return "RetVal_Subsubsection";
+    case RetVal_Paragraph:       return "RetVal_Paragraph";
+    case RetVal_SubParagraph:    return "RetVal_SubParagraph";
+    case RetVal_SubSubParagraph: return "RetVal_SubSubParagraph";
+    case RetVal_EndList:         return "RetVal_EndList";
+    case RetVal_EndPre:          return "RetVal_EndPre";
+    case RetVal_DescData:        return "RetVal_DescData";
+    case RetVal_DescTitle:       return "RetVal_DescTitle";
+    case RetVal_EndDesc:         return "RetVal_EndDesc";
+    case RetVal_TableRow:        return "RetVal_TableRow";
+    case RetVal_TableCell:       return "RetVal_TableCell";
+    case RetVal_TableHCell:      return "RetVal_TableHCell";
+    case RetVal_EndTable:        return "RetVal_EndTable";
+    case RetVal_Internal:        return "RetVal_Internal";
   }
   return "ERROR";
 }
@@ -203,7 +199,7 @@ static int computeIndent(const char *str,size_t length)
 static QCString stripEmptyLines(const QCString &s)
 {
   if (s.isEmpty()) return QCString();
-  int end=s.length();
+  int end=static_cast<int>(s.length());
   int start=0,p=0;
   // skip leading empty lines
   for (;;)
@@ -264,7 +260,7 @@ BLANK     [ \t\r]
 BLANKopt  {BLANK}*
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
-PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
+PHPTYPE   [?]?[\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
@@ -276,7 +272,7 @@ OPTSTARS  ("/""/"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
 OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
-ENDLIST   {BLANK}*"."{BLANK}*\n
+ENDLIST   {BLANK}*"."{BLANK}*(\n|"\\ilinebr")
 ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
@@ -644,12 +640,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          if (index<0) index=0; // should never happen
                          yyextra->token.name = tagName.left(index);
                          int text_begin = index+2;
-                         int text_end = tagName.length()-1;
+                         int text_end = static_cast<int>(tagName.length())-1;
                          if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
                          {
-                                 ++text_begin;
-                                 if (tagName[text_end-1]=='#')
-                                         --text_end;
+                           ++text_begin;
+                           if (tagName[text_end-1]=='#')
+                           {
+                             --text_end;
+                           }
                          }
                          yyextra->token.text = tagName.mid(text_begin,text_end-text_begin);
                          return TK_RCSTAG;
@@ -657,9 +655,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name(&yytext[2]);
-                         name = name.left(name.length()-1);
+                         name = name.left(static_cast<int>(name.length())-1);
                          QCString value = Portable::getenv(name);
-                         for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
+                         for (int i=static_cast<int>(value.length())-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */
                          lineCount(yytext,yyleng);
@@ -1205,6 +1203,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          return 0;
                        }
+<St_Ref2>{HTMLTAG}     { /* html tag */
+                         lineCount(yytext,yyleng);
+                         handleHtmlTag(yyscanner,yytext);
+                         return TK_HTMLTAG;
+                       }
 <St_Ref2>{SPCMD1}      |
 <St_Ref2>{SPCMD2}      { /* special command */
                          yyextra->token.name = yytext+1;
@@ -1327,7 +1330,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          unput(*yytext);
                          return 0;
                        }
-<St_ILine>{LINENR}/[\n\.]     |
+<St_ILine>{LINENR}/[\\@\n\.]  |
 <St_ILine>{LINENR}{BLANK}     {
                          bool ok = false;
                          int nr = QCString(yytext).toInt(&ok);
@@ -1431,6 +1434,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                     }
 <St_Sections>{CMD}"paragraph"{BLANK}+ {
                                       yyextra->secType = SectionType::Paragraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
+<St_Sections>{CMD}"subparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subparagraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
+<St_Sections>{CMD}"subsubparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subsubparagraph;
                                       BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
@@ -1590,7 +1601,7 @@ static void processSection(yyscan_t yyscanner)
   }
   else
   {
-    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor %s without context\n",qPrint(yyextra->secLabel));
+    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor %s without context",qPrint(yyextra->secLabel));
   }
   SectionInfo *si = SectionManager::instance().find(yyextra->secLabel);
   if (si)
@@ -1605,6 +1616,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   QCString tagText(text);
+  yyextra->token.text = tagText;
   yyextra->token.attribs.clear();
   yyextra->token.endTag = FALSE;
   yyextra->token.emptyTag = FALSE;
@@ -2146,9 +2158,9 @@ void DocTokenizer::pushBackHtmlTag(const QCString &tag)
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString tagName = tag;
-  int i,l = tagName.length();
+  int l = static_cast<int>(tagName.length());
   unput('>');
-  for (i=l-1;i>=0;i--)
+  for (int i=l-1;i>=0;i--)
   {
     unput(tag[i]);
   }
@@ -2183,6 +2195,4 @@ int DocTokenizer::getLineNr(void)
   return yyextra->yyLineNr;
 }
 
-#if USE_STATE2STRING
 #include "doctokenizer.l.h"
-#endif

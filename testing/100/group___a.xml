@@ -35,7 +35,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="22" column="1" bodyfile="100_a.c" bodystart="22" bodyend="32"/>
+        <location file="100_a.c" line="24" column="1" bodyfile="100_a.c" bodystart="24" bodyend="34"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="typedef">
@@ -52,7 +52,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="72" column="16" bodyfile="100_a.c" bodystart="72" bodyend="-1"/>
+        <location file="100_a.c" line="74" column="16" bodyfile="100_a.c" bodystart="74" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
@@ -69,7 +69,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="79" column="5" bodyfile="100_a.c" bodystart="79" bodyend="-1"/>
+        <location file="100_a.c" line="81" column="5" bodyfile="100_a.c" bodystart="81" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="group___a_1gabf2bc2545a4a5f5683d9ef3ed0d977e0" prot="public" static="yes" mutable="no">
         <type>int</type>
@@ -84,7 +84,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="86" column="12" bodyfile="100_a.c" bodystart="86" bodyend="-1"/>
+        <location file="100_a.c" line="88" column="12" bodyfile="100_a.c" bodystart="88" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
@@ -104,7 +104,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="46" column="13" bodyfile="100_a.c" bodystart="46" bodyend="46"/>
+        <location file="100_a.c" line="48" column="13" bodyfile="100_a.c" bodystart="48" bodyend="48"/>
       </memberdef>
       <memberdef kind="function" id="group___a_1ga5806fbe7d2114068e8085236b6f8098d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -122,7 +122,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="53" column="6" bodyfile="100_a.c" bodystart="53" bodyend="53"/>
+        <location file="100_a.c" line="55" column="6" bodyfile="100_a.c" bodystart="55" bodyend="55"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="define">
@@ -137,7 +137,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="39" column="9" bodyfile="100_a.c" bodystart="39" bodyend="-1"/>
+        <location file="100_a.c" line="41" column="9" bodyfile="100_a.c" bodystart="41" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

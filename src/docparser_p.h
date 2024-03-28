@@ -56,7 +56,7 @@ using DocStyleChangeStack = IterableStack<const DocNodeVariant *>;
  */
 struct DocParserContext
 {
-  const Definition *scope = 0;
+  const Definition *scope = nullptr;
   QCString context;
   bool inSeeBlock = false;
   bool xmlComment = false;
@@ -72,19 +72,19 @@ struct DocParserContext
   bool         hasReturnCommand = false;
   StringMultiSet retvalsFound;
   StringMultiSet paramsFound;
-  const MemberDef *  memberDef = 0;
+  const MemberDef *  memberDef = nullptr;
   bool         isExample = false;
   QCString     exampleName;
   QCString     searchUrl;
 
   QCString     includeFileName;
   QCString     includeFileText;
-  uint32_t     includeFileOffset = 0;
-  uint32_t     includeFileLength = 0;
+  size_t       includeFileOffset = 0;
+  size_t       includeFileLength = 0;
   int          includeFileLine;
   bool         includeFileShowLineNo = false;
 
-  TokenInfo *token = 0;
+  TokenInfo *token = nullptr;
   int      lineNo = 0;
   bool     markdownSupport = false;
 };

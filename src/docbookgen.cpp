@@ -52,6 +52,7 @@
 #include "dir.h"
 #include "growbuf.h"
 #include "outputlist.h"
+#include "moduledef.h"
 
 // no debug info
 #define Docbook_DB(x) do {} while(0)
@@ -79,7 +80,7 @@ inline void writeDocbookString(TextStream &t,const QCString &s)
   t << convertToDocBook(s);
 }
 
-inline void writeDocbookCodeString(TextStream &t,const QCString &str, int &col)
+inline void writeDocbookCodeString(TextStream &t,const QCString &str, size_t &col)
 {
   if (str.isEmpty()) return;
   const char *s = str.data();
@@ -186,7 +187,7 @@ void DocbookCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, c
   Docbook_DB(("(writeToolTip)\n"));
 }
 
-void DocbookCodeGenerator::startCodeLine(bool)
+void DocbookCodeGenerator::startCodeLine(int)
 {
   Docbook_DB(("(startCodeLine)\n"));
   m_insideCodeLine=TRUE;
@@ -198,8 +199,8 @@ void DocbookCodeGenerator::endCodeLine()
   if (m_insideCodeLine) *m_t << "\n";
   Docbook_DB(("(endCodeLine)\n"));
   m_lineNumber = -1;
-  m_refId.resize(0);
-  m_external.resize(0);
+  m_refId.clear();
+  m_external.clear();
   m_insideCodeLine=FALSE;
 }
 
@@ -392,7 +393,7 @@ DB_GEN_C
   m_codeGen->setSourceFileName(stripPath(fileName));
   m_pageLinks = QCString();
 
-  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
+  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
   m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
   if (!pageName.isEmpty()) m_t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
   m_t << " xml:lang=\"" << theTranslator->trISOLang() << "\"";
@@ -444,6 +445,9 @@ DB_GEN_C2("IndexSection " << is)
     case IndexSection::isModuleIndex:
       //Module Index\n"
       break;
+    case IndexSection::isTopicIndex:
+      //Module Index\n"
+      break;
     case IndexSection::isDirIndex:
       //Directory Index\n"
       break;
@@ -466,6 +470,10 @@ DB_GEN_C2("IndexSection " << is)
       //Annotated Page Index\n"
       break;
     case IndexSection::isModuleDocumentation:
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
+      break;
+    case IndexSection::isTopicDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
@@ -522,6 +530,9 @@ DB_GEN_C2("IndexSection " << is)
     case IndexSection::isModuleIndex:
       //m_t << "</chapter>\n";
       break;
+    case IndexSection::isTopicIndex:
+      //m_t << "</chapter>\n";
+      break;
     case IndexSection::isDirIndex:
       //m_t << "<xi:include href=\"dirs.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
@@ -549,7 +560,7 @@ DB_GEN_C2("IndexSection " << is)
       //m_t << "<xi:include href=\"pages.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case IndexSection::isModuleDocumentation:
+    case IndexSection::isTopicDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
@@ -561,6 +572,20 @@ DB_GEN_C2("IndexSection " << is)
         }
       }
       m_t << "</chapter>\n";
+      break;
+    case IndexSection::isModuleDocumentation:
+      {
+        m_t << "</title>\n";
+        for (const auto &mod : ModuleManager::instance().modules())
+        {
+          if (!mod->isReference() && mod->isPrimaryInterface())
+          {
+            writePageLink(mod->getOutputFileBase(), TRUE);
+          }
+        }
+      }
+      m_t << "</chapter>\n";
+      break;
       break;
     case IndexSection::isDirDocumentation:
       {
@@ -607,7 +632,7 @@ DB_GEN_C2("IndexSection " << is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -911,6 +936,10 @@ void DocbookGenerator::endDoxyAnchor(const QCString &,const QCString &)
 {
 DB_GEN_C
 }
+void DocbookGenerator::addLabel(const QCString &,const QCString &)
+{
+DB_GEN_C
+}
 void DocbookGenerator::startMemberDocName(bool)
 {
 DB_GEN_C
@@ -1029,19 +1058,46 @@ DB_GEN_C
   }
   m_t << " ";
 }
+
 void DocbookGenerator::startParameterName(bool)
 {
 DB_GEN_C
   m_t << " ";
 }
-void DocbookGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
+
+void DocbookGenerator::endParameterName()
 {
 DB_GEN_C
-  if (last)
+}
+
+void DocbookGenerator::startParameterExtra()
+{
+DB_GEN_C
+}
+
+void DocbookGenerator::endParameterExtra(bool last,bool /*emptyList*/,bool closeBracket)
+{
+DB_GEN_C
+  if (last && closeBracket)
   {
-    if (closeBracket) m_t << ")";
+    m_t << ")";
   }
 }
+
+
+void DocbookGenerator::startParameterDefVal(const char *sep)
+{
+DB_GEN_C
+  m_t << sep;
+  if (!m_denseText) m_t << "<computeroutput>";
+}
+
+void DocbookGenerator::endParameterDefVal()
+{
+DB_GEN_C
+  if (!m_denseText) m_t << "</computeroutput>\n";
+}
+
 void DocbookGenerator::startMemberTemplateParams()
 {
 DB_GEN_C
@@ -1337,10 +1393,10 @@ void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalT
     for (const SectionInfo *si : sectionRefs)
     {
       SectionType type = si->type();
-      if (isSection(type))
+      if (type.isSection())
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = static_cast<int>(type);
+        int nextLevel = type.level();
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)

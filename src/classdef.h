@@ -18,12 +18,13 @@
 
 #include <memory>
 #include <vector>
-#include <set>
+#include <unordered_set>
 
 #include "containers.h"
 #include "definition.h"
 #include "arguments.h"
 #include "membergroup.h"
+#include "configvalues.h"
 
 struct Argument;
 class MemberDef;
@@ -38,7 +39,6 @@ class NamespaceDef;
 class MemberDef;
 class ExampleList;
 class MemberNameInfoLinkedMap;
-class PackageDef;
 class GroupDef;
 struct IncludeInfo;
 class ClassDefImpl;
@@ -47,6 +47,7 @@ class ClassDefMutable;
 class UsesClassList;
 class ConstraintClassList;
 class MemberGroupList;
+class ModuleDef;
 
 /** Class that contains information about an inheritance relation.
  */
@@ -91,7 +92,7 @@ using TemplateInstanceList = std::vector<TemplateInstanceDef>;
 
 using TemplateNameMap = std::map<std::string,int>;
 
-using ClassDefSet = std::set<const ClassDef*>;
+using ClassDefSet = std::unordered_set<const ClassDef*>;
 
 
 /** A abstract class representing of a compound symbol.
@@ -215,6 +216,10 @@ class ClassDef : public Definition
      */
     virtual FileDef      *getFileDef() const = 0;
 
+    /** Returns the C++20 module in which this compound's definition can be found.
+     */
+    virtual ModuleDef    *getModuleDef() const = 0;
+
     /** Returns the member with the given name */
     virtual const MemberDef *getMemberByName(const QCString &) const = 0;
 
@@ -273,7 +278,7 @@ class ClassDef : public Definition
     virtual ArgumentLists getTemplateParameterLists() const = 0;
 
     virtual QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const = 0;
+        const ArgumentLists *actualParams=nullptr,uint32_t *actualParamIndex=nullptr) const = 0;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.
@@ -356,6 +361,8 @@ class ClassDef : public Definition
     virtual QCString requiresClause() const = 0;
     virtual StringVector getQualifiers() const = 0;
 
+    virtual bool containsOverload(const MemberDef *md) const = 0;
+
     //-----------------------------------------------------------------------------------
     // --- count members ----
     //-----------------------------------------------------------------------------------
@@ -392,12 +399,10 @@ class ClassDef : public Definition
     virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
                  const QCString &subTitle=QCString(),
-                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
-
-
 };
 
 class ClassDefMutable : public DefinitionMutable, public ClassDef
@@ -409,13 +414,14 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
 
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setFileDef(FileDef *fd) = 0;
+    virtual void setModuleDef(ModuleDef *md) = 0;
     virtual void setSubGrouping(bool enabled) = 0;
     virtual void setProtection(Protection p) = 0;
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) = 0;
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const QCString &name) = 0;
-    virtual void setClassSpecifier(uint64_t spec) = 0;
+    virtual void setClassSpecifier(TypeSpecifier spec) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;
@@ -426,6 +432,13 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
+        // inheritance graph related members
+    virtual CLASS_GRAPH_t hasInheritanceGraph() const = 0;
+    virtual void overrideInheritanceGraph(CLASS_GRAPH_t e) = 0;
+
+    // collaboration graph related members
+    virtual bool hasCollaborationGraph() const = 0;
+    virtual void overrideCollaborationGraph(bool e) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

@@ -10,18 +10,20 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/deps/spdlog/include
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
 
+if (NOT use_sys_spdlog)
+    include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
+endif()
+if (NOT use_sys_sqlite)
+    include_directories(${PROJECT_SOURCE_DIR}/deps/sqlite3)
+endif()
+
 
 file(MAKE_DIRECTORY ${GENERATED_SRC})
-if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-    file(GLOB LANGUAGE_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/translator_??.h")
-else()
-    file(GLOB LANGUAGE_FILES "${CMAKE_CURRENT_LIST_DIR}/translator_??.h")
-endif()
+file(GLOB LANGUAGE_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/translator_??.h")
 
 # instead of increasebuffer.py
 add_definitions(-DYY_BUF_SIZE=${enlarge_lex_buffers} -DYY_READ_BUF_SIZE=${enlarge_lex_buffers})
@@ -30,10 +32,9 @@ add_definitions(-DYY_BUF_SIZE=${enlarge_lex_buffers} -DYY_READ_BUF_SIZE=${enlarg
 file(GENERATE OUTPUT ${GENERATED_SRC}/settings.h
 CONTENT "#ifndef SETTINGS_H
 #define SETTINGS_H
-#define USE_SQLITE3 ${sqlite3}
 #define USE_LIBCLANG ${clang}
 #define IS_SUPPORTED(x) \\
-  ((USE_SQLITE3  && strcmp(\"USE_SQLITE3\",(x))==0)  || \\
+  ( \\
    (USE_LIBCLANG && strcmp(\"USE_LIBCLANG\",(x))==0) || \\
   0)
 #endif" )
@@ -42,7 +43,7 @@ set_source_files_properties(${GENERATED_SRC}/settings.h PROPERTIES GENERATED 1)
 
 # configvalues.h
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/configgen.py -maph ${CMAKE_CURRENT_LIST_DIR}/config.xml > ${GENERATED_SRC}/configvalues.h
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/configgen.py -maph ${CMAKE_CURRENT_LIST_DIR}/config.xml > ${GENERATED_SRC}/configvalues.h
     DEPENDS ${CMAKE_CURRENT_LIST_DIR}/config.xml ${CMAKE_CURRENT_LIST_DIR}/configgen.py
     OUTPUT ${GENERATED_SRC}/configvalues.h
 )
@@ -54,7 +55,7 @@ add_custom_target(
 
 # configvalues.cpp
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/configgen.py -maps ${CMAKE_CURRENT_LIST_DIR}/config.xml > ${GENERATED_SRC}/configvalues.cpp
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/configgen.py -maps ${CMAKE_CURRENT_LIST_DIR}/config.xml > ${GENERATED_SRC}/configvalues.cpp
     DEPENDS ${CMAKE_CURRENT_LIST_DIR}/config.xml ${CMAKE_CURRENT_LIST_DIR}/configgen.py
     OUTPUT ${GENERATED_SRC}/configvalues.cpp
 )
@@ -62,7 +63,7 @@ set_source_files_properties(${GENERATED_SRC}/configvalues.cpp PROPERTIES GENERAT
 
 # configoptions.cpp
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/configgen.py -cpp ${CMAKE_CURRENT_LIST_DIR}/config.xml > ${GENERATED_SRC}/configoptions.cpp
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/configgen.py -cpp ${CMAKE_CURRENT_LIST_DIR}/config.xml > ${GENERATED_SRC}/configoptions.cpp
     DEPENDS ${CMAKE_CURRENT_LIST_DIR}/config.xml ${CMAKE_CURRENT_LIST_DIR}/configgen.py
     OUTPUT ${GENERATED_SRC}/configoptions.cpp
 )
@@ -79,16 +80,12 @@ add_custom_command(
 set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 
 # all resource files
-if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-    file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
-else()
-    file(GLOB RESOURCES ${PROJECT_SOURCE_DIR}/templates/*/*)
-endif()
+file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
 
 # resources.cpp
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/resources.cpp"
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py ${PROJECT_SOURCE_DIR}/templates ${GENERATED_SRC}/resources.cpp
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py ${PROJECT_SOURCE_DIR}/templates ${GENERATED_SRC}/resources.cpp
     DEPENDS ${RESOURCES} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py
     OUTPUT ${GENERATED_SRC}/resources.cpp
 )
@@ -142,7 +139,7 @@ foreach(lex_file ${LEX_FILES})
     endif()
     add_custom_command(
         OUTPUT ${_generated_files}
-        COMMAND ${PYTHON_EXECUTABLE}
+        COMMAND ${Python_EXECUTABLE}
             ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py
             ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
             ${_generated_files}
@@ -155,7 +152,7 @@ foreach(lex_file ${LEX_FILES})
     set_source_files_properties(${_generated_files} PROPERTIES GENERATED 1)
 
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
         DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l
         OUTPUT  ${GENERATED_SRC}/${lex_file}.l.h
     )
@@ -175,7 +172,7 @@ foreach(lex_file ${LEX_FILES})
                 ${GENERATED_SRC}/${lex_file}_intermediate.cpp
                 COMPILE_FLAGS "${LEX_FLAGS}")
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.cpp  ${GENERATED_SRC}/${lex_file}.corr ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.cpp  ${GENERATED_SRC}/${lex_file}.corr ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l
         DEPENDS ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.corr
         OUTPUT  ${GENERATED_SRC}/${lex_file}.cpp
     )
@@ -214,6 +211,9 @@ add_library(doxycfg STATIC
     debug.cpp
     trace.cpp
 )
+target_link_libraries(doxycfg PRIVATE
+    spdlog::spdlog
+)
 add_sanitizers(doxycfg)
 
 add_library(doxymain STATIC
@@ -227,6 +227,7 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
     #
+    aliases.cpp
     anchor.cpp
     arguments.cpp
     cite.cpp
@@ -234,9 +235,9 @@ add_library(doxymain STATIC
     classdef.cpp
     classlist.cpp
     cmdmapper.cpp
+    codefragment.cpp
     conceptdef.cpp
     condparser.cpp
-    context.cpp
     cppvalue.cpp
     datetime.cpp
     defgen.cpp
@@ -291,6 +292,7 @@ add_library(doxymain STATIC
     memberdef.cpp
     membergroup.cpp
     memberlist.cpp
+    moduledef.cpp
     msc.cpp
     namespacedef.cpp
     outputgen.cpp
@@ -313,7 +315,6 @@ add_library(doxymain STATIC
     stlsupport.cpp
     symbolresolver.cpp
     tagreader.cpp
-    template.cpp
     textdocvisitor.cpp
     tooltip.cpp
     utf8.cpp
@@ -322,6 +323,9 @@ add_library(doxymain STATIC
     vhdljjparser.cpp
     xmldocvisitor.cpp
     xmlgen.cpp
+)
+target_link_libraries(doxymain PRIVATE
+    spdlog::spdlog
 )
 add_sanitizers(doxymain)
 
@@ -383,13 +387,12 @@ target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
     md5
+    sqlite3
     lodepng
     mscgen
     xml
     doxygen_version
     vhdlparser
-    spdlog
-    ${SQLITE3_LIBRARIES}
     ${ICONV_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}

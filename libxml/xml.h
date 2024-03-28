@@ -73,15 +73,24 @@ class XMLParser : public XMLLocator
     /*! Destructor */
    ~XMLParser();
 
+   using Transcode = bool(std::string &,const char *);
+
     /*! Parses a file gives the contents of the file as a string.
      *  @param fileName the name of the file, used for error reporting.
      *  @param inputString the contents of the file as a zero terminated UTF-8 string.
      *  @param debugEnabled indicates if debugging via -d lex is enabled or not.
-     *  @param debugStart hook that to called before starting with parsing
-     *  @param debugEnd   hook that to called after finishing with parsing
+     *  @param debugStart hook that is to be called before starting with parsing
+     *  @param debugEnd   hook that is to be called after finishing with parsing
+     *  @param transcoder hook that is to be called when transcoding text to UTF-8
      */
-    void parse(const char *fileName,const char *inputString,bool debugEnabled,
-        std::function<void()> debugStart,std::function<void()> debugEnd);
+    void parse(const char *fileName,
+               const char *inputString,
+               bool debugEnabled,
+               std::function<void()> debugStart,
+               std::function<void()> debugEnd,
+               std::function<Transcode> transcoder =
+                   [](std::string&s,const char *){ return true; }
+              );
 
   private:
    virtual int lineNr() const override;

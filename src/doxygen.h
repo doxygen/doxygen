@@ -57,8 +57,8 @@ struct LookupInfo
   LookupInfo() = default;
   LookupInfo(const Definition *d,const MemberDef *td,const QCString &ts,const QCString &rt)
     : definition(d), typeDef(td), templSpec(ts), resolvedType(rt) {}
-  const Definition  *definition = 0;
-  const MemberDef *typeDef = 0;
+  const Definition  *definition = nullptr;
+  const MemberDef *typeDef = nullptr;
   QCString   templSpec;
   QCString   resolvedType;
 };
@@ -75,6 +75,8 @@ using InputFileEncodingList = std::vector<InputFileEncoding>;
 
 using ClangUsrMap = std::unordered_map<std::string,const Definition *>;
 
+using StaticInitMap = std::unordered_map<std::string,BodyInfo>;
+
 /*! \brief This class serves as a namespace for global variables used by doxygen.
  *
  *  All fields in this class are public and static, so they can be used directly.
@@ -90,7 +92,7 @@ class Doxygen
     static std::unique_ptr<PageDef>  mainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;
-    static StringSet                 inputPaths;
+    static StringUnorderedSet        inputPaths;
     static FileNameLinkedMap        *inputNameLinkedMap;
     static FileNameLinkedMap        *imageNameLinkedMap;
     static FileNameLinkedMap        *dotFileNameLinkedMap;
@@ -102,7 +104,7 @@ class Doxygen
     static GroupLinkedMap           *groupLinkedMap;
     static NamespaceLinkedMap       *namespaceLinkedMap;
     static StringMap                 tagDestinationMap;
-    static StringMap                 aliasMap;
+    static StringUnorderedSet        tagFileSet;
     static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
     static std::unique_ptr<NamespaceDef> globalNamespaceDef;
@@ -129,6 +131,7 @@ class Doxygen
     static InputFileEncodingList     inputFileEncodingList;
     static std::mutex                countFlowKeywordsMutex;
     static std::mutex                addExampleMutex;
+    static StaticInitMap             staticInitMap;
 };
 
 void initDoxygen();
@@ -137,7 +140,6 @@ void checkConfiguration();
 void adjustConfiguration();
 void parseInput();
 void generateOutput();
-void readAliases();
 void cleanUpDoxygen();
 void readFileOrDirectory(const QCString &s,
                         FileNameLinkedMap *fnDict,
@@ -148,8 +150,8 @@ void readFileOrDirectory(const QCString &s,
                         StringUnorderedSet *resultSet,
                         bool recursive,
                         bool errorIfNotExist=TRUE,
-                        StringUnorderedSet *killSet = 0,
-                        StringSet *paths = 0
+                        StringUnorderedSet *killSet = nullptr,
+                        StringUnorderedSet *paths = nullptr
                        );
 
 #endif

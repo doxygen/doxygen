@@ -67,29 +67,26 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
-
 struct pycodeYY_state
 {
   std::unordered_map< std::string, ScopedTypeVariant > codeClassMap;
   QCString      curClassName;
   StringVector  curClassBases;
 
-  OutputCodeList * code = 0;
-  const char *  inputString = 0;     //!< the code fragment as text
+  OutputCodeList * code = nullptr;
+  const char *  inputString = nullptr;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
-  const char *  currentFontClass = 0;
+  const char *  currentFontClass = nullptr;
   bool          insideCodeLine = FALSE;
-  const Definition *searchCtx = 0;
+  const Definition *searchCtx = nullptr;
   bool          collectXRefs = FALSE;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   std::unique_ptr<FileDef> exampleFileDef;
-  const FileDef *    sourceFileDef = 0;
-  const Definition * currentDefinition = 0;
-  const MemberDef *  currentMemberDef = 0;
+  const FileDef *    sourceFileDef = nullptr;
+  const Definition * currentDefinition = nullptr;
+  const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = FALSE;
   QCString      realScope;
   int           bodyCurlyCount = 0;
@@ -117,12 +114,11 @@ struct pycodeYY_state
   CallContext theCallContext;
   SymbolResolver symbolResolver;
   TooltipManager tooltipManager;
+  std::vector<const Definition *> foldStack;
 };
 
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void startCodeLine(yyscan_t yyscanner);
 static int countLines(yyscan_t yyscanner);
@@ -411,7 +407,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       ScopedTypeVariant var(yyextra->curClassName);
                                       for (const auto &s : yyextra->curClassBases)
                                       {
-                                        const ClassDef *baseDefToAdd = 0;
+                                        const ClassDef *baseDefToAdd = nullptr;
                                         // find class in the local scope
                                         auto it = yyextra->codeClassMap.find(s);
                                         if (it != yyextra->codeClassMap.end())
@@ -421,7 +417,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                         // Try to find class in global scope
                                         if (baseDefToAdd==0)
                                         {
-                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s.c_str());
+                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s.c_str(),true);
                                         }
 
                                         if (baseDefToAdd && baseDefToAdd->name()!=yyextra->curClassName)
@@ -432,7 +428,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(var)));
 
                                       // Reset class-parsing variables.
-                                      yyextra->curClassName.resize(0);
+                                      yyextra->curClassName.clear();
                                       yyextra->curClassBases.clear();
 
                                       yyextra->noSuiteFound = TRUE;
@@ -972,14 +968,14 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,Defin
   while (extractClassNameFromType(type,pos,className,templSpec)!=-1)
   {
     QCString clName=className+templSpec;
-    const ClassDef *cd=0;
+    const ClassDef *cd=nullptr;
     if (!yyextra->classScope.isEmpty())
     {
-      cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName);
+      cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName,true);
     }
     if (cd==0)
     {
-      cd=yyextra->symbolResolver.resolveClass(d,clName);
+      cd=yyextra->symbolResolver.resolveClass(d,clName,true);
     }
     if (cd)
     {
@@ -988,6 +984,48 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,Defin
   }
 
   return 0;
+}
+
+//-------------------------------------------------------------------------------
+static void codeFolding(yyscan_t yyscanner,const Definition *d)
+{
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+    while (!yyextra->foldStack.empty())
+    {
+      const Definition *dd = yyextra->foldStack.back();
+      if (dd->getEndBodyLine()+1==yyextra->yyLineNr) // +1 to close the section after the end of the body
+      {
+        yyextra->code->endFold();
+        //printf("%d:   end codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(dd->name()),dd->getStartDefLine(),dd->getEndBodyLine());
+        yyextra->foldStack.pop_back();
+      }
+      else
+      {
+        break;
+      }
+    }
+    if (d)
+    {
+      int startLine = d->getStartDefLine();
+      int endLine   = d->getEndBodyLine();
+      if (endLine!=-1 && startLine!=endLine &&
+          // since the end of a section is closed after the last line, we need to avoid starting a
+          // new section if the previous section ends at the same line, i.e. something like
+          // struct X {
+          // ...
+          // }; struct S {  <- start of S and end of X at the same line
+          // ...
+          // };
+          (yyextra->foldStack.empty() || yyextra->foldStack.back()->getEndBodyLine()!=startLine))
+      {
+        //printf("%d: start codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->name()),d->getStartDefLine(),d->getEndBodyLine());
+        yyextra->code->startFold(yyextra->yyLineNr,"", "");
+        yyextra->foldStack.push_back(d);
+      }
+    }
+  }
 }
 
 //-------------------------------------------------------------------------------
@@ -1025,28 +1063,35 @@ static void startCodeLine(yyscan_t yyscanner)
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
       {
+        codeFolding(yyscanner,yyextra->currentMemberDef);
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
                                 yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
                                 !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
-      else
+      else if (d->isLinkableInProject())
       {
+        codeFolding(yyscanner,d);
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
                                 QCString(),yyextra->yyLineNr,
                                 !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
+      else
+      {
+        codeFolding(yyscanner,nullptr);
+      }
     }
     else
     {
+      codeFolding(yyscanner,nullptr);
       yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
                                      !yyextra->includeCodeFragment);
     }
   }
-  yyextra->code->startCodeLine(yyextra->sourceFileDef!=0);
+  yyextra->code->startCodeLine(yyextra->yyLineNr);
   yyextra->insideCodeLine=true;
 
   if (yyextra->currentFontClass)
@@ -1180,12 +1225,9 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     if (c=='\n')
     {
       yyextra->yyLineNr++;
-      int l = (int)(p-sp-1);
-      char *tmp = (char*)malloc(l+1);
-      memcpy(tmp,sp,l);
-      tmp[l]='\0';
-      yyextra->code->codify(tmp);
-      free(tmp);
+      size_t l = static_cast<size_t>(p-sp-1);
+      std::string tmp(sp,l);
+      yyextra->code->codify(tmp.c_str());
       nextCodeLine(yyscanner);
     }
     else
@@ -1207,35 +1249,30 @@ static bool getLinkInScope(yyscan_t yyscanner,
                           )
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  const MemberDef    *md = 0;
-  const ClassDef     *cd = 0;
-  const FileDef      *fd = 0;
-  const NamespaceDef *nd = 0;
-  const GroupDef     *gd = 0;
+  GetDefInput input(c,m,"()");
+  input.currentFile = yyextra->sourceFileDef;
+  input.insideCode = true;
+  GetDefResult result = getDefs(input);
   //printf("Trying '%s'::'%s'\n",qPrint(c),qPrint(m));
-  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,yyextra->sourceFileDef) &&
-      md->isLinkable())
+  if (result.found && result.md->isLinkable())
   {
-    //Definition *d=0;
-    //if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
-
-    const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-                          md->getBodyDef() : md->getOuterScope();
+    const Definition *d = result.md->getOuterScope()==Doxygen::globalScope ?
+                          result.md->getBodyDef() : result.md->getOuterScope();
     //printf("Found! d=%s\n",d?qPrint(d->name()):"<none>");
-    if (md->getGroupDef()) d = md->getGroupDef();
+    if (result.md->getGroupDef()) d = result.md->getGroupDef();
     if (d && d->isLinkable())
     {
-      yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,md->typeString(),md->getOuterScope())));
+      yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,result.md->typeString(),result.md->getOuterScope())));
       //printf("yyextra->currentDefinition=%p yyextra->currentMemberDef=%p\n",
       //        yyextra->currentDefinition,yyextra->currentMemberDef);
 
       if (yyextra->currentDefinition && yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
       {
-        addDocCrossReference(yyextra->currentMemberDef,md);
+        addDocCrossReference(yyextra->currentMemberDef,result.md);
       }
       //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name()));
 
-      writeMultiLineCodeLink(yyscanner,ol,md, !text.isEmpty() ? text : memberText);
+      writeMultiLineCodeLink(yyscanner,ol,result.md, !text.isEmpty() ? text : memberText);
       addToSearchIndex(yyscanner,!text.isEmpty() ? text : memberText);
       return TRUE;
     }
@@ -1286,9 +1323,9 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
 
   DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",qPrint(className)));
 
-  const ScopedTypeVariant *lcd = 0;
-  const ClassDef *cd=0;             // Class def that we may find 
-  const MemberDef *md=0;            // Member def that we may find 
+  const ScopedTypeVariant *lcd = nullptr;
+  const ClassDef *cd=nullptr;             // Class def that we may find 
+  const MemberDef *md=nullptr;            // Member def that we may find 
   //bool isLocal=FALSE;
 
   if ((lcd=yyextra->theVarContext.findVariable(className))==0) // not a local variable
@@ -1296,7 +1333,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     const Definition *d = yyextra->currentDefinition;
     QCString scope = substitute(className,".","::");
 
-    cd = yyextra->symbolResolver.resolveClass(d,substitute(className,".","::"));
+    cd = yyextra->symbolResolver.resolveClass(d,substitute(className,".","::"),true);
     md = yyextra->symbolResolver.getTypedef();
 
     DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",
@@ -1612,6 +1649,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;
   yyextra->symbolResolver.setFileScope(fileDef);
+  yyextra->foldStack.clear();
 
   if (yyextra->exampleBlock && fileDef==0)
   {
@@ -1641,6 +1679,14 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     endCodeLine(yyscanner);
   }
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    while (!yyextra->foldStack.empty())
+    {
+      yyextra->code->endFold();
+      yyextra->foldStack.pop_back();
+    }
+  }
   if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
@@ -1660,6 +1706,4 @@ static inline void pop_state(yyscan_t yyscanner)
     yy_pop_state(yyscanner);
 }
 
-#if USE_STATE2STRING
 #include "pycode.l.h"
-#endif

@@ -55,7 +55,7 @@ struct SourceLinkInfo
   QCString anchor;
 };
 
-enum class OutputType { List, Html, Latex, Man, RTF, Docbook, XML, Null, Extension };
+enum class OutputType { List, Html, Latex, Man, RTF, Docbook, XML, Null, Extension, Recorder };
 
 /** Base class for specific output generators.
  *

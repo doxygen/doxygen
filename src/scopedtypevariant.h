@@ -103,7 +103,7 @@ class VariableContext
     }
     const ScopedTypeVariant *findVariable(const QCString &name)
     {
-      const ScopedTypeVariant *result = 0;
+      const ScopedTypeVariant *result = nullptr;
       if (name.isEmpty()) return result;
 
       // search from inner to outer scope
@@ -154,7 +154,7 @@ class CallContext
     void setScope(const ScopedTypeVariant &stv)
     {
       Ctx &ctx = m_stvList.back();
-      ctx.stv=std::move(stv);
+      ctx.stv=stv;
     }
     void pushScope(const QCString &name_,const QCString &type_)
     {

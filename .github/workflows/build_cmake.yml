@@ -18,28 +18,28 @@ jobs:
             os: ubuntu-20.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
             os: ubuntu-20.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release",
             os: ubuntu-20.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "Ubuntu Latest Clang Debug",
             os: ubuntu-20.04,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "macOS Latest Release",
@@ -67,25 +67,9 @@ jobs:
           }
     steps:
     - name: Checkout doxygen
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
-
-#    - name: Download MikTex (Windows)
-#      run: |
-#        $wc = New-Object System.Net.WebClient;
-#        $maxAttempts=5;
-#        $attemptCount=0;
-#        Do {
-#          $attemptCount++;
-#          Try {
-#            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-5.2.0+b8f430f-x64.zip","miktexsetup-5.2.0+b8f430f-x64.zip")
-#          } Catch [Exception] {
-#            Write-Host $_.Exception | format-list -force
-#          }
-#        } while (((Test-Path "miktexsetup-5.2.0+b8f430f-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))
-#      shell: pwsh
-#      if: matrix.config.os == 'windows-latest'
 
     - name: Install libiconv (Windows)
       uses: suisei-cn/actions-download-file@v1
@@ -96,6 +80,7 @@ jobs:
 
     - name: Install LaTeX (Linux)
       run: |
+        sudo apt update --fix-missing
         sudo apt upgrade
         sudo apt update
         sudo apt-get install texlive texlive-latex-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
@@ -135,44 +120,8 @@ jobs:
         sudo apt install libxapian-dev
       if: matrix.config.os == 'ubuntu-20.04'
 
-#    - name: Extract MikTex zip (Windows)
-#      shell: bash
-#      run: |
-#        unzip miktexsetup-5.2.0+b8f430f-x64.zip
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Download MikTex packages (Windows)
-#      shell: bash
-#      run: |
-#        ./miktexsetup_standalone --verbose \
-#                      --local-package-repository="C:/miktex-repository" \
-#                      --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
-#                      --package-set=essential \
-#                      download
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Install MikTex packages (Windows)
-#      shell: bash
-#      run: |
-#        ./miktexsetup_standalone --local-package-repository="C:/miktex-repository" \
-#                      --verbose \
-#                      --package-set=essential \
-#                      --shared \
-#                      install
-#      if: matrix.config.os == 'windows-latest'
-#
-#    - name: Setting MikTex paths (Windows)
-#      shell: bash
-#      run: |
-#        echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
-#        export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
-#
-#        echo "Configuring MiKTeX to install missing packages on the fly"
-#        initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
-#      if: matrix.config.os == 'windows-latest'
-
     - name: Install LaTeX (Windows)
-      uses: teatimeguest/setup-texlive-action@v2
+      uses: teatimeguest/setup-texlive-action@v3
       with:
         packages: >-
           scheme-medium
@@ -210,6 +159,8 @@ jobs:
 
     - name: Install xmllint (MacOS)
       run: |
+         brew install --force --overwrite python@3.11 # temp hack
+         brew install --force --overwrite python@3.12 # temp hack
          brew update
          brew install libxml2
       if: matrix.config.os == 'macos-latest'
@@ -223,8 +174,8 @@ jobs:
 
     - name: Install bison/flex (Windows)
       run: |
-        Choco-Install -PackageName winflexbison
-        #choco install winflexbison
+        #Choco-Install -PackageName winflexbison
+        choco install winflexbison
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Graphviz (Linux)
@@ -250,17 +201,13 @@ jobs:
         choco install graphviz.portable
       if: matrix.config.os == 'windows-latest'
 
-#    - name: Install Perl (Windows)
-#      run:
-#        choco install activeperl
-#      if: matrix.config.os == 'windows-latest'
-
     - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
       if: matrix.config.os == 'windows-latest'
 
     - name: Refresh Env (Windows)
-      run:
+      run: |
+        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
       if: matrix.config.os == 'windows-latest'
 
@@ -358,7 +305,7 @@ jobs:
         endif()
 
     - name: Archive build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
@@ -407,7 +354,7 @@ jobs:
         endif()
 
     - name: Archive html documentation artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "Html documentation artifacts"
         path: build/html/
@@ -415,7 +362,7 @@ jobs:
 
 
     - name: Archive Latex documentation artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf

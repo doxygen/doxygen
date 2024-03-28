@@ -1,5 +1,5 @@
 Doxygen uses cmake (http://www.cmake.org/) to build executables for various platforms.
-At least cmake version 3.3 is required.
+At least cmake version 3.14 is required.
 
 The first step is to create a build directory where the output should be stored.
 Doxygen can be fully built outside of the source tree.
@@ -32,8 +32,9 @@ Doxygen's cmake configuration provides a number of options:
 - build_xmlparser Example showing how to parse doxygen's XML output.
 - build_search    Build external search tools (doxysearch and doxyindexer).
 - build_doc       Build user manual.
-- use_sqlite3     Add support for sqlite3 output [experimental].
 - use_libclang    Add support for libclang parsing.
+- use_sys_spdlog  Use system spdlog library instead of the one bundled.
+- use_sys_sqlite3 Use system sqlite3 library instead of the one bundled.
 - win_static      Link with /MT in stead of /MD on windows.
 - force_qt=<vers> Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6
 

@@ -52,14 +52,12 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 #define repeatChar(chr, cnt) std::string(cnt, chr).c_str()
 
 struct lexscannerYY_state
 {
   COutlineParser   cOutlineParser;
-  const char *     inputString = 0;
+  const char *     inputString = nullptr;
   int              inputPosition = 0;
 
   int              lastContext = 0;
@@ -73,7 +71,7 @@ struct lexscannerYY_state
   bool             insideCode = FALSE;
   QCString         delimiter;
   QCString         docBlockName;
-  uint32_t         fencedSize = 0;
+  size_t           fencedSize = 0;
   bool             nestedComment = false;
 
   QCString         prefix = "yy";
@@ -84,16 +82,14 @@ struct lexscannerYY_state
   int              roundCount = 0;
 
   QCString         fileName;
-  ClangTUParser   *clangParser = 0;
+  ClangTUParser   *clangParser = nullptr;
 
   std::shared_ptr<Entry> current;
   std::shared_ptr<Entry> current_root;
   SrcLangExt language;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 
 // forward declarations for statefull functions
@@ -864,7 +860,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                             yyextra->cCodeBuffer += yytext;
                             QCString pat = substitute(yytext,"*"," ");
-                            if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                            if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
                             }
@@ -872,7 +868,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                             yyextra->cCodeBuffer += yytext;
                             QCString pat = substitute(yytext,"*"," ");
-                            if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                            if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
                             }
@@ -966,11 +962,11 @@ static void parseMain(yyscan_t yyscanner,
 
   yyextra->current_root  = rt;
   yyextra->current = std::make_shared<Entry>();
-  int sec=guessSection(yyextra->fileName);
-  if (sec)
+  EntryType sec=guessSection(yyextra->fileName);
+  if (!sec.isEmpty())
   {
     yyextra->current->name    = yyextra->fileName;
-    yyextra->current->section = sec;
+    yyextra->current->section = EntryType(sec);
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   }
   yyextra->current->reset();
@@ -993,7 +989,7 @@ static void handleCCode(yyscan_t yyscanner)
                                      yyextra->cCodeBuffer.data(),
                                      yyextra->current_root,
                                      yyextra->clangParser);
-  yyextra->cCodeBuffer.resize(0);
+  yyextra->cCodeBuffer.clear();
   return;
 }
 //----------------------------------------------------------------------------
@@ -1033,6 +1029,4 @@ void LexOutlineParser::parseInput(const QCString &fileName,
 
 //----------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "lexscanner.l.h"
-#endif

@@ -35,6 +35,8 @@
 #include "xmlgen.h"
 #include "devnullgen.h"
 
+class OutputCodeList;
+
 //-------------------------------------------------------------------------------------------
 
 /** Namespace containing typed wrappers to refer to member functions for specific code generators called by OutputCodeList.
@@ -53,6 +55,8 @@ namespace OutputCodeIntf
   template <class T> struct writeCodeAnchor   { static constexpr auto method = &T::writeCodeAnchor;   };
   template <class T> struct startCodeFragment { static constexpr auto method = &T::startCodeFragment; };
   template <class T> struct endCodeFragment   { static constexpr auto method = &T::endCodeFragment;   };
+  template <class T> struct startFold         { static constexpr auto method = &T::startFold;         };
+  template <class T> struct endFold           { static constexpr auto method = &T::endFold;           };
 }
 
 /** Helper template class which defers all methods of OutputCodeIntf to an existing object of the templated type.
@@ -79,8 +83,8 @@ class OutputCodeDefer
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
     { m_codeGen->writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
 
-    void startCodeLine(bool hasLineNumbers)
-    { m_codeGen->startCodeLine(hasLineNumbers); }
+    void startCodeLine(int lineNr)
+    { m_codeGen->startCodeLine(lineNr); }
 
     void endCodeLine()
     { m_codeGen->endCodeLine(); }
@@ -99,6 +103,12 @@ class OutputCodeDefer
 
     void endCodeFragment(const QCString &style)
     { m_codeGen->endCodeFragment(style); }
+
+    void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
+    { m_codeGen->startFold(lineNr,startMarker,endMarker); }
+
+    void endFold()
+    { m_codeGen->endFold(); }
 
   private:
     OutputCodeGen *m_codeGen;
@@ -121,13 +131,15 @@ class OutputCodeExtension
                          int lineNumber, bool writeLineAnchor) = 0;
     virtual void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) = 0;
-    virtual void startCodeLine(bool hasLineNumbers) = 0;
+    virtual void startCodeLine(int) = 0;
     virtual void endCodeLine() = 0;
     virtual void startFontClass(const QCString &c) = 0;
     virtual void endFontClass() = 0;
     virtual void writeCodeAnchor(const QCString &name) = 0;
     virtual void startCodeFragment(const QCString &style) = 0;
     virtual void endCodeFragment(const QCString &style) = 0;
+    virtual void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker) = 0;
+    virtual void endFold() = 0;
 };
 
 using HtmlCodeGeneratorDefer    = OutputCodeDefer<HtmlCodeGenerator>;
@@ -136,6 +148,49 @@ using RTFCodeGeneratorDefer     = OutputCodeDefer<RTFCodeGenerator>;
 using ManCodeGeneratorDefer     = OutputCodeDefer<ManCodeGenerator>;
 using DocbookCodeGeneratorDefer = OutputCodeDefer<DocbookCodeGenerator>;
 using OutputCodeDeferExtension  = OutputCodeDefer<OutputCodeExtension>;
+
+/** Implementation that allows capturing calls made to the code interface to later
+ *  invoke them on a #OutputCodeList via replay().
+ */
+class OutputCodeRecorder
+{
+  public:
+    virtual ~OutputCodeRecorder() = default;
+    OutputType type() const { return OutputType::Recorder; }
+    void codify(const QCString &s);
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip);
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+                         int lineNumber, bool writeLineAnchor);
+    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
+                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo);
+    void startCodeLine(int);
+    void endCodeLine();
+    void startFontClass(const QCString &c);
+    void endFontClass();
+    void writeCodeAnchor(const QCString &name);
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &style);
+    void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker);
+    void endFold();
+    void replay(OutputCodeList &ol,int startLine,int endLine,bool showLineNumbers);
+  private:
+    void startNewLine(int lineNr);
+    struct CallInfo
+    {
+      using ConditionFunc = std::function<bool()>;
+      using OutputFunc    = std::function<void(OutputCodeList*)>;
+      CallInfo(ConditionFunc &&c,OutputFunc &&f) : condition(std::move(c)), function(std::move(f)) {}
+      ConditionFunc  condition;
+      OutputFunc     function;
+    };
+    std::vector<CallInfo> m_calls;
+    std::vector<size_t>   m_lineOffset;
+    bool m_showLineNumbers = false;
+};
+
 
 /** Class representing a list of different code generators.
  *  It offers the same interface as the specific code generators,
@@ -156,7 +211,8 @@ class OutputCodeList
                                            DocbookCodeGeneratorDefer,
                                            XMLCodeGenerator,
                                            DevNullCodeGenerator,
-                                           OutputCodeDeferExtension
+                                           OutputCodeDeferExtension,
+                                           OutputCodeRecorder
                                           >;
 
     int id() const     { return m_id; }
@@ -221,8 +277,8 @@ class OutputCodeList
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
     { foreach<OutputCodeIntf::writeTooltip>(id,docInfo,decl,desc,defInfo,declInfo); }
 
-    void startCodeLine(bool hasLineNumbers)
-    { foreach<OutputCodeIntf::startCodeLine>(hasLineNumbers); }
+    void startCodeLine(int lineNr)
+    { foreach<OutputCodeIntf::startCodeLine>(lineNr); }
 
     void endCodeLine()
     { foreach<OutputCodeIntf::endCodeLine>(); }
@@ -241,6 +297,12 @@ class OutputCodeList
 
     void endCodeFragment(const QCString &style)
     { foreach<OutputCodeIntf::endCodeFragment>(style); }
+
+    void startFold(int lineNr, const QCString &startMarker, const QCString &endMarker)
+    { foreach<OutputCodeIntf::startFold>(lineNr,startMarker,endMarker); }
+
+    void endFold()
+    { foreach<OutputCodeIntf::endFold>(); }
 
   private:
     template<template <class> class GeneratorT, class... As>
@@ -361,6 +423,7 @@ namespace OutputGenIntf
   template<class T> struct endMemberDoc                { static constexpr auto method = &T::endMemberDoc;                };
   template<class T> struct startDoxyAnchor             { static constexpr auto method = &T::startDoxyAnchor;             };
   template<class T> struct endDoxyAnchor               { static constexpr auto method = &T::endDoxyAnchor;               };
+  template<class T> struct addLabel                    { static constexpr auto method = &T::addLabel;                    };
   template<class T> struct writeLatexSpacing           { static constexpr auto method = &T::writeLatexSpacing;           };
   template<class T> struct startDescForItem            { static constexpr auto method = &T::startDescForItem;            };
   template<class T> struct endDescForItem              { static constexpr auto method = &T::endDescForItem;              };
@@ -430,6 +493,10 @@ namespace OutputGenIntf
   template<class T> struct endParameterType            { static constexpr auto method = &T::endParameterType;            };
   template<class T> struct startParameterName          { static constexpr auto method = &T::startParameterName;          };
   template<class T> struct endParameterName            { static constexpr auto method = &T::endParameterName;            };
+  template<class T> struct startParameterExtra         { static constexpr auto method = &T::startParameterExtra;         };
+  template<class T> struct endParameterExtra           { static constexpr auto method = &T::endParameterExtra;           };
+  template<class T> struct startParameterDefVal        { static constexpr auto method = &T::startParameterDefVal;        };
+  template<class T> struct endParameterDefVal          { static constexpr auto method = &T::endParameterDefVal;          };
   template<class T> struct startParameterList          { static constexpr auto method = &T::startParameterList;          };
   template<class T> struct endParameterList            { static constexpr auto method = &T::endParameterList;            };
   template<class T> struct exceptionEntry              { static constexpr auto method = &T::exceptionEntry;              };
@@ -669,6 +736,8 @@ class OutputList
     { foreach<OutputGenIntf::startDoxyAnchor>(fName,manName,anchor,name,args); }
     void endDoxyAnchor(const QCString &fn,const QCString &anchor)
     { foreach<OutputGenIntf::endDoxyAnchor>(fn,anchor); }
+    void addLabel(const QCString &fName,const QCString &anchor)
+    { foreach<OutputGenIntf::addLabel>(fName,anchor); }
     void writeLatexSpacing()
     { foreach<OutputGenIntf::writeLatexSpacing>(); }
     void startDescForItem()
@@ -736,8 +805,8 @@ class OutputList
     { foreach<OutputGenIntf::writeNavigationPath>(s); }
     void writeLogo()
     { foreach<OutputGenIntf::writeLogo>(); }
-    void writeQuickLinks(bool compact,HighlightedItem hli,const QCString &file)
-    { foreach<OutputGenIntf::writeQuickLinks>(compact,hli,file); }
+    void writeQuickLinks(HighlightedItem hli,const QCString &file)
+    { foreach<OutputGenIntf::writeQuickLinks>(hli,file); }
     void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first)
     { foreach<OutputGenIntf::writeSummaryLink>(file,anchor,title,first); }
     void startContents()
@@ -808,8 +877,16 @@ class OutputList
     { foreach<OutputGenIntf::endParameterType>(); }
     void startParameterName(bool one)
     { foreach<OutputGenIntf::startParameterName>(one); }
-    void endParameterName(bool last,bool one,bool bracket)
-    { foreach<OutputGenIntf::endParameterName>(last,one,bracket); }
+    void endParameterName()
+    { foreach<OutputGenIntf::endParameterName>(); }
+    void startParameterExtra()
+    { foreach<OutputGenIntf::startParameterExtra>(); }
+    void endParameterExtra(bool last,bool one,bool bracket)
+    { foreach<OutputGenIntf::endParameterExtra>(last,one,bracket); }
+    void startParameterDefVal(const char *separator)
+    { foreach<OutputGenIntf::startParameterDefVal>(separator); }
+    void endParameterDefVal()
+    { foreach<OutputGenIntf::endParameterDefVal>(); }
     void startParameterList(bool openBracket)
     { foreach<OutputGenIntf::startParameterList>(openBracket); }
     void endParameterList()

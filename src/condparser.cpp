@@ -108,7 +108,7 @@ int CondParser::getOperatorId(const QCString &opName)
 void CondParser::getToken()
 {
   m_tokenType = NOTHING;
-  m_token.resize(0);
+  m_token.clear();
 
   //printf("\tgetToken e:{%c}, ascii=%i, col=%i\n", *e, *e, e-expr);
 

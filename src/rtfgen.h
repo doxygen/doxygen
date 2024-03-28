@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Parker Waechter & Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -46,13 +44,15 @@ class RTFCodeGenerator
                       const SourceLinkInfo &
                      ) {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
-    void startCodeLine(bool);
+    void startCodeLine(int);
     void endCodeLine();
     void startFontClass(const QCString &);
     void endFontClass();
     void writeCodeAnchor(const QCString &) {}
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
   private:
     friend class RTFGenerator;
@@ -170,6 +170,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
     void endDoxyAnchor(const QCString &,const QCString &);
+    void addLabel(const QCString &,const QCString &);
     void writeChar(char c);
     void writeLatexSpacing() {};//{ m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
@@ -204,7 +205,7 @@ class RTFGenerator : public OutputGenerator
     void writeSplitBar(const QCString &) {}
     void writeNavigationPath(const QCString &) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem,const QCString &) {}
+    void writeQuickLinks(HighlightedItem,const QCString &) {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) {}
     void startContents() {}
     void endContents() {}
@@ -249,8 +250,12 @@ class RTFGenerator : public OutputGenerator
     void startParameterType(bool,const QCString &);
     void endParameterType();
     void startParameterName(bool) {}
-    void endParameterName(bool,bool,bool) {}
-    void startParameterList(bool) {}
+    void endParameterName() {}
+    void startParameterExtra() {}
+    void endParameterExtra(bool,bool,bool);
+    void startParameterDefVal(const char *s) { docify(s); startTypewriter(); }
+    void endParameterDefVal() { endTypewriter(); }
+    void startParameterList(bool);
     void endParameterList() {}
     void exceptionEntry(const QCString &,bool);
 

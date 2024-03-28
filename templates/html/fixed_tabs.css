@@ -41,6 +41,12 @@
     outline: none;
 }
 
+.tablist a:focus {
+    outline: auto;
+    z-index: 10;
+    position: relative;
+}
+
 .tabs3 .tablist a {
     padding: 0 10px;
 }

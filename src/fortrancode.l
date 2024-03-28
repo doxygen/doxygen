@@ -18,7 +18,8 @@
  */
 
 /**
- @todo - continuation lines not always recognized
+ @todo
+       - continuation lines not always recognized
        - merging of use-statements with same module name and different only-names
        - rename part of use-statement
        - links to interface functions
@@ -72,8 +73,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_TOP_STATE 1
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
-
-#define USE_STATE2STRING 0
 
 /*
  * For fixed formatted code position 6 is of importance (continuation character).
@@ -135,31 +134,31 @@ struct fortrancodeYY_state
   bool          isExternal = false;
   QCString      str=QCString();             //!< contents of fortran string
 
-  OutputCodeList * code = 0;
+  OutputCodeList * code = nullptr;
 
-  const char *  inputString = 0;     //!< the code fragment as text
+  const char *  inputString = nullptr;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
   QCString      fileName;
   int           yyLineNr = 0;        //!< current line number
   int           contLineNr = 0;      //!< current, local, line number for continuation determination
-  int          *hasContLine = 0;     //!< signals whether or not a line has a continuation line (fixed source form)
+  int          *hasContLine = nullptr;     //!< signals whether or not a line has a continuation line (fixed source form)
   bool          insideCodeLine = false;
-  const Definition *searchCtx = 0;
+  const Definition *searchCtx = nullptr;
   bool          collectXRefs = false;
   bool          isFixedForm = false;
 
   bool          insideBody = false;      //!< inside subprog/program body? => create links
-  const char *  currentFontClass = 0;
+  const char *  currentFontClass = nullptr;
 
   bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
 
   std::unique_ptr<FileDef> exampleFileDef;
-  const FileDef *    sourceFileDef = 0;
-  const Definition * currentDefinition = 0;
-  const MemberDef *  currentMemberDef = 0;
+  const FileDef *    sourceFileDef = nullptr;
+  const Definition * currentDefinition = nullptr;
+  const MemberDef *  currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
 
   char          stringStartSymbol = '\0'; // single or double quote
@@ -172,13 +171,12 @@ struct fortrancodeYY_state
 
   bool          endComment = false;
   TooltipManager tooltipManager;
+  std::vector<const Definition *> foldStack;
 
    int fixedCommentAfter = 72;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static bool getFortranNamespaceDefs(const QCString &mname,
                                NamespaceDef *&cd);
@@ -775,6 +773,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           endFontClass(yyscanner);
                                           pop_state(yyscanner);
                                         }
+<String>[\x80-\xFF]*                    |
 <String>.                               {yyextra->str+=yytext;}
 
 <*>\"|\'                                { /* string starts */
@@ -909,6 +908,47 @@ static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
   }
 }
 
+static void codeFolding(yyscan_t yyscanner,const Definition *d)
+{
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+    while (!yyextra->foldStack.empty())
+    {
+      const Definition *dd = yyextra->foldStack.back();
+      if (dd->getEndBodyLine()+1==yyextra->yyLineNr) // +1 to close the section after the end of the body
+      {
+        yyextra->code->endFold();
+        //printf("%d:   end codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(dd->name()),dd->getStartDefLine(),dd->getEndBodyLine());
+        yyextra->foldStack.pop_back();
+      }
+      else
+      {
+        break;
+      }
+    }
+    if (d)
+    {
+      int startLine = d->getStartDefLine();
+      int endLine   = d->getEndBodyLine();
+      if (endLine!=-1 && startLine!=endLine &&
+          // since the end of a section is closed after the last line, we need to avoid starting a
+          // new section if the previous section ends at the same line, i.e. something like
+          // struct X {
+          // ...
+          // }; struct S {  <- start of S and end of X at the same line
+          // ...
+          // };
+          (yyextra->foldStack.empty() || yyextra->foldStack.back()->getEndBodyLine()!=startLine))
+      {
+        //printf("%d: start codeFolding for %s [%d..%d]\n",yyextra->yyLineNr,qPrint(d->name()),d->getStartDefLine(),d->getEndBodyLine());
+        yyextra->code->startFold(yyextra->yyLineNr,"","");
+        yyextra->foldStack.push_back(d);
+      }
+    }
+  }
+}
+
 /*! start a new line of code, inserting a line number if yyextra->sourceFileDef
  * is TRUE. If a definition starts at the current line, then the line
  * number is linked to the documentation of that definition.
@@ -934,6 +974,7 @@ static void startCodeLine(yyscan_t yyscanner)
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
       {
+        codeFolding(yyscanner,yyextra->currentMemberDef);
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
                                 yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
@@ -942,21 +983,27 @@ static void startCodeLine(yyscan_t yyscanner)
       }
       else if (d->isLinkableInProject())
       {
+        codeFolding(yyscanner,d);
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
                                 QCString(),yyextra->yyLineNr,
                                 !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
+      else
+      {
+        codeFolding(yyscanner,nullptr);
+      }
     }
     else
     {
+      codeFolding(yyscanner,nullptr);
       yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
                                      !yyextra->includeCodeFragment);
     }
   }
-  yyextra->code->startCodeLine(yyextra->sourceFileDef!=0);
-  yyextra->insideCodeLine=true;
+  yyextra->code->startCodeLine(yyextra->yyLineNr);
+  yyextra->insideCodeLine=true;  
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(QCString(yyextra->currentFontClass));
@@ -1002,12 +1049,9 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     if (c=='\n')
     {
       yyextra->yyLineNr++;
-      int l = (int)(p-sp-1);
-      char *tmp = (char*)malloc(l+1);
-      memcpy(tmp,sp,l);
-      tmp[l]='\0';
-      yyextra->code->codify(QCString(tmp));
-      free(tmp);
+      size_t l = static_cast<size_t>(p-sp-1);
+      std::string tmp(sp,l);
+      yyextra->code->codify(tmp.c_str());
       nextCodeLine(yyscanner);
     }
     else
@@ -1226,12 +1270,12 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
                     const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  MemberDef *md=0;
+  MemberDef *md=nullptr;
   QCString memberName= removeRedundantWhiteSpace(memberText);
 
   if ((md=getFortranDefs(yyscanner,memberName, yyextra->currentModule, useMap)) && md->isLinkable())
   {
-    if (md->isVariable() && (md->getLanguage()!=SrcLangExt_Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
+    if (md->isVariable() && (md->getLanguage()!=SrcLangExt::Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
                                                                                    // see also linkifyText in util.cpp
 
     const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
@@ -1256,8 +1300,8 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
 static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const QCString &lname)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  ClassDef *cd=0;
-  NamespaceDef *nsd=0;
+  ClassDef *cd=nullptr;
+  NamespaceDef *nsd=nullptr;
   QCString name = lname;
   name = removeRedundantWhiteSpace(name.lower());
 
@@ -1493,6 +1537,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   yyextra->exampleBlock  = isExampleBlock;
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;
+  yyextra->foldStack.clear();
   if (isExampleBlock && fileDef==0)
   {
     // create a dummy filedef for the example
@@ -1518,6 +1563,14 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   {
     endCodeLine(yyscanner);
   }
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    while (!yyextra->foldStack.empty())
+    {
+      yyextra->code->endFold();
+      yyextra->foldStack.pop_back();
+    }
+  }
   if (!fileDef && isExampleBlock && yyextra->sourceFileDef)
   {
     // delete the temporary file definition used for this example
@@ -1541,6 +1594,4 @@ static inline void pop_state(yyscan_t yyscanner)
 }
 //---------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "fortrancode.l.h"
-#endif

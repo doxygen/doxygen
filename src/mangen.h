@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -44,13 +42,15 @@ class ManCodeGenerator
                       const SourceLinkInfo &
                      ) {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
-    void startCodeLine(bool) {}
+    void startCodeLine(int) {}
     void endCodeLine() { codify("\n"); m_col=0; }
     void startFontClass(const QCString &) {}
     void endFontClass() {}
     void writeCodeAnchor(const QCString &) {}
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
   private:
     int  m_col = 0;
@@ -112,7 +112,7 @@ class ManGenerator : public OutputGenerator
                          const QCString &anchor,const QCString &name);
     void startTextLink(const QCString &,const QCString &) {}
     void endTextLink() {}
-    void startTypewriter() { m_t << "\\fC"; m_firstCol=FALSE; }
+    void startTypewriter() { m_t << "\\fR"; m_firstCol=FALSE; }
     void endTypewriter()   { m_t << "\\fP"; m_firstCol=FALSE; }
     void startGroupHeader(int);
     void endGroupHeader(int);
@@ -162,6 +162,7 @@ class ManGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
     void endDoxyAnchor(const QCString &,const QCString &) {}
+    void addLabel(const QCString &,const QCString &);
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name);
@@ -194,7 +195,7 @@ class ManGenerator : public OutputGenerator
     void writeSplitBar(const QCString &) {}
     void writeNavigationPath(const QCString &) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem,const QCString &) {}
+    void writeQuickLinks(HighlightedItem,const QCString &) {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) {}
     void startContents() {}
     void endContents() {}
@@ -230,10 +231,14 @@ class ManGenerator : public OutputGenerator
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
     void startParameterType(bool,const QCString &) {}
-    void endParameterType() {}
+    void endParameterType();
     void startParameterName(bool) {}
-    void endParameterName(bool,bool,bool) {}
-    void startParameterList(bool) {}
+    void endParameterName() {}
+    void startParameterExtra() {}
+    void endParameterExtra(bool,bool,bool);
+    void startParameterDefVal(const char *s) { docify(s); startTypewriter(); }
+    void endParameterDefVal() { endTypewriter(); }
+    void startParameterList(bool);
     void endParameterList() {}
     void exceptionEntry(const QCString &,bool) {}
 

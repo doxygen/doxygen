@@ -13,8 +13,6 @@ body, table, div, p, dl {
 /* @group Heading Levels */
 
 .title {
-	font-weight: 400;
-	font-size: 14px;
 	font-family: var(--font-family-normal);
 	line-height: 28px;
 	font-size: 150%;
@@ -147,6 +145,12 @@ div.qindex{
 	color: var(--index-separator-color);
 }
 
+#main-menu a:focus {
+	outline: auto;
+	z-index: 10;
+	position: relative;
+}
+
 dt.alphachar{
 	font-size: 180%;
 	font-weight: bold;
@@ -206,7 +210,13 @@ a {
 }
 
 a:hover {
-	text-decoration: underline;
+	text-decoration: none;
+	background:   linear-gradient(to bottom, transparent 0,transparent calc(100% - 1px), currentColor 100%);
+}
+
+a:hover > span.arrow {
+        text-decoration: none;
+        background : var(--nav-background-color);
 }
 
 a.el {
@@ -282,30 +292,63 @@ ul.multicol {
 .fragment {
   text-align: left;
   direction: ltr;
-  overflow-x: auto; /*Fixed: fragment lines overlap floating elements*/
+  overflow-x: auto;
   overflow-y: hidden;
+  position: relative;
+  min-height: 12px;
+  margin: 10px 0px;
+  padding: 10px 10px;
+  border: 1px solid var(--fragment-border-color);
+  border-radius: 4px;
+  background-color: var(--fragment-background-color);
+  color: var(--fragment-foreground-color);
 }
 
 pre.fragment {
-        border: 1px solid var(--fragment-border-color);
-        background-color: var(--fragment-background-color);
-	color: var(--fragment-foreground-color);
-        padding: 4px 6px;
-        margin: 4px 8px 4px 2px;
-        overflow: auto;
-        word-wrap: break-word;
-        font-size:  9pt;
-        line-height: 125%;
-        font-family: var(--font-family-monospace);
-        font-size: 105%;
+  word-wrap: break-word;
+  font-size:  10pt;
+  line-height: 125%;
+  font-family: var(--font-family-monospace);
 }
 
-div.fragment {
-	padding: 0 0 1px 0; /*Fixed: last line underline overlap border*/
-	margin: 4px 8px 4px 2px;
-	color: var(--fragment-foreground-color);
-	background-color: var(--fragment-background-color);
-	border: 1px solid var(--fragment-border-color);
+.clipboard {
+        width: 24px;
+        height: 24px;
+        right: 5px;
+        top: 5px;
+        opacity: 0;
+        position: absolute;
+        display: inline;
+        overflow: auto;
+        fill: var(--fragment-foreground-color);
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+}
+
+.clipboard.success {
+        border: 1px solid var(--fragment-foreground-color);
+        border-radius: 4px;
+}
+
+.fragment:hover .clipboard, .clipboard.success {
+        opacity: .28;
+}
+
+.clipboard:hover, .clipboard.success {
+        opacity: 1 !important;
+}
+
+.clipboard:active:not([class~=success]) svg {
+        transform: scale(.91);
+}
+
+.clipboard.success svg {
+        fill: var(--fragment-copy-ok-color);
+}
+
+.clipboard.success {
+        border-color: var(--fragment-copy-ok-color);
 }
 
 div.line {
@@ -345,6 +388,18 @@ div.line.glow {
 	box-shadow: 0 0 10px var(--glow-color);
 }
 
+span.fold {
+        margin-left: 5px;
+        margin-right: 1px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding: 0px;
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	background-repeat:no-repeat;
+        background-position:center;
+}
 
 span.lineno {
 	padding-right: 4px;
@@ -414,10 +469,6 @@ img.dark-mode-visible {
 }
 img.light-mode-visible {
 	display: none;
-}
-
-img.formulaDsp {
-	
 }
 
 img.formulaInl, img.inline {
@@ -719,17 +770,25 @@ dl.reflist dd {
 
 .paramtype {
 	white-space: nowrap;
+	padding: 0px;
+	padding-bottom: 1px;
 }
 
 .paramname {
-	color: var(--memdef-param-name-color);
 	white-space: nowrap;
+        padding: 0px;
+        padding-bottom: 1px;
+        margin-left: 2px;
 }
+
 .paramname em {
+	color: var(--memdef-param-name-color);
 	font-style: normal;
+	margin-right: 1px;
 }
-.paramname code {
-        line-height: 14px;
+
+.paramname .paramdefval {
+	font-family: var(--font-family-monospace);
 }
 
 .params, .retval, .exception, .tparams {
@@ -1063,7 +1122,6 @@ table.fieldtable {
 {
 	height:32px;
 	display:block;
-	text-decoration: none;
 	outline: none;
 	color: var(--nav-text-normal-color);
 	font-family: var(--font-family-nav);
@@ -1152,7 +1210,8 @@ dl {
         padding: 0 0 0 0;
 }
 
-/* dl.note, dl.warning, dl.attention, dl.pre, dl.post, dl.invariant, dl.deprecated, dl.todo, dl.test, dl.bug, dl.examples */
+/*
+
 dl.section {
 	margin-left: 0px;
 	padding-left: 0px;
@@ -1165,7 +1224,7 @@ dl.note {
   border-color: #D0C000;
 }
 
-dl.warning, dl.attention {
+dl.warning, dl.attention, dl.important {
   margin-left: -7px;
   padding-left: 3px;
   border-left: 4px solid;
@@ -1207,8 +1266,103 @@ dl.bug {
   border-color: #C08050;
 }
 
+*/
+
+dl.bug dt a, dl.deprecated dt a, dl.todo dt a, dl.test a {
+    font-weight: bold !important;
+}
+
+dl.warning, dl.attention, dl.important, dl.note, dl.deprecated, dl.bug,
+dl.invariant, dl.pre, dl.post, dl.todo, dl.test, dl.remark {
+    padding: 10px;
+    margin: 10px 0px;
+    overflow: hidden;
+    margin-left: 0;
+    border-radius: 4px;
+}
+
 dl.section dd {
-	margin-bottom: 6px;
+    margin-bottom: 2px;
+}
+
+dl.warning, dl.attention, dl.important {
+    background: var(--warning-color-bg);
+    border-left: 8px solid var(--warning-color-hl);
+    color: var(--warning-color-text);
+}
+
+dl.warning dt, dl.attention dt, dl.important dt {
+    color: var(--warning-color-hl);
+}
+
+dl.note, dl.remark {
+    background: var(--note-color-bg);
+    border-left: 8px solid var(--note-color-hl);
+    color: var(--note-color-text);
+}
+
+dl.note dt, dl.remark dt {
+    color: var(--note-color-hl);
+}
+
+dl.todo {
+    background: var(--todo-color-bg);
+    border-left: 8px solid var(--todo-color-hl);
+    color: var(--todo-color-text);
+}
+
+dl.todo dt {
+    color: var(--todo-color-hl);
+}
+
+dl.test {
+    background: var(--test-color-bg);
+    border-left: 8px solid var(--test-color-hl);
+    color: var(--test-color-text);
+}
+
+dl.test dt {
+    color: var(--test-color-hl);
+}
+
+dl.bug dt a {
+    color: var(--bug-color-hl) !important;
+}
+
+dl.bug {
+    background: var(--bug-color-bg);
+    border-left: 8px solid var(--bug-color-hl);
+    color: var(--bug-color-text);
+}
+
+dl.bug dt a {
+    color: var(--bug-color-hl) !important;
+}
+
+dl.deprecated {
+    background: var(--deprecated-color-bg);
+    border-left: 8px solid var(--deprecated-color-hl);
+    color: var(--deprecated-color-text);
+}
+
+dl.deprecated dt a {
+    color: var(--deprecated-color-hl) !important;
+}
+
+dl.note dd, dl.warning dd, dl.pre dd, dl.post dd,
+dl.remark dd, dl.attention dd, dl.important dd, dl.invariant dd,
+dl.bug dd, dl.deprecated dd, dl.todo dd, dl.test dd {
+    margin-inline-start: 0px;
+}
+
+dl.invariant, dl.pre, dl.post {
+    background: var(--invariant-color-bg);
+    border-left: 8px solid var(--invariant-color-hl);
+    color: var(--invariant-color-text);
+}
+
+dl.invariant dt, dl.pre dt, dl.post dt {
+    color: var(--invariant-color-hl);
 }
 
 
@@ -1223,12 +1377,12 @@ dl.section dd {
 	vertical-align: bottom;
 	border-collapse: separate;
 }
- 
+
 #projectlogo img
-{ 
+{
 	border: 0px none;
 }
- 
+
 #projectalign
 {
         vertical-align: middle;

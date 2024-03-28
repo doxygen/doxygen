@@ -38,6 +38,7 @@
      - added details and summary tag
      - added placeholder to input tag
      - added allowfullscreen to iframe tag
+     - added data-start and data-end to div tag (needed for code folding)
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -448,6 +449,8 @@
 <!ATTLIST div
   %attrs;
   %TextAlign;
+  data-start %Text; #IMPLIED
+  data-end   %Text; #IMPLIED
   >
 
 <!ELEMENT details %Flow;>  <!-- generic language/style container -->

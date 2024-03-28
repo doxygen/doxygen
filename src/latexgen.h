@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -48,13 +46,15 @@ class LatexCodeGenerator
                       const SourceLinkInfo &
                      )  {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool);
-    void startCodeLine(bool);
+    void startCodeLine(int);
     void endCodeLine();
     void startFontClass(const QCString &);
     void endFontClass();
     void writeCodeAnchor(const QCString &) {}
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &style);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
     // extra methods not part of CodeOutputInterface
     void incUsedTableLevel() { m_usedTableLevel++; }
@@ -76,7 +76,7 @@ class LatexCodeGenerator
     TextStream *m_t;
     QCString m_relPath;
     QCString m_sourceFileName;
-    int m_col = 0;
+    size_t m_col = 0;
     bool m_doxyCodeLineOpen = false;
     int m_usedTableLevel = 0;
     bool m_insideTabbing = false;
@@ -191,6 +191,7 @@ class LatexGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
     void endDoxyAnchor(const QCString &,const QCString &);
+    void addLabel(const QCString &,const QCString &);
     void writeChar(char c);
     void writeLatexSpacing() { m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
@@ -224,7 +225,7 @@ class LatexGenerator : public OutputGenerator
     void writeSplitBar(const QCString &) {}
     void writeNavigationPath(const QCString &) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem,const QCString &) {}
+    void writeQuickLinks(HighlightedItem,const QCString &) {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) {}
     void startContents() {}
     void endContents() {}
@@ -262,7 +263,11 @@ class LatexGenerator : public OutputGenerator
     void startParameterType(bool,const QCString &);
     void endParameterType();
     void startParameterName(bool);
-    void endParameterName(bool,bool,bool);
+    void endParameterName();
+    void startParameterExtra();
+    void endParameterExtra(bool last,bool one,bool bracket);
+    void startParameterDefVal(const char *s) { docify(s); startTypewriter(); }
+    void endParameterDefVal() { endTypewriter(); }
     void startParameterList(bool);
     void endParameterList();
     void exceptionEntry(const QCString &,bool);

@@ -103,18 +103,30 @@ void linkifyText(const TextGeneratorIntf &ol,
 
 QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);
 
-bool getDefs(const QCString &scopeName,
-                    const QCString &memberName,
-                    const QCString &args,
-                    const MemberDef *&md,
-                    const ClassDef *&cd,
-                    const FileDef *&fd,
-                    const NamespaceDef *&nd,
-                    const GroupDef *&gd,
-                    bool forceEmptyScope=FALSE,
-                    const FileDef *currentFile=0,
-                    bool checkCV=FALSE
-                   );
+struct GetDefInput
+{
+  GetDefInput(const QCString &scName,const QCString &memName,const QCString &a) :
+    scopeName(scName),memberName(memName),args(a) {}
+  QCString scopeName;
+  QCString memberName;
+  QCString args;
+  bool forceEmptyScope = false;
+  const FileDef *currentFile = nullptr;
+  bool checkCV = false;
+  bool insideCode = false;
+};
+
+struct GetDefResult
+{
+  bool found = false;
+  const MemberDef    *md=nullptr;
+  const ClassDef     *cd=nullptr;
+  const FileDef      *fd=nullptr;
+  const NamespaceDef *nd=nullptr;
+  const GroupDef     *gd=nullptr;
+};
+
+GetDefResult getDefs(const GetDefInput &input);
 
 QCString getFileFilter(const QCString &name,bool isSourceCode);
 
@@ -124,7 +136,7 @@ bool resolveRef(/* in */  const QCString &scName,
                 /* out */ const Definition **resContext,
                 /* out */ const MemberDef  **resMember,
                 /* in */  bool lookForSpecializations = TRUE,
-                /* in */  const FileDef *currentFile = 0,
+                /* in */  const FileDef *currentFile = nullptr,
                 /* in */  bool checkScope = FALSE
                );
 
@@ -179,12 +191,12 @@ void checkBlocks(const QCString& s,const QCString fileName, const SelectionMarke
 QCString removeEmptyLines(const QCString &s);
 
 
-FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,
-                bool &ambig);
+FileDef *findFileDef(const FileNameLinkedMap *fnMap, const QCString &n, bool &ambig);
+QCString findFilePath(const QCString &file, bool &ambig);
 
 QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n);
 
-int guessSection(const QCString &name);
+EntryType guessSection(const QCString &name);
 
 inline bool isId(int c)
 {
@@ -264,7 +276,7 @@ void addMembersToMemberGroup(/* in,out */ MemberList *ml,
                              /* in */     const Definition *context);
 
 int extractClassNameFromType(const QCString &type,int &pos,
-                              QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt_Unknown);
+                              QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt::Unknown);
 
 QCString normalizeNonTemplateArgumentsInString(
        const QCString &name,
@@ -274,14 +286,16 @@ QCString normalizeNonTemplateArgumentsInString(
 QCString substituteTemplateArgumentsInString(
        const QCString &name,
        const ArgumentList &formalArgs,
-       const std::unique_ptr<ArgumentList> &actualArgs);
+       const ArgumentList *actualArgs);
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
-                                          QCString *lastScopeStripped=0);
+                                          QCString *lastScopeStripped=nullptr,
+                                          QCString scopeName=QCString(),
+                                          bool allowArtificial=true);
 
 QCString resolveTypeDef(const Definition *d,const QCString &name,
-                        const Definition **typedefContext=0);
+                        const Definition **typedefContext=nullptr);
 
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);
 
@@ -302,10 +316,10 @@ PageDef *addRelatedPage(const QCString &name,
                         int docLine,
                         int startLine,
                         const RefItemVector &sli = RefItemVector(),
-                        GroupDef *gd=0,
-                        const TagInfo *tagInfo=0,
+                        GroupDef *gd=nullptr,
+                        const TagInfo *tagInfo=nullptr,
                         bool xref=FALSE,
-                        SrcLangExt lang=SrcLangExt_Unknown
+                        SrcLangExt lang=SrcLangExt::Unknown
                        );
 
 bool getCaseSenseNames();
@@ -325,30 +339,19 @@ QCString stripExtensionGeneral(const QCString &fName, const QCString &ext);
 
 QCString stripExtension(const QCString &fName);
 
-void replaceNamespaceAliases(QCString &scope,int i);
+void replaceNamespaceAliases(QCString &scope,size_t i);
 
-//! Return the index of the last :: in the string \a name that is still before the first <
-inline int computeQualifiedIndex(const QCString &name)
-{
-  int l = static_cast<int>(name.length());
-  int lastSepPos = -1;
-  const char *p = name.data();
-  for (int i=0;i<l-1;i++)
-  {
-    char c=*p++;
-    if (c==':' && *p==':') lastSepPos=i;
-    if (c=='<') break;
-  }
-  return lastSepPos;
-}
+int computeQualifiedIndex(const QCString &name);
 
 void addDirPrefix(QCString &fileName);
 
 QCString relativePathToRoot(const QCString &name);
+QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &incFileName);
 
 void createSubDirs(const Dir &d);
 void clearSubDirs(const Dir &d);
 
+QCString removeLongPathMarker(QCString path);
 QCString stripPath(const QCString &s);
 
 bool containsWord(const QCString &s,const char *word);
@@ -358,7 +361,7 @@ bool findAndRemoveWord(QCString &s,const char *word);
 QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine);
 
 bool updateLanguageMapping(const QCString &extension,const QCString &parser);
-SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang=SrcLangExt_Cpp);
+SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang=SrcLangExt::Cpp);
 SrcLangExt getLanguageFromCodeLang(QCString &fileName);
 QCString getFileNameExtension(const QCString &fn);
 void initDefaultExtensionMapping();
@@ -368,16 +371,9 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCStr
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
-QCString transcodeCharacterStringToUTF8(const QCString &inputEncoding,const QCString &input);
+bool transcodeCharacterStringToUTF8(std::string &input,const char *inputEncoding);
 
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding);
-
-QCString extractAliasArgs(const QCString &args,size_t pos);
-
-int countAliasArguments(const QCString &argList);
-
-QCString resolveAliasCmd(const QCString &aliasCmd);
-std::string expandAlias(const std::string &aliasName,const std::string &aliasValue);
 
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
 
@@ -385,13 +381,19 @@ QCString convertCharEntitiesToUTF8(const QCString &s);
 
 void stackTrace();
 
-bool readInputFile(const QCString &fileName,BufStr &inBuf,
+bool readInputFile(const QCString &fileName,std::string &contents,
                    bool filter=TRUE,bool isSourceCode=FALSE);
 QCString filterTitle(const QCString &title);
 
 bool patternMatch(const FileInfo &fi,const StringVector &patList);
 
 QCString externalLinkTarget(const bool parent = false);
+QCString createHtmlUrl(const QCString &relPath,
+                       const QCString &ref,
+                       bool href,
+                       bool islocalFile,
+                       const QCString &targetFileName,
+                       const QCString &anchor);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos);
 
@@ -412,7 +414,6 @@ void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[]);
 QCString replaceColorMarkers(const QCString &str);
 
 bool copyFile(const QCString &src,const QCString &dest);
-QCString extractBlock(const QCString &text,const QCString &marker, const bool trimLeft=false);
 
 int lineBlock(const QCString &text,const QCString &marker);
 
@@ -459,6 +460,11 @@ QCString getEncoding(const FileInfo &fi);
 
 inline QCString fixSpaces(const QCString &s) { return substitute(s," ","&#160;"); }
 
-QCString detab(const QCString &s,int &refIndent);
+QCString detab(const QCString &s,size_t &refIndent);
+
+QCString getProjectId();
+QCString projectLogoFile();
+
+void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
 
 #endif

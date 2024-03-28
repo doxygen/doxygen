@@ -73,7 +73,7 @@ SearchIndex::SearchIndex()
 
 void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
-  if (ctx==0) return;
+  if (ctx==nullptr) return;
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
@@ -86,7 +86,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   if (ctx->definitionType()==Definition::TypeMember)
   {
     const MemberDef *md = toMemberDef(ctx);
-    name.prepend((md->getLanguage()==SrcLangExt_Fortran  ?
+    name.prepend((md->getLanguage()==SrcLangExt::Fortran  ?
                  theTranslator->trSubprogram(TRUE,TRUE) :
                  theTranslator->trMember(TRUE,TRUE))+" ");
   }
@@ -121,11 +121,11 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
         break;
       case Definition::TypeNamespace:
         {
-          if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+          if (lang==SrcLangExt::Java || lang==SrcLangExt::CSharp)
           {
             name = theTranslator->trPackage(name);
           }
-          else if (lang==SrcLangExt_Fortran)
+          else if (lang==SrcLangExt::Fortran)
           {
             name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
           }
@@ -146,6 +146,11 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
           {
             name.prepend(theTranslator->trGroup(TRUE,TRUE)+" ");
           }
+        }
+        break;
+      case Definition::TypeModule:
+        {
+          name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
         }
         break;
       default:
@@ -245,8 +250,8 @@ static void writeInt(std::ostream &f,size_t index)
 
 static void writeString(std::ostream &f,const QCString &s)
 {
-  uint32_t l = s.length();
-  for (uint32_t i=0;i<l;i++) f.put(s[i]);
+  size_t l = s.length();
+  for (size_t i=0;i<l;i++) f.put(s[i]);
   f.put(0);
 }
 
@@ -264,7 +269,7 @@ void SearchIndex::write(const QCString &fileName)
     {
       for (const auto &iw : wlist)
       {
-        int ws = iw.word().length()+1;
+        size_t ws = iw.word().length()+1;
         size+=ws+4; // word + url info list offset
       }
       size+=1; // zero list terminator
@@ -435,6 +440,8 @@ static QCString definitionToName(const Definition *ctx)
         return "page";
       case Definition::TypeDir:
         return "dir";
+      case Definition::TypeModule:
+        return "module";
       default:
         break;
     }
@@ -461,6 +468,22 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
     {
       e.args = (toMemberDef(ctx))->argsString();
     }
+    else if (ctx->definitionType()==Definition::TypeGroup)
+    {
+      const GroupDef *gd = toGroupDef(ctx);
+      if (!gd->groupTitle().isEmpty())
+      {
+        e.name = filterTitle(gd->groupTitle());
+      }
+    }
+    else if (ctx->definitionType()==Definition::TypePage)
+    {
+      const PageDef *pd = toPageDef(ctx);
+      if (pd->hasTitle())
+      {
+        e.name = filterTitle(pd->title());
+      }
+    }
     e.extId = extId;
     e.url  = url;
     it = m_docEntries.insert({key.str(),e}).first;
@@ -472,7 +495,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
 void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
-  if (word.isEmpty() || !isId(word[0]) || m_current==0) return;
+  if (word.isEmpty() || !isId(word[0]) || m_current==nullptr) return;
   GrowBuf *pText = hiPriority ? &m_current->importantText : &m_current->normalText;
   if (pText->getPos()>0) pText->addChar(' ');
   pText->addStr(word);

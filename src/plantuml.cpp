@@ -38,7 +38,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   Debug::print(Debug::Plantuml,0,"*** %s outDir: %s\n","writePlantUMLSource",qPrint(outDir));
 
   // strip any trailing slashes and backslashes
-  uint32_t l;
+  size_t l;
   while ((l=outDir.length())>0 && (outDir.at(l-1)=='/' || outDir.at(l-1)=='\\'))
   {
     outDir = outDir.left(l-1);
@@ -269,7 +269,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       std::ofstream file = Portable::openOutputStream(puFileName);
       if (!file.is_open())
       {
-        err_full(nb.srcFile,nb.srcLine,"Could not open file %s for writing\n",puFileName.data());
+        err_full(nb.srcFile,nb.srcLine,"Could not open file %s for writing",puFileName.data());
       }
       file.write( nb.content.data(), nb.content.length() );
       file.close();
@@ -279,7 +279,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
 
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
-        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%s\" -h' works from the command line. Exit code: %d\n",
+        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%s\" -h' works from the command line. Exit code: %d.",
             plantumlJarPath.data(),exitCode);
       }
 
@@ -292,12 +292,12 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
           for (const auto &str : files_kv->second)
           {
             const int maxCmdLine = 40960;
-            QCString epstopdfArgs(maxCmdLine);
+            QCString epstopdfArgs(maxCmdLine, QCString::ExplicitSize);
             epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",
                 pumlOutDir.data(),str.c_str(), pumlOutDir.data(),str.c_str());
             if ((exitCode=Portable::system("epstopdf",epstopdfArgs.data()))!=0)
             {
-              err_full(nb.srcFile,nb.srcLine,"Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
+              err_full(nb.srcFile,nb.srcLine,"Problems running epstopdf. Check your TeX installation! Exit code: %d.",exitCode);
             }
           }
         }

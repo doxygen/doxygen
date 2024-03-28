@@ -43,14 +43,14 @@ class QhpSectionTree
     {
       enum class Type { Root, Dir, Section };
       // constructor for root node
-      Node() : type(Type::Root), parent(0) {}
+      Node() : type(Type::Root), parent(nullptr) {}
       // constructor for dir node
       Node(Node *parent_) : type(Type::Dir), parent(parent_) {}
       // constructor for section node
       Node(Node *parent_, const QCString &title_,const QCString &ref_)
                           : type(Type::Section), parent(parent_), title(title_), ref(ref_) {}
       Type type;
-      Node *parent = 0;
+      Node *parent = nullptr;
       QCString title;
       QCString ref;
       std::vector<std::unique_ptr<Node>> children;
@@ -126,7 +126,7 @@ class QhpSectionTree
     }
     void decLevel()
     {
-      assert(m_current->parent!=0);
+      assert(m_current->parent!=nullptr);
       if (m_current->parent)
       {
         m_current = m_current->parent;
@@ -341,14 +341,14 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   if (md) // member
   {
     bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    if (context==0) // global member
+    if (context==nullptr) // global member
     {
       if (md->getGroupDef())
         context = md->getGroupDef();
       else if (md->getFileDef())
         context = md->getFileDef();
     }
-    if (context==0) return; // should not happen
+    if (context==nullptr) return; // should not happen
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();
     QCString cfiname = context->getOutputFileBase();

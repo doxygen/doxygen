@@ -59,7 +59,7 @@ namespace IndexIntf
  */
 class IndexList
 {
-    using IndexVariant = std::variant<DocSets, EclipseHelp, FTVHelp, HtmlHelp, Qhp, Sitemap>;
+    using IndexVariant = std::variant<DocSets, EclipseHelp, FTVHelp, HtmlHelp, Qhp, Sitemap, Crawlmap>;
 
     template<template <class> class IndexT, class... As>
     void foreach(As&&... args)
@@ -111,7 +111,7 @@ class IndexList
 
     void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
                          const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
-                         const Definition *def=0)
+                         const Definition *def=nullptr)
     { if (m_enabled) foreach_locked<IndexIntf::addContentsItem>(isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
 
     void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())

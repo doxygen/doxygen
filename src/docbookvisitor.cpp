@@ -34,6 +34,7 @@
 #include "growbuf.h"
 #include "fileinfo.h"
 #include "portable.h"
+#include "codefragment.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -358,7 +359,7 @@ DB_VIS_C
     case DocVerbatim::Dot:
       {
         static int dotindex = 1;
-        QCString baseName(4096);
+        QCString baseName(4096, QCString::ExplicitSize);
         QCString name;
         QCString stext = s.text();
         m_t << "<para>\n";
@@ -383,7 +384,7 @@ DB_VIS_C
     case DocVerbatim::Msc:
       {
         static int mscindex = 1;
-        QCString baseName(4096);
+        QCString baseName(4096, QCString::ExplicitSize);
         QCString name;
         QCString stext = s.text();
         m_t << "<para>\n";
@@ -482,41 +483,16 @@ DB_VIS_C
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       m_t << "<literallayout><computeroutput>";
-      getCodeParser(inc.extension()).parseCode(m_ci,
-                                                inc.context(),
-                                                extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                                langExt,
-                                                inc.isExample(),
-                                                inc.exampleFile()
-                                               );
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                          inc.file(),
+                                          inc.blockId(),
+                                          inc.context(),
+                                          inc.type()==DocInclude::SnippetWithLines,
+                                          inc.type()==DocInclude::SnippetTrimLeft
+                                         );
       m_t << "</computeroutput></literallayout>";
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-         m_t << "<literallayout><computeroutput>";
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         m_t << "</computeroutput></literallayout>";
-      }
-      break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
       break;
   }
 }
@@ -555,7 +531,7 @@ DB_VIS_C
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
     }
@@ -822,6 +798,16 @@ DB_VIS_C
         m_t << "<caution><title>" << convertToDocBook(theTranslator->trAttention()) << "</title>\n";
       }
       break;
+    case DocSimpleSect::Important:
+      if (m_insidePre)
+      {
+        m_t << "<important><title>" << theTranslator->trImportant() << "</title>\n";
+      }
+      else
+      {
+        m_t << "<important><title>" << convertToDocBook(theTranslator->trImportant()) << "</title>\n";
+      }
+      break;
     case DocSimpleSect::User:
     case DocSimpleSect::Rcs:
     case DocSimpleSect::Unknown:
@@ -853,6 +839,9 @@ DB_VIS_C
       break;
     case DocSimpleSect::Attention:
       m_t << "</caution>\n";
+      break;
+    case DocSimpleSect::Important:
+      m_t << "</important>\n";
       break;
     case DocSimpleSect::Warning:
       m_t << "</warning>\n";
@@ -900,9 +889,10 @@ DB_VIS_C
   m_t << "<section xml:id=\"_" <<  stripPath(s.file());
   if (!s.anchor().isEmpty()) m_t << "_1" << s.anchor();
   m_t << "\">\n";
-  m_t << "<title>";
-  filter(s.title());
-  m_t << "</title>\n";
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   visitChildren(s);
   m_t << "</section>\n";
 }

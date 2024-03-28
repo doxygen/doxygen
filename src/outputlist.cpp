@@ -218,8 +218,126 @@ void OutputList::parseText(const QCString &textStr)
     auto parser { createDocParser() };
     auto ast { validatingParseText(*parser.get(), textStr) };
 
-    if (ast) writeDoc(ast.get(),0,0);
+    if (ast) writeDoc(ast.get(),nullptr,nullptr);
   }
 }
 
 //--------------------------------------------------------------------------
+
+void OutputCodeRecorder::startNewLine(int lineNr)
+{
+  int orgSize = static_cast<int>(m_lineOffset.size());
+  if (orgSize<lineNr)
+  {
+    m_lineOffset.resize(lineNr);
+    for (int i=orgSize;i<lineNr;i++) // output lines can be skipped due to hidden comments so fill in the gap
+    {
+      //printf("%p: startCodeLine(%d) offset=%zu\n",(void*)this,i,m_calls.size());
+      m_lineOffset[i]=m_calls.size();
+    }
+  }
+}
+
+void OutputCodeRecorder::codify(const QCString &s)
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol) { ol->codify(s); }
+                      );
+}
+
+void OutputCodeRecorder::writeCodeLink(CodeSymbolType type,
+                   const QCString &ref,const QCString &file,
+                   const QCString &anchor,const QCString &name,
+                   const QCString &tooltip)
+{
+  m_calls.emplace_back([](){ return true; },
+                       [=](OutputCodeList *ol) { ol->writeCodeLink(type,ref,file,anchor,name,tooltip); }
+                      );
+}
+
+void OutputCodeRecorder::writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+                     int lineNumber, bool writeLineAnchor)
+{
+  startNewLine(lineNumber);
+  m_calls.emplace_back([&]() { return m_showLineNumbers; },
+                       [=](OutputCodeList *ol) { ol->writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
+                      );
+}
+
+void OutputCodeRecorder::writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
+                  const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
+{
+  m_calls.emplace_back([](){ return true; },
+                       [=](OutputCodeList *ol) { ol->writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
+                      );
+}
+
+void OutputCodeRecorder::startCodeLine(int lineNr)
+{
+  startNewLine(lineNr);
+  m_calls.emplace_back([](){ return true; },
+                       [=](OutputCodeList *ol) { ol->startCodeLine(lineNr); }
+                      );
+}
+
+void OutputCodeRecorder::endCodeLine()
+{
+  m_calls.emplace_back([](){ return true; },
+                       [=](OutputCodeList *ol) { ol->endCodeLine(); }
+                      );
+}
+
+void OutputCodeRecorder::startFontClass(const QCString &c)
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol) { ol->startFontClass(c); }
+                      );
+}
+
+void OutputCodeRecorder::endFontClass()
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol){ ol->endFontClass(); }
+                      );
+}
+
+void OutputCodeRecorder::writeCodeAnchor(const QCString &name)
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol){ ol->writeCodeAnchor(name); }
+                      );
+}
+
+void OutputCodeRecorder::startCodeFragment(const QCString &style)
+{
+}
+
+void OutputCodeRecorder::endCodeFragment(const QCString &style)
+{
+}
+
+void OutputCodeRecorder::startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol) { ol->startFold(lineNr,startMarker,endMarker); }
+                      );
+}
+
+void OutputCodeRecorder::endFold()
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol) { ol->endFold(); }
+                      );
+}
+
+void OutputCodeRecorder::replay(OutputCodeList &ol,int startLine,int endLine,bool showLineNumbers)
+{
+  size_t startIndex = startLine>0 && startLine<=(int)m_lineOffset.size() ? m_lineOffset[startLine-1] : 0;
+  size_t endIndex   = endLine>0   && endLine  <=(int)m_lineOffset.size() ? m_lineOffset[  endLine-1] : m_calls.size();
+  //printf("startIndex=%zu endIndex=%zu\n",startIndex,endIndex);
+  m_showLineNumbers = showLineNumbers;
+  for (size_t i=startIndex; i<endIndex; i++)
+  {
+    if (m_calls[i].condition()) m_calls[i].function(&ol);
+  }
+}

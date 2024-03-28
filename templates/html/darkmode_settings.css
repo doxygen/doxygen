@@ -127,13 +127,13 @@
 --code-char-literal-color: #00E0F0;
 --code-xml-cdata-color: #C9D1D9;
 --code-vhdl-digit-color: #FF00FF;
---code-vhdl-char-color: #000000;
---code-vhdl-keyword-color: #700070;
+--code-vhdl-char-color: #C0C0C0;
+--code-vhdl-keyword-color: #CF53C9;
 --code-vhdl-logic-color: #FF0000;
 --code-link-color: #79C0FF;
 --code-external-link-color: #79C0FF;
 --fragment-foreground-color: #C9D1D9;
---fragment-background-color: black;
+--fragment-background-color: ##08;
 --fragment-border-color: #30363D;
 --fragment-lineno-border-color: #30363D;
 --fragment-lineno-background-color: black;
@@ -142,6 +142,7 @@
 --fragment-lineno-link-bg-color: #303030;
 --fragment-lineno-link-hover-fg-color: #8E96A1;
 --fragment-lineno-link-hover-bg-color: #505050;
+--fragment-copy-ok-color: #0EA80E;
 --tooltip-foreground-color: #C9D1D9;
 --tooltip-background-color: #202020;
 --tooltip-border-color: #C9D1D9;
@@ -149,6 +150,11 @@
 --tooltip-declaration-color: #20C348;
 --tooltip-link-color: #79C0FF;
 --tooltip-shadow: none;
+--fold-line-color: #808080;
+--fold-minus-image: url('minusd.svg');
+--fold-plus-image: url('plusd.svg');
+--fold-minus-image-relpath: url('../../minusd.svg');
+--fold-plus-image-relpath: url('../../plusd.svg');
 
 /** font-family */
 --font-family-normal: Roboto,sans-serif;
@@ -160,3 +166,25 @@
 --font-family-icon: Arial,Helvetica;
 --font-family-tooltip: Roboto,sans-serif;
 
+/** special sections */
+--warning-color-bg: #2e1917;
+--warning-color-hl: #ad2617;
+--warning-color-text: #f5b1aa;
+--note-color-bg: #3b2e04;
+--note-color-hl: #f1b602;
+--note-color-text: #ceb670;
+--todo-color-bg: #163750;
+--todo-color-hl: #1982D2;
+--todo-color-text: #dcf0fa;
+--test-color-bg: #121258;
+--test-color-hl: #4242cf;
+--test-color-text: #c0c0da;
+--deprecated-color-bg: #2e323b;
+--deprecated-color-hl: #738396;
+--deprecated-color-text: #abb0bd;
+--bug-color-bg: #2a2536;
+--bug-color-hl: #7661b3;
+--bug-color-text: #ae9ed6;
+--invariant-color-bg: #303a35;
+--invariant-color-hl: #76ce96;
+--invariant-color-text: #cceed5;

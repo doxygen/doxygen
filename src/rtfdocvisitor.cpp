@@ -36,6 +36,7 @@
 #include "plantuml.h"
 #include "fileinfo.h"
 #include "portable.h"
+#include "codefragment.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -340,7 +341,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Dot:
       {
         static int dotindex = 1;
-        QCString fileName(4096);
+        QCString fileName(4096, QCString::ExplicitSize);
 
         fileName.sprintf("%s%d%s",
             qPrint(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_"),
@@ -369,7 +370,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::Msc:
       {
         static int mscindex = 1;
-        QCString baseName(4096);
+        QCString baseName(4096, QCString::ExplicitSize);
 
         baseName.sprintf("%s%d%s",
             qPrint(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_"),
@@ -455,7 +456,7 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
-                                           0,     // memberDef
+                                           nullptr,     // memberDef
                                            TRUE   // show line numbers
 					   );
          m_t << "\\par";
@@ -469,11 +470,11 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                         inc.text(),langExt,inc.isExample(),
                                         inc.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         FALSE  // show line numbers
 				       );
       m_t << "\\par";
@@ -500,45 +501,18 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       m_t << "{\n";
       if (!m_lastIsPara) m_t << "\\par\n";
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      getCodeParser(inc.extension()).parseCode(m_ci,
-                                        inc.context(),
-                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                        langExt,
-                                        inc.isExample(),
-                                        inc.exampleFile()
-                                       );
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                         inc.file(),
+                                         inc.blockId(),
+                                         inc.context(),
+                                         inc.type()==DocInclude::SnippetWithLines,
+                                         inc.type()==DocInclude::SnippetTrimLeft
+                                        );
       m_t << "}";
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-         m_t << "{\n";
-         if (!m_lastIsPara) m_t << "\\par\n";
-         m_t << rtf_Style_Reset << getStyle("CodeExample");
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         m_t << "}";
-      }
-      break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
       break;
   }
   m_lastIsPara=TRUE;
@@ -568,7 +542,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
     m_hide = popHidden();
     if (!m_hide)
     {
-      std::unique_ptr<FileDef> fd = 0;
+      std::unique_ptr<FileDef> fd = nullptr;
       if (!op.includeFileName().isEmpty())
       {
         FileInfo cfi( op.includeFileName().str() );
@@ -581,7 +555,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
     }
@@ -776,6 +750,8 @@ void RTFDocVisitor::operator()(const DocSimpleSect &s)
       m_t << theTranslator->trRemarks(); break;
     case DocSimpleSect::Attention:
       m_t << theTranslator->trAttention(); break;
+    case DocSimpleSect::Important:
+      m_t << theTranslator->trImportant(); break;
     case DocSimpleSect::User: break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
@@ -863,10 +839,16 @@ void RTFDocVisitor::operator()(const DocSection &s)
   // set style
   m_t << rtf_Style[heading.str()].reference() << "\n";
   // make table of contents entry
-  filter(s.title());
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   m_t << "\n\\par" << "}\n";
   m_t << "{\\tc\\tcl" << level << " \\v ";
-  filter(s.title());
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   m_t << "}\n";
   m_lastIsPara=TRUE;
   visitChildren(s);
@@ -1165,9 +1147,7 @@ void RTFDocVisitor::operator()(const DocHtmlHeader &header)
   m_t << "{" // start section
       << rtf_Style_Reset;
   QCString heading;
-  int level = std::min(header.level()+m_hierarchyLevel,5);
-  if (level <= 0)
-    level = 1;
+  int level = std::clamp(header.level()+m_hierarchyLevel,SectionType::MinLevel,SectionType::MaxLevel);
   heading.sprintf("Heading%d",level);
   // set style
   m_t << rtf_Style[heading.str()].reference();

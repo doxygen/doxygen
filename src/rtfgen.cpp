@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Parker Waechter & Dimitri van Heesch.
  *
  * Style sheet additions by Alexander Bartolich
  *
@@ -19,6 +17,7 @@
 
 #include <mutex>
 #include <stdlib.h>
+#include <algorithm>
 
 #include "rtfgen.h"
 #include "config.h"
@@ -49,6 +48,7 @@
 #include "debug.h"
 #include "datetime.h"
 #include "outputlist.h"
+#include "moduledef.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -185,6 +185,7 @@ void RTFCodeGenerator::startCodeFragment(const QCString &)
 {
   DBG_RTF(*m_t << "{\\comment (startCodeFragment) }\n")
   *m_t << "{\n";
+  *m_t << "\\par\n";
   *m_t << rtf_Style_Reset << rtf_Code_DepthStyle();
 }
 
@@ -240,7 +241,7 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
   m_col=0;
 }
 
-void RTFCodeGenerator::startCodeLine(bool)
+void RTFCodeGenerator::startCodeLine(int)
 {
   m_doxyCodeLineOpen = true;
   m_col=0;
@@ -367,7 +368,7 @@ void RTFGenerator::writeStyleSheetFile(TextStream &t)
   t << "# Remove a hash to activate a line.\n\n";
 
   int i;
-  for ( i=0 ; rtf_Style_Default[i].reference!=0 ; i++ )
+  for ( i=0 ; rtf_Style_Default[i].reference!=nullptr ; i++ )
   {
     t << "# " << rtf_Style_Default[i].name << " = "
               << rtf_Style_Default[i].reference
@@ -440,7 +441,7 @@ void RTFGenerator::init()
   const struct Rtf_Style_Default* def = rtf_Style_Default;
   while (def->reference)
   {
-    if (def->definition == 0)
+    if (def->definition == nullptr)
     {
       err("Internal: rtf_Style_Default[%s] has no definition.\n", def->name);
     }
@@ -568,13 +569,13 @@ void RTFGenerator::beginRTFDocument()
     uint32_t index = data.index();
     if (index > maxIndex) maxIndex = index;
   }
-  std::vector<const StyleData*> array(maxIndex + 1, 0);
+  std::vector<const StyleData*> array(maxIndex + 1, nullptr);
   ASSERT(maxIndex < array.size());
 
   for (const auto &[name,data] : rtf_Style)
   {
     uint32_t index = data.index();
-    if (array[index] != 0)
+    if (array[index] != nullptr)
     {
       msg("Style '%s' redefines \\s%d.\n", name.c_str(), index);
     }
@@ -703,6 +704,10 @@ void RTFGenerator::startIndexSection(IndexSection is)
       //Introduction
       beginRTFChapter();
       break;
+    case IndexSection::isTopicIndex:
+      //Topic Index
+      beginRTFChapter();
+      break;
     case IndexSection::isModuleIndex:
       //Module Index
       beginRTFChapter();
@@ -736,12 +741,25 @@ void RTFGenerator::startIndexSection(IndexSection is)
       //Related Page Index
       beginRTFChapter();
       break;
-    case IndexSection::isModuleDocumentation:
+    case IndexSection::isTopicDocumentation:
       {
-        //Module Documentation
+        //Topic Documentation
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
+          {
+            beginRTFChapter();
+            break;
+          }
+        }
+      }
+      break;
+    case IndexSection::isModuleDocumentation:
+      {
+        //Module Documentation
+        for (const auto &mod : ModuleManager::instance().modules())
+        {
+          if (!mod->isReference() && mod->isPrimaryInterface())
           {
             beginRTFChapter();
             break;
@@ -794,7 +812,7 @@ void RTFGenerator::startIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -900,7 +918,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
           if (ast)
           {
             m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-            writeDoc(ast.get(),0,0,0);
+            writeDoc(ast.get(),nullptr,nullptr,0);
             m_t << "}}\\par\n";
           }
         }
@@ -962,6 +980,11 @@ void RTFGenerator::endIndexSection(IndexSection is)
         writePageLink(Doxygen::mainPage->getOutputFileBase(), TRUE);
       }
       break;
+    case IndexSection::isTopicIndex:
+      m_t << "\\par " << rtf_Style_Reset << "\n";
+      m_t << "{\\tc \\v " << theTranslator->trTopicIndex() << "}\n";
+      m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"topics.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      break;
     case IndexSection::isModuleIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}\n";
@@ -1021,14 +1044,26 @@ void RTFGenerator::endIndexSection(IndexSection is)
       m_t << "{\\tc \\v " << theTranslator->trPageIndex() << "}\n";
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"pages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case IndexSection::isModuleDocumentation:
+    case IndexSection::isTopicDocumentation:
       {
-        m_t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}\n";
+        m_t << "{\\tc \\v " << theTranslator->trTopicDocumentation() << "}\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference() && !gd->isASubGroup())
           {
             writePageLink(gd->getOutputFileBase(), FALSE);
+          }
+        }
+      }
+      break;
+    case IndexSection::isModuleDocumentation:
+      {
+        m_t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}\n";
+        for (const auto &mod : ModuleManager::instance().modules())
+        {
+          if (!mod->isReference() && mod->isPrimaryInterface())
+          {
+            writePageLink(mod->getOutputFileBase(), FALSE);
           }
         }
       }
@@ -1108,7 +1143,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -1642,6 +1677,12 @@ void RTFGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
   m_t << "}\n";
 }
 
+void RTFGenerator::addLabel(const QCString &,const QCString &)
+{
+  DBG_RTF(m_t << "{\\comment addLabel}\n")
+}
+
+
 void RTFGenerator::addIndexItem(const QCString &s1,const QCString &s2)
 {
   if (!s1.isEmpty())
@@ -1706,18 +1747,19 @@ void RTFGenerator::startSection(const QCString &,const QCString &title,SectionTy
   DBG_RTF(m_t << "{\\comment (startSection)}\n")
   m_t << "{";
   m_t << rtf_Style_Reset;
-  int num=4;
-  switch(type)
+  int num=SectionType::MaxLevel;
+  switch(type.level())
   {
-    case SectionType::Page:          num=2+m_hierarchyLevel; break;
-    case SectionType::Section:       num=3+m_hierarchyLevel; break;
-    case SectionType::Subsection:    num=4+m_hierarchyLevel; break;
-    case SectionType::Subsubsection: num=4+m_hierarchyLevel; break;
-    case SectionType::Paragraph:     num=4+m_hierarchyLevel; break;
+    case SectionType::Page:             num=2+m_hierarchyLevel; break;
+    case SectionType::Section:          num=3+m_hierarchyLevel; break;
+    case SectionType::Subsection:       // fall through
+    case SectionType::Subsubsection:    // fall through
+    case SectionType::Paragraph:        // fall through
+    case SectionType::Subparagraph:     // fall through
+    case SectionType::Subsubparagraph:  num=4+m_hierarchyLevel; break;
     default: ASSERT(0); break;
   }
-  if (num > 5)
-    num = 5;
+  num = std::clamp(num, SectionType::MinLevel, SectionType::MaxLevel);
   QCString heading;
   heading.sprintf("Heading%d",num);
   // set style
@@ -2068,7 +2110,7 @@ bool isLeadBytes(int c)
 // note: function is not reentrant!
 static void encodeForOutput(TextStream &t,const QCString &s)
 {
-  if (s==0) return;
+  if (s==nullptr) return;
   QCString encoding;
   bool converted=FALSE;
   size_t l = s.length();
@@ -2141,7 +2183,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   }
 
   const int maxLineLength = 10240;
-  static QCString lineBuf(maxLineLength);
+  static QCString lineBuf(maxLineLength, QCString::ExplicitSize);
 
   // scan until find end of header
   // this is EXTREEEEEEEMLY brittle.  It works on OUR rtf
@@ -2725,6 +2767,19 @@ void RTFGenerator::writeInheritedSectionTitle(
   m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(ref, file, anchor, name));
   m_t << "\\par\n";
   m_t << rtf_Style_Reset << "\n";
+}
+
+void RTFGenerator::startParameterList(bool openBracket)
+{
+  if (openBracket) m_t << "(";
+}
+
+void RTFGenerator::endParameterExtra(bool last,bool /* emptyList */, bool closeBracket)
+{
+  if (last && closeBracket)
+  {
+    m_t << ")";
+  }
 }
 
 //----------------------------------------------------------------------

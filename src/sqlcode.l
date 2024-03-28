@@ -49,8 +49,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 struct sqlcodeYY_state
 {
      OutputCodeList * code;
@@ -74,9 +72,7 @@ struct sqlcodeYY_state
      const char   *currentFontClass;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static void startCodeLine(yyscan_t yyscanner);
@@ -122,7 +118,7 @@ typekeyword     (?i:"ARRAY"|"BIGINT"|"BINARY"|"BLOB"|"BOOLEAN"|"CHAR"|"CHARACTER
 flowkeyword     (?i:"CASE"|"IF"|"ELSE"|"BEGIN"|"END"|"WHILE")
 
 literalkeyword  (?i:"false"|"true"|"NULL"|"UNKNOWN")
-stringliteral   (\"[^"]*\")|('[^']*')
+stringliteral   (\"[^\"]*\")|('[^']*')
 number          [0-9]+
 literals        ({literalkeyword}|{stringliteral}|{number})
 
@@ -269,7 +265,7 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
 
-  yyextra->code->startCodeLine(yyextra->sourceFileDef!=0);
+  yyextra->code->startCodeLine(yyextra->yyLineNr);
   yyextra->insideCodeLine=true;
 
   if (yyextra->currentFontClass)
@@ -324,12 +320,9 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
     if (c=='\n')
     {
       yyextra->yyLineNr++;
-      int l = (int)(p-sp-1);
-      char *tmp = (char*)malloc(l+1);
-      memcpy(tmp,sp,l);
-      tmp[l]='\0';
-      yyextra->code->codify(tmp);
-      free(tmp);
+      size_t l = static_cast<size_t>(p-sp-1);
+      std::string tmp(sp,l);
+      yyextra->code->codify(tmp.c_str());
       nextCodeLine(yyscanner);
     }
     else
@@ -492,6 +485,4 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
 //---------------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "sqlcode.l.h"
-#endif

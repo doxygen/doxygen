@@ -28,8 +28,8 @@ void DocGroup::enterFile(const QCString &fileName,int)
   m_openCount = 0;
   m_autoGroupStack.clear();
   m_memberGroupId = DOX_NOGROUP;
-  m_memberGroupDocs.resize(0);
-  m_memberGroupRelates.resize(0);
+  m_memberGroupDocs.clear();
+  m_memberGroupRelates.clear();
   m_compoundName=fileName;
 }
 
@@ -37,11 +37,11 @@ void DocGroup::leaveFile(const QCString &fileName,int line)
 {
   //if (m_memberGroupId!=DOX_NOGROUP)
   //{
-  //  warn(fileName,line,"end of file while inside a member group\n");
+  //  warn(fileName,line,"end of file while inside a member group");
   //}
   m_memberGroupId=DOX_NOGROUP;
-  m_memberGroupRelates.resize(0);
-  m_memberGroupDocs.resize(0);
+  m_memberGroupRelates.clear();
+  m_memberGroupDocs.clear();
   if (!m_autoGroupStack.empty())
   {
     warn(fileName,line,"end of file while inside a group");
@@ -56,11 +56,11 @@ void DocGroup::enterCompound(const QCString &fileName,int line,const QCString &n
 {
   if (m_memberGroupId!=DOX_NOGROUP)
   {
-    warn(fileName,line,"try to put compound %s inside a member group\n",qPrint(name));
+    warn(fileName,line,"try to put compound %s inside a member group",qPrint(name));
   }
   m_memberGroupId=DOX_NOGROUP;
-  m_memberGroupRelates.resize(0);
-  m_memberGroupDocs.resize(0);
+  m_memberGroupRelates.clear();
+  m_memberGroupDocs.clear();
   m_compoundName = name;
   int i = m_compoundName.find('(');
   if (i!=-1)
@@ -82,9 +82,9 @@ void DocGroup::leaveCompound(const QCString &,int,const QCString &/* name */)
   //  warn(fileName,line,"end of compound %s while inside a member group\n",qPrint(name));
   //}
   m_memberGroupId=DOX_NOGROUP;
-  m_memberGroupRelates.resize(0);
-  m_memberGroupDocs.resize(0);
-  m_compoundName.resize(0);
+  m_memberGroupRelates.clear();
+  m_memberGroupDocs.clear();
+  m_compoundName.clear();
 }
 
 int DocGroup::findExistingGroup(const MemberGroupInfo *info)
@@ -110,7 +110,7 @@ void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
   if (!implicit) m_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%zu\n",
   //  	qPrint(e->name),e->section,m_autoGroupStack.size());
-  if (e->section==Entry::GROUPDOC_SEC) // auto group
+  if (e->section.isGroupDoc()) // auto group
   {
     m_autoGroupStack.push_back(Grouping(e->name,e->groupingPri()));
   }
@@ -167,8 +167,8 @@ void DocGroup::close(Entry *e,const QCString &fileName,int line,bool foundInline
       }
     }
     m_memberGroupId=DOX_NOGROUP;
-    m_memberGroupRelates.resize(0);
-    m_memberGroupDocs.resize(0);
+    m_memberGroupRelates.clear();
+    m_memberGroupDocs.clear();
     if (!foundInline) e->mGrpId=DOX_NOGROUP;
     //printf("new group id=%d\n",m_memberGroupId);
   }
@@ -200,7 +200,7 @@ void DocGroup::initGroupInfo(Entry *e)
 
 void DocGroup::addDocs(Entry *e)
 {
-  if (e->section==Entry::MEMBERGRP_SEC)
+  if (e->section.isMemberGrp())
   {
     m_memberGroupDocs=e->brief.stripWhiteSpace();
     e->doc = stripLeadingAndTrailingEmptyLines(e->doc,e->docLine);
@@ -221,8 +221,8 @@ void DocGroup::addDocs(Entry *e)
         info->setRefItems(e->sli);
       }
     }
-    e->doc.resize(0);
-    e->brief.resize(0);
+    e->doc.clear();
+    e->brief.clear();
   }
 }
 
@@ -233,7 +233,7 @@ bool DocGroup::isEmpty() const
 
 void DocGroup::clearHeader()
 {
-  m_memberGroupHeader.resize(0);
+  m_memberGroupHeader.clear();
 }
 
 void DocGroup::appendHeader(const char text)

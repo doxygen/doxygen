@@ -1,22 +1,16 @@
 #include <string.h>
 #include <version.h>
 
-const char *getFullVersion(void)
+std::string getFullVersion()
 {
-#define BUF_SIZE 100
-  static char fullVersionString[BUF_SIZE];
+  static std::string fullVersion;
   static bool init = false;
   if (!init)
   {
-    strncpy(fullVersionString,getDoxygenVersion(),BUF_SIZE-1);
-    if (strlen(getGitVersion())>0)
-    {
-      strncat(fullVersionString," (",BUF_SIZE-1);
-      strncat(fullVersionString,getGitVersion(),BUF_SIZE-1);
-      strncat(fullVersionString,")",BUF_SIZE-1);
-    }
-    fullVersionString[BUF_SIZE-1]='\0';
+    fullVersion = getDoxygenVersion();
+    std::string gitVersion  = getGitVersion();
+    if (!gitVersion.empty()) fullVersion+=" ("+gitVersion+")";
     init = true;
   }
-  return fullVersionString;
+  return fullVersion;
 }

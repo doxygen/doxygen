@@ -24,19 +24,30 @@
 #endif
 #endif
 
+// Since some modules produce a huge amount of tracing we disable those traces by default.
+// Set of or more of the following to 1 to enable the relevant tracing
+#define ENABLE_SYMBOLRESOLVER_TRACING 0
+#define ENABLE_MARKDOWN_TRACING       0
+#define ENABLE_DOCPARSER_TRACING      0
+
+
 #if ENABLE_TRACING
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE // debug build
 #else
 #define SPELOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO  // release build (hide trace/debug levels)
 #endif
+
+#pragma push_macro("warn")
+#undef warn
 #include "spdlog/spdlog.h"
+#pragma pop_macro("warn")
 
 #include "types.h"
 #include "qcstring.h"
 
 extern std::shared_ptr<spdlog::logger> g_tracer;
 
-void initTracing(const QCString &logFile);
+void initTracing(const QCString &logFile, bool timing);
 void exitTracing();
 
 namespace Trace
@@ -233,24 +244,24 @@ template<> struct fmt::formatter<SrcLangExt> : formatter<std::string>
     std::string result="Unknown";
     switch (lang)
     {
-      case SrcLangExt_Unknown:  result="Unknown";     break;
-      case SrcLangExt_IDL:      result="IDL";         break;
-      case SrcLangExt_Java:     result="Java";        break;
-      case SrcLangExt_CSharp:   result="C#";          break;
-      case SrcLangExt_D:        result="D";           break;
-      case SrcLangExt_PHP:      result="PHP";         break;
-      case SrcLangExt_ObjC:     result="Objective-C"; break;
-      case SrcLangExt_Cpp:      result="C++";         break;
-      case SrcLangExt_JS:       result="Javascript";  break;
-      case SrcLangExt_Python:   result="Python";      break;
-      case SrcLangExt_Fortran:  result="Fortran";     break;
-      case SrcLangExt_VHDL:     result="VHDL";        break;
-      case SrcLangExt_XML:      result="XML";         break;
-      //case SrcLangExt_Tcl:    result="Tcl";         break;
-      case SrcLangExt_Markdown: result="Markdown";    break;
-      case SrcLangExt_SQL:      result="SQL";         break;
-      case SrcLangExt_Slice:    result="Slice";       break;
-      case SrcLangExt_Lex:      result="Lex";         break;
+      case SrcLangExt::Unknown:  result="Unknown";     break;
+      case SrcLangExt::IDL:      result="IDL";         break;
+      case SrcLangExt::Java:     result="Java";        break;
+      case SrcLangExt::CSharp:   result="C#";          break;
+      case SrcLangExt::D:        result="D";           break;
+      case SrcLangExt::PHP:      result="PHP";         break;
+      case SrcLangExt::ObjC:     result="Objective-C"; break;
+      case SrcLangExt::Cpp:      result="C++";         break;
+      case SrcLangExt::JS:       result="Javascript";  break;
+      case SrcLangExt::Python:   result="Python";      break;
+      case SrcLangExt::Fortran:  result="Fortran";     break;
+      case SrcLangExt::VHDL:     result="VHDL";        break;
+      case SrcLangExt::XML:      result="XML";         break;
+      //case SrcLangExt::Tcl:    result="Tcl";         break;
+      case SrcLangExt::Markdown: result="Markdown";    break;
+      case SrcLangExt::SQL:      result="SQL";         break;
+      case SrcLangExt::Slice:    result="Slice";       break;
+      case SrcLangExt::Lex:      result="Lex";         break;
     }
     return formatter<std::string>::format(result, ctx);
   }
@@ -281,6 +292,22 @@ template<> struct fmt::formatter<MemberType> : formatter<std::string>
       case MemberType_Dictionary:  result="Dictionary";  break;
     }
     return formatter<std::string>::format(result, ctx);
+  }
+};
+
+//! adds support for formatting TypeSpecifier
+template<> struct fmt::formatter<TypeSpecifier> : formatter<std::string>
+{
+  auto format(TypeSpecifier type, format_context& ctx) {
+    return formatter<std::string>::format(type.to_string(),ctx);
+  }
+};
+
+//! adds support for formatting EntryType
+template<> struct fmt::formatter<EntryType> : formatter<std::string>
+{
+  auto format(EntryType type, format_context& ctx) {
+    return formatter<std::string>::format(type.to_string(),ctx);
   }
 };
 

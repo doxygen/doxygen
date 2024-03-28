@@ -71,8 +71,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-  
 /* -----------------------------------------------------------------
  *	state variables
  */
@@ -84,7 +82,7 @@ struct defargsYY_state
   std::unique_ptr<ArgumentList> &argList;
   SrcLangExt       lang;
   int              inputPosition = 0;
-  QCString        *copyArgValue = 0;
+  QCString        *copyArgValue = nullptr;
   QCString         curArgTypeName;
   QCString         curArgDefValue;
   QCString         curArgName;
@@ -104,9 +102,7 @@ struct defargsYY_state
   QCString         delimiter;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static bool nameIsActuallyPartOfType(QCString &name);
@@ -211,10 +207,13 @@ CPPC  "/\/"
 					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgPtr>")"			{ // redundant braces detected / remove them
-					  int i=yyextra->curArgTypeName.findRev('('),l=yyextra->curArgTypeName.length();
+					  int i=yyextra->curArgTypeName.findRev('(');
+                                          int l=static_cast<int>(yyextra->curArgTypeName.length());
 					  if (i!=-1)
+                                          {
 					    yyextra->curArgTypeName=yyextra->curArgTypeName.left(i)+
 					                   yyextra->curArgTypeName.right(l-i-1);
+                                          }
 					  yyextra->curArgTypeName+=yyextra->curArgName;
 					  BEGIN( ReadFuncArgType );
 					}
@@ -400,7 +399,7 @@ CPPC  "/\/"
 					    yyextra->curArgTypeName=removeRedundantWhiteSpace(yyextra->curArgTypeName);
 					    yyextra->curArgDefValue=yyextra->curArgDefValue.stripWhiteSpace();
 					    //printf("curArgType='%s' curArgDefVal='%s'\n",qPrint(yyextra->curArgTypeName),qPrint(yyextra->curArgDefValue));
-					    int l=yyextra->curArgTypeName.length();
+					    int l = static_cast<int>(yyextra->curArgTypeName.length());
 					    if (l>0)
 					    {
 					      int i=l-1;
@@ -411,7 +410,7 @@ CPPC  "/\/"
                                               a.typeConstraint = yyextra->curTypeConstraint.stripWhiteSpace();
 					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
 					      //        qPrint(a->type),qPrint(a->name),i,l);
-					      a.array.resize(0);
+					      a.array.clear();
 					      if (i==l-1 && yyextra->curArgTypeName.at(i)==')') // function argument
 					      {
 						int bi=yyextra->curArgTypeName.find('(');
@@ -451,7 +450,7 @@ CPPC  "/\/"
 						   )
 						{
 						  a.type = a.type + " " + a.name;
-						  a.name.resize(0);
+						  a.name.clear();
 						}
 						//printf(" --> a->type='%s' a->name='%s'\n",qPrint(a->type),qPrint(a->name));
 					      }
@@ -466,7 +465,7 @@ CPPC  "/\/"
                                               }
 					      a.array  += removeRedundantWhiteSpace(yyextra->curArgArray);
 					      //printf("array=%s\n",qPrint(a->array));
-					      int alen = a.array.length();
+					      size_t alen = a.array.length();
 					      if (alen>2 && a.array.at(0)=='(' && 
 						            a.array.at(alen-1)==')') // fix-up for int *(a[10])
 					      {
@@ -484,12 +483,12 @@ CPPC  "/\/"
 					      //printf("Argument '%s' '%s' adding docs='%s'\n",qPrint(a->type),qPrint(a->name),qPrint(a->docs));
 					      yyextra->argList->push_back(a);
 					    }
-					    yyextra->curArgAttrib.resize(0);
-					    yyextra->curArgTypeName.resize(0);
-					    yyextra->curArgDefValue.resize(0);
-					    yyextra->curArgArray.resize(0);
-					    yyextra->curArgDocs.resize(0);
-                                            yyextra->curTypeConstraint.resize(0);
+					    yyextra->curArgAttrib.clear();
+					    yyextra->curArgTypeName.clear();
+					    yyextra->curArgDefValue.clear();
+					    yyextra->curArgArray.clear();
+					    yyextra->curArgDocs.clear();
+                                            yyextra->curTypeConstraint.clear();
 					    if (*yytext==')')
 					    {
 					      BEGIN(FuncQual);
@@ -502,13 +501,13 @@ CPPC  "/\/"
 					  }
   					}
 <ReadFuncArgType,ReadFuncArgPtr>"extends" {
-                                           if (yyextra->lang!=SrcLangExt_Java)
+                                           if (yyextra->lang!=SrcLangExt::Java)
                                            {
                                              REJECT;
                                            }
                                            else
                                            {
-                                             yyextra->curTypeConstraint.resize(0);
+                                             yyextra->curTypeConstraint.clear();
                                              yyextra->lastExtendsContext=YY_START;
                                              BEGIN(ReadTypeConstraint);
                                            }
@@ -518,7 +517,7 @@ CPPC  "/\/"
 					  if (YY_START==ReadFuncArgType && yyextra->curArgArray=="[]") // Java style array
 					  {
 					    yyextra->curArgTypeName+=" []";
-					    yyextra->curArgArray.resize(0);
+					    yyextra->curArgArray.clear();
 					  }
 					  //printf("resolveName '%s'->'%s'\n",yytext,qPrint(name));
   					  yyextra->curArgTypeName+=name;
@@ -688,13 +687,12 @@ void
 class KeywordHash
 {
   private:
-    static inline unsigned int hash (const char *str, unsigned int len);
+    static inline size_t hash (const char *str, size_t len);
   public:
-    static const char *find (const char *str, unsigned int len);
+    static const char *find (const char *str, size_t len);
 };
 
-inline unsigned int
-KeywordHash::hash (const char *str, unsigned int len)
+inline size_t KeywordHash::hash (const char *str, size_t len)
 {
   static const unsigned char asso_values[] =
   {
@@ -725,7 +723,7 @@ KeywordHash::hash (const char *str, unsigned int len)
     49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
     49, 49, 49, 49, 49, 49
   };
-  unsigned int hval = len;
+  size_t hval = len;
 
   switch (hval)
   {
@@ -741,8 +739,7 @@ KeywordHash::hash (const char *str, unsigned int len)
   return hval;
 }
 
-const char *
-KeywordHash::find (const char *str, unsigned int len)
+const char * KeywordHash::find (const char *str, size_t len)
 {
   static const char * const wordlist[] =
   {
@@ -786,7 +783,7 @@ KeywordHash::find (const char *str, unsigned int len)
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
   {
-    unsigned int key = hash (str, len);
+    size_t key = hash (str, len);
 
     if (key <= MAX_HASH_VALUE)
     {
@@ -841,6 +838,4 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   return al;
 }
 
-#if USE_STATE2STRING
 #include "defargs.l.h"
-#endif

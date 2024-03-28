@@ -38,26 +38,26 @@ enum class RelatesType  { Simple, Duplicate, MemberOf };
 enum class Relationship { Member, Related, Foreign };
 
 /** Language as given by extension */
-enum SrcLangExt
+enum class SrcLangExt
 {
-  SrcLangExt_Unknown  = 0x00000,
-  SrcLangExt_IDL      = 0x00008,
-  SrcLangExt_Java     = 0x00010,
-  SrcLangExt_CSharp   = 0x00020,
-  SrcLangExt_D        = 0x00040,
-  SrcLangExt_PHP      = 0x00080,
-  SrcLangExt_ObjC     = 0x00100,
-  SrcLangExt_Cpp      = 0x00200,
-  SrcLangExt_JS       = 0x00400,
-  SrcLangExt_Python   = 0x00800,
-  SrcLangExt_Fortran  = 0x01000,
-  SrcLangExt_VHDL     = 0x02000,
-  SrcLangExt_XML      = 0x04000,
-  //SrcLangExt_Tcl      = 0x08000, // no longer supported
-  SrcLangExt_Markdown = 0x10000,
-  SrcLangExt_SQL      = 0x20000,
-  SrcLangExt_Slice    = 0x40000,
-  SrcLangExt_Lex      = 0x80000
+  Unknown  = 0x00000,
+  IDL      = 0x00008,
+  Java     = 0x00010,
+  CSharp   = 0x00020,
+  D        = 0x00040,
+  PHP      = 0x00080,
+  ObjC     = 0x00100,
+  Cpp      = 0x00200,
+  JS       = 0x00400,
+  Python   = 0x00800,
+  Fortran  = 0x01000,
+  VHDL     = 0x02000,
+  XML      = 0x04000,
+  //Tcl      = 0x08000, // no longer supported
+  Markdown = 0x10000,
+  SQL      = 0x20000,
+  Slice    = 0x40000,
+  Lex      = 0x80000
 };
 
 /** Grouping info */
@@ -99,10 +99,12 @@ struct Grouping
 
 enum MemberListType
 {
-  MemberListType_privateLists       = 0x0800,
-  MemberListType_detailedLists      = 0x1000,
-  MemberListType_declarationLists   = 0x2000,
-  MemberListType_documentationLists = 0x4000,
+  MemberListType_privateLists       = 0x00800,
+  MemberListType_detailedLists      = 0x01000,
+  MemberListType_declarationLists   = 0x02000,
+  MemberListType_documentationLists = 0x04000,
+  MemberListType_exportedLists      = 0x08000,
+  MemberListType_internalLists      = 0x10000,
 
   MemberListType_undefined               = -1,
 
@@ -192,7 +194,7 @@ enum MemberListType
   MemberListType_decSequenceMembers      = 74 + MemberListType_declarationLists,
   MemberListType_docSequenceMembers      = 75 + MemberListType_documentationLists,
   MemberListType_decDictionaryMembers    = 76 + MemberListType_declarationLists,
-  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists
+  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists,
 };
 
 enum class MemberListContainer
@@ -200,7 +202,8 @@ enum class MemberListContainer
   File,
   Namespace,
   Group,
-  Class
+  Class,
+  Module
 };
 
 enum class CodeSymbolType
@@ -220,6 +223,7 @@ enum class CodeSymbolType
   Concept,
   Namespace,
   Package,
+  Module,
   // Member types
   Define,
   Function,
@@ -268,7 +272,7 @@ constexpr const char *codeSymbolType2Str(CodeSymbolType type)
     case CodeSymbolType::Sequence:    return "sequence";
     case CodeSymbolType::Dictionary:  return "dictionary";
     default:
-      return 0;
+      return nullptr;
   }
 }
 
@@ -352,5 +356,228 @@ class LocalToc
     int m_mask;
     int m_level[numTocTypes];
 };
+
+//---------------------------------------------------------------------------------------
+
+
+#define TYPE_SPECIFIERS                                                                                                         \
+/*  0 */ TSPEC(Template)          TSPEC(Generic)         TSPEC(Ref)               TSPEC(Value)        TSPEC(Interface)          \
+/*  5 */ TSPEC(Struct)            TSPEC(Union)           TSPEC(Exception)         TSPEC(Protocol)     TSPEC(Category)           \
+/* 10 */ TSPEC(SealedClass)       TSPEC(AbstractClass)   TSPEC(Enum)              TSPEC(Service)      TSPEC(Singleton)          \
+/* 15 */ TSPEC(ForwardDecl)       TSPEC(Local)           TSPEC(EnumStruct)        TSPEC(ConstExpr)    TSPEC(PrivateGettable)    \
+/* 20 */ TSPEC(ProtectedGettable) TSPEC(PrivateSettable) TSPEC(ProtectedSettable) TSPEC(Inline)       TSPEC(Explicit)           \
+/* 25 */ TSPEC(Mutable)           TSPEC(Settable)        TSPEC(Gettable)          TSPEC(Readable)     TSPEC(Writable)           \
+/* 30 */ TSPEC(Final)             TSPEC(Abstract)        TSPEC(Addable)           TSPEC(Removable)    TSPEC(Raisable)           \
+/* 35 */ TSPEC(Override)          TSPEC(New)             TSPEC(Sealed)            TSPEC(Initonly)     TSPEC(Optional)           \
+/* 40 */ TSPEC(Required)          TSPEC(NonAtomic)       TSPEC(Copy)              TSPEC(Retain)       TSPEC(Assign)             \
+/* 45 */ TSPEC(Strong)            TSPEC(Weak)            TSPEC(Unretained)        TSPEC(Alias)        TSPEC(ConstExp)           \
+/* 50 */ TSPEC(Default)           TSPEC(Delete)          TSPEC(NoExcept)          TSPEC(Attribute)    TSPEC(Property)           \
+/* 55 */ TSPEC(Readonly)          TSPEC(Bound)           TSPEC(Constrained)       TSPEC(Transient)    TSPEC(MaybeVoid)          \
+/* 60 */ TSPEC(MaybeDefault)      TSPEC(MaybeAmbiguous)  TSPEC(Published)         TSPEC(ConstEval)    TSPEC(ConstInit)          \
+/* 65 */ TSPEC(NoDiscard)
+
+/** Wrapper class for a number of boolean properties.
+ *  The properties are packed together, and initialized to false.
+ */
+class TypeSpecifier
+{
+  public:
+    TypeSpecifier() { reset(); }
+
+    void reset() { std::memset(this, 0, sizeof(*this)); }
+
+    void merge(const TypeSpecifier &other)
+    {
+#define TSPEC(x) m_is##x = m_is##x || other.is##x();
+      TYPE_SPECIFIERS
+#undef TSPEC
+    }
+
+    friend inline bool operator==(const TypeSpecifier &t1,const TypeSpecifier &t2)
+    {
+      bool eq = true;
+#define TSPEC(x) eq = eq && (t1.m_is##x == t2.m_is##x);
+      TYPE_SPECIFIERS
+#undef TSPEC
+      return eq;
+    }
+
+    friend inline bool operator!=(const TypeSpecifier &t1,const TypeSpecifier &t2)
+    {
+      return !(operator==(t1,t2));
+    }
+
+
+    std::string to_string() const
+    {
+      std::string result="[";
+      bool first=true;
+#define TSPEC(x)                                                          \
+      if (m_is##x) {                                                      \
+        if (!first) result+=",";                                          \
+        result+=#x; first=false;                                          \
+      }
+      TYPE_SPECIFIERS
+#undef TSPEC
+      result+="]";
+      return result;
+    }
+
+    // generate getter and setter for each property
+#define TSPEC(x)                                                          \
+    public:                                                               \
+      TypeSpecifier &set##x(bool b) { m_is##x = b; return *this; }        \
+      bool is##x() const { return m_is##x; }                              \
+    private:                                                              \
+      bool m_is##x : 1;
+    TYPE_SPECIFIERS
+#undef TSPEC
+
+};
+
+enum class VhdlSpecifier
+{
+  UNKNOWN=0,
+  LIBRARY,
+  ENTITY,
+  PACKAGE_BODY,
+  ARCHITECTURE,
+  PACKAGE,
+  ATTRIBUTE,
+  SIGNAL,
+  COMPONENT,
+  CONSTANT,
+  TYPE,
+  SUBTYPE,
+  FUNCTION,
+  RECORD,
+  PROCEDURE,
+  USE,
+  PROCESS,
+  PORT,
+  UNITS,
+  GENERIC,
+  INSTANTIATION,
+  GROUP,
+  VFILE,
+  SHAREDVARIABLE,
+  CONFIG,
+  ALIAS,
+  MISCELLANEOUS,
+  UCF_CONST
+};
+
+
+//     Type                Categories (or'ed)
+#define ENTRY_TYPES                         \
+ ETYPE(Empty,              None)            \
+ ETYPE(Class,              Compound|Scope)  \
+ ETYPE(Namespace,          Scope)           \
+ ETYPE(Concept,            None)            \
+ ETYPE(ClassDoc,           CompoundDoc|Doc) \
+ ETYPE(StructDoc,          CompoundDoc|Doc) \
+ ETYPE(UnionDoc,           CompoundDoc|Doc) \
+ ETYPE(ExceptionDoc,       CompoundDoc|Doc) \
+ ETYPE(InterfaceDoc,       CompoundDoc|Doc) \
+ ETYPE(ProtocolDoc,        CompoundDoc|Doc) \
+ ETYPE(CategoryDoc,        CompoundDoc|Doc) \
+ ETYPE(ServiceDoc,         CompoundDoc|Doc) \
+ ETYPE(SingletonDoc,       CompoundDoc|Doc) \
+ ETYPE(Source,             File)            \
+ ETYPE(Header,             File)            \
+ ETYPE(ModuleDoc,          Doc)             \
+ ETYPE(ConceptDoc,         Doc)             \
+ ETYPE(NamespaceDoc,       Doc)             \
+ ETYPE(EnumDoc,            Doc)             \
+ ETYPE(PageDoc,            Doc)             \
+ ETYPE(MemberDoc,          Doc)             \
+ ETYPE(OverloadDoc,        Doc)             \
+ ETYPE(Example,            Doc)             \
+ ETYPE(VariableDoc,        Doc)             \
+ ETYPE(FileDoc,            Doc)             \
+ ETYPE(DefineDoc,          Doc)             \
+ ETYPE(GroupDoc,           Doc)             \
+ ETYPE(MainpageDoc,        Doc)             \
+ ETYPE(MemberGrp,          Doc)             \
+ ETYPE(PackageDoc,         Doc)             \
+ ETYPE(DirDoc,             Doc)             \
+ ETYPE(Variable,           None)            \
+ ETYPE(Function,           None)            \
+ ETYPE(Typedef,            None)            \
+ ETYPE(Include,            None)            \
+ ETYPE(Enum,               None)            \
+ ETYPE(Define,             None)            \
+ ETYPE(UsingDir,           None)            \
+ ETYPE(UsingDecl,          None)            \
+ ETYPE(Package,            None)            \
+ ETYPE(ObjcImpl,           None)            \
+ ETYPE(ExportedInterface,  None)            \
+ ETYPE(IncludedService,    None)            \
+ ETYPE(ExampleLineno,      None)            \
+
+/** Wrapper class for the Entry type. Can be set only during construction.
+ *  Packs the type together with category flags.
+ */
+class EntryType
+{
+  public:
+#define ETYPE(x,bits)                                                                            \
+    static EntryType make##x() { return EntryType(static_cast<int>(x)|static_cast<int>(bits)); } \
+    bool is##x() const { return (m_type&TypeMask)==x; }
+    ENTRY_TYPES
+#undef ETYPE
+    bool isCompound()    const { return (m_type & Compound)!=0;    }
+    bool isScope()       const { return (m_type & Scope)!=0;       }
+    bool isFile()        const { return (m_type & File)!=0;        }
+    bool isCompoundDoc() const { return (m_type & CompoundDoc)!=0; }
+    bool isDoc()         const { return (m_type & Doc)!=0;         }
+    std::string to_string() const
+    {
+      switch (type())
+      {
+#define ETYPE(x,bits)                                                   \
+        case x : return "["+std::string(#x)+bits_to_string()+"]";
+        ENTRY_TYPES
+#undef ETYPE
+      }
+      return "[unknown]";
+    }
+    friend inline bool operator==(const EntryType &t1,const EntryType &t2) { return t1.m_type==t2.m_type; }
+    friend inline bool operator!=(const EntryType &t1,const EntryType &t2) { return !(operator==(t1,t2)); }
+
+  private:
+    enum TypeName
+    {
+#define ETYPE(x,bits)                                                   \
+      x,
+      ENTRY_TYPES
+#undef ETYPE
+    };
+
+    enum CategoryBits
+    {
+      None        = 0,
+      Compound    = (1<<16),
+      Scope       = (1<<17),
+      File        = (1<<18),
+      CompoundDoc = (1<<19),
+      Doc         = (1<<20),
+      TypeMask      = 0x0000FFFF,
+      CategoryMask  = 0xFFFF0000
+    };
+    explicit EntryType(int t) : m_type(t) {}
+    std::string bits_to_string() const
+    {
+      std::string result;
+      if (m_type&Compound) result+=",Compound";
+      if (m_type&Scope) result+=",Scope";
+      if (m_type&File) result+=",File";
+      if (m_type&CompoundDoc) result+=",CompoundDoc";
+      return result;
+    }
+    TypeName type() const { return static_cast<TypeName>(m_type & TypeMask); }
+    unsigned int m_type = Empty;
+};
+
 
 #endif

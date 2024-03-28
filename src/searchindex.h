@@ -48,7 +48,7 @@ struct SIData_CurrentDoc
 {
   SIData_CurrentDoc(const Definition *d,const QCString &a,bool b)
     : ctx(d), anchor(a), isSourceFile(b) {}
-  const Definition *ctx = 0;
+  const Definition *ctx = nullptr;
   QCString anchor;
   bool isSourceFile;
 };
@@ -132,7 +132,7 @@ class SearchIndexExternal
     void write(const QCString &file);
   private:
     std::map<std::string,SearchDocEntry> m_docEntries;
-    SearchDocEntry *m_current = 0;
+    SearchDocEntry *m_current = nullptr;
 };
 
 namespace SearchIndexMethods

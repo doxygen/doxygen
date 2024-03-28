@@ -40,8 +40,8 @@ struct xmlYY_state
 {
   std::string   fileName;
   int           lineNr = 1;
-  const char *  inputString = 0;     //!< the code fragment as text
-  int           inputPosition = 0;   //!< read offset during parsing
+  const char *  inputString = nullptr; //!< the code fragment as text
+  int           inputPosition = 0;     //!< read offset during parsing
   std::string   name;
   bool          isEnd = false;
   bool          selfClose = false;
@@ -53,7 +53,9 @@ struct xmlYY_state
   int           cdataContext;
   int           commentContext;
   char          stringChar;
+  std::string   encoding;
   std::vector<std::string> xpath;
+  std::function<XMLParser::Transcode> transcodeFunc;
 };
 
 #if USE_STATE2STRING
@@ -191,10 +193,18 @@ ENDCDATA        "]]>"
   .                { yyextra->data += yytext; }
 }
 <Prolog>{
+  "encoding"\s*=\s*\"[^\"]*\" {
+                     std::string encoding=yytext;
+                     size_t i=encoding.find('"');
+                     encoding=encoding.substr(i+1,yyleng-i-2);
+                     if (encoding!="UTF-8") // need to transcode to UTF-8
+                     {
+                       yyextra->encoding=encoding;
+                     }
+                   }
   {CLOSESPECIAL}   { countLines(yyscanner,yytext,yyleng);
                      BEGIN(Initial);
                    }
-  [^?\n]+          { }
   \n               { yyextra->lineNr++; }
   .                { }
 }
@@ -320,6 +330,10 @@ static void addCharacters(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   std::string data = trimSpaces(yyextra->data);
+  if (!yyextra->encoding.empty() && !yyextra->transcodeFunc(data,yyextra->encoding.c_str()))
+  {
+    reportError(yyscanner,"failed to transcode string '"+data+"' from encoding '"+yyextra->encoding+"' to UTF-8");
+  }
   if (yyextra->handlers.characters)
   {
     yyextra->handlers.characters(data);
@@ -336,7 +350,12 @@ static void addCharacters(yyscan_t yyscanner)
 static void addAttribute(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->attrs.insert(std::make_pair(yyextra->attrName,yyextra->attrValue));
+  std::string val = yyextra->attrValue;
+  if (!yyextra->encoding.empty() && !yyextra->transcodeFunc(val,yyextra->encoding.c_str()))
+  {
+    reportError(yyscanner,"failed to transcode string '"+val+"' from encoding '"+yyextra->encoding+"' to UTF-8");
+  }
+  yyextra->attrs.insert(std::make_pair(yyextra->attrName,val));
 }
 
 static void reportError(yyscan_t yyscanner,const std::string &msg)
@@ -425,8 +444,12 @@ XMLParser::~XMLParser()
   xmlYYlex_destroy(p->yyscanner);
 }
 
-void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabled,
-                      std::function<void()> debugStart, std::function<void()> debugEnd)
+void XMLParser::parse(const char *fileName,
+                      const char *inputStr,
+                      bool debugEnabled,
+                      std::function<void()> debugStart,
+                      std::function<void()> debugEnd,
+                      std::function<Transcode> transcodeFunc)
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -444,6 +467,14 @@ void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabl
   yyextra->lineNr        = 1;
   yyextra->inputString   = inputStr;
   yyextra->inputPosition = 0;
+  yyextra->transcodeFunc = transcodeFunc;
+
+  if (static_cast<unsigned char>(inputStr[0])==0xEF &&
+      static_cast<unsigned char>(inputStr[1])==0xBB &&
+      static_cast<unsigned char>(inputStr[2])==0xBF)
+  {
+    yyextra->inputPosition = 3; // remove UTF-8 BOM
+  }
 
   xmlYYrestart( 0, yyscanner );
 

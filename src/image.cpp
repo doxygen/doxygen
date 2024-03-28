@@ -166,7 +166,7 @@ struct Image::Private
     { 0xa7, 0x38, 0x30, 0xff },
     { 0x29, 0x70, 0x18, 0xff },
     { 0x97, 0xCC, 0xE8, 0xff },
-    { 0xc0, 0xc0, 0xc0, 0xff },
+    { 0xe0, 0xe0, 0xe0, 0xff },
     { 0xff, 0xff, 0xff, 0xff }
   };
 };
@@ -245,14 +245,17 @@ void Image::writeChar(uint32_t x,uint32_t y,char c,uint8_t fg)
         bitOffset=0;
         byteOffset++;
       }
-      uint32_t mask=1<<(cw-1);
-      // draw character row yf
-      for (xf=0;xf<cw;xf++)
+      if (cw>0 && cw<32)
       {
-        setPixel(x+xf,y+yf,(bitPattern&mask) ? fg : getPixel(x+xf,y+yf));
-        mask>>=1;
+        uint32_t mask=(uint32_t)1<<(cw-1);
+        // draw character row yf
+        for (xf=0;xf<cw;xf++)
+        {
+          setPixel(x+xf,y+yf,(bitPattern&mask) ? fg : getPixel(x+xf,y+yf));
+          mask>>=1;
+        }
+        rowOffset+=charSetWidth;
       }
-      rowOffset+=charSetWidth;
     }
   }
 }
@@ -339,6 +342,8 @@ void Image::fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_
     for (xp=x,xi=0;xp<x+width;xp++,xi++)
       if (mask&(1<<((xi+yi)&0x1f)))
         setPixel(xp,yp,colIndex);
+      else
+        setPixel(xp,yp,8);
 }
 
 bool Image::save(const QCString &fileName)
@@ -439,7 +444,7 @@ ColoredImage::ColoredImage(uint32_t width,uint32_t height,
            const uint8_t *greyLevels,const uint8_t *alphaLevels,
            int saturation,int hue,int gamma) : p(std::make_unique<Private>())
 {
-  p->hasAlpha = alphaLevels!=0;
+  p->hasAlpha = alphaLevels!=nullptr;
   p->width    = width;
   p->height   = height;
   p->data.resize(width*height*4);

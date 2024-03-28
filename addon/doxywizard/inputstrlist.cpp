@@ -50,8 +50,8 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
   //m_lb->setMinimumSize(400,100);
   foreach (QString s, m_strList) m_lb->addItem(s);
 
-  m_brFile=0;
-  m_brDir=0;
+  m_brFile=nullptr;
+  m_brDir=nullptr;
   if (lm!=ListString)
   {
     if (lm&ListFile)

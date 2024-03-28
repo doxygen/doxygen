@@ -31,13 +31,15 @@ class DevNullCodeGenerator
                              ) {}
     void writeLineNumber(const QCString &,const QCString &,
                                  const QCString &,int,bool) {}
-    void startCodeLine(bool) {}
+    void startCodeLine(int) {}
     void endCodeLine() {}
     void startFontClass(const QCString &) {}
     void endFontClass() {}
     void writeCodeAnchor(const QCString &) {}
     void startCodeFragment(const QCString &) {}
     void endCodeFragment(const QCString &) {}
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 };
 
 #endif // DEVNULLGEN_H

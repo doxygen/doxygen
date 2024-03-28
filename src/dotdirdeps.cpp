@@ -220,7 +220,7 @@ static void addDependencies(DirRelations &dependencies,const DirDef *const srcDi
     if (!dstDir->isParentOf(srcDir) && (isLeaf || usedDirectory->hasDirectSrcDeps()))
     {
       QCString relationName;
-      relationName.sprintf("dir_%06d_%06d", srcDir->dirCount(), dstDir->dirCount());
+      relationName.sprintf("dir_%06d_%06d", srcDir->dirIndex(), dstDir->dirIndex());
       bool directRelation = isLeaf ? usedDirectory->hasDirectDstDeps() : usedDirectory->hasDirectDeps();
       auto &&dependency = std::make_unique<DirRelation>(relationName, srcDir, usedDirectory.get());
       auto &&pair = std::make_pair(std::move(dependency),directRelation);
@@ -392,6 +392,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
           QCString fn = relationName;
           addHtmlExtensionIfMissing(fn);
           t << " headhref=\"" << fn << "\"";
+          t << " href=\"" << fn << "\"";
         }
         t << " color=\"steelblue1\" fontcolor=\"steelblue1\"];\n";
       }

@@ -15,11 +15,11 @@
  *
  */
 
+#include "types.h"
 #include "message.h"
 #include "config.h"
 #include "util.h"
 #include "language.h"
-#include "vhdldocgen.h"
 #include "translator.h"
 #include "translator_en.h"
 #include "translator_adapter.h"
@@ -66,8 +66,9 @@
 #include "translator_vi.h"
 #include "translator_tr.h"
 #include "translator_bg.h"
+#include "configimpl.h"
 
-Translator *theTranslator=0;
+Translator *theTranslator=nullptr;
 
 void setTranslator(OUTPUT_LANGUAGE_t langName)
 {
@@ -121,5 +122,5 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
   }
 
   QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) ::msg("%s", qPrint(msg));
+  if (!msg.isEmpty()) ConfigImpl::config_warn("%s", qPrint(msg));
 }

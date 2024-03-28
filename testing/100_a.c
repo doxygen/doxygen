@@ -1,10 +1,12 @@
-!// objective: test documentation entry association with groups
-!// input: more_100_b.c
-!// input: more_100_c.c
-!// check: group___a.xml
-!// check: group___b.xml
-!// check: group___c.xml
-!// check: structs.xml
+// objective: test documentation entry association with groups
+// input: more_100_b.c
+// input: more_100_c.c
+// input: more_100_d.cpp
+// check: group___a.xml
+// check: group___b.xml
+// check: group___c.xml
+// check: group___d.xml
+// check: structs.xml
 
 /**
  * @file

@@ -39,13 +39,13 @@ endif()
 target_link_libraries(doxyapp
 doxymain
 md5
+sqlite3
 xml
 lodepng
 mscgen
 doxygen_version
 doxycfg
 vhdlparser
-spdlog
 ${ICONV_LIBRARIES}
 ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}

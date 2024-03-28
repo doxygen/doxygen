@@ -44,7 +44,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
-    virtual QCString idLanguage()
+    QCString idLanguage() override
     { return "macedonian"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
@@ -61,15 +61,15 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      * The English LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
-    virtual QCString latexLanguageSupportCommand()
+    QCString latexLanguageSupportCommand() override
     {
       return "\\usepackage[macedonian]{babel}\n";
     }
-    virtual QCString trISOLang()
+    QCString trISOLang() override
     {
       return "mk";
     }
-    virtual QCString getLanguageString()
+    QCString getLanguageString() override
     {
       return "0x042f Macedonian (Former Yugoslav Republic of Macedonia)";
     }
@@ -77,35 +77,35 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    virtual QCString trRelatedFunctions()
+    QCString trRelatedFunctions() override
     { return "Поврзани Функции"; }
 
     /*! subscript for the related functions. */
-    virtual QCString trRelatedSubscript()
+    QCString trRelatedSubscript() override
     { return "(Овие функции не се членови.)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    virtual QCString trDetailedDescription()
+    QCString trDetailedDescription() override
     { return "Детален опис"; }
 
     /*! header that is used when the summary tag is missing inside the details tag */
-    virtual QCString trDetails()
+    QCString trDetails() override
     { return "Детали"; }
 
     /*! header that is put before the list of typedefs. */
-    virtual QCString trMemberTypedefDocumentation()
+    QCString trMemberTypedefDocumentation() override
     { return "Документација на членови дефиниции на тип"; }
 
     /*! header that is put before the list of enumerations. */
-    virtual QCString trMemberEnumerationDocumentation()
+    QCString trMemberEnumerationDocumentation() override
     { return "Документација на набројани членови"; }
 
     /*! header that is put before the list of member functions. */
-    virtual QCString trMemberFunctionDocumentation()
+    QCString trMemberFunctionDocumentation() override
     { return "Документација на функции членови"; }
 
     /*! header that is put before the list of member attributes. */
-    virtual QCString trMemberDataDocumentation()
+    QCString trMemberDataDocumentation() override
     {
       //if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -114,29 +114,29 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore()
+    QCString trMore() override
     { return "Повеќе..."; }
 
     /*! put in the class documentation */
-    virtual QCString trListOfAllMembers()
+    QCString trListOfAllMembers() override
     { return "Список на сите членови"; }
 
     /*! used as the title of the "list of all members" page of a class */
-    virtual QCString trMemberList()
+    QCString trMemberList() override
     { return "Список на членови"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    virtual QCString trThisIsTheListOfAllMembers()
-    { return "Ова е целосниот список на членови на "; }
+    QCString trThisIsTheListOfAllMembers() override
+    { return "Ова е целосниот список на членови на"; }
 
     /*! this is the remainder of the sentence after the class name */
-    virtual QCString trIncludingInheritedMembers()
+    QCString trIncludingInheritedMembers() override
     { return ", вклучувајќи ги сите наследени членови."; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const QCString &s)
+    QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Автоматски создадено од Doxygen";
       if (!s.isEmpty()) result+=" за "+s;
       result+=" изворниот код.";
@@ -144,15 +144,15 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! put after an enum name in the list of all members */
-    virtual QCString trEnumName()
+    QCString trEnumName() override
     { return "име на набројан член"; }
 
     /*! put after an enum value in the list of all members */
-    virtual QCString trEnumValue()
+    QCString trEnumValue() override
     { return "вредност на набројан член"; }
 
     /*! put after an undocumented member in the list of all members */
-    virtual QCString trDefinedIn()
+    QCString trDefinedIn() override
     { return "дефиниран во"; }
 
     // quick reference sections
@@ -160,15 +160,15 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    virtual QCString trModules()
+    QCString trModules() override
     { return "Модули"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    virtual QCString trClassHierarchy()
+    QCString trClassHierarchy() override
     { return "Стебло на класи"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    virtual QCString trCompoundList()
+    QCString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -181,11 +181,11 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    virtual QCString trFileList()
+    QCString trFileList() override
     { return "Список на Датотеки"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    virtual QCString trCompoundMembers()
+    QCString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -198,7 +198,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! This is put above each page as a link to all members of files. */
-    virtual QCString trFileMembers()
+    QCString trFileMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -211,24 +211,24 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! This is put above each page as a link to all related pages. */
-    virtual QCString trRelatedPages()
+    QCString trRelatedPages() override
     { return "Страници Поврзани со Оваа"; }
 
     /*! This is put above each page as a link to all examples. */
-    virtual QCString trExamples()
+    QCString trExamples() override
     { return "Примери"; }
 
     /*! This is put above each page as a link to the search engine. */
-    virtual QCString trSearch()
+    QCString trSearch() override
     { return "Пребарај"; }
 
     /*! This is an introduction to the class hierarchy. */
-    virtual QCString trClassHierarchyDescription()
+    QCString trClassHierarchyDescription() override
     { return "Овој список на наследување е приближно азбучно подреден:";
     }
 
     /*! This is an introduction to the list with all files. */
-    virtual QCString trFileListDescription(bool extractAll)
+    QCString trFileListDescription(bool extractAll) override
     {
       QCString result="Список на сите ";
       if (!extractAll) result+="документирани ";
@@ -237,7 +237,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! This is an introduction to the annotated compound list. */
-    virtual QCString trCompoundListDescription()
+    QCString trCompoundListDescription() override
     {
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -256,7 +256,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! This is an introduction to the page with all class members. */
-    virtual QCString trCompoundMembersDescription(bool extractAll)
+    QCString trCompoundMembersDescription(bool extractAll) override
     {
       QCString result="Список на сите ";
       if (!extractAll)
@@ -298,7 +298,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! This is an introduction to the page with all file members. */
-    virtual QCString trFileMembersDescription(bool extractAll)
+    QCString trFileMembersDescription(bool extractAll) override
     {
       QCString result="Список на сите ";
       if (!extractAll) result+="документирани ";
@@ -320,39 +320,39 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    virtual QCString trExamplesDescription()
+    QCString trExamplesDescription() override
     { return "Список на сите примери:"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    virtual QCString trRelatedPagesDescription()
+    QCString trRelatedPagesDescription() override
     { return "Список на сите страници поврзани со оваа и нивна документација:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    virtual QCString trModulesDescription()
+    QCString trModulesDescription() override
     { return "Список на сите модули:"; }
 
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    virtual QCString trDocumentation()
+    QCString trDocumentation() override
     { return "Документација"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    virtual QCString trModuleIndex()
+    QCString trModuleIndex() override
     { return "Попис на Модули"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    virtual QCString trHierarchicalIndex()
+    QCString trHierarchicalIndex() override
     { return "Попис на Стебло"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    virtual QCString trCompoundIndex()
+    QCString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -367,19 +367,19 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex()
+    QCString trFileIndex() override
     { return "Попис на Датотеки"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    virtual QCString trModuleDocumentation()
+    QCString trModuleDocumentation() override
     { return "Попис на Документација"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    virtual QCString trClassDocumentation()
+    QCString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -398,83 +398,83 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    virtual QCString trFileDocumentation()
+    QCString trFileDocumentation() override
     { return "Документија на Датотеки"; }
 
     /*! This is used in LaTeX as the title of the document */
-    virtual QCString trReferenceManual()
+    QCString trReferenceManual() override
     { return "Прирачник"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    virtual QCString trDefines()
+    QCString trDefines() override
     { return "Дефинирања"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    virtual QCString trTypedefs()
+    QCString trTypedefs() override
     { return "Дефиниции на Тип"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    virtual QCString trEnumerations()
+    QCString trEnumerations() override
     { return "Набројувања"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    virtual QCString trFunctions()
+    QCString trFunctions() override
     { return "Функции"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trVariables()
+    QCString trVariables() override
     { return "Променливи"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trEnumerationValues()
+    QCString trEnumerationValues() override
     { return "Вредности на Набројувањата"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    virtual QCString trDefineDocumentation()
+    QCString trDefineDocumentation() override
     { return "Документција на Дефиниции"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    virtual QCString trTypedefDocumentation()
+    QCString trTypedefDocumentation() override
     { return "Документација на Дефиниции на Тип"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    virtual QCString trEnumerationTypeDocumentation()
+    QCString trEnumerationTypeDocumentation() override
     { return "Документација на Набројувања"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    virtual QCString trFunctionDocumentation()
+    QCString trFunctionDocumentation() override
     { return "Документација на Функции"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    virtual QCString trVariableDocumentation()
+    QCString trVariableDocumentation() override
     { return "Документација на Променливи"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    virtual QCString trCompounds()
+    QCString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -489,7 +489,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
+    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
       QCString result="Создадено на "+date;
       if (!projName.isEmpty()) result+=" за "+projName;
@@ -498,41 +498,41 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const QCString &clName)
+    QCString trClassDiagram(const QCString &clName) override
     {
       return "Диаграм на наследување за "+clName+":";
     }
 
     /*! this text is generated when the \\warning command is used. */
-    virtual QCString trWarning()
+    QCString trWarning() override
     { return "Предупредување"; }
 
     /*! this text is generated when the \\version command is used. */
-    virtual QCString trVersion()
+    QCString trVersion() override
     { return "Верзија"; }
 
     /*! this text is generated when the \\date command is used. */
-    virtual QCString trDate()
+    QCString trDate() override
     { return "Дата"; }
 
     /*! this text is generated when the \\return command is used. */
-    virtual QCString trReturns()
+    QCString trReturns() override
     { return "Враќа"; }
 
     /*! this text is generated when the \\sa command is used. */
-    virtual QCString trSeeAlso()
+    QCString trSeeAlso() override
     { return "Истотака погледнете"; }
 
     /*! this text is generated when the \\param command is used. */
-    virtual QCString trParameters()
+    QCString trParameters() override
     { return "Параметри"; }
 
     /*! this text is generated when the \\exception command is used. */
-    virtual QCString trExceptions()
+    QCString trExceptions() override
     { return "Исклучоци"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    virtual QCString trGeneratedBy()
+    QCString trGeneratedBy() override
     { return "Создадено од"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -540,11 +540,11 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    virtual QCString trNamespaceList()
+    QCString trNamespaceList() override
     { return "Список на Имиња на Простор"; }
 
     /*! used as an introduction to the namespace list */
-    virtual QCString trNamespaceListDescription(bool extractAll)
+    QCString trNamespaceListDescription(bool extractAll) override
     {
       QCString result="Список на сите ";
       if (!extractAll) result+="документирани ";
@@ -555,7 +555,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    virtual QCString trFriends()
+    QCString trFriends() override
     { return "Пријатели"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -565,7 +565,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
-    virtual QCString trRelatedFunctionDocumentation()
+    QCString trRelatedFunctionDocumentation() override
     { return "Документација на Пријатели и Поврзани Функции"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -573,9 +573,9 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const QCString &clName,
+    QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
       QCString result=clName;
       switch(compType)
@@ -595,7 +595,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const QCString &fileName)
+    QCString trFileReference(const QCString &fileName) override
     {
       QCString result = "Опис на Датотекaта ";
       result += fileName;
@@ -603,38 +603,38 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const QCString &namespaceName)
+    QCString trNamespaceReference(const QCString &namespaceName) override
     {
       QCString result = "Опис на Имeто на Простор ";
       result += namespaceName;
       return result;
     }
 
-    virtual QCString trPublicMembers()
+    QCString trPublicMembers() override
     { return "Јавни Функции Членови"; }
-    virtual QCString trPublicSlots()
+    QCString trPublicSlots() override
     { return "Јавни Слотови"; }
-    virtual QCString trSignals()
+    QCString trSignals() override
     { return "Сигнали"; }
-    virtual QCString trStaticPublicMembers()
+    QCString trStaticPublicMembers() override
     { return "Статични Јавни Функции Членови"; }
-    virtual QCString trProtectedMembers()
+    QCString trProtectedMembers() override
     { return "Заштитени Функции Членови"; }
-    virtual QCString trProtectedSlots()
+    QCString trProtectedSlots() override
     { return "Заштитени Слотови"; }
-    virtual QCString trStaticProtectedMembers()
+    QCString trStaticProtectedMembers() override
     { return "Статични Заштитени Функции Членови"; }
-    virtual QCString trPrivateMembers()
+    QCString trPrivateMembers() override
     { return "Приватни Функции Членови"; }
-    virtual QCString trPrivateSlots()
+    QCString trPrivateSlots() override
     { return "Приватни Слотови"; }
-    virtual QCString trStaticPrivateMembers()
+    QCString trStaticPrivateMembers() override
     { return "Статични Приватни Функции Членови"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    virtual QCString trWriteList(int numEntries)
+    QCString trWriteList(int numEntries) override
     {
       QCString result;
       int i;
@@ -659,7 +659,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritsList(int numEntries)
+    QCString trInheritsList(int numEntries) override
     {
       return "Наследува "+trWriteList(numEntries)+".";
     }
@@ -667,7 +667,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritedByList(int numEntries)
+    QCString trInheritedByList(int numEntries) override
     {
       return "Наследено од "+trWriteList(numEntries)+".";
     }
@@ -675,7 +675,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    virtual QCString trReimplementedFromList(int numEntries)
+    QCString trReimplementedFromList(int numEntries) override
     {
       return "Преприменето од "+trWriteList(numEntries)+".";
     }
@@ -683,17 +683,17 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    virtual QCString trReimplementedInList(int numEntries)
+    QCString trReimplementedInList(int numEntries) override
     {
       return "Преприменето во "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    virtual QCString trNamespaceMembers()
+    QCString trNamespaceMembers() override
     { return "Членови на Име на Простор"; }
 
     /*! This is an introduction to the page with all namespace members */
-    virtual QCString trNamespaceMemberDescription(bool extractAll)
+    QCString trNamespaceMemberDescription(bool extractAll) override
     {
       QCString result="Список на сите ";
       if (!extractAll) result+="документирани ";
@@ -707,13 +707,13 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    virtual QCString trNamespaceIndex()
+    QCString trNamespaceIndex() override
     { return "Попис на Имиња на Простор"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    virtual QCString trNamespaceDocumentation()
+    QCString trNamespaceDocumentation() override
     { return "Документација на Имиња на Простор"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -723,7 +723,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    virtual QCString trNamespaces()
+    QCString trNamespaces() override
     { return "Имиња на Простор"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -733,8 +733,8 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single)
+    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       QCString result="Документацијата за ";
@@ -759,29 +759,29 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    virtual QCString trReturnValues()
+    QCString trReturnValues() override
     { return "Вратена Вредност"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    virtual QCString trMainPage()
+    QCString trMainPage() override
     { return "Главна Страна"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    virtual QCString trPageAbbreviation()
+    QCString trPageAbbreviation() override
     { return "стр."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDefinedAtLineInSourceFile()
+    QCString trDefinedAtLineInSourceFile() override
     {
       return "Дефиницијата е на линија @0 во датотека @1.";
     }
-    virtual QCString trDefinedInSourceFile()
+    QCString trDefinedInSourceFile() override
     {
       return "Дефинијата е во датотека @0.";
     }
@@ -790,7 +790,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDeprecated()
+    QCString trDeprecated() override
     {
       return "Застарено";
     }
@@ -800,68 +800,68 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const QCString &clName)
+    QCString trCollaborationDiagram(const QCString &clName) override
     {
       return "Диаграм на соработка за "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const QCString &fName)
+    QCString trInclDepGraph(const QCString &fName) override
     {
       return "Вклучен дијаграм на зависност за "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
-    virtual QCString trConstructorDocumentation()
+    QCString trConstructorDocumentation() override
     {
       return "Документација на Конструктор и Деструктор";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    virtual QCString trGotoSourceCode()
+    QCString trGotoSourceCode() override
     {
       return "Оди до изворниот код на оваа датотека.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    virtual QCString trGotoDocumentation()
+    QCString trGotoDocumentation() override
     {
       return "Оди до документацијата на оваа датотека.";
     }
     /*! Text for the \\pre command */
-    virtual QCString trPrecondition()
+    QCString trPrecondition() override
     {
       return "Предуслов";
     }
     /*! Text for the \\post command */
-    virtual QCString trPostcondition()
+    QCString trPostcondition() override
     {
       return "Постуслов";
     }
     /*! Text for the \\invariant command */
-    virtual QCString trInvariant()
+    QCString trInvariant() override
     {
       return "Инваријанта";
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    virtual QCString trInitialValue()
+    QCString trInitialValue() override
     {
       return "Основна вредност:";
     }
     /*! Text used the source code in the file index */
-    virtual QCString trCode()
+    QCString trCode() override
     {
       return "код";
     }
-    virtual QCString trGraphicalHierarchy()
+    QCString trGraphicalHierarchy() override
     {
       return "Графичко Стебло на Класи";
     }
-    virtual QCString trGotoGraphicalHierarchy()
+    QCString trGotoGraphicalHierarchy() override
     {
       return "Оди до графичкото стебло на класи";
     }
-    virtual QCString trGotoTextualHierarchy()
+    QCString trGotoTextualHierarchy() override
     {
       return "Оди до текстуалното стебло на класи";
     }
-    virtual QCString trPageIndex()
+    QCString trPageIndex() override
     {
       return "Попис на Страници";
     }
@@ -870,15 +870,15 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trNote()
+    QCString trNote() override
     {
       return "Забелешка";
     }
-    virtual QCString trPublicTypes()
+    QCString trPublicTypes() override
     {
       return "Јавни Типови";
     }
-    virtual QCString trPublicAttribs()
+    QCString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -889,31 +889,31 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         return "Јавни Членови";
       }
     }
-    virtual QCString trStaticPublicAttribs()
+    QCString trStaticPublicAttribs() override
     {
       return "Статични Јавни Членови";
     }
-    virtual QCString trProtectedTypes()
+    QCString trProtectedTypes() override
     {
       return "Заштитени Типови";
     }
-    virtual QCString trProtectedAttribs()
+    QCString trProtectedAttribs() override
     {
       return "Заштитени Членови";
     }
-    virtual QCString trStaticProtectedAttribs()
+    QCString trStaticProtectedAttribs() override
     {
       return "Статични Заштитени Типови";
     }
-    virtual QCString trPrivateTypes()
+    QCString trPrivateTypes() override
     {
       return "Приватни Типови";
     }
-    virtual QCString trPrivateAttribs()
+    QCString trPrivateAttribs() override
     {
       return "Приватни Членови";
     }
-    virtual QCString trStaticPrivateAttribs()
+    QCString trStaticPrivateAttribs() override
     {
       return "Статични Приватни Членови";
     }
@@ -923,12 +923,12 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
-    virtual QCString trTodo()
+    QCString trTodo() override
     {
       return "Незавршено";
     }
     /*! Used as the header of the todo list */
-    virtual QCString trTodoList()
+    QCString trTodoList() override
     {
       return "Список на Незавршени";
     }
@@ -937,24 +937,24 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trReferencedBy()
+    QCString trReferencedBy() override
     {
       return "Повикано од";
     }
-    virtual QCString trRemarks()
+    QCString trRemarks() override
     {
       return "Забелешки";
     }
-    virtual QCString trAttention()
+    QCString trAttention() override
     {
       return "Внимание";
     }
-    virtual QCString trInclByDepGraph()
+    QCString trInclByDepGraph() override
     {
       return "Овој дијаграм покажува кои датотеки се "
              "директно или индеректно вклучени во оваа датотека:";
     }
-    virtual QCString trSince()
+    QCString trSince() override
     {
       return "Од";
     }
@@ -964,14 +964,14 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    virtual QCString trLegendTitle()
+    QCString trLegendTitle() override
     {
       return "Легенда на Дијаграмот";
     }
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
-    virtual QCString trLegendDocs()
+    QCString trLegendDocs() override
     {
       return
         "Оваа страна објаснува како да ги толкувате дијаграмите создадени"
@@ -1033,7 +1033,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    virtual QCString trLegend()
+    QCString trLegend() override
     {
       return "Легенда";
     }
@@ -1043,12 +1043,12 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    virtual QCString trTest()
+    QCString trTest() override
     {
       return "Тест";
     }
     /*! Used as the header of the test list */
-    virtual QCString trTestList()
+    QCString trTestList() override
     {
       return "Листа на Тестови";
     }
@@ -1058,12 +1058,12 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    virtual QCString trProperties()
+    QCString trProperties() override
     {
       return "Особини";
     }
     /*! Used as a section header for IDL property documentation */
-    virtual QCString trPropertyDocumentation()
+    QCString trPropertyDocumentation() override
     {
       return "Документација на Особини";
     }
@@ -1073,7 +1073,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    virtual QCString trClasses()
+    QCString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -1085,22 +1085,22 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const QCString &name)
+    QCString trPackage(const QCString &name) override
     {
       return "Пакет "+name;
     }
     /*! The description of the package index page */
-    virtual QCString trPackageListDescription()
+    QCString trPackageListDescription() override
     {
       return "Пакети со краток опис (доколку достапен):";
     }
     /*! The link name in the Quick links header for each page */
-    virtual QCString trPackages()
+    QCString trPackages() override
     {
       return "Пакети";
     }
     /*! Text shown before a multi-line define */
-    virtual QCString trDefineValue()
+    QCString trDefineValue() override
     {
       return "Вредност:";
     }
@@ -1110,12 +1110,12 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    virtual QCString trBug()
+    QCString trBug() override
     {
       return "Дефект";
     }
     /*! Used as the header of the bug list */
-    virtual QCString trBugList()
+    QCString trBugList() override
     {
       return "Листа на Дефекти";
     }
@@ -1149,7 +1149,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      * </pre>
      *
      */
-    virtual QCString trRTFansicp()
+    QCString trRTFansicp() override
     {
       return "1251";
     }
@@ -1158,13 +1158,13 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    virtual QCString trRTFCharSet()
+    QCString trRTFCharSet() override
     {
       return "204";
     }
 
     /*! Used as header RTF general index */
-    virtual QCString trRTFGeneralIndex()
+    QCString trRTFGeneralIndex() override
     {
       return "Попис";
     }
@@ -1173,7 +1173,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    QCString trClass(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Клас" : "клас"));
       result += (singular ? "а" : "и");
@@ -1184,7 +1184,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    QCString trFile(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Датотек" : "датотек"));
       result += (singular ? "а" : "и");
@@ -1195,7 +1195,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool first_capital, bool singular)
+    QCString trNamespace(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Им" : "им"));
       result += (singular ? "е на простор" : "иња на простори");
@@ -1206,7 +1206,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    QCString trGroup(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Груп" : "груп"));
       result += (singular ? "а" : "и");
@@ -1217,7 +1217,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    QCString trPage(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Стран" : "стран"));
       result += (singular ? "а" : "и");
@@ -1228,7 +1228,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    QCString trMember(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Член" : "член"));
       if (!singular)  result+="ови";
@@ -1239,7 +1239,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool first_capital, bool singular)
+    QCString trGlobal(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Глобал" : "глобал"));
       result += (singular ? "ен" : "ни");
@@ -1252,7 +1252,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    QCString trAuthor(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Автор" : "автор"));
       if (!singular)  result+="и";
@@ -1265,7 +1265,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 
     /*! This text is put before the list of members referenced by a member
      */
-    virtual QCString trReferences()
+    QCString trReferences() override
     {
       return "Повикувања";
     }
@@ -1277,7 +1277,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    virtual QCString trImplementedFromList(int numEntries)
+    QCString trImplementedFromList(int numEntries) override
     {
       return "Применува "+trWriteList(numEntries)+".";
     }
@@ -1285,7 +1285,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    virtual QCString trImplementedInList(int numEntries)
+    QCString trImplementedInList(int numEntries) override
     {
       return "Применето во "+trWriteList(numEntries)+".";
     }
@@ -1297,7 +1297,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    virtual QCString trRTFTableOfContents()
+    QCString trRTFTableOfContents() override
     {
       return "Содржина";
     }
@@ -1309,7 +1309,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    virtual QCString trDeprecatedList()
+    QCString trDeprecatedList() override
     {
       return "Список на Застарени";
     }
@@ -1321,12 +1321,12 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    virtual QCString trEvents()
+    QCString trEvents() override
     {
       return "Настани";
     }
     /*! Header used for the documentation section of a class' events. */
-    virtual QCString trEventDocumentation()
+    QCString trEventDocumentation() override
     {
       return "Документација на Настани";
     }
@@ -1337,39 +1337,39 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    virtual QCString trPackageTypes()
+    QCString trPackageTypes() override
     {
       return "Типови во Пакетот";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageFunctions()
+    QCString trPackageFunctions() override
     {
       return "Функции во Пакетот";
     }
-    virtual QCString trPackageMembers()
+    QCString trPackageMembers() override
     {
       return "Членови во Пакетот";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageFunctions()
+    QCString trStaticPackageFunctions() override
     {
       return "Статични Функции во Пакетот";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    virtual QCString trPackageAttribs()
+    QCString trPackageAttribs() override
     {
       return "Членови во Пакетот";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    virtual QCString trStaticPackageAttribs()
+    QCString trStaticPackageAttribs() override
     {
       return "Статични Членови во Пакетот";
     }
@@ -1381,12 +1381,12 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    virtual QCString trAll()
+    QCString trAll() override
     {
       return "Сите";
     }
     /*! Put in front of the call graph for a function. */
-    virtual QCString trCallGraph()
+    QCString trCallGraph() override
     {
       return "Дијаграм на повикувања за оваа функција:";
     }
@@ -1398,7 +1398,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    virtual QCString trSearchResultsTitle()
+    QCString trSearchResultsTitle() override
     {
       return "Резултати од Пребарувањето";
     }
@@ -1410,7 +1410,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    virtual QCString trSearchResults(int numDocuments)
+    QCString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1429,7 +1429,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    virtual QCString trSearchMatches()
+    QCString trSearchMatches() override
     {
       return "Пронајдени:";
     }
@@ -1440,7 +1440,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    virtual QCString trSourceFile(QCString& filename)
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Изворен код на датотеката " + filename;
     }
@@ -1452,31 +1452,31 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    virtual QCString trDirIndex()
+    QCString trDirIndex() override
     { return "Стебло на Именикот"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    virtual QCString trDirDocumentation()
+    QCString trDirDocumentation() override
     { return "Документација на Именикот"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    virtual QCString trDirectories()
+    QCString trDirectories() override
     { return "Именици"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const QCString &dirName)
+    QCString trDirReference(const QCString &dirName) override
     { QCString result= "Опис на Именикот "; result += dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
-    virtual QCString trDir(bool first_capital, bool singular)
+    QCString trDir(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Имени" : "имени"));
       if (singular) result+="к"; else result+="ци";
@@ -1490,7 +1490,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    virtual QCString trOverloadText()
+    QCString trOverloadText() override
     {
        return "Оваа е преоптоварена фунција. Се разликува по "
               "типот и бројот на аргументи што ги прифаќа.";
@@ -1501,7 +1501,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
-    virtual QCString trCallerGraph()
+    QCString trCallerGraph() override
     {
       return "Ова е графот на повикување за оваа фунција:";
     }
@@ -1509,7 +1509,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    virtual QCString trEnumerationValueDocumentation()
+    QCString trEnumerationValueDocumentation() override
     { return "Документија на Набројувања"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1517,23 +1517,23 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    virtual QCString trMemberFunctionDocumentationFortran()
+    QCString trMemberFunctionDocumentationFortran() override
     { return "Документација на функции/процедури членови"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    virtual QCString trCompoundListFortran()
+    QCString trCompoundListFortran() override
     { return "Список на Типови"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    virtual QCString trCompoundMembersFortran()
+    QCString trCompoundMembersFortran() override
     { return "Членови"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    virtual QCString trCompoundListDescriptionFortran()
+    QCString trCompoundListDescriptionFortran() override
     { return "Список на типови со кратки описи:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
       QCString result="Список на сите ";
       if (!extractAll)
@@ -1556,39 +1556,39 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    virtual QCString trCompoundIndexFortran()
+    QCString trCompoundIndexFortran() override
     { return "Попис на Типови"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    virtual QCString trTypeDocumentation()
+    QCString trTypeDocumentation() override
     { return "Документација на Типови"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    virtual QCString trSubprograms()
+    QCString trSubprograms() override
     { return "Функции/Процедури"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    virtual QCString trSubprogramDocumentation()
+    QCString trSubprogramDocumentation() override
     { return "Документација на Функции/Процедури"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     virtual QCString trDataTypes()
+     QCString trDataTypes() override
     { return "Типови"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    virtual QCString trModulesList()
+    QCString trModulesList() override
     { return "Попис на Модули"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    virtual QCString trModulesListDescription(bool extractAll)
+    QCString trModulesListDescription(bool extractAll) override
     {
       QCString result="Список на сите ";
       if (!extractAll) result+="документирани ";
@@ -1597,9 +1597,9 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const QCString &clName,
+    QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
       QCString result=clName + " - Повикување на";
       switch(compType)
@@ -1617,7 +1617,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const QCString &namespaceName)
+    QCString trModuleReference(const QCString &namespaceName) override
     {
       QCString result=namespaceName;
       result+=" - Содржина на Модул";
@@ -1625,11 +1625,11 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    virtual QCString trModulesMembers()
+    QCString trModulesMembers() override
     { return "Членови на Модул"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    virtual QCString trModulesMemberDescription(bool extractAll)
+    QCString trModulesMemberDescription(bool extractAll) override
     {
       QCString result="Список на сите ";
       if (!extractAll) result+="документирани ";
@@ -1648,14 +1648,14 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    virtual QCString trModulesIndex()
+    QCString trModulesIndex() override
     { return "Попис на Модули"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool first_capital, bool singular)
+    QCString trModule(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Модул" : "модул"));
       if (!singular)  result+="и";
@@ -1664,8 +1664,8 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single)
+    QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single) override
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
       QCString result="Документацијата за ";
@@ -1688,7 +1688,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trType(bool first_capital, bool singular)
+    QCString trType(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Тип" : "тип"));
       if (!singular)  result+="ови";
@@ -1698,7 +1698,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trSubprogram(bool first_capital, bool singular)
+    QCString trSubprogram(bool first_capital, bool singular) override
     {
       QCString result((first_capital ? "Потпрограм" : "потпрограм"));
       if (singular){
@@ -1711,29 +1711,29 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! C# Type Constraint list */
-    virtual QCString trTypeConstraints()
+    QCString trTypeConstraints() override
     {
       return "Ограничувања на Тип";
     }
 
-    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
       static const char *days_short[]   = { "пон.", "вт.", "сре.", "чет.", "пет.", "саб.", "нед." };
       static const char *days_full[]    = { "понеделник", "вторник", "среда", "четврток", "петок", "сабота", "недела" };
       QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
       return text;
     }
-    virtual QCString trMonth(int month, bool, bool full)
+    QCString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "јан.", "фев.", "мар.", "апр.", "мај", "јун.", "јул.", "авг.", "септ.", "окт.", "ноем.", "дек." };
       static const char *months_full[]  = { "јануари", "февруари", "март", "април", "мај", "јуни", "јули", "август", "септември", "октомври", "ноември", "декември" };
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    virtual QCString trDayPeriod(int period)
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "претпл.", "попл." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

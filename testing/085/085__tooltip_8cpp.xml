@@ -2,6 +2,18 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="085__tooltip_8cpp" kind="file" language="C++">
     <compoundname>085_tooltip.cpp</compoundname>
+    <includes local="no">stdio.h</includes>
+    <incdepgraph>
+      <node id="1">
+        <label>085_tooltip.cpp</label>
+        <link refid="085__tooltip_8cpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>stdio.h</label>
+      </node>
+    </incdepgraph>
     <sectiondef kind="define">
       <memberdef kind="define" id="085__tooltip_8cpp_1ace0cca79d3f7e7c96b6edcb1b8d31e66" prot="public" static="no">
         <name>FOPEN_MACRO</name>
@@ -22,7 +34,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="085_tooltip.cpp" line="11" column="9" bodyfile="085_tooltip.cpp" bodystart="11" bodyend="-1"/>
+        <location file="085_tooltip.cpp" line="11" column="9" bodyfile="085_tooltip.cpp" bodystart="11" bodyend="15"/>
       </memberdef>
       <memberdef kind="define" id="085__tooltip_8cpp_1a11a2c0486e2bbd915f975a3517817de6" prot="public" static="no">
         <name>FCLOSE_MACRO</name>
@@ -37,7 +49,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="085_tooltip.cpp" line="18" column="9" bodyfile="085_tooltip.cpp" bodystart="18" bodyend="-1"/>
+        <location file="085_tooltip.cpp" line="18" column="9" bodyfile="085_tooltip.cpp" bodystart="18" bodyend="22"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">

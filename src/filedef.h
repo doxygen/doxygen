@@ -19,7 +19,7 @@
 #define FILEDEF_H
 
 #include <memory>
-#include <set>
+#include <unordered_set>
 
 #include "definition.h"
 #include "memberlist.h"
@@ -36,24 +36,49 @@ class NamespaceDef;
 class NamespaceLinkedRefMap;
 class ConceptLinkedRefMap;
 class ClassLinkedRefMap;
-class PackageDef;
 class DirDef;
 class ClangTUParser;
 
 // --- Set of files
 
-using FileDefSet = std::set<const FileDef*>;
+using FileDefSet = std::unordered_set<const FileDef*>;
+
+enum class IncludeKind : uint32_t
+{
+  // bits
+  IncludeSystem     = 0x0001,
+  IncludeLocal      = 0x0002,
+  ImportSystemObjC  = 0x0004,
+  ImportLocalObjC   = 0x0008,
+  ImportSystem      = 0x0010, // C++20 header import
+  ImportLocal       = 0x0020, // C++20 header import
+  ImportModule      = 0x0040  // C++20 module import
+};
+
+inline constexpr uint32_t operator|(IncludeKind a, IncludeKind b) { return static_cast<uint32_t>(a) | static_cast<uint32_t>(b); }
+inline constexpr uint32_t operator|(uint32_t a, IncludeKind b) { return a | static_cast<uint32_t>(b); }
+inline constexpr uint32_t operator&(IncludeKind a, uint32_t mask) { return static_cast<uint32_t>(a) & mask; }
+
+// masks
+constexpr uint32_t IncludeKind_LocalMask  = IncludeKind::IncludeLocal     | IncludeKind::ImportLocalObjC  | IncludeKind::ImportLocal;
+constexpr uint32_t IncludeKind_SystemMask = IncludeKind::IncludeSystem    | IncludeKind::ImportSystemObjC | IncludeKind::ImportSystem;
+constexpr uint32_t IncludeKind_ImportMask = IncludeKind::ImportSystemObjC | IncludeKind::ImportLocalObjC  | IncludeKind::ImportSystem |
+                                            IncludeKind::ImportLocal      | IncludeKind::ImportModule;
+constexpr uint32_t IncludeKind_ObjCMask   = IncludeKind::ImportSystemObjC | IncludeKind::ImportLocalObjC;
+
+QCString includeStatement(SrcLangExt lang,IncludeKind kind);
+QCString includeOpen(SrcLangExt lang,IncludeKind kind);
+QCString includeClose(SrcLangExt lang,IncludeKind kind);
 
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
 {
   IncludeInfo() {}
-  IncludeInfo(const FileDef *fd,const QCString &in,bool loc,bool imp)
-    : fileDef(fd), includeName(in), local(loc), imported(imp) {}
-  const FileDef *fileDef = 0;
+  IncludeInfo(const FileDef *fd,const QCString &in,IncludeKind k)
+    : fileDef(fd), includeName(in), kind(k) {}
+  const FileDef *fileDef = nullptr;
   QCString includeName;
-  bool local = false;
-  bool imported = false;
+  IncludeKind kind = IncludeKind::IncludeSystem;
 };
 
 class IncludeInfoList : public std::vector<IncludeInfo>
@@ -120,8 +145,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool isLinkable() const = 0;
     virtual bool isIncluded(const QCString &name) const = 0;
 
-    virtual PackageDef *packageDef() const = 0;
     virtual DirDef *getDirDef() const = 0;
+    virtual ModuleDef *getModuleDef() const = 0;
     virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const = 0;
     virtual const LinkedRefMap<ClassDef> &getUsedClasses() const = 0;
     virtual const IncludeInfoList &includeFileList() const = 0;
@@ -169,8 +194,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void insertNamespace(NamespaceDef *nd) = 0;
     virtual void computeAnchors() = 0;
 
-    virtual void setPackageDef(PackageDef *pd) = 0;
     virtual void setDirDef(DirDef *dd) = 0;
+    virtual void setModuleDef(ModuleDef *mod) = 0;
 
     virtual void addUsingDirective(NamespaceDef *nd) = 0;
     virtual void addUsingDeclaration(ClassDef *cd) = 0;
@@ -179,8 +204,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool generateSourceFile() const = 0;
     virtual void sortMemberLists() = 0;
 
-    virtual void addIncludeDependency(const FileDef *fd,const QCString &incName,bool local,bool imported) = 0;
-    virtual void addIncludedByDependency(const FileDef *fd,const QCString &incName,bool local,bool imported) = 0;
+    virtual void addIncludeDependency(const FileDef *fd,const QCString &incName,IncludeKind kind) = 0;
+    virtual void addIncludedByDependency(const FileDef *fd,const QCString &incName,IncludeKind kind) = 0;
 
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
@@ -188,6 +213,13 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void addIncludedUsingDirectives(FileDefSet &visitedFiles) = 0;
 
     virtual void addListReferences() = 0;
+
+    // include graph related members
+    virtual bool hasIncludeGraph() const = 0;
+    virtual bool hasIncludedByGraph() const = 0;
+
+    virtual void overrideIncludeGraph(bool e) = 0;
+    virtual void overrideIncludedByGraph(bool e) = 0;
 };
 
 std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());

@@ -64,7 +64,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Write parents
   for (const auto &d : gd->partOfGroups())
   {
-    DotNode *nnode = 0;
+    DotNode *nnode = nullptr;
     auto it = m_usedNodes.find(d->name().str());
     if ( it==m_usedNodes.end())
     { // add node
@@ -85,7 +85,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Add subgroups
   for (const auto &def : gd->getSubGroups())
   {
-    DotNode *nnode = 0;
+    DotNode *nnode = nullptr;
     auto it = m_usedNodes.find(def->name().str());
     if ( it==m_usedNodes.end())
     { // add node
@@ -151,7 +151,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
 void DotGroupCollaboration::addMemberList( MemberList* ml )
 {
   QCString url;
-  if ( ml==0 || ml->empty() ) return;
+  if ( ml==nullptr || ml->empty() ) return;
   for (const auto &def : *ml)
   {
     makeURL(def,url);
@@ -191,10 +191,10 @@ void DotGroupCollaboration::addCollaborationMember(
   for (const auto &d : def->partOfGroups())
   {
     auto it = m_usedNodes.find(d->name().str());
-    DotNode* nnode = it!=m_usedNodes.end() ? it->second : 0;
+    DotNode* nnode = it!=m_usedNodes.end() ? it->second : nullptr;
     if ( nnode != m_rootNode )
     {
-      if ( nnode==0 )
+      if ( nnode==nullptr )
       { // add node
         tmp_str = d->getReference()+"$"+d->getOutputFileBase();
         QCString tooltip = d->briefDescriptionAsTooltip();
@@ -319,6 +319,16 @@ void DotGroupCollaboration::Edge::write( TextStream &t ) const
 bool DotGroupCollaboration::isTrivial() const
 {
   return m_usedNodes.size() <= 1;
+}
+
+bool DotGroupCollaboration::isTooBig() const
+{
+  return numNodes()>=Config_getInt(DOT_GRAPH_MAX_NODES);
+}
+
+int DotGroupCollaboration::numNodes() const
+{
+  return static_cast<int>(m_usedNodes.size());
 }
 
 void DotGroupCollaboration::writeGraphHeader(TextStream &t,const QCString &title) const

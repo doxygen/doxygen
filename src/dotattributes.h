@@ -37,7 +37,8 @@ class DotAttributes
     void updateValue(const QCString &key,const QCString &inpValue)
     {
       // look for key\s*=
-      const reg::Ex re = key.str()+R"(\s*=)";
+      const std::string regStr = key.str()+R"(\s*=)";
+      const reg::Ex re { regStr };
       reg::Match match;
       std::string s = m_input.str();
       if (reg::search(s,match,re)) // replace existing attribute

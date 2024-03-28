@@ -46,8 +46,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
-
 struct lexcodeYY_state
 {
      OutputCodeList *code;
@@ -78,7 +76,7 @@ struct lexcodeYY_state
      bool          insideCode = FALSE;
      QCString      delimiter;
      QCString      docBlockName;
-     uint32_t      fencedSize = 0;
+     size_t        fencedSize = 0;
      bool          nestedComment = false;
 
      bool          exampleBlock;
@@ -93,9 +91,7 @@ struct lexcodeYY_state
      const char   *currentFontClass;
 };
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
+[[maybe_unused]] static const char *stateToString(int state);
 
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static void startCodeLine(yyscan_t yyscanner);
@@ -378,7 +374,7 @@ NONLopt [^\n]*
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer.data());
-                             yyextra->rulesPatternBuffer.resize(0);
+                             yyextra->rulesPatternBuffer.clear();
                              endFontClass(yyscanner);
                            }
                          }
@@ -433,7 +429,7 @@ NONLopt [^\n]*
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
-                             yyextra->rulesPatternBuffer.resize(0);
+                             yyextra->rulesPatternBuffer.clear();
                              endFontClass(yyscanner);
                            }
                            codifyLines(yyscanner,yytext);
@@ -453,7 +449,7 @@ NONLopt [^\n]*
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
-                             yyextra->rulesPatternBuffer.resize(0);
+                             yyextra->rulesPatternBuffer.clear();
                              endFontClass(yyscanner);
                            }
                            yyextra->startCCodeLine=yyextra->yyLineNr;
@@ -468,7 +464,7 @@ NONLopt [^\n]*
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
-                             yyextra->rulesPatternBuffer.resize(0);
+                             yyextra->rulesPatternBuffer.clear();
                              endFontClass(yyscanner);
                            }
                            yyextra->CCodeBuffer += yytext;
@@ -1011,8 +1007,9 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
 
-  yyextra->code->startCodeLine(yyextra->sourceFileDef && yyextra->lineNumbers);
+  yyextra->code->startCodeLine(yyextra->yyLineNr);
   yyextra->insideCodeLine = true;
+
 
   if (yyextra->currentFontClass)
   {
@@ -1067,13 +1064,10 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     if (c=='\n')
     {
       yyextra->yyLineNr++;
-      int l = (int)(p-sp-1);
-      char *tmp = (char*)malloc(l+1);
-      memcpy(tmp,sp,l);
-      tmp[l]='\0';
-      yyextra->code->codify(tmp);
+      size_t l = static_cast<size_t>(p-sp-1);
+      std::string tmp(sp,l);
+      yyextra->code->codify(tmp.c_str());
       nextCodeLine(yyscanner);
-      free(tmp);
     }
     else
     {
@@ -1152,7 +1146,7 @@ static void handleCCode(yyscan_t yyscanner)
   yyextra->ccodeParser.parseCode(*yyextra->code,
                yyextra->classScope,
                yyextra->CCodeBuffer,
-               SrcLangExt_Cpp,
+               SrcLangExt::Cpp,
                yyextra->exampleBlock,
                yyextra->exampleName,
                yyextra->sourceFileDef,
@@ -1164,7 +1158,7 @@ static void handleCCode(yyscan_t yyscanner)
                yyextra->searchCtx,
                yyextra->collectXRefs
               );
-  yyextra->CCodeBuffer.resize(0);
+  yyextra->CCodeBuffer.clear();
   yyextra->insideCodeLine = yyextra->ccodeParser.insideCodeLine();
   yyextra->yyLineNr--;
   codifyLines(yyscanner,"\n");
@@ -1284,6 +1278,4 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
 //---------------------------------------------------------------------------------
 
-#if USE_STATE2STRING
 #include "lexcode.l.h"
-#endif

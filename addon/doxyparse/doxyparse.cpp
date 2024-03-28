@@ -57,7 +57,7 @@ class Doxyparse : public OutputCodeExtension
     OutputType type() const override { return OutputType::Extension; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
-    void startCodeLine(bool) override {}
+    void startCodeLine(int) override {}
     void endCodeLine() override {}
     void writeCodeAnchor(const QCString &) override {}
     void startFontClass(const QCString &) override {}
@@ -68,6 +68,8 @@ class Doxyparse : public OutputCodeExtension
                               const SourceLinkInfo &) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
     {
@@ -102,7 +104,7 @@ static void findXRefSymbols(FileDef *fd)
   parseList.add(OutputCodeDeferExtension(&parse));
 
   // parse the source code
-  intf->parseCode(parseList, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
+  intf->parseCode(parseList, QCString(), fileToString(fd->absFilePath()), lang, FALSE, QCString(), fd);
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
@@ -174,7 +176,7 @@ static void printNumberOfConditionalPaths(const MemberDef* md) {
 }
 
 static int isPartOfCStruct(const MemberDef * md) {
-  return is_c_code && md->getClassDef() != NULL;
+  return is_c_code && md->getClassDef() != nullptr;
 }
 
 std::string sanitizeString(std::string data) {
@@ -428,7 +430,7 @@ int main(int argc,char **argv) {
     }
     else if (!strcmp(argv[1],"--version"))
     {
-      printf("%s version: %s\n",argv[0],getFullVersion());
+      printf("%s version: %s\n",argv[0],getFullVersion().c_str());
       exit(0);
     }
   }

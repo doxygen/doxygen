@@ -27,13 +27,16 @@
 #include "textstream.h"
 #include "util.h"
 #include "portable.h"
+#include "language.h"
+#include "version.h"
+
+//-------------------------------------------------------------------------------------------
 
 class Sitemap::Private
 {
   public:
     std::ofstream docFile;
     TextStream doc;
-    TextStream index;
 };
 
 Sitemap::Sitemap() : p(std::make_unique<Private>()) {}
@@ -47,7 +50,7 @@ void Sitemap::initialize()
   p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
   {
-    term("Could not open file %s for writing\n", fileName.data());
+    term("Could not open file %s for writing\n", qPrint(fileName));
   }
   p->doc.setStream(&p->docFile);
 
@@ -75,3 +78,55 @@ void Sitemap::addIndexFile(const QCString & fileName)
   p->doc << "    <loc>" << convertToXML(sidemapUrl + fn) << "</loc>\n";
   p->doc << "  </url>\n";
 }
+
+//-------------------------------------------------------------------------------------------
+//
+class Crawlmap::Private
+{
+  public:
+    std::ofstream crawlFile;
+    TextStream crawl;
+};
+
+Crawlmap::Crawlmap() : p(std::make_unique<Private>()) {}
+Crawlmap::~Crawlmap() = default;
+Crawlmap::Crawlmap(Crawlmap &&) = default;
+
+void Crawlmap::initialize()
+{
+  QCString fileName = Config_getString(HTML_OUTPUT) + "/" + crawlFileName;
+  addHtmlExtensionIfMissing(fileName);
+  p->crawlFile = Portable::openOutputStream(fileName);
+  if (!p->crawlFile.is_open())
+  {
+    term("Could not open file %s for writing\n", qPrint(fileName));
+  }
+  p->crawl.setStream(&p->crawlFile);
+  p->crawl << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+  p->crawl << "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"" + theTranslator->trISOLang() + "\">\n";
+  p->crawl << "<head>\n";
+  p->crawl << "<title>Validator / crawler helper</title>\n";
+  p->crawl << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
+  p->crawl << "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=11\"/>\n";
+
+  p->crawl << "<meta name=\"generator\" content=\"Doxygen " + getDoxygenVersion() + "\"/>\n";
+  p->crawl << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>\n";
+  p->crawl << "</head>\n";
+  p->crawl << "<body>\n";
+}
+
+void Crawlmap::finalize()
+{
+  p->crawl << "</body>\n";
+  p->crawl << "</html>\n";
+  p->crawl.flush();
+  p->crawlFile.close();
+}
+
+void Crawlmap::addIndexFile(const QCString & fileName)
+{
+  QCString fn = fileName;
+  addHtmlExtensionIfMissing(fn);
+  p->crawl << "<a href=\"" << fn << "\"/>\n";
+}
+

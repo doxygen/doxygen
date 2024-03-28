@@ -37,6 +37,7 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <QDate>
+#include <QScrollBar>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -50,8 +51,6 @@ bool DoxygenWizard::debugFlag = false;
 const int messageTimeout = 5000; //!< status bar message timeout in milliseconds.
 
 #define APPQT(x) QString::fromLatin1("<qt><pre>") + x + QString::fromLatin1("</pre></qt>")
-
-static QString text1  = QString::fromLatin1("");
 
 MainWindow &MainWindow::instance()
 {
@@ -267,7 +266,7 @@ void MainWindow::about()
   QString msg;
   QTextStream t(&msg,QIODevice::WriteOnly);
   t << QString::fromLatin1("<qt><center>A tool to configure and run doxygen version ")+
-       QString::fromLatin1(getDoxygenVersion())+
+       QString::fromLatin1(getDoxygenVersion().c_str())+
        QString::fromLatin1(" on your source files.</center>")+
        QString::fromLatin1("<center>(Created with Qt version  ")+
        QString::fromLatin1(QT_VERSION_STR);
@@ -568,7 +567,6 @@ void MainWindow::runDoxygen()
     args << QString::fromLatin1("-");  // read config from stdin
 
     m_outputLog->clear();
-    text1  = QString::fromLatin1("");
     m_runProcess->start(doxygenPath + QString::fromLatin1("doxygen"), args);
 
     if (!m_runProcess->waitForStarted())
@@ -613,9 +611,26 @@ void MainWindow::readStdout()
     QString text = QString::fromUtf8(data);
     if (!text.isEmpty())
     {
-      text1 += text;
-      m_outputLog->clear();
-      m_outputLog->append(APPQT(text1.toHtmlEscaped().trimmed()));
+      QScrollBar *vbar = m_outputLog->verticalScrollBar();
+
+      const QTextCursor old_cursor = m_outputLog->textCursor();
+      const bool is_scrolled_up = vbar->value() == vbar->maximum();
+      const int distanceFromBottom = vbar->minimum() - vbar->value();
+
+      m_outputLog->moveCursor(QTextCursor::End);
+
+      m_outputLog->insertPlainText(text);
+
+      if (old_cursor.hasSelection() || !is_scrolled_up)
+      {
+        m_outputLog->setTextCursor(old_cursor);
+        vbar->setValue(vbar->minimum() - distanceFromBottom);
+      }
+      else
+      {
+        m_outputLog->moveCursor(QTextCursor::End);
+        vbar->setValue(m_outputLog->verticalScrollBar()->maximum());
+      }
     }
   }
 }
@@ -654,7 +669,7 @@ void MainWindow::showHtmlOutput()
   // TODO: the following doesn't seem to work with IE
 #ifdef _WIN32
   //QString indexUrl(QString::fromLatin1("file:///"));
-  ShellExecute(NULL, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
+  ShellExecute(nullptr, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), nullptr, nullptr, SW_SHOWNORMAL);
 #else
   QString indexUrl(QString::fromLatin1("file://"));
   indexUrl+=fi.absoluteFilePath();
@@ -678,7 +693,7 @@ void MainWindow::saveLog()
     }
     else
     {
-      QMessageBox::warning(0,tr("Warning"),
+      QMessageBox::warning(nullptr,tr("Warning"),
           tr("Cannot open file ")+fn+tr(" for writing. Nothing saved!"),tr("ok"));
     }
   }
@@ -796,11 +811,11 @@ int main(int argc,char **argv)
       QMessageBox msgBox;
       if (!qstrcmp(qVersion(),QT_VERSION_STR))
       {
-        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: %2").arg(QString::fromLatin1(getFullVersion()),QString::fromLatin1(QT_VERSION_STR)));
+        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: %2").arg(QString::fromLatin1(getFullVersion().c_str()),QString::fromLatin1(QT_VERSION_STR)));
       }
       else
       {
-        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: created with %2, running with %3").arg(QString::fromLatin1(getFullVersion()),QString::fromLatin1(QT_VERSION_STR),QString::fromLatin1(qVersion())));
+        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: created with %2, running with %3").arg(QString::fromLatin1(getFullVersion().c_str()),QString::fromLatin1(QT_VERSION_STR),QString::fromLatin1(qVersion())));
       }
       msgBox.exec();
       exit(0);

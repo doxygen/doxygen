@@ -60,7 +60,7 @@ class DocbookCodeGenerator
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                      );
-    void startCodeLine(bool);
+    void startCodeLine(int);
     void endCodeLine();
     void startFontClass(const QCString &colorClass);
     void endFontClass();
@@ -69,6 +69,8 @@ class DocbookCodeGenerator
         const QCString &anchorId,int l, bool writeLineAnchor);
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &style);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
     void setRelativePath(const QCString &path) { m_relPath = path; }
     void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
@@ -84,7 +86,7 @@ class DocbookCodeGenerator
     QCString    m_refId;
     QCString    m_external;
     int         m_lineNumber = -1;
-    int         m_col = 0;
+    size_t      m_col = 0;
     bool        m_insideCodeLine = false;
     bool        m_insideSpecialHL = false;
     QCString    m_relPath;
@@ -218,6 +220,7 @@ class DocbookGenerator : public OutputGenerator
                          const QCString &anchor,const QCString &name,
                          const QCString &args);
     void endDoxyAnchor(const QCString &fileName,const QCString &anchor);
+    void addLabel(const QCString &,const QCString &);
     void writeLatexSpacing(){DB_GEN_EMPTY}
     void writeStartAnnoItem(const QCString &,const QCString &,
                             const QCString &,const QCString &){DB_GEN_NEW};
@@ -249,7 +252,7 @@ class DocbookGenerator : public OutputGenerator
     void writeSplitBar(const QCString &){DB_GEN_EMPTY};
     void writeNavigationPath(const QCString &){DB_GEN_NEW};
     void writeLogo(){DB_GEN_NEW};
-    void writeQuickLinks(bool,HighlightedItem,const QCString &){DB_GEN_EMPTY};
+    void writeQuickLinks(HighlightedItem,const QCString &){DB_GEN_EMPTY};
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool){DB_GEN_EMPTY};
     void startContents(){DB_GEN_EMPTY};
     void endContents(){DB_GEN_EMPTY};
@@ -265,7 +268,11 @@ class DocbookGenerator : public OutputGenerator
     void startParameterType(bool,const QCString &){DB_GEN_EMPTY};
     void endParameterType(){DB_GEN_EMPTY};
     void startParameterName(bool);
-    void endParameterName(bool,bool,bool);
+    void endParameterName();
+    void startParameterExtra();
+    void endParameterExtra(bool,bool,bool);
+    void startParameterDefVal(const char *sep);
+    void endParameterDefVal();
     void startParameterList(bool);
     void endParameterList();
     void exceptionEntry(const QCString &,bool);

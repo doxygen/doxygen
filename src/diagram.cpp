@@ -373,7 +373,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
   }
   if (count>0 && (prot!=Protection::Private || !doBases))
   {
-    DiagramRow *row=0;
+    DiagramRow *row=nullptr;
     if (m_diagram->numRows()<=m_level+1) /* add new row */
     {
       row=m_diagram->addRow(m_level+1);
@@ -402,7 +402,7 @@ TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
   auto row = std::make_unique<DiagramRow>(this,0);
   DiagramRow *row_ptr = row.get();
   m_rows.push_back(std::move(row));
-  row_ptr->insertClass(0,root,doBases,Protection::Public,Specifier::Normal,QCString());
+  row_ptr->insertClass(nullptr,root,doBases,Protection::Public,Specifier::Normal,QCString());
 }
 
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)
@@ -466,7 +466,7 @@ void TreeDiagram::computeLayout()
   {
     const auto &row = *it;
     //printf("computeLayout() list row at %d\n",row->number());
-    DiagramItem *opi=0;
+    DiagramItem *opi=nullptr;
     int delta=0;
     bool first=TRUE;
     for (const auto &di : *row)
@@ -526,7 +526,7 @@ uint32_t TreeDiagram::computeRows()
     const auto &row = *it;
     uint32_t maxListLen=0;
     uint32_t curListLen=0;
-    DiagramItem *opi=0;
+    DiagramItem *opi=nullptr;
     for (const auto &di : *row) // for each item in a row
     {
       if (di->parentItem()!=opi) curListLen=1; else curListLen++;
@@ -612,7 +612,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
     DiagramItem *firstDi = dr->item(0);
     if (firstDi->isInList()) // put boxes in a list
     {
-      DiagramItem *opi=0;
+      DiagramItem *opi=nullptr;
       DualDirIterator<DiagramRow,const std::unique_ptr<DiagramItem>&> dit(*dr,!doBase);
       while (!dit.atEnd())
       {
@@ -854,7 +854,7 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               }
             }
             ++rit;
-            if (rit!=dr->end()) di = (*rit).get(); else di=0;
+            if (rit!=dr->end()) di = (*rit).get(); else di=nullptr;
           }
           // add last horizontal line and a vertical connection line
           if (bitmap)
@@ -1342,19 +1342,19 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
       << "boundx scalefactor div boundy scalefactor div scale\n";
 
     t << "\n% ----- classes -----\n\n";
-    p->base.drawBoxes(t,0,TRUE,FALSE,baseRows,superRows,0,0);
-    p->super.drawBoxes(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+    p->base.drawBoxes(t,nullptr,TRUE,FALSE,baseRows,superRows,0,0);
+    p->super.drawBoxes(t,nullptr,FALSE,FALSE,baseRows,superRows,0,0);
 
     t << "\n% ----- relations -----\n\n";
-    p->base.drawConnectors(t,0,TRUE,FALSE,baseRows,superRows,0,0);
-    p->super.drawConnectors(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+    p->base.drawConnectors(t,nullptr,TRUE,FALSE,baseRows,superRows,0,0);
+    p->super.drawConnectors(t,nullptr,FALSE,FALSE,baseRows,superRows,0,0);
 
   }
   f.close();
 
   if (Config_getBool(USE_PDFLATEX))
   {
-    QCString epstopdfArgs(4096);
+    QCString epstopdfArgs(4096, QCString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    qPrint(epsBaseName),qPrint(epsBaseName));
     //printf("Converting eps using '%s'\n",qPrint(epstopdfArgs));

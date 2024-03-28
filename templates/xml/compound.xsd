@@ -24,6 +24,7 @@
       <xsd:element name="includedby" type="incType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="incdepgraph" type="graphType" minOccurs="0" />
       <xsd:element name="invincdepgraph" type="graphType" minOccurs="0" />
+      <xsd:element name="innermodule" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerdir" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerfile" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerclass" type="refType" minOccurs="0" maxOccurs="unbounded" />
@@ -39,6 +40,7 @@
       <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
       <xsd:element name="briefdescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="detaileddescription" type="descriptionType" minOccurs="0" />
+      <xsd:element name="exports" type="exportsType" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="inheritancegraph" type="graphType" minOccurs="0" />
       <xsd:element name="collaborationgraph" type="graphType" minOccurs="0" />
       <xsd:element name="programlisting" type="listingType" minOccurs="0" />
@@ -101,8 +103,22 @@
   <xsd:complexType name="incType">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
-        <xsd:attribute name="refid" type="xsd:string" />
+        <xsd:attribute name="refid" type="xsd:string" use="optional" />
         <xsd:attribute name="local" type="DoxBool" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="exportsType">
+    <xsd:sequence>
+      <xsd:element name="export" type="exportType" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="exportType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="refid" type="xsd:string" use="optional" />
       </xsd:extension>
     </xsd:simpleContent>
   </xsd:complexType>
@@ -194,6 +210,7 @@
     <xsd:attribute name="id" type="xsd:string" />
     <xsd:attribute name="prot" type="DoxProtectionKind" />
     <xsd:attribute name="static" type="DoxBool" />
+    <xsd:attribute name="extern" type="DoxBool" use="optional" />
     <xsd:attribute name="strong" type="DoxBool" use="optional"/>
     <xsd:attribute name="const" type="DoxBool" use="optional"/>
     <xsd:attribute name="explicit" type="DoxBool" use="optional"/>
@@ -203,7 +220,11 @@
     <xsd:attribute name="volatile" type="DoxBool" use="optional"/>
     <xsd:attribute name="mutable" type="DoxBool" use="optional"/>
     <xsd:attribute name="noexcept" type="DoxBool" use="optional"/>
+    <xsd:attribute name="noexceptexpression" type="xsd:string" use="optional"/>
+    <xsd:attribute name="nodiscard" type="DoxBool" use="optional"/>
     <xsd:attribute name="constexpr" type="DoxBool" use="optional"/>
+    <xsd:attribute name="consteval" type="DoxBool" use="optional"/>
+    <xsd:attribute name="constinit" type="DoxBool" use="optional"/>
     <!-- Qt property -->
     <xsd:attribute name="readable" type="DoxBool" use="optional"/>
     <xsd:attribute name="writable" type="DoxBool" use="optional"/>
@@ -366,7 +387,7 @@
 
   <xsd:complexType name="docSect1Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="xsd:string" minOccurs="0" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="internal" type="docInternalS1Type" minOccurs="0"  maxOccurs="unbounded" />
@@ -378,7 +399,7 @@
 
   <xsd:complexType name="docSect2Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="xsd:string" />
+      <xsd:element name="title" type="docTitleType" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect3" type="docSect3Type" minOccurs="0" maxOccurs="unbounded" />
@@ -390,7 +411,7 @@
 
   <xsd:complexType name="docSect3Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="xsd:string" />
+      <xsd:element name="title" type="docTitleType" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect4" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
@@ -402,10 +423,34 @@
 
   <xsd:complexType name="docSect4Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="xsd:string" />
+      <xsd:element name="title" type="docTitleType" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="sect5" type="docSect5Type" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="internal" type="docInternalS4Type" minOccurs="0" />
+      </xsd:choice>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:string" />
+  </xsd:complexType>
+
+  <xsd:complexType name="docSect5Type" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="title" type="docTitleType" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="sect6" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="internal" type="docInternalS5Type" minOccurs="0" />
+      </xsd:choice>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:string" />
+  </xsd:complexType>
+
+  <xsd:complexType name="docSect6Type" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="title" type="docTitleType" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="internal" type="docInternalS6Type" minOccurs="0" />
       </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
@@ -435,16 +480,30 @@
   <xsd:complexType name="docInternalS3Type" mixed="true">
     <xsd:sequence>
       <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="sect3" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="sect4" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
 
   <xsd:complexType name="docInternalS4Type" mixed="true">
     <xsd:sequence>
       <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="sect5" type="docSect5Type" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
- 
+
+  <xsd:complexType name="docInternalS5Type" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="sect5" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="docInternalS6Type" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
   <xsd:group name="docTitleCmdGroup">
     <xsd:choice>
       <xsd:element name="ulink" type="docURLLink" />
@@ -490,7 +549,40 @@
 
   <xsd:group name="docCmdGroup">
     <xsd:choice>
-      <xsd:group ref="docTitleCmdGroup"/>
+      <!-- start workaround for xsd.exe
+        <xsd:group ref="docTitleCmdGroup"/>
+      -->
+      <xsd:element name="ulink" type="docURLLink" />
+      <xsd:element name="bold" type="docMarkupType" />
+      <xsd:element name="s" type="docMarkupType" />
+      <xsd:element name="strike" type="docMarkupType" />
+      <xsd:element name="underline" type="docMarkupType" />
+      <xsd:element name="emphasis" type="docMarkupType" />
+      <xsd:element name="computeroutput" type="docMarkupType" />
+      <xsd:element name="subscript" type="docMarkupType" />
+      <xsd:element name="superscript" type="docMarkupType" />
+      <xsd:element name="center" type="docMarkupType" />
+      <xsd:element name="small" type="docMarkupType" />
+      <xsd:element name="cite" type="docMarkupType" />
+      <xsd:element name="del" type="docMarkupType" />
+      <xsd:element name="ins" type="docMarkupType" />
+      <xsd:element name="htmlonly" type="docHtmlOnlyType" />
+      <xsd:element name="manonly" type="xsd:string" />
+      <xsd:element name="xmlonly" type="xsd:string" />
+      <xsd:element name="rtfonly" type="xsd:string" />
+      <xsd:element name="latexonly" type="xsd:string" />
+      <xsd:element name="docbookonly" type="xsd:string" />
+      <xsd:element name="image" type="docImageType" />
+      <xsd:element name="dot" type="docDotMscType" />
+      <xsd:element name="msc" type="docDotMscType" />
+      <xsd:element name="plantuml" type="docPlantumlType" />
+      <xsd:element name="anchor" type="docAnchorType" />
+      <xsd:element name="formula" type="docFormulaType" />
+      <xsd:element name="ref" type="docRefTextType" />
+      <xsd:element name="emoji" type="docEmojiType" />
+      <xsd:element name="linebreak" type="docEmptyType" />
+      <!-- Automatically insert here the HTML entities -->
+      <!-- end workaround for xsd.exe -->
       <xsd:element name="hruler" type="docEmptyType" />
       <xsd:element name="preformatted" type="docMarkupType" />
       <xsd:element name="programlisting" type="listingType" />
@@ -633,9 +725,16 @@
     <xsd:attribute name="id" type="xsd:string" /> 
   </xsd:complexType>
 
+  <xsd:simpleType name="range_1_6">
+    <xsd:restriction base="xsd:integer">
+      <xsd:minInclusive value="1"/>
+      <xsd:maxInclusive value="6"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
   <xsd:complexType name="docHeadingType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
-    <xsd:attribute name="level" type="xsd:integer" /> <!-- todo: range 1-6 -->
+    <xsd:attribute name="level" type="range_1_6" />
   </xsd:complexType>
 
   <xsd:complexType name="docImageType" mixed="true">
@@ -978,6 +1077,7 @@
       <xsd:enumeration value="invariant" />
       <xsd:enumeration value="remark" />
       <xsd:enumeration value="attention" />
+      <xsd:enumeration value="important" />
       <xsd:enumeration value="par" />
       <xsd:enumeration value="rcs" />
     </xsd:restriction>
@@ -1021,6 +1121,7 @@
       <xsd:enumeration value="hcl"/>
       <xsd:enumeration value="regex"/>
       <xsd:enumeration value="ebnf"/>
+      <xsd:enumeration value="files"/>
     </xsd:restriction>
   </xsd:simpleType>
 

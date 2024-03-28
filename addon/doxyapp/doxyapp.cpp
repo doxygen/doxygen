@@ -18,7 +18,8 @@
  *
  *  This example shows how to configure and run doxygen programmatically from
  *  within an application without generating the usual output.
- *  The example should work on any Unix like OS (including Linux and Mac OS X).
+ *
+ *  If you are running a non-UNIX-like system you should specify `--tempdir`.
  *
  *  This example shows how to use to code parser to get cross-references information
  *  and it also shows how to look up symbols in a program parsed by doxygen and
@@ -26,6 +27,8 @@
  */
 
 #include <stdlib.h>
+#include <map>
+#include <string>
 #include "dir.h"
 #include "doxygen.h"
 #include "outputgen.h"
@@ -55,13 +58,15 @@ class XRefDummyCodeGenerator : public OutputCodeExtension
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,
                               const QCString &,const QCString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}
-    void startCodeLine(bool) override {}
+    void startCodeLine(int) override {}
     void endCodeLine() override {}
     void startFontClass(const QCString &) override {}
     void endFontClass() override {}
     void writeCodeAnchor(const QCString &) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     // here we are presented with the symbols found by the code parser
     void linkableSymbol(int l, const char *sym,Definition *symDef,Definition *context)
@@ -124,11 +129,11 @@ static void findXRefSymbols(FileDef *fd)
 
   // parse the source code
   intf->parseCode(xrefList,
-                0,
+                QCString(),
                 fileToString(fd->absFilePath()),
                 lang,
                 FALSE,
-                0,
+                QCString(),
                 fd);
 }
 
@@ -221,41 +226,147 @@ static void lookupSymbols(const QCString &sym)
   }
 }
 
-int main(int argc,char **argv)
+template <typename Iter>
+std::string join(Iter begin, Iter end, std::string const& separator)
 {
-  char cmd[256];
+  std::ostringstream result;
+  if (begin != end)
+    result << *begin++;
+  while (begin != end)
+    result << separator << *begin++;
+  return result.str();
+}
 
-  int locArgc = argc;
-
-  if (locArgc == 2)
+static auto symbolInfo(const Definition *def)
+{
+  std::map<std::string, int> ret;
+  if (def->hasDocumentation())
   {
-    if (!strcmp(argv[1],"--help"))
+    if (def->hasBriefDescription())
+      ret["briefLine"] = def->briefLine();
+    ret["docLine"] = def->docLine();
+  }
+  ret["defLine"] = def->getDefLine();
+  ret["defColumn"] = def->getDefColumn();
+  ret["startDefLine"] = def->getStartDefLine();
+  ret["startBodyLine"] = def->getStartBodyLine();
+  ret["endBodyLine"] = def->getEndBodyLine();
+  ret["inbodyLine"] = def->inbodyLine();
+  return ret;
+}
+
+static void locateSymbols()
+{
+  std::map<std::string, std::map<std::string, std::map<std::string, std::map<std::string, int>>>> ret;
+  for (const auto &kv : *Doxygen::symbolMap)
+  {
+    for (const auto &def : kv.second)
     {
-      printf("Usage: %s [source_file | source_dir]\n",argv[0]);
-      exit(0);
-    }
-    else if (!strcmp(argv[1],"--version"))
-    {
-      printf("%s version: %s\n",argv[0],getFullVersion());
-      exit(0);
+      if (def == Doxygen::globalScope || def->name().at(0) == '@')
+        continue;
+
+      QCString args = "";
+      if (def->definitionType() == Definition::TypeMember)
+      {
+        const auto *md = dynamic_cast<MemberDef*>(def);
+        args = md->argsString();
+      }
+      ret[def->getDefFileName().data()][def->qualifiedName().data()][args.data()] = symbolInfo(def);
     }
   }
 
-  if (locArgc!=2)
+  // print as json
+  std::vector<std::string> out;
+  for (const auto &[fname, qmap] : ret)
   {
-    printf("Usage: %s [source_file | source_dir]\n",argv[0]);
-    exit(1);
+    out.push_back(std::string(4, ' ') + "\"" + fname + "\": {\n");
+    std::vector<std::string> file;
+    for (const auto &[qname, arg_map] : qmap)
+    {
+      file.push_back(std::string(8, ' ') + "\"" + qname + "\": {\n");
+      std::vector<std::string> name;
+      for (const auto &[args, imap] : arg_map)
+      {
+        name.push_back(std::string(12, ' ') + "\"" + args + "\": {\n");
+        std::vector<std::string> item;
+        for (const auto &[key, value] : imap)
+        {
+          item.push_back(std::string(16, ' ') + "\"" + key + "\": " + std::to_string(value));
+        }
+        name.back() += join(item.begin(), item.end(), ",\n");
+        name.back() += "\n" + std::string(12, ' ') + "}";
+      }
+      file.back() += join(name.begin(), name.end(), ",\n");
+      file.back() += "\n" + std::string(8, ' ') + "}";
+    }
+    out.back() += join(file.begin(), file.end(), ",\n");
+    out.back() += "\n" + std::string(4, ' ') + "}";
+  }
+  std::cout << "{\n" << join(out.begin(), out.end(), ",\n") << "\n}\n";
+}
+
+int main(int argc,char **argv)
+{
+  std::string tempdir = "/tmp/doxygen";
+  std::string usage = "Usage: %s [--version] [--help] [--list] [--locate] [--tempdir ARG] path [path...]\n";
+  StringVector inputList;
+  bool list = false;
+  bool locate = false;
+
+  for (size_t i = 1; i < argc; i++)
+  {
+    if (std::string(argv[i]) == "--version")
+    {
+      printf("%s version: %s\n",argv[0],getFullVersion().c_str());
+      exit(0);
+    }
+    if (std::string(argv[i]) == "--help")
+    {
+      printf(usage.c_str(), argv[0]);
+      exit(0);
+    }
+    if (std::string(argv[i]) == "--list")
+    {
+      if (locate)
+      {
+        printf(usage.c_str(), argv[0]);
+        exit(1);
+      }
+      list = true;
+      continue;
+    }
+    if (std::string(argv[i]) == "--locate")
+    {
+      if (list)
+      {
+        printf(usage.c_str(), argv[0]);
+        exit(1);
+      }
+      locate = true;
+      continue;
+    }
+    if (std::string(argv[i]) == "--tempdir")
+    {
+      if (i+1 >= argc)
+      {
+        printf(usage.c_str(), argv[0]);
+        exit(1);
+      }
+      tempdir = argv[i+1];
+      i++;
+      continue;
+    }
+    inputList.push_back(argv[i]);
   }
 
   // initialize data structures
   initDoxygen();
 
   // setup the non-default configuration options
-
   checkConfiguration();
   adjustConfiguration();
   // we need a place to put intermediate files
-  Config_updateString(OUTPUT_DIRECTORY,"/tmp/doxygen");
+  Config_updateString(OUTPUT_DIRECTORY, tempdir.c_str());
   // disable html output
   Config_updateBool(GENERATE_HTML,FALSE);
   // disable latex output
@@ -279,8 +390,6 @@ int main(int argc,char **argv)
   Config_updateBool(RECURSIVE,TRUE);
 
   // set the input
-  StringVector inputList;
-  inputList.push_back(argv[1]);
   Config_updateList(INPUT,inputList);
 
   // parse the files
@@ -297,8 +406,21 @@ int main(int argc,char **argv)
   }
 
   // clean up after us
-  Dir().rmdir("/tmp/doxygen");
+  Dir().rmdir(tempdir.c_str());
 
+  if (list)
+  {
+    listSymbols();
+    exit(0);
+  }
+
+  if (locate)
+  {
+    locateSymbols();
+    exit(0);
+  }
+
+  char cmd[256];
   while (1)
   {
     printf("> Type a symbol name or\n> .list for a list of symbols or\n> .quit to exit\n> ");
@@ -307,6 +429,8 @@ int main(int argc,char **argv)
     if (s.at(s.length()-1)=='\n') s=s.left(s.length()-1); // strip trailing \n
     if (s==".list")
       listSymbols();
+    else if (s==".locate")
+      locateSymbols();
     else if (s==".quit")
       exit(0);
     else

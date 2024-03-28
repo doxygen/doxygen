@@ -29,7 +29,7 @@
 static const int maxCmdLine = 40960;
 
 static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
-                           const QCString &context)
+                           const QCString &context,const QCString &srcFile,int srcLine)
 {
   std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
@@ -63,17 +63,22 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
       if (y2<y1) { int temp=y2; y2=y1; y1=temp; }
       if (x2<x1) { int temp=x2; x2=x1; x1=temp; }
 
-      t << "<area href=\"";
 
+      bool link = false;
       if ( isRef )
       {
         // handle doxygen \ref tag URL reference
 
         auto parser { createDocParser() };
-        auto dfAst  { createRef( *parser.get(), url, context ) };
+        auto dfAst  { createRef( *parser.get(), url, context, srcFile, srcLine) };
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
-        t << externalRef(relPath,df->ref(),TRUE);
+        if (!df->file().isEmpty() || !df->anchor().isEmpty())
+        {
+          link = true;
+          t << "<area href=\"";
+          t << externalRef(relPath,df->ref(),TRUE);
+        }
         if (!df->file().isEmpty())
         {
           QCString fn = df->file();
@@ -87,11 +92,16 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
       }
       else
       {
+        link = true;
+        t << "<area href=\"";
         t << url;
       }
-      t << "\" shape=\"rect\" coords=\""
-        << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
-        << " alt=\"\"/>\n";
+      if (link)
+      {
+        t << "\" shape=\"rect\" coords=\""
+          << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
+          << " alt=\"\"/>\n";
+      }
     }
   }
 
@@ -135,7 +145,7 @@ static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,ms
     int code = mscgen_generate(inFile.data(),outFile.data(),msc_format);
     if (code!=0)
     {
-      err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+      err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file '%s'",
           mscgen_error2str(code),qPrint(inFile));
       return false;
     }
@@ -149,7 +159,6 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                           )
 {
   QCString absOutFile = outDir;
-  QCString localOutFile = outFile;
   absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
@@ -160,17 +169,14 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     case MSC_BITMAP:
       msc_format = mscgen_format_png;
       imgName+=".png";
-      localOutFile+=".png";
       break;
     case MSC_EPS:
       msc_format = mscgen_format_eps;
       imgName+=".eps";
-      localOutFile+=".eps";
       break;
     case MSC_SVG:
       msc_format = mscgen_format_svg;
       imgName+=".svg";
-      localOutFile+=".svg";
       break;
     default:
       return;
@@ -182,17 +188,25 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
 
   if ( (format==MSC_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
-    QCString epstopdfArgs(maxCmdLine);
+    QCString epstopdfArgs(maxCmdLine, QCString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(absOutFile),qPrint(absOutFile));
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
-      err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!\n",
+      err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!",
           qPrint(absOutFile));
     }
   }
 
-  if (toIndex) Doxygen::indexList->addImageFile(localOutFile);
+  if (toIndex)
+  {
+    int i=std::max(imgName.findRev('/'),imgName.findRev('\\'));
+    if (i!=-1) // strip path
+    {
+      imgName=imgName.right(imgName.length()-i-1);
+    }
+    Doxygen::indexList->addImageFile(imgName);
+  }
 
 }
 
@@ -208,7 +222,7 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& /
     return "";
 
   TextStream t;
-  convertMapFile(t, outFile, relPath, context);
+  convertMapFile(t, outFile, relPath, context, srcFile, srcLine);
 
   Dir().remove(outFile.str());
 

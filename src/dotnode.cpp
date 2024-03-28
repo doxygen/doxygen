@@ -49,8 +49,8 @@ static const char *normalArrowStyleMap[] =
   "empty",         // Protected
   "empty",         // Private
   "open",          // "use" relation
-  0,               // Undocumented
-  0                // template relation
+  nullptr,         // Undocumented
+  nullptr          // template relation
 };
 
 static const char *normalEdgeStyleMap[] =
@@ -76,8 +76,8 @@ static const char *umlArrowStyleMap[] =
   "onormal",         // Protected
   "onormal",         // Private
   "odiamond",        // "use" relation
-  0,                 // Undocumented
-  0                  // template relation
+  nullptr,           // Undocumented
+  nullptr           // template relation
 };
 
 static const char *umlEdgeStyleMap[] =
@@ -125,11 +125,14 @@ static void writeBoxMemberList(TextStream &t,
   constexpr auto br       = "<BR ALIGN=\"LEFT\"/>";
   if (ml)
   {
+    auto hideUndocMembers = Config_getEnum(HIDE_UNDOC_MEMBERS);
     int totalCount=0;
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef()==scope &&
-        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
+        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)) &&
+          !(hideUndocMembers && !mma->hasDocumentation())
+         )
       {
         totalCount++;
       }
@@ -140,7 +143,9 @@ static void writeBoxMemberList(TextStream &t,
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
-        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
+        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)) &&
+          !(hideUndocMembers && !mma->hasDocumentation())
+         )
       {
         int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
@@ -197,8 +202,7 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   QCString result;
   char c,pc=0;
   uint32_t idx = 0;
-  int len=p.length();
-  int charsLeft=len;
+  int charsLeft=static_cast<int>(p.length());
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
   QCString br;
@@ -457,7 +461,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,lineWritten,TRUE);
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef,lineWritten);
       }
-      if (m_classDef->getLanguage()!=SrcLangExt_Fortran)
+      if (m_classDef->getLanguage()!=SrcLangExt::Fortran)
       {
         for (const auto &mg : m_classDef->getMemberGroups())
         {

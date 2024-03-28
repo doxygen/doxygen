@@ -29,6 +29,7 @@
 #include "emoji.h"
 #include "filedef.h"
 #include "fileinfo.h"
+#include "codefragment.h"
 
 static void startSimpleSect(TextStream &t,const DocSimpleSect &s)
 {
@@ -65,6 +66,8 @@ static void startSimpleSect(TextStream &t,const DocSimpleSect &s)
       t << "remark"; break;
     case DocSimpleSect::Attention:
       t << "attention"; break;
+    case DocSimpleSect::Important:
+      t << "important"; break;
     case DocSimpleSect::User:
       t << "par"; break;
     case DocSimpleSect::Rcs:
@@ -412,7 +415,7 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
-                                           0,     // memberDef
+                                           nullptr,     // memberDef
                                            TRUE   // show line numbers
 					   );
          m_t << "</programlisting>";
@@ -425,11 +428,11 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         FALSE  // show line numbers
 				       );
       m_t << "</programlisting>";
@@ -479,41 +482,16 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       m_t << "<programlisting filename=\"" << inc.file() << "\">";
-      getCodeParser(inc.extension()).parseCode(m_ci,
-                                        inc.context(),
-                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                        langExt,
-                                        inc.isExample(),
-                                        inc.exampleFile()
-                                       );
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                       inc.file(),
+                                       inc.blockId(),
+                                       inc.context(),
+                                       inc.type()==DocInclude::SnippetWithLines,
+                                       inc.type()==DocInclude::SnippetTrimLeft
+                                      );
       m_t << "</programlisting>";
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         m_t << "<programlisting filename=\"" << inc.file() << "\">";
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName());
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         m_t << "</programlisting>";
-      }
-      break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
       break;
   }
 }
@@ -553,7 +531,7 @@ void XmlDocVisitor::operator()(const DocIncOperator &op)
                                           op.line(),    // startLine
                                           -1,    // endLine
                                           FALSE, // inline fragment
-                                          0,     // memberDef
+                                          nullptr,     // memberDef
                                           op.showLineNo()  // show line numbers
                                          );
     }
@@ -700,9 +678,10 @@ void XmlDocVisitor::operator()(const DocSection &s)
   m_t << "<sect" << s.level() << " id=\"" << s.file();
   if (!s.anchor().isEmpty()) m_t << "_1" << s.anchor();
   m_t << "\">\n";
-  m_t << "<title>";
-  filter(convertCharEntitiesToUTF8(s.title()));
-  m_t << "</title>\n";
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   visitChildren(s);
   m_t << "</sect" << s.level() << ">\n";
 }
@@ -937,7 +916,7 @@ void XmlDocVisitor::operator()(const DocImage &img)
                 altValue, img.isInlineImage());
 
   // copy the image to the output dir
-  FileDef *fd = 0;
+  FileDef *fd = nullptr;
   bool ambig;
   if (url.isEmpty() && (fd=findFileDef(Doxygen::imageNameLinkedMap,img.name(),ambig)))
   {

@@ -33,7 +33,7 @@ class XMLCodeGenerator
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                      );
-    void startCodeLine(bool);
+    void startCodeLine(int);
     void endCodeLine();
     void startFontClass(const QCString &colorClass);
     void endFontClass();
@@ -42,6 +42,8 @@ class XMLCodeGenerator
                          const QCString &anchorId,int l,bool writeLineAnchor);
     void startCodeFragment(const QCString &);
     void endCodeFragment(const QCString &);
+    void startFold(int,const QCString &,const QCString &) {}
+    void endFold() {}
 
     void finish();
 
@@ -51,7 +53,7 @@ class XMLCodeGenerator
     QCString m_external;
     int m_lineNumber;
     bool m_isMemberRef;
-    int m_col;
+    size_t m_col;
 
     bool m_insideCodeLine;
     bool m_normalHLNeedStartTag;
