@@ -33,7 +33,7 @@ class DotCallGraph : public DotGraph
     int numNodes() const;
     QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const QCString &path,const QCString &fileName,
-                        const QCString &relPath,bool writeImageMap=TRUE,
+                        const QCString &relPath,const bool toIndex,bool writeImageMap=TRUE,
                         int graphId=-1);
     static bool isTrivial(const MemberDef *md,bool inverse);
 

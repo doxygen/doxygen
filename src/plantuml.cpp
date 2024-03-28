@@ -123,7 +123,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   return baseName;
 }
 
-void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &/* outDir */,OutputFormat format)
+void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &/* outDir */,OutputFormat format,const bool toIndex)
 {
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order
@@ -146,7 +146,7 @@ void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCSt
       break;
   }
 
-  Doxygen::indexList->addImageFile(imgName);
+  if (toIndex) Doxygen::indexList->addImageFile(imgName);
 }
 
 //--------------------------------------------------------------------

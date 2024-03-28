@@ -436,12 +436,12 @@ QCString DotDirDeps::getImgAltText() const
 }
 
 QCString DotDirDeps::writeGraph(TextStream &out, GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
-                                const QCString &path, const QCString &fileName, const QCString &relPath, bool generateImageMap,
-                                int graphId, bool linkRelations)
+                                const QCString &path, const QCString &fileName, const QCString &relPath, bool toIndex,
+                                bool generateImageMap, int graphId, bool linkRelations)
 {
   m_linkRelations = linkRelations;
   m_urlOnly = TRUE;
-  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
+  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, toIndex, generateImageMap, graphId);
 }
 
 bool DotDirDeps::isTrivial() const

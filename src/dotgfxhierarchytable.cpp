@@ -69,7 +69,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
   m_graphId = id;
   m_noDivTag = TRUE;
   m_zoomable = FALSE;
-  DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
+  DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", true, TRUE, 0);
 }
 
 void DotGfxHierarchyTable::writeGraph(TextStream &out,

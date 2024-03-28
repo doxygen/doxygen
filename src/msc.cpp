@@ -155,7 +155,7 @@ static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,ms
 
 void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,MscOutputFormat format,
-                           const QCString &srcFile,int srcLine
+                           const QCString &srcFile,int srcLine,const bool toIndex
                           )
 {
   QCString absOutFile = outDir;
@@ -198,12 +198,15 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     }
   }
 
-  int i=std::max(imgName.findRev('/'),imgName.findRev('\\'));
-  if (i!=-1) // strip path
+  if (toIndex)
   {
-    imgName=imgName.right(imgName.length()-i-1);
+    int i=std::max(imgName.findRev('/'),imgName.findRev('\\'));
+    if (i!=-1) // strip path
+    {
+      imgName=imgName.right(imgName.length()-i-1);
+    }
+    Doxygen::indexList->addImageFile(imgName);
   }
-  Doxygen::indexList->addImageFile(imgName);
 
 }
 

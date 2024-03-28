@@ -182,7 +182,7 @@ void FormulaManager::checkRepositories()
   }
 }
 
-void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate)
+void FormulaManager::createLatexFile(const QCString &fileName,Format format,const bool toIndex,Mode mode,IntVector &formulasToGenerate)
 {
   // generate a latex file containing one formula per page.
   QCString texName=fileName+".tex";
@@ -228,9 +228,12 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
         t << formula->text() << "\n\\pagebreak\n\n";
         formulasToGenerate.push_back(id);
       }
-      QCString resultName;
-      resultName.sprintf("form_%d%s.%s",id, mode==Mode::Light?"":"_dark", format==Format::Vector?"svg":"png");
-      Doxygen::indexList->addImageFile(resultName);
+      if (toIndex)
+      {
+        QCString resultName;
+        resultName.sprintf("form_%d%s.%s",id, mode==Mode::Light?"":"_dark", format==Format::Vector?"svg":"png");
+        Doxygen::indexList->addImageFile(resultName);
+      }
     }
     t << "\\end{document}\n";
     t.flush();
@@ -550,11 +553,11 @@ static StringVector generateFormula(const Dir &thisDir,const QCString &formulaFi
   return tempFiles;
 }
 
-void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd,Mode mode)
+void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,const bool toIndex, HighDPI hd,Mode mode)
 {
   IntVector formulasToGenerate;
   QCString formulaFileName = mode==Mode::Light ? "_formulas" : "_formulas_dark";
-  createLatexFile(formulaFileName,format,mode,formulasToGenerate);
+  createLatexFile(formulaFileName,format,toIndex,mode,formulasToGenerate);
 
   if (!formulasToGenerate.empty()) // there are new formulas
   {
@@ -633,7 +636,7 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
   }
 }
 
-void FormulaManager::generateImages(const QCString &path,Format format,HighDPI hd)
+void FormulaManager::generateImages(const QCString &path,Format format,const bool toIndex,HighDPI hd)
 {
   Dir d(path.str());
   // store the original directory
@@ -661,12 +664,12 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
     copyFile(macroFile,stripMacroFile);
   }
 
-  createFormulasTexFile(thisDir,format,hd,Mode::Light);
+  createFormulasTexFile(thisDir,format,toIndex,hd,Mode::Light);
   if (Config_getEnum(HTML_COLORSTYLE)!=HTML_COLORSTYLE_t::LIGHT) // all modes other than light need a dark version
   {
     // note that the dark version reuses the bounding box of the light version so it needs to be
     // created after the light version.
-    createFormulasTexFile(thisDir,format,hd,Mode::Dark);
+    createFormulasTexFile(thisDir,format,toIndex,hd,Mode::Dark);
   }
 
   // clean up temporary files
