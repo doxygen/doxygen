@@ -137,7 +137,7 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
 
 QCString ModuleDefImpl::getOutputFileBase() const
 {
-  return "module_"+convertNameToFile(name());
+  return convertNameToFile("module_" + name());
 }
 
 QCString ModuleDefImpl::qualifiedName() const
