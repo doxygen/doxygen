@@ -396,7 +396,7 @@ class TranslatorPortuguese : public Translator
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return "Documentação" + (!projName.isEmpty()? " de " + projName : ""); }
 
     /*! This is used in LaTeX as the title of the chapter with the

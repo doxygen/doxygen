@@ -349,7 +349,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return (!projName.isEmpty()?projName + " " : "") + ": Documentació"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
