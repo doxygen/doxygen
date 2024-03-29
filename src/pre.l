@@ -2983,6 +2983,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
       i=p+l;
     }
   }
+  expr = expr.stripWhiteSpace();
   //printf("<expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",qPrint(expr),rest ? qPrint(*rest) : "", pos,level);
   return TRUE;
 }
