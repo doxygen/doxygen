@@ -65,7 +65,7 @@ class Crawlmap
                          bool separateIndex,bool addToNavIndex,
                          const Definition *def);
     void addIndexItem(const Definition *context, const MemberDef *md,
-                      const QCString &sectionAnchor, const QCString &title){}
+                      const QCString &sectionAnchor, const QCString &title);
     void addIndexFile(const QCString & name);
     void addImageFile(const QCString & name){}
     void addStyleSheetFile(const QCString & name){}

@@ -164,3 +164,59 @@ void Crawlmap::addContentsItem(bool, const QCString &, const QCString &,
     p->crawlLinks.insert(link);
   }
 }
+
+static QCString makeFileName(const QCString & withoutExtension)
+{
+  QCString result=withoutExtension;
+  if (!result.isEmpty())
+  {
+    if (result.at(0)=='!') // relative URL -> strip marker
+    {
+      result=result.mid(1);
+    }
+    else // add specified HTML extension
+    {
+      addHtmlExtensionIfMissing(result);
+    }
+  }
+  return result;
+}
+
+static QCString makeRef(const QCString & withoutExtension, const QCString & anchor)
+{
+  if (withoutExtension.isEmpty()) return QCString();
+  QCString result = makeFileName(withoutExtension);
+  if (anchor.isEmpty()) return result;
+  return result+"#"+anchor;
+}
+void Crawlmap::addIndexItem(const Definition *context, const MemberDef *md,
+                            const QCString &sectionAnchor, const QCString &title)
+{
+  if (md) // member
+  {
+    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+    if (context==nullptr) // global member
+    {
+      if (md->getGroupDef())
+        context = md->getGroupDef();
+      else if (md->getFileDef())
+        context = md->getFileDef();
+    }
+    if (context==nullptr) return; // should not happen
+    QCString cfname  = md->getOutputFileBase();
+    //QCString argStr  = md->argsString();
+    QCString cfiname = context->getOutputFileBase();
+    QCString contRef = separateMemberPages ? cfname : cfiname;
+    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
+    QCString ref;
+
+    ref = makeRef(contRef, anchor);
+    p->crawlLinks.insert(ref.str());
+  }
+  else if (context) // container
+  {
+    QCString contRef = context->getOutputFileBase();
+    QCString ref = makeRef(contRef,sectionAnchor);
+    p->crawlLinks.insert(ref.str());
+  }
+}
