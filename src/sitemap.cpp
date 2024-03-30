@@ -29,6 +29,7 @@
 #include "portable.h"
 #include "language.h"
 #include "version.h"
+#include "containers.h"
 
 //-------------------------------------------------------------------------------------------
 
@@ -86,6 +87,7 @@ class Crawlmap::Private
   public:
     std::ofstream crawlFile;
     TextStream crawl;
+    StringSet crawlLinks;
 };
 
 Crawlmap::Crawlmap() : p(std::make_unique<Private>()) {}
@@ -117,6 +119,11 @@ void Crawlmap::initialize()
 
 void Crawlmap::finalize()
 {
+  for (auto &s : p->crawlLinks)
+  {
+    p->crawl << "<a href=\"" << s << "\"/>\n";
+  }
+
   p->crawl << "</body>\n";
   p->crawl << "</html>\n";
   p->crawl.flush();
@@ -130,3 +137,30 @@ void Crawlmap::addIndexFile(const QCString & fileName)
   p->crawl << "<a href=\"" << fn << "\"/>\n";
 }
 
+void Crawlmap::addContentsItem(bool, const QCString &, const QCString &,
+                               const QCString & file, const QCString & anchor,
+                               bool ,bool ,
+                               const Definition *)
+{
+  if (!file.isEmpty())      // made file optional param - KPW
+  {
+    std::string link;
+    if (file[0]=='!' || file[0]=='^') // special markers for user defined URLs
+    {
+      link+=&file[1];
+    }
+    else
+    {
+      QCString currFile = file;
+      addHtmlExtensionIfMissing(currFile);
+      QCString currAnc = anchor;
+      link += currFile.data();
+      if (!currAnc.isEmpty()) 
+      {
+        link += "#";
+        link += currAnc.str();
+      }
+    }
+    p->crawlLinks.insert(link);
+  }
+}
