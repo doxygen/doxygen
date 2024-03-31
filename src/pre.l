@@ -829,7 +829,7 @@ WSopt [ \t\r]*
                                             QCString result=def->isPredefined && !def->expandAsDefined ?
                                               def->definition :
                                               expandMacro(yyscanner,yytext);
-                                            outputString(yyscanner,result);
+                                            outputString(yyscanner,result.stripWhiteSpace());
                                           }
                                           else
                                           {
