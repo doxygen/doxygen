@@ -2778,11 +2778,12 @@ Commands for displaying examples
   \endverbatim will treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
   into a level 3 \c \\subsubsection, etc.
   Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
-  Furtehermore there is the option `label` that can be used to change the labels of the included sections and anchors by appending
-  the given label_id to the given id. For example:
+
+  Furthermore, there is the option `prefix` that can be used to add a prefix
+  to each label of the included sections, so that they remain unique. For example:
   \verbatim
-  \include{doc,label=_append_id} file.dox
-  \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section s1_append_id`.
+  \include{doc,prefix=fn_} file.dox
+  \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
   \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.
@@ -2926,11 +2927,12 @@ Commands for displaying examples
  treat any level 1 \c \\section found the snippet as a level 2 \c \\subsection, and any level 2 \c \\subsection
  into a level 3 \c \\subsubsection, etc.
  Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
- Furtehermore there is the option `label` that can be used to change the labels of the included sections and anchors by appending
- the given label_id to the given id. For example:
+
+ Furthermore, there is the option `prefix` that can be used to add a prefix
+ to each label of the included sections, so that they remain unique. For example:
  \verbatim
- \snippet{doc,label=_append_id} file.dox
- \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section s1_append_id`.
+ \include{doc,prefix=fn_} file.dox
+ \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
  \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.

@@ -464,7 +464,7 @@ struct commentscanYY_state
   QCString         fileName;               // file name that is read from
   int              lineNr = 0;             // line number in the input
   int              raiseLevel = 0;         // section level raise amount
-  QCString         raiseLabel;             // section label to append
+  QCString         raisePrefix;             // section label to append
   bool             inBody = FALSE;         // was the comment found inside the body of a function?
   OutputContext    inContext;              // are we inside the brief, details or xref part
   bool             briefEndsAtDot = FALSE; // does the brief description stop at a dot?
@@ -694,7 +694,7 @@ STopt  [^\n@\\]*
 %x      ILine
 %x      ILineSection
 %x      IRaise
-%x      IRaiseLabel
+%x      IRaisePrefix
 
 %%
 
@@ -1763,18 +1763,18 @@ STopt  [^\n@\\]*
                                           {
                                             yyextra->raiseLevel = nr;
                                           }
-                                          BEGIN(IRaiseLabel);
+                                          BEGIN(IRaisePrefix);
                                         }
 <IRaise>.                               {
                                           unput(yytext[0]);
                                           BEGIN(Comment);
                                         }
-<IRaiseLabel>{B}*"\""({LABELID})?"\""   {
+<IRaisePrefix>{B}*"\""({LABELID})?"\""   {
                                           QCString text(yytext);
-                                          yyextra->raiseLabel = text.stripWhiteSpace().mid(1,text.length()-2);
+                                          yyextra->raisePrefix = text.stripWhiteSpace().mid(1,text.length()-2);
                                           BEGIN(Comment);
                                         }
-<IRaiseLabel>.                          {
+<IRaisePrefix>.                          {
                                           unput(yytext[0]);
                                           BEGIN(Comment);
                                         }
@@ -1848,8 +1848,7 @@ STopt  [^\n@\\]*
   /* ----- handle arguments of the section/subsection/.. commands ------- */
 
 <SectionLabel>{LABELID}                 { // first argument
-                                          yyextra->sectionLabel=yytext;
-                                          yyextra->sectionLabel+=yyextra->raiseLabel;
+                                          yyextra->sectionLabel=yyextra->raisePrefix+yytext;
                                           addOutput(yyscanner,yyextra->sectionLabel.data());
                                           yyextra->sectionTitle.clear();
                                           BEGIN(SectionTitle);
@@ -2111,7 +2110,7 @@ STopt  [^\n@\\]*
   /* ----- handle arguments of the anchor command ------- */
 
 <AnchorLabel,AnchorLabelSection>{LABELID} { // found argument
-                                          QCString lbl = QCString(yytext)+yyextra->raiseLabel;
+                                          QCString lbl = yyextra->raisePrefix+yytext;
                                           addAnchor(yyscanner,lbl, yyextra->anchorTitle);
                                           addOutput(yyscanner,lbl.data());
                                           if (YY_START == AnchorLabel)

@@ -99,7 +99,7 @@ struct commentcnvYY_state
   int      raiseLevel = 0;
   QCString raiseLabel;
   int      raiseIncrement = 0;
-  QCString incrementLabel;
+  QCString raisePrefix;
   bool     skip = FALSE;
   QCString fileName;
   int      lineNr = 0;
@@ -1307,61 +1307,59 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
-  QCString fullMatch = QCString(yytext);
   //printf("parseIncludeOptions=%s\n",qPrint(QCString(s)));
-  int idx = fullMatch.find('{');
-  int idxEnd = fullMatch.find("}",idx+1);
-  QCString cmdName;
+  size_t optIdxStart = s.find('{');
+  size_t optIdxEnd   = optIdxStart!=std::string::npos ? s.find("}",optIdxStart+1) : std::string::npos;
+  std::string cmdName;
   StringVector optList;
-  if (idx == -1) // no options
+  if (optIdxStart == std::string::npos) // no options
   {
-    cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
+    cmdName = stripWhiteSpace(s.substr(1)); // to remove {CMD}
   }
   else // options present
   {
-    cmdName = fullMatch.left(idx).stripWhiteSpace().mid(1); // to remove {CMD}
-    QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
-    optList = split(optStr.str(),",");
+    cmdName = stripWhiteSpace(s.substr(1,optIdxStart-1)); // to remove {CMD}
+    optList = split(std::string{s.substr(optIdxStart+1,optIdxEnd-optIdxStart-1)},",");
   }
-  bool isDoc = false;
-  if (cmdName=="includedoc" || cmdName=="snippetdoc") isDoc = true;
-
+  bool isDoc = cmdName=="includedoc" || cmdName=="snippetdoc";
   for (const auto &opt : optList)
   {
-    QCString locOpt = QCString(opt);
-    locOpt = locOpt.stripWhiteSpace();
-    if (locOpt=="doc")
+    if (stripWhiteSpace(opt)==std::string_view{"doc"})
     {
-      isDoc = true;
+      isDoc=true;
+      break;
     }
-    else
+  }
+
+  if (isDoc)
+  {
+    for (const auto &opt : optList)
     {
-      int posEqual = locOpt.find('=');
-      if (posEqual == -1) 
+      std::string_view locOpt = stripWhiteSpace(opt);
+      size_t posEqual = locOpt.find('=');
+      std::string_view option = posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(0,posEqual)) : locOpt;
+      std::string_view value  = posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(posEqual+1)) : std::string_view();
+
+      if (option==std::string_view{"doc"} && value.empty())
       {
-        isDoc = false;
-        break;
       }
-      QCString option = locOpt.left(posEqual);
-      QCString value = locOpt.mid(posEqual+1);
-      if (option == "raise")
+      else if (option==std::string_view{"raise"} && !value.empty())
       {
         yyextra->raiseIncrement = atoi(value.data());
         if (yyextra->raiseLevel+yyextra->raiseIncrement>=SectionType::MaxLevel) // check range
         {
           warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
-                    yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
+              yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
           yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
         }
       }
-      else if (option == "label")
+      else if (option==std::string_view{"prefix"} && !value.empty())
       {
-        yyextra->incrementLabel = value;
+        yyextra->raisePrefix = value;
       }
       else
       {
-        isDoc = false;
-        break;
+        warn(yyextra->fileName,yyextra->lineNr,"Unsupported option '%s' for %s command",qPrint(option), qPrint(cmdName));
       }
     }
   }
@@ -1687,7 +1685,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     int oldRaiseLevel = yyextra->raiseLevel;
     QCString oldRaiseLabel = yyextra->raiseLabel;
     yyextra->raiseLevel+=yyextra->raiseIncrement;
-    yyextra->raiseLabel+=yyextra->incrementLabel;
+    yyextra->raiseLabel+=yyextra->raisePrefix;
     QCString lineStr=" \\ilinebr \\ifile \""+absFileName+"\" \\iline " + std::to_string(lineNr);
     if (yyextra->raiseLevel>0 || !yyextra->raiseLabel.isEmpty())
     {
@@ -1860,7 +1858,7 @@ void convertCppComments(const std::string &inBuf,std::string &outBuf,const std::
   yyextra->raiseLevel = 0;
   yyextra->raiseLabel = "";
   yyextra->raiseIncrement = 0;
-  yyextra->incrementLabel = "";
+  yyextra->raisePrefix = "";
   yyextra->insertCppCommentMarker=false;
   yyextra->expandedAliases.clear();
   while (!yyextra->condStack.empty()) yyextra->condStack.pop();
