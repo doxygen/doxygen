@@ -424,6 +424,10 @@ void HtmlHelp::Private::createProjectFile()
     {
       t << "Compiled file=" << Config_getString(CHM_FILE) << "\n";
     }
+    else
+    {
+      t << "Compiled file=index.chm\n";
+    }
     t << "Compatibility=1.1\n"
          "Full-text search=Yes\n";
     if (ctsItemPresent) t << "Contents file=" + hhcFileName + "\n";
