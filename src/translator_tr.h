@@ -343,7 +343,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return (!projName.isEmpty()?projName + " " : "") + "Dokümantasyonu"; }
 
     /*! This is used in LaTeX as the title of the chapter with the

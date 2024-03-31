@@ -341,7 +341,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return "مستندات" + (!projName.isEmpty()?" " + projName : ""); }
 
     /*! This is used in LaTeX as the title of the chapter with the
