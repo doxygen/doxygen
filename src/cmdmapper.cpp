@@ -155,6 +155,7 @@ static const CommandMap g_cmdMap =
   { "iliteral",      CMD_ILITERAL },
   { "endiliteral",   CMD_ENDILITERAL },
   { "ianchor" ,      CMD_IANCHOR },
+  { "iprefix" ,      CMD_IPREFIX },
 };
 
 //----------------------------------------------------------------------------

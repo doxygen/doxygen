@@ -14,6 +14,7 @@ and the version in which they were introduced.
 \refitem cmdiline \\iline
 \refitem cmdilinebr \\ilinebr
 \refitem cmdiliteral \\iliteral
+\refitem cmdiprefix \\iprefix
 \refitem cmdiraise \\iraise
 \refitem cmdiverbatim \\iverbatim
 \endsecreflist
@@ -130,13 +131,23 @@ and the version in which they were introduced.
 \since doxygen version 1.9.5
 
 <hr>
-\section cmdiraise \\iraise \<amount\> "<label>"
+\section cmdiraise \\iraise \<amount\>
   \addindex \\iraise
 
-  Internal doxygen command to increase the section level by a given `amount` and append the
-  `label` to the label of the `\section` type of commands and the the `\anchor` command.
-  After processing `\iraise 1 "_lab"` for instance, a `\section s1` will be treated as a `\subsection s1_lab`.
-  Inserted when processing `\include{doc}` with the `raise` or `label` option.
+  Internal doxygen command to increase the section level by a given `amount`.
+  After processing `\iraise 1` for instance, a `\section s1` will be treated as a `\subsection s1`.
+  Inserted when processing `\include{doc}` with the `raise` option.
+
+\since doxygen version 1.11.0
+
+<hr>
+\section cmdiprefix \\iprefix "<label>"
+  \addindex \\iprefix
+
+  Internal doxygen command to prefix section labels references for \c \\ref and \c \\link commands.
+  After processing `\iprefix "pf_"` for instance, a <code>\\ref s1</code> will be treated as 
+  if <code>\\ref pf_s1</code> was written.
+  Inserted internally when processing `\include{doc}` with the `prefix` option.
 
 \since doxygen version 1.11.0
 

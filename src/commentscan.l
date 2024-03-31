@@ -170,6 +170,7 @@ static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIRaise(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 [[maybe_unused]] static const char *stateToString(int state);
 
@@ -396,7 +397,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "endlink",                { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
   { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }}
+  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iprefix",                { &handleIPrefix,                  CommandSpacing::Invisible, SectionHandling::Replace }}
 };
 
 #define YY_NO_INPUT 1
@@ -1763,18 +1765,21 @@ STopt  [^\n@\\]*
                                           {
                                             yyextra->raiseLevel = nr;
                                           }
-                                          BEGIN(IRaisePrefix);
+                                          BEGIN(Comment);
                                         }
 <IRaise>.                               {
                                           unput(yytext[0]);
                                           BEGIN(Comment);
                                         }
-<IRaisePrefix>{B}*"\""({LABELID})?"\""   {
+  /* ----- handle arguments of the iprefix command ----- */
+
+<IRaisePrefix>{B}*"\""({LABELID})?"\""  {
                                           QCString text(yytext);
                                           yyextra->raisePrefix = text.stripWhiteSpace().mid(1,text.length()-2);
+                                          addOutput(yyscanner,yytext);
                                           BEGIN(Comment);
                                         }
-<IRaisePrefix>.                          {
+<IRaisePrefix>.                         {
                                           unput(yytext[0]);
                                           BEGIN(Comment);
                                         }
@@ -3468,6 +3473,13 @@ static bool handleIRaise(yyscan_t yyscanner,const QCString &, const StringVector
   return FALSE;
 }
 
+static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner,"@iprefix ");
+  BEGIN(IRaisePrefix);
+  return FALSE;
+}
 
 static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {

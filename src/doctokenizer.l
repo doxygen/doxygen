@@ -386,6 +386,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_Text
 %x St_SkipTitle
 %x St_Anchor
+%x St_Prefix
 %x St_Snippet
 %x St_SetScope
 %x St_SetScopeEnd
@@ -1270,6 +1271,15 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.chars=yytext;
                          return TK_WHITESPACE;
                        }
+<St_Prefix>"\""[^\n\"]*"\"" {
+                         yyextra->token.name = yytext+1;
+                         yyextra->token.name = yyextra->token.name.left((int)yyleng-2);
+                         return TK_WORD;
+                       }
+<St_Prefix>.           {
+                         unput(*yytext);
+                         return 0;
+                       }
 <St_Options>{ID}       {
                          yyextra->token.name+=yytext;
                        }
@@ -2077,6 +2087,13 @@ void DocTokenizer::setStateAnchor()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Anchor);
+}
+
+void DocTokenizer::setStatePrefix()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_Prefix);
 }
 
 void DocTokenizer::setStateSnippet()

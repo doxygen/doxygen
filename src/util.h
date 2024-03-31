@@ -144,7 +144,8 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* in */  const QCString &lr,
                  /* in */  bool inSeeBlock,
                  /* out */ const Definition **resContext,
-                 /* out */ QCString &resAnchor
+                 /* out */ QCString &resAnchor,
+                 /* in */  const QCString &prefix=QCString()
                 );
 
 bool generateLink(OutputList &ol,const QCString &,

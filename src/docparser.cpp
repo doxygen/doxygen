@@ -958,6 +958,33 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
   children.append<DocAnchor>(this,parent,context.token->name,FALSE);
 }
 
+void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
+{
+  AUTO_TRACE();
+  int tok=tokenizer.lex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
+        qPrint(context.token->name));
+    return;
+  }
+  tokenizer.setStatePrefix();
+  tok=tokenizer.lex();
+  if (tok==0)
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
+        "argument of command %s",qPrint(context.token->name));
+    return;
+  }
+  else if (tok!=TK_WORD)
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
+        DocTokenizer::tokToString(tok),qPrint(context.token->name));
+    return;
+  }
+  context.prefix = context.token->name;
+  tokenizer.setStatePara();
+}
 
 /* Helper function that deals with the title, width, and height arguments of various commands.
  * @param[in] cmd        Command id for which to extract caption and size info.
@@ -1345,6 +1372,11 @@ reparsetoken:
         case CMD_IANCHOR:
           {
             handleAnchor(parent,children);
+          }
+          break;
+        case CMD_IPREFIX:
+          {
+            handlePrefix(parent,children);
           }
           break;
         case CMD_INTERNALREF:
