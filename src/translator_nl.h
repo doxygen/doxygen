@@ -242,7 +242,7 @@ class TranslatorDutch : public Translator
     QCString trModulesDescription() override
     { return "Hieronder volgt de lijst met alle modules:"; }
 
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return (!projName.isEmpty()?projName + " " : "") + "Documentatie"; }
     QCString trModuleIndex() override
     { return "Module Index"; }

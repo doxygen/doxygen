@@ -356,7 +356,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return (!projName.isEmpty()?projName + " " : "") + "說明文件"; }
 
     /*! This is used in LaTeX as the title of the chapter with the

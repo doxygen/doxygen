@@ -136,7 +136,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Seznam strani z dodatnimi opisi:"; }
     QCString trModulesDescription() override
     { return "Seznam modulov:"; }
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacija"; }
     QCString trModuleIndex() override
     { return "seznam modulov"; }

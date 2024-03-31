@@ -331,7 +331,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     { return "'n Lys van alle modules:"; }
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasie"; }
 
     /*! This is used in LaTeX as the title of the chapter with the

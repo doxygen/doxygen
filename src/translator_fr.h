@@ -414,7 +414,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
     { return "Liste de tous les modules :"; }
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString projName) override
+    QCString trDocumentation(const QCString &projName) override
     { return (!projName.isEmpty()?projName + " " : "") + "Documentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
