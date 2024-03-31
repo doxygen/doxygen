@@ -3061,7 +3061,8 @@ bool resolveLink(/* in */ const QCString &scName,
     /* in */ const QCString &lr,
     /* in */ bool /*inSeeBlock*/,
     /* out */ const Definition **resContext,
-    /* out */ QCString &resAnchor
+    /* out */ QCString &resAnchor,
+    /* in */ const QCString &prefix
     )
 {
   *resContext=nullptr;
@@ -3097,7 +3098,7 @@ bool resolveLink(/* in */ const QCString &scName,
     }
     return TRUE;
   }
-  else if ((si=SectionManager::instance().find(linkRef)))
+  else if ((si=SectionManager::instance().find(prefix+linkRef)))
   {
     *resContext=si->definition();
     resAnchor = si->label();

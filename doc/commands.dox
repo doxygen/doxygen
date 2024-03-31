@@ -2771,13 +2771,19 @@ Commands for displaying examples
   - The `option` `local` can be used make doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
 
-  When using option `doc`, there is an second option `raise` that can be specified to raise
+  When using option `doc`, there is also the option `raise` that can be specified to raise
   all sections found in the referenced file by a certain amount. For example 
   \verbatim
   \include{doc,raise=1} file.dox
   \endverbatim will treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
   into a level 3 \c \\subsubsection, etc.
   Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
+
+  Furthermore, there is the option `prefix` that can be used to add a prefix
+  to each label of the included sections, so that they remain unique. For example:
+  \verbatim
+  \include{doc,prefix=fn_} file.dox
+  \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
   \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.
@@ -2796,11 +2802,13 @@ Commands for displaying examples
   \sa sections \ref cmdinclude "\\include{lineno}".
 
 <hr>
-\section cmdincludedoc \\includedoc <file-name>
+\section cmdincludedoc \\includedoc['{'option'}'] <file-name>
 
   \addindex \\includedoc
   This command is obsolete and is still supported for backward compatibility reasons,
   it works the same way as \ref cmdinclude "\\include{doc}"
+
+  The `option`s are the same `option`s that can be used with the `\include` when using there the option `doc`.
 
   \sa section \ref cmdinclude "\\include{doc}".
 
@@ -2911,7 +2919,7 @@ Commands for displaying examples
  - The `option` `local` can be used make doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
 
- When using option `doc`, there is an second option `raise` that can be specified to raise
+ When using option `doc`, there is also the option `raise` that can be specified to raise
  all sections found in the referenced file by a certain amount. For example 
  \verbatim
  \snippet{doc,raise=1} file.dox XXX
@@ -2919,6 +2927,12 @@ Commands for displaying examples
  treat any level 1 \c \\section found the snippet as a level 2 \c \\subsection, and any level 2 \c \\subsection
  into a level 3 \c \\subsubsection, etc.
  Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
+
+ Furthermore, there is the option `prefix` that can be used to add a prefix
+ to each label of the included sections, so that they remain unique. For example:
+ \verbatim
+ \include{doc,prefix=fn_} file.dox
+ \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
  \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.
@@ -2936,11 +2950,13 @@ Commands for displaying examples
   \sa sections \ref cmdsnippet "\\snippet{lineno}"
 
 <hr>
-\section cmdsnippetdoc \\snippetdoc <file-name> ( block_id )
+\section cmdsnippetdoc \\snippetdoc['{'option'}'] <file-name> ( block_id )
 
   \addindex \\snippetdoc
   This command is obsolete and is still supported for backward compatibility reasons,
   it works the same way as \ref cmdsnippet "\\snippet{doc}"
+
+  The `option`s are the same `option`s that can be used with the `\snippet` when using there the option `doc`.
 
   \sa section \ref cmdsnippet "\\snippet{doc}" and \ref cmdinclude "\\include{doc}".
 

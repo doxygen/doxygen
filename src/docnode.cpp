@@ -694,7 +694,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   ASSERT(!target.isEmpty());
   SrcLangExt lang = getLanguageFromFileName(target);
   m_relPath = parser->context.relPath;
-  const SectionInfo *sec = SectionManager::instance().find(target);
+  const SectionInfo *sec = SectionManager::instance().find(parser->context.prefix+target);
   if (sec==nullptr && lang==SrcLangExt::Markdown) // lookup as markdown file
   {
     sec = SectionManager::instance().find(markdownFileNameToId(target));
@@ -731,7 +731,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);
     return;
   }
-  else if (resolveLink(context,target,TRUE,&compound,anchor))
+  else if (resolveLink(context,target,TRUE,&compound,anchor,parser->context.prefix))
   {
     bool isFile = compound ?
                  (compound->definitionType()==Definition::TypeFile ||
@@ -911,7 +911,7 @@ DocLink::DocLink(DocParser *parser,DocNodeVariant *parent,const QCString &target
   {
     m_refText = m_refText.right(m_refText.length()-1);
   }
-  if (resolveLink(parser->context.context,stripKnownExtensions(target),parser->context.inSeeBlock,&compound,anchor))
+  if (resolveLink(parser->context.context,stripKnownExtensions(target),parser->context.inSeeBlock,&compound,anchor,parser->context.prefix))
   {
     m_anchor = anchor;
     if (compound && compound->isLinkable())
@@ -4368,6 +4368,11 @@ int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CMD_ANCHOR:
       {
         parser()->handleAnchor(thisVariant(),children());
+      }
+      break;
+    case CMD_IPREFIX:
+      {
+        parser()->handlePrefix(thisVariant(),children());
       }
       break;
     case CMD_ADDINDEX:

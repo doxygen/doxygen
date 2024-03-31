@@ -76,6 +76,7 @@ struct DocParserContext
   bool         isExample = false;
   QCString     exampleName;
   QCString     searchUrl;
+  QCString     prefix;
 
   QCString     includeFileName;
   QCString     includeFileText;
@@ -128,6 +129,7 @@ class DocParser : public IDocParser
     void handleParameterType(DocNodeVariant *parent,DocNodeList &children,const QCString &paramTypes);
     void handleInternalRef(DocNodeVariant *parent,DocNodeList &children);
     void handleAnchor(DocNodeVariant *parent,DocNodeList &children);
+    void handlePrefix(DocNodeVariant *parent,DocNodeList &children);
     void handleImage(DocNodeVariant *parent, DocNodeList &children);
     void readTextFileByName(const QCString &file,QCString &text);
 

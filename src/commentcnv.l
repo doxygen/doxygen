@@ -81,6 +81,7 @@ struct commentcnv_FileState
   int oldFileBufPos = 0;
   int oldIncludeCtx = 0;
   int oldRaiseLvl = 0;
+  QCString oldRaiseLbl;
 };
 
 struct commentcnvYY_state
@@ -96,7 +97,9 @@ struct commentcnvYY_state
   int      readLineCtx = 0;
   int      includeCtx = 0;
   int      raiseLevel = 0;
+  QCString raiseLabel;
   int      raiseIncrement = 0;
+  QCString raisePrefix;
   bool     skip = FALSE;
   QCString fileName;
   int      lineNr = 0;
@@ -144,7 +147,7 @@ static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
 static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCString &blockId);
 static void insertCommentStart(yyscan_t yyscanner);
-static void parseIncludeOptions(yyscan_t yyscanner,std::string_view s);
+static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s);
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
@@ -214,7 +217,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 B         [ \t]
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 
-OPTS      (","{B}*{ID}{B}*("="{B}*({ID}|[0-9]*){B}*)?)*
+OPTS      "{"[^}]*"}"{B}*
 
   //- end: NUMBER ---------------------------------------------------------------------------
 
@@ -1033,7 +1036,7 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,yyleng);
   				   }
 
-<CComment,ReadLine,IncludeFile>{B}{B}{B}{B}[\\@]("include{"{B}*"doc"{B}*{OPTS}"}"|"includedoc") { // Markdown code section
+<CComment,ReadLine,IncludeFile>{B}{B}{B}{B}[\\@]("include"{OPTS}|"includedoc"{OPTS}*) { // Markdown code section
                                      if (Config_getBool(MARKDOWN_SUPPORT))
                                      {
 				       copyToOutput(yyscanner,yytext,yyleng);
@@ -1043,7 +1046,7 @@ SLASHopt [/]*
                                        REJECT;
                                      }
                                    }
-<CComment,ReadLine,IncludeFile>{B}{B}{B}{B}[\\@]("snippet{"{B}*"doc"{B}*{OPTS}"}"|"snippetdoc") { // Markdown code section
+<CComment,ReadLine,IncludeFile>{B}{B}{B}{B}[\\@]("snippet"{OPTS}|"snippetdoc"{OPTS}*) { // Markdown code section
                                      if (Config_getBool(MARKDOWN_SUPPORT))
                                      {
 				       copyToOutput(yyscanner,yytext,yyleng);
@@ -1053,10 +1056,10 @@ SLASHopt [/]*
                                        REJECT;
                                      }
                                    }
-<CComment,ReadLine,IncludeFile>[\\@]("include{"{B}*"doc"{B}*{OPTS}"}"|"includedoc") {
+<CComment,ReadLine,IncludeFile>[\\@]("include"{OPTS}|"includedoc"{OPTS}*) {
+                                     if (!parseIncludeOptions(yyscanner,std::string_view{yytext,static_cast<size_t>(yyleng)})) REJECT;
                                      yyextra->includeCtx = YY_START;
                                      yyextra->firstIncludeLine = true;
-                                     parseIncludeOptions(yyscanner,std::string_view{yytext,static_cast<size_t>(yyleng)});
                                      if (!yyextra->insertCppCommentMarker && (yyextra->includeCtx==ReadLine || yyextra->includeCtx==IncludeFile))
                                      {
                                        if (yyextra->includeCtx==ReadLine)
@@ -1067,10 +1070,10 @@ SLASHopt [/]*
                                      }
                                      BEGIN(IncludeDoc);
                                    }
-<CComment,ReadLine,IncludeFile>[\\@]("snippet{"{B}*"doc"{B}*{OPTS}"}"|"snippetdoc") {
+<CComment,ReadLine,IncludeFile>[\\@]("snippet"{OPTS}|"snippetdoc"{OPTS}*) {
+                                     if (!parseIncludeOptions(yyscanner,std::string_view{yytext,static_cast<size_t>(yyleng)})) REJECT;
                                      yyextra->includeCtx = YY_START;
                                      yyextra->firstIncludeLine = true;
-                                     parseIncludeOptions(yyscanner,std::string_view{yytext,static_cast<size_t>(yyleng)});
                                      if (!yyextra->insertCppCommentMarker && (yyextra->includeCtx==ReadLine || yyextra->includeCtx==IncludeFile))
                                      {
                                        if (yyextra->includeCtx==ReadLine)
@@ -1285,9 +1288,14 @@ SLASHopt [/]*
                                        QCString lineStr= " \\ilinebr \\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
                                        if (fs->oldRaiseLvl!=yyextra->raiseLevel)
                                        {
-                                          lineStr+=std::string(" \\iraise ") + std::to_string(fs->oldRaiseLvl);
+                                          lineStr+=" \\iraise " + std::to_string(fs->oldRaiseLvl);
+                                       }
+                                       if (fs->oldRaiseLbl!=yyextra->raiseLabel)
+                                       {
+                                          lineStr+=" \\iprefix \"" + fs->oldRaiseLbl + "\"";
                                        }
                                        yyextra->raiseLevel    = fs->oldRaiseLvl;
+                                       yyextra->raiseLabel    = fs->oldRaiseLbl;
                                        copyToOutput(yyscanner,lineStr.view());
                                        yyextra->includeStack.pop_back();
                                        //printf("<<EOF>> switch back to %s line %d inbufPos=%d outbufPos=%d\n",
@@ -1299,22 +1307,68 @@ SLASHopt [/]*
   */
 %%
 
-static void parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
+static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+
   //printf("parseIncludeOptions=%s\n",qPrint(QCString(s)));
-  static const reg::Ex re(R"(,\s*raise\s*=\s*(\d+))");
-  reg::Match match;
-  if (reg::search(s,match,re))
+  size_t optIdxStart = s.find('{');
+  size_t optIdxEnd   = optIdxStart!=std::string::npos ? s.find("}",optIdxStart+1) : std::string::npos;
+  std::string cmdName;
+  StringVector optList;
+  if (optIdxStart == std::string::npos) // no options
   {
-    yyextra->raiseIncrement = atoi(match[1].str().c_str());
-    if (yyextra->raiseLevel+yyextra->raiseIncrement>=SectionType::MaxLevel) // check range
+    cmdName = stripWhiteSpace(s.substr(1)); // to remove {CMD}
+  }
+  else // options present
+  {
+    cmdName = stripWhiteSpace(s.substr(1,optIdxStart-1)); // to remove {CMD}
+    optList = split(std::string{s.substr(optIdxStart+1,optIdxEnd-optIdxStart-1)},",");
+  }
+  bool isDoc = cmdName=="includedoc" || cmdName=="snippetdoc";
+  for (const auto &opt : optList)
+  {
+    if (stripWhiteSpace(opt)==std::string_view{"doc"})
     {
-      warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
-                yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
-      yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
+      isDoc=true;
+      break;
     }
   }
+
+  if (isDoc)
+  {
+    for (const auto &opt : optList)
+    {
+      std::string_view locOpt = stripWhiteSpace(opt);
+      size_t posEqual = locOpt.find('=');
+      std::string_view option = posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(0,posEqual)) : locOpt;
+      std::string_view value  = posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(posEqual+1)) : std::string_view();
+
+      if (option==std::string_view{"doc"} && value.empty())
+      {
+      }
+      else if (option==std::string_view{"raise"} && !value.empty())
+      {
+        yyextra->raiseIncrement = atoi(value.data());
+        if (yyextra->raiseLevel+yyextra->raiseIncrement>=SectionType::MaxLevel) // check range
+        {
+          warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
+              yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
+          yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
+        }
+      }
+      else if (option==std::string_view{"prefix"} && !value.empty())
+      {
+        yyextra->raisePrefix = value;
+      }
+      else
+      {
+        warn(yyextra->fileName,yyextra->lineNr,"Unsupported option '%s' for %s command",qPrint(option), qPrint(cmdName));
+      }
+    }
+  }
+
+  return isDoc;
 }
 
 
@@ -1633,11 +1687,17 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       }
     }
     int oldRaiseLevel = yyextra->raiseLevel;
+    QCString oldRaiseLabel = yyextra->raiseLabel;
     yyextra->raiseLevel+=yyextra->raiseIncrement;
+    yyextra->raiseLabel+=yyextra->raisePrefix;
     QCString lineStr=" \\ilinebr \\ifile \""+absFileName+"\" \\iline " + std::to_string(lineNr);
     if (yyextra->raiseLevel>0)
     {
       lineStr+=" \\iraise " + std::to_string(yyextra->raiseLevel);
+    }
+    if (!yyextra->raiseLabel.isEmpty())
+    {
+      lineStr+=" \\iprefix \"" + yyextra->raiseLabel + "\"";
     }
     lineStr+=" \\ilinebr ";
     copyToOutput(yyscanner,lineStr.view());
@@ -1651,6 +1711,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     fs->oldFileBufPos = yyextra->inBufPos;
     fs->oldIncludeCtx = yyextra->includeCtx;
     fs->oldRaiseLvl   = oldRaiseLevel;
+    fs->oldRaiseLbl   = oldRaiseLabel;
     fs->blockId       = blockId;
     yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner),yyscanner);
     yyextra->fileName = absFileName;
@@ -1803,7 +1864,9 @@ void convertCppComments(const std::string &inBuf,std::string &outBuf,const std::
   yyextra->pythonDocString = FALSE;
   yyextra->lineNr   = 1;
   yyextra->raiseLevel = 0;
+  yyextra->raiseLabel = "";
   yyextra->raiseIncrement = 0;
+  yyextra->raisePrefix = "";
   yyextra->insertCppCommentMarker=false;
   yyextra->expandedAliases.clear();
   while (!yyextra->condStack.empty()) yyextra->condStack.pop();

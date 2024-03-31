@@ -187,6 +187,7 @@ class DocTokenizer
     void setStateILine();
     void setStateQuotedString();
     void setStateShowDate();
+    void setStatePrefix();
 
   private:
     struct Private;

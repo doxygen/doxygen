@@ -170,6 +170,7 @@ static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleILine(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIRaise(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 [[maybe_unused]] static const char *stateToString(int state);
 
@@ -396,7 +397,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "endlink",                { 0,                               CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
   { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }}
+  { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "iprefix",                { &handleIPrefix,                  CommandSpacing::Invisible, SectionHandling::Replace }}
 };
 
 #define YY_NO_INPUT 1
@@ -464,6 +466,7 @@ struct commentscanYY_state
   QCString         fileName;               // file name that is read from
   int              lineNr = 0;             // line number in the input
   int              raiseLevel = 0;         // section level raise amount
+  QCString         raisePrefix;             // section label to append
   bool             inBody = FALSE;         // was the comment found inside the body of a function?
   OutputContext    inContext;              // are we inside the brief, details or xref part
   bool             briefEndsAtDot = FALSE; // does the brief description stop at a dot?
@@ -693,6 +696,7 @@ STopt  [^\n@\\]*
 %x      ILine
 %x      ILineSection
 %x      IRaise
+%x      IRaisePrefix
 
 %%
 
@@ -1767,6 +1771,18 @@ STopt  [^\n@\\]*
                                           unput(yytext[0]);
                                           BEGIN(Comment);
                                         }
+  /* ----- handle arguments of the iprefix command ----- */
+
+<IRaisePrefix>{B}*"\""({LABELID})?"\""  {
+                                          QCString text(yytext);
+                                          yyextra->raisePrefix = text.stripWhiteSpace().mid(1,text.length()-2);
+                                          addOutput(yyscanner,yytext);
+                                          BEGIN(Comment);
+                                        }
+<IRaisePrefix>.                         {
+                                          unput(yytext[0]);
+                                          BEGIN(Comment);
+                                        }
 
 
   /* ----- handle arguments of the ifile command ----- */
@@ -1837,8 +1853,8 @@ STopt  [^\n@\\]*
   /* ----- handle arguments of the section/subsection/.. commands ------- */
 
 <SectionLabel>{LABELID}                 { // first argument
-                                          yyextra->sectionLabel=yytext;
-                                          addOutput(yyscanner,yytext);
+                                          yyextra->sectionLabel=yyextra->raisePrefix+yytext;
+                                          addOutput(yyscanner,yyextra->sectionLabel.data());
                                           yyextra->sectionTitle.clear();
                                           BEGIN(SectionTitle);
                                         }
@@ -2099,8 +2115,9 @@ STopt  [^\n@\\]*
   /* ----- handle arguments of the anchor command ------- */
 
 <AnchorLabel,AnchorLabelSection>{LABELID} { // found argument
-                                          addAnchor(yyscanner,QCString(yytext), yyextra->anchorTitle);
-                                          addOutput(yyscanner,yytext);
+                                          QCString lbl = yyextra->raisePrefix+yytext;
+                                          addAnchor(yyscanner,lbl, yyextra->anchorTitle);
+                                          addOutput(yyscanner,lbl.data());
                                           if (YY_START == AnchorLabel)
                                           {
                                             BEGIN(Comment);
@@ -3456,6 +3473,13 @@ static bool handleIRaise(yyscan_t yyscanner,const QCString &, const StringVector
   return FALSE;
 }
 
+static bool handleIPrefix(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner,"@iprefix ");
+  BEGIN(IRaisePrefix);
+  return FALSE;
+}
 
 static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
