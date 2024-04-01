@@ -989,6 +989,11 @@ class DoxBool(str, Enum):
     NO='no'
 
 
+class DoxCheck(str, Enum):
+    CHECKED='checked'
+    UNCHECKED='unchecked'
+
+
 class DoxCompoundKind(str, Enum):
     CLASS='class'
     STRUCT='struct'
@@ -17381,12 +17386,14 @@ class docListItemType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, value=None, para=None, gds_collector_=None, **kwargs_):
+    def __init__(self, override=None, value=None, para=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
         self.parent_object_ = kwargs_.get('parent_object_')
         self.ns_prefix_ = None
+        self.override = _cast(None, override)
+        self.override_nsprefix_ = None
         self.value = _cast(int, value)
         self.value_nsprefix_ = None
         if para is None:
@@ -17419,10 +17426,27 @@ class docListItemType(GeneratedsSuper):
         self.para.insert(index, value)
     def replace_para_at(self, index, value):
         self.para[index] = value
+    def get_override(self):
+        return self.override
+    def set_override(self, override):
+        self.override = override
     def get_value(self):
         return self.value
     def set_value(self, value):
         self.value = value
+    def validate_DoxCheck(self, value):
+        # Validate type DoxCheck, a restriction on xsd:string.
+        if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
+            if not isinstance(value, str):
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
+                return False
+            value = value
+            enumerations = ['checked', 'unchecked']
+            if value not in enumerations:
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxCheck' % {"value" : encode_str_2_3(value), "lineno": lineno} )
+                result = False
     def hasContent_(self):
         if (
             self.para
@@ -17454,6 +17478,9 @@ class docListItemType(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='docListItemType'):
+        if self.override is not None and 'override' not in already_processed:
+            already_processed.add('override')
+            outfile.write(' override=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.override), input_name='override')), ))
         if self.value is not None and 'value' not in already_processed:
             already_processed.add('value')
             outfile.write(' value="%s"' % self.gds_format_integer(self.value, input_name='value'))
@@ -17477,6 +17504,11 @@ class docListItemType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('override', node)
+        if value is not None and 'override' not in already_processed:
+            already_processed.add('override')
+            self.override = value
+            self.validate_DoxCheck(self.override)    # validate type DoxCheck
         value = find_attr_value_('value', node)
         if value is not None and 'value' not in already_processed:
             already_processed.add('value')

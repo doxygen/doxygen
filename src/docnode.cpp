@@ -2714,9 +2714,9 @@ int DocAutoListItem::parse()
 //--------------------------------------------------------------------------
 
 DocAutoList::DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,bool isEnumList,
-                         int depth) :
+                         int depth, bool isCheckedList):
       DocCompoundNode(parser,parent), m_indent(indent), m_isEnumList(isEnumList),
-      m_depth(depth)
+      m_depth(depth),m_isCheckedList(isCheckedList)
 {
 }
 
@@ -2730,10 +2730,20 @@ int DocAutoList::parse()
 	  // first item or sub list => create new list
   do
   {
-    if (parser()->context.token->id!=-1) // explicitly numbered list
+    switch (parser()->context.token->id)
     {
-      num=parser()->context.token->id;  // override num with real number given
+      case -1:
+        break;
+      case DocAutoList::Unchecked: // unchecked
+      case DocAutoList::Checked_x: // checked with x
+      case DocAutoList::Checked_X: // checked with X
+        num = parser()->context.token->id;
+        break;
+      default: // explicitly numbered list
+        num=parser()->context.token->id;  // override num with real number given
+        break;
     }
+
     children().append<DocAutoListItem>(parser(),thisVariant(),m_indent,num++);
     retval = children().get_last<DocAutoListItem>()->parse();
     //printf("DocAutoList::parse(): retval=0x%x parser()->context.token->indent=%d m_indent=%d "
@@ -2745,7 +2755,8 @@ int DocAutoList::parse()
   while (retval==TK_LISTITEM &&                // new list item
          m_indent==parser()->context.token->indent &&          // at same indent level
 	 m_isEnumList==parser()->context.token->isEnumList &&  // of the same kind
-         (parser()->context.token->id==-1 || parser()->context.token->id>=num)  // increasing number (or no number)
+         m_isCheckedList==parser()->context.token->isCheckedList &&  // of the same kind
+         (parser()->context.token->id==-1 || parser()->context.token->id>=num)  // increasing number (or no number or checked list)
         );
 
   parser()->tokenizer.endAutoList();
@@ -5344,7 +5355,8 @@ reparsetoken:
           {
             children().append<DocAutoList>(parser(),thisVariant(),
                                            parser()->context.token->indent,
-                                           parser()->context.token->isEnumList,depth);
+                                           parser()->context.token->isEnumList,depth,
+                                           parser()->context.token->isCheckedList);
             al = children().get_last<DocAutoList>();
             retval = children().get_last<DocAutoList>()->parse();
           } while (retval==TK_LISTITEM &&                   // new list

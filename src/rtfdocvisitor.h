@@ -119,6 +119,7 @@ class RTFDocVisitor : public DocVisitor
                    const QCString &anchor);
     void endLink(const QCString &ref);
     QCString getStyle(const QCString &name);
+    QCString getListTable(const int id);
 
     int indentLevel() const;
     void incIndentLevel();
@@ -150,6 +151,7 @@ class RTFDocVisitor : public DocVisitor
     struct RTFListItemInfo
     {
       bool isEnum = false;
+      bool isCheck = false;
       int number = 1;
       char type = '1';
     };

@@ -754,7 +754,19 @@ void LatexDocVisitor::operator()(const DocAutoList &l)
 void LatexDocVisitor::operator()(const DocAutoListItem &li)
 {
   if (m_hide) return;
-  m_t << "\n\\item ";
+  switch (li.itemNumber())
+  {
+    case DocAutoList::Unchecked: // unchecked
+      m_t << "\n\\item[\\DoxyUnchecked] ";
+      break;
+    case DocAutoList::Checked_x: // checked with x
+    case DocAutoList::Checked_X: // checked with X
+      m_t << "\n\\item[\\DoxyChecked] ";
+      break;
+    default:
+      m_t << "\n\\item ";
+      break;
+  }
   incIndentLevel();
   visitChildren(li);
   decIndentLevel();

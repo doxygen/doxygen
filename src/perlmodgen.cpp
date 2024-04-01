@@ -755,7 +755,7 @@ void PerlModDocVisitor::operator()(const DocCite &cite)
 void PerlModDocVisitor::operator()(const DocAutoList &l)
 {
   openItem("list");
-  m_output.addFieldQuotedString("style", l.isEnumList() ? "ordered" : "itemized");
+  m_output.addFieldQuotedString("style", l.isEnumList() ? "ordered" : (l.isCheckedList() ? "check" :"itemized"));
   openSubBlock("content");
   visitChildren(l);
   closeSubBlock();
@@ -765,6 +765,18 @@ void PerlModDocVisitor::operator()(const DocAutoList &l)
 void PerlModDocVisitor::operator()(const DocAutoListItem &li)
 {
   openSubBlock();
+  switch (li.itemNumber())
+  {
+    case DocAutoList::Unchecked: // unchecked
+      m_output.addFieldQuotedString("style", "Unchecked");
+      break;
+    case DocAutoList::Checked_x: // checked with x
+    case DocAutoList::Checked_X: // checked with X
+      m_output.addFieldQuotedString("style", "Checked");
+      break;
+    default:
+      break;
+  }
   visitChildren(li);
   closeSubBlock();
 }

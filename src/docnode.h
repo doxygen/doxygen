@@ -546,15 +546,23 @@ class DocIndexEntry : public DocNode
 class DocAutoList : public DocCompoundNode
 {
   public:
-    DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,bool isEnumList,int depth);
+    enum ListType
+    {
+       Unnumbered=1, Unchecked=-2, Checked_x=-3, Checked_X=-4 // positive numbers give the label
+    };
+    DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,bool isEnumList,
+                         int depth, bool isCheckedList);
+
     bool isEnumList() const    { return m_isEnumList; }
     int  indent() const        { return m_indent; }
+    bool isCheckedList() const { return m_isCheckedList; }
     int depth() const          { return m_depth; }
     int parse();
 
   private:
     int      m_indent = 0;
     bool     m_isEnumList = false;
+    bool     m_isCheckedList = false;
     int      m_depth = 0;
 };
 

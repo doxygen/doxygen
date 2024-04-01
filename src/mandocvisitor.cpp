@@ -464,7 +464,21 @@ void ManDocVisitor::operator()(const DocAutoListItem &li)
   }
   else // bullet list
   {
-    m_t << "\\(bu\" " << (2*m_indent);
+    switch (li.itemNumber())
+    {
+      case DocAutoList::Unchecked: // unchecked
+        m_t << "[ ]\" " << (2*m_indent) + 2;
+        break;
+      case DocAutoList::Checked_x: // checked with x
+        m_t << "[x]\" " << (2*m_indent) + 2;
+        break;
+      case DocAutoList::Checked_X: // checked with X
+        m_t << "[X]\" " << (2*m_indent) + 2;
+        break;
+      default:
+        m_t << "\\(bu\" " << (2*m_indent);
+        break;
+    }
   }
   m_t << "\n";
   m_firstCol=TRUE;
