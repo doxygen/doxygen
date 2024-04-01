@@ -68,6 +68,19 @@ QCString RTFDocVisitor::getStyle(const QCString &name)
   return sd.reference();
 }
 
+QCString RTFDocVisitor::getListTable(const int id)
+{
+  for (int i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  {
+    if ((id == rtf_Table_Default[i].id) && (m_indentLevel == rtf_Table_Default[i].lvl))
+    {
+      return rtf_Table_Default[i].place;
+    }
+  }
+  ASSERT(0);
+  return "";
+}
+
 int RTFDocVisitor::indentLevel() const
 {
   return std::min(m_indentLevel,maxIndentLevels-1);
@@ -647,6 +660,7 @@ void RTFDocVisitor::operator()(const DocAutoList &l)
   m_t << "{\n";
   int level = indentLevel();
   m_listItemInfo[level].isEnum = l.isEnumList();
+  m_listItemInfo[level].isCheck = l.isCheckedList();
   m_listItemInfo[level].type   = '1';
   m_listItemInfo[level].number = 1;
   m_lastIsPara=FALSE;
@@ -654,16 +668,21 @@ void RTFDocVisitor::operator()(const DocAutoList &l)
   if (!m_lastIsPara) m_t << "\\par";
   m_t << "}\n";
   m_lastIsPara=TRUE;
-  if (indentLevel()==0) m_t << "\\par\n";
+  if (!l.isCheckedList() && indentLevel()==0) m_t << "\\par\n";
 }
 
 void RTFDocVisitor::operator()(const DocAutoListItem &li)
 {
+  static int prevLevel = -1;
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocAutoListItem &)}\n");
-  if (!m_lastIsPara) m_t << "\\par\n";
-  m_t << rtf_Style_Reset;
   int level = indentLevel();
+  if ((level != prevLevel-1) &&
+      (!(level==prevLevel && level != 0 && m_listItemInfo[level].isCheck)) &&
+      (!m_lastIsPara))
+    m_t << "\\par\n";
+  prevLevel= level;
+  m_t << rtf_Style_Reset;
   if (m_listItemInfo[level].isEnum)
   {
     m_t << getStyle("ListEnum") << "\n";
@@ -672,10 +691,22 @@ void RTFDocVisitor::operator()(const DocAutoListItem &li)
   }
   else
   {
-    m_t << getStyle("ListBullet") << "\n";
+    switch (li.itemNumber())
+    {
+      case DocAutoList::Unchecked: // unchecked
+        m_t << getListTable(2) << "\n";
+        break;
+      case DocAutoList::Checked_x: // checked with x
+      case DocAutoList::Checked_X: // checked with X
+        m_t << getListTable(3) << "\n";
+        break;
+      default:
+        m_t << getListTable(1) << "\n";
+        break;
+    }
   }
   incIndentLevel();
-  m_lastIsPara=FALSE;
+  m_lastIsPara=false;
   visitChildren(li);
   decIndentLevel();
 }
@@ -799,7 +830,8 @@ void RTFDocVisitor::operator()(const DocSimpleList &l)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocSimpleSect &)}\n");
   m_t << "{\n";
-  m_listItemInfo[indentLevel()].isEnum = FALSE;
+  m_listItemInfo[indentLevel()].isEnum = false;
+  m_listItemInfo[indentLevel()].isCheck = false;
   m_lastIsPara=FALSE;
   visitChildren(l);
   if (!m_lastIsPara) m_t << "\\par\n";
@@ -863,6 +895,7 @@ void RTFDocVisitor::operator()(const DocHtmlList &l)
   m_t << "{\n";
   int level = indentLevel();
   m_listItemInfo[level].isEnum = l.type()==DocHtmlList::Ordered;
+  m_listItemInfo[level].isCheck = false;
   m_listItemInfo[level].number = 1;
   m_listItemInfo[level].type   = '1';
   for (const auto &opt : l.attribs())

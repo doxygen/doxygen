@@ -651,6 +651,7 @@
     <xsd:sequence>
       <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
+    <xsd:attribute name="override" type="DoxCheck" />
     <xsd:attribute name="value" type="xsd:integer" use="optional"/>
   </xsd:complexType>
 
@@ -1080,6 +1081,13 @@
       <xsd:enumeration value="important" />
       <xsd:enumeration value="par" />
       <xsd:enumeration value="rcs" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DoxCheck">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="checked" />
+      <xsd:enumeration value="unchecked" />
     </xsd:restriction>
   </xsd:simpleType>
 
