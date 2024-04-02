@@ -1411,6 +1411,7 @@ public:
   QCString pathDoxyRules;
   // perlmodPython PerlModGenerator path define <start>
   QCString pathPythonPut2cpp_py;
+  QCString pathPythonREADME_md;
   QCString pathPythonSample_py;
   QCString pathPythonDoxy2py_pl;
   // perlmodPython PerlModGenerator path define <end>
@@ -1442,6 +1443,7 @@ public:
   bool generateDoxyRules();
   // perlmodPython PerlModGenerator declare function <start>
   bool generatePythonPut2cpp_py();
+  bool generatePythonREADME_md();
   bool generatePythonSample_py();
   bool generatePythonDoxy2py_pl();
   // perlmodPython PerlModGenerator declare function <end>
@@ -2541,12 +2543,12 @@ bool PerlModGenerator::generatePythonPut2cpp_py()
     "    - code in generate function\n"
     "    - Makefile\n"
     "    \'\'\'\n"
-    "    def __init__(self,inputdir,out,perlmodgen,debug):\n"
+    "    def __init__(self,inputdir,outlog,perlmodgen,debug):\n"
     "        \'\'\'\n"
     "            This is  init funciton \"\"\" test \"\"\"\n"
     "        \'\'\'\n"
     "        self.inputdir = inputdir\n"
-    "        self.out = out\n"
+    "        self.outlog = outlog\n"
     "        self.perlmodgen = perlmodgen\n"
     "        self.debug = debug\n"
     "        if self.perlmodgen and not os.path.exists(self.perlmodgen):\n"
@@ -2554,6 +2556,7 @@ bool PerlModGenerator::generatePythonPut2cpp_py()
     "            print(\' !! set --perlmodgen option with the location of perlmodgen.cpp\')\n"
     "            quit(4)\n"
     "        files = os.listdir(self.inputdir)\n"
+    "        print(\'files:\',files)\n"
     "        self.p = []\n"
     "        self.o = {}\n"
     "        self.o[\'path define\'] = []\n"
@@ -2652,22 +2655,25 @@ bool PerlModGenerator::generatePythonPut2cpp_py()
     "        mk.append(\'\'\'\\t# first of all, you add your py in input_perlmodgen_files directory\'\'\')\n"
     "        mk.append(\'\'\'\\t# please change ../../../../src/perlmodgen.cpp to location of src/perlmodgen.cpp\'\'\')\n"
     "        mk.append(\'\'\'\\t# output filename : perlmodgen.cpp.mod\'\'\')\n"
-    "        mk.append(\'\'\'\\tpython3 put2cpp.py --inputdir=input_perlmodgen_files --perlmodgen=../../../../src/perlmodgen.cpp\'\'\')\n"
+    "        mk.append(\'\'\'\\tpython3 put2cpp.py --inputdir=input_perlmodgen_files --perlmodgen=../../../../src/perlmodgen.cpp --outlog=out-perlmodgen.log\'\'\')\n"
     "        mk.append(\'\')\n"
     "        mk.append(\'\'\'# run python code with DoxyDocs\'\'\')\n"
     "        mk.append(\'\'\'python_doc:\'\'\')\n"
-    "        mk.append(\'\'\'\\t# if you want to get plantuml without running java ,\'\'\')\n"
-    "        mk.append(\'\'\'\\t# 1. set PLANTUML_JAR_PATH = ./plantuml.jar in Doxygile\'\'\')\n"
-    "        mk.append(\'\'\'\\t# 2. do \'touch plantuml.jar\' \'\'\')\n"
-    "        mk.append(\'\'\'\\t# 3. run \'doxygen\' then your DoxyDocs.pm will include plantuml.\'\'\')\n"
+    "        mk.append(\'\'\'\\t@echo \"if you want to get plantuml without running java ,\"\'\'\')\n"
+    "        mk.append(\'\'\'\\t@echo \" 1. set PLANTUML_JAR_PATH = ./plantuml.jar in Doxygile\"\'\'\')\n"
+    "        mk.append(\'\'\'\\t@echo \" 2. do \'touch plantuml.jar\'\"\'\'\')\n"
+    "        mk.append(\'\'\'\\t@echo \" 3. run \'doxygen\' then your DoxyDocs.pm will include plantuml.\"\'\'\')\n"
+    "        mk.append(\'\'\'\\t@echo \"\"\'\'\')\n"
     "        mk.append(\'\'\'\\tperl doxy2py.pl\'\'\')\n"
     "        mk.append(\'\'\'\\tpython3 sample.py --outfile=output.md\'\'\')\n"
+    "        mk.append(\'\'\'\\t@echo \"\"\'\'\')\n"
+    "        mk.append(\'\'\'\\t@echo \"refer to https://github.com/cheoljoo/doxygen_perlmod_python for getting more example and usage\"\'\'\')\n"
     "        mk.append(\'\')\n"
     "        self.o[\'Makefile\'].append(\'\\n\'.join([self.line2cpp(6,item) for item in mk]) + \';\')\n"
     "        self.p += self.o[\'Makefile\']\n"
     "        self.p.append(\'\'\'  }\'\'\')\n"
-    "        with open(self.out ,\"w\") as f:\n"
-    "            print(\'write:\',self.out)\n"
+    "        with open(self.outlog ,\"w\") as f:\n"
+    "            print(\'write:\',self.outlog)\n"
     "            f.write(\'\\n\'.join(self.p))\n"
     "        startRe = re.compile(\'^\\s*//\\s+perlmodPython\\s+PerlModGenerator\\s+(?P<key>[^<>]+)<start>\\s*\')\n"
     "        endRe = re.compile(\'^\\s*//\\s+perlmodPython\\s+PerlModGenerator\\s+(?P<key>[^<>]+)<end>\\s*\')\n"
@@ -2719,6 +2725,7 @@ bool PerlModGenerator::generatePythonPut2cpp_py()
     "        file2 = file.replace(\'.\',\'_\')\n"
     "        fileList = list(file2)\n"
     "        ff = \'Python\' + fileList[0].upper() + \'\'.join(fileList[1:])\n"
+    "        print(ff)\n"
     "        return ff\n"
     "\n"
     "    def line2cpp(self,indent,line):\n"
@@ -2748,19 +2755,54 @@ bool PerlModGenerator::generatePythonPut2cpp_py()
     "        type=str,\n"
     "        default=\'./perlmodgen.cpp\',\n"
     "        help=\'location of perlmodgen.cpp.  python codes in inputdir will be updated.\')\n"
-    "    parser.add_argument( \'--out\',\n"
+    "    parser.add_argument( \'--outlog\',\n"
     "        metavar=\"<str>\",\n"
     "        type=str,\n"
-    "        default=\'out.mod\',\n"
-    "        help=\'insert python code into cpp (perlmodgen.cpp)\')\n"
+    "        default=\'out-perlmodgen.log\',\n"
+    "        help=\'log file\')\n"
     "\n"
     "    args = parser.parse_args()\n"
     "    debug = args.debug\n"
     "\n"
     "    print(\'inputdir:\',args.inputdir)\n"
     "    print(\'input location of perlmodegen.cpp:\',args.perlmodgen)\n"
-    "    S = Solution(args.inputdir,args.out,args.perlmodgen,args.debug)\n"
+    "    S = Solution(args.inputdir,args.outlog,args.perlmodgen,args.debug)\n"
     "\n";
+
+  return true;
+}
+
+bool PerlModGenerator::generatePythonREADME_md()
+{
+  std::ofstream pythonStream;
+  if (!createOutputFile(pythonStream, pathPythonREADME_md))
+    return false;
+
+  pythonStream <<
+    "# PERLMOD_PYTHON\n"
+    "- developers want to use parsing data from doxygen.\n"
+    "- they want to do something with python.\n"
+    "\n"
+    "- set **GENERATE_PERLMOD = YES**   and **PERLMOD_PYTHON = YES**\n"
+    "\n"
+    "## make python_doc\n"
+    "- DoxyDocs.pm converts to DoxyDocs.py.\n"
+    "  - DoxyDocs.py is loaded in python program.\n"
+    "- sample.py makes markdown (output.md) file as final output.\n"
+    "  - output.md includes table for classes and member functions.\n"
+    "  - if doxygen comments include plantuml , output.md includes plantuml   if you set PLANTUML_JAR_PATH = ./plantuml.jar and this file exists.\n"
+    "- output\n"
+    "	- output.md : show markdown including plantuml with vscode (useful extension : markdown preview enhanced)\n"
+    "\n"
+    "## make code2cpp\n"
+    "- add new file in input_perlmodgen_files directory\n"
+    "    - add new line for new file in Makefile : `cd input_perlmodgen_files; ln -s ../[wanted_file] [wanted_file]`\n"
+    "- all codes with related to PERLMOD_PYTHON are created by perlmodgen.cpp.\n"
+    "- put2cpp.py insert converted c++ code into perlmodgen.cpp from files in input_perlmodgen_files directory.\n"
+    "- `--perlmodgen` option : location of perlmodgen.cpp. python codes in inputdir will be updated.\n"
+    "- generated code will be inserted between `// perlmodPython PerlModGenerator [key] <start>` and `// perlmodPython PerlModGenerator [key] <end>`\n"
+    "- output    ( `--perlmodgen=../../../../src/perlmodgen.cpp` )\n"
+    "	- ../../../../src/perlmodgen.cpp.mod : you can replace perlmodgen.cpp with it.\n";
 
   return true;
 }
@@ -2781,7 +2823,7 @@ bool PerlModGenerator::generatePythonSample_py()
     "    analyze classes as example. it will print table for class with markdown format\n"
     "    \'\'\'\n"
     "    def __init__(self,doxydocs={},outfile=\'\',debug=False):\n"
-    "        self.tabsize = 2\n"
+    "        self.plantumlCnt = 0\n"
     "        self.ret = \'<br>\'   # or  \'\\\\n\'\n"
     "\n"
     "        self.D = doxydocs\n"
@@ -2815,22 +2857,19 @@ bool PerlModGenerator::generatePythonSample_py()
     "            t = self.cls[k]\n"
     "            self.print(0,\'\'\'|{name}|{drived}|{includes}|{brief}|{detail}|\'\'\'.format(name=t[\'name\'],brief=t[\'brief\'],drived=\' \'.join(t[\'derived\']),includes=t[\'includes\'],detail=t[\'detailed\']))\n"
     "\n"
-    "        # plantuml\n"
     "        for k,v in self.D[\'classes\'].items():\n"
+    "            self.print(0,\'## Function Lists of {c} class\'.format(c=v[\'name\']))\n"
+    "            # plantuml\n"
     "            plantuml = self.getPlantuml(doc=v.get(\'detailed\',{}).get(\'doc\',{}))\n"
-    "            cnt = 0\n"
     "            for p in plantuml:\n"
-    "                cnt += 1\n"
-    "                self.print(0,\'\')\n"
-    "                self.print(0,\"\"\"- ```puml plantmul-{c}.png\"\"\".format(c=cnt))\n"
+    "                self.plantumlCnt += 1\n"
+    "                self.print(0,\"\"\"- ```puml plantmul-{c}.png\"\"\".format(c=self.plantumlCnt))\n"
     "                self.print(2,\'@startuml\')\n"
     "                self.print(2,p)\n"
     "                self.print(2,\'@enduml\')\n"
     "                self.print(2,\'```\')\n"
-    "\n"
-    "        for k,v in self.D[\'classes\'].items():\n"
-    "            self.print(0,\'\')\n"
-    "            self.print(0,\'## Function Lists of {c} class\'.format(c=v[\'name\']))\n"
+    "                self.print(0,\'\')\n"
+    "            # Table\n"
     "            self.print(2,\'| Accessibility | Function | Description | Parameters | param input | param output | Returns | return Description |\')\n"
     "            self.print(2,\'|-------|-------|----------|-------------|-------|-----|----|-------|\')\n"
     "            for accessibility,v2 in v.items():\n"
@@ -2850,6 +2889,7 @@ bool PerlModGenerator::generatePythonSample_py()
     "                         #print((self.ret).join(params[\'parameters\']))\n"
     "                         #print((self.ret).join([x for x,y in params[\'in\']]))\n"
     "                        self.print(2,\'\'\'|{acc}|{func}|{desc}|{param}|{i}|{o}|{r}|{rdesc}|\'\'\'.format(acc=accessibility,func=func,desc=detailed,param=self.ret.join(params[\'parameters\']),i=self.ret.join([ x for x,y in params[\'in\']]),o=self.ret.join([x for x,y in params[\'out\']]),r=returnType,rdesc=returnDoc))\n"
+    "            self.print(0,\'\')\n"
     "\n"
     "\n"
     "    def print(self,spaceCnt=0,text=\'\'):\n"
@@ -3095,22 +3135,26 @@ bool PerlModGenerator::generateMakefile()
       "	rm -rf input_perlmodgen_files\n"
       "	mkdir -p input_perlmodgen_files\n"
       "	cd input_perlmodgen_files; ln -s ../put2cpp.py put2cpp.py\n"
+      "	cd input_perlmodgen_files; ln -s ../README.md README.md\n"
       "	cd input_perlmodgen_files; ln -s ../sample.py sample.py\n"
       "	cd input_perlmodgen_files; ln -s ../doxy2py.pl doxy2py.pl\n"
       "	# if you want to add python file into perlmodgen.cpp , you can use it.\n"
       "	# first of all, you add your py in input_perlmodgen_files directory\n"
       "	# please change ../../../../src/perlmodgen.cpp to location of src/perlmodgen.cpp\n"
       "	# output filename : perlmodgen.cpp.mod\n"
-      "	python3 put2cpp.py --inputdir=input_perlmodgen_files --perlmodgen=../../../../src/perlmodgen.cpp\n"
+      "	python3 put2cpp.py --inputdir=input_perlmodgen_files --perlmodgen=../../../../src/perlmodgen.cpp --outlog=out-perlmodgen.log\n"
       "\n"
       "# run python code with DoxyDocs\n"
       "python_doc:\n"
-      "	# if you want to get plantuml without running java ,\n"
-      "	# 1. set PLANTUML_JAR_PATH = ./plantuml.jar in Doxygile\n"
-      "	# 2. do \'touch plantuml.jar\'\n"
-      "	# 3. run \'doxygen\' then your DoxyDocs.pm will include plantuml.\n"
+      "	@echo \"if you want to get plantuml without running java ,\"\n"
+      "	@echo \" 1. set PLANTUML_JAR_PATH = ./plantuml.jar in Doxygile\"\n"
+      "	@echo \" 2. do \'touch plantuml.jar\'\"\n"
+      "	@echo \" 3. run \'doxygen\' then your DoxyDocs.pm will include plantuml.\"\n"
+      "	@echo \"\"\n"
       "	perl doxy2py.pl\n"
       "	python3 sample.py --outfile=output.md\n"
+      "	@echo \"\"\n"
+      "	@echo \"refer to https://github.com/cheoljoo/doxygen_perlmod_python for getting more example and usage\"\n"
       "\n";
     // perlmodPython PerlModGenerator Makefile <end>
   }
@@ -3511,9 +3555,11 @@ void PerlModGenerator::generate()
   if (perlmodPython) {
     // perlmodPython PerlModGenerator code in generate function <start>
     pathPythonPut2cpp_py = perlModAbsPath + "/put2cpp.py";
+    pathPythonREADME_md = perlModAbsPath + "/README.md";
     pathPythonSample_py = perlModAbsPath + "/sample.py";
     pathPythonDoxy2py_pl = perlModAbsPath + "/doxy2py.pl";
     if (!(generatePythonPut2cpp_py()
+      && generatePythonREADME_md()
       && generatePythonSample_py()
       && generatePythonDoxy2py_pl()))
       return;
