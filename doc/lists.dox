@@ -29,7 +29,7 @@ Here is an example:
    *    - keyboard events
    *         1. key down event
    *         2. key up event
-   *    - checbox list
+   *    - checkbox list
    *         - [ ] unchecked
    *         - [x] checked
    *
@@ -47,7 +47,7 @@ Here is an example:
        - keyboard events
             1. key down event
             2. key up event
-       - checbox list
+       - checkbox list
             - [ ] unchecked
             - [x] checked
      
