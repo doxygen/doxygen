@@ -13,7 +13,7 @@
  *
  */
 
-#include <set>
+#include <unordered_set>
 #include <stack>
 
 #include "docsets.h"
@@ -37,7 +37,7 @@ struct DocSets::Private
   std::ofstream ttf;
   TextStream    tts;
   std::stack<bool> indentStack;
-  std::set<std::string> scopes;
+  std::unordered_set<std::string> scopes;
 };
 
 
@@ -234,7 +234,7 @@ void DocSets::addContentsItem(bool isDir,
 {
   (void)isDir;
   //printf("DocSets::addContentsItem(%s) depth=%zu\n",name,p->indentStack.size());
-  if (ref==0)
+  if (ref==nullptr)
   {
     if (!p->indentStack.top())
     {
@@ -273,7 +273,7 @@ void DocSets::addContentsItem(bool isDir,
 void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
                            const QCString &,const QCString &)
 {
-  if (md==0 && context==0) return;
+  if (md==nullptr && context==nullptr) return;
 
   const FileDef *fd      = nullptr;
   const ClassDef *cd     = nullptr;
@@ -293,7 +293,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
 
   // determine language
   QCString lang;
-  SrcLangExt langExt = SrcLangExt_Cpp;
+  SrcLangExt langExt = SrcLangExt::Cpp;
   if (md)
   {
     langExt = md->getLanguage();
@@ -304,46 +304,46 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   }
   switch (langExt)
   {
-    case SrcLangExt_Cpp:
-    case SrcLangExt_ObjC:
+    case SrcLangExt::Cpp:
+    case SrcLangExt::ObjC:
       {
         if (md && (md->isObjCMethod() || md->isObjCProperty()))
           lang="occ";  // Objective C/C++
         else if (fd && fd->name().lower().endsWith(".c"))
           lang="c";    // Plain C
-        else if (cd==0 && nd==0)
+        else if (cd==nullptr && nd==nullptr)
           lang="c";    // Plain C symbol outside any class or namespace
         else
           lang="cpp";  // C++
       }
       break;
-    case SrcLangExt_IDL:     lang="idl"; break;        // IDL
-    case SrcLangExt_CSharp:  lang="csharp"; break;     // C#
-    case SrcLangExt_PHP:     lang="php"; break;        // PHP4/5
-    case SrcLangExt_D:       lang="d"; break;          // D
-    case SrcLangExt_Java:    lang="java"; break;       // Java
-    case SrcLangExt_JS:      lang="javascript"; break; // JavaScript
-    case SrcLangExt_Python:  lang="python"; break;     // Python
-    case SrcLangExt_Fortran: lang="fortran"; break;    // Fortran
-    case SrcLangExt_VHDL:    lang="vhdl"; break;       // VHDL
-    case SrcLangExt_XML:     lang="xml"; break;        // DBUS XML
-    case SrcLangExt_SQL:     lang="sql"; break;        // Sql
-    case SrcLangExt_Markdown:lang="markdown"; break;   // Markdown
-    case SrcLangExt_Slice:   lang="slice"; break;      // Slice
-    case SrcLangExt_Lex:     lang="lex"; break;        // Lex
-    case SrcLangExt_Unknown: lang="unknown"; break;    // should not happen!
+    case SrcLangExt::IDL:     lang="idl"; break;        // IDL
+    case SrcLangExt::CSharp:  lang="csharp"; break;     // C#
+    case SrcLangExt::PHP:     lang="php"; break;        // PHP4/5
+    case SrcLangExt::D:       lang="d"; break;          // D
+    case SrcLangExt::Java:    lang="java"; break;       // Java
+    case SrcLangExt::JS:      lang="javascript"; break; // JavaScript
+    case SrcLangExt::Python:  lang="python"; break;     // Python
+    case SrcLangExt::Fortran: lang="fortran"; break;    // Fortran
+    case SrcLangExt::VHDL:    lang="vhdl"; break;       // VHDL
+    case SrcLangExt::XML:     lang="xml"; break;        // DBUS XML
+    case SrcLangExt::SQL:     lang="sql"; break;        // Sql
+    case SrcLangExt::Markdown:lang="markdown"; break;   // Markdown
+    case SrcLangExt::Slice:   lang="slice"; break;      // Slice
+    case SrcLangExt::Lex:     lang="lex"; break;        // Lex
+    case SrcLangExt::Unknown: lang="unknown"; break;    // should not happen!
   }
 
   if (md)
   {
-    if (context==0)
+    if (context==nullptr)
     {
       if (md->getGroupDef())
         context = md->getGroupDef();
       else if (md->getFileDef())
         context = md->getFileDef();
     }
-    if (context==0) return; // should not happen
+    if (context==nullptr) return; // should not happen
 
     switch (md->memberType())
     {
@@ -422,15 +422,15 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   }
   else if (context && context->isLinkable())
   {
-    if (fd==0 && context->definitionType()==Definition::TypeFile)
+    if (fd==nullptr && context->definitionType()==Definition::TypeFile)
     {
       fd = toFileDef(context);
     }
-    if (cd==0 && context->definitionType()==Definition::TypeClass)
+    if (cd==nullptr && context->definitionType()==Definition::TypeClass)
     {
       cd = toClassDef(context);
     }
-    if (nd==0 && context->definitionType()==Definition::TypeNamespace)
+    if (nd==nullptr && context->definitionType()==Definition::TypeNamespace)
     {
       nd = toNamespaceDef(context);
     }

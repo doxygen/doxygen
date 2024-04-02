@@ -139,7 +139,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Şu sınıfın tüm üyelerinin listesidir: "; }
+    { return "Şu sınıfın tüm üyelerinin listesidir:"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -343,8 +343,8 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokümantasyonu"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokümantasyonu"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1450,7 +1450,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Kaynak Dosyası";
     }
@@ -1824,10 +1824,10 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "ÖÖ", "ÖS" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 };

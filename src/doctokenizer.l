@@ -47,6 +47,7 @@ typedef yyguts_t *yyscan_t;
 #include "cite.h"
 #include "regex.h"
 #include "debug.h"
+#include "docnode.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -147,24 +148,25 @@ const char *DocTokenizer::retvalToString(int retval)
 {
   switch (retval)
   {
-    case RetVal_OK:            return "RetVal_OK";
-    case RetVal_SimpleSec:     return "RetVal_SimpleSec";
-    case RetVal_ListItem:      return "RetVal_ListItem";
-    case RetVal_Section:       return "RetVal_Section";
-    case RetVal_Subsection:    return "RetVal_Subsection";
-    case RetVal_Subsubsection: return "RetVal_Subsubsection";
-    case RetVal_Paragraph:     return "RetVal_Paragraph";
-    case RetVal_SubParagraph:  return "RetVal_SubParagraph";
-    case RetVal_EndList:       return "RetVal_EndList";
-    case RetVal_EndPre:        return "RetVal_EndPre";
-    case RetVal_DescData:      return "RetVal_DescData";
-    case RetVal_DescTitle :    return "RetVal_DescTitle";
-    case RetVal_EndDesc:       return "RetVal_EndDesc";
-    case RetVal_TableRow:      return "RetVal_TableRow";
-    case RetVal_TableCell:     return "RetVal_TableCell";
-    case RetVal_TableHCell:    return "RetVal_TableHCell";
-    case RetVal_EndTable:      return "RetVal_EndTable";
-    case RetVal_Internal:      return "RetVal_Internal";
+    case RetVal_OK:              return "RetVal_OK";
+    case RetVal_SimpleSec:       return "RetVal_SimpleSec";
+    case RetVal_ListItem:        return "RetVal_ListItem";
+    case RetVal_Section:         return "RetVal_Section";
+    case RetVal_Subsection:      return "RetVal_Subsection";
+    case RetVal_Subsubsection:   return "RetVal_Subsubsection";
+    case RetVal_Paragraph:       return "RetVal_Paragraph";
+    case RetVal_SubParagraph:    return "RetVal_SubParagraph";
+    case RetVal_SubSubParagraph: return "RetVal_SubSubParagraph";
+    case RetVal_EndList:         return "RetVal_EndList";
+    case RetVal_EndPre:          return "RetVal_EndPre";
+    case RetVal_DescData:        return "RetVal_DescData";
+    case RetVal_DescTitle:       return "RetVal_DescTitle";
+    case RetVal_EndDesc:         return "RetVal_EndDesc";
+    case RetVal_TableRow:        return "RetVal_TableRow";
+    case RetVal_TableCell:       return "RetVal_TableCell";
+    case RetVal_TableHCell:      return "RetVal_TableHCell";
+    case RetVal_EndTable:        return "RetVal_EndTable";
+    case RetVal_Internal:        return "RetVal_Internal";
   }
   return "ERROR";
 }
@@ -271,6 +273,7 @@ OPTSTARS  ("/""/"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
 OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
+CLISTITEM {BLANK}*[-]{BLANK}*"\["[ xX]"\]"
 ENDLIST   {BLANK}*"."{BLANK}*(\n|"\\ilinebr")
 ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
@@ -385,6 +388,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_Text
 %x St_SkipTitle
 %x St_Anchor
+%x St_Prefix
 %x St_Snippet
 %x St_SetScope
 %x St_SetScopeEnd
@@ -412,7 +416,19 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
                          assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
+                         yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
+                         yyextra->token.indent     = computeIndent(yytext,dashPos);
+                         return TK_LISTITEM;
+                       }
+<St_Para>^{CLISTITEM}  { /* checkbox item */
+                         QCString text=yytext;
+                         int dashPos = text.findRev('-');
+                         yyextra->token.isEnumList = false;
+                         yyextra->token.isCheckedList = true;
+                         if (text.find('x') != -1) yyextra->token.id = DocAutoList::Checked_x;
+                         else if (text.find('X') != -1) yyextra->token.id = DocAutoList::Checked_X;
+                         else yyextra->token.id = DocAutoList::Unchecked;
                          yyextra->token.indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
@@ -430,7 +446,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            reg::search(text,match,re);
                            size_t listPos = match.position();
                            assert(listPos!=std::string::npos);
-                           yyextra->token.isEnumList = FALSE;
+                           yyextra->token.isEnumList = false;
+                           yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
                            yyextra->token.indent     = computeIndent(yytext,listPos);
                            return TK_LISTITEM;
@@ -450,6 +467,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = true;
+                           yyextra->token.isCheckedList = false;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
                            yyextra->token.id = ok ? id : -1;
@@ -468,7 +486,20 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
                          assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
+                         yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
+                         yyextra->token.indent     = computeIndent(text.data(),dashPos);
+                         return TK_LISTITEM;
+                       }
+<St_Para>{BLANK}*\n{CLISTITEM}   { /* checkbox item on next line */
+                         QCString text=yytext;
+                         text=text.right(text.length()-text.find('\n')-1);
+                         int dashPos = text.findRev('-');
+                         yyextra->token.isEnumList = false;
+                         yyextra->token.isCheckedList = true;
+                         if (text.find('x') != -1) yyextra->token.id = DocAutoList::Checked_x;
+                         else if (text.find('X') != -1) yyextra->token.id = DocAutoList::Checked_X;
+                         else yyextra->token.id = DocAutoList::Unchecked;
                          yyextra->token.indent     = computeIndent(text.data(),dashPos);
                          return TK_LISTITEM;
                        }
@@ -487,6 +518,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = FALSE;
+                           yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
                            yyextra->token.indent     = computeIndent(text.c_str(),markPos);
                            return TK_LISTITEM;
@@ -507,6 +539,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = true;
+                           yyextra->token.isCheckedList = false;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
                            yyextra->token.id = ok ? id : -1;
@@ -735,6 +768,12 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            REJECT;
                          }
                          lineCount(yytext,yyleng);
+                       }
+<St_Para>({BLANK}*\n)+{BLANK}*\n/{CLISTITEM} { /* skip trailing paragraph followed by new checkbox item */
+                         if (yyextra->insidePre || yyextra->autoListLevel==0)
+                         {
+                           REJECT;
+                         }
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (!yyextra->markdownSupport || yyextra->insidePre || yyextra->autoListLevel==0)
@@ -1269,6 +1308,15 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.chars=yytext;
                          return TK_WHITESPACE;
                        }
+<St_Prefix>"\""[^\n\"]*"\"" {
+                         yyextra->token.name = yytext+1;
+                         yyextra->token.name = yyextra->token.name.left((int)yyleng-2);
+                         return TK_WORD;
+                       }
+<St_Prefix>.           {
+                         unput(*yytext);
+                         return 0;
+                       }
 <St_Options>{ID}       {
                          yyextra->token.name+=yytext;
                        }
@@ -1433,6 +1481,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                     }
 <St_Sections>{CMD}"paragraph"{BLANK}+ {
                                       yyextra->secType = SectionType::Paragraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
+<St_Sections>{CMD}"subparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subparagraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
+<St_Sections>{CMD}"subsubparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subsubparagraph;
                                       BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
@@ -2068,6 +2124,13 @@ void DocTokenizer::setStateAnchor()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Anchor);
+}
+
+void DocTokenizer::setStatePrefix()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_Prefix);
 }
 
 void DocTokenizer::setStateSnippet()

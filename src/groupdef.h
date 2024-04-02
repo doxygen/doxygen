@@ -114,7 +114,7 @@ class GroupDef : public DefinitionMutable, public Definition
 
     // group graph related members
     virtual bool hasGroupGraph() const = 0;
-    virtual void enableGroupGraph(bool e) = 0;
+    virtual void overrideGroupGraph(bool e) = 0;
 };
 
 std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,

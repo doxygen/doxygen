@@ -138,6 +138,7 @@ documentation:
 \refitem cmdifnot \\ifnot
 \refitem cmdimage \\image
 \refitem cmdimplements \\implements
+\refitem cmdimportant \\important
 \refitem cmdinclude \\include
 \refitem cmdincludedoc \\includedoc
 \refitem cmdincludedbygraph \\includedbygraph
@@ -222,7 +223,9 @@ documentation:
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
+\refitem cmdsubparagraph \\subparagraph
 \refitem cmdsubsection \\subsection
+\refitem cmdsubsubparagraph \\subsubparagraph
 \refitem cmdsubsubsection \\subsubsection
 \refitem cmdtableofcontents \\tableofcontents
 \refitem cmdtest \\test
@@ -835,7 +838,7 @@ Structural indicators
   (i.e. the line after \c \\file is left blank) then the documentation block that
   contains the \c \\file command will belong to the file it is located in.
 
-  \par Important:
+  \important
   The documentation of global functions, variables, typedefs, and enums will
   only be included in the output if the file they are in is documented as well
   or if \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES.
@@ -1693,7 +1696,7 @@ contains \c TEST, or \c DEV
   for an example.
 
 <hr>
-\section cmdshowdate \\showdate "<format>" [ \<date_time\> ]
+\section cmdshowdate \\showdate \"\<format\>\" [ \<date_time\> ]
 
   \addindex \\showdate
   Shows the date and time based on the given \<format\> and \<date_time\>. Where the \<format\> is a string in which the following tokens have a special meaning:
@@ -1983,6 +1986,18 @@ ALIASES  = "english=\if english" \
                \ref cmdelse "\\else", and \ref cmdelseif "\\elseif",
                \ref cmdcond "\\cond", \ref cmdendcond "\\endcond", and
                \ref cfg_enabled_sections "ENABLED_SECTIONS".
+
+<hr>
+\section cmdimportant \\important { important text }
+
+  \addindex \\important
+  Starts a paragraph where a message that needs important may be entered.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\important commands will be joined into a single paragraph.
+  The \c \\important command ends when a blank line or some other
+  sectioning command is encountered.
 
 <hr>
 \section cmdinvariant \\invariant { description of invariant }
@@ -2568,9 +2583,9 @@ Make sure you have first read \ref intro "the introduction".
   Creates a table of contents at the top of a page, listing all
   sections and subsections in the page. The `option` can be `HTML` or `LaTeX`
   or `XML` or `DocBook`. When a `level` is specified this means the maximum nesting level
-  that is shown. The value of `level` should be in the range 1..5, values outside
-  this range are considered to be 5. In case no `level` is specified `level` is
-  set to 5 (show all)
+  that is shown. The value of `level` should be in the range 1..6, values outside
+  this range are considered to be 6. In case no `level` is specified `level` is
+  set to 6 (show all)
   In case no `option`. is specified \c \\tableofcontents acts as if just the
   `option` `HTML` and `XML` was specified. In case of multiple \c \\tableofcontents
   commands in a page the `option`(s) will be used additional to the already
@@ -2637,6 +2652,30 @@ Make sure you have first read \ref intro "the introduction".
   \c \\paragraph command.
 
   \warning This command only works inside a subsubsection of a
+           related page documentation block and
+           \e not in other documentation blocks!
+
+<hr>
+\section cmdsubparagraph \\subparagraph <subparagraph-name> (subparagraph title)
+
+  \addindex \\subparagraph
+  Creates a named subparagraph with name \<subparagraph-name\>. The title of the
+  subparagraph should be specified as the second argument of the
+  \c \\subparagraph command.
+
+  \warning This command only works inside a paragraph of a
+           related page documentation block and
+           \e not in other documentation blocks!
+
+<hr>
+\section cmdsubsubparagraph \\subsubparagraph <subsubparagraph-name> (subsubparagraph title)
+
+  \addindex \\subsubparagraph
+  Creates a named subsubparagraph with name \<subsubparagraph-name\>. The title of the
+  subsubparagraph should be specified as the second argument of the
+  \c \\subsubparagraph command.
+
+  \warning This command only works inside a subparagraph of a
            related page documentation block and
            \e not in other documentation blocks!
 
@@ -2732,9 +2771,19 @@ Commands for displaying examples
   - The `option` `local` can be used make doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
 
-  \note When using the `{doc}` option,
-       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
-       this command due to the moment of parsing.
+  When using option `doc`, there is also the option `raise` that can be specified to raise
+  all sections found in the referenced file by a certain amount. For example 
+  \verbatim
+  \include{doc,raise=1} file.dox
+  \endverbatim will treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
+  into a level 3 \c \\subsubsection, etc.
+  Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
+
+  Furthermore, there is the option `prefix` that can be used to add a prefix
+  to each label of the included sections, so that they remain unique. For example:
+  \verbatim
+  \include{doc,prefix=fn_} file.dox
+  \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
   \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.
@@ -2753,11 +2802,13 @@ Commands for displaying examples
   \sa sections \ref cmdinclude "\\include{lineno}".
 
 <hr>
-\section cmdincludedoc \\includedoc <file-name>
+\section cmdincludedoc \\includedoc['{'option'}'] <file-name>
 
   \addindex \\includedoc
   This command is obsolete and is still supported for backward compatibility reasons,
   it works the same way as \ref cmdinclude "\\include{doc}"
+
+  The `option`s are the same `option`s that can be used with the `\include` when using there the option `doc`.
 
   \sa section \ref cmdinclude "\\include{doc}".
 
@@ -2868,9 +2919,20 @@ Commands for displaying examples
  - The `option` `local` can be used make doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
 
- \note When using the `{doc}` option,
-       some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with
-       this command due to the moment of parsing.
+ When using option `doc`, there is also the option `raise` that can be specified to raise
+ all sections found in the referenced file by a certain amount. For example 
+ \verbatim
+ \snippet{doc,raise=1} file.dox XXX
+ \endverbatim will
+ treat any level 1 \c \\section found the snippet as a level 2 \c \\subsection, and any level 2 \c \\subsection
+ into a level 3 \c \\subsubsection, etc.
+ Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
+
+ Furthermore, there is the option `prefix` that can be used to add a prefix
+ to each label of the included sections, so that they remain unique. For example:
+ \verbatim
+ \include{doc,prefix=fn_} file.dox
+ \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
  \note The included documentation should not have comment signs in it as they will appear
        in the documentation as well.
@@ -2888,11 +2950,13 @@ Commands for displaying examples
   \sa sections \ref cmdsnippet "\\snippet{lineno}"
 
 <hr>
-\section cmdsnippetdoc \\snippetdoc <file-name> ( block_id )
+\section cmdsnippetdoc \\snippetdoc['{'option'}'] <file-name> ( block_id )
 
   \addindex \\snippetdoc
   This command is obsolete and is still supported for backward compatibility reasons,
   it works the same way as \ref cmdsnippet "\\snippet{doc}"
+
+  The `option`s are the same `option`s that can be used with the `\snippet` when using there the option `doc`.
 
   \sa section \ref cmdsnippet "\\snippet{doc}" and \ref cmdinclude "\\include{doc}".
 

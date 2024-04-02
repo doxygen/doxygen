@@ -170,6 +170,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
     void endDoxyAnchor(const QCString &,const QCString &);
+    void addLabel(const QCString &,const QCString &);
     void writeChar(char c);
     void writeLatexSpacing() {};//{ m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
@@ -249,10 +250,12 @@ class RTFGenerator : public OutputGenerator
     void startParameterType(bool,const QCString &);
     void endParameterType();
     void startParameterName(bool) {}
-    void endParameterName(bool,bool,bool) {}
+    void endParameterName() {}
+    void startParameterExtra() {}
+    void endParameterExtra(bool,bool,bool);
     void startParameterDefVal(const char *s) { docify(s); startTypewriter(); }
     void endParameterDefVal() { endTypewriter(); }
-    void startParameterList(bool) {}
+    void startParameterList(bool);
     void endParameterList() {}
     void exceptionEntry(const QCString &,bool);
 

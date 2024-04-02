@@ -347,7 +347,7 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
 static char compoundIcon(const ClassDef *cd)
 {
   char icon='C';
-  if (cd->getLanguage() == SrcLangExt_Slice)
+  if (cd->getLanguage() == SrcLangExt::Slice)
   {
     if (cd->compoundType()==ClassDef::Interface)
     {
@@ -393,11 +393,11 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        if ((n->def->getLanguage() == SrcLangExt_Slice) || (n->def->getLanguage() == SrcLangExt_Fortran))
+        if ((n->def->getLanguage() == SrcLangExt::Slice) || (n->def->getLanguage() == SrcLangExt::Fortran))
         {
           t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
         }
-        else if ((n->def->getLanguage() == SrcLangExt_Java) || (n->def->getLanguage() == SrcLangExt_VHDL))
+        else if ((n->def->getLanguage() == SrcLangExt::Java) || (n->def->getLanguage() == SrcLangExt::VHDL))
         {
           t << "<span class=\"icona\"><span class=\"icon\">P</span></span>";
         }
@@ -457,11 +457,11 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        if ((n->def->getLanguage() == SrcLangExt_Slice) || (n->def->getLanguage() == SrcLangExt_Fortran))
+        if ((n->def->getLanguage() == SrcLangExt::Slice) || (n->def->getLanguage() == SrcLangExt::Fortran))
         {
           t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
         }
-        else if ((n->def->getLanguage() == SrcLangExt_Java) || (n->def->getLanguage() == SrcLangExt_VHDL))
+        else if ((n->def->getLanguage() == SrcLangExt::Java) || (n->def->getLanguage() == SrcLangExt::VHDL))
         {
           t << "<span class=\"icona\"><span class=\"icon\">P</span></span>";
         }

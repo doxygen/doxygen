@@ -201,7 +201,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Liste complète des membres de "; }
+    { return "Liste complète des membres de"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -414,8 +414,8 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
     { return "Liste de tous les modules :"; }
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Documentation"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Documentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1528,7 +1528,7 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return " Fichier source de " + filename;
     }
@@ -1905,10 +1905,10 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

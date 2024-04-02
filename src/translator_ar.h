@@ -128,7 +128,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "هذه فائمة بكل الأعضاء في "; }
+    { return "هذه فائمة بكل الأعضاء في"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -332,8 +332,8 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "التوثيق"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "التوثيق"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1450,7 +1450,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return " ملف المصدر" + filename ;
     }
@@ -1519,10 +1519,10 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       static const char *months_full[]  = { "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر" };
       return full? months_full[month-1] : months_short[month-1];
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "ص", "م" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

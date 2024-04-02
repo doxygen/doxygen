@@ -199,6 +199,10 @@
 \setlist[DoxyItemize,3]{label=\textasteriskcentered}
 \setlist[DoxyItemize,4]{label=\textperiodcentered}
 
+% Used for check boxes
+\newcommand{\DoxyUnchecked}{$\square$}
+\newcommand{\DoxyChecked}{\rlap{\raisebox{0.3ex}{\hspace{0.4ex}\tiny \checkmark}}$\square$}
+
 % Used by description lists (using <dl> ... </dl>)
 \newenvironment{DoxyDescription}{%
   \description%
@@ -231,6 +235,13 @@
 
 % Used by @attention
 \newenvironment{DoxyAttention}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @important
+\newenvironment{DoxyImportant}[1]{%
   \begin{DoxyDesc}{#1}%
 }{%
   \end{DoxyDesc}%
@@ -389,7 +400,7 @@
 
 % Used for parameters within a detailed function description
 \newenvironment{DoxyParamCaption}{%
-  \renewcommand{\item}[2][]{\\ \hspace*{2.0cm} ##1 {\em ##2}}% 
+  \renewcommand{\item}[3][]{\\ \hspace*{2.0cm} ##1 {\em ##2}##3}% 
 }{%
 }
 
@@ -677,9 +688,15 @@
                                           \doxysubparagraphfont{#1}%
                                           \doxyminisecfont{#1}}%
 % Define caption that is also suitable in a table
+% for usage with hyperlinks
 \makeatletter
 \def\doxyfigcaption{%
 \H@refstepcounter{figure}%
+\@dblarg{\@caption{figure}}}
+
+% for usage without hyperlinks
+\def\doxyfigcaptionnolink{%
+\refstepcounter{figure}%
 \@dblarg{\@caption{figure}}}
 \makeatother
 

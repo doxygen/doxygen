@@ -149,7 +149,7 @@ class TranslatorEnglish : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "This is the complete list of members for "; }
+    { return "This is the complete list of members for"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -365,8 +365,8 @@ class TranslatorEnglish : public Translator
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Documentation"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Documentation"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1474,7 +1474,7 @@ class TranslatorEnglish : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Source File";
     }
@@ -1848,10 +1848,10 @@ class TranslatorEnglish : public Translator
       static const char *months_full[]  = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
       return full? months_full[month-1] : months_short[month-1];
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2337,7 +2337,7 @@ class TranslatorEnglish : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Flowchart: "; }
+    { return "Flowchart:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
@@ -2376,7 +2376,7 @@ class TranslatorEnglish : public Translator
       switch(compType)
       {
         case ClassDef::Class:
-          if (lang == SrcLangExt_Fortran) trType(true,true);
+          if (lang == SrcLangExt::Fortran) trType(true,true);
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Struct"; break;
@@ -2631,6 +2631,13 @@ class TranslatorEnglish : public Translator
     QCString trCopyToClipboard() override
     {
       return "Copy to clipboard";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Important";
     }
 };
 

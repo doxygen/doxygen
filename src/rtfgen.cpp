@@ -17,6 +17,7 @@
 
 #include <mutex>
 #include <stdlib.h>
+#include <algorithm>
 
 #include "rtfgen.h"
 #include "config.h"
@@ -184,6 +185,7 @@ void RTFCodeGenerator::startCodeFragment(const QCString &)
 {
   DBG_RTF(*m_t << "{\\comment (startCodeFragment) }\n")
   *m_t << "{\n";
+  *m_t << "\\par\n";
   *m_t << rtf_Style_Reset << rtf_Code_DepthStyle();
 }
 
@@ -366,7 +368,7 @@ void RTFGenerator::writeStyleSheetFile(TextStream &t)
   t << "# Remove a hash to activate a line.\n\n";
 
   int i;
-  for ( i=0 ; rtf_Style_Default[i].reference!=0 ; i++ )
+  for ( i=0 ; rtf_Style_Default[i].reference!=nullptr ; i++ )
   {
     t << "# " << rtf_Style_Default[i].name << " = "
               << rtf_Style_Default[i].reference
@@ -439,7 +441,7 @@ void RTFGenerator::init()
   const struct Rtf_Style_Default* def = rtf_Style_Default;
   while (def->reference)
   {
-    if (def->definition == 0)
+    if (def->definition == nullptr)
     {
       err("Internal: rtf_Style_Default[%s] has no definition.\n", def->name);
     }
@@ -567,13 +569,13 @@ void RTFGenerator::beginRTFDocument()
     uint32_t index = data.index();
     if (index > maxIndex) maxIndex = index;
   }
-  std::vector<const StyleData*> array(maxIndex + 1, 0);
+  std::vector<const StyleData*> array(maxIndex + 1, nullptr);
   ASSERT(maxIndex < array.size());
 
   for (const auto &[name,data] : rtf_Style)
   {
     uint32_t index = data.index();
-    if (array[index] != 0)
+    if (array[index] != nullptr)
     {
       msg("Style '%s' redefines \\s%d.\n", name.c_str(), index);
     }
@@ -592,6 +594,38 @@ void RTFGenerator::beginRTFDocument()
   }
 
   m_t << "}\n";
+
+  // place to write rtf_Table_Default
+  int i;
+  int id = -1;
+  m_t << "{\\*\\listtable" << "\n";
+  for ( i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  {
+    if (id != rtf_Table_Default[i].id)
+    {
+      if (id != -1)
+      {
+        m_t << "\\listid" << id << "}" << "\n";
+      }
+      id = rtf_Table_Default[i].id;
+      m_t << "{\\list\\listtemplateid" << rtf_Table_Default[i].id << "\n";
+    }
+    m_t << "{ " << rtf_Table_Default[i].definition << " }" << "\n";
+  }
+  m_t << "\\listid" << id << "}" << "\n";
+  m_t << "}" <<"\n";
+  m_t << "{\\listoverridetable" <<"\n";
+  id = -1;
+  for ( i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  {
+    if (id != rtf_Table_Default[i].id)
+    {
+      id = rtf_Table_Default[i].id;
+      m_t << "{\\listoverride\\listid" << id << "\\listoverridecount0\\ls" << id << "}" << "\n";
+    }
+  }
+  m_t << "}" << "\n";
+
   // this comment is needed for postprocessing!
   m_t << "{\\comment begin body}\n";
 
@@ -810,7 +844,7 @@ void RTFGenerator::startIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -916,7 +950,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
           if (ast)
           {
             m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-            writeDoc(ast.get(),0,0,0);
+            writeDoc(ast.get(),nullptr,nullptr,0);
             m_t << "}}\\par\n";
           }
         }
@@ -1141,7 +1175,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -1675,6 +1709,12 @@ void RTFGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
   m_t << "}\n";
 }
 
+void RTFGenerator::addLabel(const QCString &,const QCString &)
+{
+  DBG_RTF(m_t << "{\\comment addLabel}\n")
+}
+
+
 void RTFGenerator::addIndexItem(const QCString &s1,const QCString &s2)
 {
   if (!s1.isEmpty())
@@ -1739,18 +1779,19 @@ void RTFGenerator::startSection(const QCString &,const QCString &title,SectionTy
   DBG_RTF(m_t << "{\\comment (startSection)}\n")
   m_t << "{";
   m_t << rtf_Style_Reset;
-  int num=4;
-  switch(type)
+  int num=SectionType::MaxLevel;
+  switch(type.level())
   {
-    case SectionType::Page:          num=2+m_hierarchyLevel; break;
-    case SectionType::Section:       num=3+m_hierarchyLevel; break;
-    case SectionType::Subsection:    num=4+m_hierarchyLevel; break;
-    case SectionType::Subsubsection: num=4+m_hierarchyLevel; break;
-    case SectionType::Paragraph:     num=4+m_hierarchyLevel; break;
+    case SectionType::Page:             num=2+m_hierarchyLevel; break;
+    case SectionType::Section:          num=3+m_hierarchyLevel; break;
+    case SectionType::Subsection:       // fall through
+    case SectionType::Subsubsection:    // fall through
+    case SectionType::Paragraph:        // fall through
+    case SectionType::Subparagraph:     // fall through
+    case SectionType::Subsubparagraph:  num=4+m_hierarchyLevel; break;
     default: ASSERT(0); break;
   }
-  if (num > 5)
-    num = 5;
+  num = std::clamp(num, SectionType::MinLevel, SectionType::MaxLevel);
   QCString heading;
   heading.sprintf("Heading%d",num);
   // set style
@@ -2101,7 +2142,7 @@ bool isLeadBytes(int c)
 // note: function is not reentrant!
 static void encodeForOutput(TextStream &t,const QCString &s)
 {
-  if (s==0) return;
+  if (s==nullptr) return;
   QCString encoding;
   bool converted=FALSE;
   size_t l = s.length();
@@ -2758,6 +2799,19 @@ void RTFGenerator::writeInheritedSectionTitle(
   m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(ref, file, anchor, name));
   m_t << "\\par\n";
   m_t << rtf_Style_Reset << "\n";
+}
+
+void RTFGenerator::startParameterList(bool openBracket)
+{
+  if (openBracket) m_t << "(";
+}
+
+void RTFGenerator::endParameterExtra(bool last,bool /* emptyList */, bool closeBracket)
+{
+  if (last && closeBracket)
+  {
+    m_t << ")";
+  }
 }
 
 //----------------------------------------------------------------------

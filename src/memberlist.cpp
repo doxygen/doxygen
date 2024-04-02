@@ -351,7 +351,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
   {
     //printf(">>> Member '%s' type=%d visible=%d inheritedFrom=%p\n",
     //    qPrint(md->name()),md->memberType(),md->isBriefSectionVisible(),(void*)inheritedFrom);
-    if ((inheritedFrom==0 || !md->isReimplementedBy(inheritedFrom)) &&
+    if ((inheritedFrom==nullptr || !md->isReimplementedBy(inheritedFrom)) &&
         md->isBriefSectionVisible())
     {
       //printf(">>> rendering\n");
@@ -394,13 +394,14 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               if (!detailsLinkable)
               {
                 ol.startDoxyAnchor(md->getOutputFileBase(),QCString(),md->anchor(),md->name(),QCString());
+                ol.addLabel(md->getOutputFileBase(),md->anchor());
               }
               if (md->isSliceLocal())
               {
                 ol.writeString("local ");
               }
               ol.writeString("enum ");
-              if (md->getLanguage()==SrcLangExt_Cpp && md->isStrong())
+              if (md->getLanguage()==SrcLangExt::Cpp && md->isStrong())
               {
                 if (md->isEnumStruct())
                 {
@@ -451,7 +452,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             break;
           }
         case MemberType_Friend:
-          if (inheritedFrom==0)
+          if (inheritedFrom==nullptr)
           {
             if (first)
             {
@@ -512,10 +513,10 @@ void MemberList::writeDeclarations(OutputList &ol,
   QCString inheritId;
 
   const Definition  *ctx =  cd;
-  if (ctx==0 &&  nd) ctx =  nd;
-  if (ctx==0 &&  gd) ctx =  gd;
-  if (ctx==0 && mod) ctx = mod;
-  if (ctx==0 &&  fd) ctx =  fd;
+  if (ctx==nullptr &&  nd) ctx =  nd;
+  if (ctx==nullptr &&  gd) ctx =  gd;
+  if (ctx==nullptr && mod) ctx = mod;
+  if (ctx==nullptr &&  fd) ctx =  fd;
 
   //printf("%p: MemberList::writeDeclaration(title='%s',subtitle='%s')=%d inheritedFrom=%p\n",
   //       (void*)this,qPrint(title),qPrint(subtitle),numDecMembers(),(void*)inheritedFrom);
@@ -563,7 +564,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     if (!subtitle.stripWhiteSpace().isEmpty())
     {
       ol.startMemberSubtitle();
-      ol.generateDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,
+      ol.generateDoc("[generated]",-1,ctx,nullptr,subtitle,FALSE,FALSE,
                      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       ol.endMemberSubtitle();
     }
@@ -579,7 +580,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     // 2. This might need to be repeated below for memberGroupLists
     if (optimizeVhdl) // use specific declarations function
     {
-      VhdlDocGen::writeVhdlDeclarations(this,ol,0,cd,0,0,0);
+      VhdlDocGen::writeVhdlDeclarations(this,ol,nullptr,cd,nullptr,nullptr,nullptr);
     }
     else
     {
@@ -603,7 +604,7 @@ void MemberList::writeDeclarations(OutputList &ol,
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
-          ol.generateDoc(mg->docFile(),mg->docLine(),mg->memberContainer(),0,mg->documentation()+"\n",FALSE,FALSE,
+          ol.generateDoc(mg->docFile(),mg->docLine(),mg->memberContainer(),nullptr,mg->documentation()+"\n",FALSE,FALSE,
               QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           ol.endMemberGroupDocs();
         }
@@ -804,7 +805,7 @@ void MemberList::addListReferences(Definition *def)
   for (const auto &imd : m_members)
   {
     MemberDefMutable *md = toMemberDefMutable(imd);
-    if (md && !md->isAlias() && (md->getGroupDef()==0 || def->definitionType()==Definition::TypeGroup))
+    if (md && !md->isAlias() && (md->getGroupDef()==nullptr || def->definitionType()==Definition::TypeGroup))
     {
       md->addListReference(def);
       const MemberVector &enumFields = md->enumFieldList();
@@ -917,7 +918,7 @@ void MemberList::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool sho
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
     {
-      if (md->getLanguage()!=SrcLangExt_VHDL)
+      if (md->getLanguage()!=SrcLangExt::VHDL)
       {
         md->writeTagFile(tagFile,useQualifiedName,showNamespaceMembers);
         if (md->memberType()==MemberType_Enumeration && !md->isStrong())

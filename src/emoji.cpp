@@ -1957,7 +1957,7 @@ void EmojiEntityMapper::writeEmojiFile(TextStream &t)
  */
 const char *EmojiEntityMapper::unicode(int index) const
 {
-  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].unicode : 0;
+  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].unicode : nullptr;
 }
 
 /*! @brief Access routine to the name of the Emoji entity
@@ -1967,5 +1967,5 @@ const char *EmojiEntityMapper::unicode(int index) const
  */
 const char *EmojiEntityMapper::name(int index) const
 {
-  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].name : 0;
+  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].name : nullptr;
 }

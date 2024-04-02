@@ -20,6 +20,7 @@
 #include "message.h"
 #include "util.h"
 #include "htmlentity.h"
+#include "cite.h"
 #include "emoji.h"
 
 //-------------------------------------------------------------------------
@@ -39,14 +40,48 @@ void TextDocVisitor::operator()(const DocSymbol &s)
 
 void TextDocVisitor::operator()(const DocEmoji &s)
 {
-  const char *res = EmojiEntityMapper::instance().name(s.index());
+  // the TextDocVisitor is only invoked for the JS part of the HTML output
+  const char *res = EmojiEntityMapper::instance().unicode(s.index());
   if (res)
   {
-    filter(res);
+    const char *p = res;
+    while (*p)
+    {
+      switch(*p)
+      {
+        case '&': case '#':
+          break;
+        case 'x':
+          m_t << "\\u{";
+          break;
+        case ';':
+          m_t << "}";
+          break;
+        default:
+          m_t << *p;
+          break;
+      }
+      p++;
+    }
   }
   else
   {
     filter(s.name());
+  }
+}
+
+void TextDocVisitor::operator()(const DocCite &cite)
+{
+  if (!cite.file().isEmpty())
+  {
+    QCString anchor = cite.anchor();
+    QCString anchorPrefix = CitationManager::instance().anchorPrefix();
+    anchor = anchor.mid(anchorPrefix.length()); // strip prefix
+    m_t << anchor;
+  }
+  else
+  {
+    filter(cite.text());
   }
 }
 

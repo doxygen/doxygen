@@ -18,7 +18,7 @@
 
 #include <memory>
 #include <vector>
-#include <set>
+#include <unordered_set>
 
 #include "containers.h"
 #include "definition.h"
@@ -92,7 +92,7 @@ using TemplateInstanceList = std::vector<TemplateInstanceDef>;
 
 using TemplateNameMap = std::map<std::string,int>;
 
-using ClassDefSet = std::set<const ClassDef*>;
+using ClassDefSet = std::unordered_set<const ClassDef*>;
 
 
 /** A abstract class representing of a compound symbol.
@@ -361,6 +361,8 @@ class ClassDef : public Definition
     virtual QCString requiresClause() const = 0;
     virtual StringVector getQualifiers() const = 0;
 
+    virtual bool containsOverload(const MemberDef *md) const = 0;
+
     //-----------------------------------------------------------------------------------
     // --- count members ----
     //-----------------------------------------------------------------------------------
@@ -431,12 +433,12 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setRequiresClause(const QCString &req) = 0;
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
         // inheritance graph related members
-    virtual CLASS_GRAPH_t inheritanceGraphType() const = 0;
-    virtual void setTypeInheritanceGraph(CLASS_GRAPH_t e) = 0;
+    virtual CLASS_GRAPH_t hasInheritanceGraph() const = 0;
+    virtual void overrideInheritanceGraph(CLASS_GRAPH_t e) = 0;
 
     // collaboration graph related members
     virtual bool hasCollaborationGraph() const = 0;
-    virtual void enableCollaborationGraph(bool e) = 0;
+    virtual void overrideCollaborationGraph(bool e) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

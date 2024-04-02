@@ -200,7 +200,7 @@ class Translator
 
     // index titles (the project name is prepended for these)
 
-    virtual QCString trDocumentation() = 0;
+    virtual QCString trDocumentation(const QCString &projName) = 0;
     virtual QCString trModuleIndex() = 0;
     virtual QCString trHierarchicalIndex() = 0;
     virtual QCString trCompoundIndex() = 0;
@@ -543,7 +543,7 @@ class Translator
 // new since 1.3.8
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSourceFile(QCString& filename) = 0;
+    virtual QCString trSourceFile(const QCString& filename) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.9
@@ -619,7 +619,7 @@ class Translator
                                 DateTimeType includeTime) = 0;
     virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) = 0;
     virtual QCString trMonth(int month, bool first_capital, bool full) = 0;
-    virtual QCString trDayPeriod(int period) = 0;
+    virtual QCString trDayPeriod(bool period) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
@@ -765,6 +765,10 @@ class Translator
 // new since 1.10.0
 //////////////////////////////////////////////////////////////////////////
     virtual QCString trCopyToClipboard() = 0;
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trImportant() = 0;
 };
 
 #endif

@@ -235,7 +235,7 @@ void ConceptDefImpl::setIncludeFile(FileDef *fd,const QCString &incName,bool loc
 {
   if (!m_incInfo) m_incInfo = std::make_unique<IncludeInfo>();
   if ((!incName.isEmpty() && m_incInfo->includeName.isEmpty()) ||
-      (fd!=0 && m_incInfo->fileDef==0)
+      (fd!=nullptr && m_incInfo->fileDef==nullptr)
      )
   {
     m_incInfo->fileDef     = fd;
@@ -321,7 +321,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(
-                        *parser.get(),briefFile(),briefLine(),this,0,
+                        *parser.get(),briefFile(),briefLine(),this,nullptr,
                         briefDescription(),TRUE,FALSE,
                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (!ast->isEmpty())
@@ -331,7 +331,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
       ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(ast.get(),this,0);
+      ol.writeDoc(ast.get(),this,nullptr);
       ol.pushGeneratorState();
       ol.disable(OutputType::RTF);
       ol.writeString(" \n");
@@ -364,8 +364,8 @@ void ConceptDefImpl::writeIncludeFiles(OutputList &ol) const
     {
       ol.startParagraph();
       ol.startTypewriter();
-      ol.docify(::includeStatement(SrcLangExt_Cpp,m_incInfo->kind));
-      ol.docify(::includeOpen(SrcLangExt_Cpp,m_incInfo->kind));
+      ol.docify(::includeStatement(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.docify(::includeOpen(SrcLangExt::Cpp,m_incInfo->kind));
       ol.pushGeneratorState();
       ol.disable(OutputType::Html);
       ol.docify(nm);
@@ -380,7 +380,7 @@ void ConceptDefImpl::writeIncludeFiles(OutputList &ol) const
         ol.docify(nm);
       }
       ol.popGeneratorState();
-      ol.docify(::includeClose(SrcLangExt_Cpp,m_incInfo->kind));
+      ol.docify(::includeClose(SrcLangExt::Cpp,m_incInfo->kind));
       ol.endTypewriter();
       ol.endParagraph();
     }
@@ -434,8 +434,8 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
     if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
     TextStream conceptDef;
     conceptDef << m_initializer;
-    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt_Cpp,false,QCString(),
-                    m_fileDef, -1,-1,true,0,false,this);
+    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt::Cpp,false,QCString(),
+                    m_fileDef, -1,-1,true,nullptr,false,this);
     codeOL.endCodeFragment("DoxyCode");
 }
 
@@ -462,7 +462,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     // repeat brief description
     if (!briefDescription().isEmpty() && repeatBrief)
     {
-      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+      ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
           QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     if (!briefDescription().isEmpty() && repeatBrief &&
@@ -477,7 +477,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     // write documentation
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE,
+      ol.generateDoc(docFile(),docLine(),this,nullptr,documentation(),TRUE,FALSE,
           QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
 
@@ -667,13 +667,13 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(
-                                *parser.get(),briefFile(),briefLine(),this,0,
+                                *parser.get(),briefFile(),briefLine(),this,nullptr,
                                 briefDescription(),FALSE,FALSE,
                                 QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(ast.get(),this,0);
+        ol.writeDoc(ast.get(),this,nullptr);
         ol.endMemberDescription();
       }
     }
@@ -725,7 +725,7 @@ ConceptDef *toConceptDef(Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -738,7 +738,7 @@ ConceptDef *toConceptDef(DefinitionMutable *md)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -750,7 +750,7 @@ const ConceptDef *toConceptDef(const Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -762,7 +762,7 @@ ConceptDefMutable *toConceptDefMutable(Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -774,7 +774,7 @@ ConceptDefMutable *toConceptDefMutable(const Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -782,7 +782,7 @@ ConceptDefMutable *toConceptDefMutable(const Definition *d)
 
 ConceptDef *getConcept(const QCString &n)
 {
-  if (n.isEmpty()) return 0;
+  if (n.isEmpty()) return nullptr;
   return Doxygen::conceptLinkedMap->find(n);
 }
 

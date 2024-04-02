@@ -563,11 +563,11 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
                                         langExt,
                                         s.isExample(),
                                         s.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         FALSE, // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         TRUE,  // show line numbers
                                         m_ctx  // search context
                                        );
@@ -715,11 +715,11 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         FALSE, // show line numbers
                                         m_ctx  // search context
                                        );
@@ -742,7 +742,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
-                                           0,     // memberDef
+                                           nullptr,     // memberDef
                                            TRUE,  // show line numbers
                                            m_ctx  // search context
                                            );
@@ -826,7 +826,7 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
                                 op.line(),    // startLine
                                 -1,    // endLine
                                 FALSE, // inline fragment
-                                0,     // memberDef
+                                nullptr,     // memberDef
                                 op.showLineNo(),  // show line numbers
                                 m_ctx  // search context
                                );
@@ -1028,7 +1028,14 @@ void HtmlDocVisitor::operator()(const DocAutoList &l)
   }
   else
   {
-    m_t << "<ul>";
+    if (l.isCheckedList())
+    {
+      m_t << "<ul class=\"check\">";
+    }
+    else
+    {
+      m_t << "<ul>";
+    }
   }
   if (!l.isPreformatted()) m_t << "\n";
   visitChildren(l);
@@ -1047,7 +1054,19 @@ void HtmlDocVisitor::operator()(const DocAutoList &l)
 void HtmlDocVisitor::operator()(const DocAutoListItem &li)
 {
   if (m_hide) return;
-  m_t << "<li>";
+  switch (li.itemNumber())
+  {
+    case DocAutoList::Unchecked: // unchecked
+      m_t << "<li class=\"unchecked\">";
+      break;
+    case DocAutoList::Checked_x: // checked with x
+    case DocAutoList::Checked_X: // checked with X
+      m_t << "<li class=\"checked\">";
+      break;
+    default:
+      m_t << "<li>";
+      break;
+  }
   visitChildren(li);
   m_t << "</li>";
   if (!li.isPreformatted()) m_t << "\n";
@@ -1082,7 +1101,7 @@ bool isSeparatedParagraph(const DocSimpleSect &parent,const DocPara &par)
   auto it = std::find_if(std::begin(nodes),std::end(nodes),[&par](const auto &n) { return holds_value(&par,n); });
   if (it==std::end(nodes)) return FALSE;
   size_t count = parent.children().size();
-  auto isSeparator = [](auto &&it_) { return std::get_if<DocSimpleSectSep>(&(*it_))!=0; };
+  auto isSeparator = [](auto &&it_) { return std::get_if<DocSimpleSectSep>(&(*it_))!=nullptr; };
   if (count>1 && it==std::begin(nodes)) // it points to first node
   {
     return isSeparator(std::next(it));
@@ -1117,9 +1136,9 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       }
       isFirst=isFirstChildNode(parBlock,p);
       isLast =isLastChildNode (parBlock,p);
-      bool isLI = p3!=0 && holds_one_of_alternatives<DocHtmlListItem,DocSecRefItem>(*p3);
-      bool isDD = p3!=0 && holds_one_of_alternatives<DocHtmlDescData,DocXRefItem,DocSimpleSect>(*p3);
-      bool isTD = p3!=0 && holds_one_of_alternatives<DocHtmlCell,DocParamList>(*p3);
+      bool isLI = p3!=nullptr && holds_one_of_alternatives<DocHtmlListItem,DocSecRefItem>(*p3);
+      bool isDD = p3!=nullptr && holds_one_of_alternatives<DocHtmlDescData,DocXRefItem,DocSimpleSect>(*p3);
+      bool isTD = p3!=nullptr && holds_one_of_alternatives<DocHtmlCell,DocParamList>(*p3);
       t=contexts_t::NONE;
       if (isFirst)
       {
@@ -1394,6 +1413,8 @@ void HtmlDocVisitor::operator()(const DocSimpleSect &s)
       m_t << theTranslator->trRemarks(); break;
     case DocSimpleSect::Attention:
       m_t << theTranslator->trAttention(); break;
+    case DocSimpleSect::Important:
+      m_t << theTranslator->trImportant(); break;
     case DocSimpleSect::User: break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
@@ -2022,6 +2043,7 @@ void HtmlDocVisitor::operator()(const DocVhdlFlow &vf)
     QCString fname=FlowChart::convertNameToFileName();
     m_t << "<p>";
     m_t << theTranslator->trFlowchart();
+    m_t << " ";
     m_t << "<a href=\"";
     m_t << fname;
     m_t << ".svg\">";

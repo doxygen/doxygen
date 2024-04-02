@@ -203,6 +203,7 @@ class HtmlGenerator : public OutputGenerator
                          const QCString &anchor,const QCString &name,
                          const QCString &args);
     void endDoxyAnchor(const QCString &fName,const QCString &anchor);
+    void addLabel(const QCString &,const QCString &);
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name);
@@ -269,7 +270,9 @@ class HtmlGenerator : public OutputGenerator
     void startParameterType(bool first,const QCString &key);
     void endParameterType();
     void startParameterName(bool);
-    void endParameterName(bool last,bool emptyList,bool closeBracket);
+    void endParameterName();
+    void startParameterExtra();
+    void endParameterExtra(bool last,bool emptyList,bool closeBracket);
     void startParameterDefVal(const char *sep);
     void endParameterDefVal();
     void startParameterList(bool);

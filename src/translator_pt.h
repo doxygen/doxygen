@@ -26,6 +26,8 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20240204:
+ *  - Updated to 1.11.0:
  * 20231107:
  *  - Updated to 1.10.0:
  * 20230817:
@@ -189,7 +191,7 @@ class TranslatorPortuguese : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Lista completa de todos os membros de "; }
+    { return "Lista completa de todos os membros de"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -394,8 +396,8 @@ class TranslatorPortuguese : public Translator
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Documentação"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return "Documentação" + (!projName.isEmpty()? " de " + projName : ""); }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1498,7 +1500,7 @@ class TranslatorPortuguese : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return  "Código-Fonte de " + filename;
     }
@@ -1882,10 +1884,10 @@ class TranslatorPortuguese : public Translator
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2396,7 +2398,7 @@ class TranslatorPortuguese : public Translator
      */
     QCString trFlowchart() override
     {
-        return "Fluxograma: ";
+        return "Fluxograma:";
     }
 
     /*! Please translate also updated body of the method
@@ -2436,7 +2438,7 @@ class TranslatorPortuguese : public Translator
       switch(compType)
       {
         case ClassDef::Class:
-          if (lang == SrcLangExt_Fortran) trType(true,true);
+          if (lang == SrcLangExt::Fortran) trType(true,true);
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Estrutura"; break;
@@ -2713,6 +2715,13 @@ class TranslatorPortuguese : public Translator
     QCString trCopyToClipboard() override
     {
       return "Copiado para a área de transferência";
+    }    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Importante";
     }    
 };
 

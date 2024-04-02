@@ -160,7 +160,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Danh sách các thành viên đầy đủ cho "; }
+    { return "Danh sách các thành viên đầy đủ cho"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -368,8 +368,8 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Thông tin"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Thông tin"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1473,7 +1473,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " File nguồn";
     }
@@ -1759,10 +1759,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "SA", "CH" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

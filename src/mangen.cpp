@@ -114,13 +114,14 @@ ManCodeGenerator::ManCodeGenerator(TextStream *t) : m_t(t)
 
 void ManCodeGenerator::startCodeFragment(const QCString &)
 {
-  *m_t << ".PP\n";
+  *m_t << "\n";
   *m_t << ".nf\n";
 }
 
 void ManCodeGenerator::endCodeFragment(const QCString &)
 {
   if (m_col>0) *m_t << "\n";
+  *m_t << ".PP\n";
   *m_t << ".fi\n";
   m_col=0;
 }
@@ -541,6 +542,10 @@ void ManGenerator::startDoxyAnchor(const QCString &,const QCString &manName,
     }
 }
 
+void ManGenerator::addLabel(const QCString &,const QCString &)
+{
+}
+
 void ManGenerator::endMemberDoc(bool)
 {
     m_t << "\"\n";
@@ -660,13 +665,15 @@ void ManGenerator::startSection(const QCString &,const QCString &,SectionType ty
 {
   if( !m_inHeader )
   {
-    switch(type)
+    switch(type.level())
     {
-      case SectionType::Page:          startGroupHeader(0); break;
-      case SectionType::Section:       startGroupHeader(0); break;
-      case SectionType::Subsection:    startMemberHeader(QCString(), -1); break;
-      case SectionType::Subsubsection: startMemberHeader(QCString(), -1); break;
-      case SectionType::Paragraph:     startMemberHeader(QCString(), -1); break;
+      case SectionType::Page:             // fall through
+      case SectionType::Section:          startGroupHeader(0); break;
+      case SectionType::Subsection:       // fall through
+      case SectionType::Subsubsection:    // fall through
+      case SectionType::Paragraph:        // fall through
+      case SectionType::Subparagraph:     // fall through
+      case SectionType::Subsubparagraph:  startMemberHeader(QCString(), -1); break;
       default: ASSERT(0); break;
     }
   }
@@ -676,13 +683,15 @@ void ManGenerator::endSection(const QCString &,SectionType type)
 {
   if( !m_inHeader )
   {
-    switch(type)
+    switch(type.level())
     {
-      case SectionType::Page:          endGroupHeader(0); break;
-      case SectionType::Section:       endGroupHeader(0); break;
-      case SectionType::Subsection:    endMemberHeader(); break;
-      case SectionType::Subsubsection: endMemberHeader(); break;
-      case SectionType::Paragraph:     endMemberHeader(); break;
+      case SectionType::Page:            // fall through
+      case SectionType::Section:         endGroupHeader(0); break;
+      case SectionType::Subsection:      // fall through
+      case SectionType::Subsubsection:   // fall through
+      case SectionType::Paragraph:       // fall through
+      case SectionType::Subparagraph:    // fall through
+      case SectionType::Subsubparagraph: endMemberHeader(); break;
       default: ASSERT(0); break;
     }
   }
@@ -895,5 +904,22 @@ void ManGenerator::writeInheritedSectionTitle(
   m_t << "\n\n";
   m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(name));
   m_firstCol = FALSE;
+}
+
+void ManGenerator::startParameterList(bool openBracket)
+{
+  if (openBracket) m_t << "(";
+}
+
+void ManGenerator::endParameterExtra(bool last,bool /* emptyList */, bool closeBracket)
+{
+  if (last && closeBracket)
+  {
+    m_t << ")";
+  }
+}
+void ManGenerator::endParameterType()
+{
+  m_t << " ";
 }
 

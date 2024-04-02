@@ -161,10 +161,9 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
   }
   p->yyLineNr=1;
   s->current_root=root;
-  s->lastCompound=0;
-  s->lastEntity=0;
-  s->lastEntity=0;
-  p->oldEntry = 0;
+  s->lastCompound=nullptr;
+  s->lastEntity=nullptr;
+  p->oldEntry = nullptr;
   s->current=std::make_shared<Entry>();
   initEntry(s->current.get());
   p->commentScanner.enterFile(fileName,p->yyLineNr);
@@ -200,11 +199,11 @@ void VHDLOutlineParser::lineCount(const QCString &text)
 void VHDLOutlineParser::initEntry(Entry *e)
 {
   e->fileName = p->yyFileName;
-  e->lang     = SrcLangExt_VHDL;
+  e->lang     = SrcLangExt::VHDL;
   if (p->str_doc.pending)
   {
     p->str_doc.pending=FALSE;
-    p->oldEntry=0; // prevents endless recursion
+    p->oldEntry=nullptr; // prevents endless recursion
     p->iDocLine=p->str_doc.iDocLine;
     handleCommentBlock(p->str_doc.doc,p->str_doc.brief);
     p->iDocLine=-1;
@@ -362,7 +361,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   gBlock.vhdlSpec = VhdlSpecifier::MISCELLANEOUS;
   gBlock.fileName = p->yyFileName;
   gBlock.endBodyLine = p->yyLineNr + val +iLine;
-  gBlock.lang = SrcLangExt_VHDL;
+  gBlock.lang = SrcLangExt::VHDL;
   std::shared_ptr<Entry> compound;
 
   if (s->lastEntity)
@@ -370,7 +369,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   else if (s->lastCompound)
     compound = s->lastCompound;
   else
-    compound = 0;
+    compound = nullptr;
 
   if (compound)
   {
@@ -852,7 +851,7 @@ void VHDLOutlineParser::error_skipto(int kind)
   {
     p->vhdlParser->getNextToken();  // step to next token
     op=p->vhdlParser->getToken(1);  // get first token
-    if (op==0) break;
+    if (op==nullptr) break;
     //fprintf(stderr,"\n %s",qPrint(t->image));
   } while (op->kind != kind);
   p->vhdlParser->clearError();

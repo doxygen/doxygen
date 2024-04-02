@@ -146,7 +146,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Šis ir pilns elementu saraksts klasei "; }
+    { return "Šis ir pilns elementu saraksts klasei"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -354,8 +354,8 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokumentācija"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentācija"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1462,7 +1462,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " pirmkoda fails";
     }
@@ -1840,10 +1840,10 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "priekšp.", "pēcp." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

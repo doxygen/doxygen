@@ -88,7 +88,7 @@ class DocNode
     DocNode &operator=(DocNode &&) = default;
    ~DocNode() = default;
 
-    /*! Returns the parent of this node or 0 for the root node. */
+    /*! Returns the parent of this node or nullptr for the root node. */
     DocNodeVariant *parent() { return m_parent; }
     const DocNodeVariant *parent() const { return m_parent; }
 
@@ -546,15 +546,23 @@ class DocIndexEntry : public DocNode
 class DocAutoList : public DocCompoundNode
 {
   public:
-    DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,bool isEnumList,int depth);
+    enum ListType
+    {
+       Unnumbered=1, Unchecked=-2, Checked_x=-3, Checked_X=-4 // positive numbers give the label
+    };
+    DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,bool isEnumList,
+                         int depth, bool isCheckedList);
+
     bool isEnumList() const    { return m_isEnumList; }
     int  indent() const        { return m_indent; }
+    bool isCheckedList() const { return m_isCheckedList; }
     int depth() const          { return m_depth; }
     int parse();
 
   private:
     int      m_indent = 0;
     bool     m_isEnumList = false;
+    bool     m_isCheckedList = false;
     int      m_depth = 0;
 };
 
@@ -977,7 +985,8 @@ class DocSimpleSect : public DocCompoundNode
     enum Type
     {
        Unknown, See, Return, Author, Authors, Version, Since, Date,
-       Note, Warning, Copyright, Pre, Post, Invar, Remark, Attention, User, Rcs
+       Note, Warning, Copyright, Pre, Post, Invar, Remark, Attention, Important,
+       User, Rcs
     };
     DocSimpleSect(DocParser *parser,DocNodeVariant *parent,Type t);
     Type type() const       { return m_type; }
@@ -1044,7 +1053,7 @@ class DocPara : public DocCompoundNode
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
 
-    int handleCommand(const QCString &cmdName,const int tok);
+    int handleCommand(char cmdChar,const QCString &cmdName);
     int handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs);
     int handleHtmlEndTag(const QCString &tagName);
     int handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=FALSE);
@@ -1054,16 +1063,16 @@ class DocPara : public DocCompoundNode
     template<class T> void handleFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
-    void handleCite();
-    void handleDoxyConfig();
-    void handleEmoji();
-    void handleRef(const QCString &cmdName);
-    void handleSection(const QCString &cmdName);
+    void handleCite(char cmdChar,const QCString &cmdName);
+    void handleDoxyConfig(char cmdChar,const QCString &cmdName);
+    void handleEmoji(char cmdChar,const QCString &cmdName);
+    void handleRef(char cmdChar,const QCString &cmdName);
+    void handleSection(char cmdChar,const QCString &cmdName);
     void handleInheritDoc();
     void handleVhdlFlow();
-    void handleILine();
-    void handleIFile();
-    void handleShowDate();
+    void handleILine(char cmdChar,const QCString &cmdName);
+    void handleIFile(char cmdChar,const QCString &cmdName);
+    void handleShowDate(char cmdChar,const QCString &cmdName);
     int handleStartCode();
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 
@@ -1260,7 +1269,7 @@ class DocHtmlBlockQuote : public DocCompoundNode
 class DocText : public DocCompoundNode
 {
   public:
-    DocText(DocParser *parser) : DocCompoundNode(parser,0) {}
+    DocText(DocParser *parser) : DocCompoundNode(parser,nullptr) {}
     void parse();
     bool isEmpty() const    { return children().empty(); }
 };
@@ -1270,7 +1279,7 @@ class DocRoot : public DocCompoundNode
 {
   public:
     DocRoot(DocParser *parser,bool indent,bool sl)
-      : DocCompoundNode(parser,0), m_indent(indent), m_singleLine(sl) {}
+      : DocCompoundNode(parser,nullptr), m_indent(indent), m_singleLine(sl) {}
     void parse();
     bool indent() const { return m_indent; }
     bool singleLine() const { return m_singleLine; }
@@ -1283,13 +1292,13 @@ class DocRoot : public DocCompoundNode
 
 //--------------------------------------------------------------------------------------
 
-/// returns the parent node of a given node \a n or 0 if the node has no parent.
+/// returns the parent node of a given node \a n or nullptr if the node has no parent.
 constexpr DocNodeVariant *parent(DocNodeVariant *n)
 {
   return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;
 }
 
-/// returns the parent node of a given node \a n or 0 if the node has no parent.
+/// returns the parent node of a given node \a n or nullptr if the node has no parent.
 constexpr const DocNodeVariant *parent(const DocNodeVariant *n)
 {
   return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;

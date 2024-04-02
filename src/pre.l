@@ -53,9 +53,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "defargs.h"
 #include "debug.h"
-#include "bufstr.h"
 #include "portable.h"
-#include "bufstr.h"
 #include "arguments.h"
 #include "entry.h"
 #include "condparser.h"
@@ -82,11 +80,10 @@ struct preYY_CondCtx
 
 struct FileState
 {
-  FileState(uint32_t size) : fileBuf(size) {}
   int lineNr = 1;
   int curlyCount = 0;
-  BufStr fileBuf;
-  BufStr *oldFileBuf = nullptr;
+  std::string fileBuf;
+  const std::string *oldFileBuf = nullptr;
   int oldFileBufPos = 0;
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
@@ -140,10 +137,10 @@ class DefineManager
         }
         void retrieve(DefineMap &toMap)
         {
-          StringSet includeStack;
+          StringUnorderedSet includeStack;
           retrieveRec(toMap,includeStack);
         }
-        void retrieveRec(DefineMap &toMap,StringSet &includeStack)
+        void retrieveRec(DefineMap &toMap,StringUnorderedSet &includeStack)
         {
           //printf("  retrieveRec #includedFiles=%zu\n",m_includedFiles.size());
           for (auto incFile : m_includedFiles)
@@ -165,7 +162,7 @@ class DefineManager
       private:
         DefineManager *m_parent;
         DefineMap m_defines;
-        StringSet m_includedFiles;
+        StringUnorderedSet m_includedFiles;
         bool m_stored = false;
     };
 
@@ -262,9 +259,9 @@ struct preYY_state
   bool               defVarArgs     = false;
   int                lastCContext   = 0;
   int                lastCPPContext = 0;
-  BufStr            *inputBuf       = nullptr;
+  const std::string *inputBuf       = nullptr;
   int                inputBufPos    = 0;
-  BufStr            *outputBuf      = nullptr;
+  std::string       *outputBuf      = nullptr;
   int                roundCount     = 0;
   bool               quoteArg       = false;
   bool               idStart        = false;
@@ -293,6 +290,7 @@ struct preYY_state
   bool               isSource       = false;
 
   yy_size_t          fenceSize      = 0;
+  char               fenceChar      = ' ';
   bool               ccomment       = false;
   QCString           delimiter;
   bool               isSpecialComment = false;
@@ -309,8 +307,9 @@ struct preYY_state
   DefineList                               macroDefinitions;
   LinkedMap<PreIncludeInfo>                includeRelations;
 
-  int                                      lastContext = 0;
-  bool                                     lexRulesPart = false;
+  int                lastContext = 0;
+  bool               lexRulesPart = false;
+  char               prevChar=0;
 };
 
 // stateless functions
@@ -340,6 +339,7 @@ static void         setFileName(yyscan_t yyscanner,const QCString &name);
 static int               yyread(yyscan_t yyscanner,char *buf,int max_size);
 static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
 static void  determineBlockName(yyscan_t yyscanner);
+static yy_size_t   getFenceSize(char *txt, yy_size_t leng);
 
 /* ----------------------------------------------------------------- */
 
@@ -463,7 +463,7 @@ WSopt [ \t\r]*
                                           BEGIN(Command);
                                         }
 <Start>^("%top{"|"%{")                  {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Lex) REJECT
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(LexCopyLine);
                                         }
@@ -581,14 +581,14 @@ WSopt [ \t\r]*
 <CopyLine,LexCopyLine>"'"."'"           {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
-<CopyLine,LexCopyLine>@\"               {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_CSharp) REJECT;
+<CopyLine,LexCopyLine>[$]?@\"           {
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::CSharp) REJECT;
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN( CopyStringCs );
                                         }
 <CopyLine,LexCopyLine>\"                {
                                           outputChar(yyscanner,*yytext);
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran)
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran)
                                           {
                                             BEGIN( CopyString );
                                           }
@@ -598,7 +598,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <CopyLine,LexCopyLine>\'                {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
                                           outputChar(yyscanner,*yytext);
                                           BEGIN( CopyStringFtn );
                                         }
@@ -606,6 +606,9 @@ WSopt [ \t\r]*
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyStringCs>[^\"\r\n]+                {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<CopyStringCs>\"\"                      {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyString>\\.                         {
@@ -689,13 +692,14 @@ WSopt [ \t\r]*
                                           }
                                         }
 <CopyLine>{RulesDelim}                  {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Lex) REJECT;
                                           yyextra->lexRulesPart = !yyextra->lexRulesPart;
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
   /* start lex rule handling */
 <CopyLine>{RulesSharp}                  {
                                           if (!yyextra->lexRulesPart) REJECT;
+                                          if (yyextra->curlyCount) REJECT;
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(RulesPattern);
                                         }
@@ -834,7 +838,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <CopyLine,LexCopyLine>"\\"\r?/\n        { // strip line continuation characters
-                                          if (getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran) outputChar(yyscanner,*yytext);
+                                          if (getLanguageFromFileName(yyextra->fileName)==SrcLangExt::Fortran) outputChar(yyscanner,*yytext);
                                         }
 <CopyLine,LexCopyLine>\\.               {
                                           outputArray(yyscanner,yytext,(int)yyleng);
@@ -889,7 +893,7 @@ WSopt [ \t\r]*
                                           BEGIN(ReadString);
                                         }
 <FindDefineArgs>'                       {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(ReadString);
                                         }
@@ -924,7 +928,7 @@ WSopt [ \t\r]*
                                           BEGIN(FindDefineArgs);
                                         }
 <ReadString>"'"                         {
-                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Fortran) REJECT;
+                                          if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt::Fortran) REJECT;
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(FindDefineArgs);
                                         }
@@ -1422,7 +1426,8 @@ WSopt [ \t\r]*
                                           }
                                           else
                                           {
-                                            yyextra->fenceSize=(int)yyleng;
+                                            yyextra->fenceChar='~';
+                                            yyextra->fenceSize=(int)getFenceSize(yytext,yyleng);
                                             BEGIN(SkipCondVerbatim);
                                           }
                                         }
@@ -1434,7 +1439,8 @@ WSopt [ \t\r]*
                                           }
                                           else
                                           {
-                                            yyextra->fenceSize=(int)yyleng;
+                                            yyextra->fenceChar='`';
+                                            yyextra->fenceSize=(int)getFenceSize(yytext,yyleng);
                                             BEGIN(SkipCondVerbatim);
                                           }
                                         }
@@ -1447,7 +1453,8 @@ WSopt [ \t\r]*
                                           else
                                           {
                                             outputArray(yyscanner,yytext,yyleng);
-                                            yyextra->fenceSize=(int)yyleng;
+                                            yyextra->fenceChar='~';
+                                            yyextra->fenceSize=(int)getFenceSize(yytext,yyleng);
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
@@ -1460,7 +1467,8 @@ WSopt [ \t\r]*
                                           else
                                           {
                                             outputArray(yyscanner,yytext,yyleng);
-                                            yyextra->fenceSize=(int)yyleng;
+                                            yyextra->fenceChar='`';
+                                            yyextra->fenceSize=(int)getFenceSize(yytext,yyleng);
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
@@ -1479,6 +1487,7 @@ WSopt [ \t\r]*
                                           BEGIN(SkipVerbatim);
                                         }
 <SkipCond>[\\@][\\@]"cond"[ \t]+        {}// escaped cond command
+<SkipCond>[\\@]"cond"/\n                |  
 <SkipCond>[\\@]"cond"[ \t]+             { // cond command in a skipped cond section, this section has to be skipped as well
                                           // but has to be recorded to match the endcond command
                                           startCondSection(yyscanner," ");
@@ -1626,27 +1635,27 @@ WSopt [ \t\r]*
                                           }
                                         }
 <SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
-                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='~') 
                                           {
                                             BEGIN(SkipCond);
                                           }
                                         }
 <SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
-                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='`')
                                           {
                                             BEGIN(SkipCond);
                                           }
                                         }
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
                                           outputArray(yyscanner,yytext,yyleng);
-                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='~')
                                           {
                                             BEGIN(SkipCComment);
                                           }
                                         }
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
                                           outputArray(yyscanner,yytext,yyleng);
-                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          if (yyextra->fenceSize==getFenceSize(yytext,yyleng) &&  yyextra->fenceChar=='`')
                                           {
                                             BEGIN(SkipCComment);
                                           }
@@ -2036,7 +2045,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <*>{CPPC}[/!]?                          {
-                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
+                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt::Fortran || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -2076,11 +2085,22 @@ WSopt [ \t\r]*
 static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  int bytesInBuf = static_cast<int>(state->inputBuf->curPos())-state->inputBufPos;
+  int bytesInBuf = static_cast<int>(state->inputBuf->size())-state->inputBufPos;
   int bytesToCopy = std::min(max_size,bytesInBuf);
   memcpy(buf,state->inputBuf->data()+state->inputBufPos,bytesToCopy);
   state->inputBufPos+=bytesToCopy;
   return bytesToCopy;
+}
+
+static yy_size_t getFenceSize(char *txt, yy_size_t leng)
+{
+  yy_size_t fenceSize = 0;
+  for (size_t i = 0; i < leng; i++)
+  {
+     if (txt[i] != ' ' && txt[i] != '*' && txt[i] != '\t') break;
+     fenceSize++;
+  }
+  return leng-fenceSize;
 }
 
 static void setFileName(yyscan_t yyscanner,const QCString &name)
@@ -2098,9 +2118,9 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   //printf("setFileName(%s) state->fileName=%s state->yyFileDef=%p\n",
   //    name,qPrint(state->fileName),state->yyFileDef);
   if (state->yyFileDef && state->yyFileDef->isReference()) state->yyFileDef=0;
-  state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
-  state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
-  state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
+  state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt::IDL;
+  state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt::CSharp;
+  state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt::Fortran;
   EntryType section = guessSection(state->fileName);
   state->isSource = section.isHeader() || section.isSource();
 }
@@ -2188,7 +2208,7 @@ static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const QCSt
     }
     //printf("#include %s\n",qPrint(absName));
 
-    fs = std::make_unique<FileState>(static_cast<uint32_t>(fi.size())+4096);
+    fs = std::make_unique<FileState>();
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
@@ -2259,6 +2279,19 @@ static std::unique_ptr<FileState> findFile(yyscan_t yyscanner, const QCString &f
     else if (alreadyProcessed)
     {
       return nullptr;
+    }
+  }
+  bool ambig;
+  FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,fileName,ambig);
+  if (fd && !ambig) // fallback in case the file is uniquely named in the input, use that one
+  {
+    auto fs = checkAndOpenFile(yyscanner,fd->absFilePath(),alreadyProcessed);
+    if (fs)
+    {
+      setFileName(yyscanner,fd->absFilePath());
+      state->yyLineNr=1;
+      //printf("  -> found it\n");
+      return fs;
     }
   }
   return nullptr;
@@ -2497,8 +2530,7 @@ static void skipCommentMacroName(yyscan_t yyscanner, const QCString &expr, QCStr
  */
 static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result,int level)
 {
-  YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%d\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),state->levelGuard.size());
+  //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%zu\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),state->levelGuard.size());
   uint32_t j=pos;
   len=0;
   result.clear();
@@ -2508,7 +2540,10 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
 
   if (cc!='(')
   {
-    unputChar(yyscanner,expr,rest,j,' ');
+    if (cc!=':') // don't add spaces for colons
+    {
+      unputChar(yyscanner,expr,rest,j,' ');
+    }
     return FALSE;
   }
   getNextChar(yyscanner,expr,rest,j); // eat the '(' character
@@ -2711,14 +2746,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
               {
                 resExpr+="@E"; // empty argument will be remove later on
               }
-              else if (state->nospaces)
-              {
-                resExpr+=substArg;
-              }
-              else
-              {
-                resExpr+=" "+substArg+" ";
-              }
+              resExpr+=substArg;
             }
           }
         }
@@ -2738,10 +2766,10 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
     }
     len=j-pos;
     result=resExpr;
-    //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%d return=TRUE\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),qPrint(result),state->levelGuard.size());
+    //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%zu return=TRUE\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),qPrint(result),state->levelGuard.size());
     return TRUE;
   }
-  //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%d return=FALSE\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),qPrint(result),state->levelGuard.size());
+  //printf("<replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s',result='%s') level=%zu return=FALSE\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),qPrint(result),state->levelGuard.size());
   return FALSE;
 }
 
@@ -2806,6 +2834,34 @@ static int getNextId(const QCString &expr,int p,int *l)
 
 #define MAX_EXPANSION_DEPTH 50
 
+static void addSeparatorsIfNeeded(yyscan_t yyscanner,const QCString &expr,QCString &resultExpr,QCString &restExpr,int pos)
+{
+  YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
+  if (!state->nospaces)
+  {
+    // peek back in the stream, for a colon character
+    char ccPrev = pos==0 || (int)expr.length()<pos ? state->prevChar : expr.at(pos-1);
+    QCString leftSpace = ccPrev!=':' && ccPrev!=' ' ? " " : "";
+    int ccNext;
+    restExpr=restExpr.stripWhiteSpace();
+    if (restExpr.isEmpty()) // peek ahead in the stream for non-whitespace
+    {
+      uint32_t j=resultExpr.length();
+      while ((ccNext=getNextChar(yyscanner,resultExpr,nullptr,j))!=EOF && ccNext==' ') { }
+      unputChar(yyscanner,resultExpr,nullptr,j,ccNext);
+    }
+    else // take first char from remainder
+    {
+      ccNext=restExpr.at(0);
+    }
+    // don't add whitespace before a colon
+    QCString rightSpace = ccNext!=':' && ccNext!=' ' ? " " : "";
+    //printf("ccPrev='%c' ccNext='%c' p=%d expr=%zu restExpr='%s' left='%s' right='%s'\n",
+    //    ccPrev,ccNext,pos,expr.length(),qPrint(restExpr),qPrint(leftSpace),qPrint(rightSpace));
+    resultExpr=leftSpace+resultExpr+rightSpace;
+  }
+}
+
 /*! performs recursive macro expansion on the string \a expr
  *  starting at position \a pos.
  *  May read additional characters from the input while re-scanning!
@@ -2864,15 +2920,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
         else if (def && def->nargs==-1) // simple macro
         {
           // substitute the definition of the macro
-          //printf("macro '%s'->'%s'\n",qPrint(macroName),qPrint(def->definition));
-          if (state->nospaces)
-          {
-            expMacro=def->definition.stripWhiteSpace();
-          }
-          else
-          {
-            expMacro=" "+def->definition.stripWhiteSpace()+" ";
-          }
+          expMacro=def->definition.stripWhiteSpace();
           //expMacro=def->definition.stripWhiteSpace();
           replaced=TRUE;
           len=l;
@@ -2892,6 +2940,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           //printf(" replacing '%s'->'%s'\n",qPrint(expr.mid(p,len)),qPrint(expMacro));
           QCString resultExpr=expMacro;
           QCString restExpr=expr.right(expr.length()-len-p);
+          addSeparatorsIfNeeded(yyscanner,expr,resultExpr,restExpr,p);
           processConcatOperators(resultExpr);
           //printf(" macroName=%s restExpr='%s' def->nonRecursive=%d\n",qPrint(macroName),qPrint(restExpr),def->nonRecursive);
           bool expanded=false;
@@ -2907,12 +2956,13 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
           }
           if (expanded)
           {
+            //printf("expanded '%s' + '%s' + '%s'\n",qPrint(expr.left(p)),qPrint(resultExpr),qPrint(restExpr));
             expr=expr.left(p)+resultExpr+restExpr;
-            //printf(" new expression: '%s' old i=%d new i=%d\n",qPrint(expr),i,p);
             i=p;
           }
           else
           {
+            //printf("not expanded '%s' + @- '%s'\n",qPrint(expr.left(p)),qPrint(expr.right(expr.length()-p)));
             expr=expr.left(p)+"@-"+expr.right(expr.length()-p);
             i=p+l+2;
           }
@@ -3275,11 +3325,14 @@ static bool computeExpression(yyscan_t yyscanner,const QCString &expr)
 
 static QCString expandMacro(yyscan_t yyscanner,const QCString &name)
 {
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
+  state->prevChar = yyscanner->yytext_r > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf ? *(yyscanner->yytext_r-1) : 0;
   QCString n=name;
   state->expanded.clear();
   expandExpression(yyscanner,n,0,0,0);
   n=removeMarkers(n);
+  state->prevChar=0;
   //printf("expandMacro '%s'->'%s'\n",qPrint(name),qPrint(n));
   return n;
 }
@@ -3360,19 +3413,19 @@ static void addMacroDefinition(yyscan_t yyscanner)
 static inline void outputChar(yyscan_t yyscanner,char c)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addChar(c);
+  if (state->includeStack.empty() || state->curlyCount>0) (*state->outputBuf)+=c;
 }
 
 static inline void outputArray(yyscan_t yyscanner,const char *a,yy_size_t len)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint32_t>(len));
+  if (state->includeStack.empty() || state->curlyCount>0) (*state->outputBuf)+=std::string_view(a,len);
 }
 
 static inline void outputString(yyscan_t yyscanner,const QCString &a)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a.data(),a.length());
+  if (state->includeStack.empty() || state->curlyCount>0) (*state->outputBuf)+=a.str();
 }
 
 static inline void outputSpace(yyscan_t yyscanner,char c)
@@ -3672,20 +3725,20 @@ static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,ui
   //printf("getNextChar(%s,%s,%d)\n",qPrint(expr),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
   {
-    //printf("%c=expr()\n",expr.at(pos));
+    //printf("  expr()='%c'\n",expr.at(pos));
     return expr.at(pos++);
   }
   else if (rest && !rest->isEmpty())
   {
     int cc=rest->at(0);
     *rest=rest->right(rest->length()-1);
-    //printf("%c=rest\n",cc);
+    //printf("  rest='%c'\n",cc);
     return cc;
   }
   else
   {
     int cc=yyinput(yyscanner);
-    //printf("%d=yyinput() %d\n",cc,EOF);
+    //printf("  yyinput()='%c' %d\n",cc,EOF);
     return cc;
   }
 }
@@ -3722,13 +3775,13 @@ static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uin
   }
   else if (rest)
   {
-    //printf("Prepending to rest!\n");
+    //printf("  prepending '%c' to rest!\n",c);
     char cs[2];cs[0]=c;cs[1]='\0';
     rest->prepend(cs);
   }
   else
   {
-    //unput(c);
+    //printf("  yyunput()='%c'\n",c);
     returnCharToStream(yyscanner,c);
   }
   //printf("result: unputChar(%s,%s,%d,%c)\n",qPrint(expr),rest ? rest->data() : 0,pos,c);
@@ -3911,7 +3964,7 @@ Preprocessor::~Preprocessor()
   preYYlex_destroy(p->yyscanner);
 }
 
-void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &output)
+void Preprocessor::processFile(const QCString &fileName,const std::string &input,std::string &output)
 {
   AUTO_TRACE("fileName={}",fileName);
   yyscan_t yyscanner = p->yyscanner;
@@ -3923,7 +3976,6 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
 #endif
 
   DebugLex debugLex(Debug::Lex_pre, __FILE__, qPrint(fileName));
-  size_t orgOffset=output.curPos();
   //printf("##########################\n%s\n####################\n",
   //    qPrint(input));
 
@@ -3976,17 +4028,16 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   if (Debug::isFlagSet(Debug::Preprocessor))
   {
     std::lock_guard<std::mutex> lock(g_debugMutex);
-    char *orgPos=output.data()+orgOffset;
-    char *newPos=output.data()+output.curPos();
-    Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %d bytes):\n",qPrint(fileName),newPos-orgPos);
+    Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %zu bytes):\n",qPrint(fileName),output.size());
     int line=1;
     Debug::print(Debug::Preprocessor,0,"---------\n");
     if (!Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"00001 ");
-    while (orgPos<newPos)
+    size_t pos=0;
+    while (pos<output.size())
     {
-      putchar(*orgPos);
-      if (*orgPos=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
-      orgPos++;
+      putchar(output[pos]);
+      if (output[pos]=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
+      pos++;
     }
     Debug::print(Debug::Preprocessor,0,"\n---------\n");
     if (yyextra->contextDefines.size()>0)

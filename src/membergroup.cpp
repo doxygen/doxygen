@@ -54,13 +54,13 @@ void MemberGroup::insertMember(MemberDef *md)
   //       md->getSectionList(),
   //       md,qPrint(md->name()));
 
-  const MemberDef *firstMd = memberList->empty() ? 0 : memberList->front();
+  const MemberDef *firstMd = memberList->empty() ? nullptr : memberList->front();
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
     inSameSection=FALSE;
   }
-  else if (inDeclSection==0)
+  else if (inDeclSection==nullptr)
   {
     inDeclSection = const_cast<MemberList*>(md->getSectionList(m_container));
     //printf("inDeclSection=%p type=%d\n",inDeclSection,inDeclSection->listType());
@@ -139,7 +139,7 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
       MemberList mml(lt,MemberListContainer::Class);
       mml.push_back(md);
       mml.countDecMembers();
-      mml.writePlainDeclarations(ol,false,cd,0,0,0,0,0,inheritedFrom,inheritId);
+      mml.writePlainDeclarations(ol,false,cd,nullptr,nullptr,nullptr,nullptr,0,inheritedFrom,inheritId);
     }
   }
 }
@@ -200,10 +200,10 @@ const Definition *MemberGroup::memberContainer() const
   {
     const MemberDef *md = memberList->front();
     ctx = md->getClassDef();
-    if (ctx==0) ctx = md->getNamespaceDef();
-    if (ctx==0) ctx = md->getFileDef();
+    if (ctx==nullptr) ctx = md->getNamespaceDef();
+    if (ctx==nullptr) ctx = md->getFileDef();
   }
-  return ctx==0 ? m_container : ctx;
+  return ctx==nullptr ? m_container : ctx;
 }
 
 int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const

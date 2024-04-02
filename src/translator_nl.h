@@ -242,8 +242,8 @@ class TranslatorDutch : public Translator
     QCString trModulesDescription() override
     { return "Hieronder volgt de lijst met alle modules:"; }
 
-    QCString trDocumentation() override
-    { return "Documentatie"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Documentatie"; }
     QCString trModuleIndex() override
     { return "Module Index"; }
     QCString trHierarchicalIndex() override
@@ -541,7 +541,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Exception:  result+="deze exceptie"; break;
         default: break;
       }
-      result+=" is gegenereerd op grond van ";
+      result+=" is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1227,7 +1227,7 @@ class TranslatorDutch : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Bron Bestand";
     }
@@ -1449,7 +1449,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Exception:  result+="deze exception"; break;
         default: break;
       }
-      result+=" is gegenereerd op grond van ";
+      result+=" is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1573,10 +1573,10 @@ class TranslatorDutch : public Translator
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "a.m.", "p.m." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1613,7 +1613,7 @@ class TranslatorDutch : public Translator
 
     /*! Used file list for a Java enum */
     QCString trEnumGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze enum is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze enum is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1645,7 +1645,7 @@ class TranslatorDutch : public Translator
     QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "in" : "uit";
-      return "klik hier de paneel synchronisatie "+opt+" the schakelen";
+      return "klik hier om de paneel synchronisatie "+opt+" te schakelen";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
@@ -1728,7 +1728,7 @@ class TranslatorDutch : public Translator
     }
     /** UNO IDL service page */
     QCString trServiceGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze service is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze service is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1736,7 +1736,7 @@ class TranslatorDutch : public Translator
     }
     /** UNO IDL singleton page */
     QCString trSingletonGeneratedFromFiles(bool single) override
-    { QCString result = "De documentatie voor deze singleton is gegenereerd op grond van ";
+    { QCString result = "De documentatie voor deze singleton is gegenereerd op basis van ";
       if (single) result+="het"; else result+="de";
       result+=" volgende bestand";
       if (single) result+=":"; else result+="en:";
@@ -1996,7 +1996,7 @@ class TranslatorDutch : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Stroomschema: "; }
+    { return "Stroomschema:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
@@ -2035,7 +2035,7 @@ class TranslatorDutch : public Translator
       switch(compType)
       {
         case ClassDef::Class:
-          if (lang == SrcLangExt_Fortran) trType(true,true);
+          if (lang == SrcLangExt::Fortran) trType(true,true);
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Struct"; break;
@@ -2311,6 +2311,15 @@ class TranslatorDutch : public Translator
     QCString trCopyToClipboard() override
     {
       return "Kopiëren naar het klembord";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    {
+      return "Belangrijk";
     }
 };
 

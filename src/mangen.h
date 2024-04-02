@@ -162,6 +162,7 @@ class ManGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
     void endDoxyAnchor(const QCString &,const QCString &) {}
+    void addLabel(const QCString &,const QCString &);
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name);
@@ -230,12 +231,14 @@ class ManGenerator : public OutputGenerator
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
     void startParameterType(bool,const QCString &) {}
-    void endParameterType() {}
+    void endParameterType();
     void startParameterName(bool) {}
-    void endParameterName(bool,bool,bool) {}
+    void endParameterName() {}
+    void startParameterExtra() {}
+    void endParameterExtra(bool,bool,bool);
     void startParameterDefVal(const char *s) { docify(s); startTypewriter(); }
     void endParameterDefVal() { endTypewriter(); }
-    void startParameterList(bool) {}
+    void startParameterList(bool);
     void endParameterList() {}
     void exceptionEntry(const QCString &,bool) {}
 

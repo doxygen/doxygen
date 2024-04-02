@@ -274,7 +274,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
-                                           0,     // memberDef
+                                           nullptr,     // memberDef
                                            TRUE
 					   );
          if (!m_firstCol) m_t << "\n";
@@ -292,11 +292,11 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         FALSE
 				       );
       if (!m_firstCol) m_t << "\n";
@@ -382,7 +382,7 @@ void ManDocVisitor::operator()(const DocIncOperator &op)
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
     }
@@ -464,7 +464,21 @@ void ManDocVisitor::operator()(const DocAutoListItem &li)
   }
   else // bullet list
   {
-    m_t << "\\(bu\" " << (2*m_indent);
+    switch (li.itemNumber())
+    {
+      case DocAutoList::Unchecked: // unchecked
+        m_t << "[ ]\" " << (2*m_indent) + 2;
+        break;
+      case DocAutoList::Checked_x: // checked with x
+        m_t << "[x]\" " << (2*m_indent) + 2;
+        break;
+      case DocAutoList::Checked_X: // checked with X
+        m_t << "[X]\" " << (2*m_indent) + 2;
+        break;
+      default:
+        m_t << "\\(bu\" " << (2*m_indent);
+        break;
+    }
   }
   m_t << "\n";
   m_firstCol=TRUE;
@@ -535,6 +549,8 @@ void ManDocVisitor::operator()(const DocSimpleSect &s)
       m_t << theTranslator->trRemarks(); break;
     case DocSimpleSect::Attention:
       m_t << theTranslator->trAttention(); break;
+    case DocSimpleSect::Important:
+      m_t << theTranslator->trImportant(); break;
     case DocSimpleSect::User: break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;

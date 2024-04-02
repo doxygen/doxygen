@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_11_0
 {
   public:
 
@@ -340,8 +340,8 @@ class TranslatorGreek : public Translator
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Τεκμηρίωση"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Τεκμηρίωση"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1452,7 +1452,7 @@ class TranslatorGreek : public Translator
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Αρχείο κώδικα " + filename;
     }
@@ -1826,10 +1826,10 @@ class TranslatorGreek : public Translator
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "π.μ.", "μ.μ." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2308,7 +2308,7 @@ class TranslatorGreek : public Translator
       switch(compType)
       {
         case ClassDef::Class:
-          if (lang == SrcLangExt_Fortran) trType(true,true);
+          if (lang == SrcLangExt::Fortran) trType(true,true);
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Δομής"; break;
@@ -2338,7 +2338,7 @@ class TranslatorGreek : public Translator
      *  followed by a single name of the VHDL process flowchart.
      */
     QCString trFlowchart() override
-    { return "Διάγραμμα ροής: "; }
+    { return "Διάγραμμα ροής:"; }
 
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for

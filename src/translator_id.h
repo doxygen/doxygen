@@ -124,7 +124,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Berikut ini daftar lengkap anggota untuk "; }
+    { return "Berikut ini daftar lengkap anggota untuk"; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers() override
@@ -331,8 +331,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return "Dokumentasi"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasi"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1437,7 +1437,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Kode Sumber:" + filename;
     }
@@ -1808,10 +1808,10 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       static const char *months_full[]  = { "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember" };
       return full? months_full[month-1] : months_short[month-1];
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

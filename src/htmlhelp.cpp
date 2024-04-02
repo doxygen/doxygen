@@ -424,6 +424,10 @@ void HtmlHelp::Private::createProjectFile()
     {
       t << "Compiled file=" << Config_getString(CHM_FILE) << "\n";
     }
+    else
+    {
+      t << "Compiled file=index.chm\n";
+    }
     t << "Compatibility=1.1\n"
          "Full-text search=Yes\n";
     if (ctsItemPresent) t << "Contents file=" + hhcFileName + "\n";
@@ -603,14 +607,14 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
   if (md)
   {
     bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    if (context==0) // global member
+    if (context==nullptr) // global member
     {
       if (md->getGroupDef())
         context = md->getGroupDef();
       else if (md->getFileDef())
         context = md->getFileDef();
     }
-    if (context==0) return; // should not happen
+    if (context==nullptr) return; // should not happen
 
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();

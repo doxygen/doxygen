@@ -220,7 +220,11 @@
     <xsd:attribute name="volatile" type="DoxBool" use="optional"/>
     <xsd:attribute name="mutable" type="DoxBool" use="optional"/>
     <xsd:attribute name="noexcept" type="DoxBool" use="optional"/>
+    <xsd:attribute name="noexceptexpression" type="xsd:string" use="optional"/>
+    <xsd:attribute name="nodiscard" type="DoxBool" use="optional"/>
     <xsd:attribute name="constexpr" type="DoxBool" use="optional"/>
+    <xsd:attribute name="consteval" type="DoxBool" use="optional"/>
+    <xsd:attribute name="constinit" type="DoxBool" use="optional"/>
     <!-- Qt property -->
     <xsd:attribute name="readable" type="DoxBool" use="optional"/>
     <xsd:attribute name="writable" type="DoxBool" use="optional"/>
@@ -422,7 +426,31 @@
       <xsd:element name="title" type="docTitleType" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="sect5" type="docSect5Type" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="internal" type="docInternalS4Type" minOccurs="0" />
+      </xsd:choice>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:string" />
+  </xsd:complexType>
+
+  <xsd:complexType name="docSect5Type" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="title" type="docTitleType" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="sect6" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="internal" type="docInternalS5Type" minOccurs="0" />
+      </xsd:choice>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:string" />
+  </xsd:complexType>
+
+  <xsd:complexType name="docSect6Type" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="title" type="docTitleType" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="internal" type="docInternalS6Type" minOccurs="0" />
       </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
@@ -452,16 +480,30 @@
   <xsd:complexType name="docInternalS3Type" mixed="true">
     <xsd:sequence>
       <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="sect3" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="sect4" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
 
   <xsd:complexType name="docInternalS4Type" mixed="true">
     <xsd:sequence>
       <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="sect5" type="docSect5Type" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
- 
+
+  <xsd:complexType name="docInternalS5Type" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="sect5" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="docInternalS6Type" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="para"  type="docParaType"  minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
   <xsd:group name="docTitleCmdGroup">
     <xsd:choice>
       <xsd:element name="ulink" type="docURLLink" />
@@ -609,6 +651,7 @@
     <xsd:sequence>
       <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
+    <xsd:attribute name="override" type="DoxCheck" />
     <xsd:attribute name="value" type="xsd:integer" use="optional"/>
   </xsd:complexType>
 
@@ -1035,8 +1078,16 @@
       <xsd:enumeration value="invariant" />
       <xsd:enumeration value="remark" />
       <xsd:enumeration value="attention" />
+      <xsd:enumeration value="important" />
       <xsd:enumeration value="par" />
       <xsd:enumeration value="rcs" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DoxCheck">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="checked" />
+      <xsd:enumeration value="unchecked" />
     </xsd:restriction>
   </xsd:simpleType>
 

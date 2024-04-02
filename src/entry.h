@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 #include <sstream>
+#include <functional>
 
 #include "types.h"
 #include "arguments.h"
@@ -30,6 +31,57 @@
 
 class SectionInfo;
 class FileDef;
+
+//--------------------------------------------------------------
+
+#define COMMAND_OVERRIDES                                       \
+  OVERRIDE_ENTRY(bool,          bool, 1, callGraph            ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, callerGraph          ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, referencedByRelation ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, referencesRelation   ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, inlineSource         ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, includeGraph         ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, includedByGraph      ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, directoryGraph       ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, collaborationGraph   ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, groupGraph           ) \
+  OVERRIDE_ENTRY(CLASS_GRAPH_t, int,  3, inheritanceGraph     )
+
+class CommandOverrides
+{
+  private:
+#define OVERRIDE_ENTRY(type,store_type,bits,name)  \
+    store_type m_##name          : bits;       \
+    bool m_##name##ExplicitlySet : 1;
+    COMMAND_OVERRIDES
+#undef OVERRIDE_ENTRY
+
+  public:
+    CommandOverrides() { reset(); }
+    void reset() { std::memset(this, 0, sizeof(*this)); }
+
+    // conversions between type and store_type
+    bool          to_store_type(bool t)           const { return t;                             }
+    int           to_store_type(CLASS_GRAPH_t t)  const { return static_cast<int>(t);           }
+    bool          from_store_type(bool t)         const { return t;                             }
+    CLASS_GRAPH_t from_store_type(int t)          const { return static_cast<CLASS_GRAPH_t>(t); }
+
+#define OVERRIDE_ENTRY(type,store_type,bits,name)              \
+    void override_##name(type value) {                         \
+      m_##name = to_store_type(value);                         \
+      m_##name##ExplicitlySet = true;                          \
+      /* printf("overrule_%s(%d) isSet=%d\n",#name,value,m_##name##ExplicitlySet); */ \
+    }                                                          \
+    void apply_##name(std::function<void(type)> func) const {  \
+      /* printf("apply_%s(%d) isSet=%d\n",#name,m_##name,m_##name##ExplicitlySet); */ \
+      if (m_##name##ExplicitlySet) func(from_store_type(m_##name)); \
+    }
+    COMMAND_OVERRIDES
+#undef OVERRIDE_ENTRY
+
+};
+
+//--------------------------------------------------------------
 
 /** This class stores information about an inheritance relation
  */
@@ -63,65 +115,6 @@ class Entry
 {
   public:
 
-#if 0
-    /*! Kind of entries that are supported */
-    enum Sections {
-      CLASS_SEC        = 0x0000'0001,
-      NAMESPACE_SEC    = 0x0000'0010,
-      CONCEPT_SEC      = 0x0000'0020,
-      COMPOUND_MASK    = CLASS_SEC,
-      SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
-
-      CLASSDOC_SEC     = 0x0000'0800,
-      STRUCTDOC_SEC    = 0x0000'1000,
-      UNIONDOC_SEC     = 0x0000'2000,
-      EXCEPTIONDOC_SEC = 0x0000'4000,
-      NAMESPACEDOC_SEC = 0x0000'8000,
-      INTERFACEDOC_SEC = 0x0001'0000,
-      PROTOCOLDOC_SEC  = 0x0002'0000,
-      CATEGORYDOC_SEC  = 0x0004'0000,
-      SERVICEDOC_SEC   = 0x0008'0000,
-      SINGLETONDOC_SEC = 0x0010'0000,
-      CONCEPTDOC_SEC   = 0x0020'0000,
-      COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC |
-                         INTERFACEDOC_SEC | EXCEPTIONDOC_SEC | PROTOCOLDOC_SEC |
-                         CATEGORYDOC_SEC | SERVICEDOC_SEC | SINGLETONDOC_SEC,
-
-      SOURCE_SEC       = 0x0040'0000,
-      HEADER_SEC       = 0x0080'0000,
-      FILE_MASK        = SOURCE_SEC | HEADER_SEC,
-
-      ENUMDOC_SEC            = 0x0100'0000,
-      ENUM_SEC               = 0x0200'0000,
-      EMPTY_SEC              = 0x0300'0000,
-      PAGEDOC_SEC            = 0x0400'0000,
-      VARIABLE_SEC           = 0x0500'0000,
-      FUNCTION_SEC           = 0x0600'0000,
-      TYPEDEF_SEC            = 0x0700'0000,
-      MEMBERDOC_SEC          = 0x0800'0000,
-      OVERLOADDOC_SEC        = 0x0900'0000,
-      EXAMPLE_SEC            = 0x0a00'0000,
-      VARIABLEDOC_SEC        = 0x0b00'0000,
-      FILEDOC_SEC            = 0x0c00'0000,
-      DEFINEDOC_SEC          = 0x0d00'0000,
-      INCLUDE_SEC            = 0x0e00'0000,
-      DEFINE_SEC             = 0x0f00'0000,
-      GROUPDOC_SEC           = 0x1000'0000,
-      USINGDIR_SEC           = 0x1100'0000,
-      MAINPAGEDOC_SEC        = 0x1200'0000,
-      MEMBERGRP_SEC          = 0x1300'0000,
-      USINGDECL_SEC          = 0x1400'0000,
-      PACKAGE_SEC            = 0x1500'0000,
-      PACKAGEDOC_SEC         = 0x1600'0000,
-      OBJCIMPL_SEC           = 0x1700'0000,
-      DIRDOC_SEC             = 0x1800'0000,
-      EXPORTED_INTERFACE_SEC = 0x1900'0000,
-      INCLUDED_SERVICE_SEC   = 0x1A00'0000,
-      EXAMPLE_LINENO_SEC     = 0x1B00'0000,
-      MODULEDOC_SEC          = 0x1C00'0000
-    };
-#endif
-
     enum GroupDocType
     {
       GROUPDOC_NORMAL,        //!< defgroup
@@ -133,7 +126,7 @@ class Entry
     Entry(const Entry &);
    ~Entry();
 
-    /*! Returns the parent for this Entry or 0 if this entry has no parent. */
+    /*! Returns the parent for this Entry or nullptr if this entry has no parent. */
     Entry *parent() const { return m_parent; }
 
     /*! Returns the list of children for this Entry
@@ -177,7 +170,7 @@ class Entry
     QCString	 name;        //!< member name
     bool         hasTagInfo;  //!< is tag info valid
     TagInfo      tagInfoData; //!< tag file info data
-    const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : 0; }
+    const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : nullptr; }
 
     // content
     Protection protection;    //!< class protection
@@ -189,18 +182,8 @@ class Entry
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?
-    bool callGraph;           //!< do we need to draw the call graph?
-    bool callerGraph;         //!< do we need to draw the caller graph?
-    bool referencedByRelation;//!< do we need to show the referenced by relation?
-    bool referencesRelation;  //!< do we need to show the references relation?
-    bool inlineSource;        //!< do we need to show the inline source?
-    bool includeGraph;        //!< do we need to draw the include graph?
-    bool includedByGraph;     //!< do we need to draw the included by graph?
-    bool directoryGraph;      //!< do we need to draw the directory graph?
-    bool collaborationGraph;  //!< do we need to draw the collaboration graph?
-    CLASS_GRAPH_t inheritanceGraph; //!< type of inheritance graph?
-    bool groupGraph;          //!< do we need to draw the group graph?
     bool exported;            //!< is the symbol exported from a C++20 module
+    CommandOverrides commandOverrides; //!< store info for commands whose default can be overridden
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields

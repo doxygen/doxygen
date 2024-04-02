@@ -211,6 +211,9 @@ add_library(doxycfg STATIC
     debug.cpp
     trace.cpp
 )
+target_link_libraries(doxycfg PRIVATE
+    spdlog::spdlog
+)
 add_sanitizers(doxycfg)
 
 add_library(doxymain STATIC
@@ -321,6 +324,9 @@ add_library(doxymain STATIC
     xmldocvisitor.cpp
     xmlgen.cpp
 )
+target_link_libraries(doxymain PRIVATE
+    spdlog::spdlog
+)
 add_sanitizers(doxymain)
 
 # LLVM/clang headers give a lot of warnings with -Wshadow and -Wcast-align so we disable them for
@@ -387,7 +393,6 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
-    spdlog::spdlog
     ${ICONV_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}

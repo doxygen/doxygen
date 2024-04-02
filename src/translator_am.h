@@ -106,7 +106,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! this is the first part of a sentence that is followed by a class name */
     /* Isn't used when optimization for C is on. */
     QCString trThisIsTheListOfAllMembers() override
-    { return "Սա դասի անդամների ամբողջական ցուցակն է "; }
+    { return "Սա դասի անդամների ամբողջական ցուցակն է"; }
 
     /*! this is the remainder of the sentence after the class name */
     /* Isn't used when optimization for C is on. */
@@ -299,8 +299,8 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation() override
-    { return " - Փաստագրություն"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + " - Փաստագրություն"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
@@ -1403,7 +1403,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return "Ելակետային ֆայլ " + filename;
     }
@@ -1787,10 +1787,10 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       static const char *months_full[]  = { "Հունվար", "Փետրվար", "Մարտ", "Ապրիլ", "Մայիս", "Հունիս", "Հուլիս", "Օգոստոս", "Սեպտեմբեր", "Հոկտեմբեր", "Նոյեմբեր", "Դեկտեմբեր" };
       return full? months_full[month-1] : months_short[month-1];
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "AM", "PM" };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////

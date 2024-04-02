@@ -61,10 +61,10 @@ const char *LatexDocVisitor::getSectionName(int level) const
   int l = level;
   if (compactLatex) l++;
 
-  if (l <= 3)
+  if (l < g_maxLevels)
   {
-    // Sections get special treatment because they inherit the parent's level
     l += m_hierarchyLevel; /* May be -1 if generating main page */
+    // Sections get special treatment because they inherit the parent's level
     if (l >= g_maxLevels)
     {
       l = g_maxLevels - 1;
@@ -76,7 +76,7 @@ const char *LatexDocVisitor::getSectionName(int level) const
     }
     return g_secLabels[l];
   }
-  else if (l == 4)
+  else if (l == 7)
   {
     return g_paragraphLabel;
   }
@@ -167,7 +167,14 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     {
       if (!inlineImage)
       {
-        t << "\n\\doxyfigcaption{";
+        if (Config_getBool(PDF_HYPERLINKS))
+        {
+          t << "\n\\doxyfigcaption{";
+        }
+        else
+        {
+          t << "\n\\doxyfigcaptionnolink{";
+        }
       }
       else
       {
@@ -320,9 +327,9 @@ void LatexDocVisitor::operator()(const DocEmoji &s)
   if (!emojiName.isEmpty())
   {
     QCString imageName=emojiName.mid(1,emojiName.length()-2); // strip : at start and end
-    m_t << "\\doxygenemoji{";
+    if (m_texOrPdf != TexOrPdf::PDF) m_t << "\\doxygenemoji{";
     filter(emojiName);
-    m_t << "}{" << imageName << "}";
+    if (m_texOrPdf != TexOrPdf::PDF) m_t << "}{" << imageName << "}";
   }
   else
   {
@@ -558,7 +565,7 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
                                                   -1,    // start line
                                                   -1,    // end line
                                                   FALSE, // inline fragment
-                                                  0,     // memberDef
+                                                  nullptr,     // memberDef
                                                   TRUE   // show line numbers
        				                 );
         m_ci.endCodeFragment("DoxyCodeInclude");
@@ -570,11 +577,11 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
         getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                                   inc.text(),langExt,inc.isExample(),
                                                   inc.exampleFile(),
-                                                  0,     // fileDef
+                                                  nullptr,     // fileDef
                                                   -1,    // startLine
                                                   -1,    // endLine
                                                   TRUE,  // inlineFragment
-                                                  0,     // memberDef
+                                                  nullptr,     // memberDef
                                                   FALSE
                                                  );
         m_ci.endCodeFragment("DoxyCodeInclude");
@@ -645,7 +652,7 @@ void LatexDocVisitor::operator()(const DocIncOperator &op)
                                           op.line(),    // startLine
                                           -1,    // endLine
                                           FALSE, // inline fragment
-                                          0,     // memberDef
+                                          nullptr,     // memberDef
                                           op.showLineNo()  // show line numbers
                                          );
     }
@@ -747,7 +754,19 @@ void LatexDocVisitor::operator()(const DocAutoList &l)
 void LatexDocVisitor::operator()(const DocAutoListItem &li)
 {
   if (m_hide) return;
-  m_t << "\n\\item ";
+  switch (li.itemNumber())
+  {
+    case DocAutoList::Unchecked: // unchecked
+      m_t << "\n\\item[\\DoxyUnchecked] ";
+      break;
+    case DocAutoList::Checked_x: // checked with x
+    case DocAutoList::Checked_X: // checked with X
+      m_t << "\n\\item[\\DoxyChecked] ";
+      break;
+    default:
+      m_t << "\n\\item ";
+      break;
+  }
   incIndentLevel();
   visitChildren(li);
   decIndentLevel();
@@ -834,6 +853,10 @@ void LatexDocVisitor::operator()(const DocSimpleSect &s)
       m_t << "\\begin{DoxyAttention}{";
       filter(theTranslator->trAttention());
       break;
+    case DocSimpleSect::Important:
+      m_t << "\\begin{DoxyImportant}{";
+      filter(theTranslator->trImportant());
+      break;
     case DocSimpleSect::User:
       m_t << "\\begin{DoxyParagraph}{";
       break;
@@ -899,6 +922,9 @@ void LatexDocVisitor::operator()(const DocSimpleSect &s)
     case DocSimpleSect::Attention:
       m_t << "\n\\end{DoxyAttention}\n";
       break;
+    case DocSimpleSect::Important:
+      m_t << "\n\\end{DoxyImportant}\n";
+      break;
     case DocSimpleSect::User:
       m_t << "\n\\end{DoxyParagraph}\n";
       break;
@@ -953,14 +979,18 @@ void LatexDocVisitor::operator()(const DocSection &s)
   }
   if (s.title())
   {
+    if (pdfHyperlinks) m_texOrPdf = TexOrPdf::TEX;
     std::visit(*this,*s.title());
+    m_texOrPdf = TexOrPdf::NO;
   }
   if (pdfHyperlinks)
   {
     m_t << "}{";
     if (s.title())
     {
+      if (pdfHyperlinks) m_texOrPdf = TexOrPdf::PDF;
       std::visit(*this,*s.title());
+      m_texOrPdf = TexOrPdf::NO;
     }
     m_t << "}";
   }
@@ -1808,7 +1838,8 @@ void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
                    );
 }
 
-void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable,bool refToSection)
+void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,
+                                bool refToTable,bool refToSection)
 {
   bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
@@ -1819,16 +1850,22 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
     }
     else if (refToSection)
     {
-      m_t << "\\doxysectlink{";
+      if (m_texOrPdf == TexOrPdf::TEX) m_t << "\\protect";
+      if (m_texOrPdf != TexOrPdf::PDF) m_t << "\\doxysectlink{";
     }
     else
     {
-      m_t << "\\doxylink{";
+      if (m_texOrPdf == TexOrPdf::TEX) m_t << "\\protect";
+      if (m_texOrPdf != TexOrPdf::PDF) m_t << "\\doxylink{";
     }
-    if (!file.isEmpty()) m_t << stripPath(file);
-    if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
-    if (!anchor.isEmpty()) m_t << anchor;
-    m_t << "}{";
+    if (refToTable || m_texOrPdf != TexOrPdf::PDF)
+    {
+      if (!file.isEmpty()) m_t << stripPath(file);
+      if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
+      if (!anchor.isEmpty()) m_t << anchor;
+      m_t << "}";
+    }
+    m_t << "{";
   }
   else if (ref.isEmpty() && refToSection)
   {
@@ -1861,14 +1898,14 @@ void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCS
     m_t << anchor << "}";
     if (refToSection)
     {
-      m_t << "{" << static_cast<int>(sectionType) << "}";
+      m_t << "{" << sectionType.level() << "}";
     }
   }
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
   {
     if (refToSection)
     {
-      m_t << "{" << static_cast<int>(sectionType) << "}";
+      if (m_texOrPdf != TexOrPdf::PDF) m_t << "{" << sectionType.level() << "}";
     }
   }
 }

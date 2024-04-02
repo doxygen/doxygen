@@ -129,7 +129,7 @@ struct scannerYY_state
   QCString         baseName;
   QCString*        specName = nullptr;
 
-  SrcLangExt       language = SrcLangExt_Unknown;
+  SrcLangExt       language = SrcLangExt::Unknown;
   bool             insideIDL   = false;                //!< processing IDL code?
   bool             insideJava  = false;                //!< processing Java code?
   bool             insideCS    = false;                //!< processing C# code?
@@ -789,7 +789,7 @@ NONLopt [^\n]*
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
                                             yyextra->current->section = EntryType::makeFunction();
-                                            yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                            yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                             yyextra->insideObjC = TRUE;
                                             yyextra->current->virt = Specifier::Virtual;
 
@@ -1238,6 +1238,20 @@ NONLopt [^\n]*
                                           }
                                           REJECT;
                                         }
+<FindMembers>{B}*"consteval"{BN}+       {
+                                          if (yyextra->insideCpp)
+                                          {
+                                            yyextra->current->spec.setConstEval(true);
+                                          }
+                                          REJECT;
+                                        }
+<FindMembers>{B}*"constinit"{BN}+       {
+                                          if (yyextra->insideCpp)
+                                          {
+                                            yyextra->current->spec.setConstInit(true);
+                                          }
+                                          REJECT;
+                                        }
 <FindMembers>{B}*"published"{BN}+       { // UNO IDL published keyword
                                           if (yyextra->insideIDL)
                                           {
@@ -1472,7 +1486,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = EntryType::makeObjcImpl();
-                                          yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                          yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                           yyextra->insideObjC = TRUE;
                                           yyextra->current->protection = yyextra->protection = Protection::Public ;
                                           addType(yyscanner);
@@ -1490,7 +1504,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec = TypeSpecifier().setInterface(true);
                                           if (!yyextra->insideJava)
                                           {
-                                            yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                            yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                             yyextra->insideObjC = TRUE;
                                           }
                                           yyextra->current->protection = yyextra->protection = Protection::Public ;
@@ -1508,7 +1522,7 @@ NONLopt [^\n]*
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = EntryType::makeClass();
                                           yyextra->current->spec = TypeSpecifier().setProtocol(true);
-                                          yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                          yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                           yyextra->insideObjC = TRUE;
                                           yyextra->current->protection = yyextra->protection = Protection::Public ;
                                           addType(yyscanner);
@@ -1572,7 +1586,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           if (yytext[0]=='@')
                                           {
-                                            yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
+                                            yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                             yyextra->insideObjC = TRUE;
                                           }
                                           lineCount(yyscanner) ;
@@ -2120,7 +2134,7 @@ NONLopt [^\n]*
 <EndTemplate>">"{BNopt}/"("({BN}*{TSCOPE}{BN}*"::")*({BN}*"*"{BN}*)+ { // function pointer returning a template instance
                                           lineCount(yyscanner);
                                           yyextra->current->name+='>';
-                                          if (yyextra->roundCount==0)
+                                          if (yyextra->roundCount==0 && --yyextra->sharpCount<=0)
                                           {
                                             BEGIN(FindMembers);
                                           }
@@ -2504,6 +2518,30 @@ NONLopt [^\n]*
                                                 else
                                                 {
                                                   yyextra->current->type+="constexpr ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(10);
+                                              }
+                                              else if (yyextra->current->name.startsWith("consteval "))
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="consteval";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="consteval ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(10);
+                                              }
+                                              else if (yyextra->current->name.startsWith("constinit "))
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="constinit";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="constinit ";
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(10);
                                               }
@@ -3160,9 +3198,11 @@ NONLopt [^\n]*
                                           *yyextra->pSkipVerbString << yytext;
                                         }
 <SkipVerbString>"\\\\"                  { // escaped backslash
+                                          if (yyextra->insideCS) REJECT
                                           *yyextra->pSkipVerbString << yytext;
                                         }
 <SkipVerbString>"\\\""                  { // backslash escaped quote
+                                          if (yyextra->insideCS) REJECT
                                           *yyextra->pSkipVerbString << yytext;
                                         }
 <SkipVerbString>"\"\""                  { // quote escape
@@ -4480,7 +4520,7 @@ NONLopt [^\n]*
 <ReadBodyIntf>"@end"/[^a-z_A-Z0-9]      { // end of Objective C block
                                           yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
                                           initEntry(yyscanner);
-                                          yyextra->language = yyextra->current->lang = SrcLangExt_Cpp; // see bug746361
+                                          yyextra->language = yyextra->current->lang = SrcLangExt::Cpp; // see bug746361
                                           yyextra->insideObjC=FALSE;
                                           BEGIN( FindMembers );
                                         }
@@ -5685,6 +5725,12 @@ NONLopt [^\n]*
                                             BEGIN(SkipPHPString);
                                           }
                                         }
+<SkipC11Attribute>{ID}                  {
+                                          if (QCString(yytext)=="nodiscard")
+                                          {
+                                            yyextra->current->spec.setNoDiscard(true);
+                                          }
+                                        }
 <SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>.       { }
 <SkipString,SkipPHPString>\\.           { }
 <SkipString>\"                          {
@@ -5865,7 +5911,7 @@ NONLopt [^\n]*
                                             initEntry(yyscanner);
                                             if (yyextra->insideObjC) // see bug746361
                                             {
-                                              yyextra->language = yyextra->current->lang = SrcLangExt_Cpp;
+                                              yyextra->language = yyextra->current->lang = SrcLangExt::Cpp;
                                               yyextra->insideObjC = FALSE;
                                               }
                                             if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
@@ -5986,6 +6032,29 @@ NONLopt [^\n]*
                                           else
                                           {
                                             REJECT;
+                                          }
+                                        }
+<ClassVar>({ID}{BN}*"::"{BN}*)+{ID}     {
+                                          yyextra->yyBegColNr=yyextra->yyColNr;
+                                          yyextra->yyBegLineNr=yyextra->yyLineNr;
+
+                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
+                                          {
+                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
+                                          }
+
+                                          lineCount(yyscanner);
+                                          if (yyextra->current->section.isEnum())
+                                          { // found "enum a N::b" -> variable
+                                            yyextra->current->section = EntryType::makeVariable() ;
+                                          }
+                                          yyextra->current->type += ' ' ;
+                                          yyextra->current->type += yyextra->current->name ;
+                                          yyextra->current->name = QCString(yytext).simplifyWhiteSpace();
+
+                                          if (nameIsOperator(yyextra->current->name))
+                                          {
+                                            BEGIN( Operator );
                                           }
                                         }
 <ClassVar>{ID}                          {
@@ -6310,7 +6379,7 @@ NONLopt [^\n]*
                                             yyextra->current->args += yytext;
                                           }
                                         }
-<Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}    {
+<Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}("...")? {
                                           lineCount(yyscanner);
                                           QCString baseScope = yytext;
                                           if (yyextra->insideCS && baseScope.stripWhiteSpace()=="where")
@@ -6624,6 +6693,11 @@ NONLopt [^\n]*
                                             BEGIN( Comment ) ;
                                           }
                                         }
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>^{B}+({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
+                                          lineCount(yyscanner);
+                                          yyextra->yyColNr=1;
+                                          REJECT;
+                                        }
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
                                           yyextra->lastDocContext = YY_START;
 
@@ -6890,8 +6964,12 @@ NONLopt [^\n]*
                                           handleCommentBlock(yyscanner,yyextra->docBlock.str(),FALSE);
                                           BEGIN(yyextra->docBlockContext);
                                         }
+<DocBlock>"\\ilinebr "{B}*"*"/[^/]      {
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext+8,yyextra->column));
+                                          yyextra->docBlock << "\\ilinebr " << indent;
+                                        }
 <DocBlock>^{B}*"*"+/[^/]                {
-
                                           QCString indent;
                                           indent.fill(' ',computeIndent(yytext,yyextra->column));
                                           yyextra->docBlock << indent;
@@ -6978,11 +7056,30 @@ NONLopt [^\n]*
                                           yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                {
-
+<DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"~~~"[~]* {
+                                          QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
+                                          yyextra->docBlock << "\\ilinebr ";
+                                          yyextra->docBlock << pat;
+                                          yyextra->docBlockName="~~~";
+                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
+                                          yyextra->nestedComment=0;
+                                          BEGIN(DocCopyBlock);
+                                        }
+<DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="~~~";
+                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
+                                          yyextra->nestedComment=0;
+                                          BEGIN(DocCopyBlock);
+                                        }
+<DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
+<DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]*/"{"[^}]+"}" |
+<DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]* {
+                                          QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
+                                          yyextra->docBlock << "\\ilinebr ";
+                                          yyextra->docBlock << pat;
+                                          yyextra->docBlockName="```";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
@@ -7114,7 +7211,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
-                                          if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                                          if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                                           {
                                             BEGIN(DocBlock);
                                           }
@@ -7122,7 +7219,7 @@ NONLopt [^\n]*
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
-                                          if (yyextra->fencedSize==pat.stripWhiteSpace().length())
+                                          if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                                           {
                                             BEGIN(DocBlock);
                                           }
@@ -7448,6 +7545,7 @@ static inline int computeIndent(const char *s,int startIndent)
   }
   return col;
 }
+
 static inline void initMethodProtection(yyscan_t yyscanner,Protection prot)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -7532,16 +7630,16 @@ static void setContext(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->language    = getLanguageFromFileName(yyextra->fileName);
-  yyextra->insideIDL   = yyextra->language==SrcLangExt_IDL;
-  yyextra->insideJava  = yyextra->language==SrcLangExt_Java;
-  yyextra->insideCS    = yyextra->language==SrcLangExt_CSharp;
-  yyextra->insideD     = yyextra->language==SrcLangExt_D;
-  yyextra->insidePHP   = yyextra->language==SrcLangExt_PHP;
-  yyextra->insideObjC  = yyextra->language==SrcLangExt_ObjC;
-  yyextra->insideJS    = yyextra->language==SrcLangExt_JS;
-  yyextra->insideSlice = yyextra->language==SrcLangExt_Slice;
-  yyextra->insideCpp   = (yyextra->language==SrcLangExt_Cpp ||
-                          yyextra->language==SrcLangExt_Lex);
+  yyextra->insideIDL   = yyextra->language==SrcLangExt::IDL;
+  yyextra->insideJava  = yyextra->language==SrcLangExt::Java;
+  yyextra->insideCS    = yyextra->language==SrcLangExt::CSharp;
+  yyextra->insideD     = yyextra->language==SrcLangExt::D;
+  yyextra->insidePHP   = yyextra->language==SrcLangExt::PHP;
+  yyextra->insideObjC  = yyextra->language==SrcLangExt::ObjC;
+  yyextra->insideJS    = yyextra->language==SrcLangExt::JS;
+  yyextra->insideSlice = yyextra->language==SrcLangExt::Slice;
+  yyextra->insideCpp   = (yyextra->language==SrcLangExt::Cpp ||
+                          yyextra->language==SrcLangExt::Lex);
   //printf("setContext(%s) yyextra->insideIDL=%d yyextra->insideJava=%d yyextra->insideCS=%d "
   //       "yyextra->insideD=%d yyextra->insidePHP=%d yyextra->insideObjC=%d\n",
   //       qPrint(yyextra->fileName),yyextra->insideIDL,yyextra->insideJava,yyextra->insideCS,yyextra->insideD,yyextra->insidePHP,yyextra->insideObjC
@@ -7915,7 +8013,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       //setContext();
       yyextra->yyLineNr = ce->bodyLine;
       yyextra->yyColNr = ce->bodyColumn;
-      yyextra->insideObjC = ce->lang==SrcLangExt_ObjC;
+      yyextra->insideObjC = ce->lang==SrcLangExt::ObjC;
       //printf("---> Inner block starts at line %d objC=%d\n",yyextra->yyLineNr,yyextra->insideObjC);
       yyextra->current = std::make_shared<Entry>();
       yyextra->isStatic = FALSE;
@@ -7942,7 +8040,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
         }
         else if (ce->spec.isInterface() || ce->spec.isRef() || ce->spec.isValue() || ce->spec.isStruct() || ce->spec.isUnion())
         {
-          if (ce->lang==SrcLangExt_ObjC)
+          if (ce->lang==SrcLangExt::ObjC)
           {
             yyextra->current->protection = yyextra->protection = Protection::Protected ;
           }
@@ -8192,7 +8290,7 @@ bool COutlineParser::needsPreprocessing(const QCString &extension) const
 {
   QCString fe=extension.lower();
   SrcLangExt lang = getLanguageFromFileName(extension);
-  return (SrcLangExt_Cpp == lang) || (SrcLangExt_Lex == lang) ||
+  return (SrcLangExt::Cpp == lang) || (SrcLangExt::Lex == lang) ||
    !( fe==".java" || fe==".as"  || fe==".d"    || fe==".php" ||
       fe==".php4" || fe==".inc" || fe==".phtml"|| fe==".php5"
     );

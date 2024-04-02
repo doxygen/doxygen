@@ -68,6 +68,19 @@ QCString RTFDocVisitor::getStyle(const QCString &name)
   return sd.reference();
 }
 
+QCString RTFDocVisitor::getListTable(const int id)
+{
+  for (int i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  {
+    if ((id == rtf_Table_Default[i].id) && (m_indentLevel == rtf_Table_Default[i].lvl))
+    {
+      return rtf_Table_Default[i].place;
+    }
+  }
+  ASSERT(0);
+  return "";
+}
+
 int RTFDocVisitor::indentLevel() const
 {
   return std::min(m_indentLevel,maxIndentLevels-1);
@@ -456,7 +469,7 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
-                                           0,     // memberDef
+                                           nullptr,     // memberDef
                                            TRUE   // show line numbers
 					   );
          m_t << "\\par";
@@ -470,11 +483,11 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                         inc.text(),langExt,inc.isExample(),
                                         inc.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         FALSE  // show line numbers
 				       );
       m_t << "\\par";
@@ -542,7 +555,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
     m_hide = popHidden();
     if (!m_hide)
     {
-      std::unique_ptr<FileDef> fd = 0;
+      std::unique_ptr<FileDef> fd = nullptr;
       if (!op.includeFileName().isEmpty())
       {
         FileInfo cfi( op.includeFileName().str() );
@@ -555,7 +568,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
     }
@@ -647,6 +660,7 @@ void RTFDocVisitor::operator()(const DocAutoList &l)
   m_t << "{\n";
   int level = indentLevel();
   m_listItemInfo[level].isEnum = l.isEnumList();
+  m_listItemInfo[level].isCheck = l.isCheckedList();
   m_listItemInfo[level].type   = '1';
   m_listItemInfo[level].number = 1;
   m_lastIsPara=FALSE;
@@ -654,16 +668,21 @@ void RTFDocVisitor::operator()(const DocAutoList &l)
   if (!m_lastIsPara) m_t << "\\par";
   m_t << "}\n";
   m_lastIsPara=TRUE;
-  if (indentLevel()==0) m_t << "\\par\n";
+  if (!l.isCheckedList() && indentLevel()==0) m_t << "\\par\n";
 }
 
 void RTFDocVisitor::operator()(const DocAutoListItem &li)
 {
+  static int prevLevel = -1;
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocAutoListItem &)}\n");
-  if (!m_lastIsPara) m_t << "\\par\n";
-  m_t << rtf_Style_Reset;
   int level = indentLevel();
+  if ((level != prevLevel-1) &&
+      (!(level==prevLevel && level != 0 && m_listItemInfo[level].isCheck)) &&
+      (!m_lastIsPara))
+    m_t << "\\par\n";
+  prevLevel= level;
+  m_t << rtf_Style_Reset;
   if (m_listItemInfo[level].isEnum)
   {
     m_t << getStyle("ListEnum") << "\n";
@@ -672,10 +691,22 @@ void RTFDocVisitor::operator()(const DocAutoListItem &li)
   }
   else
   {
-    m_t << getStyle("ListBullet") << "\n";
+    switch (li.itemNumber())
+    {
+      case DocAutoList::Unchecked: // unchecked
+        m_t << getListTable(2) << "\n";
+        break;
+      case DocAutoList::Checked_x: // checked with x
+      case DocAutoList::Checked_X: // checked with X
+        m_t << getListTable(3) << "\n";
+        break;
+      default:
+        m_t << getListTable(1) << "\n";
+        break;
+    }
   }
   incIndentLevel();
-  m_lastIsPara=FALSE;
+  m_lastIsPara=false;
   visitChildren(li);
   decIndentLevel();
 }
@@ -750,6 +781,8 @@ void RTFDocVisitor::operator()(const DocSimpleSect &s)
       m_t << theTranslator->trRemarks(); break;
     case DocSimpleSect::Attention:
       m_t << theTranslator->trAttention(); break;
+    case DocSimpleSect::Important:
+      m_t << theTranslator->trImportant(); break;
     case DocSimpleSect::User: break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
@@ -797,7 +830,8 @@ void RTFDocVisitor::operator()(const DocSimpleList &l)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocSimpleSect &)}\n");
   m_t << "{\n";
-  m_listItemInfo[indentLevel()].isEnum = FALSE;
+  m_listItemInfo[indentLevel()].isEnum = false;
+  m_listItemInfo[indentLevel()].isCheck = false;
   m_lastIsPara=FALSE;
   visitChildren(l);
   if (!m_lastIsPara) m_t << "\\par\n";
@@ -861,6 +895,7 @@ void RTFDocVisitor::operator()(const DocHtmlList &l)
   m_t << "{\n";
   int level = indentLevel();
   m_listItemInfo[level].isEnum = l.type()==DocHtmlList::Ordered;
+  m_listItemInfo[level].isCheck = false;
   m_listItemInfo[level].number = 1;
   m_listItemInfo[level].type   = '1';
   for (const auto &opt : l.attribs())
@@ -1145,9 +1180,7 @@ void RTFDocVisitor::operator()(const DocHtmlHeader &header)
   m_t << "{" // start section
       << rtf_Style_Reset;
   QCString heading;
-  int level = std::min(header.level()+m_hierarchyLevel,5);
-  if (level <= 0)
-    level = 1;
+  int level = std::clamp(header.level()+m_hierarchyLevel,SectionType::MinLevel,SectionType::MaxLevel);
   heading.sprintf("Heading%d",level);
   // set style
   m_t << rtf_Style[heading.str()].reference();

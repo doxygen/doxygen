@@ -163,7 +163,7 @@ int QCString::contains( char c, bool cs ) const
 
 int QCString::contains( const char *str, bool cs ) const
 {
-  if (str==0 || length()==0) return 0;
+  if (str==nullptr || length()==0) return 0;
   int count=0;
   const char *pos = data();
   int len = qstrlen(str);
@@ -421,7 +421,7 @@ void *qmemmove( void *dst, const void *src, size_t len )
 char *qstrdup( const char *str )
 {
   if ( !str )
-    return 0;
+    return nullptr;
   char *dst = new char[qstrlen(str)+1];
   return strcpy( dst, str );
 }
@@ -486,7 +486,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   if (srcLen!=dstLen)
   {
     int count;
-    for (count=0, p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen) count++;
+    for (count=0, p=s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen) count++;
     resLen = s.length()+count*(dstLen-srcLen);
   }
   else // result has same size as s
@@ -495,7 +495,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   }
   QCString result(resLen, QCString::ExplicitSize);
   char *r;
-  for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
+  for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen)
   {
     int l = static_cast<int>(q-p);
     memcpy(r,p,l);
@@ -527,7 +527,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   if (srcLen!=dstLen)
   {
     int count;
-    for (count=0, p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen) count++;
+    for (count=0, p=s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen) count++;
     resLen = s.length()+count*(dstLen-srcLen);
   }
   else // result has same size as s
@@ -536,7 +536,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   }
   QCString result(resLen, QCString::ExplicitSize);
   char *r;
-  for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
+  for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen)
   {
     // search a consecutive sequence of src
     int seq = 0, skip = 0;

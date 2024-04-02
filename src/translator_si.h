@@ -65,7 +65,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     QCString trMemberList() override
     { return " - seznam metod in atributov."; }
     QCString trThisIsTheListOfAllMembers() override
-    { return "Seznam metod razreda "; }
+    { return "Seznam metod razreda"; }
     QCString trIncludingInheritedMembers() override
     { return ", vključujoč dedovane metode in atribute."; }
     QCString trGeneratedAutomatically(const QCString &s) override
@@ -136,8 +136,8 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Seznam strani z dodatnimi opisi:"; }
     QCString trModulesDescription() override
     { return "Seznam modulov:"; }
-    QCString trDocumentation() override
-    { return "Dokumentacija"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentacija"; }
     QCString trModuleIndex() override
     { return "seznam modulov"; }
     QCString trHierarchicalIndex() override
@@ -1104,7 +1104,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(QCString& filename) override
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " izvorna koda";
     }
@@ -1180,10 +1180,10 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
-    QCString trDayPeriod(int period) override
+    QCString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "dop.", "pop." };
-      return dayPeriod[period];
+      return dayPeriod[period?1:0];
     }
 };
 

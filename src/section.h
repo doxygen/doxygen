@@ -24,26 +24,32 @@
 
 class Definition;
 
-//! enum representing the various types of sections and entities that can be referred to.
-enum class SectionType
+class SectionType
 {
-  Page          = 0,
-  Section       = 1,
-  Subsection    = 2,
-  Subsubsection = 3,
-  Paragraph     = 4,
-  Anchor        = 5,
-  Table         = 6
-};
+  public:
+    static constexpr int Page            = 0;
+    static constexpr int MinLevel        = 1;
+    static constexpr int Section         = 1;
+    static constexpr int Subsection      = 2;
+    static constexpr int Subsubsection   = 3;
+    static constexpr int Paragraph       = 4;
+    static constexpr int Subparagraph    = 5;
+    static constexpr int Subsubparagraph = 6;
+    static constexpr int MaxLevel        = 6;
+    static constexpr int Anchor          = 7;
+    static constexpr int Table           = 8;
 
-//! return true if type is a section, and false if it is a page, anchor or table.
-inline constexpr bool isSection(SectionType type)
-{
-  return (type==SectionType::Section       ||
-          type==SectionType::Subsection    ||
-          type==SectionType::Subsubsection ||
-          type==SectionType::Paragraph);
-}
+    constexpr SectionType() : m_level(0) {}
+    constexpr SectionType(int lvl) : m_level(lvl) {}
+    constexpr int level() const { return m_level; }
+    constexpr bool isSection() const
+    {
+      return m_level>=SectionType::MinLevel && m_level<=SectionType::MaxLevel;
+    }
+
+  private:
+    int m_level;
+};
 
 //! class that provide information about a section.
 class SectionInfo

@@ -610,6 +610,8 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "snippetlineno",  endOfLine  },
     { "struct",         endOfLine  },
     { "subpage",        endOfLabel },
+    { "subparagraph",   endOfLabel },
+    { "subsubparagraph",endOfLabel },
     { "subsection",     endOfLabel },
     { "subsubsection",  endOfLabel },
     { "throw",          endOfLabel },
@@ -711,7 +713,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
       {
         i++;
         size_t l = endBlockName.length();
-        while (i<size-l)
+        while (i+l<size)
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
               data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -965,7 +967,7 @@ int Markdown::Private::processHtmlTagWrite(std::string_view data,size_t offset,b
   if (tagName.lower()=="pre") // found <pre> tag
   {
     bool insideStr=FALSE;
-    while (i<size-6)
+    while (i+6<size)
     {
       char c=data[i];
       if (!insideStr && c=='<') // potential start of html tag
@@ -1443,7 +1445,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   if (isToc) // special case for [TOC]
   {
     int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
-    if (toc_level>0 && toc_level<=5)
+    if (toc_level>=SectionType::MinLevel && toc_level<=SectionType::MaxLevel)
     {
       out+="@tableofcontents{html:";
       out+=QCString().setNum(toc_level);
@@ -1485,7 +1487,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
   {
     SrcLangExt lang = getLanguageFromFileName(link);
     int lp=-1;
-    if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt_Markdown && !isURL(link)))
+    if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt::Markdown && !isURL(link)))
         // assume doxygen symbol link
     {
       if (lp==-1) // link to markdown page
@@ -1523,16 +1525,16 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
       }
       else
       {
-        processInline(std::string_view(content.str()));
+        processInline(std::string_view(substitute(content,"\"","&quot;").str()));
       }
       out+="\"";
     }
-    else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1)
+    else if ((lp=link.find('#'))!=-1 || link.find('/')!=-1 || link.find('.')!=-1)
     { // file/url link
-      if (link.at(0) == '#')
+      if (lp==0 || (lp>0 && !isURL(link) && Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB))
       {
         out+="@ref \"";
-        out+=AnchorGenerator::addPrefixIfNeeded(link.mid(1).str());
+        out+=AnchorGenerator::addPrefixIfNeeded(link.mid(lp+1).str());
         out+="\" \"";
         out+=substitute(content.simplifyWhiteSpace(),"\"","&quot;");
         out+="\"";
@@ -1552,7 +1554,7 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
         out+=" ";
         out+=externalLinkTarget();
         out+=">";
-        content = substitute(content.simplifyWhiteSpace(),"\"","\\\"");
+        content = content.simplifyWhiteSpace();
         processInline(std::string_view(content.str()));
         out+="</a>";
       }
@@ -1643,7 +1645,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
 void Markdown::Private::addStrEscapeUtf8Nbsp(std::string_view data)
 {
   AUTO_TRACE("{}",Trace::trunc(data));
-  if (Portable::strnstr(data.data(),g_doxy_nbsp,data.size())==0) // no escape needed -> fast
+  if (Portable::strnstr(data.data(),g_doxy_nbsp,data.size())==nullptr) // no escape needed -> fast
   {
     out+=data;
   }
@@ -1663,7 +1665,7 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
   {
     AUTO_TRACE_ADD("endBlockName={}",endBlockName);
     size_t l = endBlockName.length();
-    while (i<size-l)
+    while (i+l<size)
     {
       if ((data[i]=='\\' || data[i]=='@') && // command
           data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -1988,7 +1990,11 @@ int Markdown::Private::isAtxHeader(std::string_view data,
   {
     return 0;
   }
-  while (i<size && level<6 && data[i]=='#') i++,level++;
+  while (i<size && data[i]=='#') i++,level++;
+  if (level>SectionType::MaxLevel) // too many #'s -> no section
+  {
+    return 0;
+  }
   while (i<size && data[i]==' ') i++,blanks++;
   if (level==1 && blanks==0)
   {
@@ -2594,7 +2600,7 @@ size_t Markdown::Private::writeTableBlock(std::string_view data)
       // empty strings, which would indicate the sequence "||", used
       // to signify spanning columns.
       size_t colSpan = 1;
-      while ((c < columns-1) && tableContents[row][c+1].colSpan)
+      while ((c+1 < columns) && tableContents[row][c+1].colSpan)
       {
         c++;
         colSpan++;
@@ -2652,18 +2658,16 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   else if ((level=isAtxHeader(data,header,id,TRUE)))
   {
     QCString hTag;
-    if (level<5 && !id.isEmpty())
+    if (level>=SectionType::MinLevel && level<=SectionType::MaxLevel && !id.isEmpty())
     {
-      switch(level)
+      switch (level)
       {
-        case 1:  out+="@section ";
-                 break;
-        case 2:  out+="@subsection ";
-                 break;
-        case 3:  out+="@subsubsection ";
-                 break;
-        default: out+="@paragraph ";
-                 break;
+        case SectionType::Section:         out+="@section ";         break;
+        case SectionType::Subsection:      out+="@subsection ";      break;
+        case SectionType::Subsubsection:   out+="@subsubsection ";   break;
+        case SectionType::Paragraph:       out+="@paragraph ";       break;
+        case SectionType::Subparagraph:    out+="@subparagraph ";    break;
+        case SectionType::Subsubparagraph: out+="@subsubparagraph "; break;
       }
       out+=id;
       out+=" ";
@@ -2703,6 +2707,8 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   int curLevel=0;
   size_t end=0;
   const size_t size = data.size();
+  QCString startCmd;
+  int isGitHubAlert = false;
   while (i<size)
   {
     // find end of this line
@@ -2726,29 +2732,66 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       j--;
     }
     if (!level && data[j-1]!='\n') level=curLevel; // lazy
+    if (level == 1)
+    {
+      QCString txt = data.substr(indent,end-indent);
+      txt = txt.lower().stripWhiteSpace();
+      if (txt == "[!note]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\note ";
+      }
+      else if (txt == "[!warning]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\warning ";
+      }
+      else if (txt == "[!tip]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\remark ";
+      }
+      else if (txt == "[!caution]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\attention ";
+      }
+      else if (txt == "[!important]")
+      {
+        isGitHubAlert = true;
+        startCmd = "\\important ";
+      }
+    }
     if (level>curLevel) // quote level increased => add start markers
     {
-      for (int l=curLevel;l<level-1;l++)
+      if (level != 1 || !isGitHubAlert)
       {
-        out+="<blockquote>";
+        for (int l=curLevel;l<level-1;l++)
+        {
+          out+="<blockquote>";
+        }
       }
-      out+="<blockquote>&zwj;"; // empty blockquotes are also shown
+      if (level != 1 || !isGitHubAlert) out+="<blockquote>&zwj;"; // empty blockquotes are also shown
+      else out += startCmd;
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
-      for (int l=level;l<curLevel;l++)
+      int decrLevel = curLevel - (level==0 && isGitHubAlert ? 1 : 0);
+      for (int l=level;l<decrLevel;l++)
       {
         out+="</blockquote>";
       }
     }
-    curLevel=level;
     if (level==0) break; // end of quote block
     // copy line without quotation marks
-    out+=data.substr(indent,end-indent);
+    if (curLevel != 0 || !isGitHubAlert) out+=data.substr(indent,end-indent);
+    else out+= "\n";
+    curLevel=level;
     // proceed with next line
     i=end;
   }
   // end of comment within blockquote => add end markers
+  if (isGitHubAlert) curLevel--;
   for (int l=0;l<curLevel;l++)
   {
     out+="</blockquote>";
@@ -2902,7 +2945,7 @@ void Markdown::Private::writeFencedCodeBlock(std::string_view data,std::string_v
     out+="{"+lang+"}";
   }
   out+=" ";
-  addStrEscapeUtf8Nbsp(data.substr(blockStart,blockEnd-blockStart));
+  addStrEscapeUtf8Nbsp(data.substr(blockStart+i,blockEnd-blockStart));
   out+="@endicode ";
 }
 
@@ -3160,7 +3203,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
         out+=data[i];
         i++;
         size_t l = endBlockName.length();
-        while (i<data.size()-l)
+        while (i+l<data.size())
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
               data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -3443,7 +3486,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
 {
   std::shared_ptr<Entry> current = std::make_shared<Entry>();
   int prepend = 0; // number of empty lines in front
-  current->lang = SrcLangExt_Markdown;
+  current->lang = SrcLangExt::Markdown;
   current->fileName = fileName;
   current->docFile  = fileName;
   current->docLine  = 1;
@@ -3557,7 +3600,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
     {
       QCString docFile = current->docFile;
       root->moveToSubEntryAndRefresh(current);
-      current->lang = SrcLangExt_Markdown;
+      current->lang = SrcLangExt::Markdown;
       current->docFile = docFile;
       current->docLine = lineNr;
     }

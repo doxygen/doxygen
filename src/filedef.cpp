@@ -55,7 +55,7 @@
 
 QCString includeStatement(SrcLangExt lang,IncludeKind kind)
 {
-  bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+  bool isIDLorJava = lang==SrcLangExt::IDL || lang==SrcLangExt::Java;
   if (isIDLorJava || (kind & IncludeKind_ImportMask))
   {
     return "import ";
@@ -72,7 +72,7 @@ QCString includeStatement(SrcLangExt lang,IncludeKind kind)
 
 QCString includeOpen(SrcLangExt lang,IncludeKind kind)
 {
-  if (lang==SrcLangExt_Java || kind==IncludeKind::ImportModule) return "";
+  if (lang==SrcLangExt::Java || kind==IncludeKind::ImportModule) return "";
   if (kind & IncludeKind_LocalMask)
   {
     return "\"";
@@ -85,7 +85,7 @@ QCString includeOpen(SrcLangExt lang,IncludeKind kind)
 
 QCString includeClose(SrcLangExt lang,IncludeKind kind)
 {
-  if (lang==SrcLangExt_Java || lang==SrcLangExt_IDL) return ";";
+  if (lang==SrcLangExt::Java || lang==SrcLangExt::IDL) return ";";
   switch (kind)
   {
     case IncludeKind::ImportLocal:       return "\";";
@@ -102,7 +102,7 @@ QCString includeClose(SrcLangExt lang,IncludeKind kind)
 QCString includeTagFileAttributes(SrcLangExt lang,IncludeKind kind)
 {
   QCString result;
-  bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+  bool isIDLorJava = lang==SrcLangExt::IDL || lang==SrcLangExt::Java;
   result.sprintf("local=\"%s\" import=\"%s\" module=\"%s\" objc=\"%s\"",
            (kind & IncludeKind_LocalMask)  ? "yes" : "no",
            (isIDLorJava || (kind & IncludeKind_ImportMask)) ? "yes" : "no",
@@ -199,8 +199,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
 
     bool hasIncludeGraph() const override;
     bool hasIncludedByGraph() const override;
-    void enableIncludeGraph(bool e) override;
-    void enableIncludedByGraph(bool e) override;
+    void overrideIncludeGraph(bool e) override;
+    void overrideIncludedByGraph(bool e) override;
 
   private:
     void setDiskNameLocal(const QCString &name);
@@ -255,9 +255,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     ClassLinkedRefMap     m_exceptions;
     ConceptLinkedRefMap   m_concepts;
     bool                  m_subGrouping;
-    bool                  m_hasIncludeGraph = false;
-    bool                  m_hasIncludedByGraph = false;
-
+    bool                  m_hasIncludeGraph = Config_getBool(INCLUDE_GRAPH);
+    bool                  m_hasIncludedByGraph = Config_getBool(INCLUDED_BY_GRAPH);
 };
 
 std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const QCString &ref,const QCString &dn)
@@ -270,11 +269,11 @@ std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const
 
 /*! create a new file definition, where \a p is the file path,
     \a nm the file name, and \a lref is an HTML anchor name if the
-    file was read from a tag file or 0 otherwise
+    file was read from a tag file or nullptr otherwise
 */
 FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
                  const QCString &lref,const QCString &dn)
-   : DefinitionMixin(QCString(p)+nm,1,1,nm,0,0,!p.isEmpty())
+   : DefinitionMixin(QCString(p)+nm,1,1,nm,nullptr,nullptr,!p.isEmpty())
 {
   m_path=removeLongPathMarker(p);
   m_filePath=p+nm;
@@ -284,7 +283,7 @@ FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
   setDiskNameLocal(!dn.isEmpty() ? dn : nm);
   m_isSource          = guessSection(nm).isSource();
   m_docname           = nm;
-  m_dir               = 0;
+  m_dir               = nullptr;
   if (Config_getBool(FULL_PATH_NAMES))
   {
     m_docname.prepend(stripFromPath(m_path));
@@ -482,7 +481,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
-      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+      ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
                      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
@@ -499,7 +498,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     }
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE,
+      ol.generateDoc(docFile(),docLine(),this,nullptr,documentation()+"\n",TRUE,FALSE,
                      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     //printf("Writing source ref for file %s\n",qPrint(name()));
@@ -531,7 +530,7 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
-                                     briefFile(),briefLine(),this,0,
+                                     briefFile(),briefLine(),this,nullptr,
                                      briefDescription(),TRUE,FALSE,
                                      QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (!ast->isEmpty())
@@ -541,14 +540,14 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
       ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(ast.get(),this,0);
+      ol.writeDoc(ast.get(),this,nullptr);
       ol.pushGeneratorState();
       ol.disable(OutputType::RTF);
       ol.writeString(" \n");
       ol.enable(OutputType::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
-          !documentation().isEmpty()
+          !documentation().stripWhiteSpace().isEmpty()
          )
       {
         ol.disableAllBut(OutputType::Html);
@@ -584,7 +583,7 @@ void FileDefImpl::writeIncludeFiles(OutputList &ol)
     {
       const FileDef *fd=ii.fileDef;
       ol.startTypewriter();
-      SrcLangExt lang = fd ? fd->getLanguage() : SrcLangExt_Cpp;
+      SrcLangExt lang = fd ? fd->getLanguage() : SrcLangExt::Cpp;
       ol.docify(::includeStatement(lang,ii.kind));
       ol.docify(::includeOpen(lang,ii.kind));
       ol.disable(OutputType::Html);
@@ -700,7 +699,7 @@ void FileDefImpl::writeNamespaceDeclarations(OutputList &ol,const QCString &titl
 void FileDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title,const ClassLinkedRefMap &list)
 {
   // write list of classes
-  list.writeDeclaration(ol,0,title,FALSE);
+  list.writeDeclaration(ol,nullptr,title,FALSE);
 }
 
 void FileDefImpl::writeConcepts(OutputList &ol,const QCString &title)
@@ -757,7 +756,7 @@ void FileDefImpl::writeMemberGroups(OutputList &ol)
   {
     if (!mg->allMembersInSameSection() || !m_subGrouping)
     {
-      mg->writeDeclarations(ol,0,0,this,0,0);
+      mg->writeDeclarations(ol,nullptr,nullptr,this,nullptr,nullptr);
     }
   }
 }
@@ -1070,7 +1069,7 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
   {
     for (const auto &md : *allMemberList)
     {
-      if (md->getFileDef()==this && md->getNamespaceDef()==0 && md->isLinkable() && !md->isEnumValue())
+      if (md->getFileDef()==this && md->getNamespaceDef()==nullptr && md->isLinkable() && !md->isEnumValue())
       {
         if (md->isLinkableInProject())
         {
@@ -1162,7 +1161,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
   devNullList.add<DevNullCodeGenerator>();
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
-      (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
+      (getLanguage()==SrcLangExt::Cpp || getLanguage()==SrcLangExt::ObjC))
   {
     auto &codeOL = ol.codeGenerators();
     codeOL.startCodeFragment("DoxyCode");
@@ -1200,9 +1199,9 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
         -1,                 // startLine
         -1,                 // endLine
         FALSE,              // inlineFragment
-        0,                  // memberDef
+        nullptr,                  // memberDef
         TRUE,               // showLineNumbers
-        0,                  // searchCtx
+        nullptr,                  // searchCtx
         !needs2PassParsing  // collectXRefs
         );
     codeOL.endCodeFragment("DoxyCode");
@@ -1223,7 +1222,7 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
   devNullList.add<DevNullCodeGenerator>();
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
-      (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
+      (getLanguage()==SrcLangExt::Cpp || getLanguage()==SrcLangExt::ObjC))
   {
     clangParser->switchToFile(this);
     clangParser->writeSources(devNullList,this);
@@ -1275,7 +1274,7 @@ void FileDefImpl::insertMember(MemberDef *md)
     return;
   }
 
-  if (allMemberList==0)
+  if (allMemberList==nullptr)
   {
     m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::File));
     allMemberList = m_memberLists.back().get();
@@ -1284,7 +1283,7 @@ void FileDefImpl::insertMember(MemberDef *md)
   switch (md->memberType())
   {
     case MemberType_Property:
-      if (md->getLanguage() == SrcLangExt_Python)
+      if (md->getLanguage() == SrcLangExt::Python)
       {
         addMemberToList(MemberListType_propertyMembers,md);
         addMemberToList(MemberListType_properties,md);
@@ -1336,25 +1335,25 @@ void FileDefImpl::insertClass(ClassDef *cd)
 {
   if (cd->isHidden()) return;
 
-  ClassLinkedRefMap &list = m_classes;
+  ClassLinkedRefMap *list = &m_classes;
 
   if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
     if (cd->compoundType()==ClassDef::Interface)
     {
-      list = m_interfaces;
+      list = &m_interfaces;
     }
     else if (cd->compoundType()==ClassDef::Struct)
     {
-      list = m_structs;
+      list = &m_structs;
     }
     else if (cd->compoundType()==ClassDef::Exception)
     {
-      list = m_exceptions;
+      list = &m_exceptions;
     }
   }
 
-  list.add(cd->name(),cd);
+  list->add(cd->name(),cd);
 }
 
 void FileDefImpl::insertConcept(ConceptDef *cd)
@@ -1394,14 +1393,14 @@ const Definition *FileDefImpl::getSourceDefinition(int lineNr) const
 {
   auto it = m_srcDefMap.find(lineNr);
   //printf("%s::getSourceDefinition(%d)=%s\n",qPrint(name()),lineNr,it!=m_srcDefMap.end()?qPrint(it->second->name()):"none");
-  return it!=m_srcDefMap.end() ? it->second : 0;
+  return it!=m_srcDefMap.end() ? it->second : nullptr;
 }
 
 const MemberDef *FileDefImpl::getSourceMember(int lineNr) const
 {
   auto it = m_srcMemberMap.find(lineNr);
   //printf("%s::getSourceMember(%d)=%s\n",qPrint(name()),lineNr,it!=m_srcMemberMap.end()?qPrint(it->second->name()):"none");
-  return it!=m_srcMemberMap.end() ? it->second : 0;
+  return it!=m_srcMemberMap.end() ? it->second : nullptr;
 }
 
 
@@ -1519,7 +1518,7 @@ void FileDefImpl::addListReferences()
                theTranslator->trFile(TRUE,TRUE),
                getOutputFileBase(),name(),
                QCString(),
-               0
+               nullptr
               );
   }
   for (const auto &mg : m_memberGroups)
@@ -1572,7 +1571,7 @@ bool FileDefImpl::isDocumentationFile() const
 
   int lastDot = name().findRev('.');
   return (lastDot!=-1 && docExtensions.find(name().mid(lastDot+1).str())!=docExtensions.end()) ||
-         getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt_Markdown;
+         getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt::Markdown;
 }
 
 void FileDefImpl::acquireFileVersion()
@@ -1699,7 +1698,7 @@ MemberList *FileDefImpl::getMemberList(MemberListType lt) const
       return ml.get();
     }
   }
-  return 0;
+  return nullptr;
 }
 
 void FileDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
@@ -1711,11 +1710,11 @@ void FileDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const
     if (optVhdl) // use specific declarations function
     {
 
-      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,0,this,0,0);
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,nullptr,nullptr,this,nullptr,nullptr);
     }
     else
     {
-      ml->writeDeclarations(ol,0,0,this,0,0,title,QCString());
+      ml->writeDeclarations(ol,nullptr,nullptr,this,nullptr,nullptr,title,QCString());
     }
   }
 }
@@ -1800,12 +1799,12 @@ int FileDefImpl::numDecMembers() const
   return ml ? ml->numDecMembers() : 0;
 }
 
-void FileDefImpl::enableIncludeGraph(bool e)
+void FileDefImpl::overrideIncludeGraph(bool e)
 {
   m_hasIncludeGraph=e;
 }
 
-void FileDefImpl::enableIncludedByGraph(bool e)
+void FileDefImpl::overrideIncludedByGraph(bool e)
 {
   m_hasIncludedByGraph=e;
 }
@@ -1831,27 +1830,27 @@ bool compareFileDefs(const FileDef *fd1, const FileDef *fd2)
 
 FileDef *toFileDef(Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   if (d && typeid(*d)==typeid(FileDefImpl))
   {
     return static_cast<FileDef*>(d);
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
 const FileDef *toFileDef(const Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   if (d && typeid(*d)==typeid(FileDefImpl))
   {
     return static_cast<const FileDef*>(d);
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 

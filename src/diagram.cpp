@@ -402,7 +402,7 @@ TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
   auto row = std::make_unique<DiagramRow>(this,0);
   DiagramRow *row_ptr = row.get();
   m_rows.push_back(std::move(row));
-  row_ptr->insertClass(0,root,doBases,Protection::Public,Specifier::Normal,QCString());
+  row_ptr->insertClass(nullptr,root,doBases,Protection::Public,Specifier::Normal,QCString());
 }
 
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)
@@ -854,7 +854,7 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               }
             }
             ++rit;
-            if (rit!=dr->end()) di = (*rit).get(); else di=0;
+            if (rit!=dr->end()) di = (*rit).get(); else di=nullptr;
           }
           // add last horizontal line and a vertical connection line
           if (bitmap)
@@ -1342,12 +1342,12 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
       << "boundx scalefactor div boundy scalefactor div scale\n";
 
     t << "\n% ----- classes -----\n\n";
-    p->base.drawBoxes(t,0,TRUE,FALSE,baseRows,superRows,0,0);
-    p->super.drawBoxes(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+    p->base.drawBoxes(t,nullptr,TRUE,FALSE,baseRows,superRows,0,0);
+    p->super.drawBoxes(t,nullptr,FALSE,FALSE,baseRows,superRows,0,0);
 
     t << "\n% ----- relations -----\n\n";
-    p->base.drawConnectors(t,0,TRUE,FALSE,baseRows,superRows,0,0);
-    p->super.drawConnectors(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+    p->base.drawConnectors(t,nullptr,TRUE,FALSE,baseRows,superRows,0,0);
+    p->super.drawConnectors(t,nullptr,FALSE,FALSE,baseRows,superRows,0,0);
 
   }
   f.close();

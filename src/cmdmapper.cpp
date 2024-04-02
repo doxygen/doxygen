@@ -54,6 +54,7 @@ static const CommandMap g_cmdMap =
   { "htmlinclude",   CMD_HTMLINCLUDE },
   { "htmlonly",      CMD_HTMLONLY },
   { "image",         CMD_IMAGE },
+  { "important",     CMD_IMPORTANT },
   { "include",       CMD_INCLUDE },
   { "internal",      CMD_INTERNAL },
   { "invariant",     CMD_INVARIANT },
@@ -88,6 +89,8 @@ static const CommandMap g_cmdMap =
   { "subsection",    CMD_SUBSECTION },
   { "subsubsection", CMD_SUBSUBSECTION },
   { "paragraph",     CMD_PARAGRAPH },
+  { "subparagraph",  CMD_SUBPARAGRAPH },
+  { "subsubparagraph",  CMD_SUBSUBPARAGRAPH },
   { "see",           CMD_SA },
   { "since",         CMD_SINCE },
   { "skip",          CMD_SKIP },
@@ -152,6 +155,7 @@ static const CommandMap g_cmdMap =
   { "iliteral",      CMD_ILITERAL },
   { "endiliteral",   CMD_ENDILITERAL },
   { "ianchor" ,      CMD_IANCHOR },
+  { "iprefix" ,      CMD_IPREFIX },
 };
 
 //----------------------------------------------------------------------------

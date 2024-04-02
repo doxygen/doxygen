@@ -520,7 +520,7 @@ SqlStmt meta_insert = {
     "( doxygen_version, schema_version, generated_at, generated_on, project_name, project_number, project_brief )"
   "VALUES "
     "(:doxygen_version,:schema_version,:generated_at,:generated_on,:project_name,:project_number,:project_brief )"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt incl_insert = {
@@ -528,12 +528,12 @@ SqlStmt incl_insert = {
     "( local, src_id, dst_id ) "
   "VALUES "
     "(:local,:src_id,:dst_id )"
-  ,NULL
+  ,nullptr
 };
 SqlStmt incl_select = {
   "SELECT COUNT(*) FROM includes WHERE "
   "local=:local AND src_id=:src_id AND dst_id=:dst_id"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt contains_insert={
@@ -541,31 +541,31 @@ SqlStmt contains_insert={
     "( inner_rowid, outer_rowid )"
   "VALUES "
     "(:inner_rowid,:outer_rowid )"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt path_select = {
   "SELECT rowid FROM path WHERE name=:name"
-  ,NULL
+  ,nullptr
 };
 SqlStmt path_insert = {
   "INSERT INTO path "
     "( type, local, found, name )"
   "VALUES "
     "(:type,:local,:found,:name )"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt refid_select =  {
   "SELECT rowid FROM refid WHERE refid=:refid"
-  ,NULL
+  ,nullptr
 };
 SqlStmt refid_insert = {
   "INSERT INTO refid "
     "( refid )"
   "VALUES "
     "(:refid )"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt xrefs_insert= {
@@ -573,19 +573,19 @@ SqlStmt xrefs_insert= {
     "( src_rowid, dst_rowid, context )"
   "VALUES "
     "(:src_rowid,:dst_rowid,:context )"
-  ,NULL
+  ,nullptr
 };//////////////////////////////////////////////////////
 SqlStmt reimplements_insert= {
   "INSERT INTO reimplements "
     "( memberdef_rowid, reimplemented_rowid )"
   "VALUES "
     "(:memberdef_rowid,:reimplemented_rowid )"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt memberdef_exists={
   "SELECT EXISTS (SELECT * FROM memberdef WHERE rowid = :rowid)"
-  ,NULL
+  ,nullptr
 };
 
 SqlStmt memberdef_incomplete={
@@ -593,7 +593,7 @@ SqlStmt memberdef_incomplete={
     "SELECT * FROM memberdef WHERE "
     "rowid = :rowid AND inline != 2 AND inline != :new_inline"
   ")"
-  ,NULL
+  ,nullptr
 };
 
 SqlStmt memberdef_insert={
@@ -715,7 +715,7 @@ SqlStmt memberdef_insert={
     ":briefdescription,"
     ":inbodydescription"
   ")"
-  ,NULL
+  ,nullptr
 };
 /*
 We have a slightly different need than the XML here. The XML can have two
@@ -734,7 +734,7 @@ SqlStmt memberdef_update_decl={
     "briefdescription = 'Declaration: ' || :briefdescription || 'Definition: ' || briefdescription,"
     "inbodydescription = 'Declaration: ' || :inbodydescription || 'Definition: ' || inbodydescription "
   "WHERE rowid = :rowid"
-  ,NULL
+  ,nullptr
 };
 SqlStmt memberdef_update_def={
   "UPDATE memberdef SET "
@@ -746,7 +746,7 @@ SqlStmt memberdef_update_def={
     "briefdescription = 'Declaration: ' || briefdescription || 'Definition: ' || :briefdescription,"
     "inbodydescription = 'Declaration: ' || inbodydescription || 'Definition: ' || :inbodydescription "
   "WHERE rowid = :rowid"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt member_insert={
@@ -754,7 +754,7 @@ SqlStmt member_insert={
     "( scope_rowid, memberdef_rowid, prot, virt ) "
   "VALUES "
     "(:scope_rowid,:memberdef_rowid,:prot,:virt )"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt compounddef_insert={
@@ -786,13 +786,13 @@ SqlStmt compounddef_insert={
     ":briefdescription,"
     ":detaileddescription"
   ")"
-  ,NULL
+  ,nullptr
 };
 SqlStmt compounddef_exists={
   "SELECT EXISTS ("
     "SELECT * FROM compounddef WHERE rowid = :rowid"
   ")"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt compoundref_insert={
@@ -800,7 +800,7 @@ SqlStmt compoundref_insert={
     "( base_rowid, derived_rowid, prot, virt ) "
   "VALUES "
     "(:base_rowid,:derived_rowid,:prot,:virt )"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt param_select = {
@@ -812,14 +812,14 @@ SqlStmt param_select = {
     "(array IS NULL OR array=:array) AND "
     "(defval IS NULL OR defval=:defval) AND "
     "(briefdescription IS NULL OR briefdescription=:briefdescription)"
-  ,NULL
+  ,nullptr
 };
 SqlStmt param_insert = {
   "INSERT INTO param "
     "( attributes, type, declname, defname, array, defval, briefdescription ) "
   "VALUES "
     "(:attributes,:type,:declname,:defname,:array,:defval,:briefdescription)"
-  ,NULL
+  ,nullptr
 };
 //////////////////////////////////////////////////////
 SqlStmt memberdef_param_insert={
@@ -827,7 +827,7 @@ SqlStmt memberdef_param_insert={
     "( memberdef_id, param_id)"
   "VALUES "
     "(:memberdef_id,:param_id)"
-  ,NULL
+  ,nullptr
 };
 
 class TextGeneratorSqlite3Impl : public TextGeneratorIntf
@@ -910,7 +910,7 @@ static int step(SqlStmt &s,bool getRowId=FALSE, bool select=FALSE)
 static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=1)
 {
   int rowid=-1;
-  if (name==0) return rowid;
+  if (name==nullptr) return rowid;
 
   name = stripFromPath(name);
 
@@ -1149,11 +1149,11 @@ static void stripQualifiers(QCString &typeStr)
 static int prepareStatement(sqlite3 *db, SqlStmt &s)
 {
   int rc;
-  rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,0);
+  rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,nullptr);
   if (rc!=SQLITE_OK)
   {
     err("prepare failed for:\n  %s\n  %s\n", s.query, sqlite3_errmsg(db));
-    s.db = NULL;
+    s.db = nullptr;
     return -1;
   }
   s.db = db;
@@ -1195,21 +1195,21 @@ static int prepareStatements(sqlite3 *db)
 static void beginTransaction(sqlite3 *db)
 {
   char * sErrMsg = nullptr;
-  sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, &sErrMsg);
+  sqlite3_exec(db, "BEGIN TRANSACTION", nullptr, nullptr, &sErrMsg);
 }
 
 static void endTransaction(sqlite3 *db)
 {
   char * sErrMsg = nullptr;
-  sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &sErrMsg);
+  sqlite3_exec(db, "END TRANSACTION", nullptr, nullptr, &sErrMsg);
 }
 
 static void pragmaTuning(sqlite3 *db)
 {
   char * sErrMsg = nullptr;
-  sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, &sErrMsg);
-  sqlite3_exec(db, "PRAGMA journal_mode = MEMORY", NULL, NULL, &sErrMsg);
-  sqlite3_exec(db, "PRAGMA temp_store = MEMORY;", NULL, NULL, &sErrMsg);
+  sqlite3_exec(db, "PRAGMA synchronous = OFF", nullptr, nullptr, &sErrMsg);
+  sqlite3_exec(db, "PRAGMA journal_mode = MEMORY", nullptr, nullptr, &sErrMsg);
+  sqlite3_exec(db, "PRAGMA temp_store = MEMORY;", nullptr, nullptr, &sErrMsg);
 }
 
 static int initializeTables(sqlite3* db)
@@ -1220,7 +1220,7 @@ static int initializeTables(sqlite3* db)
   {
     const char *q = table_schema[k][1];
     char *errmsg;
-    rc = sqlite3_exec(db, q, NULL, NULL, &errmsg);
+    rc = sqlite3_exec(db, q, nullptr, nullptr, &errmsg);
     if (rc != SQLITE_OK)
     {
       err("failed to execute query: %s\n\t%s\n", q, errmsg);
@@ -1238,7 +1238,7 @@ static int initializeViews(sqlite3* db)
   {
     const char *q = view_schema[k][1];
     char *errmsg;
-    rc = sqlite3_exec(db, q, NULL, NULL, &errmsg);
+    rc = sqlite3_exec(db, q, nullptr, nullptr, &errmsg);
     if (rc != SQLITE_OK)
     {
       err("failed to execute query: %s\n\t%s\n", q, errmsg);
@@ -1871,13 +1871,13 @@ static void generateSqlite3Section( const Definition *d,
                       const QCString & /*header*/=QCString(),
                       const QCString & /*documentation*/=QCString())
 {
-  if (ml==0) return;
+  if (ml==nullptr) return;
   for (const auto &md : *ml)
   {
     // TODO: necessary? just tracking what xmlgen does; xmlgen says:
     // namespace members are also inserted in the file scope, but
     // to prevent this duplication in the XML output, we filter those here.
-    if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
+    if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==nullptr)
     {
       generateSqlite3ForMember(md, scope_refid, d);
     }
@@ -1924,7 +1924,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
   if (cd->isAnonymous())        return; // skip anonymous compounds.
-  if (cd->templateMaster()!=0)  return; // skip generated template instances.
+  if (cd->templateMaster()!=nullptr)  return; // skip generated template instances.
 
   struct Refid refid = insertRefid(cd->getOutputFileBase());
 
@@ -2540,7 +2540,7 @@ static sqlite3* openDbConnection()
   if (rc != SQLITE_OK)
   {
     err("sqlite3_initialize failed\n");
-    return NULL;
+    return nullptr;
   }
 
   std::string dbFileName = "doxygen_sqlite3.db";
@@ -2555,7 +2555,7 @@ static sqlite3* openDbConnection()
     else
     {
       err("doxygen_sqlite3.db already exists! Rename, remove, or archive it to regenerate\n");
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -2563,7 +2563,7 @@ static sqlite3* openDbConnection()
     fi.absFilePath().c_str(),
     &db,
     SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
-    0
+    nullptr
   );
   if (rc != SQLITE_OK)
   {
@@ -2586,14 +2586,14 @@ void generateSqlite3()
   sqlite3 *db;
 
   db = openDbConnection();
-  if (db==NULL)
+  if (db==nullptr)
   {
     return;
   }
 
 # ifdef SQLITE3_DEBUG
   // debug: show all executed statements
-  sqlite3_trace(db, &sqlLog, NULL);
+  sqlite3_trace(db, &sqlLog, nullptr);
 # endif
 
   beginTransaction(db);

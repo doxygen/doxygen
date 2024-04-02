@@ -144,7 +144,8 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* in */  const QCString &lr,
                  /* in */  bool inSeeBlock,
                  /* out */ const Definition **resContext,
-                 /* out */ QCString &resAnchor
+                 /* out */ QCString &resAnchor,
+                 /* in */  const QCString &prefix=QCString()
                 );
 
 bool generateLink(OutputList &ol,const QCString &,
@@ -276,7 +277,7 @@ void addMembersToMemberGroup(/* in,out */ MemberList *ml,
                              /* in */     const Definition *context);
 
 int extractClassNameFromType(const QCString &type,int &pos,
-                              QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt_Unknown);
+                              QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt::Unknown);
 
 QCString normalizeNonTemplateArgumentsInString(
        const QCString &name,
@@ -286,11 +287,13 @@ QCString normalizeNonTemplateArgumentsInString(
 QCString substituteTemplateArgumentsInString(
        const QCString &name,
        const ArgumentList &formalArgs,
-       const std::unique_ptr<ArgumentList> &actualArgs);
+       const ArgumentList *actualArgs);
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
-                                          QCString *lastScopeStripped=nullptr);
+                                          QCString *lastScopeStripped=nullptr,
+                                          QCString scopeName=QCString(),
+                                          bool allowArtificial=true);
 
 QCString resolveTypeDef(const Definition *d,const QCString &name,
                         const Definition **typedefContext=nullptr);
@@ -317,7 +320,7 @@ PageDef *addRelatedPage(const QCString &name,
                         GroupDef *gd=nullptr,
                         const TagInfo *tagInfo=nullptr,
                         bool xref=FALSE,
-                        SrcLangExt lang=SrcLangExt_Unknown
+                        SrcLangExt lang=SrcLangExt::Unknown
                        );
 
 bool getCaseSenseNames();
@@ -339,20 +342,7 @@ QCString stripExtension(const QCString &fName);
 
 void replaceNamespaceAliases(QCString &scope,size_t i);
 
-//! Return the index of the last :: in the string \a name that is still before the first <
-inline int computeQualifiedIndex(const QCString &name)
-{
-  int l = static_cast<int>(name.length());
-  int lastSepPos = -1;
-  const char *p = name.data();
-  for (int i=0;i<l-1;i++)
-  {
-    char c=*p++;
-    if (c==':' && *p==':') lastSepPos=i;
-    if (c=='<') break;
-  }
-  return lastSepPos;
-}
+int computeQualifiedIndex(const QCString &name);
 
 void addDirPrefix(QCString &fileName);
 
@@ -372,7 +362,7 @@ bool findAndRemoveWord(QCString &s,const char *word);
 QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine);
 
 bool updateLanguageMapping(const QCString &extension,const QCString &parser);
-SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang=SrcLangExt_Cpp);
+SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang=SrcLangExt::Cpp);
 SrcLangExt getLanguageFromCodeLang(QCString &fileName);
 QCString getFileNameExtension(const QCString &fn);
 void initDefaultExtensionMapping();
@@ -392,7 +382,7 @@ QCString convertCharEntitiesToUTF8(const QCString &s);
 
 void stackTrace();
 
-bool readInputFile(const QCString &fileName,BufStr &inBuf,
+bool readInputFile(const QCString &fileName,std::string &contents,
                    bool filter=TRUE,bool isSourceCode=FALSE);
 QCString filterTitle(const QCString &title);
 
@@ -475,5 +465,7 @@ QCString detab(const QCString &s,size_t &refIndent);
 
 QCString getProjectId();
 QCString projectLogoFile();
+
+void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
 
 #endif

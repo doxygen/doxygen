@@ -393,7 +393,7 @@ DB_GEN_C
   m_codeGen->setSourceFileName(stripPath(fileName));
   m_pageLinks = QCString();
 
-  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
+  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
   m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
   if (!pageName.isEmpty()) m_t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
   m_t << " xml:lang=\"" << theTranslator->trISOLang() << "\"";
@@ -632,7 +632,7 @@ DB_GEN_C2("IndexSection " << is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -936,6 +936,10 @@ void DocbookGenerator::endDoxyAnchor(const QCString &,const QCString &)
 {
 DB_GEN_C
 }
+void DocbookGenerator::addLabel(const QCString &,const QCString &)
+{
+DB_GEN_C
+}
 void DocbookGenerator::startMemberDocName(bool)
 {
 DB_GEN_C
@@ -1061,14 +1065,25 @@ DB_GEN_C
   m_t << " ";
 }
 
-void DocbookGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
+void DocbookGenerator::endParameterName()
 {
 DB_GEN_C
-  if (last)
+}
+
+void DocbookGenerator::startParameterExtra()
+{
+DB_GEN_C
+}
+
+void DocbookGenerator::endParameterExtra(bool last,bool /*emptyList*/,bool closeBracket)
+{
+DB_GEN_C
+  if (last && closeBracket)
   {
-    if (closeBracket) m_t << ")";
+    m_t << ")";
   }
 }
+
 
 void DocbookGenerator::startParameterDefVal(const char *sep)
 {
@@ -1378,10 +1393,10 @@ void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalT
     for (const SectionInfo *si : sectionRefs)
     {
       SectionType type = si->type();
-      if (isSection(type))
+      if (type.isSection())
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = static_cast<int>(type);
+        int nextLevel = type.level();
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)

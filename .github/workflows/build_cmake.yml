@@ -18,14 +18,14 @@ jobs:
             os: ubuntu-20.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
             os: ubuntu-20.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release",
@@ -159,7 +159,8 @@ jobs:
 
     - name: Install xmllint (MacOS)
       run: |
-         #brew install --force --overwrite python@3.11 # temp hack
+         brew install --force --overwrite python@3.11 # temp hack
+         brew install --force --overwrite python@3.12 # temp hack
          brew update
          brew install libxml2
       if: matrix.config.os == 'macos-latest'

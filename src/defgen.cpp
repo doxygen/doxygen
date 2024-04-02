@@ -197,7 +197,7 @@ static void generateDEFForMember(const MemberDef *md,
     }
   }
   else if (  md->memberType()==MemberType_Define
-      && md->argsString()!=0)
+      && md->argsString()!=nullptr)
   {
     QCString defPrefix = "  " + memPrefix + "def-";
     for (const Argument &a : md->argumentList())
@@ -332,7 +332,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 
   if (cd->isReference()) return; // skip external references.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
-  if (cd->templateMaster()!=0) return; // skip generated template instances.
+  if (cd->templateMaster()!=nullptr) return; // skip generated template instances.
 
   t << cd->compoundTypeString() << " = {\n";
   t << "  cp-id     = '" << cd->getOutputFileBase() << "';\n";
