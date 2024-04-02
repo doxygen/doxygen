@@ -229,7 +229,7 @@ bool DotManager::run()
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,GraphOutputFormat format,
-                           const QCString &srcFile,int srcLine)
+                           const QCString &srcFile,int srcLine,const bool toIndex)
 {
   Dir d(outDir.str());
   if (!d.exists())
@@ -265,7 +265,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
      return;
   }
 
-  Doxygen::indexList->addImageFile(imgName);
+  if (toIndex) Doxygen::indexList->addImageFile(imgName);
 
 }
 

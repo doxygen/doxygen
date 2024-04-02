@@ -186,12 +186,12 @@ QCString DotCallGraph::writeGraph(
         EmbeddedOutputFormat textFormat,
         const QCString &path,
         const QCString &fileName,
-        const QCString &relPath,bool generateImageMap,
+        const QCString &relPath,const bool toIndex,bool generateImageMap,
         int graphId)
 {
-  m_doNotAddImageToIndex = textFormat!=EOF_Html;
+  m_doNotAddImageToIndex = textFormat!=EOF_Html || !toIndex;
 
-  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
+  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, toIndex, generateImageMap, graphId);
 }
 
 bool DotCallGraph::isTrivial() const

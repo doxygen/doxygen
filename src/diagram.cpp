@@ -1369,7 +1369,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
 void ClassDiagram::writeImage(TextStream &t,const QCString &path,
                               const QCString &relPath,const QCString &fileName,
-                              bool generateMap) const
+                              const bool toIndex, bool generateMap) const
 {
   uint32_t baseRows=p->base.computeRows();
   uint32_t superRows=p->super.computeRows();
@@ -1396,6 +1396,6 @@ void ClassDiagram::writeImage(TextStream &t,const QCString &path,
 
 #define IMAGE_EXT ".png"
   image.save(QCString(path)+"/"+fileName+IMAGE_EXT);
-  Doxygen::indexList->addImageFile(QCString(fileName)+IMAGE_EXT);
+  if (toIndex) Doxygen::indexList->addImageFile(QCString(fileName)+IMAGE_EXT);
 }
 
