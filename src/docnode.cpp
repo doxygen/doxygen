@@ -2716,7 +2716,7 @@ int DocAutoListItem::parse()
 DocAutoList::DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,bool isEnumList,
                          int depth, bool isCheckedList):
       DocCompoundNode(parser,parent), m_indent(indent), m_isEnumList(isEnumList),
-      m_depth(depth),m_isCheckedList(isCheckedList)
+      m_isCheckedList(isCheckedList), m_depth(depth)
 {
 }
 
