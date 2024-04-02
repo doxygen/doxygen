@@ -953,6 +953,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body>"module"/{B}*[:;]?                { // 'module X' or 'module : private' or 'module;'
                                           if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
+                                          if (!yyextra->type.isEmpty() || !yyextra->name.isEmpty()) REJECT;
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);

@@ -1084,6 +1084,7 @@ NONLopt [^\n]*
                                         }
 <FindMembers>{B}*"module"{BN}*";"       { // global module section
                                           if (!yyextra->insideCpp) REJECT;
+                                          if (!yyextra->current->type.isEmpty() || !yyextra->current->name.isEmpty()) REJECT;
                                           //printf("Implementation module unit\n");
                                           lineCount(yyscanner);
                                           BEGIN( FindMembers );
