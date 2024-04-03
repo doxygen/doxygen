@@ -2658,7 +2658,7 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   else if ((level=isAtxHeader(data,header,id,TRUE)))
   {
     QCString hTag;
-    if (level>=SectionType::MinLevel && level<=SectionType::MaxLevel && !id.isEmpty())
+    if (!id.isEmpty())
     {
       switch (level)
       {
@@ -2676,10 +2676,6 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
     }
     else
     {
-      if (!id.isEmpty())
-      {
-        out+="\\ianchor{" + header + "} "+id+"\\ilinebr ";
-      }
       hTag.sprintf("h%d",level);
       out+="<"+hTag+">";
       out+=header;
