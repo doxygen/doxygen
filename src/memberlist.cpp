@@ -59,6 +59,11 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
   }
   // sort on name
   int cmp = qstricmp(c1->name(),c2->name());
+  // then on qualified name
+  if (cmp==0)
+  {
+    cmp = qstricmp(c1->qualifiedName(),c2->qualifiedName());
+  }
   // then on argument list
   if (cmp==0 && !c1->argsString().isEmpty() && !c2->argsString().isEmpty())
   {
