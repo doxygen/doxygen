@@ -3510,7 +3510,6 @@ If set to \c NO, doxygen will warn if a database file is already found and not m
  If the \c PERLMOD_PYTHON tag is set to \c YES, doxygen will generate
  the necessary \c Makefile rules, \c Python scripts and code to be able
  to generate print and markdown output from the Perl module output.
- experiment is using mako python library.
 ]]>
       </docs>
     </option>
