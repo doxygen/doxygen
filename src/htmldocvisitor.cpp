@@ -102,7 +102,7 @@ static QCString convertIndexWordToAnchor(const QCString &word)
       else
       {
         char enc[4];
-        enc[0] = ':';
+        enc[0] = ';';
         enc[1] = hex[(c & 0xf0) >> 4];
         enc[2] = hex[c & 0xf];
         enc[3] = 0;
