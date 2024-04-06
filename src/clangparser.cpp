@@ -85,6 +85,7 @@ class ClangTUParser::Private
     uint32_t numTokens = 0;
     StringVector filesInSameTU;
     TooltipManager tooltipManager;
+    std::vector<const Definition *> foldStack;
 
     // state while parsing sources
     const MemberDef  *currentMemberDef=nullptr;
@@ -447,14 +448,80 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
   return result;
 }
 
+void ClangTUParser::codeFolding(OutputCodeList &ol,const Definition *d,uint32_t line)
+{
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    endCodeFold(ol,line);
+    if (d)
+    {
+      int startLine = d->getStartDefLine();
+      int endLine   = d->getEndBodyLine();
+      if (endLine!=-1 && startLine!=endLine &&
+          // since the end of a section is closed after the last line, we need to avoid starting a
+          // new section if the previous section ends at the same line, i.e. something like
+          // struct X {
+          // ...
+          // }; struct S {  <- start of S and end of X at the same line
+          // ...
+          // };
+          (p->foldStack.empty() || p->foldStack.back()->getEndBodyLine()!=startLine))
+      {
+        if (d->definitionType()==Definition::TypeMember)
+        {
+          const MemberDef *md = toMemberDef(d);
+          if (md && md->isDefine())
+          {
+            ol.startFold(line,"",""); // #define X ...
+          }
+          else if (md && md->isCallable())
+          {
+            ol.startFold(line,"{","}"); // func() { ... }
+          }
+          else
+          {
+            ol.startFold(line,"{","};"); // enum X { ... }
+          }
+        }
+        else if (d->definitionType()==Definition::TypeClass)
+        {
+          ol.startFold(line,"{","};"); // class X { ... };
+        }
+        else
+        {
+          ol.startFold(line,"{","}"); // namespace X {...}
+        }
+        p->foldStack.push_back(d);
+      }
+    }
+  }
+}
+
+void ClangTUParser::endCodeFold(OutputCodeList &ol,uint32_t line)
+{
+  while (!p->foldStack.empty())
+  {
+    const Definition *dd = p->foldStack.back();
+    if (dd->getEndBodyLine()+1==static_cast<int>(line))
+    {
+      ol.endFold();
+      p->foldStack.pop_back();
+    }
+    else
+    {
+      break;
+    }
+  }
+}
 
 void ClangTUParser::writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_t line,bool writeLineAnchor)
 {
   const Definition *d = fd ? fd->getSourceDefinition(line) : nullptr;
-  if (d && fd->isLinkable())
+  if (d)
   {
     p->currentLine=line;
     const MemberDef *md = fd->getSourceMember(line);
+    //printf("writeLineNumber(%p,line=%d)\n",(void*)md,line);
     if (md && md->isLinkable())  // link to member
     {
       if (p->currentMemberDef!=md) // new member, start search for body
@@ -464,22 +531,30 @@ void ClangTUParser::writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_
         p->bracketCount=0;
       }
       p->currentMemberDef=md;
+      codeFolding(ol,md,line);
       ol.writeLineNumber(md->getReference(),
                          md->getOutputFileBase(),
                          md->anchor(),
                          line,writeLineAnchor);
     }
-    else // link to compound
+    else if (d->isLinkable()) // link to compound
     {
       p->currentMemberDef=nullptr;
+      codeFolding(ol,d,line);
       ol.writeLineNumber(d->getReference(),
                          d->getOutputFileBase(),
                          d->anchor(),
                          line,writeLineAnchor);
     }
+    else // no link
+    {
+      codeFolding(ol,nullptr,line);
+      ol.writeLineNumber(QCString(),QCString(),QCString(),line,writeLineAnchor);
+    }
   }
   else // no link
   {
+    codeFolding(ol,nullptr,line);
     ol.writeLineNumber(QCString(),QCString(),QCString(),line,writeLineAnchor);
   }
 
@@ -515,8 +590,8 @@ void ClangTUParser::codifyLines(OutputCodeList &ol,const FileDef *fd,const char 
       ol.codify(tmp.c_str());
       if (fontClass) ol.endFontClass();
       ol.endCodeLine();
-      ol.startCodeLine(line);
       writeLineNumber(ol,fd,line,inlineCodeFragment);
+      ol.startCodeLine(line);
       if (fontClass) ol.startFontClass(fontClass);
     }
     else
@@ -557,8 +632,8 @@ void ClangTUParser::writeMultiLineCodeLink(OutputCodeList &ol,
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,QCString(sp,p-sp-1),tooltip);
       ol.endCodeLine();
-      ol.startCodeLine(line);
       writeLineNumber(ol,fd,line,inlineCodeFragment);
+      ol.startCodeLine(line);
     }
     else
     {
@@ -661,8 +736,10 @@ void ClangTUParser::linkIdentifier(OutputCodeList &ol,const FileDef *fd,
   //  printf("found definition for '%s' usr='%s' name='%s'\n",
   //      text,usrStr,d->name().data());
   //}
+
   if (d && d->isLinkable())
   {
+    //printf("linkIdentifier(%s) p->insideBody=%d p->currentMemberDef=%p\n",text,p->insideBody,(void*)p->currentMemberDef);
     if (p->insideBody &&
         p->currentMemberDef && d->definitionType()==Definition::TypeMember &&
         (p->currentMemberDef!=d || p->currentLine<line)) // avoid self-reference
@@ -717,12 +794,13 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
   p->searchForBody=FALSE;
   p->insideBody=FALSE;
   p->bracketCount=0;
+  p->foldStack.clear();
 
   unsigned int line=1,column=1;
   QCString lineNumber,lineAnchor;
   bool inlineCodeFragment = false;
-  ol.startCodeLine(line);
   writeLineNumber(ol,fd,line,!inlineCodeFragment);
+  ol.startCodeLine(line);
   for (unsigned int i=0;i<p->numTokens;i++)
   {
     CXSourceLocation start = clang_getTokenLocation(p->tu, p->tokens[i]);
@@ -733,8 +811,8 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
     {
       line++;
       ol.endCodeLine();
-      ol.startCodeLine(line);
       writeLineNumber(ol,fd,line,!inlineCodeFragment);
+      ol.startCodeLine(line);
     }
     while (column<c) { ol.codify(" "); column++; }
     CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[i]);
@@ -819,6 +897,14 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
     clang_disposeString(tokenString);
   }
   ol.endCodeLine();
+  if (Config_getBool(HTML_CODE_FOLDING))
+  {
+    while (!p->foldStack.empty())
+    {
+      ol.endFold();
+      p->foldStack.pop_back();
+    }
+  }
   p->tooltipManager.writeTooltips(ol);
 }
 

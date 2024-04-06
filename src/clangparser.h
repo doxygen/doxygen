@@ -66,6 +66,8 @@ class ClangTUParser
     void linkInclude(OutputCodeList &ol,const FileDef *fd,
                    uint32_t &line,uint32_t &column,
                    const char *text);
+    void codeFolding(OutputCodeList &ol,const Definition *d,uint32_t line);
+    void endCodeFold(OutputCodeList &ol,uint32_t line);
     ClangTUParser(const ClangTUParser &) = delete;
     ClangTUParser &operator=(const ClangTUParser &) = delete;
     class Private;
