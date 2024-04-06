@@ -64,7 +64,8 @@ if the configuration file is stored at this location as well.
 
 Once the configuration file is saved and the working directory is set, you
 can run doxygen based on the selected settings. Do this by switching to the
-\ref dw_run "Run" tab, and click the "Run doxygen" button.
+\ref dw_run "Run" tab, and click the "Run doxygen" button or by selecting the item
+"Run doxygen" in the \ref dw_menu_settings.
 
 Once doxygen runs you can cancel it by clicking the same
 button again. The output produced by doxygen is captured and shown in the "Output produced by doxygen"
@@ -272,6 +273,8 @@ The file menu with a couple of useful items for loading and saving settings.
     confirm the action.
 <dt>Clear recent list<dd>Clears the "Open recent" list in the \ref dw_menu_file. This menu
     item is only accessible when there are recent files in the "Open recent" list.
+<dt>Run doxygen<dd>Selecting this item is identical to switching to the \ref dw_run "Run" tab,
+    and clicking the "Run doxygen" button
 </dl>
 
 \subsection dw_menu_help Help menu

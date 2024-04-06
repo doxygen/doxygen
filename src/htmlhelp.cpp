@@ -178,8 +178,7 @@ static QCString field2URL(const IndexField *f,bool checkReversed)
   addHtmlExtensionIfMissing(result);
   if (!f->anchor.isEmpty() && (!checkReversed || f->reversed))
   {
-    // HTML Help needs colons in link anchors to be escaped in the .hhk file.
-    result+="#"+substitute(f->anchor,":","%3A");
+    result+="#"+f->anchor;
   }
   return result;
 }
