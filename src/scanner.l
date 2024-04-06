@@ -243,6 +243,7 @@ static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString
                           const QCString &brief,const QCString &docs);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void setJavaProtection(yyscan_t yyscanner);
+static void storeClangId(yyscan_t yyscanner,const char *id);
 
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
@@ -807,10 +808,7 @@ NONLopt [^\n]*
                                             yyextra->current->type = "id";
                                           }
                                           yyextra->current->name = yytext;
-                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
-                                          {
-                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
-                                          }
+                                          storeClangId(yyscanner,yytext);
                                         }
 <ObjCMethod>":"{B}*                     { // start of parameter list
                                           yyextra->current->name += ':';
@@ -2374,10 +2372,7 @@ NONLopt [^\n]*
                                           BEGIN(yyextra->requiresContext);
                                         }
 <FindMembers,FindMemberName>{SCOPENAME} {
-                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
-                                          {
-                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
-                                          }
+                                          storeClangId(yyscanner,yytext);
                                           yyextra->yyBegColNr=yyextra->yyColNr;
                                           yyextra->yyBegLineNr=yyextra->yyLineNr;
                                           lineCount(yyscanner);
@@ -2748,10 +2743,7 @@ NONLopt [^\n]*
   */
 <SDefine>{ID}                            {
                                           //printf("Define '%s' without args\n",yytext);
-                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
-                                          {
-                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
-                                          }
+                                          storeClangId(yyscanner,yytext);
                                           yyextra->current->bodyLine = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name = yytext;
@@ -3976,10 +3968,7 @@ NONLopt [^\n]*
                                         }
 <Sharp>.                                { yyextra->current->type += *yytext ; }
 <FindFields>{ID}                        {
-                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
-                                          {
-                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
-                                          }
+                                          storeClangId(yyscanner,yytext);
                                           yyextra->current->bodyLine = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name     = yytext;
@@ -5970,10 +5959,7 @@ NONLopt [^\n]*
                                         }
 <CompoundName>{SCOPENAME}               {
                                           yyextra->current->name = yytext ;
-                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
-                                          {
-                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
-                                          }
+                                          storeClangId(yyscanner,yytext);
                                           lineCount(yyscanner);
                                           if (yyextra->current->spec.isProtocol())
                                           {
@@ -6038,12 +6024,7 @@ NONLopt [^\n]*
 <ClassVar>({ID}{BN}*"::"{BN}*)+{ID}     {
                                           yyextra->yyBegColNr=yyextra->yyColNr;
                                           yyextra->yyBegLineNr=yyextra->yyLineNr;
-
-                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
-                                          {
-                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
-                                          }
-
+                                          storeClangId(yyscanner,yytext);
                                           lineCount(yyscanner);
                                           if (yyextra->current->section.isEnum())
                                           { // found "enum a N::b" -> variable
@@ -6061,11 +6042,7 @@ NONLopt [^\n]*
 <ClassVar>{ID}                          {
                                           yyextra->yyBegColNr=yyextra->yyColNr;
                                           yyextra->yyBegLineNr=yyextra->yyLineNr;
-
-                                          if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
-                                          {
-                                            yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
-                                          }
+                                          storeClangId(yyscanner,yytext);
                                           if (yyextra->insideIDL && qstrcmp(yytext,"switch")==0)
                                           {
                                             // Corba IDL style union
@@ -7508,6 +7485,15 @@ static void initEntry(yyscan_t yyscanner)
 
 
 //-----------------------------------------------------------------------------
+
+static void storeClangId(yyscan_t yyscanner,const char *id)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
+  {
+    yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,id);
+  }
+}
 
 static void lineCount(yyscan_t yyscanner)
 {
