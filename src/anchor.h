@@ -46,6 +46,10 @@ class AnchorGenerator
 
   private:
     AnchorGenerator();
+    AnchorGenerator(const AnchorGenerator &) = delete;
+    AnchorGenerator &operator=(const AnchorGenerator &) = delete;
+    AnchorGenerator(AnchorGenerator &&) = delete;
+    AnchorGenerator &operator=(AnchorGenerator &&) = delete;
    ~AnchorGenerator();
     struct Private;
     std::unique_ptr<Private> p;
