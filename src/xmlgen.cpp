@@ -234,10 +234,6 @@ XMLCodeGenerator::XMLCodeGenerator(TextStream *t) : m_t(t), m_lineNumber(-1), m_
 {
 }
 
-XMLCodeGenerator::~XMLCodeGenerator()
-{
-}
-
 /** Generator for producing XML formatted source code. */
 void XMLCodeGenerator::codify(const QCString &text)
 {

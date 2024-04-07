@@ -21,7 +21,6 @@ class XMLCodeGenerator
 {
   public:
     XMLCodeGenerator(TextStream *t);
-   ~XMLCodeGenerator();
 
     OutputType type() const { return OutputType::XML; }
 
