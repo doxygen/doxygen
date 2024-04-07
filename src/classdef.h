@@ -507,12 +507,7 @@ Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,
  */
 struct UsesClassDef
 {
-  UsesClassDef(ClassDef *cd) : classDef(cd)
-  {
-  }
- ~UsesClassDef()
-  {
-  }
+  UsesClassDef(ClassDef *cd) : classDef(cd) {}
   void addAccessor(const QCString &s)
   {
     if (accessors.find(s.str())==accessors.end())
@@ -544,12 +539,7 @@ class UsesClassList : public std::vector<UsesClassDef>
  */
 struct ConstraintClassDef
 {
-  ConstraintClassDef(ClassDef *cd) : classDef(cd)
-  {
-  }
- ~ConstraintClassDef()
-  {
-  }
+  ConstraintClassDef(ClassDef *cd) : classDef(cd) {}
   void addAccessor(const QCString &s)
   {
     if (accessors.find(s.str())==accessors.end())
