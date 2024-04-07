@@ -32,6 +32,10 @@ class Markdown
 {
   public:
     Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
+    Markdown(const Markdown &) = delete;
+    Markdown &operator=(Markdown &) = delete;
+    Markdown(Markdown &&) = delete;
+    Markdown &operator=(Markdown &&) = delete;
    ~Markdown();
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
     QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
@@ -46,6 +50,10 @@ class MarkdownOutlineParser : public OutlineParserInterface
 {
   public:
     MarkdownOutlineParser();
+    MarkdownOutlineParser(const MarkdownOutlineParser &) = delete;
+    MarkdownOutlineParser &operator=(MarkdownOutlineParser &) = delete;
+    MarkdownOutlineParser(MarkdownOutlineParser &&) = delete;
+    MarkdownOutlineParser &operator=(MarkdownOutlineParser &&) = delete;
     virtual ~MarkdownOutlineParser();
     void parseInput(const QCString &fileName,
                     const char *fileBuf,

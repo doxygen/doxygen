@@ -40,6 +40,11 @@ class ClangTUParser;
 class OutlineParserInterface
 {
   public:
+    OutlineParserInterface() = default;
+    OutlineParserInterface(const OutlineParserInterface &) = delete;
+    OutlineParserInterface &operator=(const OutlineParserInterface &) = delete;
+    OutlineParserInterface(OutlineParserInterface &&) = delete;
+    OutlineParserInterface &operator=(OutlineParserInterface &&) = delete;
     virtual ~OutlineParserInterface() = default;
 
     /** Parses a single input file with the goal to build an Entry tree.
@@ -81,6 +86,11 @@ class OutlineParserInterface
 class CodeParserInterface
 {
   public:
+    CodeParserInterface() = default;
+    CodeParserInterface(const CodeParserInterface &) = delete;
+    CodeParserInterface &operator=(const CodeParserInterface &) = delete;
+    CodeParserInterface(CodeParserInterface &&) = delete;
+    CodeParserInterface &operator=(CodeParserInterface &&) = delete;
     virtual ~CodeParserInterface() = default;
 
     /** Parses a source file or fragment with the goal to produce

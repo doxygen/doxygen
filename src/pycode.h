@@ -34,6 +34,10 @@ class PythonCodeParser : public CodeParserInterface
 {
   public:
     PythonCodeParser();
+    PythonCodeParser(const PythonCodeParser &) = delete;
+    PythonCodeParser &operator=(PythonCodeParser &) = delete;
+    PythonCodeParser(PythonCodeParser &&) = delete;
+    PythonCodeParser &operator=(PythonCodeParser &&) = delete;
     virtual ~PythonCodeParser();
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,

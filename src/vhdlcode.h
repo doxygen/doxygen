@@ -26,6 +26,10 @@ class VHDLCodeParser : public CodeParserInterface
 {
   public:
     VHDLCodeParser();
+    VHDLCodeParser(const VHDLCodeParser &) = delete;
+    VHDLCodeParser &operator=(VHDLCodeParser &) = delete;
+    VHDLCodeParser(VHDLCodeParser &&) = delete;
+    VHDLCodeParser &operator=(VHDLCodeParser &&) = delete;
     virtual ~VHDLCodeParser();
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,

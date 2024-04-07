@@ -30,6 +30,10 @@ class COutlineParser : public OutlineParserInterface
 {
   public:
     COutlineParser();
+    COutlineParser(const COutlineParser &) = delete;
+    COutlineParser &operator=(COutlineParser &) = delete;
+    COutlineParser(COutlineParser &&) = delete;
+    COutlineParser &operator=(COutlineParser &&) = delete;
     virtual ~COutlineParser();
     void parseInput(const QCString &fileName,
                     const char *fileBuf,

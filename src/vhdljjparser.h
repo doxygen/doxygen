@@ -28,6 +28,10 @@ class VHDLOutlineParser : public OutlineParserInterface
 {
   public:
     VHDLOutlineParser();
+    VHDLOutlineParser(const VHDLOutlineParser &) = delete;
+    VHDLOutlineParser &operator=(VHDLOutlineParser &) = delete;
+    VHDLOutlineParser(VHDLOutlineParser &&) = delete;
+    VHDLOutlineParser &operator=(VHDLOutlineParser &&) = delete;
     virtual ~VHDLOutlineParser();
     void parseInput(const QCString &fileName,
                     const char *fileBuf,

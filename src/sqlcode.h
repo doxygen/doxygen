@@ -30,6 +30,10 @@ class SQLCodeParser : public CodeParserInterface
 {
   public:
     SQLCodeParser();
+    SQLCodeParser(const SQLCodeParser &) = delete;
+    SQLCodeParser &operator=(SQLCodeParser &) = delete;
+    SQLCodeParser(SQLCodeParser &&) = delete;
+    SQLCodeParser &operator=(SQLCodeParser &&) = delete;
     virtual ~SQLCodeParser();
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,

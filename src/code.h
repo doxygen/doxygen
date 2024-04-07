@@ -29,6 +29,10 @@ class CCodeParser : public CodeParserInterface
 {
   public:
     CCodeParser();
+    CCodeParser(const CCodeParser &) = delete;
+    CCodeParser &operator=(CCodeParser &) = delete;
+    CCodeParser(CCodeParser &&) = delete;
+    CCodeParser &operator=(CCodeParser &&) = delete;
     virtual ~CCodeParser();
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
