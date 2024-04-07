@@ -23,6 +23,10 @@ class ClangTUParser
 {
   public:
     ClangTUParser(const ClangParser &parser,const FileDef *fd);
+    ClangTUParser(const ClangTUParser &) = delete;
+    ClangTUParser &operator=(const ClangTUParser &) = delete;
+    ClangTUParser(ClangTUParser &&) = delete;
+    ClangTUParser &operator=(ClangTUParser &&) = delete;
     virtual ~ClangTUParser();
 
     /** Parse the file given at construction time as a translation unit
@@ -68,8 +72,6 @@ class ClangTUParser
                    const char *text);
     void codeFolding(OutputCodeList &ol,const Definition *d,uint32_t line);
     void endCodeFold(OutputCodeList &ol,uint32_t line);
-    ClangTUParser(const ClangTUParser &) = delete;
-    ClangTUParser &operator=(const ClangTUParser &) = delete;
     class Private;
     std::unique_ptr<Private> p;
 };
@@ -88,6 +90,10 @@ class ClangParser
     class Private;
     std::unique_ptr<Private> p;
     ClangParser();
+    ClangParser(const ClangParser &) = delete;
+    ClangParser &operator=(const ClangParser &) = delete;
+    ClangParser(ClangParser &&) = delete;
+    ClangParser &operator=(ClangParser &&) = delete;
     virtual ~ClangParser();
     static ClangParser *s_instance;
 };
