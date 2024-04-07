@@ -25,6 +25,11 @@
 struct CiteInfo
 {
     virtual ~CiteInfo() = default;
+    CiteInfo() = default;
+    CiteInfo(const CiteInfo &) = delete;
+    CiteInfo &operator=(const CiteInfo &) = delete;
+    CiteInfo(CiteInfo &&) = delete;
+    CiteInfo &operator=(CiteInfo &&) = delete;
     virtual QCString label() const = 0;
     virtual QCString text() const = 0;
 };
