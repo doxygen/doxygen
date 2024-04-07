@@ -25,6 +25,10 @@ class DirEntry
 {
   public:
    ~DirEntry();
+    DirEntry(const DirEntry &);
+    DirEntry &operator=(const DirEntry &);
+    DirEntry(DirEntry &&);
+    DirEntry &operator=(DirEntry &&);
     bool is_directory() const;
     bool is_regular_file() const;
     bool is_symlink() const;
@@ -46,6 +50,8 @@ class DirIterator
     using iterator_category = std::input_iterator_tag;
     DirIterator(const DirIterator &it);
     DirIterator &operator=(const DirIterator &it);
+    DirIterator(DirIterator &&it);
+    DirIterator &operator=(DirIterator &&it);
     DirIterator operator++();
     const value_type &operator*() const;
     const value_type *operator->() const;
@@ -72,6 +78,8 @@ class Dir final
     Dir(const std::string &path);
     Dir(const Dir &d);
     Dir &operator=(const Dir &d);
+    Dir(Dir &&d);
+    Dir &operator=(Dir &&d);
    ~Dir();
     void setPath(const std::string &path);
     std::string path() const;
