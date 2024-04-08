@@ -2846,9 +2846,9 @@ static void addSeparatorsIfNeeded(yyscan_t yyscanner,const QCString &expr,QCStri
     restExpr=restExpr.stripWhiteSpace();
     if (restExpr.isEmpty()) // peek ahead in the stream for non-whitespace
     {
-      uint32_t j=resultExpr.length();
+      uint32_t j=(uint32_t)resultExpr.length();
       while ((ccNext=getNextChar(yyscanner,resultExpr,nullptr,j))!=EOF && ccNext==' ') { }
-      unputChar(yyscanner,resultExpr,nullptr,j,ccNext);
+      if (ccNext != EOF) unputChar(yyscanner,resultExpr,nullptr,j,(char)ccNext);
     }
     else // take first char from remainder
     {
