@@ -486,7 +486,7 @@ static void writeMakeBat()
     term("Could not open file %s for writing\n",qPrint(fileName));
   }
   t << "pushd %~dp0\r\n";
-  t << "if not %errorlevel% == 0 goto :end\r\n";
+  t << "if not %errorlevel% == 0 goto :end1\r\n";
   t << "\r\n";
   t << "set ORG_LATEX_CMD=%LATEX_CMD%\r\n";
   t << "set ORG_MKIDX_CMD=%MKIDX_CMD%\r\n";
@@ -581,6 +581,7 @@ static void writeMakeBat()
   t << "@echo Please consult %MANUAL_FILE%.log to see the error messages\r\n";
   t << "@echo ===============\r\n";
   t<< "\r\n";
+  t<< ":end\r\n";
   t<< "@REM reset environment\r\n";
   t<< "popd\r\n";
   t<< "set LATEX_CMD=%ORG_LATEX_CMD%\r\n";
@@ -594,7 +595,7 @@ static void writeMakeBat()
   t<< "set LATEX_COUNT=%ORG_LATEX_COUNT%\r\n";
   t<< "set ORG_LATEX_COUNT=\r\n";
   t<< "\r\n";
-  t<< ":end\r\n";
+  t<< ":end1\r\n";
 #endif
 }
 
@@ -2318,6 +2319,7 @@ void writeLatexSpecialFormulaChars(TextStream &t)
     sup3[1]= 0xB3;
     sup3[2]= 0;
 
+    t << "\\ifpdftex\n";
     t << "\\usepackage{newunicodechar}\n";
     // taken from the newunicodechar package and removed the warning message
     // actually forcing to redefine the unicode character
@@ -2341,6 +2343,7 @@ void writeLatexSpecialFormulaChars(TextStream &t)
          "  \\doxynewunicodechar{" << sup2  << "}{${}^{2}$}% Superscript two\n"
          "  \\doxynewunicodechar{" << sup3  << "}{${}^{3}$}% Superscript three\n"
          "\n";
+    t << "\\fi\n";
 }
 
 void filterLatexString(TextStream &t,const QCString &str,
