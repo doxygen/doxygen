@@ -28,6 +28,7 @@
 #include "containers.h"
 #include "qcstring.h"
 #include "config.h"
+#include "construct.h"
 
 class TextStream;
 
@@ -38,6 +39,7 @@ class ConfigOption
     friend class ConfigImpl;
 
   public:
+    ABSTRACT_BASE_CLASS(ConfigOption)
 
     /*! The type of option */
     enum OptionType
@@ -61,9 +63,6 @@ class ConfigOption
     ConfigOption(OptionType t) : m_kind(t)
     {
       m_spaces.fill(' ',40);
-    }
-    virtual ~ConfigOption()
-    {
     }
 
     /*! returns the kind of option this is. */
@@ -194,9 +193,6 @@ class ConfigString : public ConfigOption
       m_name = name;
       m_doc = doc;
       m_widgetType = String;
-    }
-   ~ConfigString()
-    {
     }
     void setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
@@ -522,7 +518,7 @@ class ConfigImpl
      */
     void writeXMLDoxyfile(TextStream &t);
 
-    /*! Writes all possible setting ids to an XSD file for validation 
+    /*! Writes all possible setting ids to an XSD file for validation
      *  through the stream \a t.
      */
     void writeXSDDoxyfile(TextStream &t);

@@ -701,9 +701,7 @@ Ex::Ex(std::string_view pattern, Mode mode)
 #endif
 }
 
-Ex::~Ex()
-{
-}
+Ex::~Ex() = default;
 
 bool Ex::match(std::string_view str,Match &match,size_t pos) const
 {

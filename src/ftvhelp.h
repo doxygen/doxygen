@@ -27,6 +27,7 @@
 #include <memory>
 #include <vector>
 #include "qcstring.h"
+#include "construct.h"
 
 class Definition;
 class MemberDef;
@@ -40,7 +41,8 @@ class FTVHelp
   public:
     FTVHelp(bool LTI);
     ~FTVHelp();
-    FTVHelp(FTVHelp &&);
+    ONLY_MOVABLE_DECL(FTVHelp)
+
     void initialize();
     void finalize();
     void incContentsDepth();

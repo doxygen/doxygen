@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
 
 class Definition;
 class MemberDef;
@@ -26,7 +27,7 @@ class Qhp
   public:
     Qhp();
     ~Qhp();
-    Qhp(Qhp &&);
+    ONLY_MOVABLE_DECL(Qhp)
 
     void initialize();
     void finalize();

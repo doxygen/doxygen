@@ -32,11 +32,8 @@ class Markdown
 {
   public:
     Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
-    Markdown(const Markdown &) = delete;
-    Markdown &operator=(Markdown &) = delete;
-    Markdown(Markdown &&) = delete;
-    Markdown &operator=(Markdown &&) = delete;
    ~Markdown();
+    NON_COPYABLE(Markdown)
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
     QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
     void setIndentLevel(int level);
@@ -50,11 +47,8 @@ class MarkdownOutlineParser : public OutlineParserInterface
 {
   public:
     MarkdownOutlineParser();
-    MarkdownOutlineParser(const MarkdownOutlineParser &) = delete;
-    MarkdownOutlineParser &operator=(MarkdownOutlineParser &) = delete;
-    MarkdownOutlineParser(MarkdownOutlineParser &&) = delete;
-    MarkdownOutlineParser &operator=(MarkdownOutlineParser &&) = delete;
     virtual ~MarkdownOutlineParser();
+    NON_COPYABLE(MarkdownOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,

@@ -120,7 +120,8 @@ class OutputCodeDefer
 class OutputCodeExtension
 {
   public:
-    virtual ~OutputCodeExtension() = default;
+    ABSTRACT_BASE_CLASS(OutputCodeExtension)
+
     virtual OutputType type() const = 0;
     virtual void codify(const QCString &s) = 0;
     virtual void writeCodeLink(CodeSymbolType type,
@@ -541,6 +542,7 @@ class OutputList
     OutputList &operator=(const OutputList &ol);
     OutputList(OutputList &&) = delete;
     OutputList &operator=(OutputList &&) = delete;
+   ~OutputList() = default;
 
     template<class DocGenerator>
     void add()

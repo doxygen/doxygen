@@ -28,11 +28,8 @@ class LexOutlineParser : public OutlineParserInterface
 {
   public:
     LexOutlineParser();
-    LexOutlineParser(const LexOutlineParser &) = delete;
-    LexOutlineParser &operator=(LexOutlineParser &) = delete;
-    LexOutlineParser(LexOutlineParser &&) = delete;
-    LexOutlineParser &operator=(LexOutlineParser &&) = delete;
    ~LexOutlineParser();
+    NON_COPYABLE(LexOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,

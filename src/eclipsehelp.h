@@ -27,6 +27,7 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
 
 /* -- forward declarations */
 class Definition;
@@ -43,7 +44,7 @@ class EclipseHelp
   public:
     EclipseHelp();
     virtual ~EclipseHelp();
-    EclipseHelp(EclipseHelp &&);
+    ONLY_MOVABLE_DECL(EclipseHelp)
 
     /* -- index interface */
     virtual void initialize();

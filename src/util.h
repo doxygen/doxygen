@@ -34,6 +34,7 @@
 #include "outputgen.h"
 #include "regex.h"
 #include "conceptdef.h"
+#include "construct.h"
 
 //--------------------------------------------------------------------
 
@@ -61,7 +62,8 @@ class Dir;
 class TextGeneratorIntf
 {
   public:
-    virtual ~TextGeneratorIntf() = default;
+    ABSTRACT_BASE_CLASS(TextGeneratorIntf)
+
     virtual void writeString(const QCString &,bool) const = 0;
     virtual void writeBreak(int indent) const = 0;
     virtual void writeLink(const QCString &extRef,const QCString &file,

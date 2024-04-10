@@ -94,12 +94,6 @@ class QCString
 {
   public:
     QCString() = default;
-   ~QCString() = default;
-    QCString( const QCString &s ) = default;
-    QCString &operator=( const QCString &s ) = default;
-    QCString( QCString &&s ) = default;
-    QCString &operator=( QCString &&s ) = default;
-
     explicit QCString( const std::string &s ) : m_rep(s) {}
 
     QCString( std::string &&s) : m_rep(std::move(s)) {}

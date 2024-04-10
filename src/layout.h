@@ -22,6 +22,7 @@
 #include <memory>
 #include <vector>
 #include "types.h"
+#include "construct.h"
 
 class LayoutParser;
 struct LayoutNavEntry;
@@ -30,7 +31,8 @@ class MemberList;
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry
 {
-  virtual ~LayoutDocEntry() = default;
+  ABSTRACT_BASE_CLASS(LayoutDocEntry)
+
   enum Kind {
               // Generic items for all pages
               MemberGroups,
@@ -229,6 +231,7 @@ class LayoutDocManager
     void clear(LayoutPart p);
     LayoutDocManager();
     ~LayoutDocManager();
+    NON_COPYABLE(LayoutDocManager)
     std::unique_ptr<Private> d;
     friend class LayoutParser;
 };

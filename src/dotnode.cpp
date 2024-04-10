@@ -311,10 +311,6 @@ DotNode::DotNode(DotGraph *graph,const QCString &lab,const QCString &tip, const 
 {
 }
 
-DotNode::~DotNode()
-{
-}
-
 void DotNode::addChild(DotNode *n,
   EdgeInfo::Colors edgeColor,
   EdgeInfo::Styles edgeStyle,

@@ -89,8 +89,6 @@ class VhdlDocGen
       return ENTITYCLASS;
     }
 
-    VhdlDocGen();
-    virtual ~VhdlDocGen();
     static void init();
     static QCString convertFileNameToClassName(const QCString &name);
     // --- used by vhdlscanner.l -----------
@@ -302,7 +300,6 @@ class FlowChart
     static QCString printPlantUmlNode(const FlowChart &flo,bool,bool);
 
     FlowChart(int typ,const QCString &t,const QCString &ex,const QCString &label=QCString());
-    ~FlowChart();
 
 private:
     int id = 0;

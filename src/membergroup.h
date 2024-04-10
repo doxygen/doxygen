@@ -45,7 +45,6 @@ class MemberGroup
     //MemberGroup();
     MemberGroup(const Definition *container,int id,const QCString &header,
                 const QCString &docs,const QCString &docFile,int docLine,MemberListContainer con);
-   ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
     void insertMember(MemberDef *md);

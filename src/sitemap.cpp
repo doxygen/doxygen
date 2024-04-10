@@ -42,7 +42,7 @@ class Sitemap::Private
 
 Sitemap::Sitemap() : p(std::make_unique<Private>()) {}
 Sitemap::~Sitemap() = default;
-Sitemap::Sitemap(Sitemap &&) = default;
+DEFAULT_MOVABLE_IMPL(Sitemap)
 
 void Sitemap::initialize()
 {
@@ -92,7 +92,7 @@ class Crawlmap::Private
 
 Crawlmap::Crawlmap() : p(std::make_unique<Private>()) {}
 Crawlmap::~Crawlmap() = default;
-Crawlmap::Crawlmap(Crawlmap &&) = default;
+DEFAULT_MOVABLE_IMPL(Crawlmap)
 
 void Crawlmap::initialize()
 {
@@ -155,7 +155,7 @@ void Crawlmap::addContentsItem(bool, const QCString &, const QCString &,
       addHtmlExtensionIfMissing(currFile);
       QCString currAnc = anchor;
       link += currFile.data();
-      if (!currAnc.isEmpty()) 
+      if (!currAnc.isEmpty())
       {
         link += "#";
         link += currAnc.str();

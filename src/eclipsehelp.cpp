@@ -58,7 +58,7 @@ struct EclipseHelp::Private
 
 EclipseHelp::EclipseHelp() : p(std::make_unique<Private>()) {}
 EclipseHelp::~EclipseHelp() = default;
-EclipseHelp::EclipseHelp(EclipseHelp&&) = default;
+DEFAULT_MOVABLE_IMPL(EclipseHelp)
 
 /*!
  * \brief Initialize the Eclipse generator

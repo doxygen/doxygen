@@ -30,11 +30,8 @@ class FortranCodeParser : public CodeParserInterface
 {
   public:
     FortranCodeParser(FortranFormat format=FortranFormat_Unknown);
-    FortranCodeParser(const FortranCodeParser &) = delete;
-    FortranCodeParser &operator=(FortranCodeParser &) = delete;
-    FortranCodeParser(FortranCodeParser &&) = delete;
-    FortranCodeParser &operator=(FortranCodeParser &&) = delete;
     virtual ~FortranCodeParser();
+    NON_COPYABLE(FortranCodeParser)
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,

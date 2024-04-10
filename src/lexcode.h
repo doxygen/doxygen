@@ -30,11 +30,8 @@ class LexCodeParser : public CodeParserInterface
 {
   public:
     LexCodeParser();
-    LexCodeParser(const LexCodeParser &) = delete;
-    LexCodeParser &operator=(LexCodeParser &) = delete;
-    LexCodeParser(LexCodeParser &&) = delete;
-    LexCodeParser &operator=(LexCodeParser &&) = delete;
     virtual ~LexCodeParser();
+    NON_COPYABLE(LexCodeParser)
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,

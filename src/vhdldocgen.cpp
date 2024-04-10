@@ -121,14 +121,6 @@ static int compareString(const QCString& s1,const QCString& s2)
 
 //--------------------------------------------------------------------------------------------------
 
-VhdlDocGen::VhdlDocGen()
-{
-}
-
-VhdlDocGen::~VhdlDocGen()
-{
-}
-
  // vhdl keywords included VHDL 2008
 static const std::unordered_set< std::string > g_vhdlKeyWordSet0 =
 {
@@ -2867,10 +2859,6 @@ void FlowChart::codify(TextStream &t,const QCString &str)
     }
   }
 }//codify
-
-FlowChart::~FlowChart()
-{
-}
 
 FlowChart::FlowChart(int typ,const QCString &t,const QCString &ex,const QCString &lab)
 {

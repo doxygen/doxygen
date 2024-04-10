@@ -44,6 +44,7 @@
 
 #include "types.h"
 #include "qcstring.h"
+#include "construct.h"
 
 extern std::shared_ptr<spdlog::logger> g_tracer;
 
@@ -117,6 +118,8 @@ class AutoTrace
         }
       }
     }
+    NON_COPYABLE(AutoTrace)
+
     template<typename... Args>
     void add(spdlog::source_loc loc,
              const std::string &fmt, Args&&...args)

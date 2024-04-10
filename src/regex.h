@@ -22,6 +22,8 @@
 #include <vector>
 #include <iterator>
 
+#include "construct.h"
+
 /** Namespace for the regular expression functions */
 namespace reg
 {
@@ -106,8 +108,7 @@ class Ex
     bool match(std::string_view str,Match &match,size_t pos=0) const;
     bool isValid() const;
   private:
-    Ex(const Ex &) = delete;
-    Ex &operator=(const Ex &e) = delete;
+    NON_COPYABLE(Ex)
 
     class Private;
     std::unique_ptr<Private> p;

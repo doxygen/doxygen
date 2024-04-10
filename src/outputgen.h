@@ -26,6 +26,7 @@
 #include "section.h"
 #include "textstream.h"
 #include "docparser.h"
+#include "construct.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -70,11 +71,8 @@ class OutputGenerator
     enum class MemberItemType { Normal, AnonymousStart, AnonymousEnd, Templated };
 
     OutputGenerator(const QCString &dir);
-    OutputGenerator(const OutputGenerator &) = delete;
-    OutputGenerator &operator=(const OutputGenerator &) = delete;
-    OutputGenerator(OutputGenerator &&) = default;
-    OutputGenerator &operator=(OutputGenerator &&) = delete;
    ~OutputGenerator() = default;
+    ONLY_DEFAULT_MOVABLE(OutputGenerator)
 
     QCString dir() const;
     QCString fileName() const;

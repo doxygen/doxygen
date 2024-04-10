@@ -21,6 +21,7 @@
 
 #include "qcstring.h"
 #include "growvector.h"
+#include "construct.h"
 
 class MemberDef;
 class Definition;
@@ -31,7 +32,7 @@ class Definition;
 class IDocParser
 {
   public:
-    virtual ~IDocParser() = default;
+    ABSTRACT_BASE_CLASS(IDocParser)
 };
 
 //! @brief pointer to parser interface
@@ -46,7 +47,8 @@ IDocParserPtr createDocParser();
 class IDocNodeAST
 {
   public:
-    virtual ~IDocNodeAST() = default;
+    ABSTRACT_BASE_CLASS(IDocNodeAST)
+
     virtual bool isEmpty() const = 0;
 };
 

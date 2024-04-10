@@ -24,6 +24,7 @@
 
 #include "htmlattrib.h"
 #include "qcstring.h"
+#include "construct.h"
 
 enum Tokens
 {
@@ -123,6 +124,7 @@ class DocTokenizer
   public:
     DocTokenizer();
    ~DocTokenizer();
+    NON_COPYABLE(DocTokenizer)
 
     TokenInfo *token();
     [[maybe_unused]] TokenInfo *resetToken();

@@ -64,7 +64,6 @@ class UsedDir
 {
   public:
     UsedDir(const DirDef *dir);
-    virtual ~UsedDir();
 
     /**
      * Take up dependency between files.

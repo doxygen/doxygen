@@ -41,10 +41,6 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
   //printf("Member group docs='%s'\n",qPrint(doc));
 }
 
-MemberGroup::~MemberGroup()
-{
-}
-
 void MemberGroup::insertMember(MemberDef *md)
 {
   //printf("MemberGroup::insertMember memberList=%p count=%d"

@@ -14,6 +14,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(doxygen)
 
+option("ENABLE_CLANG_TIDY" "Enable static analysis with clang-tidy" OFF)
+
 option(build_wizard    "Build the GUI frontend for doxygen." OFF)
 option(build_app       "Example showing how to embed doxygen in an application." OFF)
 option(build_parse     "Parses source code and dumps the dependencies between the code elements." OFF)
@@ -32,6 +34,7 @@ option(enable_console  "Enable that executables on Windows get the CONSOLE bit s
 option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
 option(enable_tracing  "Enable tracing option in release builds [development]" OFF)
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
+
 
 set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
 set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
@@ -82,6 +85,17 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
+
+if (ENABLE_CLANG_TIDY)
+    find_program("CLANGTIDY" "clang-tidy")
+    if (CLANGTIDY)
+       set(CMAKE_CXX_CLANG_TIDY clang-tidy;
+                                -header-filter=.;
+                                -checks=-*,cppcoreguidelines-special-member-functions)
+    else()
+        message(SEND_ERROR "clang-tidy requested but executable not found")
+    endif()
+endif()
 
 # produce compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

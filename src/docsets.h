@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
 
 class TextStream;
 
@@ -35,8 +36,8 @@ class DocSets
 
   public:
     DocSets();
-    virtual ~DocSets();
-    DocSets(DocSets &&);
+    ~DocSets();
+    ONLY_MOVABLE_DECL(DocSets)
 
     void initialize();
     void finalize();

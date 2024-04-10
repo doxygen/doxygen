@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include "qcstring.h"
+#include "construct.h"
 
 /** Class containing a print function for diagnostics. */
 class Debug
@@ -87,11 +88,8 @@ class DebugLex
 {
   public:
     DebugLex(Debug::DebugMask mask,const char *lexName,const char *fileName);
-    DebugLex(const DebugLex &) = delete;
-    DebugLex &operator=(DebugLex &) = delete;
-    DebugLex(DebugLex &&) = delete;
-    DebugLex &operator=(DebugLex &&) = delete;
    ~DebugLex();
+    NON_COPYABLE(DebugLex)
     static void print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName);
   private:
 

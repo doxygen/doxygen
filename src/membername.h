@@ -68,7 +68,6 @@ class MemberInfo
   public:
     MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh,bool vbc) :
           m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh), m_virtBaseClass(vbc) {}
-   ~MemberInfo() = default;
 
     // getters
           MemberDef *memberDef()                { return m_memberDef; }

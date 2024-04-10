@@ -1071,9 +1071,7 @@ ClassDiagram::ClassDiagram(const ClassDef *root) : p(std::make_unique<Private>(r
   }
 }
 
-ClassDiagram::~ClassDiagram()
-{
-}
+ClassDiagram::~ClassDiagram() = default;
 
 void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
                                const QCString &fileName) const

@@ -793,10 +793,6 @@ UsedDir::UsedDir(const DirDef *dir) :
 {
 }
 
-UsedDir::~UsedDir()
-{
-}
-
 void UsedDir::addFileDep(const FileDef *srcFd,const FileDef *dstFd, bool srcDirect, bool dstDirect)
 {
   m_filePairs.add(FilePair::key(srcFd,dstFd),std::make_unique<FilePair>(srcFd,dstFd));

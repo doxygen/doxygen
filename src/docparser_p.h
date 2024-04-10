@@ -32,6 +32,7 @@
 #include "docnode.h"
 #include "doctokenizer.h"
 #include "searchindex.h"
+#include "construct.h"
 
 using DefinitionStack = std::vector<const Definition *>;
 using DocNodeStack = std::stack<DocNodeVariant *>;
@@ -93,7 +94,6 @@ struct DocParserContext
 class DocParser : public IDocParser
 {
   public:
-    ~DocParser();
     void pushContext();
     void popContext();
     void handleImg(DocNodeVariant *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
@@ -145,18 +145,20 @@ class AutoNodeStack
   public:
     AutoNodeStack(DocParser *parser,DocNodeVariant* node)
       : m_parser(parser), m_node(node) { m_parser->context.nodeStack.push(node); }
-   ~AutoNodeStack() {
+   ~AutoNodeStack()
+    {
 #if defined(NDEBUG)
-     (void)m_node;
-     if (!m_parser->context.nodeStack.empty())
-     {
-       m_parser->context.nodeStack.pop(); // robust version that does not assert
-     }
+      (void)m_node;
+      if (!m_parser->context.nodeStack.empty())
+      {
+        m_parser->context.nodeStack.pop(); // robust version that does not assert
+      }
 #else
-     assert(m_parser->context.nodeStack.top()==m_node);
-     m_parser->context.nodeStack.pop(); // error checking version
+      assert(m_parser->context.nodeStack.top()==m_node);
+      m_parser->context.nodeStack.pop(); // error checking version
 #endif
-   }
+    }
+    NON_COPYABLE(AutoNodeStack)
 
   private:
    DocParser *m_parser;

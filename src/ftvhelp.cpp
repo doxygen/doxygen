@@ -55,7 +55,6 @@ struct FTVNode
     : isLast(TRUE), isDir(dir), ref(r), file(f), anchor(a), name(n),
       separateIndex(sepIndex), addToNavIndex(navIndex),
       def(df) {}
- ~FTVNode() = default;
   int computeTreeDepth(int level) const;
   int numNodesAtLevel(int level,int maxLevel) const;
   bool isLast;
@@ -119,7 +118,7 @@ struct FTVHelp::Private
  */
 FTVHelp::FTVHelp(bool TLI) : p(std::make_unique<Private>(TLI)) {}
 FTVHelp::~FTVHelp() = default;
-FTVHelp::FTVHelp(FTVHelp &&) = default;
+DEFAULT_MOVABLE_IMPL(FTVHelp)
 
 /*! This will create a folder tree view table of contents file (tree.js).
  *  \sa finalize()

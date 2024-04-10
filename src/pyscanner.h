@@ -35,11 +35,8 @@ class PythonOutlineParser : public OutlineParserInterface
 {
   public:
     PythonOutlineParser();
-    PythonOutlineParser(const PythonOutlineParser &) = delete;
-    PythonOutlineParser &operator=(PythonOutlineParser &) = delete;
-    PythonOutlineParser(PythonOutlineParser &&) = delete;
-    PythonOutlineParser &operator=(PythonOutlineParser &&) = delete;
     virtual ~PythonOutlineParser();
+    NON_COPYABLE(PythonOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,

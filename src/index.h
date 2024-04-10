@@ -20,6 +20,7 @@
 #include <vector>
 #include <map>
 #include "qcstring.h"
+#include "construct.h"
 
 class Definition;
 class OutputList;
@@ -215,6 +216,7 @@ class Index
     void incrementDocumentedModuleMembers(int i,const std::string &letter,const MemberDef *md);
     Index();
     ~Index();
+    NON_COPYABLE(Index)
     struct Private;
     std::unique_ptr<Private> p;
 };

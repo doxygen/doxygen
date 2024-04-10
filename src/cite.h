@@ -20,18 +20,15 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
 
 /// Citation-related data.
 struct CiteInfo
 {
-    virtual ~CiteInfo() = default;
-    CiteInfo() = default;
-    CiteInfo(const CiteInfo &) = delete;
-    CiteInfo &operator=(const CiteInfo &) = delete;
-    CiteInfo(CiteInfo &&) = delete;
-    CiteInfo &operator=(CiteInfo &&) = delete;
-    virtual QCString label() const = 0;
-    virtual QCString text() const = 0;
+  ABSTRACT_BASE_CLASS(CiteInfo)
+
+  virtual QCString label() const = 0;
+  virtual QCString text() const = 0;
 };
 
 /**
@@ -72,6 +69,8 @@ class CitationManager
   private:
     /** Create the database, with an expected maximum of \a size entries */
     CitationManager();
+   ~CitationManager() = default;
+    NON_COPYABLE(CitationManager)
     void insertCrossReferencesForBibFile(const QCString &bibFile);
     QCString getFormulas(const QCString &s);
     QCString replaceFormulas(const QCString &s);

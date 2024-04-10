@@ -21,6 +21,7 @@
 
 #include "qcstring.h"
 #include "linkedmap.h"
+#include "construct.h"
 
 class Definition;
 
@@ -61,10 +62,6 @@ class SectionInfo
         m_lineNr(lineNr), m_fileName(fileName), m_level(level)
     {
       //printf("SectionInfo(%p) fileName=%s\n",(void*)this,qPrint(fileName));
-    }
-    ~SectionInfo()
-    {
-      //printf("~SectionInfo(%p)\n",(void*)this);
     }
 
     // getters
@@ -182,9 +179,9 @@ class SectionManager : public LinkedMap<SectionInfo>
     }
 
   private:
-    SectionManager() {}
-    SectionManager(const SectionManager &other) = delete;
-    SectionManager &operator=(const SectionManager &other) = delete;
+    SectionManager() = default;
+   ~SectionManager() = default;
+    NON_COPYABLE(SectionManager)
 };
 
 

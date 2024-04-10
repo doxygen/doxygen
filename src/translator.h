@@ -22,18 +22,19 @@
 #include "config.h"
 #include "datetime.h"
 #include "index.h"
+#include "construct.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator
 {
   public:
+    ABSTRACT_BASE_CLASS(Translator)
 
     /*! This method is used to provide warning message that is displayed
      *  if the user chooses a language whose translation is not up to date.
      *  It is implemented by the adapter classes.
      */
     virtual QCString updateNeededMessage() { return QCString(); }
-    virtual ~Translator() = default;
 
     // Please, have a look at comments inside the translator_en.h file
     // to learn the meaning of the following methods.  The translator_en.h

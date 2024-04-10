@@ -31,11 +31,8 @@ class XMLCodeParser : public CodeParserInterface
 {
   public:
     XMLCodeParser();
-    XMLCodeParser(const XMLCodeParser &) = delete;
-    XMLCodeParser &operator=(XMLCodeParser &) = delete;
-    XMLCodeParser(XMLCodeParser &&) = delete;
-    XMLCodeParser &operator=(XMLCodeParser &&) = delete;
     virtual ~XMLCodeParser();
+    NON_COPYABLE(XMLCodeParser)
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,

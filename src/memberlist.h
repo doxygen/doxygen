@@ -23,6 +23,7 @@
 #include "linkedmap.h"
 #include "types.h"
 #include "membergroup.h"
+#include "construct.h"
 
 class GroupDef;
 
@@ -108,6 +109,7 @@ class MemberList : public MemberVector
   public:
     MemberList(MemberListType lt,MemberListContainer container);
    ~MemberList();
+    NON_COPYABLE(MemberList)
     MemberListType listType() const { return m_listType; }
     static QCString listTypeAsString(MemberListType type);
     MemberListContainer container() const { return m_container; }
@@ -164,6 +166,7 @@ class MemberLists : public std::vector< std::unique_ptr<MemberList> >
 {
   public:
     MemberLists() = default;
+   ~MemberLists() = default;
     const std::unique_ptr<MemberList> &get(MemberListType lt,MemberListContainer con)
     {
       // find the list with the given type
@@ -175,8 +178,7 @@ class MemberLists : public std::vector< std::unique_ptr<MemberList> >
     }
 
   private:
-    MemberLists(const MemberLists &) = delete;
-    MemberLists &operator=(const MemberLists &) = delete;
+    ONLY_DEFAULT_MOVABLE(MemberLists)
 };
 
 

@@ -30,6 +30,7 @@
 #include "htmlentity.h"
 #include "growvector.h"
 #include "section.h"
+#include "construct.h"
 
 class MemberDef;
 class Definition;
@@ -80,13 +81,8 @@ class DocNode
   public:
     /*! Creates a new node */
     DocNode(DocParser *parser,DocNodeVariant *parent) : m_parser(parser), m_parent(parent) {}
-
-    // allow nodes to be moved but not copied
-    DocNode(const DocNode &) = delete;
-    DocNode &operator=(const DocNode &) = delete;
-    DocNode(DocNode &&) = default;
-    DocNode &operator=(DocNode &&) = default;
    ~DocNode() = default;
+    ONLY_DEFAULT_MOVABLE(DocNode)
 
     /*! Returns the parent of this node or nullptr for the root node. */
     DocNodeVariant *parent() { return m_parent; }

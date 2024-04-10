@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
 
 class Definition;
 class MemberDef;
@@ -25,8 +26,8 @@ class Sitemap
 {
   public:
     Sitemap();
-    ~Sitemap();
-    Sitemap(Sitemap &&);
+   ~Sitemap();
+    ONLY_MOVABLE_DECL(Sitemap)
 
     void initialize();
     void finalize();
@@ -53,8 +54,8 @@ class Crawlmap
 {
   public:
     Crawlmap();
-    ~Crawlmap();
-    Crawlmap(Crawlmap &&);
+   ~Crawlmap();
+    ONLY_MOVABLE_DECL(Crawlmap)
 
     void initialize();
     void finalize();

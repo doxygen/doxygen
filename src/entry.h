@@ -124,6 +124,9 @@ class Entry
 
     Entry();
     Entry(const Entry &);
+    Entry &operator=(const Entry &) = delete;
+    Entry(Entry &&) = delete;
+    Entry &operator=(Entry &&) = delete;
    ~Entry();
 
     /*! Returns the parent for this Entry or nullptr if this entry has no parent. */
@@ -259,7 +262,6 @@ class Entry
   private:
     Entry         *m_parent;    //!< parent node in the tree
     std::vector< std::shared_ptr<Entry> > m_sublist;
-    Entry &operator=(const Entry &);
     FileDef       *m_fileDef;
 };
 

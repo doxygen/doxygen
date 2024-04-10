@@ -56,11 +56,6 @@ IDocParserPtr createDocParser()
   return std::make_unique<DocParser>();
 }
 
-//---------------------------------------------------------------------------
-DocParser::~DocParser()
-{
-}
-
 void DocParser::pushContext()
 {
   //QCString indent;
