@@ -3331,6 +3331,17 @@ The following block name is set based on whether or not a feature is used in the
 ]]>
       </docs>
     </option>
+    <option type='list' id='RTF_EXTRA_FILES' format='file' depends='GENERATE_RTF'>
+      <docs>
+<![CDATA[
+ The \c RTF_EXTRA_FILES tag can be used to specify one or more extra images
+ or other source files which should be copied to the \ref cfg_rtf_output "RTF_OUTPUT"
+ output directory.
+ Note that the files will be copied as-is; there are no commands or markers
+ available.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Man' docs='Configuration options related to the man page output'>
     <option type='bool' id='GENERATE_MAN' defval='0'>
