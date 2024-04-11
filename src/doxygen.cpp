@@ -12544,6 +12544,7 @@ void generateOutput()
   {
     copyLogo(Config_getString(RTF_OUTPUT));
     copyIcon(Config_getString(RTF_OUTPUT));
+    copyExtraFiles(Config_getList(RTF_EXTRA_FILES),"RTF_EXTRA_FILES",Config_getString(RTF_OUTPUT));
   }
 
   FormulaManager &fm = FormulaManager::instance();

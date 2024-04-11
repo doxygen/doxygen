@@ -53,6 +53,8 @@
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
 
+static StringSet removeSet;
+
 static QCString dateToRTFDateString()
 {
   auto tm = getCurrentDateTime();
@@ -2204,7 +2206,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
  * VERY brittle routine inline RTF's included by other RTF's.
  * it is recursive and ugly.
  */
-static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool bIncludeHeader=TRUE)
+static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool bIncludeHeader=true, bool removeFile = true)
 {
   static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
   std::ifstream f = Portable::openInputStream(infName);
@@ -2267,7 +2269,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   }
   f.close();
   // remove temporary file
-  if (!rtfDebug) d.remove(infName.str());
+  if (!rtfDebug && removeFile) removeSet.insert(FileInfo(d.filePath(infName.str())).absFilePath());
   return TRUE;
 }
 
@@ -2419,6 +2421,8 @@ err:
 bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &name)
 {
   static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
+  QCString rtfOutput = Config_getString(RTF_OUTPUT);
+
   Dir d(path.str());
   // store the original directory
   if (!d.exists())
@@ -2444,12 +2448,12 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   }
   TextStream outt(&f);
 
-  if (!preProcessFile(thisDir,mainRTFName,outt))
+  if (!preProcessFile(thisDir,mainRTFName,outt,true,false))
   {
     // it failed, remove the temp file
     outt.flush();
     f.close();
-    if (!rtfDebug) thisDir.remove(combinedName.str());
+    if (!rtfDebug) removeSet.insert(FileInfo(thisDir.filePath(combinedName.str())).absFilePath());
     Dir::setCurrent(oldDir);
     return FALSE;
   }
@@ -2468,6 +2472,12 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   thisDir.rename(combinedName.str(),mainRTFName.str());
 
   testRTFOutput(mainRTFName);
+
+  for (auto &s : removeSet)
+  {
+    QCString s1(s.c_str());
+    if (s1.startsWith(rtfOutput)) Portable::unlink(s1);
+  }
 
   Dir::setCurrent(oldDir);
   return TRUE;
