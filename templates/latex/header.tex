@@ -4,7 +4,16 @@
   % to overcome problems with too many open files
   \let\mypdfximage\pdfximage\def\pdfximage{\immediate\mypdfximage}
 
-  \pdfminorversion=7
+  \RequirePackage{iftex}
+  \ifluatex
+    \directlua{pdf.setminorversion(7)}
+  \fi
+  \ifxetex
+    \special{pdf:minorversion 7}
+  \fi
+  \ifpdftex
+    \pdfminorversion=7
+  \fi
 
   % Set document class depending on configuration
 %%BEGIN COMPACT_LATEX
@@ -33,14 +42,22 @@
   \let\protected@wlog\@@protected@wlog
   \makeatother
   \IfFormatAtLeastTF{2016/01/01}{}{\usepackage{fixltx2e}} % for \textsubscript
-  \IfFormatAtLeastTF{2015/01/01}{\pdfsuppresswarningpagegroup=1}{}
+  \ifpdftex
+    \IfFormatAtLeastTF{2015/01/01}{\pdfsuppresswarningpagegroup=1}{}
+  \fi
 
   \usepackage{doxygen}
 
   $extralatexstylesheet
 
   \usepackage{graphicx}
-  \usepackage[utf8]{inputenc}
+  \iftutex
+    \usepackage{fontspec}
+    \defaultfontfeatures{Ligatures={TeX}}
+    \usepackage{unicode-math}
+  \else
+    \usepackage[utf8]{inputenc}
+  \fi
   \usepackage{makeidx}
   \PassOptionsToPackage{warn}{textcomp}
   \usepackage{textcomp}
@@ -53,7 +70,10 @@
   % Define default fonts
   % Font selection
 %%BEGIN LATEX_FONTENC
-  \usepackage[$latexfontenc]{fontenc}
+  \iftutex
+  \else
+    \usepackage[$latexfontenc]{fontenc}
+  \fi
 %%END LATEX_FONTENC
 
   % set main and monospaced font
@@ -167,16 +187,19 @@
   % Hyperlinks
 %%BEGIN PDF_HYPERLINKS
     % Hyperlinks (required, but should be loaded last)
-    \ifpdf
-      \usepackage[pdftex,pagebackref=true,unicode,psdextra]{hyperref}
+    \ifpdftex
+      \usepackage[pdftex,pagebackref=true]{hyperref}
     \else
       \ifxetex
-        \usepackage[pagebackref=true]{hyperref}
+        \usepackage[xetex,pagebackref=true]{hyperref}
       \else
-        \usepackage[ps2pdf,pagebackref=true]{hyperref}
+        \ifluatex
+          \usepackage[luatex,pagebackref=true]{hyperref}
+        \else
+          \usepackage[ps2pdf,pagebackref=true]{hyperref}
+        \fi
       \fi
     \fi
-
     \hypersetup{%
       colorlinks=true,%
       linkcolor=blue,%
