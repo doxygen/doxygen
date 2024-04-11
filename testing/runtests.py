@@ -200,7 +200,7 @@ class Tester:
         if (self.args.noredir):
             redir=''
 
-        if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
+        if os.system('%s %s %s/Doxyfile %s' % (self.args.doxygen,self.args.doxygen_dbg,self.test_out,redir))!=0:
             print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
             sys.exit(1)
 
@@ -619,6 +619,8 @@ def main():
         'update the reference file(s) for the given test',action="store_true")
     parser.add_argument('--doxygen',nargs='?',default='doxygen',help=
         'path/name of the doxygen executable')
+    parser.add_argument('--doxygen_dbg',nargs='?',default='',help=
+        'the doxygen debugging arguments')
     parser.add_argument('--xmllint',nargs='?',default='xmllint',help=
         'path/name of the xmllint executable')
     parser.add_argument('--id',nargs='+',dest='ids',action='append',type=int,help=
