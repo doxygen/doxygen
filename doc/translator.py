@@ -570,6 +570,8 @@ class Transl:
                     pass
                 elif tokenId == 'rcurly':
                     status = 11         # expected end of class
+                elif tokenId == 'id' and tokenStr == 'ABSTRACT_BASE_CLASS':
+                    status = 18
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
@@ -709,6 +711,16 @@ class Transl:
                     prototype += tokenStr
                     uniPrototype += tokenStr
                     status = 7
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+
+            elif status == 18:    # start of the ABSTRACT_BASE_CLASS
+                if tokenId == 'lpar':
+                    pass
+                elif tokenId == 'rpar':
+                    status = 2
+                elif tokenId == 'id':
+                    pass
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 

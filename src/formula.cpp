@@ -191,6 +191,7 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
   {
     TextStream t(&f);
     t << "\\documentclass{article}\n";
+    t << "\\usepackage{iftex}\n";
     t << "\\usepackage{ifthen}\n";
     t << "\\usepackage{epsfig}\n"; // for those who want to include images
     t << "\\usepackage[utf8]{inputenc}\n"; // looks like some older distributions with newunicode package 1.1 need this option.
