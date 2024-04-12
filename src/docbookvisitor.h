@@ -30,9 +30,8 @@ class TextStream;
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor
 {
-    public:
+  public:
     DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
-    ~DocbookDocVisitor();
     //-----------------------------------------
     template<class T>
     void visitChildren(const T &t)

@@ -54,6 +54,8 @@ class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
 class NamespaceDef : public Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(NamespaceDef)
+
     virtual DefType definitionType() const = 0;
 
     // ---- getters
@@ -106,6 +108,7 @@ class NamespaceDef : public Definition
 class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
 {
   public:
+    ABSTRACT_BASE_CLASS(NamespaceDefMutable)
 
     // --- setters/actions
     virtual void setMetaData(const QCString &m) = 0;

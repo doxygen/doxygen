@@ -20,6 +20,7 @@
 
 #include "qcstring.h"
 #include "classdef.h"
+#include "construct.h"
 
 class Definition;
 class FileDef;
@@ -32,6 +33,7 @@ class SymbolResolver
   public:
     explicit SymbolResolver(const FileDef *fileScope = nullptr);
    ~SymbolResolver();
+    NON_COPYABLE(SymbolResolver)
 
     // actions
 

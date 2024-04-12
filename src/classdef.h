@@ -103,6 +103,8 @@ using ClassDefSet = std::unordered_set<const ClassDef*>;
 class ClassDef : public Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(ClassDef)
+
     /** The various compound types */
     enum CompoundType { Class,     //=Entry::CLASS_SEC,
                         Struct,    //=Entry::STRUCT_SEC,
@@ -408,6 +410,8 @@ class ClassDef : public Definition
 class ClassDefMutable : public DefinitionMutable, public ClassDef
 {
   public:
+    ABSTRACT_BASE_CLASS(ClassDefMutable)
+
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------

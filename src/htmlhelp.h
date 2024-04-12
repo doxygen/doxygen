@@ -21,6 +21,7 @@
 
 #include <memory>
 #include "qcstring.h"
+#include "construct.h"
 
 class Definition;
 class MemberDef;
@@ -59,10 +60,10 @@ class HtmlHelp
       TOOL,             TOOL_NEW
     };
   public:
-    //static HtmlHelp *getInstance();
     HtmlHelp();
     ~HtmlHelp();
-    HtmlHelp(HtmlHelp &&);
+    ONLY_MOVABLE_DECL(HtmlHelp)
+
     void initialize();
     void finalize();
     void incContentsDepth();

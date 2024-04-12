@@ -417,7 +417,9 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
   public:
     ClassDefAliasImpl(const Definition *newScope,const ClassDef *cd)
       : DefinitionAliasMixin(newScope,cd) { init(); }
-    ~ClassDefAliasImpl() override { deinit(); }
+   ~ClassDefAliasImpl() override { deinit(); }
+    NON_COPYABLE(ClassDefAliasImpl)
+
     DefType definitionType() const override { return TypeClass; }
 
     const ClassDef *getCdAlias() const { return toClassDef(getAlias()); }

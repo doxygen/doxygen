@@ -128,8 +128,6 @@ class TreeDiagram
     iterator end()   { return m_rows.end();    }
   private:
     bool layoutTree(DiagramItem *root,uint32_t row);
-    TreeDiagram &operator=(const TreeDiagram &);
-    TreeDiagram(const TreeDiagram &);
     Vec m_rows;
 };
 

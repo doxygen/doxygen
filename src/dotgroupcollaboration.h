@@ -30,6 +30,8 @@ class DotGroupCollaboration : public DotGraph
   public :
     DotGroupCollaboration(const GroupDef* gd);
    ~DotGroupCollaboration();
+    NON_COPYABLE(DotGroupCollaboration)
+
     QCString writeGraph(TextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
                         const QCString &path,const QCString &fileName,const QCString &relPath,
                         bool writeImageMap=TRUE,int graphId=-1);

@@ -98,6 +98,7 @@ bool compareFileDefs(const FileDef *fd1, const FileDef *fd2);
 class FileDef : public DefinitionMutable, public Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(FileDef)
     // ----------------------------------------------------------------------
 
     virtual DefType definitionType() const = 0;

@@ -28,6 +28,8 @@ class DotCallGraph : public DotGraph
   public:
     DotCallGraph(const MemberDef *md,bool inverse);
     ~DotCallGraph();
+    NON_COPYABLE(DotCallGraph)
+
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;

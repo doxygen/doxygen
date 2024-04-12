@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "qcstring.h"
+#include "construct.h"
 
 class OutputCodeList;
 class Definition;
@@ -39,6 +40,7 @@ class CodeFragmentManager
   private:
     CodeFragmentManager();
     ~CodeFragmentManager();
+    NON_COPYABLE(CodeFragmentManager)
 
     struct Private;
     std::unique_ptr<Private> p;

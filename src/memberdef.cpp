@@ -58,6 +58,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
               const QCString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData);
+    NON_COPYABLE(MemberDefImpl)
 
     DefType definitionType() const override        { return TypeMember; }
           MemberDef *resolveAlias() override       { return this; }
@@ -373,10 +374,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool _hasVisibleCallerGraph() const;
     bool _isAnonymousBitField() const;
 
-    // disable copying of member defs
-    MemberDefImpl(const MemberDefImpl &);
-    MemberDefImpl &operator=(const MemberDefImpl &);
-
 
     void init(Definition *def,const QCString &t,const QCString &a,const QCString &e,
               Protection p,Specifier v,bool s,Relationship r,
@@ -527,6 +524,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     MemberDefAliasImpl(const Definition *newScope,const MemberDef *md)
     : DefinitionAliasMixin(newScope,md), m_memberGroup(nullptr) { init(); }
     ~MemberDefAliasImpl() override { deinit(); }
+    NON_COPYABLE(MemberDefAliasImpl)
+
     DefType definitionType() const override { return TypeMember; }
 
     const MemberDef *getMdAlias() const            { return toMemberDef(getAlias()); }
@@ -1427,113 +1426,100 @@ MemberDefImpl::MemberDefImpl(const QCString &df,int dl,int dc,
   m_isDestructorCached  = 0;
 }
 
-MemberDefImpl::MemberDefImpl(const MemberDefImpl &md) : DefinitionMixin(md)
-{
-  m_classDef                       = md.m_classDef                       ;
-  m_fileDef                        = md.m_fileDef                        ;
-  m_moduleDef                      = md.m_moduleDef                      ;
-  m_nspace                         = md.m_nspace                         ;
-  m_enumScope                      = md.m_enumScope                      ;
-  m_livesInsideEnum                = md.m_livesInsideEnum                ;
-  m_annEnumType                    = md.m_annEnumType                    ;
-  m_enumFields                     = md.m_enumFields                     ;
-  m_redefines                      = md.m_redefines                      ;
-  m_redefinedBy                    = md.m_redefinedBy                    ;
-  m_memDef                         = md.m_memDef                         ;
-  m_memDec                         = md.m_memDec                         ;
-  m_relatedAlso                    = md.m_relatedAlso                    ;
-  m_examples                       = md.m_examples                       ;
-  m_type                           = md.m_type                           ;
-  m_accessorType                   = md.m_accessorType                   ;
-  m_accessorClass                  = md.m_accessorClass                  ;
-  m_args                           = md.m_args                           ;
-  m_def                            = md.m_def                            ;
-  m_anc                            = md.m_anc                            ;
-  m_virt                           = md.m_virt                           ;
-  m_prot                           = md.m_prot                           ;
-  m_decl                           = md.m_decl                           ;
-  m_bitfields                      = md.m_bitfields                      ;
-  m_read                           = md.m_read                           ;
-  m_write                          = md.m_write                          ;
-  m_exception                      = md.m_exception                      ;
-  m_initializer                    = md.m_initializer                    ;
-  m_extraTypeChars                 = md.m_extraTypeChars                 ;
-  m_enumBaseType                   = md.m_enumBaseType                   ;
-  m_requiresClause                 = md.m_requiresClause                 ;
-  m_initLines                      = md.m_initLines                      ;
-  m_memSpec                        = md.m_memSpec                        ;
-  m_vhdlSpec                       = md.m_vhdlSpec                       ;
-  m_mtype                          = md.m_mtype                          ;
-  m_maxInitLines                   = md.m_maxInitLines                   ;
-  m_userInitLines                  = md.m_userInitLines                  ;
-  m_annMemb                        = md.m_annMemb                        ;
-  m_defArgList                     = md.m_defArgList                     ;
-  m_declArgList                    = md.m_declArgList                    ;
-  m_tArgList                       = md.m_tArgList                       ;
-  m_typeConstraints                = md.m_typeConstraints                ;
-  m_templateMaster                 = md.m_templateMaster                 ;
-  m_formalTemplateArguments        = md.m_formalTemplateArguments        ;
-  m_defTmpArgLists                 = md.m_defTmpArgLists                 ;
-  m_metaData                       = md.m_metaData                       ;
-  m_cachedAnonymousType            = md.m_cachedAnonymousType            ;
-  m_sectionMap                     = md.m_sectionMap                     ;
-  m_groupAlias                     = md.m_groupAlias                     ;
-  m_grpId                          = md.m_grpId                          ;
-  m_memberGroup                    = md.m_memberGroup                    ;
-  m_group                          = md.m_group                          ;
-  m_grouppri                       = md.m_grouppri                       ;
-  m_groupFileName                  = md.m_groupFileName                  ;
-  m_groupStartLine                 = md.m_groupStartLine                 ;
-  m_groupMember                    = md.m_groupMember                    ;
-  m_isTypedefValCached             = md.m_isTypedefValCached             ;
-  m_cachedTypedefValue             = md.m_cachedTypedefValue             ;
-  m_cachedTypedefTemplSpec         = md.m_cachedTypedefTemplSpec         ;
-  m_cachedResolvedType             = md.m_cachedResolvedType             ;
-  m_docProvider                    = md.m_docProvider                    ;
-  m_explicitOutputFileBase         = md.m_explicitOutputFileBase         ;
-  m_qualifiers                     = md.m_qualifiers                     ;
-  m_implOnly                       = md.m_implOnly                       ;
-  m_hasDocumentedParams            = md.m_hasDocumentedParams            ;
-  m_hasDocumentedReturnType        = md.m_hasDocumentedReturnType        ;
-  m_isDMember                      = md.m_isDMember                      ;
-  m_related                        = md.m_related                        ;
-  m_stat                           = md.m_stat                           ;
-  m_proto                          = md.m_proto                          ;
-  m_docEnumValues                  = md.m_docEnumValues                  ;
-  m_annScope                       = md.m_annScope                       ;
-  m_hasDetailedDescriptionCached   = md.m_hasDetailedDescriptionCached   ;
-  m_detailedDescriptionCachedValue = md.m_detailedDescriptionCachedValue ;
-  m_hasCallGraph                   = md.m_hasCallGraph                   ;
-  m_hasCallerGraph                 = md.m_hasCallerGraph                 ;
-  m_hasReferencedByRelation        = md.m_hasReferencedByRelation        ;
-  m_hasReferencesRelation          = md.m_hasReferencesRelation          ;
-  m_hasInlineSource                = md.m_hasInlineSource                ;
-  m_explExt                        = md.m_explExt                        ;
-  m_tspec                          = md.m_tspec                          ;
-  m_groupHasDocs                   = md.m_groupHasDocs                   ;
-  m_docsForDefinition              = md.m_docsForDefinition              ;
-  m_category                       = md.m_category                       ;
-  m_categoryRelation               = md.m_categoryRelation               ;
-  m_declFileName                   = md.m_declFileName                   ;
-  m_declLine                       = md.m_declLine                       ;
-  m_declColumn                     = md.m_declColumn                     ;
-  m_numberOfFlowKW                 = md.m_numberOfFlowKW                 ;
-
-  m_isLinkableCached    = 0;
-  m_isConstructorCached = 0;
-  m_isDestructorCached  = 0;
-}
-
 std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
 {
-  //MemberDef *result = new MemberDef(getDefFileName(),getDefLine(),name());
-  std::unique_ptr<MemberDefImpl> result(new MemberDefImpl(*this));
+  std::unique_ptr<MemberDefImpl> result(new MemberDefImpl(
+        getDefFileName(),getDefLine(),getDefColumn(),m_type,localName(),m_args,m_exception,
+        m_prot,m_virt,m_stat,m_related,m_mtype,m_tArgList,m_defArgList,m_metaData));
   // first copy everything by reference
-  result->m_defArgList = m_defArgList;
-  result->m_tArgList = m_tArgList;
-  result->m_typeConstraints = m_typeConstraints;
+  result->m_typeConstraints                = m_typeConstraints                ;
+  result->m_declArgList                    = m_declArgList                    ;
+  result->m_classDef                       = m_classDef                       ;
+  result->m_fileDef                        = m_fileDef                        ;
+  result->m_moduleDef                      = m_moduleDef                      ;
+  result->m_nspace                         = m_nspace                         ;
+  result->m_enumScope                      = m_enumScope                      ;
+  result->m_livesInsideEnum                = m_livesInsideEnum                ;
+  result->m_annEnumType                    = m_annEnumType                    ;
+  result->m_enumFields                     = m_enumFields                     ;
+  result->m_redefines                      = m_redefines                      ;
+  result->m_redefinedBy                    = m_redefinedBy                    ;
+  result->m_memDef                         = m_memDef                         ;
+  result->m_memDec                         = m_memDec                         ;
+  result->m_relatedAlso                    = m_relatedAlso                    ;
+  result->m_examples                       = m_examples                       ;
+  result->m_accessorType                   = m_accessorType                   ;
+  result->m_accessorClass                  = m_accessorClass                  ;
+  result->m_def                            = m_def                            ;
+  result->m_anc                            = m_anc                            ;
+  result->m_decl                           = m_decl                           ;
+  result->m_bitfields                      = m_bitfields                      ;
+  result->m_read                           = m_read                           ;
+  result->m_write                          = m_write                          ;
+  result->m_exception                      = m_exception                      ;
+  result->m_initializer                    = m_initializer                    ;
+  result->m_extraTypeChars                 = m_extraTypeChars                 ;
+  result->m_enumBaseType                   = m_enumBaseType                   ;
+  result->m_requiresClause                 = m_requiresClause                 ;
+  result->m_initLines                      = m_initLines                      ;
+  result->m_memSpec                        = m_memSpec                        ;
+  result->m_vhdlSpec                       = m_vhdlSpec                       ;
+  result->m_maxInitLines                   = m_maxInitLines                   ;
+  result->m_userInitLines                  = m_userInitLines                  ;
+  result->m_annMemb                        = m_annMemb                        ;
+  result->m_defArgList                     = m_defArgList                     ;
+  result->m_declArgList                    = m_declArgList                    ;
+  result->m_tArgList                       = m_tArgList                       ;
+  result->m_typeConstraints                = m_typeConstraints                ;
+  result->m_templateMaster                 = m_templateMaster                 ;
+  result->m_formalTemplateArguments        = m_formalTemplateArguments        ;
+  result->m_defTmpArgLists                 = m_defTmpArgLists                 ;
+  result->m_cachedAnonymousType            = m_cachedAnonymousType            ;
+  result->m_sectionMap                     = m_sectionMap                     ;
+  result->m_groupAlias                     = m_groupAlias                     ;
+  result->m_grpId                          = m_grpId                          ;
+  result->m_memberGroup                    = m_memberGroup                    ;
+  result->m_group                          = m_group                          ;
+  result->m_grouppri                       = m_grouppri                       ;
+  result->m_groupFileName                  = m_groupFileName                  ;
+  result->m_groupStartLine                 = m_groupStartLine                 ;
+  result->m_groupMember                    = m_groupMember                    ;
+  result->m_isTypedefValCached             = m_isTypedefValCached             ;
+  result->m_cachedTypedefValue             = m_cachedTypedefValue             ;
+  result->m_cachedTypedefTemplSpec         = m_cachedTypedefTemplSpec         ;
+  result->m_cachedResolvedType             = m_cachedResolvedType             ;
+  result->m_docProvider                    = m_docProvider                    ;
+  result->m_explicitOutputFileBase         = m_explicitOutputFileBase         ;
+  result->m_qualifiers                     = m_qualifiers                     ;
+  result->m_implOnly                       = m_implOnly                       ;
+  result->m_hasDocumentedParams            = m_hasDocumentedParams            ;
+  result->m_hasDocumentedReturnType        = m_hasDocumentedReturnType        ;
+  result->m_isDMember                      = m_isDMember                      ;
+  result->m_proto                          = m_proto                          ;
+  result->m_docEnumValues                  = m_docEnumValues                  ;
+  result->m_annScope                       = m_annScope                       ;
+  result->m_hasDetailedDescriptionCached   = m_hasDetailedDescriptionCached   ;
+  result->m_detailedDescriptionCachedValue = m_detailedDescriptionCachedValue ;
+  result->m_hasCallGraph                   = m_hasCallGraph                   ;
+  result->m_hasCallerGraph                 = m_hasCallerGraph                 ;
+  result->m_hasReferencedByRelation        = m_hasReferencedByRelation        ;
+  result->m_hasReferencesRelation          = m_hasReferencesRelation          ;
+  result->m_hasInlineSource                = m_hasInlineSource                ;
+  result->m_explExt                        = m_explExt                        ;
+  result->m_tspec                          = m_tspec                          ;
+  result->m_groupHasDocs                   = m_groupHasDocs                   ;
+  result->m_docsForDefinition              = m_docsForDefinition              ;
+  result->m_category                       = m_category                       ;
+  result->m_categoryRelation               = m_categoryRelation               ;
+  result->m_declFileName                   = m_declFileName                   ;
+  result->m_declLine                       = m_declLine                       ;
+  result->m_declColumn                     = m_declColumn                     ;
+  result->m_numberOfFlowKW                 = m_numberOfFlowKW                 ;
   result->setDefinitionTemplateParameterLists(m_defTmpArgLists);
-  result->m_declArgList = m_declArgList;
+
+  result->m_isLinkableCached    = 0;
+  result->m_isConstructorCached = 0;
+  result->m_isDestructorCached  = 0;
   return result;
 }
 

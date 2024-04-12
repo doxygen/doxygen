@@ -32,6 +32,9 @@ class DotGfxHierarchyTable : public DotGraph
 {
   public:
     DotGfxHierarchyTable(const QCString &prefix="",ClassDef::CompoundType ct=ClassDef::Class);
+   ~DotGfxHierarchyTable() = default;
+    NON_COPYABLE(DotGfxHierarchyTable)
+
     void createGraph(DotNode *rootNode,TextStream &t,const QCString &path,
                      const QCString &fileName,int id);
     void writeGraph(TextStream &t,const QCString &path, const QCString &fileName);

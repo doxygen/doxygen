@@ -156,7 +156,6 @@ using OutputCodeDeferExtension  = OutputCodeDefer<OutputCodeExtension>;
 class OutputCodeRecorder
 {
   public:
-    virtual ~OutputCodeRecorder() = default;
     OutputType type() const { return OutputType::Recorder; }
     void codify(const QCString &s);
     void writeCodeLink(CodeSymbolType type,

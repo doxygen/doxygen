@@ -21,6 +21,7 @@
 
 #include "qcstring.h"
 #include "dir.h"
+#include "construct.h"
 
 class DotNode;
 class TextStream;
@@ -37,6 +38,7 @@ class DotGraph
     DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() = default;
+    NON_COPYABLE(DotGraph);
 
   protected:
     /** returns the node number. */
@@ -98,8 +100,6 @@ class DotGraph
     bool                   m_urlOnly = false;
 
   private:
-    DotGraph(const DotGraph &);
-    DotGraph &operator=(const DotGraph &);
 
     bool prepareDotFile();
     void generateCode(TextStream &t);

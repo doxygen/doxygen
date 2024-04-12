@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include "construct.h"
 
 class QCString;
 
@@ -28,6 +29,8 @@ class Preprocessor
   public:
     Preprocessor();
    ~Preprocessor();
+    NON_COPYABLE(Preprocessor)
+
     void processFile(const QCString &fileName,const std::string &input,std::string &output);
     void addSearchDir(const QCString &dir);
  private:

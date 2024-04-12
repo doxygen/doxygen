@@ -20,6 +20,7 @@
 
 #include "types.h"
 #include "reflist.h"
+#include "construct.h"
 
 #ifdef _MSC_VER
 // To disable 'inherits via dominance' warnings with MSVC.
@@ -74,6 +75,8 @@ struct BodyInfo
 class Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(Definition)
+
     /*! Types of derived classes */
     enum DefType
     {
@@ -291,9 +294,6 @@ class Definition
     virtual void _setSymbolName(const QCString &name) = 0;
     virtual QCString _symbolName() const = 0;
 
-    // ---------------------------------
-    virtual ~Definition() = default;
-
   private:
     friend class DefinitionImpl;
     friend DefinitionMutable* toDefinitionMutable(Definition *);
@@ -305,7 +305,7 @@ class Definition
 class DefinitionMutable
 {
   public:
-
+    ABSTRACT_BASE_CLASS(DefinitionMutable)
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -384,9 +384,6 @@ class DefinitionMutable
     virtual void writeSummaryLinks(OutputList &) const = 0;
     virtual void writeDocAnchorsToTagFile(TextStream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
-
-    // ---------------------------------
-    virtual ~DefinitionMutable() = default;
 
   private:
     friend Definition* toDefinition(DefinitionMutable *);

@@ -51,6 +51,8 @@ class ModuleDef;
 class GroupDef : public DefinitionMutable, public Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(GroupDef)
+
     virtual DefType definitionType() const = 0;
     virtual QCString getOutputFileBase() const = 0;
     virtual QCString anchor() const = 0;

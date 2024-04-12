@@ -18,6 +18,7 @@
 
 #include <memory>
 #include "types.h"
+#include "construct.h"
 
 class Entry;
 class OutlineParserInterface;
@@ -30,6 +31,7 @@ class CommentScanner
   public:
     CommentScanner();
    ~CommentScanner();
+    NON_COPYABLE(CommentScanner)
 
     /** Invokes the comment block parser with the request to parse a
      *  single comment block.

@@ -34,6 +34,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     ConceptDefImpl(const QCString &fileName,int startLine,int startColumn,
                    const QCString &name,const QCString &tagRef=QCString(),const QCString &tagFile=QCString());
    ~ConceptDefImpl();
+    NON_COPYABLE(ConceptDefImpl);
 
     ConceptDef *resolveAlias() { return this; }
 
@@ -103,6 +104,7 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     ConceptDefAliasImpl(const Definition *newScope,const ConceptDef *cd)
       : DefinitionAliasMixin(newScope,cd) { init(); }
     ~ConceptDefAliasImpl() override { deinit(); }
+    NON_COPYABLE(ConceptDefAliasImpl)
 
     const ConceptDef *getCdAlias() const { return toConceptDef(getAlias()); }
     ConceptDef *resolveAlias() { return const_cast<ConceptDef*>(getCdAlias()); }

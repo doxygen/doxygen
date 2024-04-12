@@ -47,7 +47,8 @@ class ModuleDef;
 class MemberDef : public Definition
 {
   public:
-    virtual DefType definitionType() const = 0;
+    ABSTRACT_BASE_CLASS(MemberDef)
+
     // move this member into a different scope
     virtual std::unique_ptr<MemberDef> deepCopy() const =0;
     virtual void moveTo(Definition *) = 0;
@@ -312,6 +313,7 @@ class MemberDef : public Definition
 class MemberDefMutable : public DefinitionMutable, public MemberDef
 {
   public:
+    ABSTRACT_BASE_CLASS(MemberDefMutable)
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----

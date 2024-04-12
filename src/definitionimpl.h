@@ -33,6 +33,10 @@ class DefinitionImpl
         const QCString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=TRUE);
     ~DefinitionImpl();
+    DefinitionImpl(const DefinitionImpl &d);
+    DefinitionImpl &operator=(const DefinitionImpl &d);
+    DefinitionImpl(DefinitionImpl &&d) = delete;
+    DefinitionImpl &operator=(DefinitionImpl &&d) = delete;
 
     const QCString &name() const;
     bool isAnonymous() const;
@@ -124,7 +128,6 @@ class DefinitionImpl
     void _setSymbolName(const QCString &name);
     QCString _symbolName() const;
 
-    DefinitionImpl(const DefinitionImpl &d);
 
   private:
 
@@ -150,7 +153,11 @@ class DefinitionMixin : public Base
         const QCString &defFileName,int defLine,int defColumn,
         const QCString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=TRUE) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
-    ~DefinitionMixin() = default;
+    DefinitionMixin(const DefinitionMixin &) = default;
+    DefinitionMixin &operator=(const DefinitionMixin &) = default;
+    DefinitionMixin(DefinitionMixin &&) = delete;
+    DefinitionMixin &operator=(DefinitionMixin &&) = delete;
+   ~DefinitionMixin() = default;
 
     bool isAlias() const override { return FALSE; }
 
@@ -286,10 +293,6 @@ class DefinitionMixin : public Base
     QCString _symbolName() const override
     { return m_impl._symbolName(); }
 
-  protected:
-
-    DefinitionMixin(const DefinitionMixin &def) = default;
-
   private:
     Definition *toDefinition_() override { return this; }
     DefinitionMutable *toDefinitionMutable_() override { return this; }
@@ -303,6 +306,8 @@ class DefinitionAliasImpl
   public:
     DefinitionAliasImpl(Definition *def,const Definition *scope,const Definition *alias);
     virtual ~DefinitionAliasImpl();
+    NON_COPYABLE(DefinitionAliasImpl)
+
     void init();
     void deinit();
     const QCString &name() const;
@@ -321,11 +326,12 @@ class DefinitionAliasMixin : public Base
   public:
     DefinitionAliasMixin(const Definition *scope,const Definition *alias)
       : m_impl(this,scope,alias), m_scope(scope), m_alias(alias) {}
+    virtual ~DefinitionAliasMixin() = default;
+    NON_COPYABLE(DefinitionAliasMixin)
 
     void init() { m_impl.init(); }
     void deinit() { m_impl.deinit(); }
 
-    virtual ~DefinitionAliasMixin() = default;
 
     bool isAlias() const override { return TRUE; }
 

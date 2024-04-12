@@ -69,6 +69,13 @@ class DeepCopyUniquePtr : public std::unique_ptr<T>
       if (*this!=other) this->reset(other ? new T(*other) : nullptr);
       return *this;
     }
+    DeepCopyUniquePtr(DeepCopyUniquePtr &&other) : std::unique_ptr<T>(std::move(other)) {}
+    DeepCopyUniquePtr &operator=(DeepCopyUniquePtr &&other)
+    {
+      std::unique_ptr<T>::operator=(std::move(other));
+      return *this;
+    }
+   ~DeepCopyUniquePtr() = default;
 };
 
 //! Helper to create an object wrapped in a DeepCopyUniquePtr.

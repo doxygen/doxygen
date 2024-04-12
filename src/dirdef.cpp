@@ -38,7 +38,8 @@ class DirDefImpl : public DefinitionMixin<DirDef>
 {
   public:
     DirDefImpl(const QCString &path);
-    ~DirDefImpl() override;
+   ~DirDefImpl() override;
+    NON_COPYABLE(DirDefImpl)
 
     DefType definitionType() const override { return TypeDir; }
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }

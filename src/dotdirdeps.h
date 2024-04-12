@@ -27,6 +27,8 @@ class DotDirDeps : public DotGraph
   public:
     DotDirDeps(const DirDef *dir);
     ~DotDirDeps();
+    NON_COPYABLE(DotDirDeps)
+
     bool isTrivial() const;
     QCString writeGraph(TextStream &out,
                         GraphOutputFormat gf,

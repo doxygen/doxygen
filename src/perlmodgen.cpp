@@ -40,17 +40,16 @@
 #include "dir.h"
 #include "portable.h"
 #include "moduledef.h"
+#include "construct.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
 class PerlModOutputStream
 {
   public:
-    //QCString m_s;
-    std::ostream *m_t;
+    std::ostream *m_t = nullptr;
 
     PerlModOutputStream(std::ostream &t) : m_t(&t) { }
-   ~PerlModOutputStream() { m_t=nullptr; }
 
     void add(char c);
     void add(const QCString &s);
@@ -91,6 +90,7 @@ public:
   }
 
   virtual ~PerlModOutput() { reset(); }
+  NON_COPYABLE(PerlModOutput)
 
   void reset() { m_stream=nullptr; }
 
@@ -271,7 +271,6 @@ class PerlModDocVisitor : public DocVisitor
 {
   public:
     PerlModDocVisitor(PerlModOutput &);
-    virtual ~PerlModDocVisitor() { }
 
     void finish();
 

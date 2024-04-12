@@ -44,8 +44,7 @@ class HtmlHelpRecoder
   public:
     HtmlHelpRecoder() {}
    ~HtmlHelpRecoder() { finalize(); }
-    HtmlHelpRecoder(const HtmlHelpRecoder &) = delete;
-    HtmlHelpRecoder &operator=(const HtmlHelpRecoder &) = delete;
+    NON_COPYABLE(HtmlHelpRecoder)
 
     void initialize()
     {
@@ -116,6 +115,7 @@ class HtmlHelpIndex
   public:
     HtmlHelpIndex(HtmlHelpRecoder &recoder);
    ~HtmlHelpIndex();
+    NON_COPYABLE(HtmlHelpIndex)
     void addItem(const QCString &first,const QCString &second,
                  const QCString &url, const QCString &anchor,
                  bool hasLink,bool reversed);
@@ -132,9 +132,8 @@ HtmlHelpIndex::HtmlHelpIndex(HtmlHelpRecoder &recoder) : m_recoder(recoder)
 }
 
 /*! Destroys the HtmlHelp index */
-HtmlHelpIndex::~HtmlHelpIndex()
-{
-}
+HtmlHelpIndex::~HtmlHelpIndex() = default;
+
 
 /*! Stores an item in the index if it is not already present.
  *  Items are stored in alphabetical order, by sorting on the
@@ -361,7 +360,7 @@ class HtmlHelp::Private
  */
 HtmlHelp::HtmlHelp() : p(std::make_unique<Private>()) {}
 HtmlHelp::~HtmlHelp() = default;
-HtmlHelp::HtmlHelp(HtmlHelp &&) = default;
+DEFAULT_MOVABLE_IMPL(HtmlHelp)
 
 /*! This will create a contents file (index.hhc) and a index file (index.hhk)
  *  and write the header of those files.

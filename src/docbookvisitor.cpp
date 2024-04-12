@@ -159,11 +159,6 @@ DocbookDocVisitor::DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const QCSt
 DB_VIS_C
   // m_t << "<section>\n";
 }
-DocbookDocVisitor::~DocbookDocVisitor()
-{
-DB_VIS_C
-  // m_t << "</section>\n";
-}
 
 //--------------------------------------
 // visitor functions for leaf nodes

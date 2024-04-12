@@ -3323,10 +3323,6 @@ struct FortranOutlineParser::Private
     fortranscannerYYset_debug(Debug::isFlagSet(Debug::Lex_fortranscanner)?1:0,yyscanner);
 #endif
   }
-  ~Private()
-  {
-    fortranscannerYYlex_destroy(yyscanner);
-  }
 };
 
 FortranOutlineParser::FortranOutlineParser(FortranFormat format)
@@ -3336,6 +3332,7 @@ FortranOutlineParser::FortranOutlineParser(FortranFormat format)
 
 FortranOutlineParser::~FortranOutlineParser()
 {
+  fortranscannerYYlex_destroy(p->yyscanner);
 }
 
 void FortranOutlineParser::parseInput(const QCString &fileName,

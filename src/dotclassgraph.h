@@ -30,6 +30,8 @@ class DotClassGraph : public DotGraph
 public:
   DotClassGraph(const ClassDef *cd,GraphType t);
   ~DotClassGraph();
+  NON_COPYABLE(DotClassGraph)
+
   bool isTrivial() const;
   bool isTooBig() const;
   int numNodes() const;

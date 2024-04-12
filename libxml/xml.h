@@ -55,7 +55,13 @@ class XMLHandlers
 class XMLLocator
 {
   public:
-    virtual ~XMLLocator() {}
+    XMLLocator() = default;
+    XMLLocator(const XMLLocator &) = delete;
+    XMLLocator &operator=(const XMLLocator &) = delete;
+    XMLLocator(XMLLocator &&) = delete;
+    XMLLocator &operator=(XMLLocator &&) = delete;
+    virtual ~XMLLocator() = default;
+
     virtual int lineNr() const = 0;
     virtual std::string fileName() const = 0;
 };
@@ -72,6 +78,10 @@ class XMLParser : public XMLLocator
     XMLParser(const XMLHandlers &handlers);
     /*! Destructor */
    ~XMLParser();
+    XMLParser(const XMLParser &) = delete;
+    XMLParser &operator=(const XMLParser &) = delete;
+    XMLParser(XMLParser &&) = delete;
+    XMLParser &operator=(XMLParser &&) = delete;
 
    using Transcode = bool(std::string &,const char *);
 

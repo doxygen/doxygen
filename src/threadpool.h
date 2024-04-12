@@ -66,6 +66,10 @@ class ThreadPool
     {
       finish();
     }
+    ThreadPool(const ThreadPool &) = delete;
+    ThreadPool &operator=(const ThreadPool &) = delete;
+    ThreadPool(ThreadPool &&) = delete;
+    ThreadPool &operator=(ThreadPool &&) = delete;
 
     /// Queue the callable function \a f for the threads to execute.
     /// A future of the return type of the function is returned to capture the result.

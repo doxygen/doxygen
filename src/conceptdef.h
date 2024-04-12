@@ -26,6 +26,8 @@ class ModuleDef;
 class ConceptDef : public Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(ConceptDef)
+
     virtual DefType definitionType() const = 0;
     virtual QCString getOutputFileBase() const = 0;
     virtual bool hasDetailedDescription() const = 0;
@@ -48,6 +50,8 @@ class ConceptDef : public Definition
 class ConceptDefMutable : public DefinitionMutable, public ConceptDef
 {
   public:
+    ABSTRACT_BASE_CLASS(ConceptDefMutable)
+
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setNamespace(NamespaceDef *nd) = 0;
