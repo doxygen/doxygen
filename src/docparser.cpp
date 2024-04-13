@@ -791,6 +791,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
   if (!context.insideHtmlLink &&
       (resolveRef(context.context,context.token->name,context.inSeeBlock,&compound,&member,TRUE,fd,TRUE)
+       || resolveRef(substitute(context.context,".","::"),context.token->name,context.inSeeBlock,&compound,&member,TRUE,fd,TRUE)
        || (!context.context.isEmpty() &&  // also try with global scope
            resolveRef("",context.token->name,context.inSeeBlock,&compound,&member,FALSE,nullptr,TRUE))
       )

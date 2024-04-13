@@ -731,7 +731,9 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);
     return;
   }
-  else if (resolveLink(context,target,TRUE,&compound,anchor,parser->context.prefix))
+  else if (resolveLink(context,target,true,&compound,anchor,parser->context.prefix) ||
+           resolveLink(substitute(context,".","::"),target,true,&compound,anchor,parser->context.prefix)
+          )
   {
     bool isFile = compound ?
                  (compound->definitionType()==Definition::TypeFile ||
@@ -911,7 +913,9 @@ DocLink::DocLink(DocParser *parser,DocNodeVariant *parent,const QCString &target
   {
     m_refText = m_refText.right(m_refText.length()-1);
   }
-  if (resolveLink(parser->context.context,stripKnownExtensions(target),parser->context.inSeeBlock,&compound,anchor,parser->context.prefix))
+  if (resolveLink(parser->context.context,stripKnownExtensions(target),parser->context.inSeeBlock,&compound,anchor,parser->context.prefix) ||
+      resolveLink(substitute(parser->context.context,".","::"),stripKnownExtensions(target),parser->context.inSeeBlock,&compound,anchor,parser->context.prefix)
+     )
   {
     m_anchor = anchor;
     if (compound && compound->isLinkable())
