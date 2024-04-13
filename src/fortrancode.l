@@ -1371,7 +1371,7 @@ static void startScope(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   DBG_CTX((stderr, "===> startScope %s",yytext));
-  yyextra->scopeStack.push_back(Scope());
+  yyextra->scopeStack.emplace_back();
 }
 
 /** end scope */

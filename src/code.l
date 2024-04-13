@@ -823,7 +823,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                                   var.localDef()->insertBaseClass(bcd->name());
                                                 }
                                               }
-                                              yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(var)));
+                                              yyextra->codeClassMap.emplace(yyextra->curClassName.str(),std::move(var));
                                             }
                                             //printf("yyextra->codeClassList.count()=%d\n",yyextra->codeClassList.count());
                                           }
@@ -843,7 +843,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Bases>{SEP}?({ID}{SEP})*{ID}           {
                                           DBG_CTX((stderr,"%s:addBase(%s)\n",qPrint(yyextra->curClassName),yytext));
-                                          yyextra->curClassBases.push_back(yytext);
+                                          yyextra->curClassBases.emplace_back(yytext);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                         }
 <Bases>"<"                              {
@@ -3928,7 +3928,7 @@ static QCString escapeName(yyscan_t yyscanner,const char *s)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString result;
   result.sprintf("$n%d",yyextra->currentNameId);
-  yyextra->nameMap.emplace(std::make_pair(yyextra->currentNameId,s));
+  yyextra->nameMap.emplace(yyextra->currentNameId,s);
   yyextra->currentNameId++;
   return result;
 }
@@ -3938,7 +3938,7 @@ static QCString escapeObject(yyscan_t yyscanner,const char *s)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString result;
   result.sprintf("$o%d",yyextra->currentObjId);
-  yyextra->objectMap.emplace(std::make_pair(yyextra->currentObjId,s));
+  yyextra->objectMap.emplace(yyextra->currentObjId,s);
   yyextra->currentObjId++;
   return result;
 }
@@ -3948,7 +3948,7 @@ static QCString escapeWord(yyscan_t yyscanner,const char *s)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString result;
   result.sprintf("$w%d",yyextra->currentWordId);
-  yyextra->wordMap.emplace(std::make_pair(yyextra->currentWordId,s));
+  yyextra->wordMap.emplace(yyextra->currentWordId,s);
   yyextra->currentWordId++;
   return result;
 }
@@ -3958,7 +3958,7 @@ static QCString escapeComment(yyscan_t yyscanner,const char *s)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString result;
   result.sprintf("$d%d",yyextra->currentCommentId);
-  yyextra->commentMap.emplace(std::make_pair(yyextra->currentCommentId,s));
+  yyextra->commentMap.emplace(yyextra->currentCommentId,s);
   yyextra->currentCommentId++;
   return result;
 }
@@ -4055,7 +4055,7 @@ static void saveObjCContext(yyscan_t yyscanner)
   newCtx->method = 0;
   DBG_CTX((stderr,"save state=%d\n",YY_START));
   yyextra->currentCtx = newCtx.get();
-  yyextra->contextMap.emplace(std::make_pair(yyextra->currentCtxId,std::move(newCtx)));
+  yyextra->contextMap.emplace(yyextra->currentCtxId,std::move(newCtx));
   yyextra->braceCount = 0;
   yyextra->currentCtxId++;
 }

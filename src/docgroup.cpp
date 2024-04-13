@@ -112,7 +112,7 @@ void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
   //  	qPrint(e->name),e->section,m_autoGroupStack.size());
   if (e->section.isGroupDoc()) // auto group
   {
-    m_autoGroupStack.push_back(Grouping(e->name,e->groupingPri()));
+    m_autoGroupStack.emplace_back(e->name,e->groupingPri());
   }
   else // start of a member group
   {
@@ -194,7 +194,7 @@ void DocGroup::initGroupInfo(Entry *e)
     //printf("Appending group %s to %s: count=%zu entry=%p\n",
     //	qPrint(m_autoGroupStack.back().groupname),
     //    qPrint(e->name),e->groups.size(),(void*)e);
-    e->groups.push_back(Grouping(m_autoGroupStack.back()));
+    e->groups.emplace_back(m_autoGroupStack.back());
   }
 }
 

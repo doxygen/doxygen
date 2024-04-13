@@ -1693,7 +1693,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the qualifier command ----- */
 <Qualifier>{LABELID}                    { // unquoted version, simple label
-                                          yyextra->current->qualifiers.push_back(yytext);
+                                          yyextra->current->qualifiers.emplace_back(yytext);
                                           BEGIN( Comment );
                                         }
 <Qualifier>"\""[^\"]*"\""               { // quotes version, add without quotes
@@ -2084,7 +2084,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
-                                          yyextra->current->extends.push_back(BaseInfo(QCString(yytext),Protection::Public,Specifier::Normal));
+                                          yyextra->current->extends.emplace_back(QCString(yytext),Protection::Public,Specifier::Normal);
                                           BEGIN(SubpageTitle);
                                         }
 <SubpageLabel>{DOCNL}                   { // missing argument
@@ -2292,12 +2292,12 @@ STopt  [^\n@\\]*
 
 <SkipGuardedSection>{CMD}"ifnot"/{NW}   {
                                           yyextra->guardType = Guard_IfNot;
-                                          yyextra->guards.push(GuardedSection(false));
+                                          yyextra->guards.emplace(false);
                                           BEGIN( GuardParam );
                                         }
 <SkipGuardedSection>{CMD}"if"/{NW}      {
                                           yyextra->guardType = Guard_If;
-                                          yyextra->guards.push(GuardedSection(false));
+                                          yyextra->guards.emplace(false);
                                           BEGIN( GuardParam );
                                         }
 <SkipGuardedSection>{CMD}"endif"/{NW}   {
@@ -2523,8 +2523,8 @@ STopt  [^\n@\\]*
   /* ----- handle argument of ingroup command ------- */
 
 <InGroupParam>{LABELID}                 { // group id
-                                          yyextra->current->groups.push_back(
-                                             Grouping(QCString(yytext), Grouping::GROUPING_INGROUP)
+                                          yyextra->current->groups.emplace_back(
+                                             QCString(yytext), Grouping::GROUPING_INGROUP
                                           );
                                           yyextra->inGroupParamFound=TRUE;
                                         }
@@ -2617,8 +2617,8 @@ STopt  [^\n@\\]*
   /* ----- handle argument of inherit command ------- */
 
 <InheritParam>({ID}("::"|"."))*{ID}     { // found argument
-                                          yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal)
+                                          yyextra->current->extends.emplace_back(
+                                            removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2640,8 +2640,8 @@ STopt  [^\n@\\]*
   /* ----- handle argument of extends and implements commands ------- */
 
 <ExtendsParam>({ID}("::"|"."))*{ID}     { // found argument
-                                          yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal)
+                                          yyextra->current->extends.emplace_back(
+                                            removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal
                                           );
                                           BEGIN( Comment );
                                         }
@@ -3488,12 +3488,12 @@ static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
   yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
   if (yyextra->guards.empty())
   {
-    yyextra->guards.push(GuardedSection(true));
+    yyextra->guards.emplace(true);
   }
   else
   {
     bool enabled  = yyextra->guards.top().isEnabled();
-    yyextra->guards.push(GuardedSection(enabled));
+    yyextra->guards.emplace(enabled);
   }
   BEGIN(GuardParam);
   return FALSE;
@@ -3506,12 +3506,12 @@ static bool handleIfNot(yyscan_t yyscanner,const QCString &, const StringVector 
   yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
   if (yyextra->guards.empty())
   {
-    yyextra->guards.push(GuardedSection(true));
+    yyextra->guards.emplace(true);
   }
   else
   {
     bool enabled  = yyextra->guards.top().isEnabled();
-    yyextra->guards.push(GuardedSection(enabled));
+    yyextra->guards.emplace(enabled);
   }
   BEGIN(GuardParam);
   return FALSE;

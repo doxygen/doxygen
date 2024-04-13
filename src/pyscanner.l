@@ -1089,8 +1089,8 @@ ID        [a-z_A-Z%]+{IDSYM}*
                        }
 
     {SCOPE}            {
-                         yyextra->current->extends.push_back(
-                                              BaseInfo(substitute(yytext,".","::"),Protection::Public,Specifier::Normal)
+                         yyextra->current->extends.emplace_back(
+                                              substitute(yytext,".","::"),Protection::Public,Specifier::Normal
                                             );
                          //Has base class-do stuff
                        }

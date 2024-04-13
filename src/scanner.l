@@ -5760,8 +5760,8 @@ NONLopt [^\n]*
                                             // there can be only one base class here
                                             if (!yyextra->baseName.isEmpty())
                                             {
-                                              yyextra->current->extends.push_back(
-                                                BaseInfo(yyextra->baseName,Protection::Public,Specifier::Normal));
+                                              yyextra->current->extends.emplace_back(
+                                                yyextra->baseName,Protection::Public,Specifier::Normal);
                                               yyextra->baseName.clear();
                                             }
                                             yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
@@ -6507,8 +6507,8 @@ NONLopt [^\n]*
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
                                           if (!yyextra->baseName.isEmpty())
                                           {
-                                            yyextra->current->extends.push_back(
-                                              BaseInfo(yyextra->baseName,yyextra->baseProt,yyextra->baseVirt)
+                                            yyextra->current->extends.emplace_back(
+                                              yyextra->baseName,yyextra->baseProt,yyextra->baseVirt
                                             );
                                           }
                                           if (yyextra->current->spec.isInterface() || yyextra->current->spec.isStruct() ||
@@ -6551,8 +6551,8 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
                                           if (!yyextra->baseName.isEmpty())
-                                            yyextra->current->extends.push_back(
-                                               BaseInfo(yyextra->baseName,yyextra->baseProt,yyextra->baseVirt)
+                                            yyextra->current->extends.emplace_back(
+                                               yyextra->baseName,yyextra->baseProt,yyextra->baseVirt
                                             );
                                           yyextra->curlyCount=0;
                                           if (yyextra->insideObjC)

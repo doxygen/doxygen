@@ -131,7 +131,7 @@ class ConfigList : public ConfigOption
       m_doc = doc;
       m_widgetType = String;
     }
-    void addValue(const char *v) { m_defaultValue.push_back(v); }
+    void addValue(const char *v) { m_defaultValue.emplace_back(v); }
     void setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
     StringVector *valueRef() { return &m_value; }
@@ -163,7 +163,7 @@ class ConfigEnum : public ConfigOption
       m_value = defVal;
       m_defValue = defVal;
     }
-    void addValue(const char *v) { m_valueRange.push_back(v); }
+    void addValue(const char *v) { m_valueRange.emplace_back(v); }
     const std::vector<QCString> &values() const { return m_valueRange; }
     QCString *valueRef() { return &m_value; }
     void substEnvVars();

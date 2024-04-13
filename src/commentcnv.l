@@ -1490,7 +1490,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
   //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
   CondParser prs;
   bool expResult = prs.parse(yyextra->fileName,yyextra->lineNr,sectId);
-  yyextra->condStack.push(commentcnvYY_CondCtx(yyextra->lineNr,sectId,yyextra->skip));
+  yyextra->condStack.emplace(yyextra->lineNr,sectId,yyextra->skip);
   if (!expResult) // not enabled
   {
     yyextra->skip=TRUE;

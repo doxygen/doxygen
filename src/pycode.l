@@ -388,7 +388,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       // probably be more strict
                                       // about what to accept.
 
-                                      yyextra->curClassBases.push_back(yytext);
+                                      yyextra->curClassBases.emplace_back(yytext);
                                       yyextra->insideBody = true;
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                       yyextra->insideBody = false;
@@ -425,7 +425,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                           var.localDef()->insertBaseClass(baseDefToAdd->name());
                                         }
                                       }
-                                      yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(var)));
+                                      yyextra->codeClassMap.emplace(yyextra->curClassName.str(),std::move(var));
 
                                       // Reset class-parsing variables.
                                       yyextra->curClassName.clear();

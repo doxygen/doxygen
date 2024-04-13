@@ -1354,7 +1354,7 @@ static void resolveClassNestingRelations()
                 {
                   auto aliasCd = createClassDefAlias(d,cd);
                   QCString aliasFullName = d->qualifiedName()+"::"+aliasCd->localName();
-                  aliases.push_back(ClassAlias(aliasFullName,std::move(aliasCd),dm));
+                  aliases.emplace_back(aliasFullName,std::move(aliasCd),dm);
                   //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
                 }
               }
@@ -7288,7 +7288,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   fmmd->setAnchor();
                   md->insertEnumField(fmd.get());
                   fmmd->setEnumScope(md,TRUE);
-                  extraMembers.push_back(EnumValueInfo(e->name,std::move(fmd)));
+                  extraMembers.emplace_back(e->name,std::move(fmd));
                 }
               }
               else
@@ -11420,7 +11420,7 @@ void adjustConfiguration()
         portable_iconv_close(cd);
       }
 
-      Doxygen::inputFileEncodingList.push_back(InputFileEncoding(pattern, encoding));
+      Doxygen::inputFileEncodingList.emplace_back(pattern, encoding);
     }
   }
 

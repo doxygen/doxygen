@@ -104,7 +104,7 @@ class ThreadPool
         for(auto&& u : m_finished)
         {
           (void)u; //unused_variable, to silence the compiler warning about unused variables
-          m_work.push_back({}); // insert empty function object to signal abort
+          m_work.emplace_back(); // insert empty function object to signal abort
         }
       }
       m_cond.notify_all();

@@ -497,12 +497,12 @@ class TagFileParser
             TagCompoundInfo *info = m_curCompound.getCompoundInfo();
             if (info)
             {
-              info->docAnchors.push_back(TagAnchorInfo(m_fileName,m_curString,m_title));
+              info->docAnchors.emplace_back(m_fileName,m_curString,m_title);
             }
           }
           break;
         case InMember:
-          m_curMember.docAnchors.push_back(TagAnchorInfo(m_fileName,m_curString,m_title));
+          m_curMember.docAnchors.emplace_back(m_fileName,m_curString,m_title);
           break;
         default: break; // will not be reached
       }
@@ -763,7 +763,7 @@ class TagFileParser
         {
           virt = Specifier::Virtual;
         }
-        info->bases.push_back(BaseInfo(m_curString,prot,virt));
+        info->bases.emplace_back(m_curString,prot,virt);
       }
       else
       {
@@ -1411,7 +1411,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->startLine  = tmi.lineNr;
     if (ce->section.isGroupDoc())
     {
-      me->groups.push_back(Grouping(ce->name,Grouping::GROUPING_INGROUP));
+      me->groups.emplace_back(ce->name,Grouping::GROUPING_INGROUP);
     }
     addDocAnchors(me,tmi.docAnchors);
     me->tagInfoData.tagName    = m_tagName;
@@ -1718,7 +1718,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
             [&](const std::shared_ptr<Entry> &e) { return e->name == sg.c_str(); });
         if (i!=children.end())
         {
-          (*i)->groups.push_back(Grouping(tgi->name,Grouping::GROUPING_INGROUP));
+          (*i)->groups.emplace_back(tgi->name,Grouping::GROUPING_INGROUP);
         }
       }
     }
@@ -1739,7 +1739,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       {
         // we add subpage labels as a kind of "inheritance" relation to prevent
         // needing to add another list to the Entry class.
-        pe->extends.push_back(BaseInfo(stripExtension(QCString(subpage)),Protection::Public,Specifier::Normal));
+        pe->extends.emplace_back(stripExtension(QCString(subpage)),Protection::Public,Specifier::Normal);
       }
       addDocAnchors(pe,tpi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;

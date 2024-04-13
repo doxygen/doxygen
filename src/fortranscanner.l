@@ -697,7 +697,7 @@ abstract                                {
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext).lower();
-                                          yyextra->current->extends.push_back(BaseInfo(basename, Protection::Public, Specifier::Normal));
+                                          yyextra->current->extends.emplace_back(basename, Protection::Public, Specifier::Normal);
                                         }
 public                                  {
                                           yyextra->current->protection = Protection::Public;

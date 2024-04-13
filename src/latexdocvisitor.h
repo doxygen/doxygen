@@ -201,7 +201,7 @@ class LatexDocVisitor : public DocVisitor
 
     void pushTableState()
     {
-      m_tableStateStack.push(TableState());
+      m_tableStateStack.emplace();
     }
     void popTableState()
     {
