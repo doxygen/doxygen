@@ -38,7 +38,7 @@ class DotGraph
     DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() = default;
-    NON_COPYABLE(DotGraph);
+    NON_COPYABLE(DotGraph)
 
   protected:
     /** returns the node number. */
