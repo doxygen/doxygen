@@ -4672,12 +4672,12 @@ QCString substituteTemplateArgumentsInString(
     const ArgumentList &formalArgs,
     const ArgumentList *actualArgs)
 {
-  //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
+  //printf("> substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
   //    qPrint(nm),qPrint(argListToString(formalArgs)),actualArgs ? qPrint(argListToString(*actualArgs)): "");
   if (formalArgs.empty()) return nm;
   QCString result;
 
-  static const reg::Ex re(R"(\a[\w:.]*)");
+  static const reg::Ex re(R"(\a\w*)");
   std::string name = nm.str();
   reg::Iterator it(name,re);
   reg::Iterator end;
@@ -4695,6 +4695,7 @@ QCString substituteTemplateArgumentsInString(
     {
       actIt = actualArgs->begin();
     }
+    //printf(": name=%s\n",qPrint(name));
 
     // if n is a template argument, then we substitute it
     // for its template instance argument.
@@ -4730,7 +4731,7 @@ QCString substituteTemplateArgumentsInString(
         formArg.name += "...";
         formArg.type = formArg.type.left(8)+formArg.type.mid(11);
       }
-      //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s' actArg->type='%s' actArg->name='%s' \n",
+      //printf(": n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s' actArg->type='%s' actArg->name='%s' \n",
       //  qPrint(n),qPrint(formArg.type),qPrint(formArg.name),qPrint(formArg.defval),qPrint(actArg.type),qPrint(actArg.name));
       if (formArg.type=="class" || formArg.type=="typename" || formArg.type.startsWith("template"))
       {
@@ -4762,13 +4763,13 @@ QCString substituteTemplateArgumentsInString(
           {
             if (actArg.name.isEmpty())
             {
-              result += actArg.type+" ";
+              result += actArg.type;
             }
             else
               // for case where the actual arg is something like "unsigned int"
               // the "int" part is in actArg->name.
             {
-              result += actArg.type+" "+actArg.name+" ";
+              result += actArg.type+" "+actArg.name;
             }
             found=TRUE;
           }
@@ -4779,7 +4780,7 @@ QCString substituteTemplateArgumentsInString(
                  formArg.defval!=nm /* to prevent recursion */
             )
         {
-          result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs)+" ";
+          result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs);
           found=TRUE;
         }
       }
@@ -4789,7 +4790,7 @@ QCString substituteTemplateArgumentsInString(
                formArg.defval!=nm /* to prevent recursion */
               )
       {
-        result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs)+" ";
+        result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs);
         found=TRUE;
       }
       if (actualArgs && actIt!=actualArgs->end())
@@ -4805,8 +4806,7 @@ QCString substituteTemplateArgumentsInString(
   }
   result+=name.substr(p);
   result=result.simplifyWhiteSpace();
-  //printf("      Inheritance relation %s -> %s\n",
-  //    qPrint(name),qPrint(result));
+  //printf("< substituteTemplateArgumentsInString result=%s\n", qPrint(result));
   return result.stripWhiteSpace();
 }
 
