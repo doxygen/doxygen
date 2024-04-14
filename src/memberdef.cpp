@@ -58,7 +58,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
               const QCString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData);
-   ~MemberDefImpl() = default;
+   ~MemberDefImpl() override = default;
     NON_COPYABLE(MemberDefImpl)
 
     DefType definitionType() const override        { return TypeMember; }

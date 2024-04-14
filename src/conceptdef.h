@@ -28,15 +28,9 @@ class ConceptDef : public Definition
   public:
     ABSTRACT_BASE_CLASS(ConceptDef)
 
-    virtual DefType definitionType() const = 0;
-    virtual QCString getOutputFileBase() const = 0;
     virtual bool hasDetailedDescription() const = 0;
-    virtual QCString displayName(bool includeScope=true) const = 0;
     virtual const IncludeInfo *includeInfo() const = 0;
     virtual ArgumentList getTemplateParameterList() const = 0;
-    virtual QCString anchor() const = 0;
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
     virtual QCString initializer() const = 0;
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const = 0;

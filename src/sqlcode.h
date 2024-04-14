@@ -30,8 +30,9 @@ class SQLCodeParser : public CodeParserInterface
 {
   public:
     SQLCodeParser();
-    virtual ~SQLCodeParser();
+   ~SQLCodeParser() override;
     NON_COPYABLE(SQLCodeParser)
+
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
@@ -46,8 +47,8 @@ class SQLCodeParser : public CodeParserInterface
                    bool showLineNumbers=TRUE,
                    const Definition *searchCtx=nullptr,
                    bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+                  ) override;
+    void resetCodeParserState() override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

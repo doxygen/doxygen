@@ -101,18 +101,8 @@ class FileDef : public DefinitionMutable, public Definition
     ABSTRACT_BASE_CLASS(FileDef)
     // ----------------------------------------------------------------------
 
-    virtual DefType definitionType() const = 0;
-
     /*! Returns the unique file name (this may include part of the path). */
-    virtual const QCString &name() const = 0;
-    virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString fileName() const = 0;
-
-    virtual QCString getOutputFileBase() const = 0;
-
-    virtual QCString anchor() const = 0;
-
-    virtual QCString getSourceFileBase() const = 0;
 
     /*! Returns the name of the verbatim copy of this file (if any). */
     virtual QCString includeName() const = 0;
@@ -141,9 +131,6 @@ class FileDef : public DefinitionMutable, public Definition
     /*! Returns version of this file. */
     virtual QCString getVersion() const = 0;
 
-    virtual bool isLinkableInProject() const = 0;
-
-    virtual bool isLinkable() const = 0;
     virtual bool isIncluded(const QCString &name) const = 0;
 
     virtual DirDef *getDirDef() const = 0;
@@ -179,8 +166,6 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
-    virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void writeSourceHeader(OutputList &ol) = 0;

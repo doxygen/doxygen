@@ -26,7 +26,7 @@ class DotDirDeps : public DotGraph
 {
   public:
     DotDirDeps(const DirDef *dir);
-    ~DotDirDeps();
+    ~DotDirDeps() override;
     NON_COPYABLE(DotDirDeps)
 
     bool isTrivial() const;
@@ -41,10 +41,10 @@ class DotDirDeps : public DotGraph
                         bool linkRelations=TRUE);
 
   protected:
-    virtual QCString getBaseName() const;
-    virtual QCString getMapLabel() const;
-    virtual void computeTheGraph();
-    virtual QCString getImgAltText() const;
+    QCString getBaseName() const override;
+    QCString getMapLabel() const override;
+    void computeTheGraph() override;
+    QCString getImgAltText() const override;
 
   private:
     const DirDef *m_dir = nullptr;

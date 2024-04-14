@@ -30,8 +30,9 @@ class FortranCodeParser : public CodeParserInterface
 {
   public:
     FortranCodeParser(FortranFormat format=FortranFormat_Unknown);
-    virtual ~FortranCodeParser();
+   ~FortranCodeParser() override;
     NON_COPYABLE(FortranCodeParser)
+
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
@@ -46,8 +47,8 @@ class FortranCodeParser : public CodeParserInterface
                    bool showLineNumbers=TRUE,
                    const Definition *searchCtx=nullptr,
                    bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+                  ) override;
+    void resetCodeParserState() override;
 
   private:
     struct Private;

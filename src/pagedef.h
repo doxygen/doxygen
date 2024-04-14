@@ -34,16 +34,10 @@ class PageDef : public DefinitionMutable, public Definition
     virtual void setTitle(const QCString &title) = 0;
 
     // getters
-    virtual DefType definitionType() const = 0;
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
-    virtual QCString getOutputFileBase() const = 0;
-    virtual QCString anchor() const = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual QCString title() const = 0;
     virtual const GroupDef *getGroupDef() const = 0;
     virtual const PageLinkedRefMap &getSubPages() const = 0;
-    virtual void addInnerCompound(Definition *) = 0;
     virtual bool visibleInIndex() const = 0;
     virtual bool documentedPage() const = 0;
     virtual bool hasSubPages() const = 0;
@@ -52,7 +46,6 @@ class PageDef : public DefinitionMutable, public Definition
     virtual LocalToc localToc() const = 0;
     virtual void setPageScope(Definition *) = 0;
     virtual Definition *getPageScope() const = 0;
-    virtual QCString displayName(bool=TRUE) const = 0;
     virtual bool showLineNo() const = 0;
 
     virtual void writeDocumentation(OutputList &) = 0;

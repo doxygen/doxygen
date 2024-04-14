@@ -30,7 +30,7 @@ class CCodeParser : public CodeParserInterface
 {
   public:
     CCodeParser();
-    virtual ~CCodeParser();
+   ~CCodeParser() override;
     NON_COPYABLE(CCodeParser)
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
@@ -46,8 +46,8 @@ class CCodeParser : public CodeParserInterface
                    bool showLineNumbers=TRUE,
                    const Definition *searchCtx=nullptr,
                    bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+                  ) override;
+    void resetCodeParserState() override;
     void setInsideCodeLine(bool inp);
     bool insideCodeLine() const;
   private:

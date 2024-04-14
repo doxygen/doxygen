@@ -30,8 +30,9 @@ class LexCodeParser : public CodeParserInterface
 {
   public:
     LexCodeParser();
-    virtual ~LexCodeParser();
+   ~LexCodeParser() override;
     NON_COPYABLE(LexCodeParser)
+
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
@@ -46,8 +47,8 @@ class LexCodeParser : public CodeParserInterface
                    bool showLineNumbers=TRUE,
                    const Definition *searchCtx=nullptr,
                    bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+                  ) override;
+    void resetCodeParserState() override;
   private:
     struct Private;
     std::unique_ptr<Private> p;
