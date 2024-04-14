@@ -601,7 +601,7 @@ void RTFGenerator::beginRTFDocument()
   int i;
   int id = -1;
   m_t << "{\\*\\listtable" << "\n";
-  for ( i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  for ( i=0 ; rtf_Table_Default[i].definition ; i++ )
   {
     if (id != rtf_Table_Default[i].id)
     {
@@ -618,7 +618,7 @@ void RTFGenerator::beginRTFDocument()
   m_t << "}" <<"\n";
   m_t << "{\\listoverridetable" <<"\n";
   id = -1;
-  for ( i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  for ( i=0 ; rtf_Table_Default[i].definition ; i++ )
   {
     if (id != rtf_Table_Default[i].id)
     {

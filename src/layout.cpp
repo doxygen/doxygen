@@ -522,7 +522,7 @@ class LayoutParser
           QCString(),
           "usergroup"
         },
-        { 0, // end of list
+        { nullptr, // end of list
           static_cast<LayoutNavEntry::Kind>(0),
           QCString(),
           QCString(),

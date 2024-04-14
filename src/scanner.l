@@ -8108,7 +8108,7 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
   yyextra->column = 0;
-  scannerYYrestart(0,yyscanner);
+  scannerYYrestart(nullptr,yyscanner);
 
   //depthIf       = 0;
   yyextra->protection    = Protection::Public;
@@ -8208,7 +8208,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
   // save scanner state
   orgState = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner), yyscanner);
+  yy_switch_to_buffer(yy_create_buffer(nullptr, YY_BUF_SIZE, yyscanner), yyscanner);
   orgInputString = yyextra->inputString;
   orgInputPosition = yyextra->inputPosition;
 
@@ -8216,7 +8216,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->inputString = text.data();
   yyextra->inputPosition = 0;
   yyextra->column = 0;
-  scannerYYrestart(0, yyscanner);
+  scannerYYrestart(nullptr, yyscanner);
   BEGIN(Prototype);
   scannerYYlex(yyscanner);
   yyextra->lexInit=TRUE;

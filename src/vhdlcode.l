@@ -1343,7 +1343,7 @@ static void generateMemLink(yyscan_t yyscanner,OutputCodeList &ol,QCString &clNa
   const MemberDef *md=VhdlDocGen::findMember(className,memberName);
   ClassDef *po=VhdlDocGen::getClass(className);
 
-  if (md==0 && po && (VhdlDocGen::VhdlClasses)po->protection()==VhdlDocGen::PACKBODYCLASS)
+  if (md==nullptr && po && (VhdlDocGen::VhdlClasses)po->protection()==VhdlDocGen::PACKBODYCLASS)
   {
     QCString temp=className;//.stripPrefix("_");
     temp.stripPrefix("_");
@@ -1407,7 +1407,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,
     }
     else
     {
-      cd = 0;
+      cd = nullptr;
     }
   }
 
@@ -1450,7 +1450,7 @@ static void endFontClass(yyscan_t yyscanner)
 static void startFontClass(yyscan_t yyscanner,const char *s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (s==0) return;
+  if (s==nullptr) return;
   endFontClass(yyscanner);
   yyextra->code->startFontClass(s);
   yyextra->currentFontClass=s;
@@ -1459,7 +1459,7 @@ static void startFontClass(yyscan_t yyscanner,const char *s)
 static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (s==0 || text.isEmpty()) return;
+  if (s==nullptr || text.isEmpty()) return;
   //printf("writeFont(yyscanner,%d,\"%s\")\n",yyextra->yyLineNr,text);
   yyextra->code->startFontClass(s);
   yyextra->code->codify(text);
@@ -1638,7 +1638,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
-  DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, fd ? qPrint(fd->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, fd ? qPrint(fd->fileName()): nullptr);
   yyextra->fileName      = fd ? fd->fileName():"";
   if (memberDef)
   {
@@ -1649,7 +1649,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   yyextra->code = &od;
   yyextra->inputString   = s.data();
   yyextra->inputPosition = 0;
-  yyextra->currentFontClass = 0;
+  yyextra->currentFontClass = nullptr;
   yyextra->insideCodeLine = false;
   yyextra->searchCtx = searchCtx;
   yyextra->foldStack.clear();
@@ -1669,7 +1669,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   yyextra->exampleBlock  = exBlock;
   yyextra->exampleName   = exName;
   yyextra->sourceFileDef = fd;
-  if (exBlock && fd==0)
+  if (exBlock && fd==nullptr)
   {
     // create a dummy filedef for the example
     yyextra->exampleFileDef = createFileDef("",exName);
@@ -1679,9 +1679,9 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   {
     setCurrentDoc(yyscanner,"l00001");
   }
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
-  yyextra->vhdlMember=0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef  = nullptr;
+  yyextra->vhdlMember        = nullptr;
   if (!yyextra->exampleName.isEmpty())
   {
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
@@ -1693,7 +1693,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
     VhdlDocGen::init();
     yyextra->lexInit=true;
   }
-  vhdlcodeYYrestart( 0, yyscanner );
+  vhdlcodeYYrestart( nullptr, yyscanner );
   BEGIN( Bases );
   vhdlcodeYYlex(yyscanner);
   if (yyextra->insideCodeLine)
@@ -1712,7 +1712,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   {
     // delete the temporary file definition used for this example
     yyextra->exampleFileDef.reset();
-    yyextra->sourceFileDef=0;
+    yyextra->sourceFileDef = nullptr;
   }
 
   // write the tooltips

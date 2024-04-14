@@ -415,7 +415,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                           baseDefToAdd = toClassDef(it->second.globalDef());
                                         }
                                         // Try to find class in global scope
-                                        if (baseDefToAdd==0)
+                                        if (baseDefToAdd==nullptr)
                                         {
                                           baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s.c_str(),true);
                                         }
@@ -889,7 +889,7 @@ static void adjustScopesAndSuites(yyscan_t yyscanner,unsigned indentLength)
       // printf("Exited scope indent of [%d]\n", yyextra->indents.top());
       yyextra->indents.pop(); // Pop the old suite's indentation
 
-      yyextra->currentMemberDef=0;
+      yyextra->currentMemberDef=nullptr;
       if (yyextra->currentDefinition)
         yyextra->currentDefinition=yyextra->currentDefinition->getOuterScope();
     }
@@ -973,7 +973,7 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,Defin
     {
       cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName,true);
     }
-    if (cd==0)
+    if (cd==nullptr)
     {
       cd=yyextra->symbolResolver.resolveClass(d,clName,true);
     }
@@ -983,7 +983,7 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,Defin
     }
   }
 
-  return 0;
+  return nullptr;
 }
 
 //-------------------------------------------------------------------------------
@@ -1204,7 +1204,7 @@ static void endFontClass(yyscan_t yyscanner)
   if (yyextra->currentFontClass)
   {
     yyextra->code->endFontClass();
-    yyextra->currentFontClass=0;
+    yyextra->currentFontClass=nullptr;
   }
 }
 
@@ -1328,7 +1328,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   const MemberDef *md=nullptr;            // Member def that we may find 
   //bool isLocal=FALSE;
 
-  if ((lcd=yyextra->theVarContext.findVariable(className))==0) // not a local variable
+  if ((lcd=yyextra->theVarContext.findVariable(className))==nullptr) // not a local variable
   {
     const Definition *d = yyextra->currentDefinition;
     QCString scope = substitute(className,".","::");
@@ -1341,7 +1341,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
         yyextra->currentDefinition?qPrint(yyextra->currentDefinition->displayName()):"<null>"));
     DBG_CTX((stderr,"is found as a type %s\n",cd?qPrint(cd->name()):"<null>"));
 
-    if (cd==0 && md==0) // also see if it is variable or enum or enum value
+    if (cd==nullptr && md==nullptr) // also see if it is variable or enum or enum value
     {
       const NamespaceDef *nd = getResolvedNamespace(scope);
       if (nd)
@@ -1596,8 +1596,8 @@ void PythonCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->codeClassMap.clear();
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
   yyextra->doubleStringIsDoc = FALSE;
   yyextra->paramParens = 0;
   while (!yyextra->indents.empty()) yyextra->indents.pop();
@@ -1626,12 +1626,12 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   //printf("***parseCode(%s)\n",qPrint(input));
 
   if (input.isEmpty()) return;
-  DebugLex debugLex(Debug::Lex_pycode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_pycode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
-  yyextra->currentFontClass = 0;
+  yyextra->currentFontClass = nullptr;
   yyextra->insideCodeLine = FALSE;
   yyextra->searchCtx=searchCtx;
   yyextra->collectXRefs=collectXRefs;
@@ -1651,7 +1651,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->symbolResolver.setFileScope(fileDef);
   yyextra->foldStack.clear();
 
-  if (yyextra->exampleBlock && fileDef==0)
+  if (yyextra->exampleBlock && fileDef==nullptr)
   {
     // create a dummy filedef for the example
     yyextra->exampleFileDef = createFileDef("",(!exampleName.isEmpty()?qPrint(exampleName):"generated"));
@@ -1666,7 +1666,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 
-  pycodeYYrestart(0,yyscanner);
+  pycodeYYrestart(nullptr,yyscanner);
 
   pycodeYYlex(yyscanner);
 
@@ -1691,7 +1691,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     // delete the temporary file definition used for this example
     yyextra->exampleFileDef.reset();
-    yyextra->sourceFileDef=0;
+    yyextra->sourceFileDef=nullptr;
   }
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(codeOutIntf);

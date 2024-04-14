@@ -51,25 +51,25 @@ typedef yyguts_t *yyscan_t;
 
 struct sqlcodeYY_state
 {
-     OutputCodeList * code;
-     const char   *inputString;     //!< the code fragment as text
-     int           inputPosition;   //!< read offset during parsing
+     OutputCodeList * code = nullptr;
+     const char   *inputString = nullptr; //!< the code fragment as text
+     int           inputPosition = 0;     //!< read offset during parsing
      QCString      fileName;
-     int           inputLines;      //!< number of line in the code fragment
-     int           yyLineNr;        //!< current line number
-     bool          insideCodeLine;
-     const Definition   *searchCtx;
+     int           inputLines = 0;        //!< number of line in the code fragment
+     int           yyLineNr = 1;          //!< current line number
+     bool          insideCodeLine = false;
+     const Definition   *searchCtx = nullptr;
 
-     bool          exampleBlock;
+     bool          exampleBlock = false;
      QCString      exampleName;
      QCString      classScope;
 
      std::unique_ptr<FileDef> exampleFileDef;
-     const FileDef    *sourceFileDef;
-     const Definition *currentDefinition;
-     const MemberDef  *currentMemberDef;
-     bool          includeCodeFragment;
-     const char   *currentFontClass;
+     const FileDef    *sourceFileDef = nullptr;
+     const Definition *currentDefinition = nullptr;
+     const MemberDef  *currentMemberDef = nullptr;
+     bool          includeCodeFragment = false;
+     const char   *currentFontClass = nullptr;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -402,8 +402,8 @@ SQLCodeParser::~SQLCodeParser()
 void SQLCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
 }
 
 void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
@@ -427,13 +427,13 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_sqlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_sqlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
 
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
-  yyextra->currentFontClass = 0;
+  yyextra->currentFontClass = nullptr;
   yyextra->insideCodeLine = false;
   yyextra->searchCtx=searchCtx;
 
@@ -467,7 +467,7 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 
-  sqlcodeYYrestart( 0, yyscanner );
+  sqlcodeYYrestart( nullptr, yyscanner );
 
   sqlcodeYYlex(yyscanner);
 
@@ -479,7 +479,7 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     // delete the temporary file definition used for this example
     yyextra->exampleFileDef.reset();
-    yyextra->sourceFileDef=0;
+    yyextra->sourceFileDef=nullptr;
   }
 }
 
