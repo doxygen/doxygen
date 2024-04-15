@@ -149,7 +149,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_9_6
      */
     QCString latexLanguageSupportCommand() override
     {
-      return "\\usepackage[spanish]{babel}";
+      return "\\usepackage[spanish, es-noshorthands, shorthands=off]{babel}";
     }
 
     QCString trISOLang() override
