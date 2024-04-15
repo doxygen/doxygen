@@ -6747,8 +6747,12 @@ NONLopt [^\n]*
                                           else if (yyextra->insideCS &&
                                               !yyextra->current->name.isEmpty() &&
                                               !yyextra->current->type.isEmpty())
-                                          {
-                                            if (containsWord(yyextra->current->type,"event")) // event
+                                          { 
+                                            if (yyextra->current->mtype == MethodTypes::Event)
+                                            {
+                                              yyextra->mtype = MethodTypes::Event;
+                                            }
+                                            else if (containsWord(yyextra->current->type,"event")) // event
                                             {
                                               yyextra->current->mtype = yyextra->mtype = MethodTypes::Event;
                                             }
