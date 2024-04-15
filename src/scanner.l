@@ -5760,8 +5760,8 @@ NONLopt [^\n]*
                                             // there can be only one base class here
                                             if (!yyextra->baseName.isEmpty())
                                             {
-                                              yyextra->current->extends.push_back(
-                                                BaseInfo(yyextra->baseName,Protection::Public,Specifier::Normal));
+                                              yyextra->current->extends.emplace_back(
+                                                yyextra->baseName,Protection::Public,Specifier::Normal);
                                               yyextra->baseName.clear();
                                             }
                                             yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
@@ -6507,8 +6507,8 @@ NONLopt [^\n]*
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
                                           if (!yyextra->baseName.isEmpty())
                                           {
-                                            yyextra->current->extends.push_back(
-                                              BaseInfo(yyextra->baseName,yyextra->baseProt,yyextra->baseVirt)
+                                            yyextra->current->extends.emplace_back(
+                                              yyextra->baseName,yyextra->baseProt,yyextra->baseVirt
                                             );
                                           }
                                           if (yyextra->current->spec.isInterface() || yyextra->current->spec.isStruct() ||
@@ -6551,8 +6551,8 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
                                           if (!yyextra->baseName.isEmpty())
-                                            yyextra->current->extends.push_back(
-                                               BaseInfo(yyextra->baseName,yyextra->baseProt,yyextra->baseVirt)
+                                            yyextra->current->extends.emplace_back(
+                                               yyextra->baseName,yyextra->baseProt,yyextra->baseVirt
                                             );
                                           yyextra->curlyCount=0;
                                           if (yyextra->insideObjC)
@@ -8108,7 +8108,7 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
   yyextra->column = 0;
-  scannerYYrestart(0,yyscanner);
+  scannerYYrestart(nullptr,yyscanner);
 
   //depthIf       = 0;
   yyextra->protection    = Protection::Public;
@@ -8208,7 +8208,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
   // save scanner state
   orgState = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner), yyscanner);
+  yy_switch_to_buffer(yy_create_buffer(nullptr, YY_BUF_SIZE, yyscanner), yyscanner);
   orgInputString = yyextra->inputString;
   orgInputPosition = yyextra->inputPosition;
 
@@ -8216,7 +8216,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->inputString = text.data();
   yyextra->inputPosition = 0;
   yyextra->column = 0;
-  scannerYYrestart(0, yyscanner);
+  scannerYYrestart(nullptr, yyscanner);
   BEGIN(Prototype);
   scannerYYlex(yyscanner);
   yyextra->lexInit=TRUE;

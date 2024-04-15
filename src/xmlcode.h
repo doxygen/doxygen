@@ -31,8 +31,9 @@ class XMLCodeParser : public CodeParserInterface
 {
   public:
     XMLCodeParser();
-    virtual ~XMLCodeParser();
+   ~XMLCodeParser() override;
     NON_COPYABLE(XMLCodeParser)
+
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
@@ -47,8 +48,9 @@ class XMLCodeParser : public CodeParserInterface
                    bool showLineNumbers=TRUE,
                    const Definition *searchCtx=nullptr,
                    bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+                  ) override;
+    void resetCodeParserState() override;
+
   private:
     struct Private;
     std::unique_ptr<Private> p;

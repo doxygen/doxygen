@@ -47,14 +47,14 @@ class MarkdownOutlineParser : public OutlineParserInterface
 {
   public:
     MarkdownOutlineParser();
-    virtual ~MarkdownOutlineParser();
+   ~MarkdownOutlineParser() override;
     NON_COPYABLE(MarkdownOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser);
-    bool needsPreprocessing(const QCString &) const { return FALSE; }
-    void parsePrototype(const QCString &text);
+                    ClangTUParser *clangParser) override;
+    bool needsPreprocessing(const QCString &) const override { return FALSE; }
+    void parsePrototype(const QCString &text) override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

@@ -56,7 +56,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
                  const QCString &name,const QCString &ref=QCString(),
                  const QCString &refFile=QCString(),const QCString &type=QCString(),
                  bool isPublished=false);
-    virtual ~NamespaceDefImpl();
+   ~NamespaceDefImpl() override;
     NON_COPYABLE(NamespaceDefImpl)
 
     DefType definitionType() const override { return TypeNamespace; }

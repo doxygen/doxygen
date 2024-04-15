@@ -81,7 +81,7 @@ struct LayoutDocEntrySimple : LayoutDocEntry
 {
   public:
     LayoutDocEntrySimple(Kind k,bool v) : m_kind(k), m_visible(v) {}
-    Kind kind() const { return m_kind; }
+    Kind kind() const override { return m_kind; }
     bool visible() const { return m_visible; }
   private:
     Kind m_kind;
@@ -104,7 +104,7 @@ struct LayoutDocEntryMemberDecl: public LayoutDocEntry
                            const QCString &tl,const QCString &ss)
     : type(tp), m_title(tl), m_subscript(ss) {}
 
-  Kind kind() const { return MemberDecl; }
+  Kind kind() const override { return MemberDecl; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
   QCString subtitle(SrcLangExt lang) const;
@@ -119,7 +119,7 @@ struct LayoutDocEntryMemberDef: public LayoutDocEntry
   LayoutDocEntryMemberDef(MemberListType tp,const QCString &tl)
     : type(tp), m_title(tl) {}
 
-  Kind kind() const { return MemberDef; }
+  Kind kind() const override { return MemberDef; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
 private:

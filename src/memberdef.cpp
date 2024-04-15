@@ -58,6 +58,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
               const QCString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData);
+   ~MemberDefImpl() override = default;
     NON_COPYABLE(MemberDefImpl)
 
     DefType definitionType() const override        { return TypeMember; }
@@ -2513,14 +2514,14 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.docify(" [");
       StringVector sl;
 
-      if (isGettable())             sl.push_back("get");
-      if (isProtectedGettable())    sl.push_back("protected get");
-      if (isSettable())             sl.push_back("set");
-      if (isProtectedSettable())    sl.push_back("protected set");
+      if (isGettable())             sl.emplace_back("get");
+      if (isProtectedGettable())    sl.emplace_back("protected get");
+      if (isSettable())             sl.emplace_back("set");
+      if (isProtectedSettable())    sl.emplace_back("protected set");
       if (extractPrivate)
       {
-        if (isPrivateGettable())    sl.push_back("private get");
-        if (isPrivateSettable())    sl.push_back("private set");
+        if (isPrivateGettable())    sl.emplace_back("private get");
+        if (isPrivateSettable())    sl.emplace_back("private set");
       }
       bool first=true;
       for (const auto &s : sl)
@@ -2542,9 +2543,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.startTypewriter();
       ol.docify(" [");
       StringVector sl;
-      if (isAddable())   sl.push_back("add");
-      if (isRemovable()) sl.push_back("remove");
-      if (isRaisable())  sl.push_back("raise");
+      if (isAddable())   sl.emplace_back("add");
+      if (isRemovable()) sl.emplace_back("remove");
+      if (isRaisable())  sl.emplace_back("raise");
       bool first=true;
       for (const auto &s : sl)
       {
@@ -2776,82 +2777,82 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
     }
     else
     {
-      if (isFriend())                                   sl.push_back("friend");
-      else if (isRelated())                             sl.push_back("related");
+      if (isFriend())                                   sl.emplace_back("friend");
+      else if (isRelated())                             sl.emplace_back("related");
       else
       {
-        if      (isExternal())                          sl.push_back("extern");
-        if      (inlineInfo && isInline())              sl.push_back("inline");
-        if      (isExplicit())                          sl.push_back("explicit");
-        if      (isMutable())                           sl.push_back("mutable");
-        if      (isStatic())                            sl.push_back("static");
-        if      (isGettable())                          sl.push_back("get");
-        if      (isProtectedGettable())                 sl.push_back("protected get");
-        if      (isSettable())                          sl.push_back("set");
-        if      (isProtectedSettable())                 sl.push_back("protected set");
+        if      (isExternal())                          sl.emplace_back("extern");
+        if      (inlineInfo && isInline())              sl.emplace_back("inline");
+        if      (isExplicit())                          sl.emplace_back("explicit");
+        if      (isMutable())                           sl.emplace_back("mutable");
+        if      (isStatic())                            sl.emplace_back("static");
+        if      (isGettable())                          sl.emplace_back("get");
+        if      (isProtectedGettable())                 sl.emplace_back("protected get");
+        if      (isSettable())                          sl.emplace_back("set");
+        if      (isProtectedSettable())                 sl.emplace_back("protected set");
         if (extractPrivate)
         {
-          if    (isPrivateGettable())                   sl.push_back("private get");
-          if    (isPrivateSettable())                   sl.push_back("private set");
+          if    (isPrivateGettable())                   sl.emplace_back("private get");
+          if    (isPrivateSettable())                   sl.emplace_back("private set");
         }
-        if      (isNoDiscard())                         sl.push_back("nodiscard");
-        if      (isConstExpr())                         sl.push_back("constexpr");
-        if      (isConstEval())                         sl.push_back("consteval");
-        if      (isConstInit())                         sl.push_back("constinit");
-        if      (isAddable())                           sl.push_back("add");
-        if      (!isUNOProperty() && isRemovable())     sl.push_back("remove");
-        if      (isRaisable())                          sl.push_back("raise");
-        if      (isReadable())                          sl.push_back("read");
-        if      (isWritable())                          sl.push_back("write");
-        if      (isFinal())                             sl.push_back("final");
-        if      (isAbstract())                          sl.push_back("abstract");
-        if      (isOverride())                          sl.push_back("override");
-        if      (isInitonly())                          sl.push_back("initonly");
-        if      (isSealed())                            sl.push_back("sealed");
-        if      (isNew())                               sl.push_back("new");
-        if      (isOptional())                          sl.push_back("optional");
-        if      (isRequired())                          sl.push_back("required");
-        if      (isExported())                          sl.push_back("export");
+        if      (isNoDiscard())                         sl.emplace_back("nodiscard");
+        if      (isConstExpr())                         sl.emplace_back("constexpr");
+        if      (isConstEval())                         sl.emplace_back("consteval");
+        if      (isConstInit())                         sl.emplace_back("constinit");
+        if      (isAddable())                           sl.emplace_back("add");
+        if      (!isUNOProperty() && isRemovable())     sl.emplace_back("remove");
+        if      (isRaisable())                          sl.emplace_back("raise");
+        if      (isReadable())                          sl.emplace_back("read");
+        if      (isWritable())                          sl.emplace_back("write");
+        if      (isFinal())                             sl.emplace_back("final");
+        if      (isAbstract())                          sl.emplace_back("abstract");
+        if      (isOverride())                          sl.emplace_back("override");
+        if      (isInitonly())                          sl.emplace_back("initonly");
+        if      (isSealed())                            sl.emplace_back("sealed");
+        if      (isNew())                               sl.emplace_back("new");
+        if      (isOptional())                          sl.emplace_back("optional");
+        if      (isRequired())                          sl.emplace_back("required");
+        if      (isExported())                          sl.emplace_back("export");
 
-        if      (isNonAtomic())                         sl.push_back("nonatomic");
-        else if (isObjCProperty())                      sl.push_back("atomic");
+        if      (isNonAtomic())                         sl.emplace_back("nonatomic");
+        else if (isObjCProperty())                      sl.emplace_back("atomic");
 
         // mutual exclusive Objective 2.0 property attributes
-        if      (isAssign())                            sl.push_back("assign");
-        else if (isCopy())                              sl.push_back("copy");
-        else if (isRetain())                            sl.push_back("retain");
-        else if (isWeak())                              sl.push_back("weak");
-        else if (lang!=SrcLangExt::CSharp && isStrong()) sl.push_back("strong");
-        else if (isUnretained())                        sl.push_back("unsafe_unretained");
+        if      (isAssign())                            sl.emplace_back("assign");
+        else if (isCopy())                              sl.emplace_back("copy");
+        else if (isRetain())                            sl.emplace_back("retain");
+        else if (isWeak())                              sl.emplace_back("weak");
+        else if (lang!=SrcLangExt::CSharp && isStrong()) sl.emplace_back("strong");
+        else if (isUnretained())                        sl.emplace_back("unsafe_unretained");
 
         if (!isObjCMethod())
         {
-          if      (protection()==Protection::Protected) sl.push_back("protected");
-          else if (protection()==Protection::Private)   sl.push_back("private");
-          else if (protection()==Protection::Package)   sl.push_back("package");
+          if      (protection()==Protection::Protected) sl.emplace_back("protected");
+          else if (protection()==Protection::Private)   sl.emplace_back("private");
+          else if (protection()==Protection::Package)   sl.emplace_back("package");
 
-          if      (lvirt==Specifier::Virtual)           sl.push_back("virtual");
-          else if (lvirt==Specifier::Pure)              sl.push_back("pure virtual");
-          if      (isSignal())                          sl.push_back("signal");
-          if      (isSlot())                            sl.push_back("slot");
-          if      (isDefault())                         sl.push_back("default");
-          if      (isDelete())                          sl.push_back("delete");
-          if      (isNoExcept())                        sl.push_back("noexcept");
-          if      (isAttribute())                       sl.push_back("attribute");
-          if      (isUNOProperty())                     sl.push_back("property");
-          if      (isReadonly())                        sl.push_back("readonly");
-          if      (isBound())                           sl.push_back("bound");
-          if      (isUNOProperty() && isRemovable())    sl.push_back("removable");
-          if      (isConstrained())                     sl.push_back("constrained");
-          if      (isTransient())                       sl.push_back("transient");
-          if      (isMaybeVoid())                       sl.push_back("maybevoid");
-          if      (isMaybeDefault())                    sl.push_back("maybedefault");
-          if      (isMaybeAmbiguous())                  sl.push_back("maybeambiguous");
-          if      (isPublished())                       sl.push_back("published"); // enum
+          if      (lvirt==Specifier::Virtual)           sl.emplace_back("virtual");
+          else if (lvirt==Specifier::Pure)              sl.emplace_back("pure virtual");
+          if      (isSignal())                          sl.emplace_back("signal");
+          if      (isSlot())                            sl.emplace_back("slot");
+          if      (isDefault())                         sl.emplace_back("default");
+          if      (isDelete())                          sl.emplace_back("delete");
+          if      (isNoExcept())                        sl.emplace_back("noexcept");
+          if      (isAttribute())                       sl.emplace_back("attribute");
+          if      (isUNOProperty())                     sl.emplace_back("property");
+          if      (isReadonly())                        sl.emplace_back("readonly");
+          if      (isBound())                           sl.emplace_back("bound");
+          if      (isUNOProperty() && isRemovable())    sl.emplace_back("removable");
+          if      (isConstrained())                     sl.emplace_back("constrained");
+          if      (isTransient())                       sl.emplace_back("transient");
+          if      (isMaybeVoid())                       sl.emplace_back("maybevoid");
+          if      (isMaybeDefault())                    sl.emplace_back("maybedefault");
+          if      (isMaybeAmbiguous())                  sl.emplace_back("maybeambiguous");
+          if      (isPublished())                       sl.emplace_back("published"); // enum
         }
         if (isObjCProperty() && isImplementation())
         {
-          sl.push_back("implementation");
+          sl.emplace_back("implementation");
         }
       }
       if (getClassDef() &&
@@ -2860,13 +2861,13 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
           !isRelated()
          )
       {
-        sl.push_back("inherited");
+        sl.emplace_back("inherited");
       }
     }
   }
   else if (isObjCMethod() && isImplementation())
   {
-    sl.push_back("implementation");
+    sl.emplace_back("implementation");
   }
 
   for (const auto &sx : m_qualifiers)

@@ -2110,14 +2110,13 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   FileInfo fi(name.str());
   state->fileName=fi.absFilePath();
   state->yyFileDef=findFileDef(Doxygen::inputNameLinkedMap,state->fileName,ambig);
-  if (state->yyFileDef==0) // if this is not an input file check if it is an
-                      // include file
+  if (state->yyFileDef==nullptr) // if this is not an input file check if it is an include file
   {
     state->yyFileDef=findFileDef(Doxygen::includeNameLinkedMap,state->fileName,ambig);
   }
   //printf("setFileName(%s) state->fileName=%s state->yyFileDef=%p\n",
   //    name,qPrint(state->fileName),state->yyFileDef);
-  if (state->yyFileDef && state->yyFileDef->isReference()) state->yyFileDef=0;
+  if (state->yyFileDef && state->yyFileDef->isReference()) state->yyFileDef=nullptr;
   state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt::IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt::CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt::Fortran;
@@ -2177,7 +2176,7 @@ static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const QCSt
   if (fi.exists() && fi.isFile())
   {
     const StringVector &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
-    if (patternMatch(fi,exclPatterns)) return 0;
+    if (patternMatch(fi,exclPatterns)) return nullptr;
 
     QCString absName = fi.absFilePath();
 
@@ -2204,7 +2203,7 @@ static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const QCSt
     if (alreadyProcessed)
     {
       //printf("  already included 2\n");
-      return 0;
+      return nullptr;
     }
     //printf("#include %s\n",qPrint(absName));
 
@@ -2730,7 +2729,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
             // marker we do macro expansion.
             if (!hash)
             {
-              expandExpression(yyscanner,substArg,0,0,level+1);
+              expandExpression(yyscanner,substArg,nullptr,0,level+1);
             }
             if (inString)
             {
@@ -3013,7 +3012,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
  */
 static const char *processUntilMatchingTerminator(const char *inputStr,QCString &result)
 {
-  if (inputStr==0) return inputStr;
+  if (inputStr==nullptr) return inputStr;
   char term = *inputStr; // capture start character of the literal
   if (term!='\'' && term!='"') return inputStr; // not a valid literal
   char c=term;
@@ -3311,7 +3310,7 @@ static bool computeExpression(yyscan_t yyscanner,const QCString &expr)
   QCString ee=expr;
   ee = removeMarkers(ee);
   state->expanded.clear();
-  expandExpression(yyscanner,e,0,0,0);
+  expandExpression(yyscanner,e,nullptr,0,0);
   //printf("after expansion '%s'\n",qPrint(e));
   e = removeIdsAndMarkers(e);
   if (e.isEmpty()) return FALSE;
@@ -3330,7 +3329,7 @@ static QCString expandMacro(yyscan_t yyscanner,const QCString &name)
   state->prevChar = yyscanner->yytext_r > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf ? *(yyscanner->yytext_r-1) : 0;
   QCString n=name;
   state->expanded.clear();
-  expandExpression(yyscanner,n,0,0,0);
+  expandExpression(yyscanner,n,nullptr,0,0);
   n=removeMarkers(n);
   state->prevChar=0;
   //printf("expandMacro '%s'->'%s'\n",qPrint(name),qPrint(n));
@@ -3551,14 +3550,14 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       if (state->includeStack.empty() && oldFileDef)
       {
         PreIncludeInfo *ii = state->includeRelations.find(absIncFileName);
-        if (ii==0)
+        if (ii==nullptr)
         {
           bool ambig;
           FileDef *incFd = findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
           state->includeRelations.add(
               absIncFileName,
               oldFileDef,
-              ambig?nullptr:incFd,
+              ambig ? nullptr : incFd,
               incFileName,
               localInclude,
               state->isImported
@@ -3604,13 +3603,13 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       if (state->includeStack.empty() && oldFileDef)
       {
         PreIncludeInfo *ii = state->includeRelations.find(absIncFileName);
-        if (ii==0)
+        if (ii==nullptr)
         {
           bool ambig;
           FileDef *incFd = findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
           ii = state->includeRelations.add(absIncFileName,
               oldFileDef,
-              ambig?0:incFd,
+              ambig ? nullptr : incFd,
               incFileName,
               localInclude,
               state->isImported
@@ -3805,14 +3804,14 @@ static Define *isDefined(yyscan_t yyscanner,const QCString &name)
       if (d->undef)
       {
         undef=true;
-        d=0;
+        d=nullptr;
       }
     }
     return d;
   };
 
   Define *def = findDefine(state->localDefines);
-  if (def==0 && !undef)
+  if (def==nullptr && !undef)
   {
     def = findDefine(state->contextDefines);
   }

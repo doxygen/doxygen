@@ -203,7 +203,7 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
   if (it==m_words.end())
   {
     //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
-    m_index[idx].push_back(IndexWord(wStr));
+    m_index[idx].emplace_back(wStr);
     it = m_words.insert({ wStr.str(), static_cast<int>(m_index[idx].size())-1 }).first;
   }
   m_index[idx][it->second].addUrlIndex(m_urlIndex,hiPriority);

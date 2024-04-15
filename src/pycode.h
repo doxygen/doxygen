@@ -34,8 +34,9 @@ class PythonCodeParser : public CodeParserInterface
 {
   public:
     PythonCodeParser();
-    virtual ~PythonCodeParser();
+   ~PythonCodeParser() override;
     NON_COPYABLE(PythonCodeParser)
+
     void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
@@ -50,8 +51,8 @@ class PythonCodeParser : public CodeParserInterface
                    bool showLineNumbers=TRUE,
                    const Definition *searchCtx=nullptr,
                    bool collectXrefs=TRUE
-                  );
-    void resetCodeParserState();
+                  ) override;
+    void resetCodeParserState() override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

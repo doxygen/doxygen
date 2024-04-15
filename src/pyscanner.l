@@ -367,13 +367,13 @@ ID        [a-z_A-Z%]+{IDSYM}*
                       }
      "'"              { // start of a single quoted string
                         yyextra->stringContext=YY_START;
-                        yyextra->copyString=0;
+                        yyextra->copyString=nullptr;
                         yyextra->packageCommentAllowed = FALSE;
                         BEGIN( SingleQuoteString );
                       }
      "\""             { // start of a double quoted string
                         yyextra->stringContext=YY_START;
-                        yyextra->copyString=0;
+                        yyextra->copyString=nullptr;
                         yyextra->packageCommentAllowed = FALSE;
                         BEGIN( DoubleQuoteString );
                       }
@@ -383,7 +383,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
     "@"{SCOPE}"("     { // decorator
                         lineCount(yyscanner);
                         yyextra->decoratorRound = 1;
-                        yyextra->copyString=0;
+                        yyextra->copyString=nullptr;
                         BEGIN( Decorator );
                       }
     "@"{SCOPE}        { // decorator
@@ -572,12 +572,12 @@ ID        [a-z_A-Z%]+{IDSYM}*
                       }
     "'"               { // start of a single quoted string
                         yyextra->stringContext=YY_START;
-                        yyextra->copyString=0;
+                        yyextra->copyString=nullptr;
                         BEGIN( SingleQuoteString );
                       }
     "\""              { // start of a double quoted string
                         yyextra->stringContext=YY_START;
-                        yyextra->copyString=0;
+                        yyextra->copyString=nullptr;
                         BEGIN( DoubleQuoteString );
                       }
     \n                { incLineNr(yyscanner); }
@@ -609,12 +609,12 @@ ID        [a-z_A-Z%]+{IDSYM}*
                       }
     "'"               { // start of a single quoted string
                         yyextra->stringContext=YY_START;
-                        yyextra->copyString=0;
+                        yyextra->copyString=nullptr;
                         BEGIN( SingleQuoteString );
                       }
     "\""              { // start of a double quoted string
                         yyextra->stringContext=YY_START;
-                        yyextra->copyString=0;
+                        yyextra->copyString=nullptr;
                         BEGIN( DoubleQuoteString );
                       }
     \n                { incLineNr(yyscanner);
@@ -1089,8 +1089,8 @@ ID        [a-z_A-Z%]+{IDSYM}*
                        }
 
     {SCOPE}            {
-                         yyextra->current->extends.push_back(
-                                              BaseInfo(substitute(yytext,".","::"),Protection::Public,Specifier::Normal)
+                         yyextra->current->extends.emplace_back(
+                                              substitute(yytext,".","::"),Protection::Public,Specifier::Normal
                                             );
                          //Has base class-do stuff
                        }
@@ -2064,7 +2064,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       yyextra->programStr = ce->program.str();
       yyextra->inputString = yyextra->programStr.data();
       yyextra->inputPosition = 0;
-      pyscannerYYrestart( 0, yyscanner );
+      pyscannerYYrestart( nullptr, yyscanner );
       if (ce->section.isCompound())
       {
         yyextra->specialBlock = false;
@@ -2107,7 +2107,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   initParser(yyscanner);
 
-  if (fileBuf==0 || fileBuf[0]=='\0') return;
+  if (fileBuf==nullptr || fileBuf[0]=='\0') return;
 
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
@@ -2163,7 +2163,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   yyextra->current->reset();
   initEntry(yyscanner);
-  pyscannerYYrestart(0,yyscanner);
+  pyscannerYYrestart(nullptr,yyscanner);
   BEGIN( Search );
   pyscannerYYlex(yyscanner);
   yyextra->lexInit=TRUE;
@@ -2197,14 +2197,14 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
   // save scanner state
   orgState = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner), yyscanner);
+  yy_switch_to_buffer(yy_create_buffer(nullptr, YY_BUF_SIZE, yyscanner), yyscanner);
   orgInputString = yyextra->inputString;
   orgInputPosition = yyextra->inputPosition;
 
   // set new string
   yyextra->inputString = text.data();
   yyextra->inputPosition = 0;
-  pyscannerYYrestart( 0, yyscanner );
+  pyscannerYYrestart( nullptr, yyscanner );
 
   BEGIN( FunctionDec );
 

@@ -4504,7 +4504,7 @@ void addMembersToMemberGroup(MemberList *ml,
         {
           mg_ptr = (*mg_it).get();
         }
-        movedMembers.push_back(MoveMemberInfo(md,mg_ptr,info->m_sli));
+        movedMembers.emplace_back(md,mg_ptr,info->m_sli);
       }
     }
   }

@@ -36,8 +36,8 @@ class FileCodeParser : public CodeParserInterface
                    bool showLineNumbers=TRUE,
                    const Definition *searchCtx=nullptr,
                    bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState() {}
+                  ) override;
+    void resetCodeParserState() override {}
 };
 
 #endif

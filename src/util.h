@@ -76,11 +76,11 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
     TextGeneratorOLImpl(OutputList &ol);
-    void writeString(const QCString &s,bool keepSpaces) const;
-    void writeBreak(int indent) const;
+    void writeString(const QCString &s,bool keepSpaces) const override;
+    void writeBreak(int indent) const override;
     void writeLink(const QCString &extRef,const QCString &file,
                    const QCString &anchor,const QCString &text
-                  ) const;
+                  ) const override;
   private:
     OutputList &m_ol;
 };

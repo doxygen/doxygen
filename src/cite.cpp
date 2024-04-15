@@ -49,8 +49,8 @@ class CiteInfoImpl : public CiteInfo
     CiteInfoImpl(const QCString &label, const QCString &text=QCString())
     : m_label(label), m_text(text) { }
 
-    virtual QCString label()    const { return m_label;    }
-    virtual QCString text()     const { return m_text;     }
+    QCString label() const override { return m_label;    }
+    QCString text()  const override { return m_text;     }
 
     void setText(const QCString &s) { m_text = s; }
 

@@ -1490,7 +1490,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
   //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
   CondParser prs;
   bool expResult = prs.parse(yyextra->fileName,yyextra->lineNr,sectId);
-  yyextra->condStack.push(commentcnvYY_CondCtx(yyextra->lineNr,sectId,yyextra->skip));
+  yyextra->condStack.emplace(yyextra->lineNr,sectId,yyextra->skip);
   if (!expResult) // not enabled
   {
     yyextra->skip=TRUE;
@@ -1713,7 +1713,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     fs->oldRaiseLvl   = oldRaiseLevel;
     fs->oldRaiseLbl   = oldRaiseLabel;
     fs->blockId       = blockId;
-    yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner),yyscanner);
+    yy_switch_to_buffer(yy_create_buffer(nullptr, YY_BUF_SIZE, yyscanner),yyscanner);
     yyextra->fileName = absFileName;
     yyextra->lineNr   = lineNr;
     yyextra->inBuf    = &fs->fileBuf;

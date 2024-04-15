@@ -77,7 +77,7 @@ class XMLParser : public XMLLocator
      */
     XMLParser(const XMLHandlers &handlers);
     /*! Destructor */
-   ~XMLParser();
+   ~XMLParser() override;
     XMLParser(const XMLParser &) = delete;
     XMLParser &operator=(const XMLParser &) = delete;
     XMLParser(XMLParser &&) = delete;
@@ -103,8 +103,8 @@ class XMLParser : public XMLLocator
               );
 
   private:
-   virtual int lineNr() const override;
-   virtual std::string fileName() const override;
+   int lineNr() const override;
+   std::string fileName() const override;
    struct Private;
    std::unique_ptr<Private> p;
 };

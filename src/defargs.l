@@ -793,7 +793,7 @@ const char * KeywordHash::find (const char *str, size_t len)
         return s;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 //--- end gperf generated code ----------------------------------------------------------
@@ -801,7 +801,7 @@ const char * KeywordHash::find (const char *str, size_t len)
 /* bug_520975 */
 static bool nameIsActuallyPartOfType(QCString &name)
 {
-  return KeywordHash::find(name.data(),name.length())!=0;
+  return KeywordHash::find(name.data(),name.length())!=nullptr;
 }
 
 /*! Converts an argument string into an ArgumentList.
@@ -823,9 +823,9 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   defargsYYset_debug(Debug::isFlagSet(Debug::Lex_defargs)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  DebugLex debugLex(Debug::Lex_defargs, __FILE__, NULL);
+  DebugLex debugLex(Debug::Lex_defargs, __FILE__, nullptr);
 
-  defargsYYrestart( 0, yyscanner );
+  defargsYYrestart( nullptr, yyscanner );
   BEGIN( Start );
   defargsYYlex(yyscanner);
   if (yyextra->argList->empty())

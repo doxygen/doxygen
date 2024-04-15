@@ -84,11 +84,11 @@ struct lexcodeYY_state
      QCString      classScope;
 
      std::unique_ptr<FileDef> exampleFileDef;
-     const FileDef    *sourceFileDef;
-     const Definition *currentDefinition;
-     const MemberDef  *currentMemberDef;
-     bool          includeCodeFragment;
-     const char   *currentFontClass;
+     const FileDef    *sourceFileDef = nullptr;
+     const Definition *currentDefinition = nullptr;
+     const MemberDef  *currentMemberDef = nullptr;
+     bool              includeCodeFragment;
+     const char       *currentFontClass = nullptr;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -1189,8 +1189,8 @@ LexCodeParser::~LexCodeParser()
 void LexCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
 }
 
 void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
@@ -1214,13 +1214,13 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_lexcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_lexcode, __FILE__, fileDef ? qPrint(fileDef->fileName()) : nullptr);
 
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
-  yyextra->currentFontClass = 0;
+  yyextra->currentFontClass = nullptr;
   yyextra->insideCodeLine = false;
 
   yyextra->classScope=scopeName;
@@ -1260,7 +1260,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 
-  lexcodeYYrestart( 0, yyscanner );
+  lexcodeYYrestart( nullptr, yyscanner );
   BEGIN( DefSection );
   lexcodeYYlex(yyscanner);
 

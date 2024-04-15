@@ -61,11 +61,6 @@ class MemberDef : public Definition
     // ----  getters -----
     //-----------------------------------------------------------------------------------
 
-    // link id
-    virtual QCString getOutputFileBase() const = 0;
-    virtual QCString getReference() const = 0;
-    virtual QCString anchor() const = 0;
-
     virtual QCString declaration() const = 0;
     virtual QCString definition() const = 0;
     virtual QCString typeString() const = 0;
@@ -102,7 +97,6 @@ class MemberDef : public Definition
     virtual int getGroupStartLine() const = 0;
     virtual bool getGroupHasDocs() const = 0;
 
-    virtual QCString qualifiedName() const = 0;
     virtual QCString objCMethodName(bool localLink,bool showStatic) const = 0;
 
     // direct kind info
@@ -201,10 +195,6 @@ class MemberDef : public Definition
     virtual bool isRelatedOrFriend() const = 0;
 
     // output info
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
-    virtual bool hasDocumentation() const = 0;  // overrides hasDocumentation in definition.h
-    //bool hasUserDocumentation() const = 0; // overrides hasUserDocumentation
     virtual bool isDeleted() const = 0;
     virtual bool isBriefSectionVisible() const = 0;
     virtual bool isDetailedSectionVisible(MemberListContainer container) const = 0;
@@ -270,7 +260,6 @@ class MemberDef : public Definition
     virtual ClassDef *category() const = 0;
     virtual const MemberDef *categoryRelation() const = 0;
 
-    virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString getDeclType() const = 0;
     virtual StringVector getLabels(const Definition *container) const = 0;
     virtual StringVector getQualifiers() const = 0;
@@ -279,12 +268,7 @@ class MemberDef : public Definition
 
     virtual QCString requiresClause() const = 0;
 
-
-    // overrules
-    virtual QCString documentation() const = 0;
-    virtual QCString briefDescription(bool abbr=FALSE) const = 0;
     virtual QCString fieldType() const = 0;
-    virtual bool isReference() const = 0;
 
     virtual QCString getDeclFileName() const = 0;
     virtual int getDeclLine() const = 0;
@@ -413,12 +397,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void setCategory(ClassDef *) = 0;
     virtual void setCategoryRelation(const MemberDef *) = 0;
-
-    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
-    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) = 0;
-    virtual void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine) = 0;
-
-    virtual void setHidden(bool b) = 0;
 
     virtual void setRequiresClause(const QCString &req) = 0;
 

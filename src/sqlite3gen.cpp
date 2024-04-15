@@ -834,16 +834,16 @@ class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 {
   public:
     TextGeneratorSqlite3Impl(StringVector &l) : m_list(l) { }
-    void writeString(const QCString & /*s*/,bool /*keepSpaces*/) const
+    void writeString(const QCString & /*s*/,bool /*keepSpaces*/) const override
     {
     }
-    void writeBreak(int) const
+    void writeBreak(int) const override
     {
       DBG_CTX(("writeBreak\n"));
     }
     void writeLink(const QCString & /*extRef*/,const QCString &file,
                    const QCString &anchor,const QCString & /*text*/
-                  ) const
+                  ) const override
     {
       std::string rs = file.str();
       if (!anchor.isEmpty())

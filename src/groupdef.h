@@ -53,10 +53,6 @@ class GroupDef : public DefinitionMutable, public Definition
   public:
     ABSTRACT_BASE_CLASS(GroupDef)
 
-    virtual DefType definitionType() const = 0;
-    virtual QCString getOutputFileBase() const = 0;
-    virtual QCString anchor() const = 0;
-    virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString groupTitle() const = 0;
     virtual void setGroupTitle( const QCString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
@@ -75,11 +71,8 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol, int hierarchyLevel) = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeTagFile(TextStream &) = 0;
     virtual size_t numDocMembers() const = 0;
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
     virtual bool isVisibleInHierarchy() const = 0;
     virtual bool isASubGroup() const = 0;
     virtual void computeAnchors() = 0;

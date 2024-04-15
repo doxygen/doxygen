@@ -157,7 +157,7 @@ class DefinitionMixin : public Base
     DefinitionMixin &operator=(const DefinitionMixin &) = default;
     DefinitionMixin(DefinitionMixin &&) = delete;
     DefinitionMixin &operator=(DefinitionMixin &&) = delete;
-   ~DefinitionMixin() = default;
+   ~DefinitionMixin() override = default;
 
     bool isAlias() const override { return FALSE; }
 
@@ -326,7 +326,7 @@ class DefinitionAliasMixin : public Base
   public:
     DefinitionAliasMixin(const Definition *scope,const Definition *alias)
       : m_impl(this,scope,alias), m_scope(scope), m_alias(alias) {}
-    virtual ~DefinitionAliasMixin() = default;
+   ~DefinitionAliasMixin() override = default;
     NON_COPYABLE(DefinitionAliasMixin)
 
     void init() { m_impl.init(); }

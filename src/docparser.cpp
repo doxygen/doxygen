@@ -63,7 +63,7 @@ void DocParser::pushContext()
   //printf("%sdocParserPushContext() count=%zu\n",qPrint(indent),context.nodeStack.size());
 
   tokenizer.pushContext();
-  contextStack.push(DocParserContext());
+  contextStack.emplace();
   auto &ctx = contextStack.top();
   ctx = context;
   ctx.lineNo = tokenizer.getLineNr();

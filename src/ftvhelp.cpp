@@ -329,7 +329,7 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
                                      def->briefFile(),def->briefLine(),
-                                     def,0,brief,FALSE,FALSE,
+                                     def,nullptr,brief,FALSE,FALSE,
                                      QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
     const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
     if (astImpl)

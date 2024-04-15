@@ -70,7 +70,7 @@ QCString RTFDocVisitor::getStyle(const QCString &name)
 
 QCString RTFDocVisitor::getListTable(const int id)
 {
-  for (int i=0 ; rtf_Table_Default[i].definition!=0 ; i++ )
+  for (int i=0 ; rtf_Table_Default[i].definition ; i++ )
   {
     if ((id == rtf_Table_Default[i].id) && (m_indentLevel == rtf_Table_Default[i].lvl))
     {

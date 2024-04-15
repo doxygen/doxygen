@@ -409,8 +409,8 @@ XMLCodeParser::~XMLCodeParser()
 void XMLCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
 }
 
 void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
@@ -434,13 +434,13 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
 
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
-  yyextra->currentFontClass = 0;
+  yyextra->currentFontClass = nullptr;
   yyextra->insideCodeLine = false;
   yyextra->searchCtx = searchCtx;
 
@@ -474,7 +474,7 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   // Starts line 1 on the output
   startCodeLine(yyscanner);
 
-  xmlcodeYYrestart( 0, yyscanner );
+  xmlcodeYYrestart( nullptr, yyscanner );
 
   xmlcodeYYlex(yyscanner);
 
@@ -486,7 +486,7 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     // delete the temporary file definition used for this example
     yyextra->exampleFileDef.reset();
-    yyextra->sourceFileDef=0;
+    yyextra->sourceFileDef=nullptr;
   }
 }
 

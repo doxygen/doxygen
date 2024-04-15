@@ -212,14 +212,14 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 {
   public:
     TextGeneratorXMLImpl(TextStream &t): m_t(t) {}
-    void writeString(const QCString &s,bool /*keepSpaces*/) const
+    void writeString(const QCString &s,bool /*keepSpaces*/) const override
     {
       writeXMLString(m_t,s);
     }
-    void writeBreak(int) const {}
+    void writeBreak(int) const override {}
     void writeLink(const QCString &extRef,const QCString &file,
                    const QCString &anchor,const QCString &text
-                  ) const
+                  ) const override
     {
       writeXMLLink(m_t,extRef,file,anchor,text,QCString());
     }

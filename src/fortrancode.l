@@ -451,7 +451,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           YY_FTN_REJECT;
                                         }
 <Start>^{BS}"end"({BS_}"module").*      { // just reset yyextra->currentModule, rest is done in following rule
-                                          yyextra->currentModule=0;
+                                          yyextra->currentModule=nullptr;
                                           YY_FTN_REJECT;
                                         }
  /*-------- subprog definition -------------------------------------*/
@@ -867,7 +867,7 @@ static void endFontClass(yyscan_t yyscanner)
   if (yyextra->currentFontClass)
   {
     yyextra->code->endFontClass();
-    yyextra->currentFontClass=0;
+    yyextra->currentFontClass=nullptr;
   }
 }
 
@@ -1210,9 +1210,9 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
       {
         const NamespaceDef *nspace= md->getNamespaceDef();
 
-        if (nspace == 0)
+        if (nspace == nullptr)
         { // found function in global scope
-          if(cd == 0)
+          if (cd == nullptr)
           { // Skip if bound to type
             return md.get();
           }
@@ -1371,7 +1371,7 @@ static void startScope(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   DBG_CTX((stderr, "===> startScope %s",yytext));
-  yyextra->scopeStack.push_back(Scope());
+  yyextra->scopeStack.emplace_back();
 }
 
 /** end scope */
@@ -1430,7 +1430,9 @@ static void checkContLines(yyscan_t yyscanner,const char *s)
 
   yyextra->hasContLine = (int *) malloc((numLines) * sizeof(int));
   for (i = 0; i < numLines; i++)
+  {
     yyextra->hasContLine[i] = 0;
+  }
   p = prepassFixedForm(s, yyextra->hasContLine,yyextra->fixedCommentAfter);
   yyextra->hasContLine[0] = 0;
 }
@@ -1473,9 +1475,9 @@ FortranCodeParser::~FortranCodeParser()
 void FortranCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
-  yyextra->currentFontClass = 0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
+  yyextra->currentFontClass = nullptr;
   yyextra->insideCodeLine = FALSE;
   BEGIN( Start );
 }
@@ -1507,20 +1509,20 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   //                const MemberDef *,bool,const Definition *searchCtx,
   //                bool collectXRefs, FortranFormat format)
   if (input.isEmpty()) return;
-  DebugLex debugLex(Debug::Lex_fortrancode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_fortrancode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->isFixedForm = recognizeFixedForm(input,p->format);
   yyextra->contLineNr = 1;
-  yyextra->hasContLine = NULL;
+  yyextra->hasContLine = nullptr;
   if (yyextra->isFixedForm)
   {
     checkContLines(yyscanner,yyextra->inputString);
     yyextra->fixedCommentAfter = Config_getInt(FORTRAN_COMMENT_AFTER);
   }
-  yyextra->currentFontClass = 0;
+  yyextra->currentFontClass = nullptr;
   yyextra->insideCodeLine = FALSE;
   yyextra->searchCtx = searchCtx;
   yyextra->collectXRefs = collectXRefs;
@@ -1538,7 +1540,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;
   yyextra->foldStack.clear();
-  if (isExampleBlock && fileDef==0)
+  if (isExampleBlock && fileDef==nullptr)
   {
     // create a dummy filedef for the example
     yyextra->exampleFileDef = createFileDef(QCString(),exampleName);
@@ -1548,15 +1550,15 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   {
     setCurrentDoc(yyscanner,QCString("l00001"));
   }
-  yyextra->currentDefinition = 0;
-  yyextra->currentMemberDef = 0;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
   if (!yyextra->exampleName.isEmpty())
   {
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
   }
   yyextra->includeCodeFragment = inlineFragment;
   startCodeLine(yyscanner);
-  fortrancodeYYrestart(0, yyscanner);
+  fortrancodeYYrestart(nullptr, yyscanner);
   BEGIN( Start );
   fortrancodeYYlex(yyscanner);
   if (yyextra->insideCodeLine)
@@ -1575,10 +1577,10 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   {
     // delete the temporary file definition used for this example
     yyextra->exampleFileDef.reset();
-    yyextra->sourceFileDef=0;
+    yyextra->sourceFileDef=nullptr;
   }
   if (yyextra->hasContLine) free(yyextra->hasContLine);
-  yyextra->hasContLine = NULL;
+  yyextra->hasContLine = nullptr;
 
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(codeOutIntf);
