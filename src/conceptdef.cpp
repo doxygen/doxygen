@@ -34,7 +34,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     ConceptDefImpl(const QCString &fileName,int startLine,int startColumn,
                    const QCString &name,const QCString &tagRef=QCString(),const QCString &tagFile=QCString());
    ~ConceptDefImpl() override;
-    NON_COPYABLE(ConceptDefImpl);
+    NON_COPYABLE(ConceptDefImpl)
 
     ConceptDef *resolveAlias() { return this; }
 
