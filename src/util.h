@@ -26,6 +26,7 @@
 #include <functional>
 #include <fstream>
 #include <variant>
+#include <string_view>
 
 #include <ctype.h>
 #include "types.h"
@@ -64,10 +65,10 @@ class TextGeneratorIntf
   public:
     ABSTRACT_BASE_CLASS(TextGeneratorIntf)
 
-    virtual void writeString(const QCString &,bool) const = 0;
+    virtual void writeString(std::string_view,bool) const = 0;
     virtual void writeBreak(int indent) const = 0;
     virtual void writeLink(const QCString &extRef,const QCString &file,
-                      const QCString &anchor,const QCString &text
+                      const QCString &anchor,std::string_view text
                      ) const = 0;
 };
 
@@ -76,10 +77,10 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
     TextGeneratorOLImpl(OutputList &ol);
-    void writeString(const QCString &s,bool keepSpaces) const override;
+    void writeString(std::string_view s,bool keepSpaces) const override;
     void writeBreak(int indent) const override;
     void writeLink(const QCString &extRef,const QCString &file,
-                   const QCString &anchor,const QCString &text
+                   const QCString &anchor,std::string_view text
                   ) const override;
   private:
     OutputList &m_ol;

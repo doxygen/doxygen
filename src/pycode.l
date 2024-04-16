@@ -1545,8 +1545,8 @@ static void findMemberLink(yyscan_t yyscanner,
   bool found = false;
   if (yyextra->currentDefinition)
   {
-    auto v = Doxygen::symbolMap->find(symName);
-    for (auto p : v)
+    const auto &v = Doxygen::symbolMap->find(symName);
+    for (const auto &p : v)
     {
       if (findMemberLink(yyscanner,ol,p,symName)) found = true;
     }

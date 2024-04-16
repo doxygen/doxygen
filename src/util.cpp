@@ -104,28 +104,32 @@ TextGeneratorOLImpl::TextGeneratorOLImpl(OutputList &ol) : m_ol(ol)
 {
 }
 
-void TextGeneratorOLImpl::writeString(const QCString &s,bool keepSpaces) const
+void TextGeneratorOLImpl::writeString(std::string_view s,bool keepSpaces) const
 {
-  if (s.isEmpty()) return;
+  if (s.empty()) return;
   //printf("TextGeneratorOlImpl::writeString('%s',%d)\n",s,keepSpaces);
   if (keepSpaces)
   {
-    const char *p=s.data();
-    if (p)
+    char cs[2];
+    char c;
+    cs[1]='\0';
+    for (size_t i=0;i<s.length();i++)
     {
-      char cs[2];
-      char c;
-      cs[1]='\0';
-      while ((c=*p++))
+      c = s[i];
+      if (c==' ')
       {
-        if (c==' ') m_ol.writeNonBreakableSpace(1);
-        else cs[0]=c,m_ol.docify(cs);
+        m_ol.writeNonBreakableSpace(1);
+      }
+      else
+      {
+        cs[0]=c;
+        m_ol.docify(cs);
       }
     }
   }
   else
   {
-    m_ol.docify(s);
+    m_ol.docify(QCString(s));
   }
 }
 
@@ -140,11 +144,11 @@ void TextGeneratorOLImpl::writeBreak(int indent) const
 }
 
 void TextGeneratorOLImpl::writeLink(const QCString &extRef,const QCString &file,
-                                    const QCString &anchor,const QCString &text
+                                    const QCString &anchor,std::string_view text
                                    ) const
 {
   //printf("TextGeneratorOlImpl::writeLink('%s')\n",text);
-  m_ol.writeObjectLink(extRef,file,anchor,text);
+  m_ol.writeObjectLink(extRef,file,anchor,QCString(text));
 }
 
 //------------------------------------------------------------------------
@@ -892,7 +896,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 {
   if (text.isEmpty()) return;
   //printf("linkify='%s'\n",qPrint(text));
-  std::string txtStr=text.str();
+  std::string_view txtStr=text.view();
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
@@ -900,7 +904,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   reg::Iterator it(txtStr,regExp);
   reg::Iterator end;
 
-  //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n",
+  //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%zu external=%d\n",
   //    scope ? qPrint(scope->name()):"<none>",
   //    fileScope ? qPrint(fileScope->name()) : "<none>",
   //    qPrint(txtStr),strLen,external);
@@ -915,8 +919,8 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     floatingIndex+=newIndex-skipIndex+matchLen;
     if (newIndex>0 && txtStr.at(newIndex-1)=='0') // ignore hex numbers (match x00 in 0x00)
     {
-      std::string part = txtStr.substr(skipIndex,newIndex+matchLen-skipIndex);
-      out.writeString(part.c_str(),keepSpaces);
+      std::string_view part = txtStr.substr(skipIndex,newIndex+matchLen-skipIndex);
+      out.writeString(part,keepSpaces);
       skipIndex=index=newIndex+matchLen;
       continue;
     }
@@ -932,7 +936,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
     if (strLen>35 && floatingIndex>30 && autoBreak) // try to insert a split point
     {
-      std::string splitText = txtStr.substr(skipIndex,newIndex-skipIndex);
+      std::string_view splitText = txtStr.substr(skipIndex,newIndex-skipIndex);
       size_t splitLength = splitText.length();
       size_t offset=1;
       size_t i = splitText.find(',');
@@ -942,26 +946,26 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       //printf("splitText=[%s] len=%d i=%d offset=%d\n",qPrint(splitText),splitLength,i,offset);
       if (i!=std::string::npos) // add a link-break at i in case of Html output
       {
-        std::string part1 = splitText.substr(0,i+offset);
-        out.writeString(part1.c_str(),keepSpaces);
+        std::string_view part1 = splitText.substr(0,i+offset);
+        out.writeString(part1,keepSpaces);
         out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
-        std::string part2 = splitText.substr(i+offset);
-        out.writeString(part2.c_str(),keepSpaces);
+        std::string_view part2 = splitText.substr(i+offset);
+        out.writeString(part2,keepSpaces);
         floatingIndex=splitLength-i-offset+matchLen;
       }
       else
       {
-        out.writeString(splitText.c_str(),keepSpaces);
+        out.writeString(splitText,keepSpaces);
       }
     }
     else
     {
       //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex));
-      std::string part = txtStr.substr(skipIndex,newIndex-skipIndex);
-      out.writeString(part.c_str(),keepSpaces);
+      std::string_view part = txtStr.substr(skipIndex,newIndex-skipIndex);
+      out.writeString(part,keepSpaces);
     }
     // get word from string
-    std::string word=txtStr.substr(newIndex,matchLen);
+    std::string_view word=txtStr.substr(newIndex,matchLen);
     QCString matchWord = substitute(substitute(QCString(word),"\\","::"),".","::");
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    qPrint(word),qPrint(matchWord),scope ? qPrint(scope->name()) : "<none>");
@@ -977,15 +981,15 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       const MemberDef *typeDef = resolver.getTypedef();
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
-        //printf("Found typedef %s\n",qPrint(typeDef->name()));
         if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
         {
           if (typeDef->getOuterScope()!=self)
           {
+            //printf("Found typedef %s word='%s'\n",qPrint(typeDef->name()),qPrint(word));
             out.writeLink(typeDef->getReference(),
                 typeDef->getOutputFileBase(),
                 typeDef->anchor(),
-                word.c_str());
+                word);
             found=TRUE;
           }
         }
@@ -995,14 +999,14 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
         {
           if (self==nullptr || cd_->qualifiedName()!=self->qualifiedName())
           {
-            out.writeLink(cd_->getReference(),cd_->getOutputFileBase(),cd_->anchor(),word.c_str());
+            //printf("Found compound %s word='%s'\n",qPrint(cd->name()),qPrint(word));
+            out.writeLink(cd_->getReference(),cd_->getOutputFileBase(),cd_->anchor(),word);
             found=TRUE;
           }
         }
       };
       if (!found && (cd || (cd=getClass(matchWord))))
       {
-        //printf("Found class %s\n",qPrint(cd->name()));
         writeCompoundName(cd);
       }
       else if ((cd=getClass(matchWord+"-p"))) // search for Obj-C protocols as well
@@ -1035,7 +1039,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       }
 
       //printf("ScopeName=%s\n",qPrint(scopeName));
-      //if (!found) printf("Trying to link %s in %s\n",qPrint(word),qPrint(scopeName));
+      //if (!found) printf("Trying to link '%s' in '%s'\n",qPrint(word),qPrint(scopeName));
       if (!found)
       {
         GetDefInput input(scopeName,matchWord,QCString());
@@ -1060,9 +1064,9 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
                 )
                )
             {
+              //printf("found symbol %s word='%s'\n",qPrint(result.md->name()),qPrint(word));
               out.writeLink(result.md->getReference(),result.md->getOutputFileBase(),
-                  result.md->anchor(),word.c_str());
-              //printf("found symbol %s\n",qPrint(matchWord));
+                  result.md->anchor(),word);
               found=TRUE;
             }
           }
@@ -1072,7 +1076,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 
     if (!found) // add word to the result
     {
-      out.writeString(word.c_str(),keepSpaces);
+      out.writeString(word,keepSpaces);
     }
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
@@ -1080,8 +1084,8 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   }
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
-  std::string lastPart = txtStr.substr(skipIndex);
-  out.writeString(lastPart.c_str(),keepSpaces);
+  std::string_view lastPart = txtStr.substr(skipIndex);
+  out.writeString(lastPart,keepSpaces);
 }
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
