@@ -2600,6 +2600,7 @@ class TranslatorPolish : public Translator
     QCString trCopyToClipboard() override
     {
       return "Kopiuj do schowka";
+    }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 1.11.0
