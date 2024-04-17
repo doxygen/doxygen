@@ -713,6 +713,8 @@ class Transl:
                     prototype += ', '
                     uniPrototype += ', '
                     status = 6
+                elif tokenId == 'assign':
+                    status=20
                 elif tokenId == 'rpar':
                     prototype += tokenStr
                     uniPrototype += tokenStr
@@ -734,6 +736,12 @@ class Transl:
                 if tokenId == 'colon':
                     backStatus = 3
                     status = 3
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+
+            elif status == 20:
+                if tokenId == 'string':
+                    status = 17
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
