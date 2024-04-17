@@ -1217,9 +1217,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trClass(bool first_capital, bool /* singular */) override
     {
-      QCString result((first_capital ? "Osztály" : "osztály"));
-      //if (!singular)  result+="ok";
-      return result;
+      return createNoun(first_capital, true, "osztály", "");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1228,9 +1226,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Fájl" : "fájl"));
-      if (!singular)  result+="ok";
-      return result;
+      return createNoun(first_capital, singular, "fájl", "ok");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1239,10 +1235,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result("");
-      if (!singular) result+=first_capital ? "Névterek" : "névterek";
-      else           result+=first_capital ? "Névtér"   : "névtér";
-      return result;
+      return createNoun(first_capital, singular, "névt", "erek", "ér");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1251,9 +1244,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modul" : "modul"));
-      if (!singular)  result+="ok";
-      return result;
+      return createNoun(first_capital, singular, "modul", "ok");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1262,9 +1253,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Oldal" : "oldal"));
-      if (!singular)  result+="ak";
-      return result;
+      return createNoun(first_capital, singular, "oldal", "ak");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1273,9 +1262,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tag" : "tag"));
-      if (!singular)  result+="ok";
-      return result;
+      return createNoun(first_capital, singular, "tag", "ok");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1284,9 +1271,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Globális elem" : "globális elem"));
-      if (!singular)  result+="ek";
-      return result;
+      return createNoun(first_capital, singular, "globális elem", "ek");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1297,9 +1282,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Szerző" : "szerző"));
-      if (!singular)  result+="k";
-      return result;
+      return createNoun(first_capital, singular, "szerző", "k");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1521,9 +1504,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trDir(bool first_capital, bool /*singular*/) override
     {
-      QCString result((first_capital ? "Könyvtár" : "könyvtár"));
-      //if (singular) result+="y"; else result+="ies";
-      return result;
+      return createNoun(first_capital, true, "könyvtár", "");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1701,9 +1682,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modul" : "modul"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "modul", "s");
     }
 
     /*! This is put at the bottom of a module documentation page and is
@@ -1737,9 +1716,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Típus" : "típus"));
-      if (!singular)  result+="ok";
-      return result;
+      return createNoun(first_capital, singular, "típus", "ok");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1748,9 +1725,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Alprogram" : "alprogram"));
-      if (!singular)  result+="ok";
-      return result;
+      return createNoun(first_capital, singular, "alprogram", "ok");
     }
 
     /*! C# Type Constraint list */

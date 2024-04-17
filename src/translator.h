@@ -72,13 +72,7 @@ class Translator
      */
     virtual QCString latexCommandName()
     {
-      QCString latex_command = Config_getString(LATEX_CMD_NAME);
-      if (latex_command.isEmpty()) latex_command = "latex";
-      if (Config_getBool(USE_PDFLATEX))
-      {
-        if (latex_command == "latex") latex_command = "pdflatex";
-      }
-      return latex_command;
+      return p_latexCommandName("pdflatex");
     }
     virtual QCString trISOLang() = 0;
 
@@ -770,6 +764,30 @@ class Translator
 // new since 1.11.0
 //////////////////////////////////////////////////////////////////////////
     virtual QCString trImportant() = 0;
+
+  protected:
+    QCString p_latexCommandName(const QCString &latexCmd)
+    {
+      QCString latex_command = Config_getString(LATEX_CMD_NAME);
+      if (latex_command.isEmpty()) latex_command = "latex";
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        if (latex_command == "latex") latex_command = latexCmd;
+      }
+      return latex_command;
+    }
+    /*! For easy flexible-noun implementation.
+     *  \internal
+     */
+    QCString createNoun(bool first_capital, bool singular,
+                        const QCString &base,
+                        const QCString &plurSuffix, const QCString &singSuffix = "" )
+    {
+      QCString result(base);
+      if (first_capital) result = result.left(1).upper() + result.mid(1);
+      result += (singular ? singSuffix : plurSuffix);
+      return result;
+    }
 };
 
 #endif

@@ -545,6 +545,7 @@ class Transl:
         status = 0
         curlyCnt = 0      # counter for the level of curly braces
 
+        backStatus = 2
         # Loop until the final state 777 is reached. The errors are processed
         # immediately. In this implementation, it always quits the application.
         while status != 777:
@@ -558,6 +559,7 @@ class Transl:
 
             elif status == 1:    # colon after the 'public'
                 if tokenId == 'colon':
+                    backStatus = 2
                     status = 2
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
@@ -566,12 +568,16 @@ class Transl:
                 if tokenId == 'virtual':
                     prototype = tokenStr  # but not to unified prototype
                     status = 3
+                elif tokenId == 'id' and tokenStr == 'QCString' and backStatus == 3:
+                    status = 4
                 elif tokenId == 'comment':
                     pass
                 elif tokenId == 'rcurly':
                     status = 11         # expected end of class
                 elif tokenId == 'id' and tokenStr == 'ABSTRACT_BASE_CLASS':
                     status = 18
+                elif tokenId == 'protected':
+                    status = 19
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
@@ -721,6 +727,13 @@ class Transl:
                     status = 2
                 elif tokenId == 'id':
                     pass
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+
+            elif status == 19:    # colon after the 'protected'
+                if tokenId == 'colon':
+                    backStatus = 3
+                    status = 3
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
