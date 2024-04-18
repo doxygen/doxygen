@@ -783,8 +783,18 @@ class Translator
                         const QCString &base,
                         const QCString &plurSuffix, const QCString &singSuffix = "" )
     {
-      QCString result(base);
-      if (first_capital) result = result.left(1).upper() + result.mid(1);
+      QCString result;
+      if (first_capital)
+      {
+        std::string res = getUTF8CharAt(base.str(),0);
+        res = convertUTF8ToUpper(res);
+        result = res.c_str();
+        result += base.mid(res.length());
+      }
+      else
+      {
+        result = base;
+      }
       result += (singular ? singSuffix : plurSuffix);
       return result;
     }
