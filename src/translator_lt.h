@@ -1180,9 +1180,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klasė" : "klasė"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "klasė", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1191,10 +1189,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Faila" : "faila"));
-      if (!singular)  result+="i";
-      else  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "faila", "i", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1203,10 +1198,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Vardų srit" : "vardų srit"));
-      if (!singular)  result+="ys";
-      else  result+="is";
-      return result;
+      return createNoun(first_capital, singular, "vardų srit", "ys", "is");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1215,9 +1207,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Grupė" : "grupė"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "grupė", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1226,10 +1216,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Puslapi" : "puslapi"));
-      if (!singular)  result+="ai";
-      else  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "puslapi", "ai", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1238,10 +1225,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Nar" : "nar"));
-      if (!singular)  result+="iai";
-      else  result+="ys";
-      return result;
+      return createNoun(first_capital, singular, "nar", "iai", "ys");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1250,10 +1234,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="ūs";
-      else  result+="us";
-      return result;
+      return createNoun(first_capital, singular, "global", "ūs", "us");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1264,10 +1245,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Autori" : "autori"));
-      if (!singular)  result+="ai";
-      else  result+="us";
-      return result;
+      return createNoun(first_capital, singular, "autori", "ai", "us");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1488,9 +1466,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Direktorij" : "direktorij"));
-      if (singular) result+="a"; else result+="os";
-      return result;
+      return createNoun(first_capital, singular, "direktorij", "os", "a");
     }
 
 //////////////////////////////////////////////////////////////////////////

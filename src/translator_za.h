@@ -1173,9 +1173,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klas" : "klas"));
-      if (!singular)  result+="se";
-      return result;
+      return createNoun(first_capital, singular, "klas", "se");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1184,9 +1182,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Leër" : "leër"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "leër", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1195,9 +1191,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Namespace" : "namespace"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "namespace", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1206,9 +1200,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Groep" : "groep"));
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(first_capital, singular, "groep", "e");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1217,9 +1209,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Bladsy" : "bladsy"));
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(first_capital, singular, "bladsy", "e");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1228,9 +1218,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Lid" : "lid"));
-      if (!singular)  result = (first_capital ? "Lede" : "lede");
-      return result;
+      return createNoun(first_capital, singular, "l", "ede", "id");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1239,9 +1227,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "global", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1252,9 +1238,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Outeur" : "outeur"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "outeur", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1476,9 +1460,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Director" : "director"));
-      if (singular) result+="y"; else result+="ies";
-      return result;
+      return createNoun(first_capital, singular, "director", "ies", "y");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1657,9 +1639,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Module" : "module"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "module", "s");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1668,7 +1648,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         bool single) override
     {
       // single is true implies a single file
-      QCString result="The documentation for this ";
+      QCString result="Die dokumentasie vir hierdie ";
       switch(compType)
       {
         case ClassDef::Class:      result+="module"; break;
@@ -1680,7 +1660,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         case ClassDef::Exception:  result+="eksepsie"; break;
         default: break;
       }
-      result+=" is gegenereer vanaf die foldende leer";
+      result+=" is gegenereer vanaf die volgende leër";
       if (single) result+=":"; else result+="s:";
       return result;
     }
@@ -1690,9 +1670,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tipe" : "tipe"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "tipe", "s");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1700,9 +1678,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Subprogram" : "subprogram"));
-      if (!singular)  result+="me";
-      return result;
+      return createNoun(first_capital, singular, "subprogram", "me");
     }
 
     /*! C# Type Constraint list */

@@ -1196,9 +1196,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klasse" : "klasse"));
-      if (!singular)  result+="r";
-      return result;
+      return createNoun(first_capital, singular, "klasse", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1207,9 +1205,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Fil" : "fil"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "fil", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1218,9 +1214,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Navnerom" : "navnerom"));
-      if (!singular)  result+="";
-      return result;
+      return createNoun(first_capital, false, "navnerom", "");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1229,9 +1223,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Gruppe" : "gruppe"));
-      if (!singular)  result+="r";
-      return result;
+      return createNoun(first_capital, singular, "gruppe", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1240,9 +1232,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Side" : "side"));
-      if (!singular)  result+="r";
-      return result;
+      return createNoun(first_capital, singular, "side", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1251,9 +1241,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Medlem" : "medlem"));
-      if (!singular)  result+="mer";
-      return result;
+      return createNoun(first_capital, singular, "medlem", "mer");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1262,9 +1250,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(first_capital, singular, "global", "e");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1275,9 +1261,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Forfatter" : "forfatter"));
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(first_capital, singular, "forfatter", "e");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1499,9 +1483,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Katalog" : "katalog"));
-      if (!singular) result+="er";
-      return result;
+      return createNoun(first_capital, singular, "katalog", "er");
     }
 
 //////////////////////////////////////////////////////////////////////////

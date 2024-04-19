@@ -87,13 +87,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     }
     QCString latexCommandName() override
     {
-      QCString latex_command = Config_getString(LATEX_CMD_NAME);
-      if (latex_command.isEmpty()) latex_command = "latex";
-      if (Config_getBool(USE_PDFLATEX))
-      {
-        if (latex_command == "latex") latex_command = "xelatex";
-      }
-      return latex_command;
+      return p_latexCommandName("xelatex");
     }
     QCString trISOLang() override
     {
@@ -1208,9 +1202,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Class" : "class"));
-      if (!singular)  result+="es";
-      return result;
+      return createNoun(first_capital, singular, "class", "es");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1219,9 +1211,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "File" : "file"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "file", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1230,9 +1220,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Namespace" : "namespace"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "namespace", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1241,9 +1229,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Group" : "group"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "group", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1252,9 +1238,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Trang" : "trang"));
-      if (!singular)  result+="";
-      return result;
+      return createNoun(first_capital, singular, "trang", "");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1263,9 +1247,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Member" : "member"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "member", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1274,9 +1256,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "global", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1287,9 +1267,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tác giả" : "tác giả"));
-      if (!singular)  result+="";
-      return result;
+      return createNoun(first_capital, singular, "tác giả", "");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1511,8 +1489,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trDir(bool first_capital, bool) override
     {
-      QCString result((first_capital ? "Thư mục" : "thư mục"));
-      return result;
+      return createNoun(first_capital, false, "thư mục", "");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1691,9 +1668,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Module" : "module"));
-      if (!singular)  result+="";
-      return result;
+      return createNoun(first_capital, singular, "module", "");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1724,9 +1699,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Kiểu" : "kiểu"));
-      if (!singular)  result+="";
-      return result;
+      return createNoun(first_capital, false, "kiểu", "");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1734,9 +1707,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Chương trình con" : "chương trình con"));
-      if (!singular)  result+="";
-      return result;
+      return createNoun(first_capital, singular, "chương trình con", "");
     }
 
     /*! C# Type Constraint list */
