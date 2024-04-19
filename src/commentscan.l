@@ -1002,6 +1002,34 @@ STopt  [^\n@\\]*
                                             BEGIN(SkipLang);
                                           }
                                         }
+<Comment>{B}*{CMD}"~{"({B}*[a-zA-Z-]*{B}*,)*{B}*[a-zA-Z-]*{B}*"}" { 
+                                          QCString fullMatch = QCString(yytext).stripWhiteSpace();
+                                          QCString optStr = fullMatch.mid(3,fullMatch.length()-4).stripWhiteSpace();
+                                          StringVector optList = split(optStr.str(),",");
+                                          bool supportedLang = false;
+                                          for (const auto &opt : optList)
+                                          {
+                                            QCString stripLang = QCString(opt.c_str()).stripWhiteSpace();
+                                            if (stripLang.isEmpty())
+                                            {
+                                              // ignore;
+                                            }
+                                            else if (Config_isAvailableEnum(OUTPUT_LANGUAGE,stripLang))
+                                            {
+                                              if (qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),stripLang)==0) supportedLang = true;
+                                            }
+                                            else
+                                            {
+                                              warn(yyextra->fileName,yyextra->lineNr,
+                                                   "non supported language '%s' specified in '%s'",
+                                                   qPrint(opt),QCString(yytext).stripWhiteSpace().data());
+                                            }
+                                          }
+                                          if (supportedLang)
+                                          {
+                                            BEGIN(SkipLang);
+                                          }
+                                        }
 <Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
                                           setOutput(yyscanner,OutputDoc);
                                           yyextra->formulaText="\\begin";
@@ -2406,13 +2434,13 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<SkipInternal>[@\\]"if"/[ \t]           {
+<SkipInternal>{CMD}"if"/[ \t]           {
                                           yyextra->condCount++;
                                           }
-<SkipInternal>[@\\]"ifnot"/[ \t]        {
+<SkipInternal>{CMD}"ifnot"/[ \t]        {
                                           yyextra->condCount++;
                                         }
-<SkipInternal>[@\\]/"endif"             {
+<SkipInternal>{CMD}/"endif"             {
                                           yyextra->condCount--;
                                           if (yyextra->condCount<0) // handle conditional section around of \internal, see bug607743
                                           {
@@ -2420,49 +2448,49 @@ STopt  [^\n@\\]*
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"section"[ \t]      {
+<SkipInternal>{CMD}/"section"[ \t]      {
                                           if (yyextra->sectionLevel>0)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsection"[ \t]   {
+<SkipInternal>{CMD}/"subsection"[ \t]   {
                                           if (yyextra->sectionLevel>1)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsubsection"[ \t] {
+<SkipInternal>{CMD}/"subsubsection"[ \t] {
                                           if (yyextra->sectionLevel>2)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"paragraph"[ \t]    {
+<SkipInternal>{CMD}/"paragraph"[ \t]    {
                                           if (yyextra->sectionLevel>3)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subparagraph"[ \t] {
+<SkipInternal>{CMD}/"subparagraph"[ \t] {
                                           if (yyextra->sectionLevel>4)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsubparagraph"[ \t] {
+<SkipInternal>{CMD}/"subsubparagraph"[ \t] {
                                           if (yyextra->sectionLevel>5)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]"endinternal"[ \t]*  {
+<SkipInternal>{CMD}"endinternal"[ \t]*  {
                                           BEGIN(Comment);
                                         }
 <SkipInternal>[^ \\@\n]+                { // skip non-special characters
@@ -2659,7 +2687,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle language specific sections ------- */
 
-<SkipLang>[\\@]"~"[a-zA-Z-]*            { /* language switch */
+<SkipLang>{CMD}"~"[a-zA-Z-]*            { /* language switch */
                                           QCString langId(&yytext[2]);
                                           if (!langId.isEmpty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
                                           {
@@ -2669,6 +2697,34 @@ STopt  [^\n@\\]*
                                           else if (langId.isEmpty() ||
                                               qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)==0)
                                           { // enable language specific section
+                                            BEGIN(Comment);
+                                          }
+                                        }
+<SkipLang>{CMD}"~{"({B}*[a-zA-Z-]*{B}*,)*{B}*[a-zA-Z-]*{B}*"}"        { /* language switch */
+                                          QCString fullMatch = QCString(yytext);
+                                          QCString optStr = fullMatch.mid(3,fullMatch.length()-4).stripWhiteSpace();
+                                          StringVector optList = split(optStr.str(),",");
+                                          bool supportedLang = false;
+                                          for (const auto &opt : optList)
+                                          {
+                                            QCString stripLang = QCString(opt.c_str()).stripWhiteSpace();
+                                            if (stripLang.isEmpty())
+                                            {
+                                              // ignore;
+                                            }
+                                            else if (Config_isAvailableEnum(OUTPUT_LANGUAGE,stripLang))
+                                            {
+                                              if (qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),stripLang)==0) supportedLang = true;
+                                            }
+                                            else
+                                            {
+                                              warn(yyextra->fileName,yyextra->lineNr,
+                                                   "non supported language '%s' specified in '%s'",
+                                                   qPrint(opt),QCString(yytext).stripWhiteSpace().data());
+                                            }
+                                          }
+                                          if (!supportedLang)
+                                          {
                                             BEGIN(Comment);
                                           }
                                         }
