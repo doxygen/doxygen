@@ -24,7 +24,7 @@
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public TranslatorAdapter_1_11_0
+class TranslatorPolish : public Translator
 {
   public:
 
@@ -2600,6 +2600,14 @@ class TranslatorPolish : public TranslatorAdapter_1_11_0
     QCString trCopyToClipboard() override
     {
       return "Kopiuj do schowka";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "Ważne";
     }
 };
 
