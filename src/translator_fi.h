@@ -1296,9 +1296,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Luokka" : "luokka")); // "Class" / "class"
-      if (!singular)  result=(first_capital ? "Luokat" : "luokat"); // "+es" -> "Classes" / "classes"
-      return result;
+      return createNoun(first_capital, singular, "luok", "at", "ka");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1307,9 +1305,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tiedosto" : "tiedosto")); // "File" / "file"
-      if (!singular)  result+="t"; // "+s" -> "Files" / "files"
-      return result;
+      return createNoun(first_capital, singular, "tiedosto", "t");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1318,9 +1314,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Nimiavaruus" : "nimiavaruus")); // "Namespace" / "namespace"
-      if (!singular)  result=(first_capital ? "Nimiavaruudet" : "nimiavaruudet"); // "+s"
-      return result;
+      return createNoun(first_capital, singular, "nimiavaruu", "det", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1329,9 +1323,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Ryhmä" : "ryhmä")); // "Group" / "group"
-      if (!singular)  result+="t"; // "+s"
-      return result;
+      return createNoun(first_capital, singular, "ryhmä", "t");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1340,9 +1332,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Sivu" : "sivu")); // "Page" / "page"
-      if (!singular)  result+="t"; // "+s"
-      return result;
+      return createNoun(first_capital, singular, "sivu", "t");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1351,9 +1341,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Jäsen" : "jäsen")); // "Member" / "member"
-      if (!singular)  result+="et"; // "+s"
-      return result;
+      return createNoun(first_capital, singular, "jäsen", "et");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1362,9 +1350,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Globaali" : "globaali")); // "Global" / "global"
-      if (!singular)  result+="t"; // "+s"
-      return result;
+      return createNoun(first_capital, singular, "globaali", "t");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1375,9 +1361,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tekijä" : "tekijä")); // "Author" / "author"
-      if (!singular)  result+="t"; // "+s"
-      return result;
+      return createNoun(first_capital, singular, "tekijä", "t");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1600,9 +1584,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Hakemisto" : "hakemisto")); // "Director" / "director"
-      if (singular) result+=""; else result+="t"; // "+y" / "+ies"
-      return result;
+      return createNoun(first_capital, singular, "hakemisto", "t");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1784,9 +1766,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Moduuli" : "moduuli")); // "Module" / "module"
-      if (!singular)  result+="t"; // "+s"
-      return result;
+      return createNoun(first_capital, singular, "moduuli", "t");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1817,9 +1797,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tyyppi" : "tyyppi")); // "Type" / "type"
-      if (!singular)  result=(first_capital ? "Tyypit" : "tyypit"); // "+s"
-      return result;
+      return createNoun(first_capital, singular, "tyyp", "it", "pi");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1827,9 +1805,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Aliohjelma" : "aliohjelma")); // "Subprogram" / "subprogram"
-      if (!singular)  result+="t"; // "+s"
-      return result;
+      return createNoun(first_capital, singular, "aliohjelma", "t");
     }
 
     /*! C# Type Constraint list */

@@ -836,9 +836,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Razred" : "razred"));
-      if (!singular)  result+="i";
-      return result;
+      return createNoun(first_capital, singular, "razred", "i");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -847,10 +845,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Datotek" : "datotek"));
-      if (!singular)  result+="e";
-      else result += "a";
-      return result;
+      return createNoun(first_capital, singular, "datotek", "e", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -859,9 +854,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Imenski prostor" : "imenski prostor"));
-      if (!singular)  result+="i";
-      return result;
+      return createNoun(first_capital, singular, "imenski prostor", "i");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -870,9 +863,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Skupina" : "skupina"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "skupina", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -881,9 +872,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Stran" : "stran"));
-      if (!singular)  result+="i";
-      return result;
+      return createNoun(first_capital, singular, "stran", "i");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -892,9 +881,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Element" : "element"));
-      if (!singular)  result+="i";
-      return result;
+      return createNoun(first_capital, singular, "element", "i");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -903,9 +890,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "global", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -916,9 +901,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Avtor" : "avtor"));
-      if (!singular)  result+="ji";
-      return result;
+      return createNoun(first_capital, singular, "avtor", "ji");
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.11
@@ -1145,9 +1128,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Imenik" : "imenik"));
-      if (singular) result+="i"; else result+="";
-      return result;
+      return createNoun(first_capital, singular, "imenik", "i");
     }
 
 //////////////////////////////////////////////////////////////////////////
