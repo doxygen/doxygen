@@ -716,11 +716,6 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         BEGIN(TripleComment);
                       }
 
-    {STARTDOCSYMS}/[^#\n] {  // start of a special comment
-                        initSpecialBlock(yyscanner);
-                        BEGIN(SpecialComment);
-                      }
-
 }
 
 <FunctionDec>{
