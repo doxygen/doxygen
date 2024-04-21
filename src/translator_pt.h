@@ -700,9 +700,8 @@ class TranslatorPortuguese : public Translator
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -2689,14 +2688,14 @@ class TranslatorPortuguese : public Translator
     QCString trCopyToClipboard() override
     {
       return "Copiado para a área de transferência";
-    }    
+    }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.11.0
 //////////////////////////////////////////////////////////////////////////
     QCString trImportant() override
     {
       return "Importante";
-    }    
+    }
 };
 
 #endif

@@ -111,11 +111,10 @@ void TextGeneratorOLImpl::writeString(std::string_view s,bool keepSpaces) const
   if (keepSpaces)
   {
     char cs[2];
-    char c;
     cs[1]='\0';
     for (size_t i=0;i<s.length();i++)
     {
-      c = s[i];
+      char c = s[i];
       if (c==' ')
       {
         m_ol.writeNonBreakableSpace(1);
@@ -136,8 +135,7 @@ void TextGeneratorOLImpl::writeString(std::string_view s,bool keepSpaces) const
 void TextGeneratorOLImpl::writeBreak(int indent) const
 {
   m_ol.lineBreak("typebreak");
-  int i;
-  for (i=0;i<indent;i++)
+  for (int i=0;i<indent;i++)
   {
     m_ol.writeNonBreakableSpace(3);
   }
@@ -242,7 +240,7 @@ QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement)
 // strip anonymous left hand side part of the scope
 QCString stripAnonymousNamespaceScope(const QCString &s)
 {
-  int i,p=0,l;
+  int i=0,p=0,l=0;
   QCString newScope;
   int sl = static_cast<int>(s.length());
   while ((i=getScopeFragment(s,p,&l))!=-1)
@@ -428,8 +426,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
       //printf("resScopeName='%s'\n",qPrint(resScopeName));
 
       // look-up scope in context
-      int is,ps=0;
-      int l;
+      int is=0,ps=0,l=0;
       while ((is=getScopeFragment(resScopeName,ps,&l))!=-1)
       {
         QCString qualScopePart = resScopeName.mid(is,l);
@@ -590,7 +587,6 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   size_t vosp=0;
   size_t vsp=0;
   size_t osp=0;
-  char c;
   char pc=0;
   // skip leading whitespace
   while (i<l && isspace(static_cast<uint8_t>(src[i])))
@@ -599,7 +595,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   }
   for (;i<l;i++)
   {
-    c=src[i];
+    char c=src[i];
     char nc=i<l-1 ? src[i+1] : ' ';
 
     auto searchForKeyword = [&](const char *kw,size_t &matchLen,size_t totalLen)
@@ -1461,7 +1457,7 @@ void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
 static void stripIrrelevantString(QCString &target,const QCString &str)
 {
   if (target==str) { target.clear(); return; }
-  int i,p=0;
+  int i=0,p=0;
   int l=static_cast<int>(str.length());
   bool changed=FALSE;
   while ((i=target.find(str,p))!=-1)
@@ -1722,7 +1718,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
 
   QCString canType;
   QCString templSpec,word;
-  int i,p=0,pp=0;
+  int i=0,p=0,pp=0;
   while ((i=extractClassNameFromType(type,p,word,templSpec))!=-1)
     // foreach identifier in the type
   {
@@ -2244,7 +2240,7 @@ GetDefResult getDefsOld(const GetDefInput &input)
   QCString mName;
   QCString mScope;
   MemberName *mn = nullptr;
-  int is,im=0,pm=0;
+  int is=0,im=0,pm=0;
 
   if (input.memberName.isEmpty()) goto exit; /* empty name => nothing to link */
 
@@ -2837,7 +2833,7 @@ static bool isLowerCase(QCString &s)
 {
   if (s.isEmpty()) return true;
   const char *p=s.data();
-  int c;
+  int c=0;
   while ((c=static_cast<uint8_t>(*p++))) if (!islower(c)) return false;
   return true;
 }
@@ -3010,7 +3006,7 @@ bool resolveRef(/* in */  const QCString &scName,
   }
   else if (tsName.find('.')!=-1) // maybe a link to a file
   {
-    bool ambig;
+    bool ambig = false;
     const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,tsName,ambig);
     if (fd && !ambig)
     {
@@ -3074,15 +3070,15 @@ bool resolveLink(/* in */ const QCString &scName,
   QCString linkRef=lr;
   QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
   //printf("ResolveLink linkRef=%s\n",qPrint(lr));
-  const FileDef  *fd;
-  const GroupDef *gd;
-  const PageDef  *pd;
-  const ClassDef *cd;
-  const DirDef   *dir;
-  const ConceptDef *cnd;
-  const NamespaceDef *nd;
-  const SectionInfo *si=nullptr;
-  bool ambig;
+  const FileDef  *fd = nullptr;
+  const GroupDef *gd = nullptr;
+  const PageDef  *pd = nullptr;
+  const ClassDef *cd = nullptr;
+  const DirDef   *dir = nullptr;
+  const ConceptDef *cnd = nullptr;
+  const NamespaceDef *nd = nullptr;
+  const SectionInfo *si = nullptr;
+  bool ambig = false;
   if (linkRef.isEmpty()) // no reference name!
   {
     return FALSE;
@@ -3223,10 +3219,9 @@ void generateFileRef(OutputList &ol,const QCString &name,const QCString &text)
   //printf("generateFileRef(%s,%s)\n",name,text);
   QCString linkText = text.isEmpty() ? text : name;
   //FileInfo *fi;
-  FileDef *fd;
-  bool ambig;
-  if ((fd=findFileDef(Doxygen::inputNameLinkedMap,name,ambig)) &&
-      fd->isLinkable())
+  bool ambig = false;
+  FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,name,ambig);
+  if (fd && fd->isLinkable())
     // link to documented input file
     ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),linkText);
   else
@@ -3275,9 +3270,8 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
 
   QCString name=Dir::cleanDirPath(n.str());
   QCString path;
-  int slashPos;
   if (name.isEmpty()) return nullptr;
-  slashPos=std::max(name.findRev('/'),name.findRev('\\'));
+  int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
     path=removeLongPathMarker(name.left(slashPos+1));
@@ -3385,8 +3379,8 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
     path=name.left(slashPos+1);
     name=name.right(name.length()-slashPos-1);
   }
-  const FileName *fn;
-  if ((fn=fnMap->find(name)))
+  const FileName *fn=fnMap->find(name);
+  if (fn)
   {
     bool first = true;
     for (const auto &fd : *fn)
@@ -3412,7 +3406,7 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
   {
     // reserve some room for expansion
     substRes.reserve(s.length()+1024);
-    char c;
+    char c = 0;
     while ((c=*p))
     {
       bool found = false;
@@ -3676,7 +3670,7 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
   bool caseSenseNames = getCaseSenseNames();
   bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
   GrowBuf growBuf;
-  signed char c;
+  signed char c = 0;
   const char *p=name.data();
   while ((c=*p++)!=0)
   {
@@ -3765,7 +3759,7 @@ QCString unescapeCharsInString(const QCString &s)
   const char *p = s.data();
   if (p)
   {
-    char c;
+    char c = 0;
     while ((c=*p++))
     {
       if (c=='_') // 2 or 3 character escape
@@ -3965,8 +3959,7 @@ void createSubDirs(const Dir &d)
   {
     // create up to 4096 subdirectories
     int createSubdirsLevelPow2 = 1 << Config_getInt(CREATE_SUBDIRS_LEVEL);
-    int l1,l2;
-    for (l1=0;l1<16;l1++)
+    for (int l1=0; l1<16; l1++)
     {
       QCString subdir;
       subdir.sprintf("d%x",l1);
@@ -3974,7 +3967,7 @@ void createSubDirs(const Dir &d)
       {
         term("Failed to create output directory '%s'\n",qPrint(subdir));
       }
-      for (l2=0; l2 < createSubdirsLevelPow2; l2++)
+      for (int l2=0; l2<createSubdirsLevelPow2; l2++)
       {
         QCString subsubdir;
         subsubdir.sprintf("d%x/d%02x",l1,l2);
@@ -4021,7 +4014,7 @@ void extractNamespaceName(const QCString &scopeName,
     QCString &className,QCString &namespaceName,
     bool allowEmptyClass)
 {
-  int i,p;
+  int i=0, p=0;
   QCString clName=scopeName;
   NamespaceDef *nd = nullptr;
   if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==nullptr)
@@ -4071,7 +4064,7 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
   QCString result=scope;
   if (!templ.isEmpty() && scope.find('<')==-1)
   {
-    int si,pi=0;
+    int si=0, pi=0;
     ClassDef *cd=nullptr;
     while (
         (si=scope.find("::",pi))!=-1 && !getClass(scope.left(si)+templ) &&
@@ -4102,8 +4095,8 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
 QCString stripScope(const QCString &name)
 {
   QCString result = name;
-  int l=static_cast<int>(result.length());
-  int p;
+  int l = static_cast<int>(result.length());
+  int p = 0;
   bool done = FALSE;
   bool skipBracket=FALSE; // if brackets do not match properly, ignore them altogether
   int count=0;
@@ -4196,9 +4189,9 @@ QCString convertToId(const QCString &s)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
-  const char *p=s.data();
-  char c;
-  bool first=TRUE;
+  const char *p = s.data();
+  char c        = 0;
+  bool first    = true;
   while ((c=*p++))
   {
     char encChar[4];
@@ -4236,8 +4229,8 @@ QCString convertToXML(const QCString &s, bool keepEntities)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
-  const char *p=s.data();
-  char c;
+  const char *p = s.data();
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)
@@ -4247,7 +4240,7 @@ QCString convertToXML(const QCString &s, bool keepEntities)
       case '&':  if (keepEntities)
                  {
                    const char *e=p;
-                   char ce;
+                   char ce = 0;
                    while ((ce=*e++))
                    {
                      if (ce==';' || (!(isId(ce) || ce=='#'))) break;
@@ -4288,7 +4281,7 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
   const char *p=s.data();
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)
@@ -4298,7 +4291,7 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
       case '&':  if (keepEntities)
                  {
                    const char *e=p;
-                   char ce;
+                   char ce = 0;
                    while ((ce=*e++))
                    {
                      if (ce==';' || (!(isId(ce) || ce=='#'))) break;
@@ -4348,7 +4341,7 @@ QCString convertToJSString(const QCString &s)
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
   const char *p=s.data();
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)
@@ -4374,7 +4367,7 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
   reg::Iterator end;
 
   GrowBuf growBuf;
-  size_t p,i=0,l;
+  size_t p=0, i=0, l=0;
   for (; it!=end ; ++it)
   {
     const auto &match = *it;
@@ -4743,7 +4736,7 @@ QCString substituteTemplateArgumentsInString(
         {
           static constexpr auto hasRecursion = [](const QCString &nameArg,const QCString &subst) -> bool
           {
-            int ii;
+            int ii=0;
             int pp=0;
             while ((ii=subst.find(nameArg,pp))!=-1)
             {
@@ -4929,7 +4922,7 @@ int getScopeFragment(const QCString &s,int p,int *l)
   int sl=static_cast<int>(s.length());
   int sp=p;
   int count=0;
-  bool done;
+  bool done=false;
   if (sp>=sl) return -1;
   while (sp<sl)
   {
@@ -4945,7 +4938,7 @@ int getScopeFragment(const QCString &s,int p,int *l)
         goto found;
       case '<': // skip template specifier
         count=1;sp++;
-        done=FALSE;
+        done=false;
         while (sp<sl && !done)
         {
           // TODO: deal with << and >> operators!
@@ -4953,7 +4946,7 @@ int getScopeFragment(const QCString &s,int p,int *l)
           switch(c)
           {
             case '<': count++; break;
-            case '>': count--; if (count==0) done=TRUE; break;
+            case '>': count--; if (count==0) done=true; break;
             default: break;
           }
         }
@@ -5326,7 +5319,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
 
   // search for leading empty lines
   int i=0,li=-1,l=static_cast<int>(s.length());
-  char c;
+  char c = 0;
   while ((c=*p))
   {
     if (c==' ' || c=='\t' || c=='\r') i++,p++;
@@ -5826,7 +5819,7 @@ bool readInputFile(const QCString &fileName,std::string &contents,bool filter,bo
     }
     const int bufSize=4096;
     char buf[bufSize];
-    int numRead;
+    int numRead = 0;
     while ((numRead=static_cast<int>(fread(buf,1,bufSize,f)))>0)
     {
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
@@ -6092,14 +6085,13 @@ QCString replaceColorMarkers(const QCString &str)
                      ((x)>='a' && (x)<='f') ? ((x)-'a'+10) :    \
                      ((x)>='A' && (x)<='F') ? ((x)-'A'+10) : 0)
 
-    double r,g,b;
-    int red,green,blue;
+    double r = 0,g = 0,b = 0;
     int level = HEXTONUM(lumStr[0])*16+HEXTONUM(lumStr[1]);
     ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
                           pow(level/255.0,gamma/100.0),&r,&g,&b);
-    red   = static_cast<int>(r*255.0);
-    green = static_cast<int>(g*255.0);
-    blue  = static_cast<int>(b*255.0);
+    int red   = static_cast<int>(r*255.0);
+    int green = static_cast<int>(g*255.0);
+    int blue  = static_cast<int>(b*255.0);
     char colStr[8];
     colStr[0]='#';
     colStr[1]=hex[red>>4];
@@ -6136,14 +6128,14 @@ bool copyFile(const QCString &src,const QCString &dest)
 int lineBlock(const QCString &text,const QCString &marker)
 {
   int result = 1;
-  int p=0,i;
-  bool found=FALSE;
 
   // find the character positions of the first marker
   int m1 = text.find(marker);
   if (m1==-1) return result;
 
   // find start line positions for the markers
+  bool found=false;
+  int p=0, i=0;
   while (!found && (i=text.find('\n',p))!=-1)
   {
     found = (p<=m1 && m1<i); // found the line with the start marker
@@ -6239,7 +6231,7 @@ QCString stripIndentation(const QCString &s)
   //printf("stripIndentation:\n%s\n------\n",qPrint(s));
   // compute minimum indentation over all lines
   const char *p=s.data();
-  char c;
+  char c=0;
   int indent=0;
   int minIndent=1000000; // "infinite"
   bool searchIndent=TRUE;
@@ -6304,12 +6296,12 @@ void stripIndentation(QCString &doc,const int indentationLevel)
 
   // by stripping content the string will only become shorter so we write the results
   // back into the input string and then resize it at the end.
-  char c;
+  char c = 0;
   const char *src = doc.data();
   char *dst = doc.rawData();
   bool insideIndent = false; // skip the initial line from stripping
   int cnt = 0;
-  while ((c=*src++)!=0)
+  while ((c=*src++))
   {
     // invariant: dst<=src
     switch(c)
@@ -6345,7 +6337,6 @@ void stripIndentation(QCString &doc,const int indentationLevel)
   }
   doc.resize(static_cast<uint32_t>(dst-doc.data()));
 }
-
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
 {
@@ -6455,10 +6446,11 @@ QCString extractDirection(QCString &docs)
       dir.erase(std::remove_if(dir.begin(),dir.end(),
                                [](const char c) { return c==' ' || c==','; }
                               ),dir.end());
-      size_t inIndex, outIndex;
       unsigned char ioMask=0;
-      if (( inIndex=dir.find( "in"))!=std::string::npos) dir.erase( inIndex,2),ioMask|=(1<<0);
-      if ((outIndex=dir.find("out"))!=std::string::npos) dir.erase(outIndex,3),ioMask|=(1<<1);
+      size_t inIndex  = dir.find( "in");
+      size_t outIndex = dir.find("out");
+      if ( inIndex!=std::string::npos) dir.erase( inIndex,2),ioMask|=(1<<0);
+      if (outIndex!=std::string::npos) dir.erase(outIndex,3),ioMask|=(1<<1);
       if (dir.empty() && ioMask!=0) // only in and/or out attributes found
       {
         docs = s.substr(l); // strip attributes
@@ -6728,10 +6720,9 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
 
   if (format == FortranFormat_Fixed) return TRUE;
   if (format == FortranFormat_Free)  return FALSE;
-  int tabSize=Config_getInt(TAB_SIZE);
-  size_t sizCont;
 
-  sizCont = contents.length();
+  int tabSize=Config_getInt(TAB_SIZE);
+  size_t sizCont = contents.length();
   for (size_t i=0;i<sizCont;i++)
   {
     column++;
@@ -6795,7 +6786,7 @@ QCString selectBlocks(const QCString &s,const SelectionBlockList &blockList,cons
   // helper to find the end of a block
   auto skipBlock = [&markerInfo](const char *p,const SelectionBlock &blk)
   {
-    char c;
+    char c = 0;
     while ((c=*p))
     {
       if (c==markerInfo.markerChar && qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // end marker
@@ -6826,7 +6817,7 @@ QCString selectBlocks(const QCString &s,const SelectionBlockList &blockList,cons
   QCString result;
   result.reserve(s.length());
   const char *p = s.data();
-  char c;
+  char c = 0;
   while ((c=*p))
   {
     if (c==markerInfo.markerChar) // potential start of marker
@@ -6906,7 +6897,7 @@ void checkBlocks(const QCString &s, const QCString fileName,const SelectionMarke
   if (s.isEmpty()) return;
 
   const char *p = s.data();
-  char c;
+  char c = 0;
   while ((c=*p))
   {
     if (c==markerInfo.markerChar) // potential start of marker
@@ -6972,7 +6963,7 @@ QCString removeEmptyLines(const QCString &s)
   const char *p=s.data();
   if (p)
   {
-    char c;
+    char c = 0;
     while ((c=*p++))
     {
       if (c=='\n')

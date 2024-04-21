@@ -356,8 +356,8 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
 
   cl=yyextra->scope;
   n=removeRedundantWhiteSpace(yyextra->name);
-  int il,ir;
-  if ((il=n.find('<'))!=-1 && (ir=n.findRev('>'))!=-1)
+  int il=n.find('<'), ir=n.findRev('>');
+  if (il!=-1 && ir!=-1)
     // TODO: handle cases like where n="operator<< <T>" 
   {
     ftl=removeRedundantWhiteSpace(n.right(n.length()-il));

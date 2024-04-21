@@ -1378,7 +1378,7 @@ static void replaceCommentMarker(yyscan_t yyscanner,std::string_view s)
   if (s.empty()) return;
   size_t p   = 0;
   size_t len = s.length();
-  char c;
+  char c = 0;
   // copy leading blanks
   while (p<len && (c=s[p]) && (c==' ' || c=='\t' || c=='\n'))
   {
@@ -1421,7 +1421,7 @@ static inline int computeIndent(const char *s)
   int col=0;
   int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     if (c==' ') col++;
@@ -1678,7 +1678,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
         return false;
       }
       lineNr = lineBlock(incText, blockId);
-      int blockPos;
+      int blockPos = 0;
       incText = extractBlock(incText, blockId, blockPos);
       fs->fileBuf.clear();
       if (!incText.isEmpty())

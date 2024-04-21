@@ -2139,7 +2139,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   // add namespaces for each scope
   QCString scope = yyextra->moduleScope;
   int startPos = 0;
-  int pos;
+  int pos = 0;
   do
   {
     pos = scope.find("::",startPos);
@@ -2191,15 +2191,11 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->specialBlock = FALSE;
   yyextra->packageCommentAllowed = FALSE;
 
-  const char *orgInputString;
-  int orgInputPosition;
-  YY_BUFFER_STATE orgState;
-
   // save scanner state
-  orgState = YY_CURRENT_BUFFER;
+  YY_BUFFER_STATE orgState = YY_CURRENT_BUFFER;
   yy_switch_to_buffer(yy_create_buffer(nullptr, YY_BUF_SIZE, yyscanner), yyscanner);
-  orgInputString = yyextra->inputString;
-  orgInputPosition = yyextra->inputPosition;
+  const char *orgInputString = yyextra->inputString;
+  int orgInputPosition = yyextra->inputPosition;
 
   // set new string
   yyextra->inputString = text.data();

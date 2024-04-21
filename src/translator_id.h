@@ -634,9 +634,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1226,7 +1225,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      return createNoun(first_capital, singular, "definisi", "-definisi") + 
+      return createNoun(first_capital, singular, "definisi", "-definisi") +
                 " global";
     }
 

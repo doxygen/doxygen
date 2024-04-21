@@ -83,7 +83,7 @@ static void unescapeCRef(QCString &s)
   const char *p = s.data();
   if (p)
   {
-    char c;
+    char c = 0;
     while ((c=*p++))
     {
       if (c=='{') c='<'; else if (c=='}') c='>';
@@ -299,7 +299,7 @@ void DocInclude::parse()
       parser()->readTextFileByName(m_file,m_text);
       // check here for the existence of the blockId inside the file, so we
       // only generate the warning once.
-      int count;
+      int count = 0;
       if (!m_blockId.isEmpty() && (count=m_text.contains(m_blockId.data()))!=2)
       {
         warn_doc_error(parser()->context.fileName,
@@ -328,7 +328,7 @@ void DocIncOperator::parse()
   size_t o = parser()->context.includeFileOffset;
   int il = parser()->context.includeFileLine;
   AUTO_TRACE("text={} off={} len={}",Trace::trunc(p),o,l);
-  size_t so = o,bo;
+  size_t so = o, bo = 0;
   bool nonEmpty = FALSE;
   switch(type())
   {
@@ -525,7 +525,7 @@ void DocSecRefItem::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   parser()->tokenizer.setStateTitle();
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -671,7 +671,7 @@ void DocInternalRef::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -823,7 +823,7 @@ void DocRef::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -941,7 +941,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
   QCString result;
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children(),FALSE))
@@ -982,7 +982,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
           if (isJavaLink) // special case to detect closing }
           {
             QCString w = parser()->context.token->name;
-            int p;
+            int p = 0;
             if (w=="}")
             {
               goto endlink;
@@ -1039,7 +1039,7 @@ bool DocDotFile::parse()
   bool ok = false;
   parser()->defaultHandleTitleAndSize(CMD_DOTFILE,thisVariant(),children(),p->width,p->height);
 
-  bool ambig;
+  bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name,ambig);
   if (fd==nullptr && !p->name.endsWith(".dot")) // try with .dot extension as well
   {
@@ -1077,7 +1077,7 @@ bool DocMscFile::parse()
   bool ok = false;
   parser()->defaultHandleTitleAndSize(CMD_MSCFILE,thisVariant(),children(),p->width,p->height);
 
-  bool ambig;
+  bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name,ambig);
   if (fd==nullptr && !p->name.endsWith(".msc")) // try with .msc extension as well
   {
@@ -1117,7 +1117,7 @@ bool DocDiaFile::parse()
   bool ok = false;
   parser()->defaultHandleTitleAndSize(CMD_DIAFILE,thisVariant(),children(),p->width,p->height);
 
-  bool ambig;
+  bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name,ambig);
   if (fd==nullptr && !p->name.endsWith(".dia")) // try with .dia extension as well
   {
@@ -1155,7 +1155,7 @@ void DocVhdlFlow::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   parser()->tokenizer.setStateTitle();
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -1203,7 +1203,7 @@ int DocHtmlHeader::parse()
   int retval=RetVal_OK;
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -1308,10 +1308,10 @@ void DocHtmlSummary::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.setStateTitle();
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
-    int tagId;
+    int tagId = 0;
     // check of </summary>
     if (tok==TK_HTMLTAG &&
         (tagId=Mappers::htmlTagMapper->map(parser()->context.token->name)) && tagId==XML_SUMMARY &&
@@ -1376,7 +1376,7 @@ int DocHRef::parse()
   int retval=RetVal_OK;
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -1610,7 +1610,7 @@ int DocHtmlCaption::parse()
   AUTO_TRACE();
   int retval=0;
   auto ns = AutoNodeStack(parser(),thisVariant());
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -2110,7 +2110,6 @@ void DocHtmlTable::computeTableGrid()
     DocHtmlRow *row = std::get_if<DocHtmlRow>(&rowNode);
     if (row)
     {
-      size_t i;
       for (auto &cellNode : row->children())
       {
         DocHtmlCell *cell = std::get_if<DocHtmlCell>(&cellNode);
@@ -2119,7 +2118,7 @@ void DocHtmlTable::computeTableGrid()
           uint32_t rs = cell->rowSpan();
           uint32_t cs = cell->colSpan();
 
-          for (i=0;i<rowSpans.size();i++)
+          for (size_t i=0;i<rowSpans.size();i++)
           {
             if (rowSpans[i].rowsLeft>0 &&
                 rowSpans[i].column==colIdx)
@@ -2136,7 +2135,7 @@ void DocHtmlTable::computeTableGrid()
           cells++;
         }
       }
-      for (i=0;i<rowSpans.size();i++)
+      for (size_t i=0;i<rowSpans.size();i++)
       {
         if (rowSpans[i].rowsLeft>0) rowSpans[i].rowsLeft--;
       }
@@ -2157,7 +2156,7 @@ int DocHtmlDescTitle::parse()
   int retval=0;
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -2661,7 +2660,7 @@ int DocSimpleListItem::parse()
 int DocSimpleList::parse()
 {
   auto ns = AutoNodeStack(parser(),thisVariant());
-  int rv;
+  int rv = 0;
   do
   {
     children().append<DocSimpleListItem>(parser(),thisVariant());
@@ -2771,7 +2770,7 @@ void DocTitle::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.setStateTitle();
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex()))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
@@ -5282,8 +5281,8 @@ int DocPara::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
   // handle style commands "inherited" from the previous paragraph
   parser()->handleInitialStyleCommands(thisVariant(),children());
-  int tok;
-  int retval=0;
+  int tok = 0;
+  int retval = 0;
   while ((tok=parser()->tokenizer.lex())) // get the next token
   {
 reparsetoken:
@@ -5766,7 +5765,7 @@ void DocText::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.setStateText();
 
-  int tok;
+  int tok = 0;
   while ((tok=parser()->tokenizer.lex())) // get the next token
   {
     switch(tok)

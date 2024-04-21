@@ -624,8 +624,8 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
       if (n->def && n->def->definitionType()==Definition::TypeFile)
       {
         const FileDef *fd = toFileDef(n->def);
-        bool doc,src;
-        doc = fileVisibleInIndex(fd,src);
+        bool src = false;
+        bool doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
           navIndex.emplace_back(node2URL(n,TRUE,FALSE),pathToNode(n,n));

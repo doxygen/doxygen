@@ -641,9 +641,8 @@ class TranslatorPolish : public Translator
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -2289,7 +2288,7 @@ class TranslatorPolish : public Translator
 
     /*! the compound type as used for the xrefitems */
     /*
-      * TODO Check usecase of this function and verify if noun case is correct  
+      * TODO Check usecase of this function and verify if noun case is correct
       * At the moment only Czech language is available for cross-reference but its cases are mixed
     */
     QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
@@ -2574,7 +2573,7 @@ class TranslatorPolish : public Translator
     {
       return "Kopiuj do schowka";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.11.0
 //////////////////////////////////////////////////////////////////////////

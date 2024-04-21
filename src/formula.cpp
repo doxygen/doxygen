@@ -67,13 +67,12 @@ void FormulaManager::initFromRepository(const QCString &dir)
     std::string readLine;
     std::string line;
     std::string prefix("\\_form#");
-    int lineNr;
     int nextLineNr=1;
     bool hasNextLine = !getline(f,readLine).fail();
     while (hasNextLine)
     {
       line = readLine;
-      lineNr = nextLineNr;
+      int lineNr = nextLineNr;
 
       // look ahead a bit because a formula can be spread over several lines
       while ((hasNextLine = !getline(f,readLine).fail()))

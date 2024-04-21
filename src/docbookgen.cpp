@@ -84,7 +84,7 @@ inline void writeDocbookCodeString(TextStream &t,const QCString &str, size_t &co
 {
   if (str.isEmpty()) return;
   const char *s = str.data();
-  char c;
+  char c=0;
   while ((c=*s++))
   {
     switch(c)
@@ -1130,7 +1130,7 @@ DB_GEN_C
 void DocbookGenerator::startMemberDocSimple(bool isEnum)
 {
 DB_GEN_C
-  int ncols;
+  int ncols=0;
   QCString title;
   if (isEnum)
   {
@@ -1387,7 +1387,7 @@ void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalT
   {
     m_t << "    <toc>\n";
     m_t << "    <title>" << theTranslator->trRTFTableOfContents() << "</title>\n";
-    int level=1,l;
+    int level=1;
     int maxLevel = localToc.docbookLevel();
     BoolVector inLi(maxLevel+1,false);
     for (const SectionInfo *si : sectionRefs)
@@ -1399,14 +1399,14 @@ void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalT
         int nextLevel = type.level();
         if (nextLevel>level)
         {
-          for (l=level;l<nextLevel;l++)
+          for (int l=level;l<nextLevel;l++)
           {
             if (l < maxLevel) m_t << "    <tocdiv>\n";
           }
         }
         else if (nextLevel<level)
         {
-          for (l=level;l>nextLevel;l--)
+          for (int l=level;l>nextLevel;l--)
           {
             inLi[l]=FALSE;
             if (l <= maxLevel) m_t << "    </tocdiv>\n";
@@ -1443,10 +1443,10 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
-  const char *q;
-  int cnt;
-  const char *p=s.data();
-  char c;
+  const char *p = s.data();
+  const char *q = nullptr;
+  int cnt = 0;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)

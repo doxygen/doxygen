@@ -247,8 +247,8 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
   {
     auto &f = *it;
     QCString level1,level2;
-    int i;
-    if ((i=f->name.find('?'))!=-1)
+    int i = f->name.find('?');
+    if (i!=-1)
     {
       level1 = f->name.left(i);
       level2 = f->name.right(f->name.length()-i-1);
@@ -519,7 +519,7 @@ void HtmlHelp::finalize()
  */
 void HtmlHelp::incContentsDepth()
 {
-  int i; for (i=0;i<p->dc+1;i++) p->cts << "  ";
+  for (int i=0; i<p->dc+1; i++) p->cts << "  ";
   p->cts << "<UL>\n";
   ++p->dc;
 }
@@ -530,7 +530,7 @@ void HtmlHelp::incContentsDepth()
  */
 void HtmlHelp::decContentsDepth()
 {
-  int i; for (i=0;i<p->dc;i++) p->cts << "  ";
+  for (int i=0; i<p->dc; i++) p->cts << "  ";
   p->cts << "</UL>\n";
   --p->dc;
 }
@@ -555,7 +555,7 @@ void HtmlHelp::addContentsItem(bool isDir,
                                const Definition * /* def */)
 {
   p->ctsItemPresent = true;
-  int i; for (i=0;i<p->dc;i++) p->cts << "  ";
+  for (int i=0; i<p->dc; i++) p->cts << "  ";
   p->cts << "<LI><OBJECT type=\"text/sitemap\">";
   p->cts << "<param name=\"Name\" value=\"" << convertToHtml(p->recoder.recode(name),TRUE) << "\">";
   if (!file.isEmpty())      // made file optional param - KPW

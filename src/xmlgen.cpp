@@ -120,7 +120,7 @@ inline void writeXMLCodeString(TextStream &t,const QCString &str, size_t &col)
 {
   if (str.isEmpty()) return;
   const char *s = str.data();
-  char c;
+  char c=0;
   while ((c=*s++))
   {
     switch(c)
@@ -2079,7 +2079,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   if (pd->localToc().isXmlEnabled() && !sectionRefs.empty())
   {
     t << "    <tableofcontents>\n";
-    int level=1,l;
+    int level=1;
     int maxLevel = pd->localToc().xmlLevel();
     BoolVector inLi(maxLevel+1,false);
     for (const SectionInfo *si : sectionRefs)
@@ -2090,14 +2090,14 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
         int nextLevel = si->type().level();
         if (nextLevel>level)
         {
-          for (l=level;l<nextLevel;l++)
+          for (int l=level;l<nextLevel;l++)
           {
             if (l < maxLevel) t << "    <tableofcontents>\n";
           }
         }
         else if (nextLevel<level)
         {
-          for (l=level;l>nextLevel;l--)
+          for (int l=level;l>nextLevel;l--)
           {
             if (l <= maxLevel && inLi[l]) t << "    </tocsect>\n";
             inLi[l]=false;

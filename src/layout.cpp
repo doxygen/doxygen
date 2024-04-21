@@ -1502,14 +1502,14 @@ void writeDefaultLayoutFile(const QCString &fileName)
 // where the number is a value of SrcLangExt in decimal notation (i.e. 16=Java, 8=IDL).
 QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
 {
-  int i,s=0,e=input.find('|');
+  int s=0,e=input.find('|');
   if (e==-1) return input; // simple title case
   int e1=e;
   while (e!=-1) // look for 'number=title' pattern separated by '|'
   {
     s=e+1;
     e=input.find('|',s);
-    i=input.find('=',s);
+    int i=input.find('=',s);
     assert(i>s);
     SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
     if (key==lang) // found matching key

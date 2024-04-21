@@ -939,11 +939,11 @@ def main():
         print("")
         print("void addConfigOptions(ConfigImpl *cfg)")
         print("{")
-        print("  ConfigString *cs;")
-        print("  ConfigEnum   *ce;")
-        print("  ConfigList   *cl;")
-        print("  ConfigInt    *ci;")
-        print("  ConfigBool   *cb;")
+        print("  ConfigString *cs = nullptr;")
+        print("  ConfigEnum   *ce = nullptr;")
+        print("  ConfigList   *cl = nullptr;")
+        print("  ConfigInt    *ci = nullptr;")
+        print("  ConfigBool   *cb = nullptr;")
         print("")
         # process header
         for n in elem.childNodes:

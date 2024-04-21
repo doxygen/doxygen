@@ -728,17 +728,16 @@ void HtmlCodeGenerator::codify(const QCString &str)
   if (!str.isEmpty())
   {
     const char *p=str.data();
-    char c;
-    int spacesToNextTabStop;
     while (*p)
     {
-      c=*p++;
+      char c=*p++;
       switch(c)
       {
-        case '\t': spacesToNextTabStop =
-                         tabSize - (m_col%tabSize);
-                   *m_t << Doxygen::spaces.left(spacesToNextTabStop);
-                   m_col+=spacesToNextTabStop;
+        case '\t': {
+                     int spacesToNextTabStop = tabSize - (m_col%tabSize);
+                     *m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                     m_col+=spacesToNextTabStop;
+                   }
                    break;
         case '\n': *m_t << "\n"; m_col=0;
                    break;
@@ -796,10 +795,9 @@ void HtmlCodeGenerator::docify(const QCString &str)
   if (!str.isEmpty())
   {
     const char *p=str.data();
-    char c;
     while (*p)
     {
-      c=*p++;
+      char c=*p++;
       switch(c)
       {
         case '<':  *m_t << "&lt;"; break;
@@ -1875,10 +1873,9 @@ void HtmlGenerator::docify_(const QCString &str,bool inHtmlComment)
   if (!str.isEmpty())
   {
     const char *p=str.data();
-    char c;
     while (*p)
     {
-      c=*p++;
+      char c=*p++;
       switch(c)
       {
         case '<':  m_t << "&lt;"; break;
@@ -2558,8 +2555,7 @@ void HtmlGenerator::addIndexItem(const QCString &,const QCString &)
 
 void HtmlGenerator::writeNonBreakableSpace(int n)
 {
-  int i;
-  for (i=0;i<n;i++)
+  for (int i=0; i<n; i++)
   {
     m_t << "&#160;";
   }
@@ -3501,7 +3497,7 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
     m_t << "<div class=\"toc\">";
     m_t << "<h3>" << theTranslator->trRTFTableOfContents() << "</h3>\n";
     m_t << "<ul>";
-    int level=1,l;
+    int level=1;
     char cs[2];
     cs[1]='\0';
     BoolVector inLi(maxLevel+1,false);
@@ -3515,14 +3511,14 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
         int nextLevel = type.level();
         if (nextLevel>level)
         {
-          for (l=level;l<nextLevel;l++)
+          for (int l=level;l<nextLevel;l++)
           {
             if (l < maxLevel) m_t << "<ul>";
           }
         }
         else if (nextLevel<level)
         {
-          for (l=level;l>nextLevel;l--)
+          for (int l=level;l>nextLevel;l--)
           {
             if (l <= maxLevel && inLi[l]) m_t << "</li>\n";
             inLi[l]=false;

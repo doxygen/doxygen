@@ -397,7 +397,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
   int numFiles = 0;
   for (const auto &fd : m_fileList)
   {
-    bool genSourceFile;
+    bool genSourceFile=false;
     if (fileVisibleInIndex(fd,genSourceFile))
     {
       numFiles++;
@@ -418,8 +418,8 @@ void DirDefImpl::writeFileList(OutputList &ol)
     ol.startMemberList();
     for (const auto &fd : m_fileList)
     {
-      bool doc,src;
-      doc = fileVisibleInIndex(fd,src);
+      bool src = false;
+      bool doc = fileVisibleInIndex(fd,src);
       if (doc || src)
       {
         ol.startMemberDeclaration();
@@ -1062,8 +1062,8 @@ void buildDirectories()
     {
       if (fd->getReference().isEmpty())
       {
-        DirDef *dir;
-        if ((dir=Doxygen::dirLinkedMap->find(fd->getPath()))==nullptr) // new directory
+        DirDef *dir=Doxygen::dirLinkedMap->find(fd->getPath());
+        if (dir==nullptr) // new directory
         {
           dir = DirDefImpl::mergeDirectoryInTree(fd->getPath());
         }

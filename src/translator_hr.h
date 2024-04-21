@@ -410,9 +410,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       // this function is used to produce a comma-separated list of items.
       // use generateMarker(i) to indicate where item i should be put.
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -942,7 +941,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      return createNoun(first_capital, singular, "globaln", "e", "a") + 
+      return createNoun(first_capital, singular, "globaln", "e", "a") +
              createNoun(false, singular, " varijabl", "e", "a");
     }
 

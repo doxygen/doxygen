@@ -913,7 +913,7 @@ static int countLines(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *p=yyextra->inputString;
-  char c;
+  char c=0;
   int count=1;
   while ((c=*p))
   {
@@ -1163,7 +1163,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,
   while (!done)
   {
     const char *sp=p;
-    char c;
+    char c=0;
     while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
@@ -1216,7 +1216,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
   if (text.isEmpty()) return;
   //printf("codifyLines(%d,\"%s\")\n",yyextra->yyLineNr,text);
   const char *p=text.data(),*sp=p;
-  char c;
+  char c=0;
   bool done=FALSE;
   while (!done)
   {

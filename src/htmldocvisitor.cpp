@@ -84,7 +84,7 @@ static QCString convertIndexWordToAnchor(const QCString &word)
   result += "_";
   cnt++;
   const char *str = word.data();
-  unsigned char c;
+  unsigned char c = 0;
   if (str)
   {
     while ((c = *str++))
@@ -283,6 +283,29 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
   }
   return result;
 }
+
+static QCString makeShortName(const QCString &name)
+{
+  QCString shortName = name;
+  int i = shortName.findRev('/');
+  if (i!=-1)
+  {
+    shortName=shortName.mid(i+1);
+  }
+  return shortName;
+}
+
+static QCString makeBaseName(const QCString &name)
+{
+  QCString baseName = makeShortName(name);
+  int i=baseName.find('.');
+  if (i!=-1)
+  {
+    baseName=baseName.left(i);
+  }
+  return baseName;
+}
+
 
 //-------------------------------------------------------------------------
 
@@ -1311,10 +1334,9 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   // check if this paragraph is the first or last or intermediate child of a <li> or <dd>.
   // this allows us to mark the tag with a special class so we can
   // fix the otherwise ugly spacing.
-  contexts_t t;
-  bool isFirst;
-  bool isLast;
-  t = getParagraphContext(p,isFirst,isLast);
+  bool isFirst = false;
+  bool isLast  = false;
+  contexts_t t = getParagraphContext(p,isFirst,isLast);
   //printf("startPara first=%d last=%d\n",isFirst,isLast);
   if (isFirst && isLast) needsTagBefore=FALSE;
 
@@ -1670,12 +1692,7 @@ void HtmlDocVisitor::operator()(const DocImage &img)
       forceEndParagraph(img);
     }
     if (m_hide) return;
-    QCString baseName=img.name();
-    int i;
-    if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
-    {
-      baseName=baseName.right(baseName.length()-i-1);
-    }
+    QCString baseName=makeShortName(img.name());
     if (!inlineImage) m_t << "<div class=\"image\">\n";
     QCString sizeAttribs;
     if (!img.width().isEmpty())
@@ -2072,10 +2089,9 @@ void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
 {
   if (str.isEmpty()) return;
   const char *p=str.data();
-  char c;
   while (*p)
   {
-    c=*p++;
+    char c=*p++;
     switch(c)
     {
       case '\n': if(retainNewline) m_t << "<br/>"; m_t << c; break;
@@ -2111,10 +2127,9 @@ QCString HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
   GrowBuf growBuf;
   if (str.isEmpty()) return str;
   const char *p=str.data();
-  char c;
   while (*p)
   {
-    c=*p++;
+    char c=*p++;
     switch(c)
     {
       case '&':  growBuf.addStr("&amp;"); break;
@@ -2188,16 +2203,7 @@ void HtmlDocVisitor::endLink()
 void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
                                   const QCString &context,const QCString &srcFile,int srcLine)
 {
-  QCString baseName=fn;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
-  if ((i=baseName.find('.'))!=-1) // strip extension
-  {
-    baseName=baseName.left(i);
-  }
+  QCString baseName=makeBaseName(fn);
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
   writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
@@ -2207,16 +2213,7 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
 void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
                                   const QCString &context,const QCString &srcFile,int srcLine)
 {
-  QCString baseName=fileName;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1) // strip path
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
-  if ((i=baseName.find('.'))!=-1) // strip extension
-  {
-    baseName=baseName.left(i);
-  }
+  QCString baseName=makeBaseName(fileName);
   baseName.prepend("msc_");
   QCString outDir = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
@@ -2230,16 +2227,7 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPa
 void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relPath,
                                   const QCString &,const QCString &srcFile,int srcLine)
 {
-  QCString baseName=fileName;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1) // strip path
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
-  if ((i=baseName.find('.'))!=-1) // strip extension
-  {
-    baseName=baseName.left(i);
-  }
+  QCString baseName=makeBaseName(fileName);
   baseName.prepend("dia_");
   QCString outDir = Config_getString(HTML_OUTPUT);
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP,srcFile,srcLine);
@@ -2250,16 +2238,7 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relP
 void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString &relPath,
                                        const QCString &,const QCString &/* srcFile */,int /* srcLine */)
 {
-  QCString baseName=fileName;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1) // strip path
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
-  if ((i=baseName.findRev('.'))!=-1) // strip extension
-  {
-    baseName=baseName.left(i);
-  }
+  QCString baseName=makeBaseName(fileName);
   QCString outDir = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
   if (imgExt=="svg")
@@ -2364,8 +2343,8 @@ void HtmlDocVisitor::forceEndParagraph(const Node &n)
       it = std::prev(it);
       styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,it);
     }
-    bool isFirst;
-    bool isLast;
+    bool isFirst = false;
+    bool isLast = false;
     getParagraphContext(*para,isFirst,isLast);
     //printf("forceEnd first=%d last=%d styleOutsideParagraph=%d\n",isFirst,isLast,styleOutsideParagraph);
     if (isFirst && isLast) return;
@@ -2413,11 +2392,11 @@ void HtmlDocVisitor::forceStartParagraph(const Node &n)
       return; // only whitespace at the end!
     }
 
-    bool needsTag = TRUE;
-    bool isFirst;
-    bool isLast;
+    bool needsTag = true;
+    bool isFirst = false;
+    bool isLast = false;
     getParagraphContext(*para,isFirst,isLast);
-    if (isFirst && isLast) needsTag = FALSE;
+    if (isFirst && isLast) needsTag = false;
     //printf("forceStart first=%d last=%d needsTag=%d\n",isFirst,isLast,needsTag);
 
     if (needsTag) m_t << "<p>";

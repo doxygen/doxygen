@@ -78,13 +78,11 @@ void LatexCodeGenerator::codify(const QCString &str)
   if (!str.isEmpty())
   {
     const char *p=str.data();
-    char c;
+    char c = 0;
     //char cs[5];
-    int spacesToNextTabStop;
     int tabSize = Config_getInt(TAB_SIZE);
     static THREAD_LOCAL char *result = nullptr;
     static THREAD_LOCAL int lresult = 0;
-    int i;
     while ((c=*p))
     {
       switch(c)
@@ -103,51 +101,54 @@ void LatexCodeGenerator::codify(const QCString &str)
                    m_col++;
                    p++;
                    break;
-        case '\t': spacesToNextTabStop =
-                         tabSize - (m_col%tabSize);
-                   for (i = 0; i < spacesToNextTabStop; i++) *m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
-                   m_col+=spacesToNextTabStop;
-                   p++;
+        case '\t': {
+                     int spacesToNextTabStop = tabSize - (m_col%tabSize);
+                     for (int i = 0; i < spacesToNextTabStop; i++) *m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
+                     m_col+=spacesToNextTabStop;
+                     p++;
+                   }
                    break;
         case '\n': *m_t << '\n';
                    m_col=0;
                    p++;
                    break;
         default:
-                   i=0;
+                   {
+                     int i=0;
 
 #undef  COPYCHAR
 // helper macro to copy a single utf8 character, dealing with multibyte chars.
-#define COPYCHAR() do {                                           \
-                     int bytes = getUTF8CharNumBytes(c);          \
-                     if (lresult < (i + bytes + 1))               \
-                     {                                            \
-                       lresult += 512;                            \
-                       result = static_cast<char *>(realloc(result, lresult)); \
-                     }                                            \
-                     for (int j=0; j<bytes && *p; j++)            \
-                     {                                            \
-                       result[i++]=*p++;                          \
-                     }                                            \
-                     m_col++;                                     \
-                   } while(0)
+#define COPYCHAR() do {                                             \
+                       int bytes = getUTF8CharNumBytes(c);          \
+                       if (lresult < (i + bytes + 1))               \
+                       {                                            \
+                         lresult += 512;                            \
+                         result = static_cast<char *>(realloc(result, lresult)); \
+                       }                                            \
+                       for (int j=0; j<bytes && *p; j++)            \
+                       {                                            \
+                         result[i++]=*p++;                          \
+                       }                                            \
+                       m_col++;                                     \
+                     } while(0)
 
-                   // gather characters until we find whitespace or another special character
-                   COPYCHAR();
-                   while ((c=*p) &&
-                          c!=0x0c && c!='\t' && c!='\n' && c!=' ' && c!='^'
-                         )
-                   {
+                     // gather characters until we find whitespace or another special character
                      COPYCHAR();
+                     while ((c=*p) &&
+                            c!=0x0c && c!='\t' && c!='\n' && c!=' ' && c!='^'
+                           )
+                     {
+                       COPYCHAR();
+                     }
+                     result[i]=0; // add terminator
+                     filterLatexString(*m_t,result,
+                                       m_insideTabbing, // insideTabbing
+                                       true,  // insidePre
+                                       false, // insideItem
+                                       m_usedTableLevel>0, // insideTable
+                                       false  // keepSpaces
+                                      );
                    }
-                   result[i]=0; // add terminator
-                   filterLatexString(*m_t,result,
-                                     m_insideTabbing, // insideTabbing
-                                     true,  // insidePre
-                                     false, // insideItem
-                                     m_usedTableLevel>0, // insideTable
-                                     false  // keepSpaces
-                                    );
                    break;
       }
     }
@@ -2352,15 +2353,13 @@ void filterLatexString(TextStream &t,const QCString &str,
   if (str.isEmpty()) return;
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   //printf("filterLatexString(%s) insideTabbing=%d\n",qPrint(str),insideTabbing);
-  const char *p=str.data();
-  const char *q;
-  int cnt;
-  unsigned char c;
+  const char *p = str.data();
+  const char *q = nullptr;
   unsigned char pc='\0';
 
   while (*p)
   {
-    c=static_cast<unsigned char>(*p++);
+    unsigned char c=static_cast<unsigned char>(*p++);
 
     if (insidePre)
     {
@@ -2416,33 +2415,35 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '$':  t << "\\$";           break;
         case '%':  t << "\\%";           break;
         case '^':  processEntity(t,pdfHyperlinks,"$^\\wedge$","\\string^");    break;
-        case '&':  // possibility to have a special symbol
-                   q = p;
-                   cnt = 2; // we have to count & and ; as well
-                   while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
-                   {
-                     cnt++;
-                     q++;
-                   }
-                   if (*q == ';')
-                   {
-                      --p; // we need & as well
-                      HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
-                      if (res == HtmlEntityMapper::Sym_Unknown)
-                      {
-                        p++;
-                        t << "\\&";
-                      }
-                      else
-                      {
-                        t << HtmlEntityMapper::instance().latex(res);
-                        q++;
-                        p = q;
-                      }
-                   }
-                   else
-                   {
-                     t << "\\&";
+        case '&':  {
+                     // possibility to have a special symbol
+                     q = p;
+                     int cnt = 2; // we have to count & and ; as well
+                     while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+                     {
+                       cnt++;
+                       q++;
+                     }
+                     if (*q == ';')
+                     {
+                       --p; // we need & as well
+                       HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
+                       if (res == HtmlEntityMapper::Sym_Unknown)
+                       {
+                         p++;
+                         t << "\\&";
+                       }
+                       else
+                       {
+                         t << HtmlEntityMapper::instance().latex(res);
+                         q++;
+                         p = q;
+                       }
+                     }
+                     else
+                     {
+                       t << "\\&";
+                     }
                    }
                    break;
         case '*':  processEntity(t,pdfHyperlinks,"$\\ast$","*");    break;
@@ -2518,8 +2519,7 @@ QCString latexEscapeLabelName(const QCString &s)
   QCString tmp(s.length(), QCString::ExplicitSize);
   TextStream t;
   const char *p=s.data();
-  char c;
-  int i;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)
@@ -2533,22 +2533,24 @@ QCString latexEscapeLabelName(const QCString &s)
       case '~': t << "````~"; break; // to get it a bit better in index together with other special characters
       // NOTE: adding a case here, means adding it to while below as well!
       default:
-        i=0;
-        // collect as long string as possible, before handing it to docify
-        tmp[i++]=c;
-        while ((c=*p) && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
         {
+          int i=0;
+          // collect as long string as possible, before handing it to docify
           tmp[i++]=c;
-          p++;
+          while ((c=*p) && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
+          {
+            tmp[i++]=c;
+            p++;
+          }
+          tmp[i]=0;
+          filterLatexString(t,tmp,
+                            true,  // insideTabbing
+                            false, // insidePre
+                            false, // insideItem
+                            false, // insideTable
+                            false  // keepSpaces
+                           );
         }
-        tmp[i]=0;
-        filterLatexString(t,tmp,
-                          true,  // insideTabbing
-                          false, // insidePre
-                          false, // insideItem
-                          false, // insideTable
-                          false  // keepSpaces
-                         );
         break;
     }
   }
@@ -2562,8 +2564,7 @@ QCString latexEscapeIndexChars(const QCString &s)
   QCString tmp(s.length(), QCString::ExplicitSize);
   TextStream t;
   const char *p=s.data();
-  char c;
-  int i;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)
@@ -2578,22 +2579,24 @@ QCString latexEscapeIndexChars(const QCString &s)
       case '}': t << "\\rcurly{}"; break;
       // NOTE: adding a case here, means adding it to while below as well!
       default:
-        i=0;
-        // collect as long string as possible, before handing it to docify
-        tmp[i++]=c;
-        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
         {
+          int i=0;
+          // collect as long string as possible, before handing it to docify
           tmp[i++]=c;
-          p++;
+          while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
+          {
+            tmp[i++]=c;
+            p++;
+          }
+          tmp[i]=0;
+          filterLatexString(t,tmp,
+                            true,   // insideTabbing
+                            false,  // insidePre
+                            false,  // insideItem
+                            false,  // insideTable
+                            false   // keepSpaces
+                           );
         }
-        tmp[i]=0;
-        filterLatexString(t,tmp,
-                          true,   // insideTabbing
-                          false,  // insidePre
-                          false,  // insideItem
-                          false,  // insideTable
-                          false   // keepSpaces
-                         );
         break;
     }
   }
@@ -2605,7 +2608,7 @@ QCString latexEscapePDFString(const QCString &s)
   if (s.isEmpty()) return s;
   TextStream t;
   const char *p=s.data();
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)
@@ -2634,7 +2637,7 @@ QCString latexFilterURL(const QCString &s)
   if (s.isEmpty()) return s;
   TextStream t;
   const char *p=s.data();
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)

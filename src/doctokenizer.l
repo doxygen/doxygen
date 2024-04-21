@@ -1688,7 +1688,6 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
 
   // Parse the attributes. Each attribute is a name, value pair
   // The result is stored in yyextra->token.attribs.
-  int startName,endName,startAttrib,endAttrib;
   int startAttribList = i;
   while (i<(int)yyleng)
   {
@@ -1703,16 +1702,17 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
       yyextra->token.emptyTag = TRUE;
       break;
     }
-    startName=i;
+    int startName=i;
     // search for end of name
     while (i<(int)yyleng && !isspace((uint8_t)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
-    endName=i;
+    int endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower();
     // skip spaces
     while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     if (tagText.at(i)=='=') // option has value
     {
+      int startAttrib=0, endAttrib=0;
       c=tagText.at(++i);
       // skip spaces
       while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }

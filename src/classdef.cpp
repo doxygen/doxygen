@@ -2771,7 +2771,7 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
   bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   QCString pageTitle = title();
 
-  HighlightedItem hli;
+  HighlightedItem hli = HighlightedItem::None;
   if (sliceOpt)
   {
     if (compoundType()==Interface)
@@ -2918,7 +2918,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
 
-  HighlightedItem hli;
+  HighlightedItem hli = HighlightedItem::None;
   if (sliceOpt)
   {
     if (compoundType()==Interface)
@@ -3541,8 +3541,8 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
 
       for (auto &srcMni : srcMnd)
       {
-        MemberNameInfo *dstMni;
-        if ((dstMni=dstMnd.find(srcMni->memberName())))
+        MemberNameInfo *dstMni=dstMnd.find(srcMni->memberName());
+        if (dstMni)
           // a member with that name is already in the class.
           // the member may hide or reimplement the one in the sub class
           // or there may be another path to the base class that is already
@@ -4430,7 +4430,7 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
     for (const auto &ibcd : m_impl->inherits)
     {
       ClassDefMutable *icd=toClassDefMutable(ibcd.classDef);
-      int lt1,lt2;
+      int lt1=-1,lt2=-1;
       if (icd && icd->isLinkable())
       {
         convertProtectionLevel(lt,ibcd.prot,&lt1,&lt2);
@@ -4547,7 +4547,7 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &
       ClassDefMutable *icd=toClassDefMutable(ibcd.classDef);
       if (icd && icd->isLinkable())
       {
-        int lt1,lt3;
+        int lt1=-1, lt3=-1;
         convertProtectionLevel(lt,ibcd.prot,&lt1,&lt3);
         if (lt2==-1 && lt3!=-1)
         {

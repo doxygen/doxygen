@@ -207,11 +207,10 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
     it = m_words.insert({ wStr.str(), static_cast<int>(m_index[idx].size())-1 }).first;
   }
   m_index[idx][it->second].addUrlIndex(m_urlIndex,hiPriority);
-  int i;
   bool found=FALSE;
   if (!recurse) // the first time we check if we can strip the prefix
   {
-    i=getPrefixIndex(word);
+    int i=getPrefixIndex(word);
     if (i>0)
     {
       addWordRec(word.data()+i,hiPriority,TRUE);
@@ -220,7 +219,7 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
   }
   if (!found) // no prefix stripped
   {
-    i=0;
+    int i=0;
     while (word[i]!=0 &&
            !((word[i]=='_' || word[i]==':' || (word[i]>='a' && word[i]<='z')) &&  // [_a-z:]
              (word[i+1]>='A' && word[i+1]<='Z')))                                 // [A-Z]
@@ -257,12 +256,11 @@ static void writeString(std::ostream &f,const QCString &s)
 
 void SearchIndex::write(const QCString &fileName)
 {
-  size_t i;
   size_t size=4; // for the header
   size+=4*numIndexEntries; // for the index
   size_t wordsOffset = size;
   // first pass: compute the size of the wordlist
-  for (i=0;i<numIndexEntries;i++)
+  for (size_t i=0;i<numIndexEntries;i++)
   {
     const auto &wlist = m_index[i];
     if (!wlist.empty())
@@ -279,7 +277,7 @@ void SearchIndex::write(const QCString &fileName)
   // second pass: compute the offsets in the index
   size_t indexOffsets[numIndexEntries];
   size_t offset=wordsOffset;
-  for (i=0;i<numIndexEntries;i++)
+  for (size_t i=0;i<numIndexEntries;i++)
   {
     const auto &wlist = m_index[i];
     if (!wlist.empty())
@@ -306,7 +304,7 @@ void SearchIndex::write(const QCString &fileName)
   int count=0;
 
   // third pass: compute offset to stats info for each word
-  for (i=0;i<numIndexEntries;i++)
+  for (size_t i=0;i<numIndexEntries;i++)
   {
     const auto &wlist = m_index[i];
     if (!wlist.empty())
@@ -334,13 +332,13 @@ void SearchIndex::write(const QCString &fileName)
     // write header
     f.put('D'); f.put('O'); f.put('X'); f.put('S');
     // write index
-    for (i=0;i<numIndexEntries;i++)
+    for (size_t i=0;i<numIndexEntries;i++)
     {
       writeInt(f,indexOffsets[i]);
     }
     // write word lists
     count=0;
-    for (i=0;i<numIndexEntries;i++)
+    for (size_t i=0;i<numIndexEntries;i++)
     {
       const auto &wlist = m_index[i];
       if (!wlist.empty())
@@ -354,9 +352,9 @@ void SearchIndex::write(const QCString &fileName)
       }
     }
     // write extra padding bytes
-    for (i=0;i<padding;i++) f.put(0);
+    for (size_t i=0;i<padding;i++) f.put(0);
     // write word statistics
-    for (i=0;i<numIndexEntries;i++)
+    for (size_t i=0;i<numIndexEntries;i++)
     {
       const auto &wlist = m_index[i];
       if (!wlist.empty())
