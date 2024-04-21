@@ -349,7 +349,7 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
   bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return result;
 
-  auto getCurrentTokenLine = [=]() -> uint32_t
+  auto getCurrentTokenLine = [this]() -> uint32_t
   {
     uint32_t l=0, c=0;
     if (p->numTokens==0) return 1;

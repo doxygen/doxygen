@@ -93,6 +93,7 @@ if (ENABLE_CLANG_TIDY)
                                 -header-filter=.;
                                 -checks=-*,cppcoreguidelines-special-member-functions
                                 #-checks=-*,cppcoreguidelines-init-variables
+                                #-checks=-*,cppcoreguidelines-misleading-capture-default-by-value
                                 #-checks=-*,modernize-use-nullptr
                                 #-checks=-*,modernize-use-override
                                 #-checks=-*,modernize-use-emplace
