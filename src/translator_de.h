@@ -754,9 +754,8 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1318,9 +1317,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trClass(bool, bool singular) override
     {
-      QCString result("Klasse");
-      if (!singular)  result+="n";
-      return result;
+      return createNoun(true, singular, "Klasse", "n");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1329,9 +1326,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trFile(bool, bool singular) override
     {
-      QCString result("Datei");
-      if (!singular)  result+="en";
-      return result;
+      return createNoun(true, singular, "Datei", "en");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1340,9 +1335,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trNamespace(bool, bool singular) override
     {
-      QCString result("Namensbereich");
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(true, singular, "Namensbereich", "e");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1351,9 +1344,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trGroup(bool, bool singular) override
     {
-      QCString result("Gruppe");
-      if (!singular)  result+="n";
-      return result;
+      return createNoun(true, singular, "Gruppe", "n");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1362,9 +1353,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trPage(bool, bool singular) override
     {
-      QCString result("Seite");
-      if (!singular)  result+="n";
-      return result;
+      return createNoun(true, singular, "Seite", "n");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1373,20 +1362,16 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trMember(bool, bool singular) override
     {
-      QCString result("Element");
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(true, singular, "Element", "e");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGlobal(bool first_capital, bool singular) override
+    QCString trGlobal(bool, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global")); // FIXME
-      if (!singular)  result+="";
-      return result;
+      return createNoun(true, singular, "Global", ""); // FIXME
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1398,9 +1383,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trAuthor(bool, bool singular) override
     {
-      QCString result("Autor");
-      if (!singular)  result+="en";
-      return result;
+      return createNoun(true, singular, "Autor", "en");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1627,9 +1610,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trDir(bool, bool singular) override
     {
-      QCString result("Verzeichnis");
-      if (!singular) result+="se";
-      return result;
+      return createNoun(true, singular, "Verzeichnis", "se");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1809,9 +1790,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trModule(bool /*first_capital*/, bool singular) override
     {
-      QCString result("Modul");
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(true, singular, "Modul", "e");
     }
 
     /*! This is put at the bottom of a module documentation page and is
@@ -1846,9 +1825,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trType(bool /*first_capital*/, bool singular) override
     {
-      QCString result("Typ");
-      if (!singular)  result+="en";
-      return result;
+      return createNoun(true, singular, "Typ", "en");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1857,9 +1834,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     QCString trSubprogram(bool /*first_capital*/, bool singular) override
     {
-      QCString result("Unterprogramm");
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(true, singular, "Unterprogramm", "e");
     }
 
     /*! C# Type Constraint list */

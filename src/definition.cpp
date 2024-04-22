@@ -371,17 +371,16 @@ void DefinitionImpl::addSectionsToIndex()
     {
       //printf("  level=%d title=%s\n",level,qPrint(si->title));
       int nextLevel = type.level();
-      int i;
       if (nextLevel>level)
       {
-        for (i=level;i<nextLevel;i++)
+        for (int i=level;i<nextLevel;i++)
         {
           Doxygen::indexList->incContentsDepth();
         }
       }
       else if (nextLevel<level)
       {
-        for (i=nextLevel;i<level;i++)
+        for (int i=nextLevel;i<level;i++)
         {
           Doxygen::indexList->decContentsDepth();
         }
@@ -738,7 +737,7 @@ class FilterCache
       const char *p=str.data();
       while (*p)
       {
-        char c;
+        char c=0;
         while ((c=*p)!='\n' && c!=0) p++; // search until end of the line
         p++;
         it->second.push_back(p-str.data());
@@ -909,7 +908,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
       do
       {
         //printf("reading line %d in range %d-%d\n",lineNr,startLine,endLine);
-        int size_read;
+        int size_read=0;
         do
         {
           // read up to maxLineLength-1 bytes, the last byte being zero

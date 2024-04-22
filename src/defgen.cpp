@@ -45,7 +45,7 @@ static inline void writeDEFString(TextStream &t,const QCString &s)
   if (!s.isEmpty())
   {
     const char* p=s.data();
-    char c;
+    char c = 0;
 
     while ((c = *(p++)))
     {

@@ -38,7 +38,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   Debug::print(Debug::Plantuml,0,"*** %s outDir: %s\n","writePlantUMLSource",qPrint(outDir));
 
   // strip any trailing slashes and backslashes
-  size_t l;
+  size_t l = 0;
   while ((l=outDir.length())>0 && (outDir.at(l-1)=='/' || outDir.at(l-1)=='\\'))
   {
     outDir = outDir.left(l-1);
@@ -80,7 +80,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   const char *p = content.data();
   if (p)
   {
-    char c;
+    char c = 0;
     bool insideComment = false;
     bool initial       = true;
     while ((c=*p++))
@@ -128,10 +128,10 @@ void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCSt
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order
   // to create the image file name which should be included in the index.qhp (Qt help index file).
-  int i;
-  if ((i=imgName.findRev('/'))!=-1) // strip path
+  int i = imgName.findRev('/');
+  if (i!=-1) // strip path
   {
-    imgName=imgName.right(imgName.length()-i-1);
+    imgName=imgName.mid(i+1);
   }
   switch (format)
   {
@@ -175,7 +175,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
                outDir:test_doxygen/DOXYGEN_OUTPUT/html
                test_doxygen/DOXYGEN_OUTPUT/html/A
    */
-  int exitCode;
+  int exitCode = 0;
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
 

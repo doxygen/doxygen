@@ -196,7 +196,7 @@ static QCString convertToPSString(const QCString &s)
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
   const char *p=s.data();
-  char c;
+  char c=0;
   while ((c=*p++))
   {
     switch (c)
@@ -244,8 +244,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
   image->writeString(x+(w-l)/2, y+(h-fontHeight)/2, di->label(),1);
   if (children)
   {
-    uint32_t i;
-    for (i=0;i<5;i++)
+    for (uint32_t i=0;i<5;i++)
     {
       image->drawHorzLine(y+h+i-6,x+w-2-i,x+w-2,firstRow?1:3,0xffffffff);
     }
@@ -329,7 +328,7 @@ QCString DiagramItem::fileName() const
 
 uint32_t DiagramItem::avgChildPos() const
 {
-  DiagramItem *di;
+  DiagramItem *di = nullptr;
   size_t c=m_children.size();
   if (c==0) // no children -> don't move
     return xPos();
@@ -420,7 +419,6 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
   if (root->numChildren()>0)
   {
     auto children = root->getChildren();
-    uint32_t k;
     uint32_t pPos=root->xPos();
     uint32_t cPos=root->avgChildPos();
     if (pPos>cPos) // move children
@@ -428,7 +426,7 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
       const auto &row=m_rows.at(r+1);
       //printf("Moving children %d-%d in row %d\n",
       //    dil->getFirst()->number(),row->count()-1,r+1);
-      for (k=children.front()->number();k<row->numItems();k++)
+      for (uint32_t k=children.front()->number();k<row->numItems();k++)
       {
         row->item(k)->move(static_cast<int>(pPos-cPos),0);
       }
@@ -439,7 +437,7 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
       const auto &row=m_rows.at(r);
       //printf("Moving parents %d-%d in row %d\n",
       //    root->number(),row->count()-1,r);
-      for (k=root->number();k<row->numItems();k++)
+      for (uint32_t k=root->number();k<row->numItems();k++)
       {
         row->item(k)->move(static_cast<int>(cPos-pPos),0);
       }
@@ -1076,7 +1074,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 {
   uint32_t baseRows=p->base.computeRows();
   uint32_t superRows=p->super.computeRows();
-  uint32_t baseMaxX, baseMaxLabelWidth, superMaxX, superMaxLabelWidth;
+  uint32_t baseMaxX = 0, baseMaxLabelWidth = 0, superMaxX = 0, superMaxLabelWidth = 0;
   p->base.computeExtremes(&baseMaxLabelWidth,&baseMaxX);
   p->super.computeExtremes(&superMaxLabelWidth,&superMaxX);
 
@@ -1371,7 +1369,7 @@ void ClassDiagram::writeImage(TextStream &t,const QCString &path,
   uint32_t superRows=p->super.computeRows();
   uint32_t rows=baseRows+superRows-1;
 
-  uint32_t lb,ls,xb,xs;
+  uint32_t lb=0,ls=0,xb=0,xs=0;
   p->base.computeExtremes(&lb,&xb);
   p->super.computeExtremes(&ls,&xs);
 

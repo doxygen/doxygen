@@ -1344,7 +1344,7 @@ void ModuleManager::resolvePartitions()
     }
 
     // also link the ModuleDef and FileDef together
-    bool ambig;
+    bool ambig = false;
     FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,mod->getDefFileName(),ambig);
     if (fd)
     {
@@ -1374,7 +1374,7 @@ void ModuleManager::resolveImports()
   }
   for (const auto &[fileName,importInfo] : p->externalImports)
   {
-    bool ambig;
+    bool ambig = false;
     FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,QCString(fileName),ambig);
     if (fd)
     {
@@ -1385,7 +1385,7 @@ void ModuleManager::resolveImports()
   }
   for (const auto &headerInfo : p->headers)
   {
-    bool ambig;
+    bool ambig = false;
     FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,headerInfo.fileName,ambig);
     if (fd)
     {

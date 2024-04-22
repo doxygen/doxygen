@@ -646,9 +646,8 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1185,9 +1184,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Sınıf" : "sınıf"));
-      if (!singular)  result+="lar";
-      return result;
+      return createNoun(first_capital, singular, "sınıf", "lar");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1196,9 +1193,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Dosya" : "dosya"));
-      if (!singular)  result+="lar";
-      return result;
+      return createNoun(first_capital, singular, "dosya", "lar");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1207,9 +1202,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Namespace" : "namespace"));
-      if (!singular)  result+="\'ler";
-      return result;
+      return createNoun(first_capital, singular, "namespace", "\'ler");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1218,9 +1211,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Grup" : "grup"));
-      if (!singular)  result+="lar";
-      return result;
+      return createNoun(first_capital, singular, "grup", "lar");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1229,9 +1220,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Sayfa" : "sayfa"));
-      if (!singular)  result+="lar";
-      return result;
+      return createNoun(first_capital, singular, "sayfa", "lar");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1243,6 +1232,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       QCString result((first_capital ? "Üye" : "üye"));
       if (!singular)  result+="ler";
       return result;
+
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1251,9 +1241,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global değişken" : "global değişken"));
-      if (!singular)  result+="ler";
-      return result;
+      return createNoun(first_capital, singular, "global değişken", "ler");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1264,9 +1252,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Yazar" : "yazar"));
-      if (!singular)  result+="lar";
-      return result;
+      return createNoun(first_capital, singular, "yazar", "lar");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1488,9 +1474,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Dizin" : "dizin"));
-      if (!singular) result+="ler";
-      return result;
+      return createNoun(first_capital, singular, "dizin", "ler");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1668,9 +1652,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modül" : "modül"));
-      if (!singular)  result+="ler";
-      return result;
+      return createNoun(first_capital, singular, "modül", "ler");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1702,9 +1684,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tip" : "tip"));
-      if (!singular)  result+="ler";
-      return result;
+      return createNoun(first_capital, singular, "tip", "ler");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1712,9 +1692,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Alt program" : "alt program"));
-      if (!singular)  result+="lar";
-      return result;
+      return createNoun(first_capital, singular, "alt program", "lar");
     }
 
     /*! C# Type Constraint list */

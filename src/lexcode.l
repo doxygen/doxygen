@@ -1055,11 +1055,11 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (text.isEmpty()) return;
   const char *p=text.data(),*sp=p;
-  char c;
   bool done=false;
   while (!done)
   {
     sp=p;
+    char c = 0;
     while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
@@ -1095,7 +1095,7 @@ static int countLines(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *p=yyextra->inputString;
-  char c;
+  char c = 0;
   int count=1;
   while ((c=*p))
   {
@@ -1127,8 +1127,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 static void lineCount(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  const char *p;
-  for (p = yytext ; *p ; ++p )
+  for (const char *p = yytext ; *p ; ++p )
   {
     if (*p=='\n')
     {

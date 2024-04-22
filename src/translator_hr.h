@@ -410,9 +410,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       // this function is used to produce a comma-separated list of items.
       // use generateMarker(i) to indicate where item i should be put.
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -888,9 +887,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klas" : "klas"));
-      result+= (singular ? "a" : "e");
-      return result;
+      return createNoun(first_capital, singular, "klas", "e", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -899,9 +896,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Datotek" : "datotek"));
-      result+= (singular ? "a" : "e");
-      return result;
+      return createNoun(first_capital, singular, "datotek", "e", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -910,12 +905,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-		QCString result;
-		if (singular)
-			result = ((first_capital ? "Imenik" : "imenik"));
-		else
-			result = ((first_capital ? "Imenici" : "imenici"));
-      return result;
+      return createNoun(first_capital, singular, "imeni", "ci", "k");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -924,9 +914,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Grup" : "grup"));
-      result+= (singular ? "a" : "e");
-      return result;
+      return createNoun(first_capital, singular, "grup", "e", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -935,9 +923,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Stranic" : "stranic"));
-      result+= (singular ? "a" : "e");
-      return result;
+      return createNoun(first_capital, singular, "stranic", "e", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -946,9 +932,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trMember(bool, bool singular) override
     {
-      QCString result("član");
-      if (!singular)  result+="ovi";
-      return result;
+      return createNoun(false, singular, "član", "ovi");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -957,13 +941,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "G" : "g"));
-	  if( singular )
-		  result += "lobalna varijabla";
-	  else
-		  result += "lobalne varijable";
-
-	  return result;
+      return createNoun(first_capital, singular, "globaln", "e", "a") +
+             createNoun(false, singular, " varijabl", "e", "a");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -974,9 +953,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Autor" : "autor"));
-      if (!singular)  result+="i";
-      return result;
+      return createNoun(first_capital, singular, "autor", "i");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1199,9 +1176,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Direktorij" : "direktorij"));
-      if (!singular) result+="i";
-      return result;
+      return createNoun(first_capital, singular, "direktorij", "i");
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.4.1
@@ -1378,9 +1353,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modul" : "modul"));
-      if (!singular)  result+="i";
-      return result;
+      return createNoun(first_capital, singular, "modul", "i");
     }
     /*! This is put at the bottom of a module documentation page and is
     *  followed by a list of files that were used to generate the page.
@@ -1410,9 +1383,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tip" : "tip"));
-      if (!singular)  result+="ovi";
-      return result;
+      return createNoun(first_capital, singular, "tip", "ovi");
     }
     /*! This is used for translation of the word that will possibly
     *  be followed by a single name or by a list of names
@@ -1420,9 +1391,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Subprogram" : "subprogram"));
-      if (!singular)  result+="i";
-      return result;
+      return createNoun(first_capital, singular, "subprogram", "i");
     }
 
     /*! C# Type Constraint list */

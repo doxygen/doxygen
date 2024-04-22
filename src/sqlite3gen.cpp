@@ -1148,8 +1148,7 @@ static void stripQualifiers(QCString &typeStr)
 
 static int prepareStatement(sqlite3 *db, SqlStmt &s)
 {
-  int rc;
-  rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,nullptr);
+  int rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,nullptr);
   if (rc!=SQLITE_OK)
   {
     err("prepare failed for:\n  %s\n  %s\n", s.query, sqlite3_errmsg(db));
@@ -1214,13 +1213,12 @@ static void pragmaTuning(sqlite3 *db)
 
 static int initializeTables(sqlite3* db)
 {
-  int rc;
   msg("Initializing DB schema (tables)...\n");
   for (unsigned int k = 0; k < sizeof(table_schema) / sizeof(table_schema[0]); k++)
   {
     const char *q = table_schema[k][1];
-    char *errmsg;
-    rc = sqlite3_exec(db, q, nullptr, nullptr, &errmsg);
+    char *errmsg = nullptr;
+    int rc = sqlite3_exec(db, q, nullptr, nullptr, &errmsg);
     if (rc != SQLITE_OK)
     {
       err("failed to execute query: %s\n\t%s\n", q, errmsg);
@@ -1232,13 +1230,12 @@ static int initializeTables(sqlite3* db)
 
 static int initializeViews(sqlite3* db)
 {
-  int rc;
   msg("Initializing DB schema (views)...\n");
   for (unsigned int k = 0; k < sizeof(view_schema) / sizeof(view_schema[0]); k++)
   {
     const char *q = view_schema[k][1];
-    char *errmsg;
-    rc = sqlite3_exec(db, q, nullptr, nullptr, &errmsg);
+    char *errmsg = nullptr;
+    int rc = sqlite3_exec(db, q, nullptr, nullptr, &errmsg);
     if (rc != SQLITE_OK)
     {
       err("failed to execute query: %s\n\t%s\n", q, errmsg);
@@ -2225,7 +2222,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
   for (const auto &ii : fd->includeFileList())
   {
     int src_id=insertPath(fd->absFilePath(),!fd->isReference());
-    int dst_id;
+    int dst_id=0;
     QCString dst_path;
     bool isLocal = (ii.kind & IncludeKind_LocalMask)!=0;
 
@@ -2274,7 +2271,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
   for (const auto &ii : fd->includedByFileList())
   {
     int dst_id=insertPath(fd->absFilePath(),!fd->isReference());
-    int src_id;
+    int src_id=0;
     QCString src_path;
     bool isLocal = (ii.kind & IncludeKind_LocalMask)!=0;
 
@@ -2533,10 +2530,9 @@ static sqlite3* openDbConnection()
 {
 
   QCString outputDirectory = Config_getString(SQLITE3_OUTPUT);
-  sqlite3 *db;
-  int rc;
+  sqlite3 *db = nullptr;
 
-  rc = sqlite3_initialize();
+  int rc = sqlite3_initialize();
   if (rc != SQLITE_OK)
   {
     err("sqlite3_initialize failed\n");
@@ -2583,9 +2579,7 @@ void generateSqlite3()
   // + related pages
   // + examples
   // + main page
-  sqlite3 *db;
-
-  db = openDbConnection();
+  sqlite3 *db = openDbConnection();
   if (db==nullptr)
   {
     return;

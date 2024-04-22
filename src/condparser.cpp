@@ -190,19 +190,16 @@ bool CondParser::parseLevel1()
  */
 bool CondParser::parseLevel2()
 {
-  bool ans;
   int opId = getOperatorId(m_token);
   if (opId == NOT)
   {
     getToken();
-    ans = !parseLevel3();
+    return !parseLevel3();
   }
   else
   {
-    ans = parseLevel3();
+    return parseLevel3();
   }
-
-  return ans;
 }
 
 

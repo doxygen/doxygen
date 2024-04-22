@@ -962,7 +962,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 {
   QCString result;
   QCString clRealName=n;
-  int p=0,i;
+  int p=0,i=0;
   if ((i=clRealName.find('<'))!=-1)
   {
     clRealName=clRealName.left(i); // strip template specialization
@@ -2257,8 +2257,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   if (annoClassDef || m_annMemb)
   {
-    int j;
-    for (j=0;j<indentLevel;j++)
+    for (int j=0;j<indentLevel;j++)
     {
       ol.writeNonBreakableSpace(3);
     }
@@ -2305,8 +2304,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
       anonType = OutputGenerator::MemberItemType::AnonymousEnd;
       ol.startMemberItem(anchor(),anonType,inheritId);
-      int j;
-      for (j=0;j< indentLevel;j++)
+      for (int j=0;j< indentLevel;j++)
       {
         ol.writeNonBreakableSpace(3);
       }
@@ -4621,7 +4619,7 @@ bool MemberDefImpl::isConstructor() const
 
 void MemberDefImpl::_computeIsDestructor()
 {
-  bool isDestructor;
+  bool isDestructor = false;
   if (m_isDMember) // for D
   {
     isDestructor = name()=="~this";
@@ -4633,7 +4631,7 @@ void MemberDefImpl::_computeIsDestructor()
   else if (name()=="__del__" &&
            getLanguage()==SrcLangExt::Python) // for Python
   {
-    isDestructor=TRUE;
+    isDestructor = true;
   }
   else if (getLanguage()==SrcLangExt::Fortran) // for Fortran
   {

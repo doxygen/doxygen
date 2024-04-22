@@ -101,7 +101,7 @@ QCString escapeTooltip(const QCString &tooltip)
   if (tooltip.isEmpty()) return tooltip;
   QCString result;
   const char *p=tooltip.data();
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     switch(c)
@@ -200,7 +200,7 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   QCString p(l);
   if (p.isEmpty()) return QCString();
   QCString result;
-  char c,pc=0;
+  char pc=0;
   uint32_t idx = 0;
   int charsLeft=static_cast<int>(p.length());
   int sinceLast=0;
@@ -212,7 +212,7 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
     br = "\\l";
   while (idx < p.length())
   {
-    c = p[idx++];
+    char c = p[idx++];
     char cs[2] = { c, 0 };
     const char *replacement = cs;
     if (htmlLike)
@@ -402,7 +402,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     {
       if (!ei.label().isEmpty()) // labels joined by \n
       {
-        int i;
+        int i=0;
         int p=0;
         QCString lab;
         while ((i=ei.label().find('\n',p))!=-1)
@@ -517,7 +517,7 @@ void DotNode::writeBox(TextStream &t,
                        GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren) const
 {
-  const char *labCol;
+  const char *labCol = nullptr;
   const char *fillCol = "white";
   if (m_classDef)
   {
@@ -527,14 +527,20 @@ void DotNode::writeBox(TextStream &t,
       fillCol = "#FFF0F0";
     }
     else if (m_classDef->hasDocumentation() && !hasNonReachableChildren)
+    {
       labCol = "gray40";
+    }
     else if (!m_classDef->hasDocumentation() && hasNonReachableChildren)
+    {
       labCol = "orangered";
+    }
     else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
     {
       labCol = "grey75";
       if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
+      {
         labCol = "gray40";
+      }
     }
   }
   else
@@ -716,7 +722,7 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
     if (!edgeInfo.label().isEmpty())
     {
       int p=0;
-      int ni;
+      int ni=0;
       while ((ni=edgeInfo.label().find('\n',p))!=-1)
       {
         t << "          <edgelabel>"
@@ -778,7 +784,7 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
     if (!edgeInfo.label().isEmpty())
     {
       int p=0;
-      int ni;
+      int ni=0;
       while ((ni=edgeInfo.label().find('\n',p))!=-1)
       {
         t << "          <edgelabel>"

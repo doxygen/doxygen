@@ -64,7 +64,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
   // find the potential snippet blocks (can also be other array like stuff in the file)
   const char *s=fileContents.data();
   int lineNr=1;
-  char c;
+  char c=0;
   const char *foundOpen=nullptr;
   std::unordered_map<std::string,BlockMarker> candidates;
   while ((c=*s))
@@ -105,7 +105,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
   s=fileContents.data();
   static auto gotoLine = [](const char *startBuf, const char *startPos, int startLine, int targetLine) -> const char *
   {
-    char cc;
+    char cc=0;
     if (targetLine<startLine)
     {
       //printf("gotoLine(pos=%p,start=%d,target=%d) backward\n",(void*)startPos,startLine,targetLine);
@@ -133,8 +133,8 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
   static auto lineIndent = [](const char *&ss) -> int
   {
     int tabSize=Config_getInt(TAB_SIZE);
-    int col=0;
-    char cc;
+    int col = 0;
+    char cc = 0;
     while ((cc=*ss++))
     {
       if (cc==' ') col++;
@@ -205,8 +205,8 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
         // process lines until the end of the indented block
         while (s < ee)
         {
-          int col=0;
-          char cc;
+          int col = 0;
+          char cc = 0;
           // skip over indentation
           while (col < marker.indent && (cc=*s++))
           {
@@ -263,7 +263,7 @@ static QCString readTextFileByName(const QCString &file)
   }
 
   // as a fallback we also look in the exampleNameDict
-  bool ambig;
+  bool ambig=false;
   FileDef *fd = findFileDef(Doxygen::exampleNameLinkedMap,file,ambig);
   if (fd)
   {

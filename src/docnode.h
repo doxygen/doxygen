@@ -1427,6 +1427,8 @@ inline void dumpDocNodeList(const DocNodeList &children)
 class DocNodeAST : public IDocNodeAST
 {
   public:
+    // Note that r can only be a rvalue, not a general forwarding reference.
+    // The compiler will error on lvalues because DotNodeVariant doesn't have a copy constructor
     template<class DocNode>
     DocNodeAST(DocNode &&r) : root(std::move(r))
     {

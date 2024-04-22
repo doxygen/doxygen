@@ -773,9 +773,8 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
       // this function is used to produce a comma-separated list of items.
       // use generateMarker(i) to indicate where item i should be put.
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1309,9 +1308,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klass" : "klass"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "klass", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1320,9 +1317,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Fil" : "fil"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "fil", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1331,9 +1326,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Namnrymd" : "namnrymd"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "namnrymd", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1342,9 +1335,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modul" : "modul"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "grupp", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1353,12 +1344,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Sid" : "sid"));
-      if (singular)
-         result+="a";
-      else
-         result+="or";
-      return result;
+      return createNoun(first_capital, singular, "sid", "or", "a");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1367,9 +1353,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Medlem" : "medlem"));
-      if (!singular)  result+="mar";
-      return result;
+      return createNoun(first_capital, singular, "medlem", "mar");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1378,9 +1362,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "global", "er");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1391,8 +1373,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool /*singular*/) override
     {
-      QCString result((first_capital ? "Författare" : "författare"));
-      return result;
+      return createNoun(first_capital, false, "författare", "");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1614,9 +1595,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Katalog" : "katalog"));
-      if (!singular) result+="er";
-      return result;
+      return createNoun(first_capital, singular, "katalog", "er");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1796,9 +1775,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-     QCString result((first_capital ? "Modul" : "modul"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "modul", "er");
     }
 
     /*! This is put at the bottom of a module documentation page and is
@@ -1831,9 +1808,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Typ" : "typ"));
-      if (!singular)  result+="er";
-      return result;
+      return createNoun(first_capital, singular, "typ", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1842,8 +1817,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
      */
     QCString trSubprogram(bool first_capital, bool /*singular*/) override
     {
-      QCString result((first_capital ? "Underprogram" : "underprogram"));
-      return result;
+      return createNoun(first_capital, false, "underprogram", "");
     }
 
     /*! C# Type Constraint list */
@@ -2393,8 +2367,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
     /** C++20 concept */
     QCString trConcept(bool first_capital, bool /* singular */) override
     {
-      QCString result((first_capital ? "Koncept" : "koncept"));
-      return result;
+      return createNoun(first_capital, false, "koncept", "");
     }
     /*! used as the title of the HTML page of a C++20 concept page */
     QCString trConceptReference(const QCString &conceptName) override

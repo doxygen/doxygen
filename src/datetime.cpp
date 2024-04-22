@@ -32,7 +32,7 @@ std::tm getCurrentDateTime()
   QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
   if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
   {
-    bool ok;
+    bool ok = false;
     uint64_t epoch = sourceDateEpoch.toUInt64(&ok);
     if (!ok)
     {
@@ -180,7 +180,7 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
   auto getDay       = [](const std::tm &dat) { return dat.tm_mday;         };
   auto getDayOfWeek = [](const std::tm &dat) { return (dat.tm_wday+6)%7+1; };
   GrowBuf growBuf;
-  char c;
+  char c = 0;
   const char *p            = format.data();
   const char *fmt_zero     = "%02d";
   const char *fmt_nonzero  = "%d";

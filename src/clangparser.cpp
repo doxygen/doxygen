@@ -349,9 +349,9 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
   bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return result;
 
-  auto getCurrentTokenLine = [=]() -> uint32_t
+  auto getCurrentTokenLine = [this]() -> uint32_t
   {
-    uint32_t l, c;
+    uint32_t l=0, c=0;
     if (p->numTokens==0) return 1;
     // guard against filters that reduce the number of lines
     if (p->curToken>=p->numTokens) p->curToken=p->numTokens-1;
@@ -403,7 +403,7 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
         ts = clang_getCString(tokenString);
         tl = ts ? strlen(ts) : 0;
         // skip over any spaces in the symbol
-        char c;
+        char c = 0;
         while (offset<sl && ((c=symbol[offset])==' ' || c=='\t' || c=='\r' || c=='\n'))
         {
           offset++;
@@ -574,7 +574,7 @@ void ClangTUParser::codifyLines(OutputCodeList &ol,const FileDef *fd,const char 
 {
   if (fontClass) ol.startFontClass(fontClass);
   const char *p=text,*sp=p;
-  char c;
+  char c = 0;
   bool inlineCodeFragment = false;
   bool done=FALSE;
   while (!done)
@@ -624,7 +624,7 @@ void ClangTUParser::writeMultiLineCodeLink(OutputCodeList &ol,
   while (!done)
   {
     const char *sp=p;
-    char c;
+    char c = 0;
     while ((c=*p++) && c!='\n') { column++; }
     if (c=='\n')
     {
@@ -804,7 +804,7 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
   for (unsigned int i=0;i<p->numTokens;i++)
   {
     CXSourceLocation start = clang_getTokenLocation(p->tu, p->tokens[i]);
-    unsigned int l, c;
+    unsigned int l=0, c=0;
     clang_getSpellingLocation(start, nullptr, &l, &c, nullptr);
     if (l > line) column = 1;
     while (line<l)

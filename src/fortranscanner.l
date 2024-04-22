@@ -1701,7 +1701,7 @@ static inline int computeIndent(const char *s)
   int col=0;
   int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     if (c=='\t') col+=tabSize-(col%tabSize);

@@ -638,7 +638,7 @@ void ManDocVisitor::operator()(const DocHtmlList &l)
     }
     if (opt.name=="start")
     {
-      bool ok;
+      bool ok = false;
       int val = opt.value.toInt(&ok);
       if (ok) m_listItemInfo[indent].number = val;
     }
@@ -664,7 +664,7 @@ void ManDocVisitor::operator()(const DocHtmlListItem &li)
     {
       if (opt.name=="value")
       {
-        bool ok;
+        bool ok = false;
         int val = opt.value.toInt(&ok);
         if (ok) m_listItemInfo[indent].number = val;
       }

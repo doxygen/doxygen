@@ -42,7 +42,7 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
   const int maxLineLen=1024;
   char url[maxLineLen];
   char ref[maxLineLen];
-  int x1,y1,x2,y2;
+  int x1=0, y1=0, x2=0, y2=0;
   std::string line;
   while (getline(f,line))
   {
@@ -162,7 +162,7 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
   absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
-  mscgen_format_t msc_format;
+  mscgen_format_t msc_format = mscgen_format_png;
   QCString imgName = absOutFile;
   switch (format)
   {

@@ -199,7 +199,7 @@ class ManGenerator : public OutputGenerator
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) {}
     void startContents() {}
     void endContents() {}
-    void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) m_t << " "; }
+    void writeNonBreakableSpace(int n) { for (int i=0;i<n;i++) m_t << " "; }
 
     void startDescTable(const QCString &t);
     void endDescTable();

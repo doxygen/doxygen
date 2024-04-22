@@ -93,7 +93,7 @@ void DocParser::popContext()
 QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type type, bool doWarn)
 {
   QCString result;
-  bool ambig;
+  bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::imageNameLinkedMap,fileName,ambig);
   //printf("Search for %s\n",fileName);
   if (fd)
@@ -112,8 +112,8 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
     if (infi.exists())
     {
       result = fileName;
-      int i;
-      if ((i=result.findRev('/'))!=-1 || (i=result.findRev('\\'))!=-1)
+      int i = result.findRev('/');
+      if (i!=-1 || (i=result.findRev('\\'))!=-1)
       {
 	result = result.right(static_cast<int>(result.length())-i-1);
       }
@@ -419,7 +419,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
     AUTO_TRACE_EXIT("page");
     return true;
   }
-  bool ambig;
+  bool ambig = false;
   fd = findFileDef(Doxygen::inputNameLinkedMap,cmdArg,ambig);
   if (fd && !ambig) // file
   {
@@ -786,7 +786,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   const MemberDef  *member=nullptr;
   size_t len = context.token->name.length();
   ClassDef *cd=nullptr;
-  bool ambig;
+  bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,context.fileName,ambig);
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
   if (!context.insideHtmlLink &&
@@ -883,7 +883,7 @@ void DocParser::handleParameterType(DocNodeVariant *parent,DocNodeList &children
   QCString name = context.token->name; // save token name
   AUTO_TRACE("name={}",name);
   QCString name1;
-  int p=0,i,ii;
+  int p=0, i=0, ii=0;
   while ((i=paramTypes.find('|',p))!=-1)
   {
     name1 = paramTypes.mid(p,i-p);
@@ -997,7 +997,7 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
 
   // parse title
   tokenizer.setStateTitle();
-  int tok;
+  int tok = 0;
   while ((tok=tokenizer.lex()))
   {
     if (tok==TK_WORD && (context.token->name=="width=" || context.token->name=="height="))
@@ -1148,7 +1148,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\image command");
     return;
   }
-  DocImage::Type t;
+  DocImage::Type t = DocImage::Html;
   QCString imgType = context.token->name.lower();
   if      (imgType=="html")    t=DocImage::Html;
   else if (imgType=="latex")   t=DocImage::Latex;

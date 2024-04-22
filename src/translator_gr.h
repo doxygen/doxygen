@@ -73,13 +73,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
 
     QCString latexCommandName() override
     {
-      QCString latex_command = Config_getString(LATEX_CMD_NAME);
-      if (latex_command.isEmpty()) latex_command = "latex";
-      if (Config_getBool(USE_PDFLATEX))
-      {
-        if (latex_command == "latex") latex_command = "xelatex";
-      }
-      return latex_command;
+      return p_latexCommandName("xelatex");
     }
 
     QCString trISOLang() override
@@ -654,9 +648,8 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -1197,9 +1190,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Κλάση" : "κλάση"));
-      if (!singular)  result+="";
-      return result;
+      return createNoun(first_capital, singular, "κλάση", "");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1208,9 +1199,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Αρχεί" : "αρχεί"));
-      if (!singular)  result+="α"; else result+="ο";
-      return result;
+      return createNoun(first_capital, singular, "αρχεί", "α", "ο");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1219,10 +1208,8 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Χ" : "χ"));
-      if (!singular)  result+="ώροι"; else result+="ώρος";
-	  result+=" ονομάτων";
-      return result;
+      return createNoun(first_capital, singular, "χ", "ώροι", "ώρος") +
+	     " ονομάτων";
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1231,9 +1218,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Ομάδ" : "ομάδ"));
-      if (!singular)  result+="ες"; else result+="α";
-      return result;
+      return createNoun(first_capital, singular, "ομάδ", "ες", "α");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1242,9 +1227,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Σελίδ" : "σελίδ"));
-      if (!singular)  result+="ες"; else result+="α";
-      return result;
+      return createNoun(first_capital, singular, "σελίδ", "ες", "α");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1253,9 +1236,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Μέλ" : "μέλ"));
-      if (!singular)  result+="η"; else result+="ος";
-      return result;
+      return createNoun(first_capital, singular, "μέλ", "η", "ος");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1264,9 +1245,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Καθολικ" : "καθολικ"));
-      if (!singular) result+="ές"; else result+="ή";
-      return result;
+      return createNoun(first_capital, singular, "καθολικ", "ές", "ή");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1277,9 +1256,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Συγραφ" : "συγραφ"));
-      if (!singular)  result+=""; else result+="έας";
-      return result;
+      return createNoun(first_capital,singular,"συγραφ","","έας");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1501,9 +1478,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Κατάλογο" : "κατάλογο"));
-      if (singular) result+="ς"; else result+="ι";
-      return result;
+      return createNoun(first_capital, singular, "κατάλογο", "ι", "ς");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1682,9 +1657,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Υπομονάδ" : "υπομονάδ"));
-      if (!singular)  result+="ες"; else result+="α";
-      return result;
+      return createNoun(first_capital, singular, "υπομονάδ", "ες", "α");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1715,10 +1688,8 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Τύπο" : "τύπο"));
-      if (!singular)  result+="ι"; else result+="ος";
-      result+= first_capital ? " Δεδομένων" : "  δεδομένων";
-      return result;
+      return createNoun(first_capital, singular, "τύπο", "ι", "ος") + " " +
+             createNoun(first_capital, false, "δεδομένων", "");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1726,9 +1697,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Υποπρ" : "υποπρ"));
-      if (!singular)  result+="ογράμματα"; else result+="όγραμμα";
-      return result;
+      return createNoun(first_capital, singular, "υποπρ", "ογράμματα", "όγραμμα");
     }
 
     /*! C# Type Constraint list */
@@ -2273,9 +2242,7 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
     /** C++20 concept */
     QCString trConcept(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Έννοι" : "έννοι"));
-      result+=singular ? "α" : "ες";
-      return result;
+      return createNoun(first_capital, singular, "έννοι", "ες", "α");
     }
     /*! used as the title of the HTML page of a C++20 concept page */
     QCString trConceptReference(const QCString &conceptName) override

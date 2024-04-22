@@ -576,9 +576,8 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         }
         if (aliasMd)
         {
-          MemberName *mn;
           QCString name = md->name();
-          mn = Doxygen::functionNameLinkedMap->add(name);
+          MemberName *mn = Doxygen::functionNameLinkedMap->add(name);
           mn->push_back(std::move(aliasMd));
         }
       }

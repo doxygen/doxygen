@@ -185,13 +185,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 
     QCString latexCommandName() override
     {
-      QCString latex_command = Config_getString(LATEX_CMD_NAME);
-      if (latex_command.isEmpty()) latex_command = "latex";
-      if (Config_getBool(USE_PDFLATEX))
-      {
-        if (latex_command == "latex") latex_command = "xelatex";
-      }
-      return latex_command;
+      return p_latexCommandName("xelatex");
     }
 
     QCString trISOLang() override
@@ -730,9 +724,8 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i = 0; i < numEntries; ++i)
+      for (int i = 0; i < numEntries; ++i)
       {
         // use generateMarker to generate placeholders for the class links!
         result += generateMarker(i); // generate marker for entry i in the list

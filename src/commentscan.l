@@ -3979,11 +3979,11 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
     for (const auto &opt_ : optList)
     {
       QCString opt = QCString(opt_).stripWhiteSpace().lower();
-      char dum;
       int level = SectionType::MaxLevel;
       int i = opt.find(':');
       if (i>0)  // found ':' but not on position 0 what would mean just a level
       {
+        char dum=0;
         if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&level,&dum) != 1)
         {
           warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
@@ -4339,10 +4339,9 @@ static void stripTrailingWhiteSpace(QCString &s)
 {
   size_t len = s.length();
   int i = (int)len-1;
-  char c;
   while (i>=0)
   {
-    c = s.at(i);
+    char c = s.at(i);
     if (c==' ' || c=='\t' || c=='\r') // normal whitespace
     {
       i--;

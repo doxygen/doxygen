@@ -595,15 +595,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
       continue;
     }
 
-    bool b;
-    if (cd->getLanguage()==SrcLangExt::VHDL)
-    {
-      b=classHasVisibleRoot(cd->subClasses());
-    }
-    else
-    {
-      b=classHasVisibleRoot(cd->baseClasses());
-    }
+    bool b = cd->getLanguage()==SrcLangExt::VHDL ? classHasVisibleRoot(cd->subClasses()) : classHasVisibleRoot(cd->baseClasses());
 
     if (cd->isVisibleInHierarchy() && b) // classHasVisibleRoot(cd->baseClasses()))
     {
@@ -705,7 +697,7 @@ static bool dirHasVisibleChildren(const DirDef *dd)
 
   for (const auto &fd : dd->getFiles())
   {
-    bool genSourceFile;
+    bool genSourceFile = false;
     if (fileVisibleInIndex(fd,genSourceFile))
     {
       return TRUE;
@@ -793,7 +785,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
       //{
       //  fileCount++;
       //}
-      bool genSourceFile;
+      bool genSourceFile = false;
       if (fileVisibleInIndex(fd,genSourceFile))
       {
         fileCount++;
@@ -808,8 +800,8 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
       startIndexHierarchy(ol,level+1);
       for (const auto &fd : dd->getFiles())
       {
-        bool doc,src;
-        doc = fileVisibleInIndex(fd,src);
+        bool src = false;
+        bool doc = fileVisibleInIndex(fd,src);
         QCString reference;
         QCString outputBase;
         if (doc)
@@ -844,8 +836,8 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
     {
       for (const auto &fd : dd->getFiles())
       {
-        bool doc,src;
-        doc = fileVisibleInIndex(fd,src);
+        bool src = false;
+        bool doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
           addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),QCString(),
@@ -895,7 +887,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
       {
         if (fd->getDirDef()==nullptr) // top level file
         {
-          bool src;
+          bool src = false;
           bool doc = fileVisibleInIndex(fd.get(),src);
           QCString reference, outputBase;
           if (doc)
@@ -947,7 +939,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
     //              classHasVisibleRoot(cd->baseClasses()),
     //              cd->isVisibleInHierarchy()
     //      );
-    bool b;
+    bool b = false;
     if (cd->getLanguage()==SrcLangExt::VHDL)
     {
       if (VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS)
@@ -1421,8 +1413,8 @@ static void countFiles(int &allFiles,int &docFiles)
   {
     for (const auto &fd: *fn)
     {
-      bool doc,src;
-      doc = fileVisibleInIndex(fd.get(),src);
+      bool src = false;
+      bool doc = fileVisibleInIndex(fd.get(),src);
       if (doc || src)
       {
         allFiles++;
@@ -2753,7 +2745,7 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
     if (mil==nullptr || mil->empty()) continue;
     for (const auto &md : *mil)
     {
-      const char *sep;
+      const char *sep = nullptr;
       bool isFunc=!md->isObjCMethod() &&
         (md->isFunction() || md->isSlot() || md->isSignal());
       QCString name=type==Definition::TypeModule ? md->qualifiedName() : md->name();
@@ -3141,9 +3133,8 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
         ol.writeString(fixSpaces(getCmhlInfo(0)->title));
         endQuickIndexItem(ol);
 
-        int i;
         // index items per category member lists
-        for (i=1;i<ClassMemberHighlight::Total;i++)
+        for (int i=1;i<ClassMemberHighlight::Total;i++)
         {
           if (index.numDocumentedClassMembers(static_cast<ClassMemberHighlight::Enum>(i))>0)
           {
@@ -3309,9 +3300,8 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
         ol.writeString(fixSpaces(getFmhlInfo(0)->title));
         endQuickIndexItem(ol);
 
-        int i;
         // index items for per category member lists
-        for (i=1;i<FileMemberHighlight::Total;i++)
+        for (int i=1;i<FileMemberHighlight::Total;i++)
         {
           if (Index::instance().numDocumentedFileMembers(static_cast<FileMemberHighlight::Enum>(i))>0)
           {
@@ -3474,9 +3464,8 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
         ol.writeString(fixSpaces(getNmhlInfo(0)->title));
         endQuickIndexItem(ol);
 
-        int i;
         // index items per category member lists
-        for (i=1;i<NamespaceMemberHighlight::Total;i++)
+        for (int i=1;i<NamespaceMemberHighlight::Total;i++)
         {
           if (index.numDocumentedNamespaceMembers(static_cast<NamespaceMemberHighlight::Enum>(i))>0)
           {
@@ -3632,9 +3621,8 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
         ol.writeString(fixSpaces(getMmhlInfo(0)->title));
         endQuickIndexItem(ol);
 
-        int i;
         // index items per category member lists
-        for (i=1;i<ModuleMemberHighlight::Total;i++)
+        for (int i=1;i<ModuleMemberHighlight::Total;i++)
         {
           if (index.numDocumentedModuleMembers(static_cast<ModuleMemberHighlight::Enum>(i))>0)
           {
@@ -5067,11 +5055,10 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
     size_t idx = static_cast<size_t>(kind);
     if (idx>=indexWritten.size())
     {
-      size_t i;
       size_t oldSize = indexWritten.size();
       size_t newSize = idx+1;
       indexWritten.resize(newSize);
-      for (i=oldSize;i<newSize;i++) indexWritten.at(i)=FALSE;
+      for (size_t i=oldSize; i<newSize; i++) indexWritten.at(i)=FALSE;
     }
     //printf("starting %s kind=%d\n",qPrint(lne->title()),lne->kind());
     bool addToIndex=lne->visible();

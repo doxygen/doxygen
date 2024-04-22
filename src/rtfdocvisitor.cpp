@@ -55,6 +55,17 @@ static QCString align(const DocHtmlCell &cell)
   return "";
 }
 
+static QCString makeBaseName(const QCString &name)
+{
+  QCString baseName = name;
+  int i = baseName.findRev('/');
+  if (i!=-1)
+  {
+    baseName=baseName.mid(i+1);
+  }
+  return baseName;
+}
+
 RTFDocVisitor::RTFDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt, int hierarchyLevel)
   : m_t(t), m_ci(ci), m_langExt(langExt), m_hierarchyLevel(hierarchyLevel)
@@ -906,7 +917,7 @@ void RTFDocVisitor::operator()(const DocHtmlList &l)
     }
     if (opt.name=="start")
     {
-      bool ok;
+      bool ok = false;
       int val = opt.value.toInt(&ok);
       if (ok) m_listItemInfo[level].number = val;
     }
@@ -930,7 +941,7 @@ void RTFDocVisitor::operator()(const DocHtmlListItem &l)
     {
       if (opt.name=="value")
       {
-        bool ok;
+        bool ok = false;
         int val = opt.value.toInt(&ok);
         if (ok) m_listItemInfo[level].number = val;
       }
@@ -1046,7 +1057,7 @@ void RTFDocVisitor::operator()(const DocHtmlRow &r)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocHtmlRow &)}\n");
-  size_t i,columnWidth=r.numCells()>0 ? rtf_pageWidth/r.numCells() : 10;
+  size_t columnWidth=r.numCells()>0 ? rtf_pageWidth/r.numCells() : 10;
   m_t << "\\trowd \\trgaph108\\trleft-108"
          "\\trbrdrt\\brdrs\\brdrw10 "
          "\\trbrdrl\\brdrs\\brdrw10 "
@@ -1054,7 +1065,7 @@ void RTFDocVisitor::operator()(const DocHtmlRow &r)
          "\\trbrdrr\\brdrs\\brdrw10 "
          "\\trbrdrh\\brdrs\\brdrw10 "
          "\\trbrdrv\\brdrs\\brdrw10 \n";
-  for (i=0;i<r.numCells();i++)
+  for (size_t i=0;i<r.numCells();i++)
   {
     if (r.isHeading())
     {
@@ -1419,7 +1430,6 @@ void RTFDocVisitor::operator()(const DocParamList &pl)
   if (sect && sect->hasTypeSpecifier())  config+=2;
   if (useTable)
   {
-    int i;
     m_t << "\\trowd \\trgaph108\\trleft426\\tblind426"
          "\\trbrdrt\\brdrs\\brdrw10\\brdrcf15 "
          "\\trbrdrl\\brdrs\\brdrw10\\brdrcf15 "
@@ -1427,7 +1437,7 @@ void RTFDocVisitor::operator()(const DocParamList &pl)
          "\\trbrdrr\\brdrs\\brdrw10\\brdrcf15 "
          "\\trbrdrh\\brdrs\\brdrw10\\brdrcf15 "
          "\\trbrdrv\\brdrs\\brdrw10\\brdrcf15 "<< "\n";
-    for (i=0;i<columnPos[config][0];i++)
+    for (int i=0;i<columnPos[config][0];i++)
     {
       m_t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10\\brdrcf15 "
            "\\clbrdrl\\brdrs\\brdrw10\\brdrcf15 "
@@ -1641,10 +1651,9 @@ void RTFDocVisitor::filter(const QCString &str,bool verbatim)
   if (!str.isEmpty())
   {
     const char *p=str.data();
-    char c;
     while (*p)
     {
-      c=*p++;
+      char c=*p++;
       switch (c)
       {
         case '{':  m_t << "\\{";            break;
@@ -1715,12 +1724,7 @@ void RTFDocVisitor::writeDotFile(const DocDotFile &df)
 void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
                                  const QCString &srcFile, int srcLine)
 {
-  QCString baseName=filename;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
+  QCString baseName=makeBaseName(filename);
   QCString outDir = Config_getString(RTF_OUTPUT);
   writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
   QCString imgExt = getDotImageExtension();
@@ -1734,12 +1738,7 @@ void RTFDocVisitor::writeMscFile(const DocMscFile &df)
 void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
                                  const QCString &srcFile, int srcLine)
 {
-  QCString baseName=fileName;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
+  QCString baseName=makeBaseName(fileName);
   QCString outDir = Config_getString(RTF_OUTPUT);
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP,srcFile,srcLine);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
@@ -1747,12 +1746,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
 
 void RTFDocVisitor::writeDiaFile(const DocDiaFile &df)
 {
-  QCString baseName=df.file();
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
+  QCString baseName=makeBaseName(df.file());
   QCString outDir = Config_getString(RTF_OUTPUT);
   writeDiaGraphFromFile(df.file(),outDir,baseName,DIA_BITMAP,df.srcFile(),df.srcLine());
   includePicturePreRTF(baseName + ".png", true, df.hasCaption());
@@ -1760,12 +1754,7 @@ void RTFDocVisitor::writeDiaFile(const DocDiaFile &df)
 
 void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
 {
-  QCString baseName=fileName;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
+  QCString baseName=makeBaseName(fileName);
   QCString outDir = Config_getString(RTF_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
   includePicturePreRTF(baseName + ".png", true, hasCaption);

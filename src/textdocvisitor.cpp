@@ -90,15 +90,11 @@ void TextDocVisitor::filter(const QCString &str)
   if (str.isEmpty()) return;
   //printf("TextDocVisitor::filter(%s)\n",str);
   const char *p=str.data();
-  char c;
   while (*p)
   {
-    c=*p++;
-    switch(c)
-    {
-      case '\n':  m_t << " ";      break;
-      default:    m_t << c;
-    }
+    char c = *p++;
+    if (c=='\n') c=' ';
+    else m_t << c;
   }
 }
 

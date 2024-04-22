@@ -201,7 +201,7 @@ void Ex::Private::compile()
   if (pattern.empty()) return;
   const char *start = pattern.c_str();
   const char *ps = start;
-  char c;
+  char c = 0;
 
   int prevTokenPos=-1;
   int tokenPos=0;

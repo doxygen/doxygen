@@ -665,9 +665,9 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) {
+      for (int i=0;i<numEntries;i++)
+      {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
@@ -1601,9 +1601,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modul" : "modul"));   // "Module" : "module"));
-      if (!singular)  result+="er";  // "s";
-      return result;
+      return createNoun(first_capital, singular, "modul", "er");
     }
 
     /*! This is put at the bottom of a module documentation page and is
@@ -1636,9 +1634,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Type" : "type"));   // "Type" : "type"
-      if (!singular)  result+="r";                          // "s"
-      return result;
+      return createNoun(first_capital, singular, "type", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1647,9 +1643,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Subprogram" : "subprogram"));   // "Subprogram" : "subprogram"
-      if (!singular)  result+="er";                                     // "s"
-      return result;
+      return createNoun(first_capital, singular, "subprogram", "er");
     }
 
     /*! C# Type Constraint list */
@@ -1783,22 +1777,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     QCString trDirDepGraph(const QCString &name) override
     {
       return QCString("Afhængighedsgraf for katalog ")+name+":";
-    }
-
-
-
-/*---------- For internal use: ----------------------------------------*/
-  protected:
-	/*! For easy flexible-noun implementation.
-	 *  \internal
-	 */
-    QCString createNoun(bool first_capital, bool singular,
-			const char* base, const char* plurSuffix)
-    {
-      QCString result(base);
-      if (first_capital) result[0] = static_cast<char>(toupper(result[0]));
-      if (!singular)  result+=plurSuffix;
-      return result;
     }
 };
 

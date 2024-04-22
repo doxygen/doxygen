@@ -141,7 +141,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   std::string lineStr;
   while (getline(f,lineStr))
   {
-    int i;
+    int i = -1;
     QCString line(lineStr);
     if (line.stripWhiteSpace().startsWith("@"))
     {
@@ -213,7 +213,7 @@ QCString CitationManager::getFormulas(const QCString &s)
   const size_t tmpLen = 30;
   char tmp[tmpLen];
   const char *ps=s.data();
-  char c;
+  char c = 0;
   while ((c=*ps++))
   {
     if (insideFormula)
@@ -283,7 +283,7 @@ QCString CitationManager::replaceFormulas(const QCString &s)
   if (s.isEmpty()) return s;
   QCString t;
   int pos=0;
-  int i;
+  int i = -1;
   while ((i=s.find(g_formulaMarker.c_str(),pos))!=-1)
   {
     t += s.mid(pos,i-pos);
@@ -397,10 +397,10 @@ void CitationManager::generatePage()
 
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
-  int exitCode;
   QCString perlArgs = "\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+ citeListFile+"\"";
   if (citeDebug) perlArgs+=" -d";
-  if ((exitCode=Portable::system("perl",perlArgs)) != 0)
+  int exitCode = Portable::system("perl",perlArgs);
+  if (exitCode!=0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         exitCode);
@@ -461,7 +461,7 @@ void CitationManager::generatePage()
     CommentScanner   commentScanner;
     int              lineNr = 0;
     int              pos = 0;
-    Protection       prot;
+    Protection       prot = Protection::Public;
     commentScanner.parseCommentBlock(
         nullptr,
         &current,

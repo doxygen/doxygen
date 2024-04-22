@@ -147,8 +147,8 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
   // helper routine to extract the bounding boxes width and height
   auto extractBoundingBox = [&fileName,&boundingBox,&width,&height](const char *s) -> bool
   {
-    int x,y;
-    double w,h;
+    int x=0, y=0;
+    double w=0, h=0;
     if (sscanf(s+boundingBox.length(),"%d %d %lf %lf",&x,&y,&w,&h)==4)
     {
       *width  = static_cast<int>(std::ceil(w));

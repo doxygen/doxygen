@@ -103,7 +103,7 @@ static QCString convertToComment(const QCString &s, const QCString &u)
   {
     QCString tmp=s.stripWhiteSpace();
     const char *p=tmp.data();
-    char c;
+    char c = 0;
     if (p)
     {
       result+="#";
@@ -148,7 +148,7 @@ void ConfigOption::writeIntValue(TextStream &t,int i,bool initSpace)
 
 void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpace, bool wasQuoted)
 {
-  char c;
+  char c = 0;
   bool needsEscaping=wasQuoted;
   // convert the string back to it original g_encoding
   QCString se = configStringRecode(s,"UTF-8",m_encoding);
@@ -210,7 +210,7 @@ void ConfigInt::convertStrToVal(Config::CompareMode compareMode)
     {
        if (containsEnvVar(m_valueString)) return;
     }
-    bool ok;
+    bool ok = false;
     int val = m_valueString.toInt(&ok);
     if (!ok || val<m_minVal || val>m_maxVal)
     {
@@ -641,26 +641,26 @@ void ConfigDisabled::writeXSDDoxyfile(TextStream &t)
 
 struct ConfigFileState
 {
-  int lineNr;
-  FILE *filePtr;
+  int lineNr = 1;
+  FILE *filePtr = nullptr;
   YY_BUFFER_STATE oldState;
   YY_BUFFER_STATE newState;
   QCString fileName;
 };
 
-static const char       *g_inputString;
-static int               g_inputPosition;
-static int               g_yyLineNr;
+static const char       *g_inputString = nullptr;
+static int               g_inputPosition = 0;
+static int               g_yyLineNr = 1;
 static QCString          g_yyFileName;
 static QCString          g_cmd;
-static QCString         *g_string=nullptr;
-static StringVector     *g_list=nullptr;
+static QCString         *g_string = nullptr;
+static StringVector     *g_list = nullptr;
 static QCString          g_listStr;
 static StringVector      g_includePathList;
 static std::vector< std::unique_ptr<ConfigFileState> > g_includeStack;
 static bool              g_configUpdate = FALSE;
 static QCString          g_encoding;
-static ConfigImpl       *g_config;
+static ConfigImpl       *g_config = nullptr;
 static Config::CompareMode g_compareMode = Config::CompareMode::Full;
 static QCString          g_localStoreRepl;
 
@@ -1460,10 +1460,10 @@ static void substEnvVarsInStrList(StringVector &sl)
                        splitting is done to allow quoted items with spaces! */
     {
       int l = static_cast<int>(result.length());
-      int i,p=0;
+      int p = 0;
       // skip spaces
       // search for a "word"
-      for (i=0;i<l;i++)
+      for (int i=0;i<l;i++)
       {
         char c=0;
         // skip until start of new word
@@ -1627,10 +1627,9 @@ bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 
 bool ConfigImpl::parse(const QCString &fn,bool update)
 {
-  bool retval;
   g_encoding = "UTF-8";
   DebugLex debugLex(Debug::Lex_configimpl, __FILE__, qPrint(fn));
-  retval =  parseString(fn,configFileToString(fn), update);
+  bool retval =  parseString(fn,configFileToString(fn), update);
   return retval;
 }
 

@@ -208,7 +208,7 @@ void PerlModOutput::iaddQuoted(const QCString &str)
 {
   if (str.isEmpty()) return;
   const char *s = str.data();
-  char c;
+  char c = 0;
   while ((c = *s++) != 0)
   {
     if ((c == '\'') || (c == '\\'))

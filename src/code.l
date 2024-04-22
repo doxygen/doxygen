@@ -502,9 +502,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <ReadInclude>[^\n\"\>]+/(">"|"\"")      {
                                           //FileInfo *f;
-                                          bool ambig;
-                                          bool found=FALSE;
-
+                                          bool found = false;
+                                          bool ambig = false;
                                           QCString absIncFileName = determineAbsoluteIncludeName(yyextra->absFileName,yytext);
                                           const FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,absIncFileName,ambig);
                                           //printf("looking for include %s -> %s fd=%p\n",yytext,qPrint(absPath),fd);
@@ -2691,7 +2690,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
   while (!done)
   {
     const char *sp=p;
-    char c;
+    char c = 0;
     while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
@@ -2832,7 +2831,6 @@ static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &
     }
   }
 
-  const MemberName *mn;
   const ScopedTypeVariant *mcv = yyextra->theVarContext.findVariable(name);
   if (mcv)
   {
@@ -2866,7 +2864,8 @@ static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &
   }
 
   // look for a global member
-  if ((mn=Doxygen::functionNameLinkedMap->find(name)))
+  const MemberName *mn = Doxygen::functionNameLinkedMap->find(name);
+  if (mn)
   {
     DBG_CTX((stderr,"global var '%s'\n",qPrint(name)));
     if (mn->size()==1) // global defined only once
@@ -2908,7 +2907,7 @@ static void updateCallContextForSmartPointer(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const Definition *d = yyextra->theCallContext.getScope().globalDef();
   //printf("updateCallContextForSmartPointer() cd=%s\n",cd ? qPrint(d->name()) : "<none>");
-  const MemberDef *md;
+  const MemberDef *md = nullptr;
   if (d && d->definitionType()==Definition::TypeClass && (md=(toClassDef(d))->isSmartPointer()))
   {
     const ClassDef *ncd = stripClassName(yyscanner,md->typeString(),md->getOuterScope());
@@ -3377,7 +3376,7 @@ static void generateMemberLink(yyscan_t yyscanner,
       MemberName *vmn=Doxygen::memberNameLinkedMap->find(varName);
       if (vmn==nullptr)
       {
-        int vi;
+        int vi = 0;
         QCString vn=varName;
         if ((vi=vn.findRev("::"))!=-1 || (vi=vn.findRev('.'))!=-1)  // explicit scope A::b(), probably static member
         {
@@ -3557,7 +3556,7 @@ static int countLines(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *p=yyextra->inputString;
-  char c;
+  char c = 0;
   int count=1;
   while ((c=*p))
   {
@@ -3596,7 +3595,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
 {
   if (ctx==nullptr) return;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  char c;
+  char c = 0;
   if (!ctx->methodName.isEmpty())
   {
     DBG_CTX((stderr,"writeObjCMethodCall(%s) obj=%s method=%s\n",
@@ -3988,7 +3987,7 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
     "union", "unsigned", "using", "virtual", "wchar_t",
     "xor", "xor_eq", "override", "sealed"
   };
-  bool retval;
+  bool retval = false;
   switch (yyextra->lang)
   {
     case SrcLangExt::Cpp:
@@ -3997,7 +3996,7 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
     case SrcLangExt::Java:
       retval = (non_java_keywords.find(keyword) != non_java_keywords.end());
       break;
-    default: 
+    default:
       retval = false;
       break;
   }

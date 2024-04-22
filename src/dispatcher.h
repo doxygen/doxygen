@@ -85,7 +85,7 @@ static constexpr void dispatch_call(V &&v,As &&... args)
   switch (v.index())
   {
 #define DISPATCH_AT(n)            \
-    case n: detail::Dispatcher< ((n)<size) >::template case_<W,n>(v,std::forward<As>(args)...); break;
+    case n: detail::Dispatcher< ((n)<size) >::template case_<W,n>(std::forward<V>(v),std::forward<As>(args)...); break;
 
     DISPATCH_AT(0)
     DISPATCH_AT(1)

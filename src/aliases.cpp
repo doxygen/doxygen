@@ -234,9 +234,9 @@ static std::string replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
 
   // first make a list of arguments from the comma separated argument list
   StringViewVector args;
-  size_t i,l=argList.length();
+  size_t l=argList.length();
   size_t p=0;
-  for (i=0;i<l;i++)
+  for (size_t i=0;i<l;i++)
   {
     char c = argList[i];
     if (!sep.empty() &&
@@ -264,7 +264,7 @@ static std::string replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   bool insideMarkerId = false;
   size_t markerStart  = 0;
   auto isDigit = [](char c) { return c>='0' && c<='9'; };
-  for (i=0;i<=l;i++)
+  for (size_t i=0;i<=l;i++)
   {
     char c = i<l ? aliasValue[i] : '\0';
     if (insideMarkerId && !isDigit(c)) // found end of a markerId
@@ -472,12 +472,11 @@ static int countAliasArguments(std::string_view args, std::string_view sep)
 
 static std::string extractAliasArgs(std::string_view args)
 {
-  size_t i;
   int bc = 0;
   char prevChar = 0;
   if (!args.empty() && args[0]=='{') // alias has argument
   {
-    for (i=0;i<args.length();i++)
+    for (size_t i=0;i<args.length();i++)
     {
       char c = args[i];
       if (prevChar!='\\') // not escaped

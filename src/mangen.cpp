@@ -163,19 +163,18 @@ void ManCodeGenerator::codify(const QCString &str)
   if (!str.isEmpty())
   {
     const char *p=str.data();
-    char c;
-    int spacesToNextTabStop;
     while (*p)
     {
-      c=*p++;
+      char c=*p++;
       switch(c)
       {
         case '-':  *m_t << "\\-"; break; // see  bug747780
         case '.':   *m_t << "\\&."; break; // see  bug652277
-        case '\t':  spacesToNextTabStop =
-                          Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
-                    *m_t << Doxygen::spaces.left(spacesToNextTabStop);
-                    m_col+=spacesToNextTabStop;
+        case '\t':  {
+                      int spacesToNextTabStop = Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
+                      *m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                      m_col+=spacesToNextTabStop;
+                    }
                     break;
         case '\n':  *m_t << "\n"; m_col=0; break;
         case '\\':  *m_t << "\\\\"; m_col++; break;
@@ -281,7 +280,7 @@ static QCString buildFileName(const QCString &name)
   if (name.isEmpty()) return "noname";
 
   const char *p=name.data();
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)

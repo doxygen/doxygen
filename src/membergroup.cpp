@@ -64,7 +64,7 @@ void MemberGroup::insertMember(MemberDef *md)
   memberList->push_back(md);
 
   // copy the group of the first member in the memberGroup
-  GroupDef *gd;
+  GroupDef *gd = nullptr;
   if (firstMd && !firstMd->isAlias() && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
