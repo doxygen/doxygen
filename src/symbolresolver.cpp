@@ -413,7 +413,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 
   int i=0;
   const auto &range1 = Doxygen::symbolMap->find(name);
-  const auto &range  = range1.empty() && (i=name.find('<')!=-1) ? Doxygen::symbolMap->find(name.left(i)) : range1;
+  const auto &range  = (range1.empty() && (i=name.find('<'))!=-1) ? Doxygen::symbolMap->find(name.left(i)) : range1;
   if (range.empty())
   {
     AUTO_TRACE_ADD("no symbols (including unspecialized)");
