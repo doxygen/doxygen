@@ -1140,9 +1140,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       }
       else
       {
-        QCString result((first_capital ? "Клас" : "клас"));
-        if(!singular) result+="и";
-        return result;
+      return createNoun(first_capital, singular, "клас", "и");
       }
     }
 
@@ -1152,9 +1150,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Файл" : "файл"));
-      if (!singular)  result+="и";
-      return result;
+      return createNoun(first_capital, singular, "файл", "и");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1163,9 +1159,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Прост" : "прост"));
-      result+=(singular?"ір імен":"ори імен");
-      return result;
+      return createNoun(first_capital, singular, "прост", "ори імен", "ір імен");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1174,9 +1168,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Груп" : "груп"));
-      result+=(singular ? "а" : "и");
-      return result;
+      return createNoun(first_capital, singular, "груп", "и", "а");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1185,9 +1177,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Сторінк" : "сторінк"));
-      result+=(singular ? "а" : "и");
-      return result;
+      return createNoun(first_capital, singular, "сторінк", "и", "а");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1196,9 +1186,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Елемент" : "елемент"));
-      if (!singular)  result+="и";
-      return result;
+      return createNoun(first_capital, singular, "елемент", "и");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1207,9 +1195,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Глобальн" : "глобальн"));
-      result+=(singular ? "ий" : "і");
-      return result;
+      return createNoun(first_capital, singular, "глобальн", "і", "ий");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1220,9 +1206,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Автор" : "автор"));
-      if (!singular) result+="и";
-      return result;
+      return createNoun(first_capital, singular, "автор", "и");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1447,11 +1431,9 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
-    QCString trDir(bool, bool singular) override
+    QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result("Каталог");
-      if (!singular) result+="и";
-      return result;
+      return createNoun(first_capital, singular, "каталог", "и");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1646,9 +1628,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-    	    QCString result((first_capital ? "Модул" : "модул"));
-    	    result+=(singular? "ь": "і");
-      return result;
+      return createNoun(first_capital, singular, "модул", "і", "ь");
     }
 
     /*! This is put at the bottom of a module documentation page and is
@@ -1681,9 +1661,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Тип" : "тип"));
-      if (!singular)  result+="и";
-      return result;
+      return createNoun(first_capital, singular, "тип", "и");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1692,9 +1670,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Підпрограм" : "підпрограм"));
-      result+= (singular? "а": "и");
-      return result;
+      return createNoun(first_capital, singular, "підпрограм", "и", "а");
     }
 
     /*! C# Type Constraint list */

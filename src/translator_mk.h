@@ -1174,9 +1174,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Клас" : "клас"));
-      result += (singular ? "а" : "и");
-      return result;
+      return createNoun(first_capital, singular, "клас", "и", "а");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1185,9 +1183,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Датотек" : "датотек"));
-      result += (singular ? "а" : "и");
-      return result;
+      return createNoun(first_capital, singular, "датотек", "и", "а");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1196,9 +1192,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Им" : "им"));
-      result += (singular ? "е на простор" : "иња на простори");
-      return result;
+      return createNoun(first_capital, singular, "им", "иња на простори", "е на простор");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1207,9 +1201,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Груп" : "груп"));
-      result += (singular ? "а" : "и");
-      return result;
+      return createNoun(first_capital, singular, "груп", "и", "а");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1218,9 +1210,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Стран" : "стран"));
-      result += (singular ? "а" : "и");
-      return result;
+      return createNoun(first_capital, singular, "стран", "и", "а");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1229,9 +1219,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Член" : "член"));
-      if (!singular)  result+="ови";
-      return result;
+      return createNoun(first_capital, singular, "член", "ови");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1240,9 +1228,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Глобал" : "глобал"));
-      result += (singular ? "ен" : "ни");
-      return result;
+      return createNoun(first_capital, singular, "глобал", "ни", "ен");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1253,9 +1239,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      *  for the author section in man pages. */
     QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Автор" : "автор"));
-      if (!singular)  result+="и";
-      return result;
+      return createNoun(first_capital, singular, "автор", "и");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1477,9 +1461,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Имени" : "имени"));
-      if (singular) result+="к"; else result+="ци";
-      return result;
+      return createNoun(first_capital, singular, "имени", "ци", "к");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1656,9 +1638,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Модул" : "модул"));
-      if (!singular)  result+="и";
-      return result;
+      return createNoun(first_capital, singular, "модул", "и");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1689,9 +1669,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Тип" : "тип"));
-      if (!singular)  result+="ови";
-      return result;
+      return createNoun(first_capital, singular, "тип", "ови");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1699,14 +1677,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Потпрограм" : "потпрограм"));
-      if (singular){
-		result+="а";
-      }else{
-      	result+="и";
-      }
-
-      return result;
+      return createNoun(first_capital, singular, "потпрограм", "и", "а");
     }
 
     /*! C# Type Constraint list */
