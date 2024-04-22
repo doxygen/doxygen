@@ -251,6 +251,9 @@ Note that by running doxygen with `-d lex` you get information about which
 To see the information of the flex parser, which is compiled with the flex debug option,
 you have to specify `-d lex:<flex codefile>` when running doxygen.
 
+Note that the information with respect to the lex parsing goes to `stderr` and that the other
+debug output goes by default to `stdout` unless one uses `-d stderr`.
+
 <h3>Testing</h3>
 
 Doxygen has a small set of tests available to test, some, code integrity.
