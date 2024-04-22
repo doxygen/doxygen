@@ -47,6 +47,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "alias",              Debug::Alias              },
   { "entries",            Debug::Entries            },
   { "sections",           Debug::Sections           },
+  { "stderr",             Debug::Stderr             },
   { "lex",                Debug::Lex                },
   { "lex:code",           Debug::Lex_code           },
   { "lex:commentcnv",     Debug::Lex_commentcnv     },
@@ -71,6 +72,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
 };
 
 //------------------------------------------------------------------------
+static FILE *g_debugFile = stdout;
 
 Debug::DebugMask Debug::curMask = Debug::Quiet;
 int Debug::curPrio = 0;
@@ -81,7 +83,7 @@ void Debug::print(DebugMask mask,int prio,const char *fmt,...)
   {
     va_list args;
     va_start(args,fmt);
-    vfprintf(stdout, fmt, args);
+    vfprintf(g_debugFile, fmt, args);
     va_end(args);
   }
 }
@@ -103,7 +105,14 @@ static uint64_t labelToEnumValue(const QCString &l)
 bool Debug::setFlagStr(const QCString &lab)
 {
   uint64_t retVal = labelToEnumValue(lab);
-  curMask = static_cast<DebugMask>(curMask | retVal);
+  if (retVal == Debug::Stderr)
+  {
+    g_debugFile = stderr;
+  }
+  else
+  {
+    curMask = static_cast<DebugMask>(curMask | retVal);
+  }
   return retVal!=0;
 }
 
