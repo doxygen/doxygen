@@ -18,16 +18,17 @@
 
 #include "qcstring.h"
 #include "construct.h"
+#include "indexlist.h"
 
 class Definition;
 class MemberDef;
 
-class Qhp
+class Qhp : public IndexIntf
 {
   public:
     Qhp();
     ~Qhp();
-    ONLY_MOVABLE_DECL(Qhp)
+    NON_COPYABLE(Qhp)
 
     void initialize();
     void finalize();

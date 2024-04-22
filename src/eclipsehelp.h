@@ -28,6 +28,7 @@
 
 #include "qcstring.h"
 #include "construct.h"
+#include "indexlist.h"
 
 /* -- forward declarations */
 class Definition;
@@ -39,12 +40,12 @@ class MemberDef;
  * These files can be used to generate a help plugin readable
  * by the Eclipse IDE.
  */
-class EclipseHelp
+class EclipseHelp : public IndexIntf
 {
   public:
     EclipseHelp();
     virtual ~EclipseHelp();
-    ONLY_MOVABLE_DECL(EclipseHelp)
+    NON_COPYABLE(EclipseHelp)
 
     /* -- index interface */
     virtual void initialize();

@@ -1971,17 +1971,17 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   }
   parser->context.scope = ctx;
 
-  if (indexWords && Doxygen::searchIndex)
+  if (indexWords && Doxygen::searchIndex.enabled())
   {
     if (md)
     {
       parser->context.searchUrl=md->getOutputFileBase();
-      Doxygen::searchIndex->setCurrentDoc(md,md->anchor(),false);
+      Doxygen::searchIndex.setCurrentDoc(md,md->anchor(),false);
     }
     else if (ctx)
     {
       parser->context.searchUrl=ctx->getOutputFileBase();
-      Doxygen::searchIndex->setCurrentDoc(ctx,ctx->anchor(),false);
+      Doxygen::searchIndex.setCurrentDoc(ctx,ctx->anchor(),false);
     }
   }
   else

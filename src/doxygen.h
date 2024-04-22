@@ -25,6 +25,7 @@
 #include "define.h"
 #include "cache.h"
 #include "symbolmap.h"
+#include "searchindex.h"
 
 #define THREAD_LOCAL thread_local
 #define AtomicInt    std::atomic_int
@@ -32,7 +33,6 @@
 class RefList;
 class PageLinkedMap;
 class PageDef;
-class SearchIndexIntf;
 class ParserManager;
 class BufStr;
 class MemberDef;
@@ -111,7 +111,7 @@ class Doxygen
     static NamespaceDefMutable      *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
-    static std::unique_ptr<SearchIndexIntf> searchIndex;
+    static SearchIndexIntf           searchIndex;
     static SymbolMap<Definition>    *symbolMap;
     static ClangUsrMap              *clangUsrMap;
     static Cache<std::string,LookupInfo> *typeLookupCache;

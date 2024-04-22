@@ -50,6 +50,7 @@
 #include "utf8.h"
 #include "portable.h"
 #include "moduledef.h"
+#include "sitemap.h"
 
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30

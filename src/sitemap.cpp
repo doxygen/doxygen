@@ -42,7 +42,6 @@ class Sitemap::Private
 
 Sitemap::Sitemap() : p(std::make_unique<Private>()) {}
 Sitemap::~Sitemap() = default;
-DEFAULT_MOVABLE_IMPL(Sitemap)
 
 void Sitemap::initialize()
 {
@@ -92,7 +91,6 @@ class Crawlmap::Private
 
 Crawlmap::Crawlmap() : p(std::make_unique<Private>()) {}
 Crawlmap::~Crawlmap() = default;
-DEFAULT_MOVABLE_IMPL(Crawlmap)
 
 void Crawlmap::initialize()
 {

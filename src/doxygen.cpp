@@ -63,7 +63,6 @@
 #include "pagedef.h"
 #include "commentcnv.h"
 #include "cmdmapper.h"
-#include "searchindex.h"
 #include "searchindex_js.h"
 #include "parserintf.h"
 #include "htags.h"
@@ -152,7 +151,7 @@ std::unique_ptr<PageDef> Doxygen::mainPage;
 std::unique_ptr<NamespaceDef> Doxygen::globalNamespaceDef;
 NamespaceDefMutable  *Doxygen::globalScope;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
-std::unique_ptr<SearchIndexIntf> Doxygen::searchIndex;
+SearchIndexIntf       Doxygen::searchIndex;
 SymbolMap<Definition>*Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = nullptr;
 Cache<std::string,LookupInfo> *Doxygen::typeLookupCache;
@@ -7607,10 +7606,10 @@ static void addToIndices()
     if (cd->isLinkableInProject())
     {
       Doxygen::indexList->addIndexItem(cd.get(),nullptr);
-      if (Doxygen::searchIndex)
+      if (Doxygen::searchIndex.enabled())
       {
-        Doxygen::searchIndex->setCurrentDoc(cd.get(),cd->anchor(),FALSE);
-        Doxygen::searchIndex->addWord(cd->localName(),TRUE);
+        Doxygen::searchIndex.setCurrentDoc(cd.get(),cd->anchor(),FALSE);
+        Doxygen::searchIndex.addWord(cd->localName(),TRUE);
       }
     }
   }
@@ -7620,10 +7619,10 @@ static void addToIndices()
     if (cd->isLinkableInProject())
     {
       Doxygen::indexList->addIndexItem(cd.get(),nullptr);
-      if (Doxygen::searchIndex)
+      if (Doxygen::searchIndex.enabled())
       {
-        Doxygen::searchIndex->setCurrentDoc(cd.get(),cd->anchor(),FALSE);
-        Doxygen::searchIndex->addWord(cd->localName(),TRUE);
+        Doxygen::searchIndex.setCurrentDoc(cd.get(),cd->anchor(),FALSE);
+        Doxygen::searchIndex.addWord(cd->localName(),TRUE);
       }
     }
   }
@@ -7633,10 +7632,10 @@ static void addToIndices()
     if (nd->isLinkableInProject())
     {
       Doxygen::indexList->addIndexItem(nd.get(),nullptr);
-      if (Doxygen::searchIndex)
+      if (Doxygen::searchIndex.enabled())
       {
-        Doxygen::searchIndex->setCurrentDoc(nd.get(),nd->anchor(),FALSE);
-        Doxygen::searchIndex->addWord(nd->localName(),TRUE);
+        Doxygen::searchIndex.setCurrentDoc(nd.get(),nd->anchor(),FALSE);
+        Doxygen::searchIndex.addWord(nd->localName(),TRUE);
       }
     }
   }
@@ -7645,10 +7644,10 @@ static void addToIndices()
   {
     for (const auto &fd : *fn)
     {
-      if (Doxygen::searchIndex && fd->isLinkableInProject())
+      if (Doxygen::searchIndex.enabled() && fd->isLinkableInProject())
       {
-        Doxygen::searchIndex->setCurrentDoc(fd.get(),fd->anchor(),FALSE);
-        Doxygen::searchIndex->addWord(fd->localName(),TRUE);
+        Doxygen::searchIndex.setCurrentDoc(fd.get(),fd->anchor(),FALSE);
+        Doxygen::searchIndex.addWord(fd->localName(),TRUE);
       }
     }
   }
@@ -7656,9 +7655,9 @@ static void addToIndices()
   auto addWordsForTitle = [](const Definition *d,const QCString &anchor,const QCString &title)
   {
       Doxygen::indexList->addIndexItem(d,nullptr,QCString(),filterTitle(title));
-      if (Doxygen::searchIndex)
+      if (Doxygen::searchIndex.enabled())
       {
-        Doxygen::searchIndex->setCurrentDoc(d,anchor,false);
+        Doxygen::searchIndex.setCurrentDoc(d,anchor,false);
         std::string s = title.str();
         static const reg::Ex re(R"(\a[\w-]*)");
         reg::Iterator it(s,re);
@@ -7667,7 +7666,7 @@ static void addToIndices()
         {
           const auto &match = *it;
           std::string matchStr = match.str();
-          Doxygen::searchIndex->addWord(matchStr.c_str(),true);
+          Doxygen::searchIndex.addWord(matchStr.c_str(),true);
         }
       }
   };
@@ -7695,22 +7694,22 @@ static void addToIndices()
 
   auto addMemberToSearchIndex = [](const MemberDef *md)
   {
-    if (Doxygen::searchIndex)
+    if (Doxygen::searchIndex.enabled())
     {
-      Doxygen::searchIndex->setCurrentDoc(md,md->anchor(),FALSE);
+      Doxygen::searchIndex.setCurrentDoc(md,md->anchor(),FALSE);
       QCString ln=md->localName();
       QCString qn=md->qualifiedName();
-      Doxygen::searchIndex->addWord(ln,TRUE);
+      Doxygen::searchIndex.addWord(ln,TRUE);
       if (ln!=qn)
       {
-        Doxygen::searchIndex->addWord(qn,TRUE);
+        Doxygen::searchIndex.addWord(qn,TRUE);
         if (md->getClassDef())
         {
-          Doxygen::searchIndex->addWord(md->getClassDef()->displayName(),TRUE);
+          Doxygen::searchIndex.addWord(md->getClassDef()->displayName(),TRUE);
         }
         if (md->getNamespaceDef())
         {
-          Doxygen::searchIndex->addWord(md->getNamespaceDef()->displayName(),TRUE);
+          Doxygen::searchIndex.addWord(md->getNamespaceDef()->displayName(),TRUE);
         }
       }
     }
@@ -12643,10 +12642,10 @@ void generateOutput()
   if (generateHtml && searchEngine && serverBasedSearch)
   {
     g_s.begin("Generating search index\n");
-    if (Doxygen::searchIndex->kind()==SearchIndexIntf::Internal) // write own search index
+    if (Doxygen::searchIndex.kind()==SearchIndexIntf::Internal) // write own search index
     {
       HtmlGenerator::writeSearchPage();
-      Doxygen::searchIndex->write(Config_getString(HTML_OUTPUT)+"/search/search.idx");
+      Doxygen::searchIndex.write(Config_getString(HTML_OUTPUT)+"/search/search.idx");
     }
     else // write data for external search index
     {
@@ -12660,7 +12659,7 @@ void generateOutput()
       {
         searchDataFile.prepend(Config_getString(OUTPUT_DIRECTORY)+"/");
       }
-      Doxygen::searchIndex->write(searchDataFile);
+      Doxygen::searchIndex.write(searchDataFile);
     }
     g_s.end();
   }

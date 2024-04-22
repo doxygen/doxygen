@@ -118,7 +118,6 @@ struct FTVHelp::Private
  */
 FTVHelp::FTVHelp(bool TLI) : p(std::make_unique<Private>(TLI)) {}
 FTVHelp::~FTVHelp() = default;
-DEFAULT_MOVABLE_IMPL(FTVHelp)
 
 /*! This will create a folder tree view table of contents file (tree.js).
  *  \sa finalize()

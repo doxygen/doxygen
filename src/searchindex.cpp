@@ -544,11 +544,11 @@ void initSearchIndexer()
   bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
   if (searchEngine && serverBasedSearch)
   {
-    Doxygen::searchIndex = std::make_unique<SearchIndexIntf>(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
+    Doxygen::searchIndex.setKind(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
   }
 }
 
 void finalizeSearchIndexer()
 {
-  Doxygen::searchIndex.reset();
+  Doxygen::searchIndex.setKind(SearchIndexIntf::Disabled);
 }

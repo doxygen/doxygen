@@ -18,16 +18,17 @@
 
 #include "qcstring.h"
 #include "construct.h"
+#include "indexlist.h"
 
 class Definition;
 class MemberDef;
 
-class Sitemap
+class Sitemap : public IndexIntf
 {
   public:
     Sitemap();
    ~Sitemap();
-    ONLY_MOVABLE_DECL(Sitemap)
+    NON_COPYABLE(Sitemap)
 
     void initialize();
     void finalize();
@@ -50,12 +51,12 @@ class Sitemap
     std::unique_ptr<Private> p;
 };
 
-class Crawlmap
+class Crawlmap : public IndexIntf
 {
   public:
     Crawlmap();
    ~Crawlmap();
-    ONLY_MOVABLE_DECL(Crawlmap)
+    NON_COPYABLE(Crawlmap)
 
     void initialize();
     void finalize();

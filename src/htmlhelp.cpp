@@ -360,7 +360,6 @@ class HtmlHelp::Private
  */
 HtmlHelp::HtmlHelp() : p(std::make_unique<Private>()) {}
 HtmlHelp::~HtmlHelp() = default;
-DEFAULT_MOVABLE_IMPL(HtmlHelp)
 
 /*! This will create a contents file (index.hhc) and a index file (index.hhk)
  *  and write the header of those files.

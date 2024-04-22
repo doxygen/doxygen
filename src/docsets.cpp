@@ -43,7 +43,6 @@ struct DocSets::Private
 
 DocSets::DocSets() : p(std::make_unique<Private>()) {}
 DocSets::~DocSets() = default;
-DEFAULT_MOVABLE_IMPL(DocSets)
 
 void DocSets::initialize()
 {

@@ -938,15 +938,15 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (Doxygen::searchIndex)
+  if (Doxygen::searchIndex.enabled())
   {
     if (yyextra->searchCtx)
     {
-      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+      Doxygen::searchIndex.setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -991,9 +991,9 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
 
 static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
 {
-  if (Doxygen::searchIndex)
+  if (Doxygen::searchIndex.enabled())
   {
-    Doxygen::searchIndex->addWord(text,false);
+    Doxygen::searchIndex.addWord(text,false);
   }
 }
 

@@ -559,11 +559,11 @@ void ClangTUParser::writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_
   }
 
   // set search page target
-  if (Doxygen::searchIndex)
+  if (Doxygen::searchIndex.enabled())
   {
     QCString lineAnchor;
     lineAnchor.sprintf("l%05d",line);
-    Doxygen::searchIndex->setCurrentDoc(fd,lineAnchor,TRUE);
+    Doxygen::searchIndex.setCurrentDoc(fd,lineAnchor,TRUE);
   }
 
   //printf("writeLineNumber(%d) g_searchForBody=%d\n",line,g_searchForBody);
@@ -882,9 +882,9 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
                )
             {
               linkIdentifier(ol,fd,line,column,s,i);
-              if (Doxygen::searchIndex)
+              if (Doxygen::searchIndex.enabled())
               {
-                Doxygen::searchIndex->addWord(s,FALSE);
+                Doxygen::searchIndex.addWord(s,FALSE);
               }
             }
             else

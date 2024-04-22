@@ -1407,11 +1407,11 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   else d=mdef;
 
   // write search index info
-  if (Doxygen::searchIndex)
+  if (Doxygen::searchIndex.enabled())
   {
-    Doxygen::searchIndex->setCurrentDoc(mdef,mdef->anchor(),FALSE);
-    Doxygen::searchIndex->addWord(mdef->localName(),TRUE);
-    Doxygen::searchIndex->addWord(mdef->qualifiedName(),FALSE);
+    Doxygen::searchIndex.setCurrentDoc(mdef,mdef->anchor(),FALSE);
+    Doxygen::searchIndex.addWord(mdef->localName(),TRUE);
+    Doxygen::searchIndex.addWord(mdef->qualifiedName(),FALSE);
   }
 
   QCString cname  = d->name();
