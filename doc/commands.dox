@@ -251,6 +251,7 @@ documentation:
 \refitem cmdbackslash \\\\
 \refitem cmdamp \\\&
 \refitem cmdtilde \\~
+\refitem cmdtildeother \\~!
 \refitem cmdlt \\\<
 \refitem cmdeq \\=
 \refitem cmdgt \\\>
@@ -4099,23 +4100,38 @@ class Receiver
   because doxygen uses it to detect Javadoc commands.
 
 <hr>
-\section cmdtilde \\~[LanguageId] or \\~'{'LanguageId [,LanguageId]*'}'
+\section cmdtilde \\~[LanguageId]
   \addindex \\~
   This command enables/disables a language specific filter. This can be
   used to put documentation for different language into one comment block
   and use the \ref cfg_output_language "OUTPUT_LANGUAGE" tag to filter out only a specific language.
-  Use \c \\~language_id to enable output for a specific language only,
-  \c \\~{LanguageId's} to enable output for all languages except for the ones specified in the options list and
+  Use \c \\~language_id to enable output for a specific language only and
   \c \\~ to enable output for all languages (this is also the default mode).
 
   Example:
 \verbatim
 /*! \~english This is English \~dutch Dit is Nederlands \~german Dies ist
-    Deutsch. \~{english, dutch, german} output for all languages but English, Dutch and German
+    Deutsch. \~ output for all languages.
+ */
+\endverbatim
+
+  \sa \ref cmdtilde "\\~!'{'LanguageId [,LanguageId]*'}'"
+
+<hr>
+\section cmdtildeother \\~!'{'LanguageId [,LanguageId]*'}'
+  \addindex \\~!
+  This command enables/disables a language specific filter.
+  Use \c \\~!{LanguageId's} to enable output for all languages except for the ones specified in the options list.
+
+  Example:
+\verbatim
+/*! \~english This is English \~dutch Dit is Nederlands \~german Dies ist
+    Deutsch. \~!{english, dutch, german} output for all languages but English, Dutch and German
     \~ output for all languages.
  */
 \endverbatim
 
+  \sa \ref cmdtilde "\\~[LanguageId]"
 
 <hr>
 \section cmdamp \\\&

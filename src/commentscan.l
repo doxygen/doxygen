@@ -1002,9 +1002,9 @@ STopt  [^\n@\\]*
                                             BEGIN(SkipLang);
                                           }
                                         }
-<Comment>{B}*{CMD}"~{"({B}*[a-zA-Z-]*{B}*,)*{B}*[a-zA-Z-]*{B}*"}" { 
+<Comment>{B}*{CMD}"~!{"({B}*[a-zA-Z-]*{B}*,)*{B}*[a-zA-Z-]*{B}*"}" { 
                                           QCString fullMatch = QCString(yytext).stripWhiteSpace();
-                                          QCString optStr = fullMatch.mid(3,fullMatch.length()-4).stripWhiteSpace();
+                                          QCString optStr = fullMatch.mid(4,fullMatch.length()-5).stripWhiteSpace();
                                           StringVector optList = split(optStr.str(),",");
                                           bool supportedLang = false;
                                           for (const auto &opt : optList)
@@ -2700,9 +2700,9 @@ STopt  [^\n@\\]*
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipLang>{CMD}"~{"({B}*[a-zA-Z-]*{B}*,)*{B}*[a-zA-Z-]*{B}*"}"        { /* language switch */
+<SkipLang>{CMD}"~!{"({B}*[a-zA-Z-]*{B}*,)*{B}*[a-zA-Z-]*{B}*"}"        { /* language switch */
                                           QCString fullMatch = QCString(yytext);
-                                          QCString optStr = fullMatch.mid(3,fullMatch.length()-4).stripWhiteSpace();
+                                          QCString optStr = fullMatch.mid(4,fullMatch.length()-5).stripWhiteSpace();
                                           StringVector optList = split(optStr.str(),",");
                                           bool supportedLang = false;
                                           for (const auto &opt : optList)
