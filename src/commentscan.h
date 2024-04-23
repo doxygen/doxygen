@@ -83,7 +83,7 @@ class CommentScanner
      *         finds that a the comment block finishes the entry and a new one
      *         needs to be started.
      *  @param[in] markdownEnabled Indicates if markdown specific processing should be done.
-     *  @maram[inout] guards Tracks nested conditional sections (if,ifnot,..)
+     *  @param[inout] guards Tracks nested conditional sections (if,ifnot,..)
      *  @returns TRUE if the comment requires further processing. The
      *         parameter \a newEntryNeeded will typically be true in this case and
      *         \a position will indicate the offset inside the \a comment string
