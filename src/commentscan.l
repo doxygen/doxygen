@@ -431,26 +431,6 @@ enum GuardType
   Guard_ElseIf
 };
 
-class GuardedSection
-{
-  public:
-    GuardedSection(bool parentVisible)
-      : m_parentVisible(parentVisible) {}
-    void setEnabled(bool enabled) { m_enabled = enabled; }
-    bool isEnabled() const { return m_enabled; }
-    void setEnabledFound() { m_enabledFound = true; }
-    bool isEnabledFound() const { return m_enabledFound; }
-    bool parentVisible() const { return m_parentVisible; }
-    void setElse() { m_hasElse = true; }
-    bool hasElse() const { return m_hasElse; }
-
-  private:
-    bool m_parentVisible;
-    bool m_enabledFound = false;
-    bool m_enabled = false;
-    bool m_hasElse = false;
-};
-
 /* -----------------------------------------------------------------
  *
  *        statics
@@ -473,15 +453,15 @@ struct commentscanYY_state
   QCString         formulaText;            // Running text of a formula
   QCString         formulaEnv;             // environment name
   int              formulaNewLines = 0;    // amount of new lines in the formula
-  QCString        *pOutputString = nullptr;      // pointer to string to which the output is appended.
+  QCString        *pOutputString = nullptr;  // pointer to string to which the output is appended.
   QCString         outputXRef;               // temp argument of todo/test/../xrefitem commands
   QCString         blockName;                // preformatted block name (e.g. verbatim, latexonly,...)
   XRefKind         xrefKind    = XRef_Item;  // kind of cross-reference command
   XRefKind         newXRefKind = XRef_Item;  //
   GuardType        guardType = Guard_If;     // kind of guards for conditional section
-  QCString         functionProto;          // function prototype
-  std::stack<GuardedSection> guards;             // tracks nested conditional sections (if,ifnot,..)
-  Entry           *current = nullptr;              // working entry
+  QCString         functionProto;            // function prototype
+  std::stack<GuardedSection> *guards;        // tracks nested conditional sections (if,ifnot,..)
+  Entry           *current = nullptr;        // working entry
 
   bool             needNewEntry = FALSE;
 
@@ -2292,16 +2272,16 @@ STopt  [^\n@\\]*
 
 <SkipGuardedSection>{CMD}"ifnot"/{NW}   {
                                           yyextra->guardType = Guard_IfNot;
-                                          yyextra->guards.emplace(false);
+                                          yyextra->guards->emplace(false);
                                           BEGIN( GuardParam );
                                         }
 <SkipGuardedSection>{CMD}"if"/{NW}      {
                                           yyextra->guardType = Guard_If;
-                                          yyextra->guards.emplace(false);
+                                          yyextra->guards->emplace(false);
                                           BEGIN( GuardParam );
                                         }
 <SkipGuardedSection>{CMD}"endif"/{NW}   {
-                                          if (yyextra->guards.empty())
+                                          if (yyextra->guards->empty())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\endif without matching start command");
@@ -2309,14 +2289,14 @@ STopt  [^\n@\\]*
                                           }
                                           else
                                           {
-                                            yyextra->guards.pop();
-                                            if (yyextra->guards.empty())
+                                            yyextra->guards->pop();
+                                            if (yyextra->guards->empty())
                                             {
                                               BEGIN( GuardParamEnd );
                                             }
                                             else
                                             {
-                                              if (yyextra->guards.top().isEnabled())
+                                              if (yyextra->guards->top().isEnabled())
                                               {
                                                 BEGIN( GuardParamEnd );
                                               }
@@ -2328,64 +2308,64 @@ STopt  [^\n@\\]*
                                           }
                                         }
 <SkipGuardedSection>{CMD}"else"/{NW}    {
-                                          if (yyextra->guards.empty())
+                                          if (yyextra->guards->empty())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\else without matching start command");
                                           }
-                                          else if (yyextra->guards.top().hasElse())
+                                          else if (yyextra->guards->top().hasElse())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found multiple \\else commands in same \\if construct");
-                                            yyextra->guards.top().setEnabled(false);
+                                            yyextra->guards->top().setEnabled(false);
                                             BEGIN( SkipGuardedSection );
                                           }
-                                          else if (!yyextra->guards.top().parentVisible())
+                                          else if (!yyextra->guards->top().parentVisible())
                                           {
-                                            yyextra->guards.top().setEnabled(false);
+                                            yyextra->guards->top().setEnabled(false);
                                             BEGIN( SkipGuardedSection );
                                           }
                                           else
                                           {
                                             yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-                                            yyextra->guards.top().setElse();
-                                            if (!yyextra->guards.top().parentVisible())
+                                            yyextra->guards->top().setElse();
+                                            if (!yyextra->guards->top().parentVisible())
                                             {
-                                              yyextra->guards.top().setEnabled(false);
+                                              yyextra->guards->top().setEnabled(false);
                                               BEGIN( SkipGuardedSection );
                                             }
-                                            else if (yyextra->guards.top().isEnabledFound())
+                                            else if (yyextra->guards->top().isEnabledFound())
                                             {
-                                              yyextra->guards.top().setEnabled(false);
+                                              yyextra->guards->top().setEnabled(false);
                                               BEGIN( SkipGuardedSection );
                                             }
                                             else
                                             {
-                                              yyextra->guards.top().setEnabled(true);
+                                              yyextra->guards->top().setEnabled(true);
                                               BEGIN( GuardParamEnd );
                                             }
                                           }
                                         }
 <SkipGuardedSection>{CMD}"elseif"/{NW}  {
-                                          if (yyextra->guards.empty())
+                                          if (yyextra->guards->empty())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\elseif without matching start command");
                                           }
-                                          else if (yyextra->guards.top().hasElse())
+                                          else if (yyextra->guards->top().hasElse())
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\elseif command after \\else command was given in \\if construct");
                                             yyextra->guardType = Guard_ElseIf;
                                             yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-                                            yyextra->guards.top().setEnabled(false);
+                                            yyextra->guards->top().setEnabled(false);
                                             BEGIN( GuardParam );
                                           }
                                           else
                                           {
                                             yyextra->guardType = Guard_ElseIf;
                                             yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-                                            yyextra->guards.top().setEnabled(false);
+                                            yyextra->guards->top().setEnabled(false);
                                             BEGIN( GuardParam );
                                           }
                                         }
@@ -3486,14 +3466,14 @@ static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->guardType = Guard_If;
   yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-  if (yyextra->guards.empty())
+  if (yyextra->guards->empty())
   {
-    yyextra->guards.emplace(true);
+    yyextra->guards->emplace(true);
   }
   else
   {
-    bool enabled  = yyextra->guards.top().isEnabled();
-    yyextra->guards.emplace(enabled);
+    bool enabled  = yyextra->guards->top().isEnabled();
+    yyextra->guards->emplace(enabled);
   }
   BEGIN(GuardParam);
   return FALSE;
@@ -3504,14 +3484,14 @@ static bool handleIfNot(yyscan_t yyscanner,const QCString &, const StringVector 
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->guardType = Guard_IfNot;
   yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-  if (yyextra->guards.empty())
+  if (yyextra->guards->empty())
   {
-    yyextra->guards.emplace(true);
+    yyextra->guards->emplace(true);
   }
   else
   {
-    bool enabled  = yyextra->guards.top().isEnabled();
-    yyextra->guards.emplace(enabled);
+    bool enabled  = yyextra->guards->top().isEnabled();
+    yyextra->guards->emplace(enabled);
   }
   BEGIN(GuardParam);
   return FALSE;
@@ -3520,25 +3500,25 @@ static bool handleIfNot(yyscan_t yyscanner,const QCString &, const StringVector 
 static bool handleElseIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->guards.empty())
+  if (yyextra->guards->empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
         "found \\elseif without matching start command");
   }
-  else if (yyextra->guards.top().hasElse())
+  else if (yyextra->guards->top().hasElse())
   {
     warn(yyextra->fileName,yyextra->lineNr,
         "found \\elseif command after \\else command was given in \\if construct");
     yyextra->guardType = Guard_ElseIf;
     yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-    yyextra->guards.top().setEnabled(false);
+    yyextra->guards->top().setEnabled(false);
     BEGIN(GuardParam);
   }
   else
   {
     yyextra->guardType = Guard_ElseIf;
     yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-    yyextra->guards.top().setEnabled(false);
+    yyextra->guards->top().setEnabled(false);
     BEGIN(GuardParam);
   }
   return FALSE;
@@ -3547,31 +3527,31 @@ static bool handleElseIf(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handleElse(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->guards.empty())
+  if (yyextra->guards->empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
         "found \\else without matching start command");
   }
-  else if (yyextra->guards.top().hasElse())
+  else if (yyextra->guards->top().hasElse())
   {
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\else commands in same \\if construct");
-    yyextra->guards.top().setEnabled(false);
-    yyextra->guards.top().setElse();
+    yyextra->guards->top().setEnabled(false);
+    yyextra->guards->top().setElse();
     BEGIN( SkipGuardedSection );
   }
   else
   {
-    yyextra->guards.top().setElse();
+    yyextra->guards->top().setElse();
     yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-    if (yyextra->guards.top().isEnabledFound())
+    if (yyextra->guards->top().isEnabledFound())
     {
-      yyextra->guards.top().setEnabled(false);
+      yyextra->guards->top().setEnabled(false);
       BEGIN( SkipGuardedSection );
     }
     else
     {
-      yyextra->guards.top().setEnabled(true);
+      yyextra->guards->top().setEnabled(true);
       BEGIN( GuardParamEnd );
     }
   }
@@ -3581,27 +3561,27 @@ static bool handleElse(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleEndIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->guards.empty())
+  if (yyextra->guards->empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
         "found \\endif without matching start command");
   }
   else
   {
-    yyextra->guards.pop();
+    yyextra->guards->pop();
   }
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
   }
-  if (yyextra->guards.empty())
+  if (yyextra->guards->empty())
   {
     BEGIN( GuardParamEnd );
   }
   else
   {
-    if (yyextra->guards.top().isEnabled())
+    if (yyextra->guards->top().isEnabled())
     {
       BEGIN( GuardParamEnd );
     }
@@ -4616,7 +4596,8 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
                        /* in,out */ Protection &prot,
                        /* in,out */ int &position,
                        /* out */    bool &newEntryNeeded,
-                       /* in */     bool markdownSupport
+                       /* in */     bool markdownSupport,
+                       /* inout */  std::stack<GuardedSection> *guards
                       )
 {
   AUTO_TRACE("comment='{}' fileName={} lineNr={} isBrief={} isAutoBriefOn={} inInbody={}"
@@ -4626,7 +4607,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   initParser(yyscanner);
-  yyextra->guards = std::stack<GuardedSection>();
+  yyextra->guards = guards;
   yyextra->langParser     = parser;
   yyextra->current        = curEntry;
   yyextra->current->docLine = (lineNr > 1 ? lineNr : 1);
@@ -4678,11 +4659,6 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
     addOutput(yyscanner,getOverloadDocs());
   }
 
-  if (!yyextra->guards.empty())
-  {
-    warn(yyextra->fileName,yyextra->lineNr,"Documentation block ended in the middle of a conditional section!");
-  }
-
   if (yyextra->insideParBlock)
   {
     warn(yyextra->fileName,yyextra->lineNr,
@@ -4723,6 +4699,11 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   // were this happens
   if (yyextra->parseMore && position==yyextra->inputPosition) yyextra->parseMore=FALSE;
 
+  if (!yyextra->parseMore && !yyextra->guards->empty())
+  {
+    warn(yyextra->fileName,yyextra->lineNr,"Documentation block ended in the middle of a conditional section!");
+  }
+
   if (yyextra->parseMore) position=yyextra->inputPosition; else position=0;
 
   lineNr = yyextra->lineNr;
@@ -4741,7 +4722,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
   {
     sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
   }
-  bool parentEnabled = yyextra->guards.top().parentVisible();
+  bool parentEnabled = yyextra->guards->top().parentVisible();
   if (parentEnabled)
   {
     if (
@@ -4750,26 +4731,26 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
        ) // section is visible
     {
 
-      yyextra->guards.top().setEnabled(true);
-      yyextra->guards.top().setEnabledFound();
+      yyextra->guards->top().setEnabled(true);
+      yyextra->guards->top().setEnabledFound();
       BEGIN( GuardParamEnd );
     }
     else if (yyextra->guardType==Guard_ElseIf)
     {
-      if (yyextra->guards.top().isEnabledFound())
+      if (yyextra->guards->top().isEnabledFound())
       {
-        yyextra->guards.top().setEnabled(false);
+        yyextra->guards->top().setEnabled(false);
         BEGIN( SkipGuardedSection );
       }
       else if (sectionEnabled)
       {
-        yyextra->guards.top().setEnabled(true);
-        yyextra->guards.top().setEnabledFound();
+        yyextra->guards->top().setEnabled(true);
+        yyextra->guards->top().setEnabledFound();
         BEGIN( GuardParamEnd );
       }
       else
       {
-        yyextra->guards.top().setEnabled(false);
+        yyextra->guards->top().setEnabled(false);
         BEGIN( SkipGuardedSection );
       }
     }

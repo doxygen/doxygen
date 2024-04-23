@@ -1917,6 +1917,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   bool needsEntry = false;
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   Markdown markdown(yyextra->fileName,lineNr);
+  std::stack<GuardedSection> guards = std::stack<GuardedSection>();
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
@@ -1930,7 +1931,9 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
         yyextra->protection,
         position,
         needsEntry,
-        Config_getBool(MARKDOWN_SUPPORT))
+        Config_getBool(MARKDOWN_SUPPORT),
+        &guards
+       )
      ) // need to start a new entry
   {
     if (needsEntry)

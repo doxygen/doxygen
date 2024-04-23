@@ -3575,6 +3575,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   Protection prot = Protection::Public;
   bool needsEntry = false;
   int position=0;
+  std::stack<GuardedSection> guards = std::stack<GuardedSection>();
   QCString processedDocs = markdown.process(docs,lineNr,true);
   while (p->commentScanner.parseCommentBlock(
         this,
@@ -3588,7 +3589,9 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         prot,      // protection
         position,
         needsEntry,
-        true))
+        true,
+        &guards
+        ))
   {
     if (needsEntry)
     {
