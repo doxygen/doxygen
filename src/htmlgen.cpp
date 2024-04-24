@@ -1067,7 +1067,7 @@ HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og.m_dir
 {
   //printf("%p:HtmlGenerator(copy %p)\n",(void*)this,(void*)&og);
   m_codeList     = std::make_unique<OutputCodeList>(*og.m_codeList);
-  m_codeGen      = m_codeList->get<HtmlCodeGenerator>();
+  m_codeGen      = m_codeList->get<HtmlCodeGenerator>(OutputType::Html);
   m_codeGen->setTextStream(&m_t);
   m_lastTitle    = og.m_lastTitle;
   m_lastFile     = og.m_lastFile;
@@ -1083,7 +1083,7 @@ HtmlGenerator &HtmlGenerator::operator=(const HtmlGenerator &og)
   {
     m_dir          = og.m_dir;
     m_codeList     = std::make_unique<OutputCodeList>(*og.m_codeList);
-    m_codeGen      = m_codeList->get<HtmlCodeGenerator>();
+    m_codeGen      = m_codeList->get<HtmlCodeGenerator>(OutputType::Html);
     m_codeGen->setTextStream(&m_t);
     m_lastTitle    = og.m_lastTitle;
     m_lastFile     = og.m_lastFile;
@@ -1099,7 +1099,7 @@ HtmlGenerator::HtmlGenerator(HtmlGenerator &&og)
 {
   //printf("%p:HtmlGenerator(move %p)\n",(void*)this,(void*)&og);
   m_codeList     = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen      = m_codeList->get<HtmlCodeGenerator>();
+  m_codeGen      = m_codeList->get<HtmlCodeGenerator>(OutputType::Html);
   m_codeGen->setTextStream(&m_t);
   m_lastTitle    = std::exchange(og.m_lastTitle,QCString());
   m_lastFile     = std::exchange(og.m_lastFile,QCString());
@@ -1115,7 +1115,7 @@ HtmlGenerator::~HtmlGenerator()
 
 void HtmlGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(HtmlCodeGeneratorDefer(m_codeGen)));
+  list.add<HtmlCodeGeneratorDefer>(m_codeGen);
 }
 
 void HtmlGenerator::init()

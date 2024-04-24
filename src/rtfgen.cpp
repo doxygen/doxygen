@@ -300,7 +300,7 @@ RTFGenerator::RTFGenerator()
 RTFGenerator::RTFGenerator(const RTFGenerator &og) : OutputGenerator(og.m_dir)
 {
   m_codeList       = std::make_unique<OutputCodeList>(*og.m_codeList);
-  m_codeGen        = m_codeList->get<RTFCodeGenerator>();
+  m_codeGen        = m_codeList->get<RTFCodeGenerator>(OutputType::RTF);
   m_codeGen->setTextStream(&m_t);
   m_bstartedBody   = og.m_bstartedBody;
   m_omitParagraph  = og.m_omitParagraph;
@@ -316,7 +316,7 @@ RTFGenerator &RTFGenerator::operator=(const RTFGenerator &og)
   {
     m_dir            = og.m_dir;
     m_codeList       = std::make_unique<OutputCodeList>(*og.m_codeList);
-    m_codeGen        = m_codeList->get<RTFCodeGenerator>();
+    m_codeGen        = m_codeList->get<RTFCodeGenerator>(OutputType::RTF);
     m_codeGen->setTextStream(&m_t);
     m_bstartedBody   = og.m_bstartedBody;
     m_omitParagraph  = og.m_omitParagraph;
@@ -332,7 +332,7 @@ RTFGenerator::RTFGenerator(RTFGenerator &&og)
   : OutputGenerator(std::move(og))
 {
   m_codeList       = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen        = m_codeList->get<RTFCodeGenerator>();
+  m_codeGen        = m_codeList->get<RTFCodeGenerator>(OutputType::RTF);
   m_codeGen->setTextStream(&m_t);
   m_bstartedBody   = std::exchange(og.m_bstartedBody,false);
   m_omitParagraph  = std::exchange(og.m_omitParagraph,false);
@@ -348,7 +348,7 @@ RTFGenerator::~RTFGenerator()
 
 void RTFGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(RTFCodeGeneratorDefer(m_codeGen)));
+  list.add<RTFCodeGeneratorDefer>(m_codeGen);
 }
 
 void RTFGenerator::setRelativePath(const QCString &path)

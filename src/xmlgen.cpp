@@ -468,7 +468,7 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
                 TRUE         // showLineNumbers
                 );
   xmlList.endCodeFragment("DoxyCode");
-  xmlList.get<XMLCodeGenerator>()->finish();
+  xmlList.get<XMLCodeGenerator>(OutputType::XML)->finish();
 }
 
 static void writeMemberReference(TextStream &t,const Definition *def,const MemberDef *rmd,const QCString &tagName)

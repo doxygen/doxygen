@@ -24,35 +24,36 @@
 class OutputCodeList;
 
 /** Generator for RTF code fragments */
-class RTFCodeGenerator
+class RTFCodeGenerator : public OutputCodeIntf
 {
   public:
     RTFCodeGenerator(TextStream *t);
     void setTextStream(TextStream *t) { m_t = t; }
 
-    OutputType type() const { return OutputType::RTF; }
-    void codify(const QCString &text);
+    OutputType type() const override { return OutputType::RTF; }
+    void codify(const QCString &text) override;
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<RTFCodeGenerator>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip);
+                       const QCString &tooltip) override;
     void writeTooltip(const QCString &,
                       const DocLinkInfo &,
                       const QCString &,
                       const QCString &,
                       const SourceLinkInfo &,
                       const SourceLinkInfo &
-                     ) {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
-    void startCodeLine(int);
-    void endCodeLine();
-    void startFontClass(const QCString &);
-    void endFontClass();
-    void writeCodeAnchor(const QCString &) {}
-    void startCodeFragment(const QCString &style);
-    void endCodeFragment(const QCString &);
-    void startFold(int,const QCString &,const QCString &) {}
-    void endFold() {}
+                     ) override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool) override;
+    void startCodeLine(int) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &) override {}
+    void startCodeFragment(const QCString &style) override;
+    void endCodeFragment(const QCString &) override;
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
   private:
     friend class RTFGenerator;

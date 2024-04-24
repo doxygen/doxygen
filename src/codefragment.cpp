@@ -386,11 +386,11 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     AUTO_TRACE_ADD("replay(start={},end={}) fileContentsTrimLeft.empty()={}",startLine,endLine,codeFragment->fileContentsTrimLeft.isEmpty());
     if (!trimLeft || codeFragment->fileContentsTrimLeft.isEmpty()) // replay the normal version
     {
-      codeFragment->recorderCodeList.get<OutputCodeRecorder>()->replay(codeOutList,startLine+1,endLine,showLineNumbers);
+      codeFragment->recorderCodeList.get<OutputCodeRecorder>(OutputType::Recorder)->replay(codeOutList,startLine+1,endLine,showLineNumbers);
     }
     else // replay the trimmed version
     {
-      codeFragment->recorderCodeListTrimLeft.get<OutputCodeRecorder>()->replay(codeOutList,startLine+1,endLine,showLineNumbers);
+      codeFragment->recorderCodeListTrimLeft.get<OutputCodeRecorder>(OutputType::Recorder)->replay(codeOutList,startLine+1,endLine,showLineNumbers);
     }
   }
   else

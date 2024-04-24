@@ -58,6 +58,39 @@ struct SourceLinkInfo
 
 enum class OutputType { List, Html, Latex, Man, RTF, Docbook, XML, Null, Extension, Recorder };
 
+
+/** Base class for code generators
+ */
+class OutputCodeIntf
+{
+  public:
+    OutputCodeIntf() = default;
+    DEFAULT_COPYABLE(OutputCodeIntf)
+
+    virtual OutputType type() const = 0;
+    virtual std::unique_ptr<OutputCodeIntf> clone() = 0;
+    virtual void codify(const QCString &s) = 0;
+    virtual void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip) = 0;
+    virtual void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+                         int lineNumber, bool writeLineAnchor) = 0;
+    virtual void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
+                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) = 0;
+    virtual void startCodeLine(int lineNr) = 0;
+    virtual void endCodeLine()= 0;
+    virtual void startFontClass(const QCString &c) = 0;
+    virtual void endFontClass() = 0;
+    virtual void writeCodeAnchor(const QCString &name) = 0;
+    virtual void startCodeFragment(const QCString &style) = 0;
+    virtual void endCodeFragment(const QCString &style) = 0;
+    virtual void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker) = 0;
+    virtual void endFold() = 0;
+};
+
+
+
 /** Base class for specific output generators.
  *
  *  Subclass this class to add support for a new output format

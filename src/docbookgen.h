@@ -44,33 +44,33 @@
 
 class OutputCodeList;
 
-class DocbookCodeGenerator
+class DocbookCodeGenerator : public OutputCodeIntf
 {
   public:
     DocbookCodeGenerator(TextStream *t);
     void setTextStream(TextStream *t) { m_t = t; }
 
-    OutputType type() const { return OutputType::Docbook; }
-
-    void codify(const QCString &text);
+    OutputType type() const override { return OutputType::Docbook; }
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<DocbookCodeGenerator>(m_t); }
+    void codify(const QCString &text) override;
     void writeCodeLink(CodeSymbolType type,
         const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
-        const QCString &tooltip);
+        const QCString &tooltip) override;
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
-                     );
-    void startCodeLine(int);
-    void endCodeLine();
-    void startFontClass(const QCString &colorClass);
-    void endFontClass();
-    void writeCodeAnchor(const QCString &);
+                     ) override;
+    void startCodeLine(int) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &colorClass) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &) override;
     void writeLineNumber(const QCString &extRef,const QCString &compId,
-        const QCString &anchorId,int l, bool writeLineAnchor);
-    void startCodeFragment(const QCString &style);
-    void endCodeFragment(const QCString &style);
-    void startFold(int,const QCString &,const QCString &) {}
-    void endFold() {}
+        const QCString &anchorId,int l, bool writeLineAnchor) override;
+    void startCodeFragment(const QCString &style) override;
+    void endCodeFragment(const QCString &style) override;
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     void setRelativePath(const QCString &path) { m_relPath = path; }
     void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }

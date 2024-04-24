@@ -21,7 +21,7 @@
 class OutputCodeList;
 
 /** Generator for HTML code fragments */
-class HtmlCodeGenerator
+class HtmlCodeGenerator : public OutputCodeIntf
 {
   public:
     HtmlCodeGenerator(TextStream *t,const QCString &relPath);
@@ -31,30 +31,30 @@ class HtmlCodeGenerator
     void setFileName(const QCString fileName) { m_fileName = fileName; }
     QCString fileName() { return m_fileName; }
 
-    OutputType type() const { return OutputType::Html; }
-
-    void codify(const QCString &text);
+    OutputType type() const override { return OutputType::Html; }
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<HtmlCodeGenerator>(*this); }
+    void codify(const QCString &text) override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip);
+                       const QCString &tooltip) override;
     void writeTooltip(const QCString &id,
                       const DocLinkInfo &docInfo,
                       const QCString &decl,
                       const QCString &desc,
                       const SourceLinkInfo &defInfo,
                       const SourceLinkInfo &declInfo
-                     );
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool);
-    void startCodeLine(int);
-    void endCodeLine();
-    void startFontClass(const QCString &s);
-    void endFontClass();
-    void writeCodeAnchor(const QCString &anchor);
-    void startCodeFragment(const QCString &style);
-    void endCodeFragment(const QCString &);
-    void startFold(int,const QCString &,const QCString &);
-    void endFold();
+                     ) override;
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool) override;
+    void startCodeLine(int) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &s) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &anchor) override;
+    void startCodeFragment(const QCString &style) override;
+    void endCodeFragment(const QCString &) override;
+    void startFold(int,const QCString &,const QCString &) override;
+    void endFold() override;
 
     void setRelativePath(const QCString &path);
   private:

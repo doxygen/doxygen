@@ -287,7 +287,7 @@ DB_GEN_C
 DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og.m_dir)
 {
   m_codeList         = std::make_unique<OutputCodeList>(*og.m_codeList);
-  m_codeGen          = m_codeList->get<DocbookCodeGenerator>();
+  m_codeGen          = m_codeList->get<DocbookCodeGenerator>(OutputType::Docbook);
   m_codeGen->setTextStream(&m_t);
   m_denseText        = og.m_denseText;
   m_inGroup          = og.m_inGroup;
@@ -305,9 +305,9 @@ DocbookGenerator &DocbookGenerator::operator=(const DocbookGenerator &og)
 {
   if (this!=&og)
   {
-    m_dir          = og.m_dir;
-    m_codeList     = std::make_unique<OutputCodeList>(*og.m_codeList);
-    m_codeGen      = m_codeList->get<DocbookCodeGenerator>();
+    m_dir              = og.m_dir;
+    m_codeList         = std::make_unique<OutputCodeList>(*og.m_codeList);
+    m_codeGen          = m_codeList->get<DocbookCodeGenerator>(OutputType::Docbook);
     m_codeGen->setTextStream(&m_t);
     m_denseText        = og.m_denseText;
     m_inGroup          = og.m_inGroup;
@@ -327,7 +327,7 @@ DocbookGenerator::DocbookGenerator(DocbookGenerator &&og)
   : OutputGenerator(std::move(og))
 {
   m_codeList         = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen          = m_codeList->get<DocbookCodeGenerator>();
+  m_codeGen          = m_codeList->get<DocbookCodeGenerator>(OutputType::Docbook);
   m_codeGen->setTextStream(&m_t);
   m_denseText        = std::exchange(og.m_denseText,false);
   m_inGroup          = std::exchange(og.m_inGroup,false);
@@ -347,7 +347,7 @@ DocbookGenerator::~DocbookGenerator()
 
 void DocbookGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(DocbookCodeGeneratorDefer(m_codeGen)));
+  list.add<DocbookCodeGeneratorDefer>(m_codeGen);
 }
 
 void DocbookGenerator::init()
