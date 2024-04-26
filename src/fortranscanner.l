@@ -3052,6 +3052,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int position=0;
   bool needsEntry = FALSE;
   Markdown markdown(yyextra->fileName,lineNr);
+  std::stack<GuardedSection> guards = std::stack<GuardedSection>();
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
@@ -3065,7 +3066,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
         yyextra->defaultProtection,
         position,
         needsEntry,
-        Config_getBool(MARKDOWN_SUPPORT)
+        Config_getBool(MARKDOWN_SUPPORT),
+        &guards
         ))
   {
     DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
