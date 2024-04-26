@@ -177,12 +177,12 @@ jobs:
          brew install libxml2
       if: matrix.config.os == 'macos-latest'
 
-    - name: Install bison (MacOS)
-      run: |
-        brew update
-        brew install bison;
-        echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-      if: matrix.config.os == 'macos-latest'
+    #- name: Install bison (MacOS)
+    #  run: |
+    #    brew update
+    #    brew install bison;
+    #    echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+    #  if: matrix.config.os == 'macos-latest'
 
     - name: Install bison/flex (Windows)
       run: |
