@@ -7875,7 +7875,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 
   int position=0;
   bool needsEntry=FALSE;
-  std::stack<GuardedSection> guards = std::stack<GuardedSection>();
+  GuardedSectionStack guards;
   Markdown markdown(yyextra->fileName,lineNr);
   QCString strippedDoc = stripIndentation(doc);
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,lineNr) : strippedDoc;
@@ -7941,7 +7941,7 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
 
       //printf("handleParametersCommentBlock [%s]\n",qPrint(doc));
       int lineNr = orgDocLine;
-      std::stack<GuardedSection> guards = std::stack<GuardedSection>();
+      GuardedSectionStack guards;
       Markdown markdown(yyextra->fileName,lineNr);
       QCString strippedDoc = stripIndentation(a.docs);
       QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,lineNr) : strippedDoc;

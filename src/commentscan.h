@@ -17,6 +17,8 @@
 #define COMMENTSCAN_H
 
 #include <memory>
+#include <stack>
+
 #include "types.h"
 #include "construct.h"
 
@@ -42,6 +44,8 @@ class GuardedSection
     bool m_enabled = false;
     bool m_hasElse = false;
 };
+
+using GuardedSectionStack = std::stack<GuardedSection>;
 
 /** @file
  *  @brief Interface for the comment block scanner */
@@ -102,7 +106,7 @@ class CommentScanner
                            int &position,
                            bool &newEntryNeeded,
                            bool markdownEnabled,
-                           std::stack<GuardedSection> *guards
+                           GuardedSectionStack *guards
                           );
     void initGroupInfo(Entry *entry);
     void enterFile(const QCString &fileName,int lineNr);

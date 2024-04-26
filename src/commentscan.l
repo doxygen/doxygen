@@ -460,7 +460,7 @@ struct commentscanYY_state
   XRefKind         newXRefKind = XRef_Item;  //
   GuardType        guardType = Guard_If;     // kind of guards for conditional section
   QCString         functionProto;            // function prototype
-  std::stack<GuardedSection> *guards;        // tracks nested conditional sections (if,ifnot,..)
+  GuardedSectionStack *guards = nullptr;     // tracks nested conditional sections (if,ifnot,..)
   Entry           *current = nullptr;        // working entry
 
   bool             needNewEntry = FALSE;
@@ -4597,7 +4597,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
                        /* in,out */ int &position,
                        /* out */    bool &newEntryNeeded,
                        /* in */     bool markdownSupport,
-                       /* inout */  std::stack<GuardedSection> *guards
+                       /* inout */  GuardedSectionStack *guards
                       )
 {
   AUTO_TRACE("comment='{}' fileName={} lineNr={} isBrief={} isAutoBriefOn={} inInbody={}"

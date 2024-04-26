@@ -461,7 +461,7 @@ void CitationManager::generatePage()
     CommentScanner   commentScanner;
     int              lineNr = 0;
     int              pos = 0;
-    std::stack<GuardedSection> guards = std::stack<GuardedSection>();
+    GuardedSectionStack guards;
     Protection       prot = Protection::Public;
     commentScanner.parseCommentBlock(
         nullptr,

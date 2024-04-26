@@ -433,7 +433,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 
   Markdown markdown(p->yyFileName,p->iDocLine);
   int lineNr = p->iDocLine;
-  std::stack<GuardedSection> guards = std::stack<GuardedSection>();
+  GuardedSectionStack guards;
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
 
    while (p->commentScanner.parseCommentBlock(

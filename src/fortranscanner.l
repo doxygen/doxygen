@@ -3052,7 +3052,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int position=0;
   bool needsEntry = FALSE;
   Markdown markdown(yyextra->fileName,lineNr);
-  std::stack<GuardedSection> guards = std::stack<GuardedSection>();
+  GuardedSectionStack guards;
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
