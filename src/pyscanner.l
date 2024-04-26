@@ -544,14 +544,6 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         docVariable(yyscanner,&yytext[5]);
                         newEntry(yyscanner);
                       }
-    "self."{IDENTIFIER}{B}:{B}{IDENTIFIER}/{B}"=" { // with typing
-                        QCString inp(yytext);
-                        int i=inp.find(':');
-                        docVariable(yyscanner,inp.mid(5,i-5).stripWhiteSpace().data());
-                        yyextra->current->type = inp.mid(i+1).stripWhiteSpace();
-                        yyextra->startInit = false;
-                        newEntry(yyscanner);
-                      }
     "cls."{IDENTIFIER}/{B}[,)] {
                         DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
                         docVariable(yyscanner,&yytext[4]);
@@ -560,14 +552,6 @@ ID        [a-z_A-Z%]+{IDSYM}*
     "cls."{IDENTIFIER}/{B}"=" {
                         DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
                         docVariable(yyscanner,&yytext[4]);
-                        newEntry(yyscanner);
-                      }
-    "cls."{IDENTIFIER}{B}:{B}{IDENTIFIER}/{B}"=" { // with typing
-                        QCString inp(yytext);
-                        int i=inp.find(':');
-                        docVariable(yyscanner,inp.mid(4,i-4).stripWhiteSpace().data());
-                        yyextra->current->type = inp.mid(i+1).stripWhiteSpace();
-                        yyextra->startInit = false;
                         newEntry(yyscanner);
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
@@ -1770,28 +1754,6 @@ static void setProtection(yyscan_t yyscanner)
 static void docVariable(yyscan_t yyscanner,const char *name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  for (auto &v : yyextra->current_root->children())
-  {
-    if (v->name == name)
-    {
-      if (!v->brief.isEmpty())
-      {
-        if (!v->doc.isEmpty()) v->doc = v->doc.stripWhiteSpace() + "\n\n";
-        v->doc += yyextra->current->brief;
-      }
-      else
-      {
-        v->brief = yyextra->current->brief;
-      }
-      if (!yyextra->current->doc.isEmpty())
-      {
-        if (!v->doc.isEmpty()) v->doc = v->doc.stripWhiteSpace() + "\n\n";
-        v->doc += yyextra->current->doc;
-      }
-      yyextra->current = v;
-      return;
-    }
-  }
   yyextra->current->name = name;
   yyextra->current->section=EntryType::makeVariable();
   yyextra->current->fileName  = yyextra->fileName;
