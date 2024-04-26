@@ -461,6 +461,7 @@ void CitationManager::generatePage()
     CommentScanner   commentScanner;
     int              lineNr = 0;
     int              pos = 0;
+    GuardedSectionStack guards;
     Protection       prot = Protection::Public;
     commentScanner.parseCommentBlock(
         nullptr,
@@ -474,7 +475,8 @@ void CitationManager::generatePage()
         prot,         // protection
         pos,          // position,
         needsEntry,
-        false
+        false,
+        &guards
         );
     doc = current.doc;
   }
