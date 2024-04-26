@@ -1190,9 +1190,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Člen" : "člen"));
-      if (!singular)  result+="y";
-      return result;
+      return createNoun(first_capital, singular, "člen", "y");
     }
 
     /*! This is used for translation of the word that will possibly

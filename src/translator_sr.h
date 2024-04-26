@@ -1217,9 +1217,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Član" : "član"));
-      result+= (singular ? "" : "ovi");
-      return result;
+      return createNoun(first_capital, singular, "član", "ovi");
     }
 
     /*! This is used for translation of the word that will possibly
