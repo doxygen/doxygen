@@ -1229,10 +1229,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Üye" : "üye"));
-      if (!singular)  result+="ler";
-      return result;
-
+      return createNoun(first_capital, singular, "üye", "ler");
     }
 
     /*! This is used for translation of the word that will possibly

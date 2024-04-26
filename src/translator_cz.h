@@ -1385,9 +1385,7 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
      */
     QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Člen" : "člen"));
-      if (!singular)  result += "y";
-      return result;
+      return createNoun(first_capital, singular, "člen", "y");
     }
 
     /*! ??? Jak to prelozit? Bylo by dobre, kdyby se ozval nekdo, kdo to pouziva.*/

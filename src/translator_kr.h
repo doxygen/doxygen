@@ -1202,9 +1202,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trClass(bool, bool singular) override
     {
-      QCString result("클래스");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "클래스", "들");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1213,9 +1211,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trFile(bool, bool singular) override
     {
-      QCString result("파일");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "파일", "들");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1224,9 +1220,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trNamespace(bool, bool singular) override
     {
-      QCString result("네임스페이스");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "네임스페이스", "들");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1235,9 +1229,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trGroup(bool, bool singular) override
     {
-      QCString result("그룹");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "그룹", "들");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1246,9 +1238,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trPage(bool, bool singular) override
     {
-      QCString result("페이지");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "페이지", "들");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1257,9 +1247,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trMember(bool, bool singular) override
     {
-      QCString result("멤버");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "멤버", "들");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1268,9 +1256,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trGlobal(bool, bool singular) override
     {
-      QCString result("전역");
-      if (!singular)  result+="";
-      return result;
+      return createNoun(false, singular, "전역", "");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1281,9 +1267,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      *  for the author section in man pages. */
     QCString trAuthor(bool, bool singular) override
     {
-      QCString result("작성자");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "작성자", "들");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1505,9 +1489,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trDir(bool, bool singular) override
     {
-      QCString result("디렉토리");
-      if (singular) result+=""; else result+="들";
-      return result;
+      return createNoun(false, singular, "디렉토리", "들");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1686,9 +1668,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trModule(bool, bool singular) override
     {
-      QCString result("모듈");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "모듈", "들");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1721,9 +1701,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trType(bool, bool singular) override
     {
-      QCString result("타입");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "타입", "들");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
@@ -1731,9 +1709,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     QCString trSubprogram(bool, bool singular) override
     {
-      QCString result("서브프로그램");
-      if (!singular)  result+="들";
-      return result;
+      return createNoun(false, singular, "서브프로그램", "들");
     }
 
     /*! C# Type Constraint list */
