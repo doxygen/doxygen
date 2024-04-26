@@ -285,8 +285,8 @@ BITOP     "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 MODULE_ID ({ID}".")*{ID}
 LINENR    {B}*[1-9][0-9]*
-FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
-FILEECHAR [a-z_A-Z0-9\-\+=&#@]
+FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=&#@]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
 HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
