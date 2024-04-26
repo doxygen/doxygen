@@ -469,7 +469,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 
  /*------ ignore simple comment (not documentation yyextra->comments) */
 
-<*>"!"/[^<>\n]                         {  if (YY_START == String)
+<*>"!"/[^<>\n]                         {  if (YY_START == String || YY_START == DocCopyBlock)
                                           { yyextra->colNr -= (int)yyleng;
                                             REJECT;
                                           } // "!" is ignored in strings
