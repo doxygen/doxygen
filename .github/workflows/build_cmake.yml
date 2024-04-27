@@ -103,7 +103,7 @@ jobs:
         brew update
         brew install --cask mactex;
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
-      if: matrix.config.os == 'macos-latest'
+      if: matrix.config.os == 'macos-13'
 
     - name: Install libclang (Ubuntu 20.04)
       run: |
@@ -175,7 +175,7 @@ jobs:
          brew install --force --overwrite python@3.12 # temp hack
          brew update
          brew install libxml2
-      if: matrix.config.os == 'macos-latest'
+      if: matrix.config.os == 'macos-13'
 
     - name: Install bison (MacOS)
       run: |
@@ -183,7 +183,7 @@ jobs:
         brew install bison;
         echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
         #echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-      if: matrix.config.os == 'macos-latest'
+      if: matrix.config.os == 'macos-13'
 
     - name: Install bison/flex (Windows)
       run: |
@@ -207,7 +207,7 @@ jobs:
           # Try again
           brew install graphviz
         fi
-      if: matrix.config.os == 'macos-latest'
+      if: matrix.config.os == 'macos-13'
 
     - name: Install Graphviz (Windows)
       run:
