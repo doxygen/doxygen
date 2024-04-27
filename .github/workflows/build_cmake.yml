@@ -227,7 +227,7 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
-        version: 6.*
+        version: 6.2.*
 
     - name: Check tool versions (Linux / MacOS)
       shell: bash
