@@ -2056,7 +2056,7 @@ ALIASES  = "english=\if english" \
   \endlatexonly
 
 <hr>
-\section cmdparam \\param '['dir']' <parameter-name> { parameter description }
+\section cmdparam \\param[\<dir\>] <parameter-name> { parameter description }
 
   \addindex \\param
   Starts a parameter description for a function parameter with name
@@ -2065,9 +2065,10 @@ ALIASES  = "english=\if english" \
   the documentation of this (or any other) parameter is missing or not
   present in the function declaration or definition.
 
-  The \c \\param command has an optional attribute, `dir`, specifying the direction
+  The \c \\param command has an optional attribute, \<dir\>, specifying the direction
   of the parameter. Possible values are "[in]", "[in,out]", and "[out]",
-  note the [square] brackets in this description.
+  note the [square] brackets in this description. Note that it is also possible to put
+  whitespace between the command and the \<dir\>.
   When a parameter is both input and output, [in,out] is used as attribute.
   Here is an example for the function \c memcpy:
   \code
@@ -2989,7 +2990,7 @@ Commands for displaying examples
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
 <hr>
-\section cmdhtmlinclude \\htmlinclude ["[block]"] <file-name>
+\section cmdhtmlinclude \\htmlinclude['[block]'] <file-name>
 
   \addindex \\htmlinclude
   This command includes the contents of the file \<file-name\> as is in the HTML documentation
@@ -3830,7 +3831,7 @@ class Receiver
   \sa section \ref cmdfcurlyopen "\\f{" and section \ref formulas "formulas".
 
 <hr>
-\section cmdhtmlonly \\htmlonly ["[block]"]
+\section cmdhtmlonly \\htmlonly['[block]']
 
   \addindex \\htmlonly
   Starts a block of text that only will be verbatim included in the
