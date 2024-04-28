@@ -12,6 +12,13 @@
  * input used in their production; they are not affected by this license.
  *
  */
+
+%{
+  // redefine buffer size (defaults to 16Kb) to avoid a 'flex scanner push-back overflow' error
+  #undef YY_BUF_SIZE
+  #define YY_BUF_SIZE 10*1024*1024  // 10Mb should be sufficient for a source file
+%}
+
 %option never-interactive
 %option prefix="commentcnvYY"
 %option reentrant
