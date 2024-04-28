@@ -43,13 +43,13 @@ jobs:
           }
         - {
             name: "macOS Latest Release (Intel)",
-            os: macos-latest,
+            os: macos-13,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
         - {
             name: "macOS Latest Debug (Intel)",
-            os: macos-latest,
+            os: macos-13,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
@@ -103,7 +103,7 @@ jobs:
         brew update
         brew install --cask mactex;
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
-      if: matrix.config.os == 'macos-latest'
+      if: matrix.config.os == 'macos-13'
 
     - name: Install libclang (Ubuntu 20.04)
       run: |
@@ -175,14 +175,15 @@ jobs:
          brew install --force --overwrite python@3.12 # temp hack
          brew update
          brew install libxml2
-      if: matrix.config.os == 'macos-latest'
+      if: matrix.config.os == 'macos-13'
 
     - name: Install bison (MacOS)
       run: |
         brew update
         brew install bison;
-        echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-      if: matrix.config.os == 'macos-latest'
+        echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+        #echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+      if: matrix.config.os == 'macos-13'
 
     - name: Install bison/flex (Windows)
       run: |
@@ -206,7 +207,7 @@ jobs:
           # Try again
           brew install graphviz
         fi
-      if: matrix.config.os == 'macos-latest'
+      if: matrix.config.os == 'macos-13'
 
     - name: Install Graphviz (Windows)
       run:
@@ -223,8 +224,17 @@ jobs:
         refreshenv
       if: matrix.config.os == 'windows-latest'
 
-    - name: Install Qt
+    - name: Install Qt 6
       uses: jurplel/install-qt-action@v3
+      with:
+        version: 6.2.*
+      if: matrix.config.is == 'macos-13'
+
+    - name: Install Qt 5
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: 5.*
+      if: matrix.config.is != 'macos-13'
 
     - name: Check tool versions (Linux / MacOS)
       shell: bash
