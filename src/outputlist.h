@@ -316,14 +316,6 @@ class OutputList
     };
 
   public:
-#if 0
-    using OutputGenVariant = std::variant<HtmlGenerator,
-                                          LatexGenerator,
-                                          ManGenerator,
-                                          RTFGenerator,
-                                          DocbookGenerator>;
-#endif
-
     OutputList();
     OutputList(const OutputList &ol);
     OutputList &operator=(const OutputList &ol);

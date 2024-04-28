@@ -75,7 +75,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     RTFGenerator();
     RTFGenerator(const RTFGenerator &);
     RTFGenerator &operator=(const RTFGenerator &);
-    RTFGenerator(RTFGenerator &&);
+    RTFGenerator(RTFGenerator &&) = delete;
     RTFGenerator &operator=(RTFGenerator &&) = delete;
    ~RTFGenerator();
 

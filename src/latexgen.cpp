@@ -311,23 +311,7 @@ LatexGenerator &LatexGenerator::operator=(const LatexGenerator &og)
   return *this;
 }
 
-LatexGenerator::LatexGenerator(LatexGenerator &&og)
-  : OutputGenerator(std::move(og))
-{
-  m_codeList           = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen            = m_codeList->get<LatexCodeGenerator>(OutputType::Latex);
-  m_codeGen->setTextStream(&m_t);
-  m_firstDescItem      = std::exchange(og.m_firstDescItem,true);
-  m_disableLinks       = std::exchange(og.m_disableLinks,false);
-  m_relPath            = std::exchange(og.m_relPath,QCString());
-  m_indent             = std::exchange(og.m_indent,0);
-  m_templateMemberItem = std::exchange(og.m_templateMemberItem,false);
-  m_hierarchyLevel     = og.m_hierarchyLevel;
-}
-
-LatexGenerator::~LatexGenerator()
-{
-}
+LatexGenerator::~LatexGenerator() = default;
 
 void LatexGenerator::addCodeGen(OutputCodeList &list)
 {

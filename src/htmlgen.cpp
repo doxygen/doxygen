@@ -1094,24 +1094,7 @@ HtmlGenerator &HtmlGenerator::operator=(const HtmlGenerator &og)
   return *this;
 }
 
-HtmlGenerator::HtmlGenerator(HtmlGenerator &&og)
-  : OutputGenerator(std::move(og))
-{
-  //printf("%p:HtmlGenerator(move %p)\n",(void*)this,(void*)&og);
-  m_codeList     = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen      = m_codeList->get<HtmlCodeGenerator>(OutputType::Html);
-  m_codeGen->setTextStream(&m_t);
-  m_lastTitle    = std::exchange(og.m_lastTitle,QCString());
-  m_lastFile     = std::exchange(og.m_lastFile,QCString());
-  m_relPath      = std::exchange(og.m_relPath,QCString());
-  m_sectionCount = std::exchange(og.m_sectionCount,0);
-  m_emptySection = std::exchange(og.m_emptySection,false);
-}
-
-HtmlGenerator::~HtmlGenerator()
-{
-  //printf("%p:~HtmlGenerator()\n",(void*)this);
-}
+HtmlGenerator::~HtmlGenerator() = default;
 
 void HtmlGenerator::addCodeGen(OutputCodeList &list)
 {

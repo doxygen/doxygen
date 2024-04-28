@@ -99,7 +99,7 @@ class DocbookGenerator : public OutputGenerator, public OutputGenIntf
     DocbookGenerator();
     DocbookGenerator(const DocbookGenerator &);
     DocbookGenerator &operator=(const DocbookGenerator &);
-    DocbookGenerator(DocbookGenerator &&);
+    DocbookGenerator(DocbookGenerator &&) = delete;
     DocbookGenerator &operator=(DocbookGenerator &&) = delete;
    ~DocbookGenerator();
 

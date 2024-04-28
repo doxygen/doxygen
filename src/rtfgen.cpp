@@ -328,23 +328,7 @@ RTFGenerator &RTFGenerator::operator=(const RTFGenerator &og)
   return *this;
 }
 
-RTFGenerator::RTFGenerator(RTFGenerator &&og)
-  : OutputGenerator(std::move(og))
-{
-  m_codeList       = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen        = m_codeList->get<RTFCodeGenerator>(OutputType::RTF);
-  m_codeGen->setTextStream(&m_t);
-  m_bstartedBody   = std::exchange(og.m_bstartedBody,false);
-  m_omitParagraph  = std::exchange(og.m_omitParagraph,false);
-  m_numCols        = std::exchange(og.m_numCols,0);
-  m_relPath        = std::exchange(og.m_relPath,QCString());
-  m_indentLevel    = std::exchange(og.m_indentLevel,0);
-  m_listItemInfo   = std::exchange(og.m_listItemInfo,std::array<RTFListItemInfo,maxIndentLevels>());
-}
-
-RTFGenerator::~RTFGenerator()
-{
-}
+RTFGenerator::~RTFGenerator() = default;
 
 void RTFGenerator::addCodeGen(OutputCodeList &list)
 {

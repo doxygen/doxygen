@@ -89,7 +89,7 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     LatexGenerator();
     LatexGenerator(const LatexGenerator &);
     LatexGenerator &operator=(const LatexGenerator &);
-    LatexGenerator(LatexGenerator &&);
+    LatexGenerator(LatexGenerator &&) = delete;
     LatexGenerator &operator=(LatexGenerator &&) = delete;
    ~LatexGenerator();
 

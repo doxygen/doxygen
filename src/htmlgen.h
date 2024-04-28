@@ -77,7 +77,7 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     HtmlGenerator();
     HtmlGenerator(const HtmlGenerator &);
     HtmlGenerator &operator=(const HtmlGenerator &);
-    HtmlGenerator(HtmlGenerator &&);
+    HtmlGenerator(HtmlGenerator &&) = delete;
     HtmlGenerator &operator=(HtmlGenerator &&) = delete;
    ~HtmlGenerator();
 

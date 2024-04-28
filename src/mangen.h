@@ -64,7 +64,7 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     ManGenerator();
     ManGenerator(const ManGenerator &);
     ManGenerator &operator=(const ManGenerator &);
-    ManGenerator(ManGenerator &&);
+    ManGenerator(ManGenerator &&) = delete;
     ManGenerator &operator=(ManGenerator &&) = delete;
    ~ManGenerator();
 

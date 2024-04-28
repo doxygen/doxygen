@@ -227,23 +227,7 @@ ManGenerator &ManGenerator::operator=(const ManGenerator &og)
   return *this;
 }
 
-ManGenerator::ManGenerator(ManGenerator &&og)
-  : OutputGenerator(std::move(og))
-{
-  m_codeList      = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen       = m_codeList->get<ManCodeGenerator>(OutputType::Man);
-  m_codeGen->setTextStream(&m_t);
-  m_firstCol      = std::exchange(og.m_firstCol,true);
-  m_col           = std::exchange(og.m_col,0);
-  m_paragraph     = std::exchange(og.m_paragraph,true);
-  m_upperCase     = std::exchange(og.m_upperCase,false);
-  m_insideTabbing = std::exchange(og.m_insideTabbing,false);
-  m_inHeader      = std::exchange(og.m_inHeader,false);
-}
-
-ManGenerator::~ManGenerator()
-{
-}
+ManGenerator::~ManGenerator() = default;
 
 void ManGenerator::addCodeGen(OutputCodeList &list)
 {
