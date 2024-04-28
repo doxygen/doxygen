@@ -314,8 +314,8 @@ PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON
 SCOPENAME ({ID}{BS}"::"{BS})*
 
 LINENR    {B}*[1-9][0-9]*
-FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
-FILEECHAR [a-z_A-Z0-9\-\+=&#@]
+FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=&#@]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
 HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
@@ -469,7 +469,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 
  /*------ ignore simple comment (not documentation yyextra->comments) */
 
-<*>"!"/[^<>\n]                         {  if (YY_START == String)
+<*>"!"/[^<>\n]                         {  if (YY_START == String || YY_START == DocCopyBlock)
                                           { yyextra->colNr -= (int)yyleng;
                                             REJECT;
                                           } // "!" is ignored in strings
@@ -1521,6 +1521,13 @@ private                                 {
                                           yyextra->blockLineNr=yyextra->lineNr;
                                           BEGIN(DocCopyBlock);
                                         }
+<DocBlock>"\\ilinebr "{B}*"!"           {
+                                          QCString indent;
+                                          indent.fill(' ',yyleng-9);
+                                          yyextra->docBlock += "\\ilinebr ";
+                                          yyextra->docBlock += indent;
+                                        }
+
 <DocBlock>[^@*`~\/\\\n]+                { // any character that isn't special
                                           yyextra->docBlock += yytext;
                                         }

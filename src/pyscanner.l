@@ -206,8 +206,8 @@ SCRIPTCOMMENT      "#!".*
 STARTDOCSYMS      "##"
 
 LINENR            {B}*[1-9][0-9]*
-FILEICHAR         [a-z_A-Z0-9\\:\\\/\-\+=&#@]
-FILEECHAR         [a-z_A-Z0-9\-\+=&#@]
+FILEICHAR         [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@]
+FILEECHAR         [a-z_A-Z0-9\x80-\xFF\-\+=&#@]
 FILECHARS         {FILEICHAR}*{FILEECHAR}+
 HFILEMASK         {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK         {FILECHARS}("."{FILECHARS})*
@@ -1507,6 +1507,12 @@ ID        [a-z_A-Z%]+{IDSYM}*
     ({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
                                      yyextra->docBlock+=yytext;
                                   }
+    "\\ilinebr "{B}*"#" {
+                          QCString indent;
+                          indent.fill(' ',yyleng-9);
+                          yyextra->docBlock += "\\ilinebr ";
+                          yyextra->docBlock += indent;
+                        }
     [^#\\@\n]+          { // any other stuff
                           yyextra->docBlock+=yytext;
                         }
