@@ -21,6 +21,7 @@
 #include <memory>
 #include <variant>
 #include <stack>
+#include <functional>
 
 #include "outputgen.h"
 #include "doxygen.h"
