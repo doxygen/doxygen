@@ -1521,6 +1521,13 @@ private                                 {
                                           yyextra->blockLineNr=yyextra->lineNr;
                                           BEGIN(DocCopyBlock);
                                         }
+<DocBlock>"\\ilinebr "{B}*"!"           {
+                                          QCString indent;
+                                          indent.fill(' ',yyleng-9);
+                                          yyextra->docBlock += "\\ilinebr ";
+                                          yyextra->docBlock += indent;
+                                        }
+
 <DocBlock>[^@*`~\/\\\n]+                { // any character that isn't special
                                           yyextra->docBlock += yytext;
                                         }
