@@ -93,7 +93,7 @@ class DocbookCodeGenerator : public OutputCodeIntf
     QCString    m_sourceFileName;
 };
 
-class DocbookGenerator : public OutputGenerator
+class DocbookGenerator : public OutputGenerator, public OutputGenIntf
 {
   public:
     DocbookGenerator();
@@ -104,207 +104,208 @@ class DocbookGenerator : public OutputGenerator
    ~DocbookGenerator();
 
     static void init();
-    void cleanup();
 
-    OutputType type() const { return OutputType::Docbook; }
+    //void setCurrentDoc(const Definition *,const QCString &,bool) override {DB_GEN_EMPTY}
+    //void addWord(const QCString &,bool) override {DB_GEN_EMPTY}
 
-    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *md,int id);
+    //--------------------------------------
 
-    ///////////////////////////////////////////////////////////////
-    // structural output interface
-    ///////////////////////////////////////////////////////////////
-    void startFile(const QCString &name,const QCString &manName,
-                           const QCString &title,int id,int hierarchyLevel);
-    void writeSearchInfo(){DB_GEN_EMPTY};
-    void writeFooter(const QCString &){DB_GEN_NEW};
-    void endFile();
-    void startIndexSection(IndexSection);
-    void endIndexSection(IndexSection);
-    void writePageLink(const QCString &,bool);
-    void startProjectNumber(){DB_GEN_NEW};
-    void endProjectNumber(){DB_GEN_NEW};
-    void writeStyleInfo(int){DB_GEN_EMPTY};
-    void startTitleHead(const QCString &);
-    void endTitleHead(const QCString &fileName,const QCString &name);
-    void startIndexListItem(){DB_GEN_NEW};
-    void endIndexListItem(){DB_GEN_NEW};
-    void startIndexList(){DB_GEN_NEW};
-    void endIndexList(){DB_GEN_NEW};
-    void startIndexKey(){DB_GEN_NEW};
-    void endIndexKey(){DB_GEN_NEW};
-    void startIndexValue(bool){DB_GEN_NEW};
-    void endIndexValue(const QCString &,bool){DB_GEN_NEW};
-    void startItemList()  {DB_GEN_EMPTY};
-    void endItemList()    {DB_GEN_EMPTY};
+    OutputType type() const override { return OutputType::Docbook; }
+    std::unique_ptr<OutputGenIntf> clone() override { return std::make_unique<DocbookGenerator>(*this); }
+    void addCodeGen(OutputCodeList &list) override;
+    void cleanup() override;
+    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *md,int id) override;
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
+    void endFile() override;
 
-    void startIndexItem(const QCString &,const QCString &){DB_GEN_NEW};
-    void endIndexItem(const QCString &,const QCString &){DB_GEN_NEW};
-    void startItemListItem() {DB_GEN_EMPTY};
-    void endItemListItem() {DB_GEN_EMPTY};
-    void docify(const QCString &text);
-    void writeChar(char);
-    void writeString(const QCString &);
-    void startParagraph(const QCString &);
-    void endParagraph();
-    void writeObjectLink(const QCString &,const QCString &,const QCString &,const QCString &);
-    void startBold();
-    void endBold();
-    void startTypewriter();
-    void endTypewriter();
-    void startEmphasis(){DB_GEN_NEW};
-    void endEmphasis(){DB_GEN_NEW};
-    void writeRuler();
-    void startDescForItem(){DB_GEN_EMPTY};
-    void endDescForItem(){DB_GEN_EMPTY};
-    void startCenter(){DB_GEN_NEW};
-    void endCenter(){DB_GEN_NEW};
-    void startSmall(){DB_GEN_NEW};
-    void endSmall(){DB_GEN_NEW};
-    void startExamples();
-    void endExamples();
-    void writeAnchor(const QCString &,const QCString &){DB_GEN_EMPTY};
-    void startSection(const QCString &,const QCString &,SectionType);
-    void endSection(const QCString &,SectionType);
-    void lineBreak(const QCString &);
-    void addIndexItem(const QCString &,const QCString &);
-    void writeNonBreakableSpace(int);
-    void startDescTable(const QCString &);
-    void endDescTable();
-    void startDescTableRow();
-    void endDescTableRow();
-    void startDescTableTitle();
-    void endDescTableTitle();
-    void startDescTableData();
-    void endDescTableData();
-    void startTextLink(const QCString &,const QCString &){DB_GEN_NEW};
-    void endTextLink(){DB_GEN_NEW};
-    void startPageRef(){DB_GEN_NEW};
-    void endPageRef(const QCString &,const QCString &){DB_GEN_NEW};
+    void writeSearchInfo() override {DB_GEN_EMPTY};
+    void writeFooter(const QCString &) override {DB_GEN_NEW};
+    void startIndexSection(IndexSection) override;
+    void endIndexSection(IndexSection) override;
+    void writePageLink(const QCString &,bool) override;
+    void startProjectNumber() override {DB_GEN_NEW};
+    void endProjectNumber() override {DB_GEN_NEW};
+    void writeStyleInfo(int) override {DB_GEN_EMPTY};
+    void startTitleHead(const QCString &) override;
+    void endTitleHead(const QCString &fileName,const QCString &name) override;
+    void startIndexListItem() override {DB_GEN_NEW};
+    void endIndexListItem() override {DB_GEN_NEW};
+    void startIndexList() override {DB_GEN_NEW};
+    void endIndexList() override {DB_GEN_NEW};
+    void startIndexKey() override {DB_GEN_NEW};
+    void endIndexKey() override {DB_GEN_NEW};
+    void startIndexValue(bool) override {DB_GEN_NEW};
+    void endIndexValue(const QCString &,bool) override {DB_GEN_NEW};
+    void startItemList() override {DB_GEN_EMPTY};
+    void endItemList() override {DB_GEN_EMPTY};
 
-    void startGroupHeader(int);
-    void endGroupHeader(int);
-    void startMemberSections(){DB_GEN_EMPTY};
-    void endMemberSections(){DB_GEN_EMPTY};
-    void startHeaderSection(){DB_GEN_EMPTY};
-    void endHeaderSection(){DB_GEN_EMPTY};
-    void startMemberHeader(const QCString &anchor, int typ);
-    void endMemberHeader();
-    void startMemberSubtitle(){DB_GEN_EMPTY};
-    void endMemberSubtitle(){DB_GEN_EMPTY};
-    void startMemberDocList();
-    void endMemberDocList();
-    void startMemberList();
-    void endMemberList();
-    void startInlineHeader(){DB_GEN_NEW};
-    void endInlineHeader(){DB_GEN_NEW};
-    void startAnonTypeScope(int){DB_GEN_EMPTY};
-    void endAnonTypeScope(int){DB_GEN_EMPTY};
-    void startMemberItem(const QCString &,MemberItemType,const QCString &);
-    void endMemberItem(MemberItemType);
-    void startMemberTemplateParams();
-    void endMemberTemplateParams(const QCString &,const QCString &);
-    void startCompoundTemplateParams();
-    void endCompoundTemplateParams();
-    void startMemberGroupHeader(bool);
-    void endMemberGroupHeader();
-    void startMemberGroupDocs(){DB_GEN_EMPTY};
-    void endMemberGroupDocs(){DB_GEN_EMPTY};
-    void startMemberGroup();
-    void endMemberGroup(bool);
-    void insertMemberAlign(bool){DB_GEN_EMPTY};
-    void insertMemberAlignLeft(MemberItemType,bool){DB_GEN_EMPTY};
+    void startIndexItem(const QCString &,const QCString &) override {DB_GEN_NEW};
+    void endIndexItem(const QCString &,const QCString &) override {DB_GEN_NEW};
+    void startItemListItem() override {DB_GEN_EMPTY};
+    void endItemListItem() override {DB_GEN_EMPTY};
+    void docify(const QCString &text) override;
+    void writeChar(char) override;
+    void writeString(const QCString &) override;
+    void startParagraph(const QCString &) override;
+    void endParagraph() override;
+    void writeObjectLink(const QCString &,const QCString &,const QCString &,const QCString &) override;
+    void startBold() override;
+    void endBold() override;
+    void startTypewriter() override;
+    void endTypewriter() override;
+    void startEmphasis() override {DB_GEN_NEW};
+    void endEmphasis() override {DB_GEN_NEW};
+    void writeRuler() override;
+    void startDescForItem() override {DB_GEN_EMPTY};
+    void endDescForItem() override {DB_GEN_EMPTY};
+    void startCenter() override {DB_GEN_NEW};
+    void endCenter() override {DB_GEN_NEW};
+    void startSmall() override {DB_GEN_NEW};
+    void endSmall() override {DB_GEN_NEW};
+    void startExamples() override;
+    void endExamples() override;
+    void writeAnchor(const QCString &,const QCString &) override {DB_GEN_EMPTY};
+    void startSection(const QCString &,const QCString &,SectionType) override;
+    void endSection(const QCString &,SectionType) override;
+    void lineBreak(const QCString &) override;
+    void addIndexItem(const QCString &,const QCString &) override;
+    void writeNonBreakableSpace(int) override;
+    void startDescTable(const QCString &) override;
+    void endDescTable() override;
+    void startDescTableRow() override;
+    void endDescTableRow() override;
+    void startDescTableTitle() override;
+    void endDescTableTitle() override;
+    void startDescTableData() override;
+    void endDescTableData() override;
+    void startTextLink(const QCString &,const QCString &) override {DB_GEN_NEW};
+    void endTextLink() override {DB_GEN_NEW};
+    void startPageRef() override {DB_GEN_NEW};
+    void endPageRef(const QCString &,const QCString &) override {DB_GEN_NEW};
+
+    void startGroupHeader(int) override;
+    void endGroupHeader(int) override;
+    void startMemberSections() override {DB_GEN_EMPTY};
+    void endMemberSections() override {DB_GEN_EMPTY};
+    void startHeaderSection() override {DB_GEN_EMPTY};
+    void endHeaderSection() override {DB_GEN_EMPTY};
+    void startMemberHeader(const QCString &anchor, int typ) override;
+    void endMemberHeader() override;
+    void startMemberSubtitle() override {DB_GEN_EMPTY};
+    void endMemberSubtitle() override {DB_GEN_EMPTY};
+    void startMemberDocList() override;
+    void endMemberDocList() override;
+    void startMemberList() override;
+    void endMemberList() override;
+    void startInlineHeader() override {DB_GEN_NEW};
+    void endInlineHeader() override {DB_GEN_NEW};
+    void startAnonTypeScope(int) override {DB_GEN_EMPTY};
+    void endAnonTypeScope(int) override {DB_GEN_EMPTY};
+    void startMemberItem(const QCString &,MemberItemType,const QCString &) override;
+    void endMemberItem(MemberItemType) override;
+    void startMemberTemplateParams() override;
+    void endMemberTemplateParams(const QCString &,const QCString &) override;
+    void startCompoundTemplateParams() override;
+    void endCompoundTemplateParams() override;
+    void startMemberGroupHeader(bool) override;
+    void endMemberGroupHeader() override;
+    void startMemberGroupDocs() override {DB_GEN_EMPTY};
+    void endMemberGroupDocs() override {DB_GEN_EMPTY};
+    void startMemberGroup() override;
+    void endMemberGroup(bool) override;
+    void insertMemberAlign(bool) override {DB_GEN_EMPTY};
+    void insertMemberAlignLeft(MemberItemType,bool) override {DB_GEN_EMPTY};
     void startMemberDoc(const QCString &,const QCString &,
-                        const QCString &,const QCString &,int,int,bool);
-    void endMemberDoc(bool);
+                        const QCString &,const QCString &,int,int,bool) override;
+    void endMemberDoc(bool) override;
     void startDoxyAnchor(const QCString &fName,const QCString &manName,
                          const QCString &anchor,const QCString &name,
-                         const QCString &args);
-    void endDoxyAnchor(const QCString &fileName,const QCString &anchor);
-    void addLabel(const QCString &,const QCString &);
-    void writeLatexSpacing(){DB_GEN_EMPTY}
+                         const QCString &args) override;
+    void endDoxyAnchor(const QCString &fileName,const QCString &anchor) override;
+    void addLabel(const QCString &,const QCString &) override;
+    void writeLatexSpacing() override {DB_GEN_EMPTY}
     void writeStartAnnoItem(const QCString &,const QCString &,
-                            const QCString &,const QCString &){DB_GEN_NEW};
-    void startMemberDescription(const QCString &,const QCString &,bool){DB_GEN_EMPTY};
-    void endMemberDescription(){DB_GEN_EMPTY};
-    void startMemberDeclaration(){DB_GEN_EMPTY};
-    void endMemberDeclaration(const QCString &,const QCString &){DB_GEN_EMPTY};
+                            const QCString &,const QCString &) override {DB_GEN_NEW};
+    void startMemberDescription(const QCString &,const QCString &,bool) override {DB_GEN_EMPTY};
+    void endMemberDescription() override {DB_GEN_EMPTY};
+    void startMemberDeclaration() override {DB_GEN_EMPTY};
+    void endMemberDeclaration(const QCString &,const QCString &) override {DB_GEN_EMPTY};
     void writeInheritedSectionTitle(const QCString &,const QCString &,
                                     const QCString &,const QCString &,
-                                    const QCString &,const QCString &);
-    void startIndent(){DB_GEN_EMPTY};
-    void endIndent(){DB_GEN_EMPTY};
-    void writeSynopsis(){DB_GEN_EMPTY};
-    void startClassDiagram();
-    void endClassDiagram(const ClassDiagram &,const QCString &,const QCString &);
-    void startDotGraph();
-    void endDotGraph(DotClassGraph &g);
-    void startInclDepGraph();
-    void endInclDepGraph(DotInclDepGraph &g);
-    void startGroupCollaboration();
-    void endGroupCollaboration(DotGroupCollaboration &g);
-    void startCallGraph();
-    void endCallGraph(DotCallGraph &g);
-    void startDirDepGraph();
-    void endDirDepGraph(DotDirDeps &g);
-    void writeGraphicalHierarchy(DotGfxHierarchyTable &){DB_GEN_NEW};
-    void startQuickIndices(){DB_GEN_EMPTY};
-    void endQuickIndices(){DB_GEN_EMPTY};
-    void writeSplitBar(const QCString &){DB_GEN_EMPTY};
-    void writeNavigationPath(const QCString &){DB_GEN_NEW};
-    void writeLogo(){DB_GEN_NEW};
-    void writeQuickLinks(HighlightedItem,const QCString &){DB_GEN_EMPTY};
-    void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool){DB_GEN_EMPTY};
-    void startContents(){DB_GEN_EMPTY};
-    void endContents(){DB_GEN_EMPTY};
-    void startPageDoc(const QCString &){DB_GEN_EMPTY}
-    void endPageDoc() {DB_GEN_EMPTY}
-    void startTextBlock(bool);
-    void endTextBlock(bool);
-    void lastIndexPage(){DB_GEN_EMPTY};
-    void startMemberDocPrefixItem();
-    void endMemberDocPrefixItem();
-    void startMemberDocName(bool);
-    void endMemberDocName();
-    void startParameterType(bool,const QCString &){DB_GEN_EMPTY};
-    void endParameterType(){DB_GEN_EMPTY};
-    void startParameterName(bool);
-    void endParameterName();
-    void startParameterExtra();
-    void endParameterExtra(bool,bool,bool);
-    void startParameterDefVal(const char *sep);
-    void endParameterDefVal();
-    void startParameterList(bool);
-    void endParameterList();
-    void exceptionEntry(const QCString &,bool);
+                                    const QCString &,const QCString &) override;
+    void startIndent() override {DB_GEN_EMPTY};
+    void endIndent() override {DB_GEN_EMPTY};
+    void writeSynopsis() override {DB_GEN_EMPTY};
+    void startClassDiagram() override;
+    void endClassDiagram(const ClassDiagram &,const QCString &,const QCString &) override;
+    void startDotGraph() override;
+    void endDotGraph(DotClassGraph &g) override;
+    void startInclDepGraph() override;
+    void endInclDepGraph(DotInclDepGraph &g) override;
+    void startGroupCollaboration() override;
+    void endGroupCollaboration(DotGroupCollaboration &g) override;
+    void startCallGraph() override;
+    void endCallGraph(DotCallGraph &g) override;
+    void startDirDepGraph() override;
+    void endDirDepGraph(DotDirDeps &g) override;
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &) override {DB_GEN_NEW};
+    void startQuickIndices() override {DB_GEN_EMPTY};
+    void endQuickIndices() override {DB_GEN_EMPTY};
+    void writeSplitBar(const QCString &) override {DB_GEN_EMPTY};
+    void writeNavigationPath(const QCString &) override {DB_GEN_NEW};
+    void writeLogo() override {DB_GEN_NEW};
+    void writeQuickLinks(HighlightedItem,const QCString &) override {DB_GEN_EMPTY};
+    void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {DB_GEN_EMPTY};
+    void startContents() override {DB_GEN_EMPTY};
+    void endContents() override {DB_GEN_EMPTY};
+    void startPageDoc(const QCString &) override {DB_GEN_EMPTY}
+    void endPageDoc() override {DB_GEN_EMPTY}
+    void startTextBlock(bool) override;
+    void endTextBlock(bool) override;
+    void lastIndexPage() override {DB_GEN_EMPTY};
+    void startMemberDocPrefixItem() override;
+    void endMemberDocPrefixItem() override;
+    void startMemberDocName(bool) override;
+    void endMemberDocName() override;
+    void startParameterType(bool,const QCString &) override {DB_GEN_EMPTY};
+    void endParameterType() override {DB_GEN_EMPTY};
+    void startParameterName(bool) override;
+    void endParameterName() override;
+    void startParameterExtra() override;
+    void endParameterExtra(bool,bool,bool) override;
+    void startParameterDefVal(const char *sep) override;
+    void endParameterDefVal() override;
+    void startParameterList(bool) override;
+    void endParameterList() override;
+    void exceptionEntry(const QCString &,bool) override;
 
-    void startConstraintList(const QCString &);
-    void startConstraintParam();
-    void endConstraintParam();
-    void startConstraintType();
-    void endConstraintType();
-    void startConstraintDocs();
-    void endConstraintDocs();
-    void endConstraintList();
+    void startConstraintList(const QCString &) override;
+    void startConstraintParam() override;
+    void endConstraintParam() override;
+    void startConstraintType() override;
+    void endConstraintType() override;
+    void startConstraintDocs() override;
+    void endConstraintDocs() override;
+    void endConstraintList() override;
 
-    void startMemberDocSimple(bool);
-    void endMemberDocSimple(bool);
-    void startInlineMemberType();
-    void endInlineMemberType();
-    void startInlineMemberName();
-    void endInlineMemberName();
-    void startInlineMemberDoc();
-    void endInlineMemberDoc();
+    void startMemberDocSimple(bool) override;
+    void endMemberDocSimple(bool) override;
+    void startInlineMemberType() override;
+    void endInlineMemberType() override;
+    void startInlineMemberName() override;
+    void endInlineMemberName() override;
+    void startInlineMemberDoc() override;
+    void endInlineMemberDoc() override;
 
-    void startLabels();
-    void writeLabel(const QCString &,bool);
-    void endLabels();
+    void startLabels() override;
+    void writeLabel(const QCString &,bool) override;
+    void endLabels() override;
 
-    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt);
+    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt) override;
 
-    void setCurrentDoc(const Definition *,const QCString &,bool) {DB_GEN_EMPTY}
-    void addWord(const QCString &,bool) {DB_GEN_EMPTY}
+    void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
+    void endPlainFile() override { OutputGenerator::endPlainFile(); }
 
-    void addCodeGen(OutputCodeList &list);
 private:
     void openSection(const QCString &attr=QCString());
     void closeSection();

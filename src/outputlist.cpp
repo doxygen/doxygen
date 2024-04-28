@@ -63,7 +63,7 @@ void OutputList::refreshCodeGenerators()
   m_codeGenList.clear();
   for (auto &e : m_outputGenList)
   {
-    std::visit([&](auto &&gen) { gen.addCodeGen(m_codeGenList); },e.variant);
+    e.intf->addCodeGen(m_codeGenList);
   }
   m_codeGenList.setId(m_id);
 }
@@ -78,7 +78,7 @@ void OutputList::syncEnabled()
   for (const auto &e : m_outputGenList)
   {
     //printf("output %d isEnabled=%d\n",og->type(),og->isEnabled());
-    std::visit([&](auto &&gen) { m_codeGenList.setEnabledFiltered(gen.type(),e.enabled); },e.variant);
+    m_codeGenList.setEnabledFiltered(e.intf->type(),e.enabled);
   }
 }
 
@@ -87,7 +87,7 @@ void OutputList::disableAllBut(OutputType o)
   //printf("disableAllBut(%d)\n",o);
   for (auto &e : m_outputGenList)
   {
-    std::visit([&](auto &&gen) { if (gen.type()!=o) e.setEnabled(false); }, e.variant);
+    if (e.intf->type()!=o) e.setEnabled(false);
   }
   syncEnabled();
 }
@@ -117,7 +117,7 @@ void OutputList::disable(OutputType o)
   //printf("disable(%d)\n",o);
   for (auto &e : m_outputGenList)
   {
-    std::visit([&](auto &&gen) { if (gen.type()==o) e.setEnabled(false); }, e.variant);
+    if (e.intf->type()==o) e.setEnabled(false);
   }
   syncEnabled();
 }
@@ -127,23 +127,18 @@ void OutputList::enable(OutputType o)
   //printf("enable(%d)\n",o);
   for (auto &e : m_outputGenList)
   {
-    std::visit([&](auto &&gen) { if (gen.type()==o) e.setEnabled(true); }, e.variant);
+    if (e.intf->type()==o) e.setEnabled(true);
   }
   syncEnabled();
 }
 
 bool OutputList::isEnabled(OutputType o)
 {
-  bool found   = false;
-  bool enabled = false;
   for (const auto &e : m_outputGenList)
   {
-    std::visit([&](auto &&gen) {
-        if (gen.type()==o) { enabled = e.enabled; found=true; }
-     }, e.variant);
-    if (found) return enabled;
+    if (e.intf->type()==o) { return e.enabled; }
   }
-  return enabled;
+  return false;
 }
 
 void OutputList::pushGeneratorState()
@@ -200,7 +195,7 @@ void OutputList::startFile(const QCString &name,const QCString &manName,const QC
 {
   newId();
   m_codeGenList.setId(m_id);
-  foreach<OutputGenIntf::startFile>(name,manName,title,m_id,hierarchyLevel);
+  foreach(&OutputGenIntf::startFile,name,manName,title,m_id,hierarchyLevel);
 }
 
 void OutputList::parseText(const QCString &textStr)
