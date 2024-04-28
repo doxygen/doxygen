@@ -46,7 +46,7 @@
 #include "portable.h"
 #include "dir.h"
 
-class Doxyparse : public OutputCodeExtension
+class Doxyparse : public OutputCodeIntf
 {
   public:
     Doxyparse(const FileDef *fd) : m_fd(fd) {}
@@ -55,6 +55,7 @@ class Doxyparse : public OutputCodeExtension
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
     OutputType type() const override { return OutputType::Extension; }
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<Doxyparse>(m_fd); }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
     void startCodeLine(int) override {}
@@ -99,9 +100,9 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  Doxyparse parse(fd);
+  std::unique_ptr<OutputCodeIntf> parse = std::make_unique<Doxyparse>(fd);
   OutputCodeList parseList;
-  parseList.add(OutputCodeDeferExtension(&parse));
+  parseList.add(std::move(parse));
 
   // parse the source code
   intf->parseCode(parseList, QCString(), fileToString(fd->absFilePath()), lang, FALSE, QCString(), fd);

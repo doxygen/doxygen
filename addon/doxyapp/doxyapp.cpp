@@ -43,7 +43,7 @@
 #include "filename.h"
 #include "version.h"
 
-class XRefDummyCodeGenerator : public OutputCodeExtension
+class XRefDummyCodeGenerator : public OutputCodeIntf
 {
   public:
     XRefDummyCodeGenerator(FileDef *fd) : m_fd(fd) {}
@@ -52,6 +52,7 @@ class XRefDummyCodeGenerator : public OutputCodeExtension
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
     OutputType type() const override { return OutputType::Extension; }
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<XRefDummyCodeGenerator>(m_fd); }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
@@ -123,9 +124,9 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  XRefDummyCodeGenerator xrefGen(fd);
+  std::unique_ptr<OutputCodeIntf> xrefGen = std::make_unique<XRefDummyCodeGenerator>(fd);
   OutputCodeList xrefList;
-  xrefList.add(OutputCodeDeferExtension(&xrefGen));
+  xrefList.add(std::move(xrefGen));
 
   // parse the source code
   intf->parseCode(xrefList,
