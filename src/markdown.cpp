@@ -2687,7 +2687,7 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
 
     if (hasLineBreak(data))
     {
-      out+="<br>";
+      out+="\\ilinebr<br>";
     }
     if (tmpSize != data.size()) out+='\n';
   }
