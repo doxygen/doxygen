@@ -126,7 +126,7 @@ static void initParser(yyscan_t yyscanner);
 static void initEntry(yyscan_t yyscanner);
 static void newEntry(yyscan_t yyscanner);
 static void addEntry(yyscan_t yyscanner);
-static void docVariable(yyscan_t yyscanner,const char *name);
+static void docVariable(yyscan_t yyscanner,const QCString &name);
 static void newVariable(yyscan_t yyscanner);
 static void addVariable(yyscan_t yyscanner);
 static void newFunction(yyscan_t yyscanner);
@@ -544,6 +544,14 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         docVariable(yyscanner,&yytext[5]);
                         newEntry(yyscanner);
                       }
+    "self."{IDENTIFIER}{B}:{B}{IDENTIFIER}/{B}"=" { // with typing
+                        QCString inp(yytext);
+                        int i=inp.find(':');
+                        docVariable(yyscanner,inp.mid(5,i-5).stripWhiteSpace());
+                        yyextra->current->type = inp.mid(i+1).stripWhiteSpace();
+                        yyextra->startInit = false;
+                        newEntry(yyscanner);
+                      }
     "cls."{IDENTIFIER}/{B}[,)] {
                         DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
                         docVariable(yyscanner,&yytext[4]);
@@ -552,6 +560,14 @@ ID        [a-z_A-Z%]+{IDSYM}*
     "cls."{IDENTIFIER}/{B}"=" {
                         DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
                         docVariable(yyscanner,&yytext[4]);
+                        newEntry(yyscanner);
+                      }
+    "cls."{IDENTIFIER}{B}:{B}{IDENTIFIER}/{B}"=" { // with typing
+                        QCString inp(yytext);
+                        int i=inp.find(':');
+                        docVariable(yyscanner,inp.mid(4,i-4).stripWhiteSpace());
+                        yyextra->current->type = inp.mid(i+1).stripWhiteSpace();
+                        yyextra->startInit = false;
                         newEntry(yyscanner);
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
@@ -1757,9 +1773,18 @@ static void setProtection(yyscan_t yyscanner)
   }
 }
 
-static void docVariable(yyscan_t yyscanner,const char *name)
+static void docVariable(yyscan_t yyscanner,const QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  for (auto &v : yyextra->current_root->children())
+  {
+    if (v->name == name)
+    {
+      v->section=EntryType::makeVariable();
+      yyextra->current = v;
+      return;
+    }
+  }
   yyextra->current->name = name;
   yyextra->current->section=EntryType::makeVariable();
   yyextra->current->fileName  = yyextra->fileName;
