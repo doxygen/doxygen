@@ -924,7 +924,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                                     bool addToAllList
                                    )
 {
-  //printf("%s:insertInternalMember(%s) isHidden()=%d\n",qPrint(name()),qPrint(md->name()),md->isHidden());
+  AUTO_TRACE("{} name={} isHidden={}",name(),md->name(),md->isHidden());
   if (md->isHidden()) return;
 
   if (getLanguage()==SrcLangExt::VHDL)
@@ -4305,6 +4305,7 @@ MemberList *ClassDefImpl::getMemberList(MemberListType lt) const
 
 void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
 {
+  AUTO_TRACE("{} md={} lt={} isBrief={}",name(),md->name(),(int)lt,isBrief);
   bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   const auto &ml = m_impl->memberLists.get(lt,MemberListContainer::Class);

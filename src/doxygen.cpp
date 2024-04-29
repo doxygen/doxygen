@@ -6550,9 +6550,9 @@ static void findMember(const Entry *root,
           }
           if (rmd_found) // member already exists as rmd -> add docs
           {
-            //printf("addMemberDocs for related member %s\n",qPrint(root->name));
-            //rmd->setMemberDefTemplateArguments(root->mtArgList);
+            AUTO_TRACE_ADD("addMemberDocs for related member {}",root->name);
             addMemberDocs(root,rmd_found,funcDecl,nullptr,overloaded,spec);
+            newMember=false;
           }
         }
 
