@@ -40,6 +40,7 @@ typedef yyguts_t *yyscan_t;
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "pyscanner.h"
 #include "entry.h"
@@ -126,7 +127,7 @@ static void initParser(yyscan_t yyscanner);
 static void initEntry(yyscan_t yyscanner);
 static void newEntry(yyscan_t yyscanner);
 static void addEntry(yyscan_t yyscanner);
-static void docVariable(yyscan_t yyscanner,const char *name);
+static void docVariable(yyscan_t yyscanner,const char *s);
 static void newVariable(yyscan_t yyscanner);
 static void addVariable(yyscan_t yyscanner);
 static void newFunction(yyscan_t yyscanner);
@@ -265,6 +266,8 @@ ID        [a-z_A-Z%]+{IDSYM}*
 %x FromModItem
 %x Import
 
+  /* TypeHints */
+%x TypeHint
 
   /* Decorator */
 %x Decorator
@@ -534,25 +537,23 @@ ID        [a-z_A-Z%]+{IDSYM}*
 }
 
 <SearchMemVars>{
-    "self."{IDENTIFIER}/{B}[,)] {
-                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
-                        docVariable(yyscanner,&yytext[5]);
+    ("cls"|"self")"."{IDENTIFIER}/{B}[,)] {
+                        const char *s = strchr(yytext,'.'); s++;
+                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",s,qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
+                        docVariable(yyscanner,s);
                         addEntry(yyscanner);
                       }
-    "self."{IDENTIFIER}/{B}"=" {
-                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
-                        docVariable(yyscanner,&yytext[5]);
+    ("cls"|"self")"."{IDENTIFIER}/{B}"=" {
+                        const char *s = strchr(yytext,'.'); s++;
+                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",s,qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
+                        docVariable(yyscanner,s);
                         newEntry(yyscanner);
                       }
-    "cls."{IDENTIFIER}/{B}[,)] {
-                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
-                        docVariable(yyscanner,&yytext[4]);
-                        addEntry(yyscanner);
-                      }
-    "cls."{IDENTIFIER}/{B}"=" {
-                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
-                        docVariable(yyscanner,&yytext[4]);
-                        newEntry(yyscanner);
+    ("cls"|"self")"."{IDENTIFIER}/{B}":" { // type hint
+                        const char *s = strchr(yytext,'.'); s++;
+                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",s,qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
+                        docVariable(yyscanner,s);
+                        BEGIN(TypeHint);
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
                         initTriDoubleQuoteBlock(yyscanner);
@@ -589,6 +590,55 @@ ID        [a-z_A-Z%]+{IDSYM}*
     {IDENTIFIER}      // identifiers
     [^'"\.#a-z_A-Z=\n]+  // other uninteresting stuff
     .                 // anything else
+}
+
+<TypeHint>{
+    ":"                 { // skip over start of type hint
+                          yyextra->braceCount=0;
+                        }
+    "("|"["|"{"         {
+                          yyextra->current->type+=*yytext;
+                          yyextra->braceCount++;
+                        }
+    ")"|"]"|"}"         {
+                          yyextra->current->type+=*yytext;
+                          yyextra->braceCount--;
+                        }
+    "'"                 { // start of a single quoted string
+                          yyextra->stringContext=YY_START;
+                          yyextra->copyString=nullptr;
+                          BEGIN( SingleQuoteString );
+                        }
+    "\""                { // start of a double quoted string
+                          yyextra->stringContext=YY_START;
+                          yyextra->copyString=nullptr;
+                          BEGIN( DoubleQuoteString );
+                        }
+    "="                 {
+                          if (yyextra->braceCount==0)
+                          { // end of the type hint
+                            yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+                            newEntry(yyscanner);
+                            BEGIN(SearchSkipValue);
+                          }
+                          else
+                          {
+                            yyextra->current->type+=*yytext;
+                          }
+                        }
+    \n                  { // end of the type hint
+                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
+                          incLineNr(yyscanner);
+                          newEntry(yyscanner);
+                          BEGIN(SearchMemVars);
+                        }
+   "\\\n"               {
+                          yyextra->current->type+=' ';
+                          incLineNr(yyscanner);
+                        }
+    .                   {
+                          yyextra->current->type+=*yytext;
+                        }
 }
 
 <SearchSkipValue>{
