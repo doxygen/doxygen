@@ -753,7 +753,18 @@ ID        [a-z_A-Z%]+{IDSYM}*
 }
 
 <FunctionParams>{
-    ({BB}|",")          {
+    {BB}                {
+                        }
+
+    ","                 {
+                          if (!yyextra->argType.isEmpty())
+                          {
+                            Argument a;
+                            a.name = "";
+                            a.type = yyextra->argType;
+                            yyextra->current->argList.push_back(a);
+                            yyextra->argType = "";
+                          }
                         }
 
     [\*]+               {
@@ -775,6 +786,14 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           BEGIN(FunctionParamDefVal);
                         }
      ")"                {
+                          if (!yyextra->argType.isEmpty())
+                          {
+                            Argument a;
+                            a.name = "";
+                            a.type = yyextra->argType;
+                            yyextra->current->argList.push_back(a);
+                            yyextra->argType = "";
+                          }
                           unput(*yytext);
                           BEGIN(FunctionDec);
                         }
