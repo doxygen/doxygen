@@ -2260,40 +2260,50 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
-      QCString result="Zusammengefaßt";
-      if (!extractAll) result+="dokumentiert ";
-      result+="Modul ";
-      QCString singularResult = "";
-      QCString pluralResult = "";
+      QCString result = "Zusammengefaßt ";
+      
+      QCString singularResult = result + "bezieht sich das Modul auf: ";
+      QCString pluralResult   = result + "beziehen sich die Module auf: ";
+      
       switch (hl)
       {
         case ModuleMemberHighlight::All:
-          singularResult="Mitglied";
+          if (!extractAll)
+              singularResult += "die verlinkte Modul-Beschreibung für jedes Mitglied:"; else
+              pluralResult   += "die verlinkten Modul-Beschreibungen aller Mitglieder:";
           break;
         case ModuleMemberHighlight::Functions:
-          singularResult="Funktion";
+          if (!extractAll)
+              singularResult += "die verlinkte Modul-Beschreibung für jede Funktion:"; else
+              pluralResult   += "die verlinkten Modul-Beschreibungen aller Funktionen:";
           break;
         case ModuleMemberHighlight::Variables:
-          singularResult="Variable";
+          if (!extractAll)
+              singularResult += "die verlinkte Modul-Beschreibung für jede Variable:"; else
+              pluralResult   += "die verlinkten Modul-Beschreibungen für alle Variablen:";
           break;
         case ModuleMemberHighlight::Typedefs:
-          singularResult="Typen-Definition";
+          if (!extractAll)
+              singularResult += "die verlinkte Modul-Beschreibung für jede Typ-Definition:"; else
+              pluralResult   += "die verlinkten Modul-Beschreibungen für jeden Definitions-Typen:";
           break;
         case ModuleMemberHighlight::Enums:
-          singularResult="Aufzählung";
+          if (!extractAll)
+              singularResult += "die verlinkte Modul-Beschreibung für jede Aufzählung:"; else
+              pluralResult   += "die verlinkten Modul-Beschreibungen aller Aufzählungen:";
           break;
         case ModuleMemberHighlight::EnumValues:
-          singularResult="Aufzählungs-Wert";
+          if (!extractAll)
+              singularResult += "die verlinkte Modul-Beschreibung für jedem Aufzählungswert:"; else
+              pluralResult   += "die verlinkten Modul-Beschreibungen aller Aufzählungswerte:";
           break;
         case ModuleMemberHighlight::Total: // for completeness
           break;
       }
-      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
-      result+=" verlinkt mit ";
-      if (extractAll)
-        result+="die Modul-Beschreibung für jede " + singularResult + ":";
-      else
-        result+="Das Modul bezieht sich auf: ";
+      if (!extractAll)
+        result = singularResult; else
+        result = pluralResult;
+      
       return result;
     }
     QCString trExportedModules() override
