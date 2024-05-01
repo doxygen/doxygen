@@ -2243,6 +2243,78 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     QCString trDesignUnitDocumentation() override
     { return "Entwurfseinheiten-Dokumentation"; }
 
-};
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0 added by paule32
+//////////////////////////////////////////////////////////////////////////
 
+    QCString trTopics() override
+    { return "Themen"; }
+    QCString trTopicDocumentation() override
+    { return "Themen Dokumentation"; }
+    QCString trTopicList() override
+    { return "Themen-Liste"; }
+    QCString trTopicIndex() override
+    { return "Themen Index"; }
+    QCString trTopicListDescription() override
+    { return "Es folgt eine Liste der Themen mit einer Kurzbeschreibung"; }
+    QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Zusammengefaßt";
+      if (!extractAll) result+="dokumentiert ";
+      result+="Modul ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          singularResult="Mitglied";
+          break;
+        case ModuleMemberHighlight::Functions:
+          singularResult="Funktion";
+          break;
+        case ModuleMemberHighlight::Variables:
+          singularResult="Variable";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          singularResult="Typen-Definition";
+          break;
+        case ModuleMemberHighlight::Enums:
+          singularResult="Aufzählung";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          singularResult="Aufzählungs-Wert";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=" verlinkt mit ";
+      if (extractAll)
+        result+="die Modul-Beschreibung für jede " + singularResult + ":";
+      else
+        result+="Das Modul bezieht sich auf: ";
+      return result;
+    }
+    QCString trExportedModules() override
+    {
+      return "Exportierte Module";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCopyToClipboard() override
+    {
+      return "In die Zwischenablage kopieren";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    QCString trImportant() override
+    {
+      return "wichtig";
+    }
+};
 #endif
