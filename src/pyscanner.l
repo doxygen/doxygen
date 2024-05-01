@@ -116,6 +116,7 @@ struct pyscannerYY_state
   QCString                programStr;
   TextStream              decoratorCommentStr;
   int                     decoratorRound = 0;
+  bool                    checkDupEntry = false;
 };
 
 //-----------------------------------------------------------------------------
@@ -1782,8 +1783,35 @@ static void initEntry(yyscan_t yyscanner)
 static void newEntry(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->previous = yyextra->current;
-  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+  bool found = false;
+  if (yyextra->checkDupEntry)
+  {
+    for (auto &v : yyextra->current_root->children())
+    {
+      if (v->name == yyextra->current->name) // name is already added, don't add it again
+      {
+        if (v->doc.isEmpty() && !yyextra->current->doc.isEmpty())
+        {
+          v->doc       = yyextra->current->doc;
+          v->docLine   = yyextra->current->docLine;
+          v->docFile   = yyextra->current->docFile;
+        }
+        if (v->brief.isEmpty() && !yyextra->current->brief.isEmpty())
+        {
+          v->brief     = yyextra->current->brief;
+          v->briefLine = yyextra->current->briefLine;
+          v->briefFile = yyextra->current->briefFile;
+        }
+        found=true;
+      }
+    }
+    yyextra->checkDupEntry=false;
+  }
+  if (!found)
+  {
+    yyextra->previous = yyextra->current;
+    yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+  }
   initEntry(yyscanner);
 }
 
@@ -1836,6 +1864,7 @@ static void docVariable(yyscan_t yyscanner,const char *name)
   yyextra->current->bodyLine  = yyextra->yyLineNr;
   yyextra->current->type.clear();
   setProtection(yyscanner);
+  yyextra->checkDupEntry = true;
 }
 
 static void newVariable(yyscan_t yyscanner)
