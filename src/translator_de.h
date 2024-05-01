@@ -2324,7 +2324,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
     QCString trImportant() override
     {
-      return "wichtig";
+      return "Wichtig";
     }
 };
 #endif
