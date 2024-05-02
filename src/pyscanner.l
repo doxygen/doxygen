@@ -1788,7 +1788,8 @@ static void newEntry(yyscan_t yyscanner)
   {
     for (auto &v : yyextra->current_root->children())
     {
-      if (v->name == yyextra->current->name) // name is already added, don't add it again
+      //printf("candidate %s section=%s!\n",qPrint(v->name),v->section.to_string().c_str());
+      if (v->name==yyextra->current->name && v->section==yyextra->current->section) // name is already added, don't add it again
       {
         if (v->doc.isEmpty() && !yyextra->current->doc.isEmpty())
         {
