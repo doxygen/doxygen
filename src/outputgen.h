@@ -122,9 +122,7 @@ class OutputGenerator
 class OutputGenIntf
 {
   public:
-    OutputGenIntf() = default;
-    virtual ~OutputGenIntf() = default;
-    ONLY_DEFAULT_MOVABLE(OutputGenIntf)
+    ABSTRACT_BASE_CLASS(OutputGenIntf)
 
     virtual OutputType type() const = 0;
     virtual std::unique_ptr<OutputGenIntf> clone() = 0;

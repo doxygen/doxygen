@@ -284,7 +284,7 @@ DB_GEN_C
   m_codeGen = m_codeList->add<DocbookCodeGenerator>(&m_t);
 }
 
-DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og.m_dir)
+DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og.m_dir), OutputGenIntf()
 {
   m_codeList         = std::make_unique<OutputCodeList>(*og.m_codeList);
   m_codeGen          = m_codeList->get<DocbookCodeGenerator>(OutputType::Docbook);

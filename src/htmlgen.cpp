@@ -1063,7 +1063,7 @@ HtmlGenerator::HtmlGenerator()
   m_codeGen = m_codeList->add<HtmlCodeGenerator>(&m_t);
 }
 
-HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og.m_dir)
+HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og.m_dir), OutputGenIntf()
 {
   //printf("%p:HtmlGenerator(copy %p)\n",(void*)this,(void*)&og);
   m_codeList     = std::make_unique<OutputCodeList>(*og.m_codeList);

@@ -297,7 +297,7 @@ RTFGenerator::RTFGenerator()
   m_codeGen = m_codeList->add<RTFCodeGenerator>(&m_t);
 }
 
-RTFGenerator::RTFGenerator(const RTFGenerator &og) : OutputGenerator(og.m_dir)
+RTFGenerator::RTFGenerator(const RTFGenerator &og) : OutputGenerator(og.m_dir), OutputGenIntf()
 {
   m_codeList       = std::make_unique<OutputCodeList>(*og.m_codeList);
   m_codeGen        = m_codeList->get<RTFCodeGenerator>(OutputType::RTF);

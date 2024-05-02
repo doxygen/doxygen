@@ -196,7 +196,7 @@ ManGenerator::ManGenerator()
   m_codeGen = m_codeList->add<ManCodeGenerator>(&m_t);
 }
 
-ManGenerator::ManGenerator(const ManGenerator &og) : OutputGenerator(og.m_dir)
+ManGenerator::ManGenerator(const ManGenerator &og) : OutputGenerator(og.m_dir), OutputGenIntf()
 {
   m_codeList = std::make_unique<OutputCodeList>(*og.m_codeList);
   m_codeGen      = m_codeList->get<ManCodeGenerator>(OutputType::Man);

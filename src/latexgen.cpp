@@ -280,7 +280,7 @@ LatexGenerator::LatexGenerator()
   m_codeGen = m_codeList->add<LatexCodeGenerator>(&m_t);
 }
 
-LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og.m_dir)
+LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og.m_dir), OutputGenIntf()
 {
   m_codeList           = std::make_unique<OutputCodeList>(*og.m_codeList);
   m_codeGen            = m_codeList->get<LatexCodeGenerator>(OutputType::Latex);
