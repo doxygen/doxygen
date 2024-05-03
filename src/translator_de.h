@@ -13,6 +13,8 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
+ * Reviewed, and extented by
+ *   Jens Kallup (kallup-dev@web.de)
  * The translation into German was provided by
  *   Jens Seidel (jensseidel@users.sf.net)
  * based on work from
@@ -134,6 +136,9 @@
 //    - Resynced trMemberDataDocumentation() and trFileMembers() to include the
 //      boolean switch OPTIMIZE_OUTPUT_FOR_C
 //    - Replaced "\t" by "    "
+//
+//   2024/05/03 Jens Kallup (kallup-dev@web.de)
+//    - Updated for 1.10.0
 //
 //   Todo:
 //    - see FIXME
@@ -2242,6 +2247,306 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /** VHDL design unit documentation */
     QCString trDesignUnitDocumentation() override
     { return "Entwurfseinheiten-Dokumentation"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    QCString trConcept(bool first_capital, bool singular) override
+    {
+      return createNoun(first_capital, singular, "Konzept", "Konzepte");
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    QCString trConceptReference(const QCString &conceptName) override
+    {
+      QCString result=conceptName;
+      result+=" Konzept Referenz";
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    QCString trConceptList() override
+    { return "Konzept Liste"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    QCString trConceptIndex() override
+    { return "Konzept Index"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    QCString trConceptDocumentation() override
+    { return "Konzept Dokumentation"; }
+
+    /*! used as an introduction to the concept list */
+    QCString trConceptListDescription(bool extractAll) override
+    {
+      QCString result="Hier folgt eine Lister aller ";
+      if (!extractAll) result+="dokumentierten ";
+      result+="Konzepte mit Kurzbeschreibungen:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    QCString trConceptDefinition() override
+    {
+      return "Konzept-Definition";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "Paket-Liste"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "Flußdiagram:"; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    QCString trRelatedSymbols() override
+    { return "Zugehörige Symbole"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    QCString trRelatedSymbolsSubscript() override
+    { return "(Hinweis: diese Symbole sind keine Funktionen.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    QCString trRelatedSymbolDocumentation() override
+    { return "Freunde und bezugnehmende Symbol-Dokumentation"; }
+
+    /*! the compound type as used for the xrefitems */
+    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt::Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Struct"; break;
+        case ClassDef::Union:      result="Union"; break;
+        case ClassDef::Interface:  result="Interface"; break;
+        case ClassDef::Protocol:   result="Protocol"; break;
+        case ClassDef::Category:   result="Category"; break;
+        case ClassDef::Exception:  result="Exception"; break;
+        case ClassDef::Service:    result="Service"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Hier ist eine Lister aller ";
+      if (!extractAll) result+="documented ";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="functions, variables, defines, enums, and typedefs";
+          }
+          else
+          {
+            result+="zugehöriger Dateien";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="Funktionen";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="Variablen";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="Typen-Definitionen";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="Abfolgen";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="Wörterbücher";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="Aufzählungen";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="Aufzählungs-Werte";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="Makros";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" mit verweisen auf ";
+      if (extractAll)
+        result+="bezugnehmenden Dateien:";
+      else
+        result+="die Dokumentation";
+      return result;
+    }
+    QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Hier ist eine Liste aller ";
+      if (!extractAll)
+      {
+        result+="dokumentierter ";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="Struktur- und Einheits-Felder";
+          }
+          else
+          {
+            result+="Klassen-Funktionen";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="Funktionen";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="Variablen";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="Typen-Definitionen";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="Aufzählungen";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="Aufzählungs-Werte";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="Eigenschaften";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="Ereignisse";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="zugehörige Symbole";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" mit Verweisen auf ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="die struct/union Dokumentation für jedes Feld:";
+        }
+        else
+        {
+          result+="die Klassen-Dokumentation für jede Funktion:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="die Strukturen/Einheiten auf denen sie sich beziehen:";
+        }
+        else
+        {
+          result+="die Klassen auf denen sie sich beziehen:";
+        }
+      }
+      return result;
+    }
+    QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      
+      QCString result           = "Hier folgt eine Liste mit Verweisen auf die Namensraum-Dokumentation für ";
+      QCString result_singular1 = result + "jede dokumentierte";
+      QCString result_singular2 = result + "jedes dokumentiertes";
+      QCString result_singular3 = result + "jeder dokumentierten";
+      QCString result_plural    = result + "alle dokumentierten";
+      
+      QCString singularResult = "";
+      QCString pluralResult   = "";
+      
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult = result_singular2 + "Mitglied";
+          pluralResult   = result_plural    + "Mitglieder";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult = result_singular1 + "Funktion";
+          pluralResult   = result_plural    + "Funktionen";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult = result_singular1 + "Variable";
+          pluralResult   = result_plural    + "Variablen";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult = result_singular1 + "Typ-Definition";
+          pluralResult   = result_plural    + "Typen-Defintionen";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult = result_singular1 + "Abfolge";
+          pluralResult   = result_plural    + "Abfolgen";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult = result_singular2 + "Wörterbuch";
+          pluralResult   = result_plural    + "Wörterbücher";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult = result_singular3 + "Aufzählung";
+          pluralResult   = result_plural    + "Aufzählungen";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult = result_singular3 + "Aufzählung";
+          pluralResult   = result_plural    + "Aufzählungen";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+
+      // TODO: plural form !!!
+      if (!extractAll)
+        result += singularResult + " mit Verweise auf die Namensraum-Dokumentation:"; else
+        result += singularResult + " mit Verweise auf dem sich beziehenden Namensraum:";
+          
+      return result;
+    }
+    QCString trDefinition() override  { return "Definition";}
+    QCString trDeclaration() override { return "Deklaration";}
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.10.0 added by paule32
