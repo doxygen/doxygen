@@ -72,6 +72,7 @@ Benoît BROSSE: Benoit dot BROSSE at ingenico dot com
 TranslatorGerman
 Peter Grotrian: Peter dot Grotrian at pdv-FS dot de
 Jens Seidel: jensseidel at users dot sf dot net
+Jens Kallup: kallup at web dot de
 
 TranslatorGreek
 Paul Gessos: gessos dot paul at yahoo dot gr
