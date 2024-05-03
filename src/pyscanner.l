@@ -1803,6 +1803,10 @@ static void newEntry(yyscan_t yyscanner)
           v->briefLine = yyextra->current->briefLine;
           v->briefFile = yyextra->current->briefFile;
         }
+        if (v->type.isEmpty() && !yyextra->current->type.isEmpty())
+        {
+          v->type      = yyextra->current->type;
+        }
         found=true;
       }
     }
