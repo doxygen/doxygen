@@ -5064,10 +5064,13 @@ static void addMemberDocs(const Entry *root,
   if (md==nullptr) return;
   AUTO_TRACE("scope='{}' name='{}' args='{}' funcDecl='{}' mSpec={}",
        root->parent()->name,md->name(),md->argsString(),funcDecl,spec);
-  QCString fDecl=funcDecl;
-  // strip extern specifier
-  fDecl.stripPrefix("extern ");
-  md->setDefinition(fDecl);
+  if (!root->section.isDoc()) // @fn or @var does not need to specify the complete definition, so don't overwrite it
+  {
+    QCString fDecl=funcDecl;
+    // strip extern specifier
+    fDecl.stripPrefix("extern ");
+    md->setDefinition(fDecl);
+  }
   applyMemberOverrideOptions(root,md);
   md->addQualifiers(root->qualifiers);
   ClassDefMutable *cd=md->getClassDefMutable();

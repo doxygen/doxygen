@@ -57,9 +57,9 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="typedef">
-      <memberdef kind="typedef" id="018__def_8c_1a1d1cfd8ffb84e947f82999c682b666a7" prot="public" static="no">
+      <memberdef kind="typedef" id="018__def_8c_1acf326bb477a5bcb5ca69d535da296189" prot="public" static="no">
         <type>int</type>
-        <definition>Type</definition>
+        <definition>typedef int Type</definition>
         <argsstring/>
         <name>Type</name>
         <briefdescription>
@@ -73,9 +73,9 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="018__def_8c_1a335628f2e9085305224b4f9cc6e95ed5" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="018__def_8c_1a96c77f9f3a7baec84b9b8add26a31787" prot="public" static="no" mutable="no">
         <type>int</type>
-        <definition>var</definition>
+        <definition>int var</definition>
         <argsstring/>
         <name>var</name>
         <initializer>= 10</initializer>
@@ -90,9 +90,9 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
-      <memberdef kind="function" id="018__def_8c_1aee50dbe7d43d2202b490a6977a325584" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="018__def_8c_1aa8f34da24a80c3b3c98faf7809a07a9e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
-        <definition>func</definition>
+        <definition>void func</definition>
         <argsstring>(int)</argsstring>
         <name>func</name>
         <param>
@@ -107,9 +107,9 @@
         </inbodydescription>
         <location file="018_def.c" line="10" column="6" bodyfile="018_def.c" bodystart="10" bodyend="10"/>
       </memberdef>
-      <memberdef kind="function" id="018__def_8c_1a2652ccbfb85efa2df3c70ba6c4628f8d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="018__def_8c_1adf3f1249a79d3272ac196dd90d6b23aa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
-        <definition>func</definition>
+        <definition>void func</definition>
         <argsstring>(int, const char *)</argsstring>
         <name>func</name>
         <param>
