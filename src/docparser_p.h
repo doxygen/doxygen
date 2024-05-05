@@ -78,6 +78,7 @@ struct DocParserContext
   QCString     exampleName;
   QCString     searchUrl;
   QCString     prefix;
+  SrcLangExt   lang = SrcLangExt::Cpp;
 
   QCString     includeFileName;
   QCString     includeFileText;

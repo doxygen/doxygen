@@ -771,7 +771,7 @@ void DocParser::handleUnclosedStyleCommands()
 
 void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
 {
-  QCString name = linkToText(SrcLangExt::Unknown,context.token->name,TRUE);
+  QCString name = linkToText(context.lang,context.token->name,TRUE);
   AUTO_TRACE("word={}",name);
   bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
@@ -791,9 +791,8 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
   if (!context.insideHtmlLink &&
       (resolveRef(context.context,context.token->name,context.inSeeBlock,&compound,&member,TRUE,fd,TRUE)
-       || resolveRef(substitute(context.context,".","::"),context.token->name,context.inSeeBlock,&compound,&member,TRUE,fd,TRUE)
        || (!context.context.isEmpty() &&  // also try with global scope
-           resolveRef("",context.token->name,context.inSeeBlock,&compound,&member,FALSE,nullptr,TRUE))
+           resolveRef(QCString(),context.token->name,context.inSeeBlock,&compound,&member,FALSE,nullptr,TRUE))
       )
      )
   {
@@ -1954,23 +1953,30 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
       )
      )
   {
-    parser->context.context = ctx->qualifiedName();
+    parser->context.context = substitute(ctx->qualifiedName(),getLanguageSpecificSeparator(ctx->getLanguage(),true),"::");
   }
   else if (ctx && ctx->definitionType()==Definition::TypePage)
   {
     const Definition *scope = (toPageDef(ctx))->getPageScope();
-    if (scope && scope!=Doxygen::globalScope) parser->context.context = scope->name();
+    if (scope && scope!=Doxygen::globalScope)
+    {
+      parser->context.context = substitute(scope->name(),getLanguageSpecificSeparator(scope->getLanguage(),true),"::");
+    }
   }
   else if (ctx && ctx->definitionType()==Definition::TypeGroup)
   {
     const Definition *scope = (toGroupDef(ctx))->getGroupScope();
-    if (scope && scope!=Doxygen::globalScope) parser->context.context = scope->name();
+    if (scope && scope!=Doxygen::globalScope)
+    {
+      parser->context.context = substitute(scope->name(),getLanguageSpecificSeparator(scope->getLanguage(),true),"::");
+    }
   }
   else
   {
     parser->context.context = "";
   }
   parser->context.scope = ctx;
+  parser->context.lang = getLanguageFromFileName(fileName);
 
   if (indexWords && Doxygen::searchIndex.enabled())
   {
@@ -2082,6 +2088,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   parser->context.retvalsFound.clear();
   parser->context.paramsFound.clear();
   parser->context.searchUrl="";
+  parser->context.lang = SrcLangExt::Unknown;
   parser->context.markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
 
 

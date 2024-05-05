@@ -22,6 +22,7 @@
 #include "qcstring.h"
 #include "growvector.h"
 #include "construct.h"
+#include "types.h"
 
 class MemberDef;
 class Definition;
