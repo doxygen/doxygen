@@ -151,9 +151,6 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* in */  const QCString &prefix=QCString()
                 );
 
-bool generateLink(OutputList &ol,const QCString &,
-                         const QCString &,bool inSeeBlock,const QCString &);
-
 void generateFileRef(OutputList &ol,const QCString &,
                              const QCString &linkTxt=QCString());
 

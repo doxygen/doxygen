@@ -538,9 +538,8 @@ void DocSecRefItem::parse()
 
   if (!m_target.isEmpty())
   {
-    SrcLangExt lang = getLanguageFromFileName(m_target);
     const SectionInfo *sec = SectionManager::instance().find(m_target);
-    if (sec==nullptr && lang==SrcLangExt::Markdown) // lookup as markdown file
+    if (sec==nullptr && parser()->context.lang==SrcLangExt::Markdown) // lookup as markdown file
     {
       sec = SectionManager::instance().find(markdownFileNameToId(m_target));
     }
@@ -692,10 +691,9 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   QCString     anchor;
   //printf("DocRef::DocRef(target=%s,context=%s)\n",qPrint(target),qPrint(context));
   ASSERT(!target.isEmpty());
-  SrcLangExt lang = getLanguageFromFileName(target);
   m_relPath = parser->context.relPath;
   const SectionInfo *sec = SectionManager::instance().find(parser->context.prefix+target);
-  if (sec==nullptr && lang==SrcLangExt::Markdown) // lookup as markdown file
+  if (sec==nullptr && parser->context.lang==SrcLangExt::Markdown) // lookup as markdown file
   {
     sec = SectionManager::instance().find(markdownFileNameToId(target));
   }
@@ -731,13 +729,13 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);
     return;
   }
-  else if (resolveLink(context,target,TRUE,&compound,anchor,parser->context.prefix))
+  else if (resolveLink(context,target,true,&compound,anchor,parser->context.prefix))
   {
     bool isFile = compound ?
                  (compound->definitionType()==Definition::TypeFile ||
                   compound->definitionType()==Definition::TypePage ? TRUE : FALSE) :
                  FALSE;
-    m_text = linkToText(compound?compound->getLanguage():SrcLangExt::Unknown,target,isFile);
+    m_text = linkToText(parser->context.lang,target,isFile);
     m_anchor = anchor;
     if (compound && compound->isLinkable()) // ref to compound
     {
@@ -4632,7 +4630,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_CODE:
       if (parser()->context.token->emptyTag) break;
-      if (/*getLanguageFromFileName(parser()->context.fileName)==SrcLangExt::CSharp ||*/ parser()->context.xmlComment)
+      if (parser()->context.xmlComment)
         // for C# source or inside a <summary> or <remark> section we
         // treat <code> as an XML tag (so similar to @code)
       {

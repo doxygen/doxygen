@@ -3053,6 +3053,7 @@ QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
       result=substitute(result,"::",sep);
     }
   }
+  //printf("linkToText(%s,lang=%d)=%s\n",qPrint(link),lang,qPrint(result));
   return result;
 }
 
@@ -3164,55 +3165,6 @@ bool resolveLink(/* in */ const QCString &scName,
   }
 }
 
-
-//----------------------------------------------------------------------
-// General function that generates the HTML code for a reference to some
-// file, class or member from text 'lr' within the context of class 'clName'.
-// This link has the text 'lt' (if not 0), otherwise 'lr' is used as a
-// basis for the link's text.
-// returns TRUE if a link could be generated.
-
-bool generateLink(OutputList &ol,const QCString &clName,
-    const QCString &lr,bool inSeeBlock,const QCString &lt)
-{
-  //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
-  const Definition *compound = nullptr;
-  //PageDef *pageDef=nullptr;
-  QCString anchor,linkText=linkToText(SrcLangExt::Unknown,lt,FALSE);
-  //printf("generateLink linkText=%s\n",qPrint(linkText));
-  if (resolveLink(clName,lr,inSeeBlock,&compound,anchor))
-  {
-    if (compound) // link to compound
-    {
-      if (lt.isEmpty() && anchor.isEmpty() &&                      /* compound link */
-          compound->definitionType()==Definition::TypeGroup /* is group */
-         )
-      {
-        linkText=(toGroupDef(compound))->groupTitle(); // use group's title as link
-      }
-      else if (compound->definitionType()==Definition::TypeFile)
-      {
-        linkText=linkToText(compound->getLanguage(),lt,TRUE);
-      }
-      ol.writeObjectLink(compound->getReference(),
-          compound->getOutputFileBase(),anchor,linkText);
-      if (!compound->isReference())
-      {
-        writePageRef(ol,compound->getOutputFileBase(),anchor);
-      }
-    }
-    else
-    {
-      err("%s:%d: Internal error: resolveLink successful but no compound found!\n",__FILE__,__LINE__);
-    }
-    return TRUE;
-  }
-  else // link could not be found
-  {
-    ol.docify(linkText);
-    return FALSE;
-  }
-}
 
 void generateFileRef(OutputList &ol,const QCString &name,const QCString &text)
 {
