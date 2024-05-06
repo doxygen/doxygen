@@ -2304,7 +2304,7 @@ void writeLatexSpecialFormulaChars(TextStream &t)
     sup3[1]= 0xB3;
     sup3[2]= 0;
 
-    t << "\\ifpdftex\n";
+    t << "\\ifPDFTeX\n";
     t << "\\usepackage{newunicodechar}\n";
     // taken from the newunicodechar package and removed the warning message
     // actually forcing to redefine the unicode character

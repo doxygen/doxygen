@@ -5,13 +5,13 @@
   \let\mypdfximage\pdfximage\def\pdfximage{\immediate\mypdfximage}
 
   \RequirePackage{iftex}
-  \ifluatex
+  \ifLuaTeX
     \directlua{pdf.setminorversion(7)}
   \fi
-  \ifxetex
+  \ifXeTeX
     \special{pdf:minorversion 7}
   \fi
-  \ifpdftex
+  \ifPDFTeX
     \pdfminorversion=7
   \fi
 
@@ -42,7 +42,7 @@
   \let\protected@wlog\@@protected@wlog
   \makeatother
   \IfFormatAtLeastTF{2016/01/01}{}{\usepackage{fixltx2e}} % for \textsubscript
-  \ifpdftex
+  \ifPDFTeX
     \IfFormatAtLeastTF{2015/01/01}{\pdfsuppresswarningpagegroup=1}{}
   \fi
 
@@ -187,13 +187,13 @@
   % Hyperlinks
 %%BEGIN PDF_HYPERLINKS
     % Hyperlinks (required, but should be loaded last)
-    \ifpdftex
+    \ifPDFTeX
       \usepackage[pdftex,pagebackref=true]{hyperref}
     \else
-      \ifxetex
+      \ifXeTeX
         \usepackage[xetex,pagebackref=true]{hyperref}
       \else
-        \ifluatex
+        \ifLuaTeX
           \usepackage[luatex,pagebackref=true]{hyperref}
         \else
           \usepackage[ps2pdf,pagebackref=true]{hyperref}
