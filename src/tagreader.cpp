@@ -1369,7 +1369,11 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vec
     }
     else
     {
-      p_warn("Duplicate anchor %s found",qPrint(ta.label));
+      //printf("Replace sectionInfo file=%s anchor=%s\n",
+      //    qPrint(ta->fileName),qPrint(ta->label));
+      SectionInfo *si=SectionManager::instance().replace(
+          ta.label,ta.fileName,-1,ta.title,
+          SectionType::Anchor,0,m_tagName);
     }
   }
 }
