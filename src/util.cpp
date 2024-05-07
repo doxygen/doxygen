@@ -4973,6 +4973,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       pd->setNestingLevel(0);
       pd->setPageScope(nullptr);
       pd->setTitle(title);
+      pd->setReference(QCString());
     }
     else // newPage
     {
@@ -4989,7 +4990,6 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       pd->setReference(tagInfo->tagName);
       pd->setFileName(tagInfo->fileName);
     }
-
 
     if (gd) gd->addPage(pd);
 
