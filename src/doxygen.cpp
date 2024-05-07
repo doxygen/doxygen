@@ -9399,8 +9399,9 @@ void printSectionsTree()
   {
     for (const auto &si : SectionManager::instance())
     {
-      Debug::print(Debug::Sections,0,"Section = %s, file = %s, title = %s\n",
-            qPrint(si->label()),qPrint(si->fileName()),qPrint(si->title()));
+      Debug::print(Debug::Sections,0,"Section = %s, file = %s, title = %s, type = %d, ref = %s\n",
+            qPrint(si->label()),qPrint(si->fileName()),qPrint(si->title()),
+            si->type(),qPrint(si->ref()));
     }
   }
 }
