@@ -135,12 +135,14 @@ void Crawlmap::addIndexFile(const QCString & fileName)
   p->crawl << "<a href=\"" << fn << "\"/>\n";
 }
 
-void Crawlmap::addContentsItem(bool, const QCString &, const QCString &,
+void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
                                const QCString & file, const QCString & anchor,
                                bool ,bool ,
                                const Definition *)
 {
-  if (!file.isEmpty())      // made file optional param - KPW
+  if (!file.isEmpty() && ref.isEmpty())      // made file optional param and
+                                             // don't olace links in crawl file imported
+                                             // by tags
   {
     std::string link;
     if (file[0]=='!' || file[0]=='^') // special markers for user defined URLs
