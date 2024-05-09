@@ -46,6 +46,7 @@ class Qhp : public IndexIntf
 
     static inline const QCString qhpFileName = "index.qhp";
     static QCString getQchFileName();
+    static inline const QCString blankFileName = "doxygen_blank";
 
   private:
     void addFile(const QCString &);

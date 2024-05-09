@@ -311,6 +311,7 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
                           bool /* addToNavIndex */,
                           const Definition * /*def*/)
 {
+  static bool blankWritten = false;
   /*
   <toc>
     <section title="My Application Manual" ref="index.html">
@@ -324,6 +325,19 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
   QCString f = file;
   if (!f.isEmpty() && f.at(0)=='^') return; // absolute URL not supported
 
+  if (f.isEmpty())
+  {
+    f = blankFileName;
+    addHtmlExtensionIfMissing(f);
+    if (!blankWritten)
+    {
+      QCString fileName = Config_getString(HTML_OUTPUT) + "/" + f;
+      std::ofstream blankFile = Portable::openOutputStream(fileName); // we just need an empty file
+      blankFile.close();
+      addFile(f);
+      blankWritten = true;
+    }
+  }
   QCString finalRef = makeRef(f, anchor);
   p->sectionTree.addSection(name,finalRef);
 }
