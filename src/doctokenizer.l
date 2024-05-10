@@ -187,6 +187,11 @@ static int computeIndent(const char *str,size_t length)
     {
       indent=0;
     }
+    else if (str[i]=='\\' && qstrcmp(str+i+1,"ilinebr ")==0)
+    {
+      indent=0;
+      i+=8;
+    }
     else
     {
       indent++;
