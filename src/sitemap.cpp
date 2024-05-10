@@ -141,7 +141,7 @@ void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
                                const Definition *)
 {
   if (!file.isEmpty() && ref.isEmpty())      // made file optional param and
-                                             // don't olace links in crawl file imported
+                                             // don't place links in crawl file imported
                                              // by tags
   {
     std::string link;
