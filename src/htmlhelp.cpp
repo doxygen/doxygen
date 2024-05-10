@@ -546,7 +546,7 @@ void HtmlHelp::decContentsDepth()
  */
 void HtmlHelp::addContentsItem(bool isDir,
                                const QCString &name,
-                               const QCString & /*ref*/,
+                               const QCString &ref,
                                const QCString &file,
                                const QCString &anchor,
                                bool /* separateIndex */,
@@ -573,6 +573,7 @@ void HtmlHelp::addContentsItem(bool isDir,
       addHtmlExtensionIfMissing(currFile);
       QCString currAnc = anchor;
       p->cts << "<param name=\"Local\" value=\"";
+      if (!ref.isEmpty()) p->cts << qPrint(externalRef("",ref,true));
       p->cts << currFile;
       if (p->prevFile == currFile && p->prevAnc.isEmpty() && currAnc.isEmpty())
       {
