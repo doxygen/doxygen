@@ -187,16 +187,18 @@ static int computeIndent(const char *str,size_t length)
     {
       indent=0;
     }
-    else if (str[i]=='\\' && qstrcmp(str+i+1,"ilinebr ")==0)
+    else if (str[i]=='\\' && qstrncmp(str+i+1,"ilinebr",7)==0)
     {
       indent=0;
-      i+=8;
+      i+=7;
+      if (str[i+1]==' ') i++; // also eat space after \\ilinebr if present
     }
     else
     {
       indent++;
     }
   }
+  //printf("input('%s')=%d\n",str,indent);
   return indent;
 }
 
