@@ -1697,6 +1697,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     QCString oldRaiseLabel = yyextra->raiseLabel;
     yyextra->raiseLevel+=yyextra->raiseIncrement;
     yyextra->raiseLabel+=yyextra->raisePrefix;
+    lineNr--;
     QCString lineStr=" \\ilinebr \\ifile \""+absFileName+"\" \\iline " + std::to_string(lineNr);
     if (yyextra->raiseLevel>0)
     {
@@ -1706,12 +1707,14 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     {
       lineStr+=" \\iprefix \"" + yyextra->raiseLabel + "\"";
     }
-    lineStr+=" \\ilinebr ";
+    copyToOutput(yyscanner,lineStr.view());
+    insertCommentStart(yyscanner);
+    lineStr="\n";
     copyToOutput(yyscanner,lineStr.view());
 
     fs->fileName      = absFileName;
     fs->bufState      = YY_CURRENT_BUFFER;
-    fs->oldLineNr     = yyextra->lineNr;
+    fs->oldLineNr     = yyextra->lineNr-1;
     fs->oldFileName   = yyextra->fileName;
     fs->oldState      = yyextra->includeCtx;
     fs->oldFileBuf    = yyextra->inBuf;
