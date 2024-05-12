@@ -3754,6 +3754,16 @@ static void findFriends()
             const ArgumentList &mmdAl = mmd->argumentList();
             const ArgumentList &fmdAl = fmd->argumentList();
             mergeArguments(const_cast<ArgumentList&>(fmdAl),const_cast<ArgumentList&>(mmdAl));
+
+            // reset argument lists to add missing default parameters
+            QCString mmdAlStr = argListToString(mmdAl);
+            QCString fmdAlStr = argListToString(fmdAl);
+            mmd->setArgsString(mmdAlStr);
+            fmd->setArgsString(fmdAlStr);
+            mmd->moveDeclArgumentList(std::make_unique<ArgumentList>(mmdAl));
+            fmd->moveDeclArgumentList(std::make_unique<ArgumentList>(fmdAl));
+            AUTO_TRACE_ADD("friend args='{}' member args='{}'",argListToString(fmd->argumentList()),argListToString(mmd->argumentList()));
+
             if (!fmd->documentation().isEmpty())
             {
               mmd->setDocumentation(fmd->documentation(),fmd->docFile(),fmd->docLine());
@@ -3797,6 +3807,7 @@ static void findFriends()
 
             mmd->addQualifiers(fmd->getQualifiers());
             fmd->addQualifiers(mmd->getQualifiers());
+
           }
         }
       }
