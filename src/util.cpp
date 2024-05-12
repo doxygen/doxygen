@@ -6180,7 +6180,7 @@ QCString stripIndentation(const QCString &s)
 {
   if (s.isEmpty()) return s; // empty string -> we're done
 
-  //printf("stripIndentation:\n%s\n------\n",qPrint(s));
+  //printf("stripIndentation: input=\n%s\n------\n",qPrint(s));
   // compute minimum indentation over all lines
   const char *p=s.data();
   char c=0;
@@ -6232,11 +6232,24 @@ QCString stripIndentation(const QCString &s)
         indent++;
       }
     }
+    else if (c=='\\' && qstrncmp(p,"ilinebr ",8)==0)
+      // we also need to remove the indentation after a \ilinebr command at the end of a line
+    {
+      result << "\\ilinebr ";
+      p+=8;
+      int skipAmount=0;
+      for (int j=0;j<minIndent;j++) if (*(p+j)==' ') skipAmount++; // test to see if we have the indent
+      if (skipAmount==minIndent)
+      {
+        p+=skipAmount; // remove the indent
+      }
+    }
     else // copy anything until the end of the line
     {
       result << c;
     }
   }
+  //printf("stripIndentation: result=\n%s\n------\n",qPrint(result.str()));
 
   return result.str();
 }
