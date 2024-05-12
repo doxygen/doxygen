@@ -384,12 +384,10 @@ EntryType guessSection(const QCString &name)
 QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
                         const Definition **typedefContext)
 {
-  //printf("<<resolveTypeDef(%s,%s)\n",
-  //          context ? qPrint(context->name()) : "<none>",qPrint(qualifiedName));
+  AUTO_TRACE("context='{}' qualifiedName='{}'",context?context->name():"",qualifiedName);
   QCString result;
   if (qualifiedName.isEmpty())
   {
-    //printf("  qualified name empty!\n");
     return result;
   }
 
@@ -399,7 +397,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   // see if the qualified name has a scope part
   if (qualifiedName.find('<')!=-1)
   {
-    //printf("  templates cannot be typedefs!\n");
+    AUTO_TRACE_EXIT("template");
     return result;
   }
   int scopeIndex = qualifiedName.findRev("::");
@@ -409,8 +407,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     resName=qualifiedName.right(qualifiedName.length()-scopeIndex-2);
     if (resName.isEmpty())
     {
-      // qualifiedName was of form A:: !
-      //printf("  qualified name of form A::!\n");
+      AUTO_TRACE_EXIT("invalid format");
       return result;
     }
   }
@@ -438,7 +435,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
         ps=is+l;
       }
     }
-    //printf("resScope=%s\n",resScope? qPrint(resScope->name()) : "<none>");
+    AUTO_TRACE_ADD("resScope='{}' resName='{}'",resScope?resScope->name():"",resName);
 
     // step 2: get the member
     if (resScope) // no scope or scope found in the current context
@@ -446,6 +443,8 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
       //printf("scope found: %s, look for typedef %s\n",
       //     qPrint(resScope->qualifiedName()),qPrint(resName));
       MemberNameLinkedMap *mnd=nullptr;
+      bool searchRelated=false;
+      bool mustBeRelated=false;
       if (resScope->definitionType()==Definition::TypeClass)
       {
         mnd=Doxygen::memberNameLinkedMap;
@@ -453,25 +452,40 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
       else
       {
         mnd=Doxygen::functionNameLinkedMap;
+        searchRelated=true;
       }
       MemberName *mn=mnd->find(resName);
+      if (mn==0 && searchRelated)
+      {
+        mn=Doxygen::memberNameLinkedMap->find(resName);
+        mustBeRelated=true;
+      }
       if (mn)
       {
         int minDist=-1;
         for (const auto &tmd_p : *mn)
         {
           const MemberDef *tmd = tmd_p.get();
+          AUTO_TRACE_ADD("found candidate member '{}' isTypeDef={}' isRelated={} mustBeRelated={}",
+              tmd->name(),tmd->isTypedef(),tmd->isRelated(),mustBeRelated);
           //printf("Found member %s resScope=%s outerScope=%s mContext=%p\n",
           //    qPrint(tmd->name()),qPrint( resScope->name()),
           //    qPrint(tmd->getOuterScope()->name()), mContext);
-          if (tmd->isTypedef() /*&& tmd->getOuterScope()==resScope*/)
+          if (tmd->isTypedef())
           {
-            SymbolResolver resolver;
-            int dist=resolver.isAccessibleFrom(resScope,tmd);
-            if (dist!=-1 && (md==nullptr || dist<minDist))
+            if (resScope==Doxygen::globalScope && tmd->isRelated() && mustBeRelated)
             {
               md = tmd;
-              minDist = dist;
+            }
+            else
+            {
+              SymbolResolver resolver;
+              int dist=resolver.isAccessibleFrom(resScope,tmd);
+              if (dist!=-1 && (md==nullptr || dist<minDist))
+              {
+                md = tmd;
+                minDist = dist;
+              }
             }
           }
         }
@@ -480,6 +494,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     mContext=mContext->getOuterScope();
   }
 
+  AUTO_TRACE_ADD("md='{}'",md?md->name():"");
   // step 3: get the member's type
   if (md)
   {
@@ -503,8 +518,8 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     //printf(">>resolveTypeDef: Typedef '%s' not found in scope '%s'!\n",
     //    qPrint(qualifiedName),context ? qPrint(context->name()) : "<global>");
   }
+  AUTO_TRACE_EXIT("result='{}'",result);
   return result;
-
 }
 
 //-------------------------------------------------------------------------
@@ -1561,6 +1576,8 @@ static QCString getCanonicalTypeForIdentifier(
   if (tSpec && !tSpec->isEmpty())
     templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec,lang));
 
+  AUTO_TRACE("d='{}' fs='{}' word='{}' templSpec='{}'",d?d->name():"",fs?fs->name():"",word,templSpec);
+
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
     symName=tmpName; // name without scope
@@ -1569,10 +1586,6 @@ static QCString getCanonicalTypeForIdentifier(
   {
     symName=word;
   }
-  //printf("getCanonicalTypeForIdentifier(%s d=%s fs=%s ,[%s->%s]) start\n",
-  //    qPrint(word),
-  //    d ? qPrint(d->name()) : "<null>", fs ? qPrint(fs->name()) : "<null>",
-  //    tSpec ? qPrint(tSpec) : "<none>", qPrint(templSpec));
 
   // lookup class / class template instance
   SymbolResolver resolver(fs);
@@ -1592,6 +1605,8 @@ static QCString getCanonicalTypeForIdentifier(
   }
   if (cd && cd->isUsedOnly()) cd=nullptr; // ignore types introduced by usage relations
 
+  AUTO_TRACE_ADD("cd='{}' mType='{}' ts='{}' resolvedType='{}'",
+      cd?cd->name():"",mType?mType->name():"",ts,resolvedType);
   //printf("cd=%p mtype=%p\n",cd,mType);
   //printf("  getCanonicalTypeForIdentifier: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    qPrint(symName),
@@ -1684,7 +1699,7 @@ static QCString getCanonicalTypeForIdentifier(
   else // fallback
   {
     resolvedType = lang==SrcLangExt::Java ? word : resolveTypeDef(d,word);
-    //printf("typedef [%s]->[%s]\n",qPrint(word),qPrint(resolvedType));
+    AUTO_TRACE_ADD("fallback resolvedType='{}'",resolvedType);
     if (resolvedType.isEmpty()) // not known as a typedef either
     {
       result = word;
@@ -1694,12 +1709,13 @@ static QCString getCanonicalTypeForIdentifier(
       result = resolvedType;
     }
   }
-  //printf("getCanonicalTypeForIdentifier [%s]->[%s]\n",qPrint(word),qPrint(result));
+  AUTO_TRACE_EXIT("result='{}'",result);
   return result;
 }
 
 static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang)
 {
+  AUTO_TRACE("d={} fs={} type='{}'",d?d->name():"",fs?fs->name():"",type);
   type = type.stripWhiteSpace();
 
   // strip const and volatile keywords that are not relevant for the type
@@ -1768,7 +1784,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
     pp=p;
   }
   canType += type.right(type.length()-pp);
-  //printf("extractCanonicalType = '%s'->'%s'\n",qPrint(type),qPrint(canType));
+  AUTO_TRACE_EXIT("canType='{}'",canType);
 
   return removeRedundantWhiteSpace(canType);
 }
@@ -1811,6 +1827,7 @@ static bool matchCanonicalTypes(
     const Definition *dstScope,const FileDef *dstFileScope,const QCString &dstType,
     SrcLangExt lang)
 {
+  AUTO_TRACE("srcType='{}' dstType='{}'",srcType,dstType);
   if (srcType==dstType) return true;
 
   // check if the types are function pointers
@@ -1888,6 +1905,7 @@ static bool matchArgument2(
                           lang))
   {
     MATCH
+    AUTO_TRACE_EXIT("true");
     return TRUE;
   }
   else
@@ -1895,6 +1913,7 @@ static bool matchArgument2(
     //printf("   Canonical types do not match [%s]<->[%s]\n",
     //    qPrint(srcA->canType),qPrint(dstA->canType));
     NOMATCH
+    AUTO_TRACE_EXIT("false");
     return FALSE;
   }
 }
