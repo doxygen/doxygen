@@ -3753,7 +3753,7 @@ static void findFriends()
                 mmd->name(),mmd->isFriend(),mmd->isRelated(),mmd->isFunction());
             const ArgumentList &mmdAl = mmd->argumentList();
             const ArgumentList &fmdAl = fmd->argumentList();
-            mergeArguments(const_cast<ArgumentList&>(mmdAl),const_cast<ArgumentList&>(fmdAl));
+            mergeArguments(const_cast<ArgumentList&>(fmdAl),const_cast<ArgumentList&>(mmdAl));
             if (!fmd->documentation().isEmpty())
             {
               mmd->setDocumentation(fmd->documentation(),fmd->docFile(),fmd->docLine());

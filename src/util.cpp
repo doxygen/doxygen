@@ -1997,8 +1997,8 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 // pre:  the types of the arguments in the list should match.
 void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwrite)
 {
-  //printf("mergeArguments '%s', '%s'\n",
-  //    qPrint(argListToString(srcAl)),qPrint(argListToString(dstAl)));
+  AUTO_TRACE("srcAl='{}',dstAl='{}',forceNameOverwrite={}",
+             qPrint(argListToString(srcAl)),qPrint(argListToString(dstAl)),forceNameOverwrite);
 
   if (srcAl.size()!=dstAl.size())
   {
@@ -2012,6 +2012,9 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
     Argument &srcA = *srcIt;
     Argument &dstA = *dstIt;
 
+    AUTO_TRACE_ADD("before merge: src=[type='{}',name='{}',def='{}'] dst=[type='{}',name='{}',def='{}']",
+        srcA.type,srcA.name,srcA.defval,
+        dstA.type,dstA.name,dstA.defval);
     if (srcA.defval.isEmpty() && !dstA.defval.isEmpty())
     {
       //printf("Defval changing '%s'->'%s'\n",qPrint(srcA.defval),qPrint(dstA.defval));
@@ -2128,6 +2131,9 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
     //  qPrint(dstA.type), qPrint(dstA.name));
     ++srcIt;
     ++dstIt;
+    AUTO_TRACE_ADD("after merge: src=[type='{}',name='{}',def='{}'] dst=[type='{}',name='{}',def='{}']",
+        srcA.type,srcA.name,srcA.defval,
+        dstA.type,dstA.name,dstA.defval);
   }
 }
 
