@@ -1991,6 +1991,27 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(  depOption, "HTML_COPY_CLIPBOARD",  false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
     adjustColorStyleSetting(depOption);
+    const StringVector &tagFileList = Config_getList(TAGFILES);
+    StringVector tagFileListNew;
+    for (const auto &s : tagFileList)
+    {
+      bool isRelative = false;
+      int eqPos = s.find('=');
+      if (eqPos!=-1) // tag command contains a destination
+      {
+        QCString dest = s.c_str();
+        QCString destName = dest.right(dest.length()-eqPos-1).stripWhiteSpace();
+        if (!destName.isEmpty())
+        {
+          if (!(destName.left(5).lower() == "http:" || destName.left(6).lower() == "https:")) isRelative = true;
+        }
+      }
+      if (!isRelative) tagFileListNew.push_back(s);
+      else
+        err("When enabling %s the %s option should only contain destination with https / http addresses (not: %s). I'll adjust it for you.\n",
+            "GENERATE_HTMLHELP","TAGFILES",qPrint(s));
+    }
+    Config_updateList(TAGFILES,tagFileListNew);
   }
 
   // check for settings that are inconsistent with having INLINE_GROUPED_CLASSES enabled
