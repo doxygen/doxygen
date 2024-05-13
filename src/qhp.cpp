@@ -27,6 +27,8 @@
 #include "textstream.h"
 #include "util.h"
 #include "portable.h"
+#include "language.h"
+#include "version.h"
 
 static inline void writeIndent(TextStream &t,int indent)
 {
@@ -311,6 +313,7 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
                           bool /* addToNavIndex */,
                           const Definition * /*def*/)
 {
+  static bool blankWritten = false;
   /*
   <toc>
     <section title="My Application Manual" ref="index.html">
@@ -324,6 +327,39 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
   QCString f = file;
   if (!f.isEmpty() && f.at(0)=='^') return; // absolute URL not supported
 
+  if (f.isEmpty())
+  {
+    f = blankFileName;
+    addHtmlExtensionIfMissing(f);
+    if (!blankWritten)
+    {
+      QCString fileName = Config_getString(HTML_OUTPUT) + "/" + f;
+      std::ofstream blankFile = Portable::openOutputStream(fileName); // we just need an empty file
+      if (!blankFile.is_open())
+      {
+        term("Could not open file %s for writing\n", qPrint(fileName));
+      }
+      TextStream blank;
+      blank.setStream(&blankFile);
+      blank << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+      blank << "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"" + theTranslator->trISOLang() + "\">\n";
+      blank << "<head>\n";
+      blank << "<title>Validator / crawler helper</title>\n";
+      blank << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
+      blank << "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=11\"/>\n";
+    
+      blank << "<meta name=\"generator\" content=\"Doxygen " + getDoxygenVersion() + "\"/>\n";
+      blank << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>\n";
+      blank << "</head>\n";
+      blank << "<body>\n";
+      blank << "</body>\n";
+      blank << "</html>\n";
+      blank.flush();
+      blankFile.close();
+      addFile(f);
+      blankWritten = true;
+    }
+  }
   QCString finalRef = makeRef(f, anchor);
   p->sectionTree.addSection(name,finalRef);
 }

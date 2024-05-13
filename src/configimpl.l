@@ -2143,6 +2143,13 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       err("GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
       Config_updateString(QHP_VIRTUAL_FOLDER,"doc");
     }
+    const StringVector &tagFileList = Config_getList(TAGFILES);
+    if (tagFileList.size() != 0)
+    {
+      err("When enabling %s the %s option should be empty. I'll adjust it for you.\n","GENERATE_QHP","TAGFILES");
+      const StringVector tagFileListEmpty;
+      Config_updateList(TAGFILES,tagFileListEmpty);
+    }
   }
 
   //------------------------
