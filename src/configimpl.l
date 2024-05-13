@@ -2144,11 +2144,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       Config_updateString(QHP_VIRTUAL_FOLDER,"doc");
     }
     const StringVector &tagFileList = Config_getList(TAGFILES);
-    if (tagFileList.size() != 0)
+    if (!tagFileList.empty())
     {
-      err("When enabling %s the %s option should be empty. I'll adjust it for you.\n","GENERATE_QHP","TAGFILES");
-      const StringVector tagFileListEmpty;
-      Config_updateList(TAGFILES,tagFileListEmpty);
+      err("When enabling GENERATE_QHP the TAGFILES option should be empty. I'll adjust it for you.\n");
+      Config_updateList(TAGFILES,StringVector());
     }
   }
 

@@ -16,6 +16,7 @@
 #include <string.h>
 #include <vector>
 #include <cassert>
+#include <mutex>
 
 #include "config.h"
 #include "debug.h"
@@ -29,6 +30,9 @@
 #include "portable.h"
 #include "language.h"
 #include "version.h"
+
+static std::once_flag g_blankWritten;
+
 
 static inline void writeIndent(TextStream &t,int indent)
 {
@@ -313,7 +317,6 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
                           bool /* addToNavIndex */,
                           const Definition * /*def*/)
 {
-  static bool blankWritten = false;
   /*
   <toc>
     <section title="My Application Manual" ref="index.html">
@@ -329,9 +332,9 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
 
   if (f.isEmpty())
   {
-    f = blankFileName;
+    f = "doxygen_blank";
     addHtmlExtensionIfMissing(f);
-    if (!blankWritten)
+    std::call_once(g_blankWritten,[this,&f]()
     {
       QCString fileName = Config_getString(HTML_OUTPUT) + "/" + f;
       std::ofstream blankFile = Portable::openOutputStream(fileName); // we just need an empty file
@@ -357,8 +360,7 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
       blank.flush();
       blankFile.close();
       addFile(f);
-      blankWritten = true;
-    }
+    });
   }
   QCString finalRef = makeRef(f, anchor);
   p->sectionTree.addSection(name,finalRef);
