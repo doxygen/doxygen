@@ -1015,7 +1015,7 @@ DB_VIS_C
   if (m_hide) return;
   m_t << "<varlistentry><term>";
   visitChildren(dt);
-  m_t << "</term>\n";
+  m_t << "</term></varlistentry>\n";
 }
 
 void DocbookDocVisitor::operator()(const DocHtmlDescData &dd)
@@ -1024,7 +1024,7 @@ DB_VIS_C
   if (m_hide) return;
   m_t << "<listitem>";
   visitChildren(dd);
-  m_t << "</listitem></varlistentry>\n";
+  m_t << "</listitem>\n";
 }
 
 void DocbookDocVisitor::operator()(const DocHtmlTable &t)

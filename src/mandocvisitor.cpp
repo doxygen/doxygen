@@ -726,6 +726,7 @@ void ManDocVisitor::operator()(const DocHtmlDescTitle &dt)
 
 void ManDocVisitor::operator()(const DocHtmlDescData &dd)
 {
+  if (!m_firstCol) m_t << "\n.IP \"\" 1c\n";
   visitChildren(dd);
 }
 

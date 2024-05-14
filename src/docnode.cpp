@@ -2369,6 +2369,12 @@ int DocHtmlDescList::parse()
     if (retval==RetVal_DescData)
     {
       retval=dd->parse();
+      while (retval==RetVal_DescData)
+      {
+        children().append<DocHtmlDescData>(parser(),thisVariant());
+        dd    = children().get_last<DocHtmlDescData>();
+        retval=dd->parse();
+      }
     }
     else if (retval!=RetVal_DescTitle)
     {
@@ -4688,7 +4694,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       retval = RetVal_DescTitle;
       break;
     case HTML_DD:
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <dd> found");
+      retval = RetVal_DescData;
       break;
     case HTML_TABLE:
       if (!parser()->context.token->emptyTag)
