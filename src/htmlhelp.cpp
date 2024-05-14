@@ -573,7 +573,7 @@ void HtmlHelp::addContentsItem(bool isDir,
       addHtmlExtensionIfMissing(currFile);
       QCString currAnc = anchor;
       p->cts << "<param name=\"Local\" value=\"";
-      if (!ref.isEmpty()) p->cts << qPrint(externalRef("",ref,true));
+      if (!ref.isEmpty()) p->cts << externalRef("",ref,true);
       p->cts << currFile;
       if (p->prevFile == currFile && p->prevAnc.isEmpty() && currAnc.isEmpty())
       {

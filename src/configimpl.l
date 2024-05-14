@@ -1992,26 +1992,27 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
     adjustColorStyleSetting(depOption);
     const StringVector &tagFileList = Config_getList(TAGFILES);
-    StringVector tagFileListNew;
+    StringVector filteredTagFileList;
     for (const auto &s : tagFileList)
     {
-      bool isRelative = false;
-      int eqPos = s.find('=');
-      if (eqPos!=-1) // tag command contains a destination
+      bool validUrl = false;
+      size_t eqPos = s.find('=');
+      if (eqPos!=std::string::npos) // tag command contains a destination
       {
-        QCString dest = s.c_str();
-        QCString destName = dest.right(dest.length()-eqPos-1).stripWhiteSpace();
-        if (!destName.isEmpty())
-        {
-          if (!(destName.left(5).lower() == "http:" || destName.left(6).lower() == "https:")) isRelative = true;
-        }
+        QCString url = QCString(s.substr(eqPos+1)).stripWhiteSpace().lower();
+        validUrl = url.startsWith("http:") || url.startsWith("https:");
       }
-      if (!isRelative) tagFileListNew.push_back(s);
+      if (validUrl)
+      {
+        filteredTagFileList.push_back(s);
+      }
       else
-        err("When enabling %s the %s option should only contain destination with https / http addresses (not: %s). I'll adjust it for you.\n",
-            "GENERATE_HTMLHELP","TAGFILES",qPrint(s));
+      {
+        err("When enabling GENERATE_HTMLHELP the TAGFILES option should only contain destinations "
+            "with https / http addresses (not: %s). I'll adjust it for you.\n",s.c_str());
+      }
     }
-    Config_updateList(TAGFILES,tagFileListNew);
+    Config_updateList(TAGFILES,filteredTagFileList);
   }
 
   // check for settings that are inconsistent with having INLINE_GROUPED_CLASSES enabled
