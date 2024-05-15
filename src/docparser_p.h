@@ -251,5 +251,16 @@ inline bool insideDetails(const DocNodeVariant *n)
   return FALSE;
 }
 
+//---------------------------------------------------------------------------
+
+inline bool insideDL(const DocNodeVariant *n)
+{
+  while (n)
+  {
+    if (std::holds_alternative<DocHtmlDescList>(*n)) return TRUE;
+    n=parent(n);
+  }
+  return FALSE;
+}
 
 #endif
