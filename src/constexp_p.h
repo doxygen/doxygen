@@ -34,13 +34,14 @@ struct constexpYY_state
   int          constExpLineNr;
   std::string  constExpFileName;
 
+  std::string orgString;
   std::string inputString;
   int         inputPosition;
 };
 constexpYY_state* constexpYYget_extra(yyscan_t yyscanner );
 
-extern int constexpYYlex(YYSTYPE *lvalp, yyscan_t);
-extern int constexpYYparse(yyscan_t);
+int constexpYYlex(YYSTYPE *lvalp, yyscan_t);
+int constexpYYparse(yyscan_t);
 
 
 #endif

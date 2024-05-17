@@ -4,14 +4,20 @@
 # this also include multi-byte characters.
 
 import codecs
+import unicodedata
 
 toupper = {}
 tolower = {}
 
 def writeMapping(file,mapping):
     for k,v in sorted(mapping.items()):
-        file.write(u"    case %s /* %s */: BSEQ(%s) /* %s */;\n" %
+        file.write(u"    case %s /* %s */: BSEQ(%s) /* %s */\n" %
                (hex(ord(k[0])), k, ",".join(f"0x{b:02x}" for b in v.encode('utf-8')), v))
+
+def writePunctuationCodes(file):
+    for codeValue in range(0,0x1FFFF):
+        if unicodedata.category(chr(codeValue)).startswith(tuple(['P','S'])): # punctuation and symbols
+            file.write(u"    case %s: return true; /* %s */\n" % (hex(codeValue), chr(codeValue)))
 
 # create mappings of characters whose upper and lower case differ
 for codeValue in range(0,0x1FFFF):
@@ -53,6 +59,17 @@ inline const char *convertUnicodeToLower(uint32_t code)
 writeMapping(file,tolower);
 file.write(r'''    default: return nullptr;
   }
+}
+
+inline bool isPunctuationCharacter(uint32_t code)
+{
+  switch(code)
+  {
+''');
+writePunctuationCodes(file);
+file.write(r'''    default: return false;
+  }
+  return false;
 }
 
 #endif

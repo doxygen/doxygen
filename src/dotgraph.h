@@ -21,6 +21,7 @@
 
 #include "qcstring.h"
 #include "dir.h"
+#include "construct.h"
 
 class DotNode;
 class TextStream;
@@ -32,14 +33,18 @@ enum GraphType            { Dependency, Inheritance, Collaboration, Hierarchy, C
 /** A dot graph */
 class DotGraph
 {
+    friend class DotNode;
   public:
     DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() = default;
+    NON_COPYABLE(DotGraph)
 
   protected:
-    /** returns node numbers. The Counter is reset by the constructor */
+    /** returns the node number. */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
+    /** returns the edge number. */
+    int getNextEdgeNumber() { return ++m_curEdgeNumber; }
 
     QCString writeGraph(TextStream &t,
                         GraphOutputFormat gf,
@@ -95,13 +100,12 @@ class DotGraph
     bool                   m_urlOnly = false;
 
   private:
-    DotGraph(const DotGraph &);
-    DotGraph &operator=(const DotGraph &);
 
     bool prepareDotFile();
     void generateCode(TextStream &t);
 
     int m_curNodeNumber = 0;
+    int m_curEdgeNumber = 0;
 };
 
 #endif

@@ -64,7 +64,6 @@ class UsedDir
 {
   public:
     UsedDir(const DirDef *dir);
-    virtual ~UsedDir();
 
     /**
      * Take up dependency between files.
@@ -113,12 +112,6 @@ class DirDef : public DefinitionMutable, public Definition
     class UsedDirLinkedMap : public LinkedMap<UsedDir> {};
 
     // accessors
-    virtual DefType definitionType() const = 0;
-    virtual QCString getOutputFileBase() const = 0;
-    virtual QCString anchor() const = 0;
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
-    virtual QCString displayName(bool=TRUE) const = 0;
     virtual const QCString shortName() const = 0;
     virtual void addSubDir(DirDef *subdir) = 0;
     virtual const FileList &getFiles() const = 0;
@@ -127,7 +120,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual bool hasSubdirs() const = 0;
     virtual int level() const = 0;
     virtual DirDef *parent() const = 0;
-    virtual int dirCount() const = 0;
+    virtual int dirIndex() const = 0;
     virtual const UsedDirLinkedMap &usedDirs() const = 0;
     virtual bool isParentOf(const DirDef *dir) const = 0;
     virtual bool depGraphIsTrivial() const = 0;
@@ -139,13 +132,17 @@ class DirDef : public DefinitionMutable, public Definition
     virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void setDiskName(const QCString &name) = 0;
-    virtual void setDirCount(int count) = 0;
+    virtual void setDirIndex(int index) = 0;
     virtual void sort() = 0;
     virtual void setParent(DirDef *parent) = 0;
     virtual void setLevel() = 0;
     virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect) = 0;
     virtual void computeDependencies() = 0;
+
+    // directory graph related members
+    virtual bool hasDirectoryGraph() const = 0;
+    virtual void overrideDirectoryGraph(bool e) = 0;
 };
 
 // --- Cast functions

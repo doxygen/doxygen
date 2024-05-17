@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -16,11 +16,12 @@
 #ifndef CMDMAPPER_H
 #define CMDMAPPER_H
 
-#include <map>
+#include <unordered_map>
 #include <string>
+#include <memory>
 #include "qcstring.h"
 
-struct CommandMap;
+using CommandMap = std::unordered_map< std::string, int >;
 
 const int SIMPLESECT_BIT = 0x1000;
 
@@ -150,7 +151,13 @@ enum CommandType
   CMD_ISTARTCODE   = 121,
   CMD_ENDICODE     = 122,
   CMD_IVERBATIM    = 123,
-  CMD_ENDIVERBATIM = 124
+  CMD_ENDIVERBATIM = 124,
+  CMD_IANCHOR      = 125,
+  CMD_DOXYCONFIG   = 126,
+  CMD_IMPORTANT    = 127 | SIMPLESECT_BIT,
+  CMD_SUBPARAGRAPH = 128,
+  CMD_SUBSUBPARAGRAPH = 129,
+  CMD_IPREFIX      = 130
 };
 
 enum HtmlTagType
@@ -196,6 +203,9 @@ enum HtmlTagType
   HTML_S         = 38,
   HTML_DETAILS   = 39,
   HTML_CITE      = 40,
+  HTML_THEAD     = 41,
+  HTML_TBODY     = 42,
+  HTML_TFOOT     = 43,
 
   XML_CmdMask    = 0x100,
 
@@ -229,21 +239,20 @@ enum HtmlTagType
 class Mapper
 {
   public:
-    int map(const QCString &n);
-    QCString find(const int n);
-    Mapper(const CommandMap *cm,bool caseSensitive);
+    int map(const QCString &n) const;
+    QCString find(const int n) const;
+    Mapper(const CommandMap &cm,bool caseSensitive);
   private:
-    std::map<std::string,int> m_map;
+    const CommandMap &m_map;
     bool m_cs;
 };
 
-/** Class representing a namespace for the doxygen and HTML command mappers. */
-struct Mappers
+/** Namespace for the doxygen and HTML command mappers. */
+namespace Mappers
 {
-  static void freeMappers();
-  static Mapper *cmdMapper;
-  static Mapper *htmlTagMapper;
-};
+  extern const Mapper *cmdMapper;
+  extern const Mapper *htmlTagMapper;
+}
 
 
 #endif

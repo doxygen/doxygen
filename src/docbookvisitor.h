@@ -23,16 +23,15 @@
 #include "docnode.h"
 #include "qcstring.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class QCString;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor
 {
-    public:
-    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
-    ~DocbookDocVisitor();
+  public:
+    DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
     //-----------------------------------------
     template<class T>
     void visitChildren(const T &t)
@@ -143,7 +142,7 @@ class DocbookDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
     TextStream &m_t;
-    CodeOutputInterface &m_ci;
+    OutputCodeList &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;
     BoolStack m_enabled;

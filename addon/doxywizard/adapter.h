@@ -32,7 +32,7 @@ class TextCodecAdapter
     TextCodecAdapter(const QByteArray &name)
     {
       m_codec = QTextCodec::codecForName(name);
-      if (m_codec==0) // fallback: use UTF-8
+      if (m_codec==nullptr) // fallback: use UTF-8
       {
         m_codec = QTextCodec::codecForName("UTF-8");
       }
@@ -40,9 +40,9 @@ class TextCodecAdapter
     QByteArray encode(const QString    &input) { return m_codec ? m_codec->fromUnicode(input) : input.toLatin1(); }
     QString    decode(const QByteArray &input) { return m_codec ? m_codec->toUnicode(input)   : QString::fromLatin1(input); }
     void applyToStream(QTextStream &t) { t.setCodec(m_codec); }
-    bool isValid() const { return m_codec!=0; }
+    bool isValid() const { return m_codec!=nullptr; }
   private:
-    QTextCodec *m_codec = 0; // object is owned by Qt
+    QTextCodec *m_codec = nullptr; // object is owned by Qt
 };
 #else // Qt6+
 #include <QStringEncoder>

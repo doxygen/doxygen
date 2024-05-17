@@ -19,6 +19,7 @@
 #include <string>
 
 #include "qcstring.h"
+#include "construct.h"
 
 class TextStream;
 
@@ -91,8 +92,7 @@ class HtmlEntityMapper
                     Perl_acute, Perl_grave, Perl_circ, Perl_slash, Perl_tilde,
                     Perl_cedilla, Perl_ring
                   };
-    static HtmlEntityMapper *instance();
-    static void deleteInstance();
+    static HtmlEntityMapper &instance();
     SymType name2sym(const QCString &symName) const;
     const char *utf8(SymType symb,bool useInPrintf=FALSE) const;
     const char *html(SymType symb,bool useInPrintf=FALSE) const;
@@ -112,6 +112,7 @@ class HtmlEntityMapper
     void  validate();
     HtmlEntityMapper();
    ~HtmlEntityMapper();
+    NON_COPYABLE(HtmlEntityMapper)
     static HtmlEntityMapper *s_instance;
     std::unordered_map<std::string,SymType> m_name2sym;
 };

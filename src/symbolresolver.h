@@ -20,6 +20,7 @@
 
 #include "qcstring.h"
 #include "classdef.h"
+#include "construct.h"
 
 class Definition;
 class FileDef;
@@ -30,8 +31,9 @@ class MemberDef;
 class SymbolResolver
 {
   public:
-    explicit SymbolResolver(const FileDef *fileScope = 0);
+    explicit SymbolResolver(const FileDef *fileScope = nullptr);
    ~SymbolResolver();
+    NON_COPYABLE(SymbolResolver)
 
     // actions
 
@@ -57,7 +59,7 @@ class SymbolResolver
                                          bool mayBeUnlinkable=false,
                                          bool mayBeHidden=false)
     {
-      return toClassDefMutable(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden));
+      return toClassDefMutable(const_cast<ClassDef*>(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden)));
     }
 
     /** Find the symbool definition matching name within the scope set.
@@ -65,11 +67,14 @@ class SymbolResolver
      *  @param name    The name of the symbol.
      *  @param args    Argument list associated with the symbol (for functions)
      *  @param checkCV Check const/volatile qualifiers (for methods)
+     *  @param insideCode Is the symbol found in a code fragment
      */
     const Definition *resolveSymbol(const Definition *scope,
                                     const QCString &name,
                                     const QCString &args=QCString(),
-                                    bool checkCV=false);
+                                    bool checkCV=false,
+                                    bool insideCode=false
+                                   );
 
     /** Checks if symbol \a item is accessible from within \a scope.
      *  @returns -1 if \a item is not accessible or a number indicating how

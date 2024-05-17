@@ -16,19 +16,20 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <mutex>
 
 #include "tooltip.h"
 #include "definition.h"
-#include "outputgen.h"
+#include "outputlist.h"
 #include "util.h"
 #include "filedef.h"
 #include "doxygen.h"
 #include "config.h"
 
-static std::mutex                                      g_tooltipsMutex;
-static std::unordered_map<int, std::set<std::string> > g_tooltipsWrittenPerFile;
+static std::mutex                                                g_tooltipsMutex;
+static std::unordered_map<int, std::unordered_set<std::string> > g_tooltipsWrittenPerFile;
 
 class TooltipManager::Private
 {
@@ -47,11 +48,11 @@ TooltipManager::~TooltipManager()
 static QCString escapeId(const QCString &s)
 {
   QCString res=s;
-  for (uint i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
+  for (size_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
   return res;
 }
 
-void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
+void TooltipManager::addTooltip(const Definition *d)
 {
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   if (!sourceTooltips) return;
@@ -81,30 +82,27 @@ void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
   }
   id = "a" + id;
   p->tooltipInfo.insert(std::make_pair(id.str(),d));
-  //printf("%p: addTooltip(%s) ol=%d\n",this,id.data(),ol.id());
+  //printf("%p: addTooltip(%s)\n",this,id.data());
 }
 
-void TooltipManager::writeTooltips(CodeOutputInterface &ol)
+void TooltipManager::writeTooltips(OutputCodeList &ol)
 {
-  int id = ol.id();
-  std::unordered_map<int, std::set<std::string> >::iterator it;
   // critical section
+  std::lock_guard<std::mutex> lock(g_tooltipsMutex);
+
+  int id = ol.id();
+  auto it = g_tooltipsWrittenPerFile.find(id);
+  if (it==g_tooltipsWrittenPerFile.end()) // new file
   {
-    std::lock_guard<std::mutex> lock(g_tooltipsMutex);
-    it = g_tooltipsWrittenPerFile.find(id);
-    if (it==g_tooltipsWrittenPerFile.end()) // new file
-    {
-      it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
-    }
+    it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::unordered_set<std::string>())).first;
   }
 
-  for (const auto &kv : p->tooltipInfo)
+  for (const auto &[name,d] : p->tooltipInfo)
   {
-    bool written = it->second.find(kv.first)!=it->second.end();
+    bool written = it->second.find(name)!=it->second.end();
     if (!written) // only write tooltips once
     {
-      //printf("%p: writeTooltips(%s) ol=%d\n",this,kv.first.c_str(),ol.id());
-      const Definition *d = kv.second;
+      //printf("%p: writeTooltips(%s) ol=%d\n",this,name.c_str(),ol.id());
       DocLinkInfo docInfo;
       docInfo.name   = d->qualifiedName();
       docInfo.ref    = d->getReference();
@@ -128,14 +126,14 @@ void TooltipManager::writeTooltips(CodeOutputInterface &ol)
           decl = md->declaration();
         }
       }
-      ol.writeTooltip(kv.first.c_str(),                // id
+      ol.writeTooltip(name.c_str(),    // id
           docInfo,                         // symName
           decl,                            // decl
           d->briefDescriptionAsTooltip(),  // desc
           defInfo,
           declInfo
           );
-      it->second.insert(kv.first); // remember we wrote this tooltip for the given file id
+      it->second.insert(name); // remember we wrote this tooltip for the given file id
     }
   }
 }

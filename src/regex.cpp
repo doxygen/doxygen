@@ -170,7 +170,7 @@ class Ex::Private
 {
   public:
     /** Creates the private part */
-    Private(const std::string &pat) : pattern(pat)
+    Private(std::string_view pat) : pattern(pat)
     {
       data.reserve(100);
     }
@@ -178,7 +178,7 @@ class Ex::Private
 #if ENABLE_DEBUG
     void dump();
 #endif
-    bool matchAt(size_t tokenPos,size_t tokenLen,const std::string &str,
+    bool matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,
                  Match &match,size_t pos,int level) const;
 
     /** Flag indicating the expression was successfully compiled */
@@ -201,7 +201,7 @@ void Ex::Private::compile()
   if (pattern.empty()) return;
   const char *start = pattern.c_str();
   const char *ps = start;
-  char c;
+  char c = 0;
 
   int prevTokenPos=-1;
   int tokenPos=0;
@@ -445,7 +445,7 @@ void Ex::Private::dump()
  *  @param pos      The position in the input string to start with matching
  *  @param level    Recursion level (used for debugging)
  */
-bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,const std::string &str,Match &match,const size_t pos,int level) const
+bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,std::string_view str,Match &match,const size_t pos,int level) const
 {
   DBG("%d:matchAt(tokenPos=%zu, str='%s', pos=%zu)\n",level,tokenPos,pos<str.length() ? str.substr(pos).c_str() : "",pos);
   auto isStartIdChar = [](char c) { return isalpha(c) || c=='_'; };
@@ -488,36 +488,37 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,const std::string &str
                           &isStartIdChar,&isIdChar,&match,&level,&pos](SequenceType type) -> bool
   {
     size_t startIndex = index;
+    size_t len = str.length();
     PToken tok = data[++tokenPos];
     if (tok.kind()==PToken::Kind::Character) // 'x*' -> eat x's
     {
       char c_tok = tok.asciiValue();
-      while (index<=str.length() && str[index]==c_tok) { index++; if (type==Optional) break; }
+      while (index<len && str[index]==c_tok) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.isCharClass()) // '[a-f0-4]* -> eat matching characters
     {
-      while (index<=str.length() && matchCharClass(tokenPos,str[index])) { index++; if (type==Optional) break; }
+      while (index<len && matchCharClass(tokenPos,str[index])) { index++; if (type==Optional) break; }
       tokenPos+=tok.value()+1; // skip over character ranges + end token
     }
     else if (tok.kind()==PToken::Kind::Alpha) // '\a*' -> eat start id characters
     {
-      while (index<=str.length() && isStartIdChar(str[index])) { index++; if (type==Optional) break; }
+      while (index<len && isStartIdChar(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::AlphaNum) // '\w*' -> eat id characters
     {
-      while (index<=str.length() && isIdChar(str[index])) { index++; if (type==Optional) break; }
+      while (index<len && isIdChar(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::WhiteSpace) // '\s*' -> eat spaces
     {
-      while (index<=str.length() && isspace(str[index])) { index++; if (type==Optional) break; }
+      while (index<len && isspace(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::Digit) // '\d*' -> eat digits
     {
-      while (index<=str.length() && isdigit(str[index])) { index++; if (type==Optional) break; }
+      while (index<len && isdigit(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::Any) // '.*' -> eat all
@@ -530,7 +531,7 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,const std::string &str
       size_t tokenStart = ++tokenPos;
       while (tokenPos<tokenLen && data[tokenPos].kind()!=PToken::Kind::EndCapture) { tokenPos++; }
       Match rangeMatch;
-      rangeMatch.init(&str);
+      rangeMatch.init(str);
       bool found = matchAt(tokenStart,tokenPos,str,rangeMatch,index,level+1);
       if (found)
       {
@@ -645,13 +646,13 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,const std::string &str
   return true;
 }
 
-static std::string wildcard2regex(const std::string &pattern)
+static std::string wildcard2regex(std::string_view pattern)
 {
   std::string result="^"; // match start of input
-  char c;
-  const char *p = pattern.c_str();
-  while ((c=*p++))
+  result.reserve(pattern.length());
+  for (size_t i=0;i<pattern.length();i++)
   {
+    char c=pattern[i];
     switch(c)
     {
       case '*':
@@ -670,10 +671,10 @@ static std::string wildcard2regex(const std::string &pattern)
          result+='\\'; result+=c;  // escape
          break;
       case '[':
-         if (*p=='^') // don't escape ^ after [
+         if (i<pattern.length()-1 && pattern[i+1]=='^') // don't escape ^ after [
          {
            result+="[^";
-           p++;
+           i++;
          }
          else
          {
@@ -690,7 +691,7 @@ static std::string wildcard2regex(const std::string &pattern)
 }
 
 
-Ex::Ex(const std::string &pattern, Mode mode)
+Ex::Ex(std::string_view pattern, Mode mode)
   : p(std::make_unique<Private>(mode==Mode::RegEx ? pattern : wildcard2regex(pattern)))
 {
   p->compile();
@@ -700,15 +701,13 @@ Ex::Ex(const std::string &pattern, Mode mode)
 #endif
 }
 
-Ex::~Ex()
-{
-}
+Ex::~Ex() = default;
 
-bool Ex::match(const std::string &str,Match &match,size_t pos) const
+bool Ex::match(std::string_view str,Match &match,size_t pos) const
 {
   bool found=false;
   if (p->data.size()==0 || p->error) return found;
-  match.init(&str);
+  match.init(str);
 
   PToken tok = p->data[0];
   if (tok.kind()==PToken::Kind::BeginOfLine) // only test match at the given position
@@ -746,29 +745,29 @@ bool Ex::isValid() const
 
 //----------------------------------------------------------------------------------------
 
-bool search(const std::string &str,Match &match,const Ex &re,size_t pos)
+bool search(std::string_view str,Match &match,const Ex &re,size_t pos)
 {
   return re.match(str,match,pos);
 }
 
-bool search(const std::string &str,const Ex &re,size_t pos)
+bool search(std::string_view str,const Ex &re,size_t pos)
 {
   Match match;
   return re.match(str,match,pos);
 }
 
-bool match(const std::string &str,Match &match,const Ex &re)
+bool match(std::string_view str,Match &match,const Ex &re)
 {
   return re.match(str,match,0) && match.position()==0 && match.length()==str.length();
 }
 
-bool match(const std::string &str,const Ex &re)
+bool match(std::string_view str,const Ex &re)
 {
   Match match;
   return re.match(str,match,0) && match.position()==0 && match.length()==str.length();
 }
 
-std::string replace(const std::string &str,const Ex &re,const std::string &replacement)
+std::string replace(std::string_view str,const Ex &re,std::string_view replacement)
 {
   std::string result;
   Match match;

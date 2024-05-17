@@ -10,6 +10,7 @@ include_directories(
 
 add_executable(doxyapp
 doxyapp.cpp
+${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 include(ApplyEditbin)
 apply_editbin(doxyapp console)
@@ -38,6 +39,7 @@ endif()
 target_link_libraries(doxyapp
 doxymain
 md5
+sqlite3
 xml
 lodepng
 mscgen

@@ -56,20 +56,20 @@ class PrintDocVisitor
     void operator()(const DocSymbol &s)
     {
       indent_leaf();
-      const char *res = HtmlEntityMapper::instance()->utf8(s.symbol(),TRUE);
+      const char *res = HtmlEntityMapper::instance().utf8(s.symbol(),TRUE);
       if (res)
       {
         printf("%s",res);
       }
       else
       {
-        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
       }
     }
     void operator()(const DocEmoji &s)
     {
       indent_leaf();
-      const char *res = EmojiEntityMapper::instance()->name(s.index());
+      const char *res = EmojiEntityMapper::instance().name(s.index());
       if (res)
       {
         printf("%s",res);
@@ -212,12 +212,8 @@ class PrintDocVisitor
         case DocInclude::XmlInclude: printf("xmlinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;
         case DocInclude::Snippet: printf("snippet"); break;
-        case DocInclude::SnipWithLines: printf("snipwithlines"); break;
-        case DocInclude::SnippetDoc:
-        case DocInclude::IncludeDoc:
-          err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-              "Please create a bug report\n",__FILE__);
-          break;
+        case DocInclude::SnippetTrimLeft: printf("snippettrimleft"); break;
+        case DocInclude::SnippetWithLines: printf("snipwithlines"); break;
       }
       printf("\"/>");
     }
@@ -299,7 +295,19 @@ class PrintDocVisitor
     void operator()(const DocAutoListItem &li)
     {
       indent_pre();
-      printf("<li>\n");
+      switch (li.itemNumber())
+      {
+        case DocAutoList::Unchecked: // unchecked
+          printf("<li class=\"unchecked\">\n");
+          break;
+        case DocAutoList::Checked_x: // checked with x
+        case DocAutoList::Checked_X: // checked with X
+          printf("<li class=\"checked\">\n");
+          break;
+        default:
+          printf("<li>\n");
+          break;
+      }
       visitChildren(li);
       indent_post();
       printf("</li>\n");
@@ -341,6 +349,7 @@ class PrintDocVisitor
 	case DocSimpleSect::Invar: printf("invar"); break;
 	case DocSimpleSect::Remark: printf("remark"); break;
 	case DocSimpleSect::Attention: printf("attention"); break;
+	case DocSimpleSect::Important: printf("important"); break;
 	case DocSimpleSect::User: printf("user"); break;
 	case DocSimpleSect::Rcs: printf("rcs"); break;
 	case DocSimpleSect::Unknown: printf("unknown"); break;
@@ -385,6 +394,10 @@ class PrintDocVisitor
     {
       indent_pre();
       printf("<sect%d>\n",s.level());
+      if (s.title())
+      {
+        std::visit(*this, *s.title());
+      }
       visitChildren(s);
       indent_post();
       printf("</sect%d>\n",s.level());

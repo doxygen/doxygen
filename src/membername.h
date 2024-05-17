@@ -66,12 +66,11 @@ class MemberNameLinkedMap : public LinkedMap<MemberName>
 class MemberInfo
 {
   public:
-    MemberInfo(const MemberDef *md,Protection p,Specifier v,bool inh) :
-          m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh) {}
-   ~MemberInfo() = default;
+    MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh,bool vbc) :
+          m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh), m_virtBaseClass(vbc) {}
 
     // getters
-    const MemberDef *memberDef()                { return m_memberDef; }
+          MemberDef *memberDef()                { return m_memberDef; }
     const MemberDef *memberDef() const          { return m_memberDef; }
     Protection prot() const                     { return m_prot;      }
     Specifier  virt() const                     { return m_virt;      }
@@ -79,6 +78,7 @@ class MemberInfo
     QCString   scopePath() const                { return m_scopePath; }
     QCString   ambiguityResolutionScope() const { return m_ambiguityResolutionScope; }
     const ClassDef  *ambigClass() const         { return m_ambigClass; }
+    bool       virtualBaseClass() const         { return m_virtBaseClass; }
 
     // setters
     void setAmbiguityResolutionScope(const QCString &s) { m_ambiguityResolutionScope = s; }
@@ -86,13 +86,14 @@ class MemberInfo
     void setAmbigClass(const ClassDef *cd)              { m_ambigClass = cd; }
 
   private:
-    const MemberDef *m_memberDef;
+    MemberDef *    m_memberDef;
     Protection     m_prot;
     Specifier      m_virt;
     bool           m_inherited;
     QCString       m_scopePath;
     QCString       m_ambiguityResolutionScope;
-    const ClassDef *m_ambigClass = 0;
+    const ClassDef *m_ambigClass = nullptr;
+    bool           m_virtBaseClass;
 };
 
 class MemberNameInfo

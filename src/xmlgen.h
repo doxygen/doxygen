@@ -17,14 +17,15 @@
 
 class TextStream;
 
-class XMLCodeGenerator : public CodeOutputInterface
+class XMLCodeGenerator : public OutputCodeIntf
 {
   public:
+    XMLCodeGenerator(TextStream *t);
 
-    XMLCodeGenerator(TextStream &t);
-    virtual ~XMLCodeGenerator() { }
+    OutputType type() const override { return OutputType::XML; }
 
     void codify(const QCString &text) override;
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<XMLCodeGenerator>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
@@ -32,7 +33,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                      ) override;
-    void startCodeLine(bool) override;
+    void startCodeLine(int) override;
     void endCodeLine() override;
     void startFontClass(const QCString &colorClass) override;
     void endFontClass() override;
@@ -41,16 +42,18 @@ class XMLCodeGenerator : public CodeOutputInterface
                          const QCString &anchorId,int l,bool writeLineAnchor) override;
     void startCodeFragment(const QCString &) override;
     void endCodeFragment(const QCString &) override;
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     void finish();
 
   private:
-    TextStream &m_t;
+    TextStream *m_t;
     QCString m_refId;
     QCString m_external;
     int m_lineNumber;
     bool m_isMemberRef;
-    int m_col;
+    size_t m_col;
 
     bool m_insideCodeLine;
     bool m_normalHLNeedStartTag;

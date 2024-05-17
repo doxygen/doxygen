@@ -441,49 +441,10 @@ The following table gives an overview of the doxygen configuration settings and 
 <dt></dt>              <dd>SQLITE3_RECREATE_DB</dd>
 <dt>New in 1.8.20</dt>
 <dt></dt>              <dd>PYTHON_DOCSTRING</dd>
-<dt>New in 1.9.0</dt>
-<dt></dt>              <dd>DOT_UML_DETAILS</dd>
-<dt></dt>              <dd>DOT_WRAP_THRESHOLD</dd>
-<dt></dt>              <dd>RESOLVE_UNNAMED_PARAMS</dd>
-<dt>Obsolete in 1.9.0</dt>
-<dt></dt>              <dd>COLS_IN_ALPHA_INDEX</dd>
-<dt>New in 1.9.1</dt>
-<dt></dt>              <dd>CLANG_ADD_INC_PATHS</dd>
-<dt>New in 1.9.2</dt>
-<dt></dt>              <dd>FULL_SIDEBAR</dd>
-<dt></dt>              <dd>MATHJAX_VERSION</dd>
-<dt></dt>              <dd>SHOW_HEADERFILE</dd>
-<dt></dt>              <dd>WARN_IF_INCOMPLETE_DOC</dd>
-<dt>Obsolete  in 1.9.2</dt>
-<dt></dt>              <dd>DOCBOOK_PROGRAMLISTING</dd>
-<dt></dt>              <dd>LATEX_SOURCE_CODE</dd>
-<dt></dt>              <dd>OUTPUT_TEXT_DIRECTION</dd>
-<dt></dt>              <dd>RTF_SOURCE_CODE</dd>
-<dt></dt>              <dd>SORT_MEMBER_DOCS</dd>
-<dt>New in 1.9.3</dt>
-<dt></dt>              <dd>DIR_GRAPH_MAX_DEPTH</dd>
-<dt></dt>              <dd>DOCSET_FEEDURL</dd>
-<dt></dt>              <dd>OBFUSCATE_EMAILS</dd>
-<dt>Obsolete  in 1.9.3</dt>
-<dt></dt>              <dd>CLASS_DIAGRAMS</dd>
-<dt>New in 1.9.4</dt>
-<dt></dt>              <dd>CREATE_SUBDIRS_LEVEL</dd>
-<dt></dt>              <dd>WARN_LINE_FORMAT</dd>
-<dt>New in 1.9.5</dt>
-<dt></dt>              <dd>DOT_COMMON_ATTR</dd>
-<dt></dt>              <dd>DOT_EDGE_ATTR</dd>
-<dt></dt>              <dd>DOT_NODE_ATTR</dd>
-<dt></dt>              <dd>FORTRAN_COMMENT_AFTER</dd>
-<dt></dt>              <dd>HTML_COLORSTYLE</dd>
-<dt></dt>              <dd>INPUT_FILE_ENCODING</dd>
-<dt>Obsolete  in 1.9.5</dt>
-<dt></dt>              <dd>DOT_FONTNAME</dd>
-<dt></dt>              <dd>DOT_FONTSIZE</dd>
-<dt></dt>              <dd>DOT_TRANSPARENT</dd>
-<dt></dt>              <dd>FORMULA_TRANSPARENT</dd>
+<!-- PLACEHOLDER -->
 </dl>
 
-## Directives
+# Directives
 
 <dl>
 <dt>New in 1.2.1</dt>

@@ -22,16 +22,23 @@
 #include "docvisitor.h"
 #include "docnode.h"
 
+class OutputCodeList;
 class LatexCodeGenerator;
 class TextStream;
 
+enum class TexOrPdf
+{
+   NO,  //!< not called through texorpdf
+   TEX, //!< called through texorpdf as TeX (first) part
+   PDF, //!< called through texorpdf as PDF (second) part
+};
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
-                    const QCString &langExt,bool insideTabbing);
+    LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
+                    const QCString &langExt, int hierarchyLevel = 0);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -128,9 +135,9 @@ class LatexDocVisitor : public DocVisitor
 
     void filter(const QCString &str, const bool retainNewLine = false);
     void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor,bool refToTable=FALSE);
+                   const QCString &anchor,bool refToTable=false,bool refToSection=false);
     void endLink(const QCString &ref,const QCString &file,
-                 const QCString &anchor,bool refToTable=FALSE);
+                 const QCString &anchor,bool refToTable=false,bool refToSection=false, SectionType sectionType = SectionType::Anchor);
     QCString escapeMakeIndexChars(const char *s);
     void startDotFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption,
@@ -154,18 +161,21 @@ class LatexDocVisitor : public DocVisitor
     void incIndentLevel();
     void decIndentLevel();
     int indentLevel() const;
+    const char *getSectionName(int level) const;
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
     TextStream &m_t;
-    LatexCodeGenerator &m_ci;
+    OutputCodeList &m_ci;
+    LatexCodeGenerator &m_lcg;
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
-    bool m_insideTabbing;
     QCString m_langExt;
+    int m_hierarchyLevel;
+    TexOrPdf m_texOrPdf = TexOrPdf::NO;
 
     struct TableState
     {
@@ -191,7 +201,7 @@ class LatexDocVisitor : public DocVisitor
 
     void pushTableState()
     {
-      m_tableStateStack.push(TableState());
+      m_tableStateStack.emplace();
     }
     void popTableState()
     {

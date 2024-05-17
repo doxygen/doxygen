@@ -23,7 +23,7 @@
 static QCString getUniqueId(const MemberDef *md)
 {
   const MemberDef *def = md->memberDefinition();
-  if (def==0) def = md;
+  if (def==nullptr) def = md;
   QCString result = def->getReference()+"$"+
          def->getOutputFileBase()+"#"+
          def->anchor();
@@ -35,14 +35,14 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
   auto refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       QCString uniqueId = getUniqueId(rmd);
       auto it = m_usedNodes.find(uniqueId.str());
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -60,13 +60,13 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
         }
         QCString tooltip = rmd->briefDescriptionAsTooltip();
         DotNode *bn = new DotNode(
-            getNextNodeNumber(),
+            this,
             linkToText(rmd->getLanguage(),name,FALSE),
             tooltip,
             uniqueId,
             0 //distance
             );
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
         m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
@@ -133,7 +133,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
     name = md->qualifiedName();
   }
   QCString tooltip = md->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(getNextNodeNumber(),
+  m_startNode = new DotNode(this,
     linkToText(md->getLanguage(),name,FALSE),
     tooltip,
     uniqueId,
@@ -214,7 +214,7 @@ bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
   auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       return FALSE;
     }

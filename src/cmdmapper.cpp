@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -15,14 +15,7 @@
 
 #include "cmdmapper.h"
 
-/** Call representing a mapping from a command name to a command ID. */
-struct CommandMap
-{
-  const char *cmdName;
-  int cmdId;
-};
-
-CommandMap cmdMap[] =
+static const CommandMap g_cmdMap =
 {
   { "a",             CMD_EMPHASIS },
   { "addindex",      CMD_ADDINDEX },
@@ -44,6 +37,7 @@ CommandMap cmdMap[] =
   { "showdate",      CMD_SHOWDATE },
   { "dontinclude",   CMD_DONTINCLUDE },
   { "dotfile",       CMD_DOTFILE },
+  { "doxyconfig",    CMD_DOXYCONFIG },
   { "e",             CMD_EMPHASIS },
   { "em",            CMD_EMPHASIS },
   { "endicode",      CMD_ENDICODE },
@@ -60,6 +54,7 @@ CommandMap cmdMap[] =
   { "htmlinclude",   CMD_HTMLINCLUDE },
   { "htmlonly",      CMD_HTMLONLY },
   { "image",         CMD_IMAGE },
+  { "important",     CMD_IMPORTANT },
   { "include",       CMD_INCLUDE },
   { "internal",      CMD_INTERNAL },
   { "invariant",     CMD_INVARIANT },
@@ -89,12 +84,13 @@ CommandMap cmdMap[] =
   { "secreflist",    CMD_SECREFLIST },
   { "section",       CMD_SECTION },
   { "snippet",       CMD_SNIPPET },
-  { "snippetdoc",    CMD_SNIPPETDOC },
   { "snippetlineno", CMD_SNIPWITHLINES },
   { "subpage",       CMD_SUBPAGE },
   { "subsection",    CMD_SUBSECTION },
   { "subsubsection", CMD_SUBSUBSECTION },
   { "paragraph",     CMD_PARAGRAPH },
+  { "subparagraph",  CMD_SUBPARAGRAPH },
+  { "subsubparagraph",  CMD_SUBSUBPARAGRAPH },
   { "see",           CMD_SA },
   { "since",         CMD_SINCE },
   { "skip",          CMD_SKIP },
@@ -135,7 +131,6 @@ CommandMap cmdMap[] =
   { "manonly",       CMD_MANONLY },
   { "endmanonly",    CMD_ENDMANONLY },
   { "includelineno", CMD_INCWITHLINES },
-  { "includedoc",    CMD_INCLUDEDOC },
   { "inheritdoc",    CMD_INHERITDOC },
   { "mscfile",       CMD_MSCFILE },
   { "rtfonly",       CMD_RTFONLY },
@@ -159,12 +154,13 @@ CommandMap cmdMap[] =
   { "ifile",         CMD_IFILE },
   { "iliteral",      CMD_ILITERAL },
   { "endiliteral",   CMD_ENDILITERAL },
-  { 0,               0 },
+  { "ianchor" ,      CMD_IANCHOR },
+  { "iprefix" ,      CMD_IPREFIX },
 };
 
 //----------------------------------------------------------------------------
 
-CommandMap htmlTagMap[] =
+static const CommandMap g_htmlTagMap =
 {
   { "strong",     HTML_BOLD },
   { "center",     HTML_CENTER },
@@ -211,6 +207,9 @@ CommandMap htmlTagMap[] =
   { "u",          HTML_UNDERLINE },
   { "ins",        HTML_INS },
   { "del",        HTML_DEL },
+  { "thead",      HTML_THEAD },
+  { "tbody",      HTML_TBODY },
+  { "tfoot",      HTML_TFOOT },
   { "details",    HTML_DETAILS },
 
   { "c",            XML_C },
@@ -236,15 +235,11 @@ CommandMap htmlTagMap[] =
   { "term",         XML_TERM },
   { "value",        XML_VALUE },
   { "inheritdoc",   XML_INHERITDOC },
-  { 0,              0 }
 };
 
 //----------------------------------------------------------------------------
 
-Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,true);
-Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,false);
-
-int Mapper::map(const QCString &n)
+int Mapper::map(const QCString &n) const
 {
   if (n.isEmpty()) return 0;
   QCString name = n;
@@ -253,30 +248,27 @@ int Mapper::map(const QCString &n)
   return it!=m_map.end() ? it->second : 0;
 }
 
-QCString Mapper::find(const int n)
+QCString Mapper::find(const int n) const
 {
-  for (const auto &kv : m_map)
+  for (const auto &[name,id] : m_map)
   {
-    int curVal = kv.second;
-    if (curVal == n || (curVal == (n | SIMPLESECT_BIT))) return kv.first.c_str();
+    int curVal = id;
+    if (curVal == n || (curVal == (n | SIMPLESECT_BIT))) return name.c_str();
   }
   return QCString();
 }
 
-Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_cs(caseSensitive)
+Mapper::Mapper(const CommandMap &cm,bool caseSensitive) : m_map(cm), m_cs(caseSensitive)
 {
-  const CommandMap *p = cm;
-  while (p->cmdName)
-  {
-    m_map.insert(std::make_pair(p->cmdName,p->cmdId));
-    p++;
-  }
 }
 
-void Mappers::freeMappers()
+static Mapper g_cmdMapper(g_cmdMap,true);
+static Mapper g_htmlTagMapper(g_htmlTagMap,false);
+
+namespace Mappers
 {
-  delete cmdMapper;     cmdMapper     = 0;
-  delete htmlTagMapper; htmlTagMapper = 0;
+  const Mapper *cmdMapper     = &g_cmdMapper;
+  const Mapper *htmlTagMapper = &g_htmlTagMapper;
 }
 
 

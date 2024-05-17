@@ -30,6 +30,7 @@ class Entry;
 class ClassDef;
 class MemberList;
 class MemberDef;
+class ModuleDef;
 class MemberDefMutable;
 class OutputList;
 class Definition;
@@ -80,49 +81,16 @@ class VhdlDocGen
     {
       switch (prot)
       {
-        case Public:    return ENTITYCLASS;
-        case Protected: return PACKBODYCLASS;
-        case Private:   return ARCHITECTURECLASS;
-        case Package:   return PACKAGECLASS;
+        case Protection::Public:    return ENTITYCLASS;
+        case Protection::Protected: return PACKBODYCLASS;
+        case Protection::Private:   return ARCHITECTURECLASS;
+        case Protection::Package:   return PACKAGECLASS;
       }
       return ENTITYCLASS;
     }
 
-    enum VhdlKeyWords
-    {
-      LIBRARY=1,
-      ENTITY,
-      PACKAGE_BODY,
-      ARCHITECTURE,
-      PACKAGE,
-      ATTRIBUTE,
-      SIGNAL,
-      COMPONENT,
-      CONSTANT,
-      TYPE,
-      SUBTYPE,
-      FUNCTION,
-      RECORD,
-      PROCEDURE,
-      USE,
-      PROCESS,
-      PORT,
-      UNITS,
-      GENERIC,
-      INSTANTIATION,
-      GROUP,
-      VFILE,
-      SHAREDVARIABLE,
-      CONFIG,
-      ALIAS,
-      MISCELLANEOUS,
-      UCF_CONST
-    };
-
-    VhdlDocGen();
-    virtual ~VhdlDocGen();
     static void init();
-    static QCString convertFileNameToClassName(QCString name);
+    static QCString convertFileNameToClassName(const QCString &name);
     // --- used by vhdlscanner.l -----------
 
     static bool isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level);
@@ -197,19 +165,19 @@ class VhdlDocGen
 
     static bool writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
-    static void writeVhdlDeclarations(const MemberList*,OutputList&,const GroupDef*,const ClassDef*,const FileDef*,const NamespaceDef*);
+    static void writeVhdlDeclarations(const MemberList*,OutputList&,const GroupDef*,const ClassDef*,const FileDef*,const NamespaceDef*,const ModuleDef *);
 
     static void writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &ol,
-        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
         bool inGroup);
 
     static void writePlainVHDLDeclarations(const MemberList* ml,OutputList &ol,
-        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-        uint64_t specifier);
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
+        VhdlSpecifier specifier);
 
     static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
-        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-        const QCString &title,const QCString &subtitle,bool showEnumValues,int type);
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
+        const QCString &title,const QCString &subtitle,bool showEnumValues,VhdlSpecifier type);
 
     static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);
 
@@ -221,7 +189,7 @@ class VhdlDocGen
     static bool isNumber(const std::string& s);
     static QCString getProtectionName(int prot);
 
-    static void parseUCF(const char*  input,Entry* entity,const QCString &f,bool vendor);
+    static void parseUCF(const QCString &input,Entry* entity,const QCString &f,bool vendor);
 
     static const ClassDef*  findArchitecture(const ClassDef *cd);
 
@@ -234,9 +202,6 @@ class VhdlDocGen
     static void addBaseClass(ClassDef* cd,ClassDef *ent);
     static ClassDef* findVhdlClass(const QCString &className );
 
-    static void writeOverview(OutputList &ol);
-    static void writeOverview();
-
  // flowcharts
     static void createFlowChart(const MemberDef*);
     //static void addFlowImage(const TextStream &,const QCString &);
@@ -246,10 +211,10 @@ class VhdlDocGen
 
     static  bool isVhdlClass (const Entry *cu)
     {
-      return cu->spec==VhdlDocGen::ENTITY       ||
-             cu->spec==VhdlDocGen::PACKAGE      ||
-             cu->spec==VhdlDocGen::ARCHITECTURE ||
-             cu->spec==VhdlDocGen::PACKAGE_BODY;
+      return cu->vhdlSpec==VhdlSpecifier::ENTITY       ||
+             cu->vhdlSpec==VhdlSpecifier::PACKAGE      ||
+             cu->vhdlSpec==VhdlSpecifier::ARCHITECTURE ||
+             cu->vhdlSpec==VhdlSpecifier::PACKAGE_BODY;
     }
 
   static void resetCodeVhdlParserState();
@@ -335,7 +300,6 @@ class FlowChart
     static QCString printPlantUmlNode(const FlowChart &flo,bool,bool);
 
     FlowChart(int typ,const QCString &t,const QCString &ex,const QCString &label=QCString());
-    ~FlowChart();
 
 private:
     int id = 0;

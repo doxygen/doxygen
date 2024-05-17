@@ -23,6 +23,7 @@
 #include "linkedmap.h"
 #include "types.h"
 #include "membergroup.h"
+#include "construct.h"
 
 class GroupDef;
 
@@ -32,24 +33,40 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2);
 class MemberVector
 {
   public:
-    /* --- standard vector interface ---- */
-    using Ptr = const MemberDef *;
-    using Vec = std::vector<Ptr>;
-    using iterator = typename Vec::iterator;
-    using const_iterator = typename Vec::const_iterator;
-    using value_type = const MemberDef *;
-    using const_reference = const value_type&;
-    void push_back(const MemberDef *md)     { m_members.push_back(md); }
-    iterator begin()                        { return m_members.begin();   }
-    iterator end()                          { return m_members.end();     }
-    const_iterator begin() const            { return m_members.cbegin();  }
-    const_iterator end() const              { return m_members.cend();    }
-    bool empty() const                      { return m_members.empty();   }
-    size_t size() const                     { return m_members.size();    }
-    const_reference front() const           { return m_members.front();   }
-    const_reference back() const            { return m_members.back();    }
-    const_reference operator[](int index) const { return m_members[index];    }
-    const_reference operator[](size_t index) const { return m_members[index];    }
+    using T                = MemberDef*;
+    using Vec              = std::vector<T>;
+    using value_type       = Vec::value_type;
+    using allocator_type   = Vec::allocator_type;
+    using size_type        = Vec::size_type;
+    using difference_type  = Vec::difference_type;
+    using reference        = Vec::reference;
+    using const_reference  = Vec::const_reference;
+    using iterator         = Vec::iterator;
+    using const_iterator   = Vec::const_iterator;
+
+    void push_back( const T& value )        { m_members.push_back(value); }
+    void push_back( T&& value )             { m_members.push_back(std::move(value)); }
+
+    iterator erase( iterator pos )          { return m_members.erase(pos); }
+    iterator erase( const_iterator pos )    { return m_members.erase(pos); }
+
+          iterator begin()       noexcept   { return m_members.begin(); }
+    const_iterator begin() const noexcept   { return m_members.begin(); }
+          iterator end()         noexcept   { return m_members.end();   }
+    const_iterator end()   const noexcept   { return m_members.end();   }
+
+    size_type size() const noexcept         { return m_members.size();  }
+    bool empty()     const noexcept         { return m_members.empty(); }
+
+          reference front()                 { return m_members.front(); }
+    const_reference front() const           { return m_members.front(); }
+
+          reference back()                  { return m_members.back();  }
+    const_reference back() const            { return m_members.back();  }
+
+          reference operator[]( size_type pos )       { return m_members.operator[](pos); }
+    const_reference operator[]( size_type pos ) const { return m_members.operator[](pos); }
+
 
     static bool lessThan(const MemberDef *md1,const MemberDef *md2)
     {
@@ -59,19 +76,28 @@ class MemberVector
     {
       std::sort(m_members.begin(),m_members.end(),lessThan);
     }
-    void inSort(const MemberDef *md)
+    void inSort(MemberDef *md)
     {
       m_members.insert( std::upper_bound( m_members.begin(), m_members.end(), md, lessThan), md);
     }
     void remove(const MemberDef *md)
     {
       auto it = std::find(m_members.begin(),m_members.end(),md);
-      if (it!=m_members.end()) m_members.erase(it);
+      if (it!=m_members.end()) erase(it);
     }
-    bool contains(const MemberDef *md)
+    bool contains(const MemberDef *md) const
     {
-      auto it = std::find(m_members.begin(),m_members.end(),md);
-      return it!=m_members.end();
+      return std::find(m_members.begin(),m_members.end(),md)!=m_members.end();
+    }
+    MemberDef *find(const QCString &name)
+    {
+      auto it = std::find_if(m_members.begin(),m_members.end(),[name=name](auto &el) { return el->name()==name; });
+      if (it != m_members.end())
+      {
+        return *it;
+      }
+
+      return nullptr;
     }
   protected:
     Vec m_members;
@@ -83,6 +109,7 @@ class MemberList : public MemberVector
   public:
     MemberList(MemberListType lt,MemberListContainer container);
    ~MemberList();
+    NON_COPYABLE(MemberList)
     MemberListType listType() const { return m_listType; }
     static QCString listTypeAsString(MemberListType type);
     MemberListContainer container() const { return m_container; }
@@ -96,20 +123,20 @@ class MemberList : public MemberVector
     void countDocMembers();
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,bool inGroup,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,const ModuleDef *mod,
                int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                const QCString &title,const QCString &subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
-               const ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods) const;
+               const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType_pubMethods) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,const QCString &title,
                bool showEnumValues=FALSE,bool showInline=FALSE) const;
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
-               const QCString &scopeName, const DefinitionMutable *container) const;
-    void writeTagFile(TextStream &,bool useQualifiedName=false);
+               const QCString &scopeName, const DefinitionMutable *container, int hierarchyLevel=0) const;
+    void writeTagFile(TextStream &,bool useQualifiedName=false,bool showNamespaceMembers=true);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);
     void addListReferences(Definition *def);
@@ -139,6 +166,7 @@ class MemberLists : public std::vector< std::unique_ptr<MemberList> >
 {
   public:
     MemberLists() = default;
+   ~MemberLists() = default;
     const std::unique_ptr<MemberList> &get(MemberListType lt,MemberListContainer con)
     {
       // find the list with the given type
@@ -150,8 +178,7 @@ class MemberLists : public std::vector< std::unique_ptr<MemberList> >
     }
 
   private:
-    MemberLists(const MemberLists &) = delete;
-    MemberLists &operator=(const MemberLists &) = delete;
+    ONLY_DEFAULT_MOVABLE(MemberLists)
 };
 
 

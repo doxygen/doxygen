@@ -13,7 +13,6 @@
 *
 */
 
-#include <sstream>
 #include <mutex>
 #include <regex>
 
@@ -30,6 +29,7 @@
 #include "dotnode.h"
 #include "dotfilepatcher.h"
 #include "fileinfo.h"
+#include "portable.h"
 
 #define MAP_CMD "cmapx"
 
@@ -46,7 +46,7 @@ static bool sameMd5Signature(const QCString &baseName,
   bool same = false;
   char md5stored[33];
   md5stored[0]=0;
-  std::ifstream f(baseName.str()+".md5",std::ifstream::in | std::ifstream::binary);
+  std::ifstream f = Portable::openInputStream(baseName+".md5",true);
   if (f.is_open())
   {
     // read checksum
@@ -156,9 +156,9 @@ bool DotGraph::prepareDotFile()
   }
 
   char sigStr[33];
-  uchar md5_sig[16];
+  uint8_t md5_sig[16];
   // calculate md5
-  MD5Buffer(m_theGraph.data(), m_theGraph.length(), md5_sig);
+  MD5Buffer(m_theGraph.data(), static_cast<unsigned int>(m_theGraph.length()), md5_sig);
   // convert result to a string
   MD5SigToString(md5_sig, sigStr);
 
@@ -177,7 +177,7 @@ bool DotGraph::prepareDotFile()
   // need to rebuild the image
 
   // write .dot file because image was new or has changed
-  std::ofstream f(absDotName().str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(absDotName());
   if (!f.is_open())
   {
     err("Could not open file %s for writing\n",qPrint(absDotName()));
@@ -242,7 +242,7 @@ void DotGraph::generateCode(TextStream &t)
         int mapId = DotManager::instance()->
                createFilePatcher(m_fileName)->
                addSVGObject(m_baseName,absImgName(),m_relPath);
-        t << "<!-- SVG " << mapId << " -->\n";
+        t << "<!-- " << "SVG " << mapId << " -->";
       }
       if (!m_noDivTag) t << "</div>\n";
     }

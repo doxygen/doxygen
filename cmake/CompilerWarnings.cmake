@@ -68,6 +68,9 @@ function(set_project_warnings project_name)
       -Wno-format-nonliteral
       -Wno-shorten-64-to-32
 
+      # allow comma removal for empty __VA_ARGS__ in ,##__VA_ARGS__
+      -Wno-gnu-zero-variadic-macro-arguments
+
       # enable to turn warnings into errors
       #-Werror
   )

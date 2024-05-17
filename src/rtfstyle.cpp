@@ -104,8 +104,12 @@ Rtf_Style_Default rtf_Style_Default[] =
     "\\sbasedon0 \\snext0 heading 4;}{\\*\\cs10 \\additive Default Paragraph Font"
   },
   { "Heading5",
-    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid ",
+    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs16\\cgrid ",
     "\\sbasedon0 \\snext0 heading 5;}{\\*\\cs10 \\additive Default Paragraph Font"
+  },
+  { "Heading6",
+    "\\s5\\sb90\\sa30\\keepn\\widctlpar\\adjustright \\b\\f1\\fs12\\cgrid ",
+    "\\sbasedon0 \\snext0 heading 6;}{\\*\\cs10 \\additive Default Paragraph Font"
   },
   { "Title",
     "\\s15\\qc\\sb240\\sa60\\widctlpar\\outlinelevel0\\adjustright \\b\\f1\\fs32\\kerning28\\cgrid ",
@@ -226,9 +230,54 @@ Rtf_Style_Default rtf_Style_Default[] =
   RTF_ListEnum(12,152,153,4680),
   RTF_ListEnum(13,153,153,5040),
 
+  { nullptr,
+    nullptr,
+    nullptr
+  }
+};
+
+#define RTF_ListElement(id,lvl,pos,chr)   \
+  { id, lvl,                              \
+    "\\listlevel\\levelnfc23\\leveljc0\\levelstartat1\\levelfollow0{\\leveltext \\'01\\u"#chr" ?;}{\\levelnumbers;}\\f8\\dbch\\af3\\fi-360\\li"#pos, \
+    "{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\nowidctlpar\\cf0\\hich\\af0\\langfe2052\\dbch\\af0\\afs24\\lang1081\\loch\\f0\\fs24\\lang1033{\\listtext\\pard\\plain \\hich\\af3\\dbch\\af3\\loch\\f8 \\'01\\u"#chr"\\tab}\\ilvl"#lvl"\\ls"#id" \\li0\\ri0\\lin0\\rin0\\fi-360\\tx"#pos"\\li"#pos"\\ri0\\lin"#pos"\\rin0\\fi-360\\kerning1\\hich\\af4\\dbch\\af5\\rtlch \\ltrch\\loch\\fs20" \
+  }
+
+Rtf_Table_Default rtf_Table_Default[] =
+{
+  RTF_ListElement( 1,0, 360, 8226),
+  RTF_ListElement( 1,1, 720, 9702),
+  RTF_ListElement( 1,2,1080, 9642),
+  RTF_ListElement( 1,3,1440, 8226),
+  RTF_ListElement( 1,4,1800, 9702),
+  RTF_ListElement( 1,5,2160, 9642),
+  RTF_ListElement( 1,6,2520, 8662),
+  RTF_ListElement( 1,7,2880, 9702),
+  RTF_ListElement( 1,8,3600, 9642),
+
+  RTF_ListElement( 2,0, 360, 9744),
+  RTF_ListElement( 2,1, 720, 9744),
+  RTF_ListElement( 2,2,1080, 9744),
+  RTF_ListElement( 2,3,1440, 9744),
+  RTF_ListElement( 2,4,1800, 9744),
+  RTF_ListElement( 2,5,2160, 9744),
+  RTF_ListElement( 2,6,2520, 9744),
+  RTF_ListElement( 2,7,2880, 9744),
+  RTF_ListElement( 2,8,3600, 9744),
+
+  RTF_ListElement( 3,0, 360, 9746),
+  RTF_ListElement( 3,1, 720, 9746),
+  RTF_ListElement( 3,2,1080, 9746),
+  RTF_ListElement( 3,3,1440, 9746),
+  RTF_ListElement( 3,4,1800, 9746),
+  RTF_ListElement( 3,5,2160, 9746),
+  RTF_ListElement( 3,6,2520, 9746),
+  RTF_ListElement( 3,7,2880, 9746),
+  RTF_ListElement( 3,8,3600, 9746),
+
   { 0,
     0,
-    0
+    nullptr,
+    nullptr
   }
 };
 
@@ -254,7 +303,7 @@ bool StyleData::setStyle(const std::string &command, const std::string &styleNam
   reg::Match match;
   if (!reg::search(command,match,s_clause))
   {
-    err("Style sheet '%s' contains no '\\s' clause.\n{%s}", styleName.c_str(), command.c_str());
+    err("Style sheet '%s' contains no '\\s' clause.\n{%s}\n", styleName.c_str(), command.c_str());
     return false;
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
@@ -275,12 +324,12 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF style sheet file %s. Using defaults.",qPrint(name));
+    err("Can't open RTF style sheet file %s. Using defaults.\n",qPrint(name));
     return;
   }
   msg("Loading RTF style sheet %s...\n",qPrint(name));
 
-  uint lineNr=1;
+  uint32_t lineNr=1;
 
   for (std::string line ; getline(file,line) ; ) // for each line
   {
@@ -317,12 +366,12 @@ void loadExtensions(const QCString &name)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF extensions file %s. Using defaults.",qPrint(name));
+    err("Can't open RTF extensions file %s. Using defaults.\n",qPrint(name));
     return;
   }
   msg("Loading RTF extensions %s...\n",qPrint(name));
 
-  uint lineNr=1;
+  uint32_t lineNr=1;
 
   for (std::string line ; getline(file,line) ; ) // for each line
   {

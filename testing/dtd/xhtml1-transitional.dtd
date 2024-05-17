@@ -36,6 +36,9 @@
        - added source tag
      - adjusted possible children of a number of elements so they support the picture tag
      - added details and summary tag
+     - added placeholder to input tag
+     - added allowfullscreen to iframe tag
+     - added data-start and data-end to div tag (needed for code folding)
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -417,6 +420,7 @@
   align       %ImgAlign;     #IMPLIED
   height      %Length;       #IMPLIED
   width       %Length;       #IMPLIED
+  allowfullscreen (true|false)   "true"
   >
 
 <!-- alternate content container for non frame-based rendering -->
@@ -445,6 +449,8 @@
 <!ATTLIST div
   %attrs;
   %TextAlign;
+  data-start %Text; #IMPLIED
+  data-end   %Text; #IMPLIED
   >
 
 <!ELEMENT details %Flow;>  <!-- generic language/style container -->
@@ -976,6 +982,7 @@
   onchange    %Script;       #IMPLIED
   accept      %ContentTypes; #IMPLIED
   align       %ImgAlign;     #IMPLIED
+  placeholder CDATA          #IMPLIED
   >
 
 <!ELEMENT select (optgroup|option)+>  <!-- option selector -->

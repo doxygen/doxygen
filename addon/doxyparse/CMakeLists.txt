@@ -10,6 +10,7 @@ include_directories(
 
 add_executable(doxyparse
 doxyparse.cpp
+${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 include(ApplyEditbin)
@@ -27,6 +28,7 @@ endif()
 target_link_libraries(doxyparse
 doxymain
 md5
+sqlite3
 xml
 lodepng
 mscgen

@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -22,6 +20,7 @@
 
 #include "types.h"
 #include "reflist.h"
+#include "construct.h"
 
 #ifdef _MSC_VER
 // To disable 'inherits via dominance' warnings with MSVC.
@@ -65,7 +64,7 @@ struct BodyInfo
     int      defLine = -1;     //!< line number of the start of the definition
     int      startLine = -1;   //!< line number of the start of the definition's body
     int      endLine = -1;     //!< line number of the end of the definition's body
-    const FileDef *fileDef = 0;      //!< file definition containing the function body
+    const FileDef *fileDef = nullptr;      //!< file definition containing the function body
 };
 
 /** The common base class of all entity definitions found in the sources.
@@ -76,18 +75,21 @@ struct BodyInfo
 class Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(Definition)
+
     /*! Types of derived classes */
     enum DefType
     {
       TypeClass      = 0,
       TypeFile       = 1,
       TypeNamespace  = 2,
-      TypeMember     = 3,
-      TypeGroup      = 4,
-      TypePackage    = 5,
-      TypePage       = 6,
-      TypeDir        = 7,
-      TypeConcept    = 8
+      TypeModule     = 3,
+      TypeMember     = 4,
+      TypeGroup      = 5,
+      TypePackage    = 6,
+      TypePage       = 7,
+      TypeDir        = 8,
+      TypeConcept    = 9,
     };
 
 
@@ -105,7 +107,7 @@ class Definition
     virtual bool isAlias() const = 0;
 
     /*! Returns the name of the definition */
-    virtual QCString name() const = 0;
+    virtual const QCString &name() const = 0;
 
     /*! Returns TRUE iff this definition has an artificially generated name
      * (typically starting with a @) that is used for nameless definitions
@@ -116,7 +118,7 @@ class Definition
     virtual QCString displayName(bool includeScope=TRUE) const = 0;
 
     /*! Returns the local name without any scope qualifiers. */
-    virtual QCString localName() const = 0;
+    virtual const QCString &localName() const = 0;
 
     /*! Returns the fully qualified name of this definition
      */
@@ -219,10 +221,13 @@ class Definition
     /*! Returns TRUE iff this item is supposed to be hidden from the output. */
     virtual bool isHidden() const = 0;
 
-    /*! returns TRUE if this entity was artificially introduced, for
+    /*! Returns TRUE if this entity was artificially introduced, for
      *  instance because it is used to show a template instantiation relation.
      */
     virtual bool isArtificial() const = 0;
+
+    /*! Returns TRUE iff this entity was exported from a C++20 module. */
+    virtual bool isExported() const = 0;
 
     /*! If this definition was imported via a tag file, this function
      *  returns the tagfile for the external project. This can be
@@ -289,9 +294,6 @@ class Definition
     virtual void _setSymbolName(const QCString &name) = 0;
     virtual QCString _symbolName() const = 0;
 
-    // ---------------------------------
-    virtual ~Definition() = default;
-
   private:
     friend class DefinitionImpl;
     friend DefinitionMutable* toDefinitionMutable(Definition *);
@@ -303,7 +305,7 @@ class Definition
 class DefinitionMutable
 {
   public:
-
+    ABSTRACT_BASE_CLASS(DefinitionMutable)
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -345,6 +347,7 @@ class DefinitionMutable
     virtual void setHidden(bool b) = 0;
 
     virtual void setArtificial(bool b) = 0;
+    virtual void setExported(bool b) = 0;
     virtual void setLanguage(SrcLangExt lang) = 0;
     virtual void setLocalName(const QCString &name) = 0;
 
@@ -352,16 +355,16 @@ class DefinitionMutable
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void makePartOfGroup(const GroupDef *gd) = 0;
+    virtual void makePartOfGroup(GroupDef *gd) = 0;
 
     /*! Add the list of anchors that mark the sections that are found in the
      * documentation.
      */
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
-    virtual void addSourceReferencedBy(const MemberDef *d) = 0;
-    virtual void addSourceReferences(const MemberDef *d) = 0;
+    virtual void addSourceReferencedBy(MemberDef *d) = 0;
+    virtual void addSourceReferences(MemberDef *d) = 0;
     virtual void mergeRefItems(Definition *d) = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addInnerCompound(Definition *d) = 0;
     virtual void addSectionsToIndex() = 0;
     virtual void mergeReferences(const Definition *other) = 0;
     virtual void mergeReferencedBy(const Definition *other) = 0;
@@ -382,9 +385,6 @@ class DefinitionMutable
     virtual void writeDocAnchorsToTagFile(TextStream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
 
-    // ---------------------------------
-    virtual ~DefinitionMutable() = default;
-
   private:
     friend Definition* toDefinition(DefinitionMutable *);
     virtual Definition *toDefinition_() = 0;
@@ -392,14 +392,13 @@ class DefinitionMutable
 
 Definition          *toDefinition(DefinitionMutable *dm);
 DefinitionMutable   *toDefinitionMutable(Definition *d);
-DefinitionMutable   *toDefinitionMutable(const Definition *d);
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
  *  and ending with line \a endLine. The result is returned as a string
  *  via \a result. The function returns TRUE if successful and FALSE
  *  in case of an error.
  */
-bool readCodeFragment(const QCString &fileName,
+bool readCodeFragment(const QCString &fileName,bool isMacro,
                       int &startLine,int &endLine,
                       QCString &result);
 #endif

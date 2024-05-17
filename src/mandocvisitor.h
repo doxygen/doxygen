@@ -20,19 +20,20 @@
 #define MANDOCVISITOR_H
 
 #include <iostream>
+#include <array>
 
 #include "qcstring.h"
 #include "docvisitor.h"
 #include "docnode.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class ManDocVisitor : public DocVisitor
 {
   public:
-    ManDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
+    ManDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -122,21 +123,21 @@ class ManDocVisitor : public DocVisitor
     //--------------------------------------
 
     TextStream &m_t;
-    CodeOutputInterface &m_ci;
+    OutputCodeList &m_ci;
     bool m_insidePre;
     bool m_hide;
     bool m_firstCol;
     int  m_indent;
     QCString m_langExt;
+
+    struct ManListItemInfo
+    {
+      int number;
+      char type;
+    };
+    static const int maxIndentLevels = 13;
+
+    std::array<ManListItemInfo,maxIndentLevels> m_listItemInfo;
 };
 
-struct ManListItemInfo
-{
-  int number;
-  char type;
-};
-
-const int man_maxIndentLevels = 13;
-
-extern ManListItemInfo man_listItemInfo[man_maxIndentLevels];
 #endif

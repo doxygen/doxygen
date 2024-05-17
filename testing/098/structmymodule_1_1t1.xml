@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structmymodule_1_1t1" kind="type" language="Fortran" prot="public" abstract="yes">
+    <compoundname>mymodule::t1</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structmymodule_1_1t1_1ab1f2a4ba1fea02505c62a0cd41f447d1" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>procedure(<ref refid="interfacemymodule_1_1abstractproc" kindref="compound">abstractproc</ref>), deferred</type>
+        <definition>procedure(abstractproc), deferred mymodule::t1::deferredproc</definition>
+        <argsstring>(this, i)</argsstring>
+        <name>deferredproc</name>
+        <qualifiedname>mymodule::t1::deferredproc</qualifiedname>
+        <param>
+          <type>class(<ref refid="structmymodule_1_1t1" kindref="compound">t1</ref>), intent(inout)</type>
+          <defname>this</defname>
+        </param>
+        <param>
+          <type>integer, intent(in)</type>
+          <defname>i</defname>
+        </param>
+        <briefdescription>
+          <para>brief doc </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="098_abstract_type.f03" line="15" column="1" bodyfile="098_abstract_type.f03" bodystart="15" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="098_abstract_type.f03" line="12" column="1" bodyfile="098_abstract_type.f03" bodystart="12" bodyend="16"/>
+    <listofallmembers>
+      <member refid="structmymodule_1_1t1_1ab1f2a4ba1fea02505c62a0cd41f447d1" prot="public" virt="pure-virtual">
+        <scope>mymodule::t1</scope>
+        <name>deferredproc</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

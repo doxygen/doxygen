@@ -18,8 +18,7 @@
 
 #include <stdlib.h>
 
-#include <fstream>
-
+#include "portable.h"
 #include "defgen.h"
 #include "doxygen.h"
 #include "message.h"
@@ -46,7 +45,7 @@ static inline void writeDEFString(TextStream &t,const QCString &s)
   if (!s.isEmpty())
   {
     const char* p=s.data();
-    char c;
+    char c = 0;
 
     while ((c = *(p++)))
     {
@@ -118,19 +117,19 @@ static void generateDEFForMember(const MemberDef *md,
   t << memPrefix << "virt = ";
   switch (md->virtualness())
   {
-    case Normal:  t << "normal;\n"; break;
-    case Virtual: t << "virtual;\n"; break;
-    case Pure:    t << "pure-virtual;\n"; break;
+    case Specifier::Normal:  t << "normal;\n"; break;
+    case Specifier::Virtual: t << "virtual;\n"; break;
+    case Specifier::Pure:    t << "pure-virtual;\n"; break;
     default: ASSERT(0);
   }
 
   t << memPrefix << "prot = ";
   switch(md->protection())
   {
-    case Public:    t << "public;\n"; break;
-    case Protected: t << "protected;\n"; break;
-    case Private:   t << "private;\n"; break;
-    case Package:   t << "package;\n"; break;
+    case Protection::Public:    t << "public;\n"; break;
+    case Protection::Protected: t << "protected;\n"; break;
+    case Protection::Private:   t << "private;\n"; break;
+    case Protection::Package:   t << "package;\n"; break;
   }
 
   if (md->memberType()!=MemberType_Define &&
@@ -153,7 +152,7 @@ static void generateDEFForMember(const MemberDef *md,
     auto defIt = defAl.begin();
     for (const Argument &a : declAl)
     {
-      const Argument *defArg = 0;
+      const Argument *defArg = nullptr;
       if (defIt!=defAl.end())
       {
         defArg = &(*defIt);
@@ -198,7 +197,7 @@ static void generateDEFForMember(const MemberDef *md,
     }
   }
   else if (  md->memberType()==MemberType_Define
-      && md->argsString()!=0)
+      && md->argsString()!=nullptr)
   {
     QCString defPrefix = "  " + memPrefix + "def-";
     for (const Argument &a : md->argumentList())
@@ -333,7 +332,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 
   if (cd->isReference()) return; // skip external references.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
-  if (cd->templateMaster()!=0) return; // skip generated template instances.
+  if (cd->templateMaster()!=nullptr) return; // skip generated template instances.
 
   t << cd->compoundTypeString() << " = {\n";
   t << "  cp-id     = '" << cd->getOutputFileBase() << "';\n";
@@ -347,17 +346,17 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
     t << "    ref-prot = ";
     switch (bcd.prot)
     {
-      case Public:    t << "public;\n"; break;
-      case Package: // package scope is not possible
-      case Protected: t << "protected;\n"; break;
-      case Private:   t << "private;\n"; break;
+      case Protection::Public:    t << "public;\n"; break;
+      case Protection::Package: // package scope is not possible
+      case Protection::Protected: t << "protected;\n"; break;
+      case Protection::Private:   t << "private;\n"; break;
     }
     t << "    ref-virt = ";
     switch(bcd.virt)
     {
-      case Normal:  t << "non-virtual;";  break;
-      case Virtual: t << "virtual;";      break;
-      case Pure:    t << "pure-virtual;"; break;
+      case Specifier::Normal:  t << "non-virtual;";  break;
+      case Specifier::Virtual: t << "virtual;";      break;
+      case Specifier::Pure:    t << "pure-virtual;"; break;
     }
     t << "\n  };\n";
   }
@@ -370,17 +369,17 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
     t << "    ref-prot = ";
     switch (bcd.prot)
     {
-      case Public:    t << "public;\n"; break;
-      case Package: // packet scope is not possible!
-      case Protected: t << "protected;\n"; break;
-      case Private:   t << "private;\n"; break;
+      case Protection::Public:    t << "public;\n"; break;
+      case Protection::Package: // packet scope is not possible!
+      case Protection::Protected: t << "protected;\n"; break;
+      case Protection::Private:   t << "private;\n"; break;
     }
     t << "    ref-virt = ";
     switch (bcd.virt)
     {
-      case Normal:  t << "non-virtual;";  break;
-      case Virtual: t << "virtual;";      break;
-      case Pure:    t << "pure-virtual;"; break;
+      case Specifier::Normal:  t << "non-virtual;";  break;
+      case Specifier::Virtual: t << "virtual;";      break;
+      case Specifier::Pure:    t << "pure-virtual;"; break;
     }
     t << "\n  };\n";
   }
@@ -534,7 +533,7 @@ void generateDEF()
   }
 
   QCString fileName=outputDirectory+"/doxygen.def";
-  std::ofstream f(fileName.str(),std::ostream::out | std::ostream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));

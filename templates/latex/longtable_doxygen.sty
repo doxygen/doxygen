@@ -164,7 +164,7 @@
   \ifdim \dimen@>\z@\vfil\break\fi
       \global\@colroom\@colht
   \ifvoid\LT@foot\else
-    \advance\vsize-\ht\LT@foot
+    \global\advance\vsize-\ht\LT@foot
     \global\advance\@colroom-\ht\LT@foot
     \dimen@\pagegoal\advance\dimen@-\ht\LT@foot\pagegoal\dimen@
     \maxdepth\z@
@@ -193,9 +193,13 @@
     \LT@final@warn
   \fi
   \endgraf\penalty -\LT@end@pen
+  \ifvoid\LT@foot\else
+    \global\advance\vsize\ht\LT@foot
+    \global\advance\@colroom\ht\LT@foot
+    \dimen@\pagegoal\advance\dimen@\ht\LT@foot\pagegoal\dimen@
+  \fi
   \endgroup
   \global\@mparbottom\z@
-  \pagegoal\vsize
   \endgraf\penalty\z@\addvspace\LTpost
   \ifvoid\footins\else\insert\footins{}\fi}
 \def\LT@nofcols#1&{%
@@ -392,18 +396,17 @@
       \setbox\z@\vbox{\unvbox\@cclv}%
       \ifdim \ht\LT@lastfoot>\ht\LT@foot
         \dimen@\pagegoal
+        \advance\dimen@\ht\LT@foot
         \advance\dimen@-\ht\LT@lastfoot
         \ifdim\dimen@<\ht\z@
           \setbox\@cclv\vbox{\unvbox\z@\copy\LT@foot\vss}%
           \@makecol
           \@outputpage
+            \global\vsize\@colroom
           \setbox\z@\vbox{\box\LT@head}%
         \fi
       \fi
-      \global\@colroom\@colht
-      \global\vsize\@colht
-      \vbox
-        {\unvbox\z@\box\ifvoid\LT@lastfoot\LT@foot\else\LT@lastfoot\fi}%
+      \unvbox\z@\ifvoid\LT@lastfoot\copy\LT@foot\else\box\LT@lastfoot\fi
     \fi
   \else
     \setbox\@cclv\vbox{\unvbox\@cclv\copy\LT@foot\vss}%
@@ -438,7 +441,15 @@
   \the\LT@p@ftn
   \global\LT@p@ftn{}%
   \hfil}
-\def\LT@p@ftntext#1{%
+%% added \long to prevent:
+% LaTeX Warning: Command \LT@p@ftntext  has changed.
+%
+% from the original repository (https://github.com/latex3/latex2e/blob/develop/required/tools/longtable.dtx):
+% \changes{v4.15}{2021/03/28}
+%      {make long for gh/364}
+% Inside the `p' column, just save up the footnote text in a token
+% register.
+\long\def\LT@p@ftntext#1{%
   \edef\@tempa{\the\LT@p@ftn\noexpand\footnotetext[\the\c@footnote]}%
   \global\LT@p@ftn\expandafter{\@tempa{#1}}}%
 

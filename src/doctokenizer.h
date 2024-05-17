@@ -24,6 +24,7 @@
 
 #include "htmlattrib.h"
 #include "qcstring.h"
+#include "construct.h"
 
 enum Tokens
 {
@@ -64,15 +65,15 @@ enum Tokens
   RetVal_CopyDoc        = 0x10015,
   RetVal_EndInternal    = 0x10016,
   RetVal_EndParBlock    = 0x10017,
-  RetVal_EndHtmlDetails = 0x10018
+  RetVal_EndHtmlDetails = 0x10018,
+  RetVal_SubSubParagraph= 0x10019,
 };
 
-#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? "@" : "\\")
+#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
 
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
 {
-  TokenInfo() : isEnumList(FALSE), indent(0), id(-1), endTag(FALSE), emptyTag(FALSE), paramDir(Unspecified) {}
   // command token
   QCString name;
 
@@ -83,6 +84,7 @@ struct TokenInfo
 
   // list token info
   bool isEnumList = false;
+  bool isCheckedList = false;
   int indent = 0;
 
   // sections
@@ -122,10 +124,10 @@ class DocTokenizer
   public:
     DocTokenizer();
    ~DocTokenizer();
+    NON_COPYABLE(DocTokenizer)
 
     TokenInfo *token();
-    TokenInfo *newToken();
-    void replaceToken(TokenInfo *newToken);
+    [[maybe_unused]] TokenInfo *resetToken();
 
     // helper functions
     static const char *tokToString(int token);
@@ -137,7 +139,8 @@ class DocTokenizer
     // operations on the scanner
     void findSections(const QCString &input,const Definition *d,
         const QCString &fileName);
-    void init(const char *input,const QCString &fileName,bool markdownSupport);
+    void init(const char *input,const QCString &fileName,
+              bool markdownSupport, bool insideHtmlLink);
     void cleanup();
     void pushContext();
     bool popContext();
@@ -167,6 +170,7 @@ class DocTokenizer
     void setStatePattern();
     void setStateLink();
     void setStateCite();
+    void setStateDoxyConfig();
     void setStateRef();
     void setStateInternalRef();
     void setStateText();
@@ -186,14 +190,11 @@ class DocTokenizer
     void setStateILine();
     void setStateQuotedString();
     void setStateShowDate();
+    void setStatePrefix();
 
   private:
     struct Private;
     std::unique_ptr<Private> p;
 };
-
-// globals
-//extern TokenInfo *g_token;
-
 
 #endif

@@ -16,11 +16,10 @@
 #ifndef MARKDOWN_H
 #define MARKDOWN_H
 
-#include <functional>
+#include <memory>
 
 #include "qcstring.h"
 #include "parserintf.h"
-#include "growbuf.h"
 
 class Entry;
 
@@ -33,74 +32,29 @@ class Markdown
 {
   public:
     Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
+   ~Markdown();
+    NON_COPYABLE(Markdown)
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
-    QCString extractPageTitle(QCString &docs,QCString &id,int &prepend);
-    void setIndentLevel(int level) { m_indentLevel = level; }
+    QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
+    void setIndentLevel(int level);
 
   private:
-    QCString detab(const QCString &s,int &refIndent);
-    QCString processQuotations(const QCString &s,int refIndent);
-    QCString processBlocks(const QCString &s,int indent);
-    QCString isBlockCommand(const char *data,int offset,int size);
-    int isSpecialCommand(const char *data,int offset,int size);
-    void findEndOfLine(const char *data,int size,int &pi,int&i,int &end);
-    int processHtmlTagWrite(const char *data,int offset,int size,bool doWrite);
-    int processHtmlTag(const char *data,int offset,int size);
-    int processEmphasis(const char *data,int offset,int size);
-    int processEmphasis1(const char *data, int size, char c);
-    int processEmphasis2(const char *data, int size, char c);
-    int processEmphasis3(const char *data, int size, char c);
-    int processNmdash(const char *data,int off,int size);
-    int processQuoted(const char *data,int,int size);
-    int processCodeSpan(const char *data, int /*offset*/, int size);
-    void addStrEscapeUtf8Nbsp(const char *s,int len);
-    int processSpecialCommand(const char *data, int offset, int size);
-    int processLink(const char *data,int,int size);
-    int findEmphasisChar(const char *data, int size, char c, int c_size);
-    void processInline(const char *data,int size);
-    void writeMarkdownImage(const char *fmt, bool inline_img, bool explicitTitle,
-                            const QCString &title, const QCString &content,
-                            const QCString &link, const QCString &attributes,
-                            const FileDef *fd);
-    int isHeaderline(const char *data, int size, bool allowAdjustLevel);
-    int isAtxHeader(const char *data,int size,
-                       QCString &header,QCString &id,bool allowAdjustLevel);
-    void writeOneLineHeaderOrRuler(const char *data,int size);
-    void writeFencedCodeBlock(const char *data,const char *lng,
-                int blockStart,int blockEnd);
-    int writeBlockQuote(const char *data,int size);
-    int writeCodeBlock(const char *data,int size,int refIndent);
-    int writeTableBlock(const char *data,int size);
-
-  private:
-    struct LinkRef
-    {
-      LinkRef(const QCString &l,const QCString &t) : link(l), title(t) {}
-      QCString link;
-      QCString title;
-    };
-    using Action_t = std::function<int(const char *,int,int)>;
-
-    std::unordered_map<std::string,LinkRef> m_linkRefs;
-    QCString       m_fileName;
-    int            m_lineNr = 0;
-    int            m_indentLevel=0;  // 0 is outside markdown, -1=page level
-    GrowBuf        m_out;
-    Markdown::Action_t m_actions[256];
+    struct Private;
+    std::unique_ptr<Private> prv;
 };
-
 
 class MarkdownOutlineParser : public OutlineParserInterface
 {
   public:
     MarkdownOutlineParser();
-    virtual ~MarkdownOutlineParser();
+   ~MarkdownOutlineParser() override;
+    NON_COPYABLE(MarkdownOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser);
-    bool needsPreprocessing(const QCString &) const { return FALSE; }
-    void parsePrototype(const QCString &text);
+                    ClangTUParser *clangParser) override;
+    bool needsPreprocessing(const QCString &) const override { return FALSE; }
+    void parsePrototype(const QCString &text) override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

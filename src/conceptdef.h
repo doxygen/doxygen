@@ -16,26 +16,27 @@
 #ifndef CONCEPTDEF_H
 #define CONCEPTDEF_H
 
+#include <memory>
+
 #include "definition.h"
 #include "filedef.h"
+
+class ModuleDef;
 
 class ConceptDef : public Definition
 {
   public:
-    virtual DefType definitionType() const = 0;
-    virtual QCString getOutputFileBase() const = 0;
+    ABSTRACT_BASE_CLASS(ConceptDef)
+
     virtual bool hasDetailedDescription() const = 0;
-    virtual QCString displayName(bool includeScope=true) const = 0;
     virtual const IncludeInfo *includeInfo() const = 0;
     virtual ArgumentList getTemplateParameterList() const = 0;
-    virtual QCString anchor() const = 0;
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
     virtual QCString initializer() const = 0;
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const = 0;
     virtual const NamespaceDef *getNamespaceDef() const = 0;
     virtual const FileDef *getFileDef() const = 0;
+    virtual const ModuleDef *getModuleDef() const = 0;
     virtual QCString title() const = 0;
     virtual int groupId() const = 0;
 };
@@ -43,6 +44,8 @@ class ConceptDef : public Definition
 class ConceptDefMutable : public DefinitionMutable, public ConceptDef
 {
   public:
+    ABSTRACT_BASE_CLASS(ConceptDefMutable)
+
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setNamespace(NamespaceDef *nd) = 0;
@@ -52,13 +55,14 @@ class ConceptDefMutable : public DefinitionMutable, public ConceptDef
     virtual void setInitializer(const QCString &init) = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual void setGroupId(int id) = 0;
+    virtual void setModuleDef(ModuleDef *mod) = 0;
 };
 
-ConceptDefMutable *createConceptDef(
+std::unique_ptr<ConceptDef> createConceptDef(
     const QCString &fileName,int startLine,int startColumn,const QCString &name,
     const QCString &tagRef=QCString(),const QCString &tagFile=QCString());
 
-ConceptDef *createConceptDefAlias(const Definition *newScope,const ConceptDef *cd);
+std::unique_ptr<ConceptDef> createConceptDefAlias(const Definition *newScope,const ConceptDef *cd);
 
 // ---- Map
 
@@ -66,12 +70,11 @@ class ConceptLinkedMap : public LinkedMap<ConceptDef>
 {
 };
 
-class ConceptLinkedRefMap : public LinkedRefMap<const ConceptDef>
+class ConceptLinkedRefMap : public LinkedRefMap<ConceptDef>
 {
   public:
     bool declVisible() const;
     void writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const;
-    void writeDocumentation(OutputList &ol,const Definition * container=0) const;
 };
 
 // ---- Cast functions

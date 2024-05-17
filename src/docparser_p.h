@@ -25,12 +25,14 @@
 #include <iterator>
 #include <vector>
 #include <deque>
+#include <cstdint>
 
 #include "containers.h"
 #include "docparser.h"
 #include "docnode.h"
 #include "doctokenizer.h"
 #include "searchindex.h"
+#include "construct.h"
 
 using DefinitionStack = std::vector<const Definition *>;
 using DocNodeStack = std::stack<DocNodeVariant *>;
@@ -55,11 +57,11 @@ using DocStyleChangeStack = IterableStack<const DocNodeVariant *>;
  */
 struct DocParserContext
 {
-  const Definition *scope;
+  const Definition *scope = nullptr;
   QCString context;
-  bool inSeeBlock;
-  bool xmlComment;
-  bool insideHtmlLink;
+  bool inSeeBlock = false;
+  bool xmlComment = false;
+  bool insideHtmlLink = false;
   DocNodeStack nodeStack;
   DocStyleChangeStack styleStack;
   DocStyleChangeStack initialStyleStack;
@@ -67,37 +69,38 @@ struct DocParserContext
   QCString fileName;
   QCString relPath;
 
-  bool         hasParamCommand;
-  bool         hasReturnCommand;
+  bool         hasParamCommand = false;
+  bool         hasReturnCommand = false;
   StringMultiSet retvalsFound;
   StringMultiSet paramsFound;
-  const MemberDef *  memberDef;
-  bool         isExample;
+  const MemberDef *  memberDef = nullptr;
+  bool         isExample = false;
   QCString     exampleName;
   QCString     searchUrl;
+  QCString     prefix;
+  SrcLangExt   lang = SrcLangExt::Cpp;
 
-  QCString includeFileName;
-  QCString includeFileText;
-  uint     includeFileOffset;
-  uint     includeFileLength;
-  int      includeFileLine;
-  bool     includeFileShowLineNo;
+  QCString     includeFileName;
+  QCString     includeFileText;
+  size_t       includeFileOffset = 0;
+  size_t       includeFileLength = 0;
+  int          includeFileLine;
+  bool         includeFileShowLineNo = false;
 
-  TokenInfo *token;
-  int      lineNo;
-  bool     markdownSupport;
+  TokenInfo *token = nullptr;
+  int      lineNo = 0;
+  bool     markdownSupport = false;
 };
 
 class DocParser : public IDocParser
 {
   public:
-    ~DocParser();
     void pushContext();
     void popContext();
     void handleImg(DocNodeVariant *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
     int  internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
                                     const QCString &doc);
-    QCString processCopyDoc(const char *data,uint &len);
+    QCString processCopyDoc(const char *data,size_t &len);
     QCString findAndCopyImage(const QCString &fileName,DocImage::Type type, bool doWarn = true);
     void checkArgumentName();
     void checkRetvalName();
@@ -127,13 +130,13 @@ class DocParser : public IDocParser
     void handleParameterType(DocNodeVariant *parent,DocNodeList &children,const QCString &paramTypes);
     void handleInternalRef(DocNodeVariant *parent,DocNodeList &children);
     void handleAnchor(DocNodeVariant *parent,DocNodeList &children);
+    void handlePrefix(DocNodeVariant *parent,DocNodeList &children);
     void handleImage(DocNodeVariant *parent, DocNodeList &children);
     void readTextFileByName(const QCString &file,QCString &text);
 
     std::stack< DocParserContext > contextStack;
     DocParserContext               context;
     DocTokenizer                   tokenizer;
-    SIDataCollection               searchData;
 };
 
 //---------------------------------------------------------------------------
@@ -143,18 +146,20 @@ class AutoNodeStack
   public:
     AutoNodeStack(DocParser *parser,DocNodeVariant* node)
       : m_parser(parser), m_node(node) { m_parser->context.nodeStack.push(node); }
-   ~AutoNodeStack() {
+   ~AutoNodeStack()
+    {
 #if defined(NDEBUG)
-     (void)m_node;
-     if (!m_parser->context.nodeStack.empty())
-     {
-       m_parser->context.nodeStack.pop(); // robust version that does not assert
-     }
+      (void)m_node;
+      if (!m_parser->context.nodeStack.empty())
+      {
+        m_parser->context.nodeStack.pop(); // robust version that does not assert
+      }
 #else
-     assert(m_parser->context.nodeStack.top()==m_node);
-     m_parser->context.nodeStack.pop(); // error checking version
+      assert(m_parser->context.nodeStack.top()==m_node);
+      m_parser->context.nodeStack.pop(); // error checking version
 #endif
-   }
+    }
+    NON_COPYABLE(AutoNodeStack)
 
   private:
    DocParser *m_parser;
@@ -246,5 +251,16 @@ inline bool insideDetails(const DocNodeVariant *n)
   return FALSE;
 }
 
+//---------------------------------------------------------------------------
+
+inline bool insideDL(const DocNodeVariant *n)
+{
+  while (n)
+  {
+    if (std::holds_alternative<DocHtmlDescList>(*n)) return TRUE;
+    n=parent(n);
+  }
+  return FALSE;
+}
 
 #endif
