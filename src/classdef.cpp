@@ -1242,6 +1242,7 @@ void ClassDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
+  docFindSections(inbodyDocumentation(),this,docFile());
   for (const auto &mg : m_impl->memberGroups)
   {
     mg->findSectionsInDocumentation(this);
