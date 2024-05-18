@@ -53,10 +53,53 @@ const entityMap = {
   "/": '&#x2F;'
 };
 
+const iconMap = {
+  "source": "code",
+  "function": "data_object",
+  "slot": "location_chip",
+  "signal": "data_alert",
+  "variable": "variables",
+  "typedef": "numbers",
+  "enum": "data_array",
+  "enumvalue": "data_array",
+  "property": "list_alt",
+  "event": "overview",
+  "related": "read_more",
+  "friend": "contact_page",
+  "define": "numbers",
+  "file": "description",
+  "namespace": "clarify",
+  "concept": "quick_phrases",
+  "group": "full_coverage",
+  "package": "folder_zip",
+  "page": "article",
+  "dir": "folder",
+  "module": "grid_view",
+  "constants": "pin",
+  "library": "book_5",
+  "type": "type_specimen",
+  "union": "join",
+  "interface": "login",
+  "protocol category": "handshake",
+  "exception": "warning",
+  "class": "category",
+  "struct": "foundation",
+  "service": "settings_applications",
+  "singleton": "looks_one"
+};
+
+function getIcon(t) {
+  return iconMap[t] || "asterisk";
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"'/]/g, function (s) {
     return entityMap[s];
   });
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function searchFor(query,page,count) {
@@ -79,59 +122,15 @@ function searchFor(query,page,count) {
         let prefix = tagMap[item.tag];
         if (prefix) prefix+='/'; else prefix='';
 
-        icon = "asterisk";
-
-        if (item.type == "dir")
-          icon = "folder";
-        else if (item.type == "package")
-          icon = "folder_zip";
-        else if (item.type == "namespace")
-          icon = "clarify";
-
-        else if (item.type == "file")
-          icon = "description";
-        else if (item.type == "page")
-          icon = "article";
-        else if (item.type == "group")
-          icon = "full_coverage";
-        else if (item.type == "source")
-          icon = "code";
-
-        else if (item.type == "function")
-          icon = "data_object";
-        else if (item.type == "variable")
-          icon = "variables";
-        else if (item.type == "property")
-          icon = "list_alt";
-        else if (item.type == "typedef")
-          icon = "numbers";
-        else if (item.type == "define")
-          icon = "numbers";
-        else if (item.type == "enum")
-          icon = "data_array";
-        else if (item.type == "enumvalue")
-          icon = "data_array";
-
-        else if (item.type == "event")
-          icon = "overview";
-        else if (item.type == "related")
-          icon = "read_more";
-        else if (item.type == "friend")
-          icon = "contact_page";
-        else if (item.type == "slot")
-          icon = "location_chip";
-        else if (item.type == "signal")
-          icon = "data_alert";
-
-        r+='<tr class="searchresult">'+
-           '<td align="right">'+(data.first+i+1)+'.</td>'+
+        r+='<tr class="searchresult" title="'+capitalize(escapeHtml(item.type))+'">'+
+           '<td align="right"><span class="material-symbols-outlined">'+getIcon(item.type)+'</span></td>'+
            '<td><a href="'+escapeHtml(prefix+item.url)+
                 '">'+escapeHtml(item.name)+'</a>';
         if (item.type=="source") {
           const l=item.url.match(/[1-9][0-9]*$/);
           if (l) r+=' at line '+parseInt(l[0]);
         }
-        r+='<span class="material-symbols-outlined">'+icon+'</span></td>';
+        
         for (let i=0;i<item.fragments.length;i++) {
           r+='<tr><td></td><td>'+item.fragments[i]+'</td></tr>';
         }
