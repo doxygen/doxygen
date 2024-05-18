@@ -1820,7 +1820,7 @@ void GroupDefImpl::sortMemberLists()
   }
   if (Config_getBool(SORT_BRIEF_DOCS))
   {
-    std::sort(m_dirList.begin(), m_dirList.end(), compareDirDefs);
+    std::stable_sort(m_dirList.begin(), m_dirList.end(), compareDirDefs);
 
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
     {
@@ -1828,14 +1828,14 @@ void GroupDefImpl::sortMemberLists()
         qstricmp(c1->name(), c2->name())<0          :
         qstricmp(c1->className(), c2->className())<0;
     };
-    std::sort(m_classes.begin(), m_classes.end(), classComp);
+    std::stable_sort(m_classes.begin(), m_classes.end(), classComp);
 
     auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
     {
       return qstricmp(n1->name(),n2->name())<0;
     };
 
-    std::sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);
+    std::stable_sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);
   }
   else
   {
@@ -1886,7 +1886,7 @@ void GroupDefImpl::removeMemberFromList(MemberListType lt,MemberDef *md)
 
 void GroupDefImpl::sortSubGroups()
 {
-  std::sort(m_groups.begin(),
+  std::stable_sort(m_groups.begin(),
             m_groups.end(),
             [](const auto &g1,const auto &g2)
             { return g1->groupTitle() < g2->groupTitle(); });

@@ -4330,7 +4330,7 @@ void ClassDefImpl::sortMemberLists()
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
-  std::sort(m_impl->innerClasses.begin(),
+  std::stable_sort(m_impl->innerClasses.begin(),
             m_impl->innerClasses.end(),
             [](const auto &c1,const auto &c2)
             {
@@ -4702,7 +4702,7 @@ const MemberNameInfoLinkedMap &ClassDefImpl::memberNameInfoLinkedMap() const
 
 void ClassDefImpl::sortAllMembersList()
 {
-  std::sort(m_impl->allMemberNameInfoLinkedMap.begin(),
+  std::stable_sort(m_impl->allMemberNameInfoLinkedMap.begin(),
             m_impl->allMemberNameInfoLinkedMap.end(),
             [](const auto &m1,const auto &m2)
             {

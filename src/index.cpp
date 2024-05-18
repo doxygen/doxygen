@@ -221,11 +221,30 @@ void Index::sortMemberIndexLists()
   {
     for (auto &[name,list] : map)
     {
-      std::sort(list.begin(),list.end(),
+      std::stable_sort(list.begin(),list.end(),
           [](const MemberDef *md1,const MemberDef *md2)
           {
+            // consider candidates A::a, B::b, B::a, A::b, A::A, B::B,
+            // want after sorting: A::A, A::a, B::a, B::B, A::b, B::b
+            // so we can later group entries
+            // - A: A
+            // - a: A, B
+            // - B: B
+            // - b: A, B
             int result = qstricmp(md1->name(),md2->name());
-            return result==0 ? qstricmp(md1->qualifiedName(),md2->qualifiedName())<0 : result<0;
+            if (result==0) // next: compare case sensitive, see issue #10873
+            {
+               result = qstrcmp(md1->name(),md2->name());
+            }
+            if (result==0) // next compare with full scope
+            {
+              result = qstricmp(md1->qualifiedName(),md2->qualifiedName());
+            }
+            if (result==0)
+            {
+              result = qstrcmp(md1->qualifiedName(),md2->qualifiedName());
+            }
+            return result<0;
           });
     }
   };
@@ -1577,13 +1596,13 @@ static void writeFileIndex(OutputList &ol)
     }
 
     // sort the files by path
-    std::sort(outputFiles.begin(),
+    std::stable_sort(outputFiles.begin(),
               outputFiles.end(),
               [](const auto &fp1,const auto &fp2) { return qstricmp(fp1.path,fp2.path)<0; });
     // sort the files inside the directory by name
     for (auto &fp : outputFiles)
     {
-      std::sort(fp.files.begin(), fp.files.end(), compareFileDefs);
+      std::stable_sort(fp.files.begin(), fp.files.end(), compareFileDefs);
     }
     // write the results
     for (const auto &fp : outputFiles)
@@ -2298,12 +2317,17 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   // sort the class lists per letter while ignoring the prefix
   for (auto &[letter,list] : classesByLetter)
   {
-    std::sort(list.begin(), list.end(),
+    std::stable_sort(list.begin(), list.end(),
               [](const auto &c1,const auto &c2)
               {
                 QCString n1 = c1->className();
                 QCString n2 = c2->className();
-                return qstricmp(n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2))<0;
+                int result = qstricmp(n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
+                if (result==0)
+                {
+                  result = qstrcmp(n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
+                }
+                return result<0;
               });
   }
 

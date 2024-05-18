@@ -1461,10 +1461,10 @@ void NamespaceDefImpl::sortMemberLists()
       qstricmp(c1->className(), c2->className())<0;
   };
 
-  std::sort(classes.begin(),   classes.end(),   classComp);
-  std::sort(interfaces.begin(),interfaces.end(),classComp);
-  std::sort(structs.begin(),   structs.end(),   classComp);
-  std::sort(exceptions.begin(),exceptions.end(),classComp);
+  std::stable_sort(classes.begin(),   classes.end(),   classComp);
+  std::stable_sort(interfaces.begin(),interfaces.end(),classComp);
+  std::stable_sort(structs.begin(),   structs.end(),   classComp);
+  std::stable_sort(exceptions.begin(),exceptions.end(),classComp);
 
 
   auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
@@ -1472,7 +1472,7 @@ void NamespaceDefImpl::sortMemberLists()
     return qstricmp(n1->name(),n2->name())<0;
   };
 
-  std::sort(namespaces.begin(),namespaces.end(),namespaceComp);
+  std::stable_sort(namespaces.begin(),namespaces.end(),namespaceComp);
 }
 
 MemberList *NamespaceDefImpl::getMemberList(MemberListType lt) const

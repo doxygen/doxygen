@@ -778,7 +778,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     t << "];\n\n";
 
     // write the navigation index (and sub-indices)
-    std::sort(navIndex.begin(),navIndex.end(),[](const auto &n1,const auto &n2)
+    std::stable_sort(navIndex.begin(),navIndex.end(),[](const auto &n1,const auto &n2)
         { return !n1.url.isEmpty() && (n2.url.isEmpty() || (n1.url<n2.url)); });
 
     int subIndex=0;

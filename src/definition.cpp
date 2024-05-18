@@ -1123,7 +1123,7 @@ static inline MemberVector refMapToVector(const std::unordered_map<std::string,M
                  { return item.second; }     // extract value to add from map Key,Value pair
                 );
   // and sort it
-  std::sort(result.begin(),result.end(),
+  std::stable_sort(result.begin(),result.end(),
               [](const auto &m1,const auto &m2) { return genericCompareMembers(m1,m2)<0; });
   return result;
 }
@@ -1385,7 +1385,7 @@ void DefinitionImpl::mergeRefItems(Definition *d)
                                 otherXrefList.begin(),otherXrefList.end());
 
   // sort results on itemId
-  std::sort(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
+  std::stable_sort(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
             [](RefItem *left,RefItem *right)
             { return  left->id() <right->id() ||
                      (left->id()==right->id() &&

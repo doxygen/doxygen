@@ -671,6 +671,21 @@ inline std::string toStdString(const QCString &s)
 
 //---- overloads
 
+inline int qstrcmp( const QCString &str1, const char *str2 )
+{
+  return qstrcmp(str1.data(),str2);
+}
+
+inline int qstrcmp( const char *str1, const QCString &str2 )
+{
+  return qstrcmp(str1,str2.data());
+}
+
+inline int qstrcmp( const QCString &str1, const QCString &str2 )
+{
+  return qstrcmp(str1.data(),str2.data());
+}
+
 inline int qstricmp( const QCString &str1, const char *str2 )
 {
   return qstricmp(str1.data(),str2);

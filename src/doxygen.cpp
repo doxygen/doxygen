@@ -10003,7 +10003,7 @@ static void generateDiskNames()
     else if (size>1) // multiple occurrences of the same file name
     {
       // sort the array
-      std::sort(fileEntries.begin(),
+      std::stable_sort(fileEntries.begin(),
                 fileEntries.end(),
                 [](const FileEntry &fe1,const FileEntry &fe2)
                 { return fe1.path < fe2.path; }
@@ -10534,7 +10534,7 @@ static void readDir(FileInfo *fi,
   if (resultList && !dirResultList.empty())
   {
     // sort the resulting list to make the order platform independent.
-    std::sort(dirResultList.begin(),
+    std::stable_sort(dirResultList.begin(),
               dirResultList.end(),
               [](const auto &f1,const auto &f2) { return qstricmp(f1.c_str(),f2.c_str())<0; });
 
@@ -11739,7 +11739,7 @@ void searchInputFiles()
   }
 
   // Sort the FileDef objects by full path to get a predictable ordering over multiple runs
-  std::sort(Doxygen::inputNameLinkedMap->begin(),
+  std::stable_sort(Doxygen::inputNameLinkedMap->begin(),
             Doxygen::inputNameLinkedMap->end(),
             [](const auto &f1,const auto &f2)
             {
@@ -11749,7 +11749,7 @@ void searchInputFiles()
   {
     if (fileName->size()>1)
     {
-      std::sort(fileName->begin(),fileName->end(),[](const auto &f1,const auto &f2)
+      std::stable_sort(fileName->begin(),fileName->end(),[](const auto &f1,const auto &f2)
         {
           return qstricmp(f1->absFilePath(),f2->absFilePath())<0;
         });
@@ -12275,22 +12275,22 @@ void parseInput()
   };
 
   g_s.begin("Sorting lists...\n");
-  std::sort(Doxygen::memberNameLinkedMap->begin(),
+  std::stable_sort(Doxygen::memberNameLinkedMap->begin(),
             Doxygen::memberNameLinkedMap->end(),
             memberNameComp);
-  std::sort(Doxygen::functionNameLinkedMap->begin(),
+  std::stable_sort(Doxygen::functionNameLinkedMap->begin(),
             Doxygen::functionNameLinkedMap->end(),
             memberNameComp);
-  std::sort(Doxygen::hiddenClassLinkedMap->begin(),
+  std::stable_sort(Doxygen::hiddenClassLinkedMap->begin(),
             Doxygen::hiddenClassLinkedMap->end(),
             classComp);
-  std::sort(Doxygen::classLinkedMap->begin(),
+  std::stable_sort(Doxygen::classLinkedMap->begin(),
             Doxygen::classLinkedMap->end(),
             classComp);
-  std::sort(Doxygen::conceptLinkedMap->begin(),
+  std::stable_sort(Doxygen::conceptLinkedMap->begin(),
             Doxygen::conceptLinkedMap->end(),
             conceptComp);
-  std::sort(Doxygen::namespaceLinkedMap->begin(),
+  std::stable_sort(Doxygen::namespaceLinkedMap->begin(),
             Doxygen::namespaceLinkedMap->end(),
             namespaceComp);
   g_s.end();
@@ -12402,7 +12402,7 @@ void parseInput()
 
   if (Config_getBool(SORT_GROUP_NAMES))
   {
-    std::sort(Doxygen::groupLinkedMap->begin(),
+    std::stable_sort(Doxygen::groupLinkedMap->begin(),
               Doxygen::groupLinkedMap->end(),
               [](const auto &g1,const auto &g2)
               { return g1->groupTitle() < g2->groupTitle(); });

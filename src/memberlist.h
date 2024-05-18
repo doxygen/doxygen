@@ -74,7 +74,7 @@ class MemberVector
     }
     void sort()
     {
-      std::sort(m_members.begin(),m_members.end(),lessThan);
+      std::stable_sort(m_members.begin(),m_members.end(),lessThan);
     }
     void inSort(MemberDef *md)
     {

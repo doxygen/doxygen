@@ -237,7 +237,7 @@ static QCString convertToHtmlAndTruncate(const QCString &s)
  */
 void HtmlHelpIndex::writeFields(std::ostream &t)
 {
-  std::sort(std::begin(m_map),
+  std::stable_sort(std::begin(m_map),
             std::end(m_map),
             [](const auto &e1,const auto &e2) { return e1->name < e2->name; }
            );

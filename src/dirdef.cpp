@@ -181,8 +181,8 @@ void DirDefImpl::addFile(const FileDef *fd)
 
 void DirDefImpl::sort()
 {
-  std::sort(m_subdirs.begin(), m_subdirs.end(), compareDirDefs);
-  std::sort(m_fileList.begin(), m_fileList.end(), compareFileDefs);
+  std::stable_sort(m_subdirs.begin(), m_subdirs.end(), compareDirDefs);
+  std::stable_sort(m_fileList.begin(), m_fileList.end(), compareFileDefs);
 }
 
 static QCString encodeDirName(const QCString &anchor)
@@ -762,7 +762,7 @@ void DirDefImpl::computeDependencies()
     }
   }
 
-  std::sort(m_usedDirs.begin(),m_usedDirs.end(),
+  std::stable_sort(m_usedDirs.begin(),m_usedDirs.end(),
             [](const auto &u1,const auto &u2)
             { return qstricmp(u1->dir()->getOutputFileBase(),u2->dir()->getOutputFileBase())<0; });
 
@@ -804,7 +804,7 @@ void UsedDir::addFileDep(const FileDef *srcFd,const FileDef *dstFd, bool srcDire
 
 void UsedDir::sort()
 {
-  std::sort(m_filePairs.begin(),
+  std::stable_sort(m_filePairs.begin(),
             m_filePairs.end(),
             [](const auto &left,const auto &right)
             {
@@ -1101,7 +1101,7 @@ void buildDirectories()
   }
 
   // short the directories themselves
-  std::sort(Doxygen::dirLinkedMap->begin(),
+  std::stable_sort(Doxygen::dirLinkedMap->begin(),
             Doxygen::dirLinkedMap->end(),
             [](const auto &d1,const auto &d2)
             {

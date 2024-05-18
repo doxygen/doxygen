@@ -731,7 +731,7 @@ void ModuleDefImpl::sortMemberLists()
         qstricmp(c1->name(), c2->name())<0          :
         qstricmp(c1->className(), c2->className())<0;
     };
-    std::sort(m_classes.begin(), m_classes.end(), classComp);
+    std::stable_sort(m_classes.begin(), m_classes.end(), classComp);
 
     auto conceptComp = [](const ConceptLinkedRefMap::Ptr &c1,const ConceptLinkedRefMap::Ptr &c2)
     {
@@ -739,7 +739,7 @@ void ModuleDefImpl::sortMemberLists()
         qstricmp(c1->qualifiedName(), c2->qualifiedName())<0 :
         qstricmp(c1->name(), c2->name())<0;
     };
-    std::sort(m_concepts.begin(), m_concepts.end(), conceptComp);
+    std::stable_sort(m_concepts.begin(), m_concepts.end(), conceptComp);
   }
 
   static auto contrComp = [](const ModuleDef *m1, const ModuleDef *m2)
@@ -767,7 +767,7 @@ void ModuleDefImpl::sortMemberLists()
     return tr1<tr2 || (tr1==tr2 && diff<0);
   };
 
-  std::sort(m_contributing.begin(), m_contributing.end(), contrComp);
+  std::stable_sort(m_contributing.begin(), m_contributing.end(), contrComp);
 }
 
 void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
