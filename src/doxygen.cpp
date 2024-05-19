@@ -10006,7 +10006,7 @@ static void generateDiskNames()
       std::stable_sort(fileEntries.begin(),
                 fileEntries.end(),
                 [](const FileEntry &fe1,const FileEntry &fe2)
-                { return fe1.path < fe2.path; }
+                { return qstricmp_sort(fe1.path,fe2.path)<0; }
                );
 
       // since the entries are sorted, the common prefix of the whole array is same

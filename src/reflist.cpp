@@ -58,7 +58,7 @@ void RefList::generatePage()
 
   std::stable_sort(m_entries.begin(),m_entries.end(),
             [](const std::unique_ptr<RefItem> &left,const std::unique_ptr<RefItem> &right)
-            { return qstricmp(left->title(),right->title()) < 0; });
+            { return qstricmp_sort(left->title(),right->title()) < 0; });
   //RefItem *item;
   QCString doc;
   int cnt = 0;
