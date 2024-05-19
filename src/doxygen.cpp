@@ -10536,7 +10536,7 @@ static void readDir(FileInfo *fi,
     // sort the resulting list to make the order platform independent.
     std::stable_sort(dirResultList.begin(),
               dirResultList.end(),
-              [](const auto &f1,const auto &f2) { return qstricmp(f1.c_str(),f2.c_str())<0; });
+              [](const auto &f1,const auto &f2) { return qstricmp_sort(f1.c_str(),f2.c_str())<0; });
 
     // append the sorted results to resultList
     resultList->insert(resultList->end(), dirResultList.begin(), dirResultList.end());
@@ -11743,7 +11743,7 @@ void searchInputFiles()
             Doxygen::inputNameLinkedMap->end(),
             [](const auto &f1,const auto &f2)
             {
-              return  qstricmp(f1->fullName(),f2->fullName())<0;
+              return  qstricmp_sort(f1->fullName(),f2->fullName())<0;
             });
   for (auto &fileName : *Doxygen::inputNameLinkedMap)
   {
@@ -11751,7 +11751,7 @@ void searchInputFiles()
     {
       std::stable_sort(fileName->begin(),fileName->end(),[](const auto &f1,const auto &f2)
         {
-          return qstricmp(f1->absFilePath(),f2->absFilePath())<0;
+          return qstricmp_sort(f1->absFilePath(),f2->absFilePath())<0;
         });
     }
   }
@@ -12246,32 +12246,32 @@ void parseInput()
 
   auto memberNameComp = [](const MemberNameLinkedMap::Ptr &n1,const MemberNameLinkedMap::Ptr &n2)
   {
-    return qstricmp(n1->memberName().data()+getPrefixIndex(n1->memberName()),
-                    n2->memberName().data()+getPrefixIndex(n2->memberName())
-                   )<0;
+    return qstricmp_sort(n1->memberName().data()+getPrefixIndex(n1->memberName()),
+                         n2->memberName().data()+getPrefixIndex(n2->memberName())
+                        )<0;
   };
 
   auto classComp = [](const ClassLinkedMap::Ptr &c1,const ClassLinkedMap::Ptr &c2)
   {
     if (Config_getBool(SORT_BY_SCOPE_NAME))
     {
-      return qstricmp(c1->name(), c2->name())<0;
+      return qstricmp_sort(c1->name(), c2->name())<0;
     }
     else
     {
-      int i = qstricmp(c1->className(), c2->className());
-      return i==0 ? qstricmp(c1->name(), c2->name())<0 : i<0;
+      int i = qstricmp_sort(c1->className(), c2->className());
+      return i==0 ? qstricmp_sort(c1->name(), c2->name())<0 : i<0;
     }
   };
 
   auto namespaceComp = [](const NamespaceLinkedMap::Ptr &n1,const NamespaceLinkedMap::Ptr &n2)
   {
-    return qstricmp(n1->name(),n2->name())<0;
+    return qstricmp_sort(n1->name(),n2->name())<0;
   };
 
   auto conceptComp = [](const ConceptLinkedMap::Ptr &c1,const ConceptLinkedMap::Ptr &c2)
   {
-    return qstricmp(c1->name(),c2->name())<0;
+    return qstricmp_sort(c1->name(),c2->name())<0;
   };
 
   g_s.begin("Sorting lists...\n");

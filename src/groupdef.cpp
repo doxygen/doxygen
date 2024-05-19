@@ -261,7 +261,7 @@ void GroupDefImpl::addFile(FileDef *def)
   if (sortBriefDocs)
     m_fileList.insert( std::upper_bound( m_fileList.begin(), m_fileList.end(), def,
                                          [](const auto &fd1, const auto &fd2)
-                                         { return qstricmp(fd1->name(),fd2->name())<0; }),
+                                         { return qstricmp_sort(fd1->name(),fd2->name())<0; }),
                        def);
   else
     m_fileList.push_back(def);
@@ -1825,14 +1825,14 @@ void GroupDefImpl::sortMemberLists()
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
     {
       return Config_getBool(SORT_BY_SCOPE_NAME)     ?
-        qstricmp(c1->name(), c2->name())<0          :
-        qstricmp(c1->className(), c2->className())<0;
+        qstricmp_sort(c1->name(), c2->name())<0          :
+        qstricmp_sort(c1->className(), c2->className())<0;
     };
     std::stable_sort(m_classes.begin(), m_classes.end(), classComp);
 
     auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
     {
-      return qstricmp(n1->name(),n2->name())<0;
+      return qstricmp_sort(n1->name(),n2->name())<0;
     };
 
     std::stable_sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);

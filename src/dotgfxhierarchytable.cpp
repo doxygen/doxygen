@@ -92,7 +92,7 @@ void DotGfxHierarchyTable::writeGraph(TextStream &out,
 
   int count=0;
   std::stable_sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
-            [](auto n1,auto n2) { return qstricmp(n1->label(),n2->label())<0; });
+            [](auto n1,auto n2) { return qstricmp_sort(n1->label(),n2->label())<0; });
   for (auto n : m_rootSubgraphs)
   {
     out << "<tr><td>";

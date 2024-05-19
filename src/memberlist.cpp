@@ -57,22 +57,22 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
     else if (ord2 > ord1)
       return 1;
   }
-  // sort on name
-  int cmp = qstricmp(c1->name(),c2->name());
+  // sort on name, first case in-sensitive
+  int cmp = qstricmp_sort(c1->name(),c2->name());
   // then on qualified name
   if (cmp==0)
   {
-    cmp = qstricmp(c1->qualifiedName(),c2->qualifiedName());
+    cmp = qstricmp_sort(c1->qualifiedName(),c2->qualifiedName());
   }
   // then on argument list
   if (cmp==0 && !c1->argsString().isEmpty() && !c2->argsString().isEmpty())
   {
-    cmp = qstricmp(c1->argsString(),c2->argsString());
+    cmp = qstricmp_sort(c1->argsString(),c2->argsString());
   }
   // then on file in which the item is defined
   if (cmp==0)
   {
-    cmp = qstricmp(c1->getDefFileName(),c2->getDefFileName());
+    cmp = qstricmp_sort(c1->getDefFileName(),c2->getDefFileName());
   }
   // then on line number at which the member is defined
   if (cmp==0)

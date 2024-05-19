@@ -83,6 +83,13 @@ inline bool qisspace(char c)
 
 int qstricmp( const char *str1, const char *str2 );
 
+inline int qstricmp_sort( const char *str1, const char *str2 )
+{
+  int result = qstricmp(str1,str2);
+  return result==0 ? qstrcmp(str1,str2) : result;
+}
+
+
 int qstrnicmp( const char *str1, const char *str2, size_t len );
 
 using JavaCCString = std::basic_string<unsigned char>;
@@ -700,6 +707,22 @@ inline int qstricmp( const QCString &str1, const QCString &str2 )
 {
   return qstricmp(str1.data(),str2.data());
 }
+
+inline int qstricmp_sort( const QCString &str1, const char *str2 )
+{
+  return qstricmp_sort(str1.data(),str2);
+}
+
+inline int qstricmp_sort( const char *str1, const QCString &str2 )
+{
+  return qstricmp_sort(str1,str2.data());
+}
+
+inline int qstricmp_sort( const QCString &str1, const QCString &str2 )
+{
+  return qstricmp_sort(str1.data(),str2.data());
+}
+
 
 inline int qstrnicmp( const QCString &str1, const char *str2, size_t len )
 {

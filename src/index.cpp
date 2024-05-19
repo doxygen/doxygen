@@ -231,18 +231,10 @@ void Index::sortMemberIndexLists()
             // - a: A, B
             // - B: B
             // - b: A, B
-            int result = qstricmp(md1->name(),md2->name());
-            if (result==0) // next: compare case sensitive, see issue #10873
-            {
-               result = qstrcmp(md1->name(),md2->name());
-            }
+            int result = qstricmp_sort(md1->name(),md2->name());
             if (result==0) // next compare with full scope
             {
-              result = qstricmp(md1->qualifiedName(),md2->qualifiedName());
-            }
-            if (result==0)
-            {
-              result = qstrcmp(md1->qualifiedName(),md2->qualifiedName());
+              result = qstricmp_sort(md1->qualifiedName(),md2->qualifiedName());
             }
             return result<0;
           });
@@ -1598,7 +1590,7 @@ static void writeFileIndex(OutputList &ol)
     // sort the files by path
     std::stable_sort(outputFiles.begin(),
               outputFiles.end(),
-              [](const auto &fp1,const auto &fp2) { return qstricmp(fp1.path,fp2.path)<0; });
+              [](const auto &fp1,const auto &fp2) { return qstricmp_sort(fp1.path,fp2.path)<0; });
     // sort the files inside the directory by name
     for (auto &fp : outputFiles)
     {
@@ -2322,12 +2314,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
               {
                 QCString n1 = c1->className();
                 QCString n2 = c2->className();
-                int result = qstricmp(n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
-                if (result==0)
-                {
-                  result = qstrcmp(n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
-                }
-                return result<0;
+                return qstricmp_sort(n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2))<0;
               });
   }
 
