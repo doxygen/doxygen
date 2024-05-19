@@ -768,7 +768,7 @@ int Markdown::Private::processEmphasis1(std::string_view data, char c)
 
   while (i<size)
   {
-    int len = findEmphasisChar(data.substr(i), c, 1);
+    size_t len = findEmphasisChar(data.substr(i), c, 1);
     if (len==0) { return 0; }
     i+=len;
     if (i>=size) { return 0; }
@@ -799,7 +799,7 @@ int Markdown::Private::processEmphasis2(std::string_view data, char c)
 
   while (i<size)
   {
-    int len = findEmphasisChar(data.substr(i), c, 2);
+    size_t len = findEmphasisChar(data.substr(i), c, 2);
     if (len==0)
     {
       return 0;
