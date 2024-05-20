@@ -11561,9 +11561,7 @@ static QCString createOutputDirectory(const QCString &baseDirName,
   Dir formatDir(result.str());
   if (!formatDir.exists() && !formatDir.mkdir(result.str()))
   {
-    err("Could not create output directory %s\n", qPrint(result));
-    cleanUpDoxygen();
-    exit(1);
+    term("Could not create output directory %s\n", qPrint(result));
   }
   return result;
 }
@@ -11814,10 +11812,8 @@ void parseInput()
       dir.setPath(Dir::currentDirPath());
       if (!dir.mkdir(outputDirectory.str()))
       {
-        err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-            "exist and cannot be created\n",qPrint(outputDirectory));
-        cleanUpDoxygen();
-        exit(1);
+        term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
+             "exist and cannot be created\n",qPrint(outputDirectory));
       }
       else
       {
