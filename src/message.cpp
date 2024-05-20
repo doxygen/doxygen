@@ -145,7 +145,6 @@ static void format_warn(const QCString &file,int line,const QCString &text)
   }
   if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {
-    Doxygen::terminating=true;
     exit(1);
   }
   g_warnStat = true;
@@ -160,7 +159,6 @@ static void handle_warn_as_error()
       QCString msgText = " (warning treated as error, aborting now)\n";
       fwrite(msgText.data(),1,msgText.length(),g_warnFile);
     }
-    Doxygen::terminating=true;
     exit(1);
   }
   g_warnStat = true;
@@ -285,7 +283,6 @@ void term_(const char *fmt, ...)
       fprintf(g_warnFile, "%s\n", "Exiting...");
     }
   }
-  Doxygen::terminating=true;
   exit(1);
 }
 
@@ -329,7 +326,6 @@ extern void finishWarnExit()
   if (g_warnStat && (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS ||
                      g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT))
   {
-    Doxygen::terminating=true;
     exit(1);
   }
 }
