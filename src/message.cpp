@@ -145,6 +145,10 @@ static void format_warn(const QCString &file,int line,const QCString &text)
   }
   if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {
+    if (g_warnFile != stderr && !Config_getBool(QUIET))
+    {
+      msg("See '%s' for the reason of termination.\n",qPrint(g_warnlogFile));
+    }
     Doxygen::terminating=true;
     exit(1);
   }
@@ -159,6 +163,11 @@ static void handle_warn_as_error()
       std::unique_lock<std::mutex> lock(g_mutex);
       QCString msgText = " (warning treated as error, aborting now)\n";
       fwrite(msgText.data(),1,msgText.length(),g_warnFile);
+      if (g_warnFile != stderr && !Config_getBool(QUIET))
+      {
+        // cannot use `msg` due to the mutex
+        fprintf(stdout,"See '%s' for the reason of termination.\n",qPrint(g_warnlogFile));
+      }
     }
     Doxygen::terminating=true;
     exit(1);
@@ -283,6 +292,11 @@ void term_(const char *fmt, ...)
       size_t l = strlen(g_errorStr);
       for (size_t i=0; i<l; i++) fprintf(g_warnFile, " ");
       fprintf(g_warnFile, "%s\n", "Exiting...");
+      if (!Config_getBool(QUIET))
+      {
+        // cannot use `msg` due to the mutex
+        fprintf(stdout,"See '%s' for the reason of termination.\n",qPrint(g_warnlogFile));
+      }
     }
   }
   Doxygen::terminating=true;
