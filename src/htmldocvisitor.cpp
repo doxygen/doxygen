@@ -93,8 +93,7 @@ static QCString convertIndexWordToAnchor(const QCString &word)
           (c >= 'A' && c <= 'Z') || // ALPHA
           (c >= '0' && c <= '9') || // DIGIT
           c == '-' ||
-          c == '.' ||
-          c == '_'
+          c == '.'
          )
       {
         result += c;
@@ -102,7 +101,7 @@ static QCString convertIndexWordToAnchor(const QCString &word)
       else
       {
         char enc[4];
-        enc[0] = ';';
+        enc[0] = '_';
         enc[1] = hex[(c & 0xf0) >> 4];
         enc[2] = hex[c & 0xf];
         enc[3] = 0;
