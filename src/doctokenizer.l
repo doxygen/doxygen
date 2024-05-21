@@ -279,7 +279,7 @@ MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT
 OPTSTARS  ("/""/"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
-OLISTITEM ({BLANK}*[1-9][0-9]*"."{BLANK}|{BLANK}*"0."{BLANK})
+OLISTITEM {BLANK}*("0"|[1-9][0-9]*)"."{BLANK}
 CLISTITEM {BLANK}*[-]{BLANK}*"\["[ xX]"\]"
 ENDLIST   {BLANK}*"."{BLANK}*(\n|"\\ilinebr")
 ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
