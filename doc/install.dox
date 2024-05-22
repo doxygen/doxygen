@@ -51,7 +51,7 @@ tools should be installed.
     version 5.14 or higher (including Qt 6).
     This is needed to build the GUI front-end doxywizard.
 <li>A \LaTeX distribution: for instance
-    <a href="http://tug.org/interest.html#free">TeX Live</a>
+    <a href="https://tug.org/interest.html#free">TeX Live</a>
     This is needed for generating \LaTeX, Postscript, and PDF output.
 <li><a href="https://www.graphviz.org/">
     the Graph visualization toolkit version 2.38 or higher</a>
