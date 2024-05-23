@@ -248,7 +248,7 @@ ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC
 ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION
-FLOW      (DO|SELECT|CASE|SELECT{BS}(CASE|TYPE)|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT|GO{BS}TO)
+FLOW      (DO|SELECT|CASE|SELECT{BS}(CASE|TYPE|RANK)|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT|GO{BS}TO)
 COMMANDS  (FORMAT|CONTAINS|MODULE{BS_}PROCEDURE|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|PRESENT|DEALLOCATE|NULLIFY|SIZE|INQUIRE|OPEN|CLOSE|FLUSH|DATA|COMMON)
 IGNORE    (CALL)
 PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON_)?RECURSIVE|IMPURE|PURE|ELEMENTAL)?0
@@ -310,6 +310,8 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
+<Start>{BS}(RANK){BS_}(DEFAULT) |
+<Start>{BS}(RANK)/{BS}"("{BS}([0-9]+|"*"){BS}")" |
 <Start>{BS}(CASE|CLASS|TYPE){BS_}(IS|DEFAULT) {
                                           startFontClass(yyscanner,"keywordflow");
                                           codifyLines(yyscanner,yytext);
