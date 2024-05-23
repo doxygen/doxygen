@@ -168,7 +168,6 @@ bool                  Doxygen::generatingXmlOutput = FALSE;
 DefinesPerFileList    Doxygen::macroDefinitions;
 bool                  Doxygen::clangAssistedParsing = FALSE;
 QCString              Doxygen::verifiedDotPath;
-volatile bool         Doxygen::terminating = false;
 InputFileEncodingList Doxygen::inputFileEncodingList;
 std::mutex            Doxygen::countFlowKeywordsMutex;
 std::mutex            Doxygen::addExampleMutex;
@@ -11450,7 +11449,6 @@ static void stopDoxygen(int)
   }
   killpg(0,SIGINT);
   cleanUpDoxygen();
-  Doxygen::terminating=true;
   exitTracing();
   exit(1);
 }

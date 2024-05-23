@@ -1130,6 +1130,7 @@ private                                 {
                                           if (YY_START == FVariable) REJECT; // Just be on the safe side
                                           if (YY_START == String) REJECT; // ";" ignored in strings
                                           if (YY_START == StrIgnore) REJECT; // ";" ignored in regular yyextra->comments
+                                          if (YY_START == DocBlock) REJECT; // ";" ignored in documentation blocks
                                           yyextra->inputStringSemi = " \n"+QCString(yytext+1);
                                           yyextra->lineNr--;
                                           pushBuffer(yyscanner,yyextra->inputStringSemi);

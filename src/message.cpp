@@ -149,7 +149,6 @@ static void format_warn(const QCString &file,int line,const QCString &text)
     {
       msg("See '%s' for the reason of termination.\n",qPrint(g_warnlogFile));
     }
-    Doxygen::terminating=true;
     exit(1);
   }
   g_warnStat = true;
@@ -169,7 +168,6 @@ static void handle_warn_as_error()
         fprintf(stdout,"See '%s' for the reason of termination.\n",qPrint(g_warnlogFile));
       }
     }
-    Doxygen::terminating=true;
     exit(1);
   }
   g_warnStat = true;
@@ -299,7 +297,6 @@ void term_(const char *fmt, ...)
       }
     }
   }
-  Doxygen::terminating=true;
   exit(1);
 }
 
@@ -343,7 +340,6 @@ extern void finishWarnExit()
   if (g_warnStat && (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS ||
                      g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT))
   {
-    Doxygen::terminating=true;
     exit(1);
   }
 }
