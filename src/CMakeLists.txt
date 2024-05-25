@@ -17,7 +17,7 @@ include_directories(
 if (NOT use_sys_spdlog)
     include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
 endif()
-if (NOT use_sys_sqlite)
+if (NOT use_sys_sqlite3)
     include_directories(${PROJECT_SOURCE_DIR}/deps/sqlite3)
 endif()
 
