@@ -29,6 +29,7 @@
 #include "classlist.h"
 #include "textstream.h"
 #include "growbuf.h"
+#include "dir.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1356,6 +1357,10 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     {
        err("Problems running epstopdf. Check your TeX installation!\n");
        return;
+    }
+    else
+    {
+      Dir().remove((epsBaseName + ".eps").data());
     }
   }
 }
