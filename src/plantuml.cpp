@@ -301,7 +301,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
             }
             else
             {
-              Dir().remove((pumlOutDir + QCString(str) + ".eps").data());
+              Dir().remove(pumlOutDir.str()+str+".eps");
             }
           }
         }

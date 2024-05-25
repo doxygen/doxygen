@@ -1360,7 +1360,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     }
     else
     {
-      Dir().remove((epsBaseName + ".eps").data());
+      Dir().remove(epsBaseName.str()+".eps");
     }
   }
 }

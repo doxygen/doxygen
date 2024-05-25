@@ -77,7 +77,7 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
     }
     else
     {
-      Dir().remove((outFile + ".eps").data());
+      Dir().remove(outFile.str()+".eps");
     }
   }
 

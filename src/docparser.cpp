@@ -181,7 +181,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
       }
       else
       {
-        Dir().remove((outputDir + "/" + baseName + ".eps").data());
+        Dir().remove(outputDir.str()+"/"+baseName.str()+".eps");
       }
       return baseName;
     }
