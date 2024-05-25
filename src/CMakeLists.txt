@@ -393,7 +393,7 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
-    ${ICONV_LIBRARIES}
+    ${Iconv_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
     ${CLANG_LIBS}
