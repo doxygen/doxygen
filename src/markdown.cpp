@@ -662,10 +662,10 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
                      !(data[i]=='/' && data[i-1]=='<') && // html end tag also ends emphasis
                      data[i]!='\n') i++;
     // avoid overflow (unclosed emph token)
-    if (i==size)
-    {
-      return 0;
-    }
+    //if (i==size)
+    //{
+    //  return 0;
+    //}
     //printf("findEmphasisChar: data=[%s] i=%d c=%c\n",data,i,data[i]);
 
     // not counting escaped chars or characters that are unlikely
