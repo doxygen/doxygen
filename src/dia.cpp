@@ -75,6 +75,10 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
     {
       err("Problems running epstopdf. Check your TeX installation!\n");
     }
+    else
+    {
+      Dir().remove(outFile.str()+".eps");
+    }
   }
 
 error:

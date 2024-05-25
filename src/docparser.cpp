@@ -179,6 +179,10 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
       {
 	err("Problems running epstopdf. Check your TeX installation!\n");
       }
+      else
+      {
+        Dir().remove(outputDir.str()+"/"+baseName.str()+".eps");
+      }
       return baseName;
     }
   }
