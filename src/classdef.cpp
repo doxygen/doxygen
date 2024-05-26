@@ -3885,8 +3885,9 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
 
             mmd->setCategory(category);
             mmd->setCategoryRelation(mi->memberDef());
+            auto miMmd = toMemberDefMutable(mi->memberDef());
+            if (miMmd) miMmd->setCategoryRelation(newMd.get());
 
-            mmd->setCategoryRelation(newMd.get());
             if (makePrivate || isExtension)
             {
               mmd->makeImplementationDetail();
