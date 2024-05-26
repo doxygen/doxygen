@@ -288,6 +288,15 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
   if (m_impl->isSymbol) addToMap(m_impl->name,m_impl->def);
 }
 
+DefinitionImpl &DefinitionImpl::operator=(const DefinitionImpl &other)
+{
+  if (this!=&other)
+  {
+    m_impl = std::make_unique<DefinitionImpl::IMPL>(*other.m_impl);
+  }
+  return *this;
+}
+
 DefinitionImpl::~DefinitionImpl()
 {
   if (m_impl->isSymbol)

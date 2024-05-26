@@ -1432,7 +1432,9 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   std::unique_ptr<MemberDefImpl> result(new MemberDefImpl(
         getDefFileName(),getDefLine(),getDefColumn(),m_type,localName(),m_args,m_exception,
         m_prot,m_virt,m_stat,m_related,m_mtype,m_tArgList,m_defArgList,m_metaData));
-  // first copy everything by reference
+  // first copy base members
+  result->DefinitionMixin<MemberDefMutable>::operator=(*this);
+  // then copy other members
   result->m_typeConstraints                = m_typeConstraints                ;
   result->m_declArgList                    = m_declArgList                    ;
   result->m_classDef                       = m_classDef                       ;

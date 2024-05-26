@@ -3793,6 +3793,7 @@ void ClassDefImpl::mergeMembers()
  */
 void ClassDefImpl::mergeCategory(ClassDef *cat)
 {
+  AUTO_TRACE();
   ClassDefMutable *category = toClassDefMutable(cat);
   if (category)
   {
@@ -3836,7 +3837,7 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
       MemberNameInfo *dstMni=dstMnd.find(srcMni->memberName());
       if (dstMni) // method is already defined in the class
       {
-        //printf("Existing member %s\n",srcMni->memberName());
+        AUTO_TRACE_ADD("Existing member {}",srcMni->memberName());
         const auto &dstMi = dstMni->front();
         const auto &srcMi = srcMni->front();
         if (srcMi && dstMi)
@@ -3854,7 +3855,7 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
       }
       else // new method name
       {
-        //printf("New member %s\n",srcMni->memberName());
+        AUTO_TRACE_ADD("New member {}",srcMni->memberName());
         // create a deep copy of the list
         MemberNameInfo *newMni = dstMnd.add(srcMni->memberName());
 
@@ -3868,7 +3869,7 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
           if (newMd)
           {
             auto mmd = toMemberDefMutable(newMd.get());
-            //printf("Copying member %s\n",qPrint(mi->memberDef->name()));
+            AUTO_TRACE_ADD("Copying member {}",mmd->name());
             mmd->moveTo(this);
 
             auto newMi=std::make_unique<MemberInfo>(newMd.get(),prot,mi->virt(),mi->inherited(),mi->virtualBaseClass());

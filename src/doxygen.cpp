@@ -7926,6 +7926,7 @@ static void createTemplateInstanceMembers()
 
 static void mergeCategories()
 {
+  AUTO_TRACE();
   // merge members of categories into the class they extend
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
@@ -7936,8 +7937,7 @@ static void mergeCategories()
       ClassDefMutable *baseClass=toClassDefMutable(Doxygen::classLinkedMap->find(baseName));
       if (baseClass)
       {
-        //printf("*** merging members of category %s into %s\n",
-        //    qPrint(cd->name()),qPrint(baseClass->name()));
+        AUTO_TRACE_ADD("merging members of category {} into {}",cd->name(),baseClass->name());
         baseClass->mergeCategory(cd.get());
       }
     }

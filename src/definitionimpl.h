@@ -153,8 +153,8 @@ class DefinitionMixin : public Base
         const QCString &defFileName,int defLine,int defColumn,
         const QCString &name,const char *b=nullptr,const char *d=nullptr,
         bool isSymbol=TRUE) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
-    DefinitionMixin(const DefinitionMixin &) = default;
-    DefinitionMixin &operator=(const DefinitionMixin &) = default;
+    DefinitionMixin(const DefinitionMixin &other) : Base(other), m_impl(other.m_impl) {}
+    DefinitionMixin &operator=(const DefinitionMixin &other) { if (this!=&other) { m_impl = other.m_impl; }; return *this; }
     DefinitionMixin(DefinitionMixin &&) = delete;
     DefinitionMixin &operator=(DefinitionMixin &&) = delete;
    ~DefinitionMixin() override = default;
