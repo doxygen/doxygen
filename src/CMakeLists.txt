@@ -72,7 +72,7 @@ set_source_files_properties(${GENERATED_SRC}/configoptions.cpp PROPERTIES GENERA
 
 # ce_parse.h
 add_custom_command(
-    COMMAND ${BISON_EXECUTABLE} -l -d -p ce_parsexpYY ${CMAKE_CURRENT_LIST_DIR}/constexp.y -o ce_parse.c
+    COMMAND ${BISON_EXECUTABLE} -l -d ${CMAKE_CURRENT_LIST_DIR}/constexp.y -o ce_parse.c
     DEPENDS ${CMAKE_CURRENT_LIST_DIR}/constexp.y
     OUTPUT ${GENERATED_SRC}/ce_parse.h
     WORKING_DIRECTORY ${GENERATED_SRC}
