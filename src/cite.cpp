@@ -79,14 +79,14 @@ void CitationManager::insert(const QCString &label)
 {
   p->entries.insert(
       std::make_pair(
-        label.str(),
-        std::make_unique<CiteInfoImpl>(label)
+        label.lower().str(),
+        std::make_unique<CiteInfoImpl>(label.lower())
       ));
 }
 
 const CiteInfo *CitationManager::find(const QCString &label) const
 {
-  auto it = p->entries.find(label.str());
+  auto it = p->entries.find(label.lower().str());
   if (it!=p->entries.end())
   {
     return it->second.get();
@@ -179,6 +179,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
             k = line.find(',');
           }
         }
+        citeName = citeName.lower();
       }
       //printf("citeName = #%s#\n",qPrint(citeName));
     }
@@ -188,7 +189,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
       int k = line.find('}',i);
       if (j>i && k>j)
       {
-        QCString crossrefName = line.mid(static_cast<size_t>(j+1),static_cast<uint32_t>(k-j-1));
+        QCString crossrefName = line.mid(static_cast<size_t>(j+1),static_cast<uint32_t>(k-j-1)).lower();
         // check if the reference with the cross reference is used
         // insert cross reference when cross reference has not yet been added.
         if ((p->entries.find(citeName.str())!=p->entries.end()) &&
