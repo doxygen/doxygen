@@ -78,11 +78,12 @@ enum class ExplicitPageResult
    (c>='0' && c<='9') || \
    (static_cast<unsigned char>(c)>=0x80)) // unicode characters
 
+// is character allowed right at the beginning of an emphasis section
 #define extraChar(c) \
   (c=='-' || c=='+' || c=='!' || \
    c=='?' || c=='$' || c=='@' || \
    c=='&' || c=='*' || c=='%' || \
-   c=='[')
+   c=='[' || c=='(')
 
 // is character at position i in data allowed before an emphasis section
 #define isOpenEmphChar(c) \
