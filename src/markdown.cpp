@@ -83,7 +83,9 @@ enum class ExplicitPageResult
   (c=='-' || c=='+' || c=='!' || \
    c=='?' || c=='$' || c=='@' || \
    c=='&' || c=='*' || c=='%' || \
-   c=='[' || c=='(')
+   c=='[' || c=='(' || c=='.' || \
+   c=='>' || c==':' || c==',' || \
+   c==';')
 
 // is character at position i in data allowed before an emphasis section
 #define isOpenEmphChar(c) \
