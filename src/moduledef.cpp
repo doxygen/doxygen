@@ -1171,6 +1171,7 @@ struct ModuleManager::Private
   std::unordered_map<std::string,ModuleList> moduleNameMap; // name->module mapping
   ImportInfoMap       externalImports;
   HeaderInfoVector    headers;
+  std::mutex          mutex;
 };
 
 ModuleManager &ModuleManager::instance()
@@ -1188,6 +1189,7 @@ void ModuleManager::createModuleDef(const QCString &fileName,int line,int column
 {
   AUTO_TRACE("{}:{}: Found module name='{}' partition='{}' exported='{}'",
       fileName,line,moduleName,partitionName,exported);
+  std::lock_guard lock(p->mutex);
   ModuleDef::Type mt = exported ? ModuleDef::Type::Interface : ModuleDef::Type::Implementation;
   std::unique_ptr<ModuleDef> modDef = std::make_unique<ModuleDefImpl>(fileName,line,column,moduleName,mt,partitionName);
   auto mod = p->moduleFileMap.add(fileName,std::move(modDef));
@@ -1206,6 +1208,7 @@ void ModuleManager::createModuleDef(const QCString &fileName,int line,int column
 
 void ModuleManager::clear()
 {
+  std::lock_guard lock(p->mutex);
   p->headers.clear();
   p->externalImports.clear();
   p->moduleNameMap.clear();
@@ -1215,6 +1218,7 @@ void ModuleManager::clear()
 void ModuleManager::addHeader(const QCString &moduleFile,int line,const QCString &headerName,bool isSystem)
 {
   AUTO_TRACE("{}:{} headerName={} isSystem={}",moduleFile,line,headerName,isSystem);
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(moduleFile);
   if (mod)
   {
@@ -1232,6 +1236,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
 {
   AUTO_TRACE("{}:{} importName={},isExported={},partitionName={}",
       moduleFile,line,importName,isExported,partitionName);
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(moduleFile);
   if (mod) // import inside a module
   {
@@ -1247,6 +1252,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
 
 void ModuleManager::addClassToModule(const Entry *root,ClassDef *cd)
 {
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(root->fileName);
   if (mod)
   {
@@ -1258,6 +1264,7 @@ void ModuleManager::addClassToModule(const Entry *root,ClassDef *cd)
 
 void ModuleManager::addConceptToModule(const Entry *root,ConceptDef *cd)
 {
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(root->fileName);
   if (mod)
   {
@@ -1269,6 +1276,7 @@ void ModuleManager::addConceptToModule(const Entry *root,ConceptDef *cd)
 
 void ModuleManager::addMemberToModule(const Entry *root,MemberDef *md)
 {
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(root->fileName);
   if (mod && root->exported)
   {
@@ -1280,6 +1288,7 @@ void ModuleManager::addMemberToModule(const Entry *root,MemberDef *md)
 
 void ModuleManager::addTagInfo(const QCString &fileName,const QCString &tagFile,const QCString &clangId)
 {
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(fileName);
   if (mod)
   {
