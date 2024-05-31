@@ -78,10 +78,14 @@ enum class ExplicitPageResult
    (c>='0' && c<='9') || \
    (static_cast<unsigned char>(c)>=0x80)) // unicode characters
 
+// is character allowed right at the beginning of an emphasis section
 #define extraChar(c) \
   (c=='-' || c=='+' || c=='!' || \
    c=='?' || c=='$' || c=='@' || \
-   c=='&' || c=='*' || c=='%')
+   c=='&' || c=='*' || c=='%' || \
+   c=='[' || c=='(' || c=='.' || \
+   c=='>' || c==':' || c==',' || \
+   c==';' || c=='\'' || c=='"')
 
 // is character at position i in data allowed before an emphasis section
 #define isOpenEmphChar(c) \
@@ -1058,8 +1062,8 @@ int Markdown::Private::processEmphasis(std::string_view data,size_t offset)
   const size_t size = data.size();
 
   if ((offset>0 && !isOpenEmphChar(data.data()[-1])) || // invalid char before * or _
-      (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]) || data[1]=='[')) || // invalid char after * or _
-      (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]) || data[2]=='[')))   // invalid char after ** or __
+      (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]))) || // invalid char after * or _
+      (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]))))   // invalid char after ** or __
   {
     return 0;
   }
@@ -3620,4 +3624,3 @@ void MarkdownOutlineParser::parsePrototype(const QCString &text)
 }
 
 //------------------------------------------------------------------------
-
