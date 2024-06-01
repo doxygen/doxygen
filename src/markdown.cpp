@@ -85,7 +85,7 @@ enum class ExplicitPageResult
    c=='&' || c=='*' || c=='%' || \
    c=='[' || c=='(' || c=='.' || \
    c=='>' || c==':' || c==',' || \
-   c==';' || c=='\'' || c=='"')
+   c==';' || c=='\'' || c=='"' || c=='`')
 
 // is character at position i in data allowed before an emphasis section
 #define isOpenEmphChar(c) \
@@ -661,7 +661,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
 
   while (i<size)
   {
-    while (i<size && data[i]!=c    && data[i]!='`' &&
+    while (i<size && data[i]!=c    &&
                      data[i]!='\\' && data[i]!='@' &&
                      !(data[i]=='/' && data[i-1]=='<') && // html end tag also ends emphasis
                      data[i]!='\n') i++;
@@ -1065,6 +1065,7 @@ int Markdown::Private::processEmphasis(std::string_view data,size_t offset)
       (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]))) || // invalid char after * or _
       (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]))))   // invalid char after ** or __
   {
+    AUTO_TRACE_EXIT("invalid surrounding characters");
     return 0;
   }
 
