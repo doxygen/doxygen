@@ -693,7 +693,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   ASSERT(!target.isEmpty());
   m_relPath = parser->context.relPath;
   const SectionInfo *sec = SectionManager::instance().find(parser->context.prefix+target);
-  if (sec==nullptr && parser->context.lang==SrcLangExt::Markdown) // lookup as markdown file
+  if (sec==nullptr && getLanguageFromFileName(target)==SrcLangExt::Markdown) // lookup as markdown file
   {
     sec = SectionManager::instance().find(markdownFileNameToId(target));
   }
