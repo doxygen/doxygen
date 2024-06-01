@@ -1187,6 +1187,14 @@ SLASHopt [/]*
 <CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,yytext,YY_START==ReadLine && yyextra->readLineCtx==SComment);
   				   }
+<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{B}[\\@]"ialias{" { // expand alias with arguments
+				     yyextra->lastBlockContext=YY_START;
+				     yyextra->blockCount=1;
+				     yyextra->aliasString=yytext+1;
+				     yyextra->aliasCmd=yytext+1;
+				     yyextra->lastEscaped=0;
+				     BEGIN( ReadAliasArgs );
+				   }
 <CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>[\\@][a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
                                      yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
