@@ -1449,7 +1449,7 @@ STopt  [^\n@\\]*
                                           yyextra->current->type += yytext;
                                           yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                         }
-<GroupDocArg2>{DOCNL}                   {
+<GroupDocArg2>{DOCNL}+                  {
                                           if ( yyextra->current->groupDocType==Entry::GROUPDOC_NORMAL &&
                                                yyextra->current->type.isEmpty()
                                              ) // defgroup requires second argument
@@ -1460,10 +1460,18 @@ STopt  [^\n@\\]*
                                                 );
                                           }
                                           unput_string(yytext,yyleng);
+                                          int extraLineNr = 0;
+                                          if (yyextra->inContext == OutputBrief)
+                                          {
+                                            for (int i = 0; i < yyleng; i++)
+                                            {
+                                              if (yytext[i]=='\n') extraLineNr++;
+                                            }
+                                          }
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
-                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr) + " \\ilinebr ");
+                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr + extraLineNr) + " \\ilinebr ");
                                           BEGIN( Comment );
                                         }
 <GroupDocArg2>.                         { // title (stored in type)
@@ -4500,7 +4508,10 @@ static void addIlineBreak(yyscan_t yyscanner,int lineNr)
 static void endBrief(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->brief.stripWhiteSpace().isEmpty())
+  static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr( *\n*))");
+  std::string str = yyextra->current->brief.str();
+  reg::Match match;
+  if (!yyextra->current->brief.stripWhiteSpace().isEmpty() && !reg::match(str,match,nonBrief))
   { // only go to the detailed description if we have
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=FALSE;
