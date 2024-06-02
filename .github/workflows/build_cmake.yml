@@ -70,12 +70,14 @@ jobs:
             os: windows-latest,
             build_type: "Debug", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
+            cmake_extra_opts: "-Dwin_static=YES"
           }
         - {
             name: "Windows Latest MSVC Release",
             os: windows-latest,
             build_type: "Release", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
+            cmake_extra_opts: "-Dwin_static=YES"
           }
     steps:
     - name: Checkout doxygen
