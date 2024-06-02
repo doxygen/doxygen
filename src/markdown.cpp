@@ -2787,7 +2787,12 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
     }
     if (level==0) break; // end of quote block
     // copy line without quotation marks
-    if (curLevel != 0 || !isGitHubAlert) out+=data.substr(indent,end-indent);
+    if (curLevel != 0 || !isGitHubAlert)
+    {
+      QCString txt = data.substr(indent,end-indent);
+      if (txt.stripWhiteSpace().isEmpty() && !startCmd.isEmpty()) out += "<br><br>\n";
+      else out += txt;
+    }
     else out+= "\n";
     curLevel=level;
     // proceed with next line
