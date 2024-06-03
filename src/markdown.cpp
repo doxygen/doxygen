@@ -2712,6 +2712,7 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   const size_t size = data.size();
   QCString startCmd;
   int isGitHubAlert = false;
+  int isGitHubFirst = false;
   while (i<size)
   {
     // find end of this line
@@ -2742,26 +2743,31 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       if (txt == "[!note]")
       {
         isGitHubAlert = true;
+        isGitHubFirst = true;
         startCmd = "\\note ";
       }
       else if (txt == "[!warning]")
       {
         isGitHubAlert = true;
+        isGitHubFirst = true;
         startCmd = "\\warning ";
       }
       else if (txt == "[!tip]")
       {
         isGitHubAlert = true;
+        isGitHubFirst = true;
         startCmd = "\\remark ";
       }
       else if (txt == "[!caution]")
       {
         isGitHubAlert = true;
+        isGitHubFirst = true;
         startCmd = "\\attention ";
       }
       else if (txt == "[!important]")
       {
         isGitHubAlert = true;
+        isGitHubFirst = true;
         startCmd = "\\important ";
       }
     }
@@ -2790,8 +2796,13 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
     if (curLevel != 0 || !isGitHubAlert)
     {
       QCString txt = data.substr(indent,end-indent);
-      if (txt.stripWhiteSpace().isEmpty() && !startCmd.isEmpty()) out += "<br><br>\n";
+      if (txt.stripWhiteSpace().isEmpty() && !startCmd.isEmpty())
+      {
+        if (!isGitHubFirst) out += "<br>";
+        out += "<br>\n";
+      }
       else out += txt;
+      isGitHubFirst = false;
     }
     else out+= "\n";
     curLevel=level;
