@@ -2066,9 +2066,9 @@ ALIASES  = "english=\if english" \
   present in the function declaration or definition.
 
   The \c \\param command has an optional attribute, \<dir\>, specifying the direction
-  of the parameter. Possible values are "[in]", "[in,out]", and "[out]",
-  note the [square] brackets in this description. Note that it is also possible to put
-  whitespace between the command and the \<dir\>.
+  of the parameter. Possible values are "[in]", "[out]", "[inout]", "[outin]",
+  "[in,out]", and "[in out]"; note the [square] brackets in this description.
+  Note that it is also possible to put whitespace between the command and the \<dir\>.
   When a parameter is both input and output, [in,out] is used as attribute.
   Here is an example for the function \c memcpy:
   \code
@@ -2773,7 +2773,7 @@ Commands for displaying examples
                class or namespace in which the include command appears, rather than the global namespace.
 
   When using option `doc`, there is also the option `raise` that can be specified to raise
-  all sections found in the referenced file by a certain amount. For example 
+  all sections found in the referenced file by a certain amount. For example
   \verbatim
   \include{doc,raise=1} file.dox
   \endverbatim will treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
@@ -2921,7 +2921,7 @@ Commands for displaying examples
                class or namespace in which the include command appears, rather than the global namespace.
 
  When using option `doc`, there is also the option `raise` that can be specified to raise
- all sections found in the referenced file by a certain amount. For example 
+ all sections found in the referenced file by a certain amount. For example
  \verbatim
  \snippet{doc,raise=1} file.dox XXX
  \endverbatim will
