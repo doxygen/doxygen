@@ -2066,8 +2066,11 @@ ALIASES  = "english=\if english" \
   present in the function declaration or definition.
 
   The \c \\param command has an optional attribute, \<dir\>, specifying the direction
-  of the parameter. Possible values are "[in]", "[out]", "[inout]", "[outin]",
-  "[in,out]", "[out,in]", "[in out]", and "[out in]"; note the [square] brackets in this description.
+  of the parameter. Possible values are "[in]", "[out]", and "[in,out]"; note the [square] brackets
+  in this description.
+  For the bidirecional values, directions "in" and "out" can be specified in any order, and they can
+  either be written altogether, or separated with a comma (`,`) or a space.
+  That means that for example values "[outin]" or "[in out]" are also valid.
   Note that it is also possible to put whitespace between the command and the \<dir\>.
   When a parameter is both input and output, [in,out] is used as attribute.
   Here is an example for the function \c memcpy:
