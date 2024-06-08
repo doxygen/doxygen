@@ -1187,11 +1187,11 @@ SLASHopt [/]*
 <CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,yytext,YY_START==ReadLine && yyextra->readLineCtx==SComment);
   				   }
-<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{B}[\\@]"ialias{" { // expand alias with arguments
+<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{B}"\\ilinebr"{B}[\\@]"ialias{" { // expand alias with arguments
 				     yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
-				     yyextra->aliasString=yytext+1;
-				     yyextra->aliasCmd=yytext+1;
+				     yyextra->aliasString=yytext+10;
+				     yyextra->aliasCmd=yytext+10;
 				     yyextra->lastEscaped=0;
 				     BEGIN( ReadAliasArgs );
 				   }
@@ -1819,7 +1819,7 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCom
     }
     expAlias.push_back(cmd);
     // add a ialias command to allow expansion of cmd again
-    result += " \\ialias{";
+    result += " \\ilinebr \\ialias{";
     result += cmd;
     result += "}";
     for (int i=(int)result.length()-1; i>=0; i--)
