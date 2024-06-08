@@ -2398,7 +2398,6 @@ err:
 bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &name)
 {
   static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
-  QCString rtfOutput = Config_getString(RTF_OUTPUT);
 
   Dir d(path.str());
   // store the original directory
@@ -2450,10 +2449,11 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
 
   testRTFOutput(mainRTFName);
 
+  QCString rtfOutputDir = Dir::currentDirPath();
   for (auto &s : removeSet)
   {
     QCString s1(s.c_str());
-    if (s1.startsWith(rtfOutput)) Portable::unlink(s1);
+    if (s1.startsWith(rtfOutputDir)) Portable::unlink(s1);
   }
 
   Dir::setCurrent(oldDir);
