@@ -151,6 +151,11 @@ if (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
    endif()
 endif()
 
+if (WIN32 AND MSVC)
+    # workaround for GitHub runner, see https://github.com/actions/runner-images/issues/10004
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR")
+endif()
+
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
    if ((CMAKE_GENERATOR MATCHES "MinGW Makefiles") OR
        (CMAKE_GENERATOR MATCHES "MSYS Makefiles") OR
