@@ -92,7 +92,7 @@ inline int qstricmp_sort( const char *str1, const char *str2 )
 
 int qstrnicmp( const char *str1, const char *str2, size_t len );
 
-using JavaCCString = std::basic_string<unsigned char>;
+using JavaCCString = std::basic_string<JAVACC_CHAR_TYPE>;
 
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses std::string as the underlying string type
