@@ -33,7 +33,7 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
                          const QCString &d,const QCString &docFile,int docLine,
                          MemberListContainer con)
   : m_container(container),
-    memberList(std::make_unique<MemberList>(MemberListType_memberGroup,con)),
+    memberList(std::make_unique<MemberList>(MemberListType::MemberGroup(),con)),
     grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);

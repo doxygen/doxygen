@@ -6458,177 +6458,56 @@ QCString extractDirection(QCString &docs)
 void convertProtectionLevel(
                    MemberListType inListType,
                    Protection inProt,
-                   int *outListType1,
-                   int *outListType2
+                   MemberListType *outListType1,
+                   MemberListType *outListType2
                   )
 {
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+
   // default representing 1-1 mapping
   *outListType1=inListType;
-  *outListType2=-1;
+  *outListType2=MemberListType::Invalid();
+
   if (inProt==Protection::Public)
   {
-    switch (inListType) // in the private section of the derived class,
-                        // the private section of the base class should not
-                        // be visible
+    if (inListType.isPrivate())
     {
-      case MemberListType_priMethods:
-      case MemberListType_priStaticMethods:
-      case MemberListType_priSlots:
-      case MemberListType_priAttribs:
-      case MemberListType_priStaticAttribs:
-      case MemberListType_priTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-      default:
-        break;
+      *outListType1=MemberListType::Invalid();
     }
   }
-  else if (inProt==Protection::Protected) // Protected inheritance
+  else if (inProt==Protection::Protected)
   {
-    switch (inListType) // in the protected section of the derived class,
-                        // both the public and protected members are shown
-                        // as protected
+    if (inListType.isPrivate() || inListType.isPublic())
     {
-      case MemberListType_pubMethods:
-      case MemberListType_pubStaticMethods:
-      case MemberListType_pubSlots:
-      case MemberListType_pubAttribs:
-      case MemberListType_pubStaticAttribs:
-      case MemberListType_pubTypes:
-      case MemberListType_priMethods:
-      case MemberListType_priStaticMethods:
-      case MemberListType_priSlots:
-      case MemberListType_priAttribs:
-      case MemberListType_priStaticAttribs:
-      case MemberListType_priTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-
-      case MemberListType_proMethods:
-        *outListType2=MemberListType_pubMethods;
-        break;
-      case MemberListType_proStaticMethods:
-        *outListType2=MemberListType_pubStaticMethods;
-        break;
-      case MemberListType_proSlots:
-        *outListType2=MemberListType_pubSlots;
-        break;
-      case MemberListType_proAttribs:
-        *outListType2=MemberListType_pubAttribs;
-        break;
-      case MemberListType_proStaticAttribs:
-        *outListType2=MemberListType_pubStaticAttribs;
-        break;
-      case MemberListType_proTypes:
-        *outListType2=MemberListType_pubTypes;
-        break;
-      default:
-        break;
+      *outListType1=MemberListType::Invalid();
+    }
+    else if (inListType.isProtected())
+    {
+      *outListType2=inListType.toPublic();
     }
   }
   else if (inProt==Protection::Private)
   {
-    switch (inListType) // in the private section of the derived class,
-                        // both the public and protected members are shown
-                        // as private
+    if (inListType.isPublic() || inListType.isProtected())
     {
-      case MemberListType_pubMethods:
-      case MemberListType_pubStaticMethods:
-      case MemberListType_pubSlots:
-      case MemberListType_pubAttribs:
-      case MemberListType_pubStaticAttribs:
-      case MemberListType_pubTypes:
-      case MemberListType_proMethods:
-      case MemberListType_proStaticMethods:
-      case MemberListType_proSlots:
-      case MemberListType_proAttribs:
-      case MemberListType_proStaticAttribs:
-      case MemberListType_proTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-
-      case MemberListType_priMethods:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubMethods;
-          *outListType2=MemberListType_proMethods;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priStaticMethods:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubStaticMethods;
-          *outListType2=MemberListType_proStaticMethods;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priSlots:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubSlots;
-          *outListType2=MemberListType_proSlots;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priAttribs:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubAttribs;
-          *outListType2=MemberListType_proAttribs;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priStaticAttribs:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubStaticAttribs;
-          *outListType2=MemberListType_proStaticAttribs;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priTypes:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubTypes;
-          *outListType2=MemberListType_proTypes;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      default:
-        break;
+      *outListType1=MemberListType::Invalid();
+    }
+    else if (inListType.isPrivate())
+    {
+      if (extractPrivate)
+      {
+        *outListType1=inListType.toPublic();
+        *outListType2=inListType.toProtected();
+      }
+      else
+      {
+        *outListType1=MemberListType::Invalid();
+      }
     }
   }
-  //printf("convertProtectionLevel(type=%d prot=%d): %d,%d\n",
-  //    inListType,inProt,*outListType1,*outListType2);
+
+  //printf("convertProtectionLevel(type=%s prot=%d): %s,%s\n",
+  //    qPrint(inListType.to_string()),inProt,qPrint(outListType1->to_string()),qPrint(outListType2->to_string()));
 }
 
 bool mainPageHasTitle()

@@ -111,7 +111,7 @@ int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
     count+=mg->countInheritableMembers(inheritedFrom);
   }
   //printf("%s::countInheritableMembers(%s)=%d\n",
-  //    qPrint(listTypeAsString(m_listType)),
+  //    qPrint(m_listType.toLabel()),
   //    qPrint(inheritedFrom->name()),count);
   return count;
 }
@@ -534,7 +534,7 @@ void MemberList::writeDeclarations(OutputList &ol,
          cd->countMembersIncludingGrouped(m_listType,inheritedFrom,TRUE)>0
        )
     {
-      inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
+      inheritId = substitute(lt.toLabel(),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
       if (!title.isEmpty())
       {
@@ -554,7 +554,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       }
       else
       {
-        ol.startMemberHeader(listTypeAsString(m_listType));
+        ol.startMemberHeader(m_listType.toLabel());
       }
       ol.parseText(title);
       if (showInline)
@@ -854,66 +854,6 @@ void MemberList::findSectionsInDocumentation(const Definition *d)
 void MemberList::setNeedsSorting(bool b)
 {
   m_needsSorting = b;
-}
-
-QCString MemberList::listTypeAsString(MemberListType type)
-{
-  switch(type)
-  {
-    case MemberListType_pubMethods: return "pub-methods";
-    case MemberListType_proMethods: return "pro-methods";
-    case MemberListType_pacMethods: return "pac-methods";
-    case MemberListType_priMethods: return "pri-methods";
-    case MemberListType_pubStaticMethods: return "pub-static-methods";
-    case MemberListType_proStaticMethods: return "pro-static-methods";
-    case MemberListType_pacStaticMethods: return "pac-static-methods";
-    case MemberListType_priStaticMethods: return "pri-static-methods";
-    case MemberListType_pubSlots: return "pub-slots";
-    case MemberListType_proSlots: return "pro-slots";
-    case MemberListType_priSlots: return "pri-slots";
-    case MemberListType_pubAttribs: return "pub-attribs";
-    case MemberListType_proAttribs: return "pro-attribs";
-    case MemberListType_pacAttribs: return "pac-attribs";
-    case MemberListType_priAttribs: return "pri-attribs";
-    case MemberListType_pubStaticAttribs: return "pub-static-attribs";
-    case MemberListType_proStaticAttribs: return "pro-static-attribs";
-    case MemberListType_pacStaticAttribs: return "pac-static-attribs";
-    case MemberListType_priStaticAttribs: return "pri-static-attribs";
-    case MemberListType_pubTypes: return "pub-types";
-    case MemberListType_proTypes: return "pro-types";
-    case MemberListType_pacTypes: return "pac-types";
-    case MemberListType_priTypes: return "pri-types";
-    case MemberListType_related: return "related";
-    case MemberListType_signals: return "signals";
-    case MemberListType_friends: return "friends";
-    case MemberListType_dcopMethods: return "dcop-methods";
-    case MemberListType_properties: return "properties";
-    case MemberListType_events: return "events";
-    case MemberListType_interfaces: return "interfaces";
-    case MemberListType_services: return "services";
-    case MemberListType_interfaceMembers: return "interface-members";
-    case MemberListType_serviceMembers: return "service-members";
-    case MemberListType_decDefineMembers: return "define-members";
-    case MemberListType_decProtoMembers: return "proto-members";
-    case MemberListType_decTypedefMembers: return "typedef-members";
-    case MemberListType_decSequenceMembers: return "sequence-members";
-    case MemberListType_decDictionaryMembers: return "dictionary-members";
-    case MemberListType_decEnumMembers: return "enum-members";
-    case MemberListType_decFuncMembers: return "func-members";
-    case MemberListType_decVarMembers: return "var-members";
-    case MemberListType_decEnumValMembers: return "enumval-members";
-    case MemberListType_decPubSlotMembers: return "pub-slot-members";
-    case MemberListType_decProSlotMembers: return "pro-slot-members";
-    case MemberListType_decPriSlotMembers: return "pri-slot-members";
-    case MemberListType_decSignalMembers: return "signal-members";
-    case MemberListType_decEventMembers: return "event-members";
-    case MemberListType_decFriendMembers: return "friend-members";
-    case MemberListType_decPropMembers: return "prop-members";
-    case MemberListType_enumFields: return "enum-fields";
-    case MemberListType_memberGroup: break;
-    default: break;
-  }
-  return "";
 }
 
 void MemberList::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool showNamespaceMembers)

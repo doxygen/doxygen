@@ -367,7 +367,7 @@ void NamespaceDefImpl::findSectionsInDocumentation()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ml->findSectionsInDocumentation(this);
     }
@@ -440,7 +440,7 @@ void NamespaceDefImpl::addMembersToMemberGroup()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
@@ -497,10 +497,10 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
   }
   else // member is a non-inline namespace or a documented inline namespace
   {
-    MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+    MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
     if (allMemberList==nullptr)
     {
-      m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::Namespace));
+      m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType::AllMembersList(),MemberListContainer::Namespace));
       allMemberList = m_memberLists.back().get();
     }
     allMemberList->push_back(md);
@@ -509,40 +509,40 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     switch(md->memberType())
     {
       case MemberType_Variable:
-        addMemberToList(MemberListType_decVarMembers,md);
-        addMemberToList(MemberListType_docVarMembers,md);
+        addMemberToList(MemberListType::DecVarMembers(),md);
+        addMemberToList(MemberListType::DocVarMembers(),md);
         break;
       case MemberType_Function:
-        addMemberToList(MemberListType_decFuncMembers,md);
-        addMemberToList(MemberListType_docFuncMembers,md);
+        addMemberToList(MemberListType::DecFuncMembers(),md);
+        addMemberToList(MemberListType::DocFuncMembers(),md);
         break;
       case MemberType_Typedef:
-        addMemberToList(MemberListType_decTypedefMembers,md);
-        addMemberToList(MemberListType_docTypedefMembers,md);
+        addMemberToList(MemberListType::DecTypedefMembers(),md);
+        addMemberToList(MemberListType::DocTypedefMembers(),md);
         break;
       case MemberType_Sequence:
-        addMemberToList(MemberListType_decSequenceMembers,md);
-        addMemberToList(MemberListType_docSequenceMembers,md);
+        addMemberToList(MemberListType::DecSequenceMembers(),md);
+        addMemberToList(MemberListType::DocSequenceMembers(),md);
         break;
       case MemberType_Dictionary:
-        addMemberToList(MemberListType_decDictionaryMembers,md);
-        addMemberToList(MemberListType_docDictionaryMembers,md);
+        addMemberToList(MemberListType::DecDictionaryMembers(),md);
+        addMemberToList(MemberListType::DocDictionaryMembers(),md);
         break;
       case MemberType_Enumeration:
-        addMemberToList(MemberListType_decEnumMembers,md);
-        addMemberToList(MemberListType_docEnumMembers,md);
+        addMemberToList(MemberListType::DecEnumMembers(),md);
+        addMemberToList(MemberListType::DocEnumMembers(),md);
         break;
       case MemberType_EnumValue:
         break;
       case MemberType_Define:
-        addMemberToList(MemberListType_decDefineMembers,md);
-        addMemberToList(MemberListType_docDefineMembers,md);
+        addMemberToList(MemberListType::DecDefineMembers(),md);
+        addMemberToList(MemberListType::DocDefineMembers(),md);
         break;
       case MemberType_Property:
         if (md->getLanguage() == SrcLangExt::Python)
         {
-          addMemberToList(MemberListType_propertyMembers,md);
-          addMemberToList(MemberListType_properties,md);
+          addMemberToList(MemberListType::PropertyMembers(),md);
+          addMemberToList(MemberListType::Properties(),md);
           break;
         }
         //  fallthrough, explicitly no break here
@@ -588,7 +588,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
 
 void NamespaceDefImpl::computeAnchors()
 {
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   if (allMemberList) allMemberList->setAnchors();
 }
 
@@ -909,7 +909,7 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
-          ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+          ol.writeSummaryLink(QCString(),ml->listType().toLabel(),lmd->title(lang),first);
           first=FALSE;
         }
       }
@@ -1128,7 +1128,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+    MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
     if (allMemberList) allMemberList->sort();
     writeMemberPages(ol);
   }
@@ -1141,7 +1141,7 @@ void NamespaceDefImpl::writeMemberPages(OutputList &ol)
 
   for (const auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml->listType().isDocumentation())
     {
       ml->writeDocumentationPage(ol,displayName(),this);
     }
@@ -1156,7 +1156,7 @@ void NamespaceDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *cur
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   if (allMemberList)
   {
     for (const auto &md : *allMemberList)
@@ -1208,7 +1208,7 @@ void NamespaceDefImpl::countMembers()
 
 int NamespaceDefImpl::numDocMembers() const
 {
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   return (allMemberList ? allMemberList->numDocMembers() : 0) + static_cast<int>(m_innerCompounds.size());
 }
 
@@ -1267,7 +1267,7 @@ void NamespaceDefImpl::addListReferences()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
     }
@@ -1433,11 +1433,11 @@ void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   const auto &ml = m_memberLists.get(lt,MemberListContainer::Namespace);
   ml->setNeedsSorting(
-      ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-      ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
+      (ml->listType().isDeclaration() && sortBriefDocs) ||
+      (ml->listType().isDocumentation() && sortMemberDocs));
   ml->push_back(md);
 
-  if (ml->listType()&MemberListType_declarationLists)
+  if (ml->listType().isDeclaration())
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)

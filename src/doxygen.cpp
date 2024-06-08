@@ -1490,7 +1490,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
       const_cast<GroupDef*>(gd)->addClass(cd);
     }
 
-    MemberList *ml = templ->getMemberList(MemberListType_pubAttribs);
+    MemberList *ml = templ->getMemberList(MemberListType::PubAttribs());
     if (ml)
     {
       for (const auto &md : *ml)
@@ -1541,7 +1541,7 @@ static void processTagLessClasses(const ClassDef *rootCd,
   //printf("checking members for %s\n",qPrint(cd->name()));
   if (tagParentCd && !cd->getClasses().empty())
   {
-    MemberList *ml = cd->getMemberList(MemberListType_pubAttribs);
+    MemberList *ml = cd->getMemberList(MemberListType::PubAttribs());
     if (ml)
     {
       for (const auto &md : *ml)
@@ -1573,7 +1573,7 @@ static void processTagLessClasses(const ClassDef *rootCd,
                 // recursive calls cd is the original tag-less struct (of which
                 // there is only one instance) and tagParentCd is the newly
                 // generated tagged struct of which there can be multiple instances!
-                MemberList *pml = tagParentCd->getMemberList(MemberListType_pubAttribs);
+                MemberList *pml = tagParentCd->getMemberList(MemberListType::PubAttribs());
                 if (pml)
                 {
                   for (const auto &pmd : *pml)
@@ -7421,7 +7421,7 @@ static bool tryAddEnumDocsToGroupMember(const Entry *root,const QCString &name)
     const GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
     if (gd)
     {
-      MemberList *ml = gd->getMemberList(MemberListType_decEnumMembers);
+      MemberList *ml = gd->getMemberList(MemberListType::DecEnumMembers());
       if (ml)
       {
         MemberDefMutable *md = toMemberDefMutable(ml->find(name));

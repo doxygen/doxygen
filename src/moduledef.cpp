@@ -248,10 +248,10 @@ void ModuleDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   auto &ml = m_memberLists.get(lt,MemberListContainer::Module);
   ml->setNeedsSorting(
-       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
+       (ml->listType().isDeclaration() && sortBriefDocs) ||
+       (ml->listType().isDocumentation() && sortMemberDocs));
   ml->push_back(md);
-  if (ml->listType()&MemberListType_declarationLists)
+  if (ml->listType().isDeclaration())
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
@@ -267,10 +267,10 @@ void ModuleDefImpl::addMemberToModule(const Entry *root,MemberDef *md)
       qPrint(root->fileName),root->startLine,
       qPrint(md->qualifiedName()),qPrint(name()),
       root->exported);
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   if (allMemberList==nullptr)
   {
-    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::Module));
+    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType::AllMembersList(),MemberListContainer::Module));
     allMemberList = m_memberLists.back().get();
   }
   if (allMemberList->contains(md))
@@ -281,16 +281,16 @@ void ModuleDefImpl::addMemberToModule(const Entry *root,MemberDef *md)
   switch (md->memberType())
   {
     case MemberType_Variable:
-      addMemberToList(MemberListType_decVarMembers,md);
+      addMemberToList(MemberListType::DecVarMembers(),md);
       break;
     case MemberType_Function:
-      addMemberToList(MemberListType_decFuncMembers,md);
+      addMemberToList(MemberListType::DecFuncMembers(),md);
       break;
     case MemberType_Typedef:
-      addMemberToList(MemberListType_decTypedefMembers,md);
+      addMemberToList(MemberListType::DecTypedefMembers(),md);
       break;
     case MemberType_Enumeration:
-      addMemberToList(MemberListType_decEnumMembers,md);
+      addMemberToList(MemberListType::DecEnumMembers(),md);
       break;
     default:
       break;
@@ -326,10 +326,10 @@ void ModuleDefImpl::mergeSymbolsFrom(ModuleDefImpl *other)
       }
     }
   };
-  mergeMemberList(MemberListType_decVarMembers);
-  mergeMemberList(MemberListType_decFuncMembers);
-  mergeMemberList(MemberListType_decTypedefMembers);
-  mergeMemberList(MemberListType_decEnumMembers);
+  mergeMemberList(MemberListType::DecVarMembers());
+  mergeMemberList(MemberListType::DecFuncMembers());
+  mergeMemberList(MemberListType::DecTypedefMembers());
+  mergeMemberList(MemberListType::DecEnumMembers());
 }
 
 void ModuleDefImpl::writeDocumentation(OutputList &ol)
@@ -662,7 +662,7 @@ void ModuleDefImpl::addListReferences()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
     }
@@ -673,7 +673,7 @@ void ModuleDefImpl::addMembersToMemberGroup()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
@@ -709,7 +709,7 @@ void ModuleDefImpl::findSectionsInDocumentation()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ml->findSectionsInDocumentation(this);
     }
@@ -805,7 +805,7 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
-          ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+          ol.writeSummaryLink(QCString(),ml->listType().toLabel(),lmd->title(lang),first);
           first=FALSE;
         }
       }

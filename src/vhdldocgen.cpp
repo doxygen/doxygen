@@ -224,9 +224,9 @@ const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCStrin
   //printf("VhdlDocGen::findMember(%s,%s)=%p\n",qPrint(className),qPrint(memName),cd);
   if (cd==nullptr) return nullptr;
 
-  mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType_variableMembers);
+  mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType::VariableMembers());
   if (mdef) return mdef;
-  mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType_pubMethods);
+  mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType::PubMethods());
   if (mdef) return mdef;
 
   // nothing found so far
@@ -254,9 +254,9 @@ const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCStrin
     if (ecd) //d && d->definitionType()==Definition::TypeClass)
     {
       //ClassDef *ecd = (ClassDef*)d;
-      mdef=VhdlDocGen::findMemberDef(ecd,memName,MemberListType_variableMembers);
+      mdef=VhdlDocGen::findMemberDef(ecd,memName,MemberListType::VariableMembers());
       if (mdef) return mdef;
-      mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType_pubMethods);
+      mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType::PubMethods());
       if (mdef) return mdef;
     }
    }
@@ -300,9 +300,9 @@ const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCStrin
     {
       for (const auto &cdp : cList_it->second)
       {
-        mdef=VhdlDocGen::findMemberDef(cdp,memName,MemberListType_variableMembers);
+        mdef=VhdlDocGen::findMemberDef(cdp,memName,MemberListType::VariableMembers());
         if (mdef) return mdef;
-        mdef=VhdlDocGen::findMemberDef(cdp,memName,MemberListType_pubMethods);
+        mdef=VhdlDocGen::findMemberDef(cdp,memName,MemberListType::PubMethods());
         if (mdef) return mdef;
       }
     }
@@ -364,7 +364,7 @@ void VhdlDocGen::findAllPackages( ClassDef *cdef)
   std::lock_guard lock(g_vhdlMutex);
   if (g_packages.find(cdef)!=g_packages.end()) return;
   std::vector<ClassDef*> cList;
-  MemberList *mem=cdef->getMemberList(MemberListType_variableMembers);
+  MemberList *mem=cdef->getMemberList(MemberListType::VariableMembers());
   if (mem)
   {
     for (const auto &md : *mem)
@@ -394,7 +394,7 @@ const MemberDef* VhdlDocGen::findFunction(const QCString& funcname, const QCStri
   ClassDef *cdef=getClass(package);
   if (cdef==nullptr) return nullptr;
 
-  MemberList *mem=cdef->getMemberList(MemberListType_pubMethods);
+  MemberList *mem=cdef->getMemberList(MemberListType::PubMethods());
   if (mem)
   {
     for (const auto &mdef : *mem)

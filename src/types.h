@@ -97,104 +97,206 @@ struct Grouping
 
 };
 
-enum MemberListType
+//       enum name             category      to-public          to-protected     html-label                xml-label
+#define ML_TYPES \
+  ML_TYPE(PubMethods,          Public,       Invalid,           Invalid,          "pub-methods",           "public-func"             ) \
+  ML_TYPE(ProMethods,          Protected,    PubMethods,        Invalid,          "pro-methods",           "protected-func"          ) \
+  ML_TYPE(PacMethods,          Package,      Invalid,           Invalid,          "pac-methods",           "package-func"            ) \
+  ML_TYPE(PriMethods,          Private,      PubMethods,        ProMethods,       "pri-methods",           "private-func"            ) \
+  ML_TYPE(PubStaticMethods,    Public,       Invalid,           Invalid,          "pub-static-methods",    "public-static-func"      ) \
+  ML_TYPE(ProStaticMethods,    Protected,    PubStaticMethods,  Invalid,          "pro-static-methods",    "protected-static-func"   ) \
+  ML_TYPE(PacStaticMethods,    Package,      Invalid,           Invalid,          "pac-static-methods",    "package-static-func"     ) \
+  ML_TYPE(PriStaticMethods,    Private,      PubStaticMethods,  ProStaticMethods, "pri-static-methods",    "private-static-func"     ) \
+  ML_TYPE(PubSlots,            Public,       Invalid,           Invalid,          "pub-slots",             "public-slot"             ) \
+  ML_TYPE(ProSlots,            Protected,    PubSlots,          Invalid,          "pro-slots",             "protected-slot"          ) \
+  ML_TYPE(PriSlots,            Private,      PubSlots,          ProSlots,         "pri-slots",             "private-slot"            ) \
+  ML_TYPE(PubAttribs,          Public,       Invalid,           Invalid,          "pub-attribs",           "public-attrib"           ) \
+  ML_TYPE(ProAttribs,          Protected,    PubAttribs,        Invalid,          "pro-attribs",           "protected-attrib"        ) \
+  ML_TYPE(PacAttribs,          Package,      Invalid,           Invalid,          "pac-attribs",           "package-attrib"          ) \
+  ML_TYPE(PriAttribs,          Private,      PubAttribs,        ProAttribs,       "pri-attribs",           "private-attrib"          ) \
+  ML_TYPE(PubStaticAttribs,    Public,       Invalid,           Invalid,          "pub-static-attribs",    "public-static-attrib"    ) \
+  ML_TYPE(ProStaticAttribs,    Protected,    PubStaticAttribs,  Invalid,          "pro-static-attribs",    "protected-static-attrib" ) \
+  ML_TYPE(PacStaticAttribs,    Package,      Invalid,           Invalid,          "pac-static-attribs",    "package-static-attrib"   ) \
+  ML_TYPE(PriStaticAttribs,    Private,      PubStaticAttribs,  ProStaticAttribs, "pri-static-attribs",    "private-static-attrib"   ) \
+  ML_TYPE(PubTypes,            Public,       Invalid,           Invalid,          "pub-types",             "public-type"             ) \
+  ML_TYPE(ProTypes,            Protected,    PubTypes,          Invalid,          "pro-types",             "protected-type"          ) \
+  ML_TYPE(PacTypes,            Package,      Invalid,           Invalid,          "pac-types",             "package-type"            ) \
+  ML_TYPE(PriTypes,            Private,      PubTypes,          ProTypes,         "pri-types",             "private-type"            ) \
+  ML_TYPE(Related,             Public,       Invalid,           Invalid,          "related",               "related"                 ) \
+  ML_TYPE(Signals,             Public,       Invalid,           Invalid,          "signals",               "signal"                  ) \
+  ML_TYPE(Friends,             Public,       Invalid,           Invalid,          "friends",               "friend"                  ) \
+  ML_TYPE(DcopMethods,         Public,       Invalid,           Invalid,          "dcop-methods",          "dcop-func"               ) \
+  ML_TYPE(Properties,          Public,       Invalid,           Invalid,          "properties",            "property"                ) \
+  ML_TYPE(Events,              Public,       Invalid,           Invalid,          "events",                "event"                   ) \
+  ML_TYPE(AllMembersList,      Public,       Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(EnumFields,          Public,       Invalid,           Invalid,          "enum-fields",           ""                        ) \
+  ML_TYPE(MemberGroup,         Public,       Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(Interfaces,          Public,       Invalid,           Invalid,          "interfaces",            "interfaces"              ) \
+  ML_TYPE(Services,            Public,       Invalid,           Invalid,          "services",              "services"                ) \
+  ML_TYPE(DecDefineMembers,    Declaration,  Invalid,           Invalid,          "define-members",        "define"                  ) \
+  ML_TYPE(DecProtoMembers,     Declaration,  Invalid,           Invalid,          "proto-members",         "prototype"               ) \
+  ML_TYPE(DecTypedefMembers,   Declaration,  Invalid,           Invalid,          "typedef-members",       "typedef"                 ) \
+  ML_TYPE(DecEnumMembers,      Declaration,  Invalid,           Invalid,          "enum-members",          "enum"                    ) \
+  ML_TYPE(DecFuncMembers,      Declaration,  Invalid,           Invalid,          "func-members",          "func"                    ) \
+  ML_TYPE(DecVarMembers,       Declaration,  Invalid,           Invalid,          "var-members",           "var"                     ) \
+  ML_TYPE(DecEnumValMembers,   Declaration,  Invalid,           Invalid,          "enumval-members",       ""                        ) \
+  ML_TYPE(DecPubSlotMembers,   Declaration,  Invalid,           Invalid,          "pub-slot-members",      ""                        ) \
+  ML_TYPE(DecProSlotMembers,   Declaration,  Invalid,           Invalid,          "pro-slot-members",      ""                        ) \
+  ML_TYPE(DecPriSlotMembers,   Declaration,  Invalid,           Invalid,          "pri-slot-members",      ""                        ) \
+  ML_TYPE(DecSignalMembers,    Declaration,  Invalid,           Invalid,          "signal-members",        ""                        ) \
+  ML_TYPE(DecEventMembers,     Declaration,  Invalid,           Invalid,          "event-members",         ""                        ) \
+  ML_TYPE(DecFriendMembers,    Declaration,  Invalid,           Invalid,          "friend-members",        ""                        ) \
+  ML_TYPE(DecPropMembers,      Declaration,  Invalid,           Invalid,          "prop-members",          ""                        ) \
+  ML_TYPE(DecSequenceMembers,  Declaration,  Invalid,           Invalid,          "sequence-members",      "sequence"                ) \
+  ML_TYPE(DecDictionaryMembers,Declaration,  Invalid,           Invalid,          "dictionary-members",    "dictionary"              ) \
+  ML_TYPE(TypedefMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(EnumMembers,         Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(EnumValMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(FunctionMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(RelatedMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(VariableMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(PropertyMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(EventMembers,        Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(Constructors,        Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(InterfaceMembers,    Detailed,     Invalid,           Invalid,          "interface-members",     ""                        ) \
+  ML_TYPE(ServiceMembers,      Detailed,     Invalid,           Invalid,          "service-members",       ""                        ) \
+  ML_TYPE(DocDefineMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocProtoMembers,     Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocTypedefMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocEnumMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocFuncMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocVarMembers,       Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocEnumValMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocPubSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocProSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocPriSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocSignalMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocEventMembers,     Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocFriendMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocPropMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocSequenceMembers,  Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocDictionaryMembers,Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+
+/** Wrapper class for the MemberListType type. Can be set only during construction.
+ *  Packs the type together with category flags.
+ */
+class MemberListType
 {
-  MemberListType_privateLists       = 0x00800,
-  MemberListType_detailedLists      = 0x01000,
-  MemberListType_declarationLists   = 0x02000,
-  MemberListType_documentationLists = 0x04000,
-  MemberListType_exportedLists      = 0x08000,
-  MemberListType_internalLists      = 0x10000,
+    enum CategoryBits
+    {
+      Public        = (1<<16),
+      Protected     = (1<<17),
+      Package       = (1<<18),
+      Private       = (1<<19),
+      Detailed      = (1<<20),
+      Declaration   = (1<<21),
+      Documentation = (1<<22),
+      TypeMask      = 0x0000FFFF,
+      CategoryMask  = 0xFFFF0000
+    };
 
-  MemberListType_undefined               = -1,
+    enum TypeName
+    {
+      Invalid_,
+#define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str) \
+      x##_,
+      ML_TYPES
+#undef ML_TYPE
+    };
 
-  MemberListType_pubMethods              = 0,
-  MemberListType_proMethods              = 1,
-  MemberListType_pacMethods              = 2,
-  MemberListType_priMethods              = 3 + MemberListType_privateLists,
-  MemberListType_pubStaticMethods        = 4,
-  MemberListType_proStaticMethods        = 5,
-  MemberListType_pacStaticMethods        = 6,
-  MemberListType_priStaticMethods        = 7 + MemberListType_privateLists,
-  MemberListType_pubSlots                = 8,
-  MemberListType_proSlots                = 9,
-  MemberListType_priSlots                = 10 + MemberListType_privateLists,
-  MemberListType_pubAttribs              = 11,
-  MemberListType_proAttribs              = 12,
-  MemberListType_pacAttribs              = 13,
-  MemberListType_priAttribs              = 14 + MemberListType_privateLists,
-  MemberListType_pubStaticAttribs        = 15,
-  MemberListType_proStaticAttribs        = 16,
-  MemberListType_pacStaticAttribs        = 17,
-  MemberListType_priStaticAttribs        = 18 + MemberListType_privateLists,
-  MemberListType_pubTypes                = 19,
-  MemberListType_proTypes                = 20,
-  MemberListType_pacTypes                = 21,
-  MemberListType_priTypes                = 22 + MemberListType_privateLists,
-  MemberListType_related                 = 23,
-  MemberListType_signals                 = 24,
-  MemberListType_friends                 = 25,
-  MemberListType_dcopMethods             = 26,
-  MemberListType_properties              = 27,
-  MemberListType_events                  = 28,
+  public:
+    static MemberListType Invalid() { return MemberListType(Invalid_); }
+    constexpr bool isInvalid() const { return m_type==Invalid_; }
+#define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str)                                                                   \
+    static MemberListType x() { return MemberListType(static_cast<int>(x##_)|static_cast<int>(bits)); } \
+    bool is##x() const { return (m_type&TypeMask)==x##_; }
+    ML_TYPES
+#undef ML_TYPE
+    constexpr bool isPublic()         const { return (m_type & Public)!=0;        }
+    constexpr bool isProtected()      const { return (m_type & Protected)!=0;     }
+    constexpr bool isPackage()        const { return (m_type & Package)!=0;       }
+    constexpr bool isPrivate()        const { return (m_type & Private)!=0;       }
+    constexpr bool isDetailed()       const { return (m_type & Detailed)!=0;      }
+    constexpr bool isDeclaration()    const { return (m_type & Declaration)!=0;   }
+    constexpr bool isDocumentation()  const { return (m_type & Documentation)!=0; }
+    std::string to_string() const
+    {
+      switch (type())
+      {
+        case Invalid_: return "[Invalid]";
+#define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str) \
+        case x##_ : return "["+std::string(#x)+bits_to_string()+"]";
+        ML_TYPES
+#undef ML_TYPE
+      }
+      return "[unknown]";
+    }
+    constexpr const char *toLabel() const
+    {
+      switch (type())
+      {
+        case Invalid_: return "";
+#define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str) \
+        case x##_ : return label;
+        ML_TYPES
+#undef ML_TYPE
+      }
+      return "";
+    }
+    constexpr const char *toXML() const
+    {
+      switch (type())
+      {
+        case Invalid_: return "";
+#define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str) \
+        case x##_ : return xml_str;
+        ML_TYPES
+#undef ML_TYPE
+      }
+      return "";
+    }
+    MemberListType toPublic() const
+    {
+      switch (type())
+      {
+        case Invalid_: return Invalid();
+#define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str) \
+        case x##_ : return to_pub();
+        ML_TYPES
+#undef ML_TYPE
+      }
+      return Invalid();
+    }
+    MemberListType toProtected() const
+    {
+      switch (type())
+      {
+        case Invalid_: return Invalid();
+#define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str) \
+        case x##_ : return to_prot();
+        ML_TYPES
+#undef ML_TYPE
+      }
+      return Invalid();
+    }
+    friend inline bool operator==(const MemberListType &t1,const MemberListType &t2) { return t1.m_type==t2.m_type; }
+    friend inline bool operator!=(const MemberListType &t1,const MemberListType &t2) { return !(operator==(t1,t2)); }
 
-  MemberListType_typedefMembers          = 29 + MemberListType_detailedLists,
-  MemberListType_enumMembers             = 30 + MemberListType_detailedLists,
-  MemberListType_enumValMembers          = 31 + MemberListType_detailedLists,
-  MemberListType_functionMembers         = 32 + MemberListType_detailedLists,
-  MemberListType_relatedMembers          = 33 + MemberListType_detailedLists,
-  MemberListType_variableMembers         = 34 + MemberListType_detailedLists,
-  MemberListType_propertyMembers         = 35 + MemberListType_detailedLists,
-  MemberListType_eventMembers            = 36 + MemberListType_detailedLists,
-  MemberListType_constructors            = 37 + MemberListType_detailedLists,
-
-  MemberListType_allMembersList          = 38,
-
-  MemberListType_decDefineMembers        = 39 + MemberListType_declarationLists,
-  MemberListType_decProtoMembers         = 40 + MemberListType_declarationLists,
-  MemberListType_decTypedefMembers       = 41 + MemberListType_declarationLists,
-  MemberListType_decEnumMembers          = 42 + MemberListType_declarationLists,
-  MemberListType_decFuncMembers          = 43 + MemberListType_declarationLists,
-  MemberListType_decVarMembers           = 44 + MemberListType_declarationLists,
-  MemberListType_decEnumValMembers       = 45 + MemberListType_declarationLists,
-  MemberListType_decPubSlotMembers       = 46 + MemberListType_declarationLists,
-  MemberListType_decProSlotMembers       = 47 + MemberListType_declarationLists,
-  MemberListType_decPriSlotMembers       = 48 + MemberListType_declarationLists,
-  MemberListType_decSignalMembers        = 49 + MemberListType_declarationLists,
-  MemberListType_decEventMembers         = 50 + MemberListType_declarationLists,
-  MemberListType_decFriendMembers        = 51 + MemberListType_declarationLists,
-  MemberListType_decPropMembers          = 52 + MemberListType_declarationLists,
-
-  MemberListType_docDefineMembers        = 53 + MemberListType_documentationLists,
-  MemberListType_docProtoMembers         = 54 + MemberListType_documentationLists,
-  MemberListType_docTypedefMembers       = 55 + MemberListType_documentationLists,
-  MemberListType_docEnumMembers          = 56 + MemberListType_documentationLists,
-  MemberListType_docFuncMembers          = 57 + MemberListType_documentationLists,
-  MemberListType_docVarMembers           = 58 + MemberListType_documentationLists,
-  MemberListType_docEnumValMembers       = 59 + MemberListType_documentationLists,
-  MemberListType_docPubSlotMembers       = 60 + MemberListType_documentationLists,
-  MemberListType_docProSlotMembers       = 61 + MemberListType_documentationLists,
-  MemberListType_docPriSlotMembers       = 62 + MemberListType_documentationLists,
-  MemberListType_docSignalMembers        = 63 + MemberListType_documentationLists,
-  MemberListType_docEventMembers         = 64 + MemberListType_documentationLists,
-  MemberListType_docFriendMembers        = 65 + MemberListType_documentationLists,
-  MemberListType_docPropMembers          = 66 + MemberListType_documentationLists,
-
-  MemberListType_redefinedBy             = 67,
-  MemberListType_enumFields              = 68,
-  MemberListType_memberGroup             = 69,
-
-  // this one is for the summary section on the class page
-  MemberListType_interfaces              = 70,
-  // this one is for the detailed section on the class page
-  MemberListType_interfaceMembers        = 71 + MemberListType_detailedLists,
-  MemberListType_services                = 72,
-  MemberListType_serviceMembers          = 73 + MemberListType_detailedLists,
-
-  MemberListType_decSequenceMembers      = 74 + MemberListType_declarationLists,
-  MemberListType_docSequenceMembers      = 75 + MemberListType_documentationLists,
-  MemberListType_decDictionaryMembers    = 76 + MemberListType_declarationLists,
-  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists,
+  private:
+    explicit MemberListType(int t) : m_type(t) {}
+    std::string bits_to_string() const
+    {
+      std::string result;
+      if (m_type&Public) result+=",Public";
+      if (m_type&Protected) result+=",Protected";
+      if (m_type&Package) result+=",Package";
+      if (m_type&Private) result+=",Private";
+      if (m_type&Detailed) result+=",Detailed";
+      if (m_type&Documentation) result+=",Documentation";
+      return result;
+    }
+    constexpr TypeName type() const { return static_cast<TypeName>(m_type & TypeMask); }
+    unsigned int m_type = static_cast<unsigned int>(Invalid_);
 };
 
 enum class MemberListContainer

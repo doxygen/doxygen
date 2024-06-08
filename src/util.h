@@ -438,8 +438,8 @@ QCString extractDirection(QCString &docs);
 void convertProtectionLevel(
                    MemberListType inListType,
                    Protection inProt,
-                   int *outListType1,
-                   int *outListType2
+                   MemberListType *outListType1,
+                   MemberListType *outListType2
                   );
 
 bool mainPageHasTitle();

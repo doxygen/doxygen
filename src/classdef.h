@@ -337,7 +337,7 @@ class ClassDef : public Definition
                 const ClassDef *inheritedFrom,bool additional) const = 0;
     virtual int countInheritanceNodes() const = 0;
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const = 0;
+                MemberListType lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- helpers ----
@@ -366,7 +366,7 @@ class ClassDef : public Definition
                  MemberListType lt,const QCString &title,
                  const QCString &subTitle=QCString(),
                  bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
-                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
+                 MemberListType lt2=MemberListType::Invalid(),bool invert=FALSE,bool showAlways=FALSE) const = 0;
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
 };

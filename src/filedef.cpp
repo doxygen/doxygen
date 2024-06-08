@@ -324,7 +324,7 @@ void FileDefImpl::setDiskName(const QCString &name)
 /*! Compute the HTML anchor names for all members in the class */
 void FileDefImpl::computeAnchors()
 {
-  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  MemberList *ml = getMemberList(MemberListType::AllMembersList());
   if (ml) ml->setAnchors();
 }
 
@@ -349,7 +349,7 @@ void FileDefImpl::findSectionsInDocumentation()
 
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ml->findSectionsInDocumentation(this);
     }
@@ -828,7 +828,7 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
-          ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+          ol.writeSummaryLink(QCString(),ml->listType().toLabel(),lmd->title(lang),first);
           first=FALSE;
         }
       }
@@ -1037,7 +1037,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    MemberList *ml = getMemberList(MemberListType_allMembersList);
+    MemberList *ml = getMemberList(MemberListType::AllMembersList());
     if (ml) ml->sort();
     writeMemberPages(ol);
   }
@@ -1050,7 +1050,7 @@ void FileDefImpl::writeMemberPages(OutputList &ol)
 
   for (const auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml->listType().isDocumentation())
     {
       ml->writeDocumentationPage(ol,name(),this);
     }
@@ -1066,7 +1066,7 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   if (allMemberList)
   {
     for (const auto &md : *allMemberList)
@@ -1247,7 +1247,7 @@ void FileDefImpl::addMembersToMemberGroup()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
@@ -1270,7 +1270,7 @@ void FileDefImpl::insertMember(MemberDef *md)
   if (md->isHidden()) return;
   //printf("%s:FileDefImpl::insertMember(%s (=%p) list has %d elements)\n",
   //    qPrint(name()),qPrint(md->name()),md,allMemberList.count());
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   if (allMemberList && allMemberList->contains(md))
   {
     return;
@@ -1278,7 +1278,7 @@ void FileDefImpl::insertMember(MemberDef *md)
 
   if (allMemberList==nullptr)
   {
-    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::File));
+    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType::AllMembersList(),MemberListContainer::File));
     allMemberList = m_memberLists.back().get();
   }
   allMemberList->push_back(md);
@@ -1287,40 +1287,40 @@ void FileDefImpl::insertMember(MemberDef *md)
     case MemberType_Property:
       if (md->getLanguage() == SrcLangExt::Python)
       {
-        addMemberToList(MemberListType_propertyMembers,md);
-        addMemberToList(MemberListType_properties,md);
+        addMemberToList(MemberListType::PropertyMembers(),md);
+        addMemberToList(MemberListType::Properties(),md);
         break;
       }
       //  fallthrough, explicitly no break here
     case MemberType_Variable:
-      addMemberToList(MemberListType_decVarMembers,md);
-      addMemberToList(MemberListType_docVarMembers,md);
+      addMemberToList(MemberListType::DecVarMembers(),md);
+      addMemberToList(MemberListType::DocVarMembers(),md);
       break;
     case MemberType_Function:
-      addMemberToList(MemberListType_decFuncMembers,md);
-      addMemberToList(MemberListType_docFuncMembers,md);
+      addMemberToList(MemberListType::DecFuncMembers(),md);
+      addMemberToList(MemberListType::DocFuncMembers(),md);
       break;
     case MemberType_Typedef:
-      addMemberToList(MemberListType_decTypedefMembers,md);
-      addMemberToList(MemberListType_docTypedefMembers,md);
+      addMemberToList(MemberListType::DecTypedefMembers(),md);
+      addMemberToList(MemberListType::DocTypedefMembers(),md);
       break;
     case MemberType_Sequence:
-      addMemberToList(MemberListType_decSequenceMembers,md);
-      addMemberToList(MemberListType_docSequenceMembers,md);
+      addMemberToList(MemberListType::DecSequenceMembers(),md);
+      addMemberToList(MemberListType::DocSequenceMembers(),md);
       break;
     case MemberType_Dictionary:
-      addMemberToList(MemberListType_decDictionaryMembers,md);
-      addMemberToList(MemberListType_docDictionaryMembers,md);
+      addMemberToList(MemberListType::DecDictionaryMembers(),md);
+      addMemberToList(MemberListType::DocDictionaryMembers(),md);
       break;
     case MemberType_Enumeration:
-      addMemberToList(MemberListType_decEnumMembers,md);
-      addMemberToList(MemberListType_docEnumMembers,md);
+      addMemberToList(MemberListType::DecEnumMembers(),md);
+      addMemberToList(MemberListType::DocEnumMembers(),md);
       break;
     case MemberType_EnumValue:    // enum values are shown inside their enums
       break;
     case MemberType_Define:
-      addMemberToList(MemberListType_decDefineMembers,md);
-      addMemberToList(MemberListType_docDefineMembers,md);
+      addMemberToList(MemberListType::DecDefineMembers(),md);
+      addMemberToList(MemberListType::DocDefineMembers(),md);
       break;
     default:
        err("FileDefImpl::insertMembers(): "
@@ -1529,7 +1529,7 @@ void FileDefImpl::addListReferences()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
     }
@@ -1639,10 +1639,10 @@ void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   const auto &ml = m_memberLists.get(lt,MemberListContainer::File);
   ml->setNeedsSorting(
-       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
+       (ml->listType().isDeclaration() && sortBriefDocs) ||
+       (ml->listType().isDocumentation() && sortMemberDocs));
   ml->push_back(md);
-  if (ml->listType()&MemberListType_declarationLists)
+  if (ml->listType().isDeclaration())
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
@@ -1791,13 +1791,13 @@ void FileDefImpl::countMembers()
 
 int FileDefImpl::numDocMembers() const
 {
-  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  MemberList *ml = getMemberList(MemberListType::AllMembersList());
   return ml ? ml->numDocMembers() : 0;
 }
 
 int FileDefImpl::numDecMembers() const
 {
-  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  MemberList *ml = getMemberList(MemberListType::AllMembersList());
   return ml ? ml->numDecMembers() : 0;
 }
 

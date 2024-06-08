@@ -4006,7 +4006,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
     size_t numSubItems = 0;
     for (const auto &ml : gd->getMemberLists())
     {
-      if (ml->listType()&MemberListType_documentationLists)
+      if (ml->listType().isDocumentation())
       {
         numSubItems += ml->size();
       }
