@@ -52,6 +52,7 @@
 #include "fileinfo.h"
 #include "trace.h"
 #include "anchor.h"
+#include "stringutil.h"
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE
@@ -2703,6 +2704,15 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   }
 }
 
+static const std::unordered_map<std::string,std::string> g_quotationHeaderMap = {
+  // GitHub style   Doxygen command
+  { "[!note]",      "\\note"      },
+  { "[!warning]",   "\\warning"   },
+  { "[!tip]",       "\\remark"    },
+  { "[!caution]",   "\\attention" },
+  { "[!important]", "\\important" }
+};
+
 size_t Markdown::Private::writeBlockQuote(std::string_view data)
 {
   AUTO_TRACE("data='{}'",Trace::trunc(data));
@@ -2710,7 +2720,7 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   int curLevel=0;
   size_t end=0;
   const size_t size = data.size();
-  QCString startCmd;
+  std::string startCmd;
   int isGitHubAlert = false;
   int isGitHubFirst = false;
   while (i<size)
@@ -2735,82 +2745,74 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       level--;
       j--;
     }
-    if (!level && data[j-1]!='\n') level=curLevel; // lazy
-    if (level == 1)
+    if (level==0 && data[j-1]!='\n') level = curLevel; // lazy
+    if (level==1)
     {
-      QCString txt = data.substr(indent,end-indent);
-      txt = txt.lower().stripWhiteSpace();
-      if (txt == "[!note]")
+      QCString txt = stripWhiteSpace(data.substr(indent,end-indent));
+      auto it = g_quotationHeaderMap.find(txt.lower().str()); // TODO: in C++20 the std::string can be dropped
+      if (it != g_quotationHeaderMap.end())
       {
         isGitHubAlert = true;
         isGitHubFirst = true;
-        startCmd = "\\note ";
-      }
-      else if (txt == "[!warning]")
-      {
-        isGitHubAlert = true;
-        isGitHubFirst = true;
-        startCmd = "\\warning ";
-      }
-      else if (txt == "[!tip]")
-      {
-        isGitHubAlert = true;
-        isGitHubFirst = true;
-        startCmd = "\\remark ";
-      }
-      else if (txt == "[!caution]")
-      {
-        isGitHubAlert = true;
-        isGitHubFirst = true;
-        startCmd = "\\attention ";
-      }
-      else if (txt == "[!important]")
-      {
-        isGitHubAlert = true;
-        isGitHubFirst = true;
-        startCmd = "\\important ";
+        startCmd = it->second;
       }
     }
     if (level>curLevel) // quote level increased => add start markers
     {
-      if (level != 1 || !isGitHubAlert)
+      if (level!=1 || !isGitHubAlert) // normal block quote
       {
         for (int l=curLevel;l<level-1;l++)
         {
           out+="<blockquote>";
         }
+        out += "<blockquote>&zwj;"; // empty blockquotes are also shown
       }
-      if (level != 1 || !isGitHubAlert) out+="<blockquote>&zwj;"; // empty blockquotes are also shown
-      else out += startCmd;
+      else if (!startCmd.empty()) // GitHub style alert
+      {
+        out += startCmd + " ";
+      }
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
-      int decrLevel = curLevel - (level==0 && isGitHubAlert ? 1 : 0);
+      int decrLevel = curLevel;
+      if (level==0 && isGitHubAlert)
+      {
+        decrLevel--;
+      }
       for (int l=level;l<decrLevel;l++)
       {
-        out+="</blockquote>";
+        out += "</blockquote>";
       }
     }
     if (level==0) break; // end of quote block
     // copy line without quotation marks
-    if (curLevel != 0 || !isGitHubAlert)
+    if (curLevel!=0 || !isGitHubAlert)
     {
-      QCString txt = data.substr(indent,end-indent);
-      if (txt.stripWhiteSpace().isEmpty() && !startCmd.isEmpty())
+      std::string_view txt = data.substr(indent,end-indent);
+      if (stripWhiteSpace(txt).empty() && !startCmd.empty())
       {
         if (!isGitHubFirst) out += "<br>";
         out += "<br>\n";
       }
-      else out += txt;
+      else
+      {
+        out += txt;
+      }
       isGitHubFirst = false;
     }
-    else out+= "\n";
+    else // GitHub alert section
+    {
+      out+= "\n";
+    }
     curLevel=level;
     // proceed with next line
     i=end;
   }
   // end of comment within blockquote => add end markers
-  if (isGitHubAlert) curLevel--;
+  if (isGitHubAlert) // GitHub alert doesn't have a blockquote
+  {
+    curLevel--;
+  }
   for (int l=0;l<curLevel;l++)
   {
     out+="</blockquote>";
