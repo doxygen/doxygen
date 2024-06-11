@@ -22,7 +22,7 @@ for each group. These groups are called \ref topics "'topics'" in the documentat
 The second mechanism works within a member list of some compound entity,
 and is referred to as a \ref memgroup "'member groups'".
 For \ref cmdpage "pages" there is a third grouping mechanism referred to
-as \ref subpaging "subpaging".
+as \ref subpaging.
 
 \section topics Topics
 

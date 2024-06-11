@@ -767,7 +767,7 @@ contain only one new line, the URL may not contain any newlines.
 \subsection mddox_github_alerts Support for GitHub Alerts
 
 In the GitHub version of markdown there is the support for so called alerts, the
-syntax is similar to a one level block quote followied by `[!<alert>]` where
+syntax is similar to a one level block quote followed by `[!<alert>]` where
 `<alert>` can be one of `note`, `warning`, `tip`, `caution` or `important`.
 In doxygen these alerts are translated into normal doxygen commands:
 - `> [!note]` is translated to \ref cmdnote "\\note"

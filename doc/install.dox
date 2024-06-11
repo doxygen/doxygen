@@ -210,7 +210,7 @@ cmake -G "NMake Makefiles" ..
 nmake
 \endverbatim
 
-Note that compiling Doxywizard requires Qt 5.14 or newer
+Note that compiling doxywizard requires Qt 5.14 or newer
 (see https://doc.qt.io/).
 
 Also read the next section for additional tools you may need to install to run

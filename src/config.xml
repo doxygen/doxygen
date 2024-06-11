@@ -1088,7 +1088,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='SHOW_GROUPED_MEMB_INC' defval='0'>
       <docs>
 <![CDATA[
- If the \c SHOW_GROUPED_MEMB_INC tag is set to \c YES then Doxygen
+ If the \c SHOW_GROUPED_MEMB_INC tag is set to \c YES then doxygen
  will add for each grouped member an include statement to the documentation,
  telling the reader which file to include in order to use the member.
 ]]>
@@ -2031,11 +2031,11 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
             \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" including the required
             HTML tags for each extra stylesheet.
  <dt><code>$treeview</code><dd>will be replaced with links to
-            the javascript and style sheets needed for the navigation tree
+            the JavaScript and style sheets needed for the navigation tree
             (or an empty string when \ref cfg_generate_treeview "GENERATE_TREEVIEW"
             is disabled).
  <dt><code>$search</code><dd>will be replaced with a links to
-            the javascript and style sheets needed for the search engine
+            the JavaScript and style sheets needed for the search engine
             (or an empty string when \ref cfg_searchengine "SEARCHENGINE"
             is disabled).
  <dt><code>$searchbox</code><dd>will be replaced with the HTML code needed for
@@ -2043,7 +2043,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
             (or an empty string when \ref cfg_searchengine "SEARCHENGINE"
             is disabled).
  <dt><code>$mathjax</code><dd>will be replaced with a links to
-            the javascript and style sheets needed for the MathJax feature
+            the JavaScript and style sheets needed for the MathJax feature
             (or an empty string when \ref cfg_use_mathjax "USE_MATHJAX" is disabled).
  <dt><code>$relpath^</code><dd>
             If \ref cfg_create_subdirs "CREATE_SUBDIRS" is enabled, the command <code>$relpath^</code> can be
@@ -2770,7 +2770,7 @@ MATHJAX_EXTENSIONS     = ams
     <option type='string' id='MATHJAX_CODEFILE' format='string' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
- The \c MATHJAX_CODEFILE tag can be used to specify a file with javascript
+ The \c MATHJAX_CODEFILE tag can be used to specify a file with JavaScript
  pieces of code that will be used on startup of the MathJax code.
  See
 <a href="http://docs.mathjax.org/en/v2.7-latest/output.html">the MathJax site</a>
@@ -2804,13 +2804,13 @@ MATHJAX_CODEFILE = disableRenderer.js
       <docs>
 <![CDATA[
  When the \c SEARCHENGINE tag is enabled doxygen will generate a search box
- for the HTML output. The underlying search engine uses javascript
+ for the HTML output. The underlying search engine uses JavaScript
  and DHTML and should work on any modern browser. Note that when using
  HTML help (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"),
  Qt help (\ref cfg_generate_qhp "GENERATE_QHP"), or docsets
  (\ref cfg_generate_docset "GENERATE_DOCSET") there is already a search
  function so this one should typically be disabled. For large projects
- the javascript based search engine can be slow, then enabling
+ the JavaScript based search engine can be slow, then enabling
  \ref cfg_server_based_search "SERVER_BASED_SEARCH" may provide a
  better solution.
 
@@ -4049,7 +4049,7 @@ to be found in the default search path.
     <option type='string' id='PLANTUML_JAR_PATH' format='filedir' defval=''>
       <docs>
 <![CDATA[
- When using plantuml, the \c PLANTUML_JAR_PATH tag should be used to specify the path where
+ When using PlantUML, the \c PLANTUML_JAR_PATH tag should be used to specify the path where
  java can find the \c plantuml.jar file or to the filename of \c jar file to be used.
  If left blank, it is assumed PlantUML is not used or
  called during a preprocessing step. Doxygen will generate a warning when it encounters a
@@ -4060,16 +4060,16 @@ to be found in the default search path.
     <option type='string' id='PLANTUML_CFG_FILE' format='file' defval=''>
       <docs>
 <![CDATA[
- When using plantuml, the \c PLANTUML_CFG_FILE tag can be used to specify a configuration
- file for plantuml.
+ When using PlantUML, the \c PLANTUML_CFG_FILE tag can be used to specify a configuration
+ file for PlantUML.
 ]]>
       </docs>
     </option>
     <option type='list' id='PLANTUML_INCLUDE_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
- When using plantuml, the specified paths are searched for files specified by the \c !include
- statement in a plantuml block.
+ When using PlantUML, the specified paths are searched for files specified by the \c !include
+ statement in a PlantUML block.
 ]]>
       </docs>
     </option>
