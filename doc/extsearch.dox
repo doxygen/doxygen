@@ -259,7 +259,7 @@ have to be decoded before they can be used.
 When invoking the search engine as shown in the previous subsection, it should reply with
 the results. The format of the reply is
 <a href="https://en.wikipedia.org/wiki/JSONP">JSON with padding</a>, which is basically
-a javascript struct wrapped in a function call. The name of function should be the name of
+a JavaScript struct wrapped in a function call. The name of function should be the name of
 the callback (as passed with the *cb* field in the query).
 
 With the example query as shown the previous subsection the main structure of the reply should
