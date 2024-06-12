@@ -187,7 +187,7 @@ in the HEAD section of the HTML page.
 In the past (prior to version 1.9.2) Doxygen used a part of Qt 2.x for various
 utility classes. These have been replaced by STL container classes in the meantime.
 
-The GUI front-end called Doxywizard is based on a modern version of Qt.
+The GUI front-end called doxywizard is based on a modern version of Qt.
 Doxygen itself can also be used without the GUI.
 
 \section faq_excl_dir How can I exclude all test directories from my directory tree?
