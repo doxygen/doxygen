@@ -7236,6 +7236,9 @@ NONLopt [^\n]*
                                           yyextra->docBlock << *yytext;
                                           lineCount(yyscanner);
                                         }
+<DocCopyBlock>{CMD}{CMD}                {
+                                          yyextra->docBlock << yytext;
+                                        }
 <DocCopyBlock>.                         { // any other character
                                           yyextra->docBlock << *yytext;
                                         }

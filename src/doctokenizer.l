@@ -861,6 +861,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
                        }
+<St_Code>{CMD}{CMD}    {
+                         g_token->verb+=yytext;
+                       }
 <St_HtmlOnlyOption>" [block]" { // the space is added in commentscan.l
                          yyextra->token.name="block";
                          BEGIN(St_HtmlOnly);
@@ -882,6 +885,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
                        }
+<St_HtmlOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_ManOnly>{CMD}"endmanonly" {
                          return RetVal_OK;
                        }
@@ -890,6 +896,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_ManOnly>.             {
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
+                       }
+<St_ManOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
                        }
 <St_RtfOnly>{CMD}"endrtfonly" {
                          return RetVal_OK;
@@ -900,6 +909,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
                        }
+<St_RtfOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_LatexOnly>{CMD}"endlatexonly" {
                          return RetVal_OK;
                        }
@@ -908,6 +920,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_LatexOnly>.             {
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
+                       }
+<St_LatexOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
                        }
 <St_XmlOnly>{CMD}"endxmlonly" {
                          return RetVal_OK;
@@ -918,6 +933,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
                        }
+<St_XmlOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_DbOnly>{CMD}"enddocbookonly" {
                          return RetVal_OK;
                        }
@@ -926,6 +944,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_DbOnly>.          {
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
+                       }
+<St_DbOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
                        }
 <St_Verbatim>{CMD}"endverbatim" {
                          yyextra->token.verb=stripEmptyLines(yyextra->token.verb);
@@ -957,6 +978,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          unput_string(yytext,yyleng);
                          return RetVal_OK;
                        }
+<St_Verbatim>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_Dot>{CMD}"enddot"  {
                          return RetVal_OK;
                        }
@@ -966,6 +990,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
                        }
+<St_Dot>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_Msc>{CMD}("endmsc")  {
                          return RetVal_OK;
                        }
@@ -974,6 +1001,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Msc>.              { /* msc text */
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
+                       }
+<St_Msc>{CMD}{CMD} {
+                         g_token->verb+=yytext;
                        }
 <St_PlantUMLOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // case 1: options present
                          yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
@@ -1010,6 +1040,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_PlantUML>.         { /* plantuml text */
                          lineCount(yytext,yyleng);
                          yyextra->token.verb+=yytext;
+                       }
+<St_PlantUML>{CMD}{CMD} {
+                         g_token->verb+=yytext;
                        }
 <St_Title>"\""         { // quoted title
                          BEGIN(St_TitleQ);

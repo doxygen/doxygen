@@ -2183,6 +2183,9 @@ STopt  [^\n@\\]*
                                             }
                                           }
                                         }
+<FormatBlock>{CMD}{CMD}                 {
+                                          addOutput(yyscanner,yytext);
+                                        }
 <FormatBlock>.                          {
                                           addOutput(yyscanner,*yytext);
                                         }
