@@ -14,12 +14,12 @@
  */
 /*! \page doxywizard_usage Doxywizard usage
 
-Doxywizard is a GUI front-end for configuring and running doxygen.
+Doxywizard is a GUI front-end for configuring and running Doxygen.
 
-When starting doxywizard one can specify an existing configuration file to use as argument,
+When starting Doxywizard one can specify an existing configuration file to use as argument,
 otherwise the default settings will be used as a starting point.
 
-When you start doxywizard it will display the main window
+When you start Doxywizard it will display the main window
 (the actual look depends on the platform used).
 
 \image html doxywizard_main.png "Main window"
@@ -31,13 +31,13 @@ The user interface consists of the following sections:
 <dd> In the menu bar the following parts are available:
 \ref dw_menu_file, \ref dw_menu_settings and \ref dw_menu_help.
 
-<dt>Specify the working directory from which doxygen will run
+<dt>Specify the working directory from which Doxygen will run
 <dd>
 Using the <tt>Select...</tt> button a directory can be selected.
-When doxywizard is started with a configuration file or one is loaded using the open command
+When Doxywizard is started with a configuration file or one is loaded using the open command
 (see: \ref dw_menu_file) the directory of this settings file used as the working directory.
 
-<dt>Configure doxygen using the Wizard and/or Expert tab...
+<dt>Configure Doxygen using the Wizard and/or Expert tab...
 <dd>
   <dl>
   <dt>\ref dw_wizard <dd>with this tab it is possible to quickly configure the most
@@ -45,7 +45,7 @@ When doxywizard is started with a configuration file or one is loaded using the 
                        their defaults.
   <dt>\ref dw_expert <dd>with this tab one gains access to the \ref config
                        "full set of configuration options".
-  <dt>\ref dw_run <dd>with this tab it is possible to run doxygen and view the used settings.
+  <dt>\ref dw_run <dd>with this tab it is possible to run Doxygen and view the used settings.
   </dl>
 
 Switching between these tabs is possible, e.g you could start with the wizard tab
@@ -53,9 +53,9 @@ and then fine tune some settings by switching to the expert tab.
 
 </dl>
 
-After doxygen is configured you need to save (see: \ref dw_menu_file) the configuration as a file
-to disk. This allows doxygen to use the configuration
-and also allows running doxygen again with the same settings at a later point in time.
+After Doxygen is configured you need to save (see: \ref dw_menu_file) the configuration as a file
+to disk. This allows Doxygen to use the configuration
+and also allows running Doxygen again with the same settings at a later point in time.
 
 Since some configuration options may use relative paths, be sure to
 select a working directory that is root of those paths.
@@ -63,32 +63,32 @@ This is often the root of the source tree and will typically be correctly filled
 if the configuration file is stored at this location as well.
 
 Once the configuration file is saved and the working directory is set, you
-can run doxygen based on the selected settings. Do this by switching to the
-\ref dw_run "Run" tab, and click the "Run doxygen" button or by selecting the item
-"Run doxygen" in the \ref dw_menu_settings.
+can run Doxygen based on the selected settings. Do this by switching to the
+\ref dw_run "Run" tab, and click the "Run Doxygen" button or by selecting the item
+"Run Doxygen" in the \ref dw_menu_settings.
 
-Once doxygen runs you can cancel it by clicking the same
-button again. The output produced by doxygen is captured and shown in the "Output produced by doxygen"
-pane. Once doxygen finishes, the log can be saved as a text file.
+Once Doxygen runs you can cancel it by clicking the same
+button again. The output produced by Doxygen is captured and shown in the "Output produced by Doxygen"
+pane. Once Doxygen finishes, the log can be saved as a text file.
 
 \section dw_wizard Wizard tab
 
 The Wizard tab is divided into two panes
 <dl>
-<dt>Left pane<dd>The main topics for easy setting up doxygen.
+<dt>Left pane<dd>The main topics for easy setting up Doxygen.
 By clicking on a topic the corresponding settings will appear in the Right
 pane.
 <dt>Right pane<dd>The wizard's settings pane, in this pane you will find the
 settings that are available for the selected topic.
 </dl>
 
-The wizard only gives the possibility to quickly setup doxygen, for full control
+The wizard only gives the possibility to quickly setup Doxygen, for full control
 one should use the \ref dw_expert.
 
 \forceNewPage
 \subsection dw_wizard_project Project settings
 
-The fields in the Project pane speak for themselves. Once doxygen has finished
+The fields in the Project pane speak for themselves. Once Doxygen has finished
 the Destination directory is where to look for the results. Doxygen will
 put each output format in a separate sub-directory by default.
 
@@ -98,10 +98,10 @@ put each output format in a separate sub-directory by default.
 \forceNewPage
 \subsection dw_wizard_mode Mode of operating
 
-The Mode pane allows you to select how doxygen will look at your sources.
+The Mode pane allows you to select how Doxygen will look at your sources.
 The default is to only look for things that have been documented. Furthermore, the
 terminology used in the output can be changed to better match the main programming language used
-(this doesn't affect the way doxygen parses your source code).
+(this doesn't affect the way Doxygen parses your source code).
 
 \image html doxywizard_page2.png "Wizard tab: Mode of operating"
 \image latex doxywizard_page2.png "Wizard tab: Mode of operating" width=15cm
@@ -109,7 +109,7 @@ terminology used in the output can be changed to better match the main programmi
 \forceNewPage
 \subsection dw_wizard_output Output to produce
 
-The Output pane allows you to select what kinds of output doxygen will produce.
+The Output pane allows you to select what kinds of output Doxygen will produce.
 For HTML and \LaTeX there are additional options available.
 
 \image html doxywizard_page3.png "Wizard tab: Output to produce"
@@ -179,7 +179,7 @@ The representation of the input field depends on the type of the configuration o
     <br>and in case both a file or a folder is allowed, the look is:<br>
     \image{inline} html expert_string_filedir.png
     \image{inline} latex expert_string_filedir.png width=11.0cm
-    <br>In case a file represents an image, doxygen also tries to display the selected image.
+    <br>In case a file represents an image, Doxygen also tries to display the selected image.
     Then a typical field looks like:<br>
     \image{inline} html expert_string_image.png
     \image{inline} latex expert_string_image.png width=11.8cm
@@ -212,25 +212,25 @@ The representation of the input field depends on the type of the configuration o
 
 \section dw_run Run tab
 
-The run tab gives the possibility to run doxygen with the given settings, see the HTML results,
+The run tab gives the possibility to run Doxygen with the given settings, see the HTML results,
 see the settings used and save the output as displayed in the output pane.
 
 \image html doxywizard_run.png "Run tab"
 \image latex doxywizard_run.png "Run tab" width=15cm
 
 <dl>
-<dt>Specify additional command line options for running doxygen<dd>Field to
-specify extra options used when running doxygen, e.g. for debugging purposes.
-<dt>Run doxygen<dd>When clicked will start running doxygen.
-The "Output produced by doxygen" pane shows the messages produced by doxygen while it is running.
-Before being able to run doxygen the settings have to be saved.
+<dt>Specify additional command line options for running Doxygen<dd>Field to
+specify extra options used when running Doxygen, e.g. for debugging purposes.
+<dt>Run Doxygen<dd>When clicked will start running Doxygen.
+The "Output produced by Doxygen" pane shows the messages produced by Doxygen while it is running.
+Before being able to run Doxygen the settings have to be saved.
 <dt>Show HTML output<dd>Clicking this button will open the main HTML output page in the default browser.
-The button will be enabled after doxygen has finished.
+The button will be enabled after Doxygen has finished.
 <dt>Show configuration<dd>Clicking this button shows the configuration settings that are used when running
-doxygen. The results will be shown in the "Output produced by doxygen" pane in compact textual form.
+Doxygen. The results will be shown in the "Output produced by Doxygen" pane in compact textual form.
 <dt>Condensed<dd>When checked the "Show configuration" button will only list the configuration
 settings that differ from the default settings (analogous to `doxygen -x`).
-<dt>Save Log ...<dd>Will save the information from the "Output produced by doxygen"
+<dt>Save Log ...<dd>Will save the information from the "Output produced by Doxygen"
 pane in a file as specified by the user.
 </dl>
 
@@ -255,7 +255,7 @@ The file menu with a couple of useful items for loading and saving settings.
     will appear. In case the file already exists a confirmation is required.
 <dt>Save as..<dd>Saves the current configuration settings to disk with
     a specific name. This file name will become the currently set file name.
-<dt>Quit<dd>Leave doxywizard, in case unsaved settings exist you will be asked to
+<dt>Quit<dd>Leave Doxywizard, in case unsaved settings exist you will be asked to
     confirm the action.
 </dl>
 
@@ -273,8 +273,8 @@ The file menu with a couple of useful items for loading and saving settings.
     confirm the action.
 <dt>Clear recent list<dd>Clears the "Open recent" list in the \ref dw_menu_file. This menu
     item is only accessible when there are recent files in the "Open recent" list.
-<dt>Run doxygen<dd>Selecting this item is identical to switching to the \ref dw_run "Run" tab,
-    and clicking the "Run doxygen" button
+<dt>Run Doxygen<dd>Selecting this item is identical to switching to the \ref dw_run "Run" tab,
+    and clicking the "Run Doxygen" button
 </dl>
 
 \subsection dw_menu_help Help menu
@@ -283,7 +283,7 @@ The file menu with a couple of useful items for loading and saving settings.
 \image latex doxywizard_menu_help.png "Help menu" width=7.0cm
 
 <dl>
-<dt>Online Manual<dd>Opens the doxygen manual from the doxygen home page in the system defined default HTML browser.
+<dt>Online Manual<dd>Opens the Doxygen manual from the Doxygen home page in the system defined default HTML browser.
 <dt>About<dd>Shows an About dialog with version information.
 </dl>
 

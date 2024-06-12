@@ -17,7 +17,7 @@
 [TOC]
 
 [Markdown] support
-was introduced in doxygen version 1.8.0. It is a plain text formatting
+was introduced in Doxygen version 1.8.0. It is a plain text formatting
 syntax written by John Gruber, with the following underlying design goal:
 
 > The design goal for Markdown's formatting syntax is to
@@ -34,9 +34,9 @@ for more details.
 
 Some enhancements were made, for instance [PHP Markdown Extra][mdextra], and
 [GitHub flavored Markdown][github]. The section \ref markdown_extra discusses
-the extensions that doxygen supports.
+the extensions that Doxygen supports.
 
-Finally section \ref markdown_dox discusses some specifics for doxygen's
+Finally section \ref markdown_dox discusses some specifics for Doxygen's
 implementation of the Markdown standard.
 
 [markdown]: https://daringfireball.net/projects/markdown/
@@ -47,7 +47,7 @@ implementation of the Markdown standard.
 
 \subsection md_para Paragraphs
 
-Even before doxygen had Markdown support it supported the same way
+Even before Doxygen had Markdown support it supported the same way
 of paragraph handling as Markdown: to make a paragraph you just separate
 consecutive lines of text by one or more blank lines.
 
@@ -59,7 +59,7 @@ An example:
 
 \subsection md_headers Headers
 
-Just like Markdown, doxygen supports two types of headers
+Just like Markdown, Doxygen supports two types of headers
 
 Level 1 or 2 headers can be made as the follows
 
@@ -94,7 +94,7 @@ similar to what is used in text-only emails.
 Lists and code blocks (see below) can appear inside a quote block.
 Quote blocks can also be nested.
 
-Note that doxygen requires that you put a space after the (last) > character
+Note that Doxygen requires that you put a space after the (last) > character
 to avoid false positives, i.e. when writing
 
     0  if OK\n
@@ -122,7 +122,7 @@ You can also make a numbered list like so
     1. First item.
     2. Second item.
 
-Make sure to also read \ref mddox_lists for doxygen specifics.
+Make sure to also read \ref mddox_lists for Doxygen specifics.
 
 \subsection md_codeblock Code Blocks
 
@@ -139,7 +139,7 @@ Doxygen will remove the mandatory indentation from the code block.
 Note that you cannot start a code block in the middle of a paragraph
 (i.e. the line preceding the code block must be empty).
 
-See section \ref mddox_code_blocks for more info how doxygen handles
+See section \ref mddox_code_blocks for more info how Doxygen handles
 indentation as this is slightly different than standard Markdown.
 
 \subsection md_rulers Horizontal Rulers
@@ -173,7 +173,7 @@ Examples:
 *
 *    __double underscores__
 
-See section \ref mddox_emph_spans for more info how doxygen handles
+See section \ref mddox_emph_spans for more info how Doxygen handles
 emphasis / strikethrough spans slightly different than standard / Markdown GitHub Flavored Markdown.
 
 \subsection md_strikethrough Strikethrough
@@ -184,7 +184,7 @@ Examples:
 
 *    ~~double tilde~~
 
-See section \ref mddox_emph_spans for more info how doxygen handles
+See section \ref mddox_emph_spans for more info how Doxygen handles
 emphasis / strikethrough spans slightly different than standard Markdown / GitHub Flavored Markdown.
 
 \subsection md_codespan code spans
@@ -200,7 +200,7 @@ To show a literal backtick or single quote inside a code span use double backtic
 
     To assign the text 'text' to `var` use ``var='text'``.
 
-See section \ref mddox_code_spans for more info how doxygen handles
+See section \ref mddox_code_spans for more info how Doxygen handles
 code spans slightly different than standard Markdown.
 
 \subsection md_links Links
@@ -223,12 +223,12 @@ Examples:
     [The link text](/relative/path/to/index.html "Link title")
     [The link text](somefile.html)
 
-In addition doxygen provides a similar way to link a documented entity:
+In addition Doxygen provides a similar way to link a documented entity:
 
     [The link text](@ref MyClass)
 
 in case the first non whitespace character of the reference is a \c # this
-is interpreted as a doxygen link and replaced as a \ref cmdref "\@ref" command:
+is interpreted as a Doxygen link and replaced as a \ref cmdref "\@ref" command:
 
     [The link text](#MyClass)
 
@@ -274,7 +274,7 @@ as is shown in the following example:
 
 Link definitions will not be visible in the output.
 
-Like for inline links doxygen also supports \@ref inside a link definition:
+Like for inline links Doxygen also supports \@ref inside a link definition:
 
     [myclass]: @ref MyClass "My class"
 
@@ -312,7 +312,7 @@ syntax:
     <mailto:address@example.com>
     <address@example.com>
 
-Note that doxygen will also produce the links without the angle brackets.
+Note that Doxygen will also produce the links without the angle brackets.
 
 \section markdown_extra Markdown Extensions
 
@@ -398,7 +398,7 @@ which will look as follows:
 | 10    | 10     | 10    |
 | 1000  |||
 
-For more complex tables in doxygen please have a look at: \ref tables
+For more complex tables in Doxygen please have a look at: \ref tables
 
 \subsection md_fenced Fenced Code Blocks
 
@@ -420,7 +420,7 @@ same number of tildes. Here is an example:
 
 By default the output is the same as for a normal code block.
 
-For languages supported by doxygen you can also make the code block
+For languages supported by Doxygen you can also make the code block
 appear with syntax highlighting. To do so you need to
 indicate the typical file extension that corresponds to the
 programming language after the opening fence. For highlighting according
@@ -497,7 +497,7 @@ To link to a section in the same comment block you can use
 
     [Link text](#labelid)
 
-to link to a section in general, doxygen allows you to use \ref cmdref "\@ref"
+to link to a section in general, Doxygen allows you to use \ref cmdref "\@ref"
 
     [Link text](@ref labelid)
 
@@ -526,8 +526,8 @@ For example:
 
 \section markdown_dox Doxygen specifics
 
-Even though doxygen tries to following the Markdown standard as closely as
-possible, there are couple of deviation and doxygen specifics additions.
+Even though Doxygen tries to following the Markdown standard as closely as
+possible, there are couple of deviation and Doxygen specifics additions.
 
 \subsection md_page_header Including Markdown files as pages
 
@@ -542,14 +542,14 @@ details).
 By default the name and title of the page are derived from the file name.
 If the file starts with a level 1 header however, it is used as the title
 of the page. If you specify a label for the
-header (as shown in \ref md_header_id) doxygen will use that as the
+header (as shown in \ref md_header_id) Doxygen will use that as the
 page name.
 
-If the label is called `index` or `mainpage` doxygen will put the
+If the label is called `index` or `mainpage` Doxygen will put the
 documentation on the front page (`index.html`).
 
 Here is an example of a file `README.md` that will appear as the main page
-when processed by doxygen:
+when processed by Doxygen:
 
     My Main Page                         {#mainpage}
     ============
@@ -583,7 +583,7 @@ and in other sections that need to be processed without changes
 \subsection mddox_code_blocks Code Block Indentation
 
 Markdown allows both a single tab or 4 spaces to start a code block.
-Since doxygen already replaces tabs by spaces before doing Markdown
+Since Doxygen already replaces tabs by spaces before doing Markdown
 processing, the effect will only be same if TAB_SIZE in the configuration file
 has been set to 4. When it is set to a higher value spaces will be
 present in the code block. A lower value will prevent a single tab to be
@@ -593,7 +593,7 @@ With Markdown any block that is indented by 4 spaces (and 8 spaces
 inside lists) is treated as a code block. This indentation amount
 is absolute, i.e. counting from the start of the line.
 
-Since doxygen comments can appear at any indentation level
+Since Doxygen comments can appear at any indentation level
 that is required by the programming language, it
 uses a relative indentation instead. The amount of
 indentation is counted relative to the preceding paragraph.
@@ -614,7 +614,7 @@ is noticeable:
        code
 
 In this case Markdown will put the word code in a code block,
-whereas doxygen will treat it as normal text, since although the absolute
+whereas Doxygen will treat it as normal text, since although the absolute
 indentation is 4, the indentation with respect to the previous paragraph
 is only 1.
 
@@ -635,7 +635,7 @@ and is therefore not seen as a code block.
 
 \subsection mddox_emph_spans Emphasis and strikethrough limits
 
-Unlike standard Markdown and GitHub Flavored Markdown doxygen will not touch internal underscores or
+Unlike standard Markdown and GitHub Flavored Markdown Doxygen will not touch internal underscores or
 stars or tildes, so the following will appear as-is:
 
     a_nice_identifier
@@ -651,8 +651,8 @@ An emphasis or a strikethrough ends if
 The span of the emphasis or strikethrough is limited to a single paragraph.
 
 Lastly, note that when you want to put emphasis on a piece of text at the start of a line
-by means of `*`s within a C-style doxygen comment block (i.e. `/``** ... *``/`)
-that does not have leading `*` as column "lineup", then doxygen will see the sequence
+by means of `*`s within a C-style Doxygen comment block (i.e. `/``** ... *``/`)
+that does not have leading `*` as column "lineup", then Doxygen will see the sequence
 of `*`s at the beginning of the line as "lineup" and not as emphasis.
 So the following will not render as bold:
 \verbatim
@@ -669,7 +669,7 @@ however this will render as bold:
 
 \subsection mddox_code_spans Code Spans Limits
 
-Note that unlike standard Markdown, doxygen leaves the following untouched.
+Note that unlike standard Markdown, Doxygen leaves the following untouched.
 
     A `cool' word in a `nice' sentence.
 
@@ -719,7 +719,7 @@ will produce:
 2. Item1 of list 2
 4. Item2 of list 2
 
-Historically doxygen has an additional way to create numbered
+Historically Doxygen has an additional way to create numbered
 lists by using `-#` markers:
 
     -# item1
@@ -746,7 +746,7 @@ Markdown processing. So although the following works fine
      */
 @endverbatim
 
-When you remove the leading *'s doxygen will strip the other stars
+When you remove the leading *'s Doxygen will strip the other stars
 as well, making the list disappear!
 
 Rulers created with *'s will not be visible at all. They only work
@@ -755,7 +755,7 @@ in Markdown files.
 \subsection mddox_limits Limits on markup scope
 
 To avoid that a stray * or _ matches something many paragraphs later,
-and shows everything in between with emphasis, doxygen limits the scope
+and shows everything in between with emphasis, Doxygen limits the scope
 of a * and _ to a single paragraph.
 
 For a code span, between the starting and ending backtick only two
@@ -769,7 +769,7 @@ contain only one new line, the URL may not contain any newlines.
 In the GitHub version of markdown there is the support for so called alerts, the
 syntax is similar to a one level block quote followied by `[!<alert>]` where
 `<alert>` can be one of `note`, `warning`, `tip`, `caution` or `important`.
-In doxygen these alerts are translated into normal doxygen commands:
+In Doxygen these alerts are translated into normal Doxygen commands:
 - `> [!note]` is translated to \ref cmdnote "\\note"
 - `> [!warning]` is translated to \ref cmdwarning "\\warning"
 - `> [!tip]` is translated to \ref cmdremark "\\remark"
@@ -788,7 +788,7 @@ which will render as:
 
 \section markdown_debug Debugging problems
 
-When doxygen parses the source code it first extracts the comments blocks,
+When Doxygen parses the source code it first extracts the comments blocks,
 then passes these through the Markdown preprocessor. The output of the
 Markdown preprocessing consists of text with \ref cmd_intro "special commands"
 and \ref htmlcmds "HTML commands".
@@ -800,7 +800,7 @@ does not fit the Markdown syntax is simply passed on as-is. In the subsequent
 parsing phase this could lead to errors, which may not always be obvious
 as they are based on the intermediate format.
 
-To see the result after Markdown processing you can run doxygen with the
+To see the result after Markdown processing you can run Doxygen with the
 `-d Markdown` option. It will then print each comment block before and
 after Markdown processing.
 

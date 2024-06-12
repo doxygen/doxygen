@@ -4603,7 +4603,7 @@ static bool findClassRelation(
             // if baseClass is actually a typedef then we should not
             // instantiate it, since typedefs are in a different namespace
             // see bug531637 for an example where this would otherwise hang
-            // doxygen
+            // Doxygen
             if (baseClassTypeDef==nullptr)
             {
               //printf("       => findTemplateInstanceRelation: %s\n",qPrint(baseClass->name()));
@@ -10663,7 +10663,7 @@ static void dumpSymbolMap()
   }
 }
 
-// print developer options of doxygen
+// print developer options of Doxygen
 static void devUsage()
 {
   msg("Developer parameters:\n");
@@ -10680,7 +10680,7 @@ static void devUsage()
 
 
 //----------------------------------------------------------------------------
-// print the version of doxygen
+// print the version of Doxygen
 
 static void version(const bool extended)
 {
@@ -10707,43 +10707,43 @@ static void version(const bool extended)
 }
 
 //----------------------------------------------------------------------------
-// print the usage of doxygen
+// print the usage of Doxygen
 
 static void usage(const QCString &name,const QCString &versionString)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2021\n\n",qPrint(versionString));
-  msg("You can use doxygen in a number of ways:\n\n");
-  msg("1) Use doxygen to generate a template configuration file*:\n");
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2024\n\n",qPrint(versionString));
+  msg("You can use Doxygen in a number of ways:\n\n");
+  msg("1) Use Doxygen to generate a template configuration file*:\n");
   msg("    %s [-s] -g [configName]\n\n",qPrint(name));
-  msg("2) Use doxygen to update an old configuration file*:\n");
+  msg("2) Use Doxygen to update an old configuration file*:\n");
   msg("    %s [-s] -u [configName]\n\n",qPrint(name));
-  msg("3) Use doxygen to generate documentation using an existing ");
+  msg("3) Use Doxygen to generate documentation using an existing ");
   msg("configuration file*:\n");
   msg("    %s [configName]\n\n",qPrint(name));
-  msg("4) Use doxygen to generate a template file controlling the layout of the\n");
+  msg("4) Use Doxygen to generate a template file controlling the layout of the\n");
   msg("   generated documentation:\n");
   msg("    %s -l [layoutFileName]\n\n",qPrint(name));
   msg("    In case layoutFileName is omitted DoxygenLayout.xml will be used as filename.\n");
-  msg("    If - is used for layoutFileName doxygen will write to standard output.\n\n");
-  msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
+  msg("    If - is used for layoutFileName Doxygen will write to standard output.\n\n");
+  msg("5) Use Doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
   msg("    RTF:        %s -w rtf styleSheetFile\n",qPrint(name));
   msg("    HTML:       %s -w html headerFile footerFile styleSheetFile [configFile]\n",qPrint(name));
   msg("    LaTeX:      %s -w latex headerFile footerFile styleSheetFile [configFile]\n\n",qPrint(name));
-  msg("6) Use doxygen to generate a rtf extensions file\n");
+  msg("6) Use Doxygen to generate a rtf extensions file\n");
   msg("    %s -e rtf extensionsFile\n\n",qPrint(name));
-  msg("    If - is used for extensionsFile doxygen will write to standard output.\n\n");
-  msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
+  msg("    If - is used for extensionsFile Doxygen will write to standard output.\n\n");
+  msg("7) Use Doxygen to compare the used configuration file with the template configuration file\n");
   msg("    %s -x [configFile]\n\n",qPrint(name));
-  msg("   Use doxygen to compare the used configuration file with the template configuration file\n");
+  msg("   Use Doxygen to compare the used configuration file with the template configuration file\n");
   msg("   without replacing the environment variables or CMake type replacement variables\n");
   msg("    %s -x_noenv [configFile]\n\n",qPrint(name));
-  msg("8) Use doxygen to show a list of built-in emojis.\n");
+  msg("8) Use Doxygen to show a list of built-in emojis.\n");
   msg("    %s -f emoji outputFileName\n\n",qPrint(name));
-  msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
+  msg("    If - is used for outputFileName Doxygen will write to standard output.\n\n");
   msg("*) If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("   If configName is omitted 'Doxyfile' will be used as a default.\n");
-  msg("   If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
-  msg("If -q is used for a doxygen documentation run, doxygen will see this as if QUIET=YES has been set.\n\n");
+  msg("   If - is used for configFile Doxygen will write / read the configuration to /from standard output / input.\n\n");
+  msg("If -q is used for a Doxygen documentation run, Doxygen will see this as if QUIET=YES has been set.\n\n");
   msg("-v print version string, -V print extended version information\n");
   msg("-h,-? prints usage help information\n");
   msg("%s -d prints additional usage flags for debugging purposes\n",qPrint(name));

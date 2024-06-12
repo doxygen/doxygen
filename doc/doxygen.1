@@ -1,34 +1,34 @@
 .TH DOXYGEN "1" "@DATE@" "doxygen @VERSION@" "User Commands"
 .SH NAME
-doxygen \- documentation system for various programming languages
+Doxygen \- documentation system for various programming languages
 .SH DESCRIPTION
 Doxygen is a documentation system for C++, C, Java, Objective-C, IDL
 (Corba and Microsoft flavors), Fortran, Python, VHDL and to some extent PHP, C#, and D.
 .PP
-You can use doxygen in a number of ways:
+You can use Doxygen in a number of ways:
 .TP
-1) Use doxygen to generate a template configuration file*:
+1) Use Doxygen to generate a template configuration file*:
 .IP
 doxygen [-s] \fB\-g\fR [configName]
 .TP
-2) Use doxygen to update an old configuration file*:
+2) Use Doxygen to update an old configuration file*:
 .IP
 doxygen [-s] \fB\-u\fR [configName]
 .TP
-3) Use doxygen to generate documentation using an existing configuration file*:
+3) Use Doxygen to generate documentation using an existing configuration file*:
 .IP
 doxygen [configName]
 .TP
-4) Use doxygen to generate a template file controlling the layout of the generated documentation:
+4) Use Doxygen to generate a template file controlling the layout of the generated documentation:
 .IP
 doxygen \fB\-l\fR [layoutFileName]
 .IP
 .RS 0
    In case layoutFileName is omitted DoxygenLayout.xml will be used as filename.
-   If - is used for layoutFileName doxygen will write to standard output.
+   If - is used for layoutFileName Doxygen will write to standard output.
 .RE
 .TP
-5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.
+5) Use Doxygen to generate a template style sheet file for RTF, HTML or Latex.
 .IP
 RTF:
 doxygen \fB\-w\fR rtf styleSheetFile
@@ -38,41 +38,41 @@ doxygen \fB\-w\fR html headerFile footerFile styleSheetFile [configFile]
 .IP
 LaTeX: doxygen \fB\-w\fR latex headerFile footerFile styleSheetFile [configFile]
 .TP
-6) Use doxygen to generate an rtf extensions file
+6) Use Doxygen to generate an rtf extensions file
 .IP
 RTF:
 doxygen \fB\-e\fR rtf extensionsFile
 .IP
 .RS 0
-   If - is used for extensionsFile doxygen will write to standard output.
+   If - is used for extensionsFile Doxygen will write to standard output.
 .RE
 .TP
-7) Use doxygen to compare the used configuration file with the template configuration file
+7) Use Doxygen to compare the used configuration file with the template configuration file
 .IP
 doxygen \fB\-x\fR [configFile]
 .TP
-   Use doxygen to compare the used configuration file with the template configuration file
+   Use Doxygen to compare the used configuration file with the template configuration file
 .RS 0
    without replacing the environment variables or CMake type replacement variables
 .RE
 .IP
 doxygen \fB\-x_noenv\fR [configFile]
 .TP
-8) Use doxygen to show a list of built-in emojis.
+8) Use Doxygen to show a list of built-in emojis.
 .IP
 doxygen \fB\-f\fR emoji outputFileName
 .IP
 .RS 0
-   If - is used for outputFileName doxygen will write to standard output.
+   If - is used for outputFileName Doxygen will write to standard output.
 .RE
 .PP
 .RS 0
 *) If \fB\-s\fR is specified the comments of the configuration items in the config file will be omitted.
    If configName is omitted 'Doxyfile' will be used as a default.
-   If - is used for configFile doxygen will write / read the configuration to /from standard output / input.
+   If - is used for configFile Doxygen will write / read the configuration to /from standard output / input.
 .RE
 .PP
-If \fB\-q\fR is used for a doxygen documentation run, doxygen will see this as if QUIET=YES has been set.
+If \fB\-q\fR is used for a Doxygen documentation run, Doxygen will see this as if QUIET=YES has been set.
 .PP
 \fB\-v\fR print version string, \fB\-V\fR print extended version information
 .PP

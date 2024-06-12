@@ -120,7 +120,7 @@ Here is the above example with HTML commands:
 <b>Using \\arg or \\li</b>
 
 For compatibility with the Qt Software's internal documentation tool qdoc and
-with KDoc, doxygen has two commands that can be used to create simple
+with KDoc, Doxygen has two commands that can be used to create simple
 unnested lists. 
 
 See \ref cmdarg "\\arg" and \ref cmdli "\\li" for more info.

@@ -29,14 +29,14 @@ need to follow these steps:
 <li> You document your source code with 
      special documentation blocks (see section \ref specialblock).
 <li> You generate a configuration file (see section \ref config) by 
-     calling doxygen with the \c -g option:
+     calling Doxygen with the \c -g option:
 \verbatim
 doxygen -g <config_file>
 \endverbatim
 <li> You edit the configuration file so it matches your project.
      In the configuration file you can specify the input files and
      a lot of optional information.
-<li> You let doxygen generate the documentation, based on the settings in the
+<li> You let Doxygen generate the documentation, based on the settings in the
      configuration file:
 \verbatim
 doxygen <config_file>
@@ -44,7 +44,7 @@ doxygen <config_file>
 </ol>
 
 If you have a configuration file generated with an older version of
-doxygen, you can upgrade it to the current version by running doxygen
+Doxygen, you can upgrade it to the current version by running Doxygen
 with the -u option.
 \verbatim
 doxygen -u <config_file>
@@ -55,7 +55,7 @@ Note that comments that you may have added in the original configuration file
 will be lost.
 
 \section doxygen_finetune Fine-tuning the output
-If you want to fine-tune the way the output looks, doxygen allows you 
+If you want to fine-tune the way the output looks, Doxygen allows you 
 generate default style sheet, header, and footer files that you can edit
 afterwards:
 <ul>
@@ -67,7 +67,7 @@ afterwards:
 \verbatim
 doxygen -w html header.html footer.html stylesheet.css <config_file>
 \endverbatim
-  The `config_file` is optional. When omitted doxygen will search for 
+  The `config_file` is optional. When omitted Doxygen will search for 
   a file named `Doxyfile` and process that. When this is also not found it
   will used the default settings.
 
@@ -91,9 +91,9 @@ doxygen -w rtf rtfstyle.cfg
 \endverbatim
 </ul>
 \warning When using a custom header you are responsible 
-  for the proper inclusion of any scripts and style sheets that doxygen 
+  for the proper inclusion of any scripts and style sheets that Doxygen 
   needs, which is dependent on the configuration options and may change
-  when upgrading to a new doxygen release.
+  when upgrading to a new Doxygen release.
 
 \note
 <ul>
@@ -102,11 +102,11 @@ doxygen -w rtf rtfstyle.cfg
      used in combination with the \c -u option, to add or strip the
      documentation from an existing configuration file.
      To get a minimal configuration file use the \c -x or \-x_noenv option to
-     show only the differences from the default doxygen configuration file.
+     show only the differences from the default Doxygen configuration file.
      Please use the \c -s or \c -x or \c -x_noenv option if you send me a
      configuration file as part of a bug report or post an issue on GitHub!
      (see also: \ref bug_reports "How to report a bug")
-<li> To make doxygen read/write to standard input/output instead of from/to 
+<li> To make Doxygen read/write to standard input/output instead of from/to 
      a file, use \c - for the file name.
 </ul>
 
