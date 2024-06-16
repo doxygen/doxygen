@@ -1314,15 +1314,16 @@ SLASHopt [/]*
                                        yyextra->inBuf         = fs->oldFileBuf;
                                        yyextra->inBufPos      = fs->oldFileBufPos;
                                        yyextra->includeCtx    = fs->oldIncludeCtx;
-                                       QCString lineStr= " \\ilinebr \\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
+                                       QCString lineStr= " \\ifile \""+yyextra->fileName+"\" \\iline "+QCString().setNum(yyextra->lineNr)+" ";
                                        if (fs->oldRaiseLvl!=yyextra->raiseLevel)
                                        {
-                                          lineStr+=" \\iraise " + std::to_string(fs->oldRaiseLvl);
+                                          lineStr+="\\iraise " + std::to_string(fs->oldRaiseLvl)+ " ";
                                        }
                                        if (fs->oldRaiseLbl!=yyextra->raiseLabel)
                                        {
-                                          lineStr+=" \\iprefix \"" + fs->oldRaiseLbl + "\"";
+                                          lineStr+="\\iprefix \"" + fs->oldRaiseLbl + "\" ";
                                        }
+                                       lineStr+="\\ilinebr ";
                                        yyextra->raiseLevel    = fs->oldRaiseLvl;
                                        yyextra->raiseLabel    = fs->oldRaiseLbl;
                                        copyToOutput(yyscanner,lineStr.view());
@@ -1719,24 +1720,21 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     QCString oldRaiseLabel = yyextra->raiseLabel;
     yyextra->raiseLevel+=yyextra->raiseIncrement;
     yyextra->raiseLabel+=yyextra->raisePrefix;
-    lineNr--;
-    QCString lineStr=" \\ilinebr \\ifile \""+absFileName+"\" \\iline " + std::to_string(lineNr);
+    QCString lineStr=" \\ifile \""+absFileName+"\" \\iline " + std::to_string(lineNr)+" ";
     if (yyextra->raiseLevel>0)
     {
-      lineStr+=" \\iraise " + std::to_string(yyextra->raiseLevel);
+      lineStr+="\\iraise " + std::to_string(yyextra->raiseLevel)+" ";
     }
     if (!yyextra->raiseLabel.isEmpty())
     {
-      lineStr+=" \\iprefix \"" + yyextra->raiseLabel + "\"";
+      lineStr+="\\iprefix \"" + yyextra->raiseLabel + "\" ";
     }
-    copyToOutput(yyscanner,lineStr.view());
-    insertCommentStart(yyscanner);
-    lineStr="\n";
+    lineStr+="\\ilinebr ";
     copyToOutput(yyscanner,lineStr.view());
 
     fs->fileName      = absFileName;
     fs->bufState      = YY_CURRENT_BUFFER;
-    fs->oldLineNr     = yyextra->lineNr-1;
+    fs->oldLineNr     = yyextra->lineNr;
     fs->oldFileName   = yyextra->fileName;
     fs->oldState      = yyextra->includeCtx;
     fs->oldFileBuf    = yyextra->inBuf;

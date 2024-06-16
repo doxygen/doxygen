@@ -6257,18 +6257,33 @@ QCString stripIndentation(const QCString &s)
         indent++;
       }
     }
+    else if (c=='\\' && qstrncmp(p,"ilinebr ",8)==0)
+      // we also need to remove the indentation after a \ilinebr command at the end of a line
+    {
+      result << "\\ilinebr ";
+      p+=8;
+      int skipAmount=0;
+      for (int j=0;j<minIndent;j++) if (*(p+j)==' ') skipAmount++; // test to see if we have the indent
+      if (skipAmount==minIndent)
+      {
+        p+=skipAmount; // remove the indent
+      }
+    }
     else // copy anything until the end of the line
     {
       result << c;
     }
   }
 
+  //printf("stripIndentation: result=\n%s\n------\n",qPrint(result.str()));
+
   return result.str();
 }
 
 // strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
-void stripIndentation(QCString &doc,const int indentationLevel)
+void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
 {
+  //printf("stripIndentationVerbatim(level=%d):\n%s\n------\n",indentationLevel,qPrint(doc));
   if (indentationLevel <= 0 || doc.isEmpty()) return; // nothing to strip
 
   // by stripping content the string will only become shorter so we write the results
@@ -6313,6 +6328,7 @@ void stripIndentation(QCString &doc,const int indentationLevel)
     }
   }
   doc.resize(static_cast<uint32_t>(dst-doc.data()));
+  //printf("stripIndentationVerbatim: result=\n%s\n------\n",qPrint(doc));
 }
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)

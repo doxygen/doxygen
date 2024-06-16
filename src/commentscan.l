@@ -65,6 +65,7 @@ typedef yyguts_t *yyscan_t;
 #include "reflist.h"
 #include "trace.h"
 #include "debug.h"
+#include "stringutil.h"
 
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -599,6 +600,7 @@ MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 MODULE_ID ({ID}".")*{ID}
 LINENR    {Bopt}[1-9][0-9]*
+IFILELINE  ("\\ifile \""[^"]*"\" \\iline "[0-9]+" "("iprefix \""[^"]*"\" ")?("iraise "[0-9]+" ")?)
 
   // C start comment 
 CCS   "/\*"
@@ -898,6 +900,16 @@ STopt  [^\n@\\]*
                                         }
 <Comment>{B}*"\\ilinebr"{B}*            { // preserve spacing around \\ilinebr
                                           addOutput(yyscanner,yytext);
+                                        }
+<Comment>(\n|\\ilinebr)/({B}*(\n|{IFILELINE}?\\ilinebr))+ { // at least one blank line (or blank line command)
+                                          if (yyextra->inContext==OutputBrief)
+                                          {
+                                            endBrief(yyscanner);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
                                         }
 <Comment>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*        { // potentially interesting command
@@ -1471,7 +1483,7 @@ STopt  [^\n@\\]*
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
-                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr + extraLineNr) + " \\ilinebr ");
+                                          addOutput(yyscanner,"\" \\iline " + QCString().setNum(yyextra->lineNr + extraLineNr) + " \\ilinebr ");
                                           BEGIN( Comment );
                                         }
 <GroupDocArg2>.                         { // title (stored in type)
@@ -1524,7 +1536,7 @@ STopt  [^\n@\\]*
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
-                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr) + " \\ilinebr ");
+                                          addOutput(yyscanner,"\" \\iline " + QCString().setNum(yyextra->lineNr) + " \\ilinebr ");
                                           BEGIN( Comment );
                                         }
 <PageDocArg2>{CMD}[<>]                  {
@@ -4253,6 +4265,7 @@ static void addCite(yyscan_t yyscanner)
 }
 
 //-----------------------------------------------------------------------------
+static const reg::Ex nonBrief_re(R"( *[\\@]ifile \"[^\"]*\" [\\@]iline (\d+) [\\@]ilinebr( *\n*))");
 
 // strip trailing whitespace (excluding newlines) from string s
 static void stripTrailingWhiteSpace(QCString &s)
@@ -4390,15 +4403,14 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
         }
         else
         {
-          static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr( *\n*))");
           std::string str = yyextra->current->brief.str();
           reg::Match match;
-          if (reg::match(str,match,nonBrief)) // match found
+          if (reg::match(str,match,nonBrief_re)) // match found
           {
             size_t cnt = 0;
             for (size_t i = 0; i < match[2].str().size(); i++)
             {
-                 if (match[2].str()[i] == '\n') cnt++;
+              if (match[2].str()[i] == '\n') cnt++;
             }
             if (cnt)
             {
@@ -4508,10 +4520,9 @@ static void addIlineBreak(yyscan_t yyscanner,int lineNr)
 static void endBrief(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr( *\n*))");
-  std::string str = yyextra->current->brief.str();
+  std::string_view str = yyextra->current->brief.view();
   reg::Match match;
-  if (!yyextra->current->brief.stripWhiteSpace().isEmpty() && !reg::match(str,match,nonBrief))
+  if (!stripWhiteSpace(str).empty() && !reg::match(str,match,nonBrief_re))
   { // only go to the detailed description if we have
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=FALSE;

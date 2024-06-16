@@ -421,7 +421,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         BEGIN(TripleComment);
                       }
 
-    {STARTDOCSYMS}/[^#]    {  // start of a special comment
+    {B}{STARTDOCSYMS}/[^#]    {  // start of a special comment
                         yyextra->curIndent=computeIndent(yytext);
                         yyextra->packageCommentAllowed = FALSE;
                         initSpecialBlock(yyscanner);
@@ -1441,7 +1441,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                               {
                                 if (!actualDoc.isEmpty())
                                 {
-                                  stripIndentation(actualDoc,yyextra->commentIndent);
+                                  stripIndentationVerbatim(actualDoc,yyextra->commentIndent);
                                   actualDoc.prepend("@iverbatim\n");
                                   actualDoc.append("@endiverbatim ");
                                 }
@@ -1456,7 +1456,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                               {
                                 if (!actualDoc.isEmpty())
                                 {
-                                  stripIndentation(actualDoc,yyextra->commentIndent);
+                                  stripIndentationVerbatim(actualDoc,yyextra->commentIndent);
                                   actualDoc.prepend("@iverbatim\n");
                                   actualDoc.append("@endiverbatim ");
                                 }
@@ -1577,9 +1577,11 @@ ID        [a-z_A-Z%]+{IDSYM}*
     ({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
                                      yyextra->docBlock+=yytext;
                                   }
-    "\\ilinebr "{B}*"#" {
+    "\\ilinebr "{B}*    {
                           QCString indent;
-                          indent.fill(' ',yyleng-9);
+                          auto extraSpaces = std::max(0,yyleng-9-yyextra->curIndent-1);
+                          indent.fill(' ',extraSpaces);
+                          //printf("extraSpaces=%d\n",extraSpaces);
                           yyextra->docBlock += "\\ilinebr ";
                           yyextra->docBlock += indent;
                         }

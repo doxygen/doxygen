@@ -7003,7 +7003,6 @@ NONLopt [^\n]*
                                           yyextra->fileName = yyextra->fileName.stripWhiteSpace();
                                           yyextra->docBlock << yytext;
                                         }
-<DocBlock>{CMD}"iline"{LINENR}/[\n\.]   |
 <DocBlock>{CMD}"iline"{LINENR}{B}       {
                                           bool ok = false;
                                           int nr = QCString(&yytext[6]).toInt(&ok);
