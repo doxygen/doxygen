@@ -1528,8 +1528,7 @@ private                                 {
                                         }
 <DocBlock>"\\ilinebr "{BS}              {
                                           QCString indent;
-                                          auto extraSpaces = std::max(0,yyleng-9-yyextra->curIndent-1);
-                                          indent.fill(' ',extraSpaces);
+                                          indent.fill(' ',yyleng-9-yyextra->curIndent-1 > 0 ? yyleng-9-yyextra->curIndent-1 : 0);
                                           //printf("extraSpaces=%d\n",extraSpaces);
                                           yyextra->docBlock += "\\ilinebr ";
                                           yyextra->docBlock += indent;
