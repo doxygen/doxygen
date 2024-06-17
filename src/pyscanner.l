@@ -36,6 +36,9 @@ typedef yyguts_t *yyscan_t;
 /*
  *      includes
  */
+
+#include <algorithm>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -1579,7 +1582,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                                   }
     "\\ilinebr "{B}*    {
                           QCString indent;
-                          auto extraSpaces = std::max(0,yyleng-9-yyextra->curIndent-1);
+                          int extraSpaces = std::max(0,static_cast<int>(yyleng-9-yyextra->curIndent-1));
                           indent.fill(' ',extraSpaces);
                           //printf("extraSpaces=%d\n",extraSpaces);
                           yyextra->docBlock += "\\ilinebr ";
