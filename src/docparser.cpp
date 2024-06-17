@@ -1846,7 +1846,14 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
         const Definition *def = nullptr;
         QCString doc,brief;
         //printf("resolving docs='%s'\n",qPrint(id));
-        if (findDocsForMemberOrCompound(id,&doc,&brief,&def))
+        bool found = findDocsForMemberOrCompound(id,&doc,&brief,&def);
+        if (found && def->isReference())
+        {
+          warn_doc_error(context.fileName,tokenizer.getLineNr(),
+               "@copy%s or @copydoc target '%s' found but is from a tag file, skipped", isBrief?"brief":"details",
+               qPrint(id));
+        }
+        else if (found)
         {
           //printf("found it def=%p brief='%s' doc='%s' isBrief=%d\n",def,qPrint(brief),qPrint(doc),isBrief);
           auto it = std::find(context.copyStack.begin(),context.copyStack.end(),def);
