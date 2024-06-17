@@ -54,6 +54,7 @@ typedef yyguts_t *yyscan_t;
 
 #include <map>
 #include <vector>
+#include <algorithm>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1528,7 +1529,8 @@ private                                 {
                                         }
 <DocBlock>"\\ilinebr "{BS}              {
                                           QCString indent;
-                                          indent.fill(' ',yyleng-9-yyextra->curIndent-1 > 0 ? yyleng-9-yyextra->curIndent-1 : 0);
+                                          int extraSpaces = std::max(0,static_cast<int>(yyleng-9-yyextra->curIndent-1));
+                                          indent.fill(' ',extraSpaces);
                                           //printf("extraSpaces=%d\n",extraSpaces);
                                           yyextra->docBlock += "\\ilinebr ";
                                           yyextra->docBlock += indent;
