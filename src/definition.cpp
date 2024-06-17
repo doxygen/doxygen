@@ -1570,7 +1570,9 @@ int DefinitionImpl::docLine() const
 
 QCString DefinitionImpl::docFile() const
 {
-  return m_impl->details ? m_impl->details->file : m_impl->brief ? m_impl->brief->file : QCString("<"+m_impl->name+">");
+  if (m_impl->details && !m_impl->details->file.isEmpty()) return m_impl->details->file;
+  else if (m_impl->brief && !m_impl->brief->file.isEmpty()) return m_impl->brief->file;
+  else  return "<" + m_impl->name + ">";
 }
 
 //----------------------------------------------------------------------------
@@ -1652,7 +1654,7 @@ int DefinitionImpl::briefLine() const
 
 QCString DefinitionImpl::briefFile() const
 {
-  return m_impl->brief ? m_impl->brief->file : QCString("<"+m_impl->name+">");
+  return m_impl->brief && !m_impl->brief->file.isEmpty() ? m_impl->brief->file : QCString("<"+m_impl->name+">");
 }
 
 //----------------------
@@ -1669,7 +1671,7 @@ int DefinitionImpl::inbodyLine() const
 
 QCString DefinitionImpl::inbodyFile() const
 {
-  return m_impl->inbodyDocs ? m_impl->inbodyDocs->file : QCString("<"+m_impl->name+">");
+  return m_impl->inbodyDocs && !m_impl->inbodyDocs->file.isEmpty() ? m_impl->inbodyDocs->file : QCString("<"+m_impl->name+">");
 }
 
 
