@@ -796,6 +796,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                          lineCount(yytext,yyleng);
                        }
+<St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}*/" \\ifile" | // we don't want to count the space before \ifile
 <St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}* {
                          lineCount(yytext,yyleng);
                          if (yyextra->insidePre)
@@ -808,6 +809,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            yyextra->token.indent=computeIndent(yytext,yyleng);
                            int i;
                            // put back the indentation (needed for list items)
+                           //printf("token.indent=%d\n",yyextra->token.indent);
                            for (i=0;i<yyextra->token.indent;i++)
                            {
                              unput(' ');

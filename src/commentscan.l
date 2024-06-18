@@ -898,10 +898,10 @@ STopt  [^\n@\\]*
                                               );
                                           yyextra->inInternalDocs = FALSE;
                                         }
-<Comment>{B}*"\\ilinebr"{B}*            { // preserve spacing around \\ilinebr
+<Comment>{B}*"\\ilinebr "{B}*           { // preserve spacing around \\ilinebr
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>(\n|\\ilinebr)/({B}*(\n|{IFILELINE}?\\ilinebr))+ { // at least one blank line (or blank line command)
+<Comment>(\n|"\\ilinebr ")/({B}*(\n|{IFILELINE}?"\\ilinebr "))+ { // at least one blank line (or blank line command)
                                           if (yyextra->inContext==OutputBrief)
                                           {
                                             endBrief(yyscanner);
@@ -1103,7 +1103,7 @@ STopt  [^\n@\\]*
 <Comment>".."[\.]?/[^ \t\n]             { // internal ellipsis
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>(\n|\\ilinebr)({B}*(\n|\\ilinebr))+ { // at least one blank line (or blank line command)
+<Comment>(\n|"\\ilinebr ")({B}*(\n|"\\ilinebr "))+ { // at least one blank line (or blank line command)
                                           if (yyextra->inContext==OutputXRef)
                                           {
                                             // see bug 613024, we need to put the newlines after ending the XRef section.
@@ -1112,7 +1112,7 @@ STopt  [^\n@\\]*
                                             for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
-                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner," \\ilinebr"),i+=8;
+                                              else if (strncmp(yytext+i,"\\ilinebr ",9)==0) addOutput(yyscanner,"\\ilinebr "),i+=9;
                                               else i++;
                                             }
                                           }
@@ -1122,7 +1122,7 @@ STopt  [^\n@\\]*
                                             for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
-                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner," \\ilinebr"),i+=8;
+                                              else if (strncmp(yytext+i,"\\ilinebr ",9)==0) addOutput(yyscanner,"\\ilinebr "),i+=9;
                                               else i++;
                                             }
                                             setOutput(yyscanner,OutputDoc);
@@ -4265,7 +4265,7 @@ static void addCite(yyscan_t yyscanner)
 }
 
 //-----------------------------------------------------------------------------
-static const reg::Ex nonBrief_re(R"( *[\\@]ifile \"[^\"]*\" [\\@]iline (\d+) [\\@]ilinebr( *\n*))");
+static const reg::Ex nonBrief_re(R"( *[\\@]ifile \"[^\"]*\" [\\@]iline (\d+) [\\@]ilinebr ([ \n]*))");
 
 // strip trailing whitespace (excluding newlines) from string s
 static void stripTrailingWhiteSpace(QCString &s)
@@ -4412,7 +4412,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
             {
               if (match[2].str()[i] == '\n') cnt++;
             }
-            if (cnt)
+            if (cnt>0)
             {
               yyextra->current->brief = yyextra->current->brief.left(yyextra->current->brief.length()-cnt);
               // set warning line correct

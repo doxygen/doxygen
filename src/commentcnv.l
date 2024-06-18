@@ -1070,6 +1070,7 @@ SLASHopt [/]*
                                      if (!parseIncludeOptions(yyscanner,std::string_view{yytext,static_cast<size_t>(yyleng)})) REJECT;
                                      yyextra->includeCtx = YY_START;
                                      yyextra->firstIncludeLine = true;
+                                     yyextra->insertCommentCol = yyextra->col;
                                      if (!yyextra->insertCppCommentMarker && (yyextra->includeCtx==ReadLine || yyextra->includeCtx==IncludeFile))
                                      {
                                        if (yyextra->includeCtx==ReadLine)
@@ -1078,12 +1079,14 @@ SLASHopt [/]*
                                        }
                                        yyextra->insertCppCommentMarker = yyextra->mlBrief;
                                      }
+                                     //printf("insertCommentCol=%d\n",yyextra->insertCommentCol);
                                      BEGIN(IncludeDoc);
                                    }
 <CComment,ReadLine,IncludeFile>[\\@]("snippet"{OPTS}|"snippetdoc"{OPTS}*) {
                                      if (!parseIncludeOptions(yyscanner,std::string_view{yytext,static_cast<size_t>(yyleng)})) REJECT;
                                      yyextra->includeCtx = YY_START;
                                      yyextra->firstIncludeLine = true;
+                                     yyextra->insertCommentCol = yyextra->col;
                                      if (!yyextra->insertCppCommentMarker && (yyextra->includeCtx==ReadLine || yyextra->includeCtx==IncludeFile))
                                      {
                                        if (yyextra->includeCtx==ReadLine)
@@ -1092,6 +1095,7 @@ SLASHopt [/]*
                                        }
                                        yyextra->insertCppCommentMarker = yyextra->mlBrief;
                                      }
+                                     //printf("insertCommentCol=%d\n",yyextra->insertCommentCol);
                                      BEGIN(SnippetDoc);
                                    }
 <IncludeDoc,SnippetDoc>{B}*
@@ -1623,7 +1627,7 @@ static void insertCommentStart(yyscan_t yyscanner)
   //printf("insertCommentStart col=%d mlBrief=%d insertCppCommentMarker=%d\n",yyextra->insertCommentCol,yyextra->mlBrief,yyextra->insertCppCommentMarker);
   if (yyextra->insertCommentCol>=2)
   {
-    int count=yyextra->insertCommentCol-2;
+    int count=yyextra->insertCommentCol;
     std::string marker;
     if (yyextra->lang==SrcLangExt::Python) // need to insert #
     {
@@ -1632,6 +1636,10 @@ static void insertCommentStart(yyscan_t yyscanner)
     else if (yyextra->lang==SrcLangExt::Fortran) // need to insert !!
     {
       marker="!! ";
+    }
+    else if (yyextra->lang==SrcLangExt::Markdown)
+    {
+      marker="  ";
     }
     else if (yyextra->insertCppCommentMarker) // need to insert ///
     {
@@ -1642,6 +1650,7 @@ static void insertCommentStart(yyscan_t yyscanner)
     {
       marker="* ";
     }
+    count-=marker.length();
     for (int i=0;i<count;i++)
     {
       copyToOutput(yyscanner," ");
