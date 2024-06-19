@@ -2745,7 +2745,11 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       level--;
       j--;
     }
-    if (level==0 && data[j-1]!='\n') level = curLevel; // lazy
+    AUTO_TRACE_ADD("indent={} i={} j={} end={} level={} line={}",indent,i,j,end,level,Trace::trunc(&data[i]));
+    if (level==0 && j<end-1)
+    {
+      level = curLevel; // lazy
+    }
     if (level==1)
     {
       QCString txt = stripWhiteSpace(data.substr(indent,end-indent));
