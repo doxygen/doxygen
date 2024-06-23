@@ -2825,6 +2825,43 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   return i;
 }
 
+// For code blocks that are outputted as part of an indented include or snippet command, we need to filter out
+// the location string, i.e. '\ifile "..." \iline \ilinebr'.
+bool skipOverFileAndLineCommands(std::string_view data,size_t indent,size_t &offset,std::string &location)
+{
+  size_t i = offset;
+  size_t size = data.size();
+  while (i<data.size() && data[i]==' ') i++;
+  if (i<size+8 && data[i]=='\\' && qstrncmp(&data[i+1],"ifile \"",7)==0)
+  {
+    size_t locStart = i;
+    if (i>offset) locStart--; // include the space before \ifile
+    i+=8;
+    bool found=false;
+    while (i<size-9 && data[i]!='\n')
+    {
+      if (data[i]=='\\' && qstrncmp(&data[i+1],"ilinebr ",8)==0)
+      {
+        found=true;
+        break;
+      }
+      i++;
+    }
+    if (!found)
+    {
+      return offset; // not found
+    }
+    i+=9;
+    location=data.substr(locStart,i-locStart);
+    location+='\n';
+    while (indent>0 && i<size && data[i]==' ') i++,indent--;
+    if (i<size && data[i]=='\n') i++;
+    offset = i;
+    return true;
+  }
+  return false;
+}
+
 size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
 {
   AUTO_TRACE("data='{}' refIndent={}",Trace::trunc(data),refIndent);
@@ -2833,6 +2870,7 @@ size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
   // no need for \ilinebr here as the previous line was empty and was skipped
   out+="@iverbatim\n";
   int emptyLines=0;
+  std::string location;
   while (i<size)
   {
     // find end of this line
@@ -2858,6 +2896,11 @@ size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
       }
       // add code line minus the indent
       size_t offset = i+refIndent+codeBlockIndent;
+      std::string lineLoc;
+      if (skipOverFileAndLineCommands(data,codeBlockIndent,offset,lineLoc))
+      {
+        location = lineLoc;
+      }
       out+=data.substr(offset,end-offset);
       i=end;
     }
@@ -2866,7 +2909,15 @@ size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
       break;
     }
   }
-  out+="@endiverbatim\\ilinebr ";
+  out+="@endiverbatim";
+  if (!location.empty())
+  {
+    out+=location;
+  }
+  else
+  {
+    out+="\\ilinebr ";
+  }
   while (emptyLines>0) // write skipped empty lines
   {
     // add empty line

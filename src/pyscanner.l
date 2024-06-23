@@ -1582,7 +1582,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                                   }
     "\\ilinebr "{B}*    {
                           QCString indent;
-                          int extraSpaces = std::max(0,static_cast<int>(yyleng-9-yyextra->curIndent-1));
+                          int extraSpaces = std::max(0,static_cast<int>(yyleng-9-yyextra->curIndent-2));
                           indent.fill(' ',extraSpaces);
                           //printf("extraSpaces=%d\n",extraSpaces);
                           yyextra->docBlock += "\\ilinebr ";
