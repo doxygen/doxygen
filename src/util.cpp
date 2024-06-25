@@ -611,7 +611,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   for (;i<l;i++)
   {
     char c=src[i];
-    char nc=i<l-1 ? src[i+1] : ' ';
+    char nc=i+1<l ? src[i+1] : ' ';
 
     auto searchForKeyword = [&](const char *kw,size_t &matchLen,size_t totalLen)
     {
@@ -665,7 +665,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       case '<': // current char is a <
         *dst++=c;
-        if (i<l-1 &&
+        if (i+1<l &&
             (isId(nc)) && // next char is an id char
             (osp<8) // string in front is not "operator"
            )
@@ -682,7 +682,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
           *dst++=' '; // add extra space in front
         }
         *dst++=c;
-        if (i<l-1 && (nc=='-' || nc=='&')) // '>-' -> '> -'
+        if (i+1<l && (nc=='-' || nc=='&')) // '>-' -> '> -'
         {
           *dst++=' '; // add extra space after
         }
@@ -690,9 +690,9 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case ',': // current char is a ,
         *dst++=c;
         if (i>0 && !isspace(static_cast<uint8_t>(pc)) &&
-            ((i<l-1 && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
-             (i<l-2 && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
-             (i<l-3 && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
+            ((i+1<l && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
+             (i+2<l && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
+             (i+3<l && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
             )
            )
         {
@@ -702,14 +702,14 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '^':  // CLI 'Type^name' -> 'Type^ name'
       case '%':  // CLI 'Type%name' -> 'Type% name'
         *dst++=c;
-        if (cliSupport && i<l-1 && (isId(nc) || nc=='-'))
+        if (cliSupport && i+1<l && (isId(nc) || nc=='-'))
         {
           *dst++=' '; // add extra space after
         }
         break;
       case ')':  // current char is a )  -> ')name' -> ') name'
         *dst++=c;
-        if (i<l-1 && (isId(nc) || nc=='-'))
+        if (i+1<l && (isId(nc) || nc=='-'))
         {
           *dst++=' '; // add extra space after
         }
@@ -746,7 +746,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         // else fallthrough
       case '@':  // '@name' -> ' @name'
       case '\'': // ''name' -> '' name'
-        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace(static_cast<uint8_t>(pc)) &&
+        if (i>0 && i+1<l && pc!='=' && pc!=':' && !isspace(static_cast<uint8_t>(pc)) &&
             isId(nc) && osp<8) // ")id" -> ") id"
         {
           *dst++=' ';
@@ -797,7 +797,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         auto correctKeywordAllowedInsideScope = [&](char cc,size_t &matchLen,size_t totalLen) {
           if (c==cc && matchLen==totalLen)
           {
-            if ((i<l-2 && src[i+1] == ':' && src[i+2] == ':') ||                     // keyword::
+            if ((i+2<l && src[i+1] == ':' && src[i+2] == ':') ||                     // keyword::
                 ((i>matchLen && src[i-matchLen] == ':' && src[i-matchLen-1] == ':')) // ::keyword
                ) matchLen = 0;
           };
@@ -808,7 +808,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
 
         auto correctKeywordNotPartOfScope = [&](char cc,size_t &matchLen,size_t totalLen)
         {
-          if (c==cc && matchLen==totalLen && i<l-1 && // found matching keyword
+          if (c==cc && matchLen==totalLen && i+1<l && // found matching keyword
               !(isId(nc) || nc==')' || nc==',' || qisspace(nc))
              ) // prevent keyword ::A from being converted to keyword::A
           {
@@ -883,7 +883,7 @@ bool rightScopeMatch(const QCString &scope, const QCString &name)
   size_t nl=name.length();
   return (name==scope || // equal
           (scope.right(nl)==name && // substring
-           sl-nl>1 && scope.at(sl-nl-1)==':' && scope.at(sl-nl-2)==':' // scope
+           sl>1+nl && scope.at(sl-nl-1)==':' && scope.at(sl-nl-2)==':' // scope
           )
          );
 }

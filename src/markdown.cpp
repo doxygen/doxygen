@@ -2738,7 +2738,7 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       else if (j>0 && data[j-1]=='>') indent=j+1;
       j++;
     }
-    if (j>0 && data[j-1]=='>' &&
+    if (indent>0 && j>0 && data[j-1]=='>' &&
         !(j==size || data[j]=='\n')) // disqualify last > if not followed by space
     {
       indent--;
@@ -2847,17 +2847,16 @@ bool skipOverFileAndLineCommands(std::string_view data,size_t indent,size_t &off
       }
       i++;
     }
-    if (!found)
+    if (found)
     {
-      return offset; // not found
+      i+=9;
+      location=data.substr(locStart,i-locStart);
+      location+='\n';
+      while (indent>0 && i<size && data[i]==' ') i++,indent--;
+      if (i<size && data[i]=='\n') i++;
+      offset = i;
+      return true;
     }
-    i+=9;
-    location=data.substr(locStart,i-locStart);
-    location+='\n';
-    while (indent>0 && i<size && data[i]==' ') i++,indent--;
-    if (i<size && data[i]=='\n') i++;
-    offset = i;
-    return true;
   }
   return false;
 }

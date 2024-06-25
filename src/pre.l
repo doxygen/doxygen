@@ -2756,7 +2756,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
         {
           inString=TRUE; // entering a literal string
         }
-        else if (inString && d.at(k)=='\"' && (d.at(k-1)!='\\' || d.at(k-2)=='\\'))
+        else if (k>2 && inString && d.at(k)=='\"' && (d.at(k-1)!='\\' || d.at(k-2)=='\\'))
         {
           inString=FALSE; // leaving a literal string
         }
