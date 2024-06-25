@@ -1351,7 +1351,7 @@ private                                 {
                                             yyextra->docBlockJavaStyle = FALSE;
                                             yyextra->docBlock.clear();
                                             yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
-                                            startCommentBlock(yyscanner,TRUE);
+                                            startCommentBlock(yyscanner,FALSE);
                                             yy_push_state(DocBackLine,yyscanner);
                                           }
                                           else
@@ -1421,7 +1421,7 @@ private                                 {
                                           if (YY_START==SubprogBody) yyextra->docBlockInBody = TRUE;
                                           yyextra->docBlock.clear();
                                           yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
-                                          startCommentBlock(yyscanner,TRUE);
+                                          startCommentBlock(yyscanner,FALSE);
                                           BEGIN(DocBlock);
                                           //cout << "start DocBlock " << endl;
                                         }
