@@ -5092,14 +5092,14 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       retval=RetVal_EndHtmlDetails;
       break;
     case HTML_BLOCKQUOTE:
-      if (!insideBlockQuote(thisVariant()))
-      {
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </blockquote> tag without matching <blockquote>");
-      }
-      else
-      {
-        retval=RetVal_EndBlockQuote;
-      }
+      //if (!insideBlockQuote(thisVariant()))
+      //{
+      //  warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </blockquote> tag without matching <blockquote>");
+      //}
+      //else
+      //{
+      retval=RetVal_EndBlockQuote;
+      //}
       break;
     case HTML_BOLD:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Bold,tagName);
