@@ -4544,9 +4544,20 @@ int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CMD_IFILE:
       handleIFile(cmdChar,cmdName);
       break;
+    case CMD_SETSCOPE:
+      {
+        QCString scope;
+        parser()->tokenizer.setStateSetScope();
+        (void)parser()->tokenizer.lex();
+        scope = parser()->context.token->name;
+        parser()->context.context = scope;
+        //printf("Found scope='%s'\n",qPrint(scope));
+        parser()->tokenizer.setStatePara();
+      }
+      break;
     default:
       // we should not get here!
-      ASSERT(0);
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected command '%s' in paragraph context",qPrint(cmdName));
       break;
   }
   INTERNAL_ASSERT(retval==0 || retval==RetVal_OK || retval==RetVal_SimpleSec ||
@@ -5081,7 +5092,14 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       retval=RetVal_EndHtmlDetails;
       break;
     case HTML_BLOCKQUOTE:
-      retval=RetVal_EndBlockQuote;
+      if (!insideBlockQuote(thisVariant()))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </blockquote> tag without matching <blockquote>");
+      }
+      else
+      {
+        retval=RetVal_EndBlockQuote;
+      }
       break;
     case HTML_BOLD:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Bold,tagName);

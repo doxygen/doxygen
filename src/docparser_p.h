@@ -193,6 +193,18 @@ inline bool insideLI(const DocNodeVariant *n)
   return FALSE;
 }
 
+/*! Returns TRUE iff node n is a child of a html list item node */
+inline bool insideBlockQuote(const DocNodeVariant *n)
+{
+  while (n)
+  {
+    if (std::holds_alternative<DocHtmlBlockQuote>(*n)) return TRUE;
+    n=parent(n);
+  }
+  return FALSE;
+}
+
+
 //---------------------------------------------------------------------------
 
 /*! Returns TRUE iff node n is a child of a unordered html list node */
