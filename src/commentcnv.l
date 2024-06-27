@@ -122,6 +122,7 @@ struct commentcnvYY_state
   int      javaBlock = 0;
   bool     specialComment = FALSE;
   bool     inVerbatim = false;
+  bool     inHtmlDoxygenCommand = false;
   bool     firstIncludeLine = false;
   bool     insertCppCommentMarker = false;
   QCString aliasCmd;
@@ -612,6 +613,21 @@ SLASHopt [/]*
                                      yyextra->inVerbatim=true;
 				     BEGIN(Verbatim);
   			           }
+<CComment,ReadLine,IncludeFile>"<!--!" { /* HTML comment doxygen command*/
+                                     if (yyextra->inVerbatim) REJECT;
+                                     copyToOutput(yyscanner,"     ",5);
+                                     yyextra->inHtmlDoxygenCommand=true;
+                                   }
+<CComment,ReadLine,IncludeFile>"-->" { /* potential end HTML comment doxygen command*/
+                                     if (yyextra->inHtmlDoxygenCommand)
+                                     {
+                                       yyextra->inHtmlDoxygenCommand=false;
+                                     }
+                                     else
+                                     {
+                                       copyToOutput(yyscanner,yytext,yyleng);
+                                     }
+                                   }
 <CComment,ReadLine,IncludeFile>"<!--" { /* HTML comment */
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->blockName="-->";
