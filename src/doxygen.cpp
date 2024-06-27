@@ -725,7 +725,8 @@ static Definition *buildScopeFromQualifiedName(const QCString &name_,SrcLangExt 
       if (newNd)
       {
         newNd->setLanguage(lang);
-        newNd->setArtificial(TRUE);
+        // looks like an atrificial namespace, but is in fact part of ns1.ns2, issue 10953
+        newNd->setArtificial(false);
         // add namespace to the list
         innerScope = newNd;
       }
