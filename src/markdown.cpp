@@ -2788,7 +2788,11 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
         out += "</blockquote>";
       }
     }
-    if (level==0) break; // end of quote block
+    if (level==0)
+    {
+      curLevel=0;
+      break; // end of quote block
+    }
     // copy line without quotation marks
     if (curLevel!=0 || !isGitHubAlert)
     {

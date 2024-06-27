@@ -5089,17 +5089,24 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       }
       break;
     case HTML_DETAILS:
-      retval=RetVal_EndHtmlDetails;
+      if (!insideDetails(thisVariant()))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </details> tag without matching <details>");
+      }
+      else
+      {
+        retval=RetVal_EndHtmlDetails;
+      }
       break;
     case HTML_BLOCKQUOTE:
-      //if (!insideBlockQuote(thisVariant()))
-      //{
-      //  warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </blockquote> tag without matching <blockquote>");
-      //}
-      //else
-      //{
-      retval=RetVal_EndBlockQuote;
-      //}
+      if (!insideBlockQuote(thisVariant()))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </blockquote> tag without matching <blockquote>");
+      }
+      else
+      {
+        retval=RetVal_EndBlockQuote;
+      }
       break;
     case HTML_BOLD:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Bold,tagName);
