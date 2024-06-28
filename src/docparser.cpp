@@ -873,12 +873,8 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
     if (context.token->name.startsWith("#"))
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"explicit link request to '%s' could not be resolved",qPrint(name));
-      children.append<DocWord>(this,parent,context.token->name);
     }
-    else
-    {
-      children.append<DocWord>(this,parent,name);
-    }
+    children.append<DocWord>(this,parent,context.token->name);
   }
 }
 
