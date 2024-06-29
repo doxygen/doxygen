@@ -7047,14 +7047,23 @@ int computeQualifiedIndex(const QCString &name)
   int lastSepPos = -1;
   const char *p = name.data();
   int i=l-2;
+  int sharpCount=0;
   // --- begin optimized version of ts=name.findRev(">::");
   int ts = -1;
   while (i>=0)
   {
-    if (p[i]=='>' && p[i+1]==':' && p[i+2]==':')
+    if (p[i]=='>')
     {
-      ts=i;
-      break;
+      if (sharpCount==0 && p[i+1]==':' && p[i+2]==':')
+      {
+        ts=i;
+        break;
+      }
+      sharpCount++;
+    }
+    else if (p[i]=='<')
+    {
+      sharpCount--;
     }
     i--;
   }
