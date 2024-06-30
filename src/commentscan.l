@@ -1162,8 +1162,8 @@ STopt  [^\n@\\]*
 <HtmlComment>{DOCNL}                    {
                                           if (*yytext=='\n')
                                           {
-                                            addOutput(yyscanner,*yytext);
                                             yyextra->lineNr++;
+                                            addOutput(yyscanner," \\iline "+QCString().setNum(yyextra->lineNr)+" "); 
                                           }
                                         }
 <HtmlComment>[^\\\n\-]+                 { // ignore unimportant characters
