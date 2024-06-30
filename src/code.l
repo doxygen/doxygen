@@ -1079,7 +1079,10 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           {
                                             yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                             yyextra->bracketCount--;
-                                            BEGIN(FuncCall);
+                                            if (yyextra->bracketCount<=0)
+                                            {
+                                              BEGIN(FuncCall);
+                                            }
                                           }
                                         }
 <Body,TemplDecl,ObjCMethod>{TYPEKW}/{B}* {
@@ -1724,8 +1727,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <MemberCall,MemberCall2,FuncCall>[;:]   { // recover from unexpected end of call
-                                          unput(*yytext);
-                                          BEGIN(CallEnd);
+                                          if (yytext[0]==';' || yyextra->bracketCount<=0)
+                                          {
+                                            unput(*yytext);
+                                            BEGIN(CallEnd);
+                                          }
                                         }
 <CallEnd>[ \t\n]*                       { codifyLines(yyscanner,yytext); }
 <CallEnd>[;:]                           {
@@ -2242,10 +2248,12 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN( SkipCxxComment ) ;
                                         }
 <*>"("|"["                              {
+                                          if (yytext[0]=='(') yyextra->bracketCount++;
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
                                         }
 <*>")"|"]"                              {
+                                          if (yytext[0]=='(') yyextra->bracketCount--;
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                         }
