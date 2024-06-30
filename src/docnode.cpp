@@ -4546,12 +4546,10 @@ int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CMD_SETSCOPE:
       {
-        QCString scope;
         parser()->tokenizer.setStateSetScope();
         (void)parser()->tokenizer.lex();
-        scope = parser()->context.token->name;
-        parser()->context.context = scope;
-        //printf("Found scope='%s'\n",qPrint(scope));
+        parser()->context.context = parser()->context.token->name;
+        //printf("Found scope='%s'\n",qPrint(parser()->context.context));
         parser()->tokenizer.setStatePara();
       }
       break;

@@ -1382,12 +1382,10 @@ reparsetoken:
           break;
         case CMD_SETSCOPE:
           {
-            QCString scope;
             tokenizer.setStateSetScope();
             (void)tokenizer.lex();
-            scope = context.token->name;
-            context.context = scope;
-            //printf("Found scope='%s'\n",qPrint(scope));
+            context.context = context.token->name;
+            //printf("Found scope='%s'\n",qPrint(context.context));
             tokenizer.setStatePara();
           }
           break;
