@@ -1727,10 +1727,15 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <MemberCall,MemberCall2,FuncCall>[;:]   { // recover from unexpected end of call
-                                          if (yytext[0]==';' || yyextra->bracketCount<=0)
+                                          //if (yytext[0]==';' || yyextra->bracketCount<=0)
+                                          if (yyextra->bracketCount<=0)
                                           {
                                             unput(*yytext);
                                             BEGIN(CallEnd);
+                                          }
+                                          else 
+                                          {
+                                            yyextra->code->codify(yytext);
                                           }
                                         }
 <CallEnd>[ \t\n]*                       { codifyLines(yyscanner,yytext); }
