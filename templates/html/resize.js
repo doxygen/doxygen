@@ -66,7 +66,7 @@ function initResizable(treeview) {
     }
     else
     {
-      contentHeight = windowHeight - headerHeight;
+      contentHeight = windowHeight - headerHeight - 1;
     }
     content.css({height:contentHeight + "px"});
     if (location.hash.slice(1)) {
