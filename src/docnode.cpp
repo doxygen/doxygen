@@ -321,6 +321,7 @@ void DocIncOperator::parse()
                    "No previous '\\include' or '\\dontinclude' command for '\\%s' present",
                    typeAsString());
   }
+  bool found = false;
 
   m_includeFileName = parser()->context.includeFileName;
   const char *p = parser()->context.includeFileText.data();
@@ -352,6 +353,7 @@ void DocIncOperator::parse()
       {
         m_line  = il;
         m_text = parser()->context.includeFileText.mid(so,o-so);
+        found = true;
         AUTO_TRACE_ADD("\\line {}",Trace::trunc(m_text));
       }
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
@@ -380,6 +382,7 @@ void DocIncOperator::parse()
         {
           m_line  = il;
           m_text = parser()->context.includeFileText.mid(so,o-so);
+          found = true;
           AUTO_TRACE_ADD("\\skipline {}",Trace::trunc(m_text));
           break;
         }
@@ -409,6 +412,7 @@ void DocIncOperator::parse()
         }
         if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=-1)
         {
+        found = true;
           break;
         }
         o++; // skip new line
@@ -440,6 +444,7 @@ void DocIncOperator::parse()
         {
           m_line  = il;
           m_text = parser()->context.includeFileText.mid(bo,o-bo);
+          found = true;
           AUTO_TRACE_ADD("\\until {}",Trace::trunc(m_text));
           break;
         }
@@ -448,6 +453,11 @@ void DocIncOperator::parse()
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = parser()->context.includeFileShowLineNo;
       break;
+  }
+  if (!found)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+      "referenced pattern '%s' for command '\\%s' not found",qPrint(m_pattern),typeAsString());
   }
 }
 
