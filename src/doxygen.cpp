@@ -2252,7 +2252,8 @@ static MemberDef *addVariableToClass(
       MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md &&
           md->getClassDef()==cd &&
-          removeRedundantWhiteSpace(type)==md->typeString())
+          ((lang==SrcLangExt::Python && type.isEmpty() && !md->typeString().isEmpty()) ||
+          removeRedundantWhiteSpace(type)==md->typeString()))
         // member already in the scope
       {
 
