@@ -1324,6 +1324,11 @@ void DocHtmlSummary::parse()
     }
   }
   parser()->tokenizer.setStatePara();
+  if (tok==0)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected end of comment while inside"
+           " <summary> tag");
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -1346,6 +1351,11 @@ int DocHtmlDetails::parse()
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
+
+  if (retval==0)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <details> block");
+  }
 
   if (!summary())
   {
@@ -2610,6 +2620,11 @@ int DocHtmlBlockQuote::parse()
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
+
+  if (retval==0)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <blockquote> block");
+  }
 
   AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
   return (retval==RetVal_EndBlockQuote) ? RetVal_OK : retval;

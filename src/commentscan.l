@@ -437,6 +437,15 @@ enum GuardType
  *        statics
  */
 
+struct HtmlContextInfo
+{
+  HtmlContextInfo(const QCString &tn,OutputContext ctx) : tagName(tn), context(ctx) {}
+  QCString      tagName;
+  OutputContext context;
+};
+
+using HtmlContextStack = std::vector<HtmlContextInfo>;
+
 struct commentscanYY_state
 {
   OutlineParserInterface *langParser = nullptr;  // the language parser that is calling us
@@ -465,6 +474,7 @@ struct commentscanYY_state
   Entry           *current = nullptr;        // working entry
 
   bool             needNewEntry = FALSE;
+  HtmlContextStack htmlContextStack;
 
   QCString         sectionLabel;
   QCString         sectionTitle;
@@ -489,7 +499,7 @@ struct commentscanYY_state
 
   QCString         guardExpr;
   int              roundCount = 0;
-  std::vector<int> HTMLDetailsSummary;
+  std::vector<int> htmlDetailsStack;
 
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
@@ -554,28 +564,29 @@ static inline const char *getLexerFILE() {return __FILE__;}
        /* start command character */
 CMD       ("\\"|"@")
 XREFCMD   {CMD}("bug"|"deprecated"|"test"|"todo"|"xrefitem")
-PRE       [pP][rR][eE]
-TABLE     [tT][aA][bB][lL][eE]
+PRE       ("pre"|"PRE")
+TABLE     ("table"|"TABLE")
 P         [pP]
-UL        [uU][lL]
-OL        [oO][lL]
-DL        [dD][lL]
-IMG       [iI][mM][gG]
-HR        [hH][rR]
-PARA      [pP][aA][rR][aA]
-CODE      [cC][oO][dD][eE]
+UL        ("ul"|"UL")
+OL        ("ol"|"OL")
+DL        ("dl"|"DL")
+IMG       ("img"|"IMG")
+HR        ("hr"|"HR")
+PARA      ("para"|"PARA")
+CODE      ("code"|"CODE")
 ENDCODE   "/"{CODE}
-CAPTION   [cC][aA][pP][tT][iI][oO][nN]
-CENTER    [cC][eE][nN][tT][eE][rR]
-DIV       [dD][iI][vV]
-DETAILS   [dD][eE][tT][aA][iI][lL][sS]
-DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
+CAPTION   ("caption"|"CAPTION")
+CENTER    ("center"|"CENTER")
+DIV       ("div"|"DIV")
+DETAILS   ("details"|"DETAILS")
+BLOCKQUOTE ("blockquote"|"BLOCKQUOTE")
+DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}|{BLOCKQUOTE}
 DETAILEDHTMLOPT {CODE}
 DETAILEDHTMLOPTEND {ENDCODE}
-SUMMARY   [sS][uU][mM][mM][aA][rR][yY]
-REMARKS   [rR][eE][mM][aA][rR][kK][sS]
+SUMMARY   ("summary"|"SUMMARY")
+REMARKS   ("remarks"|"REMARKS")
 AHTML     [aA]{BN}*
-ANCHTML   ([iI][dD]|[nN][aA][mM][eE])"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
+ANCHTML   ("idname"|"IDNAME")"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -715,8 +726,33 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"<"{DETAILEDHTML}{ATTR}">"     { // HTML command that ends a brief description
-                                          setOutput(yyscanner,OutputDoc);
+                                          QCString htmlOpenTag(yytext);
+                                          int spacePos = htmlOpenTag.find(' '); // check for optional attributes
+                                          if (spacePos==-1) spacePos=yyleng-1;
+                                          QCString htmlTagName = htmlOpenTag.mid(1,spacePos-1);
+                                          //printf("found open tag '%s'\n",qPrint(htmlTagName));
+                                          yyextra->htmlContextStack.emplace_back(htmlTagName,yyextra->inContext);
+                                          if (yyextra->inContext==OutputBrief)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                          }
                                           // continue with the same input
+                                          REJECT;
+                                        }
+<Comment>"</"{DETAILEDHTML}">"          { // HTML command that ends a brief description
+                                          QCString htmlCloseTag(yytext);
+                                          QCString htmlTagName = htmlCloseTag.mid(2,htmlCloseTag.length()-3);
+                                          //printf("found close tag '%s'\n",qPrint(htmlTagName));
+                                          if (!yyextra->htmlContextStack.empty() &&
+                                              yyextra->htmlContextStack.back().tagName==htmlTagName)
+                                          {
+                                            if (yyextra->inContext==OutputXRef && yyextra->htmlContextStack.back().context!=OutputXRef)
+                                            {
+                                              //printf("switching back to OutputDoc\n");
+                                              setOutput(yyscanner,OutputDoc);
+                                            }
+                                            yyextra->htmlContextStack.pop_back();
+                                          }
                                           REJECT;
                                         }
 <Comment>"<"{DETAILEDHTMLOPT}">"        { // HTML <code> command that ends a brief description
@@ -756,14 +792,28 @@ STopt  [^\n@\\]*
                                           REJECT;
                                         }
 <Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
-                                          yyextra->HTMLDetailsSummary.push_back(0);
-                                          setOutput(yyscanner,OutputDoc);
+                                          yyextra->htmlDetailsStack.push_back(0);
+                                          yyextra->htmlContextStack.emplace_back("details",yyextra->inContext);
+                                          if (yyextra->inContext==OutputBrief)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                          }
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{DETAILS}">"               { // end of a HTML style details description
-                                          if (!yyextra->HTMLDetailsSummary.empty())
+                                          if (!yyextra->htmlDetailsStack.empty())
                                           {
-                                            yyextra->HTMLDetailsSummary.pop_back();
+                                            yyextra->htmlDetailsStack.pop_back();
+                                          }
+                                          if (!yyextra->htmlContextStack.empty() &&
+                                              yyextra->htmlContextStack.back().tagName=="details")
+                                          {
+                                            if (yyextra->inContext==OutputXRef && yyextra->htmlContextStack.back().context!=OutputXRef)
+                                            {
+                                              //printf("switching back to OutputDoc\n");
+                                              setOutput(yyscanner,OutputDoc);
+                                            }
+                                            yyextra->htmlContextStack.pop_back();
                                           }
                                           addOutput(yyscanner,yytext);
                                         }
@@ -827,7 +877,7 @@ STopt  [^\n@\\]*
                                           yyextra->htmlAnchorStr += yytext;
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
-                                          if (yyextra->HTMLDetailsSummary.empty())
+                                          if (yyextra->htmlDetailsStack.empty())
                                           {
                                             setOutput(yyscanner,OutputBrief);
                                           }
@@ -841,7 +891,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
-                                          if (!yyextra->HTMLDetailsSummary.empty())
+                                          if (!yyextra->htmlDetailsStack.empty())
                                           {
                                             addOutput(yyscanner,yytext);
                                           }
@@ -4646,6 +4696,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->sectionLevel = 0;
   yyextra->spaceBeforeCmd.clear();
   yyextra->spaceBeforeIf.clear();
+  yyextra->htmlContextStack.clear();
 
   DebugLex debugLex(Debug::Lex_commentscan, __FILE__, !fileName.isEmpty() ? qPrint(fileName): nullptr);
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
