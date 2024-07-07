@@ -52,7 +52,7 @@ Doxygen can help you in three ways:
      for the Doxygen user manual and web-site).
 </ol>
 
-Doxygen is developed under Mac OS X and Linux, but is set-up to be highly
+Doxygen is developed under macOS and Linux, but is set-up to be highly
 portable. As a result, it runs on most other Unix flavors as well.
 Furthermore, executables for Windows are available.
 

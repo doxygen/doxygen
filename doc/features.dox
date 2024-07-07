@@ -23,7 +23,7 @@
     structured output HTML tags and/or some of Doxygen's special commands 
     can be used.
 <li>Cross platform: works on Windows and many Unix flavors (including Linux and
-    MacOSX).
+    macOS).
 <li>Indexes, organizes and generates browsable and cross-referenced 
     output even from undocumented code.
 <li>Generates structured XML output for parsed sources, which can be 
@@ -35,7 +35,7 @@
     defines. 
 <li>Javadoc (1.1), qdoc3 (partially), and ECMA-334 (C# spec.) compatible.
 <li>Comes with a GUI frontend (Doxywizard) to ease editing the options and 
-    run Doxygen. The GUI is available on Windows, Linux, and MacOSX.
+    run Doxygen. The GUI is available on Windows, Linux, and macOS.
 <li>Automatically generates class and collaboration diagrams in HTML (as clickable 
     image maps) and \LaTeX (as Encapsulated PostScript images).
 <li>Uses the `dot` tool of the Graphviz tool kit to generate

@@ -10792,8 +10792,6 @@ void initDoxygen()
 
   Doxygen::symbolMap = new SymbolMap<Definition>;
 
-  Portable::correct_path();
-
   Debug::startTimer();
   Doxygen::parserManager = new ParserManager(            make_parser_factory<NullOutlineParser>(),
                                                          make_parser_factory<FileCodeParser>());
@@ -11785,6 +11783,8 @@ void parseInput()
 {
   AUTO_TRACE();
   std::atexit(exitDoxygen);
+
+  Portable::correctPath(Config_getList(EXTERNAL_TOOL_PATHS));
 
 #if USE_LIBCLANG
   Doxygen::clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);

@@ -24,7 +24,7 @@ detailed usage information.
 Optionally, the executable \c doxywizard can be used, which is a
 \ref doxywizard_usage "graphical front-end" for editing the configuration file
 that is used by Doxygen and for running Doxygen in a graphical environment.
-For Mac OS X Doxywizard will be started by clicking on the Doxygen application
+For macOS Doxywizard will be started by clicking on the Doxygen application
 icon.
 
 The following figure shows the relation between the tools and the flow
@@ -195,7 +195,7 @@ require a browser that supports Dynamic HTML and JavaScript enabled.
 \addindex LaTeX
 The generated \LaTeX documentation must first be compiled by
 a \LaTeX compiler (I use a recent teTeX distribution for Linux
-and MacOSX and MikTex for Windows).
+and macOS and MikTex for Windows).
 To simplify the process of compiling the generated
 documentation, \c doxygen writes a \c Makefile into the \c latex directory
 (on the Windows platform also a \c make.bat batch file is generated).

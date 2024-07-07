@@ -1042,7 +1042,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  one named \c CLASS and the other named \c Class, and to also support references to files without
  having to specify the exact matching casing.
 
- On Windows (including Cygwin) and MacOS, users should typically set this option to \c NO,
+ On Windows (including Cygwin) and macOS, users should typically set this option to \c NO,
  whereas on Linux or other Unix flavors it should typically be set to \c YES.
 ]]>
       </docs>
@@ -1340,6 +1340,20 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  using \ref cfg_latex_bib_style "LATEX_BIB_STYLE".
  To use this feature you need \c bibtex and \c perl available in the search path.
  See also \ref cmdcite "\\cite" for info how to create references.
+]]>
+      </docs>
+    </option>
+    <option type='list' id='EXTERNAL_TOOL_PATHS' format='dir' defval=''>
+      <docs>
+<![CDATA[
+ The \c EXTERNAL_TOOL_PATHS tag can be used to extend the search path (PATH environment variable)
+ so that external tools such as \c latex and \c gs can be found.
+ \note This option is particularly useful for macOS version 14 (Sonoma) and higher,
+ when running Doxygen from Doxywizard, because in this case any user-defined changes to the PATH
+ are ignored. A typical example on macOS is to set
+\verbatim
+EXTERNAL_TOOL_PATHS = /Library/TeX/texbin /usr/local/bin
+\endverbatim
 ]]>
       </docs>
     </option>

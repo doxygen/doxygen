@@ -119,8 +119,8 @@ has its own advantages and disadvantages:
    by Microsoft. Although the tool works fine for most people, it can 
    sometimes crash for no apparent reason (how typical). 
 
-<h2>5. Mac OS X Doc Sets</h2> 
-   If you are running Doxygen on Mac OS X 10.5 or higher, 
+<h2>5. macOS Doc Sets</h2> 
+   If you are running Doxygen on macOS 10.5 or higher, 
    then you can make a "doc set" out of the HTML files produced by Doxygen.
    A doc set consists of a single directory with a special structure 
    containing the HTML files along with a precompiled search index. 
@@ -140,7 +140,7 @@ has its own advantages and disadvantages:
    in the editor and jump to the corresponding section in the Doxygen 
    documentation.
 
-   Disadvantage is that it only works in combination with Xcode on MacOSX.
+   Disadvantage is that it only works in combination with Xcode on macOS.
 
 <h2>6. Qt Compressed Help</h2> 
    If you develop for or want to install the Qt application framework,

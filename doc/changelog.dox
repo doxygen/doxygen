@@ -2107,7 +2107,7 @@ and
 <li>Simplify vhdldocgen code a bit [<a href="https://github.com/doxygen/doxygen/commit/a159f53f032b04064df0c9ad9d7d02f0622f0529">view</a>]</li>
 <li>Modernize search index [<a href="https://github.com/doxygen/doxygen/commit/33a334ce77e6dd0c81e97edc4bfba1fe50d947fa">view</a>]</li>
 <li>Update used links in test examples [<a href="https://github.com/doxygen/doxygen/commit/3c9eeae58ca98a000c75d75ed21bbe4a625cd2c8">view</a>]</li>
-<li>Updated minimum MacOS requirements to version 10.14 [<a href="https://github.com/doxygen/doxygen/commit/4b997ee2519c1032da6f1a9caf2638d17202fea7">view</a>]</li>
+<li>Updated minimum macOS requirements to version 10.14 [<a href="https://github.com/doxygen/doxygen/commit/4b997ee2519c1032da6f1a9caf2638d17202fea7">view</a>]</li>
 <li>Updated test for enums based on recently fixed issues [<a href="https://github.com/doxygen/doxygen/commit/62b368644dec14d1d916c778461f6d4d32e2182e">view</a>]</li>
 <li>Make layout parser use the new XML parser [<a href="https://github.com/doxygen/doxygen/commit/22f6dcc3cedf1bf4360c452db40949e3c156f41b">view</a>]</li>
 <li>Make tagreader use the new XML parser [<a href="https://github.com/doxygen/doxygen/commit/714f89d30cf04ad972df84a6a398258b751d3553">view</a>]</li>
@@ -3948,8 +3948,8 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
 <li>Fix typo in function name [<a href="https://github.com/doxygen/doxygen/commit/ace0af42e330a96ad691b2d9a08dd3ff4abb2629">view</a> and [<a href="https://github.com/doxygen/doxygen/commit/b890f40d195b9dc5db12aaa398707de138093c66">view</a>]</li>
 <li>Fixed a couple of small memory leaks [<a href="https://github.com/doxygen/doxygen/commit/85ddfc814f33943199928447b4627d05b0920b99">view</a>]</li>
 <li>Fixed a number of memory leaks in the template engine [<a href="https://github.com/doxygen/doxygen/commit/d14bcd1f8f5bd4a2034bae842000630f4e098eb6">view</a>]</li>
-<li>Fixed compiler warning for MacOSX [<a href="https://github.com/doxygen/doxygen/commit/0aa27346b8728f6698dd2b363959e89d02e03ff6">view</a>]</li>
-<li>Fixed link issue for MacOSX 10.11 [<a href="https://github.com/doxygen/doxygen/commit/0918a19225daedfbd5e23388124a5de3860d5420">view</a>]</li>
+<li>Fixed compiler warning for macOS [<a href="https://github.com/doxygen/doxygen/commit/0aa27346b8728f6698dd2b363959e89d02e03ff6">view</a>]</li>
+<li>Fixed link issue for macOS 10.11 [<a href="https://github.com/doxygen/doxygen/commit/0918a19225daedfbd5e23388124a5de3860d5420">view</a>]</li>
 <li>Fixed minor typos in comments [<a href="https://github.com/doxygen/doxygen/commit/29c500434d30cd4d9c20f6b295475ed42dba2930">view</a>]</li>
 <li>Fixed preprocessor macros for flex version check [<a href="https://github.com/doxygen/doxygen/commit/a8c73cdbe37cc53c398002d20e94037552a8fb55">view</a>]</li>
 <li>Fixed problem with latex and PDF bookmarks [<a href="https://github.com/doxygen/doxygen/commit/499ecaedf1ee1222535be27f77050ee633595685">view</a>]</li>
@@ -4291,7 +4291,7 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
 <li>Add source code possibility for RTF output [<a href="https://github.com/doxygen/doxygen/commit/05eb230757f6510d461bd14df3b190da46edd9dc">view</a>]</li>
 <li>Added Coverity Scan Build Status to Readme [<a href="https://github.com/doxygen/doxygen/commit/394acb6a10dbef10cad3a0a3ff50a05d0efdea9e">view</a>]</li>
 <li>Added clearer range checks for string class to help compiler [<a href="https://github.com/doxygen/doxygen/commit/869ff34828e20e3ec318384d7b0dbf91b6b2d24d">view</a>]</li>
-<li>Added compilation support for MacOSX 10.10 (yosemite) [<a href="https://github.com/doxygen/doxygen/commit/151876a8321204bd2ec08ec6c4de38ba9fb2d034">view</a>]</li>
+<li>Added compilation support for macOS 10.10 (yosemite) [<a href="https://github.com/doxygen/doxygen/commit/151876a8321204bd2ec08ec6c4de38ba9fb2d034">view</a>]</li>
 <li>Added faster reference counted string implementation with short string optimization [<a href="https://github.com/doxygen/doxygen/commit/9323ae470ad514586706dc8647501361fe208f36">view</a>]</li>
 <li>Added graphical hierarchy support to template engine [<a href="https://github.com/doxygen/doxygen/commit/fe818bf8e3a154788a4a180068cfdfbbadd66ff6">view</a>]</li>
 <li>Added guard to prevent (theoretical) out of bound access [<a href="https://github.com/doxygen/doxygen/commit/060a5cc121be5fd177b5d5c834f2b810dc58b9ec">view</a>]</li>
@@ -4476,7 +4476,7 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
 <li>Preparations for release 1.8.8 [<a href="https://github.com/doxygen/doxygen/commit/df2a9ea9df96f1e3f85c5c35978bc5bbfac6aa1d">view</a>]</li>
 <li>Removed not implemented HTML commands from documentation [<a href="https://github.com/doxygen/doxygen/commit/8199b2d105313efd30367c7a03b57bf7a7d2180b">view</a>]</li>
 <li>Removed unsupported HTML commands from the docs [<a href="https://github.com/doxygen/doxygen/commit/16ba4bd5744c2e5fbfabe95b27736b8ca8030390">view</a>]</li>
-<li>Set deployment targets for MacOSX 10.5+ versions [<a href="https://github.com/doxygen/doxygen/commit/28f40b3aea1411488832205fae447f4652125cdc">view</a>]</li>
+<li>Set deployment targets for macOS 10.5+ versions [<a href="https://github.com/doxygen/doxygen/commit/28f40b3aea1411488832205fae447f4652125cdc">view</a>]</li>
 <li>Support multiple extra HTML stylesheets. [<a href="https://github.com/doxygen/doxygen/commit/595943c96860425f9086028b00e1e155e8ec434f">view</a>]</li>
 <li>Tcl: add missing file that breaks test 057 [<a href="https://github.com/doxygen/doxygen/commit/73e7c340f555291d4264b2f83caacf59a5a3395f">view</a>]</li>
 <li>Tcl: add test code for Bug <a href="https://github.com/doxygen/doxygen/issues/5463">5463</a> [<a href="https://github.com/doxygen/doxygen/commit/36ce0578065b95cf12b81e5a4edd95dea5707e22">view</a>]</li>
@@ -5355,7 +5355,7 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
 <li>   In the declaration section the separator line was in between the
        member and its brief description.</li>
 <li>   Fixed a couple of compiler warning with the new XCode 4.4 compiler.</li>
-<li>   Added compilation support for Mountain Lion (Mac OS X 10.8).</li>
+<li>   Added compilation support for Mountain Lion (macOS 10.8).</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4789">4789</a>: Nested namespaces did not appear in the namespace list if the
        parent namespace was undocumented.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4809">4809</a>: Fixed some spelling errors in the code comments.</li>
@@ -6062,7 +6062,7 @@ make sure you add the following:
        more then 9 parameters.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4268">4268</a>: For nested anonymous structs @xx markers could appear in
        the output.</li>
-<li>   id <a href="https://github.com/doxygen/doxygen/issues/4270">4270</a>: Added compilation support for MacOSX 10.7 (aka Lion).</li>
+<li>   id <a href="https://github.com/doxygen/doxygen/issues/4270">4270</a>: Added compilation support for macOS 10.7 (aka Lion).</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4278">4278</a>: Fixed issue printing HTML pages when the
        GENERATE_TREEVIEW option is set to YES.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4281">4281</a>: Fixed broken link to an undocumented namespace.</li>
@@ -7012,7 +7012,7 @@ make sure you add the following:
 <a name="1.5.7.1"></a>
 <h3>Changes</h3>
 <ul>
-<li> The dot tool is no longer part of the doxygen package for MacOSX.
+<li> The dot tool is no longer part of the doxygen package for macOS.
      Please install GraphViz separately and set the dot path
      to /usr/local/bin</li>
 </ul>
@@ -7111,7 +7111,7 @@ make sure you add the following:
        template arguments were no longer treated as different classes.</li>
 <li>   id 539712: Fixed code parser issue for parameter indices of procedures
        and functions.</li>
-<li>   id 540058: Creator code was wrong in the MacOSX application bundle.</li>
+<li>   id 540058: Creator code was wrong in the macOS application bundle.</li>
 <li>   id 540372: Fixed problem parsing large table by increasing
        YY_READ_BUF_SIZE in the generated parser files.</li>
 <li>   id 540247: Fixed potential memory corruption issue parsing VHDL.</li>
@@ -7314,7 +7314,7 @@ make sure you add the following:
 <li>   Added support for VHDL (.vhd or .vhdl extension) based on a patch by
        Martin Kreis. Use OPTIMIZE_OUTPUT_VHDL when parsing VHDL code. </li>
 <li>   id 374699: Added support for Objective-C 2.0 properties.</li>
-<li>   Added compilation support for MacOSX 10.5 (Leopard) in combination with
+<li>   Added compilation support for macOS 10.5 (Leopard) in combination with
        Xcode 3</li>
 <li>   Added support for docsets, which allow integration of doxygen generated
        API documentation in Xcode 3. new options:
@@ -7872,7 +7872,7 @@ make sure you add the following:
 </ul>
 <h3>New features</h3>
 <ul>
-<li>   Added support for universal binaries on MacOSX (only the non-GUI part).</li>
+<li>   Added support for universal binaries on macOS (only the non-GUI part).</li>
 <li>   Added CALLER_GRAPH config option and \callergraph command to add
        a caller (or called-by) graph to a function or all functions.
        (thanks to Daniel Sherwood for the patch)</li>
@@ -8693,7 +8693,7 @@ make sure you add the following:
 <li>   id 162517: A @ref command was not parsed properly if the argument
        between quotes was found on the next line.</li>
 <li>   Dot would not run if doxygen was installed in a path which contained
-       spaces (Mac OS X).</li>
+       spaces (macOS).</li>
 <li>   Functions inside inline methods were not always cross-referenced anymore.</li>
 <li>   Latex output was broken in some cases where anonymous structs were used.</li>
 <li>   Fixed bug in doxywizard: if the wizard was used some settings
@@ -8730,9 +8730,9 @@ make sure you add the following:
 <h3>Bug fixes</h3>(ids refer to the old bugzilla issue, just use it in the search box of the <a href="https://github.com/doxygen/doxygen/issues">issue tracker</a>)<br/>
 <ul>
 <li>   Due to an error in the packaging script, an old version of doxywizard
-       was bundled with the Mac OS X version of doxygen.</li>
+       was bundled with the macOS version of doxygen.</li>
 <li>   Dot would not run if doxygen was installed in a path which contained
-       spaces (Mac OS X).</li>
+       spaces (macOS).</li>
 <li>   id 151012: &lt;td&gt; tag in HTML function documentation
        missed 'class="md"'</li>
 <li>   id 154689: Wrong link to members of namespaces imported from tag
@@ -10294,7 +10294,7 @@ make sure you add the following:
 <li>   Added a very simple metrics utility
        (see addon/doxmlparser/examples/metrics) which can compute some
        figures based on the XML output generated by doxygen.</li>
-<li>   Added autodetection for Darwin (MacOSX) to the configure script.</li>
+<li>   Added autodetection for Darwin (macOS) to the configure script.</li>
 <li>   Added option EXCLUDE_SYMLINKS.
        The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
        directories that are symbolic links (a Unix filesystem feature) are
@@ -10645,7 +10645,7 @@ make sure you add the following:
        specified dot file as an image in the documentation. The new config
        option DOTFILE_DIRS should be used to specify directories in which
        doxygen should look for dot files (thanks to Samit Basu for the patch).</li>
-<li>   Added new build target macosx-c++ to build doxygen for Mac OS X
+<li>   Added new build target macosx-c++ to build doxygen for macOS
        (Thanks to Jason Harris for telling me what needed to be changed).</li>
 <li>   Added --enable-langs option to the configure script which can be used
        to compile-in support for a specified set of languages (thanks to
