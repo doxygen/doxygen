@@ -189,7 +189,7 @@ struct SymbolResolver::Private
     const Definition *followPath(VisitedKeys &visitedKeys,
                                  const Definition *start,const QCString &path);
 
-    const Definition *endOfPathIsUsedClass(const LinkedRefMap<ClassDef> &cl,const QCString &localName);
+    const Definition *endOfPathIsUsedClass(const LinkedRefMap<const Definition> &dl,const QCString &localName);
 
     bool accessibleViaUsingNamespace(VisitedKeys &visitedKeys,
                                      VisitedNamespaceKeys &visitedNamespaces,
@@ -197,8 +197,8 @@ struct SymbolResolver::Private
                                      const Definition *item,
                                      const QCString &explicitScopePart="",
                                      int level=0);
-    bool accessibleViaUsingClass(VisitedKeys &visitedKeys,
-                                 const LinkedRefMap<ClassDef> &cl,
+    bool accessibleViaUsingDefinition(VisitedKeys &visitedKeys,
+                                 const LinkedRefMap<const Definition> &dl,
                                  const Definition *item,
                                  const QCString &explicitScopePart=""
                                 );
@@ -258,7 +258,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
 
   bool hasUsingStatements =
     (m_fileScope && (!m_fileScope->getUsedNamespaces().empty() ||
-                     !m_fileScope->getUsedClasses().empty())
+                     !m_fileScope->getUsedDefinitions().empty())
     );
   // Since it is often the case that the same name is searched in the same
   // scope over an over again (especially for the linked source code generation)
@@ -423,7 +423,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 
   bool hasUsingStatements =
     (m_fileScope && (!m_fileScope->getUsedNamespaces().empty() ||
-                     !m_fileScope->getUsedClasses().empty())
+                     !m_fileScope->getUsedDefinitions().empty())
     );
   // Since it is often the case that the same name is searched in the same
   // scope over an over again (especially for the linked source code generation)
@@ -1070,11 +1070,11 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         // in A via a using directive.
         //printf("newScope is a namespace: %s!\n",qPrint(newScope->name()));
         const NamespaceDef *nscope = toNamespaceDef(newScope);
-        for (const auto &cd : nscope->getUsedClasses())
+        for (const auto &ud : nscope->getUsedDefinitions())
         {
-          if (cd==item)
+          if (ud==item)
           {
-            AUTO_TRACE_ADD("found in used class {}",cd->name());
+            AUTO_TRACE_ADD("found in used definition {}",ud->name());
             goto done;
           }
         }
@@ -1223,12 +1223,12 @@ const Definition *SymbolResolver::Private::followPath(VisitedKeys &visitedKeys,
       if (current->definitionType()==Definition::TypeNamespace)
       {
         next = endOfPathIsUsedClass(
-            (toNamespaceDef(current))->getUsedClasses(),qualScopePart);
+            (toNamespaceDef(current))->getUsedDefinitions(),qualScopePart);
       }
       else if (current->definitionType()==Definition::TypeFile)
       {
         next = endOfPathIsUsedClass(
-            (toFileDef(current))->getUsedClasses(),qualScopePart);
+            (toFileDef(current))->getUsedDefinitions(),qualScopePart);
       }
       current = next;
       if (current==nullptr) break;
@@ -1244,13 +1244,13 @@ const Definition *SymbolResolver::Private::followPath(VisitedKeys &visitedKeys,
   return current; // path could be followed
 }
 
-const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefMap<ClassDef> &cl,const QCString &localName)
+const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefMap<const Definition> &dl,const QCString &localName)
 {
-  for (const auto &cd : cl)
+  for (const auto &d : dl)
   {
-    if (cd->localName()==localName)
+    if (d->localName()==localName)
     {
-      return cd;
+      return d;
     }
   }
   return nullptr;
@@ -1294,16 +1294,16 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(
 }
 
 
-bool SymbolResolver::Private::accessibleViaUsingClass(VisitedKeys &visitedKeys,
-                                                      const LinkedRefMap<ClassDef> &cl,
+bool SymbolResolver::Private::accessibleViaUsingDefinition(VisitedKeys &visitedKeys,
+                                                      const LinkedRefMap<const Definition> &dl,
                                                       const Definition *item,
                                                       const QCString &explicitScopePart)
 {
   AUTO_TRACE("item={} explicitScopePart={}",item?item->name():QCString(), explicitScopePart);
-  for (const auto &ucd : cl)
+  for (const auto &ud : dl)
   {
-    AUTO_TRACE_ADD("trying via used class '{}'",ucd->name());
-    const Definition *sc = explicitScopePart.isEmpty() ? ucd : followPath(visitedKeys,ucd,explicitScopePart);
+    AUTO_TRACE_ADD("trying via used definition '{}'",ud->name());
+    const Definition *sc = explicitScopePart.isEmpty() ? ud : followPath(visitedKeys,ud,explicitScopePart);
     if (sc && sc==item)
     {
       AUTO_TRACE_EXIT("true");
@@ -1411,7 +1411,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
     }
     if (m_fileScope)
     {
-      if (accessibleViaUsingClass(visitedKeys,m_fileScope->getUsedClasses(),item))
+      if (accessibleViaUsingDefinition(visitedKeys,m_fileScope->getUsedDefinitions(),item))
       {
         AUTO_TRACE_ADD("found via used class");
         goto done;
@@ -1432,7 +1432,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       const NamespaceDef *nscope = toNamespaceDef(scope);
-      if (accessibleViaUsingClass(visitedKeys,nscope->getUsedClasses(),item))
+      if (accessibleViaUsingDefinition(visitedKeys,nscope->getUsedDefinitions(),item))
       {
         AUTO_TRACE_ADD("found via used class");
         goto done;
@@ -1447,7 +1447,7 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
     else if (scope->definitionType()==Definition::TypeFile)
     {
       const FileDef *nfile = toFileDef(scope);
-      if (accessibleViaUsingClass(visitedKeys,nfile->getUsedClasses(),item))
+      if (accessibleViaUsingDefinition(visitedKeys,nfile->getUsedDefinitions(),item))
       {
         AUTO_TRACE_ADD("found via used class");
         goto done;

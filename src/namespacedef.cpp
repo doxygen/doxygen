@@ -78,8 +78,8 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     int  numDocMembers() const override;
     void addUsingDirective(NamespaceDef *nd) override;
     const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const override { return m_usingDirList; }
-    void addUsingDeclaration(ClassDef *cd) override;
-    const LinkedRefMap<ClassDef> &getUsedClasses() const override { return m_usingDeclList; }
+    void addUsingDeclaration(const Definition *cd) override;
+    const LinkedRefMap<const Definition> &getUsedDefinitions() const override { return m_usingDeclList; }
     void combineUsingRelations(NamespaceDefSet &visitedNamespace) override;
     QCString displayName(bool=TRUE) const override;
     void setInline(bool isInline) override { m_inline = isInline; }
@@ -147,7 +147,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     FileList              files;
 
     LinkedRefMap<NamespaceDef> m_usingDirList;
-    LinkedRefMap<ClassDef> m_usingDeclList;
+    LinkedRefMap<const Definition> m_usingDeclList;
     LinkedRefMap<const Definition> m_innerCompounds;
 
     MemberLinkedRefMap    m_allMembers;
@@ -200,8 +200,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->numDocMembers(); }
     const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const override
     { return getNSAlias()->getUsedNamespaces(); }
-    const LinkedRefMap<ClassDef> &getUsedClasses() const override
-    { return getNSAlias()->getUsedClasses(); }
+    const LinkedRefMap<const Definition> &getUsedDefinitions() const override
+    { return getNSAlias()->getUsedDefinitions(); }
     QCString displayName(bool b=TRUE) const override
     { return makeDisplayName(this,b); }
     const QCString &localName() const override
@@ -1218,9 +1218,9 @@ void NamespaceDefImpl::addUsingDirective(NamespaceDef *nd)
   //printf("%s: NamespaceDefImpl::addUsingDirective: %s:%zu\n",qPrint(name()),qPrint(nd->qualifiedName()),m_usingDirList.size());
 }
 
-void NamespaceDefImpl::addUsingDeclaration(ClassDef *cd)
+void NamespaceDefImpl::addUsingDeclaration(const Definition *d)
 {
-  m_usingDeclList.add(cd->qualifiedName(),cd);
+  m_usingDeclList.add(d->qualifiedName(),d);
 }
 
 QCString NamespaceDefImpl::getOutputFileBase() const
@@ -1302,9 +1302,9 @@ void NamespaceDefImpl::combineUsingRelations(NamespaceDefSet &visitedNamespaces)
       addUsingDirective(und);
     }
     // add used classes of namespace nd to this namespace
-    for (const auto &ucd : nd->getUsedClasses())
+    for (const auto &ud : nd->getUsedDefinitions())
     {
-      addUsingDeclaration(ucd);
+      addUsingDeclaration(ud);
     }
   }
 }

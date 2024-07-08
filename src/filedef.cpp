@@ -150,7 +150,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     DirDef *getDirDef() const override       { return m_dir; }
     ModuleDef *getModuleDef() const override { return m_moduleDef; }
     const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const override;
-    const LinkedRefMap<ClassDef> &getUsedClasses() const override  { return m_usingDeclList; }
+    const LinkedRefMap<const Definition> &getUsedDefinitions() const override  { return m_usingDeclList; }
     const IncludeInfoList &includeFileList() const override    { return m_includeList; }
     const IncludeInfoList &includedByFileList() const override { return m_includedByList; }
     void getAllIncludeFilesRecursively(StringVector &incFiles) const override;
@@ -186,7 +186,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void setDirDef(DirDef *dd) override { m_dir=dd; }
     void setModuleDef(ModuleDef *mod) override { m_moduleDef=mod; }
     void addUsingDirective(NamespaceDef *nd) override;
-    void addUsingDeclaration(ClassDef *cd) override;
+    void addUsingDeclaration(const Definition *d) override;
     void combineUsingRelations() override;
     bool generateSourceFile() const override;
     void sortMemberLists() override;
@@ -233,7 +233,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     IncludeInfoMap        m_includedByMap;
     IncludeInfoList       m_includedByList;
     LinkedRefMap<NamespaceDef> m_usingDirList;
-    LinkedRefMap<ClassDef> m_usingDeclList;
+    LinkedRefMap<const Definition> m_usingDeclList;
     QCString              m_path;
     QCString              m_filePath;
     QCString              m_inclDepFileName;
@@ -1418,9 +1418,9 @@ const LinkedRefMap<NamespaceDef> &FileDefImpl::getUsedNamespaces() const
   return m_usingDirList;
 }
 
-void FileDefImpl::addUsingDeclaration(ClassDef *cd)
+void FileDefImpl::addUsingDeclaration(const Definition *d)
 {
-  m_usingDeclList.add(cd->qualifiedName(),cd);
+  m_usingDeclList.add(d->qualifiedName(),d);
 }
 
 void FileDefImpl::addIncludeDependency(const FileDef *fd,const QCString &incName,IncludeKind kind)
@@ -1468,11 +1468,11 @@ void FileDefImpl::addIncludedUsingDirectives(FileDefSet &visitedFiles)
             m_usingDirList.prepend(nd->qualifiedName(),nd);
           }
           // add using declarations
-          auto  udl = ii.fileDef->getUsedClasses();
+          auto  udl = ii.fileDef->getUsedDefinitions();
           for (auto it = udl.rbegin(); it!=udl.rend(); ++it)
           {
-            auto *cd = *it;
-            m_usingDeclList.prepend(cd->qualifiedName(),cd);
+            auto *d = *it;
+            m_usingDeclList.prepend(d->qualifiedName(),d);
           }
         }
       }
@@ -1559,9 +1559,9 @@ void FileDefImpl::combineUsingRelations()
       addUsingDirective(und);
     }
     // add used classes of namespace nd to this namespace
-    for (const auto &ucd : nd->getUsedClasses())
+    for (const auto &ud : nd->getUsedDefinitions())
     {
-      addUsingDeclaration(ucd);
+      addUsingDeclaration(ud);
     }
   }
 }

@@ -1982,7 +1982,7 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
        root->name,root->startLine,root->fileName,root->parent()->section);
     if (!root->name.isEmpty())
     {
-      ClassDefMutable *usingCd = nullptr;
+      const Definition *usingDef = nullptr;
       NamespaceDefMutable *nd = nullptr;
       FileDef      *fd = root->fileDef();
       QCString scName;
@@ -2005,45 +2005,49 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
       // file scope).
 
       QCString name = substitute(root->name,".","::"); //Java/C# scope->internal
-      usingCd = getClassMutable(name); // try direct lookup first, this is needed to get
-                                // builtin STL classes to properly resolve, e.g.
-                                // vector -> std::vector
-      if (usingCd==nullptr)
-      {
-        SymbolResolver resolver(fd);
-        usingCd = resolver.resolveClassMutable(nd,name); // try via resolving (see also bug757509)
-      }
-      if (usingCd==nullptr)
-      {
-        usingCd = toClassDefMutable(Doxygen::hiddenClassLinkedMap->find(name)); // check if it is already hidden
-      }
 
-      if (usingCd==nullptr) // definition not in the input => add an artificial class
+      SymbolResolver resolver;
+      const Definition *scope = nd;
+      if (nd==nullptr) scope = fd;
+      usingDef = resolver.resolveSymbol(scope,name);
+
+      if (!usingDef)
+      {
+        usingDef = getClass(name); // try direct lookup, this is needed to get
+                                   // builtin STL classes to properly resolve, e.g.
+                                   // vector -> std::vector
+      }
+      if (!usingDef)
+      {
+        usingDef = Doxygen::hiddenClassLinkedMap->find(name); // check if it is already hidden
+      }
+      if (!usingDef)
       {
         AUTO_TRACE_ADD("New using class '{}' (sec={})! #tArgLists={}",
              name,root->section,root->tArgLists.size());
-        usingCd = toClassDefMutable(
+        ClassDefMutable *usingCd = toClassDefMutable(
              Doxygen::hiddenClassLinkedMap->add(name,
                createClassDef( "<using>",1,1, name, ClassDef::Class)));
         if (usingCd)
         {
           usingCd->setArtificial(TRUE);
           usingCd->setLanguage(root->lang);
+          usingDef = usingCd;
         }
       }
       else
       {
-        AUTO_TRACE_ADD("Found used class '{}' in scope='{}'",
-            usingCd->name(), nd ? nd->name(): fd ? fd->name() : QCString("<unknown>"));
+        AUTO_TRACE_ADD("Found used type '{}' in scope='{}'",
+            usingDef->name(), nd ? nd->name(): fd ? fd->name() : QCString("<unknown>"));
       }
 
       if (nd)
       {
-        nd->addUsingDeclaration(usingCd);
+        nd->addUsingDeclaration(usingDef);
       }
       else if (fd)
       {
-        fd->addUsingDeclaration(usingCd);
+        fd->addUsingDeclaration(usingDef);
       }
     }
   }

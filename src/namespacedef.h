@@ -59,7 +59,7 @@ class NamespaceDef : public Definition
     // ---- getters
     virtual int numDocMembers() const = 0;
     virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const = 0;
-    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const = 0;
+    virtual const LinkedRefMap<const Definition> &getUsedDefinitions() const = 0;
     virtual bool isConstantGroup() const = 0;
     virtual bool isModule()        const = 0;
     virtual bool isLibrary() const = 0;
@@ -122,7 +122,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void setFileName(const QCString &fn) = 0;
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace) = 0;
     virtual void addUsingDirective(NamespaceDef *nd) = 0;
-    virtual void addUsingDeclaration(ClassDef *cd) = 0;
+    virtual void addUsingDeclaration(const Definition *d) = 0;
     virtual void setInline(bool isInline) = 0;
 };
 
