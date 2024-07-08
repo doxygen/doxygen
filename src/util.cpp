@@ -4646,8 +4646,7 @@ QCString substituteTemplateArgumentsInString(
     const ArgumentList &formalArgs,
     const ArgumentList *actualArgs)
 {
-  //printf("> substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
-  //    qPrint(nm),qPrint(argListToString(formalArgs)),actualArgs ? qPrint(argListToString(*actualArgs)): "");
+  AUTO_TRACE("name={} formalArgs={} actualArgs={}",nm,argListToString(formalArgs),actualArgs ? argListToString(*actualArgs) : QCString());
   if (formalArgs.empty()) return nm;
   QCString result;
 
@@ -4711,21 +4710,33 @@ QCString substituteTemplateArgumentsInString(
       {
         if (formArg.name==n && actualArgs && actIt!=actualArgs->end() && !actArg.type.isEmpty()) // base class is a template argument
         {
-          static constexpr auto hasRecursion = [](const QCString &nameArg,const QCString &subst) -> bool
+          static constexpr auto hasRecursion = [](const QCString &prefix,const QCString &nameArg,const QCString &subst) -> bool
           {
             int ii=0;
             int pp=0;
+
+            ii = subst.find('<');
+            //printf("prefix='%s' subst='%s'\n",qPrint(prefix.mid(prefix.length()-ii-2,ii+1)),qPrint(subst.left(ii+1)));
+            if (ii!=-1 && static_cast<int>(prefix.length())>=ii+2 && prefix.mid(prefix.length()-ii-2,ii+1)==subst.left(ii+1))
+            {
+              return true; // don't replace 'A< ' with 'A< A<...', see issue #10951
+            }
+
             while ((ii=subst.find(nameArg,pp))!=-1)
             {
               bool beforeNonWord = ii==0 || !isId(subst.at(ii-1));
               bool afterNonWord  = subst.length()==ii+nameArg.length() || !isId(subst.at(ii+nameArg.length()));
-              if (beforeNonWord && afterNonWord) return true; // if nameArg=='A' then subst=='A::Z' or 'S<A>' or 'Z::A' should return true, but 'AA::ZZ' or 'BAH' should not match
+              if (beforeNonWord && afterNonWord)
+              {
+                return true; // if nameArg=='A' then subst=='A::Z' or 'S<A>' or 'Z::A' should return true, but 'AA::ZZ' or 'BAH' should not match
+              }
               pp=ii+static_cast<int>(nameArg.length());
             }
             return false;
           };
           // replace formal argument with the actual argument of the instance
-          if (!hasRecursion(n,actArg.type))
+          AUTO_TRACE_ADD("result={} n={} type={} hasRecursion={}",result,n,actArg.type,hasRecursion(result,n,actArg.type));
+          if (!hasRecursion(result,n,actArg.type))
             // the scope guard is to prevent recursive lockup for
             // template<class A> class C : public<A::T>,
             // where A::T would become A::T::T here,
@@ -4780,7 +4791,7 @@ QCString substituteTemplateArgumentsInString(
   }
   result+=name.substr(p);
   result=result.simplifyWhiteSpace();
-  //printf("< substituteTemplateArgumentsInString result=%s\n", qPrint(result));
+  AUTO_TRACE_EXIT("result={}",result);
   return result.stripWhiteSpace();
 }
 
