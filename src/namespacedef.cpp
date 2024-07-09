@@ -1525,7 +1525,7 @@ static bool hasNonReferenceNestedNamespaceRec(const NamespaceDef *nd,int level)
 bool NamespaceDefImpl::isVisibleInHierarchy() const
 {
   bool allExternals = Config_getBool(ALLEXTERNALS);
-  return (allExternals || hasNonReferenceNestedNamespaceRec(this,0)) && isLinkable();
+  return allExternals || hasNonReferenceNestedNamespaceRec(this,0) || isLinkable();
 }
 
 bool NamespaceDefImpl::isLinkableInProject() const
