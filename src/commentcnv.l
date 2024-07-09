@@ -1635,9 +1635,16 @@ static void insertCommentStart(yyscan_t yyscanner)
   //printf("insertCommentStart startCol=%d contentCol=%d mlBrief=%d insertCppCommentMarker=%d\n",
   //    yyextra->blockHeadCol,yyextra->insertCommentCol,yyextra->mlBrief,yyextra->insertCppCommentMarker);
   std::string marker;
-  if (yyextra->lang==SrcLangExt::Python) // need to insert #
+  if (yyextra->lang==SrcLangExt::Python) // need to insert # or space
   {
-    marker="# ";
+    if (yyextra->pythonDocString) // """! style comment
+    {
+      marker="    ";
+    }
+    else
+    {
+      marker="# ";
+    }
   }
   else if (yyextra->lang==SrcLangExt::Fortran) // need to insert !!
   {
