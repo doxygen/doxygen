@@ -526,18 +526,26 @@ bool Portable::isAbsolutePath(const QCString &fileName)
 void Portable::correctPath(const StringVector &extraPaths)
 {
   QCString p = Portable::getenv("PATH");
+  bool first=true;
+  QCString result;
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  QCString result = substitute(p,"/","\\");
   for (const auto &path : extraPaths)
   {
-    result+=";\""+substitute(QCString(path),"/","\\")+"\"";
+    if (!first) result+=';';
+    first=false;
+    result += substitute(QCString(path),"/","\\");
   }
+  if (!result.isEmpty() && !p.isEmpty()) result+=';';
+  result += substitute(p,"/","\\");
 #else
-  QCString result=p;
   for (const auto &path : extraPaths)
   {
-    result+=":"+QCString(path);
+    if (!first) result+=':';
+    first=false;
+    result += QCString(path);
   }
+  if (!result.isEmpty() && !p.isEmpty()) result+=':';
+  result += p;
 #endif
   if (result!=p) Portable::setenv("PATH",result.data());
   //printf("settingPath(%s) #extraPaths=%zu\n",Portable::getenv("PATH").data(),extraPaths.size());

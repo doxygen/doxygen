@@ -1343,16 +1343,23 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
-    <option type='list' id='EXTERNAL_TOOL_PATHS' format='dir' defval=''>
+    <option type='list' id='EXTERNAL_TOOL_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
- The \c EXTERNAL_TOOL_PATHS tag can be used to extend the search path (PATH environment variable)
- so that external tools such as \c latex and \c gs can be found.
+ The \c EXTERNAL_TOOL_PATH tag can be used to extend the search path (PATH environment variable)
+ so that external tools such as \c latex and \c gs can be found. 
+ \note Directories specified with EXTERNAL_TOOL_PATH are added in front of the path already specified by
+ the PATH variable, and are added in the order specified.
  \note This option is particularly useful for macOS version 14 (Sonoma) and higher,
  when running Doxygen from Doxywizard, because in this case any user-defined changes to the PATH
  are ignored. A typical example on macOS is to set
 \verbatim
-EXTERNAL_TOOL_PATHS = /Library/TeX/texbin /usr/local/bin
+EXTERNAL_TOOL_PATH = /Library/TeX/texbin /usr/local/bin
+\endverbatim
+ together with the standard path, the full search path used by doxygen when launching external tools
+ will then become
+\verbatim
+PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 \endverbatim
 ]]>
       </docs>

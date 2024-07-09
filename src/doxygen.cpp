@@ -11788,7 +11788,7 @@ void parseInput()
   AUTO_TRACE();
   std::atexit(exitDoxygen);
 
-  Portable::correctPath(Config_getList(EXTERNAL_TOOL_PATHS));
+  Portable::correctPath(Config_getList(EXTERNAL_TOOL_PATH));
 
 #if USE_LIBCLANG
   Doxygen::clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
