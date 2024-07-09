@@ -9,7 +9,7 @@
  */
 void cstyle( int theory );
 
-/*******************************************************************************
+/******************************************************************************
  * A brief history of JavaDoc-style (C-style) banner comments.
  *
  * This is the typical JavaDoc-style C-style "banner" comment. It starts with
@@ -30,7 +30,7 @@ void cstyle( int theory );
  ******************************************************************************/
 void javadocBanner( int theory );
 
-/***************************************************************************//**
+/**************************************************************************//**
  * A brief history of Doxygen-style banner comments.
  *
  * This is a Doxygen-style C-style "banner" comment. It starts with a "normal"
