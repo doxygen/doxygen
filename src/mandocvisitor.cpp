@@ -498,7 +498,7 @@ void ManDocVisitor::operator()(const DocPara &p)
      )
   {
     if (!m_firstCol) m_t << "\n";
-    m_t << ".PP\n";
+    m_t << "\n.PP\n";
     m_firstCol=TRUE;
   }
 }
@@ -707,9 +707,11 @@ void ManDocVisitor::operator()(const DocHtmlListItem &li)
 void ManDocVisitor::operator()(const DocHtmlDescList &dl)
 {
   if (m_hide) return;
+  m_indent+=2;
   visitChildren(dl);
+  m_indent-=2;
   if (!m_firstCol) m_t << "\n";
-  m_t << ".PP\n";
+  m_t << "\n.PP\n";
   m_firstCol=TRUE;
 }
 
@@ -717,16 +719,17 @@ void ManDocVisitor::operator()(const DocHtmlDescTitle &dt)
 {
   if (m_hide) return;
   if (!m_firstCol) m_t << "\n";
-  m_t << ".IP \"\\fB";
+  m_t << "\n.PP";
+  m_t << "\n.IP \"\\fB";
   m_firstCol=FALSE;
   visitChildren(dt);
-  m_t << "\\fP\" 1c\n";
-  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::operator()(const DocHtmlDescData &dd)
 {
-  if (!m_firstCol) m_t << "\n.IP \"\" 1c\n";
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".IP \"\" 1c\n";
+  m_firstCol=TRUE;
   visitChildren(dd);
 }
 
