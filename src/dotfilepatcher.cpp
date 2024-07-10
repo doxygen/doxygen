@@ -295,6 +295,89 @@ int DotFilePatcher::addSVGObject(const QCString &baseName,
   return static_cast<int>(id);
 }
 
+bool DotFilePatcher::makeStdSVG(QCString patchFile)
+{
+  bool isSVGFile = patchFile.endsWith(".svg");
+  if (isSVGFile)
+  {
+    QCString tmpName = patchFile+".tmp";
+    Dir thisDir;
+    std::string lineStr;
+    if (!thisDir.rename(patchFile.str(),tmpName.str()))
+    {
+      err("Failed to rename file %s to %s!\n",qPrint(patchFile),qPrint(tmpName));
+      return false;
+    }
+    std::ifstream fi = Portable::openInputStream(tmpName);
+    std::ofstream fo = Portable::openOutputStream(patchFile);
+    if (!fi.is_open())
+    {
+      err("problem opening file %s for patching!\n",qPrint(tmpName));
+      thisDir.rename(tmpName.str(),patchFile.str());
+      return false;
+    }
+    if (!fo.is_open())
+    {
+      err("problem opening file %s for patching!\n",qPrint(patchFile));
+      thisDir.rename(tmpName.str(),patchFile.str());
+      return false;
+    }
+    TextStream t(&fo);
+    bool skipEndA = false;
+    while (getline(fi,lineStr))
+    {
+      QCString line = lineStr+'\n';
+      if (line.startsWith("<title"))
+      {
+        getline(fi,lineStr);
+        line = lineStr+'\n';
+        if (line.startsWith("<g"))
+        {
+          static const reg::Ex reTitle(R"(<a xlink:title=\"[^\"]*\">)");
+          reg::Iterator itTitle(line.str(),reTitle);
+          reg::Iterator endTitle;
+
+          if (itTitle != endTitle) // contains title but no href
+          {
+            const auto &matchTitle = *itTitle;
+            t << "<title>" << line.mid(matchTitle.position()+16,matchTitle.length()-18) << "</title>\n";
+            t << line.left(matchTitle.position());
+            t << "\n";
+            skipEndA = true;
+          }
+          else
+          {
+            t << line;
+          }
+        }
+        else
+        {
+          t << "<title/>\n";
+          t << line;
+        }
+      }
+      else if (skipEndA && line.startsWith("</a>"))
+      {
+        // just skip it
+        skipEndA = false;
+      }
+      else if (line.startsWith(" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"))
+      {
+          t << " \"https://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">";
+      }
+      else
+      {
+        t << line;
+      }
+    }
+    fi.close();
+    t.flush();
+    fo.close();
+    thisDir.remove(tmpName.str());
+  }
+  return true;
+}
+
 bool DotFilePatcher::run() const
 {
   //printf("DotFilePatcher::run(): %s\n",qPrint(m_patchFile));
@@ -313,6 +396,10 @@ bool DotFilePatcher::run() const
   }
   QCString tmpName = m_patchFile+".tmp";
   Dir thisDir;
+  std::string lineStr;
+
+  if (!makeStdSVG(m_patchFile)) return false;
+
   if (!thisDir.rename(m_patchFile.str(),tmpName.str()))
   {
     err("Failed to rename file %s to %s!\n",qPrint(m_patchFile),qPrint(tmpName));
@@ -337,7 +424,6 @@ bool DotFilePatcher::run() const
   bool insideHeader=FALSE;
   bool replacedHeader=FALSE;
   bool useNagivation=FALSE;
-  std::string lineStr;
   static const reg::Ex reSVG(R"([\[<]!-- SVG [0-9]+)");
   static const reg::Ex reMAP(R"(<!-- MAP [0-9]+)");
   static const reg::Ex reFIG(R"(% FIG [0-9]+)");
