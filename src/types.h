@@ -122,17 +122,17 @@ struct Grouping
   ML_TYPE(ProTypes,            Protected,    PubTypes,          Invalid,          "pro-types",             "protected-type"          ) \
   ML_TYPE(PacTypes,            Package,      Invalid,           Invalid,          "pac-types",             "package-type"            ) \
   ML_TYPE(PriTypes,            Private,      PubTypes,          ProTypes,         "pri-types",             "private-type"            ) \
-  ML_TYPE(Related,             Public,       Invalid,           Invalid,          "related",               "related"                 ) \
-  ML_TYPE(Signals,             Public,       Invalid,           Invalid,          "signals",               "signal"                  ) \
-  ML_TYPE(Friends,             Public,       Invalid,           Invalid,          "friends",               "friend"                  ) \
-  ML_TYPE(DcopMethods,         Public,       Invalid,           Invalid,          "dcop-methods",          "dcop-func"               ) \
-  ML_TYPE(Properties,          Public,       Invalid,           Invalid,          "properties",            "property"                ) \
-  ML_TYPE(Events,              Public,       Invalid,           Invalid,          "events",                "event"                   ) \
-  ML_TYPE(AllMembersList,      Public,       Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EnumFields,          Public,       Invalid,           Invalid,          "enum-fields",           ""                        ) \
-  ML_TYPE(MemberGroup,         Public,       Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(Interfaces,          Public,       Invalid,           Invalid,          "interfaces",            "interfaces"              ) \
-  ML_TYPE(Services,            Public,       Invalid,           Invalid,          "services",              "services"                ) \
+  ML_TYPE(Related,             OnlyPublic,   Invalid,           Invalid,          "related",               "related"                 ) \
+  ML_TYPE(Signals,             OnlyPublic,   Invalid,           Invalid,          "signals",               "signal"                  ) \
+  ML_TYPE(Friends,             OnlyPublic,   Invalid,           Invalid,          "friends",               "friend"                  ) \
+  ML_TYPE(DcopMethods,         OnlyPublic,   Invalid,           Invalid,          "dcop-methods",          "dcop-func"               ) \
+  ML_TYPE(Properties,          OnlyPublic,   Invalid,           Invalid,          "properties",            "property"                ) \
+  ML_TYPE(Events,              OnlyPublic,   Invalid,           Invalid,          "events",                "event"                   ) \
+  ML_TYPE(AllMembersList,      OnlyPublic,   Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(EnumFields,          OnlyPublic,   Invalid,           Invalid,          "enum-fields",           ""                        ) \
+  ML_TYPE(MemberGroup,         OnlyPublic,   Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(Interfaces,          OnlyPublic,   Invalid,           Invalid,          "interfaces",            "interfaces"              ) \
+  ML_TYPE(Services,            OnlyPublic,   Invalid,           Invalid,          "services",              "services"                ) \
   ML_TYPE(DecDefineMembers,    Declaration,  Invalid,           Invalid,          "define-members",        "define"                  ) \
   ML_TYPE(DecProtoMembers,     Declaration,  Invalid,           Invalid,          "proto-members",         "prototype"               ) \
   ML_TYPE(DecTypedefMembers,   Declaration,  Invalid,           Invalid,          "typedef-members",       "typedef"                 ) \
@@ -188,16 +188,17 @@ class MemberListType
       Protected     = (1<<17),
       Package       = (1<<18),
       Private       = (1<<19),
-      Detailed      = (1<<20),
-      Declaration   = (1<<21),
-      Documentation = (1<<22),
+      OnlyPublic    = (1<<20),
+      Detailed      = (1<<21),
+      Declaration   = (1<<22),
+      Documentation = (1<<23),
       TypeMask      = 0x0000FFFF,
       CategoryMask  = 0xFFFF0000
     };
 
     enum TypeName
     {
-      Invalid_,
+      Invalid_ = -1,
 #define ML_TYPE(x,bits,to_pub,to_prot,label,xml_str) \
       x##_,
       ML_TYPES
@@ -213,6 +214,7 @@ class MemberListType
     ML_TYPES
 #undef ML_TYPE
     constexpr bool isPublic()         const { return (m_type & Public)!=0;        }
+    constexpr bool isOnlyPublic()     const { return (m_type & OnlyPublic)!=0;    }
     constexpr bool isProtected()      const { return (m_type & Protected)!=0;     }
     constexpr bool isPackage()        const { return (m_type & Package)!=0;       }
     constexpr bool isPrivate()        const { return (m_type & Private)!=0;       }
@@ -230,6 +232,10 @@ class MemberListType
 #undef ML_TYPE
       }
       return "[unknown]";
+    }
+    int to_int() const
+    {
+      return m_type!=Invalid_ ? m_type&TypeMask : -1;
     }
     constexpr const char *toLabel() const
     {
@@ -291,12 +297,13 @@ class MemberListType
       if (m_type&Protected) result+=",Protected";
       if (m_type&Package) result+=",Package";
       if (m_type&Private) result+=",Private";
+      if (m_type&OnlyPublic) result+=",OnlyPublic";
       if (m_type&Detailed) result+=",Detailed";
       if (m_type&Documentation) result+=",Documentation";
       return result;
     }
     constexpr TypeName type() const { return static_cast<TypeName>(m_type & TypeMask); }
-    unsigned int m_type = static_cast<unsigned int>(Invalid_);
+    int m_type = static_cast<int>(Invalid_);
 };
 
 enum class MemberListContainer

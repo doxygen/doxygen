@@ -4345,7 +4345,7 @@ void ClassDefImpl::sortMemberLists()
 int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
                                       MemberListType lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const
 {
-  //printf("%s: countMemberDeclarations for %d and %d\n",qPrint(name()),lt,lt2);
+  //printf("%s: countMemberDeclarations for %d and %d\n",qPrint(name()),lt.to_int(),lt2.to_int());
   int count=0;
   MemberList * ml  = getMemberList(lt);
   MemberList * ml2 = getMemberList(lt2);
@@ -4428,7 +4428,7 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
   int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
   bool process = count>0;
   //printf("%s: countInheritedDecMembers: lt=%d process=%d count=%d invert=%d\n",
-  //    qPrint(name()),lt,process,count,invert);
+  //    qPrint(name()),lt.to_int(),process,count,invert);
   if ((process^invert) || showAlways)
   {
     for (const auto &ibcd : m_impl->inherits)
@@ -4440,7 +4440,7 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
       {
         convertProtectionLevel(lt,ibcd.prot,&lt1,&lt2);
         //printf("%s: convert %d->(%d,%d) prot=%d\n",
-        //    qPrint(icd->name()),lt,lt1,lt2,ibcd->prot);
+        //    qPrint(icd->name()),lt.to_int(),lt1.to_int(),lt2.to_int(),ibcd.prot);
         if (visitedClasses.find(icd)==visitedClasses.end())
         {
           visitedClasses.insert(icd); // guard for multiple virtual inheritance
