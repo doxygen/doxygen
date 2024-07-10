@@ -310,7 +310,7 @@ void writeDotImageMapFromFile(TextStream &t,
   {
     QCString svgName = outDir+"/"+baseName+".svg";
     DotFilePatcher::writeSVGFigureLink(t,relPath,baseName,svgName);
-    DotFilePatcher patcher(svgName);
+    DotFilePatcher patcher(svgName,srcFile,srcLine);
     patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
     patcher.run();
   }
@@ -319,7 +319,7 @@ void writeDotImageMapFromFile(TextStream &t,
     TextStream tt;
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
       << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
-    DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,TRUE, context);
+    DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,TRUE, context,srcFile,srcLine);
     if (!tt.empty())
     {
       t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
