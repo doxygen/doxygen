@@ -1247,8 +1247,12 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name = yytext;
                          return TK_SYMBOL;
                        }
-<St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
+<St_Ref2>\n|"\\ilinebr" {
                          lineCount(yytext,yyleng);
+                         yyextra->token->chars=yytext;
+                         return TK_WHITESPACE;
+                       }
+<St_Ref2>"\""          {
                          return 0;
                        }
 <St_Ref2>{HTMLTAG_STRICT}     { /* html tag */
