@@ -950,7 +950,7 @@ NONLopt [^\n]*
 <FindMembers>{BN}{1,80}                 {
                                           lineCount(yyscanner);
                                         }
-<FindMembers>"@"({ID}".")*{ID}{BN}*"("  {
+<FindMembers,ReadFuncArgType>"@"({ID}".")*{ID}{BN}*"("  {
                                           if (yyextra->insideJava) // Java annotation
                                           {
                                             lineCount(yyscanner);
@@ -958,7 +958,7 @@ NONLopt [^\n]*
                                             yyextra->roundCount=0;
                                             BEGIN( SkipRound );
                                           }
-                                          else if (qstrncmp(yytext,"@property",9)==0) // ObjC 2.0 property
+                                          else if ((YY_START == FindMembers) && qstrncmp(yytext,"@property",9)==0) // ObjC 2.0 property
                                           {
                                             yyextra->current->mtype = yyextra->mtype = MethodTypes::Property;
                                             yyextra->current->spec.setReadable(true).setWritable(true).setAssign(true);
