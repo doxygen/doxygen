@@ -826,7 +826,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 
-<CComment,CNComment>[^ `~<\\!@*\n{\"'\/]*     { /* anything that is not a '*' or command */
+<CComment,CNComment>[^ `~<\\!@*\n{\"'\/-]*    { /* anything that is not a '*' or command */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <CComment,CNComment>"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
