@@ -334,7 +334,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void writeTagFile(TextStream &) const override;
 
     int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const override;
-    int countInheritanceNodes() const override;
     int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
                 MemberListType lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const override;
     void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
@@ -352,6 +351,9 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     bool hasCollaborationGraph() const override;
     void overrideCollaborationGraph(bool e) override;
   private:
+    int countInheritedByNodes() const;
+    int countInheritsNodes() const;
+    int countInheritanceNodes() const;
     void addUsedInterfaceClasses(MemberDef *md,const QCString &typeStr);
     void showUsedFiles(OutputList &ol) const;
 
@@ -585,8 +587,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
 
     int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const override
     { return getCdAlias()->countMembersIncludingGrouped(lt,inheritedFrom,additional); }
-    int countInheritanceNodes() const override
-    { return getCdAlias()->countInheritanceNodes(); }
     int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
                 MemberListType lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const override
     { return getCdAlias()->countMemberDeclarations(lt,inheritedFrom,lt2,invert,showAlways,visitedClasses); }
@@ -1659,7 +1659,7 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
   ol.popGeneratorState();
 }
 
-int ClassDefImpl::countInheritanceNodes() const
+int ClassDefImpl::countInheritedByNodes() const
 {
   int count=0;
   for (const auto &ibcd : m_impl->inheritedBy)
@@ -1667,12 +1667,23 @@ int ClassDefImpl::countInheritanceNodes() const
     const ClassDef *icd=ibcd.classDef;
     if ( icd->isVisibleInHierarchy()) count++;
   }
+  return count;
+}
+
+int ClassDefImpl::countInheritsNodes() const
+{
+  int count=0;
   for (const auto &ibcd : m_impl->inherits)
   {
     const ClassDef *icd=ibcd.classDef;
     if ( icd->isVisibleInHierarchy()) count++;
   }
   return count;
+}
+
+int ClassDefImpl::countInheritanceNodes() const
+{
+  return countInheritedByNodes()+countInheritsNodes();
 }
 
 void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
@@ -1682,7 +1693,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 
   if (classGraph == CLASS_GRAPH_t::NO) return;
   // count direct inheritance relations
-  const int count=countInheritanceNodes();
+  int count=countInheritanceNodes();
 
   bool renderDiagram = FALSE;
   if (haveDot && (classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH))
@@ -1723,62 +1734,83 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     ol.disableAllBut(OutputType::Man);
   }
 
-  if (!m_impl->inherits.empty())
+  count = countInheritsNodes();
+  if (count>0)
   {
     auto replaceFunc = [this,&ol](size_t entryIndex)
     {
-      const BaseClassDef &bcd=m_impl->inherits[entryIndex];
-      const ClassDef *cd=bcd.classDef;
-
-      // use the class name but with the template arguments as given
-      // in the inheritance relation
-      QCString displayName = insertTemplateSpecifierInScope(
-          cd->displayName(),bcd.templSpecifiers);
-
-      if (cd->isLinkable())
+      for (size_t index=0; index<m_impl->inherits.size() ; index++)
       {
-        ol.writeObjectLink(cd->getReference(),
-            cd->getOutputFileBase(),
-            cd->anchor(),
-            displayName);
-      }
-      else
-      {
-        ol.docify(displayName);
+        const BaseClassDef &bcd=m_impl->inherits[index];
+        const ClassDef *cd=bcd.classDef;
+
+        if (cd->isVisibleInHierarchy()) // filter on the class we want to show
+        {
+          if (index==entryIndex) // found the requested index
+          {
+            // use the class name but with the template arguments as given
+            // in the inheritance relation
+            QCString displayName = insertTemplateSpecifierInScope(
+                cd->displayName(),bcd.templSpecifiers);
+
+            if (cd->isLinkable())
+            {
+              ol.writeObjectLink(cd->getReference(),
+                  cd->getOutputFileBase(),
+                  cd->anchor(),
+                  displayName);
+            }
+            else
+            {
+              ol.docify(displayName);
+            }
+            return;
+          }
+        }
       }
     };
 
     ol.startParagraph();
     writeMarkerList(ol,
-                    theTranslator->trInheritsList(static_cast<int>(m_impl->inherits.size())).str(),
-                    m_impl->inherits.size(),
+                    theTranslator->trInheritsList(count).str(),
+                    static_cast<size_t>(count),
                     replaceFunc);
     ol.endParagraph();
   }
 
   // write subclasses
-  if (!m_impl->inheritedBy.empty())
+  count = countInheritedByNodes();
+  if (count>0)
   {
-
     auto replaceFunc = [this,&ol](size_t entryIndex)
     {
-      const BaseClassDef &bcd=m_impl->inheritedBy[entryIndex];
-      const ClassDef *cd=bcd.classDef;
-      if (cd->isLinkable())
+      for (size_t index=0; index<m_impl->inheritedBy.size() ; index++)
       {
-        ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
+        const BaseClassDef &bcd=m_impl->inheritedBy[index];
+        const ClassDef *cd=bcd.classDef;
+        if (cd->isVisibleInHierarchy()) // filter on the class we want to show
+        {
+          if (index==entryIndex) // found the requested index
+          {
+            if (cd->isLinkable())
+            {
+              ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
+              writeInheritanceSpecifier(ol,bcd);
+            }
+            else
+            {
+              ol.docify(cd->displayName());
+            }
+            return;
+          }
+        }
       }
-      else
-      {
-        ol.docify(cd->displayName());
-      }
-      writeInheritanceSpecifier(ol,bcd);
     };
 
     ol.startParagraph();
     writeMarkerList(ol,
-                    theTranslator->trInheritedByList(static_cast<int>(m_impl->inheritedBy.size())).str(),
-                    m_impl->inheritedBy.size(),
+                    theTranslator->trInheritedByList(count).str(),
+                    static_cast<size_t>(count),
                     replaceFunc);
     ol.endParagraph();
   }

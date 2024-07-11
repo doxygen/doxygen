@@ -335,7 +335,6 @@ class ClassDef : public Definition
 
     virtual int countMembersIncludingGrouped(MemberListType lt,
                 const ClassDef *inheritedFrom,bool additional) const = 0;
-    virtual int countInheritanceNodes() const = 0;
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
                 MemberListType lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const = 0;
 
