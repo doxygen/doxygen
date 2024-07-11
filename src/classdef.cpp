@@ -4531,8 +4531,8 @@ int ClassDefImpl::countMembersIncludingGrouped(MemberListType lt,
       count+=mg->countGroupedInheritedMembers(lt);
     }
   }
-  //printf("%s:countMembersIncludingGrouped(lt=%d,%s)=%d\n",
-  //    qPrint(name()),lt,ml?qPrint(ml->listType().to_label()):"<none>",count);
+  //printf("%s:countMembersIncludingGrouped(lt=%s,%s)=%d\n",
+  //    qPrint(name()),qPrint(lt.to_string()),ml?qPrint(ml->listType().toLabel()):"<none>",count);
   return count;
 }
 
@@ -4543,8 +4543,8 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &
 {
   int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
   bool process = count>0;
-  //printf("%s: writeInheritedMemberDec: lt=%d process=%d invert=%d always=%d\n",
-  //    qPrint(name()),lt,process,invert,showAlways);
+  //printf("%s: writeInheritedMemberDec: lt=%s process=%d invert=%d always=%d\n",
+  //    qPrint(name()),qPrint(lt.to_string()),process,invert,showAlways);
   if ((process^invert) || showAlways)
   {
     for (const auto &ibcd : m_impl->inherits)
@@ -4559,13 +4559,15 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &
         {
           lt2=lt3;
         }
-        //printf("%s:convert %d->(%d,%d) prot=%d\n",qPrint(icd->name()),lt,lt1,lt2,ibcd->prot);
+        //printf("%s:convert %s->(%s,%s) prot=%d\n",qPrint(icd->name()),qPrint(lt.to_string()),
+        //                                          qPrint(lt1.to_string()),qPrint(lt2.to_string()),ibcd.prot);
         if (visitedClasses.find(icd)==visitedClasses.end())
         {
           visitedClasses.insert(icd); // guard for multiple virtual inheritance
           if (!lt1.isInvalid())
           {
-            icd->writeMemberDeclarations(ol,visitedClasses,static_cast<MemberListType>(lt1),
+            //printf("--> writeMemberDeclarations for type %s\n",qPrint(lt1.to_string()));
+            icd->writeMemberDeclarations(ol,visitedClasses,lt1,
                 title,QCString(),FALSE,inheritedFrom,lt2,FALSE,TRUE);
           }
         }
@@ -4583,7 +4585,7 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
                const QCString &subTitle,bool showInline,const ClassDef *inheritedFrom,MemberListType lt2,
                bool invert,bool showAlways) const
 {
-  //printf("%s: ClassDefImpl::writeMemberDeclarations lt=%d lt2=%d\n",qPrint(name()),lt,lt2);
+  //printf("%s: ClassDefImpl::writeMemberDeclarations lt=%s lt2=%s\n",qPrint(name()),qPrint(lt.to_string()),qPrint(lt2.to_string()));
   MemberList * ml = getMemberList(lt);
   MemberList * ml2 = getMemberList(lt2);
   if (getLanguage()==SrcLangExt::VHDL) // use specific declarations function
@@ -4605,15 +4607,15 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
     QCString tt = title, st = subTitle;
     if (ml)
     {
-      //printf("  writeDeclaration type=%d count=%d\n",lt,ml->numDecMembers());
-      ml->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,tt,st,FALSE,showInline,inheritedFrom,lt);
+      //printf("  writeDeclarations type=%s count=%d\n",qPrint(lt.to_string()),ml->numDecMembers());
+      ml->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,tt,st,FALSE,showInline,inheritedFrom,lt,true);
       tt.clear();
       st.clear();
     }
     if (ml2)
     {
-      //printf("  writeDeclaration type=%d count=%d\n",lt2,ml2->numDecMembers());
-      ml2->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,tt,st,FALSE,showInline,inheritedFrom,lt);
+      //printf("  writeDeclarations type=%s count=%d\n",qPrint(lt2.to_string()),ml2->numDecMembers());
+      ml2->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,tt,st,FALSE,showInline,inheritedFrom,lt,ml==nullptr);
     }
     bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
     if (!inlineInheritedMembers) // show inherited members as separate lists

@@ -354,8 +354,8 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
   bool first=TRUE;
   for (const auto &md : m_members)
   {
-    //printf(">>> Member '%s' type=%d visible=%d inheritedFrom=%p\n",
-    //    qPrint(md->name()),md->memberType(),md->isBriefSectionVisible(),(void*)inheritedFrom);
+    //printf(">>> Member '%s' type=%d visible=%d inheritedFrom=%p inheritId=%s\n",
+    //   qPrint(md->name()),md->memberType(),md->isBriefSectionVisible(),(void*)inheritedFrom,qPrint(inheritId));
     if ((inheritedFrom==nullptr || !md->isReimplementedBy(inheritedFrom)) &&
         md->isBriefSectionVisible())
     {
@@ -505,11 +505,13 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
  *         given class as inherited members, parameter cd points to the
  *         class containing the members.
  *  @param lt Type of list that is inherited from.
+ *  @param showSectionTitle do we show the "additional members" header or not?
+ *         When combining public and protected inherited members under a single header only for the first list it should be shown
  */
 void MemberList::writeDeclarations(OutputList &ol,
              const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
              const QCString &title,const QCString &subtitle, bool showEnumValues,
-             bool showInline,const ClassDef *inheritedFrom,MemberListType lt) const
+             bool showInline,const ClassDef *inheritedFrom,MemberListType lt,bool showSectionTitle) const
 {
   (void)showEnumValues; // unused
 
@@ -530,13 +532,11 @@ void MemberList::writeDeclarations(OutputList &ol,
   int numEnumValues = numDecEnumValues();
   if (inheritedFrom)
   {
-    if ( cd && !optimizeVhdl &&
-         cd->countMembersIncludingGrouped(m_listType,inheritedFrom,TRUE)>0
-       )
+    if (cd && !optimizeVhdl)
     {
       inheritId = substitute(lt.toLabel(),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
-      if (!title.isEmpty())
+      if (showSectionTitle && !title.isEmpty())
       {
         ol.writeInheritedSectionTitle(inheritId,cd->getReference(),
                                       cd->getOutputFileBase(),
