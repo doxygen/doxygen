@@ -80,11 +80,11 @@ inline void writeDocbookString(TextStream &t,const QCString &s)
   t << convertToDocBook(s);
 }
 
-inline void writeDocbookCodeString(TextStream &t,const QCString &str, int &col)
+inline void writeDocbookCodeString(TextStream &t,const QCString &str, size_t &col)
 {
   if (str.isEmpty()) return;
   const char *s = str.data();
-  char c;
+  char c=0;
   while ((c=*s++))
   {
     switch(c)
@@ -187,7 +187,7 @@ void DocbookCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, c
   Docbook_DB(("(writeToolTip)\n"));
 }
 
-void DocbookCodeGenerator::startCodeLine(bool)
+void DocbookCodeGenerator::startCodeLine(int)
 {
   Docbook_DB(("(startCodeLine)\n"));
   m_insideCodeLine=TRUE;
@@ -199,8 +199,8 @@ void DocbookCodeGenerator::endCodeLine()
   if (m_insideCodeLine) *m_t << "\n";
   Docbook_DB(("(endCodeLine)\n"));
   m_lineNumber = -1;
-  m_refId.resize(0);
-  m_external.resize(0);
+  m_refId.clear();
+  m_external.clear();
   m_insideCodeLine=FALSE;
 }
 
@@ -284,10 +284,10 @@ DB_GEN_C
   m_codeGen = m_codeList->add<DocbookCodeGenerator>(&m_t);
 }
 
-DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og.m_dir)
+DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og.m_dir), OutputGenIntf()
 {
   m_codeList         = std::make_unique<OutputCodeList>(*og.m_codeList);
-  m_codeGen          = m_codeList->get<DocbookCodeGenerator>();
+  m_codeGen          = m_codeList->get<DocbookCodeGenerator>(OutputType::Docbook);
   m_codeGen->setTextStream(&m_t);
   m_denseText        = og.m_denseText;
   m_inGroup          = og.m_inGroup;
@@ -305,9 +305,9 @@ DocbookGenerator &DocbookGenerator::operator=(const DocbookGenerator &og)
 {
   if (this!=&og)
   {
-    m_dir          = og.m_dir;
-    m_codeList     = std::make_unique<OutputCodeList>(*og.m_codeList);
-    m_codeGen      = m_codeList->get<DocbookCodeGenerator>();
+    m_dir              = og.m_dir;
+    m_codeList         = std::make_unique<OutputCodeList>(*og.m_codeList);
+    m_codeGen          = m_codeList->get<DocbookCodeGenerator>(OutputType::Docbook);
     m_codeGen->setTextStream(&m_t);
     m_denseText        = og.m_denseText;
     m_inGroup          = og.m_inGroup;
@@ -323,31 +323,11 @@ DocbookGenerator &DocbookGenerator::operator=(const DocbookGenerator &og)
   return *this;
 }
 
-DocbookGenerator::DocbookGenerator(DocbookGenerator &&og)
-  : OutputGenerator(std::move(og))
-{
-  m_codeList         = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen          = m_codeList->get<DocbookCodeGenerator>();
-  m_codeGen->setTextStream(&m_t);
-  m_denseText        = std::exchange(og.m_denseText,false);
-  m_inGroup          = std::exchange(og.m_inGroup,false);
-  m_levelListItem    = std::exchange(og.m_levelListItem,0);
-  m_inListItem       = std::exchange(og.m_inListItem,std::array<bool,20>());
-  m_inSimpleSect     = std::exchange(og.m_inSimpleSect,std::array<bool,20>());
-  m_descTable        = std::exchange(og.m_descTable,false);
-  m_simpleTable      = std::exchange(og.m_simpleTable,false);
-  m_inLevel          = std::exchange(og.m_inLevel,-1);
-  m_firstMember      = std::exchange(og.m_firstMember,false);
-  m_openSectionCount = std::exchange(og.m_openSectionCount,0);
-}
-
-DocbookGenerator::~DocbookGenerator()
-{
-}
+DocbookGenerator::~DocbookGenerator() = default;
 
 void DocbookGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(DocbookCodeGeneratorDefer(m_codeGen)));
+  list.add<DocbookCodeGeneratorDefer>(m_codeGen);
 }
 
 void DocbookGenerator::init()
@@ -393,7 +373,7 @@ DB_GEN_C
   m_codeGen->setSourceFileName(stripPath(fileName));
   m_pageLinks = QCString();
 
-  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
+  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
   m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
   if (!pageName.isEmpty()) m_t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
   m_t << " xml:lang=\"" << theTranslator->trISOLang() << "\"";
@@ -632,7 +612,7 @@ DB_GEN_C2("IndexSection " << is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
+              cd->templateMaster()==nullptr &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )
@@ -936,6 +916,10 @@ void DocbookGenerator::endDoxyAnchor(const QCString &,const QCString &)
 {
 DB_GEN_C
 }
+void DocbookGenerator::addLabel(const QCString &,const QCString &)
+{
+DB_GEN_C
+}
 void DocbookGenerator::startMemberDocName(bool)
 {
 DB_GEN_C
@@ -1054,19 +1038,46 @@ DB_GEN_C
   }
   m_t << " ";
 }
+
 void DocbookGenerator::startParameterName(bool)
 {
 DB_GEN_C
   m_t << " ";
 }
-void DocbookGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
+
+void DocbookGenerator::endParameterName()
 {
 DB_GEN_C
-  if (last)
+}
+
+void DocbookGenerator::startParameterExtra()
+{
+DB_GEN_C
+}
+
+void DocbookGenerator::endParameterExtra(bool last,bool /*emptyList*/,bool closeBracket)
+{
+DB_GEN_C
+  if (last && closeBracket)
   {
-    if (closeBracket) m_t << ")";
+    m_t << ")";
   }
 }
+
+
+void DocbookGenerator::startParameterDefVal(const char *sep)
+{
+DB_GEN_C
+  m_t << sep;
+  if (!m_denseText) m_t << "<computeroutput>";
+}
+
+void DocbookGenerator::endParameterDefVal()
+{
+DB_GEN_C
+  if (!m_denseText) m_t << "</computeroutput>\n";
+}
+
 void DocbookGenerator::startMemberTemplateParams()
 {
 DB_GEN_C
@@ -1099,7 +1110,7 @@ DB_GEN_C
 void DocbookGenerator::startMemberDocSimple(bool isEnum)
 {
 DB_GEN_C
-  int ncols;
+  int ncols=0;
   QCString title;
   if (isEnum)
   {
@@ -1367,26 +1378,26 @@ void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalT
   {
     m_t << "    <toc>\n";
     m_t << "    <title>" << theTranslator->trRTFTableOfContents() << "</title>\n";
-    int level=1,l;
+    int level=1;
     int maxLevel = localToc.docbookLevel();
     BoolVector inLi(maxLevel+1,false);
     for (const SectionInfo *si : sectionRefs)
     {
       SectionType type = si->type();
-      if (isSection(type))
+      if (type.isSection())
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = static_cast<int>(type);
+        int nextLevel = type.level();
         if (nextLevel>level)
         {
-          for (l=level;l<nextLevel;l++)
+          for (int l=level;l<nextLevel;l++)
           {
             if (l < maxLevel) m_t << "    <tocdiv>\n";
           }
         }
         else if (nextLevel<level)
         {
-          for (l=level;l>nextLevel;l--)
+          for (int l=level;l>nextLevel;l--)
           {
             inLi[l]=FALSE;
             if (l <= maxLevel) m_t << "    </tocdiv>\n";
@@ -1423,10 +1434,10 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
-  const char *q;
-  int cnt;
-  const char *p=s.data();
-  char c;
+  const char *p = s.data();
+  const char *q = nullptr;
+  int cnt = 0;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)

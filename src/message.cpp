@@ -145,7 +145,10 @@ static void format_warn(const QCString &file,int line,const QCString &text)
   }
   if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {
-    Doxygen::terminating=true;
+    if (g_warnFile != stderr && !Config_getBool(QUIET))
+    {
+      msg("See '%s' for the reason of termination.\n",qPrint(g_warnlogFile));
+    }
     exit(1);
   }
   g_warnStat = true;
@@ -159,8 +162,12 @@ static void handle_warn_as_error()
       std::unique_lock<std::mutex> lock(g_mutex);
       QCString msgText = " (warning treated as error, aborting now)\n";
       fwrite(msgText.data(),1,msgText.length(),g_warnFile);
+      if (g_warnFile != stderr && !Config_getBool(QUIET))
+      {
+        // cannot use `msg` due to the mutex
+        fprintf(stdout,"See '%s' for the reason of termination.\n",qPrint(g_warnlogFile));
+      }
     }
-    Doxygen::terminating=true;
     exit(1);
   }
   g_warnStat = true;
@@ -182,14 +189,14 @@ static void do_warn(bool enabled, const QCString &file, int line, const char *pr
   // format + arguments
   // prefix
   // 1 position for `\0`
-  size_t bufSize = vsnprintf(NULL, 0, fmt, args) + l + 1;
-  QCString text(bufSize);
+  size_t bufSize = vsnprintf(nullptr, 0, fmt, args) + l;
+  QCString text(bufSize, QCString::ExplicitSize);
   if (prefix)
   {
     qstrncpy(text.rawData(),prefix,bufSize);
   }
-  vsnprintf(text.rawData()+l, bufSize-l, fmt, argsCopy);
-  text[static_cast<int>(bufSize)-1]='\0';
+  vsnprintf(text.rawData()+l, bufSize-l+1, fmt, argsCopy);
+  text[bufSize]='\0';
   format_warn(file,line,text);
 
   va_end(argsCopy);
@@ -283,9 +290,13 @@ void term_(const char *fmt, ...)
       size_t l = strlen(g_errorStr);
       for (size_t i=0; i<l; i++) fprintf(g_warnFile, " ");
       fprintf(g_warnFile, "%s\n", "Exiting...");
+      if (!Config_getBool(QUIET))
+      {
+        // cannot use `msg` due to the mutex
+        fprintf(stdout,"See '%s' for the reason of termination.\n",qPrint(g_warnlogFile));
+      }
     }
   }
-  Doxygen::terminating=true;
   exit(1);
 }
 
@@ -329,7 +340,6 @@ extern void finishWarnExit()
   if (g_warnStat && (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS ||
                      g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT))
   {
-    Doxygen::terminating=true;
     exit(1);
   }
 }

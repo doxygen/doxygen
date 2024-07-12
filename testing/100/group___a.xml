@@ -9,7 +9,7 @@
       <memberdef kind="enum" id="group___a_1gaa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no" strong="no">
         <type/>
         <name>E</name>
-        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aac7b0fd14a12d3b1941ee5f10c795c648" prot="public">
+        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa42a4ade1acd55a49164099104990e09f" prot="public">
           <name>A</name>
           <briefdescription>
             <para>A in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
@@ -18,7 +18,7 @@
             <para>More for A in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
           </detaileddescription>
         </enumvalue>
-        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa1d5389f0fe7d7497267c2a70ae6a4881" prot="public">
+        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa3f2a77ecd272aa6d6b5902faa5e5fc68" prot="public">
           <name>B</name>
           <briefdescription>
             <para>B in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
@@ -35,13 +35,13 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="22" column="1" bodyfile="100_a.c" bodystart="22" bodyend="32"/>
+        <location file="100_a.c" line="24" column="1" bodyfile="100_a.c" bodystart="24" bodyend="34"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="typedef">
-      <memberdef kind="typedef" id="group___a_1ga4ed70e44cd9d80a2082e1ae033eb7fc3" prot="public" static="no">
+      <memberdef kind="typedef" id="group___a_1ga5a6fd16639bb7ebdbd75952dc246cf51" prot="public" static="no">
         <type>struct <ref refid="structs" kindref="compound">s</ref></type>
-        <definition>struct s T</definition>
+        <definition>typedef struct s T</definition>
         <argsstring/>
         <name>T</name>
         <briefdescription>
@@ -52,13 +52,13 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="72" column="16" bodyfile="100_a.c" bodystart="72" bodyend="-1"/>
+        <location file="100_a.c" line="74" column="16" bodyfile="100_a.c" bodystart="74" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="group___a_1ga7e98b8a17c0aad30ba64d47b74e2a6c1" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="group___a_1gacb559820d9ca11295b4500f179ef6392" prot="public" static="no" mutable="no">
         <type>int</type>
-        <definition>i</definition>
+        <definition>int i</definition>
         <argsstring/>
         <name>i</name>
         <briefdescription>
@@ -69,11 +69,11 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="79" column="5" bodyfile="100_a.c" bodystart="79" bodyend="-1"/>
+        <location file="100_a.c" line="81" column="5" bodyfile="100_a.c" bodystart="81" bodyend="-1"/>
       </memberdef>
-      <memberdef kind="variable" id="group___a_1gabf2bc2545a4a5f5683d9ef3ed0d977e0" prot="public" static="yes" mutable="no">
+      <memberdef kind="variable" id="group___a_1ga37d972ae0b47b9099e30983131d31916" prot="public" static="yes" mutable="no">
         <type>int</type>
-        <definition>j</definition>
+        <definition>int j</definition>
         <argsstring/>
         <name>j</name>
         <briefdescription>
@@ -84,7 +84,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="86" column="12" bodyfile="100_a.c" bodystart="86" bodyend="-1"/>
+        <location file="100_a.c" line="88" column="12" bodyfile="100_a.c" bodystart="88" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
@@ -104,7 +104,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="46" column="13" bodyfile="100_a.c" bodystart="46" bodyend="46"/>
+        <location file="100_a.c" line="48" column="13" bodyfile="100_a.c" bodystart="48" bodyend="48"/>
       </memberdef>
       <memberdef kind="function" id="group___a_1ga5806fbe7d2114068e8085236b6f8098d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -122,7 +122,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="53" column="6" bodyfile="100_a.c" bodystart="53" bodyend="53"/>
+        <location file="100_a.c" line="55" column="6" bodyfile="100_a.c" bodystart="55" bodyend="55"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="define">
@@ -137,7 +137,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="39" column="9" bodyfile="100_a.c" bodystart="39" bodyend="-1"/>
+        <location file="100_a.c" line="41" column="9" bodyfile="100_a.c" bodystart="41" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

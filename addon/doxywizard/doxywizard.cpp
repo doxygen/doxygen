@@ -79,6 +79,10 @@ MainWindow::MainWindow()
                   this,SLOT(makeDefaults()));
   m_clearRecent = settings->addAction(tr("Clear recent list"),
                   this,SLOT(clearRecent()));
+  settings->addSeparator();
+  m_runMenu = settings->addAction(tr("Run doxygen"),
+                  this,SLOT(runDoxygenMenu()),Qt::CTRL|Qt::Key_R);
+  m_runMenu->setEnabled(false);
 
   QMenu *help = menuBar()->addMenu(tr("Help"));
   help->addAction(tr("Online manual"),
@@ -104,8 +108,8 @@ MainWindow::MainWindow()
   dirLayout->addWidget(m_selWorkingDir);
 
   //------------- bottom part --------------
-  QWidget *runTab = new QWidget;
-  QVBoxLayout *runTabLayout = new QVBoxLayout(runTab);
+  m_runTab = new QWidget;
+  QVBoxLayout *runTabLayout = new QVBoxLayout(m_runTab);
 
   // run doxygen
   QHBoxLayout *runLayout = new QHBoxLayout;
@@ -171,7 +175,7 @@ MainWindow::MainWindow()
   m_tabs = new QTabWidget;
   m_tabs->addTab(m_wizard,tr("Wizard"));
   m_tabs->addTab(m_expert,tr("Expert"));
-  m_tabs->addTab(runTab,tr("Run"));
+  m_tabs->addTab(m_runTab,tr("Run"));
 
   rowLayout->addWidget(new QLabel(tr("Specify the working directory from which doxygen will run")));
   rowLayout->addLayout(dirLayout);
@@ -236,9 +240,10 @@ void MainWindow::quit()
 
 void MainWindow::setWorkingDir(const QString &dirName)
 {
-    QDir::setCurrent(dirName);
-    m_workingDir->setText(dirName);
-    m_run->setEnabled(!dirName.isEmpty());
+  QDir::setCurrent(dirName);
+  m_workingDir->setText(dirName);
+  m_run->setEnabled(!dirName.isEmpty());
+  m_runMenu->setEnabled(!dirName.isEmpty());
 }
 
 void MainWindow::selectWorkingDir()
@@ -266,7 +271,7 @@ void MainWindow::about()
   QString msg;
   QTextStream t(&msg,QIODevice::WriteOnly);
   t << QString::fromLatin1("<qt><center>A tool to configure and run doxygen version ")+
-       QString::fromLatin1(getDoxygenVersion())+
+       QString::fromLatin1(getDoxygenVersion().c_str())+
        QString::fromLatin1(" on your source files.</center>")+
        QString::fromLatin1("<center>(Created with Qt version  ")+
        QString::fromLatin1(QT_VERSION_STR);
@@ -522,6 +527,12 @@ void MainWindow::openRecent(QAction *action)
   }
 }
 
+void MainWindow::runDoxygenMenu()
+{
+  m_tabs->setCurrentWidget(m_runTab);
+  runDoxygen();
+}
+
 void MainWindow::runDoxygen()
 {
   if (!m_running)
@@ -588,6 +599,7 @@ void MainWindow::runDoxygen()
       m_saveLog->setEnabled(false);
       m_running=true;
       m_run->setText(tr("Stop doxygen"));
+      m_runMenu->setEnabled(false);
       m_runStatus->setText(tr("Status: running"));
       m_timer->start(1000);
     }
@@ -649,6 +661,7 @@ void MainWindow::runComplete()
   m_run->setText(tr("Run doxygen"));
   m_runStatus->setText(tr("Status: not running"));
   m_running=false;
+  m_runMenu->setEnabled(true);
   updateLaunchButtonState();
   //updateRunnable(m_workingDir->text());
   m_saveLog->setEnabled(true);
@@ -669,7 +682,7 @@ void MainWindow::showHtmlOutput()
   // TODO: the following doesn't seem to work with IE
 #ifdef _WIN32
   //QString indexUrl(QString::fromLatin1("file:///"));
-  ShellExecute(NULL, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
+  ShellExecute(nullptr, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), nullptr, nullptr, SW_SHOWNORMAL);
 #else
   QString indexUrl(QString::fromLatin1("file://"));
   indexUrl+=fi.absoluteFilePath();
@@ -693,7 +706,7 @@ void MainWindow::saveLog()
     }
     else
     {
-      QMessageBox::warning(0,tr("Warning"),
+      QMessageBox::warning(nullptr,tr("Warning"),
           tr("Cannot open file ")+fn+tr(" for writing. Nothing saved!"),tr("ok"));
     }
   }
@@ -794,6 +807,14 @@ void MainWindow::outputLogFinish()
 //-----------------------------------------------------------------------
 int main(int argc,char **argv)
 {
+  static const char ENV_VAR_QT_DEVICE_PIXEL_RATIO[] = "QT_DEVICE_PIXEL_RATIO";
+  if (!qEnvironmentVariableIsSet(ENV_VAR_QT_DEVICE_PIXEL_RATIO)
+        && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
+        && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
+        && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+  }
+
   QApplication a(argc,argv);
   int locArgc = argc;
 
@@ -811,11 +832,11 @@ int main(int argc,char **argv)
       QMessageBox msgBox;
       if (!qstrcmp(qVersion(),QT_VERSION_STR))
       {
-        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: %2").arg(QString::fromLatin1(getFullVersion()),QString::fromLatin1(QT_VERSION_STR)));
+        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: %2").arg(QString::fromLatin1(getFullVersion().c_str()),QString::fromLatin1(QT_VERSION_STR)));
       }
       else
       {
-        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: created with %2, running with %3").arg(QString::fromLatin1(getFullVersion()),QString::fromLatin1(QT_VERSION_STR),QString::fromLatin1(qVersion())));
+        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: created with %2, running with %3").arg(QString::fromLatin1(getFullVersion().c_str()),QString::fromLatin1(QT_VERSION_STR),QString::fromLatin1(qVersion())));
       }
       msgBox.exec();
       exit(0);

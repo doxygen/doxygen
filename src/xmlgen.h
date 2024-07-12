@@ -17,33 +17,33 @@
 
 class TextStream;
 
-class XMLCodeGenerator
+class XMLCodeGenerator : public OutputCodeIntf
 {
   public:
     XMLCodeGenerator(TextStream *t);
-   ~XMLCodeGenerator();
 
-    OutputType type() const { return OutputType::XML; }
+    OutputType type() const override { return OutputType::XML; }
 
-    void codify(const QCString &text);
+    void codify(const QCString &text) override;
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<XMLCodeGenerator>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip);
+                       const QCString &tooltip) override;
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
-                     );
-    void startCodeLine(bool);
-    void endCodeLine();
-    void startFontClass(const QCString &colorClass);
-    void endFontClass();
-    void writeCodeAnchor(const QCString &);
+                     ) override;
+    void startCodeLine(int) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &colorClass) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &) override;
     void writeLineNumber(const QCString &extRef,const QCString &compId,
-                         const QCString &anchorId,int l,bool writeLineAnchor);
-    void startCodeFragment(const QCString &);
-    void endCodeFragment(const QCString &);
-    void startFold(int,const QCString &,const QCString &) {}
-    void endFold() {}
+                         const QCString &anchorId,int l,bool writeLineAnchor) override;
+    void startCodeFragment(const QCString &) override;
+    void endCodeFragment(const QCString &) override;
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     void finish();
 
@@ -53,7 +53,7 @@ class XMLCodeGenerator
     QCString m_external;
     int m_lineNumber;
     bool m_isMemberRef;
-    int m_col;
+    size_t m_col;
 
     bool m_insideCodeLine;
     bool m_normalHLNeedStartTag;

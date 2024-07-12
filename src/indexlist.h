@@ -20,37 +20,39 @@
 #include <vector>
 #include <memory>
 #include <mutex>
-#include <variant>
 
 #include "qcstring.h"
-#include "dispatcher.h"
-
-#include "docsets.h"
-#include "eclipsehelp.h"
-#include "ftvhelp.h"
-#include "htmlhelp.h"
-#include "qhp.h"
-#include "sitemap.h"
+#include "construct.h"
 
 class Definition;
 class MemberDef;
 class OutputList;
 
-/** Namespace containing typed wrappers to refer to member functions for each method of the indices using a fixed `method` static variable.
- *  Based on this idea https://stackoverflow.com/a/71357544/784672
- */
-namespace IndexIntf
+/** Abstract interface for index generators. */
+class IndexIntf
 {
-  template <class T> struct initialize        { static constexpr auto method = &T::initialize;        };
-  template <class T> struct finalize          { static constexpr auto method = &T::finalize;          };
-  template <class T> struct incContentsDepth  { static constexpr auto method = &T::incContentsDepth;  };
-  template <class T> struct decContentsDepth  { static constexpr auto method = &T::decContentsDepth;  };
-  template <class T> struct addContentsItem   { static constexpr auto method = &T::addContentsItem;   };
-  template <class T> struct addIndexItem      { static constexpr auto method = &T::addIndexItem;      };
-  template <class T> struct addIndexFile      { static constexpr auto method = &T::addIndexFile;      };
-  template <class T> struct addImageFile      { static constexpr auto method = &T::addImageFile;      };
-  template <class T> struct addStyleSheetFile { static constexpr auto method = &T::addStyleSheetFile; };
-}
+  public:
+    ABSTRACT_BASE_CLASS(IndexIntf)
+
+    virtual void initialize() = 0;
+    virtual void finalize() = 0;
+    virtual void incContentsDepth() = 0;
+    virtual void decContentsDepth() = 0;
+    virtual void addContentsItem(bool isDir,
+                         const QCString &name,
+                         const QCString &ref,
+                         const QCString &file,
+                         const QCString &anchor,
+                         bool separateIndex,
+                         bool addToNavIndex,
+                         const Definition *def
+                        ) = 0;
+    virtual void addIndexItem(const Definition *context,const MemberDef *md,
+                      const QCString &sectionAnchor,const QCString &title) = 0;
+    virtual void addIndexFile(const QCString &name) = 0;
+    virtual void addImageFile(const QCString &) = 0;
+    virtual void addStyleSheetFile(const QCString &) = 0;
+};
 
 /** \brief A list of index interfaces.
  *
@@ -59,23 +61,24 @@ namespace IndexIntf
  */
 class IndexList
 {
-    using IndexVariant = std::variant<DocSets, EclipseHelp, FTVHelp, HtmlHelp, Qhp, Sitemap>;
+    using IndexPtr = std::unique_ptr<IndexIntf>;
 
-    template<template <class> class IndexT, class... As>
-    void foreach(As&&... args)
+    template<class... Ts,class... As>
+    void foreach(void (IndexIntf::*methodPtr)(Ts...),As&&... args)
     {
-      for (auto &v : m_indices)
+      for (const auto &intf : m_indices)
       {
-        dispatch_call<IndexT>(v,std::forward<As>(args)...);
+        (intf.get()->*methodPtr)(std::forward<As>(args)...);
       }
     }
-    template<template <class> class IndexT, class... As>
-    void foreach_locked(As&&... args)
+
+    template<class... Ts,class... As>
+    void foreach_locked(void (IndexIntf::*methodPtr)(Ts...),As&&... args)
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      for (auto &v : m_indices)
+      for (const auto &intf : m_indices)
       {
-        dispatch_call<IndexT>(v,std::forward<As>(args)...);
+        (intf.get()->*methodPtr)(std::forward<As>(args)...);
       }
     }
 
@@ -95,41 +98,41 @@ class IndexList
     /** Add an index generator to the list, using a syntax similar to std::make_unique<T>() */
     template<class T,class... As>
     void addIndex(As&&... args)
-    { m_indices.push_back(std::move(T{std::forward<As>(args)...})); }
+    { m_indices.push_back(std::make_unique<T>(std::forward<As>(args)...)); }
 
     void initialize()
-    { foreach<IndexIntf::initialize>(); }
+    { foreach(&IndexIntf::initialize); }
 
     void finalize()
-    { foreach<IndexIntf::finalize>(); }
+    { foreach(&IndexIntf::finalize); }
 
     void incContentsDepth()
-    { if (m_enabled) foreach_locked<IndexIntf::incContentsDepth>(); }
+    { if (m_enabled) foreach_locked(&IndexIntf::incContentsDepth); }
 
     void decContentsDepth()
-    { if (m_enabled) foreach_locked<IndexIntf::decContentsDepth>(); }
+    { if (m_enabled) foreach_locked(&IndexIntf::decContentsDepth); }
 
     void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
                          const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
-                         const Definition *def=0)
-    { if (m_enabled) foreach_locked<IndexIntf::addContentsItem>(isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
+                         const Definition *def=nullptr)
+    { if (m_enabled) foreach_locked(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
 
     void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())
-    { if (m_enabled) foreach_locked<IndexIntf::addIndexItem>(context,md,sectionAnchor,title); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
 
     void addIndexFile(const QCString &name)
-    { if (m_enabled) foreach_locked<IndexIntf::addIndexFile>(name); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addIndexFile,name); }
 
     void addImageFile(const QCString &name)
-    { if (m_enabled) foreach_locked<IndexIntf::addImageFile>(name); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addImageFile,name); }
 
     void addStyleSheetFile(const QCString &name)
-    { if (m_enabled) foreach_locked<IndexIntf::addStyleSheetFile>(name); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addStyleSheetFile,name); }
 
   private:
     bool m_enabled = true;
     std::mutex m_mutex;
-    std::vector<IndexVariant> m_indices;
+    std::vector<IndexPtr> m_indices;
 };
 
 #endif // INDEXLIST_H

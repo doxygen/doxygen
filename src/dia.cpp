@@ -68,12 +68,16 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   }
   if ( (format==DIA_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
-    QCString epstopdfArgs(maxCmdLine);
+    QCString epstopdfArgs(maxCmdLine, QCString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(outFile),qPrint(outFile));
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err("Problems running epstopdf. Check your TeX installation!\n");
+    }
+    else
+    {
+      Dir().remove(outFile.str()+".eps");
     }
   }
 

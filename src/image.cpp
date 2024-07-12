@@ -166,7 +166,7 @@ struct Image::Private
     { 0xa7, 0x38, 0x30, 0xff },
     { 0x29, 0x70, 0x18, 0xff },
     { 0x97, 0xCC, 0xE8, 0xff },
-    { 0xc0, 0xc0, 0xc0, 0xff },
+    { 0xe0, 0xe0, 0xe0, 0xff },
     { 0xff, 0xff, 0xff, 0xff }
   };
 };
@@ -177,8 +177,8 @@ Image::Image(uint32_t w,uint32_t h) : p(std::make_unique<Private>())
   int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
   int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
 
-  double red1,green1,blue1;
-  double red2,green2,blue2;
+  double red1=0.0 ,green1=0.0 ,blue1=0.0;
+  double red2=0.0, green2=0.0, blue2=0.0;
 
   ColoredImage::hsl2rgb(hue/360.0,                  // hue
                         sat/255.0,                  // saturation
@@ -224,11 +224,11 @@ void Image::writeChar(uint32_t x,uint32_t y,char c,uint8_t fg)
 {
   if (c>=' ')
   {
-    uint32_t xf,yf,ci=c-' ';
+    uint32_t ci=c-' ';
     uint32_t rowOffset=0;
     uint32_t cw = charWidth[ci];
     uint32_t cp = charPos[ci];
-    for (yf=0;yf<charHeight;yf++)
+    for (uint32_t yf=0;yf<charHeight;yf++)
     {
       unsigned short bitPattern=0;
       uint32_t bitsLeft=cw;
@@ -249,7 +249,7 @@ void Image::writeChar(uint32_t x,uint32_t y,char c,uint8_t fg)
       {
         uint32_t mask=(uint32_t)1<<(cw-1);
         // draw character row yf
-        for (xf=0;xf<cw;xf++)
+        for (uint32_t xf=0;xf<cw;xf++)
         {
           setPixel(x+xf,y+yf,(bitPattern&mask) ? fg : getPixel(x+xf,y+yf));
           mask>>=1;
@@ -265,7 +265,7 @@ void Image::writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg)
   if (!s.isEmpty())
   {
     const char *ps = s.data();
-    char c;
+    char c = 0;
     while ((c=*ps++))
     {
       writeChar(x,y,c,fg);
@@ -280,7 +280,7 @@ uint32_t Image::stringLength(const QCString &s)
   if (!s.isEmpty())
   {
     const char *ps = s.data();
-    char c;
+    char c = 0;
     while ((c=*ps++)) w+=charWidth[c-' '];
   }
   return w;
@@ -288,8 +288,8 @@ uint32_t Image::stringLength(const QCString &s)
 
 void Image::drawHorzLine(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask)
 {
-  uint32_t x,i=0,j=0;
-  for (x=xs;x<=xe;x++,j++)
+  uint32_t i=0,j=0;
+  for (uint32_t x=xs;x<=xe;x++,j++)
   {
     if (j&1) i++;
     if (mask&(1<<(i&0x1f))) setPixel(x,y,colIndex);
@@ -299,8 +299,7 @@ void Image::drawHorzLine(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uin
 void Image::drawHorzArrow(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask)
 {
   drawHorzLine(y,xs,xe,colIndex,mask);
-  uint32_t i;
-  for (i=0;i<6;i++)
+  for (uint32_t i=0;i<6;i++)
   {
     uint32_t h=i>>1;
     drawVertLine(xe-i,y-h,y+h,colIndex,0xffffffff);
@@ -309,8 +308,8 @@ void Image::drawHorzArrow(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,ui
 
 void Image::drawVertLine(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask)
 {
-  uint32_t y,i=0;
-  for (y=ys;y<=ye;y++,i++)
+  uint32_t i=0;
+  for (uint32_t y=ys;y<=ye;y++,i++)
   {
     if (mask&(1<<(i&0x1f))) setPixel(x,y,colIndex);
   }
@@ -319,8 +318,7 @@ void Image::drawVertLine(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uin
 void Image::drawVertArrow(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask)
 {
   drawVertLine(x,ys,ye,colIndex,mask);
-  uint32_t i;
-  for (i=0;i<6;i++)
+  for (uint32_t i=0;i<6;i++)
   {
     uint32_t h=i>>1;
     drawHorzLine(ys+i,x-h,x+h,colIndex,0xffffffff);
@@ -337,17 +335,18 @@ void Image::drawRect(uint32_t x,uint32_t y,uint32_t w,uint32_t h,uint8_t colInde
 
 void Image::fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_t colIndex,uint32_t mask)
 {
-  uint32_t xp,yp,xi,yi;
-  for (yp=y,yi=0;yp<y+height;yp++,yi++)
-    for (xp=x,xi=0;xp<x+width;xp++,xi++)
+  for (uint32_t yp=y,yi=0;yp<y+height;yp++,yi++)
+    for (uint32_t xp=x,xi=0;xp<x+width;xp++,xi++)
       if (mask&(1<<((xi+yi)&0x1f)))
         setPixel(xp,yp,colIndex);
+      else
+        setPixel(xp,yp,8);
 }
 
 bool Image::save(const QCString &fileName)
 {
-  uint8_t* buffer;
-  size_t bufferSize;
+  uint8_t* buffer = nullptr;
+  size_t bufferSize = 0;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);
   for (const auto &col : p->palette)
@@ -369,28 +368,20 @@ bool Image::save(const QCString &fileName)
 void ColoredImage::hsl2rgb(double h,double s,double l,
                          double *pRed,double *pGreen,double *pBlue)
 {
-  double v;
-  double r,g,b;
-
-  r = l;   // default to gray
-  g = l;
-  b = l;
-  v = (l <= 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
+  double r = l;   // default to gray
+  double g = l;
+  double b = l;
+  double v = (l <= 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
   if (v > 0)
   {
-    double m;
-    double sv;
-    int sextant;
-    double fract, vsf, mid1, mid2;
-
-    m       = l + l - v;
-    sv      = (v - m ) / v;
+    double m       = l + l - v;
+    double sv      = ( v - m ) / v;
     h      *= 6.0;
-    sextant = static_cast<int>(h);
-    fract   = h - sextant;
-    vsf     = v * sv * fract;
-    mid1    = m + vsf;
-    mid2    = v - vsf;
+    int sextant = static_cast<int>(h);
+    double fract   = h - sextant;
+    double vsf     = v * sv * fract;
+    double mid1    = m + vsf;
+    double mid2    = v - vsf;
     switch (sextant)
     {
       case 0:
@@ -442,23 +433,21 @@ ColoredImage::ColoredImage(uint32_t width,uint32_t height,
            const uint8_t *greyLevels,const uint8_t *alphaLevels,
            int saturation,int hue,int gamma) : p(std::make_unique<Private>())
 {
-  p->hasAlpha = alphaLevels!=0;
+  p->hasAlpha = alphaLevels!=nullptr;
   p->width    = width;
   p->height   = height;
   p->data.resize(width*height*4);
-  uint32_t i;
-  for (i=0;i<width*height;i++)
+  for (uint32_t i=0;i<width*height;i++)
   {
-    Byte r,g,b,a;
-    double red,green,blue;
+    double red=0.0, green=0.0, blue=0.0;
     hsl2rgb(hue/360.0,                            // hue
             saturation/255.0,                     // saturation
             pow(greyLevels[i]/255.0,gamma/100.0), // luma (gamma corrected)
             &red,&green,&blue);
-    r = static_cast<Byte>(red  *255.0);
-    g = static_cast<Byte>(green*255.0);
-    b = static_cast<Byte>(blue *255.0);
-    a = alphaLevels ? alphaLevels[i] : 255;
+    Byte r = static_cast<Byte>(red  *255.0);
+    Byte g = static_cast<Byte>(green*255.0);
+    Byte b = static_cast<Byte>(blue *255.0);
+    Byte a = alphaLevels ? alphaLevels[i] : 255;
     p->data[i*4+0]=r;
     p->data[i*4+1]=g;
     p->data[i*4+2]=b;
@@ -470,8 +459,8 @@ ColoredImage::~ColoredImage() = default;
 
 bool ColoredImage::save(const QCString &fileName)
 {
-  uint8_t *buffer;
-  size_t bufferSize;
+  uint8_t *buffer = nullptr;
+  size_t bufferSize = 0;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);
   encoder.infoPng.color.colorType = p->hasAlpha ? 6 : 2; // 2=RGB 24 bit, 6=RGBA 32 bit

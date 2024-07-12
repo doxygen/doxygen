@@ -22,6 +22,7 @@
 
 #include "qcstring.h"
 #include "linkedmap.h"
+#include "construct.h"
 
 class Definition;
 class RefList;
@@ -62,7 +63,7 @@ class RefItem
     QCString m_title;          //!< display name of the entity
     QCString m_args;           //!< optional arguments for the entity (if function)
     QCString m_group;          //!< group id used to combine item under a single header
-    const Definition *m_scope = 0;   //!< scope to use for references.
+    const Definition *m_scope = nullptr;   //!< scope to use for references.
 };
 
 /** List of cross-referenced items
@@ -124,9 +125,9 @@ class RefListManager : public LinkedMap<RefList>
     }
 
   private:
-    RefListManager() {}
-    RefListManager(const RefListManager &other) = delete;
-    RefListManager &operator=(const RefListManager &other) = delete;
+    RefListManager() = default;
+   ~RefListManager() = default;
+    NON_COPYABLE(RefListManager)
 };
 
 using RefItemVector = std::vector<RefItem*>;

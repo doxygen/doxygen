@@ -56,10 +56,10 @@ static EntryList g_instFiles;
 
 struct VHDLOutlineParser::Private
 {
-  void parseVhdlfile(const QCString &fileName,const char* inputBuffer,bool inLine);
+  void parseVhdlfile(const QCString &fileName,const QCString &inputBuffer,bool inLine);
 
-  VHDLOutlineParser      *thisParser = 0;
-  VhdlParser             *vhdlParser = 0;
+  VHDLOutlineParser      *thisParser = nullptr;
+  VhdlParser             *vhdlParser = nullptr;
   CommentScanner          commentScanner;
 
   QCString                yyFileName;
@@ -67,11 +67,11 @@ struct VHDLOutlineParser::Private
   IntVector               lineParse;
   int                     iDocLine      = -1;
   QCString                inputString;
-  Entry*                  gBlock        = 0;
-  Entry*                  previous      = 0;
+  Entry*                  gBlock        = nullptr;
+  Entry*                  previous      = nullptr;
 //-------------------------------------------------------
 
-  Entry*                  oldEntry = 0;
+  Entry*                  oldEntry = nullptr;
   bool                    varr = FALSE;
   QCString                varName;
   EntryList               libUse;
@@ -86,7 +86,7 @@ struct VHDLOutlineParser::Private
 };
 
 void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
-                                               const char* inputBuffer,bool inLine)
+                                               const QCString &inputBuffer,bool inLine)
 {
   QCString s =inputBuffer;
   CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(s.data()), (int)s.size(), 1, 1);
@@ -161,10 +161,9 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
   }
   p->yyLineNr=1;
   s->current_root=root;
-  s->lastCompound=0;
-  s->lastEntity=0;
-  s->lastEntity=0;
-  p->oldEntry = 0;
+  s->lastCompound=nullptr;
+  s->lastEntity=nullptr;
+  p->oldEntry = nullptr;
   s->current=std::make_shared<Entry>();
   initEntry(s->current.get());
   p->commentScanner.enterFile(fileName,p->yyLineNr);
@@ -177,7 +176,7 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
   if (!inLine)
   mapLibPackage(root.get());
 
-  p->yyFileName.resize(0);
+  p->yyFileName.clear();
   p->libUse.clear();
 }
 
@@ -200,11 +199,11 @@ void VHDLOutlineParser::lineCount(const QCString &text)
 void VHDLOutlineParser::initEntry(Entry *e)
 {
   e->fileName = p->yyFileName;
-  e->lang     = SrcLangExt_VHDL;
+  e->lang     = SrcLangExt::VHDL;
   if (p->str_doc.pending)
   {
     p->str_doc.pending=FALSE;
-    p->oldEntry=0; // prevents endless recursion
+    p->oldEntry=nullptr; // prevents endless recursion
     p->iDocLine=p->str_doc.iDocLine;
     handleCommentBlock(p->str_doc.doc,p->str_doc.brief);
     p->iDocLine=-1;
@@ -314,7 +313,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   p->code = findRe(p->inputString,csRe, p->code + 1);
   int com = p->inputString.find(p->strComment.data());
   int ref = findRe(p->inputString,cendRe, p->code + 1);
-  int len = p->strComment.size();
+  int len = static_cast<int>(p->strComment.size());
 
   int ll = com + len;
   int diff = ref - ll - 3;
@@ -362,7 +361,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   gBlock.vhdlSpec = VhdlSpecifier::MISCELLANEOUS;
   gBlock.fileName = p->yyFileName;
   gBlock.endBodyLine = p->yyLineNr + val +iLine;
-  gBlock.lang = SrcLangExt_VHDL;
+  gBlock.lang = SrcLangExt::VHDL;
   std::shared_ptr<Entry> compound;
 
   if (s->lastEntity)
@@ -370,7 +369,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   else if (s->lastCompound)
     compound = s->lastCompound;
   else
-    compound = 0;
+    compound = nullptr;
 
   if (compound)
   {
@@ -381,7 +380,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
     gBlock.type = "misc"; // global code like library ieee...
     s->current_root->copyToSubEntry(&gBlock);
   }
-  p->strComment.resize(0);
+  p->strComment.clear();
   return 1;
 }
 
@@ -397,7 +396,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 
   if (checkMultiComment(doc, p->yyLineNr))
   {
-    p->strComment.resize(0);
+    p->strComment.clear();
     return;
   }
 
@@ -434,6 +433,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 
   Markdown markdown(p->yyFileName,p->iDocLine);
   int lineNr = p->iDocLine;
+  GuardedSectionStack guards;
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
 
    while (p->commentScanner.parseCommentBlock(
@@ -448,7 +448,9 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
       protection,
       position,
       needsEntry,
-      Config_getBool(MARKDOWN_SUPPORT)))
+      Config_getBool(MARKDOWN_SUPPORT),
+      &guards
+    ))
   {
     if (needsEntry)
       newEntry();
@@ -465,7 +467,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
     newEntry();
   }
   p->iDocLine = -1;
-  p->strComment.resize(0);
+  p->strComment.clear();
 }
 
 void VHDLOutlineParser::parsePrototype(const QCString &text)
@@ -474,7 +476,7 @@ void VHDLOutlineParser::parsePrototype(const QCString &text)
   p->varr=TRUE;
 }
 
-void VHDLOutlineParser::addCompInst(const char *n, const char* instName, const char* comp,int iLine)
+void VHDLOutlineParser::addCompInst(const QCString &n, const QCString &instName, const QCString &comp,int iLine)
 {
   VhdlParser::SharedState *s = &p->shared;
   s->current->vhdlSpec=VhdlSpecifier::INSTANTIATION;
@@ -516,8 +518,8 @@ void VHDLOutlineParser::addCompInst(const char *n, const char* instName, const c
   }
 }
 
-void VHDLOutlineParser::addVhdlType(const char *n,int startLine,EntryType section,
-    VhdlSpecifier spec,const char* args,const char* type,Protection prot)
+void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType section,
+    VhdlSpecifier spec,const QCString &args,const QCString &type,Protection prot)
 {
   VhdlParser::SharedState *s = &p->shared;
   QCString name(n);
@@ -629,8 +631,8 @@ QCString VHDLOutlineParser::popLabel(QCString & q)
 
 
 
-void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
-                          const char *s4,const char *s5,const char *s6)
+void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCString &s3,
+                                 const QCString &s4,const QCString &s5,const QCString &s6)
 {
   VhdlParser::SharedState *s = &p->shared;
   (void)s5; // avoid unused warning
@@ -641,13 +643,13 @@ void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
   {
     Argument arg;
     arg.name=n;
-    if (s3)
+    if (!s3.isEmpty())
     {
       arg.type=s3;
     }
     arg.type+=" ";
     arg.type+=s4;
-    if (s6)
+    if (!s6.isEmpty())
     {
       arg.type+=s6;
     }
@@ -852,7 +854,7 @@ void VHDLOutlineParser::error_skipto(int kind)
   {
     p->vhdlParser->getNextToken();  // step to next token
     op=p->vhdlParser->getToken(1);  // get first token
-    if (op==0) break;
+    if (op==nullptr) break;
     //fprintf(stderr,"\n %s",qPrint(t->image));
   } while (op->kind != kind);
   p->vhdlParser->clearError();

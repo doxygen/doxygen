@@ -114,13 +114,14 @@ ManCodeGenerator::ManCodeGenerator(TextStream *t) : m_t(t)
 
 void ManCodeGenerator::startCodeFragment(const QCString &)
 {
-  *m_t << ".PP\n";
+  *m_t << "\n";
   *m_t << ".nf\n";
 }
 
 void ManCodeGenerator::endCodeFragment(const QCString &)
 {
   if (m_col>0) *m_t << "\n";
+  *m_t << ".PP\n";
   *m_t << ".fi\n";
   m_col=0;
 }
@@ -162,19 +163,18 @@ void ManCodeGenerator::codify(const QCString &str)
   if (!str.isEmpty())
   {
     const char *p=str.data();
-    char c;
-    int spacesToNextTabStop;
     while (*p)
     {
-      c=*p++;
+      char c=*p++;
       switch(c)
       {
         case '-':  *m_t << "\\-"; break; // see  bug747780
         case '.':   *m_t << "\\&."; break; // see  bug652277
-        case '\t':  spacesToNextTabStop =
-                          Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
-                    *m_t << Doxygen::spaces.left(spacesToNextTabStop);
-                    m_col+=spacesToNextTabStop;
+        case '\t':  {
+                      int spacesToNextTabStop = Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
+                      *m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                      m_col+=spacesToNextTabStop;
+                    }
                     break;
         case '\n':  *m_t << "\n"; m_col=0; break;
         case '\\':  *m_t << "\\\\"; m_col++; break;
@@ -196,10 +196,10 @@ ManGenerator::ManGenerator()
   m_codeGen = m_codeList->add<ManCodeGenerator>(&m_t);
 }
 
-ManGenerator::ManGenerator(const ManGenerator &og) : OutputGenerator(og.m_dir)
+ManGenerator::ManGenerator(const ManGenerator &og) : OutputGenerator(og.m_dir), OutputGenIntf()
 {
   m_codeList = std::make_unique<OutputCodeList>(*og.m_codeList);
-  m_codeGen      = m_codeList->get<ManCodeGenerator>();
+  m_codeGen      = m_codeList->get<ManCodeGenerator>(OutputType::Man);
   m_codeGen->setTextStream(&m_t);
   m_firstCol      = og.m_firstCol;
   m_col           = og.m_col;
@@ -215,7 +215,7 @@ ManGenerator &ManGenerator::operator=(const ManGenerator &og)
   {
     m_dir           = og.m_dir;
     m_codeList = std::make_unique<OutputCodeList>(*og.m_codeList);
-    m_codeGen       = m_codeList->get<ManCodeGenerator>();
+    m_codeGen       = m_codeList->get<ManCodeGenerator>(OutputType::Man);
     m_codeGen->setTextStream(&m_t);
     m_firstCol      = og.m_firstCol;
     m_col           = og.m_col;
@@ -227,27 +227,11 @@ ManGenerator &ManGenerator::operator=(const ManGenerator &og)
   return *this;
 }
 
-ManGenerator::ManGenerator(ManGenerator &&og)
-  : OutputGenerator(std::move(og))
-{
-  m_codeList      = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
-  m_codeGen       = m_codeList->get<ManCodeGenerator>();
-  m_codeGen->setTextStream(&m_t);
-  m_firstCol      = std::exchange(og.m_firstCol,true);
-  m_col           = std::exchange(og.m_col,0);
-  m_paragraph     = std::exchange(og.m_paragraph,true);
-  m_upperCase     = std::exchange(og.m_upperCase,false);
-  m_insideTabbing = std::exchange(og.m_insideTabbing,false);
-  m_inHeader      = std::exchange(og.m_inHeader,false);
-}
-
-ManGenerator::~ManGenerator()
-{
-}
+ManGenerator::~ManGenerator() = default;
 
 void ManGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(ManCodeGeneratorDefer(m_codeGen)));
+  list.add<ManCodeGeneratorDefer>(m_codeGen);
 }
 
 void ManGenerator::init()
@@ -280,7 +264,7 @@ static QCString buildFileName(const QCString &name)
   if (name.isEmpty()) return "noname";
 
   const char *p=name.data();
-  char c;
+  char c = 0;
   while ((c=*p++))
   {
     switch (c)
@@ -541,6 +525,10 @@ void ManGenerator::startDoxyAnchor(const QCString &,const QCString &manName,
     }
 }
 
+void ManGenerator::addLabel(const QCString &,const QCString &)
+{
+}
+
 void ManGenerator::endMemberDoc(bool)
 {
     m_t << "\"\n";
@@ -660,13 +648,15 @@ void ManGenerator::startSection(const QCString &,const QCString &,SectionType ty
 {
   if( !m_inHeader )
   {
-    switch(type)
+    switch(type.level())
     {
-      case SectionType::Page:          startGroupHeader(0); break;
-      case SectionType::Section:       startGroupHeader(0); break;
-      case SectionType::Subsection:    startMemberHeader(QCString(), -1); break;
-      case SectionType::Subsubsection: startMemberHeader(QCString(), -1); break;
-      case SectionType::Paragraph:     startMemberHeader(QCString(), -1); break;
+      case SectionType::Page:             // fall through
+      case SectionType::Section:          startGroupHeader(0); break;
+      case SectionType::Subsection:       // fall through
+      case SectionType::Subsubsection:    // fall through
+      case SectionType::Paragraph:        // fall through
+      case SectionType::Subparagraph:     // fall through
+      case SectionType::Subsubparagraph:  startMemberHeader(QCString(), -1); break;
       default: ASSERT(0); break;
     }
   }
@@ -676,13 +666,15 @@ void ManGenerator::endSection(const QCString &,SectionType type)
 {
   if( !m_inHeader )
   {
-    switch(type)
+    switch(type.level())
     {
-      case SectionType::Page:          endGroupHeader(0); break;
-      case SectionType::Section:       endGroupHeader(0); break;
-      case SectionType::Subsection:    endMemberHeader(); break;
-      case SectionType::Subsubsection: endMemberHeader(); break;
-      case SectionType::Paragraph:     endMemberHeader(); break;
+      case SectionType::Page:            // fall through
+      case SectionType::Section:         endGroupHeader(0); break;
+      case SectionType::Subsection:      // fall through
+      case SectionType::Subsubsection:   // fall through
+      case SectionType::Paragraph:       // fall through
+      case SectionType::Subparagraph:    // fall through
+      case SectionType::Subsubparagraph: endMemberHeader(); break;
       default: ASSERT(0); break;
     }
   }
@@ -875,7 +867,7 @@ void ManGenerator::startLabels()
 
 void ManGenerator::writeLabel(const QCString &l,bool isLast)
 {
-  m_t << "\\fC [" << l << "]\\fP";
+  m_t << "\\fR [" << l << "]\\fP";
   if (!isLast) m_t << ", ";
 }
 
@@ -895,5 +887,22 @@ void ManGenerator::writeInheritedSectionTitle(
   m_t << "\n\n";
   m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(name));
   m_firstCol = FALSE;
+}
+
+void ManGenerator::startParameterList(bool openBracket)
+{
+  if (openBracket) m_t << "(";
+}
+
+void ManGenerator::endParameterExtra(bool last,bool /* emptyList */, bool closeBracket)
+{
+  if (last && closeBracket)
+  {
+    m_t << ")";
+  }
+}
+void ManGenerator::endParameterType()
+{
+  m_t << " ";
 }
 

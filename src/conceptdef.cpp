@@ -33,41 +33,42 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
   public:
     ConceptDefImpl(const QCString &fileName,int startLine,int startColumn,
                    const QCString &name,const QCString &tagRef=QCString(),const QCString &tagFile=QCString());
-   ~ConceptDefImpl();
+   ~ConceptDefImpl() override;
+    NON_COPYABLE(ConceptDefImpl)
 
     ConceptDef *resolveAlias() { return this; }
 
     //---------- ConceptDef
-    virtual DefType definitionType() const override;
-    virtual CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Concept; }
-    virtual QCString getOutputFileBase() const override;
-    virtual bool hasDetailedDescription() const override;
-    virtual QCString displayName(bool includeScope=true) const override;
-    virtual const IncludeInfo *includeInfo() const override;
-    virtual ArgumentList getTemplateParameterList() const override;
-    virtual QCString anchor() const override;
-    virtual bool isLinkableInProject() const override;
-    virtual bool isLinkable() const override;
-    virtual QCString initializer() const override;
-    virtual void writeDeclarationLink(OutputList &ol,bool &found,
+    DefType definitionType() const override;
+    CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Concept; }
+    QCString getOutputFileBase() const override;
+    bool hasDetailedDescription() const override;
+    QCString displayName(bool includeScope=true) const override;
+    const IncludeInfo *includeInfo() const override;
+    ArgumentList getTemplateParameterList() const override;
+    QCString anchor() const override;
+    bool isLinkableInProject() const override;
+    bool isLinkable() const override;
+    QCString initializer() const override;
+    void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const override;
-    virtual const NamespaceDef *getNamespaceDef() const override;
-    virtual const FileDef *getFileDef() const override;
-    virtual const ModuleDef *getModuleDef() const override;
-    virtual QCString title() const override;
-    virtual int groupId() const override;
+    const NamespaceDef *getNamespaceDef() const override;
+    const FileDef *getFileDef() const override;
+    const ModuleDef *getModuleDef() const override;
+    QCString title() const override;
+    int groupId() const override;
 
     //---------- ConceptDefMutable
-    virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) override;
-    virtual void setTemplateArguments(const ArgumentList &al) override;
-    virtual void setNamespace(NamespaceDef *nd) override;
-    virtual void setFileDef(FileDef *fd) override;
-    virtual void setModuleDef(ModuleDef *mod) override;
-    virtual void writeTagFile(TextStream &) override;
-    virtual void writeDocumentation(OutputList &) override;
-    virtual void setInitializer(const QCString &init) override;
-    virtual void findSectionsInDocumentation() override;
-    virtual void setGroupId(int id) override;
+    void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) override;
+    void setTemplateArguments(const ArgumentList &al) override;
+    void setNamespace(NamespaceDef *nd) override;
+    void setFileDef(FileDef *fd) override;
+    void setModuleDef(ModuleDef *mod) override;
+    void writeTagFile(TextStream &) override;
+    void writeDocumentation(OutputList &) override;
+    void setInitializer(const QCString &init) override;
+    void findSectionsInDocumentation() override;
+    void setGroupId(int id) override;
 
     //---------- Helpers
     void writeBriefDescription(OutputList &) const;
@@ -80,9 +81,9 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
   private:
     QCString                     m_fileName;
     std::unique_ptr<IncludeInfo> m_incInfo;
-    NamespaceDef                *m_nspace = 0;
-    FileDef                     *m_fileDef = 0;
-    ModuleDef                   *m_moduleDef = 0;
+    NamespaceDef                *m_nspace = nullptr;
+    FileDef                     *m_fileDef = nullptr;
+    ModuleDef                   *m_moduleDef = nullptr;
     ArgumentList                 m_tArgList;
     QCString                     m_initializer;
     int                          m_groupId = -1;
@@ -102,48 +103,49 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
   public:
     ConceptDefAliasImpl(const Definition *newScope,const ConceptDef *cd)
       : DefinitionAliasMixin(newScope,cd) { init(); }
-    virtual ~ConceptDefAliasImpl() { deinit(); }
+    ~ConceptDefAliasImpl() override { deinit(); }
+    NON_COPYABLE(ConceptDefAliasImpl)
 
     const ConceptDef *getCdAlias() const { return toConceptDef(getAlias()); }
-    virtual ConceptDef *resolveAlias() { return const_cast<ConceptDef*>(getCdAlias()); }
+    ConceptDef *resolveAlias() { return const_cast<ConceptDef*>(getCdAlias()); }
 
-    virtual DefType definitionType() const { return TypeConcept; }
-    virtual CodeSymbolType codeSymbolType() const
+    DefType definitionType() const override { return TypeConcept; }
+    CodeSymbolType codeSymbolType() const override
     { return getCdAlias()->codeSymbolType(); }
-    virtual QCString getOutputFileBase() const
+    QCString getOutputFileBase() const override
     { return getCdAlias()->getOutputFileBase(); }
-    virtual QCString getReference() const
+    QCString getReference() const override
     { return getCdAlias()->getReference(); }
-    virtual bool isReference() const
+    bool isReference() const override
     { return getCdAlias()->isReference(); }
-    virtual bool hasDetailedDescription() const
+    bool hasDetailedDescription() const override
     { return getCdAlias()->hasDetailedDescription(); }
-    virtual QCString displayName(bool includeScope=true) const
+    QCString displayName(bool includeScope=true) const override
     { return getCdAlias()->displayName(includeScope); }
-    virtual const IncludeInfo *includeInfo() const
+    const IncludeInfo *includeInfo() const override
     { return getCdAlias()->includeInfo(); }
-    virtual ArgumentList getTemplateParameterList() const
+    ArgumentList getTemplateParameterList() const override
     { return getCdAlias()->getTemplateParameterList(); }
-    virtual QCString anchor() const
+    QCString anchor() const override
     { return getCdAlias()->anchor(); }
-    virtual bool isLinkableInProject() const
+    bool isLinkableInProject() const override
     { return getCdAlias()->isLinkableInProject(); }
-    virtual bool isLinkable() const
+    bool isLinkable() const override
     { return getCdAlias()->isLinkable(); }
-    virtual QCString initializer() const
+    QCString initializer() const override
     { return getCdAlias()->initializer(); }
-    virtual const NamespaceDef *getNamespaceDef() const
+    const NamespaceDef *getNamespaceDef() const override
     { return getCdAlias()->getNamespaceDef(); }
-    virtual const FileDef *getFileDef() const
+    const FileDef *getFileDef() const override
     { return getCdAlias()->getFileDef(); }
-    virtual const ModuleDef *getModuleDef() const
+    const ModuleDef *getModuleDef() const override
     { return getCdAlias()->getModuleDef(); }
-    virtual QCString title() const
+    QCString title() const override
     { return getCdAlias()->title(); }
-    virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                              const QCString &header,bool localNames) const
+    void writeDeclarationLink(OutputList &ol,bool &found,
+                              const QCString &header,bool localNames) const override
     { getCdAlias()->writeDeclarationLink(ol,found,header,localNames); }
-    virtual int groupId() const
+    int groupId() const override
     { return getCdAlias()->groupId(); }
 };
 
@@ -235,7 +237,7 @@ void ConceptDefImpl::setIncludeFile(FileDef *fd,const QCString &incName,bool loc
 {
   if (!m_incInfo) m_incInfo = std::make_unique<IncludeInfo>();
   if ((!incName.isEmpty() && m_incInfo->includeName.isEmpty()) ||
-      (fd!=0 && m_incInfo->fileDef==0)
+      (fd!=nullptr && m_incInfo->fileDef==nullptr)
      )
   {
     m_incInfo->fileDef     = fd;
@@ -321,7 +323,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(
-                        *parser.get(),briefFile(),briefLine(),this,0,
+                        *parser.get(),briefFile(),briefLine(),this,nullptr,
                         briefDescription(),TRUE,FALSE,
                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (!ast->isEmpty())
@@ -331,7 +333,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
       ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(ast.get(),this,0);
+      ol.writeDoc(ast.get(),this,nullptr);
       ol.pushGeneratorState();
       ol.disable(OutputType::RTF);
       ol.writeString(" \n");
@@ -364,8 +366,8 @@ void ConceptDefImpl::writeIncludeFiles(OutputList &ol) const
     {
       ol.startParagraph();
       ol.startTypewriter();
-      ol.docify(::includeStatement(SrcLangExt_Cpp,m_incInfo->kind));
-      ol.docify(::includeOpen(SrcLangExt_Cpp,m_incInfo->kind));
+      ol.docify(::includeStatement(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.docify(::includeOpen(SrcLangExt::Cpp,m_incInfo->kind));
       ol.pushGeneratorState();
       ol.disable(OutputType::Html);
       ol.docify(nm);
@@ -380,7 +382,7 @@ void ConceptDefImpl::writeIncludeFiles(OutputList &ol) const
         ol.docify(nm);
       }
       ol.popGeneratorState();
-      ol.docify(::includeClose(SrcLangExt_Cpp,m_incInfo->kind));
+      ol.docify(::includeClose(SrcLangExt::Cpp,m_incInfo->kind));
       ol.endTypewriter();
       ol.endParagraph();
     }
@@ -434,8 +436,8 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
     if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
     TextStream conceptDef;
     conceptDef << m_initializer;
-    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt_Cpp,false,QCString(),
-                    m_fileDef, -1,-1,true,0,false,this);
+    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt::Cpp,false,QCString(),
+                    m_fileDef, -1,-1,true,nullptr,false,this);
     codeOL.endCodeFragment("DoxyCode");
 }
 
@@ -462,7 +464,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     // repeat brief description
     if (!briefDescription().isEmpty() && repeatBrief)
     {
-      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE,
+      ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
           QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
     if (!briefDescription().isEmpty() && repeatBrief &&
@@ -477,7 +479,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     // write documentation
     if (!documentation().isEmpty())
     {
-      ol.generateDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE,
+      ol.generateDoc(docFile(),docLine(),this,nullptr,documentation(),TRUE,FALSE,
           QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
 
@@ -667,13 +669,13 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(
-                                *parser.get(),briefFile(),briefLine(),this,0,
+                                *parser.get(),briefFile(),briefLine(),this,nullptr,
                                 briefDescription(),FALSE,FALSE,
                                 QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(ast.get(),this,0);
+        ol.writeDoc(ast.get(),this,nullptr);
         ol.endMemberDescription();
       }
     }
@@ -685,6 +687,7 @@ void ConceptDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
+  docFindSections(inbodyDocumentation(),this,docFile());
 }
 
 //------------------------------------------------------------------------------------
@@ -725,7 +728,7 @@ ConceptDef *toConceptDef(Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -738,7 +741,7 @@ ConceptDef *toConceptDef(DefinitionMutable *md)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -750,7 +753,7 @@ const ConceptDef *toConceptDef(const Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -762,7 +765,7 @@ ConceptDefMutable *toConceptDefMutable(Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -774,7 +777,7 @@ ConceptDefMutable *toConceptDefMutable(const Definition *d)
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
@@ -782,13 +785,13 @@ ConceptDefMutable *toConceptDefMutable(const Definition *d)
 
 ConceptDef *getConcept(const QCString &n)
 {
-  if (n.isEmpty()) return 0;
+  if (n.isEmpty()) return nullptr;
   return Doxygen::conceptLinkedMap->find(n);
 }
 
 ConceptDef *getResolvedConcept(const Definition *d,const QCString &name)
 {
-  ConceptDef *cd=0;
+  ConceptDef *cd=nullptr;
   while (d && d!=Doxygen::globalScope)
   {
     cd = getConcept(d->name()+"::"+name);

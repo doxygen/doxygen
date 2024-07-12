@@ -20,6 +20,7 @@
 #include <vector>
 #include <map>
 #include "qcstring.h"
+#include "construct.h"
 
 class Definition;
 class OutputList;
@@ -215,17 +216,18 @@ class Index
     void incrementDocumentedModuleMembers(int i,const std::string &letter,const MemberDef *md);
     Index();
     ~Index();
+    NON_COPYABLE(Index)
     struct Private;
     std::unique_ptr<Private> p;
 };
 
 void writeGraphInfo(OutputList &ol);
 void writeIndexHierarchy(OutputList &ol);
-void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=0);
+void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=nullptr);
 void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli=HighlightedItem::None,
-               bool additionalIndices=FALSE,const QCString &altSidebarName=QCString(), int hierarchyLevel=0, bool needsFolding=false);
+               bool additionalIndices=FALSE,const QCString &altSidebarName=QCString(), int hierarchyLevel=0);
 void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
              const QCString &navPath=QCString());
 void endFileWithNavPath(OutputList &ol,const Definition *d);

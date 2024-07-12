@@ -20,7 +20,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="5" column="10" bodyfile="075_argmatch.cpp" bodystart="14" bodyend="14"/>
+        <location file="075_argmatch.cpp" line="5" column="10" bodyfile="075_argmatch.cpp" bodystart="15" bodyend="15"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a3b1460a8784e5cc8156899a04df08b94" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -39,7 +39,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="6" column="10" bodyfile="075_argmatch.cpp" bodystart="17" bodyend="17"/>
+        <location file="075_argmatch.cpp" line="6" column="10" bodyfile="075_argmatch.cpp" bodystart="18" bodyend="18"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a87f5be128245c4a16b25500fe6ae2fd1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -57,7 +57,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="7" column="10" bodyfile="075_argmatch.cpp" bodystart="20" bodyend="20"/>
+        <location file="075_argmatch.cpp" line="7" column="10" bodyfile="075_argmatch.cpp" bodystart="21" bodyend="21"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1adc1cd4494f8a556d5bf6cb78409e3e68" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -75,7 +75,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="8" column="10" bodyfile="075_argmatch.cpp" bodystart="23" bodyend="23"/>
+        <location file="075_argmatch.cpp" line="8" column="10" bodyfile="075_argmatch.cpp" bodystart="24" bodyend="24"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a0baba36cdd24740c6e39d5641e30a0fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -93,7 +93,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="9" column="10" bodyfile="075_argmatch.cpp" bodystart="26" bodyend="26"/>
+        <location file="075_argmatch.cpp" line="9" column="10" bodyfile="075_argmatch.cpp" bodystart="27" bodyend="27"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1abeaaeb54ad61db26205c06927968845f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -115,7 +115,26 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="10" column="10" bodyfile="075_argmatch.cpp" bodystart="29" bodyend="29"/>
+        <location file="075_argmatch.cpp" line="10" column="10" bodyfile="075_argmatch.cpp" bodystart="30" bodyend="30"/>
+      </memberdef>
+      <memberdef kind="function" id="struct_foo_1a0d4913fb514ee1cf71c793578650e25d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Foo::foo</definition>
+        <argsstring>(void(*fptr)(int x, int))</argsstring>
+        <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
+        <param>
+          <type>void(*)(int x, int)</type>
+          <declname>fptr</declname>
+        </param>
+        <briefdescription>
+          <para>Function pointer. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="075_argmatch.cpp" line="11" column="10" bodyfile="075_argmatch.cpp" bodystart="33" bodyend="33"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -123,7 +142,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="075_argmatch.cpp" line="4" column="1" bodyfile="075_argmatch.cpp" bodystart="4" bodyend="11"/>
+    <location file="075_argmatch.cpp" line="4" column="1" bodyfile="075_argmatch.cpp" bodystart="4" bodyend="12"/>
     <listofallmembers>
       <member refid="struct_foo_1a4f9767677227174b2a9684b92e36cba7" prot="public" virt="non-virtual">
         <scope>Foo</scope>
@@ -146,6 +165,10 @@
         <name>foo</name>
       </member>
       <member refid="struct_foo_1abeaaeb54ad61db26205c06927968845f" prot="public" virt="non-virtual">
+        <scope>Foo</scope>
+        <name>foo</name>
+      </member>
+      <member refid="struct_foo_1a0d4913fb514ee1cf71c793578650e25d" prot="public" virt="non-virtual">
         <scope>Foo</scope>
         <name>foo</name>
       </member>

@@ -27,6 +27,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "fileinfo.h"
+#include "codefragment.h"
 
 ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt)
@@ -147,7 +148,7 @@ void ManDocVisitor::operator()(const DocStyleChange &s)
       m_firstCol=FALSE;
       break;
     case DocStyleChange::Code:
-      if (s.enable()) m_t << "\\fC";   else m_t << "\\fP";
+      if (s.enable()) m_t << "\\fR";   else m_t << "\\fP";
       m_firstCol=FALSE;
       break;
     case DocStyleChange::Subscript:
@@ -216,7 +217,7 @@ void ManDocVisitor::operator()(const DocVerbatim &s)
       filter(s.text());
       break;
     case DocVerbatim::JavaDocCode:
-      m_t << "\\fC\n";
+      m_t << "\\fR\n";
       filter(s.text());
       m_t << "\\fP\n";
       break;
@@ -273,7 +274,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
-                                           0,     // memberDef
+                                           nullptr,     // memberDef
                                            TRUE
 					   );
          if (!m_firstCol) m_t << "\n";
@@ -291,11 +292,11 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile(),
-                                        0,     // fileDef
+                                        nullptr,     // fileDef
                                         -1,    // startLine
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         FALSE
 				       );
       if (!m_firstCol) m_t << "\n";
@@ -326,51 +327,21 @@ void ManDocVisitor::operator()(const DocInclude &inc)
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetTrimLeft:
+    case DocInclude::SnippetWithLines:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
-      getCodeParser(inc.extension()).parseCode(m_ci,
-                                        inc.context(),
-                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
-                                        langExt,
-                                        inc.isExample(),
-                                        inc.exampleFile()
-                                       );
+      CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                          inc.file(),
+                                          inc.blockId(),
+                                          inc.context(),
+                                          inc.type()==DocInclude::SnippetWithLines,
+                                          inc.type()==DocInclude::SnippetTrimLeft
+                                         );
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";
       m_firstCol=TRUE;
-      break;
-    case DocInclude::SnipWithLines:
-      {
-         if (!m_firstCol) m_t << "\n";
-         m_t << ".PP\n";
-         m_t << ".nf\n";
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-         getCodeParser(inc.extension()).parseCode(m_ci,
-                                           inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
-                                           langExt,
-                                           inc.isExample(),
-                                           inc.exampleFile(),
-                                           fd.get(),
-                                           lineBlock(inc.text(),inc.blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         if (!m_firstCol) m_t << "\n";
-         m_t << ".fi\n";
-         m_t << ".PP\n";
-         m_firstCol=TRUE;
-      }
-      break;
-    case DocInclude::SnippetDoc:
-    case DocInclude::IncludeDoc:
-      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-          "Please create a bug report\n",__FILE__);
       break;
   }
 }
@@ -411,7 +382,7 @@ void ManDocVisitor::operator()(const DocIncOperator &op)
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
-                                        0,     // memberDef
+                                        nullptr,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
     }
@@ -493,7 +464,21 @@ void ManDocVisitor::operator()(const DocAutoListItem &li)
   }
   else // bullet list
   {
-    m_t << "\\(bu\" " << (2*m_indent);
+    switch (li.itemNumber())
+    {
+      case DocAutoList::Unchecked: // unchecked
+        m_t << "[ ]\" " << (2*m_indent) + 2;
+        break;
+      case DocAutoList::Checked_x: // checked with x
+        m_t << "[x]\" " << (2*m_indent) + 2;
+        break;
+      case DocAutoList::Checked_X: // checked with X
+        m_t << "[X]\" " << (2*m_indent) + 2;
+        break;
+      default:
+        m_t << "\\(bu\" " << (2*m_indent);
+        break;
+    }
   }
   m_t << "\n";
   m_firstCol=TRUE;
@@ -513,7 +498,7 @@ void ManDocVisitor::operator()(const DocPara &p)
      )
   {
     if (!m_firstCol) m_t << "\n";
-    m_t << ".PP\n";
+    m_t << "\n.PP\n";
     m_firstCol=TRUE;
   }
 }
@@ -564,6 +549,8 @@ void ManDocVisitor::operator()(const DocSimpleSect &s)
       m_t << theTranslator->trRemarks(); break;
     case DocSimpleSect::Attention:
       m_t << theTranslator->trAttention(); break;
+    case DocSimpleSect::Important:
+      m_t << theTranslator->trImportant(); break;
     case DocSimpleSect::User: break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
@@ -623,7 +610,10 @@ void ManDocVisitor::operator()(const DocSection &s)
   if (!m_firstCol) m_t << "\n";
   if (s.level()==1) m_t << ".SH"; else m_t << ".SS";
   m_t << " \"";
-  filter(s.title());
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
   m_t << "\"\n";
   if (s.level()==1) m_t << ".PP\n";
   m_firstCol=TRUE;
@@ -648,7 +638,7 @@ void ManDocVisitor::operator()(const DocHtmlList &l)
     }
     if (opt.name=="start")
     {
-      bool ok;
+      bool ok = false;
       int val = opt.value.toInt(&ok);
       if (ok) m_listItemInfo[indent].number = val;
     }
@@ -674,7 +664,7 @@ void ManDocVisitor::operator()(const DocHtmlListItem &li)
     {
       if (opt.name=="value")
       {
-        bool ok;
+        bool ok = false;
         int val = opt.value.toInt(&ok);
         if (ok) m_listItemInfo[indent].number = val;
       }
@@ -717,9 +707,11 @@ void ManDocVisitor::operator()(const DocHtmlListItem &li)
 void ManDocVisitor::operator()(const DocHtmlDescList &dl)
 {
   if (m_hide) return;
+  m_indent+=2;
   visitChildren(dl);
+  m_indent-=2;
   if (!m_firstCol) m_t << "\n";
-  m_t << ".PP\n";
+  m_t << "\n.PP\n";
   m_firstCol=TRUE;
 }
 
@@ -727,15 +719,17 @@ void ManDocVisitor::operator()(const DocHtmlDescTitle &dt)
 {
   if (m_hide) return;
   if (!m_firstCol) m_t << "\n";
-  m_t << ".IP \"\\fB";
+  m_t << "\n.PP";
+  m_t << "\n.IP \"\\fB";
   m_firstCol=FALSE;
   visitChildren(dt);
-  m_t << "\\fP\" 1c\n";
-  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::operator()(const DocHtmlDescData &dd)
 {
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".IP \"\" 1c\n";
+  m_firstCol=TRUE;
   visitChildren(dd);
 }
 
@@ -767,7 +761,7 @@ void ManDocVisitor::operator()(const DocInternal &i)
 void ManDocVisitor::operator()(const DocHRef &href)
 {
   if (m_hide) return;
-  m_t << "\\fC";
+  m_t << "\\fR";
   visitChildren(href);
   m_t << "\\fP";
 }

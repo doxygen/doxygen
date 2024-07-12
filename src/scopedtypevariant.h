@@ -78,7 +78,7 @@ class VariableContext
 
     void pushScope()
     {
-      m_scopes.push_back(Scope());
+      m_scopes.emplace_back();
     }
     void popScope()
     {
@@ -103,7 +103,7 @@ class VariableContext
     }
     const ScopedTypeVariant *findVariable(const QCString &name)
     {
-      const ScopedTypeVariant *result = 0;
+      const ScopedTypeVariant *result = nullptr;
       if (name.isEmpty()) return result;
 
       // search from inner to outer scope
@@ -158,7 +158,7 @@ class CallContext
     }
     void pushScope(const QCString &name_,const QCString &type_)
     {
-      m_stvList.push_back(Ctx(name_,type_));
+      m_stvList.emplace_back(name_,type_);
     }
     void popScope(QCString &name_,QCString &type_)
     {
@@ -173,7 +173,7 @@ class CallContext
     void clear()
     {
       m_stvList.clear();
-      m_stvList.push_back(Ctx(QCString(),QCString()));
+      m_stvList.emplace_back(QCString(),QCString());
     }
     const ScopedTypeVariant getScope() const
     {

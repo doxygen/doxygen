@@ -32,10 +32,8 @@
 
 #include "qcstring.h"
 #include "growbuf.h"
-#include "dispatcher.h"
 
 class Definition;
-class SearchIndexIntf;
 
 /*! Initialize the search indexer */
 void initSearchIndexer();
@@ -48,7 +46,7 @@ struct SIData_CurrentDoc
 {
   SIData_CurrentDoc(const Definition *d,const QCString &a,bool b)
     : ctx(d), anchor(a), isSourceFile(b) {}
-  const Definition *ctx = 0;
+  const Definition *ctx = nullptr;
   QCString anchor;
   bool isSourceFile;
 };
@@ -132,15 +130,8 @@ class SearchIndexExternal
     void write(const QCString &file);
   private:
     std::map<std::string,SearchDocEntry> m_docEntries;
-    SearchDocEntry *m_current = 0;
+    SearchDocEntry *m_current = nullptr;
 };
-
-namespace SearchIndexMethods
-{
-  template <class T> struct setCurrentDoc     { static constexpr auto method = &T::setCurrentDoc;     };
-  template <class T> struct addWord           { static constexpr auto method = &T::addWord;           };
-  template <class T> struct write             { static constexpr auto method = &T::write;             };
-}
 
 /** Abstract proxy interface for non-javascript based search indices.
  *  It forwards calls to either SearchIndex or SearchIndexExternal depending
@@ -149,22 +140,52 @@ namespace SearchIndexMethods
 class SearchIndexIntf
 {
   public:
-    using SearchIndexVariant = std::variant<SearchIndex,SearchIndexExternal>;
-    enum Kind { Internal, External };
-    SearchIndexIntf(Kind k) : m_kind(k),
-        m_variant(k==Internal ? SearchIndexVariant(SearchIndex()) :
-                                SearchIndexVariant(SearchIndexExternal())) { }
+    using SearchIndexVariant = std::variant<std::monostate,SearchIndex,SearchIndexExternal>;
+    enum Kind { Disabled, Internal, External };
+    SearchIndexIntf() : m_kind(Disabled) {}
+    bool enabled() const { return m_kind!=Disabled; }
+
     void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
     {
-      dispatch_call<SearchIndexMethods::setCurrentDoc>(m_variant,ctx,anchor,isSourceFile);
+      if (std::holds_alternative<SearchIndex>(m_variant))
+      {
+        std::get<SearchIndex>(m_variant).setCurrentDoc(ctx,anchor,isSourceFile);
+      }
+      else if (std::holds_alternative<SearchIndexExternal>(m_variant))
+      {
+        std::get<SearchIndexExternal>(m_variant).setCurrentDoc(ctx,anchor,isSourceFile);
+      }
     }
     void addWord(const QCString &word,bool hiPriority)
     {
-      dispatch_call<SearchIndexMethods::addWord>(m_variant,word,hiPriority);
+      if (std::holds_alternative<SearchIndex>(m_variant))
+      {
+        std::get<SearchIndex>(m_variant).addWord(word,hiPriority);
+      }
+      else if (std::holds_alternative<SearchIndexExternal>(m_variant))
+      {
+        std::get<SearchIndexExternal>(m_variant).addWord(word,hiPriority);
+      }
     }
     void write(const QCString &file)
     {
-      dispatch_call<SearchIndexMethods::write>(m_variant,file);
+      if (std::holds_alternative<SearchIndex>(m_variant))
+      {
+        std::get<SearchIndex>(m_variant).write(file);
+      }
+      else if (std::holds_alternative<SearchIndexExternal>(m_variant))
+      {
+        std::get<SearchIndexExternal>(m_variant).write(file);
+      }
+    }
+    void setKind(Kind k) {
+      m_kind=k;
+      switch (m_kind)
+      {
+        case Disabled: m_variant = std::monostate();      break;
+        case Internal: m_variant = SearchIndex();         break;
+        case External: m_variant = SearchIndexExternal(); break;
+      }
     }
     Kind kind() const { return m_kind; }
   private:

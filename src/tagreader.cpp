@@ -251,14 +251,14 @@ class TagCompoundVariant
     R *get()
     {
       std::unique_ptr<R> *p = std::get_if<std::unique_ptr<R>>(&m_variant);
-      return p ? p->get() : 0;
+      return p ? p->get() : nullptr;
     }
     /** Generic const getter */
     template<class R>
     const R *get() const
     {
       const std::unique_ptr<R> *p = std::get_if<std::unique_ptr<R>>(&m_variant);
-      return p ? p->get() : 0;
+      return p ? p->get() : nullptr;
     }
 
     /** Generic factory method to create a variant holding a unique pointer to a given compound type */
@@ -296,7 +296,7 @@ class TagCompoundVariant
     {
       switch(type())
       {
-        case Type::Uninitialized: return 0;
+        case Type::Uninitialized: return nullptr;
         case Type::Class:         return getClassInfo();
         case Type::Concept:       return getConceptInfo();
         case Type::Namespace:     return getNamespaceInfo();
@@ -307,7 +307,7 @@ class TagCompoundVariant
         case Type::Dir:           return getDirInfo();
         case Type::Module:        return getModuleInfo();
       }
-      return 0;
+      return nullptr;
     }
     Type type() const
     {
@@ -497,12 +497,12 @@ class TagFileParser
             TagCompoundInfo *info = m_curCompound.getCompoundInfo();
             if (info)
             {
-              info->docAnchors.push_back(TagAnchorInfo(m_fileName,m_curString,m_title));
+              info->docAnchors.emplace_back(m_fileName,m_curString,m_title);
             }
           }
           break;
         case InMember:
-          m_curMember.docAnchors.push_back(TagAnchorInfo(m_fileName,m_curString,m_title));
+          m_curMember.docAnchors.emplace_back(m_fileName,m_curString,m_title);
           break;
         default: break; // will not be reached
       }
@@ -763,7 +763,7 @@ class TagFileParser
         {
           virt = Specifier::Virtual;
         }
-        info->bases.push_back(BaseInfo(m_curString,prot,virt));
+        info->bases.emplace_back(m_curString,prot,virt);
       }
       else
       {
@@ -1358,7 +1358,7 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vec
 {
   for (const auto &ta : l)
   {
-    if (SectionManager::instance().find(QCString(ta.label))==0)
+    if (SectionManager::instance().find(QCString(ta.label))==nullptr)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
       //    qPrint(ta->fileName),qPrint(ta->label));
@@ -1369,7 +1369,11 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vec
     }
     else
     {
-      p_warn("Duplicate anchor %s found",qPrint(ta.label));
+      //printf("Replace sectionInfo file=%s anchor=%s\n",
+      //    qPrint(ta->fileName),qPrint(ta->label));
+      SectionManager::instance().replace(
+          ta.label,ta.fileName,-1,ta.title,
+          SectionType::Anchor,0,m_tagName);
     }
   }
 }
@@ -1384,7 +1388,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->args       = tmi.arglist;
     if (!me->args.isEmpty())
     {
-      me->argList = *stringToArgumentList(SrcLangExt_Cpp,me->args);
+      me->argList = *stringToArgumentList(SrcLangExt::Cpp,me->args);
     }
     if (tmi.enumValues.size()>0)
     {
@@ -1411,7 +1415,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->startLine  = tmi.lineNr;
     if (ce->section.isGroupDoc())
     {
-      me->groups.push_back(Grouping(ce->name,Grouping::GROUPING_INGROUP));
+      me->groups.emplace_back(ce->name,Grouping::GROUPING_INGROUP);
     }
     addDocAnchors(me,tmi.docAnchors);
     me->tagInfoData.tagName    = m_tagName;
@@ -1531,7 +1535,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ce->startLine            = tci->lineNr;
       ce->hasTagInfo           = TRUE;
       ce->id                   = tci->clangId;
-      ce->lang                 = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
+      ce->lang                 = tci->isObjC ? SrcLangExt::ObjC : SrcLangExt::Unknown;
       // transfer base class list
       ce->extends  = tci->bases;
       if (!tci->templateArguments.empty())
@@ -1572,8 +1576,8 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       //printf("createFileDef() filename=%s\n",qPrint(tfi->filename));
       QCString tagid = m_tagName+":"+tfi->path;
       auto fd = createFileDef(tagid, tfi->name,m_tagName, tfi->filename);
-      FileName *mn;
-      if ((mn=Doxygen::inputNameLinkedMap->find(tfi->name)))
+      FileName *mn = Doxygen::inputNameLinkedMap->find(tfi->name);
+      if (mn)
       {
         mn->push_back(std::move(fd));
       }
@@ -1623,7 +1627,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
         std::vector<const SectionInfo *> anchorList;
         for (const auto &ta : tmi->docAnchors)
         {
-          if (SectionManager::instance().find(QCString(ta.label))==0)
+          if (SectionManager::instance().find(QCString(ta.label))==nullptr)
           {
             //printf("New sectionInfo file=%s anchor=%s\n",
             //    qPrint(ta->fileName),qPrint(ta->label));
@@ -1718,7 +1722,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
             [&](const std::shared_ptr<Entry> &e) { return e->name == sg.c_str(); });
         if (i!=children.end())
         {
-          (*i)->groups.push_back(Grouping(tgi->name,Grouping::GROUPING_INGROUP));
+          (*i)->groups.emplace_back(tgi->name,Grouping::GROUPING_INGROUP);
         }
       }
     }
@@ -1739,7 +1743,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       {
         // we add subpage labels as a kind of "inheritance" relation to prevent
         // needing to add another list to the Entry class.
-        pe->extends.push_back(BaseInfo(stripExtension(QCString(subpage)),Protection::Public,Specifier::Normal));
+        pe->extends.emplace_back(stripExtension(QCString(subpage)),Protection::Public,Specifier::Normal);
       }
       addDocAnchors(pe,tpi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
@@ -1772,7 +1776,7 @@ void TagFileParser::addIncludes()
             {
               //printf("ii->name='%s'\n",qPrint(ii->name));
               FileName *ifn = Doxygen::inputNameLinkedMap->find(ii.name);
-              ASSERT(ifn!=0);
+              ASSERT(ifn!=nullptr);
               if (ifn)
               {
                 for (const auto &ifd : *ifn)

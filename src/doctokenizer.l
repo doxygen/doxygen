@@ -47,11 +47,10 @@ typedef yyguts_t *yyscan_t;
 #include "cite.h"
 #include "regex.h"
 #include "debug.h"
+#include "docnode.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
-
-#define USE_STATE2STRING 0
 
 #define TK_COMMAND_SEL() (yytext[0] == '@' ? TK_COMMAND_AT : TK_COMMAND_BS)
 
@@ -76,7 +75,7 @@ struct doctokenizerYY_state
   int commentState;
   TokenInfo token;
   yy_size_t inputPos = 0;
-  const char *inputString = 0;
+  const char *inputString = nullptr;
   QCString fileName;
   bool insidePre = false;
   int sharpCount=0;
@@ -84,7 +83,7 @@ struct doctokenizerYY_state
   bool insideHtmlLink=false;
 
   // context for section finding phase
-  const Definition  *definition = 0;
+  const Definition  *definition = nullptr;
   QCString     secLabel;
   QCString     secTitle;
   SectionType  secType;
@@ -98,10 +97,7 @@ struct doctokenizerYY_state
 #define lineCount(s,len) do { for(int i=0;i<(int)len;i++) if (s[i]=='\n') yyextra->yyLineNr++; } while(0)
 
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
-
+[[maybe_unused]] static const char *stateToString(int state);
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void handleHtmlTag(yyscan_t yyscanner,const char *text);
@@ -152,24 +148,25 @@ const char *DocTokenizer::retvalToString(int retval)
 {
   switch (retval)
   {
-    case RetVal_OK:            return "RetVal_OK";
-    case RetVal_SimpleSec:     return "RetVal_SimpleSec";
-    case RetVal_ListItem:      return "RetVal_ListItem";
-    case RetVal_Section:       return "RetVal_Section";
-    case RetVal_Subsection:    return "RetVal_Subsection";
-    case RetVal_Subsubsection: return "RetVal_Subsubsection";
-    case RetVal_Paragraph:     return "RetVal_Paragraph";
-    case RetVal_SubParagraph:  return "RetVal_SubParagraph";
-    case RetVal_EndList:       return "RetVal_EndList";
-    case RetVal_EndPre:        return "RetVal_EndPre";
-    case RetVal_DescData:      return "RetVal_DescData";
-    case RetVal_DescTitle :    return "RetVal_DescTitle";
-    case RetVal_EndDesc:       return "RetVal_EndDesc";
-    case RetVal_TableRow:      return "RetVal_TableRow";
-    case RetVal_TableCell:     return "RetVal_TableCell";
-    case RetVal_TableHCell:    return "RetVal_TableHCell";
-    case RetVal_EndTable:      return "RetVal_EndTable";
-    case RetVal_Internal:      return "RetVal_Internal";
+    case RetVal_OK:              return "RetVal_OK";
+    case RetVal_SimpleSec:       return "RetVal_SimpleSec";
+    case RetVal_ListItem:        return "RetVal_ListItem";
+    case RetVal_Section:         return "RetVal_Section";
+    case RetVal_Subsection:      return "RetVal_Subsection";
+    case RetVal_Subsubsection:   return "RetVal_Subsubsection";
+    case RetVal_Paragraph:       return "RetVal_Paragraph";
+    case RetVal_SubParagraph:    return "RetVal_SubParagraph";
+    case RetVal_SubSubParagraph: return "RetVal_SubSubParagraph";
+    case RetVal_EndList:         return "RetVal_EndList";
+    case RetVal_EndPre:          return "RetVal_EndPre";
+    case RetVal_DescData:        return "RetVal_DescData";
+    case RetVal_DescTitle:       return "RetVal_DescTitle";
+    case RetVal_EndDesc:         return "RetVal_EndDesc";
+    case RetVal_TableRow:        return "RetVal_TableRow";
+    case RetVal_TableCell:       return "RetVal_TableCell";
+    case RetVal_TableHCell:      return "RetVal_TableHCell";
+    case RetVal_EndTable:        return "RetVal_EndTable";
+    case RetVal_Internal:        return "RetVal_Internal";
   }
   return "ERROR";
 }
@@ -190,11 +187,18 @@ static int computeIndent(const char *str,size_t length)
     {
       indent=0;
     }
+    else if (str[i]=='\\' && qstrncmp(str+i+1,"ilinebr",7)==0)
+    {
+      indent=0;
+      i+=7;
+      if (str[i+1]==' ') i++; // also eat space after \\ilinebr if present
+    }
     else
     {
       indent++;
     }
   }
+  //printf("input('%s')=%d\n",str,indent);
   return indent;
 }
 
@@ -203,7 +207,7 @@ static int computeIndent(const char *str,size_t length)
 static QCString stripEmptyLines(const QCString &s)
 {
   if (s.isEmpty()) return QCString();
-  int end=s.length();
+  int end=static_cast<int>(s.length());
   int start=0,p=0;
   // skip leading empty lines
   for (;;)
@@ -264,7 +268,7 @@ BLANK     [ \t\r]
 BLANKopt  {BLANK}*
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
-PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
+PHPTYPE   [?]?[\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
@@ -275,15 +279,16 @@ MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT
 OPTSTARS  ("/""/"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
-OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
-ENDLIST   {BLANK}*"."{BLANK}*\n
+OLISTITEM {BLANK}*("0"|[1-9][0-9]*)"."{BLANK}
+CLISTITEM {BLANK}*[-]{BLANK}*"\["[ xX]"\]"
+ENDLIST   {BLANK}*"."{BLANK}*(\n|"\\ilinebr")
 ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
-FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
-FILEECHAR [a-z_A-Z0-9\-\+=&#@]
+FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=&#@]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
 HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
@@ -334,6 +339,7 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"|"strike"|"u"|"del"|"ins"|"s"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"|"STRIKE"|"U"|"DEL"|"INS"|"S"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
+HTMLTAG_STRICT  "<"(("/")?){HTMLKEYW}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 REFWORD2_PRE   ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?)
 REFWORD2       {REFWORD2_PRE}{FUNCARG2}?
 REFWORD2_NOCV  {REFWORD2_PRE}("("{FUNCPART}")")?
@@ -343,7 +349,7 @@ REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
 REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
-LINENR {BLANK}*[1-9][0-9]*
+LINENR {BLANK}*([1-9][0-9]*|"0"|"-1")
 
 SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[0-9]{1,2})?)?
 
@@ -390,6 +396,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_Text
 %x St_SkipTitle
 %x St_Anchor
+%x St_Prefix
 %x St_Snippet
 %x St_SetScope
 %x St_SetScopeEnd
@@ -417,7 +424,19 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
                          assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
+                         yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
+                         yyextra->token.indent     = computeIndent(yytext,dashPos);
+                         return TK_LISTITEM;
+                       }
+<St_Para>^{CLISTITEM}  { /* checkbox item */
+                         QCString text=yytext;
+                         int dashPos = text.findRev('-');
+                         yyextra->token.isEnumList = false;
+                         yyextra->token.isCheckedList = true;
+                         if (text.find('x') != -1) yyextra->token.id = DocAutoList::Checked_x;
+                         else if (text.find('X') != -1) yyextra->token.id = DocAutoList::Checked_X;
+                         else yyextra->token.id = DocAutoList::Unchecked;
                          yyextra->token.indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
@@ -435,7 +454,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            reg::search(text,match,re);
                            size_t listPos = match.position();
                            assert(listPos!=std::string::npos);
-                           yyextra->token.isEnumList = FALSE;
+                           yyextra->token.isEnumList = false;
+                           yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
                            yyextra->token.indent     = computeIndent(yytext,listPos);
                            return TK_LISTITEM;
@@ -455,6 +475,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = true;
+                           yyextra->token.isCheckedList = false;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
                            yyextra->token.id = ok ? id : -1;
@@ -473,7 +494,20 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
                          assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
+                         yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
+                         yyextra->token.indent     = computeIndent(text.data(),dashPos);
+                         return TK_LISTITEM;
+                       }
+<St_Para>{BLANK}*\n{CLISTITEM}   { /* checkbox item on next line */
+                         QCString text=yytext;
+                         text=text.right(text.length()-text.find('\n')-1);
+                         int dashPos = text.findRev('-');
+                         yyextra->token.isEnumList = false;
+                         yyextra->token.isCheckedList = true;
+                         if (text.find('x') != -1) yyextra->token.id = DocAutoList::Checked_x;
+                         else if (text.find('X') != -1) yyextra->token.id = DocAutoList::Checked_X;
+                         else yyextra->token.id = DocAutoList::Unchecked;
                          yyextra->token.indent     = computeIndent(text.data(),dashPos);
                          return TK_LISTITEM;
                        }
@@ -492,6 +526,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = FALSE;
+                           yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
                            yyextra->token.indent     = computeIndent(text.c_str(),markPos);
                            return TK_LISTITEM;
@@ -512,6 +547,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            yyextra->token.isEnumList = true;
+                           yyextra->token.isCheckedList = false;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
                            yyextra->token.id = ok ? id : -1;
@@ -644,12 +680,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          if (index<0) index=0; // should never happen
                          yyextra->token.name = tagName.left(index);
                          int text_begin = index+2;
-                         int text_end = tagName.length()-1;
+                         int text_end = static_cast<int>(tagName.length())-1;
                          if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
                          {
-                                 ++text_begin;
-                                 if (tagName[text_end-1]=='#')
-                                         --text_end;
+                           ++text_begin;
+                           if (tagName[text_end-1]=='#')
+                           {
+                             --text_end;
+                           }
                          }
                          yyextra->token.text = tagName.mid(text_begin,text_end-text_begin);
                          return TK_RCSTAG;
@@ -657,9 +695,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name(&yytext[2]);
-                         name = name.left(name.length()-1);
+                         name = name.left(static_cast<int>(name.length())-1);
                          QCString value = Portable::getenv(name);
-                         for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
+                         for (int i=static_cast<int>(value.length())-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */
                          lineCount(yytext,yyleng);
@@ -739,6 +777,12 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                          lineCount(yytext,yyleng);
                        }
+<St_Para>({BLANK}*\n)+{BLANK}*\n/{CLISTITEM} { /* skip trailing paragraph followed by new checkbox item */
+                         if (yyextra->insidePre || yyextra->autoListLevel==0)
+                         {
+                           REJECT;
+                         }
+                       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (!yyextra->markdownSupport || yyextra->insidePre || yyextra->autoListLevel==0)
                          {
@@ -753,6 +797,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                          lineCount(yytext,yyleng);
                        }
+<St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}*/" \\ifile" | // we don't want to count the space before \ifile
 <St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}* {
                          lineCount(yytext,yyleng);
                          if (yyextra->insidePre)
@@ -765,6 +810,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            yyextra->token.indent=computeIndent(yytext,yyleng);
                            int i;
                            // put back the indentation (needed for list items)
+                           //printf("token.indent=%d\n",yyextra->token.indent);
                            for (i=0;i<yyextra->token.indent;i++)
                            {
                              unput(' ');
@@ -1205,6 +1251,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          return 0;
                        }
+<St_Ref2>{HTMLTAG_STRICT}     { /* html tag */
+                         lineCount(yytext,yyleng);
+                         handleHtmlTag(yyscanner,yytext);
+                         return TK_HTMLTAG;
+                       }
 <St_Ref2>{SPCMD1}      |
 <St_Ref2>{SPCMD2}      { /* special command */
                          yyextra->token.name = yytext+1;
@@ -1267,6 +1318,15 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.chars=yytext;
                          return TK_WHITESPACE;
                        }
+<St_Prefix>"\""[^\n\"]*"\"" {
+                         yyextra->token.name = yytext+1;
+                         yyextra->token.name = yyextra->token.name.left((int)yyleng-2);
+                         return TK_WORD;
+                       }
+<St_Prefix>.           {
+                         unput(*yytext);
+                         return 0;
+                       }
 <St_Options>{ID}       {
                          yyextra->token.name+=yytext;
                        }
@@ -1327,7 +1387,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          unput(*yytext);
                          return 0;
                        }
-<St_ILine>{LINENR}/[\n\.]     |
+<St_ILine>{LINENR}/[\\@\n\.]  |
 <St_ILine>{LINENR}{BLANK}     {
                          bool ok = false;
                          int nr = QCString(yytext).toInt(&ok);
@@ -1431,6 +1491,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                     }
 <St_Sections>{CMD}"paragraph"{BLANK}+ {
                                       yyextra->secType = SectionType::Paragraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
+<St_Sections>{CMD}"subparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subparagraph;
+                                      BEGIN(St_SecLabel2);
+                                    }
+<St_Sections>{CMD}"subsubparagraph"{BLANK}+ {
+                                      yyextra->secType = SectionType::Subsubparagraph;
                                       BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
@@ -1605,6 +1673,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   QCString tagText(text);
+  yyextra->token.text = tagText;
   yyextra->token.attribs.clear();
   yyextra->token.endTag = FALSE;
   yyextra->token.emptyTag = FALSE;
@@ -1629,7 +1698,6 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
 
   // Parse the attributes. Each attribute is a name, value pair
   // The result is stored in yyextra->token.attribs.
-  int startName,endName,startAttrib,endAttrib;
   int startAttribList = i;
   while (i<(int)yyleng)
   {
@@ -1644,16 +1712,17 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
       yyextra->token.emptyTag = TRUE;
       break;
     }
-    startName=i;
+    int startName=i;
     // search for end of name
     while (i<(int)yyleng && !isspace((uint8_t)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
-    endName=i;
+    int endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower();
     // skip spaces
     while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     if (tagText.at(i)=='=') // option has value
     {
+      int startAttrib=0, endAttrib=0;
       c=tagText.at(++i);
       // skip spaces
       while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
@@ -2067,6 +2136,13 @@ void DocTokenizer::setStateAnchor()
   BEGIN(St_Anchor);
 }
 
+void DocTokenizer::setStatePrefix()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_Prefix);
+}
+
 void DocTokenizer::setStateSnippet()
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -2146,9 +2222,9 @@ void DocTokenizer::pushBackHtmlTag(const QCString &tag)
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString tagName = tag;
-  int i,l = tagName.length();
+  int l = static_cast<int>(tagName.length());
   unput('>');
-  for (i=l-1;i>=0;i--)
+  for (int i=l-1;i>=0;i--)
   {
     unput(tag[i]);
   }
@@ -2183,6 +2259,4 @@ int DocTokenizer::getLineNr(void)
   return yyextra->yyLineNr;
 }
 
-#if USE_STATE2STRING
 #include "doctokenizer.l.h"
-#endif

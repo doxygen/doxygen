@@ -1897,7 +1897,7 @@ static struct emojiEntityCompatibility
 static const size_t g_numEmojiEntities = sizeof(g_emojiEntities)/sizeof(*g_emojiEntities);
 static const size_t g_numEmojiCompatibilityEntities = sizeof(g_emojiCompatibilityEntities)/sizeof(*g_emojiCompatibilityEntities);
 
-EmojiEntityMapper *EmojiEntityMapper::s_instance = 0;
+EmojiEntityMapper *EmojiEntityMapper::s_instance = nullptr;
 
 EmojiEntityMapper::EmojiEntityMapper()
 {
@@ -1957,7 +1957,7 @@ void EmojiEntityMapper::writeEmojiFile(TextStream &t)
  */
 const char *EmojiEntityMapper::unicode(int index) const
 {
-  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].unicode : 0;
+  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].unicode : nullptr;
 }
 
 /*! @brief Access routine to the name of the Emoji entity
@@ -1967,5 +1967,5 @@ const char *EmojiEntityMapper::unicode(int index) const
  */
 const char *EmojiEntityMapper::name(int index) const
 {
-  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].name : 0;
+  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].name : nullptr;
 }

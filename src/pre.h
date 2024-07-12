@@ -19,8 +19,9 @@
 #define PRE_H
 
 #include <memory>
+#include <string>
+#include "construct.h"
 
-class BufStr;
 class QCString;
 
 class Preprocessor
@@ -28,7 +29,9 @@ class Preprocessor
   public:
     Preprocessor();
    ~Preprocessor();
-    void processFile(const QCString &fileName,BufStr &input,BufStr &output);
+    NON_COPYABLE(Preprocessor)
+
+    void processFile(const QCString &fileName,const std::string &input,std::string &output);
     void addSearchDir(const QCString &dir);
  private:
    struct Private;

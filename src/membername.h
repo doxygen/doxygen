@@ -66,9 +66,8 @@ class MemberNameLinkedMap : public LinkedMap<MemberName>
 class MemberInfo
 {
   public:
-    MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh) :
-          m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh) {}
-   ~MemberInfo() = default;
+    MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh,bool vbc) :
+          m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh), m_virtBaseClass(vbc) {}
 
     // getters
           MemberDef *memberDef()                { return m_memberDef; }
@@ -79,6 +78,7 @@ class MemberInfo
     QCString   scopePath() const                { return m_scopePath; }
     QCString   ambiguityResolutionScope() const { return m_ambiguityResolutionScope; }
     const ClassDef  *ambigClass() const         { return m_ambigClass; }
+    bool       virtualBaseClass() const         { return m_virtBaseClass; }
 
     // setters
     void setAmbiguityResolutionScope(const QCString &s) { m_ambiguityResolutionScope = s; }
@@ -92,7 +92,8 @@ class MemberInfo
     bool           m_inherited;
     QCString       m_scopePath;
     QCString       m_ambiguityResolutionScope;
-    const ClassDef *m_ambigClass = 0;
+    const ClassDef *m_ambigClass = nullptr;
+    bool           m_virtBaseClass;
 };
 
 class MemberNameInfo

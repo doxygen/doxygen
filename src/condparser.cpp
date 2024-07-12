@@ -108,7 +108,7 @@ int CondParser::getOperatorId(const QCString &opName)
 void CondParser::getToken()
 {
   m_tokenType = NOTHING;
-  m_token.resize(0);
+  m_token.clear();
 
   //printf("\tgetToken e:{%c}, ascii=%i, col=%i\n", *e, *e, e-expr);
 
@@ -190,19 +190,16 @@ bool CondParser::parseLevel1()
  */
 bool CondParser::parseLevel2()
 {
-  bool ans;
   int opId = getOperatorId(m_token);
   if (opId == NOT)
   {
     getToken();
-    ans = !parseLevel3();
+    return !parseLevel3();
   }
   else
   {
-    ans = parseLevel3();
+    return parseLevel3();
   }
-
-  return ans;
 }
 
 

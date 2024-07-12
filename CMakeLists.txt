@@ -14,10 +14,11 @@
 cmake_minimum_required(VERSION 3.14)
 project(doxygen)
 
+option("ENABLE_CLANG_TIDY" "Enable static analysis with clang-tidy" OFF)
+
 option(build_wizard    "Build the GUI frontend for doxygen." OFF)
 option(build_app       "Example showing how to embed doxygen in an application." OFF)
 option(build_parse     "Parses source code and dumps the dependencies between the code elements." OFF)
-option(build_xmlparser "Automatically update the XML parser modules when updating the schema files." OFF)
 option(build_search    "Build external search tools (doxysearch and doxyindexer)" OFF)
 option(build_doc       "Build user manual (HTML and PDF)" OFF)
 option(build_doc_chm   "Build user manual (CHM)" OFF)
@@ -33,6 +34,7 @@ option(enable_console  "Enable that executables on Windows get the CONSOLE bit s
 option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
 option(enable_tracing  "Enable tracing option in release builds [development]" OFF)
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
+
 
 set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
 set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
@@ -84,6 +86,27 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
+if (ENABLE_CLANG_TIDY)
+    find_program("CLANGTIDY" "clang-tidy")
+    if (CLANGTIDY)
+       set(CMAKE_CXX_CLANG_TIDY clang-tidy;
+                                -header-filter=.;
+                                -checks=-*,cppcoreguidelines-special-member-functions
+                                #-checks=-*,cppcoreguidelines-missing-std-forward
+                                #-checks=-*,cppcoreguidelines-init-variables
+                                #-checks=-*,cppcoreguidelines-misleading-capture-default-by-value
+                                #-checks=-*,modernize-use-nullptr
+                                #-checks=-*,modernize-use-override
+                                #-checks=-*,modernize-use-emplace
+                            )
+    else()
+        message(SEND_ERROR "clang-tidy requested but executable not found")
+    endif()
+endif()
+
+# produce compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if (CMAKE_SYSTEM MATCHES "Darwin")
     set(CMAKE_OSX_DEPLOYMENT_TARGET "${MACOS_VERSION_MIN}" CACHE STRING "Minimum OS X deployment version" FORCE)
     set(CMAKE_CXX_FLAGS "-Wno-deprecated-register -mmacosx-version-min=${MACOS_VERSION_MIN} ${CMAKE_CXX_FLAGS}")
@@ -92,12 +115,24 @@ if (CMAKE_SYSTEM MATCHES "Darwin")
     set(EXTRA_LIBS ${CORESERVICES_LIB})
 endif()
 
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_LIBCPP_ENABLE_ASSERTIONS=1")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_ASSERTIONS")
+endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_OMIT_LOAD_EXTENSION=1")
 
 if (WIN32)
     if (MSVC)
         if (NOT ICONV_DIR)
-          set(ICONV_DIR "${PROJECT_SOURCE_DIR}/winbuild")
+          if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/deps/iconv_winbuild/include" "${PROJECT_SOURCE_DIR}/deps/iconv_winbuild/x64")
+          elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/deps/iconv_winbuild/include" "${PROJECT_SOURCE_DIR}/deps/iconv_winbuild/x86")
+          endif()
+        else()
+          list(APPEND CMAKE_PREFIX_PATH ${ICONV_DIR})
         endif()
         set(CMAKE_REQUIRED_DEFINITIONS "-DLIBICONV_STATIC")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj") # needed for language.cpp on 64bit
@@ -114,6 +149,11 @@ if (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
    if (CMAKE_BUILD_TYPE STREQUAL  "")
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
    endif()
+endif()
+
+if (WIN32 AND MSVC)
+    # workaround for GitHub runner, see https://github.com/actions/runner-images/issues/10004
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR")
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -169,7 +209,7 @@ if ((CMAKE_BUILD_TYPE STREQUAL "Debug") OR enable_lex_debug)
 endif()
 
 find_package(Iconv REQUIRED)
-include_directories(${ICONV_INCLUDE_DIR})
+include_directories(${Iconv_INCLUDE_DIRS})
 
 
 #set(DOXYDOCS ${PROJECT_SOURCE_DIR}/doc CACHE INTERNAL "Path to doxygen docs")
@@ -223,12 +263,19 @@ if (build_doc_chm)
     endif ()
 endif ()
 
+# always parse doc directory to at least install man pages
+add_subdirectory(doc)
 if (build_doc)
     add_subdirectory(examples)
-    add_subdirectory(doc)
 endif ()
 
 add_subdirectory(doc_internal)
+
+find_package(generateDS)
+set(update_doxmlparser_dependency "")
+if (GENERATEDS_FOUND)
+  set(update_doxmlparser_dependency "update_doxmlparser_files")
+endif()
 add_subdirectory(addon)
 
 enable_testing()

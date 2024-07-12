@@ -24,6 +24,7 @@
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
 #include "doxygen.h"
+#include "construct.h"
 
 class DotRunner;
 class DotRunnerQueue;
@@ -41,6 +42,7 @@ class DotManager
   private:
     DotManager();
     virtual ~DotManager();
+    NON_COPYABLE(DotManager)
 
     std::map<std::string, std::unique_ptr<DotRunner> > m_runners;
     std::map<std::string, DotFilePatcher>              m_filePatchers;

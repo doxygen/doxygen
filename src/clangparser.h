@@ -1,11 +1,13 @@
 #ifndef CLANGPARSER_H
 #define CLANGPARSER_H
 
-#include "containers.h"
-#include "types.h"
 #include <memory>
 #include <string>
 #include <cstdint>
+
+#include "containers.h"
+#include "types.h"
+#include "construct.h"
 
 class OutputCodeList;
 class FileDef;
@@ -23,6 +25,7 @@ class ClangTUParser
 {
   public:
     ClangTUParser(const ClangParser &parser,const FileDef *fd);
+    NON_COPYABLE(ClangTUParser)
     virtual ~ClangTUParser();
 
     /** Parse the file given at construction time as a translation unit
@@ -53,7 +56,7 @@ class ClangTUParser
     void detectFunctionBody(const char *s);
     void writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_t line,bool writeLineAnchor);
     void codifyLines(OutputCodeList &ol,const FileDef *fd,const char *text,
-                     uint32_t &line,uint32_t &column,const char *fontClass=0);
+                     uint32_t &line,uint32_t &column,const char *fontClass=nullptr);
     void writeMultiLineCodeLink(OutputCodeList &ol,
                                 const FileDef *fd,uint32_t &line,uint32_t &column,
                                 const Definition *d, const char *text);
@@ -66,8 +69,8 @@ class ClangTUParser
     void linkInclude(OutputCodeList &ol,const FileDef *fd,
                    uint32_t &line,uint32_t &column,
                    const char *text);
-    ClangTUParser(const ClangTUParser &) = delete;
-    ClangTUParser &operator=(const ClangTUParser &) = delete;
+    void codeFolding(OutputCodeList &ol,const Definition *d,uint32_t line);
+    void endCodeFold(OutputCodeList &ol,uint32_t line);
     class Private;
     std::unique_ptr<Private> p;
 };
@@ -86,6 +89,7 @@ class ClangParser
     class Private;
     std::unique_ptr<Private> p;
     ClangParser();
+    NON_COPYABLE(ClangParser)
     virtual ~ClangParser();
     static ClangParser *s_instance;
 };

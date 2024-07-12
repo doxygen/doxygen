@@ -23,4 +23,5 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     graphviz \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /doxygen/build/bin/doxygen /usr/local/bin/
+WORKDIR /doxygen
 ENTRYPOINT ["doxygen"]

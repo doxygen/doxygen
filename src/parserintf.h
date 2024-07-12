@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -25,6 +23,7 @@
 
 #include "types.h"
 #include "containers.h"
+#include "construct.h"
 
 class Entry;
 class FileDef;
@@ -42,7 +41,7 @@ class ClangTUParser;
 class OutlineParserInterface
 {
   public:
-    virtual ~OutlineParserInterface() = default;
+    ABSTRACT_BASE_CLASS(OutlineParserInterface)
 
     /** Parses a single input file with the goal to build an Entry tree.
      *  @param[in] fileName    The full name of the file.
@@ -83,7 +82,7 @@ class OutlineParserInterface
 class CodeParserInterface
 {
   public:
-    virtual ~CodeParserInterface() = default;
+    ABSTRACT_BASE_CLASS(CodeParserInterface)
 
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.
@@ -113,13 +112,13 @@ class CodeParserInterface
                            SrcLangExt lang,
                            bool isExampleBlock,
                            const QCString &exampleName=QCString(),
-                           const FileDef *fileDef=0,
+                           const FileDef *fileDef=nullptr,
                            int startLine=-1,
                            int endLine=-1,
                            bool inlineFragment=FALSE,
-                           const MemberDef *memberDef=0,
+                           const MemberDef *memberDef=nullptr,
                            bool showLineNumbers=TRUE,
-                           const Definition *searchCtx=0,
+                           const Definition *searchCtx=nullptr,
                            bool collectXRefs=TRUE
                           ) = 0;
 

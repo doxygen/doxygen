@@ -120,7 +120,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
   QCString href = "href";
   //bool isXLink=FALSE;
   int len = 6;
-  int indexS = buf.find("href=\""), indexE;
+  int indexS = buf.find("href=\""), indexE = 0;
   bool targetAlreadySet = buf.find("target=")!=-1;
   if (indexS>5 && buf.find("xlink:href=\"")!=-1) // XLink href (for SVG)
   {
@@ -237,7 +237,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
       }
 
       // strip id="..." from replBuf since the id's are not needed and not unique.
-      int indexS = replBuf.find("id=\""), indexE;
+      int indexS = replBuf.find("id=\""), indexE = 0;
       if (indexS>0 && (indexE=replBuf.find('"',indexS+4))!=-1)
       {
         t << replBuf.left(indexS-1) << replBuf.right(replBuf.length() - indexE - 1);
@@ -346,15 +346,14 @@ bool DotFilePatcher::run() const
   {
     QCString line = lineStr+'\n';
     //printf("line=[%s]\n",qPrint(line.stripWhiteSpace()));
-    int i;
+    int i = 0;
     if (isSVGFile)
     {
       if (interactiveSVG)
       {
         if (line.find("<svg")!=-1 && !replacedHeader)
         {
-          int count;
-          count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
+          int count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
           //printf("width=%d height=%d\n",width,height);
           useNagivation = count==2 && (width>500 || height>450);
           insideHeader = count==2;

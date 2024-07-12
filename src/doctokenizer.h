@@ -24,6 +24,7 @@
 
 #include "htmlattrib.h"
 #include "qcstring.h"
+#include "construct.h"
 
 enum Tokens
 {
@@ -64,10 +65,11 @@ enum Tokens
   RetVal_CopyDoc        = 0x10015,
   RetVal_EndInternal    = 0x10016,
   RetVal_EndParBlock    = 0x10017,
-  RetVal_EndHtmlDetails = 0x10018
+  RetVal_EndHtmlDetails = 0x10018,
+  RetVal_SubSubParagraph= 0x10019,
 };
 
-#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? "@" : "\\")
+#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
 
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
@@ -82,6 +84,7 @@ struct TokenInfo
 
   // list token info
   bool isEnumList = false;
+  bool isCheckedList = false;
   int indent = 0;
 
   // sections
@@ -121,6 +124,7 @@ class DocTokenizer
   public:
     DocTokenizer();
    ~DocTokenizer();
+    NON_COPYABLE(DocTokenizer)
 
     TokenInfo *token();
     [[maybe_unused]] TokenInfo *resetToken();
@@ -186,6 +190,7 @@ class DocTokenizer
     void setStateILine();
     void setStateQuotedString();
     void setStateShowDate();
+    void setStatePrefix();
 
   private:
     struct Private;

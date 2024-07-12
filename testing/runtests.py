@@ -5,7 +5,7 @@ import argparse, glob, itertools, re, shutil, os, sys
 import subprocess
 import shlex
 
-config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
+config_reg = re.compile(r'.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
 hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
 pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
@@ -200,7 +200,7 @@ class Tester:
         if (self.args.noredir):
             redir=''
 
-        if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
+        if os.system('%s %s %s/Doxyfile %s' % (self.args.doxygen,self.args.doxygen_dbg,self.test_out,redir))!=0:
             print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
             sys.exit(1)
 
@@ -619,6 +619,8 @@ def main():
         'update the reference file(s) for the given test',action="store_true")
     parser.add_argument('--doxygen',nargs='?',default='doxygen',help=
         'path/name of the doxygen executable')
+    parser.add_argument('--doxygen_dbg',nargs='?',default='',help=
+        'the doxygen debugging arguments')
     parser.add_argument('--xmllint',nargs='?',default='xmllint',help=
         'path/name of the xmllint executable')
     parser.add_argument('--id',nargs='+',dest='ids',action='append',type=int,help=

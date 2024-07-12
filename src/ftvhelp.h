@@ -27,6 +27,8 @@
 #include <memory>
 #include <vector>
 #include "qcstring.h"
+#include "construct.h"
+#include "indexlist.h"
 
 class Definition;
 class MemberDef;
@@ -35,12 +37,13 @@ class TextStream;
 
 /** A class that generates a dynamic tree view side panel.
  */
-class FTVHelp
+class FTVHelp : public IndexIntf
 {
   public:
     FTVHelp(bool LTI);
     ~FTVHelp();
-    FTVHelp(FTVHelp &&);
+    NON_COPYABLE(FTVHelp)
+
     void initialize();
     void finalize();
     void incContentsDepth();

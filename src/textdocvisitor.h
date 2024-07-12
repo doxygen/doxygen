@@ -50,7 +50,7 @@ class TextDocVisitor : public DocVisitor
     void operator()(const DocFormula &)      {}
     void operator()(const DocIndexEntry &)   {}
     void operator()(const DocSimpleSectSep &){}
-    void operator()(const DocCite &)         {}
+    void operator()(const DocCite &);
     void operator()(const DocSeparator &)    { m_t << " "; }
 
     //--------------------------------------

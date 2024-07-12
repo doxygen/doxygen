@@ -30,6 +30,8 @@
 #include "config.h"
 #include "xml.h"
 #include "resourcemgr.h"
+#include "docparser.h"
+#include "docnode.h"
 #include "debug.h"
 
 inline QCString compileOptions(const QCString &def)
@@ -39,14 +41,14 @@ inline QCString compileOptions(const QCString &def)
 
 inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1)
 {
-  return compileOptions(def)+"|"+QCString().setNum(langId1)+"="+value1;
+  return compileOptions(def)+"|"+QCString().setNum(static_cast<long>(langId1))+"="+value1;
 }
 
 inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
                                                    SrcLangExt langId2,const QCString &value2)
 {
   return compileOptions(def,langId1,value1)+
-         "|"+QCString().setNum(langId2)+"="+value2;
+         "|"+QCString().setNum(static_cast<long>(langId2))+"="+value2;
 }
 
 inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
@@ -54,7 +56,7 @@ inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCSt
                                                    SrcLangExt langId3,const QCString &value3)
 {
   return compileOptions(def,langId1,value1,langId2,value2)+
-         "|"+QCString().setNum(langId3)+"="+value3;
+         "|"+QCString().setNum(static_cast<long>(langId3))+"="+value3;
 }
 
 inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
@@ -63,7 +65,7 @@ inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCSt
                                                    SrcLangExt langId4,const QCString &value4)
 {
   return compileOptions(def,langId1,value1,langId2,value2,langId3,value3)+
-         "|"+QCString().setNum(langId4)+"="+value4;
+         "|"+QCString().setNum(static_cast<long>(langId4))+"="+value4;
 }
 
 inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
@@ -73,7 +75,7 @@ inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCSt
                                                    SrcLangExt langId5,const QCString &value5)
 {
   return compileOptions(def,langId1,value1,langId2,value2,langId3,value3,langId4,value4)+
-         "|"+QCString().setNum(langId5)+"="+value5;
+         "|"+QCString().setNum(static_cast<long>(langId5))+"="+value5;
 }
 
 static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE)
@@ -112,7 +114,7 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
 
 static bool parentIsVisible(LayoutNavEntry *parent)
 {
-  return parent==0 || parent->visible();
+  return parent==nullptr || parent->visible();
 }
 
 //---------------------------------------------------------------------------------
@@ -120,7 +122,7 @@ static bool parentIsVisible(LayoutNavEntry *parent)
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
     const QCString &file) const
 {
-  LayoutNavEntry *result=0;
+  LayoutNavEntry *result=nullptr;
   for (const auto &entry : m_children)
   {
     // depth first search, needed to find the entry furthest from the
@@ -145,20 +147,26 @@ QCString LayoutNavEntry::url() const
   }
   else if (url.startsWith("@ref ") || url.startsWith("\\ref "))
   {
-    const Definition *d = 0;
-    QCString anchor;
-    bool found=FALSE;
-    if (resolveLink(QCString(),url.mid(5).stripWhiteSpace(),TRUE,&d,anchor))
+    bool found=false;
+    QCString relPath = "";
+    QCString context = QCString();
+    auto parser { createDocParser() };
+    auto dfAst  { createRef( *parser.get(), url.mid(5).stripWhiteSpace(), context ) };
+    auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+    const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
+    if (!df->file().isEmpty() || !df->anchor().isEmpty())
     {
-      if (d && d->isLinkable())
+      found = true;
+      url=externalRef(relPath,df->ref(),TRUE);
+      if (!df->file().isEmpty())
       {
-        url = d->getOutputFileBase();
-        addHtmlExtensionIfMissing(url);
-        if (!anchor.isEmpty())
-        {
-          url+="#"+anchor;
-        }
-        found=TRUE;
+        QCString fn = df->file();
+        addHtmlExtensionIfMissing(fn);
+        url += fn;
+      }
+      if (!df->anchor().isEmpty())
+      {
+        url += "#" + df->anchor();
       }
     }
     if (!found)
@@ -514,7 +522,7 @@ class LayoutParser
           QCString(),
           "usergroup"
         },
-        { 0, // end of list
+        { nullptr, // end of list
           static_cast<LayoutNavEntry::Kind>(0),
           QCString(),
           QCString(),
@@ -531,7 +539,7 @@ class LayoutParser
           break;
         i++;
       }
-      if (mapping[i].typeStr==0)
+      if (mapping[i].typeStr==nullptr)
       {
         std::string fileName = m_locator->fileName();
         if (type.isEmpty())
@@ -695,7 +703,7 @@ class LayoutParser
   private:
     QCString m_scope;
     LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
-    LayoutNavEntry *m_rootNav = 0;
+    LayoutNavEntry *m_rootNav = nullptr;
     bool m_invalidEntry = false;
     bool m_visible = true;
     static int m_userGroupCount;
@@ -799,140 +807,140 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "class/memberdecl/membergroups",              { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::MemberGroups) } },
   { "class/memberdecl/nestedclasses",             { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::ClassNestedClasses,
                                                             []() { return compileOptions(/*default*/        theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
-                                                                                         SrcLangExt_Fortran,theTranslator->trDataTypes()); })
+                                                                                         SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::Fortran,theTranslator->trDataTypes()); })
                                                   } },
-  { "class/memberdecl/services",                  { startCb(&LayoutParser::startMemberDeclEntry,MemberListType_services,
+  { "class/memberdecl/services",                  { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::Services(),
                                                             []() { return compileOptions(theTranslator->trServices()); })
                                                   } },
-  { "class/memberdecl/interfaces",                { startCb(&LayoutParser::startMemberDeclEntry,MemberListType_interfaces,
+  { "class/memberdecl/interfaces",                { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::Interfaces(),
                                                             []() { return compileOptions(theTranslator->trInterfaces()); })
                                                   } },
-  { "class/memberdecl/publictypes",               { startCb(&LayoutParser::startMemberDeclEntry,MemberListType_pubTypes,
+  { "class/memberdecl/publictypes",               { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::PubTypes(),
                                                             []() { return compileOptions(theTranslator->trPublicTypes()); })
                                                   } },
-  { "class/memberdecl/publicslots",               { startCb(&LayoutParser::startMemberDeclEntry,MemberListType_pubSlots,
+  { "class/memberdecl/publicslots",               { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::PubSlots(),
                                                             []() { return compileOptions(theTranslator->trPublicSlots()); })
                                                   } },
-  { "class/memberdecl/signals",                   { startCb(&LayoutParser::startMemberDeclEntry,MemberListType_signals,
+  { "class/memberdecl/signals",                   { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::Signals(),
                                                             []() { return compileOptions(theTranslator->trSignals()); })
                                                   } },
-  { "class/memberdecl/publicmethods",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pubMethods,
+  { "class/memberdecl/publicmethods",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PubMethods(),
                                                             []() { return compileOptions(/* default */    theTranslator->trPublicMembers(),
-                                                                                         SrcLangExt_ObjC, theTranslator->trInstanceMethods(),
-                                                                                         SrcLangExt_Slice,theTranslator->trOperations()); })
+                                                                                         SrcLangExt::ObjC, theTranslator->trInstanceMethods(),
+                                                                                         SrcLangExt::Slice,theTranslator->trOperations()); })
                                                   } },
-  { "class/memberdecl/publicstaticmethods",       { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pubStaticMethods,
+  { "class/memberdecl/publicstaticmethods",       { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PubStaticMethods(),
                                                             []() { return compileOptions(/* default */    theTranslator->trStaticPublicMembers(),
-                                                                                         SrcLangExt_ObjC, theTranslator->trClassMethods()); })
+                                                                                         SrcLangExt::ObjC, theTranslator->trClassMethods()); })
                                                   } },
-  { "class/memberdecl/publicattributes",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pubAttribs,
+  { "class/memberdecl/publicattributes",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PubAttribs(),
                                                             []() { return compileOptions(/* default */    theTranslator->trPublicAttribs(),
-                                                                                         SrcLangExt_Slice,theTranslator->trDataMembers()); })
+                                                                                         SrcLangExt::Slice,theTranslator->trDataMembers()); })
                                                   } },
-  { "class/memberdecl/publicstaticattributes",    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pubStaticAttribs,
+  { "class/memberdecl/publicstaticattributes",    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PubStaticAttribs(),
                                                             []() { return compileOptions(theTranslator->trStaticPublicAttribs()); })
                                                   } },
-  { "class/memberdecl/protectedtypes",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_proTypes,
+  { "class/memberdecl/protectedtypes",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProTypes(),
                                                             []() { return compileOptions(theTranslator->trProtectedTypes()); })
                                                   } },
-  { "class/memberdecl/protectedslots",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_proSlots,
+  { "class/memberdecl/protectedslots",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProSlots(),
                                                             []() { return compileOptions(theTranslator->trProtectedSlots()); })
                                                   } },
-  { "class/memberdecl/protectedmethods",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_proMethods,
+  { "class/memberdecl/protectedmethods",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProMethods(),
                                                             []() { return compileOptions(theTranslator->trProtectedMembers()); })
                                                   } },
-  { "class/memberdecl/protectedstaticmethods",    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_proStaticMethods,
+  { "class/memberdecl/protectedstaticmethods",    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProStaticMethods(),
                                                             []() { return compileOptions(theTranslator->trStaticProtectedMembers()); })
                                                   } },
-  { "class/memberdecl/protectedattributes",       { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_proAttribs,
+  { "class/memberdecl/protectedattributes",       { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProAttribs(),
                                                             []() { return compileOptions(theTranslator->trProtectedAttribs()); })
                                                   } },
-  { "class/memberdecl/protectedstaticattributes", { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_proStaticAttribs,
+  { "class/memberdecl/protectedstaticattributes", { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProStaticAttribs(),
                                                             []() { return compileOptions(theTranslator->trStaticProtectedAttribs()); })
                                                   } },
-  { "class/memberdecl/packagetypes",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacTypes,
+  { "class/memberdecl/packagetypes",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacTypes(),
                                                             []() { return compileOptions(theTranslator->trPackageTypes()); })
                                                   } },
-  { "class/memberdecl/packagemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacMethods,
+  { "class/memberdecl/packagemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacMethods(),
                                                             []() { return compileOptions(theTranslator->trPackageFunctions()); })
                                                   } },
-  { "class/memberdecl/packagestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacStaticMethods,
+  { "class/memberdecl/packagestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacStaticMethods(),
                                                             []() { return compileOptions(theTranslator->trStaticPackageFunctions()); })
                                                   } },
-  { "class/memberdecl/packageattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacAttribs,
+  { "class/memberdecl/packageattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacAttribs(),
                                                             []() { return compileOptions(theTranslator->trPackageAttribs()); })
                                                   } },
-  { "class/memberdecl/packagestaticattributes",   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacStaticAttribs,
+  { "class/memberdecl/packagestaticattributes",   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacStaticAttribs(),
                                                             []() { return compileOptions(theTranslator->trStaticPackageAttribs()); })
                                                   } },
-  { "class/memberdecl/properties",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_properties,
+  { "class/memberdecl/properties",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Properties(),
                                                             []() { return compileOptions(theTranslator->trProperties()); })
                                                   } },
-  { "class/memberdecl/events",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_events,
+  { "class/memberdecl/events",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Events(),
                                                             []() { return compileOptions(theTranslator->trEvents()); })
                                                   } },
-  { "class/memberdecl/privatetypes",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_priTypes,
+  { "class/memberdecl/privatetypes",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriTypes(),
                                                             []() { return compileOptions(theTranslator->trPrivateTypes()); })
                                                   } },
-  { "class/memberdecl/privateslots",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_priSlots,
+  { "class/memberdecl/privateslots",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriSlots(),
                                                             []() { return compileOptions(theTranslator->trPrivateSlots()); })
                                                   } },
-  { "class/memberdecl/privatemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_priMethods,
+  { "class/memberdecl/privatemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriMethods(),
                                                             []() { return compileOptions(theTranslator->trPrivateMembers()); })
                                                   } },
-  { "class/memberdecl/privatestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_priStaticMethods,
+  { "class/memberdecl/privatestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriStaticMethods(),
                                                             []() { return compileOptions(theTranslator->trStaticPrivateMembers()); })
                                                   } },
-  { "class/memberdecl/privateattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_priAttribs,
+  { "class/memberdecl/privateattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriAttribs(),
                                                             []() { return compileOptions(theTranslator->trPrivateAttribs()); })
                                                   } },
-  { "class/memberdecl/privatestaticattributes",   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_priStaticAttribs,
+  { "class/memberdecl/privatestaticattributes",   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriStaticAttribs(),
                                                             []() { return compileOptions(theTranslator->trStaticPrivateAttribs()); })
                                                   } },
-  { "class/memberdecl/friends",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_friends,
+  { "class/memberdecl/friends",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Friends(),
                                                             []() { return compileOptions(theTranslator->trFriends()); })
                                                   } },
-  { "class/memberdecl/related",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_related,
+  { "class/memberdecl/related",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Related(),
                                                             []() { return compileOptions(theTranslator->trRelatedSymbols()); },
                                                             []() { return compileOptions(theTranslator->trRelatedSymbolsSubscript()); })
                                                   } },
   { "class/memberdef",                            { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
   { "class/memberdef/inlineclasses",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ClassInlineClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trClassDocumentation(),
-                                                                           SrcLangExt_Fortran,theTranslator->trTypeDocumentation()); })
+                                                                           SrcLangExt::Fortran,theTranslator->trTypeDocumentation()); })
                                                   } },
-  { "class/memberdef/typedefs",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType_typedefMembers,
+  { "class/memberdef/typedefs",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::TypedefMembers(),
                                                             []() { return compileOptions(theTranslator->trMemberTypedefDocumentation()); })
                                                   } },
-  { "class/memberdef/enums",                      { startCb(&LayoutParser::startMemberDefEntry, MemberListType_enumMembers,
+  { "class/memberdef/enums",                      { startCb(&LayoutParser::startMemberDefEntry, MemberListType::EnumMembers(),
                                                             []() { return compileOptions(theTranslator->trMemberEnumerationDocumentation()); })
                                                   } },
-  { "class/memberdef/services",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType_serviceMembers,
+  { "class/memberdef/services",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::ServiceMembers(),
                                                             []() { return compileOptions(theTranslator->trInterfaces()); })
                                                   } },
-  { "class/memberdef/interfaces",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType_interfaceMembers,
+  { "class/memberdef/interfaces",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType::InterfaceMembers(),
                                                             []() { return compileOptions(theTranslator->trInterfaces()); })
                                                   } },
-  { "class/memberdef/constructors",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType_constructors,
+  { "class/memberdef/constructors",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType::Constructors(),
                                                             []() { return compileOptions(theTranslator->trConstructorDocumentation()); })
                                                   } },
-  { "class/memberdef/functions",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_functionMembers,
-                                                            []() { return compileOptions(/* default */      theTranslator->trMemberFunctionDocumentation(), SrcLangExt_ObjC,   theTranslator->trMethodDocumentation(),
-                                                                           SrcLangExt_Fortran,theTranslator->trMemberFunctionDocumentationFortran(),
-                                                                           SrcLangExt_Slice,  theTranslator->trOperationDocumentation()); })
+  { "class/memberdef/functions",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::FunctionMembers(),
+                                                            []() { return compileOptions(/* default */      theTranslator->trMemberFunctionDocumentation(), SrcLangExt::ObjC,   theTranslator->trMethodDocumentation(),
+                                                                           SrcLangExt::Fortran,theTranslator->trMemberFunctionDocumentationFortran(),
+                                                                           SrcLangExt::Slice,  theTranslator->trOperationDocumentation()); })
                                                   } },
-  { "class/memberdef/related",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType_relatedMembers,
+  { "class/memberdef/related",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::RelatedMembers(),
                                                             []() { return compileOptions(theTranslator->trRelatedSymbolDocumentation()); })
                                                   } },
-  { "class/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_variableMembers,
+  { "class/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::VariableMembers(),
                                                             []() { return compileOptions(/* default */      theTranslator->trMemberDataDocumentation(),
-                                                                           SrcLangExt_Slice,  theTranslator->trDataMemberDocumentation()); })
+                                                                           SrcLangExt::Slice,  theTranslator->trDataMemberDocumentation()); })
                                                   } },
-  { "class/memberdef/properties",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType_propertyMembers,
+  { "class/memberdef/properties",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType::PropertyMembers(),
                                                             []() { return compileOptions(theTranslator->trPropertyDocumentation()); })
                                                   } },
-  { "class/memberdef/events",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType_eventMembers,
+  { "class/memberdef/events",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType::EventMembers(),
                                                             []() { return compileOptions(theTranslator->trEventDocumentation()); })
                                                   } },
 
@@ -964,11 +972,11 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "namespace/memberdecl/nestednamespaces",      { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceNestedNamespaces,
                                                             []() { return compileOptions(/* default */      theTranslator->trNamespaces(),
-                                                                           SrcLangExt_Java,   theTranslator->trPackages(),
-                                                                           SrcLangExt_VHDL,   theTranslator->trPackages(),
-                                                                           SrcLangExt_IDL,    theTranslator->trModules(),
-                                                                           SrcLangExt_Fortran,theTranslator->trModules(),
-                                                                           SrcLangExt_Slice,(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
+                                                                           SrcLangExt::Java,   theTranslator->trPackages(),
+                                                                           SrcLangExt::VHDL,   theTranslator->trPackages(),
+                                                                           SrcLangExt::IDL,    theTranslator->trModules(),
+                                                                           SrcLangExt::Fortran,theTranslator->trModules(),
+                                                                           SrcLangExt::Slice,(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
                                                                                               theTranslator->trModules() :
                                                                                               theTranslator->trNamespaces())); })
                                                   } },
@@ -980,8 +988,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "namespace/memberdecl/classes",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
-                                                                           SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
-                                                                           SrcLangExt_Fortran,theTranslator->trDataTypes()); })
+                                                                           SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                           SrcLangExt::Fortran,theTranslator->trDataTypes()); })
                                                   } },
   { "namespace/memberdecl/concepts",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceConcepts,
                                                             []() { return compileOptions(theTranslator->trConcept(true,false)); })
@@ -993,53 +1001,59 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                             []() { return compileOptions(theTranslator->trExceptions()); })
                                                   } },
   { "namespace/memberdecl/membergroups",          { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::MemberGroups) } },
-  { "namespace/memberdecl/typedefs",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decTypedefMembers,
+  { "namespace/memberdecl/typedefs",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecTypedefMembers(),
                                                             []() { return compileOptions(theTranslator->trTypedefs()); })
                                                   } },
-  { "namespace/memberdecl/sequences",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decSequenceMembers,
+  { "namespace/memberdecl/sequences",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecSequenceMembers(),
                                                             []() { return compileOptions(theTranslator->trSequences()); })
                                                   } },
-  { "namespace/memberdecl/dictionaries",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decDictionaryMembers,
+  { "namespace/memberdecl/dictionaries",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDictionaryMembers(),
                                                             []() { return compileOptions(theTranslator->trDictionaries()); })
                                                   } },
-  { "namespace/memberdecl/enums",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decEnumMembers,
+  { "namespace/memberdecl/enums",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerations()); })
                                                   } },
-  { "namespace/memberdecl/functions",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decFuncMembers,
+  { "namespace/memberdecl/functions",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFuncMembers(),
                                                             []() { return compileOptions(/* default */      theTranslator->trFunctions(),
-                                                                           SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                                                           SrcLangExt_VHDL,   theTranslator->trFunctionAndProc()); })
+                                                                           SrcLangExt::Fortran,theTranslator->trSubprograms(),
+                                                                           SrcLangExt::VHDL,   theTranslator->trFunctionAndProc()); })
                                                   } },
-  { "namespace/memberdecl/variables",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decVarMembers,
+  { "namespace/memberdecl/variables",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecVarMembers(),
                                                             []() { return compileOptions(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
                                                                                               theTranslator->trConstants() :
                                                                                               theTranslator->trVariables()); })
                                                   } },
+  { "namespace/memberdecl/properties",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Properties(),
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
+                                                  } },
   { "namespace/memberdef",                        { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
   { "namespace/memberdef/inlineclasses",          { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceInlineClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trClassDocumentation(),
-                                                                           SrcLangExt_Fortran,theTranslator->trTypeDocumentation()); })
+                                                                           SrcLangExt::Fortran,theTranslator->trTypeDocumentation()); })
                                                   } },
-  { "namespace/memberdef/typedefs",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docTypedefMembers,
+  { "namespace/memberdef/typedefs",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocTypedefMembers(),
                                                             []() { return compileOptions(theTranslator->trTypedefDocumentation()); })
                                                   } },
-  { "namespace/memberdef/sequences",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docSequenceMembers,
+  { "namespace/memberdef/sequences",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocSequenceMembers(),
                                                             []() { return compileOptions(theTranslator->trSequenceDocumentation()); })
                                                   } },
-  { "namespace/memberdef/dictionaries",           { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docDictionaryMembers,
+  { "namespace/memberdef/dictionaries",           { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDictionaryMembers(),
                                                             []() { return compileOptions(theTranslator->trDictionaryDocumentation()); })
                                                   } },
-  { "namespace/memberdef/enums",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docEnumMembers,
+  { "namespace/memberdef/enums",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEnumMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerationTypeDocumentation()); })
                                                   } },
-  { "namespace/memberdef/functions",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docFuncMembers,
+  { "namespace/memberdef/functions",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocFuncMembers(),
                                                             []() { return compileOptions(/* default */      theTranslator->trFunctionDocumentation(),
-                                                                           SrcLangExt_Fortran,theTranslator->trSubprogramDocumentation()); })
+                                                                           SrcLangExt::Fortran,theTranslator->trSubprogramDocumentation()); })
                                                   } },
-  { "namespace/memberdef/variables",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docVarMembers,
+  { "namespace/memberdef/variables",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocVarMembers(),
                                                             []() { return compileOptions(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
                                                                                               theTranslator->trConstantDocumentation() :
                                                                                               theTranslator->trVariableDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/properties",             { startCb(&LayoutParser::startMemberDefEntry, MemberListType::PropertyMembers(),
+                                                            []() { return compileOptions(theTranslator->trPropertyDocumentation()); })
                                                   } },
 
   // file layout handlers
@@ -1062,8 +1076,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "file/memberdecl/classes",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
-                                                                                         SrcLangExt_Fortran,theTranslator->trDataTypes()); })
+                                                                                         SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::Fortran,theTranslator->trDataTypes()); })
                                                   } },
   { "file/memberdecl/concepts",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::FileConcepts,
                                                             []() { return compileOptions(theTranslator->trConcept(true,false)); })
@@ -1076,68 +1090,74 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "file/memberdecl/namespaces",                 { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileNamespaces,
                                                             []() { return compileOptions(/* default */      theTranslator->trNamespaces(),
-                                                                                         SrcLangExt_Java,   theTranslator->trPackages(),
-                                                                                         SrcLangExt_IDL,    theTranslator->trModules(),
-                                                                                         SrcLangExt_Fortran,theTranslator->trModules(),
-                                                                                         SrcLangExt_Slice,  theTranslator->trModules()); })
+                                                                                         SrcLangExt::Java,   theTranslator->trPackages(),
+                                                                                         SrcLangExt::IDL,    theTranslator->trModules(),
+                                                                                         SrcLangExt::Fortran,theTranslator->trModules(),
+                                                                                         SrcLangExt::Slice,  theTranslator->trModules()); })
                                                   } },
   { "file/memberdecl/constantgroups",             { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileConstantGroups,
                                                             []() { return compileOptions(theTranslator->trConstantGroups()); })
                                                   } },
-  { "file/memberdecl/defines",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decDefineMembers,
+  { "file/memberdecl/defines",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDefineMembers(),
                                                             []() { return compileOptions(theTranslator->trDefines()); })
                                                   } },
-  { "file/memberdecl/typedefs",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decTypedefMembers,
+  { "file/memberdecl/typedefs",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecTypedefMembers(),
                                                             []() { return compileOptions(theTranslator->trTypedefs()); })
                                                   } },
-  { "file/memberdecl/sequences",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decSequenceMembers,
+  { "file/memberdecl/sequences",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecSequenceMembers(),
                                                             []() { return compileOptions(theTranslator->trSequences()); })
                                                   } },
-  { "file/memberdecl/dictionaries",               { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decDictionaryMembers,
+  { "file/memberdecl/dictionaries",               { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDictionaryMembers(),
                                                             []() { return compileOptions(theTranslator->trDictionaries()); })
                                                   } },
-  { "file/memberdecl/enums",                      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decEnumMembers,
+  { "file/memberdecl/enums",                      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerations()); })
                                                   } },
-  { "file/memberdecl/functions",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decFuncMembers,
+  { "file/memberdecl/functions",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFuncMembers(),
                                                             []() { return compileOptions(/* default */      theTranslator->trFunctions(),
-                                                                                         SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                                                                         SrcLangExt_VHDL,   theTranslator->trFunctionAndProc()); })
+                                                                                         SrcLangExt::Fortran,theTranslator->trSubprograms(),
+                                                                                         SrcLangExt::VHDL,   theTranslator->trFunctionAndProc()); })
                                                   } },
-  { "file/memberdecl/variables",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decVarMembers,
+  { "file/memberdecl/variables",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecVarMembers(),
                                                             []() { return compileOptions(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
                                                                                                             theTranslator->trConstants() :
                                                                                                             theTranslator->trVariables()); })
+                                                  } },
+  { "file/memberdecl/properties",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Properties(),
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
                                                   } },
   { "file/memberdef",                             { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
 
   { "file/memberdef/inlineclasses",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileInlineClasses,
                                                             []() { return compileOptions(/* default */       theTranslator->trClassDocumentation(),
-                                                                                         SrcLangExt_Fortran, theTranslator->trTypeDocumentation()); })
+                                                                                         SrcLangExt::Fortran, theTranslator->trTypeDocumentation()); })
                                                   } },
-  { "file/memberdef/defines",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docDefineMembers,
+  { "file/memberdef/defines",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDefineMembers(),
                                                             []() { return compileOptions(theTranslator->trDefineDocumentation()); })
                                                   } },
-  { "file/memberdef/typedefs",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docTypedefMembers,
+  { "file/memberdef/typedefs",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocTypedefMembers(),
                                                             []() { return compileOptions(theTranslator->trTypedefDocumentation()); })
                                                   } },
-  { "file/memberdef/sequences",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docSequenceMembers,
+  { "file/memberdef/sequences",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocSequenceMembers(),
                                                             []() { return compileOptions(theTranslator->trSequenceDocumentation()); })
                                                   } },
-  { "file/memberdef/dictionaries",                { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docDictionaryMembers,
+  { "file/memberdef/dictionaries",                { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDictionaryMembers(),
                                                             []() { return compileOptions(theTranslator->trDictionaryDocumentation()); })
                                                   } },
-  { "file/memberdef/enums",                       { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docEnumMembers,
+  { "file/memberdef/enums",                       { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEnumMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerationTypeDocumentation()); })
                                                   } },
-  { "file/memberdef/functions",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docFuncMembers,
+  { "file/memberdef/functions",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocFuncMembers(),
                                                             []() { return compileOptions(/* default */       theTranslator->trFunctionDocumentation(),
-                                                                                         SrcLangExt_Fortran, theTranslator->trSubprogramDocumentation()); })
+                                                                                         SrcLangExt::Fortran, theTranslator->trSubprogramDocumentation()); })
                                                   } },
-  { "file/memberdef/variables",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docVarMembers,
+  { "file/memberdef/variables",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocVarMembers(),
                                                             []() { return compileOptions(theTranslator->trVariableDocumentation()); })
                                                   } },
 
+  { "file/memberdef/properties",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::PropertyMembers(),
+                                                            []() { return compileOptions(theTranslator->trPropertyDocumentation()); })
+                                                  } },
   // group layout handlers
   { "group",                                      { startCb(&LayoutParser::startTop,LayoutDocManager::Group,"group/",LayoutNavEntry::None),
                                                     endCb(&LayoutParser::endTop)
@@ -1152,8 +1172,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "group/memberdecl/membergroups",              { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::MemberGroups)  } },
   { "group/memberdecl/classes",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupClasses,
                                                             []() { return compileOptions(/* default */       theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,    theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
-                                                                                         SrcLangExt_Fortran, theTranslator->trDataTypes()); })
+                                                                                         SrcLangExt::VHDL,    theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::Fortran, theTranslator->trDataTypes()); })
                                                   } },
   { "group/memberdecl/concepts",                  { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupConcepts,
                                                             []() { return compileOptions(theTranslator->trConcept(true,false)); })
@@ -1163,8 +1183,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "group/memberdecl/namespaces",                { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupNamespaces,
                                                             []() { return compileOptions(/* default */       theTranslator->trNamespaces(),
-                                                                                         SrcLangExt_Java,    theTranslator->trPackages(),
-                                                                                         SrcLangExt_Fortran, theTranslator->trModules()); })
+                                                                                         SrcLangExt::Java,    theTranslator->trPackages(),
+                                                                                         SrcLangExt::Fortran, theTranslator->trModules()); })
                                                   } },
   { "group/memberdecl/dirs",                      { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupDirs,
                                                             []() { return compileOptions(theTranslator->trDirectories()); })
@@ -1175,103 +1195,103 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "group/memberdecl/files",                     { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupFiles,
                                                             []() { return compileOptions(theTranslator->trFile(TRUE,FALSE)); })
                                                   } },
-  { "group/memberdecl/defines",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decDefineMembers,
+  { "group/memberdecl/defines",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDefineMembers(),
                                                             []() { return compileOptions(theTranslator->trDefines()); })
                                                   } },
-  { "group/memberdecl/typedefs",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decTypedefMembers,
+  { "group/memberdecl/typedefs",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecTypedefMembers(),
                                                             []() { return compileOptions(theTranslator->trTypedefs()); })
                                                   } },
-  { "group/memberdecl/sequences",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decSequenceMembers,
+  { "group/memberdecl/sequences",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecSequenceMembers(),
                                                             []() { return compileOptions(theTranslator->trSequences()); })
                                                   } },
-  { "group/memberdecl/dictionaries",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decDictionaryMembers,
+  { "group/memberdecl/dictionaries",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDictionaryMembers(),
                                                             []() { return compileOptions(theTranslator->trDictionaries()); })
                                                   } },
-  { "group/memberdecl/enums",                     { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decEnumMembers,
+  { "group/memberdecl/enums",                     { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerations()); })
                                                   } },
-  { "group/memberdecl/enumvalues",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decEnumValMembers,
+  { "group/memberdecl/enumvalues",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumValMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerationValues()); })
                                                   } },
-  { "group/memberdecl/functions",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decFuncMembers,
+  { "group/memberdecl/functions",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFuncMembers(),
                                                             []() { return compileOptions(/* default */      theTranslator->trFunctions(),
-                                                                                         SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                                                                         SrcLangExt_VHDL,   theTranslator->trFunctionAndProc()); })
+                                                                                         SrcLangExt::Fortran,theTranslator->trSubprograms(),
+                                                                                         SrcLangExt::VHDL,   theTranslator->trFunctionAndProc()); })
                                                   } },
-  { "group/memberdecl/variables",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decVarMembers,
+  { "group/memberdecl/variables",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecVarMembers(),
                                                             []() { return compileOptions(theTranslator->trVariables()); })
                                                   } },
-  { "group/memberdecl/signals",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decSignalMembers,
+  { "group/memberdecl/signals",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecSignalMembers(),
                                                             []() { return compileOptions(theTranslator->trSignals()); })
                                                   } },
-  { "group/memberdecl/publicslots",               { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decPubSlotMembers,
+  { "group/memberdecl/publicslots",               { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecPubSlotMembers(),
                                                             []() { return compileOptions(theTranslator->trPublicSlots()); })
                                                   } },
-  { "group/memberdecl/protectedslots",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decProSlotMembers,
+  { "group/memberdecl/protectedslots",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecProSlotMembers(),
                                                             []() { return compileOptions(theTranslator->trProtectedSlots()); })
                                                   } },
-  { "group/memberdecl/privateslots",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decPriSlotMembers,
+  { "group/memberdecl/privateslots",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecPriSlotMembers(),
                                                             []() { return compileOptions(theTranslator->trPrivateSlots()); })
                                                   } },
-  { "group/memberdecl/events",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decEventMembers,
+  { "group/memberdecl/events",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEventMembers(),
                                                             []() { return compileOptions(theTranslator->trEvents()); })
                                                   } },
-  { "group/memberdecl/properties",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decPropMembers,
+  { "group/memberdecl/properties",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecPropMembers(),
                                                             []() { return compileOptions(theTranslator->trProperties()); })
                                                   } },
-  { "group/memberdecl/friends",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decFriendMembers,
+  { "group/memberdecl/friends",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFriendMembers(),
                                                             []() { return compileOptions(theTranslator->trFriends()); })
                                                   } },
   { "group/memberdef",                            { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
   { "group/memberdef/pagedocs",                   { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::GroupPageDocs)    } },
   { "group/memberdef/inlineclasses",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupInlineClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trClassDocumentation(),
-                                                                                         SrcLangExt_Fortran,theTranslator->trTypeDocumentation()); })
+                                                                                         SrcLangExt::Fortran,theTranslator->trTypeDocumentation()); })
                                                   } },
-  { "group/memberdef/defines",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docDefineMembers,
+  { "group/memberdef/defines",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDefineMembers(),
                                                             []() { return compileOptions(theTranslator->trDefineDocumentation()); })
                                                   } },
-  { "group/memberdef/typedefs",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docTypedefMembers,
+  { "group/memberdef/typedefs",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocTypedefMembers(),
                                                             []() { return compileOptions(theTranslator->trTypedefDocumentation()); })
                                                   } },
-  { "group/memberdef/sequences",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docSequenceMembers,
+  { "group/memberdef/sequences",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocSequenceMembers(),
                                                             []() { return compileOptions(theTranslator->trSequenceDocumentation()); })
                                                   } },
-  { "group/memberdef/dictionaries",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docDictionaryMembers,
+  { "group/memberdef/dictionaries",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDictionaryMembers(),
                                                             []() { return compileOptions(theTranslator->trDictionaryDocumentation()); })
                                                   } },
-  { "group/memberdef/enums",                      { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docEnumMembers,
+  { "group/memberdef/enums",                      { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEnumMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerationTypeDocumentation()); })
                                                   } },
-  { "group/memberdef/enumvalues",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docEnumValMembers,
+  { "group/memberdef/enumvalues",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEnumValMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerationValueDocumentation()); })
                                                   } },
-  { "group/memberdef/functions",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docFuncMembers,
+  { "group/memberdef/functions",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocFuncMembers(),
                                                             []() { return compileOptions(/* default */      theTranslator->trFunctionDocumentation(),
-                                                                                         SrcLangExt_Fortran,theTranslator->trSubprogramDocumentation()); })
+                                                                                         SrcLangExt::Fortran,theTranslator->trSubprogramDocumentation()); })
                                                   } },
-  { "group/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docVarMembers,
+  { "group/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocVarMembers(),
                                                             []() { return compileOptions(theTranslator->trVariableDocumentation()); })
                                                   } },
-  { "group/memberdef/signals",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docSignalMembers,
+  { "group/memberdef/signals",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocSignalMembers(),
                                                             []() { return compileOptions(theTranslator->trSignals()); })
                                                   } },
-  { "group/memberdef/publicslots",                { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docPubSlotMembers,
+  { "group/memberdef/publicslots",                { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocPubSlotMembers(),
                                                             []() { return compileOptions(theTranslator->trPublicSlots()); })
                                                   } },
-  { "group/memberdef/protectedslots",             { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docProSlotMembers,
+  { "group/memberdef/protectedslots",             { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocProSlotMembers(),
                                                             []() { return compileOptions(theTranslator->trProtectedSlots()); })
                                                   } },
-  { "group/memberdef/privateslots",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docPriSlotMembers,
+  { "group/memberdef/privateslots",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocPriSlotMembers(),
                                                             []() { return compileOptions(theTranslator->trPrivateSlots()); })
                                                   } },
-  { "group/memberdef/events",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docEventMembers,
+  { "group/memberdef/events",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEventMembers(),
                                                             []() { return compileOptions(theTranslator->trEvents()); })
                                                   } },
-  { "group/memberdef/properties",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docPropMembers,
+  { "group/memberdef/properties",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocPropMembers(),
                                                             []() { return compileOptions(theTranslator->trProperties()); })
                                                   } },
-  { "group/memberdef/friends",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType_docFriendMembers,
+  { "group/memberdef/friends",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocFriendMembers(),
                                                             []() { return compileOptions(theTranslator->trFriends()); })
                                                   } },
 
@@ -1294,16 +1314,16 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "module/memberdecl/classes",                  { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ModuleClasses,
                                                             []() { return compileOptions(theTranslator->trCompounds()); })
                                                   } },
-  { "module/memberdecl/enums",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decEnumMembers,
+  { "module/memberdecl/enums",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumMembers(),
                                                             []() { return compileOptions(theTranslator->trEnumerations()); })
                                                   } },
-  { "module/memberdecl/typedefs",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decTypedefMembers,
+  { "module/memberdecl/typedefs",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecTypedefMembers(),
                                                             []() { return compileOptions(theTranslator->trTypedefs()); })
                                                   } },
-  { "module/memberdecl/functions",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decFuncMembers,
+  { "module/memberdecl/functions",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFuncMembers(),
                                                             []() { return compileOptions(theTranslator->trFunctions()); })
                                                   } },
-  { "module/memberdecl/variables",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_decVarMembers,
+  { "module/memberdecl/variables",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecVarMembers(),
                                                             []() { return compileOptions(theTranslator->trVariables()); })
                                                   } },
   { "module/memberdecl/membergroups",             { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::MemberGroups)  } },
@@ -1348,7 +1368,7 @@ void LayoutParser::endElement( const std::string &name )
   //printf("endElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
   auto it=g_elementHandlers.end();
 
-  if (!m_scope.isEmpty() && m_scope.right(static_cast<uint32_t>(name.length())+1)==name+"/")
+  if (!m_scope.isEmpty() && m_scope.right(name.length()+1)==name+"/")
   { // element ends current scope
     it = g_elementHandlers.find(m_scope.left(m_scope.length()-1).str());
   }
@@ -1419,7 +1439,7 @@ LayoutNavEntry* LayoutDocManager::rootNavEntry() const
 LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry *parent,LayoutNavEntry::Kind k,bool vs,const QCString &bf,
                                                       const QCString &tl,const QCString &intro)
 {
-  if (parent==0) parent = &d->rootNav;
+  if (parent==nullptr) parent = &d->rootNav;
   auto ptr = std::make_unique<LayoutNavEntry>(parent,k,vs,bf,tl,intro);
   auto child = ptr.get();
   parent->addChild(std::move(ptr));
@@ -1482,19 +1502,19 @@ void writeDefaultLayoutFile(const QCString &fileName)
 // where the number is a value of SrcLangExt in decimal notation (i.e. 16=Java, 8=IDL).
 QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
 {
-  int i,s=0,e=input.find('|');
+  int s=0,e=input.find('|');
   if (e==-1) return input; // simple title case
   int e1=e;
   while (e!=-1) // look for 'number=title' pattern separated by '|'
   {
     s=e+1;
     e=input.find('|',s);
-    i=input.find('=',s);
+    int i=input.find('=',s);
     assert(i>s);
     SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
     if (key==lang) // found matching key
     {
-      if (e==-1) e=input.length();
+      if (e==-1) e=static_cast<int>(input.length());
       return input.mid(i+1,e-i-1);
     }
   }

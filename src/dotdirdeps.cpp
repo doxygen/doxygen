@@ -71,7 +71,7 @@ static QCString getDirectoryBackgroundColor(int depthIndex)
   const char hex[] = "0123456789abcdef";
   int range = 0x40; // range from darkest color to lightest color
   int luma   = 0xef-static_cast<int>(fraction*static_cast<float>(range)); // interpolation
-  double r,g,b;
+  double r=0, g=0, b=0;
   ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
                         pow(luma/255.0,gamma/100.0),&r,&g,&b);
   int red   = static_cast<int>(r*255.0);
@@ -220,7 +220,7 @@ static void addDependencies(DirRelations &dependencies,const DirDef *const srcDi
     if (!dstDir->isParentOf(srcDir) && (isLeaf || usedDirectory->hasDirectSrcDeps()))
     {
       QCString relationName;
-      relationName.sprintf("dir_%06d_%06d", srcDir->dirCount(), dstDir->dirCount());
+      relationName.sprintf("dir_%06d_%06d", srcDir->dirIndex(), dstDir->dirIndex());
       bool directRelation = isLeaf ? usedDirectory->hasDirectDstDeps() : usedDirectory->hasDirectDeps();
       auto &&dependency = std::make_unique<DirRelation>(relationName, srcDir, usedDirectory.get());
       auto &&pair = std::make_pair(std::move(dependency),directRelation);

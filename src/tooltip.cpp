@@ -16,6 +16,7 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <mutex>
 
@@ -27,8 +28,8 @@
 #include "doxygen.h"
 #include "config.h"
 
-static std::mutex                                      g_tooltipsMutex;
-static std::unordered_map<int, std::set<std::string> > g_tooltipsWrittenPerFile;
+static std::mutex                                                g_tooltipsMutex;
+static std::unordered_map<int, std::unordered_set<std::string> > g_tooltipsWrittenPerFile;
 
 class TooltipManager::Private
 {
@@ -47,7 +48,7 @@ TooltipManager::~TooltipManager()
 static QCString escapeId(const QCString &s)
 {
   QCString res=s;
-  for (uint32_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
+  for (size_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
   return res;
 }
 
@@ -93,7 +94,7 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
   auto it = g_tooltipsWrittenPerFile.find(id);
   if (it==g_tooltipsWrittenPerFile.end()) // new file
   {
-    it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
+    it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::unordered_set<std::string>())).first;
   }
 
   for (const auto &[name,d] : p->tooltipInfo)

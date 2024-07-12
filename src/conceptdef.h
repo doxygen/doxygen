@@ -26,15 +26,11 @@ class ModuleDef;
 class ConceptDef : public Definition
 {
   public:
-    virtual DefType definitionType() const = 0;
-    virtual QCString getOutputFileBase() const = 0;
+    ABSTRACT_BASE_CLASS(ConceptDef)
+
     virtual bool hasDetailedDescription() const = 0;
-    virtual QCString displayName(bool includeScope=true) const = 0;
     virtual const IncludeInfo *includeInfo() const = 0;
     virtual ArgumentList getTemplateParameterList() const = 0;
-    virtual QCString anchor() const = 0;
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
     virtual QCString initializer() const = 0;
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const = 0;
@@ -48,6 +44,8 @@ class ConceptDef : public Definition
 class ConceptDefMutable : public DefinitionMutable, public ConceptDef
 {
   public:
+    ABSTRACT_BASE_CLASS(ConceptDefMutable)
+
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setNamespace(NamespaceDef *nd) = 0;

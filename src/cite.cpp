@@ -49,8 +49,8 @@ class CiteInfoImpl : public CiteInfo
     CiteInfoImpl(const QCString &label, const QCString &text=QCString())
     : m_label(label), m_text(text) { }
 
-    virtual QCString label()    const { return m_label;    }
-    virtual QCString text()     const { return m_text;     }
+    QCString label() const override { return m_label;    }
+    QCString text()  const override { return m_text;     }
 
     void setText(const QCString &s) { m_text = s; }
 
@@ -77,21 +77,22 @@ CitationManager::CitationManager() : p(new Private)
 
 void CitationManager::insert(const QCString &label)
 {
+  QCString lowerCaseLabel = label.lower();
   p->entries.insert(
       std::make_pair(
-        label.str(),
-        std::make_unique<CiteInfoImpl>(label)
+        lowerCaseLabel.str(),
+        std::make_unique<CiteInfoImpl>(lowerCaseLabel)
       ));
 }
 
 const CiteInfo *CitationManager::find(const QCString &label) const
 {
-  auto it = p->entries.find(label.str());
+  auto it = p->entries.find(label.lower().str());
   if (it!=p->entries.end())
   {
     return it->second.get();
   }
-  return 0;
+  return nullptr;
 }
 
 void CitationManager::clear()
@@ -141,7 +142,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   std::string lineStr;
   while (getline(f,lineStr))
   {
-    int i;
+    int i = -1;
     QCString line(lineStr);
     if (line.stripWhiteSpace().startsWith("@"))
     {
@@ -191,8 +192,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
         QCString crossrefName = line.mid(static_cast<size_t>(j+1),static_cast<uint32_t>(k-j-1));
         // check if the reference with the cross reference is used
         // insert cross reference when cross reference has not yet been added.
-        if ((p->entries.find(citeName.str())!=p->entries.end()) &&
-            (p->entries.find(crossrefName.str())==p->entries.end())) // not found yet
+        if (find(citeName) && !find(crossrefName)) // not found yet
         {
           insert(crossrefName);
         }
@@ -213,7 +213,7 @@ QCString CitationManager::getFormulas(const QCString &s)
   const size_t tmpLen = 30;
   char tmp[tmpLen];
   const char *ps=s.data();
-  char c;
+  char c = 0;
   while ((c=*ps++))
   {
     if (insideFormula)
@@ -283,7 +283,7 @@ QCString CitationManager::replaceFormulas(const QCString &s)
   if (s.isEmpty()) return s;
   QCString t;
   int pos=0;
-  int i;
+  int i = -1;
   while ((i=s.find(g_formulaMarker.c_str(),pos))!=-1)
   {
     t += s.mid(pos,i-pos);
@@ -397,10 +397,10 @@ void CitationManager::generatePage()
 
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
-  int exitCode;
   QCString perlArgs = "\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+ citeListFile+"\"";
   if (citeDebug) perlArgs+=" -d";
-  if ((exitCode=Portable::system("perl",perlArgs)) != 0)
+  int exitCode = Portable::system("perl",perlArgs);
+  if (exitCode!=0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         exitCode);
@@ -440,7 +440,7 @@ void CitationManager::generatePage()
           QCString label = line.mid(ui+14,uj-ui-14);
           QCString number = line.mid(uj+2,uk-uj-1);
           line = line.left(ui+14) + label + line.right(line.length()-uj);
-          auto it = p->entries.find(label.str());
+          auto it = p->entries.find(label.lower().str());
           //printf("label='%s' number='%s' => %p\n",qPrint(label),qPrint(number),it->second.get());
           if (it!=p->entries.end())
           {
@@ -461,9 +461,10 @@ void CitationManager::generatePage()
     CommentScanner   commentScanner;
     int              lineNr = 0;
     int              pos = 0;
-    Protection       prot;
+    GuardedSectionStack guards;
+    Protection       prot = Protection::Public;
     commentScanner.parseCommentBlock(
-        NULL,
+        nullptr,
         &current,
         doc,          // text
         fileName(),   // file
@@ -474,7 +475,8 @@ void CitationManager::generatePage()
         prot,         // protection
         pos,          // position,
         needsEntry,
-        false
+        false,
+        &guards
         );
     doc = current.doc;
   }

@@ -22,6 +22,7 @@
 #include <memory>
 #include <vector>
 #include "types.h"
+#include "construct.h"
 
 class LayoutParser;
 struct LayoutNavEntry;
@@ -30,7 +31,8 @@ class MemberList;
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry
 {
-  virtual ~LayoutDocEntry() = default;
+  ABSTRACT_BASE_CLASS(LayoutDocEntry)
+
   enum Kind {
               // Generic items for all pages
               MemberGroups,
@@ -79,7 +81,7 @@ struct LayoutDocEntrySimple : LayoutDocEntry
 {
   public:
     LayoutDocEntrySimple(Kind k,bool v) : m_kind(k), m_visible(v) {}
-    Kind kind() const { return m_kind; }
+    Kind kind() const override { return m_kind; }
     bool visible() const { return m_visible; }
   private:
     Kind m_kind;
@@ -102,7 +104,7 @@ struct LayoutDocEntryMemberDecl: public LayoutDocEntry
                            const QCString &tl,const QCString &ss)
     : type(tp), m_title(tl), m_subscript(ss) {}
 
-  Kind kind() const { return MemberDecl; }
+  Kind kind() const override { return MemberDecl; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
   QCString subtitle(SrcLangExt lang) const;
@@ -117,7 +119,7 @@ struct LayoutDocEntryMemberDef: public LayoutDocEntry
   LayoutDocEntryMemberDef(MemberListType tp,const QCString &tl)
     : type(tp), m_title(tl) {}
 
-  Kind kind() const { return MemberDef; }
+  Kind kind() const override { return MemberDef; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
 private:
@@ -185,7 +187,7 @@ struct LayoutNavEntry
     LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
 
   private:
-    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(true) {}
+    LayoutNavEntry() : m_parent(nullptr), m_kind(None), m_visible(true) {}
     LayoutNavEntry *m_parent;
     Kind m_kind;
     bool m_visible;
@@ -229,6 +231,7 @@ class LayoutDocManager
     void clear(LayoutPart p);
     LayoutDocManager();
     ~LayoutDocManager();
+    NON_COPYABLE(LayoutDocManager)
     std::unique_ptr<Private> d;
     friend class LayoutParser;
 };

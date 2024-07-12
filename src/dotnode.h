@@ -36,7 +36,6 @@ class EdgeInfo
     enum Styles { Solid=0, Dashed=1 };
     EdgeInfo(Colors color,Styles style,const QCString &lab,const QCString &url,int labColor)
         : m_color(color), m_style(style), m_label(lab), m_url(url), m_labColor(labColor) {}
-    ~EdgeInfo() {}
     int color() const      { return m_color; }
     int style() const      { return m_style; }
     QCString label() const { return m_label; }
@@ -72,8 +71,7 @@ class DotNode
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& , bool htmlLike=false);
     DotNode(DotGraph *graph,const QCString &lab,const QCString &tip,const QCString &url,
-        bool rootNode=FALSE,const ClassDef *cd=0);
-    ~DotNode();
+        bool rootNode=FALSE,const ClassDef *cd=nullptr);
 
     enum TruncState { Unknown, Truncated, Untruncated };
 

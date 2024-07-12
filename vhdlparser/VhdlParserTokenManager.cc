@@ -3510,7 +3510,7 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
       case 6 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
     {
-    QCString doc(image.data());
+    QCString doc = image;
      int count=doc.contains("--!");
      parser->outlineParser()->setMultCommentLine();
     parser->outlineParser()->lineCount(image);

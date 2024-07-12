@@ -28,14 +28,15 @@ class VHDLOutlineParser : public OutlineParserInterface
 {
   public:
     VHDLOutlineParser();
-    virtual ~VHDLOutlineParser();
+   ~VHDLOutlineParser() override;
+    NON_COPYABLE(VHDLOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser);
+                    ClangTUParser *clangParser) override;
 
-    bool needsPreprocessing(const QCString &) const { return TRUE; }
-    void parsePrototype(const QCString &text);
+    bool needsPreprocessing(const QCString &) const override { return TRUE; }
+    void parsePrototype(const QCString &text) override;
 
 
     // interface for generated parser code
@@ -45,10 +46,10 @@ class VHDLOutlineParser : public OutlineParserInterface
     int getLine();
     void lineCount(const QCString &);
     void lineCount();
-    void addProto(const char *s1,const char *s2,const char *s3,const char *s4,const char *s5,const char *s6);
+    void addProto(const QCString &s1,const QCString &s2,const QCString &s3,const QCString &s4,const QCString &s5,const QCString &s6);
     void createFunction(const QCString &impure,VhdlSpecifier spec,const QCString &fname);
-    void addVhdlType(const char *n,int startLine,EntryType section, VhdlSpecifier spec,const char* args,const char* type,Protection prot);
-    void addCompInst(const char *n, const char* instName, const char* comp,int iLine);
+    void addVhdlType(const QCString &n,int startLine,EntryType section, VhdlSpecifier spec,const QCString &args,const QCString &type,Protection prot);
+    void addCompInst(const QCString &n, const QCString &instName, const QCString &comp,int iLine);
     void handleCommentBlock(const QCString &doc,bool brief);
     void handleFlowComment(const QCString &);
     void initEntry(Entry *e);

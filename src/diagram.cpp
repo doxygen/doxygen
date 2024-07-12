@@ -29,6 +29,7 @@
 #include "classlist.h"
 #include "textstream.h"
 #include "growbuf.h"
+#include "dir.h"
 
 //-----------------------------------------------------------------------------
 
@@ -128,8 +129,6 @@ class TreeDiagram
     iterator end()   { return m_rows.end();    }
   private:
     bool layoutTree(DiagramItem *root,uint32_t row);
-    TreeDiagram &operator=(const TreeDiagram &);
-    TreeDiagram(const TreeDiagram &);
     Vec m_rows;
 };
 
@@ -198,7 +197,7 @@ static QCString convertToPSString(const QCString &s)
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
   const char *p=s.data();
-  char c;
+  char c=0;
   while ((c=*p++))
   {
     switch (c)
@@ -246,8 +245,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
   image->writeString(x+(w-l)/2, y+(h-fontHeight)/2, di->label(),1);
   if (children)
   {
-    uint32_t i;
-    for (i=0;i<5;i++)
+    for (uint32_t i=0;i<5;i++)
     {
       image->drawHorzLine(y+h+i-6,x+w-2-i,x+w-2,firstRow?1:3,0xffffffff);
     }
@@ -331,7 +329,7 @@ QCString DiagramItem::fileName() const
 
 uint32_t DiagramItem::avgChildPos() const
 {
-  DiagramItem *di;
+  DiagramItem *di = nullptr;
   size_t c=m_children.size();
   if (c==0) // no children -> don't move
     return xPos();
@@ -373,7 +371,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
   }
   if (count>0 && (prot!=Protection::Private || !doBases))
   {
-    DiagramRow *row=0;
+    DiagramRow *row=nullptr;
     if (m_diagram->numRows()<=m_level+1) /* add new row */
     {
       row=m_diagram->addRow(m_level+1);
@@ -402,7 +400,7 @@ TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
   auto row = std::make_unique<DiagramRow>(this,0);
   DiagramRow *row_ptr = row.get();
   m_rows.push_back(std::move(row));
-  row_ptr->insertClass(0,root,doBases,Protection::Public,Specifier::Normal,QCString());
+  row_ptr->insertClass(nullptr,root,doBases,Protection::Public,Specifier::Normal,QCString());
 }
 
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)
@@ -422,7 +420,6 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
   if (root->numChildren()>0)
   {
     auto children = root->getChildren();
-    uint32_t k;
     uint32_t pPos=root->xPos();
     uint32_t cPos=root->avgChildPos();
     if (pPos>cPos) // move children
@@ -430,7 +427,7 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
       const auto &row=m_rows.at(r+1);
       //printf("Moving children %d-%d in row %d\n",
       //    dil->getFirst()->number(),row->count()-1,r+1);
-      for (k=children.front()->number();k<row->numItems();k++)
+      for (uint32_t k=children.front()->number();k<row->numItems();k++)
       {
         row->item(k)->move(static_cast<int>(pPos-cPos),0);
       }
@@ -441,7 +438,7 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
       const auto &row=m_rows.at(r);
       //printf("Moving parents %d-%d in row %d\n",
       //    root->number(),row->count()-1,r);
-      for (k=root->number();k<row->numItems();k++)
+      for (uint32_t k=root->number();k<row->numItems();k++)
       {
         row->item(k)->move(static_cast<int>(cPos-pPos),0);
       }
@@ -466,7 +463,7 @@ void TreeDiagram::computeLayout()
   {
     const auto &row = *it;
     //printf("computeLayout() list row at %d\n",row->number());
-    DiagramItem *opi=0;
+    DiagramItem *opi=nullptr;
     int delta=0;
     bool first=TRUE;
     for (const auto &di : *row)
@@ -526,7 +523,7 @@ uint32_t TreeDiagram::computeRows()
     const auto &row = *it;
     uint32_t maxListLen=0;
     uint32_t curListLen=0;
-    DiagramItem *opi=0;
+    DiagramItem *opi=nullptr;
     for (const auto &di : *row) // for each item in a row
     {
       if (di->parentItem()!=opi) curListLen=1; else curListLen++;
@@ -612,7 +609,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
     DiagramItem *firstDi = dr->item(0);
     if (firstDi->isInList()) // put boxes in a list
     {
-      DiagramItem *opi=0;
+      DiagramItem *opi=nullptr;
       DualDirIterator<DiagramRow,const std::unique_ptr<DiagramItem>&> dit(*dr,!doBase);
       while (!dit.atEnd())
       {
@@ -854,7 +851,7 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               }
             }
             ++rit;
-            if (rit!=dr->end()) di = (*rit).get(); else di=0;
+            if (rit!=dr->end()) di = (*rit).get(); else di=nullptr;
           }
           // add last horizontal line and a vertical connection line
           if (bitmap)
@@ -1071,16 +1068,14 @@ ClassDiagram::ClassDiagram(const ClassDef *root) : p(std::make_unique<Private>(r
   }
 }
 
-ClassDiagram::~ClassDiagram()
-{
-}
+ClassDiagram::~ClassDiagram() = default;
 
 void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
                                const QCString &fileName) const
 {
   uint32_t baseRows=p->base.computeRows();
   uint32_t superRows=p->super.computeRows();
-  uint32_t baseMaxX, baseMaxLabelWidth, superMaxX, superMaxLabelWidth;
+  uint32_t baseMaxX = 0, baseMaxLabelWidth = 0, superMaxX = 0, superMaxLabelWidth = 0;
   p->base.computeExtremes(&baseMaxLabelWidth,&baseMaxX);
   p->super.computeExtremes(&superMaxLabelWidth,&superMaxX);
 
@@ -1342,19 +1337,19 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
       << "boundx scalefactor div boundy scalefactor div scale\n";
 
     t << "\n% ----- classes -----\n\n";
-    p->base.drawBoxes(t,0,TRUE,FALSE,baseRows,superRows,0,0);
-    p->super.drawBoxes(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+    p->base.drawBoxes(t,nullptr,TRUE,FALSE,baseRows,superRows,0,0);
+    p->super.drawBoxes(t,nullptr,FALSE,FALSE,baseRows,superRows,0,0);
 
     t << "\n% ----- relations -----\n\n";
-    p->base.drawConnectors(t,0,TRUE,FALSE,baseRows,superRows,0,0);
-    p->super.drawConnectors(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+    p->base.drawConnectors(t,nullptr,TRUE,FALSE,baseRows,superRows,0,0);
+    p->super.drawConnectors(t,nullptr,FALSE,FALSE,baseRows,superRows,0,0);
 
   }
   f.close();
 
   if (Config_getBool(USE_PDFLATEX))
   {
-    QCString epstopdfArgs(4096);
+    QCString epstopdfArgs(4096, QCString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    qPrint(epsBaseName),qPrint(epsBaseName));
     //printf("Converting eps using '%s'\n",qPrint(epstopdfArgs));
@@ -1362,6 +1357,10 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     {
        err("Problems running epstopdf. Check your TeX installation!\n");
        return;
+    }
+    else
+    {
+      Dir().remove(epsBaseName.str()+".eps");
     }
   }
 }
@@ -1375,7 +1374,7 @@ void ClassDiagram::writeImage(TextStream &t,const QCString &path,
   uint32_t superRows=p->super.computeRows();
   uint32_t rows=baseRows+superRows-1;
 
-  uint32_t lb,ls,xb,xs;
+  uint32_t lb=0,ls=0,xb=0,xs=0;
   p->base.computeExtremes(&lb,&xb);
   p->super.computeExtremes(&ls,&xs);
 

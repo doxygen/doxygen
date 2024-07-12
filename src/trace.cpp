@@ -19,7 +19,7 @@
 
 std::shared_ptr<spdlog::logger> g_tracer;
 
-void initTracing(const QCString &logFile)
+void initTracing(const QCString &logFile, bool timing)
 {
   if (!logFile.isEmpty())
   {
@@ -38,7 +38,14 @@ void initTracing(const QCString &logFile)
     }
     g_tracer = std::make_shared<spdlog::logger>("tracing", sinks.begin(),sinks.end());
     g_tracer->set_level(spdlog::level::trace);
-    g_tracer->set_pattern("[%C-%m-%d %T.%e][%t][%s:%#](%!) %v");
+    if (timing)
+    {
+      g_tracer->set_pattern("[%C-%m-%d %T.%e][%t][%s:%#](%!) %v");
+    }
+    else
+    {
+      g_tracer->set_pattern("[%s:%#](%!) %v");
+    }
   }
 }
 

@@ -118,7 +118,7 @@ static bool getBoolOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return stringVariantToBool(option->value());
 }
 
@@ -126,7 +126,7 @@ static int getIntOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return option->value().toInt();
 }
 
@@ -134,7 +134,7 @@ static QString getStringOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return option->value().toString();
 }
 
@@ -142,7 +142,7 @@ static void updateBoolOption(
     const QHash<QString,Input*>&model,const QString &name,bool bNew)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   bool bOld = stringVariantToBool(option->value());
   if (bOld!=bNew)
   {
@@ -155,7 +155,7 @@ static void updateIntOption(
     const QHash<QString,Input*>&model,const QString &name,int iNew)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   int iOld = option->value().toInt();
   if (iOld!=iNew)
   {
@@ -169,7 +169,7 @@ static void updateStringOption(
     const QHash<QString,Input*>&model,const QString &name,const QString &s)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   if (option->value().toString()!=s)
   {
     option->value() = s;
@@ -333,7 +333,7 @@ ColorPicker::ColorPicker(Mode m)
   m_gam = 100;
   m_sat = 100;
   m_mode = m;
-  m_pix = 0;
+  m_pix = nullptr;
 }
 
 ColorPicker::~ColorPicker()
@@ -403,7 +403,7 @@ void ColorPicker::setHue(int h)
 {
   if (h==m_hue) return;
   m_hue = qMax(0,qMin(h,359));
-  delete m_pix; m_pix=0;
+  delete m_pix; m_pix=nullptr;
   repaint();
   emit newHsv(m_hue,m_sat,m_gam);
 }
@@ -412,7 +412,7 @@ void ColorPicker::setSat(int s)
 {
   if (s==m_sat) return;
   m_sat = qMax(0,qMin(s,255));
-  delete m_pix; m_pix=0;
+  delete m_pix; m_pix=nullptr;
   repaint();
   emit newHsv(m_hue,m_sat,m_gam);
 }
@@ -421,7 +421,7 @@ void ColorPicker::setGam(int g)
 {
   if (g==m_gam) return;
   m_gam = qMax(40,qMin(g,240));
-  delete m_pix; m_pix=0;
+  delete m_pix; m_pix=nullptr;
   repaint();
   emit newHsv(m_hue,m_sat,m_gam);
 }
@@ -433,7 +433,7 @@ void ColorPicker::setCol(int h, int s, int g)
     m_hue = h;
     m_sat = s;
     m_gam = g;
-    delete m_pix; m_pix=0;
+    delete m_pix; m_pix=nullptr;
     repaint();
   }
 }
@@ -919,8 +919,8 @@ void Step2::init()
 Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   : m_wizard(wizard), m_modelData(modelData)
 {
-  QVBoxLayout *vbox = 0;
-  QRadioButton *r   = 0;
+  QVBoxLayout *vbox = nullptr;
+  QRadioButton *r   = nullptr;
 
   QGridLayout *gbox = new QGridLayout( this );
   gbox->addWidget(new QLabel(tr("Select the output format(s) to generate")),0,0);
@@ -1323,10 +1323,10 @@ Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
   m_treeWidget->setColumnCount(1);
   m_treeWidget->setHeaderLabels(QStringList() << QString::fromLatin1("Topics"));
   QList<QTreeWidgetItem*> items;
-  items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Project"))));
-  items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Mode"))));
-  items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Output"))));
-  items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Diagrams"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Project"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Mode"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Output"))));
+  items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(tr("Diagrams"))));
   m_treeWidget->insertTopLevelItems(0,items);
 
   m_topicStack = new QStackedWidget;

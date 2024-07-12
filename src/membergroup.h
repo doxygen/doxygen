@@ -45,7 +45,6 @@ class MemberGroup
     //MemberGroup();
     MemberGroup(const Definition *container,int id,const QCString &header,
                 const QCString &docs,const QCString &docFile,int docLine,MemberListContainer con);
-   ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
     void insertMember(MemberDef *md);
@@ -92,7 +91,7 @@ class MemberGroup
   private:
     const Definition *m_container;
     std::unique_ptr<MemberList> memberList;      // list of all members in the group
-    MemberList *inDeclSection = 0;
+    MemberList *inDeclSection = nullptr;
     int grpId = 0;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file

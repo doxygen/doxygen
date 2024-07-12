@@ -16,6 +16,7 @@
 #define TOOLTIP_H
 
 #include <memory>
+#include "construct.h"
 
 class Definition;
 class OutputCodeList;
@@ -26,6 +27,7 @@ class TooltipManager
   public:
     TooltipManager();
    ~TooltipManager();
+    NON_COPYABLE(TooltipManager)
 
     /** add a tooltip for a given symbol definition */
     void addTooltip(const Definition *d);

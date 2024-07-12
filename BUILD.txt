@@ -1,5 +1,8 @@
 Doxygen uses cmake (http://www.cmake.org/) to build executables for various platforms.
-At least cmake version 3.14 is required.
+See the Installation section of the manual for dependencies and instructions:
+https://www.doxygen.nl/manual/install.html
+
+For a one-step self-contained environment, you can also use Docker to build and run the included Dockerfile.
 
 The first step is to create a build directory where the output should be stored.
 Doxygen can be fully built outside of the source tree.

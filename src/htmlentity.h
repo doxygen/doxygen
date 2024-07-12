@@ -19,6 +19,7 @@
 #include <string>
 
 #include "qcstring.h"
+#include "construct.h"
 
 class TextStream;
 
@@ -111,6 +112,7 @@ class HtmlEntityMapper
     void  validate();
     HtmlEntityMapper();
    ~HtmlEntityMapper();
+    NON_COPYABLE(HtmlEntityMapper)
     static HtmlEntityMapper *s_instance;
     std::unordered_map<std::string,SymType> m_name2sym;
 };

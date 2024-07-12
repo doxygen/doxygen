@@ -15,7 +15,7 @@
 import sys
 import re
 
-message_re = re.compile('message\s*\+=\s*("[^"]*")')
+message_re = re.compile(r'message\s*\+=\s*("[^"]*")')
 
 def main():
     inputFile = open(sys.argv[1], 'r')

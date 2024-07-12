@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 #include <variant>
+#include <type_traits>
 
 #include "qcstring.h"
 #include "docvisitor.h"
@@ -29,6 +30,7 @@
 #include "htmlentity.h"
 #include "growvector.h"
 #include "section.h"
+#include "construct.h"
 
 class MemberDef;
 class Definition;
@@ -79,15 +81,10 @@ class DocNode
   public:
     /*! Creates a new node */
     DocNode(DocParser *parser,DocNodeVariant *parent) : m_parser(parser), m_parent(parent) {}
-
-    // allow nodes to be moved but not copied
-    DocNode(const DocNode &) = delete;
-    DocNode &operator=(const DocNode &) = delete;
-    DocNode(DocNode &&) = default;
-    DocNode &operator=(DocNode &&) = default;
    ~DocNode() = default;
+    ONLY_DEFAULT_MOVABLE(DocNode)
 
-    /*! Returns the parent of this node or 0 for the root node. */
+    /*! Returns the parent of this node or nullptr for the root node. */
     DocNodeVariant *parent() { return m_parent; }
     const DocNodeVariant *parent() const { return m_parent; }
 
@@ -284,7 +281,7 @@ class DocStyleChange : public DocNode
                };
 
     DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,
-                   const QCString &tagName,bool enable, const HtmlAttribList *attribs=0)
+                   const QCString &tagName,bool enable, const HtmlAttribList *attribs=nullptr)
       : DocNode(parser,parent), m_position(position), m_style(s), m_enable(enable)
     {
       if (attribs) m_attribs=*attribs;
@@ -417,7 +414,7 @@ class DocInclude : public DocNode
 {
   public:
   enum Type { Include, DontInclude, VerbInclude, HtmlInclude, LatexInclude,
-	      IncWithLines, Snippet , IncludeDoc, SnippetDoc, SnipWithLines,
+	      IncWithLines, Snippet , SnippetWithLines,
 	      DontIncWithLines, RtfInclude, ManInclude, DocbookInclude, XmlInclude,
               SnippetTrimLeft};
     DocInclude(DocParser *parser,DocNodeVariant *parent,const QCString &file,
@@ -428,12 +425,7 @@ class DocInclude : public DocNode
       m_isExample(isExample), m_isBlock(isBlock),
       m_exampleFile(exampleFile), m_blockId(blockId) {}
     QCString file() const        { return m_file; }
-    QCString extension() const   { int i=m_file.findRev('.');
-                                   if (i!=-1)
-                                     return m_file.right(m_file.length()-static_cast<uint32_t>(i));
-                                   else
-                                     return QCString();
-                                 }
+    QCString extension() const   { int i=m_file.findRev('.'); return i!=-1 ? m_file.mid(i) : QCString(); }
     Type type() const            { return m_type; }
     QCString text() const        { return m_text; }
     QCString context() const     { return m_context; }
@@ -540,8 +532,8 @@ class DocIndexEntry : public DocNode
 
   private:
     QCString     m_entry;
-    const Definition *m_scope = 0;
-    const MemberDef  *m_member = 0;
+    const Definition *m_scope = nullptr;
+    const MemberDef  *m_member = nullptr;
 };
 
 //-----------------------------------------------------------------------
@@ -550,15 +542,23 @@ class DocIndexEntry : public DocNode
 class DocAutoList : public DocCompoundNode
 {
   public:
-    DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,bool isEnumList,int depth);
+    enum ListType
+    {
+       Unnumbered=1, Unchecked=-2, Checked_x=-3, Checked_X=-4 // positive numbers give the label
+    };
+    DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,bool isEnumList,
+                         int depth, bool isCheckedList);
+
     bool isEnumList() const    { return m_isEnumList; }
     int  indent() const        { return m_indent; }
+    bool isCheckedList() const { return m_isCheckedList; }
     int depth() const          { return m_depth; }
     int parse();
 
   private:
     int      m_indent = 0;
     bool     m_isEnumList = false;
+    bool     m_isCheckedList = false;
     int      m_depth = 0;
 };
 
@@ -878,7 +878,7 @@ class DocSection : public DocCompoundNode
     DocSection(DocParser *parser,DocNodeVariant *parent,int level,const QCString &id) :
       DocCompoundNode(parser,parent), m_level(level), m_id(id) {}
     int level() const           { return m_level; }
-    QCString title() const      { return m_title; }
+    const DocNodeVariant *title() const { return m_title.get(); }
     QCString anchor() const     { return m_anchor; }
     QCString id() const         { return m_id; }
     QCString file() const       { return m_file; }
@@ -887,7 +887,7 @@ class DocSection : public DocCompoundNode
   private:
     int       m_level = 0;
     QCString  m_id;
-    QCString  m_title;
+    std::unique_ptr<DocNodeVariant> m_title;
     QCString  m_anchor;
     QCString  m_file;
 };
@@ -981,7 +981,8 @@ class DocSimpleSect : public DocCompoundNode
     enum Type
     {
        Unknown, See, Return, Author, Authors, Version, Since, Date,
-       Note, Warning, Copyright, Pre, Post, Invar, Remark, Attention, User, Rcs
+       Note, Warning, Copyright, Pre, Post, Invar, Remark, Attention, Important,
+       User, Rcs
     };
     DocSimpleSect(DocParser *parser,DocNodeVariant *parent,Type t);
     Type type() const       { return m_type; }
@@ -1048,7 +1049,7 @@ class DocPara : public DocCompoundNode
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
 
-    int handleCommand(const QCString &cmdName,const int tok);
+    int handleCommand(char cmdChar,const QCString &cmdName);
     int handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs);
     int handleHtmlEndTag(const QCString &tagName);
     int handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=FALSE);
@@ -1058,16 +1059,16 @@ class DocPara : public DocCompoundNode
     template<class T> void handleFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
-    void handleCite();
-    void handleDoxyConfig();
-    void handleEmoji();
-    void handleRef(const QCString &cmdName);
-    void handleSection(const QCString &cmdName);
+    void handleCite(char cmdChar,const QCString &cmdName);
+    void handleDoxyConfig(char cmdChar,const QCString &cmdName);
+    void handleEmoji(char cmdChar,const QCString &cmdName);
+    void handleRef(char cmdChar,const QCString &cmdName);
+    void handleSection(char cmdChar,const QCString &cmdName);
     void handleInheritDoc();
     void handleVhdlFlow();
-    void handleILine();
-    void handleIFile();
-    void handleShowDate();
+    void handleILine(char cmdChar,const QCString &cmdName);
+    void handleIFile(char cmdChar,const QCString &cmdName);
+    void handleShowDate(char cmdChar,const QCString &cmdName);
     int handleStartCode();
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 
@@ -1264,7 +1265,7 @@ class DocHtmlBlockQuote : public DocCompoundNode
 class DocText : public DocCompoundNode
 {
   public:
-    DocText(DocParser *parser) : DocCompoundNode(parser,0) {}
+    DocText(DocParser *parser) : DocCompoundNode(parser,nullptr) {}
     void parse();
     bool isEmpty() const    { return children().empty(); }
 };
@@ -1274,7 +1275,7 @@ class DocRoot : public DocCompoundNode
 {
   public:
     DocRoot(DocParser *parser,bool indent,bool sl)
-      : DocCompoundNode(parser,0), m_indent(indent), m_singleLine(sl) {}
+      : DocCompoundNode(parser,nullptr), m_indent(indent), m_singleLine(sl) {}
     void parse();
     bool indent() const { return m_indent; }
     bool singleLine() const { return m_singleLine; }
@@ -1287,13 +1288,13 @@ class DocRoot : public DocCompoundNode
 
 //--------------------------------------------------------------------------------------
 
-/// returns the parent node of a given node \a n or 0 if the node has no parent.
+/// returns the parent node of a given node \a n or nullptr if the node has no parent.
 constexpr DocNodeVariant *parent(DocNodeVariant *n)
 {
   return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;
 }
 
-/// returns the parent node of a given node \a n or 0 if the node has no parent.
+/// returns the parent node of a given node \a n or nullptr if the node has no parent.
 constexpr const DocNodeVariant *parent(const DocNodeVariant *n)
 {
   return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;
@@ -1320,13 +1321,38 @@ struct Impl<T>
   }
 };
 
-}
+} // namespace details
 
 /// returns true iff \a v holds one of types passed as template parameters
 template<class... Ts>
 constexpr bool holds_one_of_alternatives(const DocNodeVariant &v)
 {
   return details::Impl<Ts...>::holds_one_of_alternatives(v);
+}
+
+namespace details
+{
+
+// Helper type trait to check if a type has member function children(). Default case is false.
+template <typename T, typename = void>
+struct has_method_children : std::false_type {};
+
+// Use SFINAE to have a partial template specialization derived from std::true_type in case T has method children()
+template <typename T>
+struct has_method_children<T, std::void_t<decltype(std::declval<T>().children())>> : std::true_type {};
+
+} // namespace details
+
+// Call children() on variant v if the contained type has this method, otherwise return nullptr
+inline DocNodeList* call_method_children(DocNodeVariant *v)
+{
+  return std::visit([](auto&& value) -> DocNodeList* {
+    if constexpr (details::has_method_children<decltype(value)>::value) {
+      return &value.children();
+    } else {
+      return nullptr;
+    }
+  }, *v);
 }
 
 //----------------- DocNodeList ---------------------------------------
@@ -1340,15 +1366,6 @@ inline void DocNodeList::append(Args&&... args)
   // Since DocNodeList is a GrowVector this reference will remain valid even if new
   // elements are added (which would not be the case if a std::vector was used)
   std::get_if<T>(&back())->setThisVariant(&back());
-}
-
-inline void DocNodeList::move_append(DocNodeList &elements)
-{
-  for (auto &&elem : elements)
-  {
-    emplace_back(std::move(elem));
-  }
-  elements.clear();
 }
 
 template<class T>
@@ -1410,6 +1427,8 @@ inline void dumpDocNodeList(const DocNodeList &children)
 class DocNodeAST : public IDocNodeAST
 {
   public:
+    // Note that r can only be a rvalue, not a general forwarding reference.
+    // The compiler will error on lvalues because DotNodeVariant doesn't have a copy constructor
     template<class DocNode>
     DocNodeAST(DocNode &&r) : root(std::move(r))
     {

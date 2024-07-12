@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include "qcstring.h"
+#include "construct.h"
 
 /** Class containing a print function for diagnostics. */
 class Debug
@@ -43,6 +44,8 @@ class Debug
                      Tag               =             0x00'8000ULL,
                      Alias             =             0x01'0000ULL,
                      Entries           =             0x02'0000ULL,
+                     Sections          =             0x04'0000ULL,
+                     Stderr            =             0x08'0000ULL,
                      Lex               = 0x0000'FFFF'FF00'0000ULL, // all scanners combined
                      Lex_code          = 0x0000'0000'0100'0000ULL,
                      Lex_commentcnv    = 0x0000'0000'0200'0000ULL,
@@ -87,6 +90,7 @@ class DebugLex
   public:
     DebugLex(Debug::DebugMask mask,const char *lexName,const char *fileName);
    ~DebugLex();
+    NON_COPYABLE(DebugLex)
     static void print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName);
   private:
 

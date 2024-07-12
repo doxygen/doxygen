@@ -23,6 +23,7 @@
 #include "linkedmap.h"
 #include "types.h"
 #include "membergroup.h"
+#include "construct.h"
 
 class GroupDef;
 
@@ -73,7 +74,7 @@ class MemberVector
     }
     void sort()
     {
-      std::sort(m_members.begin(),m_members.end(),lessThan);
+      std::stable_sort(m_members.begin(),m_members.end(),lessThan);
     }
     void inSort(MemberDef *md)
     {
@@ -108,8 +109,8 @@ class MemberList : public MemberVector
   public:
     MemberList(MemberListType lt,MemberListContainer container);
    ~MemberList();
+    NON_COPYABLE(MemberList)
     MemberListType listType() const { return m_listType; }
-    static QCString listTypeAsString(MemberListType type);
     MemberListContainer container() const { return m_container; }
 
     int numDecMembers() const    { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
@@ -127,7 +128,7 @@ class MemberList : public MemberVector
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                const QCString &title,const QCString &subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
-               const ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods) const;
+               const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType::PubMethods(),bool showSectionTitle=true) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,const QCString &title,
                bool showEnumValues=FALSE,bool showInline=FALSE) const;
@@ -164,6 +165,7 @@ class MemberLists : public std::vector< std::unique_ptr<MemberList> >
 {
   public:
     MemberLists() = default;
+   ~MemberLists() = default;
     const std::unique_ptr<MemberList> &get(MemberListType lt,MemberListContainer con)
     {
       // find the list with the given type
@@ -175,8 +177,7 @@ class MemberLists : public std::vector< std::unique_ptr<MemberList> >
     }
 
   private:
-    MemberLists(const MemberLists &) = delete;
-    MemberLists &operator=(const MemberLists &) = delete;
+    ONLY_DEFAULT_MOVABLE(MemberLists)
 };
 
 
