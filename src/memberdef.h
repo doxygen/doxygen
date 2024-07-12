@@ -241,6 +241,7 @@ class MemberDef : public Definition
     virtual bool hasReferencedByRelation() const = 0;
 
     virtual bool hasInlineSource() const = 0;
+    virtual bool hasEnumValues() const = 0;
 
     virtual const MemberDef *templateMaster() const = 0;
     virtual QCString getScopeString() const = 0;
@@ -377,6 +378,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void overrideReferencedByRelation(bool e) = 0;
     virtual void overrideReferencesRelation(bool e) = 0;
     virtual void overrideInlineSource(bool e) = 0;
+    virtual void overrideEnumValues(bool e) = 0;
 
     virtual void setTemplateMaster(MemberDef *mt) = 0;
     virtual void setFormalTemplateArguments(const ArgumentList &al) = 0;

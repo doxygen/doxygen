@@ -7096,6 +7096,9 @@ void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2)
   if (Config_getBool(CALL_GRAPH)  !=md2->hasCallGraph())   md1->overrideCallGraph( md2->hasCallGraph());
   if (Config_getBool(CALLER_GRAPH)!=md2->hasCallerGraph()) md1->overrideCallerGraph(md2->hasCallerGraph());
 
+  if (Config_getBool(SHOW_ENUM_VALUES)  !=md1->hasEnumValues())   md2->overrideEnumValues(md1->hasEnumValues());
+  if (Config_getBool(SHOW_ENUM_VALUES)  !=md2->hasEnumValues())   md1->overrideEnumValues( md2->hasEnumValues());
+
   if (Config_getBool(REFERENCED_BY_RELATION)!=md1->hasReferencedByRelation()) md2->overrideReferencedByRelation(md1->hasReferencedByRelation());
   if (Config_getBool(REFERENCES_RELATION)   !=md1->hasReferencesRelation())   md2->overrideReferencesRelation(md1->hasReferencesRelation());
   if (Config_getBool(REFERENCED_BY_RELATION)!=md2->hasReferencedByRelation()) md1->overrideReferencedByRelation(md2->hasReferencedByRelation());

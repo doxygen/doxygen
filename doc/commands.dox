@@ -123,6 +123,7 @@ documentation:
 \refitem cmdhidecallgraph \\hidecallgraph
 \refitem cmdhidecollaborationgraph \\hidecollaborationgraph
 \refitem cmdhidedirectorygraph \\hidedirectorygraph
+\refitem cmdhideenumvalues \\hideenumvalues
 \refitem cmdhidegroupgraph \\hidegroupgraph
 \refitem cmdhideincludedbygraph \\hideincludedbygraph
 \refitem cmdhideincludegraph \\hideincludegraph
@@ -209,6 +210,7 @@ documentation:
 \refitem cmdsee \\see
 \refitem cmdshort \\short
 \refitem cmdshowdate \\showdate
+\refitem cmdshowenumvalues \\showenumvalues
 \refitem cmdshowinitializer \\showinitializer
 \refitem cmdshowinlinesource \\showinlinesource
 \refitem cmdshowrefby \\showrefby
@@ -627,6 +629,28 @@ Structural indicators
 
   \sa section \ref cmdgroupgraph "\\groupgraph",
       option \ref cfg_group_graphs "GROUP_GRAPHS"
+
+<hr>
+\section cmdshowenumvalues \\showenumvalues
+
+  \addindex \\showenumvalues
+  When this command is put in a comment block of an enum
+  then doxygen will show the specified enum values for that enum,
+  regardless of the value of \ref cfg_show_enum_values "SHOW_ENUM_VALUES".
+
+  \sa section \ref cmdhideenumvalues "\\hideenumvalues",
+      option \ref cfg_show_enum_values "SHOW_ENUM_VALUES"
+
+<hr>
+\section cmdhideenumvalues \\hideenumvalues
+
+  \addindex \\hideenumvalues
+  When this command is put in a comment block of an enum
+  then doxygen will not show the specified enum values for that enum,
+  regardless of the value of \ref cfg_show_enum_values "SHOW_ENUM_VALUES".
+
+  \sa section \ref cmdshowenumvalues "\\showenumvalues",
+      option \ref cfg_show_enum_values "SHOW_ENUM_VALUES"
 
 <hr>
 \section cmdqualifier \\qualifier \<label\> | "(text)"

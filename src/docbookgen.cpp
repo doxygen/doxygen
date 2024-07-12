@@ -1178,17 +1178,17 @@ DB_GEN_C
   m_t << "</entry></row>\n";
 }
 
-void DocbookGenerator::startDescTable(const QCString &title)
+void DocbookGenerator::startDescTable(const QCString &title,const bool hasInits)
 {
 DB_GEN_C
-  int ncols = 2;
+  int ncols = (hasInits?3:2);
   m_t << "<informaltable frame=\"all\">\n";
   if (!title.isEmpty()) m_t << "<title>" << convertToDocBook(title) << "</title>\n";
   m_t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
-  for (int i = 0; i < ncols; i++)
-  {
-    m_t << "      <colspec colname='c" << i+1 << "'/>\n";
-  }
+  int i = 1;
+  m_t << "      <colspec colname='c" << i++ << "'/>\n";
+  if (hasInits) m_t << "      <colspec colname='c" << i++ << "' align='right'/>\n";
+  m_t << "      <colspec colname='c" << i++ << "'/>\n";
   m_t << "<tbody>\n";
   m_descTable = TRUE;
 }
@@ -1221,6 +1221,17 @@ DB_GEN_C
 }
 
 void DocbookGenerator::endDescTableTitle()
+{
+DB_GEN_C
+}
+
+void DocbookGenerator::startDescTableInit()
+{
+DB_GEN_C
+  m_t << "</entry><entry>";
+}
+
+void DocbookGenerator::endDescTableInit()
 {
 DB_GEN_C
 }

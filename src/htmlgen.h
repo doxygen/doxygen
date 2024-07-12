@@ -239,12 +239,14 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     void endPageDoc() override;
     void writeNonBreakableSpace(int) override;
 
-    void startDescTable(const QCString &title) override;
+    void startDescTable(const QCString &title,const bool hasInits) override;
     void endDescTable() override;
     void startDescTableRow() override;
     void endDescTableRow() override;
     void startDescTableTitle() override;
     void endDescTableTitle() override;
+    void startDescTableInit() override;
+    void endDescTableInit() override;
     void startDescTableData() override;
     void endDescTableData() override;
 

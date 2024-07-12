@@ -45,6 +45,7 @@ class FileDef;
   OVERRIDE_ENTRY(bool,          bool, 1, directoryGraph       ) \
   OVERRIDE_ENTRY(bool,          bool, 1, collaborationGraph   ) \
   OVERRIDE_ENTRY(bool,          bool, 1, groupGraph           ) \
+  OVERRIDE_ENTRY(bool,          bool, 1, enumValues           ) \
   OVERRIDE_ENTRY(CLASS_GRAPH_t, int,  3, inheritanceGraph     )
 
 class CommandOverrides

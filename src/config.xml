@@ -2657,6 +2657,14 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='SHOW_ENUM_VALUES' defval='0'>
+      <docs>
+<![CDATA[
+ When the \c SHOW_ENUM_VALUES tag is set doxygen will show the specified enumeration values
+ besides the enumeration mnemonics.
+]]>
+      </docs>
+    </option>
     <option type='int' id='TREEVIEW_WIDTH' minval='0' maxval='1500' defval='250' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
