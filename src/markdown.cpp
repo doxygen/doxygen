@@ -691,9 +691,9 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
 
       if (len>0)
       {
-        if (len!=c_size || (i<size-len && isIdChar(data[i+len]))) // to prevent touching some_underscore_identifier
+        if (len!=c_size || (i+len<size && isIdChar(data[i+len]))) // to prevent touching some_underscore_identifier
         {
-          i=i+len;
+          i+=len;
           continue;
         }
         AUTO_TRACE_EXIT("result={}",i);
@@ -736,7 +736,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
           i++;
         }
       }
-      else if (i<size-1 && isIdChar(data[i+1])) // @cmd, stop processing, see bug 690385
+      else if (i+1<size && isIdChar(data[i+1])) // @cmd, stop processing, see bug 690385
       {
         return 0;
       }

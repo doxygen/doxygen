@@ -3633,7 +3633,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
         }
         //printf("error: include file %s not found\n",yytext);
       }
-      if (state->curlyCount>0 && !alreadyProcessed) // failed to find #include inside { ... }
+      if (localInclude && !state->includeStack.empty() && state->curlyCount>0 && !alreadyProcessed) // failed to find #include inside { ... }
       {
         warn(state->fileName,state->yyLineNr,"include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",qPrint(incFileName));
       }
