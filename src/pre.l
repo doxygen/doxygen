@@ -420,6 +420,7 @@ WSopt [ \t\r]*
 %x      SkipCPPBlock
 %x      SkipCComment
 %x      ArgCopyCComment
+%x      ArgCopyCppComment
 %x      CopyCComment
 %x      SkipVerbatim
 %x      SkipCondVerbatim
@@ -888,6 +889,13 @@ WSopt [ \t\r]*
                                           yyextra->defArgsStr+=yytext;
                                           BEGIN(ArgCopyCComment);
                                         }
+<FindDefineArgs>{CPPC}[/!].*\n/{B}*{CPPC}[/!] { // replace multi line C++ style comment by C style comment
+                                          yyextra->defArgsStr+=QCString("/**")+&yytext[3];
+                                          BEGIN(ArgCopyCppComment);
+                                        }
+<FindDefineArgs>{CPPC}[/!].*\n          { // replace C++ single line style comment by C style comment
+                                          yyextra->defArgsStr+=QCString("/**")+&yytext[3]+" */";
+                                        }
 <FindDefineArgs>\"                      {
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(ReadString);
@@ -923,6 +931,23 @@ WSopt [ \t\r]*
 <ArgCopyCComment>.                      {
                                           yyextra->defArgsStr+=yytext;
                                         }
+<ArgCopyCppComment>^{B}*
+<ArgCopyCppComment>{CPPC}[/!].*\n/{B}*{CPPC}[/!] { // replace multi line C++ style comment by C style comment
+                                          const char *startContent = &yytext[3];
+                                          if (startContent[0]=='<') startContent++;
+                                          yyextra->defArgsStr+=startContent;
+                                        }
+<ArgCopyCppComment>{CPPC}[/!].*\n       { // replace C++ multie line style comment by C style comment
+                                          const char *startContent = &yytext[3];
+                                          if (startContent[0]=='<') startContent++;
+                                          yyextra->defArgsStr+=QCString(startContent)+" */";
+                                          BEGIN(FindDefineArgs);
+                                        }
+<ArgCopyCppComment>.                    { // unexpected character
+                                          unput(*yytext);
+                                          yyextra->defArgsStr+=" */";
+                                          BEGIN(FindDefineArgs);
+                                        }
 <ReadString>"\""                        {
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(FindDefineArgs);
@@ -933,7 +958,7 @@ WSopt [ \t\r]*
                                           BEGIN(FindDefineArgs);
                                         }
 
-<ReadString>{CPPC}|{CCS}                        {
+<ReadString>{CPPC}|{CCS}                {
                                           yyextra->defArgsStr+=yytext;
                                         }
 <ReadString>\\/\r?\n                    { // line continuation
