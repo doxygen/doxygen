@@ -210,12 +210,12 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
 
     void startDescTable(const QCString &title,const bool hasInits) override;
     void endDescTable() override;
+    void startDescTableTitle() override { startItemListItem(); startBoldEmphasis(); endItemListItem(); }
+    void endDescTableTitle() override { endBoldEmphasis(); }
     void startDescTableRow() override {}
     void endDescTableRow() override {}
-    void startDescTableTitle() { startItemListItem(); startBoldEmphasis(); endItemListItem(); }
-    void endDescTableTitle() { endBoldEmphasis(); }
-    void startDescTableInit() {};
-    void endDescTableInit() {};
+    void startDescTableInit() override {};
+    void endDescTableInit() override {};
     void startDescTableData() override { m_t << "\n"; m_firstCol=TRUE; }
     void endDescTableData() override {}
 
