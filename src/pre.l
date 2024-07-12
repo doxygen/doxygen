@@ -3570,7 +3570,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       fs->lineNr   = oldLineNr;
       fs->fileName = oldFileName;
       fs->curlyCount = state->curlyCount;
-      state->curlyCount = 0;
+      //state->curlyCount = 0; // don't reset counter, see issue #10997
       fs->lexRulesPart = state->lexRulesPart;
       state->lexRulesPart = false;
       // push the state on the stack
