@@ -2544,10 +2544,10 @@ void HtmlGenerator::writeNonBreakableSpace(int n)
   }
 }
 
-void HtmlGenerator::startDescTable(const QCString &title)
+void HtmlGenerator::startDescTable(const QCString &title,const bool hasInits)
 {
   m_t << "<table class=\"fieldtable\">\n"
-      << "<tr><th colspan=\"2\">" << title << "</th></tr>";
+      << "<tr><th colspan=\"" << (hasInits?3:2) << "\">" << title << "</th></tr>";
 }
 void HtmlGenerator::endDescTable()
 {
@@ -2570,6 +2570,16 @@ void HtmlGenerator::startDescTableTitle()
 }
 
 void HtmlGenerator::endDescTableTitle()
+{
+  m_t << "&#160;</td>";
+}
+
+void HtmlGenerator::startDescTableInit()
+{
+  m_t << "<td class=\"fieldinit\">";
+}
+
+void HtmlGenerator::endDescTableInit()
 {
   m_t << "&#160;</td>";
 }

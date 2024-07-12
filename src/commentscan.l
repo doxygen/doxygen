@@ -127,6 +127,8 @@ static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleShowEnumValues(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideEnumValues(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleShowInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -258,6 +260,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "hidecallgraph",          { &handleHideCallgraph,            CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hidecollaborationgraph", { &handleHideCollaborationgraph,   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hidedirectorygraph",     { &handleHideDirectoryGraph,       CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "hideenumvalues",         { &handleHideEnumValues,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hidegroupgraph",         { &handleHideGroupgraph,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hideincludedbygraph",    { &handleHideIncludedBygraph,      CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hideincludegraph",       { &handleHideIncludegraph,         CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -337,6 +340,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "section",                { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "see",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "short",                  { &handleBrief,                    CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "showenumvalues",         { &handleShowEnumValues,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showinitializer",        { &handleShowInitializer,          CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showinlinesource",       { &handleShowInlineSource,         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showrefby",              { &handleReferencedByRelation,     CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -3705,6 +3709,20 @@ static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const Str
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->commandOverrides.override_callerGraph(false); // OFF
+  return FALSE;
+}
+
+static bool handleShowEnumValues(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->commandOverrides.override_enumValues(true); // ON
+  return FALSE;
+}
+
+static bool handleHideEnumValues(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->commandOverrides.override_enumValues(false); // OFF
   return FALSE;
 }
 

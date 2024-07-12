@@ -2063,6 +2063,7 @@ static void applyMemberOverrideOptions(const Entry *root,MemberDefMutable *md)
   root->commandOverrides.apply_referencedByRelation([&](bool b) { md->overrideReferencedByRelation(b); });
   root->commandOverrides.apply_referencesRelation  ([&](bool b) { md->overrideReferencesRelation(b);   });
   root->commandOverrides.apply_inlineSource        ([&](bool b) { md->overrideInlineSource(b);         });
+  root->commandOverrides.apply_enumValues          ([&](bool b) { md->overrideEnumValues(b);           });
 }
 
 //----------------------------------------------------------------------

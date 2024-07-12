@@ -225,6 +225,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool hasCallerGraph() const override;
     bool hasReferencesRelation() const override;
     bool hasReferencedByRelation() const override;
+    bool hasEnumValues() const override;
     bool hasInlineSource() const override;
     const MemberDef *templateMaster() const override;
     QCString getScopeString() const override;
@@ -303,6 +304,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void overrideCallerGraph(bool e) override;
     void overrideReferencedByRelation(bool e) override;
     void overrideReferencesRelation(bool e) override;
+    void overrideEnumValues(bool e) override;
     void overrideInlineSource(bool e) override;
     void setTemplateMaster(MemberDef *mt) override;
     void setFormalTemplateArguments(const ArgumentList &al) override;
@@ -493,6 +495,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool m_hasReferencedByRelation = false;
     bool m_hasReferencesRelation = false;
     bool m_hasInlineSource = false;
+    bool m_hasEnumValues = false;
     bool m_explExt = false;             // member was explicitly declared external
     bool m_tspec = false;               // member is a template specialization
     bool m_groupHasDocs = false;        // true if the entry that caused the grouping was documented
@@ -864,6 +867,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasReferencedByRelation(); }
     bool hasInlineSource() const override
     { return getMdAlias()->hasInlineSource(); }
+    bool hasEnumValues() const override
+    { return getMdAlias()->hasEnumValues(); }
     StringVector getQualifiers() const override
     { return getMdAlias()->getQualifiers(); }
     const MemberDef *templateMaster() const override
@@ -1329,6 +1334,7 @@ void MemberDefImpl::init(Definition *d,
   m_hasCallerGraph          = Config_getBool(CALLER_GRAPH);
   m_hasReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
   m_hasReferencesRelation   = Config_getBool(REFERENCES_RELATION);
+  m_hasEnumValues           = Config_getBool(SHOW_ENUM_VALUES);
   m_hasInlineSource         = Config_getBool(INLINE_SOURCES);
   m_initLines=0;
   m_type=t;
@@ -1507,6 +1513,7 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   result->m_hasCallerGraph                 = m_hasCallerGraph                 ;
   result->m_hasReferencedByRelation        = m_hasReferencedByRelation        ;
   result->m_hasReferencesRelation          = m_hasReferencesRelation          ;
+  result->m_hasEnumValues                  = m_hasEnumValues                  ;
   result->m_hasInlineSource                = m_hasInlineSource                ;
   result->m_explExt                        = m_explExt                        ;
   result->m_tspec                          = m_tspec                          ;
@@ -3157,8 +3164,23 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
   // For enum, we also write the documented enum values
   if (isEnumerate())
   {
-    bool first=TRUE;
+    bool first=true;
     //printf("** %s: enum values=%zu\n",qPrint(name()),enumFieldList().size());
+    bool hasInits = false;
+    if (hasEnumValues())
+    {
+      for (const auto &fmd : enumFieldList())
+      {
+        if (fmd->isLinkable())
+        {
+          if (!fmd->initializer().isEmpty())
+          {
+            hasInits = true;
+            break;
+          }
+        }
+      }
+    }
     for (const auto &fmd : enumFieldList())
     {
       //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
@@ -3166,7 +3188,8 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
       {
         if (first)
         {
-          ol.startDescTable(theTranslator->trEnumerationValues());
+          ol.startDescTable(theTranslator->trEnumerationValues(),hasInits);
+          first=false;
         }
 
         ol.startDescTableRow();
@@ -3176,13 +3199,29 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
         ol.startDescTableTitle();
         ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
         ol.addLabel(cfname,anchor());
-        first=FALSE;
         ol.docify(fmd->name());
         ol.disableAllBut(OutputType::Man);
         ol.writeString(" ");
         ol.enableAll();
         ol.endDoxyAnchor(cfname,fmd->anchor());
         ol.endDescTableTitle();
+        if (hasInits)
+        {
+          ol.startDescTableInit();
+          if (!fmd->initializer().isEmpty())
+          {
+            QCString initStr = fmd->initializer().stripWhiteSpace();
+            if (initStr.startsWith("=")) initStr = initStr.mid(1).stripWhiteSpace();
+            ol.disableAllBut(OutputType::Man);
+            ol.writeString("(");
+            ol.enableAll();
+            ol.docify(initStr);
+            ol.disableAllBut(OutputType::Man);
+            ol.writeString(")");
+            ol.enableAll();
+          }
+          ol.endDescTableInit();
+        }
         ol.startDescTableData();
 
         bool hasBrief = !fmd->briefDescription().isEmpty();
@@ -4846,6 +4885,11 @@ void MemberDefImpl::overrideReferencesRelation(bool e)
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
+void MemberDefImpl::overrideEnumValues(bool e)
+{
+  m_hasEnumValues=e;
+}
+
 void MemberDefImpl::overrideInlineSource(bool e)
 {
   m_hasInlineSource=e;
@@ -5606,6 +5650,11 @@ bool MemberDefImpl::hasReferencesRelation() const
 bool MemberDefImpl::hasInlineSource() const
 {
   return m_hasInlineSource;
+}
+
+bool MemberDefImpl::hasEnumValues() const
+{
+  return m_hasEnumValues;
 }
 
 const MemberDef *MemberDefImpl::templateMaster() const

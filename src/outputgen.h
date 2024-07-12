@@ -253,12 +253,14 @@ class OutputGenIntf
     virtual void startPageDoc(const QCString &pageTitle) = 0;
     virtual void endPageDoc() = 0;
     virtual void writeNonBreakableSpace(int num) = 0;
-    virtual void startDescTable(const QCString &title) = 0;
+    virtual void startDescTable(const QCString &title,const bool hasInits) = 0;
     virtual void endDescTable() = 0;
     virtual void startDescTableRow() = 0;
     virtual void endDescTableRow() = 0;
     virtual void startDescTableTitle() = 0;
     virtual void endDescTableTitle() = 0;
+    virtual void startDescTableInit() = 0;
+    virtual void endDescTableInit() = 0;
     virtual void startDescTableData() = 0;
     virtual void endDescTableData() = 0;
     virtual void startDotGraph() = 0;
