@@ -105,6 +105,7 @@ struct pyscannerYY_state
   char                    atomStart = 0;
   char                    atomEnd = 0;
   int                     atomCount = 0;
+  int                     atomContext = 0;
   QCString                moduleScope;
   QCString                packageName;
   TextStream              defVal;
@@ -551,7 +552,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         const char *s = strchr(yytext,'.'); s++;
                         DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",s,qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
                         docVariable(yyscanner,s);
-                        newEntry(yyscanner);
+                        BEGIN( SearchSkipValue  );
                       }
     ("cls"|"self")"."{IDENTIFIER}/{B}":" { // type hint
                         const char *s = strchr(yytext,'.'); s++;
@@ -589,6 +590,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
     "="               {
                         yyextra->current->doc.clear();
                         yyextra->current->brief.clear();
+                        unput(*yytext);
                         BEGIN( SearchSkipValue  );
                       }
     {IDENTIFIER}      // identifiers
@@ -622,7 +624,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           if (yyextra->braceCount==0)
                           { // end of the type hint
                             yyextra->current->type = yyextra->current->type.stripWhiteSpace();
-                            newEntry(yyscanner);
+                            unput(*yytext);
                             BEGIN(SearchSkipValue);
                           }
                           else
@@ -645,37 +647,126 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         }
 }
 
-<SearchSkipValue>{
-    {TRIDOUBLEQUOTE}  { // start of a comment block
-                        initTriDoubleQuoteBlock(yyscanner);
-                        BEGIN(TripleComment);
+<SearchSkipValue,VariableDec>{
+   "="                { // the assignment operator
+                        //printf("====== VariableDec at line %d\n",yyextra->yyLineNr);
+                        yyextra->startInit = TRUE;
+                        yyextra->current->initializer.str(yytext);
+                        yyextra->current->initializer << " ";
+                      }
+   {B}                { // spaces
+                        yyextra->current->initializer << yytext;
                       }
 
-    {TRISINGLEQUOTE}  { // start of a comment block
-                        initTriSingleQuoteBlock(yyscanner);
-                        BEGIN(TripleComment);
+   {INTNUMBER}        { // integer value
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "int";
+                        yyextra->current->initializer << yytext;
                       }
+   {FLOATNUMBER}      { // floating point value
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "float";
+                        yyextra->current->initializer << yytext;
+                      }
+   {BOOL}             { // boolean value
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "bool";
+                        yyextra->current->initializer << yytext;
+                      }
+   {STRINGPREFIX}?"'" { // string
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
+                        yyextra->current->initializer << yytext;
+                        yyextra->copyString=&yyextra->current->initializer;
+                        yyextra->stringContext=YY_START;
+                        BEGIN( SingleQuoteString );
+                      }
+   {STRINGPREFIX}?"\"" { // string
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
+                        yyextra->current->initializer << yytext;
+                        yyextra->copyString=&yyextra->current->initializer;
+                        yyextra->stringContext=YY_START;
+                        BEGIN( DoubleQuoteString );
+                      }
+   {TRIDOUBLEQUOTE}   { // start of a comment block
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
+                        yyextra->current->initializer << yytext;
+                        yyextra->doubleQuote=TRUE;
+                        yyextra->copyString=&yyextra->current->initializer;
+                        yyextra->stringContext=YY_START;
+                        BEGIN(TripleString);
+                      }
+
+   {TRISINGLEQUOTE}   { // start of a comment block
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
+                        yyextra->current->initializer << yytext;
+                        yyextra->doubleQuote=FALSE;
+                        yyextra->copyString=&yyextra->current->initializer;
+                        yyextra->stringContext=YY_START;
+                        BEGIN(TripleString);
+                      }
+   "("                { // tuple, only when direct after =
+                        if (yyextra->current->mtype!=MethodTypes::Property && yyextra->startInit)
+                        {
+                          yyextra->current->type = "tuple";
+                        }
+                        yyextra->current->initializer << *yytext;
+                        yyextra->atomStart='(';
+                        yyextra->atomEnd=')';
+                        yyextra->atomCount=1;
+                        yyextra->atomContext=YY_START;
+                        BEGIN( VariableAtom );
+                      }
+   "["                { // list
+                        if (yyextra->startInit) yyextra->current->type = "list";
+                        yyextra->current->initializer << *yytext;
+                        yyextra->atomStart='[';
+                        yyextra->atomEnd=']';
+                        yyextra->atomCount=1;
+                        yyextra->atomContext=YY_START;
+                        BEGIN( VariableAtom );
+                      }
+   "{"                { // dictionary
+                        if (yyextra->startInit) yyextra->current->type = "dict";
+                        yyextra->current->initializer << *yytext;
+                        yyextra->atomStart='{';
+                        yyextra->atomEnd='}';
+                        yyextra->atomCount=1;
+                        yyextra->atomContext=YY_START;
+                        BEGIN( VariableAtom );
+                      }
+   "\\\n"             {
+                        yyextra->current->initializer << yytext;
+                        incLineNr(yyscanner);
+                      }
+   {IDENTIFIER}       {
+                        // do something based on the type of the IDENTIFIER
+                        if (yyextra->current->type.isEmpty())
+                        {
+                          for (const auto &child : yyextra->current_root->children())
+                          {
+                            if (child->name == QCString(yytext))
+                            {
+                               yyextra->current->type = child->type;
+                               break;
+                            }
+                          }
+                        }
+                        yyextra->startInit = FALSE;
+                        yyextra->current->initializer << yytext;
+                      }
+   .                  {
+                        yyextra->startInit = FALSE;
+                        yyextra->current->initializer << *yytext;
+                      }
+}
+<SearchSkipValue>{
     {STARTDOCSYMS}/[^#]    {  // start of a special comment
                         initSpecialBlock(yyscanner);
                         BEGIN(SpecialComment);
                       }
     {POUNDCOMMENT}    { // #
                       }
-    "'"               { // start of a single quoted string
-                        yyextra->stringContext=YY_START;
-                        yyextra->copyString=nullptr;
-                        BEGIN( SingleQuoteString );
-                      }
-    "\""              { // start of a double quoted string
-                        yyextra->stringContext=YY_START;
-                        yyextra->copyString=nullptr;
-                        BEGIN( DoubleQuoteString );
-                      }
     \n                { incLineNr(yyscanner);
+                        newEntry(yyscanner);
                         BEGIN(SearchMemVars);
                       }
-    {IDENTIFIER}      // identifiers
-    .                 // anything else
 }
 
 <FunctionBody>{
@@ -1232,88 +1323,9 @@ ID        [a-z_A-Z%]+{IDSYM}*
 
 
 <VariableDec>{
-   "="                { // the assignment operator
-                        //printf("====== VariableDec at line %d\n",yyextra->yyLineNr);
-                        yyextra->startInit = TRUE;
-                        yyextra->current->initializer.str(yytext);
-                        yyextra->current->initializer << " ";
-                      }
    ":"{B}{IDENTIFIER} { //typing
                         yyextra->startInit = FALSE;
                         yyextra->current->type = substitute(yytext,":","");
-                      }
-   {B}                { // spaces
-                        yyextra->current->initializer << yytext;
-                      }
-   {INTNUMBER}        { // integer value
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "int";
-                        yyextra->current->initializer << yytext;
-                      }
-   {FLOATNUMBER}      { // floating point value
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "float";
-                        yyextra->current->initializer << yytext;
-                      }
-   {BOOL}             { // boolean value
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "bool";
-                        yyextra->current->initializer << yytext;
-                      }
-   {STRINGPREFIX}?"'" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
-                        yyextra->current->initializer << yytext;
-                        yyextra->copyString=&yyextra->current->initializer;
-                        yyextra->stringContext=VariableDec;
-                        BEGIN( SingleQuoteString );
-                      }
-   {STRINGPREFIX}?"\"" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
-                        yyextra->current->initializer << yytext;
-                        yyextra->copyString=&yyextra->current->initializer;
-                        yyextra->stringContext=VariableDec;
-                        BEGIN( DoubleQuoteString );
-                      }
-   {TRIDOUBLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
-                        yyextra->current->initializer << yytext;
-                        yyextra->doubleQuote=TRUE;
-                        yyextra->copyString=&yyextra->current->initializer;
-                        yyextra->stringContext=VariableDec;
-                        BEGIN(TripleString);
-                      }
-
-   {TRISINGLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
-                        yyextra->current->initializer << yytext;
-                        yyextra->doubleQuote=FALSE;
-                        yyextra->copyString=&yyextra->current->initializer;
-                        yyextra->stringContext=VariableDec;
-                        BEGIN(TripleString);
-                      }
-   "("                { // tuple, only when direct after =
-                        if (yyextra->current->mtype!=MethodTypes::Property && yyextra->startInit)
-                        {
-                          yyextra->current->type = "tuple";
-                        }
-                        yyextra->current->initializer << *yytext;
-                        yyextra->atomStart='(';
-                        yyextra->atomEnd=')';
-                        yyextra->atomCount=1;
-                        BEGIN( VariableAtom );
-                      }
-   "["                { // list
-                        if (yyextra->startInit) yyextra->current->type = "list";
-                        yyextra->current->initializer << *yytext;
-                        yyextra->atomStart='[';
-                        yyextra->atomEnd=']';
-                        yyextra->atomCount=1;
-                        BEGIN( VariableAtom );
-                      }
-   "{"                { // dictionary
-                        if (yyextra->startInit) yyextra->current->type = "dict";
-                        yyextra->current->initializer << *yytext;
-                        yyextra->atomStart='{';
-                        yyextra->atomEnd='}';
-                        yyextra->atomCount=1;
-                        BEGIN( VariableAtom );
                       }
     {STARTDOCSYMS}"<"/.* {  // start of a special comment
                         yyextra->curIndent=computeIndent(yytext);
@@ -1324,30 +1336,6 @@ ID        [a-z_A-Z%]+{IDSYM}*
                       }
    "#".*              { // comment
                         BEGIN( VariableEnd );
-                      }
-   {IDENTIFIER}       {
-                        // do something based on the type of the IDENTIFIER
-                        if (yyextra->current->type.isEmpty())
-                        {
-                          for (const auto &child : yyextra->current_root->children())
-                          {
-                            if (child->name == QCString(yytext))
-                            {
-                               yyextra->current->type = child->type;
-                               break;
-                            }
-                          }
-                        }
-                        yyextra->startInit = FALSE;
-                        yyextra->current->initializer << yytext;
-                      }
-   "\\\n"             {
-                        yyextra->current->initializer << yytext;
-                        incLineNr(yyscanner);
-                      }
-   .                  {
-                        yyextra->startInit = FALSE;
-                        yyextra->current->initializer << *yytext;
                       }
    \n                 {
                         unput('\n');
@@ -1372,7 +1360,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         if (yyextra->atomCount==0)
                         {
                           yyextra->startInit = FALSE;
-                          BEGIN(VariableDec);
+                          BEGIN(yyextra->atomContext);
                         }
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
