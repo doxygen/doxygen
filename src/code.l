@@ -162,7 +162,7 @@ struct codeYY_state
 
   bool          lexInit = FALSE;
 
-  std::stack<int>  classScopeLengthStack;
+  std::vector<int>  classScopeLengthStack;
 
   int           isPrefixedWithThis = FALSE;
   const Definition *searchCtx = nullptr;
@@ -2352,7 +2352,7 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
 static void pushScope(yyscan_t yyscanner,const QCString &s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->classScopeLengthStack.push(int(yyextra->classScope.length()));
+  yyextra->classScopeLengthStack.push_back(int(yyextra->classScope.length()));
   if (yyextra->classScope.isEmpty() || leftScopeMatch(s,yyextra->classScope))
   {
     yyextra->classScope = s;
@@ -2372,8 +2372,8 @@ static void popScope(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->classScopeLengthStack.empty())
   {
-    int length = yyextra->classScopeLengthStack.top();
-    yyextra->classScopeLengthStack.pop();
+    int length = yyextra->classScopeLengthStack.back();
+    yyextra->classScopeLengthStack.pop_back();
     yyextra->classScope.resize(length);
   }
   else
@@ -2947,6 +2947,26 @@ static bool getLinkInScope(yyscan_t yyscanner,
   input.currentFile = yyextra->sourceFileDef;
   input.insideCode = true;
   GetDefResult result = getDefs(input);
+  DBG_CTX((stderr,"classScopeLengthStack.size()=%zu\n",yyextra->classScopeLengthStack.size()));
+  if (!result.found && !yyextra->classScopeLengthStack.empty() && c==yyextra->classScope)
+  {
+    QCString localName = yyextra->classScope.mid(yyextra->classScopeLengthStack[0]+2); // try also without leading scope
+    auto it = yyextra->codeClassMap.find(localName.str());
+    if (it!=yyextra->codeClassMap.end())
+    {
+      ScopedTypeVariant ccd = it->second;
+      if (ccd.localDef() && !ccd.localDef()->baseClasses().empty())
+      {
+        for (const auto &bcName : ccd.localDef()->baseClasses())
+        {
+          DBG_CTX((stderr,"trying lookup via base class %s\n",qPrint(bcName)));
+          input.scopeName = bcName;
+          result = getDefs(input);
+          if (result.found) break;
+        }
+      }
+    }
+  }
   if (result.found && (!varOnly || result.md->isVariable()))
   {
     if (result.md->isLinkable())
@@ -4115,7 +4135,7 @@ void CCodeParser::resetCodeParserState()
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   DBG_CTX((stderr,"***CodeParser::reset()\n"));
   yyextra->theVarContext.clear();
-  while (!yyextra->classScopeLengthStack.empty()) yyextra->classScopeLengthStack.pop();
+  while (!yyextra->classScopeLengthStack.empty()) yyextra->classScopeLengthStack.pop_back();
   yyextra->codeClassMap.clear();
   yyextra->curClassBases.clear();
   yyextra->anchorCount = 0;
