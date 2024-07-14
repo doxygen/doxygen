@@ -7013,7 +7013,6 @@ QCString detab(const QCString &s,size_t &refIndent)
           i+=5;
           c = data[i];
           skip = true;
-          if (col+1<minIndent) minIndent=col+1;
         }
         else if (i+8 < size && data[i] == 'e' && data[i+1] == 'n' && data[i+2] == 'd' && data[i+3] == 'i' &&
                  data[i+4] == 's' && data[i+5] == 'k' && data[i+6] == 'i' && data[i+7] == 'p') // endiskip command

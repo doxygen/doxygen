@@ -6974,8 +6974,8 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>{CMD}("f$"|"f["|"f{"|"f(")    {
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << yytext;
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName=&yytext[1];
                                           if (yyextra->docBlockName.at(1)=='[')
                                           {
@@ -7018,24 +7018,24 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>{B}*"<"{PRE}">"               {
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << yytext;
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName="<pre>";
                                           yyextra->fencedSize=0;
                                           yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << yytext;
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName="uml";
                                           yyextra->fencedSize=0;
                                           yyextra->nestedComment=0;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << yytext;
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fencedSize=0;
                                           yyextra->nestedComment=0;
@@ -7044,8 +7044,8 @@ NONLopt [^\n]*
 <DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
                                           yyextra->docBlock << "\\ilinebr ";
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << pat;
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName="~~~";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=0;
@@ -7053,8 +7053,8 @@ NONLopt [^\n]*
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << pat;
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName="~~~";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=0;
@@ -7065,8 +7065,8 @@ NONLopt [^\n]*
 <DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]* {
                                           QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
                                           yyextra->docBlock << "\\ilinebr ";
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << pat;
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName="```";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=0;
@@ -7076,8 +7076,8 @@ NONLopt [^\n]*
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*/"{"[^}]+"}" |
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                                           QCString pat = substitute(yytext,"*"," ");
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << pat;
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName="```";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=0;
@@ -7086,8 +7086,8 @@ NONLopt [^\n]*
 <DocBlock>{B}*"<"{CODE}">"              {
                                           if (yyextra->insideCS)
                                           {
-                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                             yyextra->docBlock << yytext;
+                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                             yyextra->docBlockName="<code>";
                                             yyextra->nestedComment=0;
                                             BEGIN(DocCopyBlock);
