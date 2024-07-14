@@ -7077,7 +7077,7 @@ NONLopt [^\n]*
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlock << yytext;
+                                          yyextra->docBlock << pat;
                                           yyextra->docBlockName="```";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=0;
