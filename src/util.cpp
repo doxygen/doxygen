@@ -6984,6 +6984,7 @@ QCString detab(const QCString &s,size_t &refIndent)
   constexpr auto doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
   const int maxIndent=1000000; // value representing infinity
   int minIndent=maxIndent;
+  bool skip = false;
   while (i<size)
   {
     char c = data[i++];
@@ -6995,6 +6996,36 @@ QCString detab(const QCString &s,size_t &refIndent)
           //printf("expand at %d stop=%d\n",col,stop);
           col+=stop;
           while (stop--) out.addChar(' ');
+        }
+        break;
+      case '@':
+      case '\\':
+        if (data[i] == '\\' || data[i] == '@') // escaped command
+        {
+          out.addChar(c);
+          col++;
+          c = data[i++];
+          out.addChar(c);
+          col++;
+        }
+        else if (i+5< size && data[i] == 'i' && data[i+1] == 's' && data[i+2] == 'k' && data[i+3] == 'i' && data[i+4] == 'p') // iskip command
+        {
+          i+=5;
+          c = data[i];
+          skip = true;
+          if (col+1<minIndent) minIndent=col+1;
+        }
+        else if (i+8 < size && data[i] == 'e' && data[i+1] == 'n' && data[i+2] == 'd' && data[i+3] == 'i' &&
+                 data[i+4] == 's' && data[i+5] == 'k' && data[i+6] == 'i' && data[i+7] == 'p') // endiskip command
+        {
+          i+=8;
+          c = data[i];
+          skip = false;
+        }
+        else
+        {
+          out.addChar(c);
+          col++;
         }
         break;
       case '\n': // reset column counter
@@ -7030,7 +7061,7 @@ QCString detab(const QCString &s,size_t &refIndent)
         {
           out.addChar(c);
         }
-        if (col<minIndent) minIndent=col;
+        if (!skip && col<minIndent) minIndent=col;
         col++;
     }
   }

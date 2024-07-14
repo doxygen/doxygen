@@ -6973,7 +6973,8 @@ NONLopt [^\n]*
 <DocBlock>({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
                                           yyextra->docBlock << yytext;
                                         }
-<DocBlock>{CMD}("f$"|"f["|"f{"|"f(")         {
+<DocBlock>{CMD}("f$"|"f["|"f{"|"f(")    {
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
                                           if (yyextra->docBlockName.at(1)=='[')
@@ -7017,6 +7018,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>{B}*"<"{PRE}">"               {
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName="<pre>";
                                           yyextra->fencedSize=0;
@@ -7024,6 +7026,7 @@ NONLopt [^\n]*
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName="uml";
                                           yyextra->fencedSize=0;
@@ -7031,6 +7034,7 @@ NONLopt [^\n]*
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fencedSize=0;
@@ -7040,6 +7044,7 @@ NONLopt [^\n]*
 <DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
                                           yyextra->docBlock << "\\ilinebr ";
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="~~~";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
@@ -7048,6 +7053,7 @@ NONLopt [^\n]*
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="~~~";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
@@ -7059,6 +7065,7 @@ NONLopt [^\n]*
 <DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]* {
                                           QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
                                           yyextra->docBlock << "\\ilinebr ";
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="```";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
@@ -7069,7 +7076,8 @@ NONLopt [^\n]*
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*/"{"[^}]+"}" |
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                                           QCString pat = substitute(yytext,"*"," ");
-                                          yyextra->docBlock << pat;
+                                          yyextra->docBlock << "\\iskip";
+                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                           yyextra->docBlockName="```";
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=0;
@@ -7078,6 +7086,7 @@ NONLopt [^\n]*
 <DocBlock>{B}*"<"{CODE}">"              {
                                           if (yyextra->insideCS)
                                           {
+                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
                                             yyextra->docBlock << yytext;
                                             yyextra->docBlockName="<code>";
                                             yyextra->nestedComment=0;
@@ -7102,36 +7111,40 @@ NONLopt [^\n]*
  /* ---- Copy verbatim sections ------ */
 
 <DocCopyBlock>"</"{PRE}">"              { // end of a <pre> block
-                                          yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName=="<pre>")
                                           {
+                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
                                             yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
+                                          yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>"</"{CODE}">"             { // end of a <code> block
-                                          yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName=="<code>")
                                           {
+                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
                                             yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
+                                          yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)")     {
-                                          yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName==&yytext[1])
                                           {
+                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
                                             yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
+                                          yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
-                                          yyextra->docBlock << yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
+                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
                                             yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
+                                          yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>^{B}*"*"+/{BN}+           { // start of a comment line
                                           if ((yyextra->docBlockName=="verbatim") || (yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
@@ -7191,19 +7204,23 @@ NONLopt [^\n]*
                                         }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
-                                          yyextra->docBlock << pat;
                                           if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                                           {
+                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
+                                          yyextra->docBlock << pat;
                                         }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
                                           QCString pat = substitute(yytext,"*"," ");
-                                          yyextra->docBlock << pat;
                                           if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.stripWhiteSpace().length())
                                           {
+                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
+                                          yyextra->docBlock << pat;
                                         }
 <DocCopyBlock>[^\<@/\*\]~"\$\\\n]+      { // any character that is not special
                                           yyextra->docBlock << yytext;
