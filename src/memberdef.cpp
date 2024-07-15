@@ -1426,7 +1426,7 @@ MemberDefImpl::MemberDefImpl(const QCString &df,int dl,int dc,
                      const ArgumentList &tal,const ArgumentList &al,const QCString &meta
                     ) : DefinitionMixin(df,dl,dc,removeRedundantWhiteSpace(na))
 {
-  //printf("MemberDefImpl::MemberDef(%s)\n",na);
+  //printf("MemberDefImpl::MemberDef(%s)\n",qPrint(na));
   init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
@@ -1756,31 +1756,32 @@ QCString MemberDefImpl::anchor() const
 
 void MemberDefImpl::_computeLinkableInProject()
 {
+  AUTO_TRACE("name={}",qualifiedName());
   bool extractStatic  = Config_getBool(EXTRACT_STATIC);
   bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
   m_isLinkableCached = 2; // linkable
   //printf("MemberDefImpl::isLinkableInProject(name=%s)\n",qPrint(name()));
   if (isHidden())
   {
-    //printf("is hidden\n");
+    AUTO_TRACE_ADD("is hidden");
     m_isLinkableCached = 1;
     return;
   }
   if (templateMaster())
   {
-    //printf("has template master\n");
+    AUTO_TRACE_ADD("has master template");
     m_isLinkableCached = templateMaster()->isLinkableInProject() ? 2 : 1;
     return;
   }
   if (isAnonymous())
   {
-    //printf("name invalid\n");
+    AUTO_TRACE_ADD("name invalid");
     m_isLinkableCached = 1; // not a valid or a dummy name
     return;
   }
   if (!hasDocumentation() || isReference())
   {
-    //printf("no docs or reference\n");
+    AUTO_TRACE_ADD("no docs or reference");
     m_isLinkableCached = 1; // no documentation
     return;
   }
@@ -1789,18 +1790,19 @@ void MemberDefImpl::_computeLinkableInProject()
   const ClassDef *classDef = getClassDef();
   if (groupDef && !groupDef->isLinkableInProject())
   {
-    //printf("group but group not linkable!\n");
+    AUTO_TRACE_ADD("in not linkable group");
     m_isLinkableCached = 1; // group but group not linkable
     return;
   }
   if (!groupDef && classDef && !classDef->isLinkableInProject())
   {
-    //printf("in a class but class not linkable!\n");
+    AUTO_TRACE_ADD("in not linkable class");
     m_isLinkableCached = 1; // in class but class not linkable
     return;
   }
   if (!groupDef && moduleDef && !moduleDef->isLinkableInProject())
   {
+    AUTO_TRACE_ADD("in not linkable module");
     m_isLinkableCached = 1; // in module but module not linkable
     return;
   }
@@ -1809,7 +1811,7 @@ void MemberDefImpl::_computeLinkableInProject()
   if (!groupDef && nspace && m_related==Relationship::Member && !nspace->isLinkableInProject()
       && (fileDef==nullptr || !fileDef->isLinkableInProject()))
   {
-    //printf("in a namespace but namespace not linkable!\n");
+    AUTO_TRACE_ADD("in not linkable namespace");
     m_isLinkableCached = 1; // in namespace but namespace not linkable
     return;
   }
@@ -1817,24 +1819,24 @@ void MemberDefImpl::_computeLinkableInProject()
       m_related==Relationship::Member && !classDef &&
       fileDef && !fileDef->isLinkableInProject())
   {
-    //printf("in a file but file not linkable!\n");
+    AUTO_TRACE_ADD("in not linkable file");
     m_isLinkableCached = 1; // in file (and not in namespace) but file not linkable
     return;
   }
   if ((!protectionLevelVisible(m_prot) && m_mtype!=MemberType_Friend) &&
        !(m_prot==Protection::Private && (m_virt!=Specifier::Normal || isOverride() || isFinal()) && extractPrivateVirtual))
   {
-    //printf("private and invisible!\n");
+    AUTO_TRACE_ADD("private and invisible");
     m_isLinkableCached = 1; // hidden due to protection
     return;
   }
   if (m_stat && classDef==nullptr && !extractStatic)
   {
-    //printf("static and invisible!\n");
+    AUTO_TRACE_ADD("static and invisible");
     m_isLinkableCached = 1; // hidden due to staticness
     return;
   }
-  //printf("linkable!\n");
+  AUTO_TRACE_ADD("linkable");
   return; // linkable!
 }
 

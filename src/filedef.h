@@ -178,6 +178,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void insertClass(ClassDef *cd) = 0;
     virtual void insertConcept(ConceptDef *cd) = 0;
     virtual void insertNamespace(NamespaceDef *nd) = 0;
+    virtual void removeMember(MemberDef *md) = 0;
     virtual void computeAnchors() = 0;
 
     virtual void setDirDef(DirDef *dd) = 0;

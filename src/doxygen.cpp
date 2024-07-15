@@ -6146,6 +6146,38 @@ static void addOverloaded(const Entry *root,MemberName *mn,
   }
 }
 
+static void insertMemberAlias(Definition *outerScope,const MemberDef *md)
+{
+  if (outerScope)
+  {
+    auto aliasMd = createMemberDefAlias(outerScope,md);
+    if (outerScope->definitionType()==Definition::TypeClass)
+    {
+      ClassDefMutable *cdm = toClassDefMutable(outerScope);
+      if (cdm)
+      {
+        cdm->insertMember(aliasMd.get());
+      }
+    }
+    else if (outerScope->definitionType()==Definition::TypeNamespace)
+    {
+      NamespaceDefMutable *ndm = toNamespaceDefMutable(outerScope);
+      if (ndm)
+      {
+        ndm->insertMember(aliasMd.get());
+      }
+    }
+    else if (outerScope->definitionType()==Definition::TypeFile)
+    {
+      toFileDef(outerScope)->insertMember(aliasMd.get());
+    }
+    if (aliasMd)
+    {
+      Doxygen::functionNameLinkedMap->add(md->name())->push_back(std::move(aliasMd));
+    }
+  }
+}
+
 //-------------------------------------------------------------------------------------------
 
 /*! This function tries to find a member (in a documented class/file/namespace)
@@ -6539,191 +6571,202 @@ static void findMember(const Entry *root,
           }
         }
 
-        FileDef *fd=root->fileDef();
-
-        if ((mn=Doxygen::memberNameLinkedMap->find(funcName))==nullptr)
+        if (mdDefine) // macro definition is already created by the preprocessor and inserted as a file member
         {
-          mn=Doxygen::memberNameLinkedMap->add(funcName);
+          //printf("moving #define %s into class %s\n",qPrint(mdDefine->name()),qPrint(cd->name()));
+
+          // take mdDefine from the Doxygen::functionNameLinkedMap (without deleting the data)
+          auto mdDefineTaken = Doxygen::functionNameLinkedMap->take(funcName,mdDefine);
+          // insert it as a class member
+          if ((mn=Doxygen::memberNameLinkedMap->find(funcName))==nullptr)
+          {
+            mn=Doxygen::memberNameLinkedMap->add(funcName);
+          }
+
+          if (mdDefine->getFileDef())
+          {
+            mdDefine->getFileDef()->removeMember(mdDefine);
+          }
+          mdDefine->makeRelated();
+          mdDefine->setMemberClass(cd);
+          mdDefine->moveTo(cd);
+          cd->insertMember(mdDefine);
+          // also insert the member as an alias in the parent's scope, so it can be referenced also without cd's scope
+          insertMemberAlias(cd->getOuterScope(),mdDefine);
+          mn->push_back(std::move(mdDefineTaken));
         }
-        else
+        else // normal member, needs to be created and added to the class
         {
-          // see if we got another member with matching arguments
-          MemberDefMutable *rmd_found = nullptr;
-          for (const auto &irmd : *mn)
+          FileDef *fd=root->fileDef();
+
+          if ((mn=Doxygen::memberNameLinkedMap->find(funcName))==nullptr)
           {
-            MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
-            if (rmd)
+            mn=Doxygen::memberNameLinkedMap->add(funcName);
+          }
+          else
+          {
+            // see if we got another member with matching arguments
+            MemberDefMutable *rmd_found = nullptr;
+            for (const auto &irmd : *mn)
             {
-              const ArgumentList &rmdAl = rmd->argumentList();
-
-              newMember=
-                className!=rmd->getOuterScope()->name() ||
-                !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
-                    cd,fd,&root->argList,
-                    TRUE,root->lang);
-              if (!newMember)
+              MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
+              if (rmd)
               {
-                rmd_found = rmd;
-              }
-            }
-          }
-          if (rmd_found) // member already exists as rmd -> add docs
-          {
-            AUTO_TRACE_ADD("addMemberDocs for related member {}",root->name);
-            addMemberDocs(root,rmd_found,funcDecl,nullptr,overloaded,spec);
-            newMember=false;
-          }
-        }
+                const ArgumentList &rmdAl = rmd->argumentList();
 
-        if (newMember) // need to create a new member
-        {
-          MemberType mtype = MemberType_Function;
-          if (mdDefine)
-            mtype=MemberType_Define;
-          else if (root->mtype==MethodTypes::Signal)
-            mtype=MemberType_Signal;
-          else if (root->mtype==MethodTypes::Slot)
-            mtype=MemberType_Slot;
-          else if (root->mtype==MethodTypes::DCOP)
-            mtype=MemberType_DCOP;
-
-          if (mdDefine)
-          {
-            mdDefine->setHidden(TRUE);
-            funcType="#define";
-            funcArgs=mdDefine->argsString();
-            funcDecl=funcType + " " + funcName;
-          }
-
-          //printf("New related name '%s' '%d'\n",qPrint(funcName),
-          //    root->argList ? (int)root->argList->count() : -1);
-
-          // first note that we pass:
-          //   (root->tArgLists ? root->tArgLists->last() : nullptr)
-          // for the template arguments for the new "member."
-          // this accurately reflects the template arguments of
-          // the related function, which don't have to do with
-          // those of the related class.
-          auto md = createMemberDef(
-              root->fileName,root->startLine,root->startColumn,
-              funcType,funcName,funcArgs,exceptions,
-              root->protection,root->virt,
-              root->isStatic,
-              isMemberOf ? Relationship::Foreign : Relationship::Related,
-              mtype,
-              (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
-              funcArgs.isEmpty() ? ArgumentList() : root->argList,
-              root->metaData);
-          auto mmd = toMemberDefMutable(md.get());
-
-          if (mdDefine)
-          {
-            mmd->setInitializer(mdDefine->initializer());
-          }
-
-          //
-          // we still have the problem that
-          // MemberDef::writeDocumentation() in memberdef.cpp
-          // writes the template argument list for the class,
-          // as if this member is a member of the class.
-          // fortunately, MemberDef::writeDocumentation() has
-          // a special mechanism that allows us to totally
-          // override the set of template argument lists that
-          // are printed.  We use that and set it to the
-          // template argument lists of the related function.
-          //
-          mmd->setDefinitionTemplateParameterLists(root->tArgLists);
-
-          mmd->setTagInfo(root->tagInfo());
-
-          //printf("Related member name='%s' decl='%s' bodyLine='%d'\n",
-          //       qPrint(funcName),qPrint(funcDecl),root->bodyLine);
-
-          // try to find the matching line number of the body from the
-          // global function list
-          bool found=FALSE;
-          if (root->bodyLine==-1)
-          {
-            MemberName *rmn=Doxygen::functionNameLinkedMap->find(funcName);
-            if (rmn)
-            {
-              const MemberDefMutable *rmd_found=nullptr;
-              for (const auto &irmd : *rmn)
-              {
-                MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
-                if (rmd)
+                newMember=
+                  className!=rmd->getOuterScope()->name() ||
+                  !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
+                      cd,fd,&root->argList,
+                      TRUE,root->lang);
+                if (!newMember)
                 {
-                  const ArgumentList &rmdAl = rmd->argumentList();
-                  // check for matching argument lists
-                  if (
-                      matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
-                        cd,fd,&root->argList,
-                        TRUE,root->lang)
-                     )
-                  {
-                    found=TRUE;
-                    rmd_found = rmd;
-                    break;
-                  }
+                  rmd_found = rmd;
                 }
               }
-              if (rmd_found) // member found -> copy line number info
-              {
-                mmd->setBodySegment(rmd_found->getDefLine(),rmd_found->getStartBodyLine(),rmd_found->getEndBodyLine());
-                mmd->setBodyDef(rmd_found->getBodyDef());
-                //md->setBodyMember(rmd);
-              }
+            }
+            if (rmd_found) // member already exists as rmd -> add docs
+            {
+              AUTO_TRACE_ADD("addMemberDocs for related member {}",root->name);
+              addMemberDocs(root,rmd_found,funcDecl,nullptr,overloaded,spec);
+              newMember=false;
             }
           }
-          if (!found) // line number could not be found or is available in this
-                      // entry
-          {
-            mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-            mmd->setBodyDef(fd);
-          }
 
-          //if (root->mGrpId!=-1)
-          //{
-          //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
-          //}
-          mmd->setMemberClass(cd);
-          mmd->setMemberSpecifiers(spec);
-          mmd->setVhdlSpecifiers(root->vhdlSpec);
-          mmd->setDefinition(funcDecl);
-          applyMemberOverrideOptions(root,mmd);
-          mmd->addQualifiers(root->qualifiers);
-          mmd->setDocumentation(root->doc,root->docFile,root->docLine);
-          mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-          mmd->setDocsForDefinition(!root->proto);
-          mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
-          mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-          mmd->addSectionsToDefinition(root->anchors);
-          mmd->setMemberGroupId(root->mGrpId);
-          mmd->setLanguage(root->lang);
-          mmd->setId(root->id);
-          //md->setMemberDefTemplateArguments(root->mtArgList);
-          cd->insertMember(md.get());
-          cd->insertUsedFile(fd);
-          mmd->setRefItems(root->sli);
-          if (root->relatesType==RelatesType::Duplicate) mmd->setRelatedAlso(cd);
-          if (!mdDefine)
+          if (newMember) // need to create a new member
           {
+            MemberType mtype = MemberType_Function;
+            if (root->mtype==MethodTypes::Signal)
+              mtype=MemberType_Signal;
+            else if (root->mtype==MethodTypes::Slot)
+              mtype=MemberType_Slot;
+            else if (root->mtype==MethodTypes::DCOP)
+              mtype=MemberType_DCOP;
+
+            //printf("New related name '%s' '%d'\n",qPrint(funcName),
+            //    root->argList ? (int)root->argList->count() : -1);
+
+            // first note that we pass:
+            //   (root->tArgLists ? root->tArgLists->last() : nullptr)
+            // for the template arguments for the new "member."
+            // this accurately reflects the template arguments of
+            // the related function, which don't have to do with
+            // those of the related class.
+            auto md = createMemberDef(
+                root->fileName,root->startLine,root->startColumn,
+                funcType,funcName,funcArgs,exceptions,
+                root->protection,root->virt,
+                root->isStatic,
+                isMemberOf ? Relationship::Foreign : Relationship::Related,
+                mtype,
+                (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
+                funcArgs.isEmpty() ? ArgumentList() : root->argList,
+                root->metaData);
+            auto mmd = toMemberDefMutable(md.get());
+
+            // also insert the member as an alias in the parent's scope, so it can be referenced also without cd's scope
+            insertMemberAlias(cd->getOuterScope(),md.get());
+
+            // we still have the problem that
+            // MemberDef::writeDocumentation() in memberdef.cpp
+            // writes the template argument list for the class,
+            // as if this member is a member of the class.
+            // fortunately, MemberDef::writeDocumentation() has
+            // a special mechanism that allows us to totally
+            // override the set of template argument lists that
+            // are printed.  We use that and set it to the
+            // template argument lists of the related function.
+            //
+            mmd->setDefinitionTemplateParameterLists(root->tArgLists);
+
+            mmd->setTagInfo(root->tagInfo());
+
+            //printf("Related member name='%s' decl='%s' bodyLine='%d'\n",
+            //       qPrint(funcName),qPrint(funcDecl),root->bodyLine);
+
+            // try to find the matching line number of the body from the
+            // global function list
+            bool found=FALSE;
+            if (root->bodyLine==-1)
+            {
+              MemberName *rmn=Doxygen::functionNameLinkedMap->find(funcName);
+              if (rmn)
+              {
+                const MemberDefMutable *rmd_found=nullptr;
+                for (const auto &irmd : *rmn)
+                {
+                  MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
+                  if (rmd)
+                  {
+                    const ArgumentList &rmdAl = rmd->argumentList();
+                    // check for matching argument lists
+                    if (
+                        matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
+                          cd,fd,&root->argList,
+                          TRUE,root->lang)
+                       )
+                    {
+                      found=TRUE;
+                      rmd_found = rmd;
+                      break;
+                    }
+                  }
+                }
+                if (rmd_found) // member found -> copy line number info
+                {
+                  mmd->setBodySegment(rmd_found->getDefLine(),rmd_found->getStartBodyLine(),rmd_found->getEndBodyLine());
+                  mmd->setBodyDef(rmd_found->getBodyDef());
+                  //md->setBodyMember(rmd);
+                }
+              }
+            }
+            if (!found) // line number could not be found or is available in this
+                        // entry
+            {
+              mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+              mmd->setBodyDef(fd);
+            }
+
+            //if (root->mGrpId!=-1)
+            //{
+            //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+            //}
+            mmd->setMemberClass(cd);
+            mmd->setMemberSpecifiers(spec);
+            mmd->setVhdlSpecifiers(root->vhdlSpec);
+            mmd->setDefinition(funcDecl);
+            applyMemberOverrideOptions(root,mmd);
+            mmd->addQualifiers(root->qualifiers);
+            mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+            mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+            mmd->setDocsForDefinition(!root->proto);
+            mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
+            mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+            mmd->addSectionsToDefinition(root->anchors);
+            mmd->setMemberGroupId(root->mGrpId);
+            mmd->setLanguage(root->lang);
+            mmd->setId(root->id);
+            //md->setMemberDefTemplateArguments(root->mtArgList);
+            cd->insertMember(md.get());
+            cd->insertUsedFile(fd);
+            mmd->setRefItems(root->sli);
+            if (root->relatesType==RelatesType::Duplicate) mmd->setRelatedAlso(cd);
             addMemberToGroups(root,md.get());
             ModuleManager::instance().addMemberToModule(root,md.get());
+            //printf("Adding member=%s\n",qPrint(md->name()));
+            mn->push_back(std::move(md));
           }
-          //printf("Adding member=%s\n",qPrint(md->name()));
-          mn->push_back(std::move(md));
-        }
-        if (root->relatesType==RelatesType::Duplicate)
-        {
-          if (!findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl,spec))
+          if (root->relatesType==RelatesType::Duplicate)
           {
-            QCString fullFuncDecl=funcDecl;
-            if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
-            warn(root->fileName,root->startLine,
-               "Cannot determine file/namespace for relatedalso function\n%s",
-               qPrint(fullFuncDecl)
-              );
+            if (!findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl,spec))
+            {
+              QCString fullFuncDecl=funcDecl;
+              if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
+              warn(root->fileName,root->startLine,
+                  "Cannot determine file/namespace for relatedalso function\n%s",
+                  qPrint(fullFuncDecl)
+                  );
+            }
           }
         }
       }

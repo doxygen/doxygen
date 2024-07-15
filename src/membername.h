@@ -50,6 +50,7 @@ class MemberName
     const Ptr &back() const                { return m_members.back();    }
     Ptr &front()                           { return m_members.front();   }
     const Ptr &front() const               { return m_members.front();   }
+    iterator erase(iterator it)            { return m_members.erase(it); }
     void push_back(Ptr &&p)                { m_members.push_back(std::move(p)); }
 
   private:
@@ -60,6 +61,26 @@ class MemberName
 /** Ordered dictionary of MemberName objects. */
 class MemberNameLinkedMap : public LinkedMap<MemberName>
 {
+  public:
+    MemberName::Ptr take(const QCString &key,const MemberDef *value)
+    {
+      MemberName::Ptr result;
+      MemberName *mn = find(key);
+      if (mn)
+      {
+        auto it = std::find_if(mn->begin(),mn->end(),[&value](const auto &el) { return el.get()==value; });
+        if (it != mn->end())
+        {
+          it->swap(result);
+          mn->erase(it);
+        }
+        if (mn->empty())
+        {
+          del(key);
+        }
+      }
+      return result;
+    }
 };
 
 /** Data associated with a MemberDef in an inheritance relation. */

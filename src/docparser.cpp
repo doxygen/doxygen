@@ -800,9 +800,10 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
       )
      )
   {
-    //printf("resolveRef %s = %p (linkable?=%d)\n",qPrint(context.token->name),member,member ? member->isLinkable() : FALSE);
+    //printf("resolveRef %s = %p (linkable?=%d)\n",qPrint(context.token->name),(void*)member,member ? member->isLinkable() : FALSE);
     if (member && member->isLinkable()) // member link
     {
+      AUTO_TRACE_ADD("resolved reference as member link");
       if (member->isObjCMethod())
       {
         bool localLink = context.memberDef ? member->getClassDef()==context.memberDef->getClassDef() : FALSE;
@@ -817,6 +818,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
     }
     else if (compound->isLinkable()) // compound link
     {
+      AUTO_TRACE_ADD("resolved reference as compound link");
       QCString anchor = compound->anchor();
       if (compound->definitionType()==Definition::TypeFile)
       {
@@ -837,6 +839,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
              (toFileDef(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
+      AUTO_TRACE_ADD("resolved reference as source link");
       children.append<DocLinkedWord>(
              this,parent,context.token->name,
              compound->getReference(),
@@ -846,6 +849,9 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
     }
     else // not linkable
     {
+      AUTO_TRACE_ADD("resolved reference as unlinkable compound={} (linkable={}) member={} (linkable={})",
+                     compound ? compound->name() : "<none>", compound ? (int)compound->isLinkable() : -1,
+                     member   ? member->name()   : "<none>", member   ? (int)member->isLinkable()   : -1);
       children.append<DocWord>(this,parent,name);
     }
   }

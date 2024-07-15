@@ -179,6 +179,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void parseSource(ClangTUParser *clangParser) override;
     void setDiskName(const QCString &name) override;
     void insertMember(MemberDef *md) override;
+    void removeMember(MemberDef *md) override;
     void insertClass(ClassDef *cd) override;
     void insertConcept(ConceptDef *cd) override;
     void insertNamespace(NamespaceDef *nd) override;
@@ -227,6 +228,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void writeDetailedDescription(OutputList &ol,const QCString &title);
     void writeBriefDescription(OutputList &ol);
     void writeClassesToTagFile(TextStream &t,const ClassLinkedRefMap &list);
+    void removeMemberFromList(MemberListType lt,MemberDef *md);
 
     IncludeInfoMap        m_includeMap;
     IncludeInfoList       m_includeList;
@@ -1330,6 +1332,60 @@ void FileDefImpl::insertMember(MemberDef *md)
            qPrint(name()));
   }
   //addMemberToGroup(md,groupId);
+}
+
+void FileDefImpl::removeMemberFromList(MemberListType lt,MemberDef *md)
+{
+  MemberList *ml = getMemberList(lt);
+  if (ml) ml->remove(md);
+}
+
+void FileDefImpl::removeMember(MemberDef *md)
+{
+  removeMemberFromList(MemberListType::AllMembersList(),md);
+  switch(md->memberType())
+  {
+    case MemberType_Property:
+      if (md->getLanguage() == SrcLangExt::Python)
+      {
+        removeMemberFromList(MemberListType::PropertyMembers(),md);
+        removeMemberFromList(MemberListType::Properties(),md);
+        break;
+      }
+      //  fallthrough, explicitly no break here
+    case MemberType_Variable:
+      removeMemberFromList(MemberListType::DecVarMembers(),md);
+      removeMemberFromList(MemberListType::DocVarMembers(),md);
+      break;
+    case MemberType_Function:
+      removeMemberFromList(MemberListType::DecFuncMembers(),md);
+      removeMemberFromList(MemberListType::DocFuncMembers(),md);
+      break;
+    case MemberType_Typedef:
+      removeMemberFromList(MemberListType::DecTypedefMembers(),md);
+      removeMemberFromList(MemberListType::DocTypedefMembers(),md);
+      break;
+    case MemberType_Sequence:
+      removeMemberFromList(MemberListType::DecSequenceMembers(),md);
+      removeMemberFromList(MemberListType::DocSequenceMembers(),md);
+      break;
+    case MemberType_Dictionary:
+      removeMemberFromList(MemberListType::DecDictionaryMembers(),md);
+      removeMemberFromList(MemberListType::DocDictionaryMembers(),md);
+      break;
+    case MemberType_Enumeration:
+      removeMemberFromList(MemberListType::DecEnumMembers(),md);
+      removeMemberFromList(MemberListType::DocEnumMembers(),md);
+      break;
+    case MemberType_EnumValue:    // enum values are shown inside their enums
+      break;  
+    case MemberType_Define:
+      removeMemberFromList(MemberListType::DecDefineMembers(),md);
+      removeMemberFromList(MemberListType::DocDefineMembers(),md);
+      break;
+    default:
+      err("FileDefImpl::removeMember(): unexpected member remove in file!\n");
+  }
 }
 
 /*! Adds compound definition \a cd to the list of all compounds of this file */

@@ -560,10 +560,9 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
       Definition *outerScope = getOuterScope();
       if (outerScope)
       {
-        std::unique_ptr<MemberDef> aliasMd;
+        std::unique_ptr<MemberDef> aliasMd = createMemberDefAlias(outerScope,md);
         if (outerScope->definitionType()==Definition::TypeNamespace)
         {
-          aliasMd = createMemberDefAlias(outerScope,md);
           NamespaceDefMutable *ndm = toNamespaceDefMutable(outerScope);
           if (ndm)
           {
@@ -572,7 +571,6 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         }
         else if (outerScope->definitionType()==Definition::TypeFile)
         {
-          aliasMd = createMemberDefAlias(outerScope,md);
           toFileDef(outerScope)->insertMember(aliasMd.get());
         }
         if (aliasMd)
