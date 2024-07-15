@@ -66,7 +66,7 @@ function initResizable(treeview) {
     }
     else
     {
-      contentHeight = windowHeight - headerHeight - 1;
+      contentHeight = windowHeight - headerHeight;
     }
     content.css({height:contentHeight + "px"});
     if (location.hash.slice(1)) {
@@ -139,6 +139,8 @@ function initResizable(treeview) {
   {
     $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
     $(".ui-resizable-handle").dblclick(collapseExpand);
+    // workaround for firefox
+    $("body").css({overflow: "hidden"});
   }
   $(window).on('load',function() { resizeHeight(treeview); });
 }
