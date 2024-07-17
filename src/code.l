@@ -2258,7 +2258,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
                                         }
 <*>")"|"]"                              {
-                                          if (yytext[0]=='(') yyextra->bracketCount--;
+                                          if (yytext[0]==')') yyextra->bracketCount--;
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                         }
