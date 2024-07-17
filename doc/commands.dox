@@ -3874,8 +3874,8 @@ class Receiver
   \ref cmdendhtmlonly "\\endhtmlonly" is inserted as-is. When you
   want to insert a HTML fragment that has block scope like a table or list
   which should appear outside \<p\>..\</p\>, this can lead to invalid HTML.
-  You can use `\htmlonly[block]` to make Doxygen
-  end the current paragraph and restart it after \\endhtmlonly.
+  You can use <tt>\\htmlonly[block]</tt> to make Doxygen
+  end the current paragraph and restart it after <tt>\\endhtmlonly</tt>.
 
   \note environment variables (like \$(HOME) ) are resolved inside a
   HTML-only block.

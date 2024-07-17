@@ -7,6 +7,7 @@ and the version in which they were introduced.
 \refitem cmdialias \\ialias
 \refitem cmdendicode \\endicode
 \refitem cmdendiliteral \\endiliteral
+\refitem cmdendiskip \\endiskip
 \refitem cmdendiverbatim \\endiverbatim
 \refitem cmdianchor \\ianchor
 \refitem cmdicode \\icode
@@ -16,6 +17,7 @@ and the version in which they were introduced.
 \refitem cmdiliteral \\iliteral
 \refitem cmdiprefix \\iprefix
 \refitem cmdiraise \\iraise
+\refitem cmdiskip \\iskip
 \refitem cmdiverbatim \\iverbatim
 \endsecreflist
 
@@ -141,6 +143,15 @@ and the version in which they were introduced.
 \since doxygen version 1.11.0
 
 <hr>
+\section cmdiskip \\iskip
+  \addindex \\iskip
+
+  Internal doxygen command to top determing the inital white space as calculated by the detab() function.
+  Inserted when processing commands that contain literal text like `\startuml`, `\verbatim`, `<code>` etc.
+
+\since doxygen version 1.12.0
+
+<hr>
 \section cmdiprefix \\iprefix "<label>"
   \addindex \\iprefix
 
@@ -150,6 +161,14 @@ and the version in which they were introduced.
   Inserted internally when processing `\include{doc}` with the `prefix` option.
 
 \since doxygen version 1.11.0
+
+<hr>
+\section cmdendiskip \\endiskip
+
+  \addindex \\endiskip
+  Ends a block of text that was started with a \ref cmdiskip "\\iskip" command.
+
+\since doxygen version 1.12.0
 
 <hr>
 \section cmdendiverbatim \\endiverbatim
