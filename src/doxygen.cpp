@@ -6148,7 +6148,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
 
 static void insertMemberAlias(Definition *outerScope,const MemberDef *md)
 {
-  if (outerScope)
+  if (outerScope && outerScope!=Doxygen::globalScope)
   {
     auto aliasMd = createMemberDefAlias(outerScope,md);
     if (outerScope->definitionType()==Definition::TypeClass)
@@ -6636,12 +6636,15 @@ static void findMember(const Entry *root,
           if (newMember) // need to create a new member
           {
             MemberType mtype = MemberType_Function;
-            if (root->mtype==MethodTypes::Signal)
-              mtype=MemberType_Signal;
-            else if (root->mtype==MethodTypes::Slot)
-              mtype=MemberType_Slot;
-            else if (root->mtype==MethodTypes::DCOP)
-              mtype=MemberType_DCOP;
+            switch (root->mtype)
+            {
+              case MethodTypes::Method:   mtype = MemberType_Function;
+              case MethodTypes::Signal:   mtype = MemberType_Signal;
+              case MethodTypes::Slot:     mtype = MemberType_Slot;
+              case MethodTypes::DCOP:     mtype = MemberType_DCOP;
+              case MethodTypes::Property: mtype = MemberType_Property;
+              case MethodTypes::Event:    mtype = MemberType_Event;
+            }
 
             //printf("New related name '%s' '%d'\n",qPrint(funcName),
             //    root->argList ? (int)root->argList->count() : -1);

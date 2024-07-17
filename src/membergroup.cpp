@@ -43,17 +43,14 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
 
 void MemberGroup::insertMember(MemberDef *md)
 {
-  //printf("MemberGroup::insertMember memberList=%p count=%d"
-  //       " member section list: %p: md=%p:%s\n",
-  //       memberList->first() ? memberList->first()->getSectionList() : 0,
-  //       memberList->count(),
-  //       md->getSectionList(),
-  //       md,qPrint(md->name()));
+  //printf("MemberGroup::insertMember(%s) inSameSection=%d md->getSectionList()=%s\n",qPrint(md->name()),
+  //    inSameSection,qPrint(md->getSectionList(m_container)->listType().to_string()));
 
   const MemberDef *firstMd = memberList->empty() ? nullptr : memberList->front();
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
+    //printf("inSameSection=FALSE\n");
     inSameSection=FALSE;
   }
   else if (inDeclSection==nullptr)
