@@ -6638,12 +6638,12 @@ static void findMember(const Entry *root,
             MemberType mtype = MemberType_Function;
             switch (root->mtype)
             {
-              case MethodTypes::Method:   mtype = MemberType_Function;
-              case MethodTypes::Signal:   mtype = MemberType_Signal;
-              case MethodTypes::Slot:     mtype = MemberType_Slot;
-              case MethodTypes::DCOP:     mtype = MemberType_DCOP;
-              case MethodTypes::Property: mtype = MemberType_Property;
-              case MethodTypes::Event:    mtype = MemberType_Event;
+              case MethodTypes::Method:   mtype = MemberType_Function; break;
+              case MethodTypes::Signal:   mtype = MemberType_Signal;   break;
+              case MethodTypes::Slot:     mtype = MemberType_Slot;     break;
+              case MethodTypes::DCOP:     mtype = MemberType_DCOP;     break;
+              case MethodTypes::Property: mtype = MemberType_Property; break;
+              case MethodTypes::Event:    mtype = MemberType_Event;    break;
             }
 
             //printf("New related name '%s' '%d'\n",qPrint(funcName),
