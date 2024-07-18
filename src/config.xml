@@ -3888,8 +3888,12 @@ If the \c DOT_UML_DETAILS tag is set to \c NO, Doxygen will
 show attributes and methods without types and arguments in the UML graphs.
 If the \c DOT_UML_DETAILS tag is set to \c YES, Doxygen will
 add type and arguments for attributes and methods in the UML graphs.
-If the \c DOT_UML_DETAILS tag is set to \c NONE, Doxygen will not generate
+If the \c DOT_UML_DETAILS tag is set to \c NONE or \c NONE_FLD, Doxygen will not generate
 fields with class member information in the UML graphs.
+If the \c DOT_UML_DETAILS tag is set to \c NONE_ATTR, Doxygen will not generate
+attributes on the edges between the classes in the UML graphs.
+If the \c DOT_UML_DETAILS tag is set to \c NONE_ATTR_FLD, Doxygen will not generate
+fields with class member information nor attributes on the edges between the classes in the UML graphs.
 The class diagrams will look similar to the default class diagrams but using
 UML notation for the relationships.
 ]]>
@@ -3897,6 +3901,9 @@ UML notation for the relationships.
       <value name="NO" />
       <value name="YES" />
       <value name="NONE" />
+      <value name="NONE_FLD" desc='same as NONE'/>
+      <value name="NONE_ATTR" />
+      <value name="NONE_ATTR_FLD" />
     </option>
     <option type='int' id='DOT_WRAP_THRESHOLD' defval='17' minval='0' maxval='1000' depends='HAVE_DOT'>
       <docs>
