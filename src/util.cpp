@@ -6984,6 +6984,7 @@ QCString detab(const QCString &s,size_t &refIndent)
   constexpr auto doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
   const int maxIndent=1000000; // value representing infinity
   int minIndent=maxIndent;
+  bool skip = false;
   while (i<size)
   {
     char c = data[i++];
@@ -6995,6 +6996,29 @@ QCString detab(const QCString &s,size_t &refIndent)
           //printf("expand at %d stop=%d\n",col,stop);
           col+=stop;
           while (stop--) out.addChar(' ');
+        }
+        break;
+      case '\\':
+        if (data[i] == '\\') // escaped command -> ignore
+        {
+          out.addChar(c);
+          out.addChar(data[i++]);
+          col+=2;
+        }
+        else if (i+5<size && qstrncmp(&data[i],"iskip",5)==0) // \iskip command
+        {
+          i+=5;
+          skip = true;
+        }
+        else if (i+8<size && qstrncmp(&data[i],"endiskip",8)==0) // \endiskip command
+        {
+          i+=8;
+          skip = false;
+        }
+        else // some other command
+        {
+          out.addChar(c);
+          col++;
         }
         break;
       case '\n': // reset column counter
@@ -7030,12 +7054,13 @@ QCString detab(const QCString &s,size_t &refIndent)
         {
           out.addChar(c);
         }
-        if (col<minIndent) minIndent=col;
+        if (!skip && col<minIndent) minIndent=col;
         col++;
     }
   }
   if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
   out.addChar(0);
+  //printf("detab(\n%s\n)=[\n%s\n]\n",qPrint(s),qPrint(out.get()));
   return out.get();
 }
 
