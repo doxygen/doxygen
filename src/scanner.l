@@ -244,6 +244,8 @@ static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void setJavaProtection(yyscan_t yyscanner);
 static void storeClangId(yyscan_t yyscanner,const char *id);
+static void startVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize=0);
+static bool endVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize=0);
 
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
@@ -6975,22 +6977,12 @@ NONLopt [^\n]*
                                         }
 <DocBlock>{CMD}("f$"|"f["|"f{"|"f(")    {
                                           yyextra->docBlock << yytext;
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlockName=&yytext[1];
-                                          if (yyextra->docBlockName.at(1)=='[')
-                                          {
-                                            yyextra->docBlockName.at(1)=']';
-                                          }
-                                          if (yyextra->docBlockName.at(1)=='{')
-                                          {
-                                            yyextra->docBlockName.at(1)='}';
-                                          }
-                                          if (yyextra->docBlockName.at(1)=='(')
-                                          {
-                                            yyextra->docBlockName.at(1)=')';
-                                          }
-                                          yyextra->fencedSize=0;
-                                          yyextra->nestedComment=0;
+                                          char blockName[] = "f$";
+                                          char c = yytext[2];
+                                          if      (c=='[') blockName[1]=']';
+                                          else if (c=='{') blockName[1]='}';
+                                          else if (c=='(') blockName[1]=')';
+                                          startVerbatimBlock(yyscanner,blockName);
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"ifile"{B}+"\""[^\n\"]+"\"" {
@@ -7019,45 +7011,30 @@ NONLopt [^\n]*
                                         }
 <DocBlock>{B}*"<"{PRE}">"               {
                                           yyextra->docBlock << yytext;
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlockName="<pre>";
-                                          yyextra->fencedSize=0;
-                                          yyextra->nestedComment=0;
+                                          startVerbatimBlock(yyscanner,"<pre>");
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlockName="uml";
-                                          yyextra->fencedSize=0;
-                                          yyextra->nestedComment=0;
+                                          startVerbatimBlock(yyscanner,"uml");
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlockName=&yytext[1];
-                                          yyextra->fencedSize=0;
-                                          yyextra->nestedComment=0;
+                                          startVerbatimBlock(yyscanner,&yytext[1]);
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
                                           yyextra->docBlock << "\\ilinebr ";
                                           yyextra->docBlock << pat;
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlockName="~~~";
-                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
-                                          yyextra->nestedComment=0;
+                                          startVerbatimBlock(yyscanner,"~~~",pat.stripWhiteSpace().length());
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlockName="~~~";
-                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
-                                          yyextra->nestedComment=0;
+                                          startVerbatimBlock(yyscanner,"~~~",pat.stripWhiteSpace().length());
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
@@ -7066,10 +7043,7 @@ NONLopt [^\n]*
                                           QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
                                           yyextra->docBlock << "\\ilinebr ";
                                           yyextra->docBlock << pat;
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlockName="```";
-                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
-                                          yyextra->nestedComment=0;
+                                          startVerbatimBlock(yyscanner,"```",pat.stripWhiteSpace().length());
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
@@ -7077,19 +7051,14 @@ NONLopt [^\n]*
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
-                                          if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                          yyextra->docBlockName="```";
-                                          yyextra->fencedSize=pat.stripWhiteSpace().length();
-                                          yyextra->nestedComment=0;
+                                          startVerbatimBlock(yyscanner,"```",pat.stripWhiteSpace().length());
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{B}*"<"{CODE}">"              {
                                           if (yyextra->insideCS)
                                           {
                                             yyextra->docBlock << yytext;
-                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\iskip";
-                                            yyextra->docBlockName="<code>";
-                                            yyextra->nestedComment=0;
+                                            startVerbatimBlock(yyscanner,"<code>");
                                             BEGIN(DocCopyBlock);
                                           }
                                           else
@@ -7111,37 +7080,29 @@ NONLopt [^\n]*
  /* ---- Copy verbatim sections ------ */
 
 <DocCopyBlock>"</"{PRE}">"              { // end of a <pre> block
-                                          if (yyextra->docBlockName=="<pre>")
+                                          if (endVerbatimBlock(yyscanner,"<pre>"))
                                           {
-                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
-                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                           yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>"</"{CODE}">"             { // end of a <code> block
-                                          if (yyextra->docBlockName=="<code>")
+                                          if (endVerbatimBlock(yyscanner,"<code>"))
                                           {
-                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
-                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                           yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)")     {
-                                          if (yyextra->docBlockName==&yytext[1])
+                                          if (endVerbatimBlock(yyscanner,&yytext[1]))
                                           {
-                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
-                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                           yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
-                                          if (&yytext[4]==yyextra->docBlockName)
+                                          if (endVerbatimBlock(yyscanner,&yytext[4]))
                                           {
-                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
-                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                           yyextra->docBlock << yytext;
@@ -7204,20 +7165,16 @@ NONLopt [^\n]*
                                         }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
-                                          if (yyextra->docBlockName == "~~~" && yyextra->fencedSize==pat.stripWhiteSpace().length())
+                                          if (endVerbatimBlock(yyscanner,"~~~",pat.stripWhiteSpace().length()))
                                           {
-                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
-                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                           yyextra->docBlock << pat;
                                         }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
                                           QCString pat = substitute(yytext,"*"," ");
-                                          if (yyextra->docBlockName == "```" && yyextra->fencedSize==pat.stripWhiteSpace().length())
+                                          if (endVerbatimBlock(yyscanner,"```",pat.stripWhiteSpace().length()))
                                           {
-                                            if (Config_getBool(MARKDOWN_SUPPORT)) yyextra->docBlock << "\\endiskip";
-                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                           yyextra->docBlock << pat;
@@ -7608,6 +7565,35 @@ static QCString stripFuncPtr(const QCString &type)
   while (i>0 && (type[i-1]=='*' || type[i-1]=='&' || type[i-1]==' ')) i--;
   if (funcPtr && i>0 && type[i-1]=='(') i--;
   return type.left(i);
+}
+
+//-----------------------------------------------------------------
+static void startVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (Config_getBool(MARKDOWN_SUPPORT))
+  {
+    yyextra->docBlock << "\\iskip";
+  }
+  yyextra->docBlockName=blockName;
+  yyextra->fencedSize=fencedSize;
+  yyextra->nestedComment=0;
+}
+
+//-----------------------------------------------------------------
+static bool endVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->docBlockName==blockName && (fencedSize==0 || fencedSize==yyextra->fencedSize))
+  {
+    if (Config_getBool(MARKDOWN_SUPPORT))
+    {
+      yyextra->docBlock << "\\endiskip";
+    }
+    yyextra->docBlockName="";
+    return true;
+  }
+  return false;
 }
 
 //-----------------------------------------------------------------

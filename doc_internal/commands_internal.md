@@ -146,7 +146,9 @@ and the version in which they were introduced.
 \section cmdiskip \\iskip
   \addindex \\iskip
 
-  Internal doxygen command to top determing the inital white space as calculated by the detab() function.
+  Internal doxygen command to suppress evaluation of whitespace to determine the indentation
+  of a comment block. Evaluation will continue as normal when the matching 
+  \ref cmdendiskip "\\endiskip" command is found.
   Inserted when processing commands that contain literal text like `\startuml`, `\verbatim`, `<code>` etc.
 
 \since doxygen version 1.12.0

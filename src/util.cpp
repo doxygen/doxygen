@@ -6998,30 +6998,24 @@ QCString detab(const QCString &s,size_t &refIndent)
           while (stop--) out.addChar(' ');
         }
         break;
-      case '@':
       case '\\':
-        if (data[i] == '\\' || data[i] == '@') // escaped command
+        if (data[i] == '\\') // escaped command -> ignore
         {
           out.addChar(c);
-          col++;
-          c = data[i++];
-          out.addChar(c);
-          col++;
+          out.addChar(data[i++]);
+          col+=2;
         }
-        else if (i+5< size && data[i] == 'i' && data[i+1] == 's' && data[i+2] == 'k' && data[i+3] == 'i' && data[i+4] == 'p') // iskip command
+        else if (i+5<size && qstrncmp(&data[i],"iskip",5)==0) // \iskip command
         {
           i+=5;
-          c = data[i];
           skip = true;
         }
-        else if (i+8 < size && data[i] == 'e' && data[i+1] == 'n' && data[i+2] == 'd' && data[i+3] == 'i' &&
-                 data[i+4] == 's' && data[i+5] == 'k' && data[i+6] == 'i' && data[i+7] == 'p') // endiskip command
+        else if (i+8<size && qstrncmp(&data[i],"endiskip",8)==0) // \endiskip command
         {
           i+=8;
-          c = data[i];
           skip = false;
         }
-        else
+        else // some other command
         {
           out.addChar(c);
           col++;
@@ -7066,6 +7060,7 @@ QCString detab(const QCString &s,size_t &refIndent)
   }
   if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
   out.addChar(0);
+  //printf("detab(\n%s\n)=[\n%s\n]\n",qPrint(s),qPrint(out.get()));
   return out.get();
 }
 
