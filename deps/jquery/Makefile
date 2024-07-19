@@ -5,7 +5,8 @@ POWERTIP_VERSION = 1.3.1
 TOUCHPUNCH_VERSION = 0.2.3
 SMARTMENUS_VERSION = 1.1.0
 
-MINIFIER ?= /usr/local/bin/yuicompressor-2.4.8
+UGLIFYCSS ?= /usr/local/bin/uglifycss
+UGLIFYJS ?= /usr/local/bin/uglifyjs
 SCRIPTS = jquery-$(JQUERY_VERSION).min.js \
           jquery.ui-$(JQUERY_UI_VERSION).min.js \
           jquery.scrollTo-$(SCROLL_VERSION).min.js \
@@ -30,7 +31,9 @@ doxmenu-min.css: sm-core-css.css \
                  sass/_sub-items-indentation.scss
 	compass compile --css-dir . --force sass/sm-dox.scss
 	cat sm-core-css.css sm-dox.css > doxmenu.css
-	java -jar $(MINIFIER).jar doxmenu.css > doxmenu-min.css
+	$(UGLIFYCSS) doxmenu.css > doxmenu-min.css
+	$(UGLIFYJS) -O max_line_len=1024,comments=true jquery.js > jquery-min.js
+	mv jquery-min.js jquery.js
 	rm -f sm-dox.css doxmenu.css
 
 clean:
