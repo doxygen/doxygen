@@ -1313,11 +1313,35 @@ void DefinitionImpl::addInnerCompound(Definition *)
 
 static std::recursive_mutex g_qualifiedNameMutex;
 
+// foo::_v1 => foo
+// suitable for namespace
+static QCString rStripInlineNamespaceScope(const QCString& name)
+{
+  QCString newName = name;
+  int pos = name.find("::");
+  if (pos != -1)
+  {
+    newName = name.str().substr(0, pos);
+  }
+  return newName;
+}
+
 QCString DefinitionImpl::qualifiedName() const
 {
   std::lock_guard<std::recursive_mutex> lock(g_qualifiedNameMutex);
   if (!m_impl->qualifiedName.isEmpty())
   {
+    bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
+    if (hideInlineNamespaces && m_impl->def->definitionType() == Definition::DefType::TypeNamespace)
+    {
+      DefinitionMutable* defMut = m_impl->def->toDefinitionMutable_();
+      Definition* def = toDefinition(defMut);
+      NamespaceDef* nsDef = reinterpret_cast<NamespaceDef*>(def);
+      if (nsDef->isInline())
+      {
+        return rStripInlineNamespaceScope(m_impl->qualifiedName);
+      }
+    }
     return m_impl->qualifiedName;
   }
 
@@ -1479,6 +1503,18 @@ QCString DefinitionImpl::navigationPathAsString() const
   {
     result+=(toFileDef(m_impl->def))->getDirDef()->navigationPathAsString();
   }
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
+  if (hideInlineNamespaces && m_impl->def->definitionType() == Definition::DefType::TypeNamespace)
+  {
+    DefinitionMutable* defMut = m_impl->def->toDefinitionMutable_();
+    Definition* def = toDefinition(defMut);
+    NamespaceDef* nsDef = reinterpret_cast<NamespaceDef*>(def);
+    if (nsDef->isInline())
+    {
+      return result;
+    }
+  }
+
   result+="<li class=\"navelem\">";
   if (m_impl->def->isLinkableInProject())
   {
@@ -1892,6 +1928,16 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
 
 const QCString &DefinitionImpl::name() const
 {
+  Definition* outerDef = getOuterScope();
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
+  if (hideInlineNamespaces && outerDef && outerDef->definitionType() == Definition::DefType::TypeNamespace)
+  {
+    NamespaceDef* outerDefReal = reinterpret_cast<NamespaceDef*>(outerDef);
+    if (outerDefReal->isInline())
+    {
+      return outerDefReal->getOuterScope()->name();
+    }
+  }
   return m_impl->name;
 }
 

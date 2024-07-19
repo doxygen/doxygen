@@ -306,11 +306,19 @@ static void addMemberToSearchIndex(const MemberDef *md)
 
 void createJavaScriptSearchIndex()
 {
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
   // index classes
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (cd->isLinkable())
     {
+      Definition* outerDef = cd->getOuterScope();
+      if (hideInlineNamespaces && outerDef && outerDef->definitionType() == Definition::DefType::TypeNamespace)
+      {
+        NamespaceDef* outerDefReal = reinterpret_cast<NamespaceDef*>(outerDef);
+        if (outerDefReal->isInline())
+          continue;
+      }
       QCString n = cd->localName();
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,cd.get()));
       if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))

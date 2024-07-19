@@ -1386,10 +1386,14 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
   ol.parseText(title);
   ol.endMemberHeader();
   ol.startMemberList();
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACE);
   for (const auto &nd : *this)
   {
     if (nd->isLinkable() && nd->hasDocumentation())
     {
+      if (hideInlineNamespaces && nd->isInline())
+        continue;
+
       SrcLangExt lang = nd->getLanguage();
       if (lang==SrcLangExt::IDL && (isConstantGroup != nd->isConstantGroup()))
           continue; // will be output in another pass, see layout_default.xml
