@@ -2999,7 +2999,60 @@ static void buildTypedefList(const Entry *root)
      )
   {
     AUTO_TRACE();
-    addVariable(root);
+    QCString rname = removeRedundantWhiteSpace(root->name);
+    MemberName *mn = Doxygen::functionNameLinkedMap->find(rname);
+    bool found=false;
+    if (mn) // symbol with the same name already found
+    {
+      for (auto &imd : *mn)
+      {
+        QCString rtype = root->type;
+        rtype.stripPrefix("typedef ");
+        bool notBothGrouped = root->groups.empty() || imd->getGroupDef()==nullptr; // see example #100
+        //printf("imd->isTypedef()=%d imd->typeString()=%s root->type=%s\n",imd->isTypedef(),
+        //    qPrint(imd->typeString()),qPrint(root->type));
+        if (imd->isTypedef() && notBothGrouped && imd->typeString()==rtype)
+        {
+          MemberDefMutable *md = toMemberDefMutable(imd.get());
+          if (md)
+          {
+            md->setDocumentation(root->doc,root->docFile,root->docLine);
+            md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+            md->setDocsForDefinition(!root->proto);
+            md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+            md->addSectionsToDefinition(root->anchors);
+            md->setRefItems(root->sli);
+            md->addQualifiers(root->qualifiers);
+
+            // merge ingroup specifiers
+            if (md->getGroupDef()==nullptr && !root->groups.empty())
+            {
+              addMemberToGroups(root,md);
+            }
+            else if (md->getGroupDef()!=nullptr && root->groups.empty())
+            {
+              //printf("existing member is grouped, new member not\n");
+            }
+            else if (md->getGroupDef()!=nullptr && !root->groups.empty())
+            {
+              //printf("both members are grouped\n");
+            }
+            found=true;
+            break;
+          }
+        }
+      }
+    }
+    if (found)
+    {
+      AUTO_TRACE_ADD("typedef '{}' already found",rname);
+    }
+    else
+    {
+      AUTO_TRACE_ADD("new typedef '{}'",rname);
+      addVariable(root);
+    }
+
   }
   for (const auto &e : root->children())
     if (!e->section.isEnum())
@@ -3053,7 +3106,8 @@ static void buildVarList(const Entry *root)
   if (!root->name.isEmpty() &&
       (root->type.isEmpty() || g_compoundKeywords.find(root->type.str())==g_compoundKeywords.end()) &&
       (
-       (root->section.isVariable()    // it's a variable
+       (root->section.isVariable() &&   // it's a variable
+        root->type.find("typedef ")==-1 // and not a typedef
        ) ||
        (root->section.isFunction() && // or maybe a function pointer variable
         (isFuncPtr=findFunctionPtr(root->type.str(),root->lang))!=-1
