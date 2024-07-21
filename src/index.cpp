@@ -1802,7 +1802,8 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
       (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
   {
 
-    bool hasChildren = namespaceHasNestedNamespace(nd) ||
+    bool hasNestedNamespace = namespaceHasNestedNamespace(nd);
+    bool hasChildren = hasNestedNamespace ||
       namespaceHasNestedClass(nd,false,ClassDef::Class) ||
       namespaceHasNestedConcept(nd);
     bool isLinkable  = nd->isLinkable();
@@ -1825,7 +1826,7 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
     bool isDir = hasChildren || visibleMembers>0;
     if (isLinkable || isDir)
     {
-      ftv->addContentsItem(hasChildren,nd->localName(),ref,file,QCString(),FALSE,nd->partOfGroups().empty(),nd);
+      ftv->addContentsItem(hasNestedNamespace,nd->localName(),ref,file,QCString(),FALSE,nd->partOfGroups().empty(),nd);
 
       if (addToIndex)
       {
@@ -1841,8 +1842,8 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
       {
         ftv->incContentsDepth();
         writeNamespaceTree(nd->getNamespaces(),ftv,FALSE,addToIndex);
-        writeClassTree(nd->getClasses(),ftv,addToIndex,FALSE,ClassDef::Class);
-        writeConceptList(nd->getConcepts(),ftv,addToIndex);
+        writeClassTree(nd->getClasses(),nullptr,addToIndex,FALSE,ClassDef::Class);
+        writeConceptList(nd->getConcepts(),nullptr,addToIndex);
         writeNamespaceMembers(nd,addToIndex);
         ftv->decContentsDepth();
       }
