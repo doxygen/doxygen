@@ -169,7 +169,11 @@ void DocGroup::close(Entry *e,const QCString &fileName,int line,bool foundInline
     m_memberGroupId=DOX_NOGROUP;
     m_memberGroupRelates.clear();
     m_memberGroupDocs.clear();
-    if (!foundInline) e->mGrpId=DOX_NOGROUP;
+    if (!foundInline)
+    {
+      e->mGrpId=DOX_NOGROUP;
+      e->relates="";
+    }
     //printf("new group id=%d\n",m_memberGroupId);
   }
   else if (!m_autoGroupStack.empty()) // end of auto group
