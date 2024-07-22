@@ -252,7 +252,7 @@ if (build_doc_chm)
 add_custom_target(docs_chm
     COMMENT "Generating CHM documentation."
     COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} HTML_HELP_COMPILER=${HTML_HELP_COMPILER} INDEX_DOC=index_html.dox ${DOXYGEN_EXECUTABLE} Doxyfile_chm
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/html/examples ${PROJECT_BINARY_DIR}/chm/examples
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/chm/html/examples ${PROJECT_BINARY_DIR}/chm/examples
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/chm/index.hhp ${PROJECT_BINARY_DIR}/chm/doxygen_manual.hhp
     COMMAND ${CMAKE_COMMAND} -E echo "import os" > ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
     COMMAND ${CMAKE_COMMAND} -E echo "for root, dirs, files in os.walk('examples'):" >> ${PROJECT_BINARY_DIR}/chm/doxygen_manual_examples_chm.py
@@ -265,7 +265,7 @@ add_custom_target(docs_chm
         DEPENDS ${PROJECT_BINARY_DIR}/doc/language.dox ${PROJECT_BINARY_DIR}/doc/config.dox
         DEPENDS ${OUT_DOC_FILES}
         DEPENDS ${OUT_DOC_CHM_FILES}
-        DEPENDS examples
+        DEPENDS examples_chm
         DEPENDS doxygen
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
 )
