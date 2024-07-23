@@ -4825,7 +4825,7 @@ static void writeIndex(OutputList &ol)
 
   QCString fn = Crawlmap::crawlFileName;
   addHtmlExtensionIfMissing(fn);
-  ol.writeString("<a href=\"" + fn + "\"/>\n");
+  ol.writeString("<a href=\"" + fn + "\"></a>\n");
   Doxygen::indexList->addIndexFile(fn);
 
   endFile(ol);

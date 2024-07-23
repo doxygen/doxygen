@@ -3486,11 +3486,14 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
 {
   if (localToc.isHtmlEnabled())
   {
-    int maxLevel = localToc.htmlLevel();
+    int level=0;
+    int indent=0;
+    auto writeIndent = [&]()                     { for (int i=0;i<indent*2;i++) m_t << " ";      };
+    auto incIndent   = [&](const QCString &text) { writeIndent(); m_t << text << "\n"; indent++; };
+    auto decIndent   = [&](const QCString &text) { indent--; writeIndent(); m_t << text << "\n"; };
     m_t << "<div class=\"toc\">";
     m_t << "<h3>" << theTranslator->trRTFTableOfContents() << "</h3>\n";
-    m_t << "<ul>";
-    int level=1;
+    int maxLevel = localToc.htmlLevel();
     char cs[2];
     cs[1]='\0';
     BoolVector inLi(maxLevel+1,false);
@@ -3506,50 +3509,54 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
         {
           for (int l=level;l<nextLevel;l++)
           {
-            if (l < maxLevel) m_t << "<ul>";
+            if (l < maxLevel)
+            {
+              incIndent("<ul>");
+              cs[0]=static_cast<char>('0'+l+1);
+              incIndent("<li class=\"level" + QCString(cs) + "\">");
+            }
           }
         }
         else if (nextLevel<level)
         {
           for (int l=level;l>nextLevel;l--)
           {
-            if (l <= maxLevel && inLi[l]) m_t << "</li>\n";
-            inLi[l]=false;
-            if (l <= maxLevel) m_t << "</ul>\n";
+            if (l <= maxLevel) decIndent("</li>");
+            inLi[nextLevel] = false;
+            if (l <= maxLevel) decIndent("</ul>");
           }
         }
-        cs[0]=static_cast<char>('0'+nextLevel);
-        if (nextLevel <= maxLevel && inLi[nextLevel])
-        {
-          m_t << "</li>\n";
-        }
-        QCString titleDoc = si->title();
-        QCString label = si->label();
-        if (titleDoc.isEmpty()) titleDoc = label;
         if (nextLevel <= maxLevel)
         {
-          m_t << "<li class=\"level"+QCString(cs)+"\">"
-              << "<a href=\"#"+label+"\">"
-              << convertToHtml(filterTitle(titleDoc))
-              << "</a>";
+          if (inLi[nextLevel] || level>nextLevel)
+          {
+            decIndent("</li>");
+            cs[0]=static_cast<char>('0'+nextLevel);
+            incIndent("<li class=\"level" + QCString(cs) + "\">");
+          }
+          QCString titleDoc = si->title();
+          QCString label = si->label();
+          if (titleDoc.isEmpty()) titleDoc = label;
+          writeIndent();
+          m_t  << "<a href=\"#"+label+"\">"
+               << convertToHtml(filterTitle(titleDoc))
+               << "</a>\n";
+          inLi[nextLevel]=true;
+          level = nextLevel;
         }
-        inLi[nextLevel]=true;
-        level = nextLevel;
       }
     }
     if (level > maxLevel) level = maxLevel;
     while (level>1 && level <= maxLevel)
     {
-      if (inLi[level])
-      {
-        m_t << "</li>\n";
-      }
-      inLi[level]=FALSE;
-      m_t << "</ul>\n";
+      if (inLi[level]) decIndent("</li>");
+      inLi[level]=false;
+      decIndent("</li>");
+      decIndent("</ul>");
       level--;
     }
-    if (level <= maxLevel && inLi[level]) m_t << "</li>\n";
-    m_t << "</ul>\n";
+    if (level <= maxLevel && inLi[level]) decIndent("</li>");
+    decIndent("</ul>");
     m_t << "</div>\n";
   }
 }
