@@ -2028,8 +2028,12 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   const SectionRefs &sectionRefs = pd->getSectionRefs();
   if (pd->localToc().isXmlEnabled() && !sectionRefs.empty())
   {
-    t << "    <tableofcontents>\n";
     int level=1;
+    int indent=0;
+    auto writeIndent = [&]()                 { for (int i=0;i<4+indent*2;i++) t << " ";    };
+    auto incIndent   = [&](const char *text) { writeIndent(); t << text << "\n"; indent++; };
+    auto decIndent   = [&](const char *text) { indent--; writeIndent(); t << text << "\n"; };
+    incIndent("<tableofcontents>");
     int maxLevel = pd->localToc().xmlLevel();
     BoolVector inLi(maxLevel+1,false);
     for (const SectionInfo *si : sectionRefs)
@@ -2042,27 +2046,35 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
         {
           for (int l=level;l<nextLevel;l++)
           {
-            if (l < maxLevel) t << "    <tableofcontents>\n";
+            if (l < maxLevel) incIndent("<tableofcontents>");
           }
         }
         else if (nextLevel<level)
         {
           for (int l=level;l>nextLevel;l--)
           {
-            if (l <= maxLevel && inLi[l]) t << "    </tocsect>\n";
+            if (l <= maxLevel && inLi[l]) decIndent("</tocsect>");
             inLi[l]=false;
-            if (l <= maxLevel) t << "    </tableofcontents>\n";
+            if (l <= maxLevel) decIndent("</tableofcontents>");
           }
         }
         if (nextLevel <= maxLevel)
         {
-          if (inLi[nextLevel]) t << "    </tocsect>\n";
+          if (inLi[nextLevel])
+          {
+            decIndent("</tocsect>");
+          }
+          else if (level>nextLevel)
+          {
+            decIndent("</tableofcontents>");
+            incIndent("<tableofcontents>");
+          }
           QCString titleDoc = convertToXML(si->title());
           QCString label = convertToXML(si->label());
           if (titleDoc.isEmpty()) titleDoc = label;
-          t << "      <tocsect>\n";
-          t << "        <name>" << titleDoc << "</name>\n";
-          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << label << "</reference>\n";
+          incIndent("<tocsect>");
+          writeIndent(); t << "<name>" << titleDoc << "</name>\n";
+          writeIndent(); t << "<reference>"  <<  convertToXML(pageName) << "_1" << label << "</reference>\n";
           inLi[nextLevel]=true;
           level = nextLevel;
         }
@@ -2070,14 +2082,14 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     }
     while (level>1 && level <= maxLevel)
     {
-      if (inLi[level]) t << "    </tocsect>\n";
+      if (inLi[level]) decIndent("</tocsect>");
       inLi[level]=false;
-      t << "    </tableofcontents>\n";
+      decIndent("</tableofcontents>");
       level--;
     }
-    if (level <= maxLevel && inLi[level]) t << "    </tocsect>\n";
+    if (level <= maxLevel && inLi[level]) decIndent("</tocsect>");
     inLi[level]=false;
-    t << "    </tableofcontents>\n";
+    decIndent("</tableofcontents>");
   }
   t << "    <briefdescription>\n";
   writeXMLDocBlock(t,pd->briefFile(),pd->briefLine(),pd,nullptr,pd->briefDescription());

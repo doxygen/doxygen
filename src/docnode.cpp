@@ -5727,7 +5727,7 @@ int DocSection::parse()
     else if (retval==RetVal_Subsubsection && m_level<=2)
     {
       if ((m_level <= 1) &&
-          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+          !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,
                        parser()->tokenizer.getLineNr(),
@@ -5747,7 +5747,7 @@ int DocSection::parse()
     else if (retval==RetVal_Paragraph && m_level<=3)
     {
       if ((m_level <= 2) &&
-          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+          !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
                        "Unexpected paragraph command found inside %s!",
@@ -5766,7 +5766,7 @@ int DocSection::parse()
     else if (retval==RetVal_SubParagraph && m_level<=4)
     {
       if ((m_level <= 3) &&
-          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+          !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
                        "Unexpected subparagraph command found inside %s!",
@@ -5786,7 +5786,7 @@ int DocSection::parse()
     else if (retval==RetVal_SubSubParagraph && m_level<=5)
     {
       if ((m_level <= 4) &&
-          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+          !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
                        "Unexpected subsubparagraph command found inside %s!",

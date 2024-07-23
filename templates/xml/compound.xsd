@@ -399,7 +399,7 @@
 
   <xsd:complexType name="docSect2Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect3" type="docSect3Type" minOccurs="0" maxOccurs="unbounded" />
@@ -411,7 +411,7 @@
 
   <xsd:complexType name="docSect3Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect4" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
@@ -423,7 +423,7 @@
 
   <xsd:complexType name="docSect4Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect5" type="docSect5Type" minOccurs="0" maxOccurs="unbounded" />
@@ -435,7 +435,7 @@
 
   <xsd:complexType name="docSect5Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect6" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
@@ -447,7 +447,7 @@
 
   <xsd:complexType name="docSect6Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="internal" type="docInternalS6Type" minOccurs="0" />
@@ -869,7 +869,10 @@
 
   <xsd:complexType name="tableofcontentsType">
     <xsd:sequence>
-      <xsd:element name="tocsect" type="tableofcontentsKindType" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:choice>
+        <xsd:element name="tocsect" type="tableofcontentsKindType" minOccurs="1" maxOccurs="unbounded" />
+        <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:choice>
     </xsd:sequence>
   </xsd:complexType>
 

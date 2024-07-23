@@ -149,7 +149,7 @@ static void visitPostEnd(TextStream &t, const char *cmd)
 
 XmlDocVisitor::XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
-    m_langExt(langExt)
+    m_langExt(langExt), m_sectionLevel(0)
 {
 }
 
@@ -687,15 +687,29 @@ void XmlDocVisitor::operator()(const DocSimpleListItem &li)
 void XmlDocVisitor::operator()(const DocSection &s)
 {
   if (m_hide) return;
-  m_t << "<sect" << s.level() << " id=\"" << s.file();
-  if (!s.anchor().isEmpty()) m_t << "_1" << s.anchor();
-  m_t << "\">\n";
+  int orgSectionLevel = m_sectionLevel;
+  QCString sectId = s.file();
+  if (!s.anchor().isEmpty()) sectId += "_1"+s.anchor();
+  while (m_sectionLevel+1<s.level()) // fix missing intermediate levels
+  {
+    m_sectionLevel++;
+    m_t << "<sect" << m_sectionLevel << " id=\"" << sectId << "_1s" << m_sectionLevel << "\">";
+  }
+  m_sectionLevel++;
+  m_t << "<sect" << s.level() << " id=\"" << sectId << "\">\n";
   if (s.title())
   {
     std::visit(*this,*s.title());
   }
   visitChildren(s);
-  m_t << "</sect" << s.level() << ">\n";
+  m_t << "</sect" << s.level() << ">";
+  m_sectionLevel--;
+  while (orgSectionLevel<m_sectionLevel) // fix missing intermediate levels
+  {
+    m_t << "</sect" << m_sectionLevel << ">";
+    m_sectionLevel--;
+  }
+  m_t << "\n";
 }
 
 void XmlDocVisitor::operator()(const DocHtmlList &s)

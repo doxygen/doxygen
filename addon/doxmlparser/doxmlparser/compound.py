@@ -26714,7 +26714,7 @@ class tableofcontentsType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, tocsect=None, gds_collector_=None, **kwargs_):
+    def __init__(self, tocsect=None, tableofcontents=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -26725,6 +26725,11 @@ class tableofcontentsType(GeneratedsSuper):
         else:
             self.tocsect = tocsect
         self.tocsect_nsprefix_ = None
+        if tableofcontents is None:
+            self.tableofcontents = []
+        else:
+            self.tableofcontents = tableofcontents
+        self.tableofcontents_nsprefix_ = None
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -26750,9 +26755,20 @@ class tableofcontentsType(GeneratedsSuper):
         self.tocsect.insert(index, value)
     def replace_tocsect_at(self, index, value):
         self.tocsect[index] = value
+    def get_tableofcontents(self):
+        return self.tableofcontents
+    def set_tableofcontents(self, tableofcontents):
+        self.tableofcontents = tableofcontents
+    def add_tableofcontents(self, value):
+        self.tableofcontents.append(value)
+    def insert_tableofcontents_at(self, index, value):
+        self.tableofcontents.insert(index, value)
+    def replace_tableofcontents_at(self, index, value):
+        self.tableofcontents[index] = value
     def hasContent_(self):
         if (
-            self.tocsect
+            self.tocsect or
+            self.tableofcontents
         ):
             return True
         else:
@@ -26790,6 +26806,9 @@ class tableofcontentsType(GeneratedsSuper):
         for tocsect_ in self.tocsect:
             namespaceprefix_ = self.tocsect_nsprefix_ + ':' if (UseCapturedNS_ and self.tocsect_nsprefix_) else ''
             tocsect_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='tocsect', pretty_print=pretty_print)
+        for tableofcontents_ in self.tableofcontents:
+            namespaceprefix_ = self.tableofcontents_nsprefix_ + ':' if (UseCapturedNS_ and self.tableofcontents_nsprefix_) else ''
+            tableofcontents_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='tableofcontents', pretty_print=pretty_print)
     def build(self, node, gds_collector_=None):
         self.gds_collector_ = gds_collector_
         if SaveElementTreeNode:
@@ -26809,6 +26828,11 @@ class tableofcontentsType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.tocsect.append(obj_)
             obj_.original_tagname_ = 'tocsect'
+        elif nodeName_ == 'tableofcontents':
+            obj_ = tableofcontentsType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.tableofcontents.append(obj_)
+            obj_.original_tagname_ = 'tableofcontents'
 # end class tableofcontentsType
 
 
