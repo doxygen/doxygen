@@ -1,6 +1,6 @@
 \page pg_rel Overview of doxygen release dates
 
-The following table gives an overview of the doxygen releases with together with the release dates.
+The following table gives an overview of the doxygen releases together with the release dates.
 <ul class="multicol">
 <li><b>Release 1.11.0</b>&nbsp;&nbsp; 20-05-2024</li>
 <li><b>Release 1.10.0</b>&nbsp;&nbsp; 25-12-2023</li>
