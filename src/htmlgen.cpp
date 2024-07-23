@@ -3547,16 +3547,12 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
       }
     }
     if (level > maxLevel) level = maxLevel;
-    while (level>1 && level <= maxLevel)
+    while (level>0)
     {
-      if (inLi[level]) decIndent("</li>");
-      inLi[level]=false;
       decIndent("</li>");
       decIndent("</ul>");
       level--;
     }
-    if (level <= maxLevel && inLi[level]) decIndent("</li>");
-    decIndent("</ul>");
     m_t << "</div>\n";
   }
 }
