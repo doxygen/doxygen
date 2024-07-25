@@ -561,7 +561,7 @@ void RTFGenerator::beginRTFDocument()
     uint32_t index = data.index();
     if (array[index] != nullptr)
     {
-      msg("Style '%s' redefines \\s%d.\n", name.c_str(), index);
+      err("Style '%s' redefines \\s%d.\n", name.c_str(), index);
     }
     array[index] = &data;
   }
