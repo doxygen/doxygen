@@ -432,6 +432,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     MemberType m_mtype = MemberType_Define; // returns the kind of member
     int m_maxInitLines = 0;         // when the initializer will be displayed
     int m_userInitLines = 0;        // result of explicit \hideinitializer or \showinitializer
+    bool m_forceMultiInitLines = false; // show single initializer lines as multi line initializer
     MemberDef  *m_annMemb = nullptr;
 
     ArgumentList m_defArgList;    // argument list of this member definition
@@ -1364,7 +1365,8 @@ void MemberDefImpl::init(Definition *d,
   m_explExt=FALSE;
   m_tspec=FALSE;
   m_cachedAnonymousType=nullptr;
-  m_maxInitLines=Config_getInt(MAX_INITIALIZER_LINES);
+  m_maxInitLines=abs(Config_getInt(MAX_INITIALIZER_LINES));
+  m_forceMultiInitLines=Config_getInt(MAX_INITIALIZER_LINES) < 0;
   m_userInitLines=-1;
   m_docEnumValues=FALSE;
   // copy function template arguments (if any)
@@ -1475,6 +1477,7 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   result->m_vhdlSpec                       = m_vhdlSpec                       ;
   result->m_maxInitLines                   = m_maxInitLines                   ;
   result->m_userInitLines                  = m_userInitLines                  ;
+  result->m_forceMultiInitLines            = m_forceMultiInitLines            ;
   result->m_annMemb                        = m_annMemb                        ;
   result->m_defArgList                     = m_defArgList                     ;
   result->m_declArgList                    = m_declArgList                    ;
@@ -4416,6 +4419,7 @@ bool MemberDefImpl::hasOneLineInitializer() const
   //    qPrint(name()),qPrint(m_initializer),m_initLines,
   //    m_maxInitLines,m_userInitLines);
   return !m_initializer.isEmpty() && m_initLines==0 && // one line initializer
+         !m_forceMultiInitLines && // don't force mult lines
          ((m_maxInitLines>0 && m_userInitLines==-1) || m_userInitLines>0); // enabled by default or explicitly
 }
 
@@ -4423,7 +4427,8 @@ bool MemberDefImpl::hasMultiLineInitializer() const
 {
   //printf("initLines=%d userInitLines=%d maxInitLines=%d\n",
   //    initLines,userInitLines,maxInitLines);
-  return m_initLines>0 &&
+  return (m_initLines>0 ||
+          (!m_initializer.isEmpty() && m_initLines==0 && m_forceMultiInitLines)) &&
          ((m_initLines<m_maxInitLines && m_userInitLines==-1) // implicitly enabled
           || m_initLines<m_userInitLines // explicitly enabled
          );

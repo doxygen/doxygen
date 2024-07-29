@@ -1228,14 +1228,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='int' id='MAX_INITIALIZER_LINES' minval='0' maxval='10000' defval='30'>
+    <option type='int' id='MAX_INITIALIZER_LINES' minval='-10000' maxval='10000' defval='30'>
       <docs>
 <![CDATA[
  The \c MAX_INITIALIZER_LINES tag determines the maximum number of lines
  that the initial value of a variable or macro / define can have for it to appear in
  the documentation. If the initializer
- consists of more lines than specified here it will be hidden. Use a value
- of 0 to hide initializers completely. The appearance of the value of
+ consists of more lines than, in absolute sense, specified here it will be hidden. Use a value
+ of 0 to hide initializers completely.
+ In case the value is negative also single line initializers will be shown as multi line initializers.
+ The appearance of the value of
  individual variables and macros / defines can be controlled using \ref cmdshowinitializer "\\showinitializer"
  or \ref cmdhideinitializer "\\hideinitializer" command in the documentation regardless of this setting.
 ]]>
