@@ -46,6 +46,7 @@ class Debug
                      Entries           =             0x02'0000ULL,
                      Sections          =             0x04'0000ULL,
                      Stderr            =             0x08'0000ULL,
+                     Layout            =             0x10'0000ULL,
                      Lex               = 0x0000'FFFF'FF00'0000ULL, // all scanners combined
                      Lex_code          = 0x0000'0000'0100'0000ULL,
                      Lex_commentcnv    = 0x0000'0000'0200'0000ULL,

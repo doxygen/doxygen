@@ -9506,6 +9506,66 @@ void printNavTree(Entry *root,int indent)
     }
   }
 }
+
+void printNavLayout(LayoutNavEntry *root,int indent)
+{
+  if (Debug::isFlagSet(Debug::Layout))
+  {
+    QCString indentStr;
+    indentStr.fill(' ',indent);
+    Debug::print(Debug::Layout,0,"%skind=%s visible=%d title='%s'\n",
+        indentStr.isEmpty()?"":qPrint(indentStr),
+        qPrint(root->navToString()),
+        root->visible(),
+        qPrint(root->title())
+        );
+    for (const auto &e : root->children())
+    {
+      printNavLayout(e.get(),indent+2);
+    }
+  }
+}
+
+void printLayout()
+{
+  bool extraIndent = false;
+  Debug::print(Debug::Layout,0,"Part: Navigation index\n");
+  for (const auto &e : LayoutDocManager::instance().rootNavEntry()->children())
+  {
+    printNavLayout(e.get(),2);
+  }
+
+  for (int i = 0; i < LayoutDocManager::NrParts; i++)
+  {
+     Debug::print(Debug::Layout,0,"\nPart: %s\n", qPrint(LayoutDocManager::partToString(i)));
+     for (const auto &lde : LayoutDocManager::instance().docEntries(static_cast<LayoutDocManager::LayoutPart>(i)))
+     {
+       if (const LayoutDocEntrySimple *ldes = dynamic_cast<const LayoutDocEntrySimple*>(lde.get()))
+       {
+         if (lde->kind() == LayoutDocEntry::MemberDeclEnd || lde->kind() == LayoutDocEntry::MemberDefEnd) extraIndent = false;
+         Debug::print(Debug::Layout,0,"  %skind: %s, visible=%d\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()), ldes->visible());
+         if (lde->kind() == LayoutDocEntry::MemberDeclStart || lde->kind() == LayoutDocEntry::MemberDefStart) extraIndent = true;
+       }
+       else if (const LayoutDocEntryMemberDecl *lmdecl = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get()))
+       {
+         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, type: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()),qPrint(lmdecl->type.to_string()));
+       }
+       else if (const LayoutDocEntryMemberDef *lmdef = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get()))
+       {
+         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, type: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()),qPrint(lmdef->type.to_string()));
+       }
+       else
+       {
+         // should not happen
+         Debug::print(Debug::Layout,0,"  %snot handled kind: %s\n",extraIndent? "  " : "",qPrint(lde->entryToString()));
+       }
+     }
+  }
+}
+
 //----------------------------------------------------------------------------
 // prints the Sections tree (for debugging)
 
@@ -12080,6 +12140,7 @@ void parseInput()
   {
       warn_uncond("failed to open layout file '%s' for reading! Using default settings.\n",qPrint(layoutFileName));
   }
+  printLayout();
 
   /**************************************************************************
    *             Read and preprocess input                                  *

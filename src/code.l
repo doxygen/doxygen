@@ -574,6 +574,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body,FuncCall>"{"                      {
                                           yyextra->theVarContext.pushScope();
+                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
+                                          yyextra->bracketCount = 0;
 
                                           DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
                                           yyextra->scopeStack.push(INNERBLOCK);
@@ -594,6 +596,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body,FuncCall,MemberCall,MemberCall2>"}"  {
                                           yyextra->theVarContext.popScope();
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->type.clear();
                                           yyextra->name.clear();
 
@@ -1064,7 +1067,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body>"*"{B}*")"                        { // end of cast?
                                           yyextra->code->codify(yytext);
-                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->bracketCount--;
                                           yyextra->parmType = yyextra->name;
                                           BEGIN(FuncCall);
@@ -1077,7 +1080,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->name.clear();yyextra->type.clear();
                                           if (*yytext==')')
                                           {
-                                            yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                            yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                             yyextra->bracketCount--;
                                             if (yyextra->bracketCount<=0)
                                             {
@@ -1469,7 +1472,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             }
                                             else if (*yytext=='[')
                                             {
-                                              yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
+                                              yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                             }
                                             yyextra->args.clear();
                                             yyextra->parmType.clear();
@@ -1568,7 +1571,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <ObjCCall,ObjCMName,ObjCSkipStr>\n { yyextra->currentCtx->format+=*yytext; }
 
 <Body>"]"                               {
-                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->code->codify(yytext);
                                           // TODO: nested arrays like: a[b[0]->func()]->func()
                                           yyextra->name = yyextra->saveName;
@@ -1676,7 +1679,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->parmType.clear();yyextra->parmName.clear();
                                           yyextra->code->codify(yytext);
                                           yyextra->bracketCount++;
-                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           if (YY_START==FuncCall && !yyextra->insideBody)
                                           {
                                             yyextra->theVarContext.pushScope();
@@ -1710,7 +1713,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             yyextra->parmName.clear();
                                             addVariable(yyscanner,yyextra->parmType,yyextra->parmName);
                                           }
-                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->inForEachExpression = FALSE;
                                           //yyextra->theCallContext.setClass(0); // commented out, otherwise a()->b() does not work for b().
                                           yyextra->code->codify(yytext);
@@ -2255,12 +2258,12 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <*>"("|"["                              {
                                           if (yytext[0]=='(') yyextra->bracketCount++;
                                           yyextra->code->codify(yytext);
-                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                         }
 <*>")"|"]"                              {
                                           if (yytext[0]==')') yyextra->bracketCount--;
                                           yyextra->code->codify(yytext);
-                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                         }
 <*>\n                                   {
                                           codifyLines(yyscanner,yytext);
