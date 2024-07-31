@@ -1533,6 +1533,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ce->tagInfoData.anchor   = tci->anchor;
       ce->tagInfoData.fileName = tci->filename;
       ce->startLine            = tci->lineNr;
+      ce->fileName             = m_tagName;
       ce->hasTagInfo           = TRUE;
       ce->id                   = tci->clangId;
       ce->lang                 = tci->isObjC ? SrcLangExt::ObjC : SrcLangExt::Unknown;
@@ -1604,6 +1605,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ce->tagInfoData.tagName  = m_tagName;
       ce->tagInfoData.fileName = tci->filename;
       ce->startLine   = tci->lineNr;
+      ce->fileName    = m_tagName;
       ce->hasTagInfo  = TRUE;
       ce->id       = tci->clangId;
 
@@ -1660,6 +1662,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ne->tagInfoData.tagName  = m_tagName;
       ne->tagInfoData.fileName = tni->filename;
       ne->startLine   = tni->lineNr;
+      ne->fileName    = m_tagName;
       ne->hasTagInfo  = TRUE;
       ne->id       = tni->clangId;
 
@@ -1681,6 +1684,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       pe->tagInfoData.tagName  = m_tagName;
       pe->tagInfoData.fileName = tpgi->filename;
       pe->startLine   = tpgi->lineNr;
+      pe->fileName    = m_tagName;
       pe->hasTagInfo  = TRUE;
 
       buildMemberList(pe,tpgi->members);
@@ -1702,6 +1706,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ge->tagInfoData.tagName  = m_tagName;
       ge->tagInfoData.fileName = tgi->filename;
       ge->startLine   = tgi->lineNr;
+      ge->fileName    = m_tagName;
       ge->hasTagInfo  = TRUE;
 
       buildMemberList(ge,tgi->members);
@@ -1749,6 +1754,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       pe->tagInfoData.tagName  = m_tagName;
       pe->tagInfoData.fileName = stripExtension(tpi->filename);
       pe->startLine   = tpi->lineNr;
+      pe->fileName    = m_tagName;
       pe->hasTagInfo  = TRUE;
       root->moveToSubEntryAndKeep(pe);
     }
