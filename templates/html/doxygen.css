@@ -1526,31 +1526,15 @@ div.toc ul {
         padding: 0px;
 }
 
-div.toc li.level1, div.toc li.levelE1 {
+div.toc li[class^='level'] {
+        margin-left: 15px;
+}
+
+div.toc li.level1 {
         margin-left: 0px;
 }
 
-div.toc li.level2, div.toc li.levelE2 {
-        margin-left: 15px;
-}
-
-div.toc li.level3, div.toc li.levelE3 {
-        margin-left: 15px;
-}
-
-div.toc li.level4, div.toc li.levelE4 {
-        margin-left: 15px;
-}
-
-div.toc li.level5, div.toc li.levelE5 {
-        margin-left: 15px;
-}
-
-div.toc li.level6, div.toc li.levelE6 {
-        margin-left: 15px;
-}
-
-div.toc li.levelE1, div.toc li.levelE2, div.toc li.levelE3, div.toc li.levelE4, div.toc li.levelE5, div.toc li.levelE6 {
+div.toc li.empty {
         background-image: none;
         margin-top: 0px;
 }
