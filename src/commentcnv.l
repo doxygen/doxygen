@@ -241,11 +241,11 @@ CPPC  "/\/"
 
   // Optional any character
 ANYopt .*
-
   // Optional white space
 WSopt [ \t\r]*
   // readline non special
-RLopt [^\\@<\n\*\/`]*
+RLopt [^ \\@<\n\*\/`]*
+RLopt1 [^\\@<\n\*\/`]*
   // Optional slash
 SLASHopt [/]*
 
@@ -1061,7 +1061,7 @@ SLASHopt [/]*
 <ReadLine,CopyLine>{RLopt}         {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				   }
-<ReadLine,CopyLine>{RLopt}/\n      {
+<ReadLine,CopyLine>{RLopt1}/\n     {
 				     copyToOutput(yyscanner,yytext,yyleng);
                                      yyextra->insertCppCommentMarker=false;
 				     BEGIN(yyextra->readLineCtx);
