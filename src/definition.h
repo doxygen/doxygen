@@ -297,7 +297,6 @@ class Definition
   private:
     friend class DefinitionImpl;
     friend DefinitionMutable* toDefinitionMutable(Definition *);
-    friend DefinitionMutable* toDefinitionMutable(const Definition *);
     virtual DefinitionMutable *toDefinitionMutable_() = 0;
     virtual const DefinitionImpl *toDefinitionImpl_() const = 0;
 };

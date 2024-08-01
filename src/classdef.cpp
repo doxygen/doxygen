@@ -3597,8 +3597,8 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
                 if (srcCd==dstCd || dstCd->isBaseClass(srcCd,TRUE))
                   // member is in the same or a base class
                 {
-                  ArgumentList &srcAl = const_cast<ArgumentList&>(srcMd->argumentList());
-                  ArgumentList &dstAl = const_cast<ArgumentList&>(dstMd->argumentList());
+                  const ArgumentList &srcAl = srcMd->argumentList();
+                  const ArgumentList &dstAl = dstMd->argumentList();
                   found=matchArguments2(
                       srcMd->getOuterScope(),srcMd->getFileDef(),&srcAl,
                       dstMd->getOuterScope(),dstMd->getFileDef(),&dstAl,
@@ -5051,8 +5051,8 @@ bool ClassDefImpl::containsOverload(const MemberDef *md) const
     for (const auto &mi : *mni)
     {
       const MemberDef *classMd = mi->memberDef();
-      ArgumentList &classAl = const_cast<ArgumentList&>(classMd->argumentList());
-      ArgumentList &al      = const_cast<ArgumentList&>(md->argumentList());
+      const ArgumentList &classAl = classMd->argumentList();
+      const ArgumentList &al      = md->argumentList();
       bool found = matchArguments2(
           classMd->getOuterScope(),classMd->getFileDef(),&classAl,
           md->getOuterScope(),md->getFileDef(),&al,
