@@ -88,7 +88,7 @@ class DotNode
     int  findParent( DotNode *n );
 
     void write(TextStream &t,GraphType gt,GraphOutputFormat f,
-               bool topDown,bool toChildren,bool backArrows) const;
+               bool topDown,bool toChildren,bool backArrows);
     void writeXML(TextStream &t,bool isClassGraph) const;
     void writeDocbook(TextStream &t,bool isClassGraph) const;
     void writeDEF(TextStream &t) const;
@@ -134,7 +134,7 @@ class DotNode
     DotNodeRefVector m_children;             //!< list of child nodes (outgoing arrows)
     EdgeInfoVector   m_edgeInfo;             //!< edge info for each child
     bool             m_deleted    = false;   //!< used to mark a node as deleted
-    mutable bool     m_written    = false;   //!< used to mark a node as written
+    bool             m_written    = false;   //!< used to mark a node as written
     bool             m_hasDoc     = false;   //!< used to mark a node as documented
     bool             m_isRoot;               //!< indicates if this is a root node
     const ClassDef * m_classDef;             //!< class representing this node (can be 0)

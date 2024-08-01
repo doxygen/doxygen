@@ -632,7 +632,7 @@ void DotNode::write(TextStream &t,
                     GraphOutputFormat format,
                     bool topDown,
                     bool toChildren,
-                    bool backArrows) const
+                    bool backArrows)
 {
   //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,qPrint(m_label),this,m_written,m_visible);
   if (m_written) return; // node already written to the output
