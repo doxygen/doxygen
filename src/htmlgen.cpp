@@ -3523,7 +3523,7 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
           for (int l=level;l>nextLevel;l--)
           {
             if (l <= maxLevel) decIndent("</li>");
-            inLi[nextLevel] = false;
+            inLi[l] = false;
             if (l <= maxLevel) decIndent("</ul>");
           }
         }
