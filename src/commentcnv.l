@@ -245,6 +245,7 @@ ANYopt .*
 WSopt [ \t\r]*
   // readline non special
 RLopt [^\\@<\n\*\/`]*
+RL    [^\\@<\n\*\/`]+
   // Optional slash
 SLASHopt [/]*
 
@@ -1057,10 +1058,10 @@ SLASHopt [/]*
 <ReadLine,CopyLine>"*"             {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				   }
-<ReadLine,CopyLine>{RLopt}         {
+<ReadLine,CopyLine>{RL}            {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				   }
-<ReadLine,CopyLine>{RLopt}/{B}"\\ilinebr"{B} {
+<ReadLine,CopyLine>{RL}/{B}"\\ilinebr"{B} {
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <ReadLine,CopyLine>{RLopt}/\n      {
