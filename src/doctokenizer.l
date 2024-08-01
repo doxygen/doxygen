@@ -90,6 +90,7 @@ struct doctokenizerYY_state
   QCString     endMarker;
   int          autoListLevel;
   std::stack< std::unique_ptr<DocLexerContext> > lexerStack;
+  std::stack<int> stateStack;
 
   int yyLineNr = 0;
 };
@@ -386,6 +387,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_XRefItem
 %x St_XRefItem2
 %x St_File
+%x St_IFile
 %x St_Pattern
 %x St_Link
 %x St_Cite
@@ -1404,6 +1406,16 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_ILine>.            {
                          return 0;
                        }
+<St_IFile>{BLANK}*{FILEMASK} {
+                         yyextra->fileName = QCString(yytext).stripWhiteSpace();
+                         return TK_WORD;
+                       }
+<St_IFile>{BLANK}*"\""[^\n\"]+"\"" {
+                         QCString text(yytext);
+                         text = text.stripWhiteSpace();
+                         yyextra->fileName = text.mid(1,text.length()-2);
+                         return TK_WORD;
+                       }
 <St_File>{FILEMASK}    {
                          yyextra->token.name = yytext;
                          return TK_WORD;
@@ -2072,6 +2084,13 @@ void DocTokenizer::setStateFile()
   BEGIN(St_File);
 }
 
+void DocTokenizer::setStateIFile()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_IFile);
+}
+
 void DocTokenizer::setStatePattern()
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -2257,6 +2276,22 @@ int DocTokenizer::getLineNr(void)
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   return yyextra->yyLineNr;
+}
+
+void DocTokenizer::pushState()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->stateStack.push(YYSTATE);
+}
+
+void DocTokenizer::popState()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  assert(!yyextra->stateStack.empty());
+  BEGIN(yyextra->stateStack.top());
+  yyextra->stateStack.pop();
 }
 
 #include "doctokenizer.l.h"

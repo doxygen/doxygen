@@ -1398,6 +1398,18 @@ reparsetoken:
         case CMD_IMAGE:
           handleImage(parent,children);
           break;
+        case CMD_ILINE:
+          tokenizer.pushState();
+          tokenizer.setStateILine();
+          (void)tokenizer.lex();
+          tokenizer.popState();
+          break;
+        case CMD_IFILE:
+          tokenizer.pushState();
+          tokenizer.setStateIFile();
+          (void)tokenizer.lex();
+          tokenizer.popState();
+          break;
         default:
           return FALSE;
       }
