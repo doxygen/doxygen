@@ -1526,20 +1526,17 @@ div.toc ul {
         padding: 0px;
 }
 
+div.toc li[class^='level'] {
+        margin-left: 15px;
+}
+
 div.toc li.level1 {
         margin-left: 0px;
 }
 
-div.toc li.level2 {
-        margin-left: 15px;
-}
-
-div.toc li.level3 {
-        margin-left: 15px;
-}
-
-div.toc li.level4 {
-        margin-left: 15px;
+div.toc li.empty {
+        background-image: none;
+        margin-top: 0px;
 }
 
 span.emoji {

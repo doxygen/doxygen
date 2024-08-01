@@ -3513,7 +3513,8 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
             {
               incIndent("<ul>");
               cs[0]=static_cast<char>('0'+l+1);
-              incIndent("<li class=\"level" + QCString(cs) + "\">");
+              const char *empty = (l!=nextLevel-1) ? " empty" : "";
+              incIndent("<li class=\"level" + QCString(cs) + empty + "\">");
             }
           }
         }
