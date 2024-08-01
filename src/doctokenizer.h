@@ -134,9 +134,9 @@ class DocTokenizer
     static const char *retvalToString(int retval);
 
     void setLineNr(int lineno);
-    void setState(int state);
     int getLineNr(void);
-    int getState(void);
+    void pushState();
+    void popState();
 
     // operations on the scanner
     void findSections(const QCString &input,const Definition *d,

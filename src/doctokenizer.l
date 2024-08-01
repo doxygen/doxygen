@@ -90,6 +90,7 @@ struct doctokenizerYY_state
   QCString     endMarker;
   int          autoListLevel;
   std::stack< std::unique_ptr<DocLexerContext> > lexerStack;
+  std::stack<int> stateStack;
 
   int yyLineNr = 0;
 };
@@ -2277,18 +2278,20 @@ int DocTokenizer::getLineNr(void)
   return yyextra->yyLineNr;
 }
 
-void DocTokenizer::setState(int state)
+void DocTokenizer::pushState()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  BEGIN(state);
+  yyextra->stateStack.push(YYSTATE);
 }
 
-int DocTokenizer::getState(void)
+void DocTokenizer::popState()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  return YYSTATE;
+  assert(!yyextra->stateStack.empty());
+  BEGIN(yyextra->stateStack.top());
+  yyextra->stateStack.pop();
 }
 
 #include "doctokenizer.l.h"

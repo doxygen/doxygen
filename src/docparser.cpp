@@ -1399,20 +1399,16 @@ reparsetoken:
           handleImage(parent,children);
           break;
         case CMD_ILINE:
-          {
-            int state = tokenizer.getState();
-            tokenizer.setStateILine();
-            (void)tokenizer.lex();
-            tokenizer.setState(state);
-          }
+          tokenizer.pushState();
+          tokenizer.setStateILine();
+          (void)tokenizer.lex();
+          tokenizer.popState();
           break;
         case CMD_IFILE:
-          {
-            int state = tokenizer.getState();
-            tokenizer.setStateIFile();
-            (void)tokenizer.lex();
-            tokenizer.setState(state);
-          }
+          tokenizer.pushState();
+          tokenizer.setStateIFile();
+          (void)tokenizer.lex();
+          tokenizer.popState();
           break;
         default:
           return FALSE;
