@@ -189,7 +189,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
              const QCString &ref=QCString(),const QCString &fName=QCString(),
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
-    ClassDef *resolveAlias() { return this; }
     DefType definitionType() const override { return TypeClass; }
     CodeSymbolType codeSymbolType() const override;
     QCString getOutputFileBase() const override;
@@ -425,7 +424,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     DefType definitionType() const override { return TypeClass; }
 
     const ClassDef *getCdAlias() const { return toClassDef(getAlias()); }
-    ClassDef *resolveAlias() { return const_cast<ClassDef*>(getCdAlias()); }
 
     CodeSymbolType codeSymbolType() const override
     { return getCdAlias()->codeSymbolType(); }
