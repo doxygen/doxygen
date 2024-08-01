@@ -241,7 +241,6 @@ CPPC  "/\/"
 
   // Optional any character
 ANYopt .*
-
   // Optional white space
 WSopt [ \t\r]*
   // readline non special
@@ -1061,6 +1060,9 @@ SLASHopt [/]*
 <ReadLine,CopyLine>{RLopt}         {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				   }
+<ReadLine,CopyLine>{RLopt}/{B}"\\ilinebr"{B} {
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
 <ReadLine,CopyLine>{RLopt}/\n      {
 				     copyToOutput(yyscanner,yytext,yyleng);
                                      yyextra->insertCppCommentMarker=false;
