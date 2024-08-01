@@ -313,11 +313,10 @@ class DefinitionAliasImpl
     const QCString &name() const;
     QCString qualifiedName() const;
   private:
-    void updateQualifiedName() const;
     Definition *m_def;
     const Definition *m_scope;
     QCString m_symbolName;
-    mutable QCString m_qualifiedName;
+    QCString m_qualifiedName;
 };
 
 template<class Base>

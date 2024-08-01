@@ -1933,6 +1933,16 @@ void DefinitionAliasImpl::init()
 {
   //printf("%s::addToMap(%s)\n",qPrint(name()),qPrint(alias->name()));
   addToMap(m_symbolName,m_def);
+  if (m_scope==nullptr)
+  {
+    m_qualifiedName = m_def->localName();
+  }
+  else
+  {
+    m_qualifiedName = m_scope->qualifiedName()+
+      getLanguageSpecificSeparator(m_scope->getLanguage())+
+      m_def->localName();
+  }
 }
 
 void DefinitionAliasImpl::deinit()
@@ -1940,34 +1950,13 @@ void DefinitionAliasImpl::deinit()
   removeFromMap(m_symbolName,m_def);
 }
 
-void DefinitionAliasImpl::updateQualifiedName() const
-{
-  std::lock_guard<std::recursive_mutex> lock(g_qualifiedNameMutex);
-  if (m_qualifiedName.isEmpty())
-  {
-    //printf("start %s::qualifiedName() localName=%s\n",qPrint(name()),qPrint(m_impl->localName));
-    if (m_scope==nullptr)
-    {
-      m_qualifiedName = m_def->localName();
-    }
-    else
-    {
-      m_qualifiedName = m_scope->qualifiedName()+
-        getLanguageSpecificSeparator(m_scope->getLanguage())+
-        m_def->localName();
-    }
-  }
-}
-
 QCString DefinitionAliasImpl::qualifiedName() const
 {
-  updateQualifiedName();
   return m_qualifiedName;
 }
 
 const QCString &DefinitionAliasImpl::name() const
 {
-  updateQualifiedName();
   return m_qualifiedName;
 }
 
