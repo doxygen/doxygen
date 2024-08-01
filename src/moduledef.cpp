@@ -248,10 +248,10 @@ void ModuleDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   auto &ml = m_memberLists.get(lt,MemberListContainer::Module);
   ml->setNeedsSorting(
-       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
+       (ml->listType().isDeclaration() && sortBriefDocs) ||
+       (ml->listType().isDocumentation() && sortMemberDocs));
   ml->push_back(md);
-  if (ml->listType()&MemberListType_declarationLists)
+  if (ml->listType().isDeclaration())
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
@@ -267,10 +267,10 @@ void ModuleDefImpl::addMemberToModule(const Entry *root,MemberDef *md)
       qPrint(root->fileName),root->startLine,
       qPrint(md->qualifiedName()),qPrint(name()),
       root->exported);
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   if (allMemberList==nullptr)
   {
-    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::Module));
+    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType::AllMembersList(),MemberListContainer::Module));
     allMemberList = m_memberLists.back().get();
   }
   if (allMemberList->contains(md))
@@ -281,16 +281,16 @@ void ModuleDefImpl::addMemberToModule(const Entry *root,MemberDef *md)
   switch (md->memberType())
   {
     case MemberType_Variable:
-      addMemberToList(MemberListType_decVarMembers,md);
+      addMemberToList(MemberListType::DecVarMembers(),md);
       break;
     case MemberType_Function:
-      addMemberToList(MemberListType_decFuncMembers,md);
+      addMemberToList(MemberListType::DecFuncMembers(),md);
       break;
     case MemberType_Typedef:
-      addMemberToList(MemberListType_decTypedefMembers,md);
+      addMemberToList(MemberListType::DecTypedefMembers(),md);
       break;
     case MemberType_Enumeration:
-      addMemberToList(MemberListType_decEnumMembers,md);
+      addMemberToList(MemberListType::DecEnumMembers(),md);
       break;
     default:
       break;
@@ -326,10 +326,10 @@ void ModuleDefImpl::mergeSymbolsFrom(ModuleDefImpl *other)
       }
     }
   };
-  mergeMemberList(MemberListType_decVarMembers);
-  mergeMemberList(MemberListType_decFuncMembers);
-  mergeMemberList(MemberListType_decTypedefMembers);
-  mergeMemberList(MemberListType_decEnumMembers);
+  mergeMemberList(MemberListType::DecVarMembers());
+  mergeMemberList(MemberListType::DecFuncMembers());
+  mergeMemberList(MemberListType::DecTypedefMembers());
+  mergeMemberList(MemberListType::DecEnumMembers());
 }
 
 void ModuleDefImpl::writeDocumentation(OutputList &ol)
@@ -662,7 +662,7 @@ void ModuleDefImpl::addListReferences()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
     }
@@ -673,7 +673,7 @@ void ModuleDefImpl::addMembersToMemberGroup()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
@@ -702,13 +702,14 @@ void ModuleDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
+  docFindSections(inbodyDocumentation(),this,docFile());
   for (const auto &mg : m_memberGroups)
   {
     mg->findSectionsInDocumentation(this);
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ml->findSectionsInDocumentation(this);
     }
@@ -726,19 +727,19 @@ void ModuleDefImpl::sortMemberLists()
   {
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
     {
-      return Config_getBool(SORT_BY_SCOPE_NAME)     ?
-        qstricmp(c1->name(), c2->name())<0          :
-        qstricmp(c1->className(), c2->className())<0;
+      return Config_getBool(SORT_BY_SCOPE_NAME)          ?
+        qstricmp_sort(c1->name(), c2->name())<0          :
+        qstricmp_sort(c1->className(), c2->className())<0;
     };
-    std::sort(m_classes.begin(), m_classes.end(), classComp);
+    std::stable_sort(m_classes.begin(), m_classes.end(), classComp);
 
     auto conceptComp = [](const ConceptLinkedRefMap::Ptr &c1,const ConceptLinkedRefMap::Ptr &c2)
     {
-      return Config_getBool(SORT_BY_SCOPE_NAME)              ?
-        qstricmp(c1->qualifiedName(), c2->qualifiedName())<0 :
-        qstricmp(c1->name(), c2->name())<0;
+      return Config_getBool(SORT_BY_SCOPE_NAME)                   ?
+        qstricmp_sort(c1->qualifiedName(), c2->qualifiedName())<0 :
+        qstricmp_sort(c1->name(), c2->name())<0;
     };
-    std::sort(m_concepts.begin(), m_concepts.end(), conceptComp);
+    std::stable_sort(m_concepts.begin(), m_concepts.end(), conceptComp);
   }
 
   static auto contrComp = [](const ModuleDef *m1, const ModuleDef *m2)
@@ -762,11 +763,11 @@ void ModuleDefImpl::sortMemberLists()
     };
     auto tr1 = typeRank(m1);
     auto tr2 = typeRank(m2);
-    int diff = qstricmp(fn1,fn2);
+    int diff = qstricmp_sort(fn1,fn2);
     return tr1<tr2 || (tr1==tr2 && diff<0);
   };
 
-  std::sort(m_contributing.begin(), m_contributing.end(), contrComp);
+  std::stable_sort(m_contributing.begin(), m_contributing.end(), contrComp);
 }
 
 void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
@@ -804,7 +805,7 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
-          ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+          ol.writeSummaryLink(QCString(),ml->listType().toLabel(),lmd->title(lang),first);
           first=FALSE;
         }
       }
@@ -1170,6 +1171,7 @@ struct ModuleManager::Private
   std::unordered_map<std::string,ModuleList> moduleNameMap; // name->module mapping
   ImportInfoMap       externalImports;
   HeaderInfoVector    headers;
+  std::mutex          mutex;
 };
 
 ModuleManager &ModuleManager::instance()
@@ -1187,6 +1189,7 @@ void ModuleManager::createModuleDef(const QCString &fileName,int line,int column
 {
   AUTO_TRACE("{}:{}: Found module name='{}' partition='{}' exported='{}'",
       fileName,line,moduleName,partitionName,exported);
+  std::lock_guard lock(p->mutex);
   ModuleDef::Type mt = exported ? ModuleDef::Type::Interface : ModuleDef::Type::Implementation;
   std::unique_ptr<ModuleDef> modDef = std::make_unique<ModuleDefImpl>(fileName,line,column,moduleName,mt,partitionName);
   auto mod = p->moduleFileMap.add(fileName,std::move(modDef));
@@ -1205,6 +1208,7 @@ void ModuleManager::createModuleDef(const QCString &fileName,int line,int column
 
 void ModuleManager::clear()
 {
+  std::lock_guard lock(p->mutex);
   p->headers.clear();
   p->externalImports.clear();
   p->moduleNameMap.clear();
@@ -1214,6 +1218,7 @@ void ModuleManager::clear()
 void ModuleManager::addHeader(const QCString &moduleFile,int line,const QCString &headerName,bool isSystem)
 {
   AUTO_TRACE("{}:{} headerName={} isSystem={}",moduleFile,line,headerName,isSystem);
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(moduleFile);
   if (mod)
   {
@@ -1231,6 +1236,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
 {
   AUTO_TRACE("{}:{} importName={},isExported={},partitionName={}",
       moduleFile,line,importName,isExported,partitionName);
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(moduleFile);
   if (mod) // import inside a module
   {
@@ -1246,6 +1252,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
 
 void ModuleManager::addClassToModule(const Entry *root,ClassDef *cd)
 {
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(root->fileName);
   if (mod)
   {
@@ -1257,6 +1264,7 @@ void ModuleManager::addClassToModule(const Entry *root,ClassDef *cd)
 
 void ModuleManager::addConceptToModule(const Entry *root,ConceptDef *cd)
 {
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(root->fileName);
   if (mod)
   {
@@ -1268,6 +1276,7 @@ void ModuleManager::addConceptToModule(const Entry *root,ConceptDef *cd)
 
 void ModuleManager::addMemberToModule(const Entry *root,MemberDef *md)
 {
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(root->fileName);
   if (mod && root->exported)
   {
@@ -1279,6 +1288,7 @@ void ModuleManager::addMemberToModule(const Entry *root,MemberDef *md)
 
 void ModuleManager::addTagInfo(const QCString &fileName,const QCString &tagFile,const QCString &clangId)
 {
+  std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(fileName);
   if (mod)
   {

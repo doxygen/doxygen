@@ -83,9 +83,16 @@ inline bool qisspace(char c)
 
 int qstricmp( const char *str1, const char *str2 );
 
+inline int qstricmp_sort( const char *str1, const char *str2 )
+{
+  int result = qstricmp(str1,str2);
+  return result==0 ? qstrcmp(str1,str2) : result;
+}
+
+
 int qstrnicmp( const char *str1, const char *str2, size_t len );
 
-using JavaCCString = std::basic_string<unsigned char>;
+using JavaCCString = std::basic_string<JAVACC_CHAR_TYPE>;
 
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses std::string as the underlying string type
@@ -671,6 +678,21 @@ inline std::string toStdString(const QCString &s)
 
 //---- overloads
 
+inline int qstrcmp( const QCString &str1, const char *str2 )
+{
+  return qstrcmp(str1.data(),str2);
+}
+
+inline int qstrcmp( const char *str1, const QCString &str2 )
+{
+  return qstrcmp(str1,str2.data());
+}
+
+inline int qstrcmp( const QCString &str1, const QCString &str2 )
+{
+  return qstrcmp(str1.data(),str2.data());
+}
+
 inline int qstricmp( const QCString &str1, const char *str2 )
 {
   return qstricmp(str1.data(),str2);
@@ -685,6 +707,22 @@ inline int qstricmp( const QCString &str1, const QCString &str2 )
 {
   return qstricmp(str1.data(),str2.data());
 }
+
+inline int qstricmp_sort( const QCString &str1, const char *str2 )
+{
+  return qstricmp_sort(str1.data(),str2);
+}
+
+inline int qstricmp_sort( const char *str1, const QCString &str2 )
+{
+  return qstricmp_sort(str1,str2.data());
+}
+
+inline int qstricmp_sort( const QCString &str1, const QCString &str2 )
+{
+  return qstricmp_sort(str1.data(),str2.data());
+}
+
 
 inline int qstrnicmp( const QCString &str1, const char *str2, size_t len )
 {

@@ -162,7 +162,7 @@ struct codeYY_state
 
   bool          lexInit = FALSE;
 
-  std::stack<int>  classScopeLengthStack;
+  std::vector<int>  classScopeLengthStack;
 
   int           isPrefixedWithThis = FALSE;
   const Definition *searchCtx = nullptr;
@@ -574,6 +574,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body,FuncCall>"{"                      {
                                           yyextra->theVarContext.pushScope();
+                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
+                                          yyextra->bracketCount = 0;
 
                                           DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
                                           yyextra->scopeStack.push(INNERBLOCK);
@@ -594,6 +596,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body,FuncCall,MemberCall,MemberCall2>"}"  {
                                           yyextra->theVarContext.popScope();
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->type.clear();
                                           yyextra->name.clear();
 
@@ -1064,7 +1067,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body>"*"{B}*")"                        { // end of cast?
                                           yyextra->code->codify(yytext);
-                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->bracketCount--;
                                           yyextra->parmType = yyextra->name;
                                           BEGIN(FuncCall);
@@ -1077,9 +1080,12 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->name.clear();yyextra->type.clear();
                                           if (*yytext==')')
                                           {
-                                            yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                            yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                             yyextra->bracketCount--;
-                                            BEGIN(FuncCall);
+                                            if (yyextra->bracketCount<=0)
+                                            {
+                                              BEGIN(FuncCall);
+                                            }
                                           }
                                         }
 <Body,TemplDecl,ObjCMethod>{TYPEKW}/{B}* {
@@ -1466,7 +1472,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             }
                                             else if (*yytext=='[')
                                             {
-                                              yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
+                                              yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                             }
                                             yyextra->args.clear();
                                             yyextra->parmType.clear();
@@ -1565,7 +1571,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <ObjCCall,ObjCMName,ObjCSkipStr>\n { yyextra->currentCtx->format+=*yytext; }
 
 <Body>"]"                               {
-                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->code->codify(yytext);
                                           // TODO: nested arrays like: a[b[0]->func()]->func()
                                           yyextra->name = yyextra->saveName;
@@ -1673,7 +1679,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->parmType.clear();yyextra->parmName.clear();
                                           yyextra->code->codify(yytext);
                                           yyextra->bracketCount++;
-                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           if (YY_START==FuncCall && !yyextra->insideBody)
                                           {
                                             yyextra->theVarContext.pushScope();
@@ -1707,7 +1713,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             yyextra->parmName.clear();
                                             addVariable(yyscanner,yyextra->parmType,yyextra->parmName);
                                           }
-                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->inForEachExpression = FALSE;
                                           //yyextra->theCallContext.setClass(0); // commented out, otherwise a()->b() does not work for b().
                                           yyextra->code->codify(yytext);
@@ -1724,8 +1730,16 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <MemberCall,MemberCall2,FuncCall>[;:]   { // recover from unexpected end of call
-                                          unput(*yytext);
-                                          BEGIN(CallEnd);
+                                          //if (yytext[0]==';' || yyextra->bracketCount<=0)
+                                          if (yyextra->bracketCount<=0)
+                                          {
+                                            unput(*yytext);
+                                            BEGIN(CallEnd);
+                                          }
+                                          else 
+                                          {
+                                            yyextra->code->codify(yytext);
+                                          }
                                         }
 <CallEnd>[ \t\n]*                       { codifyLines(yyscanner,yytext); }
 <CallEnd>[;:]                           {
@@ -2242,12 +2256,14 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN( SkipCxxComment ) ;
                                         }
 <*>"("|"["                              {
+                                          if (yytext[0]=='(') yyextra->bracketCount++;
                                           yyextra->code->codify(yytext);
-                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                         }
 <*>")"|"]"                              {
+                                          if (yytext[0]==')') yyextra->bracketCount--;
                                           yyextra->code->codify(yytext);
-                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
+                                          yyextra->theCallContext.popScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                         }
 <*>\n                                   {
                                           codifyLines(yyscanner,yytext);
@@ -2339,7 +2355,7 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
 static void pushScope(yyscan_t yyscanner,const QCString &s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->classScopeLengthStack.push(int(yyextra->classScope.length()));
+  yyextra->classScopeLengthStack.push_back(int(yyextra->classScope.length()));
   if (yyextra->classScope.isEmpty() || leftScopeMatch(s,yyextra->classScope))
   {
     yyextra->classScope = s;
@@ -2359,8 +2375,8 @@ static void popScope(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->classScopeLengthStack.empty())
   {
-    int length = yyextra->classScopeLengthStack.top();
-    yyextra->classScopeLengthStack.pop();
+    int length = yyextra->classScopeLengthStack.back();
+    yyextra->classScopeLengthStack.pop_back();
     yyextra->classScope.resize(length);
   }
   else
@@ -2934,6 +2950,26 @@ static bool getLinkInScope(yyscan_t yyscanner,
   input.currentFile = yyextra->sourceFileDef;
   input.insideCode = true;
   GetDefResult result = getDefs(input);
+  DBG_CTX((stderr,"classScopeLengthStack.size()=%zu\n",yyextra->classScopeLengthStack.size()));
+  if (!result.found && !yyextra->classScopeLengthStack.empty() && c==yyextra->classScope)
+  {
+    QCString localName = yyextra->classScope.mid(yyextra->classScopeLengthStack[0]+2); // try also without leading scope
+    auto it = yyextra->codeClassMap.find(localName.str());
+    if (it!=yyextra->codeClassMap.end())
+    {
+      ScopedTypeVariant ccd = it->second;
+      if (ccd.localDef() && !ccd.localDef()->baseClasses().empty())
+      {
+        for (const auto &bcName : ccd.localDef()->baseClasses())
+        {
+          DBG_CTX((stderr,"trying lookup via base class %s\n",qPrint(bcName)));
+          input.scopeName = bcName;
+          result = getDefs(input);
+          if (result.found) break;
+        }
+      }
+    }
+  }
   if (result.found && (!varOnly || result.md->isVariable()))
   {
     if (result.md->isLinkable())
@@ -4102,7 +4138,7 @@ void CCodeParser::resetCodeParserState()
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   DBG_CTX((stderr,"***CodeParser::reset()\n"));
   yyextra->theVarContext.clear();
-  while (!yyextra->classScopeLengthStack.empty()) yyextra->classScopeLengthStack.pop();
+  while (!yyextra->classScopeLengthStack.empty()) yyextra->classScopeLengthStack.pop_back();
   yyextra->codeClassMap.clear();
   yyextra->curClassBases.clear();
   yyextra->anchorCount = 0;

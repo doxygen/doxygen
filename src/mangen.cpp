@@ -705,7 +705,7 @@ void ManGenerator::endExamples()
 {
 }
 
-void ManGenerator::startDescTable(const QCString &title)
+void ManGenerator::startDescTable(const QCString &title,const bool hasInits)
 {
   if (!m_firstCol)
   { m_t << "\n.PP\n";

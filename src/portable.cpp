@@ -311,6 +311,7 @@ void Portable::setenv(const QCString &name,const QCString &value)
     }
 
     proc_env[name.str()] = value.str(); // create or replace existing value
+    ::setenv(name.data(),value.data(),1);
 #endif
 }
 
@@ -329,6 +330,7 @@ void Portable::unsetenv(const QCString &variable)
     if (it != proc_env.end())
     {
       proc_env.erase(it);
+      ::unsetenv(variable.data());
     }
 #endif
 }
@@ -521,14 +523,32 @@ bool Portable::isAbsolutePath(const QCString &fileName)
  *
  * This routine was inspired by the cause for bug 766059 was that in the Windows path there were forward slashes.
  */
-void Portable::correct_path()
+void Portable::correctPath(const StringVector &extraPaths)
 {
-#if defined(_WIN32) && !defined(__CYGWIN__)
   QCString p = Portable::getenv("PATH");
-  if (p.isEmpty()) return; // no path nothing to correct
-  QCString result = substitute(p,"/","\\");
-  if (result!=p) Portable::setenv("PATH",result.data());
+  bool first=true;
+  QCString result;
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  for (const auto &path : extraPaths)
+  {
+    if (!first) result+=';';
+    first=false;
+    result += substitute(QCString(path),"/","\\");
+  }
+  if (!result.isEmpty() && !p.isEmpty()) result+=';';
+  result += substitute(p,"/","\\");
+#else
+  for (const auto &path : extraPaths)
+  {
+    if (!first) result+=':';
+    first=false;
+    result += QCString(path);
+  }
+  if (!result.isEmpty() && !p.isEmpty()) result+=':';
+  result += p;
 #endif
+  if (result!=p) Portable::setenv("PATH",result.data());
+  //printf("settingPath(%s) #extraPaths=%zu\n",Portable::getenv("PATH").data(),extraPaths.size());
 }
 
 void Portable::unlink(const QCString &fileName)

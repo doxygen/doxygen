@@ -65,6 +65,7 @@ typedef yyguts_t *yyscan_t;
 #include "reflist.h"
 #include "trace.h"
 #include "debug.h"
+#include "stringutil.h"
 
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -126,6 +127,8 @@ static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIncludedBygraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleShowEnumValues(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideEnumValues(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleShowInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHideIncludegraph(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -257,6 +260,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "hidecallgraph",          { &handleHideCallgraph,            CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hidecollaborationgraph", { &handleHideCollaborationgraph,   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hidedirectorygraph",     { &handleHideDirectoryGraph,       CommandSpacing::Invisible, SectionHandling::Escape  }},
+  { "hideenumvalues",         { &handleHideEnumValues,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hidegroupgraph",         { &handleHideGroupgraph,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hideincludedbygraph",    { &handleHideIncludedBygraph,      CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "hideincludegraph",       { &handleHideIncludegraph,         CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -336,6 +340,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "section",                { &handleSection,                  CommandSpacing::Block,     SectionHandling::Break   }},
   { "see",                    { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }},
   { "short",                  { &handleBrief,                    CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "showenumvalues",         { &handleShowEnumValues,           CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showinitializer",        { &handleShowInitializer,          CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showinlinesource",       { &handleShowInlineSource,         CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "showrefby",              { &handleReferencedByRelation,     CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -436,6 +441,15 @@ enum GuardType
  *        statics
  */
 
+struct HtmlContextInfo
+{
+  HtmlContextInfo(const QCString &tn,OutputContext ctx) : tagName(tn), context(ctx) {}
+  QCString      tagName;
+  OutputContext context;
+};
+
+using HtmlContextStack = std::vector<HtmlContextInfo>;
+
 struct commentscanYY_state
 {
   OutlineParserInterface *langParser = nullptr;  // the language parser that is calling us
@@ -464,6 +478,7 @@ struct commentscanYY_state
   Entry           *current = nullptr;        // working entry
 
   bool             needNewEntry = FALSE;
+  HtmlContextStack htmlContextStack;
 
   QCString         sectionLabel;
   QCString         sectionTitle;
@@ -488,7 +503,7 @@ struct commentscanYY_state
 
   QCString         guardExpr;
   int              roundCount = 0;
-  std::vector<int> HTMLDetailsSummary;
+  std::vector<int> htmlDetailsStack;
 
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
@@ -553,28 +568,29 @@ static inline const char *getLexerFILE() {return __FILE__;}
        /* start command character */
 CMD       ("\\"|"@")
 XREFCMD   {CMD}("bug"|"deprecated"|"test"|"todo"|"xrefitem")
-PRE       [pP][rR][eE]
-TABLE     [tT][aA][bB][lL][eE]
+PRE       ("pre"|"PRE")
+TABLE     ("table"|"TABLE")
 P         [pP]
-UL        [uU][lL]
-OL        [oO][lL]
-DL        [dD][lL]
-IMG       [iI][mM][gG]
-HR        [hH][rR]
-PARA      [pP][aA][rR][aA]
-CODE      [cC][oO][dD][eE]
+UL        ("ul"|"UL")
+OL        ("ol"|"OL")
+DL        ("dl"|"DL")
+IMG       ("img"|"IMG")
+HR        ("hr"|"HR")
+PARA      ("para"|"PARA")
+CODE      ("code"|"CODE")
 ENDCODE   "/"{CODE}
-CAPTION   [cC][aA][pP][tT][iI][oO][nN]
-CENTER    [cC][eE][nN][tT][eE][rR]
-DIV       [dD][iI][vV]
-DETAILS   [dD][eE][tT][aA][iI][lL][sS]
-DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
+CAPTION   ("caption"|"CAPTION")
+CENTER    ("center"|"CENTER")
+DIV       ("div"|"DIV")
+DETAILS   ("details"|"DETAILS")
+BLOCKQUOTE ("blockquote"|"BLOCKQUOTE")
+DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}|{BLOCKQUOTE}
 DETAILEDHTMLOPT {CODE}
 DETAILEDHTMLOPTEND {ENDCODE}
-SUMMARY   [sS][uU][mM][mM][aA][rR][yY]
-REMARKS   [rR][eE][mM][aA][rR][kK][sS]
+SUMMARY   ("summary"|"SUMMARY")
+REMARKS   ("remarks"|"REMARKS")
 AHTML     [aA]{BN}*
-ANCHTML   ([iI][dD]|[nN][aA][mM][eE])"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
+ANCHTML   ("idname"|"IDNAME")"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -599,6 +615,7 @@ MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 MODULE_ID ({ID}".")*{ID}
 LINENR    {Bopt}[1-9][0-9]*
+IFILELINE  ("\\ifile \""[^"]*"\" \\iline "[0-9]+" "("iprefix \""[^"]*"\" ")?("iraise "[0-9]+" ")?)
 
   // C start comment 
 CCS   "/\*"
@@ -713,8 +730,33 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"<"{DETAILEDHTML}{ATTR}">"     { // HTML command that ends a brief description
-                                          setOutput(yyscanner,OutputDoc);
+                                          QCString htmlOpenTag(yytext);
+                                          int spacePos = htmlOpenTag.find(' '); // check for optional attributes
+                                          if (spacePos==-1) spacePos=yyleng-1;
+                                          QCString htmlTagName = htmlOpenTag.mid(1,spacePos-1);
+                                          //printf("found open tag '%s'\n",qPrint(htmlTagName));
+                                          yyextra->htmlContextStack.emplace_back(htmlTagName,yyextra->inContext);
+                                          if (yyextra->inContext==OutputBrief)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                          }
                                           // continue with the same input
+                                          REJECT;
+                                        }
+<Comment>"</"{DETAILEDHTML}">"          { // HTML command that ends a brief description
+                                          QCString htmlCloseTag(yytext);
+                                          QCString htmlTagName = htmlCloseTag.mid(2,htmlCloseTag.length()-3);
+                                          //printf("found close tag '%s'\n",qPrint(htmlTagName));
+                                          if (!yyextra->htmlContextStack.empty() &&
+                                              yyextra->htmlContextStack.back().tagName==htmlTagName)
+                                          {
+                                            if (yyextra->inContext==OutputXRef && yyextra->htmlContextStack.back().context!=OutputXRef)
+                                            {
+                                              //printf("switching back to OutputDoc\n");
+                                              setOutput(yyscanner,OutputDoc);
+                                            }
+                                            yyextra->htmlContextStack.pop_back();
+                                          }
                                           REJECT;
                                         }
 <Comment>"<"{DETAILEDHTMLOPT}">"        { // HTML <code> command that ends a brief description
@@ -754,14 +796,28 @@ STopt  [^\n@\\]*
                                           REJECT;
                                         }
 <Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
-                                          yyextra->HTMLDetailsSummary.push_back(0);
-                                          setOutput(yyscanner,OutputDoc);
+                                          yyextra->htmlDetailsStack.push_back(0);
+                                          yyextra->htmlContextStack.emplace_back("details",yyextra->inContext);
+                                          if (yyextra->inContext==OutputBrief)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                          }
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{DETAILS}">"               { // end of a HTML style details description
-                                          if (!yyextra->HTMLDetailsSummary.empty())
+                                          if (!yyextra->htmlDetailsStack.empty())
                                           {
-                                            yyextra->HTMLDetailsSummary.pop_back();
+                                            yyextra->htmlDetailsStack.pop_back();
+                                          }
+                                          if (!yyextra->htmlContextStack.empty() &&
+                                              yyextra->htmlContextStack.back().tagName=="details")
+                                          {
+                                            if (yyextra->inContext==OutputXRef && yyextra->htmlContextStack.back().context!=OutputXRef)
+                                            {
+                                              //printf("switching back to OutputDoc\n");
+                                              setOutput(yyscanner,OutputDoc);
+                                            }
+                                            yyextra->htmlContextStack.pop_back();
                                           }
                                           addOutput(yyscanner,yytext);
                                         }
@@ -825,7 +881,7 @@ STopt  [^\n@\\]*
                                           yyextra->htmlAnchorStr += yytext;
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
-                                          if (yyextra->HTMLDetailsSummary.empty())
+                                          if (yyextra->htmlDetailsStack.empty())
                                           {
                                             setOutput(yyscanner,OutputBrief);
                                           }
@@ -839,7 +895,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
-                                          if (!yyextra->HTMLDetailsSummary.empty())
+                                          if (!yyextra->htmlDetailsStack.empty())
                                           {
                                             addOutput(yyscanner,yytext);
                                           }
@@ -896,8 +952,18 @@ STopt  [^\n@\\]*
                                               );
                                           yyextra->inInternalDocs = FALSE;
                                         }
-<Comment>{B}*"\\ilinebr"{B}*            { // preserve spacing around \\ilinebr
+<Comment>{B}*"\\ilinebr "{B}*           { // preserve spacing around \\ilinebr
                                           addOutput(yyscanner,yytext);
+                                        }
+<Comment>(\n|"\\ilinebr ")/({B}*(\n|{IFILELINE}?"\\ilinebr "))+ { // at least one blank line (or blank line command)
+                                          if (yyextra->inContext==OutputBrief)
+                                          {
+                                            endBrief(yyscanner);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
                                         }
 <Comment>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*        { // potentially interesting command
@@ -943,15 +1009,7 @@ STopt  [^\n@\\]*
                                               // of this command.
                                               yyextra->parseMore=TRUE;
 
-                                              // yuk, this is probably not very portable across lex implementations,
-                                              // but we need to know the position in the input buffer where this
-                                              // rule matched.
-                                              // for flex 2.5.33+ we should use YY_CURRENT_BUFFER_LVALUE
-#if YY_FLEX_MAJOR_VERSION>=2 && (YY_FLEX_MINOR_VERSION>5 || (YY_FLEX_MINOR_VERSION==5 && YY_FLEX_SUBMINOR_VERSION>=33))
                                               yyextra->inputPosition=yyextra->prevPosition + (int)(yy_bp - YY_CURRENT_BUFFER_LVALUE->yy_ch_buf);
-#else
-                                              yyextra->inputPosition=yyextra->prevPosition + (int)(yy_bp - yy_current_buffer->yy_ch_buf);
-#endif
                                               yyterminate();
                                             }
                                             else if (it->second.handler==nullptr)
@@ -1021,11 +1079,7 @@ STopt  [^\n@\\]*
                                           yyextra->docGroup.clearHeader();
                                           yyextra->parseMore=TRUE;
                                           yyextra->needNewEntry = TRUE;
-#if YY_FLEX_MAJOR_VERSION>=2 && (YY_FLEX_MINOR_VERSION>5 || (YY_FLEX_MINOR_VERSION==5 && YY_FLEX_SUBMINOR_VERSION>=33))
                                           yyextra->inputPosition=yyextra->prevPosition + (int)(yy_bp - YY_CURRENT_BUFFER_LVALUE->yy_ch_buf) + (int)strlen(yytext);
-#else
-                                          yyextra->inputPosition=yyextra->prevPosition + (int)(yy_bp - yy_current_buffer->yy_ch_buf) + (int)strlen(yytext);
-#endif
                                           yyterminate();
                                         }
 <Comment>{B}*{CMD}[$@\\&~<>#%]          { // escaped character
@@ -1103,7 +1157,7 @@ STopt  [^\n@\\]*
 <Comment>".."[\.]?/[^ \t\n]             { // internal ellipsis
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>(\n|\\ilinebr)({B}*(\n|\\ilinebr))+ { // at least one blank line (or blank line command)
+<Comment>(\n|"\\ilinebr ")({B}*(\n|"\\ilinebr "))+ { // at least one blank line (or blank line command)
                                           if (yyextra->inContext==OutputXRef)
                                           {
                                             // see bug 613024, we need to put the newlines after ending the XRef section.
@@ -1112,7 +1166,7 @@ STopt  [^\n@\\]*
                                             for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
-                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner," \\ilinebr"),i+=8;
+                                              else if (strncmp(yytext+i,"\\ilinebr ",9)==0) addOutput(yyscanner,"\\ilinebr "),i+=9;
                                               else i++;
                                             }
                                           }
@@ -1122,7 +1176,7 @@ STopt  [^\n@\\]*
                                             for (i=0;i<(yy_size_t)yyleng;)
                                             {
                                               if (yytext[i]=='\n') addOutput(yyscanner,'\n'),i++;
-                                              else if (strcmp(yytext+i,"\\ilinebr")==0) addOutput(yyscanner," \\ilinebr"),i+=8;
+                                              else if (strncmp(yytext+i,"\\ilinebr ",9)==0) addOutput(yyscanner,"\\ilinebr "),i+=9;
                                               else i++;
                                             }
                                             setOutput(yyscanner,OutputDoc);
@@ -1162,8 +1216,8 @@ STopt  [^\n@\\]*
 <HtmlComment>{DOCNL}                    {
                                           if (*yytext=='\n')
                                           {
-                                            addOutput(yyscanner,*yytext);
                                             yyextra->lineNr++;
+                                            addOutput(yyscanner," \\iline "+QCString().setNum(yyextra->lineNr)+" "); 
                                           }
                                         }
 <HtmlComment>[^\\\n\-]+                 { // ignore unimportant characters
@@ -1461,7 +1515,7 @@ STopt  [^\n@\\]*
                                           yyextra->current->type += yytext;
                                           yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                         }
-<GroupDocArg2>{DOCNL}                   {
+<GroupDocArg2>{DOCNL}+                  {
                                           if ( yyextra->current->groupDocType==Entry::GROUPDOC_NORMAL &&
                                                yyextra->current->type.isEmpty()
                                              ) // defgroup requires second argument
@@ -1472,10 +1526,18 @@ STopt  [^\n@\\]*
                                                 );
                                           }
                                           unput_string(yytext,yyleng);
+                                          int extraLineNr = 0;
+                                          if (yyextra->inContext == OutputBrief)
+                                          {
+                                            for (int i = 0; i < yyleng; i++)
+                                            {
+                                              if (yytext[i]=='\n') extraLineNr++;
+                                            }
+                                          }
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
-                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr) + " \\ilinebr ");
+                                          addOutput(yyscanner,"\" \\iline " + QCString().setNum(yyextra->lineNr + extraLineNr) + " \\ilinebr ");
                                           BEGIN( Comment );
                                         }
 <GroupDocArg2>.                         { // title (stored in type)
@@ -1528,7 +1590,7 @@ STopt  [^\n@\\]*
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
-                                          addOutput(yyscanner,"\" \\ilinebr \\iline " + QCString().setNum(yyextra->lineNr) + " \\ilinebr ");
+                                          addOutput(yyscanner,"\" \\iline " + QCString().setNum(yyextra->lineNr) + " \\ilinebr ");
                                           BEGIN( Comment );
                                         }
 <PageDocArg2>{CMD}[<>]                  {
@@ -3650,6 +3712,20 @@ static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const Str
   return FALSE;
 }
 
+static bool handleShowEnumValues(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->commandOverrides.override_enumValues(true); // ON
+  return FALSE;
+}
+
+static bool handleHideEnumValues(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->commandOverrides.override_enumValues(false); // OFF
+  return FALSE;
+}
+
 static bool handleShowInlineSource(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -4257,6 +4333,7 @@ static void addCite(yyscan_t yyscanner)
 }
 
 //-----------------------------------------------------------------------------
+static const reg::Ex nonBrief_re(R"( *[\\@]ifile \"[^\"]*\" [\\@]iline (\d+) [\\@]ilinebr ([ \n]*))");
 
 // strip trailing whitespace (excluding newlines) from string s
 static void stripTrailingWhiteSpace(QCString &s)
@@ -4394,17 +4471,16 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
         }
         else
         {
-          static const reg::Ex nonBrief(R"( *[\\@]ifile *\"[^\"]*\" *[\\@]ilinebr *[\\@]iline *(\d+) *[\\@]ilinebr( *\n*))");
           std::string str = yyextra->current->brief.str();
           reg::Match match;
-          if (reg::match(str,match,nonBrief)) // match found
+          if (reg::match(str,match,nonBrief_re)) // match found
           {
             size_t cnt = 0;
             for (size_t i = 0; i < match[2].str().size(); i++)
             {
-                 if (match[2].str()[i] == '\n') cnt++;
+              if (match[2].str()[i] == '\n') cnt++;
             }
-            if (cnt)
+            if (cnt>0)
             {
               yyextra->current->brief = yyextra->current->brief.left(yyextra->current->brief.length()-cnt);
               // set warning line correct
@@ -4512,7 +4588,9 @@ static void addIlineBreak(yyscan_t yyscanner,int lineNr)
 static void endBrief(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->brief.stripWhiteSpace().isEmpty())
+  std::string_view str = yyextra->current->brief.view();
+  reg::Match match;
+  if (!stripWhiteSpace(str).empty() && !reg::match(str,match,nonBrief_re))
   { // only go to the detailed description if we have
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=FALSE;
@@ -4636,6 +4714,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->sectionLevel = 0;
   yyextra->spaceBeforeCmd.clear();
   yyextra->spaceBeforeIf.clear();
+  yyextra->htmlContextStack.clear();
 
   DebugLex debugLex(Debug::Lex_commentscan, __FILE__, !fileName.isEmpty() ? qPrint(fileName): nullptr);
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments

@@ -74,7 +74,7 @@ class MemberVector
     }
     void sort()
     {
-      std::sort(m_members.begin(),m_members.end(),lessThan);
+      std::stable_sort(m_members.begin(),m_members.end(),lessThan);
     }
     void inSort(MemberDef *md)
     {
@@ -111,7 +111,6 @@ class MemberList : public MemberVector
    ~MemberList();
     NON_COPYABLE(MemberList)
     MemberListType listType() const { return m_listType; }
-    static QCString listTypeAsString(MemberListType type);
     MemberListContainer container() const { return m_container; }
 
     int numDecMembers() const    { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
@@ -129,7 +128,7 @@ class MemberList : public MemberVector
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                const QCString &title,const QCString &subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
-               const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType_pubMethods) const;
+               const ClassDef *inheritedFrom=nullptr,MemberListType lt=MemberListType::PubMethods(),bool showSectionTitle=true) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,const QCString &title,
                bool showEnumValues=FALSE,bool showInline=FALSE) const;

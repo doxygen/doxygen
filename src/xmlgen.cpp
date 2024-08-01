@@ -61,56 +61,6 @@
 
 //------------------
 
-static std::map<MemberListType,std::string> g_xmlSectionMap =
-{
-  { MemberListType_pubTypes,"public-type" },
-  { MemberListType_pubMethods,"public-func" },
-  { MemberListType_pubAttribs,"public-attrib" },
-  { MemberListType_pubSlots,"public-slot" },
-  { MemberListType_signals,"signal" },
-  { MemberListType_dcopMethods,"dcop-func" },
-  { MemberListType_properties,"property" },
-  { MemberListType_events,"event" },
-  { MemberListType_interfaces,"interfaces" },
-  { MemberListType_services,"services" },
-  { MemberListType_pubStaticMethods,"public-static-func" },
-  { MemberListType_pubStaticAttribs,"public-static-attrib" },
-  { MemberListType_proTypes,"protected-type" },
-  { MemberListType_proMethods,"protected-func" },
-  { MemberListType_proAttribs,"protected-attrib" },
-  { MemberListType_proSlots,"protected-slot" },
-  { MemberListType_proStaticMethods,"protected-static-func" },
-  { MemberListType_proStaticAttribs,"protected-static-attrib" },
-  { MemberListType_pacTypes,"package-type" },
-  { MemberListType_pacMethods,"package-func" },
-  { MemberListType_pacAttribs,"package-attrib" },
-  { MemberListType_pacStaticMethods,"package-static-func" },
-  { MemberListType_pacStaticAttribs,"package-static-attrib" },
-  { MemberListType_priTypes,"private-type" },
-  { MemberListType_priMethods,"private-func" },
-  { MemberListType_priAttribs,"private-attrib" },
-  { MemberListType_priSlots,"private-slot" },
-  { MemberListType_priStaticMethods,"private-static-func" },
-  { MemberListType_priStaticAttribs,"private-static-attrib" },
-  { MemberListType_friends,"friend" },
-  { MemberListType_related,"related" },
-  { MemberListType_decDefineMembers,"define" },
-  { MemberListType_decProtoMembers,"prototype" },
-  { MemberListType_decTypedefMembers,"typedef" },
-  { MemberListType_decSequenceMembers,"sequence" },
-  { MemberListType_decDictionaryMembers,"dictionary" },
-  { MemberListType_decEnumMembers,"enum" },
-  { MemberListType_decFuncMembers,"func" },
-  { MemberListType_decVarMembers,"var" },
-};
-
-static const char *xmlSectionMapper(MemberListType ml)
-{
-  auto it = g_xmlSectionMap.find(ml);
-  return it!=g_xmlSectionMap.end() ? it->second.c_str() : "";
-}
-
-
 inline void writeXMLString(TextStream &t,const QCString &s)
 {
   t << convertToXML(s);
@@ -1557,9 +1507,9 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
 
   for (const auto &ml : cd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_detailedLists)==0)
+    if (!ml->listType().isDetailed())
     {
-      generateXMLSection(cd,ti,t,ml.get(),xmlSectionMapper(ml->listType()));
+      generateXMLSection(cd,ti,t,ml.get(),ml->listType().toXML());
     }
   }
 
@@ -1690,9 +1640,9 @@ static void generateXMLForModule(const ModuleDef *mod,TextStream &ti)
   writeInnerConcepts(mod->getConcepts(),t);
   for (const auto &ml : mod->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if (ml->listType().isDeclaration())
     {
-      generateXMLSection(mod,ti,t,ml.get(),xmlSectionMapper(ml->listType()));
+      generateXMLSection(mod,ti,t,ml.get(),ml->listType().toXML());
     }
   }
   for (const auto &mg : mod->getMemberGroups())
@@ -1769,9 +1719,9 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
 
   for (const auto &ml : nd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if (ml->listType().isDeclaration())
     {
-      generateXMLSection(nd,ti,t,ml.get(),xmlSectionMapper(ml->listType()));
+      generateXMLSection(nd,ti,t,ml.get(),ml->listType().toXML());
     }
   }
 
@@ -1883,9 +1833,9 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
 
   for (const auto &ml : fd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if (ml->listType().isDeclaration())
     {
-      generateXMLSection(fd,ti,t,ml.get(),xmlSectionMapper(ml->listType()));
+      generateXMLSection(fd,ti,t,ml.get(),ml->listType().toXML());
     }
   }
 
@@ -1957,9 +1907,9 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
 
   for (const auto &ml : gd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if (ml->listType().isDeclaration())
     {
-      generateXMLSection(gd,ti,t,ml.get(),xmlSectionMapper(ml->listType()));
+      generateXMLSection(gd,ti,t,ml.get(),ml->listType().toXML());
     }
   }
 
@@ -2078,8 +2028,12 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   const SectionRefs &sectionRefs = pd->getSectionRefs();
   if (pd->localToc().isXmlEnabled() && !sectionRefs.empty())
   {
-    t << "    <tableofcontents>\n";
     int level=1;
+    int indent=0;
+    auto writeIndent = [&]()                 { for (int i=0;i<4+indent*2;i++) t << " ";    };
+    auto incIndent   = [&](const char *text) { writeIndent(); t << text << "\n"; indent++; };
+    auto decIndent   = [&](const char *text) { indent--; writeIndent(); t << text << "\n"; };
+    incIndent("<tableofcontents>");
     int maxLevel = pd->localToc().xmlLevel();
     BoolVector inLi(maxLevel+1,false);
     for (const SectionInfo *si : sectionRefs)
@@ -2092,27 +2046,35 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
         {
           for (int l=level;l<nextLevel;l++)
           {
-            if (l < maxLevel) t << "    <tableofcontents>\n";
+            if (l < maxLevel) incIndent("<tableofcontents>");
           }
         }
         else if (nextLevel<level)
         {
           for (int l=level;l>nextLevel;l--)
           {
-            if (l <= maxLevel && inLi[l]) t << "    </tocsect>\n";
+            if (l <= maxLevel && inLi[l]) decIndent("</tocsect>");
             inLi[l]=false;
-            if (l <= maxLevel) t << "    </tableofcontents>\n";
+            if (l <= maxLevel) decIndent("</tableofcontents>");
           }
         }
         if (nextLevel <= maxLevel)
         {
-          if (inLi[nextLevel]) t << "    </tocsect>\n";
+          if (inLi[nextLevel])
+          {
+            decIndent("</tocsect>");
+          }
+          else if (level>nextLevel)
+          {
+            decIndent("</tableofcontents>");
+            incIndent("<tableofcontents>");
+          }
           QCString titleDoc = convertToXML(si->title());
           QCString label = convertToXML(si->label());
           if (titleDoc.isEmpty()) titleDoc = label;
-          t << "      <tocsect>\n";
-          t << "        <name>" << titleDoc << "</name>\n";
-          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << label << "</reference>\n";
+          incIndent("<tocsect>");
+          writeIndent(); t << "<name>" << titleDoc << "</name>\n";
+          writeIndent(); t << "<reference>"  <<  convertToXML(pageName) << "_1" << label << "</reference>\n";
           inLi[nextLevel]=true;
           level = nextLevel;
         }
@@ -2120,14 +2082,14 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     }
     while (level>1 && level <= maxLevel)
     {
-      if (inLi[level]) t << "    </tocsect>\n";
+      if (inLi[level]) decIndent("</tocsect>");
       inLi[level]=false;
-      t << "    </tableofcontents>\n";
+      decIndent("</tableofcontents>");
       level--;
     }
-    if (level <= maxLevel && inLi[level]) t << "    </tocsect>\n";
+    if (level <= maxLevel && inLi[level]) decIndent("</tocsect>");
     inLi[level]=false;
-    t << "    </tableofcontents>\n";
+    decIndent("</tableofcontents>");
   }
   t << "    <briefdescription>\n";
   writeXMLDocBlock(t,pd->briefFile(),pd->briefLine(),pd,nullptr,pd->briefDescription());

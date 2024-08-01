@@ -36,8 +36,6 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
    ~ConceptDefImpl() override;
     NON_COPYABLE(ConceptDefImpl)
 
-    ConceptDef *resolveAlias() { return this; }
-
     //---------- ConceptDef
     DefType definitionType() const override;
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Concept; }
@@ -107,7 +105,6 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     NON_COPYABLE(ConceptDefAliasImpl)
 
     const ConceptDef *getCdAlias() const { return toConceptDef(getAlias()); }
-    ConceptDef *resolveAlias() { return const_cast<ConceptDef*>(getCdAlias()); }
 
     DefType definitionType() const override { return TypeConcept; }
     CodeSymbolType codeSymbolType() const override
@@ -687,6 +684,7 @@ void ConceptDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
+  docFindSections(inbodyDocumentation(),this,docFile());
 }
 
 //------------------------------------------------------------------------------------

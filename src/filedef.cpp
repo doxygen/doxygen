@@ -150,7 +150,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     DirDef *getDirDef() const override       { return m_dir; }
     ModuleDef *getModuleDef() const override { return m_moduleDef; }
     const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const override;
-    const LinkedRefMap<ClassDef> &getUsedClasses() const override  { return m_usingDeclList; }
+    const LinkedRefMap<const Definition> &getUsedDefinitions() const override  { return m_usingDeclList; }
     const IncludeInfoList &includeFileList() const override    { return m_includeList; }
     const IncludeInfoList &includedByFileList() const override { return m_includedByList; }
     void getAllIncludeFilesRecursively(StringVector &incFiles) const override;
@@ -179,6 +179,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void parseSource(ClangTUParser *clangParser) override;
     void setDiskName(const QCString &name) override;
     void insertMember(MemberDef *md) override;
+    void removeMember(MemberDef *md) override;
     void insertClass(ClassDef *cd) override;
     void insertConcept(ConceptDef *cd) override;
     void insertNamespace(NamespaceDef *nd) override;
@@ -186,7 +187,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void setDirDef(DirDef *dd) override { m_dir=dd; }
     void setModuleDef(ModuleDef *mod) override { m_moduleDef=mod; }
     void addUsingDirective(NamespaceDef *nd) override;
-    void addUsingDeclaration(ClassDef *cd) override;
+    void addUsingDeclaration(const Definition *d) override;
     void combineUsingRelations() override;
     bool generateSourceFile() const override;
     void sortMemberLists() override;
@@ -227,13 +228,14 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void writeDetailedDescription(OutputList &ol,const QCString &title);
     void writeBriefDescription(OutputList &ol);
     void writeClassesToTagFile(TextStream &t,const ClassLinkedRefMap &list);
+    void removeMemberFromList(MemberListType lt,MemberDef *md);
 
     IncludeInfoMap        m_includeMap;
     IncludeInfoList       m_includeList;
     IncludeInfoMap        m_includedByMap;
     IncludeInfoList       m_includedByList;
     LinkedRefMap<NamespaceDef> m_usingDirList;
-    LinkedRefMap<ClassDef> m_usingDeclList;
+    LinkedRefMap<const Definition> m_usingDeclList;
     QCString              m_path;
     QCString              m_filePath;
     QCString              m_inclDepFileName;
@@ -324,7 +326,7 @@ void FileDefImpl::setDiskName(const QCString &name)
 /*! Compute the HTML anchor names for all members in the class */
 void FileDefImpl::computeAnchors()
 {
-  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  MemberList *ml = getMemberList(MemberListType::AllMembersList());
   if (ml) ml->setAnchors();
 }
 
@@ -341,6 +343,7 @@ void FileDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
+  docFindSections(inbodyDocumentation(),this,docFile());
   for (const auto &mg : m_memberGroups)
   {
     mg->findSectionsInDocumentation(this);
@@ -348,7 +351,7 @@ void FileDefImpl::findSectionsInDocumentation()
 
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ml->findSectionsInDocumentation(this);
     }
@@ -827,7 +830,7 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
-          ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+          ol.writeSummaryLink(QCString(),ml->listType().toLabel(),lmd->title(lang),first);
           first=FALSE;
         }
       }
@@ -1036,7 +1039,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    MemberList *ml = getMemberList(MemberListType_allMembersList);
+    MemberList *ml = getMemberList(MemberListType::AllMembersList());
     if (ml) ml->sort();
     writeMemberPages(ol);
   }
@@ -1049,7 +1052,7 @@ void FileDefImpl::writeMemberPages(OutputList &ol)
 
   for (const auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml->listType().isDocumentation())
     {
       ml->writeDocumentationPage(ol,name(),this);
     }
@@ -1065,7 +1068,7 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   if (allMemberList)
   {
     for (const auto &md : *allMemberList)
@@ -1246,7 +1249,7 @@ void FileDefImpl::addMembersToMemberGroup()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml->listType().isDeclaration())
     {
       ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
@@ -1269,7 +1272,7 @@ void FileDefImpl::insertMember(MemberDef *md)
   if (md->isHidden()) return;
   //printf("%s:FileDefImpl::insertMember(%s (=%p) list has %d elements)\n",
   //    qPrint(name()),qPrint(md->name()),md,allMemberList.count());
-  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
   if (allMemberList && allMemberList->contains(md))
   {
     return;
@@ -1277,7 +1280,7 @@ void FileDefImpl::insertMember(MemberDef *md)
 
   if (allMemberList==nullptr)
   {
-    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::File));
+    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType::AllMembersList(),MemberListContainer::File));
     allMemberList = m_memberLists.back().get();
   }
   allMemberList->push_back(md);
@@ -1286,40 +1289,40 @@ void FileDefImpl::insertMember(MemberDef *md)
     case MemberType_Property:
       if (md->getLanguage() == SrcLangExt::Python)
       {
-        addMemberToList(MemberListType_propertyMembers,md);
-        addMemberToList(MemberListType_properties,md);
+        addMemberToList(MemberListType::PropertyMembers(),md);
+        addMemberToList(MemberListType::Properties(),md);
         break;
       }
       //  fallthrough, explicitly no break here
     case MemberType_Variable:
-      addMemberToList(MemberListType_decVarMembers,md);
-      addMemberToList(MemberListType_docVarMembers,md);
+      addMemberToList(MemberListType::DecVarMembers(),md);
+      addMemberToList(MemberListType::DocVarMembers(),md);
       break;
     case MemberType_Function:
-      addMemberToList(MemberListType_decFuncMembers,md);
-      addMemberToList(MemberListType_docFuncMembers,md);
+      addMemberToList(MemberListType::DecFuncMembers(),md);
+      addMemberToList(MemberListType::DocFuncMembers(),md);
       break;
     case MemberType_Typedef:
-      addMemberToList(MemberListType_decTypedefMembers,md);
-      addMemberToList(MemberListType_docTypedefMembers,md);
+      addMemberToList(MemberListType::DecTypedefMembers(),md);
+      addMemberToList(MemberListType::DocTypedefMembers(),md);
       break;
     case MemberType_Sequence:
-      addMemberToList(MemberListType_decSequenceMembers,md);
-      addMemberToList(MemberListType_docSequenceMembers,md);
+      addMemberToList(MemberListType::DecSequenceMembers(),md);
+      addMemberToList(MemberListType::DocSequenceMembers(),md);
       break;
     case MemberType_Dictionary:
-      addMemberToList(MemberListType_decDictionaryMembers,md);
-      addMemberToList(MemberListType_docDictionaryMembers,md);
+      addMemberToList(MemberListType::DecDictionaryMembers(),md);
+      addMemberToList(MemberListType::DocDictionaryMembers(),md);
       break;
     case MemberType_Enumeration:
-      addMemberToList(MemberListType_decEnumMembers,md);
-      addMemberToList(MemberListType_docEnumMembers,md);
+      addMemberToList(MemberListType::DecEnumMembers(),md);
+      addMemberToList(MemberListType::DocEnumMembers(),md);
       break;
     case MemberType_EnumValue:    // enum values are shown inside their enums
       break;
     case MemberType_Define:
-      addMemberToList(MemberListType_decDefineMembers,md);
-      addMemberToList(MemberListType_docDefineMembers,md);
+      addMemberToList(MemberListType::DecDefineMembers(),md);
+      addMemberToList(MemberListType::DocDefineMembers(),md);
       break;
     default:
        err("FileDefImpl::insertMembers(): "
@@ -1329,6 +1332,60 @@ void FileDefImpl::insertMember(MemberDef *md)
            qPrint(name()));
   }
   //addMemberToGroup(md,groupId);
+}
+
+void FileDefImpl::removeMemberFromList(MemberListType lt,MemberDef *md)
+{
+  MemberList *ml = getMemberList(lt);
+  if (ml) ml->remove(md);
+}
+
+void FileDefImpl::removeMember(MemberDef *md)
+{
+  removeMemberFromList(MemberListType::AllMembersList(),md);
+  switch(md->memberType())
+  {
+    case MemberType_Property:
+      if (md->getLanguage() == SrcLangExt::Python)
+      {
+        removeMemberFromList(MemberListType::PropertyMembers(),md);
+        removeMemberFromList(MemberListType::Properties(),md);
+        break;
+      }
+      //  fallthrough, explicitly no break here
+    case MemberType_Variable:
+      removeMemberFromList(MemberListType::DecVarMembers(),md);
+      removeMemberFromList(MemberListType::DocVarMembers(),md);
+      break;
+    case MemberType_Function:
+      removeMemberFromList(MemberListType::DecFuncMembers(),md);
+      removeMemberFromList(MemberListType::DocFuncMembers(),md);
+      break;
+    case MemberType_Typedef:
+      removeMemberFromList(MemberListType::DecTypedefMembers(),md);
+      removeMemberFromList(MemberListType::DocTypedefMembers(),md);
+      break;
+    case MemberType_Sequence:
+      removeMemberFromList(MemberListType::DecSequenceMembers(),md);
+      removeMemberFromList(MemberListType::DocSequenceMembers(),md);
+      break;
+    case MemberType_Dictionary:
+      removeMemberFromList(MemberListType::DecDictionaryMembers(),md);
+      removeMemberFromList(MemberListType::DocDictionaryMembers(),md);
+      break;
+    case MemberType_Enumeration:
+      removeMemberFromList(MemberListType::DecEnumMembers(),md);
+      removeMemberFromList(MemberListType::DocEnumMembers(),md);
+      break;
+    case MemberType_EnumValue:    // enum values are shown inside their enums
+      break;  
+    case MemberType_Define:
+      removeMemberFromList(MemberListType::DecDefineMembers(),md);
+      removeMemberFromList(MemberListType::DocDefineMembers(),md);
+      break;
+    default:
+      err("FileDefImpl::removeMember(): unexpected member remove in file!\n");
+  }
 }
 
 /*! Adds compound definition \a cd to the list of all compounds of this file */
@@ -1417,9 +1474,9 @@ const LinkedRefMap<NamespaceDef> &FileDefImpl::getUsedNamespaces() const
   return m_usingDirList;
 }
 
-void FileDefImpl::addUsingDeclaration(ClassDef *cd)
+void FileDefImpl::addUsingDeclaration(const Definition *d)
 {
-  m_usingDeclList.add(cd->qualifiedName(),cd);
+  m_usingDeclList.add(d->qualifiedName(),d);
 }
 
 void FileDefImpl::addIncludeDependency(const FileDef *fd,const QCString &incName,IncludeKind kind)
@@ -1467,11 +1524,11 @@ void FileDefImpl::addIncludedUsingDirectives(FileDefSet &visitedFiles)
             m_usingDirList.prepend(nd->qualifiedName(),nd);
           }
           // add using declarations
-          auto  udl = ii.fileDef->getUsedClasses();
+          auto  udl = ii.fileDef->getUsedDefinitions();
           for (auto it = udl.rbegin(); it!=udl.rend(); ++it)
           {
-            auto *cd = *it;
-            m_usingDeclList.prepend(cd->qualifiedName(),cd);
+            auto *d = *it;
+            m_usingDeclList.prepend(d->qualifiedName(),d);
           }
         }
       }
@@ -1528,7 +1585,7 @@ void FileDefImpl::addListReferences()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
     }
@@ -1558,9 +1615,9 @@ void FileDefImpl::combineUsingRelations()
       addUsingDirective(und);
     }
     // add used classes of namespace nd to this namespace
-    for (const auto &ucd : nd->getUsedClasses())
+    for (const auto &ud : nd->getUsedDefinitions())
     {
-      addUsingDeclaration(ucd);
+      addUsingDeclaration(ud);
     }
   }
 }
@@ -1638,10 +1695,10 @@ void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   const auto &ml = m_memberLists.get(lt,MemberListContainer::File);
   ml->setNeedsSorting(
-       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
+       (ml->listType().isDeclaration() && sortBriefDocs) ||
+       (ml->listType().isDocumentation() && sortMemberDocs));
   ml->push_back(md);
-  if (ml->listType()&MemberListType_declarationLists)
+  if (ml->listType().isDeclaration())
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
@@ -1664,29 +1721,29 @@ void FileDefImpl::sortMemberLists()
     if (mlg.needsSorting()) { mlg.sort(); mlg.setNeedsSorting(FALSE); }
   }
 
-  std::sort(m_includedByList.begin(),m_includedByList.end(),
+  std::stable_sort(m_includedByList.begin(),m_includedByList.end(),
       [](const auto &fi1,const auto &fi2) { return fi1.includeName < fi2.includeName; });
 
   if (Config_getBool(SORT_BRIEF_DOCS))
   {
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
     {
-      return Config_getBool(SORT_BY_SCOPE_NAME)     ?
-        qstricmp(c1->name(),      c2->name())<0     :
-        qstricmp(c1->className(), c2->className())<0;
+      return Config_getBool(SORT_BY_SCOPE_NAME)          ?
+        qstricmp_sort(c1->name(),      c2->name())<0     :
+        qstricmp_sort(c1->className(), c2->className())<0;
     };
 
-    std::sort(m_classes.begin(),   m_classes.end(),   classComp);
-    std::sort(m_interfaces.begin(),m_interfaces.end(),classComp);
-    std::sort(m_structs.begin(),   m_structs.end(),   classComp);
-    std::sort(m_exceptions.begin(),m_exceptions.end(),classComp);
+    std::stable_sort(m_classes.begin(),   m_classes.end(),   classComp);
+    std::stable_sort(m_interfaces.begin(),m_interfaces.end(),classComp);
+    std::stable_sort(m_structs.begin(),   m_structs.end(),   classComp);
+    std::stable_sort(m_exceptions.begin(),m_exceptions.end(),classComp);
 
     auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
     {
-      return qstricmp(n1->name(),n2->name())<0;
+      return qstricmp_sort(n1->name(),n2->name())<0;
     };
 
-    std::sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);
+    std::stable_sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);
   }
 }
 
@@ -1790,13 +1847,13 @@ void FileDefImpl::countMembers()
 
 int FileDefImpl::numDocMembers() const
 {
-  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  MemberList *ml = getMemberList(MemberListType::AllMembersList());
   return ml ? ml->numDocMembers() : 0;
 }
 
 int FileDefImpl::numDecMembers() const
 {
-  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  MemberList *ml = getMemberList(MemberListType::AllMembersList());
   return ml ? ml->numDecMembers() : 0;
 }
 
@@ -1824,7 +1881,7 @@ bool FileDefImpl::hasIncludedByGraph() const
 
 bool compareFileDefs(const FileDef *fd1, const FileDef *fd2)
 {
-  return qstricmp(fd1->name(),fd2->name()) < 0;
+  return qstricmp_sort(fd1->name(),fd2->name()) < 0;
 }
 
 // --- Cast functions

@@ -73,11 +73,11 @@ of a HTML tag are passed on to the HTML output only
 <tr><td valign="top">\startendhtmltag{SUB}</td><td valign="top">Starts and ends a piece of text displayed in subscript.</td></tr>
 <tr><td valign="top">\startendhtmltag{SUP}</td><td valign="top">Starts and ends a piece of text displayed in superscript.</td></tr>
 <tr><td valign="top">\startendhtmltag{TABLE}</td><td valign="top">Starts and ends a table.</td></tr>
-<tr><td valign="top">\startendhtmltag{TBODY}</td><td valign="top">Starts and ends a new table body, currently ignored by doxygen.</td></tr>
+<tr><td valign="top">\startendhtmltag{TBODY}</td><td valign="top">Starts and ends a new table body, currently ignored by Doxygen.</td></tr>
 <tr><td valign="top">\startendhtmltag{TD}</td><td valign="top">Starts and ends a new table data element.</td></tr>
 <tr><td valign="top">\startendhtmltag{TH}</td><td valign="top">Starts and ends a new table header.</td></tr>
-<tr><td valign="top">\startendhtmltag{THEAD}</td><td valign="top">Starts and ends a new table header, currently ignored by doxygen.</td></tr>
-<tr><td valign="top">\startendhtmltag{TFOOT}</td><td valign="top">Starts and ends a new table footer, currently ignored by doxygen.</td></tr>
+<tr><td valign="top">\startendhtmltag{THEAD}</td><td valign="top">Starts and ends a new table header, currently ignored by Doxygen.</td></tr>
+<tr><td valign="top">\startendhtmltag{TFOOT}</td><td valign="top">Starts and ends a new table footer, currently ignored by Doxygen.</td></tr>
 <tr><td valign="top">\startendhtmltag{TR}</td><td valign="top">Starts and ends a new table row.</td></tr>
 <tr><td valign="top">\startendhtmltag{TT}</td><td valign="top">Starts and ends a piece of text displayed in a typewriter font.</td></tr>
 <tr><td valign="top">\startendhtmltag{U}</td><td valign="top">Starts and ends a section of underlined text.</td></tr>
@@ -85,12 +85,23 @@ of a HTML tag are passed on to the HTML output only
 <tr><td valign="top">\startendhtmltag{VAR}</td><td valign="top">Starts and ends a piece of text displayed in an italic font.</td></tr>
 </table>
 
-Finally, to put invisible comments inside comment blocks, HTML style
-comments can be used:
-\verbatim
-/*! <!-- This is a comment with a comment block --> Visible text */
-\endverbatim
-The part `<!-- ... -->` will not be shown in the main documentation.<br>
+Finally we have the HTML style comments. 
+- When using the, Doxygen, special HTML style comments, i.e. <code>\<!--! ... --\></code>, it is not seen as comment but as
+  if the `...` part is just in the documentation. This is useful to specify Doxygen commands inside a markdown file like:
+  ```
+  <!--! \page pg1 The page -->
+  ```
+  which will be ignored by regular Markdown processors, but Doxygen will interpret this as if there was written:
+  ```
+        \page pg1 The page 
+  ```
+- To put invisible comments inside comment blocks, the normal HTML style
+  comments can be used:
+  \verbatim
+  /*! <!-- This is a comment with a comment block --> Visible text */
+  \endverbatim
+  The part `<!-- ... -->` will not be shown in the main documentation.
+
 Note: It is explicitly forbidden to use 3 dashes before the closing greater than sign.
 Doxygen won't see that as the closing either and give a warning.
 

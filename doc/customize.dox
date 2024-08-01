@@ -24,7 +24,7 @@ do if you want to do minor tweaking to the look and feel of the output.
 The section \ref layout "Layout" show how to reorder and hide certain
 information on a page.
 The section \ref xmlgenerator "XML output" show how to generate
-whatever output you want based on the XML output produced by doxygen.
+whatever output you want based on the XML output produced by Doxygen.
 
 \section minor_tweaks Minor Tweaks
 
@@ -33,7 +33,7 @@ little effort.
 
 \subsection minor_tweaks_colors Overall Color
 
-To change the overall color of the HTML output doxygen provides three options
+To change the overall color of the HTML output Doxygen provides three options
 - \ref cfg_html_colorstyle_hue "HTML_COLORSTYLE_HUE"
 - \ref cfg_html_colorstyle_sat "HTML_COLORSTYLE_SAT"
 - \ref cfg_html_colorstyle_gamma "HTML_COLORSTYLE_GAMMA"
@@ -46,7 +46,7 @@ on the output in real time.
 
 \subsection minor_tweaks_treeview Navigation
 
-By default doxygen shows navigation tabs on top of every HTML page,
+By default Doxygen shows navigation tabs on top of every HTML page,
 corresponding with the following settings:
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c NO
@@ -97,14 +97,14 @@ then you can also disable all indices, like so:
 
 \subsection minor_tweaks_dynsection Dynamic Content
 
-To make the HTML output more interactive, doxygen provides a number of options
+To make the HTML output more interactive, Doxygen provides a number of options
 that are disabled by default:
 - enabling \ref cfg_html_dynamic_sections "HTML_DYNAMIC_SECTIONS" will make
-  doxygen hide certain content (like graphs) in the HTML by default,
+  Doxygen hide certain content (like graphs) in the HTML by default,
   and let the reader expand these sections on request.
 - enabling \ref cfg_have_dot "HAVE_DOT" along
   with \ref cfg_interactive_svg "INTERACTIVE_SVG" while setting
-  \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" to \c svg, will make doxygen
+  \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" to \c svg, will make Doxygen
   produce SVG images that will allow the user to zoom and pan (this only
   happens when the size of the images exceeds a certain size).
 
@@ -113,25 +113,25 @@ that are disabled by default:
 To tweak things like fonts or colors, margins, or other look \& feel
 aspects of the HTML output in detail, you can create a different
 <a href="https://www.w3schools.com/css/default.asp">cascading style sheet</a>.
-You can also let doxygen use a custom header and footer for each HTML
+You can also let Doxygen use a custom header and footer for each HTML
 page it generates, for instance to make the output conform to the style
 used on the rest of your web site.
 
-To do this first run doxygen as follows:
+To do this first run Doxygen as follows:
 \verbatim
 doxygen -w html header.html footer.html customdoxygen.css
 \endverbatim
 
 This will create 3 files:
-- header.html is a HTML fragment which doxygen normally uses to start
+- header.html is a HTML fragment which Doxygen normally uses to start
   a HTML page. Note that the fragment ends with a body tag and that is
   contains a couple of commands of the form \$word. These will be replaced
-  by doxygen on the fly.
-- footer.html is a HTML fragment which doxygen normally uses to end
+  by Doxygen on the fly.
+- footer.html is a HTML fragment which Doxygen normally uses to end
   a HTML page. Also here special commands can be used. This file contain the
   link to www.doxygen.org and the body and html end tags.
 - customdoxygen.css is the default cascading style sheet
-  used by doxygen. It is recommended only to look into this file and overrule
+  used by Doxygen. It is recommended only to look into this file and overrule
   some settings you like by putting them in a separate stylesheets and
   referencing those extra files
   via \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET".
@@ -142,7 +142,7 @@ You should edit these files and then reference them from the configuration file.
 - \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" = \c my_customdoxygen.css
 
 \note it is not longer recommended to use \ref cfg_html_stylesheet "HTML_STYLESHEET",
-as it make it difficult to upgrade to a newer version of doxygen. Use
+as it make it difficult to upgrade to a newer version of Doxygen. Use
 \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" instead.
 
 See the documentation of the \ref cfg_html_header "HTML_HEADER" tag
@@ -154,11 +154,11 @@ it as a source file. Doxygen will copy it for you.
 
 \note If you use images or other external content in a custom header you
 need to make sure these end up in the HTML output directory yourself,
-for instance by writing a script that runs doxygen can then copies the
+for instance by writing a script that runs Doxygen can then copies the
 images to the output.
 
 \warning The structure of headers and footers may change after upgrading to
-a newer version of doxygen, so if you are using a custom header or footer,
+a newer version of Doxygen, so if you are using a custom header or footer,
 it might not produce valid output anymore after upgrading.
 
 \section layout Changing the layout of pages
@@ -167,13 +167,13 @@ In some cases you may want to change the way the output is structured.
 A different style sheet or custom headers and footers do not help in such
 case.
 
-The solution doxygen provides is a layout file, which you can
-modify and doxygen will use to control what information is presented,
+The solution Doxygen provides is a layout file, which you can
+modify and Doxygen will use to control what information is presented,
 in which order, and to some extent also how information is presented.
 The layout file is an XML file.
 
 The default layout can be generated
-by doxygen using the following command:
+by Doxygen using the following command:
 \verbatim
 doxygen -l
 \endverbatim
@@ -227,7 +227,7 @@ Each tab is represented by a \c tab element in the XML file.
 You can hide tabs by setting the \c visible attribute to \c no.
 You can also override the default title of a tab by specifying it as
 the value of the \c title attribute. If the title field is the empty string
-(the default) then doxygen will fill in an appropriate language specific title.
+(the default) then Doxygen will fill in an appropriate language specific title.
 
 You can reorder the tabs by moving the tab elements in the XML file
 within the \c navindex element and even change the tree structure.
@@ -290,7 +290,7 @@ different page using the `url` attribute just like you can for the
 \endverbatim
 
 The elements after \c navindex represent the layout of the different
-pages generated by doxygen:
+pages generated by Doxygen:
 - The \c class element represents the layout of all pages generated for
   documented classes, structs, unions, and interfaces.
 - The \c namespace element represents the layout of all pages generated for
@@ -320,7 +320,7 @@ The following generic elements are possible for each page:
   <dd>Represents the author section of a page (only used for man pages). This is
       a separate section for man pages with a text like:
       `Generated automatically by Doxygen for My Project from the source code.`
-      This should not be misinterpreted with the doxygen commands \ref cmdauthor
+      This should not be misinterpreted with the Doxygen commands \ref cmdauthor
       "\\author" or \ref cmdauthors "\\authors" that generate an author paragraph
       inside a detailed description.
 </dl>
@@ -396,25 +396,25 @@ its name prefixed with a dollar sign, e.g.
   ...
 \endverbatim
 This was mainly added for backward compatibility.
-Note that the \c visible attribute is just a hint for doxygen.
+Note that the \c visible attribute is just a hint for Doxygen.
 If no relevant information is available for a certain piece it is
 omitted even if it is set to \c yes (i.e. no empty sections are generated).<br>
 Not all elements have a \c visible attribute shown in the layout file, though
 this attribute can be used anyway (the default is `visible="yes"`).
 
 Some elements have a \c title attribute. This attribute can be used
-to customize the title doxygen will use as a header for the piece.
+to customize the title Doxygen will use as a header for the piece.
 
 
 \section xmlgenerator Using the XML output
 
 If the above two methods still do not provide enough flexibility, you
-can also use the XML output produced by doxygen as a basis to
+can also use the XML output produced by Doxygen as a basis to
 generate the output you like. To do this set
 \ref cfg_generate_xml "GENERATE_XML" to \c YES.
 
 The XML output consists of an index file named \c index.xml which
-lists all items extracted by doxygen with references to the other XML files
+lists all items extracted by Doxygen with references to the other XML files
 for details. The structure of the index is described by a schema file
 \c index.xsd. All other XML files are described by the schema file
 named \c compound.xsd. If you prefer one big XML file
@@ -422,7 +422,7 @@ you can combine the index and the other files using the
 XSLT file \c combine.xslt.
 
 You can use any XML parser to parse the files or use the one that can be found
-in the \c addon/doxmlparser directory of doxygen's source distribution.
+in the \c addon/doxmlparser directory of Doxygen's source distribution.
 Look at \c addon/doxmlparser/doxmlparser/index.py and
 \c addon/doxmlparser/doxmlparser/compound.py for the interface of the
 parser (it is generated by <a href="https://www.davekuhlman.org/generateDS.html">generatedDS</a>
@@ -436,7 +436,7 @@ result this works even for very large projects where reading all XML
 files as one big DOM tree would not fit into memory.
 
 See <a href="https://github.com/breathe-doc/breathe">the Breathe project</a> for
-an example that uses doxygen XML output from Python to bridge it with the
+an example that uses Doxygen XML output from Python to bridge it with the
 <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> document generator.
 
 \htmlonly

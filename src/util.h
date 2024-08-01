@@ -151,9 +151,6 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* in */  const QCString &prefix=QCString()
                 );
 
-bool generateLink(OutputList &ol,const QCString &,
-                         const QCString &,bool inSeeBlock,const QCString &);
-
 void generateFileRef(OutputList &ol,const QCString &,
                              const QCString &linkTxt=QCString());
 
@@ -430,7 +427,7 @@ QCString processMarkup(const QCString &s);
 bool protectionLevelVisible(Protection prot);
 
 QCString stripIndentation(const QCString &s);
-void stripIndentation(QCString &doc,const int indentationLevel);
+void stripIndentationVerbatim(QCString &doc,const int indentationLevel);
 
 QCString getDotImageExtension();
 
@@ -441,8 +438,8 @@ QCString extractDirection(QCString &docs);
 void convertProtectionLevel(
                    MemberListType inListType,
                    Protection inProt,
-                   int *outListType1,
-                   int *outListType2
+                   MemberListType *outListType1,
+                   MemberListType *outListType2
                   );
 
 bool mainPageHasTitle();

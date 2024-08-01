@@ -127,9 +127,10 @@ class XmlDocVisitor : public DocVisitor
 
     TextStream &m_t;
     OutputCodeList &m_ci;
-    bool m_insidePre;
-    bool m_hide;
+    bool m_insidePre = false;
+    bool m_hide = false;
     QCString m_langExt;
+    int m_sectionLevel;
 };
 
 #endif

@@ -252,10 +252,10 @@ void protectionInformation(Protection protection) {
 }
 
 void cModule(const ClassDef* cd) {
-  const MemberList* ml = cd->getMemberList(MemberListType_variableMembers);
+  const MemberList* ml = cd->getMemberList(MemberListType::VariableMembers());
   if (ml) {
     const FileDef *fd = cd->getFileDef();
-    const MemberList *fd_ml = fd->getMemberList(MemberListType_allMembersList);
+    const MemberList *fd_ml = fd->getMemberList(MemberListType::AllMembersList());
     if (!fd_ml || fd_ml->size() == 0) {
       printModule(fd->getOutputFileBase().data());
       printDefines();
@@ -340,11 +340,11 @@ void listMembers(const MemberList *ml) {
 
 void listAllMembers(const ClassDef* cd) {
   // methods
-  listMembers(cd->getMemberList(MemberListType_functionMembers));
+  listMembers(cd->getMemberList(MemberListType::FunctionMembers()));
   // constructors
-  listMembers(cd->getMemberList(MemberListType_constructors));
+  listMembers(cd->getMemberList(MemberListType::Constructors()));
   // attributes
-  listMembers(cd->getMemberList(MemberListType_variableMembers));
+  listMembers(cd->getMemberList(MemberListType::VariableMembers()));
 }
 
 static void classInformation(const ClassDef* cd) {
@@ -400,7 +400,7 @@ static void listSymbols() {
   for (const auto &fn : *Doxygen::inputNameLinkedMap) {
     for (const auto &fd : *fn) {
       printFile(fd->absFilePath().data());
-      MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
+      MemberList *ml = fd->getMemberList(MemberListType::AllMembersList());
       if (ml && ml->size() > 0) {
         printModule(fd->getOutputFileBase().data());
         printDefines();

@@ -33,47 +33,54 @@ struct LayoutDocEntry
 {
   ABSTRACT_BASE_CLASS(LayoutDocEntry)
 
+#define ENTRY_SPECIFICATIONS \
+              /* Generic items for all pages */ \
+              ESPEC(MemberGroups) \
+              ESPEC(MemberDeclStart) ESPEC(MemberDeclEnd) ESPEC(MemberDecl) \
+              ESPEC(MemberDefStart) ESPEC(MemberDefEnd) ESPEC(MemberDef) \
+              ESPEC(BriefDesc) ESPEC(DetailedDesc) \
+              ESPEC(AuthorSection) \
+              /* Class specific items */ \
+              ESPEC(ClassIncludes) ESPEC(ClassInlineClasses) \
+              ESPEC(ClassInheritanceGraph) ESPEC(ClassNestedClasses) \
+              ESPEC(ClassCollaborationGraph) ESPEC(ClassAllMembersLink) \
+              ESPEC(ClassUsedFiles) \
+              /* Concept specific items */ \
+              ESPEC(ConceptDefinition) \
+              /* Namespace specific items */ \
+              ESPEC(NamespaceNestedNamespaces) ESPEC(NamespaceNestedConstantGroups) \
+              ESPEC(NamespaceClasses) ESPEC(NamespaceConcepts) ESPEC(NamespaceInterfaces) ESPEC(NamespaceStructs) ESPEC(NamespaceExceptions) \
+              ESPEC(NamespaceInlineClasses) \
+              /* File specific items */ \
+              ESPEC(FileClasses) ESPEC(FileConcepts) ESPEC(FileInterfaces) ESPEC(FileStructs) ESPEC(FileExceptions) ESPEC(FileConstantGroups) ESPEC(FileNamespaces) \
+              ESPEC(FileIncludes) ESPEC(FileIncludeGraph) \
+              ESPEC(FileIncludedByGraph) ESPEC(FileSourceLink) \
+              ESPEC(FileInlineClasses) \
+              /* C++20 Modules */ \
+              ESPEC(ModuleExports) ESPEC(ModuleClasses) ESPEC(ModuleConcepts) ESPEC(ModuleUsedFiles) \
+              /* Group specific items */ \
+              ESPEC(GroupClasses) ESPEC(GroupConcepts) ESPEC(GroupModules) ESPEC(GroupInlineClasses) ESPEC(GroupNamespaces) \
+              ESPEC(GroupDirs) ESPEC(GroupNestedGroups) ESPEC(GroupFiles) \
+              ESPEC(GroupGraph) ESPEC(GroupPageDocs) \
+              /* Directory specific items */ \
+              ESPEC(DirSubDirs) ESPEC(DirFiles) ESPEC(DirGraph)
+
   enum Kind {
-              // Generic items for all pages
-              MemberGroups,
-              MemberDeclStart, MemberDeclEnd, MemberDecl,
-              MemberDefStart, MemberDefEnd, MemberDef,
-              BriefDesc, DetailedDesc,
-              AuthorSection,
-
-              // Class specific items
-              ClassIncludes, ClassInlineClasses,
-              ClassInheritanceGraph, ClassNestedClasses,
-              ClassCollaborationGraph, ClassAllMembersLink,
-              ClassUsedFiles,
-
-              // Concept specific items
-              ConceptDefinition,
-
-              // Namespace specific items
-              NamespaceNestedNamespaces, NamespaceNestedConstantGroups,
-              NamespaceClasses, NamespaceConcepts, NamespaceInterfaces, NamespaceStructs, NamespaceExceptions,
-              NamespaceInlineClasses,
-
-              // File specific items
-              FileClasses, FileConcepts, FileInterfaces, FileStructs, FileExceptions, FileConstantGroups, FileNamespaces,
-              FileIncludes, FileIncludeGraph,
-              FileIncludedByGraph, FileSourceLink,
-              FileInlineClasses,
-
-              // C++20 Modules
-              ModuleExports, ModuleClasses, ModuleConcepts, ModuleUsedFiles,
-
-              // Group specific items
-              GroupClasses, GroupConcepts, GroupModules, GroupInlineClasses, GroupNamespaces,
-              GroupDirs, GroupNestedGroups, GroupFiles,
-              GroupGraph, GroupPageDocs,
-
-              // Directory specific items
-              DirSubDirs, DirFiles, DirGraph
-
+#define ESPEC(x) x,
+      ENTRY_SPECIFICATIONS
+#undef ESPEC
             };
   virtual Kind kind() const = 0;
+  std::string entryToString()
+  {
+    switch (kind())
+    {
+#define ESPEC(x) case x: return #x; break;
+      ENTRY_SPECIFICATIONS
+#undef ESPEC
+      default: return "unknown"; // to satisfy compiler
+    }
+  }
 };
 
 /** @brief Represents of a piece of a documentation page without configurable parts */
@@ -131,42 +138,58 @@ using LayoutNavEntryList = std::vector< std::unique_ptr<LayoutNavEntry> >;
 /** @brief Base class for the layout of a navigation item at the top of the HTML pages. */
 struct LayoutNavEntry
 {
+#define NAV_SPECIFICATIONS \
+      NSPEC(None, = -1) \
+      NSPEC(MainPage,) \
+      NSPEC(Pages,) \
+      NSPEC(Modules,) \
+      NSPEC(ModuleList,) \
+      NSPEC(ModuleMembers,) \
+      NSPEC(Topics,) \
+      NSPEC(Namespaces,) \
+      NSPEC(NamespaceList,) \
+      NSPEC(NamespaceMembers,) \
+      NSPEC(Concepts,) \
+      NSPEC(Classes,) \
+      NSPEC(ClassList,) \
+      NSPEC(ClassIndex,) \
+      NSPEC(ClassHierarchy,) \
+      NSPEC(ClassMembers,) \
+      NSPEC(Interfaces,) \
+      NSPEC(InterfaceList,) \
+      NSPEC(InterfaceIndex,) \
+      NSPEC(InterfaceHierarchy,) \
+      NSPEC(Structs,) \
+      NSPEC(StructList,) \
+      NSPEC(StructIndex,) \
+      NSPEC(Exceptions,) \
+      NSPEC(ExceptionList,) \
+      NSPEC(ExceptionIndex,) \
+      NSPEC(ExceptionHierarchy,) \
+      NSPEC(Files,) \
+      NSPEC(FileList,) \
+      NSPEC(FileGlobals,) \
+      NSPEC(Examples,) \
+      NSPEC(User,) \
+      NSPEC(UserGroup,)
+
   public:
     enum Kind {
-      None = -1,
-      MainPage,
-      Pages,
-      Modules,
-      ModuleList,
-      ModuleMembers,
-      Topics,
-      Namespaces,
-      NamespaceList,
-      NamespaceMembers,
-      Concepts,
-      Classes,
-      ClassList,
-      ClassIndex,
-      ClassHierarchy,
-      ClassMembers,
-      Interfaces,
-      InterfaceList,
-      InterfaceIndex,
-      InterfaceHierarchy,
-      Structs,
-      StructList,
-      StructIndex,
-      Exceptions,
-      ExceptionList,
-      ExceptionIndex,
-      ExceptionHierarchy,
-      Files,
-      FileList,
-      FileGlobals,
-      Examples,
-      User,
-      UserGroup
+#define NSPEC(x,y) x y,
+      NAV_SPECIFICATIONS
+#undef NSPEC
     };
+    std::string navToString()
+    {
+      switch (kind())
+      {
+#define NSPEC(x,y) case x: return #x; break;
+      NAV_SPECIFICATIONS
+#undef NSPEC
+        default: return "unknown"; // to satisfy compiler
+      }
+    }
+
     LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf,
                    const QCString &tl,const QCString &intro)
       : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl), m_intro(intro) {}
@@ -201,6 +224,10 @@ struct LayoutNavEntry
 using LayoutDocEntryPtr  = std::unique_ptr<LayoutDocEntry>;
 using LayoutDocEntryList = std::vector<LayoutDocEntryPtr>;
 
+#define PART_SPECIFICATIONS \
+  PSPEC(Undefined, = -1)     \
+  PSPEC(Class,) PSPEC(Concept,) PSPEC(Namespace,) PSPEC(File,) PSPEC(Group,) PSPEC(Directory,) PSPEC(Module,)       \
+  PSPEC(NrParts,)
 /** @brief Singleton providing access to the (user configurable) layout of the documentation */
 class LayoutDocManager
 {
@@ -208,13 +235,22 @@ class LayoutDocManager
   public:
     enum LayoutPart
     {
-      Undefined = -1,
-      Class, Concept, Namespace, File, Group, Directory, Module,
-      NrParts
+#define PSPEC(x,y) x y,
+      PART_SPECIFICATIONS
+#undef PSPEC
     };
     /** Returns a reference to this singleton. */
     static LayoutDocManager &instance();
-
+    static std::string partToString(int k)
+    {
+      switch (k)
+      {
+#define PSPEC(x,y) case x: return #x; break;
+        PART_SPECIFICATIONS
+#undef PSPEC
+        default: return "unknown"; // to satisfy compiler
+      }
+    }
     /** Returns the list of LayoutDocEntry's in representation order for a given page identified by @a part. */
     const LayoutDocEntryList &docEntries(LayoutPart part) const;
 

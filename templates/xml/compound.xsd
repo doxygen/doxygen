@@ -32,7 +32,7 @@
       <xsd:element name="innernamespace" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerpage" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innergroup" type="refType" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="qualifier" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="qualifier" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="templateparamlist" type="templateparamlistType" minOccurs="0" />
       <xsd:element name="sectiondef" type="sectiondefType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="1" />
@@ -65,8 +65,8 @@
 
   <xsd:complexType name="memberRefType">
     <xsd:sequence>
-      <xsd:element name="scope" />
-      <xsd:element name="name" />
+      <xsd:element name="scope" type="xsd:string" />
+      <xsd:element name="name" type="xsd:string" />
     </xsd:sequence>
     <xsd:attribute name="refid" type="xsd:string" />
     <xsd:attribute name="prot" type="DoxProtectionKind" />
@@ -184,16 +184,16 @@
     <xsd:sequence>
       <xsd:element name="templateparamlist" type="templateparamlistType" minOccurs="0" />
       <xsd:element name="type" type="linkedTextType" minOccurs="0" />
-      <xsd:element name="definition" minOccurs="0" />
-      <xsd:element name="argsstring" minOccurs="0" />
-      <xsd:element name="name" />
-      <xsd:element name="qualifiedname" minOccurs="0"/>
-      <xsd:element name="read" minOccurs="0" />
-      <xsd:element name="write" minOccurs="0" />
-      <xsd:element name="bitfield" minOccurs="0" />
+      <xsd:element name="definition" type="xsd:string" minOccurs="0" />
+      <xsd:element name="argsstring" type="xsd:string" minOccurs="0" />
+      <xsd:element name="name" type="xsd:string" />
+      <xsd:element name="qualifiedname" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="read" type="xsd:string" minOccurs="0" />
+      <xsd:element name="write" type="xsd:string" minOccurs="0" />
+      <xsd:element name="bitfield" type="xsd:string" minOccurs="0" />
       <xsd:element name="reimplements" type="reimplementType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="reimplementedby" type="reimplementType" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="qualifier" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="qualifier" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="enumvalue" type="enumvalueType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="requiresclause" type="linkedTextType" minOccurs="0" />
@@ -275,7 +275,7 @@
 
   <xsd:complexType name="enumvalueType">
     <xsd:sequence>
-      <xsd:element name="name" />
+      <xsd:element name="name" type="xsd:string" />
       <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
       <xsd:element name="briefdescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="detaileddescription" type="descriptionType" minOccurs="0" />
@@ -292,11 +292,11 @@
 
   <xsd:complexType name="paramType">
     <xsd:sequence>
-      <xsd:element name="attributes" minOccurs="0" />
+      <xsd:element name="attributes" type="xsd:string" minOccurs="0" />
       <xsd:element name="type" type="linkedTextType" minOccurs="0" />
-      <xsd:element name="declname" minOccurs="0" />
-      <xsd:element name="defname" minOccurs="0" />
-      <xsd:element name="array" minOccurs="0" />
+      <xsd:element name="declname" type="xsd:string" minOccurs="0" />
+      <xsd:element name="defname" type="xsd:string" minOccurs="0" />
+      <xsd:element name="array" type="xsd:string" minOccurs="0" />
       <xsd:element name="defval" type="linkedTextType" minOccurs="0" />
       <xsd:element name="typeconstraint" type="linkedTextType" minOccurs="0" />
       <xsd:element name="briefdescription" type="descriptionType" minOccurs="0" />
@@ -317,7 +317,7 @@
 
   <xsd:complexType name="nodeType">
     <xsd:sequence>
-      <xsd:element name="label" />
+      <xsd:element name="label" type="xsd:string" />
       <xsd:element name="link" type="linkType" minOccurs="0" />
       <xsd:element name="childnode" type="childnodeType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
@@ -326,7 +326,7 @@
 
   <xsd:complexType name="childnodeType">
     <xsd:sequence>
-      <xsd:element name="edgelabel" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="edgelabel" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
     <xsd:attribute name="refid" type="xsd:string" />
     <xsd:attribute name="relation" type="DoxGraphRelation" />
@@ -399,7 +399,7 @@
 
   <xsd:complexType name="docSect2Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect3" type="docSect3Type" minOccurs="0" maxOccurs="unbounded" />
@@ -411,7 +411,7 @@
 
   <xsd:complexType name="docSect3Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect4" type="docSect4Type" minOccurs="0" maxOccurs="unbounded" />
@@ -423,7 +423,7 @@
 
   <xsd:complexType name="docSect4Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect5" type="docSect5Type" minOccurs="0" maxOccurs="unbounded" />
@@ -435,7 +435,7 @@
 
   <xsd:complexType name="docSect5Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="sect6" type="docSect6Type" minOccurs="0" maxOccurs="unbounded" />
@@ -447,7 +447,7 @@
 
   <xsd:complexType name="docSect6Type" mixed="true">
     <xsd:sequence>
-      <xsd:element name="title" type="docTitleType" />
+      <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:choice maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
         <xsd:element name="internal" type="docInternalS6Type" minOccurs="0" />
@@ -869,7 +869,10 @@
 
   <xsd:complexType name="tableofcontentsType">
     <xsd:sequence>
-      <xsd:element name="tocsect" type="tableofcontentsKindType" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:choice>
+        <xsd:element name="tocsect" type="tableofcontentsKindType" minOccurs="1" maxOccurs="unbounded" />
+        <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:choice>
     </xsd:sequence>
   </xsd:complexType>
 

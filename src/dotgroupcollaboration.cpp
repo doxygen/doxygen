@@ -107,7 +107,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Write collaboration
 
   // Add members
-  addMemberList( gd->getMemberList(MemberListType_allMembersList) );
+  addMemberList( gd->getMemberList(MemberListType::AllMembersList()) );
 
   // Add classes
   for (const auto &def : gd->getClasses())

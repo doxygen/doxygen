@@ -181,8 +181,8 @@ void DirDefImpl::addFile(const FileDef *fd)
 
 void DirDefImpl::sort()
 {
-  std::sort(m_subdirs.begin(), m_subdirs.end(), compareDirDefs);
-  std::sort(m_fileList.begin(), m_fileList.end(), compareFileDefs);
+  std::stable_sort(m_subdirs.begin(), m_subdirs.end(), compareDirDefs);
+  std::stable_sort(m_fileList.begin(), m_fileList.end(), compareFileDefs);
 }
 
 static QCString encodeDirName(const QCString &anchor)
@@ -762,9 +762,9 @@ void DirDefImpl::computeDependencies()
     }
   }
 
-  std::sort(m_usedDirs.begin(),m_usedDirs.end(),
+  std::stable_sort(m_usedDirs.begin(),m_usedDirs.end(),
             [](const auto &u1,const auto &u2)
-            { return qstricmp(u1->dir()->getOutputFileBase(),u2->dir()->getOutputFileBase())<0; });
+            { return qstricmp_sort(u1->dir()->getOutputFileBase(),u2->dir()->getOutputFileBase())<0; });
 
   for (const auto& usedDirectory : m_usedDirs)
   {
@@ -804,13 +804,13 @@ void UsedDir::addFileDep(const FileDef *srcFd,const FileDef *dstFd, bool srcDire
 
 void UsedDir::sort()
 {
-  std::sort(m_filePairs.begin(),
+  std::stable_sort(m_filePairs.begin(),
             m_filePairs.end(),
             [](const auto &left,const auto &right)
             {
-              int orderHi = qstricmp(left->source()->name(),right->source()->name());
+              int orderHi = qstricmp_sort(left->source()->name(),right->source()->name());
               if (orderHi!=0) return orderHi<0;
-              int orderLo = qstricmp(left->destination()->name(),right->destination()->name());
+              int orderLo = qstricmp_sort(left->destination()->name(),right->destination()->name());
               return orderLo<0;
             });
 }
@@ -840,7 +840,7 @@ bool DirDefImpl::matchPath(const QCString &path,const StringVector &l)
   for (const auto &s : l)
   {
     std::string prefix = s.substr(0,path.length());
-    if (qstricmp(prefix.c_str(),path)==0) // case insensitive compare
+    if (qstricmp_sort(prefix.c_str(),path)==0) // case insensitive compare
     {
       return TRUE;
     }
@@ -1101,16 +1101,16 @@ void buildDirectories()
   }
 
   // short the directories themselves
-  std::sort(Doxygen::dirLinkedMap->begin(),
+  std::stable_sort(Doxygen::dirLinkedMap->begin(),
             Doxygen::dirLinkedMap->end(),
             [](const auto &d1,const auto &d2)
             {
               QCString s1 = d1->shortName(), s2 = d2->shortName();
-              int i = qstricmp(s1,s2);
+              int i = qstricmp_sort(s1,s2);
               if (i==0) // if sort name are equal, sort on full path
               {
                 QCString n1 = d1->name(), n2 = d2->name();
-                int n = qstricmp(n1,n2);
+                int n = qstricmp_sort(n1,n2);
                 return n < 0;
               }
               return i < 0;
@@ -1167,7 +1167,7 @@ void generateDirDocs(OutputList &ol)
 
 bool compareDirDefs(const DirDef *item1, const DirDef *item2)
 {
-  return qstricmp(item1->shortName(),item2->shortName()) < 0;
+  return qstricmp_sort(item1->shortName(),item2->shortName()) < 0;
 }
 
 // --- Cast functions

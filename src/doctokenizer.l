@@ -90,6 +90,7 @@ struct doctokenizerYY_state
   QCString     endMarker;
   int          autoListLevel;
   std::stack< std::unique_ptr<DocLexerContext> > lexerStack;
+  std::stack<int> stateStack;
 
   int yyLineNr = 0;
 };
@@ -187,11 +188,18 @@ static int computeIndent(const char *str,size_t length)
     {
       indent=0;
     }
+    else if (str[i]=='\\' && qstrncmp(str+i+1,"ilinebr",7)==0)
+    {
+      indent=0;
+      i+=7;
+      if (str[i+1]==' ') i++; // also eat space after \\ilinebr if present
+    }
     else
     {
       indent++;
     }
   }
+  //printf("input('%s')=%d\n",str,indent);
   return indent;
 }
 
@@ -272,7 +280,7 @@ MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT
 OPTSTARS  ("/""/"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
-OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
+OLISTITEM {BLANK}*("0"|[1-9][0-9]*)"."{BLANK}
 CLISTITEM {BLANK}*[-]{BLANK}*"\["[ xX]"\]"
 ENDLIST   {BLANK}*"."{BLANK}*(\n|"\\ilinebr")
 ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
@@ -332,6 +340,7 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"|"strike"|"u"|"del"|"ins"|"s"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"|"STRIKE"|"U"|"DEL"|"INS"|"S"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
+HTMLTAG_STRICT  "<"(("/")?){HTMLKEYW}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 REFWORD2_PRE   ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?)
 REFWORD2       {REFWORD2_PRE}{FUNCARG2}?
 REFWORD2_NOCV  {REFWORD2_PRE}("("{FUNCPART}")")?
@@ -341,7 +350,7 @@ REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
 REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
-LINENR {BLANK}*[1-9][0-9]*
+LINENR {BLANK}*([1-9][0-9]*|"0"|"-1")
 
 SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[0-9]{1,2})?)?
 
@@ -378,6 +387,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_XRefItem
 %x St_XRefItem2
 %x St_File
+%x St_IFile
 %x St_Pattern
 %x St_Link
 %x St_Cite
@@ -789,6 +799,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                          lineCount(yytext,yyleng);
                        }
+<St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}*/" \\ifile" | // we don't want to count the space before \ifile
 <St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}* {
                          lineCount(yytext,yyleng);
                          if (yyextra->insidePre)
@@ -801,6 +812,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            yyextra->token.indent=computeIndent(yytext,yyleng);
                            int i;
                            // put back the indentation (needed for list items)
+                           //printf("token.indent=%d\n",yyextra->token.indent);
                            for (i=0;i<yyextra->token.indent;i++)
                            {
                              unput(' ');
@@ -1241,7 +1253,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          return 0;
                        }
-<St_Ref2>{HTMLTAG}     { /* html tag */
+<St_Ref2>{HTMLTAG_STRICT}     { /* html tag */
                          lineCount(yytext,yyleng);
                          handleHtmlTag(yyscanner,yytext);
                          return TK_HTMLTAG;
@@ -1393,6 +1405,16 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_ILine>.            {
                          return 0;
+                       }
+<St_IFile>{BLANK}*{FILEMASK} {
+                         yyextra->fileName = QCString(yytext).stripWhiteSpace();
+                         return TK_WORD;
+                       }
+<St_IFile>{BLANK}*"\""[^\n\"]+"\"" {
+                         QCString text(yytext);
+                         text = text.stripWhiteSpace();
+                         yyextra->fileName = text.mid(1,text.length()-2);
+                         return TK_WORD;
                        }
 <St_File>{FILEMASK}    {
                          yyextra->token.name = yytext;
@@ -2062,6 +2084,13 @@ void DocTokenizer::setStateFile()
   BEGIN(St_File);
 }
 
+void DocTokenizer::setStateIFile()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_IFile);
+}
+
 void DocTokenizer::setStatePattern()
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -2247,6 +2276,22 @@ int DocTokenizer::getLineNr(void)
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   return yyextra->yyLineNr;
+}
+
+void DocTokenizer::pushState()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->stateStack.push(YYSTATE);
+}
+
+void DocTokenizer::popState()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  assert(!yyextra->stateStack.empty());
+  BEGIN(yyextra->stateStack.top());
+  yyextra->stateStack.pop();
 }
 
 #include "doctokenizer.l.h"

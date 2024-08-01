@@ -1787,29 +1787,29 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
   addListOfAllMembers(cd);
   generatePerlUserDefinedSection(cd, cd->getMemberGroups());
 
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_pubTypes),"public_typedefs");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_pubMethods),"public_methods");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_pubAttribs),"public_members");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_pubSlots),"public_slots");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_signals),"signals");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_dcopMethods),"dcop_methods");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_properties),"properties");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_pubStaticMethods),"public_static_methods");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_pubStaticAttribs),"public_static_members");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_proTypes),"protected_typedefs");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_proMethods),"protected_methods");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_proAttribs),"protected_members");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_proSlots),"protected_slots");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_proStaticMethods),"protected_static_methods");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_proStaticAttribs),"protected_static_members");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_priTypes),"private_typedefs");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_priMethods),"private_methods");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_priAttribs),"private_members");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_priSlots),"private_slots");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_priStaticMethods),"private_static_methods");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_priStaticAttribs),"private_static_members");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_friends),"friend_methods");
-  generatePerlModSection(cd,cd->getMemberList(MemberListType_related),"related_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PubTypes()),"public_typedefs");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PubMethods()),"public_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PubAttribs()),"public_members");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PubSlots()),"public_slots");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::Signals()),"signals");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::DcopMethods()),"dcop_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::Properties()),"properties");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PubStaticMethods()),"public_static_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PubStaticAttribs()),"public_static_members");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::ProTypes()),"protected_typedefs");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::ProMethods()),"protected_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::ProAttribs()),"protected_members");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::ProSlots()),"protected_slots");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::ProStaticMethods()),"protected_static_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::ProStaticAttribs()),"protected_static_members");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PriTypes()),"private_typedefs");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PriMethods()),"private_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PriAttribs()),"private_members");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PriSlots()),"private_slots");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PriStaticMethods()),"private_static_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::PriStaticAttribs()),"private_static_members");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::Friends()),"friend_methods");
+  generatePerlModSection(cd,cd->getMemberList(MemberListType::Related()),"related_methods");
 
   addPerlModDocBlock(m_output,"brief",cd->getDefFileName(),cd->getDefLine(),cd,nullptr,cd->briefDescription());
   addPerlModDocBlock(m_output,"detailed",cd->getDefFileName(),cd->getDefLine(),cd,nullptr,cd->documentation());
@@ -1898,10 +1898,10 @@ void PerlModGenerator::generatePerlModForModule(const ModuleDef *mod)
     m_output.closeList();
   }
 
-  generatePerlModSection(mod,mod->getMemberList(MemberListType_decTypedefMembers),"typedefs");
-  generatePerlModSection(mod,mod->getMemberList(MemberListType_decEnumMembers),"enums");
-  generatePerlModSection(mod,mod->getMemberList(MemberListType_decFuncMembers),"functions");
-  generatePerlModSection(mod,mod->getMemberList(MemberListType_decVarMembers),"variables");
+  generatePerlModSection(mod,mod->getMemberList(MemberListType::DecTypedefMembers()),"typedefs");
+  generatePerlModSection(mod,mod->getMemberList(MemberListType::DecEnumMembers()),"enums");
+  generatePerlModSection(mod,mod->getMemberList(MemberListType::DecFuncMembers()),"functions");
+  generatePerlModSection(mod,mod->getMemberList(MemberListType::DecVarMembers()),"variables");
 
   addPerlModDocBlock(m_output,"brief",mod->getDefFileName(),mod->getDefLine(),nullptr,nullptr,mod->briefDescription());
   addPerlModDocBlock(m_output,"detailed",mod->getDefFileName(),mod->getDefLine(),nullptr,nullptr,mod->documentation());
@@ -1957,12 +1957,12 @@ void PerlModGenerator::generatePerlModForNamespace(const NamespaceDef *nd)
 
   generatePerlUserDefinedSection(nd, nd->getMemberGroups());
 
-  generatePerlModSection(nd,nd->getMemberList(MemberListType_decDefineMembers),"defines");
-  generatePerlModSection(nd,nd->getMemberList(MemberListType_decProtoMembers),"prototypes");
-  generatePerlModSection(nd,nd->getMemberList(MemberListType_decTypedefMembers),"typedefs");
-  generatePerlModSection(nd,nd->getMemberList(MemberListType_decEnumMembers),"enums");
-  generatePerlModSection(nd,nd->getMemberList(MemberListType_decFuncMembers),"functions");
-  generatePerlModSection(nd,nd->getMemberList(MemberListType_decVarMembers),"variables");
+  generatePerlModSection(nd,nd->getMemberList(MemberListType::DecDefineMembers()),"defines");
+  generatePerlModSection(nd,nd->getMemberList(MemberListType::DecProtoMembers()),"prototypes");
+  generatePerlModSection(nd,nd->getMemberList(MemberListType::DecTypedefMembers()),"typedefs");
+  generatePerlModSection(nd,nd->getMemberList(MemberListType::DecEnumMembers()),"enums");
+  generatePerlModSection(nd,nd->getMemberList(MemberListType::DecFuncMembers()),"functions");
+  generatePerlModSection(nd,nd->getMemberList(MemberListType::DecVarMembers()),"variables");
 
   addPerlModDocBlock(m_output,"brief",nd->getDefFileName(),nd->getDefLine(),nullptr,nullptr,nd->briefDescription());
   addPerlModDocBlock(m_output,"detailed",nd->getDefFileName(),nd->getDefLine(),nullptr,nullptr,nd->documentation());
@@ -2019,12 +2019,12 @@ void PerlModGenerator::generatePerlModForFile(const FileDef *fd)
 
   generatePerlUserDefinedSection(fd, fd->getMemberGroups());
 
-  generatePerlModSection(fd,fd->getMemberList(MemberListType_decDefineMembers),"defines");
-  generatePerlModSection(fd,fd->getMemberList(MemberListType_decProtoMembers),"prototypes");
-  generatePerlModSection(fd,fd->getMemberList(MemberListType_decTypedefMembers),"typedefs");
-  generatePerlModSection(fd,fd->getMemberList(MemberListType_decEnumMembers),"enums");
-  generatePerlModSection(fd,fd->getMemberList(MemberListType_decFuncMembers),"functions");
-  generatePerlModSection(fd,fd->getMemberList(MemberListType_decVarMembers),"variables");
+  generatePerlModSection(fd,fd->getMemberList(MemberListType::DecDefineMembers()),"defines");
+  generatePerlModSection(fd,fd->getMemberList(MemberListType::DecProtoMembers()),"prototypes");
+  generatePerlModSection(fd,fd->getMemberList(MemberListType::DecTypedefMembers()),"typedefs");
+  generatePerlModSection(fd,fd->getMemberList(MemberListType::DecEnumMembers()),"enums");
+  generatePerlModSection(fd,fd->getMemberList(MemberListType::DecFuncMembers()),"functions");
+  generatePerlModSection(fd,fd->getMemberList(MemberListType::DecVarMembers()),"variables");
 
   addPerlModDocBlock(m_output,"brief",fd->getDefFileName(),fd->getDefLine(),nullptr,nullptr,fd->briefDescription());
   addPerlModDocBlock(m_output,"detailed",fd->getDefFileName(),fd->getDefLine(),nullptr,nullptr,fd->documentation());
@@ -2124,12 +2124,12 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
 
   generatePerlUserDefinedSection(gd, gd->getMemberGroups());
 
-  generatePerlModSection(gd,gd->getMemberList(MemberListType_decDefineMembers),"defines");
-  generatePerlModSection(gd,gd->getMemberList(MemberListType_decProtoMembers),"prototypes");
-  generatePerlModSection(gd,gd->getMemberList(MemberListType_decTypedefMembers),"typedefs");
-  generatePerlModSection(gd,gd->getMemberList(MemberListType_decEnumMembers),"enums");
-  generatePerlModSection(gd,gd->getMemberList(MemberListType_decFuncMembers),"functions");
-  generatePerlModSection(gd,gd->getMemberList(MemberListType_decVarMembers),"variables");
+  generatePerlModSection(gd,gd->getMemberList(MemberListType::DecDefineMembers()),"defines");
+  generatePerlModSection(gd,gd->getMemberList(MemberListType::DecProtoMembers()),"prototypes");
+  generatePerlModSection(gd,gd->getMemberList(MemberListType::DecTypedefMembers()),"typedefs");
+  generatePerlModSection(gd,gd->getMemberList(MemberListType::DecEnumMembers()),"enums");
+  generatePerlModSection(gd,gd->getMemberList(MemberListType::DecFuncMembers()),"functions");
+  generatePerlModSection(gd,gd->getMemberList(MemberListType::DecVarMembers()),"variables");
 
   addPerlModDocBlock(m_output,"brief",gd->getDefFileName(),gd->getDefLine(),nullptr,nullptr,gd->briefDescription());
   addPerlModDocBlock(m_output,"detailed",gd->getDefFileName(),gd->getDefLine(),nullptr,nullptr,gd->documentation());

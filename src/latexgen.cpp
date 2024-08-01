@@ -1856,10 +1856,10 @@ void LatexGenerator::writeNonBreakableSpace(int)
 // - endDescTableRow()
 // endDescTable()
 
-void LatexGenerator::startDescTable(const QCString &title)
+void LatexGenerator::startDescTable(const QCString &title,const bool hasInits)
 {
   m_codeGen->incUsedTableLevel();
-  m_t << "\\begin{DoxyEnumFields}{" << title << "}\n";
+  m_t << "\\begin{DoxyEnumFields}[" << (hasInits?3:2) << "]{" << title << "}\n";
 }
 
 void LatexGenerator::endDescTable()
@@ -1885,6 +1885,15 @@ void LatexGenerator::startDescTableTitle()
 }
 
 void LatexGenerator::endDescTableTitle()
+{
+}
+
+void LatexGenerator::startDescTableInit()
+{
+  m_t << "&";
+}
+
+void LatexGenerator::endDescTableInit()
 {
 }
 
@@ -2304,7 +2313,7 @@ void writeLatexSpecialFormulaChars(TextStream &t)
     sup3[1]= 0xB3;
     sup3[2]= 0;
 
-    t << "\\ifpdftex\n";
+    t << "\\ifPDFTeX\n";
     t << "\\usepackage{newunicodechar}\n";
     // taken from the newunicodechar package and removed the warning message
     // actually forcing to redefine the unicode character

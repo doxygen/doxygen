@@ -420,6 +420,7 @@ WSopt [ \t\r]*
 %x      SkipCPPBlock
 %x      SkipCComment
 %x      ArgCopyCComment
+%x      ArgCopyCppComment
 %x      CopyCComment
 %x      SkipVerbatim
 %x      SkipCondVerbatim
@@ -888,6 +889,13 @@ WSopt [ \t\r]*
                                           yyextra->defArgsStr+=yytext;
                                           BEGIN(ArgCopyCComment);
                                         }
+<FindDefineArgs>{CPPC}[/!].*\n/{B}*{CPPC}[/!] { // replace multi line C++ style comment by C style comment
+                                          yyextra->defArgsStr+=QCString("/**")+&yytext[3];
+                                          BEGIN(ArgCopyCppComment);
+                                        }
+<FindDefineArgs>{CPPC}[/!].*\n          { // replace C++ single line style comment by C style comment
+                                          yyextra->defArgsStr+=QCString("/**")+&yytext[3]+" */";
+                                        }
 <FindDefineArgs>\"                      {
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(ReadString);
@@ -923,6 +931,23 @@ WSopt [ \t\r]*
 <ArgCopyCComment>.                      {
                                           yyextra->defArgsStr+=yytext;
                                         }
+<ArgCopyCppComment>^{B}*
+<ArgCopyCppComment>{CPPC}[/!].*\n/{B}*{CPPC}[/!] { // replace multi line C++ style comment by C style comment
+                                          const char *startContent = &yytext[3];
+                                          if (startContent[0]=='<') startContent++;
+                                          yyextra->defArgsStr+=startContent;
+                                        }
+<ArgCopyCppComment>{CPPC}[/!].*\n       { // replace C++ multie line style comment by C style comment
+                                          const char *startContent = &yytext[3];
+                                          if (startContent[0]=='<') startContent++;
+                                          yyextra->defArgsStr+=QCString(startContent)+" */";
+                                          BEGIN(FindDefineArgs);
+                                        }
+<ArgCopyCppComment>.                    { // unexpected character
+                                          unput(*yytext);
+                                          yyextra->defArgsStr+=" */";
+                                          BEGIN(FindDefineArgs);
+                                        }
 <ReadString>"\""                        {
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(FindDefineArgs);
@@ -933,7 +958,7 @@ WSopt [ \t\r]*
                                           BEGIN(FindDefineArgs);
                                         }
 
-<ReadString>{CPPC}|{CCS}                        {
+<ReadString>{CPPC}|{CCS}                {
                                           yyextra->defArgsStr+=yytext;
                                         }
 <ReadString>\\/\r?\n                    { // line continuation
@@ -2756,7 +2781,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
         {
           inString=TRUE; // entering a literal string
         }
-        else if (inString && d.at(k)=='\"' && (d.at(k-1)!='\\' || d.at(k-2)=='\\'))
+        else if (k>2 && inString && d.at(k)=='\"' && (d.at(k-1)!='\\' || d.at(k-2)=='\\'))
         {
           inString=FALSE; // leaving a literal string
         }
@@ -3570,7 +3595,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       fs->lineNr   = oldLineNr;
       fs->fileName = oldFileName;
       fs->curlyCount = state->curlyCount;
-      state->curlyCount = 0;
+      //state->curlyCount = 0; // don't reset counter, see issue #10997
       fs->lexRulesPart = state->lexRulesPart;
       state->lexRulesPart = false;
       // push the state on the stack
@@ -3633,7 +3658,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
         }
         //printf("error: include file %s not found\n",yytext);
       }
-      if (state->curlyCount>0 && !alreadyProcessed) // failed to find #include inside { ... }
+      if (localInclude && !state->includeStack.empty() && state->curlyCount>0 && !alreadyProcessed) // failed to find #include inside { ... }
       {
         warn(state->fileName,state->yyLineNr,"include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",qPrint(incFileName));
       }

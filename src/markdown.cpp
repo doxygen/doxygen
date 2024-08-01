@@ -52,6 +52,7 @@
 #include "fileinfo.h"
 #include "trace.h"
 #include "anchor.h"
+#include "stringutil.h"
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE
@@ -78,10 +79,14 @@ enum class ExplicitPageResult
    (c>='0' && c<='9') || \
    (static_cast<unsigned char>(c)>=0x80)) // unicode characters
 
+// is character allowed right at the beginning of an emphasis section
 #define extraChar(c) \
   (c=='-' || c=='+' || c=='!' || \
    c=='?' || c=='$' || c=='@' || \
-   c=='&' || c=='*' || c=='%')
+   c=='&' || c=='*' || c=='%' || \
+   c=='[' || c=='(' || c=='.' || \
+   c=='>' || c==':' || c==',' || \
+   c==';' || c=='\'' || c=='"' || c=='`')
 
 // is character at position i in data allowed before an emphasis section
 #define isOpenEmphChar(c) \
@@ -657,10 +662,15 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
 
   while (i<size)
   {
-    while (i<size && data[i]!=c    && data[i]!='`' &&
+    while (i<size && data[i]!=c    &&
                      data[i]!='\\' && data[i]!='@' &&
                      !(data[i]=='/' && data[i-1]=='<') && // html end tag also ends emphasis
                      data[i]!='\n') i++;
+    // avoid overflow (unclosed emph token)
+    if (i==size)
+    {
+      return 0;
+    }
     //printf("findEmphasisChar: data=[%s] i=%d c=%c\n",data,i,data[i]);
 
     // not counting escaped chars or characters that are unlikely
@@ -681,9 +691,9 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
 
       if (len>0)
       {
-        if (len!=c_size || (i<size-len && isIdChar(data[i+len]))) // to prevent touching some_underscore_identifier
+        if (len!=c_size || (i+len<size && isIdChar(data[i+len]))) // to prevent touching some_underscore_identifier
         {
-          i=i+len;
+          i+=len;
           continue;
         }
         AUTO_TRACE_EXIT("result={}",i);
@@ -726,7 +736,7 @@ size_t Markdown::Private::findEmphasisChar(std::string_view data, char c, size_t
           i++;
         }
       }
-      else if (i<size-1 && isIdChar(data[i+1])) // @cmd, stop processing, see bug 690385
+      else if (i+1<size && isIdChar(data[i+1])) // @cmd, stop processing, see bug 690385
       {
         return 0;
       }
@@ -768,7 +778,7 @@ int Markdown::Private::processEmphasis1(std::string_view data, char c)
 
   while (i<size)
   {
-    int len = findEmphasisChar(data.substr(i), c, 1);
+    size_t len = findEmphasisChar(data.substr(i), c, 1);
     if (len==0) { return 0; }
     i+=len;
     if (i>=size) { return 0; }
@@ -799,7 +809,7 @@ int Markdown::Private::processEmphasis2(std::string_view data, char c)
 
   while (i<size)
   {
-    int len = findEmphasisChar(data.substr(i), c, 2);
+    size_t len = findEmphasisChar(data.substr(i), c, 2);
     if (len==0)
     {
       return 0;
@@ -1053,9 +1063,10 @@ int Markdown::Private::processEmphasis(std::string_view data,size_t offset)
   const size_t size = data.size();
 
   if ((offset>0 && !isOpenEmphChar(data.data()[-1])) || // invalid char before * or _
-      (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]) || data[1]=='[')) || // invalid char after * or _
-      (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]) || data[2]=='[')))   // invalid char after ** or __
+      (size>1 && data[0]!=data[1] && !(isIdChar(data[1]) || extraChar(data[1]))) || // invalid char after * or _
+      (size>2 && data[0]==data[1] && !(isIdChar(data[2]) || extraChar(data[2]))))   // invalid char after ** or __
   {
+    AUTO_TRACE_EXIT("invalid surrounding characters");
     return 0;
   }
 
@@ -2693,6 +2704,15 @@ void Markdown::Private::writeOneLineHeaderOrRuler(std::string_view data)
   }
 }
 
+static const std::unordered_map<std::string,std::string> g_quotationHeaderMap = {
+  // GitHub style   Doxygen command
+  { "[!note]",      "\\note"      },
+  { "[!warning]",   "\\warning"   },
+  { "[!tip]",       "\\remark"    },
+  { "[!caution]",   "\\attention" },
+  { "[!important]", "\\important" }
+};
+
 size_t Markdown::Private::writeBlockQuote(std::string_view data)
 {
   AUTO_TRACE("data='{}'",Trace::trunc(data));
@@ -2700,8 +2720,9 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   int curLevel=0;
   size_t end=0;
   const size_t size = data.size();
-  QCString startCmd;
+  std::string startCmd;
   int isGitHubAlert = false;
+  int isGitHubFirst = false;
   while (i<size)
   {
     // find end of this line
@@ -2717,80 +2738,131 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       else if (j>0 && data[j-1]=='>') indent=j+1;
       j++;
     }
-    if (j>0 && data[j-1]=='>' &&
+    if (indent>0 && j>0 && data[j-1]=='>' &&
         !(j==size || data[j]=='\n')) // disqualify last > if not followed by space
     {
       indent--;
       level--;
       j--;
     }
-    if (!level && data[j-1]!='\n') level=curLevel; // lazy
-    if (level == 1)
+    AUTO_TRACE_ADD("indent={} i={} j={} end={} level={} line={}",indent,i,j,end,level,Trace::trunc(&data[i]));
+    if (level==0 && j<end-1)
     {
-      QCString txt = data.substr(indent,end-indent);
-      txt = txt.lower().stripWhiteSpace();
-      if (txt == "[!note]")
+      level = curLevel; // lazy
+    }
+    if (level==1)
+    {
+      QCString txt = stripWhiteSpace(data.substr(indent,end-indent));
+      auto it = g_quotationHeaderMap.find(txt.lower().str()); // TODO: in C++20 the std::string can be dropped
+      if (it != g_quotationHeaderMap.end())
       {
         isGitHubAlert = true;
-        startCmd = "\\note ";
-      }
-      else if (txt == "[!warning]")
-      {
-        isGitHubAlert = true;
-        startCmd = "\\warning ";
-      }
-      else if (txt == "[!tip]")
-      {
-        isGitHubAlert = true;
-        startCmd = "\\remark ";
-      }
-      else if (txt == "[!caution]")
-      {
-        isGitHubAlert = true;
-        startCmd = "\\attention ";
-      }
-      else if (txt == "[!important]")
-      {
-        isGitHubAlert = true;
-        startCmd = "\\important ";
+        isGitHubFirst = true;
+        startCmd = it->second;
       }
     }
     if (level>curLevel) // quote level increased => add start markers
     {
-      if (level != 1 || !isGitHubAlert)
+      if (level!=1 || !isGitHubAlert) // normal block quote
       {
         for (int l=curLevel;l<level-1;l++)
         {
           out+="<blockquote>";
         }
+        out += "<blockquote>&zwj;"; // empty blockquotes are also shown
       }
-      if (level != 1 || !isGitHubAlert) out+="<blockquote>&zwj;"; // empty blockquotes are also shown
-      else out += startCmd;
+      else if (!startCmd.empty()) // GitHub style alert
+      {
+        out += startCmd + " ";
+      }
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
-      int decrLevel = curLevel - (level==0 && isGitHubAlert ? 1 : 0);
+      int decrLevel = curLevel;
+      if (level==0 && isGitHubAlert)
+      {
+        decrLevel--;
+      }
       for (int l=level;l<decrLevel;l++)
       {
-        out+="</blockquote>";
+        out += "</blockquote>";
       }
     }
-    if (level==0) break; // end of quote block
+    if (level==0)
+    {
+      curLevel=0;
+      break; // end of quote block
+    }
     // copy line without quotation marks
-    if (curLevel != 0 || !isGitHubAlert) out+=data.substr(indent,end-indent);
-    else out+= "\n";
+    if (curLevel!=0 || !isGitHubAlert)
+    {
+      std::string_view txt = data.substr(indent,end-indent);
+      if (stripWhiteSpace(txt).empty() && !startCmd.empty())
+      {
+        if (!isGitHubFirst) out += "<br>";
+        out += "<br>\n";
+      }
+      else
+      {
+        out += txt;
+      }
+      isGitHubFirst = false;
+    }
+    else // GitHub alert section
+    {
+      out+= "\n";
+    }
     curLevel=level;
     // proceed with next line
     i=end;
   }
   // end of comment within blockquote => add end markers
-  if (isGitHubAlert) curLevel--;
+  if (isGitHubAlert) // GitHub alert doesn't have a blockquote
+  {
+    curLevel--;
+  }
   for (int l=0;l<curLevel;l++)
   {
     out+="</blockquote>";
   }
   AUTO_TRACE_EXIT("i={}",i);
   return i;
+}
+
+// For code blocks that are outputted as part of an indented include or snippet command, we need to filter out
+// the location string, i.e. '\ifile "..." \iline \ilinebr'.
+bool skipOverFileAndLineCommands(std::string_view data,size_t indent,size_t &offset,std::string &location)
+{
+  size_t i = offset;
+  size_t size = data.size();
+  while (i<data.size() && data[i]==' ') i++;
+  if (i<size+8 && data[i]=='\\' && qstrncmp(&data[i+1],"ifile \"",7)==0)
+  {
+    size_t locStart = i;
+    if (i>offset) locStart--; // include the space before \ifile
+    i+=8;
+    bool found=false;
+    while (i<size-9 && data[i]!='\n')
+    {
+      if (data[i]=='\\' && qstrncmp(&data[i+1],"ilinebr ",8)==0)
+      {
+        found=true;
+        break;
+      }
+      i++;
+    }
+    if (found)
+    {
+      i+=9;
+      location=data.substr(locStart,i-locStart);
+      location+='\n';
+      while (indent>0 && i<size && data[i]==' ') i++,indent--;
+      if (i<size && data[i]=='\n') i++;
+      offset = i;
+      return true;
+    }
+  }
+  return false;
 }
 
 size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
@@ -2801,6 +2873,7 @@ size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
   // no need for \ilinebr here as the previous line was empty and was skipped
   out+="@iverbatim\n";
   int emptyLines=0;
+  std::string location;
   while (i<size)
   {
     // find end of this line
@@ -2826,6 +2899,11 @@ size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
       }
       // add code line minus the indent
       size_t offset = i+refIndent+codeBlockIndent;
+      std::string lineLoc;
+      if (skipOverFileAndLineCommands(data,codeBlockIndent,offset,lineLoc))
+      {
+        location = lineLoc;
+      }
       out+=data.substr(offset,end-offset);
       i=end;
     }
@@ -2834,7 +2912,15 @@ size_t Markdown::Private::writeCodeBlock(std::string_view data,size_t refIndent)
       break;
     }
   }
-  out+="@endiverbatim\\ilinebr ";
+  out+="@endiverbatim";
+  if (!location.empty())
+  {
+    out+=location;
+  }
+  else
+  {
+    out+="\\ilinebr ";
+  }
   while (emptyLines>0) // write skipped empty lines
   {
     // add empty line
@@ -3615,4 +3701,3 @@ void MarkdownOutlineParser::parsePrototype(const QCString &text)
 }
 
 //------------------------------------------------------------------------
-

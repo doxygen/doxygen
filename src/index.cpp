@@ -221,11 +221,22 @@ void Index::sortMemberIndexLists()
   {
     for (auto &[name,list] : map)
     {
-      std::sort(list.begin(),list.end(),
+      std::stable_sort(list.begin(),list.end(),
           [](const MemberDef *md1,const MemberDef *md2)
           {
-            int result = qstricmp(md1->name(),md2->name());
-            return result==0 ? qstricmp(md1->qualifiedName(),md2->qualifiedName())<0 : result<0;
+            // consider candidates A::a, B::b, B::a, A::b, A::A, B::B,
+            // want after sorting: A::A, A::a, B::a, B::B, A::b, B::b
+            // so we can later group entries
+            // - A: A
+            // - a: A, B
+            // - B: B
+            // - b: A, B
+            int result = qstricmp_sort(md1->name(),md2->name());
+            if (result==0) // next compare with full scope
+            {
+              result = qstricmp_sort(md1->qualifiedName(),md2->qualifiedName());
+            }
+            return result<0;
           });
     }
   };
@@ -1577,13 +1588,13 @@ static void writeFileIndex(OutputList &ol)
     }
 
     // sort the files by path
-    std::sort(outputFiles.begin(),
+    std::stable_sort(outputFiles.begin(),
               outputFiles.end(),
-              [](const auto &fp1,const auto &fp2) { return qstricmp(fp1.path,fp2.path)<0; });
+              [](const auto &fp1,const auto &fp2) { return qstricmp_sort(fp1.path,fp2.path)<0; });
     // sort the files inside the directory by name
     for (auto &fp : outputFiles)
     {
-      std::sort(fp.files.begin(), fp.files.end(), compareFileDefs);
+      std::stable_sort(fp.files.begin(), fp.files.end(), compareFileDefs);
     }
     // write the results
     for (const auto &fp : outputFiles)
@@ -1791,7 +1802,8 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
       (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
   {
 
-    bool hasChildren = namespaceHasNestedNamespace(nd) ||
+    bool hasNestedNamespace = namespaceHasNestedNamespace(nd);
+    bool hasChildren = hasNestedNamespace ||
       namespaceHasNestedClass(nd,false,ClassDef::Class) ||
       namespaceHasNestedConcept(nd);
     bool isLinkable  = nd->isLinkable();
@@ -1814,7 +1826,7 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
     bool isDir = hasChildren || visibleMembers>0;
     if (isLinkable || isDir)
     {
-      ftv->addContentsItem(hasChildren,nd->localName(),ref,file,QCString(),FALSE,nd->partOfGroups().empty(),nd);
+      ftv->addContentsItem(hasNestedNamespace,nd->localName(),ref,file,QCString(),FALSE,nd->partOfGroups().empty(),nd);
 
       if (addToIndex)
       {
@@ -1830,8 +1842,8 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
       {
         ftv->incContentsDepth();
         writeNamespaceTree(nd->getNamespaces(),ftv,FALSE,addToIndex);
-        writeClassTree(nd->getClasses(),ftv,addToIndex,FALSE,ClassDef::Class);
-        writeConceptList(nd->getConcepts(),ftv,addToIndex);
+        writeClassTree(nd->getClasses(),nullptr,addToIndex,FALSE,ClassDef::Class);
+        writeConceptList(nd->getConcepts(),nullptr,addToIndex);
         writeNamespaceMembers(nd,addToIndex);
         ftv->decContentsDepth();
       }
@@ -2298,12 +2310,12 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   // sort the class lists per letter while ignoring the prefix
   for (auto &[letter,list] : classesByLetter)
   {
-    std::sort(list.begin(), list.end(),
+    std::stable_sort(list.begin(), list.end(),
               [](const auto &c1,const auto &c2)
               {
                 QCString n1 = c1->className();
                 QCString n2 = c2->className();
-                return qstricmp(n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2))<0;
+                return qstricmp_sort(n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2))<0;
               });
   }
 
@@ -3995,7 +4007,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
     size_t numSubItems = 0;
     for (const auto &ml : gd->getMemberLists())
     {
-      if (ml->listType()&MemberListType_documentationLists)
+      if (ml->listType().isDocumentation())
       {
         numSubItems += ml->size();
       }
@@ -4813,7 +4825,7 @@ static void writeIndex(OutputList &ol)
 
   QCString fn = Crawlmap::crawlFileName;
   addHtmlExtensionIfMissing(fn);
-  ol.writeString("<a href=\"" + fn + "\"/>\n");
+  ol.writeString("<a href=\"" + fn + "\"></a>\n");
   Doxygen::indexList->addIndexFile(fn);
 
   endFile(ol);

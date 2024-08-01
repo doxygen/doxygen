@@ -561,7 +561,7 @@ void RTFGenerator::beginRTFDocument()
     uint32_t index = data.index();
     if (array[index] != nullptr)
     {
-      msg("Style '%s' redefines \\s%d.\n", name.c_str(), index);
+      err("Style '%s' redefines \\s%d.\n", name.c_str(), index);
     }
     array[index] = &data;
   }
@@ -1900,7 +1900,7 @@ void RTFGenerator::endMemberList()
 #endif
 }
 
-void RTFGenerator::startDescTable(const QCString &title)
+void RTFGenerator::startDescTable(const QCString &title,const bool hasInits)
 {
   DBG_RTF(m_t << "{\\comment (startDescTable) }\n")
   m_t << "{\\par\n";
@@ -1915,15 +1915,16 @@ void RTFGenerator::startDescTable(const QCString &title)
        "\\trbrdrr\\brdrs\\brdrw10\\brdrcf15 "
        "\\trbrdrh\\brdrs\\brdrw10\\brdrcf15 "
        "\\trbrdrv\\brdrs\\brdrw10\\brdrcf15 \n";
-  int columnPos[2] = { 25, 100 };
-  for (int i=0;i<2;i++)
+  int columnPos2[2] = { 25, 100 };
+  int columnPos3[3] = { 25, 45, 100 };
+  for (int i=0;i<(hasInits?3:2);i++)
   {
     m_t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10\\brdrcf15 "
          "\\clbrdrl\\brdrs\\brdrw10\\brdrcf15 "
          "\\clbrdrb\\brdrs\\brdrw10\\brdrcf15 "
          "\\clbrdrr \\brdrs\\brdrw10\\brdrcf15 "
          "\\cltxlrtb "
-         "\\cellx" << (rtf_pageWidth*columnPos[i]/100) << "\n";
+         "\\cellx" << (rtf_pageWidth*(hasInits?columnPos3[i]:columnPos2[i])/100) << "\n";
   }
   m_t << "\\pard \\widctlpar\\intbl\\adjustright\n";
 }
@@ -1945,12 +1946,27 @@ void RTFGenerator::endDescTableRow()
 void RTFGenerator::startDescTableTitle()
 {
   DBG_RTF(m_t << "{\\comment (startDescTableTitle) }\n")
-  m_t << "{\\qr ";
+  m_t << "{";
+  m_t << rtf_Style["BodyText"].reference();
 }
 
 void RTFGenerator::endDescTableTitle()
 {
   DBG_RTF(m_t << "{\\comment (endDescTableTitle) }\n")
+  m_t << "\\cell }";
+}
+
+void RTFGenerator::startDescTableInit()
+{
+  DBG_RTF(m_t << "{\\comment (startDescTableInit) }"    << endl)
+  m_t << "{";
+  m_t << rtf_Style["BodyText"].reference();
+  m_t << "\\qr ";
+}
+
+void RTFGenerator::endDescTableInit()
+{
+  DBG_RTF(m_t << "{\\comment (endDescTableInit) }"    << endl)
   m_t << "\\cell }";
 }
 
@@ -2398,7 +2414,6 @@ err:
 bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &name)
 {
   static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
-  QCString rtfOutput = Config_getString(RTF_OUTPUT);
 
   Dir d(path.str());
   // store the original directory
@@ -2450,10 +2465,11 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
 
   testRTFOutput(mainRTFName);
 
+  QCString rtfOutputDir = Dir::currentDirPath();
   for (auto &s : removeSet)
   {
     QCString s1(s.c_str());
-    if (s1.startsWith(rtfOutput)) Portable::unlink(s1);
+    if (s1.startsWith(rtfOutputDir)) Portable::unlink(s1);
   }
 
   Dir::setCurrent(oldDir);

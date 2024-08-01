@@ -70,7 +70,8 @@ static const StringUnorderedSet g_plantumlEngine {
   "uml", "bpm", "wire", "dot", "ditaa",
   "salt", "math", "latex", "gantt", "mindmap",
   "wbs", "yaml", "creole", "json", "flow",
-  "board", "git", "hcl", "regex", "ebnf", "files"
+  "board", "git", "hcl", "regex", "ebnf",
+  "files", "chen", "chronology"
 };
 
 //---------------------------------------------------------------------------
@@ -321,6 +322,7 @@ void DocIncOperator::parse()
                    "No previous '\\include' or '\\dontinclude' command for '\\%s' present",
                    typeAsString());
   }
+  bool found = false;
 
   m_includeFileName = parser()->context.includeFileName;
   const char *p = parser()->context.includeFileText.data();
@@ -352,6 +354,7 @@ void DocIncOperator::parse()
       {
         m_line  = il;
         m_text = parser()->context.includeFileText.mid(so,o-so);
+        found = true;
         AUTO_TRACE_ADD("\\line {}",Trace::trunc(m_text));
       }
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
@@ -380,6 +383,7 @@ void DocIncOperator::parse()
         {
           m_line  = il;
           m_text = parser()->context.includeFileText.mid(so,o-so);
+          found = true;
           AUTO_TRACE_ADD("\\skipline {}",Trace::trunc(m_text));
           break;
         }
@@ -409,6 +413,7 @@ void DocIncOperator::parse()
         }
         if (parser()->context.includeFileText.mid(so,o-so).find(m_pattern)!=-1)
         {
+        found = true;
           break;
         }
         o++; // skip new line
@@ -440,6 +445,7 @@ void DocIncOperator::parse()
         {
           m_line  = il;
           m_text = parser()->context.includeFileText.mid(bo,o-bo);
+          found = true;
           AUTO_TRACE_ADD("\\until {}",Trace::trunc(m_text));
           break;
         }
@@ -448,6 +454,11 @@ void DocIncOperator::parse()
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = parser()->context.includeFileShowLineNo;
       break;
+  }
+  if (!found)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+      "referenced pattern '%s' for command '\\%s' not found",qPrint(m_pattern),typeAsString());
   }
 }
 
@@ -538,9 +549,8 @@ void DocSecRefItem::parse()
 
   if (!m_target.isEmpty())
   {
-    SrcLangExt lang = getLanguageFromFileName(m_target);
     const SectionInfo *sec = SectionManager::instance().find(m_target);
-    if (sec==nullptr && lang==SrcLangExt::Markdown) // lookup as markdown file
+    if (sec==nullptr && parser()->context.lang==SrcLangExt::Markdown) // lookup as markdown file
     {
       sec = SectionManager::instance().find(markdownFileNameToId(m_target));
     }
@@ -692,10 +702,9 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   QCString     anchor;
   //printf("DocRef::DocRef(target=%s,context=%s)\n",qPrint(target),qPrint(context));
   ASSERT(!target.isEmpty());
-  SrcLangExt lang = getLanguageFromFileName(target);
   m_relPath = parser->context.relPath;
   const SectionInfo *sec = SectionManager::instance().find(parser->context.prefix+target);
-  if (sec==nullptr && lang==SrcLangExt::Markdown) // lookup as markdown file
+  if (sec==nullptr && getLanguageFromFileName(target)==SrcLangExt::Markdown) // lookup as markdown file
   {
     sec = SectionManager::instance().find(markdownFileNameToId(target));
   }
@@ -731,13 +740,13 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);
     return;
   }
-  else if (resolveLink(context,target,TRUE,&compound,anchor,parser->context.prefix))
+  else if (resolveLink(context,target,true,&compound,anchor,parser->context.prefix))
   {
     bool isFile = compound ?
                  (compound->definitionType()==Definition::TypeFile ||
                   compound->definitionType()==Definition::TypePage ? TRUE : FALSE) :
                  FALSE;
-    m_text = linkToText(compound?compound->getLanguage():SrcLangExt::Unknown,target,isFile);
+    m_text = linkToText(parser->context.lang,target,isFile);
     m_anchor = anchor;
     if (compound && compound->isLinkable()) // ref to compound
     {
@@ -1326,6 +1335,11 @@ void DocHtmlSummary::parse()
     }
   }
   parser()->tokenizer.setStatePara();
+  if (tok==0)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected end of comment while inside"
+           " <summary> tag");
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -1348,6 +1362,11 @@ int DocHtmlDetails::parse()
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
+
+  if (retval==0)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <details> block");
+  }
 
   if (!summary())
   {
@@ -2371,6 +2390,12 @@ int DocHtmlDescList::parse()
     if (retval==RetVal_DescData)
     {
       retval=dd->parse();
+      while (retval==RetVal_DescData)
+      {
+        children().append<DocHtmlDescData>(parser(),thisVariant());
+        dd    = children().get_last<DocHtmlDescData>();
+        retval=dd->parse();
+      }
     }
     else if (retval!=RetVal_DescTitle)
     {
@@ -2606,6 +2631,11 @@ int DocHtmlBlockQuote::parse()
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
+
+  if (retval==0)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <blockquote> block");
+  }
 
   AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
   return (retval==RetVal_EndBlockQuote) ? RetVal_OK : retval;
@@ -4540,9 +4570,18 @@ int DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CMD_IFILE:
       handleIFile(cmdChar,cmdName);
       break;
+    case CMD_SETSCOPE:
+      {
+        parser()->tokenizer.setStateSetScope();
+        (void)parser()->tokenizer.lex();
+        parser()->context.context = parser()->context.token->name;
+        //printf("Found scope='%s'\n",qPrint(parser()->context.context));
+        parser()->tokenizer.setStatePara();
+      }
+      break;
     default:
       // we should not get here!
-      ASSERT(0);
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected command '%s' in paragraph context",qPrint(cmdName));
       break;
   }
   INTERNAL_ASSERT(retval==0 || retval==RetVal_OK || retval==RetVal_SimpleSec ||
@@ -4632,7 +4671,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_CODE:
       if (parser()->context.token->emptyTag) break;
-      if (/*getLanguageFromFileName(parser()->context.fileName)==SrcLangExt::CSharp ||*/ parser()->context.xmlComment)
+      if (parser()->context.xmlComment)
         // for C# source or inside a <summary> or <remark> section we
         // treat <code> as an XML tag (so similar to @code)
       {
@@ -4687,10 +4726,24 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       }
       break;
     case HTML_DT:
-      retval = RetVal_DescTitle;
+      if (insideDL(thisVariant()))
+      {
+        retval = RetVal_DescTitle;
+      }
+      else
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <dt> found");
+      }
       break;
     case HTML_DD:
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <dd> found");
+      if (insideDL(thisVariant()))
+      {
+        retval = RetVal_DescData;
+      }
+      else
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <dd> found");
+      }
       break;
     case HTML_TABLE:
       if (!parser()->context.token->emptyTag)
@@ -5060,10 +5113,24 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       }
       break;
     case HTML_DETAILS:
-      retval=RetVal_EndHtmlDetails;
+      if (!insideDetails(thisVariant()))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </details> tag without matching <details>");
+      }
+      else
+      {
+        retval=RetVal_EndHtmlDetails;
+      }
       break;
     case HTML_BLOCKQUOTE:
-      retval=RetVal_EndBlockQuote;
+      if (!insideBlockQuote(thisVariant()))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </blockquote> tag without matching <blockquote>");
+      }
+      else
+      {
+        retval=RetVal_EndBlockQuote;
+      }
       break;
     case HTML_BOLD:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Bold,tagName);
@@ -5660,7 +5727,7 @@ int DocSection::parse()
     else if (retval==RetVal_Subsubsection && m_level<=2)
     {
       if ((m_level <= 1) &&
-          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+          !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,
                        parser()->tokenizer.getLineNr(),
@@ -5680,7 +5747,7 @@ int DocSection::parse()
     else if (retval==RetVal_Paragraph && m_level<=3)
     {
       if ((m_level <= 2) &&
-          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+          !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
                        "Unexpected paragraph command found inside %s!",
@@ -5699,7 +5766,7 @@ int DocSection::parse()
     else if (retval==RetVal_SubParagraph && m_level<=4)
     {
       if ((m_level <= 3) &&
-          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+          !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
                        "Unexpected subparagraph command found inside %s!",
@@ -5719,7 +5786,7 @@ int DocSection::parse()
     else if (retval==RetVal_SubSubParagraph && m_level<=5)
     {
       if ((m_level <= 4) &&
-          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+          !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
                        "Unexpected subsubparagraph command found inside %s!",

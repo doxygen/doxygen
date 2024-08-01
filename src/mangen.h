@@ -160,6 +160,8 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endEmphasis() override { m_t << "\\fP"; m_firstCol=FALSE; }
     void startBold() override { m_t << "\\fB"; m_firstCol=FALSE; }
     void endBold() override { m_t << "\\fP"; m_firstCol=FALSE; }
+    void startBoldEmphasis() { m_t << "\\f(BI"; m_firstCol=FALSE; }
+    void endBoldEmphasis() { m_t << "\\fP"; m_firstCol=FALSE; }
     void lineBreak(const QCString &) override { m_t << "\n.br\n"; }
     void writeChar(char c) override;
     void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool) override;
@@ -168,6 +170,7 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endDoxyAnchor(const QCString &,const QCString &) override {}
     void addLabel(const QCString &,const QCString &) override;
     void writeLatexSpacing() override {}
+
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name) override;
     void startCenter() override {}
@@ -205,12 +208,14 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endContents() override {}
     void writeNonBreakableSpace(int n) override { for (int i=0;i<n;i++) m_t << " "; }
 
-    void startDescTable(const QCString &t) override;
+    void startDescTable(const QCString &title,const bool hasInits) override;
     void endDescTable() override;
+    void startDescTableTitle() override { startItemListItem(); startBoldEmphasis(); endItemListItem(); }
+    void endDescTableTitle() override { endBoldEmphasis(); }
     void startDescTableRow() override {}
     void endDescTableRow() override {}
-    void startDescTableTitle() override { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
-    void endDescTableTitle() override { endEmphasis(); endBold(); }
+    void startDescTableInit() override {};
+    void endDescTableInit() override {};
     void startDescTableData() override { m_t << "\n"; m_firstCol=TRUE; }
     void endDescTableData() override {}
 

@@ -288,6 +288,15 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
   if (m_impl->isSymbol) addToMap(m_impl->name,m_impl->def);
 }
 
+DefinitionImpl &DefinitionImpl::operator=(const DefinitionImpl &other)
+{
+  if (this!=&other)
+  {
+    m_impl = std::make_unique<DefinitionImpl::IMPL>(*other.m_impl);
+  }
+  return *this;
+}
+
 DefinitionImpl::~DefinitionImpl()
 {
   if (m_impl->isSymbol)
@@ -1123,7 +1132,7 @@ static inline MemberVector refMapToVector(const std::unordered_map<std::string,M
                  { return item.second; }     // extract value to add from map Key,Value pair
                 );
   // and sort it
-  std::sort(result.begin(),result.end(),
+  std::stable_sort(result.begin(),result.end(),
               [](const auto &m1,const auto &m2) { return genericCompareMembers(m1,m2)<0; });
   return result;
 }
@@ -1385,7 +1394,7 @@ void DefinitionImpl::mergeRefItems(Definition *d)
                                 otherXrefList.begin(),otherXrefList.end());
 
   // sort results on itemId
-  std::sort(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
+  std::stable_sort(m_impl->xrefListItems.begin(),m_impl->xrefListItems.end(),
             [](RefItem *left,RefItem *right)
             { return  left->id() <right->id() ||
                      (left->id()==right->id() &&
@@ -1561,7 +1570,9 @@ int DefinitionImpl::docLine() const
 
 QCString DefinitionImpl::docFile() const
 {
-  return m_impl->details ? m_impl->details->file : m_impl->brief ? m_impl->brief->file : QCString("<"+m_impl->name+">");
+  if (m_impl->details && !m_impl->details->file.isEmpty()) return m_impl->details->file;
+  else if (m_impl->brief && !m_impl->brief->file.isEmpty()) return m_impl->brief->file;
+  else  return "<" + m_impl->name + ">";
 }
 
 //----------------------------------------------------------------------------
@@ -1643,7 +1654,7 @@ int DefinitionImpl::briefLine() const
 
 QCString DefinitionImpl::briefFile() const
 {
-  return m_impl->brief ? m_impl->brief->file : QCString("<"+m_impl->name+">");
+  return m_impl->brief && !m_impl->brief->file.isEmpty() ? m_impl->brief->file : QCString("<"+m_impl->name+">");
 }
 
 //----------------------
@@ -1660,7 +1671,7 @@ int DefinitionImpl::inbodyLine() const
 
 QCString DefinitionImpl::inbodyFile() const
 {
-  return m_impl->inbodyDocs ? m_impl->inbodyDocs->file : QCString("<"+m_impl->name+">");
+  return m_impl->inbodyDocs && !m_impl->inbodyDocs->file.isEmpty() ? m_impl->inbodyDocs->file : QCString("<"+m_impl->name+">");
 }
 
 
@@ -1922,6 +1933,16 @@ void DefinitionAliasImpl::init()
 {
   //printf("%s::addToMap(%s)\n",qPrint(name()),qPrint(alias->name()));
   addToMap(m_symbolName,m_def);
+  if (m_scope==nullptr)
+  {
+    m_qualifiedName = m_def->localName();
+  }
+  else
+  {
+    m_qualifiedName = m_scope->qualifiedName()+
+      getLanguageSpecificSeparator(m_scope->getLanguage())+
+      m_def->localName();
+  }
 }
 
 void DefinitionAliasImpl::deinit()
@@ -1929,34 +1950,13 @@ void DefinitionAliasImpl::deinit()
   removeFromMap(m_symbolName,m_def);
 }
 
-void DefinitionAliasImpl::updateQualifiedName() const
-{
-  std::lock_guard<std::recursive_mutex> lock(g_qualifiedNameMutex);
-  if (m_qualifiedName.isEmpty())
-  {
-    //printf("start %s::qualifiedName() localName=%s\n",qPrint(name()),qPrint(m_impl->localName));
-    if (m_scope==nullptr)
-    {
-      m_qualifiedName = m_def->localName();
-    }
-    else
-    {
-      m_qualifiedName = m_scope->qualifiedName()+
-        getLanguageSpecificSeparator(m_scope->getLanguage())+
-        m_def->localName();
-    }
-  }
-}
-
 QCString DefinitionAliasImpl::qualifiedName() const
 {
-  updateQualifiedName();
   return m_qualifiedName;
 }
 
 const QCString &DefinitionAliasImpl::name() const
 {
-  updateQualifiedName();
   return m_qualifiedName;
 }
 

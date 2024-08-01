@@ -384,12 +384,10 @@ EntryType guessSection(const QCString &name)
 QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
                         const Definition **typedefContext)
 {
-  //printf("<<resolveTypeDef(%s,%s)\n",
-  //          context ? qPrint(context->name()) : "<none>",qPrint(qualifiedName));
+  AUTO_TRACE("context='{}' qualifiedName='{}'",context?context->name():"",qualifiedName);
   QCString result;
   if (qualifiedName.isEmpty())
   {
-    //printf("  qualified name empty!\n");
     return result;
   }
 
@@ -399,7 +397,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   // see if the qualified name has a scope part
   if (qualifiedName.find('<')!=-1)
   {
-    //printf("  templates cannot be typedefs!\n");
+    AUTO_TRACE_EXIT("template");
     return result;
   }
   int scopeIndex = qualifiedName.findRev("::");
@@ -409,8 +407,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     resName=qualifiedName.right(qualifiedName.length()-scopeIndex-2);
     if (resName.isEmpty())
     {
-      // qualifiedName was of form A:: !
-      //printf("  qualified name of form A::!\n");
+      AUTO_TRACE_EXIT("invalid format");
       return result;
     }
   }
@@ -438,7 +435,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
         ps=is+l;
       }
     }
-    //printf("resScope=%s\n",resScope? qPrint(resScope->name()) : "<none>");
+    AUTO_TRACE_ADD("resScope='{}' resName='{}'",resScope?resScope->name():"",resName);
 
     // step 2: get the member
     if (resScope) // no scope or scope found in the current context
@@ -446,6 +443,8 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
       //printf("scope found: %s, look for typedef %s\n",
       //     qPrint(resScope->qualifiedName()),qPrint(resName));
       MemberNameLinkedMap *mnd=nullptr;
+      bool searchRelated=false;
+      bool mustBeRelated=false;
       if (resScope->definitionType()==Definition::TypeClass)
       {
         mnd=Doxygen::memberNameLinkedMap;
@@ -453,25 +452,40 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
       else
       {
         mnd=Doxygen::functionNameLinkedMap;
+        searchRelated=true;
       }
       MemberName *mn=mnd->find(resName);
+      if (mn==0 && searchRelated)
+      {
+        mn=Doxygen::memberNameLinkedMap->find(resName);
+        mustBeRelated=true;
+      }
       if (mn)
       {
         int minDist=-1;
         for (const auto &tmd_p : *mn)
         {
           const MemberDef *tmd = tmd_p.get();
+          AUTO_TRACE_ADD("found candidate member '{}' isTypeDef={}' isRelated={} mustBeRelated={}",
+              tmd->name(),tmd->isTypedef(),tmd->isRelated(),mustBeRelated);
           //printf("Found member %s resScope=%s outerScope=%s mContext=%p\n",
           //    qPrint(tmd->name()),qPrint( resScope->name()),
           //    qPrint(tmd->getOuterScope()->name()), mContext);
-          if (tmd->isTypedef() /*&& tmd->getOuterScope()==resScope*/)
+          if (tmd->isTypedef())
           {
-            SymbolResolver resolver;
-            int dist=resolver.isAccessibleFrom(resScope,tmd);
-            if (dist!=-1 && (md==nullptr || dist<minDist))
+            if (resScope==Doxygen::globalScope && tmd->isRelated() && mustBeRelated)
             {
               md = tmd;
-              minDist = dist;
+            }
+            else
+            {
+              SymbolResolver resolver;
+              int dist=resolver.isAccessibleFrom(resScope,tmd);
+              if (dist!=-1 && (md==nullptr || dist<minDist))
+              {
+                md = tmd;
+                minDist = dist;
+              }
             }
           }
         }
@@ -480,6 +494,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     mContext=mContext->getOuterScope();
   }
 
+  AUTO_TRACE_ADD("md='{}'",md?md->name():"");
   // step 3: get the member's type
   if (md)
   {
@@ -503,8 +518,8 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
     //printf(">>resolveTypeDef: Typedef '%s' not found in scope '%s'!\n",
     //    qPrint(qualifiedName),context ? qPrint(context->name()) : "<global>");
   }
+  AUTO_TRACE_EXIT("result='{}'",result);
   return result;
-
 }
 
 //-------------------------------------------------------------------------
@@ -596,7 +611,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   for (;i<l;i++)
   {
     char c=src[i];
-    char nc=i<l-1 ? src[i+1] : ' ';
+    char nc=i+1<l ? src[i+1] : ' ';
 
     auto searchForKeyword = [&](const char *kw,size_t &matchLen,size_t totalLen)
     {
@@ -650,7 +665,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       case '<': // current char is a <
         *dst++=c;
-        if (i<l-1 &&
+        if (i+1<l &&
             (isId(nc)) && // next char is an id char
             (osp<8) // string in front is not "operator"
            )
@@ -667,7 +682,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
           *dst++=' '; // add extra space in front
         }
         *dst++=c;
-        if (i<l-1 && (nc=='-' || nc=='&')) // '>-' -> '> -'
+        if (i+1<l && (nc=='-' || nc=='&')) // '>-' -> '> -'
         {
           *dst++=' '; // add extra space after
         }
@@ -675,9 +690,9 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case ',': // current char is a ,
         *dst++=c;
         if (i>0 && !isspace(static_cast<uint8_t>(pc)) &&
-            ((i<l-1 && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
-             (i<l-2 && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
-             (i<l-3 && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
+            ((i+1<l && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
+             (i+2<l && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
+             (i+3<l && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
             )
            )
         {
@@ -687,14 +702,14 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '^':  // CLI 'Type^name' -> 'Type^ name'
       case '%':  // CLI 'Type%name' -> 'Type% name'
         *dst++=c;
-        if (cliSupport && i<l-1 && (isId(nc) || nc=='-'))
+        if (cliSupport && i+1<l && (isId(nc) || nc=='-'))
         {
           *dst++=' '; // add extra space after
         }
         break;
       case ')':  // current char is a )  -> ')name' -> ') name'
         *dst++=c;
-        if (i<l-1 && (isId(nc) || nc=='-'))
+        if (i+1<l && (isId(nc) || nc=='-'))
         {
           *dst++=' '; // add extra space after
         }
@@ -731,7 +746,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         // else fallthrough
       case '@':  // '@name' -> ' @name'
       case '\'': // ''name' -> '' name'
-        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace(static_cast<uint8_t>(pc)) &&
+        if (i>0 && i+1<l && pc!='=' && pc!=':' && !isspace(static_cast<uint8_t>(pc)) &&
             isId(nc) && osp<8) // ")id" -> ") id"
         {
           *dst++=' ';
@@ -782,7 +797,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         auto correctKeywordAllowedInsideScope = [&](char cc,size_t &matchLen,size_t totalLen) {
           if (c==cc && matchLen==totalLen)
           {
-            if ((i<l-2 && src[i+1] == ':' && src[i+2] == ':') ||                     // keyword::
+            if ((i+2<l && src[i+1] == ':' && src[i+2] == ':') ||                     // keyword::
                 ((i>matchLen && src[i-matchLen] == ':' && src[i-matchLen-1] == ':')) // ::keyword
                ) matchLen = 0;
           };
@@ -793,7 +808,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
 
         auto correctKeywordNotPartOfScope = [&](char cc,size_t &matchLen,size_t totalLen)
         {
-          if (c==cc && matchLen==totalLen && i<l-1 && // found matching keyword
+          if (c==cc && matchLen==totalLen && i+1<l && // found matching keyword
               !(isId(nc) || nc==')' || nc==',' || qisspace(nc))
              ) // prevent keyword ::A from being converted to keyword::A
           {
@@ -868,7 +883,7 @@ bool rightScopeMatch(const QCString &scope, const QCString &name)
   size_t nl=name.length();
   return (name==scope || // equal
           (scope.right(nl)==name && // substring
-           sl-nl>1 && scope.at(sl-nl-1)==':' && scope.at(sl-nl-2)==':' // scope
+           sl>1+nl && scope.at(sl-nl-1)==':' && scope.at(sl-nl-2)==':' // scope
           )
          );
 }
@@ -1561,6 +1576,8 @@ static QCString getCanonicalTypeForIdentifier(
   if (tSpec && !tSpec->isEmpty())
     templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec,lang));
 
+  AUTO_TRACE("d='{}' fs='{}' word='{}' templSpec='{}'",d?d->name():"",fs?fs->name():"",word,templSpec);
+
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
     symName=tmpName; // name without scope
@@ -1569,10 +1586,6 @@ static QCString getCanonicalTypeForIdentifier(
   {
     symName=word;
   }
-  //printf("getCanonicalTypeForIdentifier(%s d=%s fs=%s ,[%s->%s]) start\n",
-  //    qPrint(word),
-  //    d ? qPrint(d->name()) : "<null>", fs ? qPrint(fs->name()) : "<null>",
-  //    tSpec ? qPrint(tSpec) : "<none>", qPrint(templSpec));
 
   // lookup class / class template instance
   SymbolResolver resolver(fs);
@@ -1592,6 +1605,8 @@ static QCString getCanonicalTypeForIdentifier(
   }
   if (cd && cd->isUsedOnly()) cd=nullptr; // ignore types introduced by usage relations
 
+  AUTO_TRACE_ADD("cd='{}' mType='{}' ts='{}' resolvedType='{}'",
+      cd?cd->name():"",mType?mType->name():"",ts,resolvedType);
   //printf("cd=%p mtype=%p\n",cd,mType);
   //printf("  getCanonicalTypeForIdentifier: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    qPrint(symName),
@@ -1684,7 +1699,7 @@ static QCString getCanonicalTypeForIdentifier(
   else // fallback
   {
     resolvedType = lang==SrcLangExt::Java ? word : resolveTypeDef(d,word);
-    //printf("typedef [%s]->[%s]\n",qPrint(word),qPrint(resolvedType));
+    AUTO_TRACE_ADD("fallback resolvedType='{}'",resolvedType);
     if (resolvedType.isEmpty()) // not known as a typedef either
     {
       result = word;
@@ -1694,12 +1709,13 @@ static QCString getCanonicalTypeForIdentifier(
       result = resolvedType;
     }
   }
-  //printf("getCanonicalTypeForIdentifier [%s]->[%s]\n",qPrint(word),qPrint(result));
+  AUTO_TRACE_EXIT("result='{}'",result);
   return result;
 }
 
 static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang)
 {
+  AUTO_TRACE("d={} fs={} type='{}'",d?d->name():"",fs?fs->name():"",type);
   type = type.stripWhiteSpace();
 
   // strip const and volatile keywords that are not relevant for the type
@@ -1768,7 +1784,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
     pp=p;
   }
   canType += type.right(type.length()-pp);
-  //printf("extractCanonicalType = '%s'->'%s'\n",qPrint(type),qPrint(canType));
+  AUTO_TRACE_EXIT("canType='{}'",canType);
 
   return removeRedundantWhiteSpace(canType);
 }
@@ -1811,6 +1827,7 @@ static bool matchCanonicalTypes(
     const Definition *dstScope,const FileDef *dstFileScope,const QCString &dstType,
     SrcLangExt lang)
 {
+  AUTO_TRACE("srcType='{}' dstType='{}'",srcType,dstType);
   if (srcType==dstType) return true;
 
   // check if the types are function pointers
@@ -1888,6 +1905,7 @@ static bool matchArgument2(
                           lang))
   {
     MATCH
+    AUTO_TRACE_EXIT("true");
     return TRUE;
   }
   else
@@ -1895,6 +1913,7 @@ static bool matchArgument2(
     //printf("   Canonical types do not match [%s]<->[%s]\n",
     //    qPrint(srcA->canType),qPrint(dstA->canType));
     NOMATCH
+    AUTO_TRACE_EXIT("false");
     return FALSE;
   }
 }
@@ -1997,8 +2016,8 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 // pre:  the types of the arguments in the list should match.
 void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwrite)
 {
-  //printf("mergeArguments '%s', '%s'\n",
-  //    qPrint(argListToString(srcAl)),qPrint(argListToString(dstAl)));
+  AUTO_TRACE("srcAl='{}',dstAl='{}',forceNameOverwrite={}",
+             qPrint(argListToString(srcAl)),qPrint(argListToString(dstAl)),forceNameOverwrite);
 
   if (srcAl.size()!=dstAl.size())
   {
@@ -2012,6 +2031,9 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
     Argument &srcA = *srcIt;
     Argument &dstA = *dstIt;
 
+    AUTO_TRACE_ADD("before merge: src=[type='{}',name='{}',def='{}'] dst=[type='{}',name='{}',def='{}']",
+        srcA.type,srcA.name,srcA.defval,
+        dstA.type,dstA.name,dstA.defval);
     if (srcA.defval.isEmpty() && !dstA.defval.isEmpty())
     {
       //printf("Defval changing '%s'->'%s'\n",qPrint(srcA.defval),qPrint(dstA.defval));
@@ -2128,6 +2150,9 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
     //  qPrint(dstA.type), qPrint(dstA.name));
     ++srcIt;
     ++dstIt;
+    AUTO_TRACE_ADD("after merge: src=[type='{}',name='{}',def='{}'] dst=[type='{}',name='{}',def='{}']",
+        srcA.type,srcA.name,srcA.defval,
+        dstA.type,dstA.name,dstA.defval);
   }
 }
 
@@ -3053,6 +3078,7 @@ QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
       result=substitute(result,"::",sep);
     }
   }
+  //printf("linkToText(%s,lang=%d)=%s\n",qPrint(link),lang,qPrint(result));
   return result;
 }
 
@@ -3164,55 +3190,6 @@ bool resolveLink(/* in */ const QCString &scName,
   }
 }
 
-
-//----------------------------------------------------------------------
-// General function that generates the HTML code for a reference to some
-// file, class or member from text 'lr' within the context of class 'clName'.
-// This link has the text 'lt' (if not 0), otherwise 'lr' is used as a
-// basis for the link's text.
-// returns TRUE if a link could be generated.
-
-bool generateLink(OutputList &ol,const QCString &clName,
-    const QCString &lr,bool inSeeBlock,const QCString &lt)
-{
-  //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
-  const Definition *compound = nullptr;
-  //PageDef *pageDef=nullptr;
-  QCString anchor,linkText=linkToText(SrcLangExt::Unknown,lt,FALSE);
-  //printf("generateLink linkText=%s\n",qPrint(linkText));
-  if (resolveLink(clName,lr,inSeeBlock,&compound,anchor))
-  {
-    if (compound) // link to compound
-    {
-      if (lt.isEmpty() && anchor.isEmpty() &&                      /* compound link */
-          compound->definitionType()==Definition::TypeGroup /* is group */
-         )
-      {
-        linkText=(toGroupDef(compound))->groupTitle(); // use group's title as link
-      }
-      else if (compound->definitionType()==Definition::TypeFile)
-      {
-        linkText=linkToText(compound->getLanguage(),lt,TRUE);
-      }
-      ol.writeObjectLink(compound->getReference(),
-          compound->getOutputFileBase(),anchor,linkText);
-      if (!compound->isReference())
-      {
-        writePageRef(ol,compound->getOutputFileBase(),anchor);
-      }
-    }
-    else
-    {
-      err("%s:%d: Internal error: resolveLink successful but no compound found!\n",__FILE__,__LINE__);
-    }
-    return TRUE;
-  }
-  else // link could not be found
-  {
-    ol.docify(linkText);
-    return FALSE;
-  }
-}
 
 void generateFileRef(OutputList &ol,const QCString &name,const QCString &text)
 {
@@ -4669,8 +4646,7 @@ QCString substituteTemplateArgumentsInString(
     const ArgumentList &formalArgs,
     const ArgumentList *actualArgs)
 {
-  //printf("> substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
-  //    qPrint(nm),qPrint(argListToString(formalArgs)),actualArgs ? qPrint(argListToString(*actualArgs)): "");
+  AUTO_TRACE("name={} formalArgs={} actualArgs={}",nm,argListToString(formalArgs),actualArgs ? argListToString(*actualArgs) : QCString());
   if (formalArgs.empty()) return nm;
   QCString result;
 
@@ -4734,21 +4710,33 @@ QCString substituteTemplateArgumentsInString(
       {
         if (formArg.name==n && actualArgs && actIt!=actualArgs->end() && !actArg.type.isEmpty()) // base class is a template argument
         {
-          static constexpr auto hasRecursion = [](const QCString &nameArg,const QCString &subst) -> bool
+          static constexpr auto hasRecursion = [](const QCString &prefix,const QCString &nameArg,const QCString &subst) -> bool
           {
             int ii=0;
             int pp=0;
+
+            ii = subst.find('<');
+            //printf("prefix='%s' subst='%s'\n",qPrint(prefix.mid(prefix.length()-ii-2,ii+1)),qPrint(subst.left(ii+1)));
+            if (ii!=-1 && static_cast<int>(prefix.length())>=ii+2 && prefix.mid(prefix.length()-ii-2,ii+1)==subst.left(ii+1))
+            {
+              return true; // don't replace 'A< ' with 'A< A<...', see issue #10951
+            }
+
             while ((ii=subst.find(nameArg,pp))!=-1)
             {
               bool beforeNonWord = ii==0 || !isId(subst.at(ii-1));
               bool afterNonWord  = subst.length()==ii+nameArg.length() || !isId(subst.at(ii+nameArg.length()));
-              if (beforeNonWord && afterNonWord) return true; // if nameArg=='A' then subst=='A::Z' or 'S<A>' or 'Z::A' should return true, but 'AA::ZZ' or 'BAH' should not match
+              if (beforeNonWord && afterNonWord)
+              {
+                return true; // if nameArg=='A' then subst=='A::Z' or 'S<A>' or 'Z::A' should return true, but 'AA::ZZ' or 'BAH' should not match
+              }
               pp=ii+static_cast<int>(nameArg.length());
             }
             return false;
           };
           // replace formal argument with the actual argument of the instance
-          if (!hasRecursion(n,actArg.type))
+          AUTO_TRACE_ADD("result={} n={} type={} hasRecursion={}",result,n,actArg.type,hasRecursion(result,n,actArg.type));
+          if (!hasRecursion(result,n,actArg.type))
             // the scope guard is to prevent recursive lockup for
             // template<class A> class C : public<A::T>,
             // where A::T would become A::T::T here,
@@ -4803,7 +4791,7 @@ QCString substituteTemplateArgumentsInString(
   }
   result+=name.substr(p);
   result=result.simplifyWhiteSpace();
-  //printf("< substituteTemplateArgumentsInString result=%s\n", qPrint(result));
+  AUTO_TRACE_EXIT("result={}",result);
   return result.stripWhiteSpace();
 }
 
@@ -5021,6 +5009,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       pd->setNestingLevel(0);
       pd->setPageScope(nullptr);
       pd->setTitle(title);
+      pd->setReference(QCString());
     }
     else // newPage
     {
@@ -5037,7 +5026,6 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       pd->setReference(tagInfo->tagName);
       pd->setFileName(tagInfo->fileName);
     }
-
 
     if (gd) gd->addPage(pd);
 
@@ -6280,18 +6268,33 @@ QCString stripIndentation(const QCString &s)
         indent++;
       }
     }
+    else if (c=='\\' && qstrncmp(p,"ilinebr ",8)==0)
+      // we also need to remove the indentation after a \ilinebr command at the end of a line
+    {
+      result << "\\ilinebr ";
+      p+=8;
+      int skipAmount=0;
+      for (int j=0;j<minIndent;j++) if (*(p+j)==' ') skipAmount++; // test to see if we have the indent
+      if (skipAmount==minIndent)
+      {
+        p+=skipAmount; // remove the indent
+      }
+    }
     else // copy anything until the end of the line
     {
       result << c;
     }
   }
 
+  //printf("stripIndentation: result=\n%s\n------\n",qPrint(result.str()));
+
   return result.str();
 }
 
 // strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)
-void stripIndentation(QCString &doc,const int indentationLevel)
+void stripIndentationVerbatim(QCString &doc,const int indentationLevel)
 {
+  //printf("stripIndentationVerbatim(level=%d):\n%s\n------\n",indentationLevel,qPrint(doc));
   if (indentationLevel <= 0 || doc.isEmpty()) return; // nothing to strip
 
   // by stripping content the string will only become shorter so we write the results
@@ -6336,6 +6339,7 @@ void stripIndentation(QCString &doc,const int indentationLevel)
     }
   }
   doc.resize(static_cast<uint32_t>(dst-doc.data()));
+  //printf("stripIndentationVerbatim: result=\n%s\n------\n",qPrint(doc));
 }
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
@@ -6481,177 +6485,56 @@ QCString extractDirection(QCString &docs)
 void convertProtectionLevel(
                    MemberListType inListType,
                    Protection inProt,
-                   int *outListType1,
-                   int *outListType2
+                   MemberListType *outListType1,
+                   MemberListType *outListType2
                   )
 {
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+
   // default representing 1-1 mapping
   *outListType1=inListType;
-  *outListType2=-1;
+  *outListType2=MemberListType::Invalid();
+
   if (inProt==Protection::Public)
   {
-    switch (inListType) // in the private section of the derived class,
-                        // the private section of the base class should not
-                        // be visible
+    if (inListType.isPrivate())
     {
-      case MemberListType_priMethods:
-      case MemberListType_priStaticMethods:
-      case MemberListType_priSlots:
-      case MemberListType_priAttribs:
-      case MemberListType_priStaticAttribs:
-      case MemberListType_priTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-      default:
-        break;
+      *outListType1=MemberListType::Invalid();
     }
   }
-  else if (inProt==Protection::Protected) // Protected inheritance
+  else if (inProt==Protection::Protected)
   {
-    switch (inListType) // in the protected section of the derived class,
-                        // both the public and protected members are shown
-                        // as protected
+    if (inListType.isPrivate() || inListType.isPublic())
     {
-      case MemberListType_pubMethods:
-      case MemberListType_pubStaticMethods:
-      case MemberListType_pubSlots:
-      case MemberListType_pubAttribs:
-      case MemberListType_pubStaticAttribs:
-      case MemberListType_pubTypes:
-      case MemberListType_priMethods:
-      case MemberListType_priStaticMethods:
-      case MemberListType_priSlots:
-      case MemberListType_priAttribs:
-      case MemberListType_priStaticAttribs:
-      case MemberListType_priTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-
-      case MemberListType_proMethods:
-        *outListType2=MemberListType_pubMethods;
-        break;
-      case MemberListType_proStaticMethods:
-        *outListType2=MemberListType_pubStaticMethods;
-        break;
-      case MemberListType_proSlots:
-        *outListType2=MemberListType_pubSlots;
-        break;
-      case MemberListType_proAttribs:
-        *outListType2=MemberListType_pubAttribs;
-        break;
-      case MemberListType_proStaticAttribs:
-        *outListType2=MemberListType_pubStaticAttribs;
-        break;
-      case MemberListType_proTypes:
-        *outListType2=MemberListType_pubTypes;
-        break;
-      default:
-        break;
+      *outListType1=MemberListType::Invalid();
+    }
+    else if (inListType.isProtected())
+    {
+      *outListType2=inListType.toPublic();
     }
   }
   else if (inProt==Protection::Private)
   {
-    switch (inListType) // in the private section of the derived class,
-                        // both the public and protected members are shown
-                        // as private
+    if (inListType.isPublic() || inListType.isProtected())
     {
-      case MemberListType_pubMethods:
-      case MemberListType_pubStaticMethods:
-      case MemberListType_pubSlots:
-      case MemberListType_pubAttribs:
-      case MemberListType_pubStaticAttribs:
-      case MemberListType_pubTypes:
-      case MemberListType_proMethods:
-      case MemberListType_proStaticMethods:
-      case MemberListType_proSlots:
-      case MemberListType_proAttribs:
-      case MemberListType_proStaticAttribs:
-      case MemberListType_proTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-
-      case MemberListType_priMethods:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubMethods;
-          *outListType2=MemberListType_proMethods;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priStaticMethods:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubStaticMethods;
-          *outListType2=MemberListType_proStaticMethods;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priSlots:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubSlots;
-          *outListType2=MemberListType_proSlots;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priAttribs:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubAttribs;
-          *outListType2=MemberListType_proAttribs;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priStaticAttribs:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubStaticAttribs;
-          *outListType2=MemberListType_proStaticAttribs;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priTypes:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubTypes;
-          *outListType2=MemberListType_proTypes;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      default:
-        break;
+      *outListType1=MemberListType::Invalid();
+    }
+    else if (inListType.isPrivate())
+    {
+      if (extractPrivate)
+      {
+        *outListType1=inListType.toPublic();
+        *outListType2=inListType.toProtected();
+      }
+      else
+      {
+        *outListType1=MemberListType::Invalid();
+      }
     }
   }
-  //printf("convertProtectionLevel(type=%d prot=%d): %d,%d\n",
-  //    inListType,inProt,*outListType1,*outListType2);
+
+  //printf("convertProtectionLevel(type=%s prot=%d): %s,%s\n",
+  //    qPrint(inListType.to_string()),inProt,qPrint(outListType1->to_string()),qPrint(outListType2->to_string()));
 }
 
 bool mainPageHasTitle()
@@ -7101,6 +6984,7 @@ QCString detab(const QCString &s,size_t &refIndent)
   constexpr auto doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
   const int maxIndent=1000000; // value representing infinity
   int minIndent=maxIndent;
+  bool skip = false;
   while (i<size)
   {
     char c = data[i++];
@@ -7112,6 +6996,29 @@ QCString detab(const QCString &s,size_t &refIndent)
           //printf("expand at %d stop=%d\n",col,stop);
           col+=stop;
           while (stop--) out.addChar(' ');
+        }
+        break;
+      case '\\':
+        if (data[i] == '\\') // escaped command -> ignore
+        {
+          out.addChar(c);
+          out.addChar(data[i++]);
+          col+=2;
+        }
+        else if (i+5<size && qstrncmp(&data[i],"iskip",5)==0) // \iskip command
+        {
+          i+=5;
+          skip = true;
+        }
+        else if (i+8<size && qstrncmp(&data[i],"endiskip",8)==0) // \endiskip command
+        {
+          i+=8;
+          skip = false;
+        }
+        else // some other command
+        {
+          out.addChar(c);
+          col++;
         }
         break;
       case '\n': // reset column counter
@@ -7147,12 +7054,13 @@ QCString detab(const QCString &s,size_t &refIndent)
         {
           out.addChar(c);
         }
-        if (col<minIndent) minIndent=col;
+        if (!skip && col<minIndent) minIndent=col;
         col++;
     }
   }
   if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
   out.addChar(0);
+  //printf("detab(\n%s\n)=[\n%s\n]\n",qPrint(s),qPrint(out.get()));
   return out.get();
 }
 
@@ -7175,14 +7083,23 @@ int computeQualifiedIndex(const QCString &name)
   int lastSepPos = -1;
   const char *p = name.data();
   int i=l-2;
+  int sharpCount=0;
   // --- begin optimized version of ts=name.findRev(">::");
   int ts = -1;
   while (i>=0)
   {
-    if (p[i]=='>' && p[i+1]==':' && p[i+2]==':')
+    if (p[i]=='>')
     {
-      ts=i;
-      break;
+      if (sharpCount==0 && p[i+1]==':' && p[i+2]==':')
+      {
+        ts=i;
+        break;
+      }
+      sharpCount++;
+    }
+    else if (p[i]=='<')
+    {
+      sharpCount--;
     }
     i--;
   }
@@ -7203,6 +7120,9 @@ void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2)
   if (Config_getBool(CALLER_GRAPH)!=md1->hasCallerGraph()) md2->overrideCallerGraph(md1->hasCallerGraph());
   if (Config_getBool(CALL_GRAPH)  !=md2->hasCallGraph())   md1->overrideCallGraph( md2->hasCallGraph());
   if (Config_getBool(CALLER_GRAPH)!=md2->hasCallerGraph()) md1->overrideCallerGraph(md2->hasCallerGraph());
+
+  if (Config_getBool(SHOW_ENUM_VALUES)  !=md1->hasEnumValues())   md2->overrideEnumValues(md1->hasEnumValues());
+  if (Config_getBool(SHOW_ENUM_VALUES)  !=md2->hasEnumValues())   md1->overrideEnumValues( md2->hasEnumValues());
 
   if (Config_getBool(REFERENCED_BY_RELATION)!=md1->hasReferencedByRelation()) md2->overrideReferencedByRelation(md1->hasReferencedByRelation());
   if (Config_getBool(REFERENCES_RELATION)   !=md1->hasReferencesRelation())   md2->overrideReferencesRelation(md1->hasReferencesRelation());

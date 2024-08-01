@@ -487,8 +487,8 @@ void createJavaScriptSearchIndex()
                 symList.end(),
                 [](const auto &t1,const auto &t2)
                 {
-                  int    eq =    qstricmp(t1.word,t2.word);             // search term first
-                  return eq==0 ? qstricmp(t1.title,t2.title)<0 : eq<0;  // then full title
+                  int    eq =    qstricmp_sort(t1.word,t2.word);             // search term first
+                  return eq==0 ? qstricmp_sort(t1.title,t2.title)<0 : eq<0;  // then full title
                 });
     }
   }

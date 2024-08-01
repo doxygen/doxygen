@@ -21,7 +21,7 @@
 
 First go to the
 <a href="https://www.doxygen.org/download.html">download</a> page
-to get the latest distribution, if you have not downloaded doxygen already.
+to get the latest distribution, if you have not downloaded Doxygen already.
 
 \section install_src_unix Compiling from source on UNIX
 
@@ -41,7 +41,7 @@ following to build the executable:
     \addindex cmake
 </ul>
 
-To take full advantage of doxygen's features the following additional
+To take full advantage of Doxygen's features the following additional
 tools should be installed.
 
 <ul>
@@ -49,9 +49,9 @@ tools should be installed.
     <a href="https://doc.qt.io/">Qt</A>
     \addindex Qt
     version 5.14 or higher (including Qt 6).
-    This is needed to build the GUI front-end doxywizard.
+    This is needed to build the GUI front-end Doxywizard.
 <li>A \LaTeX distribution: for instance
-    <a href="http://tug.org/interest.html#free">TeX Live</a>
+    <a href="https://tug.org/interest.html#free">TeX Live</a>
     This is needed for generating \LaTeX, Postscript, and PDF output.
 <li><a href="https://www.graphviz.org/">
     the Graph visualization toolkit version 2.38 or higher</a>
@@ -109,7 +109,7 @@ Compilation is now done by performing the following steps:
         cmake -Dbuild_doc=YES ..
         make docs
 
-    To let doxygen generate the HTML and PDF documentation.
+    To let Doxygen generate the HTML and PDF documentation.
 
     The HTML directory within the build directory will now contain the html
     documentation (just point a HTML browser to the file
@@ -117,7 +117,7 @@ Compilation is now done by performing the following steps:
 
 <li>Optional: static linking
 
-    If you want to build a statically linked version of doxygen that embeds libclang
+    If you want to build a statically linked version of Doxygen that embeds libclang
     you need to first build LLVM and clang from sources using the following options:
 
         cmake -DLIBCLANG_BUILD_STATIC=ON \
@@ -128,7 +128,7 @@ Compilation is now done by performing the following steps:
               -DLLVM_ENABLE_TERMINFO=OFF \
               path_to_llvm_root_source_dir
 
-    and then build doxygen with these options:
+    and then build Doxygen with these options:
 
         cmake -DCMAKE_BUILD_TYPE=Release \
               "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a" \
@@ -141,7 +141,7 @@ Compilation is now done by performing the following steps:
 \section install_bin_unix    Installing the binaries on UNIX
 
 After the compilation of the source code do a <code>make install</code>
-to install doxygen. If you downloaded the binary distribution for Linux,
+to install Doxygen. If you downloaded the binary distribution for Linux,
 type:
 
     make install
@@ -167,7 +167,7 @@ cmake can be downloaded from https://cmake.org/download/
 At the moment only the community version of Visual Studio 2019 is tested,
 but other version might also work.
 
-Alternatively, you can compile doxygen
+Alternatively, you can compile Doxygen
 \ref install_src_unix "the UNIX way" using
 <a href="https://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
 or <a href="https://www.mingw-w64.org/">MinGW</a>.
@@ -181,7 +181,7 @@ your `path` rename `win_flex.exe` to `flex.exe` and `win_bison.exe` to `bison.ex
 Furthermore you have to install \c python (version 2.7 or higher, see https://www.python.org).
 These packages are needed during the compilation process.
 
-Download doxygen's source tarball and put it somewhere (e.g. use <code>c:\\tools</code>)
+Download Doxygen's source tarball and put it somewhere (e.g. use <code>c:\\tools</code>)
 
 Now start a visual studio native command shell (for either x86 or x64) and type
 \verbatim
@@ -192,7 +192,7 @@ to unpack the sources (you can obtain \c tar from e.g. https://gnuwin32.sourcefo
 Alternatively you can use an unpack program, like 7-Zip (see https://www.7-zip.org/)
 or use the built-in unpack feature of modern Windows systems).
 
-Now your environment is setup to generate the required project files for \c doxygen.
+Now your environment is setup to generate the required project files for Doxygen.
 
 change directory to the \c doxygen-x.y.z directory, create and change to a build directory
 \verbatim
@@ -214,7 +214,7 @@ Note that compiling Doxywizard requires Qt 5.14 or newer
 (see https://doc.qt.io/).
 
 Also read the next section for additional tools you may need to install to run
-doxygen with certain features enabled.
+Doxygen with certain features enabled.
 
 \section install_bin_windows Installing the binaries on Windows
 
@@ -244,7 +244,7 @@ install <a href="https://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and
 <a href="https://en.wikipedia.org/wiki/Ghostscript">Ghostscript</a>.
 
 For \LaTeX a number of distributions exists. Popular ones that should work with
-doxygen are <a href="https://miktex.org/">MikTex</a>
+Doxygen are <a href="https://miktex.org/">MikTex</a>
 and <a href="https://www.tug.org/protext/">proTeXt</a>.
 
 Ghostscript can be <a href="https://sourceforge.net/projects/ghostscript/">downloaded</a>

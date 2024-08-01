@@ -18,22 +18,22 @@
 
 \section extsearch_intro Introduction
 
-With release 1.8.3, doxygen provides the ability to search through HTML using
+With release 1.8.3, Doxygen provides the ability to search through HTML using
 an external indexing tool and search engine.
 This has several advantages:
 
 - For large projects it can have significant performance advantages over
-  doxygen's built-in search engine, as doxygen uses a rather simple indexing
+  Doxygen's built-in search engine, as Doxygen uses a rather simple indexing
   algorithm.
 - It allows combining the search data of multiple projects into one index,
-  allowing a global search across multiple doxygen projects.
+  allowing a global search across multiple Doxygen projects.
 - It allows adding additional data to the search index, i.e. other web pages
-  not produced by doxygen.
+  not produced by Doxygen.
 - The search engine needs to run on a web server, but clients can still browse
   the web pages locally.
 
 To avoid that everyone has to start writing their own indexer and search 
-engine, doxygen provides an example tool for each action: `doxyindexer` 
+engine, Doxygen provides an example tool for each action: `doxyindexer` 
 for indexing the data and `doxysearch.cgi` for searching through the index.
 
 The data flow is shown in the following diagram:
@@ -43,7 +43,7 @@ The data flow is shown in the following diagram:
 
 - `doxygen` produces the raw search data
 - `doxyindexer` indexes the data into a search database `doxysearch.db`
-- when a user performs a search from a doxygen generated HTML page, 
+- when a user performs a search from a Doxygen generated HTML page, 
   the CGI binary `doxysearch.cgi` will be invoked.
 - the `doxysearch.cgi` tool will perform a query on the database and return
   the results. 
@@ -59,7 +59,7 @@ browser via an URL starting with http:)
 
 How to setup a web server is outside the scope of this document,
 but if you for instance have Apache installed, you could simply copy the 
-`doxysearch.cgi` file from doxygen's `bin` directory to the `cgi-bin` directory of the
+`doxysearch.cgi` file from Doxygen's `bin` directory to the `cgi-bin` directory of the
 Apache web server. Read the <a href="https://httpd.apache.org/docs/2.2/howto/cgi.html">apache documentation</a> for details.
 
 To test if `doxysearch.cgi` is accessible start your web browser and
@@ -79,20 +79,20 @@ fail for this reason. How to correct this is discussed in the next section.
 
 Before continuing with the next section add the above 
 URL (without the `?test` part) to the \ref cfg_searchengine_url "SEARCHENGINE_URL" tag in
-doxygen's configuration file:
+Doxygen's configuration file:
 
     SEARCHENGINE_URL = http://yoursite.com/path/to/cgi/doxysearch.cgi
 
 \subsection extsearch_single Single project index
 
 To use the external search option, make sure the following options are enabled
-in doxygen's configuration file:
+in Doxygen's configuration file:
 
     SEARCHENGINE           = YES
     SERVER_BASED_SEARCH    = YES
     EXTERNAL_SEARCH        = YES
 
-This will make doxygen generate a file called `searchdata.xml` in the output 
+This will make Doxygen generate a file called `searchdata.xml` in the output 
 directory (configured with \ref cfg_output_directory "OUTPUT_DIRECTORY").
 You can change the file name (and location) with the 
 \ref cfg_searchdata_file "SEARCHDATA_FILE" option.
@@ -121,7 +121,7 @@ Now you should be able to search for words and symbols from the HTML output.
 
 \subsection extsearch_multi Multi project index
 
-In case you have more than one doxygen project and these projects are related, 
+In case you have more than one Doxygen project and these projects are related, 
 it may be desirable to allow searching for words in all projects from within 
 the documentation of any of the projects.
 
@@ -188,7 +188,7 @@ The next subsections describe these interfaces in more detail.
 
 \subsection extsearch_api_index Indexer input format
 
-The search data produced by doxygen follows the 
+The search data produced by Doxygen follows the 
 <a href="https://cwiki.apache.org/confluence/display/solr/UpdateXmlMessages">Solr XML index message</a>
 format.
 
@@ -232,7 +232,7 @@ Each field has a name. The following field names are supported:
 
 \subsection extsearch_api_search_in Search URL format
 
-When the search engine is invoked from a doxygen generated HTML page, a number of parameters are
+When the search engine is invoked from a Doxygen generated HTML page, a number of parameters are
 passed to via the <a href="https://en.wikipedia.org/wiki/Query_string">query string</a>.
 
 The following fields are passed:
@@ -259,7 +259,7 @@ have to be decoded before they can be used.
 When invoking the search engine as shown in the previous subsection, it should reply with
 the results. The format of the reply is
 <a href="https://en.wikipedia.org/wiki/JSONP">JSON with padding</a>, which is basically
-a javascript struct wrapped in a function call. The name of function should be the name of
+a JavaScript struct wrapped in a function call. The name of function should be the name of
 the callback (as passed with the *cb* field in the query).
 
 With the example query as shown the previous subsection the main structure of the reply should

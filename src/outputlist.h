@@ -601,8 +601,8 @@ class OutputList
     { foreach(&OutputGenIntf::endPageDoc); }
     void writeNonBreakableSpace(int num)
     { foreach(&OutputGenIntf::writeNonBreakableSpace,num); }
-    void startDescTable(const QCString &title)
-    { foreach(&OutputGenIntf::startDescTable,title); }
+    void startDescTable(const QCString &title,const bool hasInits)
+    { foreach(&OutputGenIntf::startDescTable,title,hasInits); }
     void endDescTable()
     { foreach(&OutputGenIntf::endDescTable); }
     void startDescTableRow()
@@ -613,6 +613,10 @@ class OutputList
     { foreach(&OutputGenIntf::startDescTableTitle); }
     void endDescTableTitle()
     { foreach(&OutputGenIntf::endDescTableTitle); }
+    void startDescTableInit()
+    { foreach(&OutputGenIntf::startDescTableInit); }
+    void endDescTableInit()
+    { foreach(&OutputGenIntf::endDescTableInit); }
     void startDescTableData()
     { foreach(&OutputGenIntf::startDescTableData); }
     void endDescTableData()

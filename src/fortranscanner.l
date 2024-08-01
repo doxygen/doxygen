@@ -54,6 +54,7 @@ typedef yyguts_t *yyscan_t;
 
 #include <map>
 #include <vector>
+#include <algorithm>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -212,6 +213,7 @@ struct fortranscannerYY_state
   int fixedCommentAfter = 72;
   //! counter for the number of main programs in this file
   int mainPrograms      = 0; 
+  int curIndent         = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -1130,6 +1132,7 @@ private                                 {
                                           if (YY_START == FVariable) REJECT; // Just be on the safe side
                                           if (YY_START == String) REJECT; // ";" ignored in strings
                                           if (YY_START == StrIgnore) REJECT; // ";" ignored in regular yyextra->comments
+                                          if (YY_START == DocBlock) REJECT; // ";" ignored in documentation blocks
                                           yyextra->inputStringSemi = " \n"+QCString(yytext+1);
                                           yyextra->lineNr--;
                                           pushBuffer(yyscanner,yyextra->inputStringSemi);
@@ -1348,7 +1351,7 @@ private                                 {
                                             yyextra->docBlockJavaStyle = FALSE;
                                             yyextra->docBlock.clear();
                                             yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
-                                            startCommentBlock(yyscanner,TRUE);
+                                            startCommentBlock(yyscanner,FALSE);
                                             yy_push_state(DocBackLine,yyscanner);
                                           }
                                           else
@@ -1392,7 +1395,7 @@ private                                 {
                                             {
                                               yyextra->current = yyextra->last_entry;
                                             }
-                                            handleCommentBlock(yyscanner,yyextra->docBlock,TRUE);
+                                            handleCommentBlock(yyscanner,stripIndentation(yyextra->docBlock),TRUE);
                                             // switch back
                                             yyextra->current = std::move(tmp_entry);
                                           }
@@ -1408,6 +1411,9 @@ private                                 {
                                           yyextra->docBlock.clear();
                                         }
 
+<Start,SubprogBody,ModuleBody,TypedefBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains,TypedefBodyContains,FEnum>^{BS}  {
+                                          yyextra->curIndent = computeIndent(yytext);
+                                        }
 <Start,SubprogBody,ModuleBody,TypedefBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains,TypedefBodyContains,FEnum>"!>"  {
                                           yy_push_state(YY_START,yyscanner);
                                           yyextra->current->docLine  = yyextra->lineNr;
@@ -1415,7 +1421,7 @@ private                                 {
                                           if (YY_START==SubprogBody) yyextra->docBlockInBody = TRUE;
                                           yyextra->docBlock.clear();
                                           yyextra->docBlockJavaStyle = Config_getBool(JAVADOC_AUTOBRIEF);
-                                          startCommentBlock(yyscanner,TRUE);
+                                          startCommentBlock(yyscanner,FALSE);
                                           BEGIN(DocBlock);
                                           //cout << "start DocBlock " << endl;
                                         }
@@ -1521,9 +1527,11 @@ private                                 {
                                           yyextra->blockLineNr=yyextra->lineNr;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>"\\ilinebr "{B}*"!"           {
+<DocBlock>"\\ilinebr "{BS}              {
                                           QCString indent;
-                                          indent.fill(' ',yyleng-9);
+                                          int extraSpaces = std::max(0,static_cast<int>(yyleng-9-yyextra->curIndent-2));
+                                          indent.fill(' ',extraSpaces);
+                                          //printf("extraSpaces=%d\n",extraSpaces);
                                           yyextra->docBlock += "\\ilinebr ";
                                           yyextra->docBlock += indent;
                                         }
@@ -1539,7 +1547,7 @@ private                                 {
                                           //cout <<"3=========> comment block : "<< yyextra->docBlock << endl;
                                           yyextra->colNr -= 1;
                                           unput(*yytext);
-                                          handleCommentBlock(yyscanner,yyextra->docBlock,TRUE);
+                                          handleCommentBlock(yyscanner,stripIndentation(yyextra->docBlock),TRUE);
                                           pop_state(yyscanner);
                                         }
 <DocBlock>.                             { // command block

@@ -25,7 +25,7 @@ For example `\emoji smile` or `\emoji :smile:` both produce \emoji smile.
 
 \section emojirep Representation
 
-For the different doxygen output types there is an output defined:
+For the different Doxygen output types there is an output defined:
 - Unicode code sequence, the actual representation is depending on the possibilities of the fonts loaded:
   - HTML
   - DocBook
@@ -42,7 +42,7 @@ For the different doxygen output types there is an output defined:
 In the list of images can be downloaded via the following Python script:
 \code{.py}
 # script to download the emoticons from GitHub and to produce a table for
-# inclusion in doxygen. Works with python 2.7+ and python 3.x
+# inclusion in Doxygen. Works with python 2.7+ and python 3.x
 import json
 import os
 import argparse
@@ -104,7 +104,7 @@ if __name__=="__main__":
 
 \endcode
 When invoking it with the `-d image_dir` option the images will by downloaded in the `image_dir` directory.
-By means of the doxygen configuration parameter
+By means of the Doxygen configuration parameter
 \ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" the requested directory can be selected.
 
 For convenience a zip with the result of running the script can also be downloaded from

@@ -115,12 +115,24 @@ if (CMAKE_SYSTEM MATCHES "Darwin")
     set(EXTRA_LIBS ${CORESERVICES_LIB})
 endif()
 
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_LIBCPP_ENABLE_ASSERTIONS=1")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_ASSERTIONS")
+endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_OMIT_LOAD_EXTENSION=1")
 
 if (WIN32)
     if (MSVC)
         if (NOT ICONV_DIR)
-          set(ICONV_DIR "${PROJECT_SOURCE_DIR}/winbuild")
+          if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/deps/iconv_winbuild/include" "${PROJECT_SOURCE_DIR}/deps/iconv_winbuild/x64")
+          elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/deps/iconv_winbuild/include" "${PROJECT_SOURCE_DIR}/deps/iconv_winbuild/x86")
+          endif()
+        else()
+          list(APPEND CMAKE_PREFIX_PATH ${ICONV_DIR})
         endif()
         set(CMAKE_REQUIRED_DEFINITIONS "-DLIBICONV_STATIC")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj") # needed for language.cpp on 64bit
@@ -137,6 +149,11 @@ if (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
    if (CMAKE_BUILD_TYPE STREQUAL  "")
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
    endif()
+endif()
+
+if (WIN32 AND MSVC)
+    # workaround for GitHub runner, see https://github.com/actions/runner-images/issues/10004
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR")
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -192,7 +209,7 @@ if ((CMAKE_BUILD_TYPE STREQUAL "Debug") OR enable_lex_debug)
 endif()
 
 find_package(Iconv REQUIRED)
-include_directories(${ICONV_INCLUDE_DIR})
+include_directories(${Iconv_INCLUDE_DIRS})
 
 
 #set(DOXYDOCS ${PROJECT_SOURCE_DIR}/doc CACHE INTERNAL "Path to doxygen docs")

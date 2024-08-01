@@ -387,38 +387,38 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
   size_t numMembers = 0;
   for (const auto &ml : cd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_detailedLists)==0)
+    if (!ml->listType().isDetailed())
     {
       numMembers+=ml->size();
     }
   }
   if (numMembers>0)
   {
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubTypes),"public-type");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_interfaces),"interfaces");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_services),"services");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubMethods),"public-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubAttribs),"public-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubSlots),"public-slot");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_signals),"signal");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_dcopMethods),"dcop-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_properties),"property");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubStaticMethods),"public-static-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubStaticAttribs),"public-static-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proTypes),"protected-type");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proMethods),"protected-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proAttribs),"protected-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proSlots),"protected-slot");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proStaticMethods),"protected-static-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_proStaticAttribs),"protected-static-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priTypes),"private-type");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priMethods),"private-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priAttribs),"private-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priSlots),"private-slot");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priStaticMethods),"private-static-func");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_priStaticAttribs),"private-static-attrib");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_friends),"signal");
-    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_related),"related");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubTypes()),"public-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Interfaces()),"interfaces");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Services()),"services");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubMethods()),"public-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubAttribs()),"public-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubSlots()),"public-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Signals()),"signal");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::DcopMethods()),"dcop-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Properties()),"property");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubStaticMethods()),"public-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PubStaticAttribs()),"public-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProTypes()),"protected-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProMethods()),"protected-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProAttribs()),"protected-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProSlots()),"protected-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProStaticMethods()),"protected-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::ProStaticAttribs()),"protected-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriTypes()),"private-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriMethods()),"private-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriAttribs()),"private-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriSlots()),"private-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriStaticMethods()),"private-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::PriStaticAttribs()),"private-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Friends()),"signal");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType::Related()),"related");
   }
 
   t << "  cp-filename  = '" << cd->getDefFileName() << "';\n";
@@ -471,14 +471,14 @@ static void generateDEFForNamespace(const NamespaceDef *nd,TextStream &t)
   writeDEFString(t,nd->name());
   t << ";\n";
 
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decDefineMembers),"define");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decProtoMembers),"prototype");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decTypedefMembers),"typedef");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decSequenceMembers),"sequence");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decDictionaryMembers),"dictionary");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decEnumMembers),"enum");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decFuncMembers),"func");
-  generateDEFSection(nd,t,nd->getMemberList(MemberListType_decVarMembers),"var");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecDefineMembers()),"define");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecProtoMembers()),"prototype");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecTypedefMembers()),"typedef");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecSequenceMembers()),"sequence");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecDictionaryMembers()),"dictionary");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecEnumMembers()),"enum");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecFuncMembers()),"func");
+  generateDEFSection(nd,t,nd->getMemberList(MemberListType::DecVarMembers()),"var");
 
   t << "  ns-filename  = '" << nd->getDefFileName() << "';\n";
   t << "  ns-fileline  = '" << nd->getDefLine()     << "';\n";
@@ -500,14 +500,14 @@ static void generateDEFForFile(const FileDef *fd,TextStream &t)
   writeDEFString(t,fd->name());
   t << ";\n";
 
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decDefineMembers),"define");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decProtoMembers),"prototype");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decTypedefMembers),"typedef");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decSequenceMembers),"sequence");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decDictionaryMembers),"dictionary");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decEnumMembers),"enum");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decFuncMembers),"func");
-  generateDEFSection(fd,t,fd->getMemberList(MemberListType_decVarMembers),"var");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecDefineMembers()),"define");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecProtoMembers()),"prototype");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecTypedefMembers()),"typedef");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecSequenceMembers()),"sequence");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecDictionaryMembers()),"dictionary");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecEnumMembers()),"enum");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecFuncMembers()),"func");
+  generateDEFSection(fd,t,fd->getMemberList(MemberListType::DecVarMembers()),"var");
 
   t << "  file-full-name  = '" << fd->getDefFileName() << "';\n";
   t << "  file-first-line = '" << fd->getDefLine()     << "';\n";

@@ -17,13 +17,13 @@
 
 \section custom_pages Custom Pages
 
-\c doxygen can be also be used to create custom pages that are not part of the API of your library/program.
+Doxygen can be also be used to create custom pages that are not part of the API of your library/program.
 The purpose of such pages is to enrich your documentation with anything else that you think the user may find useful.
 
 To create custom pages, use one of the supported file extension: `.dox`, `.txt`, or `.md`.
 Doxygen will treat a .dox or .txt file as a C/C++ source file, and a .md file as a Markdown file.
 
-For a .dox or .txt file, one can use a single doxygen comment, like so:
+For a .dox or .txt file, one can use a single Doxygen comment, like so:
 
 \c manual/index.dox
 \code
@@ -34,10 +34,10 @@ For a .dox or .txt file, one can use a single doxygen comment, like so:
 */
 \endcode
 
-You'll note that the \ref cmdmainpage "\\mainpage" command was used, which tells doxygen to use this page as, well, the main page.
+You'll note that the \ref cmdmainpage "\\mainpage" command was used, which tells Doxygen to use this page as, well, the main page.
 For other pages, prefix them with the \ref cmdpage "\\page" command.
 
-By default doxygen will not know about these custom files, so we'll need to let it know through the `INPUT` attribute in our
+By default Doxygen will not know about these custom files, so we'll need to let it know through the `INPUT` attribute in our
 Doxyfile. For the about example add this line to your Doxyfile:
 
 \code
@@ -45,7 +45,7 @@ INPUT  = manual/index.dox
 \endcode
 
 Next, we may want to add the instructions on how to build the project, so we create `manual/building/index.dox`.
-As you read a bit more of the documentation, you will find out that doxygen supports a
+As you read a bit more of the documentation, you will find out that Doxygen supports a
 subset of the \ref htmlcmds "HTML" tags, so we can write the following:
 
 \code

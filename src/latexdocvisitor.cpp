@@ -1174,6 +1174,8 @@ void LatexDocVisitor::operator()(const DocHtmlDescTitle &dt)
 void LatexDocVisitor::operator()(const DocHtmlDescData &dd)
 {
   incIndentLevel();
+  if (!m_insideItem) m_t << "\\hfill";
+  m_t << " \\\\\n";
   visitChildren(dd);
   decIndentLevel();
 }

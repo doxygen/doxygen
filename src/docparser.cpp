@@ -179,6 +179,10 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
       {
 	err("Problems running epstopdf. Check your TeX installation!\n");
       }
+      else
+      {
+        Dir().remove(outputDir.str()+"/"+baseName.str()+".eps");
+      }
       return baseName;
     }
   }
@@ -771,7 +775,7 @@ void DocParser::handleUnclosedStyleCommands()
 
 void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
 {
-  QCString name = linkToText(SrcLangExt::Unknown,context.token->name,TRUE);
+  QCString name = linkToText(context.lang,context.token->name,TRUE);
   AUTO_TRACE("word={}",name);
   bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
@@ -792,13 +796,14 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   if (!context.insideHtmlLink &&
       (resolveRef(context.context,context.token->name,context.inSeeBlock,&compound,&member,TRUE,fd,TRUE)
        || (!context.context.isEmpty() &&  // also try with global scope
-           resolveRef("",context.token->name,context.inSeeBlock,&compound,&member,FALSE,nullptr,TRUE))
+           resolveRef(QCString(),context.token->name,context.inSeeBlock,&compound,&member,FALSE,nullptr,TRUE))
       )
      )
   {
-    //printf("resolveRef %s = %p (linkable?=%d)\n",qPrint(context.token->name),member,member ? member->isLinkable() : FALSE);
+    //printf("resolveRef %s = %p (linkable?=%d)\n",qPrint(context.token->name),(void*)member,member ? member->isLinkable() : FALSE);
     if (member && member->isLinkable()) // member link
     {
+      AUTO_TRACE_ADD("resolved reference as member link");
       if (member->isObjCMethod())
       {
         bool localLink = context.memberDef ? member->getClassDef()==context.memberDef->getClassDef() : FALSE;
@@ -813,6 +818,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
     }
     else if (compound->isLinkable()) // compound link
     {
+      AUTO_TRACE_ADD("resolved reference as compound link");
       QCString anchor = compound->anchor();
       if (compound->definitionType()==Definition::TypeFile)
       {
@@ -833,6 +839,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
              (toFileDef(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
+      AUTO_TRACE_ADD("resolved reference as source link");
       children.append<DocLinkedWord>(
              this,parent,context.token->name,
              compound->getReference(),
@@ -842,6 +849,9 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
     }
     else // not linkable
     {
+      AUTO_TRACE_ADD("resolved reference as unlinkable compound={} (linkable={}) member={} (linkable={})",
+                     compound ? compound->name() : "<none>", compound ? (int)compound->isLinkable() : -1,
+                     member   ? member->name()   : "<none>", member   ? (int)member->isLinkable()   : -1);
       children.append<DocWord>(this,parent,name);
     }
   }
@@ -869,12 +879,8 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
     if (context.token->name.startsWith("#"))
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"explicit link request to '%s' could not be resolved",qPrint(name));
-      children.append<DocWord>(this,parent,context.token->name);
     }
-    else
-    {
-      children.append<DocWord>(this,parent,name);
-    }
+    children.append<DocWord>(this,parent,context.token->name);
   }
 }
 
@@ -1382,17 +1388,27 @@ reparsetoken:
           break;
         case CMD_SETSCOPE:
           {
-            QCString scope;
             tokenizer.setStateSetScope();
             (void)tokenizer.lex();
-            scope = context.token->name;
-            context.context = scope;
-            //printf("Found scope='%s'\n",qPrint(scope));
+            context.context = context.token->name;
+            //printf("Found scope='%s'\n",qPrint(context.context));
             tokenizer.setStatePara();
           }
           break;
         case CMD_IMAGE:
           handleImage(parent,children);
+          break;
+        case CMD_ILINE:
+          tokenizer.pushState();
+          tokenizer.setStateILine();
+          (void)tokenizer.lex();
+          tokenizer.popState();
+          break;
+        case CMD_IFILE:
+          tokenizer.pushState();
+          tokenizer.setStateIFile();
+          (void)tokenizer.lex();
+          tokenizer.popState();
           break;
         default:
           return FALSE;
@@ -1842,7 +1858,14 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
         const Definition *def = nullptr;
         QCString doc,brief;
         //printf("resolving docs='%s'\n",qPrint(id));
-        if (findDocsForMemberOrCompound(id,&doc,&brief,&def))
+        bool found = findDocsForMemberOrCompound(id,&doc,&brief,&def);
+        if (found && def->isReference())
+        {
+          warn_doc_error(context.fileName,tokenizer.getLineNr(),
+               "@copy%s or @copydoc target '%s' found but is from a tag file, skipped", isBrief?"brief":"details",
+               qPrint(id));
+        }
+        else if (found)
         {
           //printf("found it def=%p brief='%s' doc='%s' isBrief=%d\n",def,qPrint(brief),qPrint(doc),isBrief);
           auto it = std::find(context.copyStack.begin(),context.copyStack.end(),def);
@@ -1852,8 +1875,8 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
             context.copyStack.push_back(def);
             auto addDocs = [&](const QCString &file_,int line_,const QCString &doc_)
             {
-              buf.addStr(" \\ilinebr \\ifile \""+file_+"\" ");
-              buf.addStr("\\iline "+QCString().setNum(line_)+" ");
+              buf.addStr(" \\ifile \""+file_+"\" ");
+              buf.addStr("\\iline "+QCString().setNum(line_)+" \\ilinebr ");
               size_t len_ = doc_.length();
               buf.addStr(processCopyDoc(doc_.data(),len_));
             };
@@ -1953,23 +1976,30 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
       )
      )
   {
-    parser->context.context = ctx->qualifiedName();
+    parser->context.context = substitute(ctx->qualifiedName(),getLanguageSpecificSeparator(ctx->getLanguage(),true),"::");
   }
   else if (ctx && ctx->definitionType()==Definition::TypePage)
   {
     const Definition *scope = (toPageDef(ctx))->getPageScope();
-    if (scope && scope!=Doxygen::globalScope) parser->context.context = scope->name();
+    if (scope && scope!=Doxygen::globalScope)
+    {
+      parser->context.context = substitute(scope->name(),getLanguageSpecificSeparator(scope->getLanguage(),true),"::");
+    }
   }
   else if (ctx && ctx->definitionType()==Definition::TypeGroup)
   {
     const Definition *scope = (toGroupDef(ctx))->getGroupScope();
-    if (scope && scope!=Doxygen::globalScope) parser->context.context = scope->name();
+    if (scope && scope!=Doxygen::globalScope)
+    {
+      parser->context.context = substitute(scope->name(),getLanguageSpecificSeparator(scope->getLanguage(),true),"::");
+    }
   }
   else
   {
     parser->context.context = "";
   }
   parser->context.scope = ctx;
+  parser->context.lang = getLanguageFromFileName(fileName);
 
   if (indexWords && Doxygen::searchIndex.enabled())
   {
@@ -2081,6 +2111,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   parser->context.retvalsFound.clear();
   parser->context.paramsFound.clear();
   parser->context.searchUrl="";
+  parser->context.lang = SrcLangExt::Unknown;
   parser->context.markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
 
 

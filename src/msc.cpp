@@ -196,6 +196,10 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
       err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!",
           qPrint(absOutFile));
     }
+    else
+    {
+      Dir().remove((absOutFile + ".eps").data());
+    }
   }
 
   int i=std::max(imgName.findRev('/'),imgName.findRev('\\'));

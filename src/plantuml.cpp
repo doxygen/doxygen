@@ -299,6 +299,10 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
             {
               err_full(nb.srcFile,nb.srcLine,"Problems running epstopdf. Check your TeX installation! Exit code: %d.",exitCode);
             }
+            else
+            {
+              Dir().remove(pumlOutDir.str()+str+".eps");
+            }
           }
         }
       }

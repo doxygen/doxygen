@@ -225,6 +225,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool hasCallerGraph() const override;
     bool hasReferencesRelation() const override;
     bool hasReferencedByRelation() const override;
+    bool hasEnumValues() const override;
     bool hasInlineSource() const override;
     const MemberDef *templateMaster() const override;
     QCString getScopeString() const override;
@@ -303,6 +304,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void overrideCallerGraph(bool e) override;
     void overrideReferencedByRelation(bool e) override;
     void overrideReferencesRelation(bool e) override;
+    void overrideEnumValues(bool e) override;
     void overrideInlineSource(bool e) override;
     void setTemplateMaster(MemberDef *mt) override;
     void setFormalTemplateArguments(const ArgumentList &al) override;
@@ -476,15 +478,15 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     // objective-c
     bool m_implOnly = false; // function found in implementation but not
                            // in the interface
-    mutable bool m_hasDocumentedParams = false;      // guard to show only the first warning
-    mutable bool m_hasDocumentedReturnType = false;  // guard to show only the first warning
+    mutable bool m_hasDocumentedParams = false;      // guard to show only the first warning, acts as cache
+    mutable bool m_hasDocumentedReturnType = false;  // guard to show only the first warning, acts as cache
     bool m_isDMember = false;
     Relationship m_related = Relationship::Member;    // relationship of this to the class
     bool m_stat = false;                // is it a static function?
     bool m_proto = false;               // is it a prototype?
     bool m_docEnumValues = false;       // is an enum with documented enum values.
 
-    mutable bool m_annScope = false;    // member is part of an anonymous scope
+    bool m_annScope = false;    // member is part of an anonymous scope
     mutable bool m_hasDetailedDescriptionCached = false;
     mutable bool m_detailedDescriptionCachedValue = false;
                                       // const member.
@@ -493,6 +495,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool m_hasReferencedByRelation = false;
     bool m_hasReferencesRelation = false;
     bool m_hasInlineSource = false;
+    bool m_hasEnumValues = false;
     bool m_explExt = false;             // member was explicitly declared external
     bool m_tspec = false;               // member is a template specialization
     bool m_groupHasDocs = false;        // true if the entry that caused the grouping was documented
@@ -864,6 +867,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasReferencedByRelation(); }
     bool hasInlineSource() const override
     { return getMdAlias()->hasInlineSource(); }
+    bool hasEnumValues() const override
+    { return getMdAlias()->hasEnumValues(); }
     StringVector getQualifiers() const override
     { return getMdAlias()->getQualifiers(); }
     const MemberDef *templateMaster() const override
@@ -1329,6 +1334,7 @@ void MemberDefImpl::init(Definition *d,
   m_hasCallerGraph          = Config_getBool(CALLER_GRAPH);
   m_hasReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
   m_hasReferencesRelation   = Config_getBool(REFERENCES_RELATION);
+  m_hasEnumValues           = Config_getBool(SHOW_ENUM_VALUES);
   m_hasInlineSource         = Config_getBool(INLINE_SOURCES);
   m_initLines=0;
   m_type=t;
@@ -1420,7 +1426,7 @@ MemberDefImpl::MemberDefImpl(const QCString &df,int dl,int dc,
                      const ArgumentList &tal,const ArgumentList &al,const QCString &meta
                     ) : DefinitionMixin(df,dl,dc,removeRedundantWhiteSpace(na))
 {
-  //printf("MemberDefImpl::MemberDef(%s)\n",na);
+  //printf("MemberDefImpl::MemberDef(%s)\n",qPrint(na));
   init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
@@ -1432,7 +1438,9 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   std::unique_ptr<MemberDefImpl> result(new MemberDefImpl(
         getDefFileName(),getDefLine(),getDefColumn(),m_type,localName(),m_args,m_exception,
         m_prot,m_virt,m_stat,m_related,m_mtype,m_tArgList,m_defArgList,m_metaData));
-  // first copy everything by reference
+  // first copy base members
+  result->DefinitionMixin<MemberDefMutable>::operator=(*this);
+  // then copy other members
   result->m_typeConstraints                = m_typeConstraints                ;
   result->m_declArgList                    = m_declArgList                    ;
   result->m_classDef                       = m_classDef                       ;
@@ -1505,6 +1513,7 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   result->m_hasCallerGraph                 = m_hasCallerGraph                 ;
   result->m_hasReferencedByRelation        = m_hasReferencedByRelation        ;
   result->m_hasReferencesRelation          = m_hasReferencesRelation          ;
+  result->m_hasEnumValues                  = m_hasEnumValues                  ;
   result->m_hasInlineSource                = m_hasInlineSource                ;
   result->m_explExt                        = m_explExt                        ;
   result->m_tspec                          = m_tspec                          ;
@@ -1747,31 +1756,32 @@ QCString MemberDefImpl::anchor() const
 
 void MemberDefImpl::_computeLinkableInProject()
 {
+  AUTO_TRACE("name={}",qualifiedName());
   bool extractStatic  = Config_getBool(EXTRACT_STATIC);
   bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
   m_isLinkableCached = 2; // linkable
   //printf("MemberDefImpl::isLinkableInProject(name=%s)\n",qPrint(name()));
   if (isHidden())
   {
-    //printf("is hidden\n");
+    AUTO_TRACE_ADD("is hidden");
     m_isLinkableCached = 1;
     return;
   }
   if (templateMaster())
   {
-    //printf("has template master\n");
+    AUTO_TRACE_ADD("has master template");
     m_isLinkableCached = templateMaster()->isLinkableInProject() ? 2 : 1;
     return;
   }
   if (isAnonymous())
   {
-    //printf("name invalid\n");
+    AUTO_TRACE_ADD("name invalid");
     m_isLinkableCached = 1; // not a valid or a dummy name
     return;
   }
   if (!hasDocumentation() || isReference())
   {
-    //printf("no docs or reference\n");
+    AUTO_TRACE_ADD("no docs or reference");
     m_isLinkableCached = 1; // no documentation
     return;
   }
@@ -1780,18 +1790,19 @@ void MemberDefImpl::_computeLinkableInProject()
   const ClassDef *classDef = getClassDef();
   if (groupDef && !groupDef->isLinkableInProject())
   {
-    //printf("group but group not linkable!\n");
+    AUTO_TRACE_ADD("in not linkable group");
     m_isLinkableCached = 1; // group but group not linkable
     return;
   }
   if (!groupDef && classDef && !classDef->isLinkableInProject())
   {
-    //printf("in a class but class not linkable!\n");
+    AUTO_TRACE_ADD("in not linkable class");
     m_isLinkableCached = 1; // in class but class not linkable
     return;
   }
   if (!groupDef && moduleDef && !moduleDef->isLinkableInProject())
   {
+    AUTO_TRACE_ADD("in not linkable module");
     m_isLinkableCached = 1; // in module but module not linkable
     return;
   }
@@ -1800,7 +1811,7 @@ void MemberDefImpl::_computeLinkableInProject()
   if (!groupDef && nspace && m_related==Relationship::Member && !nspace->isLinkableInProject()
       && (fileDef==nullptr || !fileDef->isLinkableInProject()))
   {
-    //printf("in a namespace but namespace not linkable!\n");
+    AUTO_TRACE_ADD("in not linkable namespace");
     m_isLinkableCached = 1; // in namespace but namespace not linkable
     return;
   }
@@ -1808,24 +1819,24 @@ void MemberDefImpl::_computeLinkableInProject()
       m_related==Relationship::Member && !classDef &&
       fileDef && !fileDef->isLinkableInProject())
   {
-    //printf("in a file but file not linkable!\n");
+    AUTO_TRACE_ADD("in not linkable file");
     m_isLinkableCached = 1; // in file (and not in namespace) but file not linkable
     return;
   }
   if ((!protectionLevelVisible(m_prot) && m_mtype!=MemberType_Friend) &&
        !(m_prot==Protection::Private && (m_virt!=Specifier::Normal || isOverride() || isFinal()) && extractPrivateVirtual))
   {
-    //printf("private and invisible!\n");
+    AUTO_TRACE_ADD("private and invisible");
     m_isLinkableCached = 1; // hidden due to protection
     return;
   }
   if (m_stat && classDef==nullptr && !extractStatic)
   {
-    //printf("static and invisible!\n");
+    AUTO_TRACE_ADD("static and invisible");
     m_isLinkableCached = 1; // hidden due to staticness
     return;
   }
-  //printf("linkable!\n");
+  AUTO_TRACE_ADD("linkable");
   return; // linkable!
 }
 
@@ -2183,7 +2194,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
-  //printf("> %s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
+  //printf("> %s MemberDefImpl::writeDeclaration() inGroup=%d inheritId=%s\n",qPrint(qualifiedName()),inGroup,qPrint(inheritId));
 
   // hide enum value, since they appear already as part of the enum, unless they
   // are explicitly grouped.
@@ -3155,8 +3166,23 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
   // For enum, we also write the documented enum values
   if (isEnumerate())
   {
-    bool first=TRUE;
+    bool first=true;
     //printf("** %s: enum values=%zu\n",qPrint(name()),enumFieldList().size());
+    bool hasInits = false;
+    if (hasEnumValues())
+    {
+      for (const auto &fmd : enumFieldList())
+      {
+        if (fmd->isLinkable())
+        {
+          if (!fmd->initializer().isEmpty())
+          {
+            hasInits = true;
+            break;
+          }
+        }
+      }
+    }
     for (const auto &fmd : enumFieldList())
     {
       //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
@@ -3164,7 +3190,8 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
       {
         if (first)
         {
-          ol.startDescTable(theTranslator->trEnumerationValues());
+          ol.startDescTable(theTranslator->trEnumerationValues(),hasInits);
+          first=false;
         }
 
         ol.startDescTableRow();
@@ -3174,13 +3201,29 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
         ol.startDescTableTitle();
         ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
         ol.addLabel(cfname,anchor());
-        first=FALSE;
         ol.docify(fmd->name());
         ol.disableAllBut(OutputType::Man);
         ol.writeString(" ");
         ol.enableAll();
         ol.endDoxyAnchor(cfname,fmd->anchor());
         ol.endDescTableTitle();
+        if (hasInits)
+        {
+          ol.startDescTableInit();
+          if (!fmd->initializer().isEmpty())
+          {
+            QCString initStr = fmd->initializer().stripWhiteSpace();
+            if (initStr.startsWith("=")) initStr = initStr.mid(1).stripWhiteSpace();
+            ol.disableAllBut(OutputType::Man);
+            ol.writeString("(");
+            ol.enableAll();
+            ol.docify(initStr);
+            ol.disableAllBut(OutputType::Man);
+            ol.writeString(")");
+            ol.enableAll();
+          }
+          ol.endDescTableInit();
+        }
         ol.startDescTableData();
 
         bool hasBrief = !fmd->briefDescription().isEmpty();
@@ -4087,16 +4130,16 @@ static std::mutex g_detectUndocumentedParamsMutex;
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
+  bool isPython = getLanguage()==SrcLangExt::Python;
+
   // this function is called while parsing the documentation. A member can have multiple
   // documentation blocks, which could be handled by multiple threads, hence this guard.
   std::lock_guard<std::mutex> lock(g_detectUndocumentedParamsMutex);
 
-  bool isPython = getLanguage()==SrcLangExt::Python;
-
   if (!m_hasDocumentedParams && hasParamCommand)
   {
     //printf("%s:hasDocumentedParams=TRUE;\n",qPrint(name()));
-    m_hasDocumentedParams = TRUE;
+    m_hasDocumentedParams = true;
   }
   else if (!m_hasDocumentedParams)
   {
@@ -4122,7 +4165,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
       }
       if (!allDoc && declAl.empty()) // try declaration arguments as well
       {
-        allDoc=TRUE;
+        allDoc=true;
         for (auto it = al.begin(); it!=al.end() && allDoc; ++it)
         {
           Argument a = *it;
@@ -4139,17 +4182,13 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
     if (allDoc)
     {
       //printf("%s:hasDocumentedParams=TRUE;\n",qPrint(name()));
-      m_hasDocumentedParams = TRUE;
+      m_hasDocumentedParams = true;
     }
   }
 
   //printf("Member %s hasDocumentedReturnType=%d hasReturnCommand=%d\n",
   //    qPrint(name()),m_hasDocumentedReturnType,hasReturnCommand);
-  if (!m_hasDocumentedReturnType && // docs not yet found
-      hasReturnCommand)
-  {
-    m_hasDocumentedReturnType = TRUE;
-  }
+  m_hasDocumentedReturnType = m_hasDocumentedReturnType || hasReturnCommand;
 }
 
 void MemberDefImpl::warnIfUndocumentedParams() const
@@ -4817,6 +4856,7 @@ void MemberDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
+  docFindSections(inbodyDocumentation(),this,docFile());
 }
 
 void MemberDefImpl::overrideCallGraph(bool e)
@@ -4841,6 +4881,11 @@ void MemberDefImpl::overrideReferencesRelation(bool e)
 {
   m_hasReferencesRelation=e;
   if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDefImpl::overrideEnumValues(bool e)
+{
+  m_hasEnumValues=e;
 }
 
 void MemberDefImpl::overrideInlineSource(bool e)
@@ -5603,6 +5648,11 @@ bool MemberDefImpl::hasReferencesRelation() const
 bool MemberDefImpl::hasInlineSource() const
 {
   return m_hasInlineSource;
+}
+
+bool MemberDefImpl::hasEnumValues() const
+{
+  return m_hasEnumValues;
 }
 
 const MemberDef *MemberDefImpl::templateMaster() const

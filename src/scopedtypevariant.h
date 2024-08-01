@@ -141,9 +141,10 @@ class CallContext
   public:
     struct Ctx
     {
-      Ctx(const QCString &name_,const QCString &type_) : name(name_), type(type_) {}
+      Ctx(const QCString &name_,const QCString &type_, int bracketCount_) : name(name_), type(type_), bracketCount(bracketCount_) {}
       QCString name;
       QCString type;
+      int bracketCount;
       ScopedTypeVariant stv;
     };
 
@@ -156,24 +157,25 @@ class CallContext
       Ctx &ctx = m_stvList.back();
       ctx.stv=stv;
     }
-    void pushScope(const QCString &name_,const QCString &type_)
+    void pushScope(const QCString &name_,const QCString &type_, int bracketCount_)
     {
-      m_stvList.emplace_back(name_,type_);
+      m_stvList.emplace_back(name_,type_,bracketCount_);
     }
-    void popScope(QCString &name_,QCString &type_)
+    void popScope(QCString &name_,QCString &type_, int &bracketCount_)
     {
       if (m_stvList.size()>1)
       {
         const Ctx &ctx = m_stvList.back();
         name_ = ctx.name;
         type_ = ctx.type;
+        bracketCount_ = ctx.bracketCount;
         m_stvList.pop_back();
       }
     }
     void clear()
     {
       m_stvList.clear();
-      m_stvList.emplace_back(QCString(),QCString());
+      m_stvList.emplace_back(QCString(),QCString(),0);
     }
     const ScopedTypeVariant getScope() const
     {

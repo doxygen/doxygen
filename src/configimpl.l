@@ -1991,6 +1991,28 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(  depOption, "HTML_COPY_CLIPBOARD",  false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
     adjustColorStyleSetting(depOption);
+    const StringVector &tagFileList = Config_getList(TAGFILES);
+    StringVector filteredTagFileList;
+    for (const auto &s : tagFileList)
+    {
+      bool validUrl = false;
+      size_t eqPos = s.find('=');
+      if (eqPos!=std::string::npos) // tag command contains a destination
+      {
+        QCString url = QCString(s.substr(eqPos+1)).stripWhiteSpace().lower();
+        validUrl = url.startsWith("http:") || url.startsWith("https:");
+      }
+      if (validUrl)
+      {
+        filteredTagFileList.push_back(s);
+      }
+      else
+      {
+        err("When enabling GENERATE_HTMLHELP the TAGFILES option should only contain destinations "
+            "with https / http addresses (not: %s). I'll adjust it for you.\n",s.c_str());
+      }
+    }
+    Config_updateList(TAGFILES,filteredTagFileList);
   }
 
   // check for settings that are inconsistent with having INLINE_GROUPED_CLASSES enabled
@@ -2142,6 +2164,12 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       err("GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
       Config_updateString(QHP_VIRTUAL_FOLDER,"doc");
+    }
+    const StringVector &tagFileList = Config_getList(TAGFILES);
+    if (!tagFileList.empty())
+    {
+      err("When enabling GENERATE_QHP the TAGFILES option should be empty. I'll adjust it for you.\n");
+      Config_updateList(TAGFILES,StringVector());
     }
   }
 

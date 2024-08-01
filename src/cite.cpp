@@ -77,16 +77,17 @@ CitationManager::CitationManager() : p(new Private)
 
 void CitationManager::insert(const QCString &label)
 {
+  QCString lowerCaseLabel = label.lower();
   p->entries.insert(
       std::make_pair(
-        label.str(),
-        std::make_unique<CiteInfoImpl>(label)
+        lowerCaseLabel.str(),
+        std::make_unique<CiteInfoImpl>(lowerCaseLabel)
       ));
 }
 
 const CiteInfo *CitationManager::find(const QCString &label) const
 {
-  auto it = p->entries.find(label.str());
+  auto it = p->entries.find(label.lower().str());
   if (it!=p->entries.end())
   {
     return it->second.get();
@@ -191,8 +192,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
         QCString crossrefName = line.mid(static_cast<size_t>(j+1),static_cast<uint32_t>(k-j-1));
         // check if the reference with the cross reference is used
         // insert cross reference when cross reference has not yet been added.
-        if ((p->entries.find(citeName.str())!=p->entries.end()) &&
-            (p->entries.find(crossrefName.str())==p->entries.end())) // not found yet
+        if (find(citeName) && !find(crossrefName)) // not found yet
         {
           insert(crossrefName);
         }
@@ -440,7 +440,7 @@ void CitationManager::generatePage()
           QCString label = line.mid(ui+14,uj-ui-14);
           QCString number = line.mid(uj+2,uk-uj-1);
           line = line.left(ui+14) + label + line.right(line.length()-uj);
-          auto it = p->entries.find(label.str());
+          auto it = p->entries.find(label.lower().str());
           //printf("label='%s' number='%s' => %p\n",qPrint(label),qPrint(number),it->second.get());
           if (it!=p->entries.end())
           {

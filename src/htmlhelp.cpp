@@ -237,9 +237,9 @@ static QCString convertToHtmlAndTruncate(const QCString &s)
  */
 void HtmlHelpIndex::writeFields(std::ostream &t)
 {
-  std::sort(std::begin(m_map),
+  std::stable_sort(std::begin(m_map),
             std::end(m_map),
-            [](const auto &e1,const auto &e2) { return e1->name < e2->name; }
+            [](const auto &e1,const auto &e2) { return qstricmp_sort(e1->name,e2->name)<0; }
            );
   QCString prevLevel1;
   bool level2Started=FALSE;
@@ -546,7 +546,7 @@ void HtmlHelp::decContentsDepth()
  */
 void HtmlHelp::addContentsItem(bool isDir,
                                const QCString &name,
-                               const QCString & /*ref*/,
+                               const QCString &ref,
                                const QCString &file,
                                const QCString &anchor,
                                bool /* separateIndex */,
@@ -573,6 +573,7 @@ void HtmlHelp::addContentsItem(bool isDir,
       addHtmlExtensionIfMissing(currFile);
       QCString currAnc = anchor;
       p->cts << "<param name=\"Local\" value=\"";
+      if (!ref.isEmpty()) p->cts << externalRef("",ref,true);
       p->cts << currFile;
       if (p->prevFile == currFile && p->prevAnc.isEmpty() && currAnc.isEmpty())
       {

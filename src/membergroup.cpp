@@ -33,7 +33,7 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
                          const QCString &d,const QCString &docFile,int docLine,
                          MemberListContainer con)
   : m_container(container),
-    memberList(std::make_unique<MemberList>(MemberListType_memberGroup,con)),
+    memberList(std::make_unique<MemberList>(MemberListType::MemberGroup(),con)),
     grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
@@ -43,17 +43,14 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
 
 void MemberGroup::insertMember(MemberDef *md)
 {
-  //printf("MemberGroup::insertMember memberList=%p count=%d"
-  //       " member section list: %p: md=%p:%s\n",
-  //       memberList->first() ? memberList->first()->getSectionList() : 0,
-  //       memberList->count(),
-  //       md->getSectionList(),
-  //       md,qPrint(md->name()));
+  //printf("MemberGroup::insertMember(%s) inSameSection=%d md->getSectionList()=%s\n",qPrint(md->name()),
+  //    inSameSection,qPrint(md->getSectionList(m_container)->listType().to_string()));
 
   const MemberDef *firstMd = memberList->empty() ? nullptr : memberList->front();
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
+    //printf("inSameSection=FALSE\n");
     inSameSection=FALSE;
   }
   else if (inDeclSection==nullptr)

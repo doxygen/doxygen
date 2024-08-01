@@ -314,5 +314,13 @@ template<> struct fmt::formatter<EntryType> : formatter<std::string>
   }
 };
 
+//! adds support for formatting MemberListType
+template<> struct fmt::formatter<MemberListType> : formatter<std::string>
+{
+  auto format(MemberListType type, format_context& ctx) {
+    return formatter<std::string>::format(type.to_string(),ctx);
+  }
+};
+
 
 #endif // TRACE_H
