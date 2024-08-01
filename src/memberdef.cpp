@@ -478,15 +478,15 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     // objective-c
     bool m_implOnly = false; // function found in implementation but not
                            // in the interface
-    mutable bool m_hasDocumentedParams = false;      // guard to show only the first warning
-    mutable bool m_hasDocumentedReturnType = false;  // guard to show only the first warning
+    mutable bool m_hasDocumentedParams = false;      // guard to show only the first warning, acts as cache
+    mutable bool m_hasDocumentedReturnType = false;  // guard to show only the first warning, acts as cache
     bool m_isDMember = false;
     Relationship m_related = Relationship::Member;    // relationship of this to the class
     bool m_stat = false;                // is it a static function?
     bool m_proto = false;               // is it a prototype?
     bool m_docEnumValues = false;       // is an enum with documented enum values.
 
-    mutable bool m_annScope = false;    // member is part of an anonymous scope
+    bool m_annScope = false;    // member is part of an anonymous scope
     mutable bool m_hasDetailedDescriptionCached = false;
     mutable bool m_detailedDescriptionCachedValue = false;
                                       // const member.
@@ -4130,16 +4130,16 @@ static std::mutex g_detectUndocumentedParamsMutex;
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
+  bool isPython = getLanguage()==SrcLangExt::Python;
+
   // this function is called while parsing the documentation. A member can have multiple
   // documentation blocks, which could be handled by multiple threads, hence this guard.
   std::lock_guard<std::mutex> lock(g_detectUndocumentedParamsMutex);
 
-  bool isPython = getLanguage()==SrcLangExt::Python;
-
   if (!m_hasDocumentedParams && hasParamCommand)
   {
     //printf("%s:hasDocumentedParams=TRUE;\n",qPrint(name()));
-    m_hasDocumentedParams = TRUE;
+    m_hasDocumentedParams = true;
   }
   else if (!m_hasDocumentedParams)
   {
@@ -4165,7 +4165,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
       }
       if (!allDoc && declAl.empty()) // try declaration arguments as well
       {
-        allDoc=TRUE;
+        allDoc=true;
         for (auto it = al.begin(); it!=al.end() && allDoc; ++it)
         {
           Argument a = *it;
@@ -4182,17 +4182,13 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
     if (allDoc)
     {
       //printf("%s:hasDocumentedParams=TRUE;\n",qPrint(name()));
-      m_hasDocumentedParams = TRUE;
+      m_hasDocumentedParams = true;
     }
   }
 
   //printf("Member %s hasDocumentedReturnType=%d hasReturnCommand=%d\n",
   //    qPrint(name()),m_hasDocumentedReturnType,hasReturnCommand);
-  if (!m_hasDocumentedReturnType && // docs not yet found
-      hasReturnCommand)
-  {
-    m_hasDocumentedReturnType = TRUE;
-  }
+  m_hasDocumentedReturnType = m_hasDocumentedReturnType || hasReturnCommand;
 }
 
 void MemberDefImpl::warnIfUndocumentedParams() const
