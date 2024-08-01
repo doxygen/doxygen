@@ -244,8 +244,7 @@ ANYopt .*
   // Optional white space
 WSopt [ \t\r]*
   // readline non special
-RLopt [^ \\@<\n\*\/`]*
-RLopt1 [^\\@<\n\*\/`]*
+RLopt [^\\@<\n\*\/`]*
   // Optional slash
 SLASHopt [/]*
 
@@ -1061,7 +1060,10 @@ SLASHopt [/]*
 <ReadLine,CopyLine>{RLopt}         {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				   }
-<ReadLine,CopyLine>{RLopt1}/\n     {
+<ReadLine,CopyLine>{RLopt}/{B}"\\ilinebr"{B} {
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
+<ReadLine,CopyLine>{RLopt}/\n      {
 				     copyToOutput(yyscanner,yytext,yyleng);
                                      yyextra->insertCppCommentMarker=false;
 				     BEGIN(yyextra->readLineCtx);
