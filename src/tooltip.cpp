@@ -108,7 +108,7 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
     // critical section
     {
       std::lock_guard<std::mutex> lock(g_tooltipsTipMutex);
-      it->second.find(name)!=it->second.end();
+      written = it->second.find(name)!=it->second.end();
       if (!written) // only write tooltips once
       {
         it->second.insert(name); // remember we wrote this tooltip for the given file id
