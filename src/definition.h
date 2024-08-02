@@ -277,6 +277,7 @@ class Definition
     virtual bool hasSections() const = 0;
     virtual bool hasSources() const = 0;
 
+
     /** returns TRUE if this class has a brief description */
     virtual bool hasBriefDescription() const = 0;
 
@@ -360,8 +361,8 @@ class DefinitionMutable
      * documentation.
      */
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
-    virtual void addSourceReferencedBy(MemberDef *d) = 0;
-    virtual void addSourceReferences(MemberDef *d) = 0;
+    virtual void addSourceReferencedBy(MemberDef *d,const QCString &sourceRefName) = 0;
+    virtual void addSourceReferences(MemberDef *d,const QCString &sourceRefName) = 0;
     virtual void mergeRefItems(Definition *d) = 0;
     virtual void addInnerCompound(Definition *d) = 0;
     virtual void addSectionsToIndex() = 0;

@@ -1255,52 +1255,19 @@ bool DefinitionImpl::hasUserDocumentation() const
   return hasDocs;
 }
 
-
-void DefinitionImpl::addSourceReferencedBy(MemberDef *md)
+void DefinitionImpl::addSourceReferencedBy(MemberDef *md,const QCString &sourceRefName)
 {
   if (md)
   {
-    QCString name  = md->name();
-    QCString scope = md->getScopeString();
-
-    if (!scope.isEmpty())
-    {
-      name.prepend(scope+"::");
-    }
-    else if (md->isStatic() && md->getFileDef())
-    {
-      name.prepend(md->getFileDef()->name()+":");
-    }
-    if (md->isCallable())
-    {
-      name.append(md->argsString());
-    }
-
-    m_impl->sourceRefByDict.insert({name.str(),md});
+    m_impl->sourceRefByDict.insert({sourceRefName.str(),md});
   }
 }
 
-void DefinitionImpl::addSourceReferences(MemberDef *md)
+void DefinitionImpl::addSourceReferences(MemberDef *md,const QCString &sourceRefName)
 {
   if (md)
   {
-    QCString name  = md->name();
-    QCString scope = md->getScopeString();
-
-    if (!scope.isEmpty())
-    {
-      name.prepend(scope+"::");
-    }
-    else if (md->isStatic() && md->getFileDef())
-    {
-      name.prepend(md->getFileDef()->name()+":");
-    }
-    if (md->isCallable())
-    {
-      name.append(md->argsString());
-    }
-
-    m_impl->sourceRefsDict.insert({name.str(),md});
+    m_impl->sourceRefsDict.insert({sourceRefName.str(),md});
   }
 }
 

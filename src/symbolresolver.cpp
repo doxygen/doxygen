@@ -534,10 +534,10 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     }
 
     {
+      LookupInfo lookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       std::lock_guard lock(g_cacheMutex);
       // we need to insert the item in the cache again, as it could be removed in the meantime
-      Doxygen::symbolLookupCache->insert(key,
-                            LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
+      Doxygen::symbolLookupCache->insert(key,std::move(lookupInfo));
     }
     visitedKeys.erase(std::remove(visitedKeys.begin(),visitedKeys.end(),key),visitedKeys.end());
 
