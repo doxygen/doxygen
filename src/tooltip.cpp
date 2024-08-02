@@ -28,7 +28,8 @@
 #include "doxygen.h"
 #include "config.h"
 
-static std::mutex                                                g_tooltipsMutex;
+static std::mutex                                                g_tooltipsFileMutex;
+static std::mutex                                                g_tooltipsTipMutex;
 static std::unordered_map<int, std::unordered_set<std::string> > g_tooltipsWrittenPerFile;
 
 class TooltipManager::Private
@@ -87,20 +88,34 @@ void TooltipManager::addTooltip(const Definition *d)
 
 void TooltipManager::writeTooltips(OutputCodeList &ol)
 {
+  std::unordered_map<int, std::unordered_set<std::string> >::iterator it;
   // critical section
-  std::lock_guard<std::mutex> lock(g_tooltipsMutex);
-
-  int id = ol.id();
-  auto it = g_tooltipsWrittenPerFile.find(id);
-  if (it==g_tooltipsWrittenPerFile.end()) // new file
   {
-    it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::unordered_set<std::string>())).first;
+    std::lock_guard<std::mutex> lock(g_tooltipsFileMutex);
+
+    int id = ol.id();
+    it = g_tooltipsWrittenPerFile.find(id);
+    if (it==g_tooltipsWrittenPerFile.end()) // new file
+    {
+      it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::unordered_set<std::string>())).first;
+    }
   }
 
   for (const auto &[name,d] : p->tooltipInfo)
   {
-    bool written = it->second.find(name)!=it->second.end();
-    if (!written) // only write tooltips once
+    bool written = false;
+
+    // critical section
+    {
+      std::lock_guard<std::mutex> lock(g_tooltipsTipMutex);
+      it->second.find(name)!=it->second.end();
+      if (!written) // only write tooltips once
+      {
+        it->second.insert(name); // remember we wrote this tooltip for the given file id
+      }
+    }
+
+    if (!written)
     {
       //printf("%p: writeTooltips(%s) ol=%d\n",this,name.c_str(),ol.id());
       DocLinkInfo docInfo;
@@ -133,7 +148,6 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
           defInfo,
           declInfo
           );
-      it->second.insert(name); // remember we wrote this tooltip for the given file id
     }
   }
 }
