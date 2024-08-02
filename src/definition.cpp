@@ -625,7 +625,6 @@ class FilterCache
     //! the same file can be performed efficiently
     bool getFileContents(const QCString &fileName,size_t startLine,size_t endLine, std::string &str)
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
       bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
       QCString filter = getFileFilter(fileName,TRUE);
       bool usePipe = !filter.isEmpty() && filterSourceFiles;
@@ -636,9 +635,11 @@ class FilterCache
     bool getFileContentsPipe(const QCString &fileName,const QCString &filter,
                              size_t startLine,size_t endLine,std::string &str)
     {
+      std::unique_lock<std::mutex> lock(m_mutex);
       auto it = m_cache.find(fileName.str());
       if (it!=m_cache.end()) // cache hit: reuse stored result
       {
+        lock.unlock();
         auto item = it->second;
         //printf("getFileContents(%s): cache hit\n",qPrint(fileName));
         // file already processed, get the results after filtering from the tmp file
@@ -717,6 +718,7 @@ class FilterCache
     //! into buffer \a str
     bool getFileContentsDisk(const QCString &fileName,size_t startLine,size_t endLine,std::string &str)
     {
+      std::unique_lock<std::mutex> lock(m_mutex);
       // normal file
       //printf("getFileContents(%s): no filter\n",qPrint(fileName));
       auto it = m_lineOffsets.find(fileName.str());
@@ -729,6 +731,7 @@ class FilterCache
       }
       else // file already processed before
       {
+        lock.unlock();
         auto [ startLineOffset, fragmentSize] = getFragmentLocation(it->second,startLine,endLine);
         //printf("%s: existing file [%zu-%zu] -> start=%zu size=%zu\n",
         //    qPrint(fileName),startLine,endLine,startLineOffset,fragmentSize);
