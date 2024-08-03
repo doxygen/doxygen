@@ -636,7 +636,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           {
                                             yyterminate();
                                           }
-                                          yyextra->defaultProtection = Protection::PUBLLICS;
+                                          yyextra->defaultProtection = Protection::Public;
                                           if (yyextra->global_scope)
                                           {
                                             if (yyextra->global_scope != INVALID_ENTRY)
