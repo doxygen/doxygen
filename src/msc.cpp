@@ -13,6 +13,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include "msc.h"
 #include "portable.h"
 #include "config.h"
@@ -25,6 +29,10 @@
 #include "mscgen_api.h"
 #include "dir.h"
 #include "textstream.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 static const int maxCmdLine = 40960;
 
@@ -202,7 +210,11 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     }
   }
 
-  int i=std::max(imgName.findRev('/'),imgName.findRev('\\'));
+#ifndef __GNUC__
+  int i =      max(imgName.findRev('/'),imgName.findRev('\\'));
+#else
+  int i = std::max(imgName.findRev('/'),imgName.findRev('\\'));
+#endif
   if (i!=-1) // strip path
   {
     imgName=imgName.right(imgName.length()-i-1);
