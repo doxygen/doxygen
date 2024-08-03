@@ -90,7 +90,7 @@ enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
 //! Holds yyextra->modifiers (ie attributes) for one symbol (variable, function, etc)
 struct SymbolModifiers
 {
-  enum Protection {doxNONE_P, Public, PUBLIC, PRIVATE, Package};
+  enum Protection {doxNONE_P, Public, PUBLIC, PRIVATE, Private, Package};
   enum Direction {doxNONE_D, doxIN, doxOUT, doxINOUT};
 
   //! This is only used with function return value.
@@ -666,7 +666,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
   /*------- access specification --------------------------------------------------------------------------*/
 
 <ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
-                                           yyextra->defaultProtection = Protection::PRIVATE;
+                                           yyextra->defaultProtection = Protection::Private;
                                            yyextra->current->protection = yyextra->defaultProtection ;
                                          }
 <ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
@@ -705,7 +705,7 @@ public                                  {
                                           yyextra->current->protection = Protection::Public;
                                         }
 private                                 {
-                                          yyextra->current->protection = Protection::PRIVATE;
+                                          yyextra->current->protection = Protection::Private;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -735,7 +735,7 @@ private                                 {
                                           {
                                             yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("public");
                                           }
-                                          else if( yyextra->current->protection == Protection::PRIVATE )
+                                          else if( yyextra->current->protection == Protection::Private )
                                           {
                                             yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("private");
                                           }
@@ -2301,11 +2301,11 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
   }
   else if (mdfString=="public")
   {
-    newMdf.protection = SymbolModifiers::doxPublic;
+    newMdf.protection = SymbolModifiers::Public;
   }
   else if (mdfString=="private")
   {
-    newMdf.protection = SymbolModifiers::doxPrivate;
+    newMdf.protection = SymbolModifiers::Private;
   }
   else if (mdfString=="protected")
   {
@@ -2495,12 +2495,12 @@ static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs)
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += mdfs.bindVar;
   }
-  if (mdfs.protection == SymbolModifiers::doxPublic)
+  if (mdfs.protection == SymbolModifiers::Public)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "public";
   }
-  else if (mdfs.protection == SymbolModifiers::doxPrivate)
+  else if (mdfs.protection == SymbolModifiers::Private)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "private";
@@ -2540,10 +2540,10 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
 {
   ent->type = applyModifiers(ent->type, mdfs);
 
-  if (mdfs.protection == SymbolModifiers::doxPublic)
+  if (mdfs.protection == SymbolModifiers::Public)
     ent->protection = Protection::Public;
-  else if (mdfs.protection == SymbolModifiers::doxPrivate)
-    ent->protection = Protection::PRIVATE;
+  else if (mdfs.protection == SymbolModifiers::Private)
+    ent->protection = Protection::Private;
 
   if (mdfs.nonoverridable)
     ent->spec.setFinal(true);
@@ -2884,7 +2884,7 @@ static void initEntry(yyscan_t yyscanner)
   }
   else if (yyextra->current_root && yyextra->current_root->section.isFunction())
   {
-    yyextra->current->protection = Protection::PRIVATE;
+    yyextra->current->protection = Protection::Private;
   }
   else
   {
