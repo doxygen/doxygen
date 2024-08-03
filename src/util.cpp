@@ -102,7 +102,7 @@ using namespace std;
 
 #define REL_PATH_TO_ROOT "../../"
 
-static const char *hex = "0123456789ABCDEF";
+static const char *hex_value = "0123456789ABCDEF";
 
 //------------------------------------------------------------------------
 // TextGeneratorOLImpl implementation
@@ -3722,8 +3722,8 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
                     unsigned char id = static_cast<unsigned char>(c);
                     ids[0]='_';
                     ids[1]='x';
-                    ids[2]=hex[id>>4];
-                    ids[3]=hex[id&0xF];
+                    ids[2]=hex_value[id>>4];
+                    ids[3]=hex_value[id&0xF];
                     ids[4]=0;
                     growBuf.addStr(ids);
                   }
@@ -4196,8 +4196,8 @@ QCString convertToId(const QCString &s)
     else
     {
       encChar[0]='_';
-      encChar[1]=hex[static_cast<unsigned char>(c)>>4];
-      encChar[2]=hex[static_cast<unsigned char>(c)&0xF];
+      encChar[1]=hex_value[static_cast<unsigned char>(c)>>4];
+      encChar[2]=hex_value[static_cast<unsigned char>(c)&0xF];
       encChar[3]=0;
       growBuf.addStr(encChar);
     }
@@ -4313,8 +4313,8 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
           if (uc<32 && !isspace(c))
           {
             growBuf.addStr("&#x24");
-            growBuf.addChar(hex[uc>>4]);
-            growBuf.addChar(hex[uc&0xF]);
+            growBuf.addChar(hex_value[uc>>4]);
+            growBuf.addChar(hex_value[uc&0xF]);
             growBuf.addChar(';');
           }
           else
@@ -6102,12 +6102,12 @@ QCString replaceColorMarkers(const QCString &str)
     int blue  = static_cast<int>(b*255.0);
     char colStr[8];
     colStr[0]='#';
-    colStr[1]=hex[red>>4];
-    colStr[2]=hex[red&0xf];
-    colStr[3]=hex[green>>4];
-    colStr[4]=hex[green&0xf];
-    colStr[5]=hex[blue>>4];
-    colStr[6]=hex[blue&0xf];
+    colStr[1]=hex_value[red>>4];
+    colStr[2]=hex_value[red&0xf];
+    colStr[3]=hex_value[green>>4];
+    colStr[4]=hex_value[green&0xf];
+    colStr[5]=hex_value[blue>>4];
+    colStr[6]=hex_value[blue&0xf];
     colStr[7]=0;
     //printf("replacing %s->%s (level=%d)\n",qPrint(lumStr),colStr,level);
     result+=colStr;
