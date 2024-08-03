@@ -5200,13 +5200,7 @@ void addHtmlExtensionIfMissing(QCString &fName)
 {
   if (fName.isEmpty()) return;
   QString tmp = fname;
-  if (fname.endsWith(".")) {
-      fname += Doxygen::htmlFileExtension;
-  }
-  else if (fname.endsWith("/") {
-      fname += Doxygen::htmlFileExtension;
-  }
-  else if (fname.endsWith("\\") {
+  if (tmp.endsWith(".")) {
       fname += Doxygen::htmlFileExtension;
   }
 }
