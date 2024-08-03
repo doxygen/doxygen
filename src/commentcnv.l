@@ -1405,9 +1405,9 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
               yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
 // testing: below (paule32)
 #ifndef __GNUC__
-          yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
-#else
           yyextra->raiseIncrement =      max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
+#else
+          yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
 #endif
         }
       }
@@ -1891,9 +1891,9 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
   int bytesInBuf = static_cast<int>(yyextra->inBuf->size())-yyextra->inBufPos;
 //  testing: paule32
 #ifndef __GNUC__
-  int bytesToCopy = std::min(max_size,bytesInBuf);
-#else
   int bytesToCopy =      min(max_size,bytesInBuf);
+#else
+  int bytesToCopy = std::min(max_size,bytesInBuf);
 #endif
   memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
