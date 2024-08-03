@@ -52,6 +52,10 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <map>
 #include <vector>
 #include <algorithm>
@@ -60,8 +64,6 @@ typedef yyguts_t *yyscan_t;
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
-
-#include <iostream>
 
 #include "fortranscanner.h"
 #include "entry.h"
