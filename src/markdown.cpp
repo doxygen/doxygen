@@ -35,6 +35,7 @@
 
 #ifdef __GNUC__
 # include <iostream>
+# include <string>
 #endif
 
 #include <unordered_map>
@@ -2327,11 +2328,11 @@ static bool isCodeBlock(std::string_view data, size_t offset,size_t &indent)
     // determine the indent of line -2
     // Note that the offset is negative so we need to rewrap the string view
 #ifndef __GNUC__
-    indent=     max(indent,computeIndentExcludingListMarkers(
+    indent = max(indent,computeIndentExcludingListMarkers(string_view(data.data()+nl_pos[2],nl_pos[1]-nl_pos[2])));
 #else
-    indent=std::max(indent,computeIndentExcludingListMarkers(
+    indent = std::max(indent,computeIndentExcludingListMarkers(std::string_view(data.data()+nl_pos[2],nl_pos[1]-nl_pos[2])));
 #endif
-          std::string_view(data.data()+nl_pos[2],nl_pos[1]-nl_pos[2])));
+          
 
     //printf(">isCodeBlock local_indent %d>=%d+%d=%d\n",
     //    indent0,indent,codeBlockIndent,indent0>=indent+codeBlockIndent);
