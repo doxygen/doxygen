@@ -21,6 +21,10 @@
 #include <string.h>
 #include <assert.h>
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <mutex>
 #include <unordered_set>
 #include <codecvt>
@@ -77,6 +81,10 @@
 #include "moduledef.h"
 #include "trace.h"
 #include "stringutil.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -3248,7 +3256,11 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   QCString name=Dir::cleanDirPath(n.str());
   QCString path;
   if (name.isEmpty()) return nullptr;
-  int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
+#ifndef __GNUC__
+  int slashPos =      max(name.findRev('/'),name.findRev('\\'));
+#else
+  int slashPos = std::max(name.findRev('/'),name.findRev('\\'));
+#endif
   if (slashPos!=-1)
   {
     path=removeLongPathMarker(name.left(slashPos+1));
@@ -3350,7 +3362,11 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
   QCString result;
   QCString name=n;
   QCString path;
-  int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
+#ifndef __GNUC__
+  int slashPos =      max(name.findRev('/'),name.findRev('\\'));
+#else
+  int slashPos = std::max(name.findRev('/'),name.findRev('\\'));
+#endif
   if (slashPos!=-1)
   {
     path=name.left(slashPos+1);
@@ -5184,7 +5200,11 @@ void addHtmlExtensionIfMissing(QCString &fName)
   if (fName.isEmpty()) return;
   int i_fs = fName.findRev('/');
   int i_bs = fName.findRev('\\');
+#ifndef __GNUC__
+  int i    = fName.find('.',     max({ i_fs, i_bs ,0})); // search for . after path part
+#else
   int i    = fName.find('.',std::max({ i_fs, i_bs ,0})); // search for . after path part
+#endif
   if (i==-1)
   {
     fName+=Doxygen::htmlFileExtension;
