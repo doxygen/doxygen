@@ -13,6 +13,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <algorithm>
@@ -30,6 +34,10 @@
 #include "textstream.h"
 #include "growbuf.h"
 #include "dir.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 //-----------------------------------------------------------------------------
 
