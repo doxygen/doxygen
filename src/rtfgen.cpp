@@ -15,6 +15,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <mutex>
 #include <stdlib.h>
 #include <algorithm>
@@ -49,6 +53,10 @@
 #include "datetime.h"
 #include "outputlist.h"
 #include "moduledef.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -1986,7 +1994,11 @@ void RTFGenerator::endDescTableData()
 
 int RTFGenerator::indentLevel() const
 {
+#ifndef __GNUC__
+  return      min(m_indentLevel,maxIndentLevels-1);
+#else
   return std::min(m_indentLevel,maxIndentLevels-1);
+#endif
 }
 
 void RTFGenerator::incIndentLevel()
