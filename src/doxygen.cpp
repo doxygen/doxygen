@@ -18,6 +18,10 @@
 #include <cerrno>
 #include <sys/stat.h>
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <algorithm>
 #include <unordered_map>
 #include <memory>
@@ -122,6 +126,10 @@ extern void initResources();
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <signal.h>
 #define HAS_SIGNALS
+#endif
+
+#ifdef __GNUC__
+using namespace std;
 #endif
 
 // globally accessible variables
@@ -2933,7 +2941,11 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     {
       QCString pScope;
       ClassDefMutable *pcd=nullptr;
+#ifndef __GNUC__
+      pScope = scope.left(     max(si-2,0)); // scope without tag less parts
+#else
       pScope = scope.left(std::max(si-2,0)); // scope without tag less parts
+#endif
       if (!pScope.isEmpty())
         pScope.prepend(annScopePrefix);
       else if (annScopePrefix.length()>2)
@@ -11081,7 +11093,11 @@ static int computeIdealCacheParam(size_t v)
   // r = log2(v)
 
   // convert to a valid cache size value
+#ifndef __GNUC__
+  return      max(0,     min(r-16,9));
+#else
   return std::max(0,std::min(r-16,9));
+#endif
 }
 
 void readConfiguration(int argc, char **argv)
@@ -12920,7 +12936,11 @@ void generateOutput()
       Doxygen::symbolLookupCache->misses());
   int typeCacheParam   = computeIdealCacheParam(static_cast<size_t>(Doxygen::typeLookupCache->misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
   int symbolCacheParam = computeIdealCacheParam(static_cast<size_t>(Doxygen::symbolLookupCache->misses()));
+#ifndef __GNUC__
+  int cacheParam =      max(typeCacheParam,symbolCacheParam);
+#else
   int cacheParam = std::max(typeCacheParam,symbolCacheParam);
+#endif
   if (cacheParam>Config_getInt(LOOKUP_CACHE_SIZE))
   {
     msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);
