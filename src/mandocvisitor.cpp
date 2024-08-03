@@ -13,6 +13,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include "mandocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -28,6 +32,10 @@
 #include "emoji.h"
 #include "fileinfo.h"
 #include "codefragment.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt)
@@ -627,7 +635,11 @@ void ManDocVisitor::operator()(const DocHtmlList &l)
   if (!m_firstCol) m_t << "\n";
   m_t << ".PD 0\n";
   m_firstCol=true;
+#ifndef __GNUC__
+  int indent =      min(m_indent,maxIndentLevels-1);
+#else
   int indent = std::min(m_indent,maxIndentLevels-1);
+#endif
   m_listItemInfo[indent].number = 1;
   m_listItemInfo[indent].type   = '1';
   for (const auto &opt : l.attribs())
@@ -659,7 +671,11 @@ void ManDocVisitor::operator()(const DocHtmlListItem &li)
   const DocHtmlList *list = std::get_if<DocHtmlList>(li.parent());
   if (list && list->type()==DocHtmlList::Ordered)
   {
+#ifndef __GNUC__
+    int indent =      min(m_indent,maxIndentLevels-1);
+#else
     int indent = std::min(m_indent,maxIndentLevels-1);
+#endif
     for (const auto &opt : li.attribs())
     {
       if (opt.name=="value")
