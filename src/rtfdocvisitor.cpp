@@ -13,6 +13,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <algorithm>
 
 #include "rtfdocvisitor.h"
@@ -37,6 +41,10 @@
 #include "fileinfo.h"
 #include "portable.h"
 #include "codefragment.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -94,7 +102,11 @@ QCString RTFDocVisitor::getListTable(const int id)
 
 int RTFDocVisitor::indentLevel() const
 {
+#ifndef __GNUC__
+  return      min(m_indentLevel,maxIndentLevels-1);
+#else
   return std::min(m_indentLevel,maxIndentLevels-1);
+#endif
 }
 
 void RTFDocVisitor::incIndentLevel()
@@ -875,7 +887,11 @@ void RTFDocVisitor::operator()(const DocSection &s)
   m_t << "{{" // start section
       << rtf_Style_Reset;
   QCString heading;
+#ifndef __GNUC__
+  int level =      min(s.level()+2+m_hierarchyLevel,4);
+#else
   int level = std::min(s.level()+2+m_hierarchyLevel,4);
+#endif
   if (level <= 0)
     level = 1;
   heading.sprintf("Heading%d",level);
