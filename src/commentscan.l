@@ -72,6 +72,11 @@ typedef yyguts_t *yyscan_t;
 #include "debug.h"
 #include "stringutil.h"
 
+// add: paule32 (testing: MSVC and GNU G++)
+#ifdef __GNUC__
+using namespace std;
+#endif
+
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &);
