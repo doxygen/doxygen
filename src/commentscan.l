@@ -31,6 +31,11 @@ typedef yyguts_t *yyscan_t;
  *        includes
  */
 
+// add: paule32 (testing: MSVC and GNU G++)
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <map>
 #include <stack>
 #include <string>
@@ -3262,9 +3267,12 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   else if (s=="subparagraph")    yyextra->sectionLevel=SectionType::Subparagraph;
   else if (s=="subsubparagraph") yyextra->sectionLevel=SectionType::Subsubparagraph;
   // raise it if requested
-// paule32 - msvc problem with std::min
-// yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
-  yyextra->sectionLevel = min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
+// add: paule32 (testing: MSVC and GNU G++)
+#ifndef __GNUC__
+  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
+#else
+  yyextra->sectionLevel =      min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
+#endif
   // rewrite the update section level to the output
   switch (yyextra->sectionLevel)
   {
@@ -3993,9 +4001,12 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
         }
         else
         {
-          // paule32 - msvc problem with std::min
-          // level = level<=0 ? SectionType::MaxLevel : std::min(level,SectionType::MaxLevel);
-          level = level<=0 ? SectionType::MaxLevel : min(level,SectionType::MaxLevel);
+          // add: paule32 (testing: MSVC and GNU G++)
+#ifndef __GNUC__
+          level = level<=0 ? SectionType::MaxLevel : std::min(level,SectionType::MaxLevel);
+#else
+          level = level<=0 ? SectionType::MaxLevel :      min(level,SectionType::MaxLevel);
+#endif
           opt = opt.left(i).stripWhiteSpace();
         }
       }
