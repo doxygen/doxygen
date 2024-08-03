@@ -13,6 +13,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include "docnode.h"
 #include "docparser_p.h"
 #include "htmlentity.h"
@@ -38,6 +42,10 @@
 #include "trace.h"
 #include "anchor.h"
 #include "aliases.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE
@@ -357,7 +365,11 @@ void DocIncOperator::parse()
         found = true;
         AUTO_TRACE_ADD("\\line {}",Trace::trunc(m_text));
       }
+#ifndef __GNUC__
+      parser()->context.includeFileOffset =      min(l,o+1); // set pointer to start of new line
+#else
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
+#endif
       m_showLineNo = parser()->context.includeFileShowLineNo;
       break;
     case SkipLine:
@@ -389,7 +401,11 @@ void DocIncOperator::parse()
         }
         o++; // skip new line
       }
+#ifndef __GNUC__
+      parser()->context.includeFileOffset =      min(l,o+1); // set pointer to start of new line
+#else
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
+#endif
       m_showLineNo = parser()->context.includeFileShowLineNo;
       break;
     case Skip:
@@ -451,7 +467,11 @@ void DocIncOperator::parse()
         }
         o++; // skip new line
       }
+#ifndef __GNUC__
+      parser()->context.includeFileOffset =      min(l,o+1); // set pointer to start of new line
+#else
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
+#endif
       m_showLineNo = parser()->context.includeFileShowLineNo;
       break;
   }
@@ -1755,7 +1775,11 @@ uint32_t DocHtmlCell::colSpan() const
   {
     if (attr.name.lower()=="colspan")
     {
+#ifndef __GNUC__
+      return      max(1u,attr.value.toUInt());
+#else
       return std::max(1u,attr.value.toUInt());
+#endif
     }
   }
   return 1;
