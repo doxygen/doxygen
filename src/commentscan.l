@@ -3262,7 +3262,9 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   else if (s=="subparagraph")    yyextra->sectionLevel=SectionType::Subparagraph;
   else if (s=="subsubparagraph") yyextra->sectionLevel=SectionType::Subsubparagraph;
   // raise it if requested
-  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
+// paule32 - msvc problem with std::min
+// yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
+  yyextra->sectionLevel = min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
   // rewrite the update section level to the output
   switch (yyextra->sectionLevel)
   {
@@ -3991,7 +3993,9 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
         }
         else
         {
-          level = level<=0 ? SectionType::MaxLevel : std::min(level,SectionType::MaxLevel);
+          // paule32 - msvc problem with std::min
+          // level = level<=0 ? SectionType::MaxLevel : std::min(level,SectionType::MaxLevel);
+          level = level<=0 ? SectionType::MaxLevel : min(level,SectionType::MaxLevel);
           opt = opt.left(i).stripWhiteSpace();
         }
       }
