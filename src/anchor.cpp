@@ -46,7 +46,7 @@ constexpr auto prefix = "autotoc_md";
 std::string AnchorGenerator::addPrefixIfNeeded(const std::string &anchor)
 {
   if (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB &&
-      (anchor.empty() || anchor.at(0)=='-' || (anchor.at(0)>='0' && anchor.at(0)<='9')))
+      (anchor.empty() || anchor.front() == '-' || std::isdigit(anchor.front())))
   {
     return prefix+anchor;
   }
@@ -70,7 +70,7 @@ std::string AnchorGenerator::generate(const std::string &label)
 
   auto createGitHubStyleAnchor = [&]()
   {
-    result="";
+    result.clear();
     size_t pos=0;
     while (pos<label.length())
     {
