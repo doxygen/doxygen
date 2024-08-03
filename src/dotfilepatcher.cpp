@@ -14,7 +14,7 @@
 */
 
 #ifdef __GNUC__
-# incluide <iostream>
+# include <iostream>
 #endif
 
 #include "dotfilepatcher.h"
