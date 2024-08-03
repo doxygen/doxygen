@@ -13,6 +13,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <algorithm>
 #include <array>
 
@@ -40,6 +44,10 @@
 #include "regex.h"
 #include "portable.h"
 #include "codefragment.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =
@@ -2041,7 +2049,11 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, const DocVerba
 
 int LatexDocVisitor::indentLevel() const
 {
+#ifndef __GNUC__
+  return      min(m_indentLevel,maxIndentLevels-1);
+#else
   return std::min(m_indentLevel,maxIndentLevels-1);
+#endif
 }
 
 void LatexDocVisitor::incIndentLevel()
