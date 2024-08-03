@@ -13,6 +13,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <map>
 #include <vector>
 #include <string>
@@ -36,6 +40,10 @@
 // TODO: remove these dependencies
 #include "doxygen.h"   // for Doxygen::indexList
 #include "indexlist.h" // for Doxygen::indexList
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 static int determineInkscapeVersion(const Dir &thisDir);
 
@@ -433,11 +441,21 @@ static bool updateEPSBoundingBox(const QCString &formBase,
     {
       if (line.rfind("%%BoundingBox",0)==0)
       {
-        epsOut << "%%BoundingBox: " << std::max(0,x1-1) << " " << std::max(0,y1-1) << " " << (x2+1) << " " << (y2+1) << "\n";
+#ifndef __GNUC__
+        epsOut << "%%BoundingBox: " << max(0,x1-1) << " "
+               <<      max(0,y1-1)  << " " << (x2+1) << " " << (y2+1) << "\n";
+#else
+        epsOut << "%%BoundingBox: " << std::max(0,x1-1) << " "
+               << std::max(0,y1-1)  << " " << (x2+1) << " " << (y2+1) << "\n";
+#endif
       }
       else if (line.rfind("%%HiResBoundingBox",0)==0)
       {
+#ifndef __GNUC__
+        epsOut << "%%HiResBoundingBox: " << max(0.0,x1hi-1.0) << " " << max(0.0,y1hi-1.0) << " " << (x2hi+1.0) << " " << (y2hi+1.0) << "\n";
+#else
         epsOut << "%%HiResBoundingBox: " << std::max(0.0,x1hi-1.0) << " " << std::max(0.0,y1hi-1.0) << " " << (x2hi+1.0) << " " << (y2hi+1.0) << "\n";
+#endif
       }
       else
       {
