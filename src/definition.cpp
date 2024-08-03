@@ -776,7 +776,7 @@ class FilterCache
 #else
       const size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
       const size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
-endif
+#endif
       assert(startLineOffset <= endLineOffset);
       const size_t fragmentSize = endLineOffset-startLineOffset;
       return std::tie(startLineOffset,fragmentSize);
