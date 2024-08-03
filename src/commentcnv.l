@@ -36,6 +36,12 @@ typedef yyguts_t *yyscan_t;
 
 #include <stdio.h>
 #include <stdlib.h>
+
+// add: paule32 (testing: MSVC and GNU G++)
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <stack>
 #include <algorithm>
 #include <deque>
@@ -54,6 +60,11 @@ typedef yyguts_t *yyscan_t;
 #include "section.h"
 
 #include <assert.h>
+
+// add: paule32 (testing: MSVC and GNU G++)
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -1392,9 +1403,12 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
         {
           warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
               yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
-// Error: below (paule32)
-//          yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
-          yyextra->raiseIncrement = max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
+// testing: below (paule32)
+#ifndef __GNUC__
+          yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
+#else
+          yyextra->raiseIncrement =      max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
+#endif
         }
       }
       else if (option==std::string_view{"prefix"} && !value.empty())
@@ -1875,8 +1889,12 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   int bytesInBuf = static_cast<int>(yyextra->inBuf->size())-yyextra->inBufPos;
-//  paule32:    int bytesToCopy = std::min(max_size,bytesInBuf);
-    int bytesToCopy = min(max_size,bytesInBuf);
+//  testing: paule32
+#ifndef __GNUC__
+  int bytesToCopy = std::min(max_size,bytesInBuf);
+#else
+  int bytesToCopy =      min(max_size,bytesInBuf);
+#endif
   memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
   return bytesToCopy;
