@@ -2936,7 +2936,11 @@ static void addModule(yyscan_t yyscanner,const QCString &name, bool isModule)
   else
   {
     QCString fname = yyextra->fileName;
+#ifndef __GNUC__
+    int index =      max(fname.findRev('/'), fname.findRev('\\'));
+#else
     int index = std::max(fname.findRev('/'), fname.findRev('\\'));
+#endif
     fname = fname.right(fname.length()-index-1);
     if (yyextra->mainPrograms) fname += "__" + QCString().setNum(yyextra->mainPrograms);
     yyextra->mainPrograms++;
