@@ -32,7 +32,10 @@ typedef yyguts_t *yyscan_t;
 
 #include "doxygen.h"
 
-#include <iostream>
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <stack>
 #include <deque>
 #include <algorithm>
