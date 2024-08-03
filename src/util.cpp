@@ -1208,8 +1208,8 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
   result+=")";
   if (al.constSpecifier()) result+=" const";
   if (al.volatileSpecifier()) result+=" volatile";
-  if (al.refQualifier()==RefQualifierLValue) result+=" &";
-  else if (al.refQualifier()==RefQualifierRValue) result+=" &&";
+  if (al.refQualifier()==RefQualifierType::LValue) result+=" &";
+  else if (al.refQualifier()==RefQualifierType::RValue) result+=" &&";
   if (!al.trailingReturnType().isEmpty()) result+=al.trailingReturnType();
   if (al.pureSpecifier()) result+=" =0";
   return removeRedundantWhiteSpace(result);

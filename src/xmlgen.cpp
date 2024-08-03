@@ -698,10 +698,10 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     if (md->isInline()) t << "yes"; else t << "no";
     t << "\"";
 
-    if (al.refQualifier()!=RefQualifierNone)
+    if (al.refQualifier()!=RefQualifierType::None)
     {
       t << " refqual=\"";
-      if (al.refQualifier()==RefQualifierLValue) t << "lvalue"; else t << "rvalue";
+      if (al.refQualifier()==RefQualifierType::LValue) t << "lvalue"; else t << "rvalue";
       t << "\"";
     }
 
