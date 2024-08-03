@@ -43,7 +43,7 @@ struct Argument
   QCString typeConstraint;  /*!< Used for Java generics: \<T extends C\> */
 };
 
-enum RefQualifierType
+enum class RefQualifierType
 {
   None,
   LValue,
