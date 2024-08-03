@@ -16,6 +16,20 @@
 #ifndef DOXYGEN_H
 #define DOXYGEN_H
 
+/**
+ * \brief   Code added by paule32, to check if a running process of the
+ *          HTML WebViewer is open.
+ * \details Doxygen has problems to write CHM HTML files when a process is
+ *          already open. If so, you get a message and you can choose to close
+ *          this process. The check is available for Windows 11 Operating Systems.
+ */
+#if defined(_WIN32) || defined(_WIN64)
+# include <windows.h>
+# include <tlhelp32.h>
+# include <tchar.h>
+# include <stdio.h>
+#endif
+
 #include <mutex>
 
 #include "containers.h"
