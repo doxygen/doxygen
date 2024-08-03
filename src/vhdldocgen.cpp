@@ -24,6 +24,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <map>
 #include <algorithm>
 #include <unordered_set>
@@ -63,6 +68,10 @@
 #include "plantuml.h"
 #include "textstream.h"
 #include "moduledef.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType
@@ -2562,7 +2571,11 @@ void alignText(QCString & q)
 
   while (str.length()>80)
   {
-    int j=std::max(str.findRev(' ',80),str.findRev('|',80));
+#ifndef __GNUC__
+    int j =      max(str.findRev(' ',80),str.findRev('|',80));
+#else
+    int j = std::max(str.findRev(' ',80),str.findRev('|',80));
+#endif
     if (j<=0)
     {
       temp+=str;
