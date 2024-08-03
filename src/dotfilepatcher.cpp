@@ -13,6 +13,10 @@
 *
 */
 
+#ifdef __GNUC__
+# incluide <iostream>
+#endif
+
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
 #include "config.h"
@@ -24,6 +28,10 @@
 #include "dot.h"
 #include "dir.h"
 #include "portable.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 // top part of the interactive SVG header
 static const char svgZoomHeader1[] = R"svg(
@@ -413,7 +421,11 @@ bool DotFilePatcher::run() const
       int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
       if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
+#ifndef __GNUC__
+        int e =      max(line.find("--]"),line.find("-->"));
+#else
         int e = std::max(line.find("--]"),line.find("-->"));
+#endif
         const Map &map = m_maps.at(mapId);
         //printf("DotFilePatcher::writeSVGFigure: file=%s zoomable=%d\n",
         //  qPrint(m_patchFile),map.zoomable);
