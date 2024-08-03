@@ -90,8 +90,8 @@ enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
 //! Holds yyextra->modifiers (ie attributes) for one symbol (variable, function, etc)
 struct SymbolModifiers
 {
-  enum Protection {NONE_P, PUBLIC, PRIVATE};
-  enum Direction {NONE_D, IN, OUT, INOUT};
+  enum Protection {doxNONE_P, doxPUBLIC, doxPRIVATE};
+  enum Direction {doxNONE_D, doxIN, doxOUT, doxINOUT};
 
   //! This is only used with function return value.
   QCString type, returnName;
