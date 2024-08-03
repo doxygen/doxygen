@@ -61,6 +61,8 @@ typedef yyguts_t *yyscan_t;
 #include <assert.h>
 #include <ctype.h>
 
+#include <iostream>
+
 #include "fortranscanner.h"
 #include "entry.h"
 #include "message.h"
@@ -75,6 +77,9 @@ typedef yyguts_t *yyscan_t;
 #include "debug.h"
 #include "markdown.h"
 
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -1529,7 +1534,11 @@ private                                 {
                                         }
 <DocBlock>"\\ilinebr "{BS}              {
                                           QCString indent;
+#ifndef __GNUC__
+                                          int extraSpaces =      max(0,static_cast<int>(yyleng-9-yyextra->curIndent-2));
+#else
                                           int extraSpaces = std::max(0,static_cast<int>(yyleng-9-yyextra->curIndent-2));
+#endif
                                           indent.fill(' ',extraSpaces);
                                           //printf("extraSpaces=%d\n",extraSpaces);
                                           yyextra->docBlock += "\\ilinebr ";
