@@ -5131,11 +5131,11 @@ NONLopt [^\n]*
                                         }
 <FuncQual>{BN}*"&"                      {
                                           yyextra->current->args += " &";
-                                          yyextra->current->argList.setRefQualifier(RefQualifierLValue);
+                                          yyextra->current->argList.setRefQualifier(RefQualifierType::LValue);
                                         }
 <FuncQual>{BN}*"&&"                     {
                                           yyextra->current->args += " &&";
-                                          yyextra->current->argList.setRefQualifier(RefQualifierRValue);
+                                          yyextra->current->argList.setRefQualifier(RefQualifierType::RValue);
                                         }
 
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"0"{BN}*          { // pure virtual member function
