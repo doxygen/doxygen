@@ -545,8 +545,13 @@ void TreeDiagram::computeExtremes(uint32_t *maxLabelLen,uint32_t *maxXPos)
     for (const auto &di : *dr) // for each item in a row
     {
       if (di->isInList()) done=TRUE;
-      if (maxXPos) mx=std::max(mx,di->xPos());
-      if (maxLabelLen) ml=std::max(ml,Image::stringLength(di->label()));
+#ifndef __GNUC__
+      if (maxXPos)     mx = max(mx,di->xPos());
+      if (maxLabelLen) ml = max(ml,Image::stringLength(di->label()));
+#else
+      if (maxXPos)     mx = std::max(mx,di->xPos());
+      if (maxLabelLen) ml = std::max(ml,Image::stringLength(di->label()));
+#endif
     }
     if (done) break;
   }
@@ -1079,12 +1084,21 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
   p->base.computeExtremes(&baseMaxLabelWidth,&baseMaxX);
   p->super.computeExtremes(&superMaxLabelWidth,&superMaxX);
 
-  uint32_t rows=std::max(1u,baseRows+superRows-1);
-  uint32_t cols=(std::max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
+#ifndef __GNUC__
+  uint32_t rows =  max(1u,baseRows+superRows-1);
+  uint32_t cols = (max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
+#else
+  uint32_t rows =  std::max(1u,baseRows+superRows-1);
+  uint32_t cols = (std::max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
+#endif
 
   // Estimate the image aspect width and height in pixels.
   float estHeight = static_cast<float>(rows)*40.0f;
+#ifndef __GNUC__
+  float estWidth  = static_cast<float>(cols)*(20+static_cast<float>(max(baseMaxLabelWidth,superMaxLabelWidth)));
+#else
   float estWidth  = static_cast<float>(cols)*(20+static_cast<float>(std::max(baseMaxLabelWidth,superMaxLabelWidth)));
+#endif
   //printf("Estimated size %d x %d\n",estWidth,estHeight);
 
   const float pageWidth = 14.0f; // estimated page width in cm.
@@ -1092,7 +1106,11 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
                                  // errors.
 
   // compute the image height in centimeters based on the estimates
+#ifndef __GNUC__
+  float realHeight = static_cast<float>(min(rows,12u)); // real height in cm
+#else
   float realHeight = static_cast<float>(std::min(rows,12u)); // real height in cm
+#endif
   float realWidth  = realHeight * estWidth/estHeight;
   if (realWidth>pageWidth) // assume that the page width is about 15 cm
   {
@@ -1378,8 +1396,13 @@ void ClassDiagram::writeImage(TextStream &t,const QCString &path,
   p->base.computeExtremes(&lb,&xb);
   p->super.computeExtremes(&ls,&xs);
 
+#ifndef __GNUC__
+  uint32_t cellWidth  = max(lb,ls)+labelHorMargin*2;
+  uint32_t maxXPos    = max(xb,xs);
+#else
   uint32_t cellWidth  = std::max(lb,ls)+labelHorMargin*2;
   uint32_t maxXPos    = std::max(xb,xs);
+#endif
   uint32_t labelVertMargin = 6; //std::max(6,(cellWidth-fontHeight)/6); // aspect at least 1:3
   uint32_t cellHeight = labelVertMargin*2+fontHeight;
   uint32_t imageWidth = (maxXPos+gridWidth)*cellWidth/gridWidth+
