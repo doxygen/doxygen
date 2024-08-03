@@ -5195,19 +5195,19 @@ bool checkExtension(const QCString &fName, const QCString &ext)
   return fName.right(ext.length())==ext;
 }
 
+// TODO: paule32
 void addHtmlExtensionIfMissing(QCString &fName)
 {
   if (fName.isEmpty()) return;
-  int i_fs = fName.findRev('/');
-  int i_bs = fName.findRev('\\');
-#ifndef __GNUC__
-  int i    = fName.find('.',     max({ i_fs, i_bs ,0})); // search for . after path part
-#else
-  int i    = fName.find('.',std::max({ i_fs, i_bs ,0})); // search for . after path part
-#endif
-  if (i==-1)
-  {
-    fName+=Doxygen::htmlFileExtension;
+  QString tmp = fname;
+  if (fname.endsWith(".")) {
+      fname += Doxygen::htmlFileExtension;
+  }
+  else if (fname.endsWith("/") {
+      fname += Doxygen::htmlFileExtension;
+  }
+  else if (fname.endsWith("\\") {
+      fname += Doxygen::htmlFileExtension;
   }
 }
 
