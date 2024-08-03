@@ -243,6 +243,8 @@ class MemberDef : public Definition
     virtual bool hasInlineSource() const = 0;
     virtual bool hasEnumValues() const = 0;
 
+    virtual QCString sourceRefName() const = 0;
+
     virtual const MemberDef *templateMaster() const = 0;
     virtual QCString getScopeString() const = 0;
     virtual ClassDef *getClassDefOfAnonymousType() const = 0;

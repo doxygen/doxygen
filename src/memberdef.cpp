@@ -227,6 +227,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool hasReferencedByRelation() const override;
     bool hasEnumValues() const override;
     bool hasInlineSource() const override;
+    QCString sourceRefName() const override;
     const MemberDef *templateMaster() const override;
     QCString getScopeString() const override;
     ClassDef *getClassDefOfAnonymousType() const override;
@@ -867,6 +868,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasReferencedByRelation(); }
     bool hasInlineSource() const override
     { return getMdAlias()->hasInlineSource(); }
+    QCString sourceRefName() const override
+    { return getMdAlias()->sourceRefName(); }
     bool hasEnumValues() const override
     { return getMdAlias()->hasEnumValues(); }
     StringVector getQualifiers() const override
@@ -1621,6 +1624,26 @@ bool MemberDefImpl::addExample(const QCString &anchor,const QCString &nameStr, c
 bool MemberDefImpl::hasExamples() const
 {
   return !m_examples.empty();
+}
+
+QCString MemberDefImpl::sourceRefName() const
+{
+  QCString n  = name();
+  QCString s = getScopeString();
+
+  if (!s.isEmpty())
+  {
+    n.prepend(s+"::");
+  }
+  else if (isStatic() && getFileDef())
+  {
+    n.prepend(getFileDef()->name()+":");
+  }
+  if (isCallable())
+  {
+    n.append(argsString());
+  }
+  return n;
 }
 
 QCString MemberDefImpl::getOutputFileBase() const
@@ -6327,39 +6350,46 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
   MemberDefMutable *src = toMemberDefMutable(const_cast<MemberDef*>(s));
   MemberDefMutable *dst = toMemberDefMutable(const_cast<MemberDef*>(d));
   if (src==nullptr || dst==nullptr) return;
-  std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
   //printf("--> addDocCrossReference src=%s,dst=%s\n",qPrint(src->name()),qPrint(dst->name()));
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
   if ((dst->hasReferencedByRelation() || dst->hasCallerGraph()) &&
       src->isCallable()
      )
   {
-    dst->addSourceReferencedBy(src);
+    QCString sourceRefName = src->sourceRefName();
     MemberDefMutable *mdDef = toMemberDefMutable(dst->memberDefinition());
+    MemberDefMutable *mdDecl = toMemberDefMutable(dst->memberDeclaration());
+
+    // critical section
+    std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
+    dst->addSourceReferencedBy(src,sourceRefName);
     if (mdDef)
     {
-      mdDef->addSourceReferencedBy(src);
+      mdDef->addSourceReferencedBy(src,sourceRefName);
     }
-    MemberDefMutable *mdDecl = toMemberDefMutable(dst->memberDeclaration());
     if (mdDecl)
     {
-      mdDecl->addSourceReferencedBy(src);
+      mdDecl->addSourceReferencedBy(src,sourceRefName);
     }
   }
   if ((src->hasReferencesRelation() || src->hasCallGraph()) &&
       src->isCallable()
      )
   {
-    src->addSourceReferences(dst);
+    QCString sourceRefName = dst->sourceRefName();
     MemberDefMutable *mdDef = toMemberDefMutable(src->memberDefinition());
+    MemberDefMutable *mdDecl = toMemberDefMutable(src->memberDeclaration());
+
+    // critical section
+    std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
+    src->addSourceReferences(dst,sourceRefName);
     if (mdDef)
     {
-      mdDef->addSourceReferences(dst);
+      mdDef->addSourceReferences(dst,sourceRefName);
     }
-    MemberDefMutable *mdDecl = toMemberDefMutable(src->memberDeclaration());
     if (mdDecl)
     {
-      mdDecl->addSourceReferences(dst);
+      mdDecl->addSourceReferences(dst,sourceRefName);
     }
   }
 }

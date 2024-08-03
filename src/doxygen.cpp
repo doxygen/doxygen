@@ -3000,57 +3000,85 @@ static void buildTypedefList(const Entry *root)
   {
     AUTO_TRACE();
     QCString rname = removeRedundantWhiteSpace(root->name);
-    MemberName *mn = Doxygen::functionNameLinkedMap->find(rname);
-    bool found=false;
-    if (mn) // symbol with the same name already found
+    QCString scope;
+    int index = computeQualifiedIndex(rname);
+    if (index!=-1 && root->parent()->section.isGroupDoc() && root->parent()->tagInfo())
+      // grouped members are stored with full scope
     {
-      for (auto &imd : *mn)
-      {
-        QCString rtype = root->type;
-        rtype.stripPrefix("typedef ");
-        bool notBothGrouped = root->groups.empty() || imd->getGroupDef()==nullptr; // see example #100
-        //printf("imd->isTypedef()=%d imd->typeString()=%s root->type=%s\n",imd->isTypedef(),
-        //    qPrint(imd->typeString()),qPrint(root->type));
-        if (imd->isTypedef() && notBothGrouped && imd->typeString()==rtype)
-        {
-          MemberDefMutable *md = toMemberDefMutable(imd.get());
-          if (md)
-          {
-            md->setDocumentation(root->doc,root->docFile,root->docLine);
-            md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-            md->setDocsForDefinition(!root->proto);
-            md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-            md->addSectionsToDefinition(root->anchors);
-            md->setRefItems(root->sli);
-            md->addQualifiers(root->qualifiers);
-
-            // merge ingroup specifiers
-            if (md->getGroupDef()==nullptr && !root->groups.empty())
-            {
-              addMemberToGroups(root,md);
-            }
-            else if (md->getGroupDef()!=nullptr && root->groups.empty())
-            {
-              //printf("existing member is grouped, new member not\n");
-            }
-            else if (md->getGroupDef()!=nullptr && !root->groups.empty())
-            {
-              //printf("both members are grouped\n");
-            }
-            found=true;
-            break;
-          }
-        }
-      }
-    }
-    if (found)
-    {
-      AUTO_TRACE_ADD("typedef '{}' already found",rname);
+      buildScopeFromQualifiedName(rname.left(index+2),root->lang,root->tagInfo());
+      scope=rname.left(index);
+      rname=rname.mid(index+2);
     }
     else
     {
-      AUTO_TRACE_ADD("new typedef '{}'",rname);
-      addVariable(root);
+      scope=root->parent()->name; //stripAnonymousNamespaceScope(root->parent->name);
+    }
+    ClassDefMutable *cd=getClassMutable(scope);
+    if (cd && scope+"::"==rname.left(scope.length()+2)) // found A::f inside A
+    {
+      // strip scope from name
+      rname=rname.right(rname.length()-root->parent()->name.length()-2);
+    }
+    QCString rtype = root->type;
+    rtype.stripPrefix("typedef ");
+    if (!root->parent()->name.isEmpty() && root->parent()->section.isCompound() && cd)
+    {
+      AUTO_TRACE_ADD("typedef '{}' in class '{}'", rname,cd->name());
+      addVariableToClass(root,cd,MemberType_Typedef,rtype,rname,root->args,false,nullptr,
+                         root->protection,Relationship::Member);
+    }
+    else
+    {
+      MemberName *mn = Doxygen::functionNameLinkedMap->find(rname);
+      bool found=false;
+      if (mn) // symbol with the same name already found
+      {
+        for (auto &imd : *mn)
+        {
+          bool notBothGrouped = root->groups.empty() || imd->getGroupDef()==nullptr; // see example #100
+                                                                                     //printf("imd->isTypedef()=%d imd->typeString()=%s root->type=%s\n",imd->isTypedef(),
+                                                                                     //    qPrint(imd->typeString()),qPrint(root->type));
+          if (imd->isTypedef() && notBothGrouped && imd->typeString()==rtype)
+          {
+            MemberDefMutable *md = toMemberDefMutable(imd.get());
+            if (md)
+            {
+              md->setDocumentation(root->doc,root->docFile,root->docLine);
+              md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+              md->setDocsForDefinition(!root->proto);
+              md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+              md->addSectionsToDefinition(root->anchors);
+              md->setRefItems(root->sli);
+              md->addQualifiers(root->qualifiers);
+
+              // merge ingroup specifiers
+              if (md->getGroupDef()==nullptr && !root->groups.empty())
+              {
+                addMemberToGroups(root,md);
+              }
+              else if (md->getGroupDef()!=nullptr && root->groups.empty())
+              {
+                //printf("existing member is grouped, new member not\n");
+              }
+              else if (md->getGroupDef()!=nullptr && !root->groups.empty())
+              {
+                //printf("both members are grouped\n");
+              }
+              found=true;
+              break;
+            }
+          }
+        }
+      }
+      if (found)
+      {
+        AUTO_TRACE_ADD("typedef '{}' already found",rname);
+      }
+      else
+      {
+        AUTO_TRACE_ADD("new typedef '{}'",rname);
+        addVariable(root);
+      }
     }
 
   }
@@ -3519,7 +3547,6 @@ static void buildFunctionList(const Entry *root)
     }
     if (!rname.isEmpty() && scope.find('@')==-1)
     {
-      ClassDefMutable *cd=nullptr;
       // check if this function's parent is a class
       scope=stripTemplateSpecifiersFromScope(scope,FALSE);
 
@@ -3527,7 +3554,7 @@ static void buildFunctionList(const Entry *root)
 
       int memIndex=rname.findRev("::");
 
-      cd=getClassMutable(scope);
+      ClassDefMutable *cd=getClassMutable(scope);
       if (cd && scope+"::"==rname.left(scope.length()+2)) // found A::f inside A
       {
         // strip scope from name

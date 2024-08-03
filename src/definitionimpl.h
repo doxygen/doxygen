@@ -96,8 +96,8 @@ class DefinitionImpl
     void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
     void setBodySegment(int defLine,int bls,int ble);
     void setBodyDef(const FileDef *fd);
-    void addSourceReferencedBy(MemberDef *d);
-    void addSourceReferences(MemberDef *d);
+    void addSourceReferencedBy(MemberDef *d,const QCString &sourceRefName);
+    void addSourceReferences(MemberDef *d,const QCString &sourceRefName);
     void setRefItems(const RefItemVector &sli);
     void mergeRefItems(Definition *d);
     void mergeReferences(const Definition *other);
@@ -230,10 +230,10 @@ class DefinitionMixin : public Base
     { m_impl.setBodySegment(defLine,bls,ble); }
     void setBodyDef(const FileDef *fd) override
     { m_impl.setBodyDef(fd); }
-    void addSourceReferencedBy(MemberDef *md) override
-    { m_impl.addSourceReferencedBy(md); }
-    void addSourceReferences(MemberDef *md) override
-    { m_impl.addSourceReferences(md); }
+    void addSourceReferencedBy(MemberDef *md,const QCString &sourceRefName) override
+    { m_impl.addSourceReferencedBy(md,sourceRefName); }
+    void addSourceReferences(MemberDef *md,const QCString &sourceRefName) override
+    { m_impl.addSourceReferences(md,sourceRefName); }
     void setRefItems(const RefItemVector &sli) override
     { m_impl.setRefItems(sli); }
     void mergeRefItems(Definition *def) override
