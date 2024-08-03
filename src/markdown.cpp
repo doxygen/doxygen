@@ -33,6 +33,10 @@
 
 #include <stdio.h>
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <unordered_map>
 #include <functional>
 #include <atomic>
@@ -53,6 +57,10 @@
 #include "trace.h"
 #include "anchor.h"
 #include "stringutil.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE
@@ -2318,7 +2326,11 @@ static bool isCodeBlock(std::string_view data, size_t offset,size_t &indent)
 
     // determine the indent of line -2
     // Note that the offset is negative so we need to rewrap the string view
+#ifndef __GNUC__
+    indent=     max(indent,computeIndentExcludingListMarkers(
+#else
     indent=std::max(indent,computeIndentExcludingListMarkers(
+#endif
           std::string_view(data.data()+nl_pos[2],nl_pos[1]-nl_pos[2])));
 
     //printf(">isCodeBlock local_indent %d>=%d+%d=%d\n",
