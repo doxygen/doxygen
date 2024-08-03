@@ -30,6 +30,10 @@
  */
 int main(int argc,char **argv)
 {
+  // do a check, if CHM HTML WebView is open ...
+  #if defined(_WIN32) || defined(_WIN64)
+  
+  #endif
   initDoxygen();
   readConfiguration(argc,argv);
   checkConfiguration();
