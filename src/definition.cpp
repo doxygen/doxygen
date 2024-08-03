@@ -13,6 +13,10 @@
  *
  */
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include <algorithm>
 #include <iterator>
 #include <unordered_map>
@@ -51,6 +55,9 @@
 #include "indexlist.h"
 #include "fileinfo.h"
 
+#ifdef __GNUC__
+using namespace std;
+#endif
 //-----------------------------------------------------------------------------------------
 
 //! Helper class add copy/assignment support to std::unique_ptr by making a deep copy
@@ -763,8 +770,13 @@ class FilterCache
     {
       assert(startLine > 0);
       assert(startLine <= endLine);
+#ifndef __GNUC__
+      const size_t startLineOffset = lineOffsets[min(startLine-1,lineOffsets.size()-1)];
+      const size_t endLineOffset   = lineOffsets[min(endLine,    lineOffsets.size()-1)];
+#else
       const size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
       const size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
+endif
       assert(startLineOffset <= endLineOffset);
       const size_t fragmentSize = endLineOffset-startLineOffset;
       return std::tie(startLineOffset,fragmentSize);
@@ -835,9 +847,15 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
   SrcLangExt lang = getLanguageFromFileName(fileName);
   const int blockSize = 4096;
   std::string str;
+  #ifndef __GNUC__
+  FilterCache::instance().getFileContents(fileName,
+                                          static_cast<size_t>(max(1,startLine)),
+                                          static_cast<size_t>(max({1,startLine,endLine})),str);
+  #else
   FilterCache::instance().getFileContents(fileName,
                                           static_cast<size_t>(std::max(1,startLine)),
                                           static_cast<size_t>(std::max({1,startLine,endLine})),str);
+  #endif
   //printf("readCodeFragment(%s,startLine=%d,endLine=%d)=\n[[[\n%s]]]\n",qPrint(fileName),startLine,endLine,qPrint(str));
 
   bool found = lang==SrcLangExt::VHDL   ||
