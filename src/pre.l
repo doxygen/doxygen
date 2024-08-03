@@ -32,6 +32,7 @@ typedef yyguts_t *yyscan_t;
 
 #include "doxygen.h"
 
+#inclide <iostream>
 #include <stack>
 #include <deque>
 #include <algorithm>
@@ -63,6 +64,10 @@ typedef yyguts_t *yyscan_t;
 #include "fileinfo.h"
 #include "trace.h"
 #include "debug.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 #define YY_NO_UNISTD_H 1
 
@@ -2111,7 +2116,11 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   int bytesInBuf = static_cast<int>(state->inputBuf->size())-state->inputBufPos;
+#ifndef __GNUC__
+  int bytesToCopy =      min(max_size,bytesInBuf);
+#else
   int bytesToCopy = std::min(max_size,bytesInBuf);
+#endif
   memcpy(buf,state->inputBuf->data()+state->inputBufPos,bytesToCopy);
   state->inputBufPos+=bytesToCopy;
   return bytesToCopy;
