@@ -848,9 +848,10 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
   const int blockSize = 4096;
   std::string str;
   #ifndef __GNUC__
+  int paul_line = endLine - startLine;
   FilterCache::instance().getFileContents(fileName,
                                           static_cast<size_t>(max(1,startLine)),
-                                          static_cast<size_t>(max({1,startLine,endLine})),str);
+                                          static_cast<size_t>(max(1,paul_line)),str);
   #else
   FilterCache::instance().getFileContents(fileName,
                                           static_cast<size_t>(std::max(1,startLine)),
