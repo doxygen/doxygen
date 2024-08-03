@@ -90,7 +90,7 @@ enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
 //! Holds yyextra->modifiers (ie attributes) for one symbol (variable, function, etc)
 struct SymbolModifiers
 {
-  enum Protection {doxNONE_P, doxPUBLIC, doxPRIVATE};
+  enum Protection {doxNONE_P, doxPublic, doxPrivate};
   enum Direction {doxNONE_D, doxIN, doxOUT, doxINOUT};
 
   //! This is only used with function return value.
@@ -117,7 +117,7 @@ struct SymbolModifiers
   QCString passVar;
   QCString bindVar;
 
-  SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
+  SymbolModifiers() : type(), returnName(), protection(doxNONE_P), direction(doxNONE_D),
     optional(FALSE), protect(FALSE), dimension(), allocatable(FALSE),
     external(FALSE), intrinsic(FALSE), parameter(FALSE),
     pointer(FALSE), target(FALSE), save(FALSE), deferred(FALSE), nonoverridable(FALSE),
@@ -610,7 +610,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 <Start>block{BS}data{BS}{ID_}           {  //
                                           yyextra->vtype = V_IGNORE;
                                           yy_push_state(BlockData,yyscanner);
-                                          yyextra->defaultProtection = Protection::Public;
+                                          yyextra->defaultProtection = Protection::doxPublic;
                                         }
 <Start>module|program{BS_}              {  //
                                           yyextra->vtype = V_IGNORE;
@@ -622,12 +622,12 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           {
                                             yy_push_state(Program,yyscanner);
                                           }
-                                          yyextra->defaultProtection = Protection::Public;
+                                          yyextra->defaultProtection = Protection::doxPublic;
                                         }
 <BlockData>^{BS}"end"({BS}(block{BS}data)({BS_}{ID})?)?{BS}/(\n|!|;) { // end block data
                                           //if (!endScope(yyscanner,yyextra->current_root))
                                           //  yyterminate();
-                                          yyextra->defaultProtection = Protection::Public;
+                                          yyextra->defaultProtection = Protection::doxPublic;
                                           pop_state(yyscanner);
                                         }
 <Start,ModuleBody,ModuleBodyContains>"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!|;) { // end module
@@ -636,7 +636,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           {
                                             yyterminate();
                                           }
-                                          yyextra->defaultProtection = Protection::Public;
+                                          yyextra->defaultProtection = Protection::doxPublic;
                                           if (yyextra->global_scope)
                                           {
                                             if (yyextra->global_scope != INVALID_ENTRY)
@@ -666,11 +666,11 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
   /*------- access specification --------------------------------------------------------------------------*/
 
 <ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
-                                           yyextra->defaultProtection = Protection::Private;
+                                           yyextra->defaultProtection = Protection::doxPrivate;
                                            yyextra->current->protection = yyextra->defaultProtection ;
                                          }
 <ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
-                                           yyextra->defaultProtection = Protection::Public;
+                                           yyextra->defaultProtection = Protection::doxPublic;
                                            yyextra->current->protection = yyextra->defaultProtection ;
                                          }
 
@@ -686,7 +686,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 
                                           yy_push_state(Typedef,yyscanner);
                                           yyextra->current->protection = Protection::Package; // invalid in Fortran, replaced below
-                                          yyextra->typeProtection = Protection::Public;
+                                          yyextra->typeProtection = Protection::doxPublic;
                                           yyextra->typeMode = true;
                                         }
 <Typedef>{
@@ -699,13 +699,13 @@ abstract                                {
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext).lower();
-                                          yyextra->current->extends.emplace_back(basename, Protection::Public, Specifier::Normal);
+                                          yyextra->current->extends.emplace_back(basename, Protection::doxPublic, Specifier::Normal);
                                         }
 public                                  {
-                                          yyextra->current->protection = Protection::Public;
+                                          yyextra->current->protection = Protection::doxPublic;
                                         }
 private                                 {
-                                          yyextra->current->protection = Protection::Private;
+                                          yyextra->current->protection = Protection::doxPrivate;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -731,11 +731,11 @@ private                                 {
                                           {
                                             yyextra->current->protection = yyextra->defaultProtection;
                                           }
-                                          else if( yyextra->current->protection == Protection::Public )
+                                          else if( yyextra->current->protection == Protection::doxPublic )
                                           {
                                             yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("public");
                                           }
-                                          else if( yyextra->current->protection == Protection::Private )
+                                          else if( yyextra->current->protection == Protection::doxPrivate )
                                           {
                                             yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("private");
                                           }
@@ -2256,8 +2256,8 @@ static QCString extractBind(const QCString &name)
 /*! Adds passed yyextra->modifiers to these yyextra->modifiers.*/
 SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
 {
-  if (mdfs.protection!=NONE_P) protection = mdfs.protection;
-  if (mdfs.direction!=NONE_D) direction = mdfs.direction;
+  if (mdfs.protection!=doxNONE_P) protection = mdfs.protection;
+  if (mdfs.direction!=doxNONE_D) direction = mdfs.direction;
   optional |= mdfs.optional;
   if (!mdfs.dimension.isEmpty()) dimension = mdfs.dimension;
   allocatable |= mdfs.allocatable;
@@ -2295,17 +2295,17 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
     QCString tmp = extractFromParens(mdfString);
     bool isin = tmp.contains("in")!=0;
     bool isout = tmp.contains("out")!=0;
-    if (isin && isout) newMdf.direction = SymbolModifiers::INOUT;
-    else if (isin) newMdf.direction = SymbolModifiers::IN;
-    else if (isout) newMdf.direction = SymbolModifiers::OUT;
+    if (isin && isout) newMdf.direction = SymbolModifiers::doxINOUT;
+    else if (isin) newMdf.direction = SymbolModifiers::doxIN;
+    else if (isout) newMdf.direction = SymbolModifiers::doxOUT;
   }
   else if (mdfString=="public")
   {
-    newMdf.protection = SymbolModifiers::PUBLIC;
+    newMdf.protection = SymbolModifiers::doxPublic;
   }
   else if (mdfString=="private")
   {
-    newMdf.protection = SymbolModifiers::PRIVATE;
+    newMdf.protection = SymbolModifiers::doxPrivate;
   }
   else if (mdfString=="protected")
   {
@@ -2420,7 +2420,7 @@ static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs)
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += mdfs.dimension;
   }
-  if (mdfs.direction!=SymbolModifiers::NONE_D)
+  if (mdfs.direction!=SymbolModifiers::doxNONE_D)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += directionStrs[mdfs.direction];
@@ -2495,12 +2495,12 @@ static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs)
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += mdfs.bindVar;
   }
-  if (mdfs.protection == SymbolModifiers::PUBLIC)
+  if (mdfs.protection == SymbolModifiers::doxPublic)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "public";
   }
-  else if (mdfs.protection == SymbolModifiers::PRIVATE)
+  else if (mdfs.protection == SymbolModifiers::doxPrivate)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "private";
@@ -2540,10 +2540,10 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
 {
   ent->type = applyModifiers(ent->type, mdfs);
 
-  if (mdfs.protection == SymbolModifiers::PUBLIC)
-    ent->protection = Protection::Public;
-  else if (mdfs.protection == SymbolModifiers::PRIVATE)
-    ent->protection = Protection::Private;
+  if (mdfs.protection == SymbolModifiers::doxPublic)
+    ent->protection = Protection::doxPublic;
+  else if (mdfs.protection == SymbolModifiers::doxPrivate)
+    ent->protection = Protection::doxPrivate;
 
   if (mdfs.nonoverridable)
     ent->spec.setFinal(true);
@@ -2880,11 +2880,11 @@ static void initEntry(yyscan_t yyscanner)
   }
   else if (yyextra->current_root && yyextra->current_root->section.isClass() && yyextra->current_root->spec.isInterface())
   {
-    yyextra->current->protection = Protection::Public;
+    yyextra->current->protection = Protection::doxPublic;
   }
   else if (yyextra->current_root && yyextra->current_root->section.isFunction())
   {
-    yyextra->current->protection = Protection::Private;
+    yyextra->current->protection = Protection::doxPrivate;
   }
   else
   {
@@ -2938,7 +2938,7 @@ static void addModule(yyscan_t yyscanner,const QCString &name, bool isModule)
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->bodyLine  = yyextra->lineNr; // used for source reference
   yyextra->current->startLine  = yyextra->lineNr;
-  yyextra->current->protection = Protection::Public ;
+  yyextra->current->protection = Protection::doxPublic ;
   addCurrentEntry(yyscanner,true);
   startScope(yyscanner,yyextra->last_entry.get());
 }
@@ -3117,19 +3117,19 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
   // direction as defined with the declaration of the parameter
   int dir1 = yyextra->modifiers[yyextra->current_root][yyextra->argName.lower().str()].direction;
   // in description [in] is specified
-  if (loc_doc.lower().find(directionParam[SymbolModifiers::IN]) == 0)
+  if (loc_doc.lower().find(directionParam[SymbolModifiers::doxIN]) == 0)
   {
     // check if with the declaration intent(in) or nothing has been specified
-    if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
-        (directionParam[dir1] == directionParam[SymbolModifiers::IN]))
+    if ((directionParam[dir1] == directionParam[SymbolModifiers::doxNONE_D]) ||
+        (directionParam[dir1] == directionParam[SymbolModifiers::doxIN]))
     {
       // strip direction
-      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::IN]));
+      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::doxIN]));
       loc_doc.stripWhiteSpace();
       // in case of empty documentation or (now) just name, consider it as no documentation
       if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
       {
-        handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::IN] + " " +
+        handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::doxIN] + " " +
                          yyextra->argName + " " + loc_doc,brief);
       }
     }
@@ -3143,19 +3143,19 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
   }
   // analogous to the [in] case, here [out] direction specified
-  else if (loc_doc.lower().find(directionParam[SymbolModifiers::OUT]) == 0)
+  else if (loc_doc.lower().find(directionParam[SymbolModifiers::doxOUT]) == 0)
   {
-    if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
-        (directionParam[dir1] == directionParam[SymbolModifiers::OUT]))
+    if ((directionParam[dir1] == directionParam[SymbolModifiers::doxNONE_D]) ||
+        (directionParam[dir1] == directionParam[SymbolModifiers::doxOUT]))
     {
-      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::OUT]));
+      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::doxOUT]));
       loc_doc.stripWhiteSpace();
       if (loc_doc.isEmpty() || (loc_doc.lower() == yyextra->argName.lower()))
       {
         yyextra->current = tmp_entry;
         return;
       }
-      handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::OUT] + " " +
+      handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::doxOUT] + " " +
                          yyextra->argName + " " + loc_doc,brief);
     }
     else
@@ -3167,16 +3167,16 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
   }
   // analogous to the [in] case, here [in,out] direction specified
-  else if (loc_doc.lower().find(directionParam[SymbolModifiers::INOUT]) == 0)
+  else if (loc_doc.lower().find(directionParam[SymbolModifiers::doxINOUT]) == 0)
   {
-    if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
-        (directionParam[dir1] == directionParam[SymbolModifiers::INOUT]))
+    if ((directionParam[dir1] == directionParam[SymbolModifiers::doxNONE_D]) ||
+        (directionParam[dir1] == directionParam[SymbolModifiers::doxINOUT]))
     {
-      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::INOUT]));
+      loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::doxINOUT]));
       loc_doc.stripWhiteSpace();
       if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
       {
-        handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::INOUT] + " " +
+        handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::doxINOUT] + " " +
                            yyextra->argName + " " + loc_doc,brief);
       }
     }
@@ -3240,7 +3240,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   if (fileBuf==nullptr || fileBuf[0]=='\0') return;
 
-  yyextra->defaultProtection = Protection::Public;
+  yyextra->defaultProtection = Protection::doxPublic;
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
   yyextra->inputStringPrepass = nullptr;
