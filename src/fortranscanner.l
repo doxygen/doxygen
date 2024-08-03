@@ -90,7 +90,7 @@ enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
 //! Holds yyextra->modifiers (ie attributes) for one symbol (variable, function, etc)
 struct SymbolModifiers
 {
-  enum Protection {doxNONE_P, doxPublic, doxPrivate};
+  enum Protection {doxNONE_P, PUBLIC, PRIVATE};
   enum Direction {doxNONE_D, doxIN, doxOUT, doxINOUT};
 
   //! This is only used with function return value.
