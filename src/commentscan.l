@@ -3274,9 +3274,9 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVect
   // raise it if requested
 // add: paule32 (testing: MSVC and GNU G++)
 #ifndef __GNUC__
-  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
-#else
   yyextra->sectionLevel =      min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
+#else
+  yyextra->sectionLevel = std::min(yyextra->sectionLevel + yyextra->raiseLevel,SectionType::MaxLevel);
 #endif
   // rewrite the update section level to the output
   switch (yyextra->sectionLevel)
@@ -4008,9 +4008,11 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
         {
           // add: paule32 (testing: MSVC and GNU G++)
 #ifndef __GNUC__
-          level = level<=0 ? SectionType::MaxLevel : std::min(level,SectionType::MaxLevel);
+          if (level <= 0) level = SectionType::MaxLevel;
+          else            level = min(level, SectionType::MaxLevel);
 #else
-          level = level<=0 ? SectionType::MaxLevel :      min(level,SectionType::MaxLevel);
+          if (level <= 0) level = SectionType::MaxLevel;
+          else            level = std::min(level, SectionType::MaxLevel);
 #endif
           opt = opt.left(i).stripWhiteSpace();
         }
