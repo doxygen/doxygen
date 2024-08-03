@@ -45,6 +45,10 @@ typedef yyguts_t *yyscan_t;
 #include <ctype.h>
 #include <string.h>
 
+#ifdef __GNUC__
+# include <iostream>
+#endif
+
 #include "pyscanner.h"
 #include "entry.h"
 #include "message.h"
@@ -59,6 +63,10 @@ typedef yyguts_t *yyscan_t;
 #include "fileinfo.h"
 #include "debug.h"
 #include "stringutil.h"
+
+#ifdef __GNUC__
+using namespace std;
+#endif
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -1570,7 +1578,11 @@ ID        [a-z_A-Z%]+{IDSYM}*
                                   }
     "\\ilinebr "{B}*    {
                           QCString indent;
+#ifndef __GNUC__
+                          int extraSpaces =      max(0,static_cast<int>(yyleng-9-yyextra->curIndent-2));
+#else
                           int extraSpaces = std::max(0,static_cast<int>(yyleng-9-yyextra->curIndent-2));
+#endif
                           indent.fill(' ',extraSpaces);
                           //printf("extraSpaces=%d\n",extraSpaces);
                           yyextra->docBlock += "\\ilinebr ";
