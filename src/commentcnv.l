@@ -1392,7 +1392,9 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
         {
           warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
               yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
-          yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
+// Error: below (paule32)
+//          yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
+          yyextra->raiseIncrement = max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
         }
       }
       else if (option==std::string_view{"prefix"} && !value.empty())
@@ -1873,7 +1875,8 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   int bytesInBuf = static_cast<int>(yyextra->inBuf->size())-yyextra->inBufPos;
-  int bytesToCopy = std::min(max_size,bytesInBuf);
+//  paule32:    int bytesToCopy = std::min(max_size,bytesInBuf);
+    int bytesToCopy = min(max_size,bytesInBuf);
   memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
   return bytesToCopy;
