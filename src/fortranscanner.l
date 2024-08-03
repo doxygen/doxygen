@@ -610,7 +610,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 <Start>block{BS}data{BS}{ID_}           {  //
                                           yyextra->vtype = V_IGNORE;
                                           yy_push_state(BlockData,yyscanner);
-                                          yyextra->defaultProtection = Protection::doxPublic;
+                                          yyextra->defaultProtection = Protection::PUBLIC;
                                         }
 <Start>module|program{BS_}              {  //
                                           yyextra->vtype = V_IGNORE;
@@ -622,12 +622,12 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           {
                                             yy_push_state(Program,yyscanner);
                                           }
-                                          yyextra->defaultProtection = Protection::doxPublic;
+                                          yyextra->defaultProtection = Protection::PUBLIC;
                                         }
 <BlockData>^{BS}"end"({BS}(block{BS}data)({BS_}{ID})?)?{BS}/(\n|!|;) { // end block data
                                           //if (!endScope(yyscanner,yyextra->current_root))
                                           //  yyterminate();
-                                          yyextra->defaultProtection = Protection::doxPublic;
+                                          yyextra->defaultProtection = Protection::PUBLIC;
                                           pop_state(yyscanner);
                                         }
 <Start,ModuleBody,ModuleBodyContains>"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!|;) { // end module
@@ -636,7 +636,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           {
                                             yyterminate();
                                           }
-                                          yyextra->defaultProtection = Protection::doxPublic;
+                                          yyextra->defaultProtection = Protection::PUBLLIC;
                                           if (yyextra->global_scope)
                                           {
                                             if (yyextra->global_scope != INVALID_ENTRY)
@@ -666,11 +666,11 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
   /*------- access specification --------------------------------------------------------------------------*/
 
 <ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
-                                           yyextra->defaultProtection = Protection::doxPrivate;
+                                           yyextra->defaultProtection = Protection::PRIVATE;
                                            yyextra->current->protection = yyextra->defaultProtection ;
                                          }
 <ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
-                                           yyextra->defaultProtection = Protection::doxPublic;
+                                           yyextra->defaultProtection = Protection::PUBLIC;
                                            yyextra->current->protection = yyextra->defaultProtection ;
                                          }
 
@@ -686,7 +686,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 
                                           yy_push_state(Typedef,yyscanner);
                                           yyextra->current->protection = Protection::Package; // invalid in Fortran, replaced below
-                                          yyextra->typeProtection = Protection::doxPublic;
+                                          yyextra->typeProtection = Protection::PUBLIC;
                                           yyextra->typeMode = true;
                                         }
 <Typedef>{
@@ -699,13 +699,13 @@ abstract                                {
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext).lower();
-                                          yyextra->current->extends.emplace_back(basename, Protection::doxPublic, Specifier::Normal);
+                                          yyextra->current->extends.emplace_back(basename, Protection::PUBLIC, Specifier::Normal);
                                         }
 public                                  {
-                                          yyextra->current->protection = Protection::doxPublic;
+                                          yyextra->current->protection = Protection::PUBLIC;
                                         }
 private                                 {
-                                          yyextra->current->protection = Protection::doxPrivate;
+                                          yyextra->current->protection = Protection::PRIVATE;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -731,11 +731,11 @@ private                                 {
                                           {
                                             yyextra->current->protection = yyextra->defaultProtection;
                                           }
-                                          else if( yyextra->current->protection == Protection::doxPublic )
+                                          else if( yyextra->current->protection == Protection::PUBLIC )
                                           {
                                             yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("public");
                                           }
-                                          else if( yyextra->current->protection == Protection::doxPrivate )
+                                          else if( yyextra->current->protection == Protection::PRIVATE )
                                           {
                                             yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("private");
                                           }
@@ -2541,9 +2541,9 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
   ent->type = applyModifiers(ent->type, mdfs);
 
   if (mdfs.protection == SymbolModifiers::doxPublic)
-    ent->protection = Protection::doxPublic;
+    ent->protection = Protection::PUBLIC;
   else if (mdfs.protection == SymbolModifiers::doxPrivate)
-    ent->protection = Protection::doxPrivate;
+    ent->protection = Protection::PRIVATE;
 
   if (mdfs.nonoverridable)
     ent->spec.setFinal(true);
@@ -2880,11 +2880,11 @@ static void initEntry(yyscan_t yyscanner)
   }
   else if (yyextra->current_root && yyextra->current_root->section.isClass() && yyextra->current_root->spec.isInterface())
   {
-    yyextra->current->protection = Protection::doxPublic;
+    yyextra->current->protection = Protection::PUBLIC;
   }
   else if (yyextra->current_root && yyextra->current_root->section.isFunction())
   {
-    yyextra->current->protection = Protection::doxPrivate;
+    yyextra->current->protection = Protection::PRIVATE;
   }
   else
   {
@@ -2938,7 +2938,7 @@ static void addModule(yyscan_t yyscanner,const QCString &name, bool isModule)
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->bodyLine  = yyextra->lineNr; // used for source reference
   yyextra->current->startLine  = yyextra->lineNr;
-  yyextra->current->protection = Protection::doxPublic ;
+  yyextra->current->protection = Protection::PUBLIC ;
   addCurrentEntry(yyscanner,true);
   startScope(yyscanner,yyextra->last_entry.get());
 }
@@ -3240,7 +3240,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   if (fileBuf==nullptr || fileBuf[0]=='\0') return;
 
-  yyextra->defaultProtection = Protection::doxPublic;
+  yyextra->defaultProtection = Protection::PUBLIC;
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
   yyextra->inputStringPrepass = nullptr;
