@@ -227,7 +227,7 @@ void DotGroupCollaboration::computeTheGraph()
   // write other nodes.
   for (const auto &[name,node] : m_usedNodes)
   {
-    node->write(md5stream,Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
+    node->write(md5stream,GraphType::Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
   }
 
   // write edges
@@ -251,7 +251,7 @@ QCString DotGroupCollaboration::writeGraph( TextStream &t,
   const QCString &path, const QCString &fileName, const QCString &relPath,
   bool generateImageMap,int graphId)
 {
-  m_doNotAddImageToIndex = textFormat!=EOF_Html;
+  m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
 
   return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }

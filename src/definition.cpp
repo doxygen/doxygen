@@ -1092,7 +1092,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
   {
     ol.pushGeneratorState();
     QCString codeFragment;
-    bool isMacro = thisMd && thisMd->memberType()==MemberType_Define;
+    bool isMacro = thisMd && thisMd->memberType()==MemberType::Define;
     int actualStart=m_impl->body->startLine,actualEnd=m_impl->body->endLine;
     if (readCodeFragment(m_impl->body->fileDef->absFilePath(),isMacro,
           actualStart,actualEnd,codeFragment)

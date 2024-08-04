@@ -27,7 +27,7 @@
 class FortranOutlineParser : public OutlineParserInterface
 {
   public:
-    FortranOutlineParser(FortranFormat format=FortranFormat_Unknown);
+    FortranOutlineParser(FortranFormat format=FortranFormat::Unknown);
    ~FortranOutlineParser() override;
     NON_COPYABLE(FortranOutlineParser)
     void parseInput(const QCString &fileName,
@@ -45,13 +45,13 @@ class FortranOutlineParser : public OutlineParserInterface
 class FortranOutlineParserFree : public FortranOutlineParser
 {
   public:
-    FortranOutlineParserFree() : FortranOutlineParser(FortranFormat_Free) { }
+    FortranOutlineParserFree() : FortranOutlineParser(FortranFormat::Free) { }
 };
 
 class FortranOutlineParserFixed : public FortranOutlineParser
 {
   public:
-    FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat_Fixed) { }
+    FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat::Fixed) { }
 };
 
 const char* prepassFixedForm(const char* contents, int *hasContLine, int fixedCommentAfter);

@@ -29,7 +29,7 @@ class Definition;
 class FortranCodeParser : public CodeParserInterface
 {
   public:
-    FortranCodeParser(FortranFormat format=FortranFormat_Unknown);
+    FortranCodeParser(FortranFormat format=FortranFormat::Unknown);
    ~FortranCodeParser() override;
     NON_COPYABLE(FortranCodeParser)
 
@@ -58,13 +58,13 @@ class FortranCodeParser : public CodeParserInterface
 class FortranCodeParserFree : public FortranCodeParser
 {
   public:
-    FortranCodeParserFree() : FortranCodeParser(FortranFormat_Free) { }
+    FortranCodeParserFree() : FortranCodeParser(FortranFormat::Free) { }
 };
 
 class FortranCodeParserFixed : public FortranCodeParser
 {
   public:
-    FortranCodeParserFixed() : FortranCodeParser(FortranFormat_Fixed) { }
+    FortranCodeParserFixed() : FortranCodeParser(FortranFormat::Fixed) { }
 };
 
 #endif

@@ -1979,7 +1979,7 @@ void LatexGenerator::startDotGraph()
 
 void LatexGenerator::endDotGraph(DotClassGraph &g)
 {
-  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GraphOutputFormat::EPS,EmbeddedOutputFormat::LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startInclDepGraph()
@@ -1988,7 +1988,7 @@ void LatexGenerator::startInclDepGraph()
 
 void LatexGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
-  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GraphOutputFormat::EPS,EmbeddedOutputFormat::LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startGroupCollaboration()
@@ -1997,7 +1997,7 @@ void LatexGenerator::startGroupCollaboration()
 
 void LatexGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
-  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GraphOutputFormat::EPS,EmbeddedOutputFormat::LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startCallGraph()
@@ -2006,7 +2006,7 @@ void LatexGenerator::startCallGraph()
 
 void LatexGenerator::endCallGraph(DotCallGraph &g)
 {
-  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GraphOutputFormat::EPS,EmbeddedOutputFormat::LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startDirDepGraph()
@@ -2015,7 +2015,7 @@ void LatexGenerator::startDirDepGraph()
 
 void LatexGenerator::endDirDepGraph(DotDirDeps &g)
 {
-  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GraphOutputFormat::EPS,EmbeddedOutputFormat::LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startExamples()

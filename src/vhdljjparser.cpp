@@ -525,7 +525,7 @@ void VHDLOutlineParser::addVhdlType(const QCString &n,int startLine,EntryType se
   QCString name(n);
   if (isFuncProcProced() || VhdlDocGen::getFlowMember())  return;
 
-  if (s->parse_sec==GEN_SEC)
+  if (s->parse_sec==VhdlSection::GEN_SEC)
   {
     spec=VhdlSpecifier::GENERIC;
   }
@@ -567,7 +567,7 @@ void VHDLOutlineParser::createFunction(const QCString &impure,VhdlSpecifier spec
     s->current->exception=impure;
   }
 
-  if (s->parse_sec==GEN_SEC)
+  if (s->parse_sec==VhdlSection::GEN_SEC)
   {
     s->current->vhdlSpec=VhdlSpecifier::GENERIC;
     s->current->section=EntryType::makeFunction();
@@ -653,12 +653,12 @@ void VHDLOutlineParser::addProto(const QCString &s1,const QCString &s2,const QCS
     {
       arg.type+=s6;
     }
-    if (s->parse_sec==GEN_SEC && s->param_sec==0)
+    if (s->parse_sec==VhdlSection::GEN_SEC && s->param_sec==VhdlSection::UNKNOWN)
     {
       arg.defval="generic";
     }
 
-    if (s->parse_sec==PARAM_SEC)
+    if (s->parse_sec==VhdlSection::PARAM_SEC)
     {
     //  assert(false);
     }

@@ -389,7 +389,7 @@ void DotNode::deleteNodes(DotNode *node)
 
 void DotNode::writeLabel(TextStream &t, GraphType gt) const
 {
-  if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
+  if (m_classDef && Config_getBool(UML_LOOK) && (gt==GraphType::Inheritance || gt==GraphType::Collaboration))
   {
     // Set shape to the plain type.
     // the UML properties and methods are rendered using dot' HTML like table format
@@ -613,7 +613,7 @@ void DotNode::writeArrow(TextStream &t,
   }
   if (Config_getBool(UML_LOOK) &&
     eProps->arrowStyleMap[ei->color()] &&
-    (gt==Inheritance || gt==Collaboration)
+    (gt==GraphType::Inheritance || gt==GraphType::Collaboration)
     )
   {
     bool rev = pointBack;

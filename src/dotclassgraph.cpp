@@ -252,7 +252,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
   //    qPrint(cd->name()),distance,base);
   // ---- Add inheritance relations
 
-  if (m_graphType == Inheritance || m_graphType==Collaboration)
+  if (m_graphType == GraphType::Inheritance || m_graphType==GraphType::Collaboration)
   {
     for (const auto &bcd : base ? cd->baseClasses() : cd->subClasses())
     {
@@ -261,7 +261,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
       addClass(bcd.classDef,n,EdgeInfo::protectionToColor(bcd.prot),QCString(),bcd.usedName,bcd.templSpecifiers,base,distance);
     }
   }
-  if (m_graphType == Collaboration)
+  if (m_graphType == GraphType::Collaboration)
   {
     // ---- Add usage relations
 
@@ -336,12 +336,12 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
   m_usedNodes.insert(std::make_pair(className.str(),m_startNode));
 
   buildGraph(cd,m_startNode,TRUE,1);
-  if (t==Inheritance) buildGraph(cd,m_startNode,FALSE,1);
+  if (t==GraphType::Inheritance) buildGraph(cd,m_startNode,FALSE,1);
 
-  m_lrRank = determineVisibleNodes(m_startNode,Config_getInt(DOT_GRAPH_MAX_NODES),t==Inheritance);
+  m_lrRank = determineVisibleNodes(m_startNode,Config_getInt(DOT_GRAPH_MAX_NODES),t==GraphType::Inheritance);
   DotNodeDeque openNodeQueue;
   openNodeQueue.push_back(m_startNode);
-  determineTruncatedNodes(openNodeQueue,t==Inheritance);
+  determineTruncatedNodes(openNodeQueue,t==GraphType::Inheritance);
 
   m_collabFileName = cd->collaborationGraphFileName();
   m_inheritFileName = cd->inheritanceGraphFileName();
@@ -349,7 +349,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
 
 bool DotClassGraph::isTrivial() const
 {
-  if (m_graphType==Inheritance)
+  if (m_graphType==GraphType::Inheritance)
     return m_startNode->children().empty() && m_startNode->parents().empty();
   else
     return !Config_getBool(UML_LOOK) && m_startNode->children().empty();
@@ -364,7 +364,7 @@ int DotClassGraph::numNodes() const
 {
   size_t numNodes = 0;
   numNodes+= m_startNode->children().size();
-  if (m_graphType==Inheritance)
+  if (m_graphType==GraphType::Inheritance)
   {
     numNodes+= m_startNode->parents().size();
   }
@@ -380,10 +380,10 @@ QCString DotClassGraph::getBaseName() const
 {
   switch (m_graphType)
   {
-  case Collaboration:
+  case GraphType::Collaboration:
     return m_collabFileName;
     break;
-  case Inheritance:
+  case GraphType::Inheritance:
     return m_inheritFileName;
     break;
   default:
@@ -400,7 +400,7 @@ void DotClassGraph::computeTheGraph()
     m_graphType,
     m_graphFormat,
     m_lrRank ? "LR" : "",
-    m_graphType == Inheritance,
+    m_graphType == GraphType::Inheritance,
     TRUE,
     m_startNode->label(),
     m_theGraph
@@ -412,10 +412,10 @@ QCString DotClassGraph::getMapLabel() const
   QCString mapName;
   switch (m_graphType)
   {
-  case Collaboration:
+  case GraphType::Collaboration:
     mapName="coll_map";
     break;
-  case Inheritance:
+  case GraphType::Inheritance:
     mapName="inherit_map";
     break;
   default:
@@ -430,10 +430,10 @@ QCString DotClassGraph::getImgAltText() const
 {
   switch (m_graphType)
   {
-  case Collaboration:
+  case GraphType::Collaboration:
     return "Collaboration graph";
     break;
-  case Inheritance:
+  case GraphType::Inheritance:
     return "Inheritance graph";
     break;
   default:
