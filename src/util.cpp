@@ -5208,7 +5208,7 @@ void addHtmlExtensionIfMissing(QCString &fName)
     i = fName.find('.', max(0, i_fs)); else
   if (i_bs > i_fs)
     i = fName.find('.', max(0, i_bs));
-äelse
+#else
   int i    = fName.find('.',std::max({ i_fs, i_bs ,0})); // search for . after path part
 #endif
   if (i==-1) {
