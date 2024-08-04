@@ -23,7 +23,6 @@
 
 #ifdef __GNUC__
 # include <iostream>
-# include <QString>
 #endif
 
 #include <mutex>
@@ -5200,9 +5199,8 @@ bool checkExtension(const QCString &fName, const QCString &ext)
 void addHtmlExtensionIfMissing(QCString &fName)
 {
   if (fName.isEmpty()) return;
-  QString tmp = fname;
-  if (tmp.endsWith(".")) {
-      fname += Doxygen::htmlFileExtension;
+  if (!fName.endsWith(".html"))
+      fName += Doxygen::htmlFileExtension;
   }
 }
 
