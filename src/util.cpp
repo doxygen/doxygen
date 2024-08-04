@@ -5198,6 +5198,8 @@ bool checkExtension(const QCString &fName, const QCString &ext)
 // TODO: paule32
 void addHtmlExtensionIfMissing(QCString &fName)
 {
+  cout << "paule32 test in util.cpp" << endl;
+  cout << fName.toStdString().str()  << endl;
   if (fName.isEmpty()) return;
   if (!fName.endsWith(".html")) {
       fName += Doxygen::htmlFileExtension;
