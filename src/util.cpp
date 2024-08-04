@@ -23,6 +23,7 @@
 
 #ifdef __GNUC__
 # include <iostream>
+# include <string>
 #endif
 
 #include <mutex>
@@ -5198,10 +5199,10 @@ bool checkExtension(const QCString &fName, const QCString &ext)
 // TODO: paule32
 void addHtmlExtensionIfMissing(QCString &fName)
 {
-  cout << "paule32 test in util.cpp" << endl;
-  cout << fName.toStdString().str()  << endl;
+  std::cout << "paule32 test in util.cpp" << std::endl;
   if (fName.isEmpty()) return;
   if (!fName.endsWith(".html")) {
+      std::cout << "ends not with htmö" << std::endl;
       fName += Doxygen::htmlFileExtension;
   }
 }
