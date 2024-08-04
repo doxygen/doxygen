@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   #if defined(_WIN32) || defined(_WIN64)
   const TCHAR *processName = _T("msedgewebview2.exe");
   DWORD processId = 0;
-  if (IsProcessRunning(processName, &processId)))) {
+  if (IsProcessRunning(processName, &processId)) {
       int response = MessageBox(0,
       _T("The HTML Viewer is already open.\nWould you exit, or close the viewer ?"),
       _T("Warning"),
