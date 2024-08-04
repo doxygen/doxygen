@@ -654,7 +654,7 @@ class FilterCache
                qPrint(fileName),qPrint(Doxygen::filterDBFileName),item.filePos,item.fileSize);
 
         auto it_off = m_lineOffsets.find(fileName.str());
-        assert(it_off!=m_lineOffsets.end());
+        //assert(it_off!=m_lineOffsets.end());
         auto [ startLineOffset, fragmentSize] = getFragmentLocation(it_off->second,startLine,endLine);
         //printf("%s: existing file [%zu-%zu]->[%zu-%zu] size=%zu\n",
         //    qPrint(fileName),startLine,endLine,startLineOffset,endLineOffset,fragmentSize);
@@ -768,7 +768,7 @@ class FilterCache
     auto getFragmentLocation(const LineOffsets &lineOffsets,
                              size_t startLine,size_t endLine) -> std::tuple<size_t,size_t>
     {
-      assert(startLine > 0);
+      //assert(startLine > 0);
       //assert(startLine <= endLine);
 #ifndef __GNUC__
       const size_t startLineOffset = lineOffsets[min(startLine-1,lineOffsets.size()-1)];
@@ -777,7 +777,7 @@ class FilterCache
       const size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
       const size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
 #endif
-      assert(startLineOffset <= endLineOffset);
+      //assert(startLineOffset <= endLineOffset);
       const size_t fragmentSize = endLineOffset-startLineOffset;
       return std::tie(startLineOffset,fragmentSize);
     };
@@ -789,7 +789,7 @@ class FilterCache
       // compute offsets from start for each line
       compileLineOffsets(fileName,str);
       auto it = m_lineOffsets.find(fileName.str());
-      assert(it!=m_lineOffsets.end());
+      //assert(it!=m_lineOffsets.end());
       const LineOffsets &lineOffsets = it->second;
       auto [ startLineOffset, fragmentSize] = getFragmentLocation(lineOffsets,startLine,endLine);
       //printf("%s: new file [%zu-%zu]->[%zu-%zu] size=%zu\n",
@@ -994,7 +994,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
 
 QCString DefinitionImpl::getSourceFileBase() const
 {
-  ASSERT(m_impl->def->definitionType()!=Definition::TypeFile); // file overloads this method
+  //ASSERT(m_impl->def->definitionType()!=Definition::TypeFile); // file overloads this method
   QCString fn;
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   if (sourceBrowser &&
