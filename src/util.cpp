@@ -23,6 +23,7 @@
 
 #ifdef __GNUC__
 # include <iostream>
+# include <QString>
 #endif
 
 #include <mutex>
