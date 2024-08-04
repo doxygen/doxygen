@@ -5199,7 +5199,7 @@ bool checkExtension(const QCString &fName, const QCString &ext)
 void addHtmlExtensionIfMissing(QCString &fName)
 {
   if (fName.isEmpty()) return;
-  if (!fName.endsWith(".html"))
+  if (!fName.endsWith(".html")) {
       fName += Doxygen::htmlFileExtension;
   }
 }
