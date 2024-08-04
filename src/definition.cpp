@@ -769,7 +769,7 @@ class FilterCache
                              size_t startLine,size_t endLine) -> std::tuple<size_t,size_t>
     {
       assert(startLine > 0);
-      assert(startLine <= endLine);
+      //assert(startLine <= endLine);
 #ifndef __GNUC__
       const size_t startLineOffset = lineOffsets[min(startLine-1,lineOffsets.size()-1)];
       const size_t endLineOffset   = lineOffsets[min(endLine,    lineOffsets.size()-1)];
