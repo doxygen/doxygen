@@ -40,6 +40,10 @@
 # include <tlhelp32.h>
 # include <tchar.h>
 # include <stdio.h>
+# include <iostream>
+# include <string>
+using namespace std;
+
 BOOL IsProcessRunning(const TCHAR *processName, DWORD *processId) {
     BOOL exists = FALSE;
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -87,20 +91,8 @@ int main(int argc,char **argv)
   const TCHAR *processName = _T("msedgewebview2.exe");
   DWORD processId = 0;
   if (IsProcessRunning(processName, &processId)) {
-      int response = MessageBox(0,
-      _T("The HTML Viewer is already open.\nWould you exit, or close the viewer ?"),
-      _T("Warning"),
-      MB_ICONQUESTION | MB_OKCANCEL);
-      if (response == IDOK) {
-          TerminateProcessById(processId);
-          MessageBox(0,
-          _T("The WebViewer was closed."),
-          _T("Information"), MB_ICONINFORMATION|MB_OK);
-          // init doxygen...
-      }   else {
-          // exit to shell
-          return 1;
-      }
+      cout << "The HTML Viewer is already open.\nTry to close it..." << endl;
+      TerminateProcessById(processId);
   }
   #endif
   initDoxygen();
@@ -111,4 +103,3 @@ int main(int argc,char **argv)
   generateOutput();
   return 0;
 }
-
