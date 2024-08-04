@@ -36,7 +36,11 @@
  *    with this name is available.
  */
 #if defined(_WIN32) || defined(_WIN64)
-BOOL IsProcessRunning(const TCHAR *processName, DWORD *processId)) {
+# include <windows.h>
+# include <tlhelp32.h>
+# include <tchar.h>
+# include <stdio.h>
+BOOL IsProcessRunning(const TCHAR *processName, DWORD *processId) {
     BOOL exists = FALSE;
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     PROCESSENTRY32 processEntry = {0};
