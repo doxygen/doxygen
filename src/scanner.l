@@ -1941,6 +1941,10 @@ NONLopt [^\n]*
                                           BEGIN(Using);
                                         }
 <JavaImport>({ID}{BN}*"."{BN}*)+{ID}    { // class import => add as a using declaration
+                                          ModuleManager::instance().addImport(yyextra->fileName,
+                                                                              yyextra->yyLineNr,
+                                                                              yytext,
+                                                                              yyextra->current->exported);
                                           lineCount(yyscanner);
                                           QCString scope=yytext;
                                           yyextra->current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
