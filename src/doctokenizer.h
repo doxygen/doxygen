@@ -26,8 +26,10 @@
 #include "qcstring.h"
 #include "construct.h"
 
-enum Tokens
+enum class Tokens
 {
+  TK_EOF           = -1,
+  TK_NONE          = 0,
   TK_WORD          = 1,
   TK_LNKWORD       = 2,
   TK_WHITESPACE    = 3,
@@ -69,7 +71,7 @@ enum Tokens
   RetVal_SubSubParagraph= 0x10019,
 };
 
-#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
+#define TK_COMMAND_CHAR(token) ((token)==Tokens::TK_COMMAND_AT ? '@' : '\\')
 
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
@@ -130,8 +132,8 @@ class DocTokenizer
     [[maybe_unused]] TokenInfo *resetToken();
 
     // helper functions
-    static const char *tokToString(int token);
-    static const char *retvalToString(int retval);
+    static const char *tokToString(Tokens token);
+    static const char *retvalToString(Tokens retval);
 
     void setLineNr(int lineno);
     int getLineNr(void);
@@ -146,7 +148,7 @@ class DocTokenizer
     void cleanup();
     void pushContext();
     bool popContext();
-    int  lex();
+    Tokens  lex();
     void unputString(const QCString &tag);
     void setStatePara();
     void setStateTitle();
