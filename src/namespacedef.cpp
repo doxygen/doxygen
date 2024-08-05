@@ -508,37 +508,37 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     m_allMembers.add(md->localName(),md);
     switch(md->memberType())
     {
-      case MemberType_Variable:
+      case MemberType::Variable:
         addMemberToList(MemberListType::DecVarMembers(),md);
         addMemberToList(MemberListType::DocVarMembers(),md);
         break;
-      case MemberType_Function:
+      case MemberType::Function:
         addMemberToList(MemberListType::DecFuncMembers(),md);
         addMemberToList(MemberListType::DocFuncMembers(),md);
         break;
-      case MemberType_Typedef:
+      case MemberType::Typedef:
         addMemberToList(MemberListType::DecTypedefMembers(),md);
         addMemberToList(MemberListType::DocTypedefMembers(),md);
         break;
-      case MemberType_Sequence:
+      case MemberType::Sequence:
         addMemberToList(MemberListType::DecSequenceMembers(),md);
         addMemberToList(MemberListType::DocSequenceMembers(),md);
         break;
-      case MemberType_Dictionary:
+      case MemberType::Dictionary:
         addMemberToList(MemberListType::DecDictionaryMembers(),md);
         addMemberToList(MemberListType::DocDictionaryMembers(),md);
         break;
-      case MemberType_Enumeration:
+      case MemberType::Enumeration:
         addMemberToList(MemberListType::DecEnumMembers(),md);
         addMemberToList(MemberListType::DocEnumMembers(),md);
         break;
-      case MemberType_EnumValue:
+      case MemberType::EnumValue:
         break;
-      case MemberType_Define:
+      case MemberType::Define:
         addMemberToList(MemberListType::DecDefineMembers(),md);
         addMemberToList(MemberListType::DocDefineMembers(),md);
         break;
-      case MemberType_Property:
+      case MemberType::Property:
         if (md->getLanguage() == SrcLangExt::Python)
         {
           addMemberToList(MemberListType::PropertyMembers(),md);
@@ -548,9 +548,9 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         //  fallthrough, explicitly no break here
       default:
         err("NamespaceDefImpl::insertMembers(): "
-            "member '%s' with unexpected type id %d and class scope '%s' inserted in namespace scope '%s'!\n",
+            "member '%s' with unexpected type '%s' and class scope '%s' inserted in namespace scope '%s'!\n",
             qPrint(md->name()),
-            md->memberType(),
+            qPrint(md->memberTypeName()),
             md->getClassDef() ? qPrint(md->getClassDef()->name()) : "",
             qPrint(name()));
     }

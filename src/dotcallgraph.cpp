@@ -166,7 +166,7 @@ void DotCallGraph::computeTheGraph()
 {
   computeGraph(
     m_startNode,
-    CallGraph,
+    GraphType::CallGraph,
     m_graphFormat,
     m_inverse ? "RL" : "LR",
     FALSE,
@@ -189,7 +189,7 @@ QCString DotCallGraph::writeGraph(
         const QCString &relPath,bool generateImageMap,
         int graphId)
 {
-  m_doNotAddImageToIndex = textFormat!=EOF_Html;
+  m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
 
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }

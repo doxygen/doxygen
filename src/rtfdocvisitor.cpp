@@ -1726,7 +1726,7 @@ void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
 {
   QCString baseName=makeBaseName(filename);
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+  writeDotGraphFromFile(filename,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
   QCString imgExt = getDotImageExtension();
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
@@ -1740,7 +1740,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
 {
   QCString baseName=makeBaseName(fileName);
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP,srcFile,srcLine);
+  writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::BITMAP,srcFile,srcLine);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
@@ -1748,7 +1748,7 @@ void RTFDocVisitor::writeDiaFile(const DocDiaFile &df)
 {
   QCString baseName=makeBaseName(df.file());
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDiaGraphFromFile(df.file(),outDir,baseName,DIA_BITMAP,df.srcFile(),df.srcLine());
+  writeDiaGraphFromFile(df.file(),outDir,baseName,DiaOutputFormat::BITMAP,df.srcFile(),df.srcLine());
   includePicturePreRTF(baseName + ".png", true, df.hasCaption());
 }
 

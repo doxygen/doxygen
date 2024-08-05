@@ -539,14 +539,14 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
 }
 
 //---------------------------------------------------------------------------
-void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,int tok,
+void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,Tokens tok,
                                         DocNodeList &children,const QCString &txt)
 {
   switch (tok)
   {
-    case TK_COMMAND_AT:
+    case Tokens::TK_COMMAND_AT:
       // fall through
-    case TK_COMMAND_BS:
+    case Tokens::TK_COMMAND_BS:
       {
         std::string str{TK_COMMAND_CHAR(tok)};
         children.append<DocWord>(this,parent,str.c_str() + context.token->name);
@@ -554,11 +554,11 @@ void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,int tok,
          TK_COMMAND_CHAR(tok),qPrint(context.token->name),qPrint(txt));
       }
       break;
-    case TK_SYMBOL:
+    case Tokens::TK_SYMBOL:
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol '%s' found as part of a %s",
            qPrint(context.token->name), qPrint(txt));
       break;
-    case TK_HTMLTAG:
+    case Tokens::TK_HTMLTAG:
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported HTML tag <%s%s> found as part of a %s",
            context.token->endTag ? "/" : "",qPrint(context.token->name), qPrint(txt));
       break;
@@ -572,26 +572,27 @@ void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,int tok,
 
 //---------------------------------------------------------------------------
 
-int DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,const QCString &cmdName)
+Tokens DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
-  int tok=tokenizer.lex();
-  if (tok!=TK_WHITESPACE)
+  Tokens tok=tokenizer.lex();
+  if (tok!=Tokens::TK_WHITESPACE)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
 	qPrint(saveCmdName));
     return tok;
   }
-  while ((tok=tokenizer.lex()) &&
-          tok!=TK_WHITESPACE &&
-          tok!=TK_NEWPARA &&
-          tok!=TK_LISTITEM &&
-          tok!=TK_ENDLIST
+  while ((tok=tokenizer.lex())!=Tokens::TK_NONE &&
+          tok!=Tokens::TK_EOF &&
+          tok!=Tokens::TK_WHITESPACE &&
+          tok!=Tokens::TK_NEWPARA &&
+          tok!=Tokens::TK_LISTITEM &&
+          tok!=Tokens::TK_ENDLIST
         )
   {
     static const reg::Ex specialChar(R"([.,|()\[\]:;?])");
-    if (tok==TK_WORD && context.token->name.length()==1 &&
+    if (tok==Tokens::TK_WORD && context.token->name.length()==1 &&
         reg::match(context.token->name.str(),specialChar))
     {
       // special character that ends the markup command
@@ -601,7 +602,7 @@ int DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,
     {
       switch (tok)
       {
-        case TK_HTMLTAG:
+        case Tokens::TK_HTMLTAG:
           if (insideLI(parent) && Mappers::htmlTagMapper->map(context.token->name) && context.token->endTag)
           { // ignore </li> as the end of a style command
             continue;
@@ -617,8 +618,8 @@ int DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,
     }
   }
   AUTO_TRACE_EXIT("end tok={}",DocTokenizer::tokToString(tok));
-  return (tok==TK_NEWPARA || tok==TK_LISTITEM || tok==TK_ENDLIST
-         ) ? tok : RetVal_OK;
+  return (tok==Tokens::TK_NEWPARA || tok==Tokens::TK_LISTITEM || tok==Tokens::TK_ENDLIST
+         ) ? tok : Tokens::RetVal_OK;
 }
 
 /*! Called when a style change starts. For instance a \<b\> command is
@@ -714,12 +715,12 @@ void DocParser::handleInitialStyleCommands(DocNodeVariant *parent,DocNodeList &c
   }
 }
 
-int DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
+Tokens DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
                            const HtmlAttribList &tagHtmlAttribs)
 {
   AUTO_TRACE();
   size_t index=0;
-  int retval = RetVal_OK;
+  Tokens retval = Tokens::RetVal_OK;
   for (const auto &opt : tagHtmlAttribs)
   {
     if (opt.name=="name" || opt.name=="id") // <a name=label> or <a id=label> tag
@@ -910,10 +911,10 @@ void DocParser::handleParameterType(DocNodeVariant *parent,DocNodeList &children
 
 void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
 {
-  int tok=tokenizer.lex();
+  Tokens tok=tokenizer.lex();
   QCString tokenName = context.token->name;
   AUTO_TRACE("name={}",tokenName);
-  if (tok!=TK_WHITESPACE)
+  if (tok!=Tokens::TK_WHITESPACE)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(tokenName));
@@ -921,7 +922,7 @@ void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
   }
   tokenizer.setStateInternalRef();
   tok=tokenizer.lex(); // get the reference id
-  if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  if (tok!=Tokens::TK_WORD && tok!=Tokens::TK_LNKWORD)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
         DocTokenizer::tokToString(tok),qPrint(tokenName));
@@ -934,8 +935,8 @@ void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
 void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
 {
   AUTO_TRACE();
-  int tok=tokenizer.lex();
-  if (tok!=TK_WHITESPACE)
+  Tokens tok=tokenizer.lex();
+  if (tok!=Tokens::TK_WHITESPACE)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(context.token->name));
@@ -943,13 +944,13 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
   }
   tokenizer.setStateAnchor();
   tok=tokenizer.lex();
-  if (tok==0)
+  if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(context.token->name));
     return;
   }
-  else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  else if (tok!=Tokens::TK_WORD && tok!=Tokens::TK_LNKWORD)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
         DocTokenizer::tokToString(tok),qPrint(context.token->name));
@@ -962,8 +963,8 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
 void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
 {
   AUTO_TRACE();
-  int tok=tokenizer.lex();
-  if (tok!=TK_WHITESPACE)
+  Tokens tok=tokenizer.lex();
+  if (tok!=Tokens::TK_WHITESPACE)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(context.token->name));
@@ -971,13 +972,13 @@ void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
   }
   tokenizer.setStatePrefix();
   tok=tokenizer.lex();
-  if (tok==0)
+  if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(context.token->name));
     return;
   }
-  else if (tok!=TK_WORD)
+  else if (tok!=Tokens::TK_WORD)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
         DocTokenizer::tokToString(tok),qPrint(context.token->name));
@@ -1003,15 +1004,15 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
 
   // parse title
   tokenizer.setStateTitle();
-  int tok = 0;
-  while ((tok=tokenizer.lex()))
+  Tokens tok = Tokens::TK_NONE;
+  while ((tok=tokenizer.lex())!=Tokens::TK_NONE && tok!=Tokens::TK_EOF)
   {
-    if (tok==TK_WORD && (context.token->name=="width=" || context.token->name=="height="))
+    if (tok==Tokens::TK_WORD && (context.token->name=="width=" || context.token->name=="height="))
     {
       // special case: no title, but we do have a size indicator
       break;
     }
-    else if (tok==TK_HTMLTAG)
+    else if (tok==Tokens::TK_HTMLTAG)
     {
       tokenizer.unputString(context.token->text);
       break;
@@ -1022,13 +1023,13 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     }
   }
   // parse size attributes
-  if (tok == 0)
+  if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
   {
     tok=tokenizer.lex();
   }
-  while (tok==TK_WHITESPACE || tok==TK_WORD || tok==TK_HTMLTAG) // there are values following the title
+  while (tok==Tokens::TK_WHITESPACE || tok==Tokens::TK_WORD || tok==Tokens::TK_HTMLTAG) // there are values following the title
   {
-    if (tok==TK_WORD)
+    if (tok==Tokens::TK_WORD)
     {
       if (context.token->name=="width=" || context.token->name=="height=")
       {
@@ -1056,18 +1057,18 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     tok=tokenizer.lex();
     // if we found something we did not expect, push it back to the stream
     // so it can still be processed
-    if (tok==TK_COMMAND_AT || tok==TK_COMMAND_BS)
+    if (tok==Tokens::TK_COMMAND_AT || tok==Tokens::TK_COMMAND_BS)
     {
       tokenizer.unputString(context.token->name);
-      tokenizer.unputString(tok==TK_COMMAND_AT ? "@" : "\\");
+      tokenizer.unputString(tok==Tokens::TK_COMMAND_AT ? "@" : "\\");
       break;
     }
-    else if (tok==TK_SYMBOL)
+    else if (tok==Tokens::TK_SYMBOL)
     {
       tokenizer.unputString(context.token->name);
       break;
     }
-    else if (tok==TK_HTMLTAG)
+    else if (tok==Tokens::TK_HTMLTAG)
     {
       tokenizer.unputString(context.token->text);
       break;
@@ -1085,10 +1086,10 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   bool inlineImage = false;
   QCString anchorStr;
 
-  int tok=tokenizer.lex();
-  if (tok!=TK_WHITESPACE)
+  Tokens tok=tokenizer.lex();
+  if (tok!=Tokens::TK_WHITESPACE)
   {
-    if (tok==TK_WORD)
+    if (tok==Tokens::TK_WORD)
     {
       if (context.token->name == "{")
       {
@@ -1128,7 +1129,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
           }
         }
         tok=tokenizer.lex();
-        if (tok!=TK_WHITESPACE)
+        if (tok!=Tokens::TK_WHITESPACE)
         {
           warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\image command");
           return;
@@ -1142,14 +1143,14 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
     }
   }
   tok=tokenizer.lex();
-  if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  if (tok!=Tokens::TK_WORD && tok!=Tokens::TK_LNKWORD)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of \\image",
         DocTokenizer::tokToString(tok));
     return;
   }
   tok=tokenizer.lex();
-  if (tok!=TK_WHITESPACE)
+  if (tok!=Tokens::TK_WHITESPACE)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\image command");
     return;
@@ -1171,7 +1172,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   tokenizer.setStateFile();
   tok=tokenizer.lex();
   tokenizer.setStatePara();
-  if (tok!=TK_WORD)
+  if (tok!=Tokens::TK_WORD)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of \\image",
         DocTokenizer::tokToString(tok));
@@ -1199,11 +1200,11 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
  * @retval TRUE      The token was handled.
  * @retval FALSE     The token was not handled.
  */
-bool DocParser::defaultHandleToken(DocNodeVariant *parent,int tok, DocNodeList &children,bool handleWord)
+bool DocParser::defaultHandleToken(DocNodeVariant *parent,Tokens tok, DocNodeList &children,bool handleWord)
 {
   AUTO_TRACE("token={} handleWord={}",DocTokenizer::tokToString(tok),handleWord);
-  if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL ||
-      tok==TK_COMMAND_AT || tok==TK_COMMAND_BS || tok==TK_HTMLTAG
+  if (tok==Tokens::TK_WORD || tok==Tokens::TK_LNKWORD || tok==Tokens::TK_SYMBOL || tok==Tokens::TK_URL ||
+      tok==Tokens::TK_COMMAND_AT || tok==Tokens::TK_COMMAND_BS || tok==Tokens::TK_HTMLTAG
      )
   {
   }
@@ -1212,9 +1213,9 @@ reparsetoken:
   AUTO_TRACE_ADD("tokenName={}",tokenName);
   switch (tok)
   {
-    case TK_COMMAND_AT:
+    case Tokens::TK_COMMAND_AT:
         // fall through
-    case TK_COMMAND_BS:
+    case Tokens::TK_COMMAND_BS:
       switch (Mappers::cmdMapper->map(tokenName))
       {
         case CMD_BSLASH:
@@ -1273,9 +1274,9 @@ reparsetoken:
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,FALSE);
-            if (tok!=TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
-            if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD || tok==TK_HTMLTAG)
+            if (tok!=Tokens::TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
+            if (tok==Tokens::TK_NEWPARA) goto handlepara;
+            else if (tok==Tokens::TK_WORD || tok==Tokens::TK_HTMLTAG)
             {
 	      AUTO_TRACE_ADD("CMD_EMPHASIS: reparsing");
               goto reparsetoken;
@@ -1287,9 +1288,9 @@ reparsetoken:
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,FALSE);
-            if (tok!=TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
-            if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD || tok==TK_HTMLTAG)
+            if (tok!=Tokens::TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
+            if (tok==Tokens::TK_NEWPARA) goto handlepara;
+            else if (tok==Tokens::TK_WORD || tok==Tokens::TK_HTMLTAG)
             {
 	      AUTO_TRACE_ADD("CMD_BOLD: reparsing");
               goto reparsetoken;
@@ -1301,9 +1302,9 @@ reparsetoken:
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,FALSE);
-            if (tok!=TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
-            if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD || tok==TK_HTMLTAG)
+            if (tok!=Tokens::TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
+            if (tok==Tokens::TK_NEWPARA) goto handlepara;
+            else if (tok==Tokens::TK_WORD || tok==Tokens::TK_HTMLTAG)
             {
 	      AUTO_TRACE_ADD("CMD_CODE: reparsing");
               goto reparsetoken;
@@ -1315,7 +1316,10 @@ reparsetoken:
             tokenizer.setStateHtmlOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::HtmlOnly,context.isExample,context.exampleName,context.token->name=="block");
-            if (tok==0) warn_doc_error(context.fileName,tokenizer.getLineNr(),"htmlonly section ended without end marker");
+            if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
+            {
+              warn_doc_error(context.fileName,tokenizer.getLineNr(),"htmlonly section ended without end marker");
+            }
             tokenizer.setStatePara();
           }
           break;
@@ -1324,7 +1328,10 @@ reparsetoken:
             tokenizer.setStateManOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::ManOnly,context.isExample,context.exampleName);
-            if (tok==0) warn_doc_error(context.fileName,tokenizer.getLineNr(),"manonly section ended without end marker");
+            if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
+            {
+              warn_doc_error(context.fileName,tokenizer.getLineNr(),"manonly section ended without end marker");
+            }
             tokenizer.setStatePara();
           }
           break;
@@ -1333,7 +1340,10 @@ reparsetoken:
             tokenizer.setStateRtfOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::RtfOnly,context.isExample,context.exampleName);
-            if (tok==0) warn_doc_error(context.fileName,tokenizer.getLineNr(),"rtfonly section ended without end marker");
+            if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
+            {
+              warn_doc_error(context.fileName,tokenizer.getLineNr(),"rtfonly section ended without end marker");
+            }
             tokenizer.setStatePara();
           }
           break;
@@ -1342,7 +1352,10 @@ reparsetoken:
             tokenizer.setStateLatexOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::LatexOnly,context.isExample,context.exampleName);
-            if (tok==0) warn_doc_error(context.fileName,tokenizer.getLineNr(),"latexonly section ended without end marker");
+            if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
+            {
+              warn_doc_error(context.fileName,tokenizer.getLineNr(),"latexonly section ended without end marker");
+            }
             tokenizer.setStatePara();
           }
           break;
@@ -1351,7 +1364,10 @@ reparsetoken:
             tokenizer.setStateXmlOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::XmlOnly,context.isExample,context.exampleName);
-            if (tok==0) warn_doc_error(context.fileName,tokenizer.getLineNr(),"xmlonly section ended without end marker");
+            if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
+            {
+              warn_doc_error(context.fileName,tokenizer.getLineNr(),"xmlonly section ended without end marker");
+            }
             tokenizer.setStatePara();
           }
           break;
@@ -1360,7 +1376,10 @@ reparsetoken:
             tokenizer.setStateDbOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::DocbookOnly,context.isExample,context.exampleName);
-            if (tok==0) warn_doc_error(context.fileName,tokenizer.getLineNr(),"docbookonly section ended without end marker");
+            if (tok==Tokens::TK_NONE || tok==Tokens::TK_EOF)
+            {
+              warn_doc_error(context.fileName,tokenizer.getLineNr(),"docbookonly section ended without end marker");
+            }
             tokenizer.setStatePara();
           }
           break;
@@ -1414,7 +1433,7 @@ reparsetoken:
           return FALSE;
       }
       break;
-    case TK_HTMLTAG:
+    case Tokens::TK_HTMLTAG:
       {
         switch (Mappers::htmlTagMapper->map(tokenName))
         {
@@ -1565,7 +1584,7 @@ reparsetoken:
         }
       }
       break;
-    case TK_SYMBOL:
+    case Tokens::TK_SYMBOL:
       {
         HtmlEntityMapper::SymType s = DocSymbol::decodeSymbol(tokenName);
         if (s!=HtmlEntityMapper::Sym_Unknown)
@@ -1578,15 +1597,15 @@ reparsetoken:
         }
       }
       break;
-    case TK_WHITESPACE:
-    case TK_NEWPARA:
+    case Tokens::TK_WHITESPACE:
+    case Tokens::TK_NEWPARA:
 handlepara:
       if (insidePRE(parent) || !children.empty())
       {
         children.append<DocWhiteSpace>(this,parent,context.token->chars);
       }
       break;
-    case TK_LNKWORD:
+    case Tokens::TK_LNKWORD:
       if (handleWord)
       {
         handleLinkedWord(parent,children);
@@ -1594,7 +1613,7 @@ handlepara:
       else
         return FALSE;
       break;
-    case TK_WORD:
+    case Tokens::TK_WORD:
       if (handleWord)
       {
         children.append<DocWord>(this,parent,context.token->name);
@@ -1602,7 +1621,7 @@ handlepara:
       else
         return FALSE;
       break;
-    case TK_URL:
+    case Tokens::TK_URL:
       if (context.insideHtmlLink)
       {
         children.append<DocWord>(this,parent,context.token->name);
@@ -1651,11 +1670,11 @@ void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const Ht
 
 //---------------------------------------------------------------------------
 
-int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
+Tokens DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
                                     const QCString &doc)
 {
   AUTO_TRACE();
-  int retval = RetVal_OK;
+  Tokens retval = Tokens::RetVal_OK;
 
   if (doc.isEmpty()) return retval;
 
@@ -1683,7 +1702,7 @@ int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &ch
     {
       children.pop_back();
     }
-  } while (retval==TK_NEWPARA);
+  } while (retval==Tokens::TK_NEWPARA);
   if (lastPar) lastPar->markLast();
 
   AUTO_TRACE_EXIT("isFirst={} isLast={}",lastPar?lastPar->isFirst():-1,lastPar?lastPar->isLast():-1);

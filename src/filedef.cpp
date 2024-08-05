@@ -1286,7 +1286,7 @@ void FileDefImpl::insertMember(MemberDef *md)
   allMemberList->push_back(md);
   switch (md->memberType())
   {
-    case MemberType_Property:
+    case MemberType::Property:
       if (md->getLanguage() == SrcLangExt::Python)
       {
         addMemberToList(MemberListType::PropertyMembers(),md);
@@ -1294,33 +1294,33 @@ void FileDefImpl::insertMember(MemberDef *md)
         break;
       }
       //  fallthrough, explicitly no break here
-    case MemberType_Variable:
+    case MemberType::Variable:
       addMemberToList(MemberListType::DecVarMembers(),md);
       addMemberToList(MemberListType::DocVarMembers(),md);
       break;
-    case MemberType_Function:
+    case MemberType::Function:
       addMemberToList(MemberListType::DecFuncMembers(),md);
       addMemberToList(MemberListType::DocFuncMembers(),md);
       break;
-    case MemberType_Typedef:
+    case MemberType::Typedef:
       addMemberToList(MemberListType::DecTypedefMembers(),md);
       addMemberToList(MemberListType::DocTypedefMembers(),md);
       break;
-    case MemberType_Sequence:
+    case MemberType::Sequence:
       addMemberToList(MemberListType::DecSequenceMembers(),md);
       addMemberToList(MemberListType::DocSequenceMembers(),md);
       break;
-    case MemberType_Dictionary:
+    case MemberType::Dictionary:
       addMemberToList(MemberListType::DecDictionaryMembers(),md);
       addMemberToList(MemberListType::DocDictionaryMembers(),md);
       break;
-    case MemberType_Enumeration:
+    case MemberType::Enumeration:
       addMemberToList(MemberListType::DecEnumMembers(),md);
       addMemberToList(MemberListType::DocEnumMembers(),md);
       break;
-    case MemberType_EnumValue:    // enum values are shown inside their enums
+    case MemberType::EnumValue:    // enum values are shown inside their enums
       break;
-    case MemberType_Define:
+    case MemberType::Define:
       addMemberToList(MemberListType::DecDefineMembers(),md);
       addMemberToList(MemberListType::DocDefineMembers(),md);
       break;
@@ -1345,7 +1345,7 @@ void FileDefImpl::removeMember(MemberDef *md)
   removeMemberFromList(MemberListType::AllMembersList(),md);
   switch(md->memberType())
   {
-    case MemberType_Property:
+    case MemberType::Property:
       if (md->getLanguage() == SrcLangExt::Python)
       {
         removeMemberFromList(MemberListType::PropertyMembers(),md);
@@ -1353,33 +1353,33 @@ void FileDefImpl::removeMember(MemberDef *md)
         break;
       }
       //  fallthrough, explicitly no break here
-    case MemberType_Variable:
+    case MemberType::Variable:
       removeMemberFromList(MemberListType::DecVarMembers(),md);
       removeMemberFromList(MemberListType::DocVarMembers(),md);
       break;
-    case MemberType_Function:
+    case MemberType::Function:
       removeMemberFromList(MemberListType::DecFuncMembers(),md);
       removeMemberFromList(MemberListType::DocFuncMembers(),md);
       break;
-    case MemberType_Typedef:
+    case MemberType::Typedef:
       removeMemberFromList(MemberListType::DecTypedefMembers(),md);
       removeMemberFromList(MemberListType::DocTypedefMembers(),md);
       break;
-    case MemberType_Sequence:
+    case MemberType::Sequence:
       removeMemberFromList(MemberListType::DecSequenceMembers(),md);
       removeMemberFromList(MemberListType::DocSequenceMembers(),md);
       break;
-    case MemberType_Dictionary:
+    case MemberType::Dictionary:
       removeMemberFromList(MemberListType::DecDictionaryMembers(),md);
       removeMemberFromList(MemberListType::DocDictionaryMembers(),md);
       break;
-    case MemberType_Enumeration:
+    case MemberType::Enumeration:
       removeMemberFromList(MemberListType::DecEnumMembers(),md);
       removeMemberFromList(MemberListType::DocEnumMembers(),md);
       break;
-    case MemberType_EnumValue:    // enum values are shown inside their enums
+    case MemberType::EnumValue:    // enum values are shown inside their enums
       break;  
-    case MemberType_Define:
+    case MemberType::Define:
       removeMemberFromList(MemberListType::DecDefineMembers(),md);
       removeMemberFromList(MemberListType::DocDefineMembers(),md);
       break;

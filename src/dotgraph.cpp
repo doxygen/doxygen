@@ -106,7 +106,7 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 
 QCString DotGraph::imgName() const
 {
-  return m_baseName + ((m_graphFormat == GOF_BITMAP) ?
+  return m_baseName + ((m_graphFormat == GraphOutputFormat::BITMAP) ?
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
@@ -166,7 +166,7 @@ bool DotGraph::prepareDotFile()
 
   if (sameMd5Signature(absBaseName(), sigStr) &&
       deliverablesPresent(absImgName(),
-                          m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
+                          m_graphFormat == GraphOutputFormat::BITMAP && m_generateImageMap ? absMapName() : QCString()
                          )
      )
   {
@@ -186,14 +186,14 @@ bool DotGraph::prepareDotFile()
   f << m_theGraph;
   f.close();
 
-  if (m_graphFormat == GOF_BITMAP)
+  if (m_graphFormat == GraphOutputFormat::BITMAP)
   {
     // run dot to create a bitmap image
     DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
     if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
   }
-  else if (m_graphFormat == GOF_EPS)
+  else if (m_graphFormat == GraphOutputFormat::EPS)
   {
     // run dot to create a .eps image
     DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
@@ -212,7 +212,7 @@ bool DotGraph::prepareDotFile()
 void DotGraph::generateCode(TextStream &t)
 {
   QCString imgExt = getDotImageExtension();
-  if (m_graphFormat==GOF_BITMAP && m_textFormat==EOF_DocBook)
+  if (m_graphFormat==GraphOutputFormat::BITMAP && m_textFormat==EmbeddedOutputFormat::DocBook)
   {
     t << "<para>\n";
     t << "    <informalfigure>\n";
@@ -226,7 +226,7 @@ void DotGraph::generateCode(TextStream &t)
     t << "    </informalfigure>\n";
     t << "</para>\n";
   }
-  else if (m_graphFormat==GOF_BITMAP && m_generateImageMap) // produce HTML to include the image
+  else if (m_graphFormat==GraphOutputFormat::BITMAP && m_generateImageMap) // produce HTML to include the image
   {
     if (imgExt=="svg") // add link to SVG file without map file
     {
@@ -261,7 +261,7 @@ void DotGraph::generateCode(TextStream &t)
       }
     }
   }
-  else if (m_graphFormat==GOF_EPS) // produce tex to include the .eps image
+  else if (m_graphFormat==GraphOutputFormat::EPS) // produce tex to include the .eps image
   {
     if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
     {
@@ -320,7 +320,7 @@ void DotGraph::computeGraph(DotNode *root,
     md5stream << "  rankdir=\"" << rank << "\";\n";
   }
   root->clearWriteFlag();
-  root->write(md5stream, gt, format, gt!=CallGraph && gt!=Dependency, TRUE, backArrows);
+  root->write(md5stream, gt, format, gt!=GraphType::CallGraph && gt!=GraphType::Dependency, TRUE, backArrows);
   if (renderParents)
   {
     for (const auto &pn : root->parents())

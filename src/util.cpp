@@ -1208,8 +1208,8 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
   result+=")";
   if (al.constSpecifier()) result+=" const";
   if (al.volatileSpecifier()) result+=" volatile";
-  if (al.refQualifier()==RefQualifierLValue) result+=" &";
-  else if (al.refQualifier()==RefQualifierRValue) result+=" &&";
+  if (al.refQualifier()==RefQualifierType::LValue) result+=" &";
+  else if (al.refQualifier()==RefQualifierType::RValue) result+=" &&";
   if (!al.trailingReturnType().isEmpty()) result+=al.trailingReturnType();
   if (al.pureSpecifier()) result+=" =0";
   return removeRedundantWhiteSpace(result);
@@ -6601,8 +6601,8 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
   int column=0;
   bool skipLine=FALSE;
 
-  if (format == FortranFormat_Fixed) return TRUE;
-  if (format == FortranFormat_Free)  return FALSE;
+  if (format == FortranFormat::Fixed) return TRUE;
+  if (format == FortranFormat::Free)  return FALSE;
 
   int tabSize=Config_getInt(TAB_SIZE);
   size_t sizCont = contents.length();
@@ -6654,10 +6654,10 @@ FortranFormat convertFileNameFortranParserCode(QCString fn)
   QCString ext = getFileNameExtension(fn);
   QCString parserName = Doxygen::parserManager->getParserName(ext);
 
-  if (parserName == "fortranfixed") return FortranFormat_Fixed;
-  else if (parserName == "fortranfree") return FortranFormat_Free;
+  if (parserName == "fortranfixed") return FortranFormat::Fixed;
+  else if (parserName == "fortranfree") return FortranFormat::Free;
 
-  return FortranFormat_Unknown;
+  return FortranFormat::Unknown;
 }
 //------------------------------------------------------------------------
 

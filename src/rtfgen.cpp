@@ -2275,7 +2275,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,TRUE,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,TRUE,FALSE);
 
   // display the file
   m_t << "{\n";
@@ -2298,7 +2298,7 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
 
   // display the file
   m_t << "{\n";
@@ -2328,7 +2328,7 @@ void RTFGenerator::endCallGraph(DotCallGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
 
   // display the file
   m_t << "{\n";
@@ -2350,7 +2350,7 @@ void RTFGenerator::endDirDepGraph(DotDirDeps &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
 
   // display the file
   m_t << "{\n";

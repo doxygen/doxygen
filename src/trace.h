@@ -277,22 +277,22 @@ template<> struct fmt::formatter<MemberType> : formatter<std::string>
     std::string result="Unknown";
     switch (mtype)
     {
-      case MemberType_Define:      result="Define";      break;
-      case MemberType_Function:    result="Function";    break;
-      case MemberType_Variable:    result="Variable";    break;
-      case MemberType_Typedef:     result="Typedef";     break;
-      case MemberType_Enumeration: result="Enumeration"; break;
-      case MemberType_EnumValue:   result="EnumValue";   break;
-      case MemberType_Signal:      result="Signal";      break;
-      case MemberType_Slot:        result="Slot";        break;
-      case MemberType_Friend:      result="Friend";      break;
-      case MemberType_DCOP:        result="DCOP";        break;
-      case MemberType_Property:    result="Property";    break;
-      case MemberType_Event:       result="Event";       break;
-      case MemberType_Interface:   result="Interface";   break;
-      case MemberType_Service:     result="Service";     break;
-      case MemberType_Sequence:    result="Sequence";    break;
-      case MemberType_Dictionary:  result="Dictionary";  break;
+      case MemberType::Define:      result="Define";      break;
+      case MemberType::Function:    result="Function";    break;
+      case MemberType::Variable:    result="Variable";    break;
+      case MemberType::Typedef:     result="Typedef";     break;
+      case MemberType::Enumeration: result="Enumeration"; break;
+      case MemberType::EnumValue:   result="EnumValue";   break;
+      case MemberType::Signal:      result="Signal";      break;
+      case MemberType::Slot:        result="Slot";        break;
+      case MemberType::Friend:      result="Friend";      break;
+      case MemberType::DCOP:        result="DCOP";        break;
+      case MemberType::Property:    result="Property";    break;
+      case MemberType::Event:       result="Event";       break;
+      case MemberType::Interface:   result="Interface";   break;
+      case MemberType::Service:     result="Service";     break;
+      case MemberType::Sequence:    result="Sequence";    break;
+      case MemberType::Dictionary:  result="Dictionary";  break;
     }
     return formatter<std::string>::format(result, ctx);
   }

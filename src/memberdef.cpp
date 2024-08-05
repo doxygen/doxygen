@@ -430,7 +430,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
 
     TypeSpecifier m_memSpec;          // The specifiers present for this member
     VhdlSpecifier m_vhdlSpec;
-    MemberType m_mtype = MemberType_Define; // returns the kind of member
+    MemberType m_mtype = MemberType::Define; // returns the kind of member
     int m_maxInitLines = 0;         // when the initializer will be displayed
     int m_userInitLines = 0;        // result of explicit \hideinitializer or \showinitializer
     MemberDef  *m_annMemb = nullptr;
@@ -1225,11 +1225,11 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   {
     ol.docify(" volatile");
   }
-  if (defArgList.refQualifier()==RefQualifierLValue)
+  if (defArgList.refQualifier()==RefQualifierType::LValue)
   {
     ol.docify(" &");
   }
-  else if (defArgList.refQualifier()==RefQualifierRValue)
+  else if (defArgList.refQualifier()==RefQualifierType::RValue)
   {
     ol.docify(" &&");
   }
@@ -1341,7 +1341,7 @@ void MemberDefImpl::init(Definition *d,
   m_hasInlineSource         = Config_getBool(INLINE_SOURCES);
   m_initLines=0;
   m_type=t;
-  if (mt==MemberType_Typedef) m_type.stripPrefix("typedef ");
+  if (mt==MemberType::Typedef) m_type.stripPrefix("typedef ");
   //  type.stripPrefix("struct ");
   //  type.stripPrefix("class " );
   //  type.stripPrefix("union " );
@@ -1846,7 +1846,7 @@ void MemberDefImpl::_computeLinkableInProject()
     m_isLinkableCached = 1; // in file (and not in namespace) but file not linkable
     return;
   }
-  if ((!protectionLevelVisible(m_prot) && m_mtype!=MemberType_Friend) &&
+  if ((!protectionLevelVisible(m_prot) && m_mtype!=MemberType::Friend) &&
        !(m_prot==Protection::Private && (m_virt!=Specifier::Normal || isOverride() || isFinal()) && extractPrivateVirtual))
   {
     AUTO_TRACE_ADD("private and invisible");
@@ -1949,7 +1949,7 @@ void MemberDefImpl::writeLink(OutputList &ol,
   }
   if (!onlyText && (isLinkable() || hasDetailedDescription())) // write link
   {
-    if (m_mtype==MemberType_EnumValue && getGroupDef()==nullptr &&          // enum value is not grouped
+    if (m_mtype==MemberType::EnumValue && getGroupDef()==nullptr &&          // enum value is not grouped
         getEnumScope() && getEnumScope()->getGroupDef()) // but its container is
     {
       const GroupDef *enumValGroup = getEnumScope()->getGroupDef();
@@ -2080,7 +2080,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
   // private *documented* virtual members are shown if EXTRACT_PRIV_VIRTUAL
   // is set to YES
   bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
-                           m_mtype==MemberType_Friend ||
+                           m_mtype==MemberType::Friend ||
                            (m_prot==Protection::Private &&
                                (m_virt!=Specifier::Normal || isOverride() || isFinal()) && extractPrivateVirtual && hasDocs)
                           );
@@ -2221,7 +2221,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // hide enum value, since they appear already as part of the enum, unless they
   // are explicitly grouped.
-  if (!inGroup && m_mtype==MemberType_EnumValue) return;
+  if (!inGroup && m_mtype==MemberType::EnumValue) return;
 
   const Definition *d=nullptr;
   ASSERT (cd!=nullptr || nd!=nullptr || fd!=nullptr || gd!=nullptr || mod!=nullptr); // member should belong to something
@@ -2433,7 +2433,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     bool extractStatic  = Config_getBool(EXTRACT_STATIC);
     MemberDefMutable *annMemb = toMemberDefMutable(m_annMemb);
     bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
-                             m_mtype==MemberType_Friend ||
+                             m_mtype==MemberType::Friend ||
                              (m_prot==Protection::Private &&
                                 (m_virt!=Specifier::Normal || isOverride() || isFinal()) &&
                                 extractPrivateVirtual && hasDocumentation()
@@ -2681,7 +2681,7 @@ bool MemberDefImpl::hasDetailedDescription() const
            // is an enum with values that are documented
            (isEnumerate() && hasDocumentedEnumValues()) ||
            // is documented enum value
-           (m_mtype==MemberType_EnumValue && !briefDescription().isEmpty()) ||
+           (m_mtype==MemberType::EnumValue && !briefDescription().isEmpty()) ||
            // has brief description that is part of the detailed description
            (!briefDescription().isEmpty() &&           // has brief docs
             (alwaysDetailedSec &&                      // they are visible in
@@ -2743,7 +2743,7 @@ bool MemberDefImpl::hasDetailedDescription() const
 
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a   group
-    bool privateFilter = protectionLevelVisible(protection()) || m_mtype==MemberType_Friend ||
+    bool privateFilter = protectionLevelVisible(protection()) || m_mtype==MemberType::Friend ||
                          (m_prot==Protection::Private && (m_virt!=Specifier::Normal || isOverride() || isFinal()) && extractPrivateVirtual);
 
     // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
@@ -3400,7 +3400,7 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
 {
     //printf("md=%s initLines=%d init='%s'\n",qPrint(name()),initLines,qPrint(init));
     ol.startBold();
-    if (m_mtype==MemberType_Define)
+    if (m_mtype==MemberType::Define)
       ol.parseText(theTranslator->trDefineValue());
     else
       ol.parseText(theTranslator->trInitialValue());
@@ -4042,22 +4042,22 @@ QCString MemberDefImpl::memberTypeName() const
 {
   switch (m_mtype)
   {
-    case MemberType_Define:      return "macro definition";
-    case MemberType_Function:    return "function";
-    case MemberType_Variable:    return "variable";
-    case MemberType_Typedef:     return "typedef";
-    case MemberType_Enumeration: return "enumeration";
-    case MemberType_EnumValue:   return "enumvalue";
-    case MemberType_Signal:      return "signal";
-    case MemberType_Slot:        return "slot";
-    case MemberType_Friend:      return "friend";
-    case MemberType_DCOP:        return "dcop";
-    case MemberType_Property:    return "property";
-    case MemberType_Event:       return "event";
-    case MemberType_Interface:   return "interface";
-    case MemberType_Service:     return "service";
-    case MemberType_Sequence:    return "sequence";
-    case MemberType_Dictionary:  return "dictionary";
+    case MemberType::Define:      return "macro definition";
+    case MemberType::Function:    return "function";
+    case MemberType::Variable:    return "variable";
+    case MemberType::Typedef:     return "typedef";
+    case MemberType::Enumeration: return "enumeration";
+    case MemberType::EnumValue:   return "enumvalue";
+    case MemberType::Signal:      return "signal";
+    case MemberType::Slot:        return "slot";
+    case MemberType::Friend:      return "friend";
+    case MemberType::DCOP:        return "dcop";
+    case MemberType::Property:    return "property";
+    case MemberType::Event:       return "event";
+    case MemberType::Interface:   return "interface";
+    case MemberType::Service:     return "service";
+    case MemberType::Sequence:    return "sequence";
+    case MemberType::Dictionary:  return "dictionary";
     default:          return "unknown";
   }
 }
@@ -4289,7 +4289,7 @@ bool MemberDefImpl::isDeleted() const
 bool MemberDefImpl::hasDocumentation() const
 {
   return DefinitionMixin::hasDocumentation() ||
-         (m_mtype==MemberType_Enumeration && m_docEnumValues) ||  // has enum values
+         (m_mtype==MemberType::Enumeration && m_docEnumValues) ||  // has enum values
          (m_defArgList.hasDocumentation());   // has doc arguments
 }
 
@@ -4558,22 +4558,22 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool 
   tagFile << "    <member kind=\"";
   switch (m_mtype)
   {
-    case MemberType_Define:      tagFile << "define";      break;
-    case MemberType_EnumValue:   tagFile << "enumvalue";   break;
-    case MemberType_Property:    tagFile << "property";    break;
-    case MemberType_Event:       tagFile << "event";       break;
-    case MemberType_Variable:    tagFile << "variable";    break;
-    case MemberType_Typedef:     tagFile << "typedef";     break;
-    case MemberType_Enumeration: tagFile << "enumeration"; break;
-    case MemberType_Function:    tagFile << "function";    break;
-    case MemberType_Signal:      tagFile << "signal";      break;
-    case MemberType_Friend:      tagFile << "friend";      break;
-    case MemberType_DCOP:        tagFile << "dcop";        break;
-    case MemberType_Slot:        tagFile << "slot";        break;
-    case MemberType_Interface:   tagFile << "interface";   break;
-    case MemberType_Service:     tagFile << "service";     break;
-    case MemberType_Sequence:    tagFile << "sequence";    break;
-    case MemberType_Dictionary:  tagFile << "dictionary";  break;
+    case MemberType::Define:      tagFile << "define";      break;
+    case MemberType::EnumValue:   tagFile << "enumvalue";   break;
+    case MemberType::Property:    tagFile << "property";    break;
+    case MemberType::Event:       tagFile << "event";       break;
+    case MemberType::Variable:    tagFile << "variable";    break;
+    case MemberType::Typedef:     tagFile << "typedef";     break;
+    case MemberType::Enumeration: tagFile << "enumeration"; break;
+    case MemberType::Function:    tagFile << "function";    break;
+    case MemberType::Signal:      tagFile << "signal";      break;
+    case MemberType::Friend:      tagFile << "friend";      break;
+    case MemberType::DCOP:        tagFile << "dcop";        break;
+    case MemberType::Slot:        tagFile << "slot";        break;
+    case MemberType::Interface:   tagFile << "interface";   break;
+    case MemberType::Service:     tagFile << "service";     break;
+    case MemberType::Sequence:    tagFile << "sequence";    break;
+    case MemberType::Dictionary:  tagFile << "dictionary";  break;
   }
   if (m_prot!=Protection::Public)
   {
@@ -5128,77 +5128,77 @@ MemberType MemberDefImpl::memberType() const
 
 bool MemberDefImpl::isSignal() const
 {
-  return m_mtype==MemberType_Signal;
+  return m_mtype==MemberType::Signal;
 }
 
 bool MemberDefImpl::isSlot() const
 {
-  return m_mtype==MemberType_Slot;
+  return m_mtype==MemberType::Slot;
 }
 
 bool MemberDefImpl::isVariable() const
 {
-  return m_mtype==MemberType_Variable;
+  return m_mtype==MemberType::Variable;
 }
 
 bool MemberDefImpl::isEnumerate() const
 {
-  return m_mtype==MemberType_Enumeration;
+  return m_mtype==MemberType::Enumeration;
 }
 
 bool MemberDefImpl::isEnumValue() const
 {
-  return m_mtype==MemberType_EnumValue;
+  return m_mtype==MemberType::EnumValue;
 }
 
 bool MemberDefImpl::isTypedef() const
 {
-  return m_mtype==MemberType_Typedef;
+  return m_mtype==MemberType::Typedef;
 }
 
 bool MemberDefImpl::isSequence() const
 {
-  return m_mtype==MemberType_Sequence;
+  return m_mtype==MemberType::Sequence;
 }
 
 bool MemberDefImpl::isDictionary() const
 {
-  return m_mtype==MemberType_Dictionary;
+  return m_mtype==MemberType::Dictionary;
 }
 
 bool MemberDefImpl::isFunction() const
 {
-  return m_mtype==MemberType_Function;
+  return m_mtype==MemberType::Function;
 }
 
 bool MemberDefImpl::isFunctionPtr() const
 {
-  return m_mtype==MemberType_Variable && QCString(argsString()).find(")(")!=-1;
+  return m_mtype==MemberType::Variable && QCString(argsString()).find(")(")!=-1;
 }
 
 bool MemberDefImpl::isDefine() const
 {
-  return m_mtype==MemberType_Define;
+  return m_mtype==MemberType::Define;
 }
 
 bool MemberDefImpl::isFriend() const
 {
-  return m_mtype==MemberType_Friend;
+  return m_mtype==MemberType::Friend;
 }
 
 bool MemberDefImpl::isDCOP() const
 {
-  return m_mtype==MemberType_DCOP;
+  return m_mtype==MemberType::DCOP;
 }
 
 bool MemberDefImpl::isProperty() const
 {
-  return m_mtype==MemberType_Property;
+  return m_mtype==MemberType::Property;
 }
 
 bool MemberDefImpl::isEvent() const
 {
-  return m_mtype==MemberType_Event;
+  return m_mtype==MemberType::Event;
 }
 
 bool MemberDefImpl::isRelated() const
@@ -5363,7 +5363,7 @@ bool MemberDefImpl::isEnumStruct() const
 
 bool MemberDefImpl::isStrongEnumValue() const
 {
-  return m_mtype==MemberType_EnumValue &&
+  return m_mtype==MemberType::EnumValue &&
          m_enumScope &&
          m_enumScope->isStrong();
 }
@@ -6320,22 +6320,22 @@ CodeSymbolType MemberDefImpl::codeSymbolType() const
 {
   switch (memberType())
   {
-    case MemberType_Define:      return CodeSymbolType::Define;
-    case MemberType_Function:    return CodeSymbolType::Function;
-    case MemberType_Variable:    return CodeSymbolType::Variable;
-    case MemberType_Typedef:     return CodeSymbolType::Typedef;
-    case MemberType_Enumeration: return CodeSymbolType::Enumeration;
-    case MemberType_EnumValue:   return CodeSymbolType::EnumValue;
-    case MemberType_Signal:      return CodeSymbolType::Signal;
-    case MemberType_Slot:        return CodeSymbolType::Slot;
-    case MemberType_Friend:      return CodeSymbolType::Friend;
-    case MemberType_DCOP:        return CodeSymbolType::DCOP;
-    case MemberType_Property:    return CodeSymbolType::Property;
-    case MemberType_Event:       return CodeSymbolType::Event;
-    case MemberType_Interface:   return CodeSymbolType::Interface;
-    case MemberType_Service:     return CodeSymbolType::Service;
-    case MemberType_Sequence:    return CodeSymbolType::Sequence;
-    case MemberType_Dictionary:  return CodeSymbolType::Dictionary;
+    case MemberType::Define:      return CodeSymbolType::Define;
+    case MemberType::Function:    return CodeSymbolType::Function;
+    case MemberType::Variable:    return CodeSymbolType::Variable;
+    case MemberType::Typedef:     return CodeSymbolType::Typedef;
+    case MemberType::Enumeration: return CodeSymbolType::Enumeration;
+    case MemberType::EnumValue:   return CodeSymbolType::EnumValue;
+    case MemberType::Signal:      return CodeSymbolType::Signal;
+    case MemberType::Slot:        return CodeSymbolType::Slot;
+    case MemberType::Friend:      return CodeSymbolType::Friend;
+    case MemberType::DCOP:        return CodeSymbolType::DCOP;
+    case MemberType::Property:    return CodeSymbolType::Property;
+    case MemberType::Event:       return CodeSymbolType::Event;
+    case MemberType::Interface:   return CodeSymbolType::Interface;
+    case MemberType::Service:     return CodeSymbolType::Service;
+    case MemberType::Sequence:    return CodeSymbolType::Sequence;
+    case MemberType::Dictionary:  return CodeSymbolType::Dictionary;
   }
   return CodeSymbolType::Default;
 }

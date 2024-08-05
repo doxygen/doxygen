@@ -74,7 +74,7 @@ static void generateDEFForMember(const MemberDef *md,
   // - source referenced by
   // - include code
 
-  if (md->memberType()==MemberType_EnumValue) return;
+  if (md->memberType()==MemberType::EnumValue) return;
 
   QCString scopeName;
   if (md->getClassDef())
@@ -91,22 +91,22 @@ static void generateDEFForMember(const MemberDef *md,
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-    case MemberType_Define:      memType="define";     break;
-    case MemberType_EnumValue:   ASSERT(0);            break;
-    case MemberType_Property:    memType="property";   break;
-    case MemberType_Event:       memType="event";      break;
-    case MemberType_Variable:    memType="variable";   break;
-    case MemberType_Typedef:     memType="typedef";    break;
-    case MemberType_Enumeration: memType="enum";       break;
-    case MemberType_Interface:   memType="interface";  break;
-    case MemberType_Service:     memType="service";    break;
-    case MemberType_Sequence:    memType="sequence";   break;
-    case MemberType_Dictionary:  memType="dictionary"; break;
-    case MemberType_Function:    memType="function";   isFunc=TRUE; break;
-    case MemberType_Signal:      memType="signal";     isFunc=TRUE; break;
-    case MemberType_Friend:      memType="friend";     isFunc=TRUE; break;
-    case MemberType_DCOP:        memType="dcop";       isFunc=TRUE; break;
-    case MemberType_Slot:        memType="slot";       isFunc=TRUE; break;
+    case MemberType::Define:      memType="define";     break;
+    case MemberType::EnumValue:   ASSERT(0);            break;
+    case MemberType::Property:    memType="property";   break;
+    case MemberType::Event:       memType="event";      break;
+    case MemberType::Variable:    memType="variable";   break;
+    case MemberType::Typedef:     memType="typedef";    break;
+    case MemberType::Enumeration: memType="enum";       break;
+    case MemberType::Interface:   memType="interface";  break;
+    case MemberType::Service:     memType="service";    break;
+    case MemberType::Sequence:    memType="sequence";   break;
+    case MemberType::Dictionary:  memType="dictionary"; break;
+    case MemberType::Function:    memType="function";   isFunc=TRUE; break;
+    case MemberType::Signal:      memType="signal";     isFunc=TRUE; break;
+    case MemberType::Friend:      memType="friend";     isFunc=TRUE; break;
+    case MemberType::DCOP:        memType="dcop";       isFunc=TRUE; break;
+    case MemberType::Slot:        memType="slot";       isFunc=TRUE; break;
   }
 
   t << memPrefix << "kind = '" << memType << "';\n";
@@ -132,8 +132,8 @@ static void generateDEFForMember(const MemberDef *md,
     case Protection::Package:   t << "package;\n"; break;
   }
 
-  if (md->memberType()!=MemberType_Define &&
-      md->memberType()!=MemberType_Enumeration
+  if (md->memberType()!=MemberType::Define &&
+      md->memberType()!=MemberType::Enumeration
      )
   {
     QCString typeStr = replaceAnonymousScopes(md->typeString());
@@ -196,7 +196,7 @@ static void generateDEFForMember(const MemberDef *md,
       t << "      }; /*" << fcnPrefix << "-param */\n";
     }
   }
-  else if (  md->memberType()==MemberType_Define
+  else if (  md->memberType()==MemberType::Define
       && md->argsString()!=nullptr)
   {
     QCString defPrefix = "  " + memPrefix + "def-";
@@ -214,7 +214,7 @@ static void generateDEFForMember(const MemberDef *md,
       << md->initializer() << "\n_EnD_oF_dEf_TeXt_;\n";
   }
   // TODO: exceptions, const volatile
-  if (md->memberType()==MemberType_Enumeration) // enum
+  if (md->memberType()==MemberType::Enumeration) // enum
   {
     for (const auto &emd : md->enumFieldList())
     {
@@ -429,14 +429,14 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
   t << "  cp-documentation = <<_EnD_oF_dEf_TeXt_\n"
     << cd->documentation() << "\n_EnD_oF_dEf_TeXt_;\n";
 
-  DotClassGraph inheritanceGraph(cd,Inheritance);
+  DotClassGraph inheritanceGraph(cd,GraphType::Inheritance);
   if (!inheritanceGraph.isTrivial())
   {
     t << "  cp-inheritancegraph = <<_EnD_oF_dEf_TeXt_\n";
     inheritanceGraph.writeDEF(t);
     t << "\n_EnD_oF_dEf_TeXt_;\n";
   }
-  DotClassGraph collaborationGraph(cd,Collaboration);
+  DotClassGraph collaborationGraph(cd,GraphType::Collaboration);
   if (!collaborationGraph.isTrivial())
   {
     t << "  cp-collaborationgraph = <<_EnD_oF_dEf_TeXt_\n";

@@ -402,56 +402,56 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
   m_allMemberList.push_back(md);
   switch(md->memberType())
   {
-    case MemberType_Variable:
+    case MemberType::Variable:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecVarMembers(),md);
       }
       addMemberToList(MemberListType::DocVarMembers(),md);
       break;
-    case MemberType_Function:
+    case MemberType::Function:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecFuncMembers(),md);
       }
       addMemberToList(MemberListType::DocFuncMembers(),md);
       break;
-    case MemberType_Typedef:
+    case MemberType::Typedef:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecTypedefMembers(),md);
       }
       addMemberToList(MemberListType::DocTypedefMembers(),md);
       break;
-    case MemberType_Enumeration:
+    case MemberType::Enumeration:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecEnumMembers(),md);
       }
       addMemberToList(MemberListType::DocEnumMembers(),md);
       break;
-    case MemberType_EnumValue:
+    case MemberType::EnumValue:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecEnumValMembers(),md);
       }
       addMemberToList(MemberListType::DocEnumValMembers(),md);
       break;
-    case MemberType_Define:
+    case MemberType::Define:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecDefineMembers(),md);
       }
       addMemberToList(MemberListType::DocDefineMembers(),md);
       break;
-    case MemberType_Signal:
+    case MemberType::Signal:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecSignalMembers(),md);
       }
       addMemberToList(MemberListType::DocSignalMembers(),md);
       break;
-    case MemberType_Slot:
+    case MemberType::Slot:
       if (md->protection()==Protection::Public)
       {
         if (!docOnly)
@@ -477,21 +477,21 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
         addMemberToList(MemberListType::DocPriSlotMembers(),md);
       }
       break;
-    case MemberType_Event:
+    case MemberType::Event:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecEventMembers(),md);
       }
       addMemberToList(MemberListType::DocEventMembers(),md);
       break;
-    case MemberType_Property:
+    case MemberType::Property:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecPropMembers(),md);
       }
       addMemberToList(MemberListType::DocPropMembers(),md);
       break;
-    case MemberType_Friend:
+    case MemberType::Friend:
       if (!docOnly)
       {
         addMemberToList(MemberListType::DecFriendMembers(),md);
@@ -500,8 +500,8 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
       break;
     default:
       err("GroupDefImpl::insertMembers(): "
-           "member '%s' (typeid=%d) with scope '%s' inserted in group scope '%s'!\n",
-           qPrint(md->name()),md->memberType(),
+           "member '%s' (typeid='%s') with scope '%s' inserted in group scope '%s'!\n",
+           qPrint(md->name()),qPrint(md->memberTypeName()),
            md->getClassDef() ? qPrint(md->getClassDef()->name()) : "",
            qPrint(name()));
   }
@@ -519,35 +519,35 @@ void GroupDefImpl::removeMember(MemberDef *md)
     removeMemberFromList(MemberListType::AllMembersList(),md);
     switch(md->memberType())
     {
-      case MemberType_Variable:
+      case MemberType::Variable:
 	removeMemberFromList(MemberListType::DecVarMembers(),md);
         removeMemberFromList(MemberListType::DocVarMembers(),md);
         break;
-      case MemberType_Function:
+      case MemberType::Function:
         removeMemberFromList(MemberListType::DecFuncMembers(),md);
         removeMemberFromList(MemberListType::DocFuncMembers(),md);
         break;
-      case MemberType_Typedef:
+      case MemberType::Typedef:
         removeMemberFromList(MemberListType::DecTypedefMembers(),md);
         removeMemberFromList(MemberListType::DocTypedefMembers(),md);
         break;
-      case MemberType_Enumeration:
+      case MemberType::Enumeration:
         removeMemberFromList(MemberListType::DecEnumMembers(),md);
         removeMemberFromList(MemberListType::DocEnumMembers(),md);
         break;
-      case MemberType_EnumValue:
+      case MemberType::EnumValue:
         removeMemberFromList(MemberListType::DecEnumValMembers(),md);
         removeMemberFromList(MemberListType::DocEnumValMembers(),md);
         break;
-      case MemberType_Define:
+      case MemberType::Define:
         removeMemberFromList(MemberListType::DecDefineMembers(),md);
         removeMemberFromList(MemberListType::DocDefineMembers(),md);
         break;
-      case MemberType_Signal:
+      case MemberType::Signal:
         removeMemberFromList(MemberListType::DecSignalMembers(),md);
         removeMemberFromList(MemberListType::DocSignalMembers(),md);
         break;
-      case MemberType_Slot:
+      case MemberType::Slot:
         if (md->protection()==Protection::Public)
         {
           removeMemberFromList(MemberListType::DecPubSlotMembers(),md);
@@ -564,15 +564,15 @@ void GroupDefImpl::removeMember(MemberDef *md)
           removeMemberFromList(MemberListType::DocPriSlotMembers(),md);
         }
         break;
-      case MemberType_Event:
+      case MemberType::Event:
         removeMemberFromList(MemberListType::DecEventMembers(),md);
         removeMemberFromList(MemberListType::DocEventMembers(),md);
         break;
-      case MemberType_Property:
+      case MemberType::Property:
         removeMemberFromList(MemberListType::DecPropMembers(),md);
         removeMemberFromList(MemberListType::DocPropMembers(),md);
         break;
-      case MemberType_Friend:
+      case MemberType::Friend:
         removeMemberFromList(MemberListType::DecFriendMembers(),md);
         removeMemberFromList(MemberListType::DocFriendMembers(),md);
         break;

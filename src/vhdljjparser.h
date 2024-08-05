@@ -17,7 +17,7 @@
 #include "config.h"
 #include "util.h"
 
-enum  { GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
+enum  class VhdlSection { UNKNOWN = 0, GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
 //void  parserVhdlfile(const char* inputBuffer);
 
 /** \brief VHDL parser using state-based lexical scanning.

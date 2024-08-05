@@ -280,16 +280,16 @@ void ModuleDefImpl::addMemberToModule(const Entry *root,MemberDef *md)
   allMemberList->push_back(md);
   switch (md->memberType())
   {
-    case MemberType_Variable:
+    case MemberType::Variable:
       addMemberToList(MemberListType::DecVarMembers(),md);
       break;
-    case MemberType_Function:
+    case MemberType::Function:
       addMemberToList(MemberListType::DecFuncMembers(),md);
       break;
-    case MemberType_Typedef:
+    case MemberType::Typedef:
       addMemberToList(MemberListType::DecTypedefMembers(),md);
       break;
-    case MemberType_Enumeration:
+    case MemberType::Enumeration:
       addMemberToList(MemberListType::DecEnumMembers(),md);
       break;
     default:

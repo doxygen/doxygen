@@ -557,10 +557,10 @@ CPPC  "/\/"
 <FuncQual>"override"                    {
                                         }
 <FuncQual>"&"		    	        {
-                                          yyextra->argList->setRefQualifier(RefQualifierLValue);
+                                          yyextra->argList->setRefQualifier(RefQualifierType::LValue);
 					}
 <FuncQual>"&&"		    	        {
-                                          yyextra->argList->setRefQualifier(RefQualifierRValue);
+                                          yyextra->argList->setRefQualifier(RefQualifierType::RValue);
 					}
 <FuncQual,TrailingReturn>"="{B}*"0"  	{
 					  yyextra->argList->setPureSpecifier(TRUE);

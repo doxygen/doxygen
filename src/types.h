@@ -386,31 +386,31 @@ constexpr const char *codeSymbolType2Str(CodeSymbolType type)
 }
 
 
-enum MemberType
+enum class MemberType
 {
-  MemberType_Define,
-  MemberType_Function,
-  MemberType_Variable,
-  MemberType_Typedef,
-  MemberType_Enumeration,
-  MemberType_EnumValue,
-  MemberType_Signal,
-  MemberType_Slot,
-  MemberType_Friend,
-  MemberType_DCOP,
-  MemberType_Property,
-  MemberType_Event,
-  MemberType_Interface,
-  MemberType_Service,
-  MemberType_Sequence,
-  MemberType_Dictionary
+  Define,
+  Function,
+  Variable,
+  Typedef,
+  Enumeration,
+  EnumValue,
+  Signal,
+  Slot,
+  Friend,
+  DCOP,
+  Property,
+  Event,
+  Interface,
+  Service,
+  Sequence,
+  Dictionary
 };
 
-enum FortranFormat
+enum class FortranFormat
 {
-  FortranFormat_Unknown,
-  FortranFormat_Free,
-  FortranFormat_Fixed
+  Unknown,
+  Free,
+  Fixed
 };
 
 

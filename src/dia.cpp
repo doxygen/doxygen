@@ -40,12 +40,12 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   QCString diaArgs;
   QCString extension;
   diaArgs+="-n ";
-  if (format==DIA_BITMAP)
+  if (format==DiaOutputFormat::BITMAP)
   {
     diaArgs+="-t png-libart";
     extension=".png";
   }
-  else if (format==DIA_EPS)
+  else if (format==DiaOutputFormat::EPS)
   {
     diaArgs+="-t eps";
     extension=".eps";
@@ -66,7 +66,7 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
         qPrint(diaExe),qPrint(inFile));
     goto error;
   }
-  if ( (format==DIA_EPS) && (Config_getBool(USE_PDFLATEX)) )
+  if ( (format==DiaOutputFormat::EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine, QCString::ExplicitSize);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
