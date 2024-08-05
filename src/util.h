@@ -468,4 +468,9 @@ QCString projectLogoFile();
 
 void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
 
+template<typename T, typename... ARGS>
+bool is_any_of(T t, ARGS... args)
+{
+   return ((t == args) || ...);
+}
 #endif
