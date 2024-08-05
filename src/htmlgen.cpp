@@ -2394,7 +2394,7 @@ void HtmlGenerator::endDotGraph(DotClassGraph &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,TRUE,m_sectionCount);
   if (generateLegend && !umlLook)
   {
     QCString url = m_relPath+"graph_legend"+Doxygen::htmlFileExtension;
@@ -2426,7 +2426,7 @@ void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
 
   endSectionContent(m_t);
   m_sectionCount++;
@@ -2444,7 +2444,7 @@ void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
 
   endSectionContent(m_t);
   m_sectionCount++;
@@ -2462,7 +2462,7 @@ void HtmlGenerator::endCallGraph(DotCallGraph &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
 
   endSectionContent(m_t);
   m_sectionCount++;
@@ -2480,7 +2480,7 @@ void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
   endSectionSummary(m_t);
   startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
 
   endSectionContent(m_t);
   m_sectionCount++;

@@ -1947,7 +1947,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   baseName.prepend("dot_");
   QCString outDir = Config_getString(LATEX_OUTPUT);
   QCString name = fileName;
-  writeDotGraphFromFile(name,outDir,baseName,GOF_EPS,srcFile,srcLine);
+  writeDotGraphFromFile(name,outDir,baseName,GraphOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1969,7 +1969,7 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   baseName.prepend("msc_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_EPS,srcFile,srcLine);
+  writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1984,7 +1984,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &
 {
   QCString shortName = makeShortName(baseName);
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS,s.srcFile(),s.srcLine());
+  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(),s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
@@ -2003,7 +2003,7 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
   baseName.prepend("dia_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_EPS,srcFile,srcLine);
+  writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::EPS,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -2018,7 +2018,7 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName, const DocVerbatim &
 {
   QCString shortName = makeShortName(baseName);
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS,s.srcFile(),s.srcLine());
+  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DiaOutputFormat::EPS,s.srcFile(),s.srcLine());
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());

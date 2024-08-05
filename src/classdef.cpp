@@ -951,25 +951,25 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
     {
       switch (md->memberType())
       {
-        case MemberType_Service: // UNO IDL
+        case MemberType::Service: // UNO IDL
           addMemberToList(MemberListType::Services(),md,TRUE);
           break;
-        case MemberType_Interface: // UNO IDL
+        case MemberType::Interface: // UNO IDL
           addMemberToList(MemberListType::Interfaces(),md,TRUE);
           break;
-        case MemberType_Signal: // Qt specific
+        case MemberType::Signal: // Qt specific
           addMemberToList(MemberListType::Signals(),md,TRUE);
           break;
-        case MemberType_DCOP:   // KDE2 specific
+        case MemberType::DCOP:   // KDE2 specific
           addMemberToList(MemberListType::DcopMethods(),md,TRUE);
           break;
-        case MemberType_Property:
+        case MemberType::Property:
           addMemberToList(MemberListType::Properties(),md,TRUE);
           break;
-        case MemberType_Event:
+        case MemberType::Event:
           addMemberToList(MemberListType::Events(),md,TRUE);
           break;
-        case MemberType_Slot:   // Qt specific
+        case MemberType::Slot:   // Qt specific
           switch (prot)
           {
             case Protection::Protected:
@@ -1112,23 +1112,23 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
     {
       switch (md->memberType())
       {
-        case MemberType_Service: // UNO IDL
+        case MemberType::Service: // UNO IDL
           addMemberToList(MemberListType::ServiceMembers(),md,FALSE);
           break;
-        case MemberType_Interface: // UNO IDL
+        case MemberType::Interface: // UNO IDL
           addMemberToList(MemberListType::InterfaceMembers(),md,FALSE);
           break;
-        case MemberType_Property:
+        case MemberType::Property:
           addMemberToList(MemberListType::PropertyMembers(),md,FALSE);
           break;
-        case MemberType_Event:
+        case MemberType::Event:
           addMemberToList(MemberListType::EventMembers(),md,FALSE);
           break;
-        case MemberType_Signal: // fall through
-        case MemberType_DCOP:
+        case MemberType::Signal: // fall through
+        case MemberType::DCOP:
           addMemberToList(MemberListType::FunctionMembers(),md,FALSE);
           break;
-        case MemberType_Slot:
+        case MemberType::Slot:
           if (protectionLevelVisible(prot))
           {
             addMemberToList(MemberListType::FunctionMembers(),md,FALSE);
@@ -1139,16 +1139,16 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
           {
             switch (md->memberType())
             {
-              case MemberType_Typedef:
+              case MemberType::Typedef:
                 addMemberToList(MemberListType::TypedefMembers(),md,FALSE);
                 break;
-              case MemberType_Enumeration:
+              case MemberType::Enumeration:
                 addMemberToList(MemberListType::EnumMembers(),md,FALSE);
                 break;
-              case MemberType_EnumValue:
+              case MemberType::EnumValue:
                 addMemberToList(MemberListType::EnumValMembers(),md,FALSE);
                 break;
-              case MemberType_Function:
+              case MemberType::Function:
                 if (md->isConstructor() || md->isDestructor())
                 {
                   m_impl->memberLists.get(MemberListType::Constructors(),MemberListContainer::Class)->push_back(md);
@@ -1158,15 +1158,15 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   addMemberToList(MemberListType::FunctionMembers(),md,FALSE);
                 }
                 break;
-              case MemberType_Variable:
+              case MemberType::Variable:
                 addMemberToList(MemberListType::VariableMembers(),md,FALSE);
                 break;
-              case MemberType_Define:
+              case MemberType::Define:
                 warn(md->getDefFileName(),md->getDefLine()-1,"A define (%s) cannot be made a member of %s",
                      qPrint(md->name()), qPrint(this->name()));
                 break;
               default:
-                err("Unexpected member type %d found!\n",md->memberType());
+                err("Unexpected member type '%s' found!\n",qPrint(md->memberTypeName()));
             }
           }
           break;
@@ -1697,7 +1697,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   if (haveDot && (classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH))
     // write class diagram using dot
   {
-    DotClassGraph inheritanceGraph(this,Inheritance);
+    DotClassGraph inheritanceGraph(this,GraphType::Inheritance);
     if (inheritanceGraph.isTooBig())
     {
        warn_uncond("Inheritance graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
@@ -1823,7 +1823,7 @@ void ClassDefImpl::writeCollaborationGraph(OutputList &ol) const
 {
   if (Config_getBool(HAVE_DOT) && m_impl->hasCollaborationGraph /*&& Config_getBool(COLLABORATION_GRAPH)*/)
   {
-    DotClassGraph usageImplGraph(this,Collaboration);
+    DotClassGraph usageImplGraph(this,GraphType::Collaboration);
     if (usageImplGraph.isTooBig())
     {
        warn_uncond("Collaboration graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",

@@ -2205,7 +2205,7 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   QCString baseName=makeBaseName(fn);
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+  writeDotGraphFromFile(fn,outDir,baseName,GraphOutputFormat::BITMAP,srcFile,srcLine);
   writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine);
 }
 
@@ -2216,9 +2216,9 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPa
   baseName.prepend("msc_");
   QCString outDir = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
-  MscOutputFormat mscFormat = MSC_BITMAP;
+  MscOutputFormat mscFormat = MscOutputFormat::BITMAP;
   if ("svg" == imgExt)
-    mscFormat = MSC_SVG;
+    mscFormat = MscOutputFormat::SVG;
   writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
   writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat,srcFile,srcLine);
 }
@@ -2229,7 +2229,7 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relP
   QCString baseName=makeBaseName(fileName);
   baseName.prepend("dia_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP,srcFile,srcLine);
+  writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::BITMAP,srcFile,srcLine);
 
   m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
 }

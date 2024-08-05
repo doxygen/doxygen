@@ -50,7 +50,7 @@ void DotGfxHierarchyTable::computeTheGraph()
   {
     if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
-      node->write(md5stream,Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE);
+      node->write(md5stream,GraphType::Hierarchy,GraphOutputFormat::BITMAP,FALSE,TRUE,TRUE);
     }
   }
   writeGraphFooter(md5stream);
@@ -69,7 +69,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
   m_graphId = id;
   m_noDivTag = TRUE;
   m_zoomable = FALSE;
-  DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
+  DotGraph::writeGraph(out, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, fileName, "", TRUE, 0);
 }
 
 void DotGfxHierarchyTable::writeGraph(TextStream &out,

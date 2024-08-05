@@ -1122,7 +1122,7 @@ static void associateMember(const MemberDef *md, struct Refid member_refid, stru
 {
   // TODO: skip EnumValue only to guard against recording refids and member records
   // for enumvalues until we can support documenting them as entities.
-  if (md->memberType()==MemberType_EnumValue) return;
+  if (md->memberType()==MemberType::EnumValue) return;
   if (!md->isAnonymous()) // skip anonymous members
   {
     bindIntParameter(member_insert, ":scope_rowid", scope_refid.rowid);
@@ -1476,7 +1476,7 @@ The XML schema claims:
     namespace page protocol service singleton struct type union
 
 Member kind comes from MemberDef::memberTypeName()
-  types.h defines 14 MemberType_*s
+  types.h defines 14 MemberType::*s
     _DCOP _Define _Enumeration _EnumValue _Event _Friend _Function _Interface
     _Property _Service _Signal _Slot _Typedef _Variable
       - xml doesn't include enumvalue here
@@ -1553,7 +1553,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   // - call graph
 
   // enum values are written as part of the enum
-  if (md->memberType()==MemberType_EnumValue) return;
+  if (md->memberType()==MemberType::EnumValue) return;
   if (md->isHidden()) return;
 
   QCString memType;
@@ -1649,11 +1649,11 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-    case MemberType_Function: // fall through
-    case MemberType_Signal:   // fall through
-    case MemberType_Friend:   // fall through
-    case MemberType_DCOP:     // fall through
-    case MemberType_Slot:
+    case MemberType::Function: // fall through
+    case MemberType::Signal:   // fall through
+    case MemberType::Friend:   // fall through
+    case MemberType::DCOP:     // fall through
+    case MemberType::Slot:
       isFunc=TRUE;
       break;
     default:
@@ -1676,7 +1676,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindIntParameter(memberdef_insert,":virt",static_cast<int>(md->virtualness()));
   }
 
-  if (md->memberType() == MemberType_Variable)
+  if (md->memberType() == MemberType::Variable)
   {
     bindIntParameter(memberdef_insert,":mutable",md->isMutable());
     bindIntParameter(memberdef_insert,":initonly",md->isInitonly());
@@ -1697,7 +1697,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
       bindTextParameter(memberdef_insert,":bitfield",bitfield.stripWhiteSpace());
     }
   }
-  else if (md->memberType() == MemberType_Property)
+  else if (md->memberType() == MemberType::Property)
   {
     bindIntParameter(memberdef_insert,":readable",md->isReadable());
     bindIntParameter(memberdef_insert,":writable",md->isWritable());
@@ -1723,7 +1723,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindTextParameter(memberdef_insert,":read",md->getReadAccessor());
     bindTextParameter(memberdef_insert,":write",md->getWriteAccessor());
   }
-  else if (md->memberType() == MemberType_Event)
+  else if (md->memberType() == MemberType::Event)
   {
     bindIntParameter(memberdef_insert,":addable",md->isAddable());
     bindIntParameter(memberdef_insert,":removable",md->isRemovable());
@@ -1743,11 +1743,11 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   }
 
   // + declaration/definition arg lists
-  if (md->memberType()!=MemberType_Define &&
-      md->memberType()!=MemberType_Enumeration
+  if (md->memberType()!=MemberType::Define &&
+      md->memberType()!=MemberType::Enumeration
      )
   {
-    if (md->memberType()!=MemberType_Typedef)
+    if (md->memberType()!=MemberType::Typedef)
     {
       writeMemberTemplateLists(md);
     }
@@ -1841,7 +1841,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   {
     insertMemberFunctionParams(memberdef_id,md,def);
   }
-  else if (md->memberType()==MemberType_Define &&
+  else if (md->memberType()==MemberType::Define &&
           !md->argsString().isEmpty())
   {
     insertMemberDefineParams(memberdef_id,md,def);

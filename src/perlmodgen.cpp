@@ -1473,22 +1473,22 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-    case MemberType_Define:      memType="define";     break;
-    case MemberType_EnumValue:   memType="enumvalue";  break;
-    case MemberType_Property:    memType="property";   break;
-    case MemberType_Variable:    memType="variable";   break;
-    case MemberType_Typedef:     memType="typedef";    break;
-    case MemberType_Enumeration: memType="enum";       break;
-    case MemberType_Function:    memType="function";   isFunc=TRUE; break;
-    case MemberType_Signal:      memType="signal";     isFunc=TRUE; break;
-    case MemberType_Friend:      memType="friend";     isFunc=TRUE; break;
-    case MemberType_DCOP:        memType="dcop";       isFunc=TRUE; break;
-    case MemberType_Slot:        memType="slot";       isFunc=TRUE; break;
-    case MemberType_Event:       memType="event";      break;
-    case MemberType_Interface:   memType="interface";  break;
-    case MemberType_Service:     memType="service";    break;
-    case MemberType_Sequence:    memType="sequence";   break;
-    case MemberType_Dictionary:  memType="dictionary"; break;
+    case MemberType::Define:      memType="define";     break;
+    case MemberType::EnumValue:   memType="enumvalue";  break;
+    case MemberType::Property:    memType="property";   break;
+    case MemberType::Variable:    memType="variable";   break;
+    case MemberType::Typedef:     memType="typedef";    break;
+    case MemberType::Enumeration: memType="enum";       break;
+    case MemberType::Function:    memType="function";   isFunc=TRUE; break;
+    case MemberType::Signal:      memType="signal";     isFunc=TRUE; break;
+    case MemberType::Friend:      memType="friend";     isFunc=TRUE; break;
+    case MemberType::DCOP:        memType="dcop";       isFunc=TRUE; break;
+    case MemberType::Slot:        memType="slot";       isFunc=TRUE; break;
+    case MemberType::Event:       memType="event";      break;
+    case MemberType::Interface:   memType="interface";  break;
+    case MemberType::Service:     memType="service";    break;
+    case MemberType::Sequence:    memType="sequence";   break;
+    case MemberType::Dictionary:  memType="dictionary"; break;
   }
 
   bool isFortran = md->getLanguage()==SrcLangExt::Fortran;
@@ -1504,8 +1504,8 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 
   addPerlModDocBlock(m_output,"brief",md->getDefFileName(),md->getDefLine(),md->getOuterScope(),md,md->briefDescription());
   addPerlModDocBlock(m_output,"detailed",md->getDefFileName(),md->getDefLine(),md->getOuterScope(),md,md->documentation());
-  if (md->memberType()!=MemberType_Define &&
-      md->memberType()!=MemberType_Enumeration)
+  if (md->memberType()!=MemberType::Define &&
+      md->memberType()!=MemberType::Enumeration)
     m_output.addFieldQuotedString("type", md->typeString());
 
   const ArgumentList &al = md->argumentList();
@@ -1554,7 +1554,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     }
     m_output.closeList();
   }
-  else if (md->memberType()==MemberType_Define &&
+  else if (md->memberType()==MemberType::Define &&
 	   md->argsString()!=nullptr) // define
   {
     m_output.openList("parameters");
@@ -1577,7 +1577,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   if (!md->excpString().isEmpty())
     m_output.addFieldQuotedString("exceptions", md->excpString());
 
-  if (md->memberType()==MemberType_Enumeration) // enum
+  if (md->memberType()==MemberType::Enumeration) // enum
   {
     const MemberVector &enumFields = md->enumFieldList();
     m_output.addFieldQuotedString("type", md->enumBaseType());
@@ -1602,7 +1602,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     }
   }
 
-  if (md->memberType() == MemberType_Variable && !md->bitfieldString().isEmpty())
+  if (md->memberType() == MemberType::Variable && !md->bitfieldString().isEmpty())
   {
     QCString bitfield = md->bitfieldString();
     if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);

@@ -9695,6 +9695,13 @@ void parseInline();
     return false;
   }
 
+ inline bool jj_3_158()
+ {
+    if (jj_done) return true;
+    if (jj_3R_generic_map_aspect_1620_6_88()) return true;
+    return false;
+  }
+
  inline bool jj_3R_subtype_indication_3224_85_182()
  {
     if (jj_done) return true;
@@ -9889,13 +9896,6 @@ void parseInline();
  {
     if (jj_done) return true;
     if (jj_3R_expression_1380_20_70()) return true;
-    return false;
-  }
-
- inline bool jj_3_158()
- {
-    if (jj_done) return true;
-    if (jj_3R_generic_map_aspect_1620_6_88()) return true;
     return false;
   }
 
@@ -11184,8 +11184,8 @@ struct SharedState
   QCString confName;
   QCString genLabels;
   QCString lab;
-  int param_sec = 0;
-  int parse_sec = 0;
+  VhdlSection param_sec = VhdlSection::UNKNOWN;
+  VhdlSection parse_sec = VhdlSection::UNKNOWN;
   VhdlSpecifier currP = VhdlSpecifier::UNKNOWN;
   bool interf_sec;
   bool generic_sec;

@@ -568,7 +568,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   // - call graph
 
   // enum values are written as part of the enum
-  if (md->memberType()==MemberType_EnumValue) return;
+  if (md->memberType()==MemberType::EnumValue) return;
   if (md->isHidden()) return;
 
   // group members are only visible in their group
@@ -578,22 +578,22 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-    case MemberType_Define:      memType="define";      break;
-    case MemberType_Function:    memType="function";    isFunc=TRUE; break;
-    case MemberType_Variable:    memType="variable";    break;
-    case MemberType_Typedef:     memType="typedef";     break;
-    case MemberType_Enumeration: memType="enum";        break;
-    case MemberType_EnumValue:   ASSERT(0);             break;
-    case MemberType_Signal:      memType="signal";      isFunc=TRUE; break;
-    case MemberType_Slot:        memType="slot";        isFunc=TRUE; break;
-    case MemberType_Friend:      memType="friend";      isFunc=TRUE; break;
-    case MemberType_DCOP:        memType="dcop";        isFunc=TRUE; break;
-    case MemberType_Property:    memType="property";    break;
-    case MemberType_Event:       memType="event";       break;
-    case MemberType_Interface:   memType="interface";   break;
-    case MemberType_Service:     memType="service";     break;
-    case MemberType_Sequence:    memType="sequence";    break;
-    case MemberType_Dictionary:  memType="dictionary";  break;
+    case MemberType::Define:      memType="define";      break;
+    case MemberType::Function:    memType="function";    isFunc=TRUE; break;
+    case MemberType::Variable:    memType="variable";    break;
+    case MemberType::Typedef:     memType="typedef";     break;
+    case MemberType::Enumeration: memType="enum";        break;
+    case MemberType::EnumValue:   ASSERT(0);             break;
+    case MemberType::Signal:      memType="signal";      isFunc=TRUE; break;
+    case MemberType::Slot:        memType="slot";        isFunc=TRUE; break;
+    case MemberType::Friend:      memType="friend";      isFunc=TRUE; break;
+    case MemberType::DCOP:        memType="dcop";        isFunc=TRUE; break;
+    case MemberType::Property:    memType="property";    break;
+    case MemberType::Event:       memType="event";       break;
+    case MemberType::Interface:   memType="interface";   break;
+    case MemberType::Service:     memType="service";     break;
+    case MemberType::Sequence:    memType="sequence";    break;
+    case MemberType::Dictionary:  memType="dictionary";  break;
   }
 
   QCString nameStr = md->name();
@@ -756,14 +756,14 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "\"";
   }
 
-  if (md->memberType() == MemberType_Enumeration)
+  if (md->memberType() == MemberType::Enumeration)
   {
     t << " strong=\"";
     if (md->isStrong()) t << "yes"; else t << "no";
     t << "\"";
   }
 
-  if (md->memberType() == MemberType_Variable)
+  if (md->memberType() == MemberType::Variable)
   {
     //ArgumentList *al = md->argumentList();
     //t << " volatile=\"";
@@ -818,7 +818,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       t << " maybeambiguous=\"yes\"";
     }
   }
-  else if (md->memberType() == MemberType_Property)
+  else if (md->memberType() == MemberType::Property)
   {
     t << " readable=\"";
     if (md->isReadable()) t << "yes"; else t << "no";
@@ -863,7 +863,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       t << "\"";
     }
   }
-  else if (md->memberType() == MemberType_Event)
+  else if (md->memberType() == MemberType::Event)
   {
     t << " add=\"";
     if (md->isAddable()) t << "yes"; else t << "no";
@@ -880,8 +880,8 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
 
   t << ">\n";
 
-  if (md->memberType()!=MemberType_Define &&
-      md->memberType()!=MemberType_Enumeration
+  if (md->memberType()!=MemberType::Define &&
+      md->memberType()!=MemberType::Enumeration
      )
   {
     writeMemberTemplateLists(md,t);
@@ -897,7 +897,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "        <argsstring>" << convertToXML(argsStr) << "</argsstring>\n";
   }
 
-  if (md->memberType() == MemberType_Enumeration)
+  if (md->memberType() == MemberType::Enumeration)
   {
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->enumBaseType());
@@ -912,7 +912,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "        <qualifiedname>" << convertToXML(qualifiedNameStr) << "</qualifiedname>\n";
   }
 
-  if (md->memberType() == MemberType_Property)
+  if (md->memberType() == MemberType::Property)
   {
     if (md->isReadable())
       t << "        <read>" << convertToXML(md->getReadAccessor()) << "</read>\n";
@@ -920,7 +920,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       t << "        <write>" << convertToXML(md->getWriteAccessor()) << "</write>\n";
   }
 
-  if (md->memberType()==MemberType_Variable && !md->bitfieldString().isEmpty())
+  if (md->memberType()==MemberType::Variable && !md->bitfieldString().isEmpty())
   {
     QCString bitfield = md->bitfieldString();
     if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
@@ -1025,7 +1025,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       }
     }
   }
-  else if (md->memberType()==MemberType_Define &&
+  else if (md->memberType()==MemberType::Define &&
           !md->argsString().isEmpty()) // define
   {
     if (md->argumentList().empty())     // special case for "foo()" to
@@ -1062,7 +1062,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "</exceptions>\n";
   }
 
-  if (md->memberType()==MemberType_Enumeration) // enum
+  if (md->memberType()==MemberType::Enumeration) // enum
   {
     for (const auto &emd : md->enumFieldList())
     {
@@ -1164,7 +1164,7 @@ static void generateXMLSection(const Definition *d,TextStream &ti,TextStream &t,
   int count=0;
   for (const auto &md : *ml)
   {
-    if (memberVisible(d,md) && (md->memberType()!=MemberType_EnumValue) &&
+    if (memberVisible(d,md) && (md->memberType()!=MemberType::EnumValue) &&
         !md->isHidden())
     {
       count++;
@@ -1531,14 +1531,14 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd,nullptr,cd->documentation());
   t << "    </detaileddescription>\n";
-  DotClassGraph inheritanceGraph(cd,Inheritance);
+  DotClassGraph inheritanceGraph(cd,GraphType::Inheritance);
   if (!inheritanceGraph.isTrivial())
   {
     t << "    <inheritancegraph>\n";
     inheritanceGraph.writeXML(t);
     t << "    </inheritancegraph>\n";
   }
-  DotClassGraph collaborationGraph(cd,Collaboration);
+  DotClassGraph collaborationGraph(cd,GraphType::Collaboration);
   if (!collaborationGraph.isTrivial())
   {
     t << "    <collaborationgraph>\n";

@@ -346,9 +346,9 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
 
     switch (md->memberType())
     {
-      case MemberType_Define:
+      case MemberType::Define:
         type="macro"; break;
-      case MemberType_Function:
+      case MemberType::Function:
         if (cd && (cd->compoundType()==ClassDef::Interface ||
               cd->compoundType()==ClassDef::Class))
         {
@@ -367,39 +367,39 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
         else
           type="func";
         break;
-      case MemberType_Variable:
+      case MemberType::Variable:
         type="data"; break;
-      case MemberType_Typedef:
+      case MemberType::Typedef:
         type="tdef"; break;
-      case MemberType_Enumeration:
+      case MemberType::Enumeration:
         type="enum"; break;
-      case MemberType_EnumValue:
+      case MemberType::EnumValue:
         type="econst"; break;
         //case MemberDef::Prototype:
         //  type="prototype"; break;
-      case MemberType_Signal:
+      case MemberType::Signal:
         type="signal"; break;
-      case MemberType_Slot:
+      case MemberType::Slot:
         type="slot"; break;
-      case MemberType_Friend:
+      case MemberType::Friend:
         type="ffunc"; break;
-      case MemberType_DCOP:
+      case MemberType::DCOP:
         type="dcop"; break;
-      case MemberType_Property:
+      case MemberType::Property:
         if (cd && cd->compoundType()==ClassDef::Protocol)
           type="intfp";         // interface property
         else
           type="instp";         // instance property
         break;
-      case MemberType_Event:
+      case MemberType::Event:
         type="event"; break;
-      case MemberType_Interface:
+      case MemberType::Interface:
         type="ifc"; break;
-      case MemberType_Service:
+      case MemberType::Service:
         type="svc"; break;
-      case MemberType_Sequence:
+      case MemberType::Sequence:
         type="sequence"; break;
-      case MemberType_Dictionary:
+      case MemberType::Dictionary:
         type="dictionary"; break;
     }
     cd = md->getClassDef();

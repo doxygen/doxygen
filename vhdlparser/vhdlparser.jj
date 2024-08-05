@@ -41,8 +41,8 @@ struct SharedState
   QCString confName;
   QCString genLabels;
   QCString lab;
-  int param_sec = 0;
-  int parse_sec = 0;
+  VhdlSection param_sec = VhdlSection::UNKNOWN;
+  VhdlSection parse_sec = VhdlSection::UNKNOWN;
   VhdlSpecifier currP = VhdlSpecifier::UNKNOWN;
   bool interf_sec;
   bool generic_sec;
@@ -1073,9 +1073,9 @@ QCString context_ref() : {QCString s, s1;}
 
 void context_declaration(): {QCString s,s1;}
 {
- <CONTEXT_T> s=identifier() <IS_T> { m_sharedState->parse_sec=CONTEXT_SEC; }  context_clause() <END_T> [ <CONTEXT_T> ][identifier()] <SEMI_T>
+ <CONTEXT_T> s=identifier() <IS_T> { m_sharedState->parse_sec=VhdlSection::CONTEXT_SEC; }  context_clause() <END_T> [ <CONTEXT_T> ][identifier()] <SEMI_T>
                         {
-                          m_sharedState->parse_sec=0;
+                          m_sharedState->parse_sec=VhdlSection::UNKNOWN;
                           outlineParser()->addVhdlType(s,outlineParser()->getLine(LIBRARY_T),
                                                        EntryType::makeVariable(),VhdlSpecifier::LIBRARY,"context",s1,Protection::Public);
                         }
@@ -1308,7 +1308,7 @@ s=entity_tag() [ s1=signature() ] { return s+s1;}
 
 void entity_header() : {}
 {
- [  { m_sharedState->currP=VhdlSpecifier::GENERIC;m_sharedState->parse_sec=GEN_SEC; } generic_clause()]
+ [  { m_sharedState->currP=VhdlSpecifier::GENERIC;m_sharedState->parse_sec=VhdlSection::GEN_SEC; } generic_clause()]
  [ { m_sharedState->currP=VhdlSpecifier::PORT; } port_clause()]
 }
 
@@ -1549,13 +1549,13 @@ void gen_interface_list() : {}
    <GENERIC_T><LPAREN_T>
                         {
 
-                          m_sharedState->parse_sec=GEN_SEC;
+                          m_sharedState->parse_sec=VhdlSection::GEN_SEC;
 
                         }
                         interface_list()
                         {
 
-                          m_sharedState->parse_sec=0;
+                          m_sharedState->parse_sec=VhdlSection::UNKNOWN;
 
                         }
                         <RPAREN_T>
@@ -1607,7 +1607,7 @@ void generate_scheme() : {}
 
 void generic_clause() : {QCString s;}
 {
- <GENERIC_T>  <LPAREN_T> { m_sharedState->parse_sec=GEN_SEC; } s=generic_list() <RPAREN_T> <SEMI_T> { m_sharedState->parse_sec=0; }
+ <GENERIC_T>  <LPAREN_T> { m_sharedState->parse_sec=VhdlSection::GEN_SEC; } s=generic_list() <RPAREN_T> <SEMI_T> { m_sharedState->parse_sec=VhdlSection::UNKNOWN; }
 }
 
 QCString generic_list() :  {QCString s;}
@@ -1796,7 +1796,7 @@ interface_subprogram_declaration() { return s;}
 |
  s=object_class() s1=identifier()
  {
-   if (m_sharedState->parse_sec==GEN_SEC)
+   if (m_sharedState->parse_sec==VhdlSection::GEN_SEC)
      outlineParser()->addVhdlType(s,outlineParser()->getLine(),
                                   EntryType::makeVariable(),m_sharedState->currP,s1,QCString(),Protection::Public);
    return s;
@@ -1886,7 +1886,7 @@ QCString ifunc():{QCString s,s1,s2,s3;Token *t=nullptr;Token *t1=nullptr;Token *
      s3.prepend(" is ");
    }
    m_sharedState->current->name=s;
-   if (m_sharedState->parse_sec==GEN_SEC)
+   if (m_sharedState->parse_sec==VhdlSection::GEN_SEC)
    {
      QCString ss=q+" function "+s1+" return "+s2+s3;
      int a=outlineParser()->getLine(FUNCTION_T);
@@ -1903,14 +1903,14 @@ QCString ifunc():{QCString s,s1,s2,s3;Token *t=nullptr;Token *t1=nullptr;Token *
 
 QCString param(): {QCString s,s1;Token *tok=nullptr;}
 {
-  [ tok=<PARAMETER_T> ] { m_sharedState->param_sec=PARAM_SEC; }
+  [ tok=<PARAMETER_T> ] { m_sharedState->param_sec=VhdlSection::PARAM_SEC; }
   [ <LPAREN_T>  s1=interface_list() <RPAREN_T>]
   {
     if(tok!=nullptr)
     {
       s = tok->image;
     }
-    m_sharedState->param_sec=0;
+    m_sharedState->param_sec=VhdlSection::UNKNOWN;
     return s+"("+s1+")";
   }
 }
@@ -1943,7 +1943,7 @@ QCString  interface_incomplete_type_declaration() :  {QCString s="type";QCString
       {
         outlineParser()->addProto("",s1,s,"","","");
       }
-      else if(m_sharedState->parse_sec==GEN_SEC)
+      else if(m_sharedState->parse_sec==VhdlSection::GEN_SEC)
       {
         outlineParser()->addVhdlType(s,outlineParser()->getLine(),EntryType::makeVariable(),VhdlSpecifier::GENERIC,s1,"",Protection::Public);
       }
@@ -2027,13 +2027,13 @@ QCString library_clause() :  {QCString s;}
  (<LIBRARY_T> s=identifier_list() <SEMI_T>
  )
  {
-               if ( m_sharedState->parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
-                   {
-                           outlineParser()->addVhdlType(s,outlineParser()->getLine(),
-                                             EntryType::makeVariable(),VhdlSpecifier::LIBRARY,s,"_library_",Protection::Public);
-                   }
-                   QCString s1="library "+s;
-                   return s1;
+   if ( m_sharedState->parse_sec==VhdlSection::UNKNOWN && Config_getBool(SHOW_INCLUDE_FILES) )
+   {
+     outlineParser()->addVhdlType(s,outlineParser()->getLine(),
+                                  EntryType::makeVariable(),VhdlSpecifier::LIBRARY,s,"_library_",Protection::Public);
+   }
+   QCString s1="library "+s;
+   return s1;
  }
 }
 
@@ -3152,7 +3152,7 @@ void subprogram_kind() :  {}
 
 void subprogram_header() :  {}
 {
-     <GENERIC_T> { m_sharedState->parse_sec=GEN_SEC; } <LPAREN_T> generic_list() <RPAREN_T> { m_sharedState->parse_sec=0; }[LOOKAHEAD(2) generic_map_aspect() ]
+     <GENERIC_T> { m_sharedState->parse_sec=VhdlSection::GEN_SEC; } <LPAREN_T> generic_list() <RPAREN_T> { m_sharedState->parse_sec=VhdlSection::UNKNOWN; }[LOOKAHEAD(2) generic_map_aspect() ]
 }
 
 void subprogram_specification() : {QCString s;Token *tok=nullptr;Token *t;}
@@ -3165,7 +3165,7 @@ void subprogram_specification() : {QCString s;Token *tok=nullptr;Token *t;}
    m_sharedState->current->startLine=outlineParser()->getLine(PROCEDURE_T);
    m_sharedState->current->bodyLine=outlineParser()->getLine(PROCEDURE_T);
 
- } [LOOKAHEAD(1) <LPAREN_T> { m_sharedState->param_sec=PARAM_SEC; } interface_list() { m_sharedState->param_sec=0; }<RPAREN_T> ]
+ } [LOOKAHEAD(1) <LPAREN_T> { m_sharedState->param_sec=VhdlSection::PARAM_SEC; } interface_list() { m_sharedState->param_sec=VhdlSection::UNKNOWN; }<RPAREN_T> ]
    [LOOKAHEAD(2) gen_interface_list()]
    [ LOOKAHEAD(2) gen_assoc_list()]
    param()
@@ -3183,7 +3183,7 @@ void subprogram_specification() : {QCString s;Token *tok=nullptr;Token *t;}
    m_sharedState->current->startLine=outlineParser()->getLine(FUNCTION_T);
    m_sharedState->current->bodyLine=outlineParser()->getLine(FUNCTION_T);
  }
- [[<PARAMETER_T>]{ m_sharedState->param_sec=PARAM_SEC; } <LPAREN_T> formal_parameter_list() <RPAREN_T> { m_sharedState->param_sec=0; }]
+ [[<PARAMETER_T>]{ m_sharedState->param_sec=VhdlSection::PARAM_SEC; } <LPAREN_T> formal_parameter_list() <RPAREN_T> { m_sharedState->param_sec=VhdlSection::UNKNOWN; }]
     <RETURN_T> [ LOOKAHEAD(2)identifier() <OF_T> ] s=type_mark()
              {
                 m_sharedState->tempEntry=m_sharedState->current;
@@ -3308,7 +3308,7 @@ QCString unconstraint_array_definition() :  {QCString s,s1,s2,s3;}
                      if (ql2.size()>1)
                      {
                        std::string it=ql2[1];
-                       if ( m_sharedState->parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
+                       if ( m_sharedState->parse_sec==VhdlSection::UNKNOWN && Config_getBool(SHOW_INCLUDE_FILES) )
                        {
                          outlineParser()->addVhdlType(it.c_str(),
                                                       outlineParser()->getLine(),

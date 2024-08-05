@@ -89,13 +89,13 @@ int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
   {
     if (md->isBriefSectionVisible())
     {
-      if (md->memberType()!=MemberType_Friend &&
-          md->memberType()!=MemberType_EnumValue)
+      if (md->memberType()!=MemberType::Friend &&
+          md->memberType()!=MemberType::EnumValue)
       {
         //printf("member %s: isReimplementedBy(%s)=%d\n",qPrint(md->name()),
         //    qPrint(inheritedFrom->name()),
         //    md->isReimplementedBy(inheritedFrom));
-        if (md->memberType()==MemberType_Function)
+        if (md->memberType()==MemberType::Function)
         {
           if (!md->isReimplementedBy(inheritedFrom)) count++;
         }
@@ -136,44 +136,44 @@ void MemberList::countDecMembers()
     {
       switch(md->memberType())
       {
-        case MemberType_Variable:    // fall through
-        case MemberType_Event:       // fall through
-        case MemberType_Property:    /*m_varCnt++,*/
+        case MemberType::Variable:    // fall through
+        case MemberType::Event:       // fall through
+        case MemberType::Property:    /*m_varCnt++,*/
                                      m_numDecMembers++;
                                      break;
 // apparently necessary to get this to show up in declarations section?
-        case MemberType_Interface:   // fall through
-        case MemberType_Service:     // fall through
-        case MemberType_Function:    // fall through
-        case MemberType_Signal:      // fall through
-        case MemberType_DCOP:        // fall through
-        case MemberType_Slot:        if (!md->isRelated() || md->getClassDef())
+        case MemberType::Interface:   // fall through
+        case MemberType::Service:     // fall through
+        case MemberType::Function:    // fall through
+        case MemberType::Signal:      // fall through
+        case MemberType::DCOP:        // fall through
+        case MemberType::Slot:        if (!md->isRelated() || md->getClassDef())
                                        /*m_funcCnt++,*/
                                        m_numDecMembers++;
                                      break;
-        case MemberType_Enumeration: /*m_enumCnt++,*/
+        case MemberType::Enumeration: /*m_enumCnt++,*/
                                      m_numDecMembers++;
                                      break;
-        case MemberType_EnumValue:   m_numDecEnumValues++;
+        case MemberType::EnumValue:   m_numDecEnumValues++;
                                      m_numDecMembers++;
                                      break;
-        case MemberType_Typedef:     /*m_typeCnt++,*/
+        case MemberType::Typedef:     /*m_typeCnt++,*/
                                      m_numDecMembers++;
                                      break;
-        case MemberType_Sequence:    /*m_seqCnt++,*/
+        case MemberType::Sequence:    /*m_seqCnt++,*/
                                      m_numDecMembers++;
                                      break;
-        case MemberType_Dictionary:  /*m_dictCnt++,*/
+        case MemberType::Dictionary:  /*m_dictCnt++,*/
                                      m_numDecMembers++;
                                      break;
-        //case MemberType_Prototype:   m_protoCnt++,m_numDecMembers++; break;
-        case MemberType_Define:      if (Config_getBool(EXTRACT_ALL) ||
+        //case MemberType::Prototype:   m_protoCnt++,m_numDecMembers++; break;
+        case MemberType::Define:      if (Config_getBool(EXTRACT_ALL) ||
                                          !md->argsString().isEmpty() ||
                                          !md->initializer().isEmpty() ||
                                          md->hasDocumentation()
                                         ) /*m_defCnt++,*/ m_numDecMembers++;
                                      break;
-        case MemberType_Friend:      /*m_friendCnt++,*/
+        case MemberType::Friend:      /*m_friendCnt++,*/
                                      m_numDecMembers++;
                                      break;
         default:
@@ -213,7 +213,7 @@ void MemberList::countDocMembers()
     if (md->isDetailedSectionVisible(m_container) && !md->isAlias())
     {
       // do not count enum values, since they do not produce entries of their own
-      if (md->memberType()==MemberType_EnumValue)
+      if (md->memberType()==MemberType::EnumValue)
       {
         m_numDocEnumValues++;
       }
@@ -239,7 +239,7 @@ void MemberList::setAnonymousEnumType()
       QCString name(md->name());
       int i=name.findRev("::");
       if (i!=-1) name=name.right(name.length()-i-2);
-      if (md->memberType()==MemberType_Enumeration && name[0]=='@')
+      if (md->memberType()==MemberType::Enumeration && name[0]=='@')
       {
         for (const auto &vmd : md->enumFieldList())
         {
@@ -290,21 +290,21 @@ bool MemberList::declVisible() const
     {
       switch (md->memberType())
       {
-        case MemberType_Define:     // fall through
-        case MemberType_Typedef:    // fall through
-        case MemberType_Variable:   // fall through
-        case MemberType_Function:   // fall through
-        case MemberType_Signal:     // fall through
-        case MemberType_Slot:       // fall through
-        case MemberType_DCOP:       // fall through
-        case MemberType_Property:   // fall through
-        case MemberType_Interface:  // fall through
-        case MemberType_Service:    // fall through
-        case MemberType_Sequence:   // fall through
-        case MemberType_Dictionary: // fall through
-        case MemberType_Event:
+        case MemberType::Define:     // fall through
+        case MemberType::Typedef:    // fall through
+        case MemberType::Variable:   // fall through
+        case MemberType::Function:   // fall through
+        case MemberType::Signal:     // fall through
+        case MemberType::Slot:       // fall through
+        case MemberType::DCOP:       // fall through
+        case MemberType::Property:   // fall through
+        case MemberType::Interface:  // fall through
+        case MemberType::Service:    // fall through
+        case MemberType::Sequence:   // fall through
+        case MemberType::Dictionary: // fall through
+        case MemberType::Event:
           return TRUE;
-        case MemberType_Enumeration:
+        case MemberType::Enumeration:
           {
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
@@ -314,9 +314,9 @@ bool MemberList::declVisible() const
             }
           }
           break;
-        case MemberType_Friend:
+        case MemberType::Friend:
           return TRUE;
-        case MemberType_EnumValue:
+        case MemberType::EnumValue:
           {
             if (m_container==MemberListContainer::Group)
             {
@@ -362,26 +362,26 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
       //printf(">>> rendering\n");
       switch(md->memberType())
       {
-        case MemberType_Define:      // fall through
-        //case MemberType_Prototype: // fall through
-        case MemberType_Typedef:     // fall through
-        case MemberType_Variable:    // fall through
-        case MemberType_Function:    // fall through
-        case MemberType_Signal:      // fall through
-        case MemberType_Slot:        // fall through
-        case MemberType_DCOP:        // fall through
-        case MemberType_Property:    // fall through
-        case MemberType_Interface:   // fall through
-        case MemberType_Service:     // fall through
-        case MemberType_Sequence:    // fall through
-        case MemberType_Dictionary:  // fall through
-        case MemberType_Event:
+        case MemberType::Define:      // fall through
+        //case MemberType::Prototype: // fall through
+        case MemberType::Typedef:     // fall through
+        case MemberType::Variable:    // fall through
+        case MemberType::Function:    // fall through
+        case MemberType::Signal:      // fall through
+        case MemberType::Slot:        // fall through
+        case MemberType::DCOP:        // fall through
+        case MemberType::Property:    // fall through
+        case MemberType::Interface:   // fall through
+        case MemberType::Service:     // fall through
+        case MemberType::Sequence:    // fall through
+        case MemberType::Dictionary:  // fall through
+        case MemberType::Event:
           {
             if (first) ol.startMemberList(),first=FALSE;
             md->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritedFrom,inheritId);
             break;
           }
-        case MemberType_Enumeration:
+        case MemberType::Enumeration:
           {
             // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
@@ -456,7 +456,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             md->warnIfUndocumented();
             break;
           }
-        case MemberType_Friend:
+        case MemberType::Friend:
           if (inheritedFrom==nullptr)
           {
             if (first)
@@ -467,7 +467,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             md->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritedFrom,inheritId);
             break;
           }
-        case MemberType_EnumValue:
+        case MemberType::EnumValue:
           {
             if (inGroup)
             {
@@ -814,7 +814,7 @@ void MemberList::addListReferences(Definition *def)
     {
       md->addListReference(def);
       const MemberVector &enumFields = md->enumFieldList();
-      if (md->memberType()==MemberType_Enumeration && !enumFields.empty())
+      if (md->memberType()==MemberType::Enumeration && !enumFields.empty())
       {
         //printf("  Adding enum values!\n");
         for (const auto &vmd : enumFields)
@@ -866,7 +866,7 @@ void MemberList::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool sho
       if (md->getLanguage()!=SrcLangExt::VHDL)
       {
         md->writeTagFile(tagFile,useQualifiedName,showNamespaceMembers);
-        if (md->memberType()==MemberType_Enumeration && !md->isStrong())
+        if (md->memberType()==MemberType::Enumeration && !md->isStrong())
         {
           for (const auto &ivmd : md->enumFieldList())
           {
