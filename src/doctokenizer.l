@@ -126,53 +126,24 @@ const char *DocTokenizer::tokToString(Tokens token)
 {
   switch (token)
   {
-    case Tokens::TK_EOF:         return "Tokens::TK_EOF";
-    case Tokens::TK_NONE:        return "Tokens::TK_NONE";
-    case Tokens::TK_WORD:        return "Tokens::TK_WORD";
-    case Tokens::TK_LNKWORD:     return "Tokens::TK_LNKWORD";
-    case Tokens::TK_WHITESPACE:  return "Tokens::TK_WHITESPACE";
-    case Tokens::TK_LISTITEM:    return "Tokens::TK_LISTITEM";
-    case Tokens::TK_ENDLIST:     return "Tokens::TK_ENDLIST";
-    case Tokens::TK_COMMAND_AT:  return "Tokens::TK_COMMAND_AT";
-    case Tokens::TK_HTMLTAG:     return "Tokens::TK_HTMLTAG";
-    case Tokens::TK_SYMBOL:      return "Tokens::TK_SYMBOL";
-    case Tokens::TK_NEWPARA:     return "Tokens::TK_NEWPARA";
-    case Tokens::TK_RCSTAG:      return "Tokens::TK_RCSTAG";
-    case Tokens::TK_URL:         return "Tokens::TK_URL";
-    case Tokens::TK_COMMAND_BS:  return "Tokens::TK_COMMAND_BS";
+#define TKSPEC(x,y) case Tokens::x:              return #x;
+    TOKEN_SPECIFICATIONS
+#undef TKSPEC
     default:
       return "ERROR";
   }
-  return "ERROR";
 }
 
 const char *DocTokenizer::retvalToString(Tokens retval)
 {
   switch (retval)
   {
-    case Tokens::RetVal_OK:              return "Tokens::RetVal_OK";
-    case Tokens::RetVal_SimpleSec:       return "Tokens::RetVal_SimpleSec";
-    case Tokens::RetVal_ListItem:        return "Tokens::RetVal_ListItem";
-    case Tokens::RetVal_Section:         return "Tokens::RetVal_Section";
-    case Tokens::RetVal_Subsection:      return "Tokens::RetVal_Subsection";
-    case Tokens::RetVal_Subsubsection:   return "Tokens::RetVal_Subsubsection";
-    case Tokens::RetVal_Paragraph:       return "Tokens::RetVal_Paragraph";
-    case Tokens::RetVal_SubParagraph:    return "Tokens::RetVal_SubParagraph";
-    case Tokens::RetVal_SubSubParagraph: return "Tokens::RetVal_SubSubParagraph";
-    case Tokens::RetVal_EndList:         return "Tokens::RetVal_EndList";
-    case Tokens::RetVal_EndPre:          return "Tokens::RetVal_EndPre";
-    case Tokens::RetVal_DescData:        return "Tokens::RetVal_DescData";
-    case Tokens::RetVal_DescTitle:       return "Tokens::RetVal_DescTitle";
-    case Tokens::RetVal_EndDesc:         return "Tokens::RetVal_EndDesc";
-    case Tokens::RetVal_TableRow:        return "Tokens::RetVal_TableRow";
-    case Tokens::RetVal_TableCell:       return "Tokens::RetVal_TableCell";
-    case Tokens::RetVal_TableHCell:      return "Tokens::RetVal_TableHCell";
-    case Tokens::RetVal_EndTable:        return "Tokens::RetVal_EndTable";
-    case Tokens::RetVal_Internal:        return "Tokens::RetVal_Internal";
+#define TKSPEC(x,y) case Tokens::x:              return #x;
+    RETVAL_SPECIFICATIONS
+#undef TKSPEC
     default:
       return "ERROR";
   }
-  return "ERROR";
 }
 
 static int computeIndent(const char *str,size_t length)
