@@ -122,7 +122,6 @@ class DefinitionImpl
     QCString pathFragment() const;
     void writeDocAnchorsToTagFile(TextStream &) const;
     void setLocalName(const QCString &name);
-    void addSectionsToIndex();
     void writeToc(OutputList &ol, const LocalToc &lt) const;
     void computeTooltip();
     void _setSymbolName(const QCString &name);
@@ -282,8 +281,6 @@ class DefinitionMixin : public Base
     { m_impl.writeDocAnchorsToTagFile(fs); }
     void setLocalName(const QCString &name) override
     { m_impl.setLocalName(name); }
-    void addSectionsToIndex() override
-    { m_impl.addSectionsToIndex(); }
     void writeToc(OutputList &ol, const LocalToc &lt) const override
     { m_impl.writeToc(ol,lt); }
     void computeTooltip() override

@@ -51,7 +51,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     const QCString shortName() const override { return m_shortName; }
     void addSubDir(DirDef *subdir) override;
     const FileList &getFiles() const override { return m_fileList; }
-    void addFile(const FileDef *fd) override;
+    void addFile(FileDef *fd) override;
     const DirList &subDirs() const override { return m_subdirs; }
     bool hasSubdirs() const override { return !m_subdirs.empty(); }
     int level() const override { return m_level; }
@@ -173,10 +173,10 @@ void DirDefImpl::setDirIndex(int index)
   m_dirIndex=index;
 }
 
-void DirDefImpl::addFile(const FileDef *fd)
+void DirDefImpl::addFile(FileDef *fd)
 {
   m_fileList.push_back(fd);
-  const_cast<FileDef*>(fd)->setDirDef(this);
+  fd->setDirDef(this);
 }
 
 void DirDefImpl::sort()

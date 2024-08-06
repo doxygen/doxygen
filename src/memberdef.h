@@ -91,6 +91,7 @@ class MemberDef : public Definition
     virtual QCString getWriteAccessor() const = 0;
 
     // querying the grouping definition
+    virtual GroupDef *getGroupDef() = 0;
     virtual const GroupDef *getGroupDef() const = 0;
     virtual Grouping::GroupPri_t getGroupPri() const = 0;
     virtual QCString getGroupFileName() const = 0;
@@ -320,7 +321,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setMaxInitLines(int lines) = 0;
     virtual void setMemberClass(ClassDef *cd) = 0;
     virtual void setSectionList(const Definition *container,const MemberList *sl) = 0;
-    virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
+    virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=nullptr) = 0;
     virtual void setReadAccessor(const QCString &r) = 0;
@@ -343,7 +344,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     // enumeration specific members
     virtual void insertEnumField(MemberDef *md) = 0;
-    virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE) = 0;
+    virtual void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE) = 0;
     virtual void setEnumClassScope(ClassDef *cd) = 0;
     virtual void setDocumentedEnumValues(bool value) = 0;
     virtual void setAnonymousEnumType(const MemberDef *md) = 0;

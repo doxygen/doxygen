@@ -115,7 +115,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual const QCString shortName() const = 0;
     virtual void addSubDir(DirDef *subdir) = 0;
     virtual const FileList &getFiles() const = 0;
-    virtual void addFile(const FileDef *fd) = 0;
+    virtual void addFile(FileDef *fd) = 0;
     virtual const DirList &subDirs() const = 0;
     virtual bool hasSubdirs() const = 0;
     virtual int level() const = 0;

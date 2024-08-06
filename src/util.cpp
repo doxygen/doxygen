@@ -5647,7 +5647,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   auto parser { createDocParser() };
   auto ast    { validatingParseDoc(*parser.get(),
                                    fileName,lineNr,
-                                   const_cast<Definition*>(scope),const_cast<MemberDef*>(md),doc,FALSE,FALSE,
+                                   scope,md,doc,FALSE,FALSE,
                                    QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)

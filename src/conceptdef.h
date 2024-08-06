@@ -83,7 +83,6 @@ ConceptDef        *toConceptDef(Definition *d);
 ConceptDef        *toConceptDef(DefinitionMutable *d);
 const ConceptDef  *toConceptDef(const Definition *d);
 ConceptDefMutable *toConceptDefMutable(Definition *d);
-ConceptDefMutable *toConceptDefMutable(const Definition *d);
 
 // --- Helpers
 

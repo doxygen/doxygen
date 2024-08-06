@@ -167,7 +167,7 @@ class VhdlDocGen
 
     static void writeVhdlDeclarations(const MemberList*,OutputList&,const GroupDef*,const ClassDef*,const FileDef*,const NamespaceDef*,const ModuleDef *);
 
-    static void writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &ol,
+    static void writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
         bool inGroup);
 
@@ -195,7 +195,7 @@ class VhdlDocGen
 
     static void correctMemberProperties(MemberDefMutable *md);
 
-    static void writeSource(const MemberDefMutable *mdef,OutputList& ol,const QCString & cname);
+    static void writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname);
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
@@ -225,7 +225,7 @@ class VhdlDocGen
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
     static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
-    static void  writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol,const MemberDefMutable *mdef);
+    static void  writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol,MemberDefMutable *mdef);
 };
 
 //-------------------------------------------------------------------------------------------------------------------

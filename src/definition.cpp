@@ -367,58 +367,6 @@ bool DefinitionImpl::hasSections() const
   return FALSE;
 }
 
-void DefinitionImpl::addSectionsToIndex()
-{
-  if (m_impl->sectionRefs.empty()) return;
-  //printf("DefinitionImpl::addSectionsToIndex()\n");
-  int level=1;
-  for (auto it = m_impl->sectionRefs.begin(); it!=m_impl->sectionRefs.end(); ++it)
-  {
-    const SectionInfo *si = *it;
-    SectionType type = si->type();
-    if (type.isSection())
-    {
-      //printf("  level=%d title=%s\n",level,qPrint(si->title));
-      int nextLevel = type.level();
-      if (nextLevel>level)
-      {
-        for (int i=level;i<nextLevel;i++)
-        {
-          Doxygen::indexList->incContentsDepth();
-        }
-      }
-      else if (nextLevel<level)
-      {
-        for (int i=nextLevel;i<level;i++)
-        {
-          Doxygen::indexList->decContentsDepth();
-        }
-      }
-      QCString title = si->title();
-      if (title.isEmpty()) title = si->label();
-      const MemberDef *md = m_impl->def->definitionType()==Definition::TypeMember ? toMemberDef(m_impl->def) : nullptr;
-      const Definition *scope = m_impl->def->definitionType()==Definition::TypeMember ? m_impl->def->getOuterScope() : m_impl->def;
-      title = parseCommentAsText(scope,md,title,si->fileName(),si->lineNr());
-      // determine if there is a next level inside this item, but be aware of the anchor and table section references.
-      auto it_next = std::next(it);
-      bool isDir = (it_next!=m_impl->sectionRefs.end()) ?
-                       ((*it_next)->type().isSection() && (*it_next)->type().level() > nextLevel) : false;
-      Doxygen::indexList->addContentsItem(isDir,title,
-                                         getReference(),
-                                         m_impl->def->getOutputFileBase(),
-                                         si->label(),
-                                         false,
-                                         true);
-      level = nextLevel;
-    }
-  }
-  while (level>1)
-  {
-    Doxygen::indexList->decContentsDepth();
-    level--;
-  }
-}
-
 void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
 {
   if (!m_impl->sectionRefs.empty())

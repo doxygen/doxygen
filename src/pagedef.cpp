@@ -24,6 +24,7 @@
 #include "namespacedef.h"
 #include "reflist.h"
 #include "definitionimpl.h"
+#include "indexlist.h"
 
 //------------------------------------------------------------------------------------------
 
@@ -63,6 +64,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     void writeTagFile(TextStream &) override;
     void setNestingLevel(int l) override;
     void writePageDocumentation(OutputList &ol) const override;
+    void addSectionsToIndex() override;
 
   private:
     QCString m_fileName;
@@ -125,7 +127,7 @@ void PageDefImpl::addInnerCompound(Definition *def)
 {
   if (def->definitionType()==Definition::TypePage)
   {
-    PageDef *pd = const_cast<PageDef*>(toPageDef(def));
+    PageDef *pd = toPageDef(def);
     if (pd)
     {
       m_subPages.add(pd->name(),pd);
@@ -139,6 +141,56 @@ void PageDefImpl::addInnerCompound(Definition *def)
         pd->setNestingLevel(m_nestingLevel+1);
       }
     }
+  }
+}
+
+void PageDefImpl::addSectionsToIndex()
+{
+  const SectionRefs &sectionRefs = getSectionRefs();
+  if (sectionRefs.empty()) return;
+  //printf("PageDefImpl::addSectionsToIndex()\n");
+  int level=1;
+  for (auto it = sectionRefs.begin(); it!=sectionRefs.end(); ++it)
+  {
+    const SectionInfo *si = *it;
+    SectionType type = si->type();
+    if (type.isSection())
+    {
+      //printf("  level=%d title=%s\n",level,qPrint(si->title));
+      int nextLevel = type.level();
+      if (nextLevel>level)
+      {
+        for (int i=level;i<nextLevel;i++)
+        {
+          Doxygen::indexList->incContentsDepth();
+        }
+      }
+      else if (nextLevel<level)
+      {
+        for (int i=nextLevel;i<level;i++)
+        {
+          Doxygen::indexList->decContentsDepth();
+        }
+      }
+      QCString title = si->title();
+      if (title.isEmpty()) title = si->label();
+      title = parseCommentAsText(this,nullptr,title,si->fileName(),si->lineNr());
+      // determine if there is a next level inside this item, but be aware of the anchor and table section references.
+      auto it_next = std::next(it);
+      bool isDir = (it_next!=sectionRefs.end()) ?  ((*it_next)->type().isSection() && (*it_next)->type().level() > nextLevel) : false;
+      Doxygen::indexList->addContentsItem(isDir,title,
+                                         getReference(),
+                                         getOutputFileBase(),
+                                         si->label(),
+                                         false,
+                                         true);
+      level = nextLevel;
+    }
+  }
+  while (level>1)
+  {
+    Doxygen::indexList->decContentsDepth();
+    level--;
   }
 }
 

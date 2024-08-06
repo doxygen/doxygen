@@ -1604,7 +1604,7 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
   // put member into group defined by this entry?
   if (fgd)
   {
-    GroupDef *mgd = const_cast<GroupDef*>(md->getGroupDef());
+    GroupDef *mgd = md->getGroupDef();
     //printf("mgd=%p\n",mgd);
     bool insertit = FALSE;
     if (mgd==nullptr)

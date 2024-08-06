@@ -1484,10 +1484,10 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
       cd->setFileDef(fd);
       fd->insertClass(cd);
     }
-    for (const auto &gd : rootCd->partOfGroups())
+    for (auto &gd : rootCd->partOfGroups())
     {
       cd->makePartOfGroup(gd);
-      const_cast<GroupDef*>(gd)->addClass(cd);
+      gd->addClass(cd);
     }
 
     MemberList *ml = templ->getMemberList(MemberListType::PubAttribs());
@@ -5449,11 +5449,11 @@ static bool findGlobalMember(const Entry *root,
         NamespaceDef *rnd = nullptr;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceLinkedMap->find(namespaceName);
 
-        const ArgumentList &mdAl = const_cast<const MemberDef *>(md.get())->argumentList();
+        const ArgumentList &mdAl = md.get()->argumentList();
         bool matching=
           (mdAl.empty() && root->argList.empty()) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
-          matchArguments2(md->getOuterScope(),const_cast<const MemberDef *>(md.get())->getFileDef(),&mdAl,
+          matchArguments2(md->getOuterScope(),md.get()->getFileDef(),&mdAl,
                           rnd ? rnd : Doxygen::globalScope,fd,&root->argList,
                           FALSE,root->lang);
 

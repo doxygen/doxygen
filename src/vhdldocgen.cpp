@@ -1389,7 +1389,7 @@ void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,TextStream &tagFile)
 
 /* writes a vhdl type declaration */
 
-void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &ol,
+void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
     const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
     bool /*inGroup*/)
 {
@@ -1834,7 +1834,7 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
 
 
 
-void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const QCString & cname)
+void VhdlDocGen::writeSource(const MemberDef* mdef,OutputList& ol,const QCString &cname)
 {
   auto intf = Doxygen::parserManager->getCodeParser(".vhd");
  // pIntf->resetCodeParserState();
@@ -1869,7 +1869,7 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
                        SrcLangExt::VHDL,  // lang
                        FALSE,            // isExample
                        QCString(),       // exampleName
-                       const_cast<FileDef*>(mdef->getFileDef()), // fileDef
+                       mdef->getFileDef(), // fileDef
                        mdef->getStartBodyLine(),      // startLine
                        mdef->getEndBodyLine(),        // endLine
                        TRUE,             // inlineFragment
@@ -1882,9 +1882,13 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
 
   if (cname.isEmpty()) return;
 
-  mdef->writeSourceDef(ol,cname);
-  if (mdef->hasReferencesRelation()) mdef->writeSourceRefs(ol,cname);
-  if (mdef->hasReferencedByRelation()) mdef->writeSourceReffedBy(ol,cname);
+  MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(mdef));
+  if (mdm)
+  {
+    mdm->writeSourceDef(ol,cname);
+    if (mdef->hasReferencesRelation()) mdm->writeSourceRefs(ol,cname);
+    if (mdef->hasReferencedByRelation()) mdm->writeSourceReffedBy(ol,cname);
+  }
 }
 
 
@@ -2259,13 +2263,13 @@ ferr:
 }
 
 
-void  VhdlDocGen::writeRecordUnit(QCString &/* largs */,QCString & ltype,OutputList& ol ,const MemberDefMutable *mdef)
+void  VhdlDocGen::writeRecordUnit(QCString &/* largs */,QCString & ltype,OutputList& ol ,MemberDefMutable *mdef)
 {
   int i=mdef->name().find('~');
   if (i>0)
   {
     //sets the real record member name
-    const_cast<MemberDefMutable*>(mdef)->setName(mdef->name().left(i));
+    mdef->setName(mdef->name().left(i));
   }
 
   writeLink(mdef,ol);

@@ -90,6 +90,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     const NamespaceDef* getNamespaceDef() const override;
           NamespaceDef* getNamespaceDef() override;
     const GroupDef *getGroupDef() const override;
+          GroupDef *getGroupDef() override;
     const ModuleDef *getModuleDef() const override;
     ClassDef *accessorClass() const override;
     QCString getReadAccessor() const override;
@@ -266,7 +267,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void setMaxInitLines(int lines) override;
     void setMemberClass(ClassDef *cd) override;
     void setSectionList(const Definition *container,const MemberList *sl) override;
-    void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
+    void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=nullptr) override;
     void setReadAccessor(const QCString &r) override;
@@ -281,7 +282,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void insertReimplementedBy(MemberDef *md) override;
     void setRelatedAlso(ClassDef *cd) override;
     void insertEnumField(MemberDef *md) override;
-    void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE) override;
+    void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE) override;
     void setEnumClassScope(ClassDef *cd) override;
     void setDocumentedEnumValues(bool value) override;
     void setAnonymousEnumType(const MemberDef *md) override;
@@ -456,7 +457,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     const MemberDef *m_groupAlias = nullptr;    // Member containing the definition
     int m_grpId = 0;                // group id
     MemberGroup *m_memberGroup = nullptr; // group's member definition
-    const GroupDef *m_group = nullptr;          // group in which this member is in
+    GroupDef *m_group = nullptr;          // group in which this member is in
     Grouping::GroupPri_t m_grouppri = Grouping::GROUPING_AUTO_DEF; // priority of this definition
     QCString m_groupFileName;   // file where this grouping was defined
     int m_groupStartLine = 0;       // line  "      "      "     "     "
@@ -605,6 +606,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     QCString getWriteAccessor() const override
     { return getMdAlias()->getWriteAccessor(); }
     const GroupDef *getGroupDef() const override
+    { return getMdAlias()->getGroupDef(); }
+    GroupDef *getGroupDef() override
     { return getMdAlias()->getGroupDef(); }
     Grouping::GroupPri_t getGroupPri() const override
     { return getMdAlias()->getGroupPri(); }
@@ -3416,7 +3419,7 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
     intf->resetCodeParserState();
     auto &codeOL = ol.codeGenerators();
     codeOL.startCodeFragment("DoxyCode");
-    intf->parseCode(codeOL,scopeName,m_initializer,srcLangExt,FALSE,QCString(),const_cast<FileDef*>(getFileDef()),
+    intf->parseCode(codeOL,scopeName,m_initializer,srcLangExt,FALSE,QCString(),getFileDef(),
                      -1,-1,TRUE,this,FALSE,this);
     codeOL.endCodeFragment("DoxyCode");
 }
@@ -4343,7 +4346,7 @@ void MemberDefImpl::setAnchor()
   m_anc = QCString("a")+sigStr;
 }
 
-void MemberDefImpl::setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
+void MemberDefImpl::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                             const QCString &fileName,int startLine,
                             bool hasDocs,MemberDef *member)
 {
@@ -4357,13 +4360,13 @@ void MemberDefImpl::setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
   m_isLinkableCached = 0;
 }
 
-void MemberDefImpl::setEnumScope(const MemberDef *md,bool livesInsideEnum)
+void MemberDefImpl::setEnumScope(MemberDef *md,bool livesInsideEnum)
 {
   m_enumScope=md;
   m_livesInsideEnum=livesInsideEnum;
   if (md->getGroupDef())
   {
-    m_group           = const_cast<GroupDef*>(md->getGroupDef());
+    m_group           = md->getGroupDef();
     m_grouppri        = md->getGroupPri();
     m_groupFileName   = md->getGroupFileName();
     m_groupStartLine  = md->getGroupStartLine();
@@ -4377,13 +4380,13 @@ void MemberDefImpl::setMemberClass(ClassDef *cd)
   m_classDef=cd;
   m_isLinkableCached = 0;
   m_isConstructorCached = 0;
-  setOuterScope(const_cast<ClassDef*>(cd));
+  setOuterScope(cd);
 }
 
 void MemberDefImpl::setNamespace(NamespaceDef *nd)
 {
   m_nspace=nd;
-  setOuterScope(const_cast<NamespaceDef*>(nd));
+  setOuterScope(nd);
 }
 
 std::unique_ptr<MemberDef> MemberDefImpl::createTemplateInstanceMember(
@@ -5087,6 +5090,11 @@ QCString MemberDefImpl::getWriteAccessor() const
 }
 
 const GroupDef *MemberDefImpl::getGroupDef() const
+{
+  return m_group;
+}
+
+GroupDef *MemberDefImpl::getGroupDef()
 {
   return m_group;
 }
@@ -6360,7 +6368,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
     MemberDefMutable *mdDef = toMemberDefMutable(dst->memberDefinition());
     MemberDefMutable *mdDecl = toMemberDefMutable(dst->memberDeclaration());
 
-    // critical section
+    // ---- critical section
     std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
     dst->addSourceReferencedBy(src,sourceRefName);
     if (mdDef)
@@ -6371,6 +6379,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
     {
       mdDecl->addSourceReferencedBy(src,sourceRefName);
     }
+    // ---- end critical section
   }
   if ((src->hasReferencesRelation() || src->hasCallGraph()) &&
       src->isCallable()
@@ -6380,7 +6389,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
     MemberDefMutable *mdDef = toMemberDefMutable(src->memberDefinition());
     MemberDefMutable *mdDecl = toMemberDefMutable(src->memberDeclaration());
 
-    // critical section
+    // ---- critical section
     std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
     src->addSourceReferences(dst,sourceRefName);
     if (mdDef)
@@ -6391,6 +6400,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
     {
       mdDecl->addSourceReferences(dst,sourceRefName);
     }
+    // ---- end critical section
   }
 }
 

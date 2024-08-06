@@ -3798,7 +3798,7 @@ static bool mainPageHasOwnTitle()
   return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
 }
 
-static void writePages(const PageDef *pd,FTVHelp *ftv)
+static void writePages(PageDef *pd,FTVHelp *ftv)
 {
   //printf("writePages()=%s pd=%p mainpage=%p\n",qPrint(pd->name()),(void*)pd,(void*)Doxygen::mainPage.get());
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Pages);
@@ -3842,7 +3842,7 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
   }
   if (hasSections)
   {
-    const_cast<PageDef*>(pd)->addSectionsToIndex();
+    pd->addSectionsToIndex();
   }
   for (const auto &subPage : pd->getSubPages())
   {
@@ -4177,7 +4177,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           }
           if (hasSections)
           {
-            const_cast<PageDef*>(pd)->addSectionsToIndex();
+            pd->addSectionsToIndex();
           }
           writePages(pd,nullptr);
           if (hasSections || hasSubPages)

@@ -46,7 +46,7 @@ void MemberGroup::insertMember(MemberDef *md)
   //printf("MemberGroup::insertMember(%s) inSameSection=%d md->getSectionList()=%s\n",qPrint(md->name()),
   //    inSameSection,qPrint(md->getSectionList(m_container)->listType().to_string()));
 
-  const MemberDef *firstMd = memberList->empty() ? nullptr : memberList->front();
+  MemberDef *firstMd = memberList->empty() ? nullptr : memberList->front();
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
@@ -62,7 +62,7 @@ void MemberGroup::insertMember(MemberDef *md)
 
   // copy the group of the first member in the memberGroup
   GroupDef *gd = nullptr;
-  if (firstMd && !firstMd->isAlias() && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
+  if (firstMd && !firstMd->isAlias() && (gd=firstMd->getGroupDef()))
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)

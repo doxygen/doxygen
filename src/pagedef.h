@@ -52,6 +52,7 @@ class PageDef : public DefinitionMutable, public Definition
     virtual void writeTagFile(TextStream &) = 0;
     virtual void setNestingLevel(int) = 0;
     virtual void writePageDocumentation(OutputList &) const = 0;
+    virtual void addSectionsToIndex() = 0;
 
 };
 
@@ -68,7 +69,7 @@ class PageLinkedMap : public LinkedMap<PageDef>
 {
 };
 
-class PageLinkedRefMap : public LinkedRefMap<const PageDef>
+class PageLinkedRefMap : public LinkedRefMap<PageDef>
 {
 };
 

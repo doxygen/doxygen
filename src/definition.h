@@ -365,7 +365,6 @@ class DefinitionMutable
     virtual void addSourceReferences(MemberDef *d,const QCString &sourceRefName) = 0;
     virtual void mergeRefItems(Definition *d) = 0;
     virtual void addInnerCompound(Definition *d) = 0;
-    virtual void addSectionsToIndex() = 0;
     virtual void mergeReferences(const Definition *other) = 0;
     virtual void mergeReferencedBy(const Definition *other) = 0;
     virtual void computeTooltip() = 0;

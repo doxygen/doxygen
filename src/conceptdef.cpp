@@ -766,18 +766,6 @@ ConceptDefMutable *toConceptDefMutable(Definition *d)
   }
 }
 
-ConceptDefMutable *toConceptDefMutable(const Definition *d)
-{
-  if (d && typeid(*d)==typeid(ConceptDefImpl))
-  {
-    return const_cast<ConceptDefMutable*>(static_cast<const ConceptDefMutable*>(d));
-  }
-  else
-  {
-    return nullptr;
-  }
-}
-
 // -- helpers
 
 ConceptDef *getConcept(const QCString &n)
