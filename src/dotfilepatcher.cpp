@@ -26,8 +26,15 @@
 #include "portable.h"
 
 // top part of the interactive SVG header
-static const char svgZoomHeader1[] = R"svg(
+static const char svgZoomHeader0[] = R"svg(
 <svg id="main" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" onload="init(evt)">
+)svg";
+
+static const char svgZoomHeader0_noinit[] = R"svg(
+<svg id="main" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+)svg";
+
+static const char svgZoomHeader1[] = R"svg(
 <style type="text/css"><![CDATA[
 .node, .edge {opacity: 0.7;}
 .node.selected, .edge.selected {opacity: 1;}
@@ -364,6 +371,11 @@ bool DotFilePatcher::run() const
           {
             // insert special replacement header for interactive SVGs
             t << "<!--zoomable " << height << " -->\n";
+            t << svgZoomHeader0;
+          }
+          else
+          {
+            t << svgZoomHeader0_noinit;
           }
           t << svgZoomHeader1;
           if (useNagivation)
