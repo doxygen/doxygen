@@ -72,6 +72,7 @@ enum class Tokens
 };
 
 #define TK_COMMAND_CHAR(token) ((token)==Tokens::TK_COMMAND_AT ? '@' : '\\')
+#define TK_COMMAND_SEL() (yytext[0] == '@' ? Tokens::TK_COMMAND_AT : Tokens::TK_COMMAND_BS)
 
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
