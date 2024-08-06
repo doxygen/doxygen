@@ -4437,7 +4437,9 @@ bool MemberDefImpl::hasOneLineInitializer() const
   //printf("%s: init=%s, initLines=%d maxInitLines=%d userInitLines=%d\n",
   //    qPrint(name()),qPrint(m_initializer),m_initLines,
   //    m_maxInitLines,m_userInitLines);
+  bool isFuncLikeMacro = m_mtype==MemberType::Define && m_defArgList.hasParameters();
   return !m_initializer.isEmpty() && m_initLines==0 && // one line initializer
+         !isFuncLikeMacro &&
          ((m_maxInitLines>0 && m_userInitLines==-1) || m_userInitLines>0); // enabled by default or explicitly
 }
 
@@ -4445,7 +4447,8 @@ bool MemberDefImpl::hasMultiLineInitializer() const
 {
   //printf("initLines=%d userInitLines=%d maxInitLines=%d\n",
   //    initLines,userInitLines,maxInitLines);
-  return m_initLines>0 &&
+  bool isFuncLikeMacro = m_mtype==MemberType::Define && m_defArgList.hasParameters();
+  return (m_initLines>0 || (!m_initializer.isEmpty() && isFuncLikeMacro)) &&
          ((m_initLines<m_maxInitLines && m_userInitLines==-1) // implicitly enabled
           || m_initLines<m_userInitLines // explicitly enabled
          );
