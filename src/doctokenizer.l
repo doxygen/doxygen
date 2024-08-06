@@ -52,8 +52,6 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define TK_COMMAND_SEL() (yytext[0] == '@' ? Tokens::TK_COMMAND_AT : Tokens::TK_COMMAND_BS)
-
 //--------------------------------------------------------------------------
 
 struct DocLexerContext
