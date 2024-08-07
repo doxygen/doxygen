@@ -71,7 +71,7 @@
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/11031">#11031</a> extra WS in @brief docu block break layout [<a href="https://github.com/doxygen/doxygen/commit/937520ca6187c984228c9fa58440569648632b49">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/11033">#11033</a> Illegal command &#39;\ifile&#39; found as part of a title section [<a href="https://github.com/doxygen/doxygen/commit/59de6f9a0a5755cc26b057ea7d11b539522dbe9f">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/11036">#11036</a> The body of a macro entirely defined on 1 line gets sucked into the synopsis [<a href="https://github.com/doxygen/doxygen/commit/79bbf23a85b438988f903bbde27855e0d721a61b">view</a>]</li>
-<li>issue <a href="https://github.com/doxygen/doxygen/issues/11056">#11056</a> HTML: Interactive SVG "viewHeight" is not defined
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11056">#11056</a> HTML: Interactive SVG "viewHeight" is not defined [<a href="https://github.com/doxygen/doxygen/commit/827ea4caa66825d381ef6383fead6c987c3af293">view</a>]</li>
 <li>Prevent extra scrollbar in HTML output when using Firefox [<a href="https://github.com/doxygen/doxygen/commit/1f20830f337697369ce9ca1b7c69371d7025e118">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/9152d391dc98515f38f2dfb32ce4f45b4f060d90">view</a>]</li>
 <li>xmllint error in combination with addindex command [<a href="https://github.com/doxygen/doxygen/commit/2fa7f2a762ea95a7940e0acb37bc8ec29ade40f2">view</a>]</li>
 <li>Files stayed in RTF directory [<a href="https://github.com/doxygen/doxygen/commit/dd56909b9ba16a64d6f562eb0836b8a65fc3b8e7">view</a>]</li>
