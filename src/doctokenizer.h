@@ -90,13 +90,15 @@ class Token
 
     const char *to_string() const
     {
+      const char *result = "ERROR";
       switch (m_value)
       {
-#define TKSPEC(x,y) case TokenRetval::x: return #x;
+#define TKSPEC(x,y) case TokenRetval::x: result = #x;
         TOKEN_SPECIFICATIONS
         RETVAL_SPECIFICATIONS
 #undef TKSPEC
       }
+      return result;
     }
 
     char command_to_char() const
