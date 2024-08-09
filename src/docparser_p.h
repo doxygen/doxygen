@@ -98,7 +98,7 @@ class DocParser : public IDocParser
     void pushContext();
     void popContext();
     void handleImg(DocNodeVariant *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
-    Tokens internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
+    Token internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
                                       const QCString &doc);
     QCString processCopyDoc(const char *data,size_t &len);
     QCString findAndCopyImage(const QCString &fileName,DocImage::Type type, bool doWarn = true);
@@ -109,14 +109,14 @@ class DocParser : public IDocParser
                                      QCString *pDoc,
                                      QCString *pBrief,
                                      const Definition **pDef);
-    bool defaultHandleToken(DocNodeVariant *parent,Tokens tok,
+    bool defaultHandleToken(DocNodeVariant *parent,Token tok,
                             DocNodeList &children,bool
                             handleWord=TRUE);
-    void errorHandleDefaultToken(DocNodeVariant *parent,Tokens tok,
+    void errorHandleDefaultToken(DocNodeVariant *parent,Token tok,
                                  DocNodeList &children,const QCString &txt);
     void defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
                                    DocNodeList &children, QCString &width,QCString &height);
-    Tokens handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,
+    Token handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,
                                const QCString &cmdName);
     void handleStyleEnter(DocNodeVariant *parent,DocNodeList &children, DocStyleChange::Style s,
                           const QCString &tagName,const HtmlAttribList *attribs);
@@ -124,7 +124,7 @@ class DocParser : public IDocParser
                           const QCString &tagName);
     void handlePendingStyleCommands(DocNodeVariant *parent,DocNodeList &children);
     void handleInitialStyleCommands(DocNodeVariant *parent,DocNodeList &children);
-    Tokens handleAHref(DocNodeVariant *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
+    Token handleAHref(DocNodeVariant *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
     void handleUnclosedStyleCommands();
     void handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag=FALSE);
     void handleParameterType(DocNodeVariant *parent,DocNodeList &children,const QCString &paramTypes);

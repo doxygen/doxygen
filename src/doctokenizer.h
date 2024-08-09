@@ -40,7 +40,7 @@
   TKSPEC(TK_NEWPARA,       9)                                   \
   TKSPEC(TK_RCSTAG,       10)                                   \
   TKSPEC(TK_URL,          11)                                   \
-  TKSPEC(TK_COMMAND_BS,   12) /*! Command starting with `\`) */ 
+  TKSPEC(TK_COMMAND_BS,   12) /*! Command starting with `\`) */
 
 #define RETVAL_SPECIFICATIONS \
   TKSPEC(RetVal_OK,              0x10000)  \
@@ -70,7 +70,7 @@
   TKSPEC(RetVal_EndHtmlDetails,  0x10018)  \
   TKSPEC(RetVal_SubSubParagraph, 0x10019)
 
-enum class Tokens
+enum class TokenRetval
 {
 #define TKSPEC(x,y) x = y,
       TOKEN_SPECIFICATIONS
@@ -78,8 +78,54 @@ enum class Tokens
 #undef TKSPEC
 };
 
-#define TK_COMMAND_CHAR(token) ((token)==Tokens::TK_COMMAND_AT ? '@' : '\\')
-#define TK_COMMAND_SEL() (yytext[0] == '@' ? Tokens::TK_COMMAND_AT : Tokens::TK_COMMAND_BS)
+class Token
+{
+  public:
+    explicit Token(TokenRetval tv) : m_value(tv) {}
+    TokenRetval value() const { return m_value; }
+#define TKSPEC(x,y) static Token make_##x() { return Token(TokenRetval::x); }
+    TOKEN_SPECIFICATIONS
+    RETVAL_SPECIFICATIONS
+#undef TKSPEC
+
+    const char *to_string() const
+    {
+      switch (m_value)
+      {
+#define TKSPEC(x,y) case TokenRetval::x: return #x;
+        TOKEN_SPECIFICATIONS
+        RETVAL_SPECIFICATIONS
+#undef TKSPEC
+      }
+    }
+
+    char command_to_char() const
+    {
+      return m_value==TokenRetval::TK_COMMAND_AT ? '@' : '\\';
+    }
+
+    static Token char_to_command(char c)
+    {
+      return c=='@' ? make_TK_COMMAND_AT() : make_TK_COMMAND_BS();
+    }
+
+    template<typename... ARGS>
+    bool is_any_of(ARGS... args) const
+    {
+      return ((m_value == args) || ...);
+    }
+
+    bool is(TokenRetval rv) const
+    {
+      return m_value==rv;
+    }
+
+    friend inline bool operator==(const Token &t1,const Token &t2) { return t1.m_value==t2.m_value; }
+    friend inline bool operator!=(const Token &t1,const Token &t2) { return !(operator==(t1,t2)); }
+
+  private:
+    TokenRetval m_value;
+};
 
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
@@ -139,10 +185,6 @@ class DocTokenizer
     TokenInfo *token();
     [[maybe_unused]] TokenInfo *resetToken();
 
-    // helper functions
-    static const char *tokToString(Tokens token);
-    static const char *retvalToString(Tokens retval);
-
     void setLineNr(int lineno);
     int getLineNr(void);
     void pushState();
@@ -156,7 +198,7 @@ class DocTokenizer
     void cleanup();
     void pushContext();
     bool popContext();
-    Tokens  lex();
+    Token  lex();
     void unputString(const QCString &tag);
     void setStatePara();
     void setStateTitle();

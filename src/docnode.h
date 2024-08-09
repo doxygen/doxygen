@@ -526,7 +526,7 @@ class DocIndexEntry : public DocNode
   public:
     DocIndexEntry(DocParser *parser,DocNodeVariant *parent,const Definition *scope,const MemberDef *md)
       : DocNode(parser,parent), m_scope(scope), m_member(md) {}
-    Tokens parse();
+    Token parse();
     const Definition *scope() const    { return m_scope;  }
     const MemberDef *member() const    { return m_member; }
     QCString entry() const        { return m_entry;  }
@@ -554,7 +554,7 @@ class DocAutoList : public DocCompoundNode
     int  indent() const        { return m_indent; }
     bool isCheckedList() const { return m_isCheckedList; }
     int depth() const          { return m_depth; }
-    Tokens parse();
+    Token parse();
 
   private:
     int      m_indent = 0;
@@ -569,7 +569,7 @@ class DocAutoListItem : public DocCompoundNode
   public:
     DocAutoListItem(DocParser *parser,DocNodeVariant *parent,int indent,int num);
     int itemNumber() const     { return m_itemNum; }
-    Tokens parse();
+    Token parse();
 
   private:
     int m_indent = 0;
@@ -789,7 +789,7 @@ class DocHRef : public DocCompoundNode
            const QCString &relPath, const QCString &file)
     : DocCompoundNode(parser,parent), m_attribs(attribs), m_url(url),
       m_relPath(relPath), m_file(file) {}
-    Tokens parse();
+    Token parse();
     QCString url() const        { return m_url; }
     QCString file() const       { return m_file; }
     QCString relPath() const    { return m_relPath; }
@@ -822,7 +822,7 @@ class DocHtmlDetails : public DocCompoundNode
     DocHtmlDetails(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
        DocCompoundNode(parser,parent), m_attribs(attribs) {}
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
+    Token parse();
     void parseSummary(DocNodeVariant *,HtmlAttribList &attribs);
     const DocNodeVariant *summary() const { return m_summary.get(); }
 
@@ -839,7 +839,7 @@ class DocHtmlHeader : public DocCompoundNode
        DocCompoundNode(parser,parent), m_level(level), m_attribs(attribs) {}
     int level() const                     { return m_level; }
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
+    Token parse();
 
   private:
     int           m_level = 0;
@@ -853,7 +853,7 @@ class DocHtmlDescTitle : public DocCompoundNode
     DocHtmlDescTitle(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
       DocCompoundNode(parser,parent), m_attribs(attribs) {}
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
+    Token parse();
 
   private:
     HtmlAttribList m_attribs;
@@ -866,7 +866,7 @@ class DocHtmlDescList : public DocCompoundNode
     DocHtmlDescList(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
       DocCompoundNode(parser,parent), m_attribs(attribs) {}
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
+    Token parse();
 
   private:
     HtmlAttribList m_attribs;
@@ -883,7 +883,7 @@ class DocSection : public DocCompoundNode
     QCString anchor() const     { return m_anchor; }
     QCString id() const         { return m_id; }
     QCString file() const       { return m_file; }
-    Tokens parse();
+    Token parse();
 
   private:
     int       m_level = 0;
@@ -932,7 +932,7 @@ class DocInternal : public DocCompoundNode
 {
   public:
     DocInternal(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
-    Tokens parse(int);
+    Token parse(int);
 
   private:
 };
@@ -942,7 +942,7 @@ class DocParBlock : public DocCompoundNode
 {
   public:
     DocParBlock(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
-    Tokens parse();
+    Token parse();
 
   private:
 };
@@ -953,7 +953,7 @@ class DocSimpleList : public DocCompoundNode
 {
   public:
     DocSimpleList(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
-    Tokens parse();
+    Token parse();
 
   private:
 };
@@ -967,8 +967,8 @@ class DocHtmlList : public DocCompoundNode
       DocCompoundNode(parser,parent), m_type(t), m_attribs(attribs) {}
     Type type() const          { return m_type; }
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
-    Tokens parseXml();
+    Token parse();
+    Token parseXml();
 
   private:
     Type           m_type = Unordered;
@@ -988,9 +988,9 @@ class DocSimpleSect : public DocCompoundNode
     DocSimpleSect(DocParser *parser,DocNodeVariant *parent,Type t);
     Type type() const       { return m_type; }
     QCString typeString() const;
-    Tokens parse(bool userTitle,bool needsSeparator);
-    Tokens parseRcs();
-    Tokens parseXml();
+    Token parse(bool userTitle,bool needsSeparator);
+    Token parseRcs();
+    Token parseXml();
     void appendLinkWord(const QCString &word);
     bool hasTitle() const;
     const DocNodeVariant *title() const { return m_title.get(); }
@@ -1027,7 +1027,7 @@ class DocParamSect : public DocCompoundNode
     DocParamSect(DocParser *parser,DocNodeVariant *parent,Type t)
       : DocCompoundNode(parser,parent), m_type(t), m_hasInOutSpecifier(FALSE), m_hasTypeSpecifier(FALSE)
     {}
-    Tokens parse(const QCString &cmdName,bool xmlContext,Direction d);
+    Token parse(const QCString &cmdName,bool xmlContext,Direction d);
     Type type() const          { return m_type; }
     bool hasInOutSpecifier() const { return m_hasInOutSpecifier; }
     bool hasTypeSpecifier() const  { return m_hasTypeSpecifier; }
@@ -1043,19 +1043,19 @@ class DocPara : public DocCompoundNode
 {
   public:
     DocPara(DocParser *parser,DocNodeVariant *parent);
-    Tokens parse();
+    Token parse();
     bool isEmpty() const        { return children().empty(); }
     void markFirst(bool v=TRUE) { m_isFirst=v; }
     void markLast(bool v=TRUE)  { m_isLast=v; }
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
 
-    Tokens handleCommand(char cmdChar,const QCString &cmdName);
-    Tokens handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs);
-    Tokens handleHtmlEndTag(const QCString &tagName);
-    Tokens handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=FALSE);
-    Tokens handleXRefItem();
-    Tokens handleParamSection(const QCString &cmdName,DocParamSect::Type t, bool xmlContext, int direction);
+    Token handleCommand(char cmdChar,const QCString &cmdName);
+    Token handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs);
+    Token handleHtmlEndTag(const QCString &tagName);
+    Token handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=FALSE);
+    Token handleXRefItem();
+    Token handleParamSection(const QCString &cmdName,DocParamSect::Type t, bool xmlContext, int direction);
     void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
     template<class T> void handleFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
@@ -1070,10 +1070,10 @@ class DocPara : public DocCompoundNode
     void handleILine(char cmdChar,const QCString &cmdName);
     void handleIFile(char cmdChar,const QCString &cmdName);
     void handleShowDate(char cmdChar,const QCString &cmdName);
-    Tokens handleStartCode();
-    Tokens handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
+    Token handleStartCode();
+    Token handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 
-    bool injectToken(Tokens tok,const QCString &tokText);
+    bool injectToken(Token tok,const QCString &tokText);
     const HtmlAttribList &attribs() const { return m_attribs; }
     void setAttribs(const HtmlAttribList &attribs) { m_attribs = attribs; }
 
@@ -1098,8 +1098,8 @@ class DocParamList : public DocNode
     void markLast(bool b=TRUE)      { m_isLast=b; }
     bool isFirst() const            { return m_isFirst; }
     bool isLast() const             { return m_isLast; }
-    Tokens parse(const QCString &cmdName);
-    Tokens parseXml(const QCString &paramName);
+    Token parse(const QCString &cmdName);
+    Token parseXml(const QCString &paramName);
 
   private:
     DocNodeList             m_paragraphs;
@@ -1116,7 +1116,7 @@ class DocSimpleListItem : public DocNode
 {
   public:
     DocSimpleListItem(DocParser *parser,DocNodeVariant *parent);
-    Tokens parse();
+    Token parse();
     const DocNodeVariant *paragraph() const { return m_paragraph.get(); }
 
   private:
@@ -1131,8 +1131,8 @@ class DocHtmlListItem : public DocCompoundNode
     : DocCompoundNode(parser,parent), m_attribs(attribs), m_itemNum(num) {}
     int itemNumber() const                { return m_itemNum; }
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
-    Tokens parseXml();
+    Token parse();
+    Token parseXml();
 
   private:
     HtmlAttribList m_attribs;
@@ -1145,7 +1145,7 @@ class DocHtmlDescData : public DocCompoundNode
   public:
     DocHtmlDescData(DocParser *parser,DocNodeVariant *parent) : DocCompoundNode(parser,parent) {}
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
+    Token parse();
 
   private:
     HtmlAttribList m_attribs;
@@ -1166,8 +1166,8 @@ class DocHtmlCell : public DocCompoundNode
     void markFirst(bool v=TRUE) { m_isFirst=v; }
     void markLast(bool v=TRUE)  { m_isLast=v; }
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
-    Tokens parseXml();
+    Token parse();
+    Token parseXml();
     uint32_t rowIndex() const        { return m_rowIdx; }
     uint32_t columnIndex() const     { return m_colIdx; }
     uint32_t rowSpan() const;
@@ -1192,7 +1192,7 @@ class DocHtmlCaption : public DocCompoundNode
   public:
     DocHtmlCaption(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs);
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
+    Token parse();
     bool hasCaptionId() const { return m_hasCaptionId; }
     QCString file() const     { return m_file;         }
     QCString anchor() const   { return m_anchor;       }
@@ -1213,8 +1213,8 @@ class DocHtmlRow : public DocCompoundNode
       : DocCompoundNode(parser,parent), m_attribs(attribs) {}
     size_t numCells() const      { return children().size(); }
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
-    Tokens parseXml(bool header);
+    Token parse();
+    Token parseXml(bool header);
     bool isHeading() const;
     void setVisibleCells(uint32_t n) { m_visibleCells = n; }
     uint32_t visibleCells() const    { return m_visibleCells; }
@@ -1236,8 +1236,8 @@ class DocHtmlTable : public DocCompoundNode
     size_t numRows() const  { return children().size(); }
     bool hasCaption() const;
     const HtmlAttribList &attribs() const { return m_attribs; }
-    Tokens parse();
-    Tokens parseXml();
+    Token parse();
+    Token parseXml();
     size_t numColumns() const { return m_numCols; }
     const DocNodeVariant *caption() const;
     const DocNodeVariant *firstRow() const;
@@ -1255,7 +1255,7 @@ class DocHtmlBlockQuote : public DocCompoundNode
   public:
     DocHtmlBlockQuote(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs)
       : DocCompoundNode(parser,parent), m_attribs(attribs) {}
-    Tokens parse();
+    Token parse();
     const HtmlAttribList &attribs() const { return m_attribs; }
 
   private:

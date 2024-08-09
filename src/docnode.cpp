@@ -536,13 +536,14 @@ void DocSecRefItem::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   parser()->tokenizer.setStateTitle();
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
       parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"\\refitem");
     }
+    tok = parser()->tokenizer.lex();
   }
   parser()->tokenizer.setStatePara();
   parser()->handlePendingStyleCommands(thisVariant(),children());
@@ -606,29 +607,29 @@ void DocSecRefList::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   // skip white space
-  while (is_any_of(tok,Tokens::TK_WHITESPACE, Tokens::TK_NEWPARA)) tok=parser()->tokenizer.lex();
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE, TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // handle items
-  while (!is_any_of(tok,Tokens::TK_NONE, Tokens::TK_EOF))
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
-    if (is_any_of(tok,Tokens::TK_COMMAND_AT, Tokens::TK_COMMAND_BS))
+    if (tok.is_any_of(TokenRetval::TK_COMMAND_AT, TokenRetval::TK_COMMAND_BS))
     {
       switch (Mappers::cmdMapper->map(parser()->context.token->name))
       {
         case CMD_SECREFITEM:
           {
             tok=parser()->tokenizer.lex();
-            if (tok!=Tokens::TK_WHITESPACE)
+            if (!tok.is(TokenRetval::TK_WHITESPACE))
             {
               warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\refitem command");
               break;
             }
             tok=parser()->tokenizer.lex();
-            if (!is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD))
+            if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
             {
               warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of \\refitem",
-                  DocTokenizer::tokToString(tok));
+                  tok.to_string());
               break;
             }
 
@@ -640,18 +641,18 @@ void DocSecRefList::parse()
           return;
         default:
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%c%s' as part of a \\secreflist",
-              TK_COMMAND_CHAR(tok),qPrint(parser()->context.token->name));
+              tok.command_to_char(),qPrint(parser()->context.token->name));
           return;
       }
     }
-    else if (tok==Tokens::TK_WHITESPACE)
+    else if (tok.is(TokenRetval::TK_WHITESPACE))
     {
       // ignore whitespace
     }
     else
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected token %s inside section reference list",
-          DocTokenizer::tokToString(tok));
+          tok.to_string());
       return;
     }
     tok=parser()->tokenizer.lex();
@@ -681,13 +682,14 @@ void DocInternalRef::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
       parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"\\ref");
     }
+    tok=parser()->tokenizer.lex();
   }
 
   parser()->handlePendingStyleCommands(thisVariant(),children());
@@ -832,20 +834,21 @@ void DocRef::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
-      switch (tok)
+      switch (tok.value())
       {
-        case Tokens::TK_HTMLTAG:
+        case TokenRetval::TK_HTMLTAG:
           break;
         default:
           parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"\\ref");
           break;
       }
     }
+    tok=parser()->tokenizer.lex();
   }
 
   if (children().empty() && !m_text.isEmpty())
@@ -950,44 +953,44 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
   QCString result;
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children(),FALSE))
     {
-      switch (tok)
+      switch (tok.value())
       {
-        case Tokens::TK_COMMAND_AT:
+        case TokenRetval::TK_COMMAND_AT:
         // fall through
-        case Tokens::TK_COMMAND_BS:
+        case TokenRetval::TK_COMMAND_BS:
           switch (Mappers::cmdMapper->map(parser()->context.token->name))
           {
             case CMD_ENDLINK:
               if (isJavaLink)
               {
                 warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'{@link...' ended with '%c%s' command",
-                  TK_COMMAND_CHAR(tok),qPrint(parser()->context.token->name));
+                  tok.command_to_char(),qPrint(parser()->context.token->name));
               }
               goto endlink;
             default:
               warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%c%s' as part of a \\link",
-                  TK_COMMAND_CHAR(tok),qPrint(parser()->context.token->name));
+                  tok.command_to_char(),qPrint(parser()->context.token->name));
               break;
           }
           break;
-        case Tokens::TK_SYMBOL:
+        case TokenRetval::TK_SYMBOL:
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unsupported symbol '%s' found as part of a \\link",
               qPrint(parser()->context.token->name));
           break;
-        case Tokens::TK_HTMLTAG:
+        case TokenRetval::TK_HTMLTAG:
           if (parser()->context.token->name!="see" || !isXmlLink)
           {
             warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected xml/html command %s found as part of a \\link",
                 qPrint(parser()->context.token->name));
           }
           goto endlink;
-        case Tokens::TK_LNKWORD:
-        case Tokens::TK_WORD:
+        case TokenRetval::TK_LNKWORD:
+        case TokenRetval::TK_WORD:
           if (isJavaLink) // special case to detect closing }
           {
             QCString w = parser()->context.token->name;
@@ -1010,13 +1013,13 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
           children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
           break;
         default:
-          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected token %s",
-             DocTokenizer::tokToString(tok));
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected token %s",tok.to_string());
         break;
       }
     }
+    tok = parser()->tokenizer.lex();
   }
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,
                    parser()->tokenizer.getLineNr(),
@@ -1164,13 +1167,14 @@ void DocVhdlFlow::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   parser()->tokenizer.setStateTitle();
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
       parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"\\vhdlflow");
     }
+    tok = parser()->tokenizer.lex();
   }
   parser()->tokenizer.lex();
 
@@ -1206,20 +1210,20 @@ void DocImage::parse()
 
 //---------------------------------------------------------------------------
 
-Tokens DocHtmlHeader::parse()
+Token DocHtmlHeader::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval(TokenRetval::RetVal_OK);
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
-      switch (tok)
+      switch (tok.value())
       {
-        case Tokens::TK_HTMLTAG:
+        case TokenRetval::TK_HTMLTAG:
           {
             int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
             if (tagId==HTML_H1 && parser()->context.token->endTag) // found </h1> tag
@@ -1300,8 +1304,9 @@ Tokens DocHtmlHeader::parse()
           parser()->errorHandleDefaultToken(thisVariant(),tok,children(),tmp);
       }
     }
+    tok = parser()->tokenizer.lex();
   }
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected end of comment while inside"
            " <h%d> tag",m_level);
@@ -1317,12 +1322,12 @@ void DocHtmlSummary::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.setStateTitle();
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     int tagId = 0;
     // check of </summary>
-    if (tok==Tokens::TK_HTMLTAG &&
+    if (tok.value()==TokenRetval::TK_HTMLTAG &&
         (tagId=Mappers::htmlTagMapper->map(parser()->context.token->name))==XML_SUMMARY &&
         parser()->context.token->endTag
        )
@@ -1333,9 +1338,10 @@ void DocHtmlSummary::parse()
     {
       parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"summary section");
     }
+    tok = parser()->tokenizer.lex();
   }
   parser()->tokenizer.setStatePara();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected end of comment while inside"
            " <summary> tag");
@@ -1344,10 +1350,10 @@ void DocHtmlSummary::parse()
 
 //---------------------------------------------------------------------------
 
-Tokens DocHtmlDetails::parse()
+Token DocHtmlDetails::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::TK_NONE;
+  Token retval(TokenRetval::TK_NONE);
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // parse one or more paragraphs
@@ -1360,10 +1366,10 @@ Tokens DocHtmlDetails::parse()
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
   }
-  while (retval==Tokens::TK_NEWPARA);
+  while (retval.is(TokenRetval::TK_NEWPARA));
   if (par) par->markLast();
 
-  if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <details> block");
   }
@@ -1375,8 +1381,8 @@ Tokens DocHtmlDetails::parse()
     DocHtmlSummary *summary = &std::get<DocHtmlSummary>(*m_summary);
     summary->children().append<DocWord>(parser(),thisVariant(),theTranslator->trDetails());
   }
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
-  return (retval==Tokens::RetVal_EndHtmlDetails) ? Tokens::RetVal_OK : retval;
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
+  return retval.is(TokenRetval::RetVal_EndHtmlDetails) ? Token::make_RetVal_OK() : retval;
 }
 
 void DocHtmlDetails::parseSummary(DocNodeVariant *parent,HtmlAttribList &attribs)
@@ -1389,20 +1395,20 @@ void DocHtmlDetails::parseSummary(DocNodeVariant *parent,HtmlAttribList &attribs
 
 //---------------------------------------------------------------------------
 
-Tokens DocHRef::parse()
+Token DocHRef::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval(TokenRetval::RetVal_OK);
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
-      switch (tok)
+      switch (tok.value())
       {
-        case Tokens::TK_HTMLTAG:
+        case TokenRetval::TK_HTMLTAG:
           {
             int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
             if (tagId==HTML_A && parser()->context.token->endTag) // found </a> tag
@@ -1425,8 +1431,9 @@ Tokens DocHRef::parse()
           break;
       }
     }
+    tok = parser()->tokenizer.lex();
   }
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected end of comment while inside"
            " <a href=...> tag");
@@ -1438,10 +1445,10 @@ endhref:
 
 //---------------------------------------------------------------------------
 
-Tokens DocInternal::parse(int level)
+Token DocInternal::parse(int level)
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval(TokenRetval::RetVal_OK);
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // first parse any number of paragraphs
@@ -1462,23 +1469,23 @@ Tokens DocInternal::parse(int level)
     {
       children().pop_back();
     }
-    if (retval==Tokens::TK_LISTITEM)
+    if (retval.is(TokenRetval::TK_LISTITEM))
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Invalid list item found");
     }
-  } while (!is_any_of(retval, Tokens::TK_NONE, Tokens::TK_EOF,
-                              Tokens::RetVal_Section, Tokens::RetVal_Subsection, Tokens::RetVal_Subsubsection,
-                              Tokens::RetVal_Paragraph, Tokens::RetVal_SubParagraph, Tokens::RetVal_SubSubParagraph,
-                              Tokens::RetVal_EndInternal));
+  } while (!retval.is_any_of(TokenRetval::TK_NONE,          TokenRetval::TK_EOF,
+                             TokenRetval::RetVal_Section,   TokenRetval::RetVal_Subsection,   TokenRetval::RetVal_Subsubsection,
+                             TokenRetval::RetVal_Paragraph, TokenRetval::RetVal_SubParagraph, TokenRetval::RetVal_SubSubParagraph,
+                             TokenRetval::RetVal_EndInternal));
   if (lastPar) lastPar->markLast();
 
   // then parse any number of level-n sections
-  while ((level==1 && retval==Tokens::RetVal_Section) ||
-         (level==2 && retval==Tokens::RetVal_Subsection) ||
-         (level==3 && retval==Tokens::RetVal_Subsubsection) ||
-         (level==4 && retval==Tokens::RetVal_Paragraph) ||
-         (level==5 && retval==Tokens::RetVal_SubParagraph) ||
-         (level==6 && retval==Tokens::RetVal_SubSubParagraph)
+  while ((level==1 && retval.is(TokenRetval::RetVal_Section)) ||
+         (level==2 && retval.is(TokenRetval::RetVal_Subsection)) ||
+         (level==3 && retval.is(TokenRetval::RetVal_Subsubsection)) ||
+         (level==4 && retval.is(TokenRetval::RetVal_Paragraph)) ||
+         (level==5 && retval.is(TokenRetval::RetVal_SubParagraph)) ||
+         (level==6 && retval.is(TokenRetval::RetVal_SubSubParagraph))
         )
   {
     children().append<DocSection>(parser(),thisVariant(),
@@ -1487,42 +1494,43 @@ Tokens DocInternal::parse(int level)
     retval = children().get_last<DocSection>()->parse();
   }
 
-  if (retval==Tokens::RetVal_Internal)
+  if (retval.is(TokenRetval::RetVal_Internal))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"\\internal command found inside internal section");
   }
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
 //---------------------------------------------------------------------------
 
-Tokens DocIndexEntry::parse()
+Token DocIndexEntry::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval(TokenRetval::RetVal_OK);
   auto ns = AutoNodeStack(parser(),thisVariant());
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\addindex command");
     goto endindexentry;
   }
   parser()->tokenizer.setStateTitle();
   m_entry="";
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
-    switch (tok)
+    switch (tok.value())
     {
-      case Tokens::TK_WHITESPACE:
+      case TokenRetval::TK_WHITESPACE:
         m_entry+=" ";
         break;
-      case Tokens::TK_WORD:
-      case Tokens::TK_LNKWORD:
+      case TokenRetval::TK_WORD:
+      case TokenRetval::TK_LNKWORD:
         m_entry+=parser()->context.token->name;
         break;
-      case Tokens::TK_SYMBOL:
+      case TokenRetval::TK_SYMBOL:
         {
           HtmlEntityMapper::SymType s = DocSymbol::decodeSymbol(parser()->context.token->name);
           switch (s)
@@ -1549,9 +1557,9 @@ Tokens DocIndexEntry::parse()
           }
         }
         break;
-      case Tokens::TK_COMMAND_AT:
+      case TokenRetval::TK_COMMAND_AT:
         // fall through
-      case Tokens::TK_COMMAND_BS:
+      case TokenRetval::TK_COMMAND_BS:
         switch (Mappers::cmdMapper->map(parser()->context.token->name))
         {
           case CMD_BSLASH:  m_entry+='\\';  break;
@@ -1578,14 +1586,15 @@ Tokens DocIndexEntry::parse()
       break;
       default:
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected token %s",
-            DocTokenizer::tokToString(tok));
+            tok.to_string());
         break;
     }
+    tok = parser()->tokenizer.lex();
   }
   parser()->tokenizer.setStatePara();
   m_entry = m_entry.stripWhiteSpace();
 endindexentry:
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
@@ -1619,24 +1628,24 @@ DocHtmlCaption::DocHtmlCaption(DocParser *parser,DocNodeVariant *parent,const Ht
   }
 }
 
-Tokens DocHtmlCaption::parse()
+Token DocHtmlCaption::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::TK_NONE;
+  Token retval = Token::make_TK_NONE();
   auto ns = AutoNodeStack(parser(),thisVariant());
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
-      switch (tok)
+      switch (tok.value())
       {
-        case Tokens::TK_HTMLTAG:
+        case TokenRetval::TK_HTMLTAG:
           {
             int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
             if (tagId==HTML_CAPTION && parser()->context.token->endTag) // found </caption> tag
             {
-              retval = Tokens::RetVal_OK;
+              retval = Token::make_RetVal_OK();
               goto endcaption;
             }
             else
@@ -1651,8 +1660,9 @@ Tokens DocHtmlCaption::parse()
           break;
       }
     }
+    tok = parser()->tokenizer.lex();
   }
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected end of comment while inside"
            " <caption> tag");
@@ -1664,10 +1674,10 @@ endcaption:
 
 //---------------------------------------------------------------------------
 
-Tokens DocHtmlCell::parse()
+Token DocHtmlCell::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // parse one or more paragraphs
@@ -1679,29 +1689,29 @@ Tokens DocHtmlCell::parse()
     par = children().get_last<DocPara>();
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (retval==Tokens::TK_HTMLTAG)
+    if (retval.is(TokenRetval::TK_HTMLTAG))
     {
       int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
       if (tagId==HTML_TD && parser()->context.token->endTag) // found </td> tag
       {
-        retval=Tokens::TK_NEWPARA; // ignore the tag
+        retval = Token::make_TK_NEWPARA(); // ignore the tag
       }
       else if (tagId==HTML_TH && parser()->context.token->endTag) // found </th> tag
       {
-        retval=Tokens::TK_NEWPARA; // ignore the tag
+        retval = Token::make_TK_NEWPARA(); // ignore the tag
       }
     }
   }
-  while (is_any_of(retval,Tokens::TK_NEWPARA,Tokens::RetVal_EndParBlock));
+  while (retval.is_any_of(TokenRetval::TK_NEWPARA,TokenRetval::RetVal_EndParBlock));
   if (par) par->markLast();
 
   return retval;
 }
 
-Tokens DocHtmlCell::parseXml()
+Token DocHtmlCell::parseXml()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // parse one or more paragraphs
@@ -1713,20 +1723,20 @@ Tokens DocHtmlCell::parseXml()
     par = children().get_last<DocPara>();
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (retval==Tokens::TK_HTMLTAG)
+    if (retval.is(TokenRetval::TK_HTMLTAG))
     {
       int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
       if (tagId==XML_ITEM && parser()->context.token->endTag) // found </item> tag
       {
-        retval=Tokens::TK_NEWPARA; // ignore the tag
+        retval = Token::make_TK_NEWPARA(); // ignore the tag
       }
       else if (tagId==XML_DESCRIPTION && parser()->context.token->endTag) // found </description> tag
       {
-        retval=Tokens::TK_NEWPARA; // ignore the tag
+        retval = Token::make_TK_NEWPARA(); // ignore the tag
       }
     }
   }
-  while (retval==Tokens::TK_NEWPARA);
+  while (retval.is(TokenRetval::TK_NEWPARA));
   if (par) par->markLast();
 
   return retval;
@@ -1831,10 +1841,10 @@ bool DocHtmlRow::isHeading() const
   return !children().empty() && heading;
 }
 
-Tokens DocHtmlRow::parse()
+Token DocHtmlRow::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   bool isHeading=FALSE;
@@ -1842,11 +1852,11 @@ Tokens DocHtmlRow::parse()
   DocHtmlCell *cell=nullptr;
 
   // get next token
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   // skip whitespace
-  while (tok==Tokens::TK_WHITESPACE || tok==Tokens::TK_NEWPARA) tok=parser()->tokenizer.lex();
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // should find a html tag now
-  if (tok==Tokens::TK_HTMLTAG)
+  if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
     if (tagId==HTML_TD && !parser()->context.token->endTag) // found <td> tag
@@ -1864,7 +1874,7 @@ Tokens DocHtmlRow::parse()
       goto endrow;
     }
   }
-  else if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF)) // premature end of comment
+  else if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while looking"
         " for a html description title");
@@ -1873,7 +1883,7 @@ Tokens DocHtmlRow::parse()
   else // token other than html token
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <td> or <th> tag but found %s token instead!",
-        DocTokenizer::tokToString(tok));
+        tok.to_string());
     goto endrow;
   }
 
@@ -1887,30 +1897,30 @@ Tokens DocHtmlRow::parse()
     cell->markFirst(isFirst);
     isFirst=FALSE;
     retval=cell->parse();
-    isHeading = retval==Tokens::RetVal_TableHCell;
+    isHeading = retval.is(TokenRetval::RetVal_TableHCell);
   }
-  while (is_any_of(retval,Tokens::RetVal_TableCell,Tokens::RetVal_TableHCell));
+  while (retval.is_any_of(TokenRetval::RetVal_TableCell,TokenRetval::RetVal_TableHCell));
   cell->markLast(TRUE);
 
 endrow:
   return retval;
 }
 
-Tokens DocHtmlRow::parseXml(bool isHeading)
+Token DocHtmlRow::parseXml(bool isHeading)
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   bool isFirst=TRUE;
   DocHtmlCell *cell=nullptr;
 
   // get next token
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   // skip whitespace
-  while (is_any_of(tok,Tokens::TK_WHITESPACE,Tokens::TK_NEWPARA)) tok=parser()->tokenizer.lex();
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // should find a html tag now
-  if (tok==Tokens::TK_HTMLTAG)
+  if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
     if (tagId==XML_TERM && !parser()->context.token->endTag) // found <term> tag
@@ -1927,7 +1937,7 @@ Tokens DocHtmlRow::parseXml(bool isHeading)
       goto endrow;
     }
   }
-  else if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF)) // premature end of comment
+  else if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while looking"
         " for a html description title");
@@ -1936,7 +1946,7 @@ Tokens DocHtmlRow::parseXml(bool isHeading)
   else // token other than html token
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <td> or <th> tag but found %s token instead!",
-        DocTokenizer::tokToString(tok));
+        tok.to_string());
     goto endrow;
   }
 
@@ -1948,7 +1958,7 @@ Tokens DocHtmlRow::parseXml(bool isHeading)
     isFirst=FALSE;
     retval=cell->parseXml();
   }
-  while (is_any_of(retval,Tokens::RetVal_TableCell,Tokens::RetVal_TableHCell));
+  while (retval.is_any_of(TokenRetval::RetVal_TableCell,TokenRetval::RetVal_TableHCell));
   cell->markLast(TRUE);
 
 endrow:
@@ -1976,19 +1986,19 @@ const DocNodeVariant *DocHtmlTable::firstRow() const
   return nullptr;
 }
 
-Tokens DocHtmlTable::parse()
+Token DocHtmlTable::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
 getrow:
   // get next token
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   // skip whitespace
-  while (tok==Tokens::TK_WHITESPACE || tok==Tokens::TK_NEWPARA) tok=parser()->tokenizer.lex();
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // should find a html tag now
-  if (tok==Tokens::TK_HTMLTAG)
+  if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
     if (tagId==HTML_THEAD && !parser()->context.token->endTag) // found <thead> tag
@@ -2006,7 +2016,7 @@ getrow:
     else if (tagId==HTML_TR && !parser()->context.token->endTag) // found <tr> tag
     {
       // no caption, just rows
-      retval=Tokens::RetVal_TableRow;
+      retval = Token::make_RetVal_TableRow();
     }
     else if (tagId==HTML_CAPTION && !parser()->context.token->endTag) // found <caption> tag
     {
@@ -2019,7 +2029,7 @@ getrow:
         m_caption = createDocNode<DocHtmlCaption>(parser(),thisVariant(),parser()->context.token->attribs);
         retval=std::get<DocHtmlCaption>(*m_caption).parse();
 
-        if (retval==Tokens::RetVal_OK) // caption was parsed ok
+        if (retval.is(TokenRetval::RetVal_OK)) // caption was parsed ok
         {
           goto getrow;
         }
@@ -2031,7 +2041,7 @@ getrow:
           "found <%s%s> instead!", parser()->context.token->endTag ? "/" : "", qPrint(parser()->context.token->name));
     }
   }
-  else if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF)) // premature end of comment
+  else if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while looking"
           " for a <tr> or <caption> tag");
@@ -2039,11 +2049,11 @@ getrow:
   else // token other than html token
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <tr> tag but found %s token instead!",
-        DocTokenizer::tokToString(tok));
+        tok.to_string());
   }
 
   // parse one or more rows
-  while (retval==Tokens::RetVal_TableRow)
+  while (retval.is(TokenRetval::RetVal_TableRow))
   {
     children().append<DocHtmlRow>(parser(),thisVariant(),parser()->context.token->attribs);
     retval = children().get_last<DocHtmlRow>()->parse();
@@ -2051,38 +2061,38 @@ getrow:
 
   computeTableGrid();
 
-  return retval==Tokens::RetVal_EndTable ? Tokens::RetVal_OK : retval;
+  return retval.is(TokenRetval::RetVal_EndTable) ? Token::make_RetVal_OK() : retval;
 }
 
-Tokens DocHtmlTable::parseXml()
+Token DocHtmlTable::parseXml()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // get next token
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   // skip whitespace
-  while (is_any_of(tok,Tokens::TK_WHITESPACE,Tokens::TK_NEWPARA)) tok=parser()->tokenizer.lex();
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // should find a html tag now
   int tagId=0;
   bool isHeader=FALSE;
-  if (tok==Tokens::TK_HTMLTAG)
+  if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
     if (tagId==XML_ITEM && !parser()->context.token->endTag) // found <item> tag
     {
-      retval=Tokens::RetVal_TableRow;
+      retval = Token::make_RetVal_TableRow();
     }
     if (tagId==XML_LISTHEADER && !parser()->context.token->endTag) // found <listheader> tag
     {
-      retval=Tokens::RetVal_TableRow;
+      retval = Token::make_RetVal_TableRow();
       isHeader=TRUE;
     }
   }
 
   // parse one or more rows
-  while (retval==Tokens::RetVal_TableRow)
+  while (retval.is(TokenRetval::RetVal_TableRow))
   {
     children().append<DocHtmlRow>(parser(),thisVariant(),parser()->context.token->attribs);
     DocHtmlRow *tr = children().get_last<DocHtmlRow>();
@@ -2093,7 +2103,7 @@ Tokens DocHtmlTable::parseXml()
   computeTableGrid();
 
   tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-  return tagId==XML_LIST && parser()->context.token->endTag ? Tokens::RetVal_OK : retval;
+  return tagId==XML_LIST && parser()->context.token->endTag ? Token::make_RetVal_OK() : retval;
 }
 
 /** Helper class to compute the grid for an HTML style table */
@@ -2164,22 +2174,22 @@ void DocHtmlTable::computeTableGrid()
 
 //---------------------------------------------------------------------------
 
-Tokens DocHtmlDescTitle::parse()
+Token DocHtmlDescTitle::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::TK_NONE;
+  Token retval = Token::make_TK_NONE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
-      switch (tok)
+      switch (tok.value())
       {
-        case Tokens::TK_COMMAND_AT:
+        case TokenRetval::TK_COMMAND_AT:
         // fall through
-        case Tokens::TK_COMMAND_BS:
+        case TokenRetval::TK_COMMAND_BS:
           {
             QCString cmdName=parser()->context.token->name;
             bool isJavaLink=FALSE;
@@ -2188,19 +2198,19 @@ Tokens DocHtmlDescTitle::parse()
               case CMD_REF:
                 {
                   tok=parser()->tokenizer.lex();
-                  if (tok!=Tokens::TK_WHITESPACE)
+                  if (!tok.is(TokenRetval::TK_WHITESPACE))
                   {
                     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
-                        TK_COMMAND_CHAR(tok),qPrint(cmdName));
+                        tok.command_to_char(),qPrint(cmdName));
                   }
                   else
                   {
                     parser()->tokenizer.setStateRef();
                     tok=parser()->tokenizer.lex(); // get the reference id
-                    if (tok!=Tokens::TK_WORD)
+                    if (!tok.is(TokenRetval::TK_WORD))
                     {
                       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s' command",
-                          DocTokenizer::tokToString(tok),TK_COMMAND_CHAR(tok),qPrint(cmdName));
+                          tok.to_string(),tok.command_to_char(),qPrint(cmdName));
                     }
                     else
                     {
@@ -2217,7 +2227,7 @@ Tokens DocHtmlDescTitle::parse()
               case CMD_LINK:
                 {
                   tok=parser()->tokenizer.lex();
-                  if (tok!=Tokens::TK_WHITESPACE)
+                  if (!tok.is(TokenRetval::TK_WHITESPACE))
                   {
                     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\%s command",
                         qPrint(cmdName));
@@ -2226,10 +2236,10 @@ Tokens DocHtmlDescTitle::parse()
                   {
                     parser()->tokenizer.setStateLink();
                     tok=parser()->tokenizer.lex();
-                    if (tok!=Tokens::TK_WORD)
+                    if (!tok.is(TokenRetval::TK_WORD))
                     {
                       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of \\%s command",
-                          DocTokenizer::tokToString(tok),qPrint(cmdName));
+                          tok.to_string(),qPrint(cmdName));
                     }
                     else
                     {
@@ -2248,20 +2258,20 @@ Tokens DocHtmlDescTitle::parse()
                 break;
               default:
                 warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%c%s' found as part of a <dt> tag",
-                  TK_COMMAND_CHAR(tok),qPrint(cmdName));
+                  tok.command_to_char(),qPrint(cmdName));
             }
           }
           break;
-        case Tokens::TK_SYMBOL:
+        case TokenRetval::TK_SYMBOL:
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unsupported symbol '%s' found as part of a <dt> tag",
               qPrint(parser()->context.token->name));
           break;
-        case Tokens::TK_HTMLTAG:
+        case TokenRetval::TK_HTMLTAG:
           {
             int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
             if (tagId==HTML_DD && !parser()->context.token->endTag) // found <dd> tag
             {
-              retval = Tokens::RetVal_DescData;
+              retval = Token::make_RetVal_DescData();
               goto endtitle;
             }
             else if (tagId==HTML_DT && parser()->context.token->endTag)
@@ -2271,12 +2281,12 @@ Tokens DocHtmlDescTitle::parse()
             else if (tagId==HTML_DT)
             {
               // missing <dt> tag.
-              retval = Tokens::RetVal_DescTitle;
+              retval = Token::make_RetVal_DescTitle();
               goto endtitle;
             }
             else if (tagId==HTML_DL && parser()->context.token->endTag)
             {
-              retval=Tokens::RetVal_EndDesc;
+              retval = Token::make_RetVal_EndDesc();
               goto endtitle;
             }
             else if (tagId==HTML_A)
@@ -2295,12 +2305,13 @@ Tokens DocHtmlDescTitle::parse()
           break;
         default:
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected token %s found as part of a <dt> tag",
-              DocTokenizer::tokToString(tok));
+              tok.to_string());
           break;
       }
     }
+    tok = parser()->tokenizer.lex();
   }
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected end of comment while inside"
         " <dt> tag");
@@ -2312,11 +2323,11 @@ endtitle:
 
 //---------------------------------------------------------------------------
 
-Tokens DocHtmlDescData::parse()
+Token DocHtmlDescData::parse()
 {
   AUTO_TRACE();
   m_attribs = parser()->context.token->attribs;
-  Tokens retval=Tokens::TK_NONE;
+  Token retval = Token::make_TK_NONE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   bool isFirst=TRUE;
@@ -2328,7 +2339,7 @@ Tokens DocHtmlDescData::parse()
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
   }
-  while (retval==Tokens::TK_NEWPARA);
+  while (retval.is(TokenRetval::TK_NEWPARA));
   if (par) par->markLast();
 
   return retval;
@@ -2336,18 +2347,18 @@ Tokens DocHtmlDescData::parse()
 
 //---------------------------------------------------------------------------
 
-Tokens DocHtmlDescList::parse()
+Token DocHtmlDescList::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // get next token
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   // skip whitespace
-  while (tok==Tokens::TK_WHITESPACE || tok==Tokens::TK_NEWPARA) tok=parser()->tokenizer.lex();
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // should find a html tag now
-  if (tok==Tokens::TK_HTMLTAG)
+  if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
     if (tagId==HTML_DT && !parser()->context.token->endTag) // found <dt> tag
@@ -2362,7 +2373,7 @@ Tokens DocHtmlDescList::parse()
       goto enddesclist;
     }
   }
-  else if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF)) // premature end of comment
+  else if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while looking"
         " for a html description title");
@@ -2371,7 +2382,7 @@ Tokens DocHtmlDescList::parse()
   else // token other than html token
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <dt> tag but found %s token instead!",
-        DocTokenizer::tokToString(tok));
+        tok.to_string());
     goto enddesclist;
   }
 
@@ -2382,39 +2393,39 @@ Tokens DocHtmlDescList::parse()
     children().append<DocHtmlDescData>(parser(),thisVariant());
     DocHtmlDescData *dd    = children().get_last<DocHtmlDescData>();
     retval=dt->parse();
-    if (retval==Tokens::RetVal_DescData)
+    if (retval.is(TokenRetval::RetVal_DescData))
     {
       retval=dd->parse();
-      while (retval==Tokens::RetVal_DescData)
+      while (retval.is(TokenRetval::RetVal_DescData))
       {
         children().append<DocHtmlDescData>(parser(),thisVariant());
         dd    = children().get_last<DocHtmlDescData>();
         retval=dd->parse();
       }
     }
-    else if (retval!=Tokens::RetVal_DescTitle)
+    else if (!retval.is(TokenRetval::RetVal_DescTitle))
     {
       // error
       break;
     }
-  } while (retval==Tokens::RetVal_DescTitle);
+  } while (retval.is(TokenRetval::RetVal_DescTitle));
 
-  if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <dl> block");
   }
 
 enddesclist:
 
-  return retval==Tokens::RetVal_EndDesc ? Tokens::RetVal_OK : retval;
+  return retval.is(TokenRetval::RetVal_EndDesc) ? Token::make_RetVal_OK() : retval;
 }
 
 //---------------------------------------------------------------------------
 
-Tokens DocHtmlListItem::parse()
+Token DocHtmlListItem::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::TK_NONE;
+  Token retval = Token::make_TK_NONE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // parse one or more paragraphs
@@ -2427,17 +2438,17 @@ Tokens DocHtmlListItem::parse()
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
   }
-  while (retval==Tokens::TK_NEWPARA);
+  while (retval.is(TokenRetval::TK_NEWPARA));
   if (par) par->markLast();
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
-Tokens DocHtmlListItem::parseXml()
+Token DocHtmlListItem::parseXml()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::TK_NONE;
+  Token retval = Token::make_TK_NONE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // parse one or more paragraphs
@@ -2449,38 +2460,38 @@ Tokens DocHtmlListItem::parseXml()
     par = children().get_last<DocPara>();
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF)) break;
+    if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) break;
 
     //printf("new item: retval=%x parser()->context.token->name=%s parser()->context.token->endTag=%d\n",
     //    retval,qPrint(parser()->context.token->name),parser()->context.token->endTag);
-    if (retval==Tokens::RetVal_ListItem)
+    if (retval.is(TokenRetval::RetVal_ListItem))
     {
       break;
     }
   }
-  while (retval!=Tokens::RetVal_CloseXml);
+  while (!retval.is(TokenRetval::RetVal_CloseXml));
 
   if (par) par->markLast();
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
 //---------------------------------------------------------------------------
 
-Tokens DocHtmlList::parse()
+Token DocHtmlList::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   int num=1;
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // get next token
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   // skip whitespace and paragraph breaks
-  while (is_any_of(tok,Tokens::TK_WHITESPACE,Tokens::TK_NEWPARA)) tok=parser()->tokenizer.lex();
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // should find a html tag now
-  if (tok==Tokens::TK_HTMLTAG)
+  if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
     if (tagId==HTML_LI && !parser()->context.token->endTag) // found <li> tag
@@ -2495,7 +2506,7 @@ Tokens DocHtmlList::parse()
       // add dummy item to obtain valid HTML
       children().append<DocHtmlListItem>(parser(),thisVariant(),HtmlAttribList(),1);
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"empty list!");
-      retval = Tokens::RetVal_EndList;
+      retval = Token::make_RetVal_EndList();
       goto endlist;
     }
     else // found some other tag
@@ -2508,7 +2519,7 @@ Tokens DocHtmlList::parse()
       goto endlist;
     }
   }
-  else if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF)) // premature end of comment
+  else if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
     // add dummy item to obtain valid HTML
     children().append<DocHtmlListItem>(parser(),thisVariant(),HtmlAttribList(),1);
@@ -2521,7 +2532,7 @@ Tokens DocHtmlList::parse()
     // add dummy item to obtain valid HTML
     children().append<DocHtmlListItem>(parser(),thisVariant(),HtmlAttribList(),1);
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <li> tag but found %s token instead!",
-        DocTokenizer::tokToString(tok));
+        tok.to_string());
     goto endlist;
   }
 
@@ -2530,32 +2541,32 @@ Tokens DocHtmlList::parse()
     children().append<DocHtmlListItem>(parser(),thisVariant(),parser()->context.token->attribs,num++);
     DocHtmlListItem *li = children().get_last<DocHtmlListItem>();
     retval=li->parse();
-  } while (retval==Tokens::RetVal_ListItem);
+  } while (retval.is(TokenRetval::RetVal_ListItem));
 
-  if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <%cl> block",
         m_type==Unordered ? 'u' : 'o');
   }
 
 endlist:
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
-  return retval==Tokens::RetVal_EndList ? Tokens::RetVal_OK : retval;
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
+  return retval.is(TokenRetval::RetVal_EndList) ? Token::make_RetVal_OK() : retval;
 }
 
-Tokens DocHtmlList::parseXml()
+Token DocHtmlList::parseXml()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   int num=1;
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // get next token
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   // skip whitespace and paragraph breaks
-  while (is_any_of(tok,Tokens::TK_WHITESPACE,Tokens::TK_NEWPARA)) tok=parser()->tokenizer.lex();
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // should find a html tag now
-  if (tok==Tokens::TK_HTMLTAG)
+  if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
     //printf("parser()->context.token->name=%s parser()->context.token->endTag=%d\n",qPrint(parser()->context.token->name),parser()->context.token->endTag);
@@ -2571,7 +2582,7 @@ Tokens DocHtmlList::parseXml()
       goto endlist;
     }
   }
-  else if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF)) // premature end of comment
+  else if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while looking"
         " for a html list item");
@@ -2580,7 +2591,7 @@ Tokens DocHtmlList::parseXml()
   else // token other than html token
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <item> tag but found %s token instead!",
-        DocTokenizer::tokToString(tok));
+        tok.to_string());
     goto endlist;
   }
 
@@ -2589,28 +2600,28 @@ Tokens DocHtmlList::parseXml()
     children().append<DocHtmlListItem>(parser(),thisVariant(),parser()->context.token->attribs,num++);
     DocHtmlListItem *li   = children().get_last<DocHtmlListItem>();
     retval=li->parseXml();
-    if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF)) break;
+    if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) break;
     //printf("retval=%x parser()->context.token->name=%s\n",retval,qPrint(parser()->context.token->name));
-  } while (retval==Tokens::RetVal_ListItem);
+  } while (retval.is(TokenRetval::RetVal_ListItem));
 
-  if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <list type=\"%s\"> block",
         m_type==Unordered ? "bullet" : "number");
   }
 
 endlist:
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
-  return (is_any_of(retval,Tokens::RetVal_EndList,Tokens::RetVal_CloseXml) || parser()->context.token->name=="list") ?
-         Tokens::RetVal_OK : retval;
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
+  return (retval.is_any_of(TokenRetval::RetVal_EndList,TokenRetval::RetVal_CloseXml) || parser()->context.token->name=="list") ?
+         Token::make_RetVal_OK() : retval;
 }
 
 //--------------------------------------------------------------------------
 
-Tokens DocHtmlBlockQuote::parse()
+Token DocHtmlBlockQuote::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::TK_NONE;
+  Token retval = Token::make_TK_NONE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // parse one or more paragraphs
@@ -2623,24 +2634,24 @@ Tokens DocHtmlBlockQuote::parse()
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
   }
-  while (retval==Tokens::TK_NEWPARA);
+  while (retval.is(TokenRetval::TK_NEWPARA));
   if (par) par->markLast();
 
-  if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment while inside <blockquote> block");
   }
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
-  return (retval==Tokens::RetVal_EndBlockQuote) ? Tokens::RetVal_OK : retval;
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
+  return retval.is(TokenRetval::RetVal_EndBlockQuote) ? Token::make_RetVal_OK() : retval;
 }
 
 //---------------------------------------------------------------------------
 
-Tokens DocParBlock::parse()
+Token DocParBlock::parse()
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::TK_NONE;
+  Token retval = Token::make_TK_NONE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // parse one or more paragraphs
@@ -2653,11 +2664,11 @@ Tokens DocParBlock::parse()
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
   }
-  while (retval==Tokens::TK_NEWPARA);
+  while (retval.is(TokenRetval::TK_NEWPARA));
   if (par) par->markLast();
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
-  return (retval==Tokens::RetVal_EndBlockQuote) ? Tokens::RetVal_OK : retval;
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
+  return retval.is(TokenRetval::RetVal_EndBlockQuote) ? Token::make_RetVal_OK() : retval;
 }
 
 //---------------------------------------------------------------------------
@@ -2668,12 +2679,12 @@ DocSimpleListItem::DocSimpleListItem(DocParser *parser,DocNodeVariant *parent)
 }
 
 
-Tokens DocSimpleListItem::parse()
+Token DocSimpleListItem::parse()
 {
   auto ns = AutoNodeStack(parser(),thisVariant());
   m_paragraph = createDocNode<DocPara>(parser(),thisVariant());
   DocPara *par = &std::get<DocPara>(*m_paragraph);
-  Tokens rv=par->parse();
+  Token rv=par->parse();
   par->markFirst();
   par->markLast();
   return rv;
@@ -2681,17 +2692,17 @@ Tokens DocSimpleListItem::parse()
 
 //--------------------------------------------------------------------------
 
-Tokens DocSimpleList::parse()
+Token DocSimpleList::parse()
 {
   auto ns = AutoNodeStack(parser(),thisVariant());
-  Tokens rv = Tokens::TK_NONE;
+  Token rv = Token::make_TK_NONE();
   do
   {
     children().append<DocSimpleListItem>(parser(),thisVariant());
     DocSimpleListItem *li   = children().get_last<DocSimpleListItem>();
     rv=li->parse();
-  } while (rv==Tokens::RetVal_ListItem);
-  return (rv!=Tokens::TK_NEWPARA) ? rv : Tokens::RetVal_OK;
+  } while (rv.is(TokenRetval::RetVal_ListItem));
+  return (!rv.is(TokenRetval::TK_NEWPARA)) ? rv : Token::make_RetVal_OK();
 }
 
 //--------------------------------------------------------------------------
@@ -2701,10 +2712,10 @@ DocAutoListItem::DocAutoListItem(DocParser *parser,DocNodeVariant *parent,int in
 {
 }
 
-Tokens DocAutoListItem::parse()
+Token DocAutoListItem::parse()
 {
   AUTO_TRACE();
-  Tokens retval = Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   // first parse any number of paragraphs
@@ -2727,10 +2738,10 @@ Tokens DocAutoListItem::parse()
     }
     // next paragraph should be more indented than the - marker to belong
     // to this item
-  } while (retval==Tokens::TK_NEWPARA && parser()->context.token->indent>m_indent);
+  } while (retval.is(TokenRetval::TK_NEWPARA) && parser()->context.token->indent>m_indent);
   if (lastPar) lastPar->markLast();
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
@@ -2743,10 +2754,10 @@ DocAutoList::DocAutoList(DocParser *parser,DocNodeVariant *parent,int indent,boo
 {
 }
 
-Tokens DocAutoList::parse()
+Token DocAutoList::parse()
 {
   AUTO_TRACE();
-  Tokens retval = Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   int num=1;
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.startAutoList();
@@ -2775,7 +2786,7 @@ Tokens DocAutoList::parse()
     //       qPrint(parser()->context.token->name));
     //printf("num=%d parser()->context.token->id=%d\n",num,parser()->context.token->id);
   }
-  while (retval==Tokens::TK_LISTITEM &&                // new list item
+  while (retval.is(TokenRetval::TK_LISTITEM) &&                // new list item
          m_indent==parser()->context.token->indent &&          // at same indent level
 	 m_isEnumList==parser()->context.token->isEnumList &&  // of the same kind
          m_isCheckedList==parser()->context.token->isCheckedList &&  // of the same kind
@@ -2783,7 +2794,7 @@ Tokens DocAutoList::parse()
         );
 
   parser()->tokenizer.endAutoList();
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
@@ -2794,13 +2805,14 @@ void DocTitle::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.setStateTitle();
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF))
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
     if (!parser()->defaultHandleToken(thisVariant(),tok,children()))
     {
       parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"title section");
     }
+    tok = parser()->tokenizer.lex();
   }
   parser()->tokenizer.setStatePara();
   parser()->handlePendingStyleCommands(thisVariant(),children());
@@ -2829,7 +2841,7 @@ bool DocSimpleSect::hasTitle() const
   return m_title && std::get<DocTitle>(*m_title).hasTitle();
 }
 
-Tokens DocSimpleSect::parse(bool userTitle,bool needsSeparator)
+Token DocSimpleSect::parse(bool userTitle,bool needsSeparator)
 {
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
@@ -2860,13 +2872,13 @@ Tokens DocSimpleSect::parse(bool userTitle,bool needsSeparator)
   par->markLast();
 
   // parse the contents of the paragraph
-  Tokens retval = par->parse();
+  Token retval = par->parse();
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
-  return retval; // 0==EOF, Tokens::TK_NEWPARA, Tokens::TK_LISTITEM, Tokens::TK_ENDLIST, Tokens::RetVal_SimpleSec
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
+  return retval; // 0==EOF, TokenRetval::TK_NEWPARA, TokenRetval::TK_LISTITEM, TokenRetval::TK_ENDLIST, TokenRetval::RetVal_SimpleSec
 }
 
-Tokens DocSimpleSect::parseRcs()
+Token DocSimpleSect::parseRcs()
 {
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
@@ -2880,15 +2892,15 @@ Tokens DocSimpleSect::parseRcs()
   parser()->internalValidatingParseDoc(thisVariant(),children(),text);
   parser()->popContext(); // this will restore the old parser->context.token
 
-  return Tokens::RetVal_OK;
+  return Token::make_RetVal_OK();
 }
 
-Tokens DocSimpleSect::parseXml()
+Token DocSimpleSect::parseXml()
 {
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
-  Tokens retval = Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   for (;;)
   {
     // add new paragraph as child
@@ -2907,15 +2919,15 @@ Tokens DocSimpleSect::parseXml()
 
     // parse the contents of the paragraph
     retval = par->parse();
-    if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF)) break;
-    if (retval == Tokens::RetVal_CloseXml)
+    if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) break;
+    if (retval.is(TokenRetval::RetVal_CloseXml))
     {
-      retval = Tokens::RetVal_OK;
+      retval = Token::make_RetVal_OK();
       break;
     }
   }
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
@@ -2930,12 +2942,12 @@ void DocSimpleSect::appendLinkWord(const QCString &word)
   else
   {
     // Comma-separate <seealso> links.
-    p->injectToken(Tokens::TK_WORD,",");
-    p->injectToken(Tokens::TK_WHITESPACE," ");
+    p->injectToken(Token::make_TK_WORD(),",");
+    p->injectToken(Token::make_TK_WHITESPACE()," ");
   }
 
   parser()->context.inSeeBlock=TRUE;
-  p->injectToken(Tokens::TK_LNKWORD,word);
+  p->injectToken(Token::make_TK_LNKWORD(),word);
   parser()->context.inSeeBlock=FALSE;
 }
 
@@ -2968,25 +2980,25 @@ QCString DocSimpleSect::typeString() const
 
 //--------------------------------------------------------------------------
 
-Tokens DocParamList::parse(const QCString &cmdName)
+Token DocParamList::parse(const QCString &cmdName)
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
   DocPara *par=nullptr;
   QCString saveCmdName = cmdName;
 
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(saveCmdName));
-    retval=Tokens::RetVal_EndParBlock;
+    retval = Token::make_RetVal_EndParBlock();
     goto endparamlist;
   }
   parser()->tokenizer.setStateParam();
   tok=parser()->tokenizer.lex();
-  while (tok==Tokens::TK_WORD) /* there is a parameter name */
+  while (tok.is(TokenRetval::TK_WORD)) /* there is a parameter name */
   {
     if (m_type==DocParamSect::Param)
     {
@@ -3018,21 +3030,21 @@ Tokens DocParamList::parse(const QCString &cmdName)
     tok=parser()->tokenizer.lex();
   }
   parser()->tokenizer.setStatePara();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF)) // premature end of comment
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) // premature end of comment
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(saveCmdName));
-    retval=Tokens::RetVal_EndParBlock;
+    retval = Token::make_RetVal_EndParBlock();
     goto endparamlist;
   }
-  if (tok!=Tokens::TK_WHITESPACE) /* premature end of comment block */
+  if (!tok.is(TokenRetval::TK_WHITESPACE)) /* premature end of comment block */
   {
-    if (tok!=Tokens::TK_NEWPARA) /* empty param description */
+    if (!tok.is(TokenRetval::TK_NEWPARA)) /* empty param description */
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s in comment block while parsing the "
-          "argument of command %s",DocTokenizer::tokToString(tok),qPrint(saveCmdName));
+          "argument of command %s",tok.to_string(),qPrint(saveCmdName));
     }
-    retval=Tokens::RetVal_EndParBlock;
+    retval = Token::make_RetVal_EndParBlock();
     goto endparamlist;
   }
 
@@ -3043,14 +3055,14 @@ Tokens DocParamList::parse(const QCString &cmdName)
   par->markLast();
 
 endparamlist:
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
-Tokens DocParamList::parseXml(const QCString &paramName)
+Token DocParamList::parseXml(const QCString &paramName)
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   parser()->context.token->name = paramName;
@@ -3093,31 +3105,32 @@ Tokens DocParamList::parseXml(const QCString &paramName)
       par->markLast();
     }
 
-    if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF)) break;
+    if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) break;
 
-  } while (retval==Tokens::RetVal_CloseXml &&
-           !is_any_of(Mappers::htmlTagMapper->map(parser()->context.token->name),XML_PARAM, XML_TYPEPARAM , XML_EXCEPTION));
+  } while (retval.is(TokenRetval::RetVal_CloseXml) &&
+           Mappers::htmlTagMapper->map(parser()->context.token->name)!=XML_PARAM &&
+           Mappers::htmlTagMapper->map(parser()->context.token->name)!=XML_TYPEPARAM &&
+           Mappers::htmlTagMapper->map(parser()->context.token->name)!=XML_EXCEPTION);
 
-
-  if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF)) /* premature end of comment block */
+  if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) /* premature end of comment block */
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unterminated param or exception tag");
   }
   else
   {
-    retval=Tokens::RetVal_OK;
+    retval = Token::make_RetVal_OK();
   }
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
 //--------------------------------------------------------------------------
 
-Tokens DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
+Token DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
 {
   AUTO_TRACE();
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   if (d!=Unspecified)
@@ -3146,12 +3159,12 @@ Tokens DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
   {
     retval = pl->parse(cmdName);
   }
-  if (retval==Tokens::RetVal_EndParBlock)
+  if (retval.is(TokenRetval::RetVal_EndParBlock))
   {
-    retval = Tokens::RetVal_OK;
+    retval = Token::make_RetVal_OK();
   }
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
@@ -3163,7 +3176,7 @@ DocPara::DocPara(DocParser *parser,DocNodeVariant *parent) :
 {
 }
 
-Tokens DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
+Token DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
 {
   AUTO_TRACE();
   DocSimpleSect *ss=nullptr;
@@ -3181,7 +3194,7 @@ Tokens DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
     children().append<DocSimpleSect>(parser(),thisVariant(),t);
     ss = children().get_last<DocSimpleSect>();
   }
-  Tokens rv = Tokens::RetVal_OK;
+  Token rv = Token::make_RetVal_OK();
   if (xmlContext)
   {
     return ss->parseXml();
@@ -3190,10 +3203,10 @@ Tokens DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
   {
     rv = ss->parse(t==DocSimpleSect::User,needsSeparator);
   }
-  return (rv!=Tokens::TK_NEWPARA) ? rv : Tokens::RetVal_OK;
+  return (!rv.is(TokenRetval::TK_NEWPARA)) ? rv : Token::make_RetVal_OK();
 }
 
-Tokens DocPara::handleParamSection(const QCString &cmdName,
+Token DocPara::handleParamSection(const QCString &cmdName,
                                 DocParamSect::Type t,
                                 bool xmlContext=FALSE,
                                 int direction=DocParamSect::Unspecified)
@@ -3210,18 +3223,18 @@ Tokens DocPara::handleParamSection(const QCString &cmdName,
     children().append<DocParamSect>(parser(),thisVariant(),t);
     ps = children().get_last<DocParamSect>();
   }
-  Tokens rv=ps->parse(cmdName,xmlContext,
+  Token rv=ps->parse(cmdName,xmlContext,
                    static_cast<DocParamSect::Direction>(direction));
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(rv));
-  return (rv!=Tokens::TK_NEWPARA) ? rv : Tokens::RetVal_OK;
+  AUTO_TRACE_EXIT("retval={}",rv.to_string());
+  return (!rv.is(TokenRetval::TK_NEWPARA)) ? rv : Token::make_RetVal_OK();
 }
 
 void DocPara::handleCite(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   // get the argument of the cite command.
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
       cmdChar,qPrint(cmdName));
@@ -3229,16 +3242,16 @@ void DocPara::handleCite(char cmdChar,const QCString &cmdName)
   }
   parser()->tokenizer.setStateCite();
   tok=parser()->tokenizer.lex();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command '%c%s'",cmdChar,qPrint(cmdName));
     return;
   }
-  else if (!is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD))
+  else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
-        DocTokenizer::tokToString(tok),cmdChar,qPrint(cmdName));
+        tok.to_string(),cmdChar,qPrint(cmdName));
     return;
   }
   parser()->context.token->sectionId = parser()->context.token->name;
@@ -3252,8 +3265,8 @@ void DocPara::handleEmoji(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   // get the argument of the emoji command.
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
       cmdChar,qPrint(cmdName));
@@ -3261,17 +3274,17 @@ void DocPara::handleEmoji(char cmdChar,const QCString &cmdName)
   }
   parser()->tokenizer.setStateEmoji();
   tok=parser()->tokenizer.lex();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"no emoji name given or unexpected end of comment block while parsing the "
         "argument of command '%c%s'",cmdChar,qPrint(cmdName));
     parser()->tokenizer.setStatePara();
     return;
   }
-  else if (tok!=Tokens::TK_WORD)
+  else if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
-        DocTokenizer::tokToString(tok),cmdChar,qPrint(cmdName));
+        tok.to_string(),cmdChar,qPrint(cmdName));
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3282,8 +3295,8 @@ void DocPara::handleEmoji(char cmdChar,const QCString &cmdName)
 void DocPara::handleDoxyConfig(char cmdChar,const QCString &cmdName)
 {
   // get the argument of the cite command.
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
       cmdChar,qPrint(cmdName));
@@ -3291,16 +3304,16 @@ void DocPara::handleDoxyConfig(char cmdChar,const QCString &cmdName)
   }
   parser()->tokenizer.setStateDoxyConfig();
   tok=parser()->tokenizer.lex();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command '%c%s'",cmdChar,qPrint(cmdName));
     return;
   }
-  else if (!is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD))
+  else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
-        DocTokenizer::tokToString(tok),cmdChar,qPrint(cmdName));
+        tok.to_string(),cmdChar,qPrint(cmdName));
     return;
   }
   ConfigOption * opt = ConfigImpl::instance()->get(parser()->context.token->name);
@@ -3377,14 +3390,14 @@ void DocPara::handleDoxyConfig(char cmdChar,const QCString &cmdName)
   parser()->tokenizer.setStatePara();
 }
 
-Tokens DocPara::handleXRefItem()
+Token DocPara::handleXRefItem()
 {
   AUTO_TRACE();
-  Tokens retval=parser()->tokenizer.lex();
-  ASSERT(retval==Tokens::TK_WHITESPACE);
+  Token retval=parser()->tokenizer.lex();
+  ASSERT(retval.is(TokenRetval::TK_WHITESPACE));
   parser()->tokenizer.setStateXRefItem();
   retval=parser()->tokenizer.lex();
-  if (retval==Tokens::RetVal_OK)
+  if (retval.is(TokenRetval::RetVal_OK))
   {
     children().append<DocXRefItem>(parser(),thisVariant(),
                                    parser()->context.token->id,parser()->context.token->name);
@@ -3403,8 +3416,8 @@ void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
   AUTO_TRACE();
   QCString fmt;
   QCString date;
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
       cmdChar,qPrint(cmdName));
@@ -3412,7 +3425,7 @@ void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
   }
   parser()->tokenizer.setStateQuotedString();
   tok = parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WORD)
+  if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <format> argument for command '%c%s'",
       cmdChar,qPrint(cmdName));
@@ -3424,10 +3437,10 @@ void DocPara::handleShowDate(char cmdChar,const QCString &cmdName)
   parser()->tokenizer.setStateShowDate();
   tok = parser()->tokenizer.lex();
 
-  QCString specDateRaw = tok==Tokens::TK_WORD ? parser()->context.token->name : QCString();
+  QCString specDateRaw = tok.is(TokenRetval::TK_WORD) ? parser()->context.token->name : QCString();
   QCString specDate    = specDateRaw.stripWhiteSpace();
   bool specDateOnlyWS  = !specDateRaw.isEmpty() && specDate.isEmpty();
-  if (!specDate.isEmpty() && !is_any_of(tok,Tokens::TK_WORD,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (!specDate.isEmpty() && !tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '%c%s'",
       cmdChar,qPrint(cmdName));
@@ -3473,8 +3486,8 @@ void DocPara::handleILine(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
   parser()->tokenizer.setStateILine();
-  Tokens tok = parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WORD)
+  Token tok = parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid argument for command '%c%s'",
       cmdChar,qPrint(cmdName));
@@ -3486,8 +3499,8 @@ void DocPara::handleILine(char cmdChar,const QCString &cmdName)
 void DocPara::handleIFile(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
       cmdChar,qPrint(cmdName));
@@ -3496,10 +3509,10 @@ void DocPara::handleIFile(char cmdChar,const QCString &cmdName)
   parser()->tokenizer.setStateFile();
   tok=parser()->tokenizer.lex();
   parser()->tokenizer.setStatePara();
-  if (tok!=Tokens::TK_WORD)
+  if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
-      DocTokenizer::tokToString(tok),cmdChar,qPrint(cmdName));
+      tok.to_string(),cmdChar,qPrint(cmdName));
     return;
   }
   parser()->context.fileName = parser()->context.token->name;
@@ -3511,8 +3524,8 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(saveCmdName));
@@ -3521,16 +3534,16 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   parser()->tokenizer.setStatePattern();
   tok=parser()->tokenizer.lex();
   parser()->tokenizer.setStatePara();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s", qPrint(saveCmdName));
     return;
   }
-  else if (tok!=Tokens::TK_WORD)
+  else if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(saveCmdName));
+        tok.to_string(),qPrint(saveCmdName));
     return;
   }
   auto it1 = children().size()>=1 ? std::prev(children().end()) : children().end();
@@ -3567,8 +3580,8 @@ void DocPara::handleFile(const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(saveCmdName));
@@ -3577,10 +3590,10 @@ void DocPara::handleFile(const QCString &cmdName)
   parser()->tokenizer.setStateFile();
   tok=parser()->tokenizer.lex();
   parser()->tokenizer.setStatePara();
-  if (tok!=Tokens::TK_WORD)
+  if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(saveCmdName));
+        tok.to_string(),qPrint(saveCmdName));
     return;
   }
   QCString name = parser()->context.token->name;
@@ -3606,8 +3619,8 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
 {
   AUTO_TRACE("cmdName={} isJavaLink={}",cmdName,isJavaLink);
   QCString saveCmdName = cmdName;
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(saveCmdName));
@@ -3615,10 +3628,10 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
   }
   parser()->tokenizer.setStateLink();
   tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WORD)
+  if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"%s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(saveCmdName));
+        tok.to_string(),qPrint(saveCmdName));
     return;
   }
   if (saveCmdName == "javalink")
@@ -3647,8 +3660,8 @@ void DocPara::handleRef(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
       cmdChar,qPrint(saveCmdName));
@@ -3656,10 +3669,10 @@ void DocPara::handleRef(char cmdChar,const QCString &cmdName)
   }
   parser()->tokenizer.setStateRef();
   tok=parser()->tokenizer.lex(); // get the reference id
-  if (tok!=Tokens::TK_WORD)
+  if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
-        DocTokenizer::tokToString(tok),cmdChar,qPrint(saveCmdName));
+        tok.to_string(),cmdChar,qPrint(saveCmdName));
     goto endref;
   }
   children().append<DocRef>(parser(),thisVariant(),
@@ -3674,10 +3687,10 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
-  Tokens tok=parser()->tokenizer.lex();
+  Token tok=parser()->tokenizer.lex();
   bool isBlock = false;
   bool localScope = false;
-  if (tok==Tokens::TK_WORD && parser()->context.token->name=="{")
+  if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
   {
     parser()->tokenizer.setStateOptions();
     parser()->tokenizer.lex();
@@ -3705,14 +3718,14 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
       t = DocInclude::SnippetTrimLeft;
     }
     tok=parser()->tokenizer.lex();
-    if (tok!=Tokens::TK_WHITESPACE)
+    if (!tok.is(TokenRetval::TK_WHITESPACE))
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\%s command",
           qPrint(saveCmdName));
       return;
     }
   }
-  else if (tok==Tokens::TK_WORD && parser()->context.token->name=="[")
+  else if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="[")
   {
     parser()->tokenizer.setStateBlock();
     parser()->tokenizer.lex();
@@ -3720,7 +3733,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     parser()->tokenizer.setStatePara();
     parser()->tokenizer.lex();
   }
-  else if (tok!=Tokens::TK_WHITESPACE)
+  else if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(saveCmdName));
@@ -3729,16 +3742,16 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   parser()->tokenizer.setStateFile();
   tok=parser()->tokenizer.lex();
   parser()->tokenizer.setStatePara();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(saveCmdName));
     return;
   }
-  else if (tok!=Tokens::TK_WORD)
+  else if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(saveCmdName));
+        tok.to_string(),qPrint(saveCmdName));
     return;
   }
   QCString fileName = parser()->context.token->name;
@@ -3749,10 +3762,10 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     parser()->tokenizer.setStateSnippet();
     tok=parser()->tokenizer.lex();
     parser()->tokenizer.setStatePara();
-    if (tok!=Tokens::TK_WORD)
+    if (!tok.is(TokenRetval::TK_WORD))
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected block identifier, but found token %s instead while parsing the %s command",
-          DocTokenizer::tokToString(tok),qPrint(saveCmdName));
+          tok.to_string(),qPrint(saveCmdName));
       return;
     }
     blockId = "["+parser()->context.token->name+"]";
@@ -3774,24 +3787,24 @@ void DocPara::handleSection(char cmdChar,const QCString &cmdName)
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
   // get the argument of the section command.
-  Tokens tok=parser()->tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=parser()->tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
         cmdChar,qPrint(saveCmdName));
     return;
   }
   tok=parser()->tokenizer.lex();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command '%c%s'", cmdChar,qPrint(saveCmdName));
     return;
   }
-  else if (!is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD))
+  else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
-        DocTokenizer::tokToString(tok),cmdChar,qPrint(saveCmdName));
+        tok.to_string(),cmdChar,qPrint(saveCmdName));
     return;
   }
   parser()->context.token->sectionId = parser()->context.token->name;
@@ -3800,28 +3813,28 @@ void DocPara::handleSection(char cmdChar,const QCString &cmdName)
   parser()->tokenizer.setStatePara();
 }
 
-Tokens DocPara::handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level)
+Token DocPara::handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level)
 {
   AUTO_TRACE();
   children().append<DocHtmlHeader>(parser(),thisVariant(),tagHtmlAttribs,level);
-  Tokens retval = children().get_last<DocHtmlHeader>()->parse();
-  return (retval==Tokens::RetVal_OK) ? Tokens::TK_NEWPARA : retval;
+  Token retval = children().get_last<DocHtmlHeader>()->parse();
+  return retval.is(TokenRetval::RetVal_OK) ? Token::make_TK_NEWPARA() : retval;
 }
 
 // For XML tags whose content is stored in attributes rather than
 // contained within the element, we need a way to inject the attribute
 // text into the current paragraph.
-bool DocPara::injectToken(Tokens tok,const QCString &tokText)
+bool DocPara::injectToken(Token tok,const QCString &tokText)
 {
   AUTO_TRACE();
   parser()->context.token->name = tokText;
   return parser()->defaultHandleToken(thisVariant(),tok,children());
 }
 
-Tokens DocPara::handleStartCode()
+Token DocPara::handleStartCode()
 {
   AUTO_TRACE();
-  Tokens retval = parser()->tokenizer.lex();
+  Token retval = parser()->tokenizer.lex();
   QCString lang = parser()->context.token->name;
   if (!lang.isEmpty() && lang.at(0)!='.')
   {
@@ -3845,12 +3858,12 @@ Tokens DocPara::handleStartCode()
                                  parser()->context.isExample,
                                  parser()->context.exampleName,
                                  FALSE,lang);
-  if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"code section ended without end marker");
   }
   parser()->tokenizer.setStatePara();
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
@@ -3891,10 +3904,10 @@ void DocPara::handleInheritDoc()
 }
 
 
-Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
+Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
-  Tokens retval = Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   int cmdId = Mappers::cmdMapper->map(cmdName);
   switch (cmdId)
   {
@@ -3916,19 +3929,19 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE);
               retval=parser()->handleStyleArgument(thisVariant(),children(),cmdName);
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,cmdName,FALSE);
-      if (retval!=Tokens::TK_WORD) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
+      if (!retval.is(TokenRetval::TK_WORD)) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
       break;
     case CMD_BOLD:
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Bold,cmdName,TRUE);
       retval=parser()->handleStyleArgument(thisVariant(),children(),cmdName);
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Bold,cmdName,FALSE);
-      if (retval!=Tokens::TK_WORD) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
+      if (!retval.is(TokenRetval::TK_WORD)) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
       break;
     case CMD_CODE:
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE);
       retval=parser()->handleStyleArgument(thisVariant(),children(),cmdName);
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE);
-      if (retval!=Tokens::TK_WORD) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
+      if (!retval.is(TokenRetval::TK_WORD)) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
       break;
     case CMD_BSLASH:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_BSlash);
@@ -4047,37 +4060,37 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CMD_SECTION:
       {
         handleSection(cmdChar,cmdName);
-        retval = Tokens::RetVal_Section;
+        retval = Token::make_RetVal_Section();
       }
       break;
     case CMD_SUBSECTION:
       {
         handleSection(cmdChar,cmdName);
-        retval = Tokens::RetVal_Subsection;
+        retval = Token::make_RetVal_Subsection();
       }
       break;
     case CMD_SUBSUBSECTION:
       {
         handleSection(cmdChar,cmdName);
-        retval = Tokens::RetVal_Subsubsection;
+        retval = Token::make_RetVal_Subsubsection();
       }
       break;
     case CMD_PARAGRAPH:
       {
         handleSection(cmdChar,cmdName);
-        retval = Tokens::RetVal_Paragraph;
+        retval = Token::make_RetVal_Paragraph();
       }
       break;
     case CMD_SUBPARAGRAPH:
       {
         handleSection(cmdChar,cmdName);
-        retval = Tokens::RetVal_SubParagraph;
+        retval = Token::make_RetVal_SubParagraph();
       }
       break;
     case CMD_SUBSUBPARAGRAPH:
       {
         handleSection(cmdChar,cmdName);
-        retval = Tokens::RetVal_SubSubParagraph;
+        retval = Token::make_RetVal_SubSubParagraph();
       }
       break;
     case CMD_ISTARTCODE:
@@ -4097,7 +4110,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStateHtmlOnly();
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant(),parser()->context.context,parser()->context.token->verb,DocVerbatim::HtmlOnly,parser()->context.isExample,parser()->context.exampleName,parser()->context.token->name=="block");
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"htmlonly section ended without end marker");
         }
@@ -4109,7 +4122,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStateManOnly();
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant(),parser()->context.context,parser()->context.token->verb,DocVerbatim::ManOnly,parser()->context.isExample,parser()->context.exampleName);
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"manonly section ended without end marker");
         }
@@ -4121,7 +4134,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStateRtfOnly();
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant(),parser()->context.context,parser()->context.token->verb,DocVerbatim::RtfOnly,parser()->context.isExample,parser()->context.exampleName);
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"rtfonly section ended without end marker");
         }
@@ -4133,7 +4146,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStateLatexOnly();
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant(),parser()->context.context,parser()->context.token->verb,DocVerbatim::LatexOnly,parser()->context.isExample,parser()->context.exampleName);
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"latexonly section ended without end marker");
         }
@@ -4145,7 +4158,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStateXmlOnly();
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant(),parser()->context.context,parser()->context.token->verb,DocVerbatim::XmlOnly,parser()->context.isExample,parser()->context.exampleName);
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"xmlonly section ended without end marker");
         }
@@ -4157,7 +4170,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStateDbOnly();
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant(),parser()->context.context,parser()->context.token->verb,DocVerbatim::DocbookOnly,parser()->context.isExample,parser()->context.exampleName);
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"docbookonly section ended without end marker");
         }
@@ -4197,7 +4210,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStateILiteral();
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant(),parser()->context.context,parser()->context.token->verb,t,parser()->context.isExample,parser()->context.exampleName);
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           if (t == DocVerbatim::JavaDocCode)
           {
@@ -4224,7 +4237,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         }
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant(),parser()->context.context,parser()->context.token->verb,DocVerbatim::Verbatim,parser()->context.isExample,parser()->context.exampleName);
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"verbatim section ended without end marker");
         }
@@ -4254,7 +4267,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"ignoring \\dot command because HAVE_DOT is not set");
           children().pop_back();
         }
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"dot section ended without end marker");
         }
@@ -4279,7 +4292,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(parser()->context.fileName,parser()->tokenizer.getLineNr());
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"msc section ended without end marker");
         }
@@ -4339,7 +4352,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         {
           parser()->tokenizer.setStatePlantUMLOpt();
           retval = parser()->tokenizer.lex();
-          assert(retval==Tokens::RetVal_OK);
+          assert(retval.is(TokenRetval::RetVal_OK));
 
           sectionId = parser()->context.token->sectionId;
           sectionId = sectionId.stripWhiteSpace();
@@ -4379,7 +4392,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"ignoring \\startuml command because PLANTUML_JAR_PATH is not set");
           children().pop_back();
         }
-        if (is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF))
+        if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"startuml section ended without end marker");
         }
@@ -4387,7 +4400,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       }
       break;
     case CMD_ENDPARBLOCK:
-      retval=Tokens::RetVal_EndParBlock;
+      retval = Token::make_RetVal_EndParBlock();
       break;
     case CMD_ENDICODE:
     case CMD_ENDCODE:
@@ -4446,10 +4459,10 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       }
       break;
     case CMD_INTERNAL:
-      retval = Tokens::RetVal_Internal;
+      retval = Token::make_RetVal_Internal();
       break;
     case CMD_ENDINTERNAL:
-      retval = Tokens::RetVal_EndInternal;
+      retval = Token::make_RetVal_EndInternal();
       break;
     case CMD_PARBLOCK:
       {
@@ -4460,7 +4473,7 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CMD_COPYDOC:   // fall through
     case CMD_COPYBRIEF: // fall through
     case CMD_COPYDETAILS:
-      //retval = Tokens::RetVal_CopyDoc;
+      //retval = Token::make_RetVal_CopyDoc();
       // these commands should already be resolved by processCopyDoc()
       break;
     case CMD_INCLUDE:
@@ -4606,13 +4619,13 @@ Tokens DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected command '%s' in paragraph context",qPrint(cmdName));
       break;
   }
-  INTERNAL_ASSERT(is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF,Tokens::RetVal_OK,Tokens::RetVal_SimpleSec
-         Tokens::TK_LISTITEM,Tokens::TK_ENDLIST,Tokens::TK_NEWPARA
-         Tokens::RetVal_Section,Tokens::RetVal_EndList
-         Tokens::RetVal_Internal,Tokens::RetVal_SwitchLang
-         Tokens::RetVal_EndInternal)
+  INTERNAL_ASSERT(retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF,TokenRetval::RetVal_OK,TokenRetval::RetVal_SimpleSec
+         TokenRetval::TK_LISTITEM,TokenRetval::TK_ENDLIST,TokenRetval::TK_NEWPARA
+         TokenRetval::RetVal_Section,TokenRetval::RetVal_EndList
+         TokenRetval::RetVal_Internal,TokenRetval::RetVal_SwitchLang
+         TokenRetval::RetVal_EndInternal)
         );
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
@@ -4632,10 +4645,10 @@ static bool findAttribute(const HtmlAttribList &tagHtmlAttribs,
   return FALSE;
 }
 
-Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs)
+Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs)
 {
   AUTO_TRACE("tagName={} #tagHtmlAttrs={}",tagName,tagHtmlAttribs.size());
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   int tagId = Mappers::htmlTagMapper->map(tagName);
   if (parser()->context.token->emptyTag && !(tagId&XML_CmdMask) &&
       tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P
@@ -4670,7 +4683,7 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
       }
       else
       {
-        retval=Tokens::RetVal_ListItem;
+        retval = Token::make_RetVal_ListItem();
       }
       break;
     case HTML_BOLD:
@@ -4738,7 +4751,7 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
       parser()->tokenizer.setInsidePre(TRUE);
       break;
     case HTML_P:
-      retval=Tokens::TK_NEWPARA;
+      retval = Token::make_TK_NEWPARA();
       break;
     case HTML_DL:
       if (!parser()->context.token->emptyTag)
@@ -4750,7 +4763,7 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
     case HTML_DT:
       if (insideDL(thisVariant()))
       {
-        retval = Tokens::RetVal_DescTitle;
+        retval = Token::make_RetVal_DescTitle();
       }
       else
       {
@@ -4760,7 +4773,7 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
     case HTML_DD:
       if (insideDL(thisVariant()))
       {
-        retval = Tokens::RetVal_DescData;
+        retval = Token::make_RetVal_DescData();
       }
       else
       {
@@ -4775,13 +4788,13 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
       }
       break;
     case HTML_TR:
-      retval = Tokens::RetVal_TableRow;
+      retval = Token::make_RetVal_TableRow();
       break;
     case HTML_TD:
-      retval = Tokens::RetVal_TableCell;
+      retval = Token::make_RetVal_TableCell();
       break;
     case HTML_TH:
-      retval = Tokens::RetVal_TableHCell;
+      retval = Token::make_RetVal_TableHCell();
       break;
     case HTML_THEAD:
     case HTML_TBODY:
@@ -4858,7 +4871,7 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
             }
             else
             {
-              retval = Tokens::TK_NEWPARA;
+              retval = Token::make_TK_NEWPARA();
             }
           }
         }
@@ -4872,13 +4885,13 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
     case XML_PARA:
       if (!children().empty())
       {
-        retval = Tokens::TK_NEWPARA;
+        retval = Token::make_TK_NEWPARA();
       }
       break;
     case XML_DESCRIPTION:
       if (insideTable(thisVariant()))
       {
-        retval=Tokens::RetVal_TableCell;
+        retval = Token::make_RetVal_TableCell();
       }
       break;
     case XML_C:
@@ -4921,7 +4934,7 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
           children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,tagName,TRUE);
           children().append<DocWord>(parser(),thisVariant(),paramName);
           children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,tagName,FALSE);
-          if (retval!=Tokens::TK_WORD) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
+          if (!retval.is(TokenRetval::TK_WORD)) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
         }
         else
         {
@@ -4948,11 +4961,11 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
     case XML_LISTHEADER:
       if (insideTable(thisVariant()))
       {
-        retval=Tokens::RetVal_TableRow;
+        retval = Token::make_RetVal_TableRow();
       }
       else if (insideUL(thisVariant()) || insideOL(thisVariant()))
       {
-        retval=Tokens::RetVal_ListItem;
+        retval = Token::make_RetVal_ListItem();
       }
       else
       {
@@ -4967,7 +4980,7 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
     case XML_TERM:
       if (insideTable(thisVariant()))
       {
-        retval=Tokens::RetVal_TableCell;
+        retval = Token::make_RetVal_TableCell();
       }
       break;
     case XML_SEE:
@@ -5045,7 +5058,7 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
           }
 
           std::get<DocSimpleSect>(*vss).appendLinkWord(cref);
-          retval = Tokens::RetVal_OK;
+          retval = Token::make_RetVal_OK();
         }
         else
         {
@@ -5093,15 +5106,15 @@ Tokens DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList 
       ASSERT(0);
       break;
   }
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
-Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
+Token DocPara::handleHtmlEndTag(const QCString &tagName)
 {
   AUTO_TRACE("tagName={}",tagName);
   int tagId = Mappers::htmlTagMapper->map(tagName);
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   switch (tagId)
   {
     case HTML_UL:
@@ -5111,7 +5124,7 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
       }
       else
       {
-        retval=Tokens::RetVal_EndList;
+        retval = Token::make_RetVal_EndList();
       }
       break;
     case HTML_OL:
@@ -5121,7 +5134,7 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
       }
       else
       {
-        retval=Tokens::RetVal_EndList;
+        retval = Token::make_RetVal_EndList();
       }
       break;
     case HTML_LI:
@@ -5141,7 +5154,7 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
       }
       else
       {
-        retval=Tokens::RetVal_EndHtmlDetails;
+        retval = Token::make_RetVal_EndHtmlDetails();
       }
       break;
     case HTML_BLOCKQUOTE:
@@ -5151,7 +5164,7 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
       }
       else
       {
-        retval=Tokens::RetVal_EndBlockQuote;
+        retval = Token::make_RetVal_EndBlockQuote();
       }
       break;
     case HTML_BOLD:
@@ -5205,10 +5218,10 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
       parser()->tokenizer.setInsidePre(FALSE);
       break;
     case HTML_P:
-      retval=Tokens::TK_NEWPARA;
+      retval = Token::make_TK_NEWPARA();
       break;
     case HTML_DL:
-      retval=Tokens::RetVal_EndDesc;
+      retval = Token::make_RetVal_EndDesc();
       break;
     case HTML_DT:
       // ignore </dt> tag
@@ -5217,7 +5230,7 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
       // ignore </dd> tag
       break;
     case HTML_TABLE:
-      retval=Tokens::RetVal_EndTable;
+      retval = Token::make_RetVal_EndTable();
       break;
     case HTML_TR:
       // ignore </tr> tag
@@ -5270,7 +5283,7 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
     case XML_TERM:
       break;
     case XML_SUMMARY:
-      retval=Tokens::TK_NEWPARA;
+      retval = Token::make_TK_NEWPARA();
       break;
     case XML_REMARKS:
     case XML_PARA:
@@ -5284,7 +5297,7 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
     case XML_SEEALSO:
     case XML_EXCEPTION:
     case XML_INHERITDOC:
-      retval = Tokens::RetVal_CloseXml;
+      retval = Token::make_RetVal_CloseXml();
       break;
     case XML_C:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Code,tagName);
@@ -5308,7 +5321,7 @@ Tokens DocPara::handleHtmlEndTag(const QCString &tagName)
       ASSERT(0);
       break;
   }
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
@@ -5364,36 +5377,36 @@ static bool checkIfHtmlEndTagEndsAutoList(DocParser *parser,const DocNodeVariant
   return false;
 }
 
-Tokens DocPara::parse()
+Token DocPara::parse()
 {
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
   // handle style commands "inherited" from the previous paragraph
   parser()->handleInitialStyleCommands(thisVariant(),children());
-  Tokens tok = Tokens::TK_NONE;
-  Tokens retval=Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF)) // get the next token
+  Token tok=parser()->tokenizer.lex();
+  Token retval = Token::make_TK_NONE();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF)) // get the next token
   {
 reparsetoken:
-    AUTO_TRACE_ADD("token '{}' at {}",DocTokenizer::tokToString(tok),parser()->tokenizer.getLineNr());
-    if (is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD,Tokens::TK_SYMBOL,Tokens::TK_URL,
-                      Tokens::TK_COMMAND_AT,Tokens::TK_COMMAND_BS,Tokens::TK_HTMLTAG)
+    AUTO_TRACE_ADD("token '{}' at {}",tok.to_string(),parser()->tokenizer.getLineNr());
+    if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD,TokenRetval::TK_SYMBOL,TokenRetval::TK_URL,
+                      TokenRetval::TK_COMMAND_AT,TokenRetval::TK_COMMAND_BS,TokenRetval::TK_HTMLTAG)
        )
     {
       AUTO_TRACE_ADD("name={}",parser()->context.token->name);
     }
-    switch(tok)
+    switch(tok.value())
     {
-      case Tokens::TK_WORD:
+      case TokenRetval::TK_WORD:
         children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
         break;
-      case Tokens::TK_LNKWORD:
+      case TokenRetval::TK_LNKWORD:
         parser()->handleLinkedWord(thisVariant(),children());
         break;
-      case Tokens::TK_URL:
+      case TokenRetval::TK_URL:
         children().append<DocURL>(parser(),thisVariant(),parser()->context.token->name,parser()->context.token->isEMailAddr);
         break;
-      case Tokens::TK_WHITESPACE:
+      case TokenRetval::TK_WHITESPACE:
         {
           // prevent leading whitespace and collapse multiple whitespace areas
           if (insidePRE(thisVariant()) || // all whitespace is relevant
@@ -5411,7 +5424,7 @@ reparsetoken:
           }
         }
         break;
-      case Tokens::TK_LISTITEM:
+      case TokenRetval::TK_LISTITEM:
         {
           AUTO_TRACE_ADD("found list item at {}",parser()->context.token->indent);
           const DocNodeVariant *n=parent();
@@ -5423,7 +5436,7 @@ reparsetoken:
             if (al->indent()>=parser()->context.token->indent)
               // new item at the same or lower indent level
             {
-              retval=Tokens::TK_LISTITEM;
+              retval = Token::make_TK_LISTITEM();
               goto endparagraph;
             }
           }
@@ -5447,12 +5460,12 @@ reparsetoken:
                                            parser()->context.token->isCheckedList);
             al = children().get_last<DocAutoList>();
             retval = children().get_last<DocAutoList>()->parse();
-          } while (retval==Tokens::TK_LISTITEM &&                   // new list
+          } while (retval.is(TokenRetval::TK_LISTITEM) &&                   // new list
               al->indent()==parser()->context.token->indent  // at same indent level
               );
 
           // check the return value
-          if (retval==Tokens::RetVal_SimpleSec) // auto list ended due to simple section command
+          if (retval.is(TokenRetval::RetVal_SimpleSec)) // auto list ended due to simple section command
           {
             // Reparse the token that ended the section at this level,
             // so a new simple section will be started at this level.
@@ -5462,16 +5475,16 @@ reparsetoken:
             {
               parser()->context.token->name = parser()->context.token->name.mid(4);
               parser()->context.token->text = parser()->context.token->simpleSectText;
-              tok = Tokens::TK_RCSTAG;
+              tok = Token::make_TK_RCSTAG();
             }
             else // other section
             {
-              tok = Tokens::TK_COMMAND_BS;
+              tok = Token::make_TK_COMMAND_BS();
             }
             AUTO_TRACE_ADD("reparsing command {}",parser()->context.token->name);
             goto reparsetoken;
           }
-          else if (retval==Tokens::TK_ENDLIST)
+          else if (retval.is(TokenRetval::TK_ENDLIST))
           {
             if (al->indent()>parser()->context.token->indent) // end list
             {
@@ -5481,13 +5494,13 @@ reparsetoken:
             {
             }
           }
-          else // paragraph ended due to Tokens::TK_NEWPARA, Tokens::TK_LISTITEM, or EOF
+          else // paragraph ended due to TokenRetval::TK_NEWPARA, TokenRetval::TK_LISTITEM, or EOF
           {
             goto endparagraph;
           }
         }
         break;
-      case Tokens::TK_ENDLIST:
+      case TokenRetval::TK_ENDLIST:
         AUTO_TRACE_ADD("Found end of list inside of paragraph at line {}",parser()->tokenizer.getLineNr());
         if (std::get_if<DocAutoListItem>(parent()))
         {
@@ -5495,7 +5508,7 @@ reparsetoken:
           if (al && al->indent()>=parser()->context.token->indent)
           {
             // end of list marker ends this paragraph
-            retval=Tokens::TK_ENDLIST;
+            retval = Token::make_TK_ENDLIST();
             goto endparagraph;
           }
           else
@@ -5510,9 +5523,9 @@ reparsetoken:
               "list items");
         }
         break;
-      case Tokens::TK_COMMAND_AT:
+      case TokenRetval::TK_COMMAND_AT:
         // fall through
-      case Tokens::TK_COMMAND_BS:
+      case TokenRetval::TK_COMMAND_BS:
         {
           // see if we have to start a simple section
           int cmd = Mappers::cmdMapper->map(parser()->context.token->name);
@@ -5529,7 +5542,7 @@ reparsetoken:
               // simple section cannot start in this paragraph, need
               // to unwind the stack and remember the command.
               parser()->context.token->simpleSectName = parser()->context.token->name;
-              retval=Tokens::RetVal_SimpleSec;
+              retval = Token::make_RetVal_SimpleSec();
               goto endparagraph;
             }
           }
@@ -5540,17 +5553,17 @@ reparsetoken:
           {
             if (cmd==CMD_LI)
             {
-              retval=Tokens::RetVal_ListItem;
+              retval = Token::make_RetVal_ListItem();
               goto endparagraph;
             }
           }
 
           // handle the command
-          retval=handleCommand(TK_COMMAND_CHAR(tok),parser()->context.token->name);
-          AUTO_TRACE_ADD("handleCommand returns {}",DocTokenizer::retvalToString(retval));
+          retval=handleCommand(tok.command_to_char(),parser()->context.token->name);
+          AUTO_TRACE_ADD("handleCommand returns {}",retval.to_string());
 
           // check the return value
-          if (retval==Tokens::RetVal_SimpleSec)
+          if (retval.is(TokenRetval::RetVal_SimpleSec))
           {
             // Reparse the token that ended the section at this level,
             // so a new simple section will be started at this level.
@@ -5560,29 +5573,29 @@ reparsetoken:
             {
               parser()->context.token->name = parser()->context.token->name.mid(4);
               parser()->context.token->text = parser()->context.token->simpleSectText;
-              tok = Tokens::TK_RCSTAG;
+              tok = Token::make_TK_RCSTAG();
             }
             else // other section
             {
-              tok = Tokens::TK_COMMAND_BS;
+              tok = Token::make_TK_COMMAND_BS();
             }
             AUTO_TRACE_ADD("reparsing command {}",parser()->context.token->name);
             goto reparsetoken;
           }
-          else if (retval>Tokens::TK_NONE && retval<Tokens::RetVal_OK)
+          else if (retval.value()>TokenRetval::TK_NONE && retval.value()<TokenRetval::RetVal_OK)
           {
             // the command ended with a new command, reparse this token
             tok = retval;
             goto reparsetoken;
           }
-          else if (retval != Tokens::RetVal_OK) // end of file, end of paragraph, start or end of section
+          else if (retval.value()!=TokenRetval::RetVal_OK) // end of file, end of paragraph, start or end of section
                                         // or some auto list marker
           {
             goto endparagraph;
           }
         }
         break;
-      case Tokens::TK_HTMLTAG:
+      case TokenRetval::TK_HTMLTAG:
         {
           if (!parser()->context.token->endTag) // found a start tag
           {
@@ -5596,13 +5609,13 @@ reparsetoken:
             }
             retval = handleHtmlEndTag(parser()->context.token->name);
           }
-          if (retval!=Tokens::RetVal_OK)
+          if (!retval.is(TokenRetval::RetVal_OK))
           {
             goto endparagraph;
           }
         }
         break;
-      case Tokens::TK_SYMBOL:
+      case TokenRetval::TK_SYMBOL:
         {
           HtmlEntityMapper::SymType s = DocSymbol::decodeSymbol(parser()->context.token->name);
           if (s!=HtmlEntityMapper::Sym_Unknown)
@@ -5617,10 +5630,10 @@ reparsetoken:
           }
           break;
         }
-      case Tokens::TK_NEWPARA:
-        retval=Tokens::TK_NEWPARA;
+      case TokenRetval::TK_NEWPARA:
+        retval = Token::make_TK_NEWPARA();
         goto endparagraph;
-      case Tokens::TK_RCSTAG:
+      case TokenRetval::TK_RCSTAG:
         {
           const DocNodeVariant *n=parent();
           while (n && !std::holds_alternative<DocSimpleSect>(*n) &&
@@ -5634,7 +5647,7 @@ reparsetoken:
             // to unwind the stack and remember the command.
             parser()->context.token->simpleSectName = "rcs:"+parser()->context.token->name;
             parser()->context.token->simpleSectText = parser()->context.token->text;
-            retval=Tokens::RetVal_SimpleSec;
+            retval = Token::make_RetVal_SimpleSec();
             goto endparagraph;
           }
 
@@ -5645,33 +5658,34 @@ reparsetoken:
         break;
       default:
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
-            "Found unexpected token (id=%s)",DocTokenizer::tokToString(tok));
+            "Found unexpected token (id=%s)",tok.to_string());
         break;
     }
+    tok=parser()->tokenizer.lex();
   }
-  retval=Tokens::TK_NONE;
+  retval=Token::make_TK_NONE();
 endparagraph:
   parser()->handlePendingStyleCommands(thisVariant(),children());
   DocPara *par = std::get_if<DocPara>(parser()->context.nodeStack.top());
   if (!parser()->context.token->endTag && par &&
-      retval==Tokens::TK_NEWPARA && parser()->context.token->name.lower() == "p")
+      retval.is(TokenRetval::TK_NEWPARA) && parser()->context.token->name.lower() == "p")
   {
     par->setAttribs(parser()->context.token->attribs);
   }
-  INTERNAL_ASSERT(is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF,Tokens::TK_NEWPARA,Tokens::TK_LISTITEM,
-                                   Tokens::TK_ENDLIST,Tokens::RetVal_OK)
+  INTERNAL_ASSERT(retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF,TokenRetval::TK_NEWPARA,TokenRetval::TK_LISTITEM,
+                                   TokenRetval::TK_ENDLIST,TokenRetval::RetVal_OK)
 	);
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
 }
 
 //--------------------------------------------------------------------------
 
-Tokens DocSection::parse()
+Token DocSection::parse()
 {
   AUTO_TRACE("start {} level={}", parser()->context.token->sectionId, m_level);
-  Tokens retval=Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   auto ns = AutoNodeStack(parser(),thisVariant());
 
   if (!m_id.isEmpty())
@@ -5707,32 +5721,32 @@ Tokens DocSection::parse()
     {
       children().pop_back();
     }
-    if (retval==Tokens::TK_LISTITEM)
+    if (retval.is(TokenRetval::TK_LISTITEM))
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Invalid list item found");
     }
-    if (retval==Tokens::RetVal_Internal)
+    if (retval.is(TokenRetval::RetVal_Internal))
     {
       children().append<DocInternal>(parser(),thisVariant());
       retval = children().get_last<DocInternal>()->parse(m_level+1);
-      if (retval==Tokens::RetVal_EndInternal)
+      if (retval.is(TokenRetval::RetVal_EndInternal))
       {
-        retval=Tokens::RetVal_OK;
+        retval = Token::make_RetVal_OK();
       }
     }
-  } while (!is_any_of(retval,Tokens::TK_NONE, Tokens::TK_EOF, Tokens::RetVal_Section, Tokens::RetVal_Subsection,
-                             Tokens::RetVal_Subsubsection, Tokens::RetVal_Paragraph, Tokens::RetVal_SubParagraph,
-                             Tokens::RetVal_SubSubParagraph, Tokens::RetVal_EndInternal)
+  } while (!retval.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF, TokenRetval::RetVal_Section, TokenRetval::RetVal_Subsection,
+                             TokenRetval::RetVal_Subsubsection, TokenRetval::RetVal_Paragraph, TokenRetval::RetVal_SubParagraph,
+                             TokenRetval::RetVal_SubSubParagraph, TokenRetval::RetVal_EndInternal)
           );
 
   if (lastPar) lastPar->markLast();
 
   while (true)
   {
-    if (retval==Tokens::RetVal_Subsection && m_level<=1)
+    if (retval.is(TokenRetval::RetVal_Subsection) && m_level<=1)
     {
       // then parse any number of nested sections
-      while (retval==Tokens::RetVal_Subsection) // more sections follow
+      while (retval.is(TokenRetval::RetVal_Subsection)) // more sections follow
       {
         children().append<DocSection>(parser(),thisVariant(),
                                 2,
@@ -5741,7 +5755,7 @@ Tokens DocSection::parse()
       }
       break;
     }
-    else if (retval==Tokens::RetVal_Subsubsection && m_level<=2)
+    else if (retval.is(TokenRetval::RetVal_Subsubsection) && m_level<=2)
     {
       if ((m_level <= 1) &&
           !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
@@ -5752,16 +5766,16 @@ Tokens DocSection::parse()
                        g_sectionLevelToName[m_level]);
       }
       // then parse any number of nested sections
-      while (retval==Tokens::RetVal_Subsubsection) // more sections follow
+      while (retval.is(TokenRetval::RetVal_Subsubsection)) // more sections follow
       {
         children().append<DocSection>(parser(),thisVariant(),
                                 3,
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse();
       }
-      if (!(m_level < 2 && retval == Tokens::RetVal_Subsection)) break;
+      if (!(m_level < 2 && retval.is(TokenRetval::RetVal_Subsection))) break;
     }
-    else if (retval==Tokens::RetVal_Paragraph && m_level<=3)
+    else if (retval.is(TokenRetval::RetVal_Paragraph) && m_level<=3)
     {
       if ((m_level <= 2) &&
           !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
@@ -5771,16 +5785,16 @@ Tokens DocSection::parse()
                        g_sectionLevelToName[m_level]);
       }
       // then parse any number of nested sections
-      while (retval==Tokens::RetVal_Paragraph) // more sections follow
+      while (retval.is(TokenRetval::RetVal_Paragraph)) // more sections follow
       {
         children().append<DocSection>(parser(),thisVariant(),
                                 4,
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse();
       }
-      if (!(m_level<3 && (is_any_of(retval,Tokens::RetVal_Subsection,Tokens::RetVal_Subsubsection)))) break;
+      if (!(m_level<3 && (retval.is_any_of(TokenRetval::RetVal_Subsection,TokenRetval::RetVal_Subsubsection)))) break;
     }
-    else if (retval==Tokens::RetVal_SubParagraph && m_level<=4)
+    else if (retval.is(TokenRetval::RetVal_SubParagraph) && m_level<=4)
     {
       if ((m_level <= 3) &&
           !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
@@ -5790,16 +5804,16 @@ Tokens DocSection::parse()
                        g_sectionLevelToName[m_level]);
       }
       // then parse any number of nested sections
-      while (retval==Tokens::RetVal_SubParagraph) // more sections follow
+      while (retval.is(TokenRetval::RetVal_SubParagraph)) // more sections follow
       {
         children().append<DocSection>(parser(),thisVariant(),
                                 5,
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse();
       }
-      if (!(m_level<4 && (is_any_of(retval,Tokens::RetVal_Subsection,Tokens::RetVal_Subsubsection,Tokens::RetVal_Paragraph)))) break;
+      if (!(m_level<4 && (retval.is_any_of(TokenRetval::RetVal_Subsection,TokenRetval::RetVal_Subsubsection,TokenRetval::RetVal_Paragraph)))) break;
     }
-    else if (retval==Tokens::RetVal_SubSubParagraph && m_level<=5)
+    else if (retval.is(TokenRetval::RetVal_SubSubParagraph) && m_level<=5)
     {
       if ((m_level <= 4) &&
           !AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
@@ -5809,15 +5823,15 @@ Tokens DocSection::parse()
                        g_sectionLevelToName[m_level]);
       }
       // then parse any number of nested sections
-      while (retval==Tokens::RetVal_SubSubParagraph) // more sections follow
+      while (retval.is(TokenRetval::RetVal_SubSubParagraph)) // more sections follow
       {
         children().append<DocSection>(parser(),thisVariant(),
                                 6,
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse();
       }
-      if (!(m_level<5 && (is_any_of(retval, Tokens::RetVal_Subsection, Tokens::RetVal_Subsubsection,
-                                            Tokens::RetVal_Paragraph, Tokens::RetVal_SubParagraph)))) break;
+      if (!(m_level<5 && (retval.is_any_of( TokenRetval::RetVal_Subsection, TokenRetval::RetVal_Subsubsection,
+                                            TokenRetval::RetVal_Paragraph, TokenRetval::RetVal_SubParagraph)))) break;
     }
     else
     {
@@ -5825,14 +5839,14 @@ Tokens DocSection::parse()
     }
   }
 
-  INTERNAL_ASSERT(is_any_of(retval,Tokens::TK_NONE, Tokens::TK_EOF,
-                                   Tokens::RetVal_Section, Tokens::RetVal_Subsection,
-                                   Tokens::RetVal_Subsubsection, Tokens::RetVal_Paragraph,
-                                   Tokens::RetVal_SubParagraph, Tokens::RetVal_SubSubParagraph,
-                                   Tokens::RetVal_Internal, Tokens::RetVal_EndInternal)
+  INTERNAL_ASSERT(retval.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF,
+                                   TokenRetval::RetVal_Section, TokenRetval::RetVal_Subsection,
+                                   TokenRetval::RetVal_Subsubsection, TokenRetval::RetVal_Paragraph,
+                                   TokenRetval::RetVal_SubParagraph, TokenRetval::RetVal_SubSubParagraph,
+                                   TokenRetval::RetVal_Internal, TokenRetval::RetVal_EndInternal)
                  );
 
-  AUTO_TRACE_EXIT("retval={}", DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}", retval.to_string());
   return retval;
 }
 
@@ -5844,18 +5858,18 @@ void DocText::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.setStateText();
 
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=parser()->tokenizer.lex(), Tokens::TK_NONE, Tokens::TK_EOF)) // get the next token
+  Token tok = parser()->tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF)) // get the next token
   {
-    switch(tok)
+    switch(tok.value())
     {
-      case Tokens::TK_WORD:
+      case TokenRetval::TK_WORD:
 	children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
 	break;
-      case Tokens::TK_WHITESPACE:
+      case TokenRetval::TK_WHITESPACE:
         children().append<DocWhiteSpace>(parser(),thisVariant(),parser()->context.token->chars);
 	break;
-      case Tokens::TK_SYMBOL:
+      case TokenRetval::TK_SYMBOL:
         {
           HtmlEntityMapper::SymType s = DocSymbol::decodeSymbol(parser()->context.token->name);
           if (s!=HtmlEntityMapper::Sym_Unknown)
@@ -5869,9 +5883,9 @@ void DocText::parse()
           }
         }
         break;
-      case Tokens::TK_COMMAND_AT:
+      case TokenRetval::TK_COMMAND_AT:
         // fall through
-      case Tokens::TK_COMMAND_BS:
+      case TokenRetval::TK_COMMAND_BS:
         switch (Mappers::cmdMapper->map(parser()->context.token->name))
         {
           case CMD_BSLASH:
@@ -5933,9 +5947,10 @@ void DocText::parse()
         break;
       default:
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected token %s",
-            DocTokenizer::tokToString(tok));
+            tok.to_string());
         break;
     }
+    tok = parser()->tokenizer.lex();
   }
 
   parser()->handleUnclosedStyleCommands();
@@ -5950,7 +5965,7 @@ void DocRoot::parse()
   AUTO_TRACE();
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.setStatePara();
-  Tokens retval=Tokens::TK_NONE;
+  Token retval = Token::make_TK_NONE();
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
@@ -5971,7 +5986,7 @@ void DocRoot::parse()
         lastPar = par;
       }
     }
-    auto checkParagraph = [this,&retval](Tokens t,int level,const char *sectionType,const char *parentSectionType) {
+    auto checkParagraph = [this,&retval](Token t,int level,const char *sectionType,const char *parentSectionType) {
       if (retval == t)
       {
         if (!AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
@@ -5997,38 +6012,38 @@ void DocRoot::parse()
             {
               warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Invalid %s id '%s'; ignoring %s",
                   sectionType,qPrint(parser()->context.token->sectionId),sectionType);
-              retval = Tokens::TK_NONE;
+              retval = Token::make_TK_NONE();
             }
           }
           else
           {
             warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Missing id for %s; ignoring %s",sectionType,sectionType);
-            retval = Tokens::TK_NONE;
+            retval = Token::make_TK_NONE();
           }
         }
       }
     };
-    checkParagraph(Tokens::RetVal_SubSubParagraph, 6, "subsubparagraph", "subparagraph"  );
-    checkParagraph(Tokens::RetVal_SubParagraph,    5, "subparagraph",    "paragraph"     );
-    checkParagraph(Tokens::RetVal_Paragraph,       4, "paragraph",       "subsubsection" );
-    checkParagraph(Tokens::RetVal_Subsubsection,   3, "subsubsection",   "subsection"    );
-    checkParagraph(Tokens::RetVal_Subsection,      2, "subsection",      "section"       );
+    checkParagraph(Token::make_RetVal_SubSubParagraph(), 6, "subsubparagraph", "subparagraph"  );
+    checkParagraph(Token::make_RetVal_SubParagraph(),    5, "subparagraph",    "paragraph"     );
+    checkParagraph(Token::make_RetVal_Paragraph(),       4, "paragraph",       "subsubsection" );
+    checkParagraph(Token::make_RetVal_Subsubsection(),   3, "subsubsection",   "subsection"    );
+    checkParagraph(Token::make_RetVal_Subsection(),      2, "subsection",      "section"       );
 
-    if (retval==Tokens::TK_LISTITEM)
+    if (retval.is(TokenRetval::TK_LISTITEM))
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Invalid list item found");
     }
-    if (retval==Tokens::RetVal_Internal)
+    if (retval.is(TokenRetval::RetVal_Internal))
     {
       children().append<DocInternal>(parser(),thisVariant());
       retval = children().get_last<DocInternal>()->parse(1);
     }
-  } while (!is_any_of(retval,Tokens::TK_NONE,Tokens::TK_EOF,Tokens::RetVal_Section));
+  } while (!retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF,TokenRetval::RetVal_Section));
   if (lastPar) lastPar->markLast();
 
-  //printf("DocRoot::parse() retval=%d %d\n",retval,Tokens::RetVal_Section);
+  //printf("DocRoot::parse() retval=%d %d\n",retval,TokenRetval::RetVal_Section);
   // then parse any number of level1 sections
-  while (retval==Tokens::RetVal_Section)
+  while (retval.is(TokenRetval::RetVal_Section))
   {
     if (!parser()->context.token->sectionId.isEmpty())
     {
@@ -6043,13 +6058,13 @@ void DocRoot::parse()
       else
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Invalid section id '%s'; ignoring section",qPrint(parser()->context.token->sectionId));
-        retval = Tokens::TK_NONE;
+        retval = Token::make_TK_NONE();
       }
     }
     else
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Missing id for section; ignoring section");
-      retval = Tokens::TK_NONE;
+      retval = Token::make_TK_NONE();
     }
   }
 

@@ -539,56 +539,57 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
 }
 
 //---------------------------------------------------------------------------
-void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,Tokens tok,
+void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,Token tok,
                                         DocNodeList &children,const QCString &txt)
 {
-  switch (tok)
+  switch (tok.value())
   {
-    case Tokens::TK_COMMAND_AT:
+    case TokenRetval::TK_COMMAND_AT:
       // fall through
-    case Tokens::TK_COMMAND_BS:
+    case TokenRetval::TK_COMMAND_BS:
       {
-        std::string str{TK_COMMAND_CHAR(tok)};
-        children.append<DocWord>(this,parent,str.c_str() + context.token->name);
+        char cs[2] = { tok.command_to_char(), 0 };
+        children.append<DocWord>(this,parent,cs + context.token->name);
         warn_doc_error(context.fileName,tokenizer.getLineNr(),"Illegal command '%c%s' found as part of a %s",
-         TK_COMMAND_CHAR(tok),qPrint(context.token->name),qPrint(txt));
+         tok.command_to_char(),qPrint(context.token->name),qPrint(txt));
       }
       break;
-    case Tokens::TK_SYMBOL:
+    case TokenRetval::TK_SYMBOL:
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol '%s' found as part of a %s",
            qPrint(context.token->name), qPrint(txt));
       break;
-    case Tokens::TK_HTMLTAG:
+    case TokenRetval::TK_HTMLTAG:
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported HTML tag <%s%s> found as part of a %s",
            context.token->endTag ? "/" : "",qPrint(context.token->name), qPrint(txt));
       break;
     default:
       children.append<DocWord>(this,parent,context.token->name);
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unexpected token %s found as part of a %s",
-        DocTokenizer::tokToString(tok), qPrint(txt));
+        tok.to_string(), qPrint(txt));
       break;
   }
 }
 
 //---------------------------------------------------------------------------
 
-Tokens DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,const QCString &cmdName)
+Token DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
-  Tokens tok=tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
 	qPrint(saveCmdName));
     return tok;
   }
-  while (!is_any_of(tok=tokenizer.lex(),Tokens::TK_NONE, Tokens::TK_EOF, Tokens::TK_WHITESPACE,
-                                        Tokens::TK_NEWPARA, Tokens::TK_LISTITEM, Tokens::TK_ENDLIST)
+  tok = tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF, TokenRetval::TK_WHITESPACE,
+                        TokenRetval::TK_NEWPARA, TokenRetval::TK_LISTITEM, TokenRetval::TK_ENDLIST)
         )
   {
     static const reg::Ex specialChar(R"([.,|()\[\]:;?])");
-    if (tok==Tokens::TK_WORD && context.token->name.length()==1 &&
+    if (tok.is(TokenRetval::TK_WORD) && context.token->name.length()==1 &&
         reg::match(context.token->name.str(),specialChar))
     {
       // special character that ends the markup command
@@ -596,14 +597,14 @@ Tokens DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childr
     }
     if (!defaultHandleToken(parent,tok,children))
     {
-      switch (tok)
+      switch (tok.value())
       {
-        case Tokens::TK_HTMLTAG:
+        case TokenRetval::TK_HTMLTAG:
           if (insideLI(parent) && Mappers::htmlTagMapper->map(context.token->name) && context.token->endTag)
           { // ignore </li> as the end of a style command
             continue;
           }
-          AUTO_TRACE_EXIT("end tok={}",DocTokenizer::tokToString(tok));
+          AUTO_TRACE_EXIT("end tok={}",tok.to_string());
           return tok;
           break;
         default:
@@ -612,9 +613,10 @@ Tokens DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childr
       }
       break;
     }
+    tok = tokenizer.lex();
   }
-  AUTO_TRACE_EXIT("end tok={}",DocTokenizer::tokToString(tok));
-  return (is_any_of(tok,Tokens::TK_NEWPARA,Tokens::TK_LISTITEM,Tokens::TK_ENDLIST)) ? tok : Tokens::RetVal_OK;
+  AUTO_TRACE_EXIT("end tok={}",tok.to_string());
+  return (tok.is_any_of(TokenRetval::TK_NEWPARA,TokenRetval::TK_LISTITEM,TokenRetval::TK_ENDLIST)) ? tok : Token::make_RetVal_OK();
 }
 
 /*! Called when a style change starts. For instance a \<b\> command is
@@ -710,12 +712,12 @@ void DocParser::handleInitialStyleCommands(DocNodeVariant *parent,DocNodeList &c
   }
 }
 
-Tokens DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
+Token DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
                            const HtmlAttribList &tagHtmlAttribs)
 {
   AUTO_TRACE();
   size_t index=0;
-  Tokens retval = Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
   for (const auto &opt : tagHtmlAttribs)
   {
     if (opt.name=="name" || opt.name=="id") // <a name=label> or <a id=label> tag
@@ -906,10 +908,10 @@ void DocParser::handleParameterType(DocNodeVariant *parent,DocNodeList &children
 
 void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
 {
-  Tokens tok=tokenizer.lex();
+  Token tok=tokenizer.lex();
   QCString tokenName = context.token->name;
   AUTO_TRACE("name={}",tokenName);
-  if (tok!=Tokens::TK_WHITESPACE)
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(tokenName));
@@ -917,10 +919,10 @@ void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
   }
   tokenizer.setStateInternalRef();
   tok=tokenizer.lex(); // get the reference id
-  if (!is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD))
+  if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(tokenName));
+        tok.to_string(),qPrint(tokenName));
     return;
   }
   children.append<DocInternalRef>(this,parent,context.token->name);
@@ -930,8 +932,8 @@ void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
 void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
 {
   AUTO_TRACE();
-  Tokens tok=tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(context.token->name));
@@ -939,16 +941,16 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
   }
   tokenizer.setStateAnchor();
   tok=tokenizer.lex();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(context.token->name));
     return;
   }
-  else if (!is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD))
+  else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(context.token->name));
+        tok.to_string(),qPrint(context.token->name));
     return;
   }
   tokenizer.setStatePara();
@@ -958,8 +960,8 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
 void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
 {
   AUTO_TRACE();
-  Tokens tok=tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
         qPrint(context.token->name));
@@ -967,16 +969,16 @@ void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
   }
   tokenizer.setStatePrefix();
   tok=tokenizer.lex();
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(context.token->name));
     return;
   }
-  else if (tok!=Tokens::TK_WORD)
+  else if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(context.token->name));
+        tok.to_string(),qPrint(context.token->name));
     return;
   }
   context.prefix = context.token->name;
@@ -999,15 +1001,15 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
 
   // parse title
   tokenizer.setStateTitle();
-  Tokens tok = Tokens::TK_NONE;
-  while (!is_any_of(tok=tokenizer.lex(),Tokens::TK_NONE,Tokens::TK_EOF))
+  Token tok = tokenizer.lex();
+  while (!tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
-    if (tok==Tokens::TK_WORD && (context.token->name=="width=" || context.token->name=="height="))
+    if (tok.is(TokenRetval::TK_WORD) && (context.token->name=="width=" || context.token->name=="height="))
     {
       // special case: no title, but we do have a size indicator
       break;
     }
-    else if (tok==Tokens::TK_HTMLTAG)
+    else if (tok.is(TokenRetval::TK_HTMLTAG))
     {
       tokenizer.unputString(context.token->text);
       break;
@@ -1016,15 +1018,16 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     {
       errorHandleDefaultToken(parent,tok,children,Mappers::cmdMapper->find(cmd));
     }
+    tok = tokenizer.lex();
   }
   // parse size attributes
-  if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     tok=tokenizer.lex();
   }
-  while (is_any_of(tok,Tokens::TK_WHITESPACE,Tokens::TK_WORD,Tokens::TK_HTMLTAG)) // there are values following the title
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG)) // there are values following the title
   {
-    if (tok==Tokens::TK_WORD)
+    if (tok.is(TokenRetval::TK_WORD))
     {
       if (context.token->name=="width=" || context.token->name=="height=")
       {
@@ -1052,18 +1055,18 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     tok=tokenizer.lex();
     // if we found something we did not expect, push it back to the stream
     // so it can still be processed
-    if (is_any_of(tok,Tokens::TK_COMMAND_AT,Tokens::TK_COMMAND_BS))
+    if (tok.is_any_of(TokenRetval::TK_COMMAND_AT,TokenRetval::TK_COMMAND_BS))
     {
       tokenizer.unputString(context.token->name);
-      tokenizer.unputString(tok==Tokens::TK_COMMAND_AT ? "@" : "\\");
+      tokenizer.unputString(tok.is(TokenRetval::TK_COMMAND_AT) ? "@" : "\\");
       break;
     }
-    else if (tok==Tokens::TK_SYMBOL)
+    else if (tok.is(TokenRetval::TK_SYMBOL))
     {
       tokenizer.unputString(context.token->name);
       break;
     }
-    else if (tok==Tokens::TK_HTMLTAG)
+    else if (tok.is(TokenRetval::TK_HTMLTAG))
     {
       tokenizer.unputString(context.token->text);
       break;
@@ -1081,10 +1084,10 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   bool inlineImage = false;
   QCString anchorStr;
 
-  Tokens tok=tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  Token tok=tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
-    if (tok==Tokens::TK_WORD)
+    if (tok.is(TokenRetval::TK_WORD))
     {
       if (context.token->name == "{")
       {
@@ -1124,7 +1127,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
           }
         }
         tok=tokenizer.lex();
-        if (tok!=Tokens::TK_WHITESPACE)
+        if (!tok.is(TokenRetval::TK_WHITESPACE))
         {
           warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\image command");
           return;
@@ -1138,14 +1141,14 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
     }
   }
   tok=tokenizer.lex();
-  if (!is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD))
+  if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of \\image",
-        DocTokenizer::tokToString(tok));
+        tok.to_string());
     return;
   }
   tok=tokenizer.lex();
-  if (tok!=Tokens::TK_WHITESPACE)
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\image command");
     return;
@@ -1167,10 +1170,10 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   tokenizer.setStateFile();
   tok=tokenizer.lex();
   tokenizer.setStatePara();
-  if (tok!=Tokens::TK_WORD)
+  if (!tok.is(TokenRetval::TK_WORD))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of \\image",
-        DocTokenizer::tokToString(tok));
+        tok.to_string());
     return;
   }
   if (!anchorStr.isEmpty())
@@ -1195,22 +1198,22 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
  * @retval TRUE      The token was handled.
  * @retval FALSE     The token was not handled.
  */
-bool DocParser::defaultHandleToken(DocNodeVariant *parent,Tokens tok, DocNodeList &children,bool handleWord)
+bool DocParser::defaultHandleToken(DocNodeVariant *parent,Token tok, DocNodeList &children,bool handleWord)
 {
-  AUTO_TRACE("token={} handleWord={}",DocTokenizer::tokToString(tok),handleWord);
-  if (is_any_of(tok,Tokens::TK_WORD,Tokens::TK_LNKWORD,Tokens::TK_SYMBOL,Tokens::TK_URL,
-                    Tokens::TK_COMMAND_AT,Tokens::TK_COMMAND_BS,Tokens::TK_HTMLTAG)
+  AUTO_TRACE("token={} handleWord={}",tok.to_string(),handleWord);
+  if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD,TokenRetval::TK_SYMBOL,TokenRetval::TK_URL,
+                    TokenRetval::TK_COMMAND_AT,TokenRetval::TK_COMMAND_BS,TokenRetval::TK_HTMLTAG)
      )
   {
   }
 reparsetoken:
   QCString tokenName = context.token->name;
   AUTO_TRACE_ADD("tokenName={}",tokenName);
-  switch (tok)
+  switch (tok.value())
   {
-    case Tokens::TK_COMMAND_AT:
+    case TokenRetval::TK_COMMAND_AT:
         // fall through
-    case Tokens::TK_COMMAND_BS:
+    case TokenRetval::TK_COMMAND_BS:
       switch (Mappers::cmdMapper->map(tokenName))
       {
         case CMD_BSLASH:
@@ -1269,9 +1272,9 @@ reparsetoken:
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,FALSE);
-            if (tok!=Tokens::TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
-            if (tok==Tokens::TK_NEWPARA) goto handlepara;
-            else if (is_any_of(tok,Tokens::TK_WORD,Tokens::TK_HTMLTAG))
+            if (!tok.is(TokenRetval::TK_WORD)) children.append<DocWhiteSpace>(this,parent," ");
+            if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
+            else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
 	      AUTO_TRACE_ADD("CMD_EMPHASIS: reparsing");
               goto reparsetoken;
@@ -1283,9 +1286,9 @@ reparsetoken:
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,FALSE);
-            if (tok!=Tokens::TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
-            if (tok==Tokens::TK_NEWPARA) goto handlepara;
-            else if (is_any_of(tok,Tokens::TK_WORD,Tokens::TK_HTMLTAG))
+            if (!tok.is(TokenRetval::TK_WORD)) children.append<DocWhiteSpace>(this,parent," ");
+            if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
+            else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
 	      AUTO_TRACE_ADD("CMD_BOLD: reparsing");
               goto reparsetoken;
@@ -1297,9 +1300,9 @@ reparsetoken:
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,FALSE);
-            if (tok!=Tokens::TK_WORD) children.append<DocWhiteSpace>(this,parent," ");
-            if (tok==Tokens::TK_NEWPARA) goto handlepara;
-            else if (is_any_of(tok,Tokens::TK_WORD,Tokens::TK_HTMLTAG))
+            if (!tok.is(TokenRetval::TK_WORD)) children.append<DocWhiteSpace>(this,parent," ");
+            if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
+            else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
 	      AUTO_TRACE_ADD("CMD_CODE: reparsing");
               goto reparsetoken;
@@ -1311,7 +1314,7 @@ reparsetoken:
             tokenizer.setStateHtmlOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::HtmlOnly,context.isExample,context.exampleName,context.token->name=="block");
-            if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+            if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
             {
               warn_doc_error(context.fileName,tokenizer.getLineNr(),"htmlonly section ended without end marker");
             }
@@ -1323,7 +1326,7 @@ reparsetoken:
             tokenizer.setStateManOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::ManOnly,context.isExample,context.exampleName);
-            if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+            if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
             {
               warn_doc_error(context.fileName,tokenizer.getLineNr(),"manonly section ended without end marker");
             }
@@ -1335,7 +1338,7 @@ reparsetoken:
             tokenizer.setStateRtfOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::RtfOnly,context.isExample,context.exampleName);
-            if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+            if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
             {
               warn_doc_error(context.fileName,tokenizer.getLineNr(),"rtfonly section ended without end marker");
             }
@@ -1347,7 +1350,7 @@ reparsetoken:
             tokenizer.setStateLatexOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::LatexOnly,context.isExample,context.exampleName);
-            if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+            if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
             {
               warn_doc_error(context.fileName,tokenizer.getLineNr(),"latexonly section ended without end marker");
             }
@@ -1359,7 +1362,7 @@ reparsetoken:
             tokenizer.setStateXmlOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::XmlOnly,context.isExample,context.exampleName);
-            if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+            if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
             {
               warn_doc_error(context.fileName,tokenizer.getLineNr(),"xmlonly section ended without end marker");
             }
@@ -1371,7 +1374,7 @@ reparsetoken:
             tokenizer.setStateDbOnly();
             tok = tokenizer.lex();
             children.append<DocVerbatim>(this,parent,context.context,context.token->verb,DocVerbatim::DocbookOnly,context.isExample,context.exampleName);
-            if (is_any_of(tok,Tokens::TK_NONE,Tokens::TK_EOF))
+            if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
             {
               warn_doc_error(context.fileName,tokenizer.getLineNr(),"docbookonly section ended without end marker");
             }
@@ -1428,7 +1431,7 @@ reparsetoken:
           return FALSE;
       }
       break;
-    case Tokens::TK_HTMLTAG:
+    case TokenRetval::TK_HTMLTAG:
       {
         switch (Mappers::htmlTagMapper->map(tokenName))
         {
@@ -1579,7 +1582,7 @@ reparsetoken:
         }
       }
       break;
-    case Tokens::TK_SYMBOL:
+    case TokenRetval::TK_SYMBOL:
       {
         HtmlEntityMapper::SymType s = DocSymbol::decodeSymbol(tokenName);
         if (s!=HtmlEntityMapper::Sym_Unknown)
@@ -1592,15 +1595,15 @@ reparsetoken:
         }
       }
       break;
-    case Tokens::TK_WHITESPACE:
-    case Tokens::TK_NEWPARA:
+    case TokenRetval::TK_WHITESPACE:
+    case TokenRetval::TK_NEWPARA:
 handlepara:
       if (insidePRE(parent) || !children.empty())
       {
         children.append<DocWhiteSpace>(this,parent,context.token->chars);
       }
       break;
-    case Tokens::TK_LNKWORD:
+    case TokenRetval::TK_LNKWORD:
       if (handleWord)
       {
         handleLinkedWord(parent,children);
@@ -1608,7 +1611,7 @@ handlepara:
       else
         return FALSE;
       break;
-    case Tokens::TK_WORD:
+    case TokenRetval::TK_WORD:
       if (handleWord)
       {
         children.append<DocWord>(this,parent,context.token->name);
@@ -1616,7 +1619,7 @@ handlepara:
       else
         return FALSE;
       break;
-    case Tokens::TK_URL:
+    case TokenRetval::TK_URL:
       if (context.insideHtmlLink)
       {
         children.append<DocWord>(this,parent,context.token->name);
@@ -1665,11 +1668,11 @@ void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const Ht
 
 //---------------------------------------------------------------------------
 
-Tokens DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
+Token DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
                                     const QCString &doc)
 {
   AUTO_TRACE();
-  Tokens retval = Tokens::RetVal_OK;
+  Token retval = Token::make_RetVal_OK();
 
   if (doc.isEmpty()) return retval;
 
@@ -1697,7 +1700,7 @@ Tokens DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList 
     {
       children.pop_back();
     }
-  } while (retval==Tokens::TK_NEWPARA);
+  } while (retval.is(TokenRetval::TK_NEWPARA));
   if (lastPar) lastPar->markLast();
 
   AUTO_TRACE_EXIT("isFirst={} isLast={}",lastPar?lastPar->isFirst():-1,lastPar?lastPar->isLast():-1);
