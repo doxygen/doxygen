@@ -1141,21 +1141,21 @@ namespace gunzip_ns
             //fprintf(stderr, "both track flag\n");
             SizeTracker<DeflateTrackBothSize> tracker;
             return tracker(Gunzip<code & Flag_NoTrackFlagMask>
-                (tracker.template ForwardInput(i), tracker.template ForwardOutput(o), tracker.template ForwardWindow(c), std::forward<B>(b)));
+                (tracker.template ForwardInput<I>(i), tracker.template ForwardOutput<O>(o), tracker.template ForwardWindow<C>(c), std::forward<B>(b)));
         }
         else if constexpr(code & Flag_TrackIn)
         {
             //fprintf(stderr, "in track flag\n");
             SizeTracker<DeflateTrackInSize> tracker;
             return tracker(Gunzip<code & Flag_NoTrackFlagMask>
-                (tracker.template ForwardInput(i),std::forward<O>(o),std::forward<C>(c),std::forward<B>(b)));
+                (tracker.template ForwardInput<I>(i),std::forward<O>(o),std::forward<C>(c),std::forward<B>(b)));
         }
         else if constexpr(code & Flag_TrackOut)
         {
             //fprintf(stderr, "out track flag\n");
             SizeTracker<DeflateTrackOutSize> tracker;
             return tracker(Gunzip<code & Flag_NoTrackFlagMask>
-                (std::forward<I>(i), tracker.template ForwardOutput(o), tracker.template ForwardWindow(c), std::forward<B>(b)));
+                (std::forward<I>(i), tracker.template ForwardOutput<O>(o), tracker.template ForwardWindow<C>(c), std::forward<B>(b)));
         }
         else
         {
