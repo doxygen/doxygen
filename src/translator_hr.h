@@ -35,7 +35,6 @@
 // - Added strings and up to and including 1.2.7_20010524
 // - Removed obsolete method trFiles()
 // - Removed obsolete method trAuthor()
-// - Removed obsolete method trAuthor()
 // - Removed obsolete method trVerbatimHeadert()
 // - Method latexBabelPackage() removed, ude latexLanguageSupportCommand
 //
