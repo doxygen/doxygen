@@ -388,6 +388,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   QCString result;
   if (qualifiedName.isEmpty())
   {
+    AUTO_TRACE_EXIT("empty name");
     return result;
   }
 
@@ -1689,7 +1690,14 @@ static QCString getCanonicalTypeForIdentifier(
         type.stripPrefix("typename ");
         type = stripTemplateSpecifiersFromScope(type,FALSE);
       }
-      result = getCanonicalTypeForIdentifier(d,fs,type,mType->getLanguage(),tSpec,count+1);
+      if (!type.isEmpty()) // see issue #11065
+      {
+        result = getCanonicalTypeForIdentifier(d,fs,type,mType->getLanguage(),tSpec,count+1);
+      }
+      else
+      {
+        result = word;
+      }
     }
     else
     {
