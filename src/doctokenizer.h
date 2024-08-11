@@ -34,13 +34,13 @@
   TKSPEC(TK_WHITESPACE,    3)                                   \
   TKSPEC(TK_LISTITEM,      4)                                   \
   TKSPEC(TK_ENDLIST,       5)                                   \
-  TKSPEC(TK_COMMAND_AT,    6) /*! Command starting with `@`) */ \
+  TKSPEC(TK_COMMAND_AT,    6) /*! Command starting with `@` */  \
   TKSPEC(TK_HTMLTAG,       7)                                   \
   TKSPEC(TK_SYMBOL,        8)                                   \
   TKSPEC(TK_NEWPARA,       9)                                   \
   TKSPEC(TK_RCSTAG,       10)                                   \
   TKSPEC(TK_URL,          11)                                   \
-  TKSPEC(TK_COMMAND_BS,   12) /*! Command starting with `\`) */
+  TKSPEC(TK_COMMAND_BS,   12) /*! Command starting with `\` */
 
 #define RETVAL_SPECIFICATIONS \
   TKSPEC(RetVal_OK,              0x10000)  \
@@ -93,7 +93,7 @@ class Token
       const char *result = "ERROR";
       switch (m_value)
       {
-#define TKSPEC(x,y) case TokenRetval::x: result = #x;
+#define TKSPEC(x,y) case TokenRetval::x: result = #x; break;
         TOKEN_SPECIFICATIONS
         RETVAL_SPECIFICATIONS
 #undef TKSPEC
