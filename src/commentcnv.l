@@ -615,7 +615,7 @@ SLASHopt [/]*
   			           }
 <CComment,ReadLine,IncludeFile>"<!--!" { /* HTML comment doxygen command*/
                                      if (yyextra->inVerbatim) REJECT;
-                                     copyToOutput(yyscanner,"     ",5);
+                                     //copyToOutput(yyscanner,"     ",5);
                                      yyextra->inHtmlDoxygenCommand=true;
                                    }
 <CComment,ReadLine,IncludeFile>"-->" { /* potential end HTML comment doxygen command*/
