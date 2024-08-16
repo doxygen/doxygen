@@ -5214,8 +5214,10 @@ QCString stripExtension(const QCString &fName)
   return stripExtensionGeneral(fName, Doxygen::htmlFileExtension);
 }
 
+#if 0
 void replaceNamespaceAliases(QCString &scope,size_t i)
 {
+  printf("replaceNamespaceAliases(%s,%zu)\n",qPrint(scope),i);
   while (i>0)
   {
     QCString ns = scope.left(i);
@@ -5230,7 +5232,9 @@ void replaceNamespaceAliases(QCString &scope,size_t i)
     }
     if (i>0 && ns==scope.left(i)) break;
   }
+  printf("result=%s\n",qPrint(scope));
 }
+#endif
 
 QCString stripPath(const QCString &s)
 {
@@ -5566,7 +5570,7 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
   if (qualifierIndex!=-1)
   {
     explicitScopePart = name.left(qualifierIndex);
-    replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
+    replaceNamespaceAliases(explicitScopePart);
     name = name.mid(qualifierIndex+2);
   }
   //printf("explicitScopePart=%s\n",qPrint(explicitScopePart));

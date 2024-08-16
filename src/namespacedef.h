@@ -145,6 +145,7 @@ NamespaceDefMutable     *toNamespaceDefMutable(Definition *d);
 
 // --- Helpers
 
+void replaceNamespaceAliases(QCString &name);
 NamespaceDef *getResolvedNamespace(const QCString &key);
 inline NamespaceDefMutable *getResolvedNamespaceMutable(const QCString &key)
 {

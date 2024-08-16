@@ -1879,9 +1879,15 @@ NONLopt [^\n]*
                                         }
 <NSAliasArg>({ID}"::")*{ID}             {
                                           //printf("Inserting namespace alias %s::%s->%s\n",qPrint(yyextra->current_root->name),qPrint(yyextra->aliasName),yytext);
-                                          // TODO: namespace aliases are now treated as global entities
-                                          // while they should be aware of the scope they are in
-                                          Doxygen::namespaceAliasMap.insert({yyextra->aliasName.str(),std::string(yytext)});
+                                          std::string ctx = yyextra->current_root->name.str();
+                                          if (ctx.empty())
+                                          {
+                                            Doxygen::namespaceAliasMap.insert({yyextra->aliasName.str(),NamespaceAliasInfo(std::string(yytext),std::string())});
+                                          }
+                                          else
+                                          {
+                                            Doxygen::namespaceAliasMap.insert({ctx+"::"+yyextra->aliasName.str(),NamespaceAliasInfo(std::string(yytext),ctx)});
+                                          }
                                         }
 <NSAliasArg>";"                         {
                                           BEGIN( FindMembers );
@@ -1914,9 +1920,8 @@ NONLopt [^\n]*
                                           //printf("PHP: adding use as relation: %s->%s\n",yytext,qPrint(yyextra->aliasName));
                                           if (!yyextra->aliasName.isEmpty())
                                           {
-                                            Doxygen::namespaceAliasMap.insert({yytext,
-                                                 std::string(removeRedundantWhiteSpace(
-                                                   substitute(yyextra->aliasName,"\\","::")).str())});
+                                            std::string aliasValue = removeRedundantWhiteSpace(substitute(yyextra->aliasName,"\\","::")).str();
+                                            Doxygen::namespaceAliasMap.insert({yytext,NamespaceAliasInfo(aliasValue)});
                                           }
                                           yyextra->aliasName.clear();
                                         }

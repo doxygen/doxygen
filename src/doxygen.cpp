@@ -142,7 +142,7 @@ FileNameLinkedMap    *Doxygen::imageNameLinkedMap = nullptr;       // images
 FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = nullptr;     // dot files
 FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = nullptr;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = nullptr;     // dia files
-StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace aliases
+NamespaceAliasInfoMap Doxygen::namespaceAliasMap;            // all namespace aliases
 StringMap             Doxygen::tagDestinationMap;            // all tag locations
 StringUnorderedSet    Doxygen::tagFileSet;                   // all tag file names
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
@@ -4180,12 +4180,8 @@ static void findUsedClassesForClass(const Entry *root,
 
           int sp=usedClassName.find('<');
           if (sp==-1) sp=0;
-          int si=usedClassName.findRev("::",sp);
-          if (si!=-1)
-          {
-            // replace any namespace aliases
-            replaceNamespaceAliases(usedClassName,si);
-          }
+          // replace any namespace aliases
+          replaceNamespaceAliases(usedClassName);
           // add any template arguments to the class
           QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
           //printf("    usedName=%s usedClassName=%s templSpec=%s\n",qPrint(usedName),qPrint(usedClassName),qPrint(templSpec));
@@ -4636,7 +4632,7 @@ static bool findClassRelation(
         if (!found && si!=-1)
         {
           // replace any namespace aliases
-          replaceNamespaceAliases(baseClassName,si);
+          replaceNamespaceAliases(baseClassName);
           baseClass = resolver.resolveClassMutable(explicitGlobalScope ? Doxygen::globalScope : context,
                                      baseClassName,
                                      mode==Undocumented,
@@ -4664,7 +4660,7 @@ static bool findClassRelation(
           auto it = Doxygen::namespaceAliasMap.find(baseClassName.str());
           if (it!=Doxygen::namespaceAliasMap.end()) // see if it is indeed a class.
           {
-            baseClass=getClassMutable(it->second.c_str());
+            baseClass=getClassMutable(QCString(it->second.alias));
             found = baseClass!=nullptr && baseClass!=cd;
           }
         }

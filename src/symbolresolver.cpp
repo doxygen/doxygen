@@ -239,7 +239,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
     // split off the explicit scope part
     explicitScopePart=name.left(qualifierIndex);
     // todo: improve namespace alias substitution
-    replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
+    replaceNamespaceAliases(explicitScopePart);
     name=name.mid(qualifierIndex+2);
   }
 
@@ -400,7 +400,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     // split off the explicit scope part
     explicitScopePart=name.left(qualifierIndex);
     // todo: improve namespace alias substitution
-    replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
+    replaceNamespaceAliases(explicitScopePart);
     name=name.mid(qualifierIndex+2);
   }
   AUTO_TRACE_ADD("qualifierIndex={} name={} explicitScopePart={}",qualifierIndex,name,explicitScopePart);
