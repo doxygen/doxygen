@@ -3646,7 +3646,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
                  newLabel+                                     // new label
                  match[2].str()+                               // part between orgLabel and \n
                  "\\ilinebr @ianchor{" + orgTitle + "} "+orgLabel+"\n"+           // add original anchor plus \n of above
-                 docs.right(docs.length()-match.length());     // add remainder of docs
+                 docs.right(docs.length()-s.length());         // add remainder of docs
         }
       }
       break;
