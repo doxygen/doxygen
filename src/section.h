@@ -59,7 +59,7 @@ class SectionInfo
     SectionInfo(const QCString &label, const QCString &fileName, int lineNr,
                 const QCString &title, SectionType type, int level,const QCString &ref) :
         m_label(label), m_title(title), m_type(type), m_ref(ref),
-        m_lineNr(lineNr), m_fileName(fileName), m_level(level)
+        m_lineNr(lineNr), m_fileName(fileName), m_level(level), m_generated(false), m_definition(nullptr)
     {
       //printf("SectionInfo(%p) fileName=%s\n",(void*)this,qPrint(fileName));
     }
@@ -92,9 +92,9 @@ class SectionInfo
     QCString    m_ref;
     int         m_lineNr;
     QCString    m_fileName;
-    bool        m_generated = false;
     int         m_level;
-    Definition *m_definition = nullptr;
+    bool        m_generated;
+    Definition *m_definition;
 };
 
 //! class that represents a list of constant references to sections.
@@ -115,7 +115,7 @@ class SectionRefs
     //! Adds a non-owning section reference.
     void add(const SectionInfo *si)
     {
-      m_lookup.insert({toStdString(si->label()),si});
+      m_lookup.emplace(toStdString(si->label()), si);
       m_entries.push_back(si);
     }
 
