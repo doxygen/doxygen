@@ -117,6 +117,9 @@ class ClassDef : public Definition
                         Singleton, //=Entry::CLASS_SEC
                       };
 
+    virtual std::unique_ptr<ClassDef> deepCopy(const QCString &name) const = 0;
+    virtual void moveTo(Definition *) = 0;
+
     //-----------------------------------------------------------------------------------
     // --- getters
     //-----------------------------------------------------------------------------------
