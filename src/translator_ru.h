@@ -2421,6 +2421,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       break;
     case ClassMemberHighlight::Typedefs:
       result += "определений типов";
+      break;
     case ClassMemberHighlight::Enums:
       result += "перечислителей";
       break;
