@@ -3633,7 +3633,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
     case ExplicitPageResult::explicitPage:
       {
         // look for `@page label My Title\n` and capture `label` (match[1]) and ` My Title` (match[2])
-        static const reg::Ex re(R"([\\@]page\s+(\a[\w-]*)(\s*[^\n]*)\n)");
+        static const reg::Ex re(R"([ ]*[\\@]page\s+(\a[\w-]*)(\s*[^\n]*)\n)");
         reg::Match match;
         std::string s = docs.str();
         if (reg::search(s,match,re))
@@ -3646,7 +3646,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
                  newLabel+                                     // new label
                  match[2].str()+                               // part between orgLabel and \n
                  "\\ilinebr @ianchor{" + orgTitle + "} "+orgLabel+"\n"+           // add original anchor plus \n of above
-                 docs.right(docs.length()-s.length());         // add remainder of docs
+                 docs.right(docs.length()-match.length());     // add remainder of docs
         }
       }
       break;
