@@ -2287,7 +2287,7 @@ static void findUsingDeclImports(const Entry *root)
         auto ncd = cd->deepCopy(copyFullName);
         AUTO_TRACE_ADD("found class '{}' for name '{}' copy '{}' obj={}",cd->qualifiedName(),root->name,copyFullName,(void*)ncd.get());
         ClassDefMutable *ncdm = toClassDefMutable(ncd.get());
-        if (nd) ncdm->moveTo(nd);
+        if (ncdm && nd) ncdm->moveTo(nd);
         if (ncdm && (!root->doc.isEmpty() || !root->brief.isEmpty())) // use docs at using statement
         {
           ncdm->setDocumentation(root->doc,root->docFile,root->docLine);
