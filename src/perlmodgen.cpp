@@ -328,6 +328,7 @@ class PerlModDocVisitor : public DocVisitor
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &);
     void operator()(const DocSecRefItem &);
@@ -1128,6 +1129,17 @@ void PerlModDocVisitor::operator()(const DocDiaFile &df)
   visitChildren(df);
 #if 0
   m_output.add("</diafile>");
+#endif
+}
+
+void PerlModDocVisitor::operator()(const DocPlantUmlFile &df)
+{
+#if 0
+  m_output.add("<plantumlfile name=\""); m_output.add(df->file()); m_output.add("\">");
+#endif
+  visitChildren(df);
+#if 0
+  m_output.add("</plantumlfile>");
 #endif
 }
 

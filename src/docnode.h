@@ -51,7 +51,7 @@ class DocParser;
 /* 40 */  DN(DocSimpleSect)     DN_SEP DN(DocSimpleSectSep) DN_SEP DN(DocParamSect)      DN_SEP DN(DocPara)         DN_SEP DN(DocParamList)   DN_SEP   \
 /* 45 */  DN(DocSimpleListItem) DN_SEP DN(DocHtmlListItem)  DN_SEP DN(DocHtmlDescData)   DN_SEP DN(DocHtmlCell)     DN_SEP DN(DocHtmlCaption) DN_SEP   \
 /* 50 */  DN(DocHtmlRow)        DN_SEP DN(DocHtmlTable)     DN_SEP DN(DocHtmlBlockQuote) DN_SEP DN(DocText)         DN_SEP DN(DocRoot)        DN_SEP   \
-/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)                                                                                              \
+/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)   DN_SEP DN(DocPlantUmlFile)                                                                      \
 
 // forward declarations
 #define DN(x) class x;
@@ -703,6 +703,15 @@ class DocDiaFile : public DocDiagramFileBase
 {
   public:
     DocDiaFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
+               const QCString &srcFile,int srcLine);
+    bool parse();
+};
+
+/** Node representing a uml file */
+class DocPlantUmlFile : public DocDiagramFileBase
+{
+  public:
+    DocPlantUmlFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
                const QCString &srcFile,int srcLine);
     bool parse();
 };

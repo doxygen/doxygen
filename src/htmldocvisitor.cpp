@@ -129,6 +129,7 @@ static bool mustBeOutsideParagraph(const DocNodeVariant &n)
                                  /* \dotfile */     DocDotFile,
                                  /* \mscfile */     DocMscFile,
                                  /* \diafile */     DocDiaFile,
+                                 /* \plantumlfile */ DocPlantUmlFile,
                                  /* <details> */    DocHtmlDetails,
                                  /* <summary> */    DocHtmlSummary,
                                                     DocIncOperator >(n))
@@ -705,7 +706,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         }
         QCString baseName = PlantumlManager::instance().writePlantUMLSource(
                                     htmlOutput,s.exampleFile(),
-                                    s.text(),format,s.engine(),s.srcFile(),s.srcLine());
+                                    s.text(),format,s.engine(),s.srcFile(),s.srcLine(),true);
         m_t << "<div class=\"plantumlgraph\">\n";
         writePlantUMLFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
         visitCaption(m_t, s);
@@ -1838,6 +1839,39 @@ void HtmlDocVisitor::operator()(const DocDiaFile &df)
   forceEndParagraph(df);
   m_t << "<div class=\"diagraph\">\n";
   writeDiaFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
+  if (df.hasCaption())
+  {
+    m_t << "<div class=\"caption\">\n";
+  }
+  visitChildren(df);
+  if (df.hasCaption())
+  {
+    m_t << "</div>\n";
+  }
+  m_t << "</div>\n";
+  forceStartParagraph(df);
+}
+
+void HtmlDocVisitor::operator()(const DocPlantUmlFile &df)
+{
+  if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
+  forceEndParagraph(df);
+  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+  QCString imgExt = getDotImageExtension();
+  PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;	// default : PUML_BITMAP
+  if (imgExt=="svg")
+  {
+    format = PlantumlManager::PUML_SVG;
+  }
+  std::string inBuf;
+  readInputFile(df.file(),inBuf);
+  QCString baseName = PlantumlManager::instance().writePlantUMLSource(
+                                    htmlOutput,QCString(),
+                                    inBuf.c_str(),format,QCString(),df.srcFile(),df.srcLine(),false);
+  baseName=makeBaseName(baseName);
+  m_t << "<div class=\"plantumlgraph\">\n";
+  writePlantUMLFile(baseName,df.relPath(),QCString(),df.srcFile(),df.srcLine());
   if (df.hasCaption())
   {
     m_t << "<div class=\"caption\">\n";

@@ -142,6 +142,7 @@ FileNameLinkedMap    *Doxygen::imageNameLinkedMap = nullptr;       // images
 FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = nullptr;     // dot files
 FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = nullptr;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = nullptr;     // dia files
+FileNameLinkedMap    *Doxygen::plantUmlFileNameLinkedMap = nullptr;// plantuml files
 NamespaceAliasInfoMap Doxygen::namespaceAliasMap;            // all namespace aliases
 StringMap             Doxygen::tagDestinationMap;            // all tag locations
 StringUnorderedSet    Doxygen::tagFileSet;                   // all tag file names
@@ -204,6 +205,7 @@ void clearAll()
   Doxygen::dotFileNameLinkedMap->clear();
   Doxygen::mscFileNameLinkedMap->clear();
   Doxygen::diaFileNameLinkedMap->clear();
+  Doxygen::plantUmlFileNameLinkedMap->clear();
   Doxygen::tagDestinationMap.clear();
   SectionManager::instance().clear();
   CitationManager::instance().clear();
@@ -11211,6 +11213,7 @@ void initDoxygen()
   Doxygen::dotFileNameLinkedMap = nullptr;
   Doxygen::mscFileNameLinkedMap = nullptr;
   Doxygen::diaFileNameLinkedMap = nullptr;
+  Doxygen::plantUmlFileNameLinkedMap = nullptr;
 
 }
 
@@ -11228,6 +11231,7 @@ void cleanUpDoxygen()
   delete Doxygen::dotFileNameLinkedMap;
   delete Doxygen::mscFileNameLinkedMap;
   delete Doxygen::diaFileNameLinkedMap;
+  delete Doxygen::plantUmlFileNameLinkedMap;
   Doxygen::mainPage.reset();
   delete Doxygen::pageLinkedMap;
   delete Doxygen::exampleLinkedMap;
@@ -11688,6 +11692,7 @@ void adjustConfiguration()
   Doxygen::dotFileNameLinkedMap = new FileNameLinkedMap;
   Doxygen::mscFileNameLinkedMap = new FileNameLinkedMap;
   Doxygen::diaFileNameLinkedMap = new FileNameLinkedMap;
+  Doxygen::plantUmlFileNameLinkedMap = new FileNameLinkedMap;
 
   setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -12039,6 +12044,24 @@ void searchInputFiles()
   {
     readFileOrDirectory(s.c_str(),                         // s
                         Doxygen::diaFileNameLinkedMap,     // fnDict
+                        nullptr,                           // exclSet
+                        nullptr,                           // patList
+                        nullptr,                           // exclPatList
+                        nullptr,                           // resultList
+                        nullptr,                           // resultSet
+                        alwaysRecursive,                   // recursive
+                        TRUE,                              // errorIfNotExist
+                        &killSet);                         // killSet
+  }
+  g_s.end();
+
+  g_s.begin("Searching for plantuml files...\n");
+  killSet.clear();
+  const StringVector &plantUmlFileList=Config_getList(PLANTUMLFILE_DIRS);
+  for (const auto &s : plantUmlFileList)
+  {
+    readFileOrDirectory(s.c_str(),                         // s
+                        Doxygen::plantUmlFileNameLinkedMap,// fnDict
                         nullptr,                           // exclSet
                         nullptr,                           // patList
                         nullptr,                           // exclPatList

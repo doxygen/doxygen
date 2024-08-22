@@ -549,7 +549,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
         QCString baseName = PlantumlManager::instance().writePlantUMLSource(
                               latexOutput,s.exampleFile(),s.text(),
                               s.useBitmap() ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS,
-                              s.engine(),s.srcFile(),s.srcLine());
+                              s.engine(),s.srcFile(),s.srcLine(),true);
 
         writePlantUMLFile(baseName, s);
       }
@@ -1568,6 +1568,15 @@ void LatexDocVisitor::operator()(const DocDiaFile &df)
   endDiaFile(df.hasCaption());
 }
 
+void LatexDocVisitor::operator()(const DocPlantUmlFile &df)
+{
+  if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
+  startPlantUmlFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
+  visitChildren(df);
+  endPlantUmlFile(df.hasCaption());
+}
+
 void LatexDocVisitor::operator()(const DocLink &lnk)
 {
   if (m_hide) return;
@@ -2037,6 +2046,40 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, const DocVerba
   visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
+}
+
+void LatexDocVisitor::startPlantUmlFile(const QCString &fileName,
+                                   const QCString &width,
+                                   const QCString &height,
+                                   bool hasCaption,
+                                   const QCString &srcFile,
+                                   int srcLine
+                                  )
+{
+  QCString outDir = Config_getString(LATEX_OUTPUT);
+  std::string inBuf;
+  readInputFile(fileName,inBuf);
+
+  bool useBitmap = inBuf.find("@startditaa") != std::string::npos;
+  QCString baseName = PlantumlManager::instance().writePlantUMLSource(
+                              outDir,QCString(),inBuf.c_str(),
+                              useBitmap ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS,
+                              QCString(),srcFile,srcLine,false);
+  baseName=makeBaseName(baseName);
+  QCString shortName = makeShortName(baseName);
+  if (useBitmap)
+  {
+    if (shortName.find('.')==-1) shortName += ".png";
+  }
+  PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,
+                              useBitmap ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS);
+  visitPreStart(m_t,hasCaption, shortName, width, height);
+}
+
+void LatexDocVisitor::endPlantUmlFile(bool hasCaption)
+{
+  if (m_hide) return;
+  visitPostEnd(m_t,hasCaption);
 }
 
 int LatexDocVisitor::indentLevel() const
