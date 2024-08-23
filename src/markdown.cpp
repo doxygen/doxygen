@@ -621,6 +621,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "throws",         endOfLabel },
     { "tparam",         endOfLabel },
     { "typedef",        endOfLine  },
+    { "plantumlfile",   endOfLine  },
     { "union",          endOfLine  },
     { "until",          endOfLine  },
     { "var",            endOfLine  },
