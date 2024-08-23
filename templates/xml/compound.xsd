@@ -600,6 +600,7 @@
       <xsd:element name="dotfile" type="docImageFileType" />
       <xsd:element name="mscfile" type="docImageFileType" />
       <xsd:element name="diafile" type="docImageFileType" />
+      <xsd:element name="plantumlfile" type="docImageFileType" />
       <xsd:element name="toclist" type="docTocListType" />
       <xsd:element name="language" type="docLanguageType" />
       <xsd:element name="parameterlist" type="docParamListType" />

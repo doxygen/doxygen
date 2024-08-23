@@ -236,6 +236,7 @@ documentation:
 \refitem cmdtodo \\todo
 \refitem cmdtparam \\tparam
 \refitem cmdtypedef \\typedef
+\refitem cmdplantumlfile \\plantumlfile
 \refitem cmdunion \\union
 \refitem cmduntil \\until
 \refitem cmdvar \\var
@@ -3746,6 +3747,30 @@ class Receiver
 
   \addindex \\enduml
   Ends a block that was started with \ref cmdstartuml "\\startuml".
+
+<hr>
+\section cmdplantumlfile \\plantumlfile \<file\> ["caption"] [\<sizeindication\>=\<size\>]
+
+  \addindex \\plantumlfile
+  Inserts an image made in PlantUml from \<file\> into the documentation.
+
+  The first argument specifies the file name of the image.
+  Doxygen will look for files in the paths (or files) that you specified
+  after the \ref cfg_plantumlfile_dirs "PLANTUMLFILE_DIRS" tag.
+  If the plantuml file is found it will be used as an input file for the plantuml program.
+  The resulting image will be put into the correct output directory.
+  If the plantuml file name contains spaces you'll have to put quotes ("...") around it.
+
+  The second argument is optional and can be used to specify the caption
+  that is displayed below the image. This argument has to be specified
+  between quotes even if it does not contain any spaces. The quotes are
+  stripped before the caption is displayed.
+
+  The third argument is also optional and can be used to specify the
+  width or height of the image.
+  For a description of the possibilities see the paragraph
+  \ref image_sizeindicator "Size indication" with the
+  \ref cmdimage "\\image" command.
 
 <hr>
 \section cmdendhtmlonly \\endhtmlonly

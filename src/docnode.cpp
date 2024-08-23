@@ -1154,6 +1154,49 @@ bool DocDiaFile::parse()
   }
   return ok;
 }
+//---------------------------------------------------------------------------
+
+DocPlantUmlFile::DocPlantUmlFile(DocParser *parser,DocNodeVariant *parent,const QCString &name,const QCString &context,
+                       const QCString &srcFile,int srcLine) :
+  DocDiagramFileBase(parser,parent,name,context,srcFile,srcLine)
+{
+  p->relPath = parser->context.relPath;
+}
+
+bool DocPlantUmlFile::parse()
+{
+  bool ok = false;
+  parser()->defaultHandleTitleAndSize(CMD_PLANTUMLFILE,thisVariant(),children(),p->width,p->height);
+
+  bool ambig = false;
+  FileDef *fd = findFileDef(Doxygen::plantUmlFileNameLinkedMap,p->name,ambig);
+  if (fd==nullptr && !p->name.endsWith(".puml")) // try with .puml extension as well
+  {
+    fd = findFileDef(Doxygen::plantUmlFileNameLinkedMap,p->name+".puml",ambig);
+    if (fd==nullptr && !p->name.endsWith(".pu")) // try with .pu extension as well
+    {
+      fd = findFileDef(Doxygen::plantUmlFileNameLinkedMap,p->name+".pu",ambig);
+    }
+  }
+  if (fd)
+  {
+    p->file = fd->absFilePath();
+    ok = true;
+    if (ambig)
+    {
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included uml file name '%s' is ambiguous.\n"
+           "Possible candidates:\n%s",qPrint(p->name),
+           qPrint(showFileDefMatches(Doxygen::plantUmlFileNameLinkedMap,p->name))
+          );
+    }
+  }
+  else
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"included uml file '%s' is not found "
+           "in any of the paths specified via PLANTUMLFILE_DIRS!",qPrint(p->name));
+  }
+  return ok;
+}
 
 //---------------------------------------------------------------------------
 
@@ -4546,6 +4589,9 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CMD_DIAFILE:
       handleFile<DocDiaFile>(cmdName);
+      break;
+    case CMD_PLANTUMLFILE:
+      handleFile<DocPlantUmlFile>(cmdName);
       break;
     case CMD_LINK:
       handleLink(cmdName,FALSE);
