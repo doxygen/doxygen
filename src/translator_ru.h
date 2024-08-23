@@ -2420,6 +2420,7 @@ class TranslatorRussian : public Translator
       break;
     case ClassMemberHighlight::Typedefs:
       result += "определений типов";
+      break;
     case ClassMemberHighlight::Enums:
       result += "перечислителей";
       break;
