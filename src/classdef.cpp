@@ -49,6 +49,7 @@
 #include "symbolresolver.h"
 #include "fileinfo.h"
 #include "trace.h"
+#include "moduledef.h"
 
 //-----------------------------------------------------------------------------
 
@@ -190,6 +191,8 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
     DefType definitionType() const override { return TypeClass; }
+    std::unique_ptr<ClassDef> deepCopy(const QCString &name) const override;
+    void moveTo(Definition *) override;
     CodeSymbolType codeSymbolType() const override;
     QCString getOutputFileBase() const override;
     QCString getInstanceOutputFileBase() const override;
@@ -424,6 +427,10 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     DefType definitionType() const override { return TypeClass; }
 
     const ClassDef *getCdAlias() const { return toClassDef(getAlias()); }
+    std::unique_ptr<ClassDef> deepCopy(const QCString &name) const override  {
+      return createClassDefAlias(getScope(),getCdAlias());
+    }
+    void moveTo(Definition *) override {}
 
     CodeSymbolType codeSymbolType() const override
     { return getCdAlias()->codeSymbolType(); }
@@ -473,8 +480,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->visibleInParentsDeclList(); }
     const ArgumentList &templateArguments() const override
     { return getCdAlias()->templateArguments(); }
-    //NamespaceDef *getNamespaceDef() const override
-    //{ return getCdAlias()->getNamespaceDef(); }
     FileDef *getFileDef() const override
     { return getCdAlias()->getFileDef(); }
     ModuleDef *getModuleDef() const override
@@ -646,6 +651,7 @@ class ClassDefImpl::IMPL
   public:
     void init(const QCString &defFileName, const QCString &name,
               const QCString &ctStr, const QCString &fName);
+    std::unique_ptr<ClassDefImpl::IMPL> deepCopy() const;
 
     /*! file name that forms the base for the output file containing the
      *  class documentation. For compatibility with Qt (e.g. links via tag
@@ -862,6 +868,128 @@ ClassDefImpl::ClassDefImpl(
   if (lref.isEmpty())
   {
     m_impl->fileName = convertNameToFile(m_impl->fileName);
+  }
+}
+
+std::unique_ptr<ClassDefImpl::IMPL> ClassDefImpl::IMPL::deepCopy() const
+{
+  auto result = std::make_unique<ClassDefImpl::IMPL>();
+
+  result->memberListFileName = memberListFileName;
+  result->collabFileName = collabFileName;
+  result->inheritFileName = inheritFileName;
+  if (incInfo)
+  {
+    result->incInfo = std::make_unique<IncludeInfo>();
+    *(result->incInfo) = *incInfo;
+  }
+  result->inherits  = inherits;
+  result->inheritedBy  = inheritedBy;
+  result->fileDef = fileDef;
+  result->moduleDef = moduleDef;
+  result->tempArgs = tempArgs;
+  result->typeConstraints = typeConstraints;
+  result->files = files;
+  result->examples = examples;
+  result->compType = compType;
+  result->prot = prot;
+  result->usesImplClassList = usesImplClassList;
+  result->usedByImplClassList = usedByImplClassList;
+  result->constraintClassList = constraintClassList;
+  result->templateInstances = templateInstances;
+  result->templBaseClassNames = templBaseClassNames;
+  result->templateMaster = templateMaster;
+  result->className = className;
+  result->categoryOf = categoryOf;
+  result->isAbstract = isAbstract;
+  result->isStatic = isStatic;
+  result->membersMerged = membersMerged;
+  result->isLocal = isLocal;
+  result->isTemplArg = isTemplArg;
+  result->subGrouping = subGrouping;
+  result->usedOnly = usedOnly;
+  result->vhdlSummaryTitles = vhdlSummaryTitles;
+  result->isSimple = isSimple;
+  result->arrowOperator = arrowOperator;
+  result->tagLessRef = tagLessRef;
+  result->isJavaEnum = isJavaEnum;
+  result->spec = spec;
+  result->metaData = metaData;
+  result->requiresClause = requiresClause;
+  result->qualifiers = qualifiers;
+  result->hasCollaborationGraph = hasCollaborationGraph;
+  result->typeInheritanceGraph = typeInheritanceGraph;
+
+  return result;
+}
+
+std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
+{
+  AUTO_TRACE("name='{}'",name);
+  auto result = std::make_unique<ClassDefImpl>(
+        getDefFileName(),getDefLine(),getDefColumn(),name,compoundType(),
+        std::string(),std::string(),true,m_impl->isJavaEnum);
+  // copy other members
+  result->m_impl = m_impl->deepCopy();
+
+  // set new file name
+  QCString compTypeString = getCompoundTypeString(getLanguage(),m_impl->compType,m_impl->isJavaEnum);
+  result->m_impl->fileName = compTypeString+name;
+  result->m_impl->memberListFileName = convertNameToFile(compTypeString+name+"-members");
+  result->m_impl->collabFileName = convertNameToFile(result->m_impl->fileName+"_coll_graph");
+  result->m_impl->inheritFileName = convertNameToFile(result->m_impl->fileName+"_inherit_graph");
+  result->m_impl->fileName = convertNameToFile(result->m_impl->fileName);
+
+  // deep copy nested classes
+  for (const auto &innerCd : m_impl->innerClasses)
+  {
+    QCString innerName = name+"::"+innerCd->localName();
+    auto cdCopy = innerCd->deepCopy(innerName);
+    auto cd = Doxygen::classLinkedMap->add(innerName,std::move(cdCopy));
+    result->addInnerCompound(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
+    if (cdm)
+    {
+      cdm->setOuterScope(result.get());
+    }
+  }
+
+  // copy all member list (and make deep copies of members)
+  for (auto &mni : m_impl->allMemberNameInfoLinkedMap)
+  {
+    for (auto &mi : *mni)
+    {
+      const MemberDef *md=mi->memberDef();
+      auto newMd = md->deepCopy();
+      if (newMd)
+      {
+        auto mmd = toMemberDefMutable(newMd.get());
+        AUTO_TRACE_ADD("Copying member {}",mmd->name());
+        mmd->moveTo(result.get());
+
+        result->internalInsertMember(newMd.get(),newMd->protection(),true);
+
+        // also add to the global list (which will own newMd)
+        MemberName *mn = Doxygen::memberNameLinkedMap->add(newMd->name());
+        mn->push_back(std::move(newMd));
+      }
+    }
+  }
+
+  return result;
+}
+
+void ClassDefImpl::moveTo(Definition *scope)
+{
+  //printf("%s::moveTo(%s)\n",qPrint(name()),qPrint(scope->name()));
+  setOuterScope(scope);
+  if (scope->definitionType()==Definition::TypeFile)
+  {
+    m_impl->fileDef = toFileDef(scope);
+  }
+  else if (scope->definitionType()==Definition::TypeModule)
+  {
+    m_impl->moduleDef = toModuleDef(scope);
   }
 }
 
@@ -4755,11 +4883,6 @@ const ArgumentList &ClassDefImpl::templateArguments() const
 {
   return m_impl->tempArgs;
 }
-
-//NamespaceDef *ClassDefImpl::getNamespaceDef() const
-//{
-//  return m_impl->nspace;
-//}
 
 FileDef *ClassDefImpl::getFileDef() const
 {

@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_11_0
+class TranslatorGreek : public Translator
 {
   public:
 
@@ -2655,6 +2655,15 @@ class TranslatorGreek : public TranslatorAdapter_1_11_0
     QCString trCopyToClipboard() override
     {
       return "Αντιγραφή στο πρόχειρο";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trImportant() override
+    {
+      return "Σημαντικό";
     }
 };
 

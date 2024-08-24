@@ -599,6 +599,14 @@ class PrintDocVisitor
       indent_post();
       printf("</diafile>\n");
     }
+    void operator()(const DocPlantUmlFile &df)
+    {
+      indent_pre();
+      printf("<plantumlfile src=\"%s\">\n",qPrint(df.name()));
+      visitChildren(df);
+      indent_post();
+      printf("</plantumlfile>\n");
+    }
     void operator()(const DocLink &lnk)
     {
       indent_pre();

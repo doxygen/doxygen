@@ -128,6 +128,7 @@ static const CommandMap<CommandType> g_cmdMap =
   { "enddot",        CommandType::CMD_ENDDOT },
   { "endmsc",        CommandType::CMD_ENDMSC },
   { "enduml",        CommandType::CMD_ENDUML },
+  { "plantumlfile",  CommandType::CMD_PLANTUMLFILE },
   { "manonly",       CommandType::CMD_MANONLY },
   { "endmanonly",    CommandType::CMD_ENDMANONLY },
   { "includelineno", CommandType::CMD_INCWITHLINES },

@@ -92,6 +92,7 @@ class DocbookDocVisitor : public DocVisitor
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &);
     void operator()(const DocSecRefItem &);
@@ -113,22 +114,26 @@ class DocbookDocVisitor : public DocVisitor
     void startLink(const QCString &file,
     const QCString &anchor);
     void endLink();
-    void startMscFile(const QCString &fileName,const QCString &width,
+    void startMscFile(const QCString &fileName,const QCString &relPath, const QCString &width,
                       const QCString &height, bool hasCaption,const DocNodeList &children,
                       const QCString &srcFile, int srcLine);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, const DocVerbatim &s);
-    void startDiaFile(const QCString &fileName,const QCString &width,
+    void startDiaFile(const QCString &fileName,const QCString &relPath, const QCString &width,
                       const QCString &height, bool hasCaption,const DocNodeList &children,
                       const QCString &srcFile, int srcLine);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, const DocVerbatim &s);
-    void startDotFile(const QCString &fileName,const QCString &width,
+    void startDotFile(const QCString &fileName,const QCString &relPath, const QCString &width,
                       const QCString &height, bool hasCaption,const DocNodeList &children,
                       const QCString &srcFile, int srcLine);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, const DocVerbatim &s);
     void writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
+    void startPlantUmlFile(const QCString &fileName,const QCString &relPath, const QCString &width,
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
+    void endPlantUmlFile(bool hasCaption);
     void visitPreStart(TextStream &t,
                    const DocNodeList &children,
                    bool hasCaption,

@@ -159,7 +159,8 @@ enum class CommandType
   CMD_IMPORTANT    = 127 | SIMPLESECT_BIT,
   CMD_SUBPARAGRAPH = 128,
   CMD_SUBSUBPARAGRAPH = 129,
-  CMD_IPREFIX      = 130
+  CMD_IPREFIX      = 130,
+  CMD_PLANTUMLFILE = 131
 };
 
 enum class HtmlTagType

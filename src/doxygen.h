@@ -71,11 +71,20 @@ struct InputFileEncoding
   QCString encoding;
 };
 
+struct NamespaceAliasInfo
+{
+  NamespaceAliasInfo(const std::string &a,const std::string &ctx=std::string()) : alias(a), context(ctx) {}
+  std::string alias;
+  std::string context;
+};
+
 using InputFileEncodingList = std::vector<InputFileEncoding>;
 
 using ClangUsrMap = std::unordered_map<std::string,const Definition *>;
 
 using StaticInitMap = std::unordered_map<std::string,BodyInfo>;
+
+using NamespaceAliasInfoMap = std::unordered_map<std::string,NamespaceAliasInfo>;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
  *
@@ -98,9 +107,10 @@ class Doxygen
     static FileNameLinkedMap        *dotFileNameLinkedMap;
     static FileNameLinkedMap        *mscFileNameLinkedMap;
     static FileNameLinkedMap        *diaFileNameLinkedMap;
+    static FileNameLinkedMap        *plantUmlFileNameLinkedMap;
     static MemberNameLinkedMap      *memberNameLinkedMap;
     static MemberNameLinkedMap      *functionNameLinkedMap;
-    static StringUnorderedMap        namespaceAliasMap;
+    static NamespaceAliasInfoMap     namespaceAliasMap;
     static GroupLinkedMap           *groupLinkedMap;
     static NamespaceLinkedMap       *namespaceLinkedMap;
     static StringMap                 tagDestinationMap;

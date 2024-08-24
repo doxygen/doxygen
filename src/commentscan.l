@@ -403,7 +403,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "ifile",                  { &handleIFile,                    CommandSpacing::Invisible, SectionHandling::Replace }},
   { "iline",                  { &handleILine,                    CommandSpacing::Invisible, SectionHandling::Replace }},
   { "iraise",                 { &handleIRaise,                   CommandSpacing::Invisible, SectionHandling::Replace }},
-  { "iprefix",                { &handleIPrefix,                  CommandSpacing::Invisible, SectionHandling::Replace }}
+  { "iprefix",                { &handleIPrefix,                  CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "plantumlfile",           { nullptr,                         CommandSpacing::Block,     SectionHandling::Break   }}
 };
 
 #define YY_NO_INPUT 1

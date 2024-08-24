@@ -86,7 +86,7 @@ of a HTML tag are passed on to the HTML output only
 </table>
 
 Finally we have the HTML style comments. 
-- When using the, Doxygen, special HTML style comments, i.e. <code>\<!--! ... --\></code>, it is not seen as comment but as
+- When using the, Doxygen, special HTML style comments, i.e. <code>\<!--! ... \--\></code>, it is not seen as comment but as
   if the `...` part is just in the documentation. This is useful to specify Doxygen commands inside a markdown file like:
   ```
   <!--! \page pg1 The page -->

@@ -11505,7 +11505,7 @@ class docParaType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, details=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, plantumlfile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, details=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -11741,6 +11741,11 @@ class docParaType(GeneratedsSuper):
         else:
             self.diafile = diafile
         self.diafile_nsprefix_ = None
+        if plantumlfile is None:
+            self.plantumlfile = []
+        else:
+            self.plantumlfile = plantumlfile
+        self.plantumlfile_nsprefix_ = None
         if toclist is None:
             self.toclist = []
         else:
@@ -12266,6 +12271,16 @@ class docParaType(GeneratedsSuper):
         self.diafile.insert(index, value)
     def replace_diafile_at(self, index, value):
         self.diafile[index] = value
+    def get_plantumlfile(self):
+        return self.plantumlfile
+    def set_plantumlfile(self, plantumlfile):
+        self.plantumlfile = plantumlfile
+    def add_plantumlfile(self, value):
+        self.plantumlfile.append(value)
+    def insert_plantumlfile_at(self, index, value):
+        self.plantumlfile.insert(index, value)
+    def replace_plantumlfile_at(self, index, value):
+        self.plantumlfile[index] = value
     def get_toclist(self):
         return self.toclist
     def set_toclist(self, toclist):
@@ -12396,6 +12411,7 @@ class docParaType(GeneratedsSuper):
             self.dotfile or
             self.mscfile or
             self.diafile or
+            self.plantumlfile or
             self.toclist or
             self.language or
             self.parameterlist or
@@ -12589,6 +12605,9 @@ class docParaType(GeneratedsSuper):
         for diafile_ in self.diafile:
             namespaceprefix_ = self.diafile_nsprefix_ + ':' if (UseCapturedNS_ and self.diafile_nsprefix_) else ''
             diafile_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='diafile', pretty_print=pretty_print)
+        for plantumlfile_ in self.plantumlfile:
+            namespaceprefix_ = self.plantumlfile_nsprefix_ + ':' if (UseCapturedNS_ and self.plantumlfile_nsprefix_) else ''
+            plantumlfile_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantumlfile', pretty_print=pretty_print)
         for toclist_ in self.toclist:
             namespaceprefix_ = self.toclist_nsprefix_ + ':' if (UseCapturedNS_ and self.toclist_nsprefix_) else ''
             toclist_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='toclist', pretty_print=pretty_print)
@@ -13076,6 +13095,16 @@ class docParaType(GeneratedsSuper):
                 self.add_diafile(obj_.value)
             elif hasattr(self, 'set_diafile'):
                 self.set_diafile(obj_.value)
+        elif nodeName_ == 'plantumlfile':
+            obj_ = docImageFileType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'plantumlfile', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_plantumlfile'):
+                self.add_plantumlfile(obj_.value)
+            elif hasattr(self, 'set_plantumlfile'):
+                self.set_plantumlfile(obj_.value)
         elif nodeName_ == 'toclist':
             obj_ = docTocListType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -13167,7 +13196,7 @@ class docMarkupType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, details=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, plantumlfile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, details=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -13403,6 +13432,11 @@ class docMarkupType(GeneratedsSuper):
         else:
             self.diafile = diafile
         self.diafile_nsprefix_ = None
+        if plantumlfile is None:
+            self.plantumlfile = []
+        else:
+            self.plantumlfile = plantumlfile
+        self.plantumlfile_nsprefix_ = None
         if toclist is None:
             self.toclist = []
         else:
@@ -13928,6 +13962,16 @@ class docMarkupType(GeneratedsSuper):
         self.diafile.insert(index, value)
     def replace_diafile_at(self, index, value):
         self.diafile[index] = value
+    def get_plantumlfile(self):
+        return self.plantumlfile
+    def set_plantumlfile(self, plantumlfile):
+        self.plantumlfile = plantumlfile
+    def add_plantumlfile(self, value):
+        self.plantumlfile.append(value)
+    def insert_plantumlfile_at(self, index, value):
+        self.plantumlfile.insert(index, value)
+    def replace_plantumlfile_at(self, index, value):
+        self.plantumlfile[index] = value
     def get_toclist(self):
         return self.toclist
     def set_toclist(self, toclist):
@@ -14058,6 +14102,7 @@ class docMarkupType(GeneratedsSuper):
             self.dotfile or
             self.mscfile or
             self.diafile or
+            self.plantumlfile or
             self.toclist or
             self.language or
             self.parameterlist or
@@ -14251,6 +14296,9 @@ class docMarkupType(GeneratedsSuper):
         for diafile_ in self.diafile:
             namespaceprefix_ = self.diafile_nsprefix_ + ':' if (UseCapturedNS_ and self.diafile_nsprefix_) else ''
             diafile_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='diafile', pretty_print=pretty_print)
+        for plantumlfile_ in self.plantumlfile:
+            namespaceprefix_ = self.plantumlfile_nsprefix_ + ':' if (UseCapturedNS_ and self.plantumlfile_nsprefix_) else ''
+            plantumlfile_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantumlfile', pretty_print=pretty_print)
         for toclist_ in self.toclist:
             namespaceprefix_ = self.toclist_nsprefix_ + ':' if (UseCapturedNS_ and self.toclist_nsprefix_) else ''
             toclist_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='toclist', pretty_print=pretty_print)
@@ -14738,6 +14786,16 @@ class docMarkupType(GeneratedsSuper):
                 self.add_diafile(obj_.value)
             elif hasattr(self, 'set_diafile'):
                 self.set_diafile(obj_.value)
+        elif nodeName_ == 'plantumlfile':
+            obj_ = docImageFileType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'plantumlfile', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_plantumlfile'):
+                self.add_plantumlfile(obj_.value)
+            elif hasattr(self, 'set_plantumlfile'):
+                self.set_plantumlfile(obj_.value)
         elif nodeName_ == 'toclist':
             obj_ = docTocListType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)

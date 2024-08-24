@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_8_15
+class TranslatorRussian : public Translator
 {
   public:
     /*! Used for identification of the language. */
@@ -1002,8 +1002,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Если \\c MAX_DOT_GRAPH_HEIGHT в конфигурационном файле "
-        "установлен в 240, получится следующий граф:"
+        "Получится следующий граф:"
         "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Прямоугольники в этом графе имеют следующее значение:\n"
@@ -1951,6 +1950,631 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       if (single) result+="а:"; else result+="ов:";
       return result;
     }
+
+/*
+ * Russian translations for updates since version 1.8.15
+ *
+ * Aleksei Leshchenko, 2024
+ * Github: FrostMonsterSP
+ */
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.8.15
+  //////////////////////////////////////////////////////////////////////////
+
+  /** VHDL design unit hierarchy */
+  QCString trDesignUnitHierarchy() override {
+    return "Иерархия проектных единиц";
+  }
+  /** VHDL design unit list */
+  QCString trDesignUnitList() override { return "Список проектных единиц"; }
+  /** VHDL design unit members */
+  QCString trDesignUnitMembers() override {
+    return "Компоненты проектной единицы";
+  }
+  /** VHDL design unit list description */
+  QCString trDesignUnitListDescription() override {
+    return "Список всех компонентов проектных единиц со ссылками на "
+           "проектные единицы, в которые входят:";
+  }
+  /** VHDL design unit index */
+  QCString trDesignUnitIndex() override { return "Указатель проектных единиц"; }
+  /** VHDL design units */
+  QCString trDesignUnits() override { return "Проектные единицы"; }
+  /** VHDL functions/procedures/processes */
+  QCString trFunctionAndProc() override { return "Функции/Процедуры/Процессы"; }
+  /** VHDL type */
+  QCString trVhdlType(VhdlSpecifier type, bool single) override {
+    switch (type) {
+    case VhdlSpecifier::LIBRARY:
+      if (single)
+        return "Библиотека";
+      else
+        return "Библиотеки";
+    case VhdlSpecifier::PACKAGE:
+      if (single)
+        return "Пакет";
+      else
+        return "Пакеты";
+    case VhdlSpecifier::SIGNAL:
+      if (single)
+        return "Сигнал";
+      else
+        return "Сигналы";
+    case VhdlSpecifier::COMPONENT:
+      if (single)
+        return "Компонент";
+      else
+        return "Компоненты";
+    case VhdlSpecifier::CONSTANT:
+      if (single)
+        return "Конатанта";
+      else
+        return "Константы";
+    case VhdlSpecifier::ENTITY:
+      if (single)
+        return "Единица";
+      else
+        return "Единицы";
+    case VhdlSpecifier::TYPE:
+      if (single)
+        return "Тип";
+      else
+        return "Типы";
+    case VhdlSpecifier::SUBTYPE:
+      if (single)
+        return "Подтип";
+      else
+        return "Подтипы";
+    case VhdlSpecifier::FUNCTION:
+      if (single)
+        return "Функция";
+      else
+        return "Функции";
+    case VhdlSpecifier::RECORD:
+      if (single)
+        return "Запись";
+      else
+        return "Записи";
+    case VhdlSpecifier::PROCEDURE:
+      if (single)
+        return "Процедура";
+      else
+        return "Процедуры";
+    case VhdlSpecifier::ARCHITECTURE:
+      if (single)
+        return "Архитектура";
+      else
+        return "Архитектуры";
+    case VhdlSpecifier::ATTRIBUTE:
+      if (single)
+        return "Аттрибут";
+      else
+        return "Аттрибуты";
+    case VhdlSpecifier::PROCESS:
+      if (single)
+        return "Процесс";
+      else
+        return "Процессы";
+    case VhdlSpecifier::PORT:
+      if (single)
+        return "Порт";
+      else
+        return "Порты";
+    case VhdlSpecifier::USE:
+      if (single)
+        return "Условие использования";
+      else
+        return "Условия использования";
+    case VhdlSpecifier::GENERIC:
+      if (single)
+        return "Дженерик";
+      else
+        return "Дженерики";
+    case VhdlSpecifier::PACKAGE_BODY:
+      return "Тело пакета";
+    case VhdlSpecifier::UNITS:
+      return "Единицы";
+    case VhdlSpecifier::SHAREDVARIABLE:
+      if (single)
+        return "Общая переменная";
+      else
+        return "Общие переменные";
+    case VhdlSpecifier::VFILE:
+      if (single)
+        return "Файл";
+      else
+        return "Файлы";
+    case VhdlSpecifier::GROUP:
+      if (single)
+        return "Группа";
+      else
+        return "Группы";
+    case VhdlSpecifier::INSTANTIATION:
+      if (single)
+        return "Созданный экземпляр";
+      else
+        return "Созданные экземпляры";
+    case VhdlSpecifier::ALIAS:
+      if (single)
+        return "Псевдоним";
+      else
+        return "Псевдонимы";
+    case VhdlSpecifier::CONFIG:
+      if (single)
+        return "Конфигурация";
+      else
+        return "Конфигурации";
+    case VhdlSpecifier::MISCELLANEOUS:
+      return "Разное";
+    case VhdlSpecifier::UCF_CONST:
+      return "Ограничения";
+    default:
+      return "Класс";
+    }
+  }
+  QCString trCustomReference(const QCString &name) override {
+    return "Документация " + name;
+  }
+
+  /* Slice */
+  QCString trConstants() override { return "Константы"; }
+  QCString trConstantDocumentation() override {
+    return "Документация константы";
+  }
+  QCString trSequences() override { return "Последовательности"; }
+  QCString trSequenceDocumentation() override {
+    return "Документация последовательности";
+  }
+  QCString trDictionaries() override { return "Словари"; }
+  QCString trDictionaryDocumentation() override {
+    return "Документация словаря";
+  }
+  QCString trSliceInterfaces() override { return "Интерфейсы"; }
+  QCString trInterfaceIndex() override { return "Документация интерфейса"; }
+  QCString trInterfaceList() override { return "Список интерфейсов"; }
+  QCString trInterfaceListDescription() override {
+    return "Здесь представлен список интерфейсов с их кратким описанием:";
+  }
+  QCString trInterfaceHierarchy() override { return "Иерархия интерфейса"; }
+  QCString trInterfaceHierarchyDescription() override {
+    return "Данный список наследований по большей части, но не "
+           "полностью, отсортирован в алфавитном порядке:";
+  }
+  QCString trInterfaceDocumentation() override {
+    return "Документация интерфейса";
+  }
+  QCString trStructs() override { return "Структуры"; }
+  QCString trStructIndex() override { return "Указатель Структур"; }
+  QCString trStructList() override { return "Список Структур"; }
+  QCString trStructListDescription() override {
+    return "Здесь представлен список структур с их краткими описаниями:";
+  }
+  QCString trStructDocumentation() override { return "Документация структур"; }
+  QCString trExceptionIndex() override { return "Указатель исключений"; }
+  QCString trExceptionList() override { return "Список исключений"; }
+  QCString trExceptionListDescription() override {
+    return "Здесь представлен список исключений с их краткими описаниями:";
+  }
+  QCString trExceptionHierarchy() override { return "Иерархия Исключения"; }
+  QCString trExceptionHierarchyDescription() override {
+    return "Данный список наследований частично, но не полностью, отсортирован "
+           "в алфавитном порядке:";
+  }
+  QCString trExceptionDocumentation() override {
+    return "Документация исключения";
+  }
+  QCString trCompoundReferenceSlice(const QCString &clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isLocal) override {
+    QCString result = "Ссылка на";
+    switch (compType) {
+    case ClassDef::Class:
+      if (isLocal)
+        result += " локальный";
+      result += " класс ";
+      break;
+    case ClassDef::Struct:
+      if (isLocal)
+        result += " локальную";
+      result += " структуру ";
+      break;
+    case ClassDef::Union:
+      if (isLocal)
+        result += " локальное";
+      result += " объединение ";
+      break;
+    case ClassDef::Interface:
+      if (isLocal)
+        result += " локальный";
+      result += " интерфейс ";
+      break;
+    case ClassDef::Protocol:
+      if (isLocal)
+        result += " локальный";
+      result += " протокол ";
+      break;
+    case ClassDef::Category:
+      if (isLocal)
+        result += " локальную";
+      result += " категорию ";
+      break;
+    case ClassDef::Exception:
+      if (isLocal)
+        result += " локальное";
+      result += " исключение ";
+      break;
+    default:
+      break;
+    }
+    return result + clName;
+  }
+  QCString trOperations() override { return "Операции"; }
+  QCString trOperationDocumentation() override {
+    return "Документация операции";
+  }
+  QCString trDataMembers() override { return "Поля класса"; }
+  QCString trDataMemberDocumentation() override {
+    return "Документация для полей класса";
+  }
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.8.19
+  //////////////////////////////////////////////////////////////////////////
+
+  /** VHDL design unit documentation */
+  QCString trDesignUnitDocumentation() override { return "Проектная единица"; }
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.9.2
+  //////////////////////////////////////////////////////////////////////////
+
+  /** C++20 concept */
+  QCString trConcept(bool first_capital, bool singular) override {
+    return createNoun(first_capital, singular, "концепт", "ы");
+  }
+  /*! used as the title of the HTML page of a C++20 concept page */
+  QCString trConceptReference(const QCString &conceptName) override {
+    return "Ссылка на концепт " + conceptName;
+  }
+
+  /*! used as the title of page containing all the index of all concepts. */
+  QCString trConceptList() override { return "Список концептов"; }
+
+  /*! used as the title of chapter containing the index listing all concepts. */
+  QCString trConceptIndex() override { return "Указатель концептов"; }
+
+  /*! used as the title of chapter containing all information about concepts. */
+  QCString trConceptDocumentation() override {
+    return "Документация концептов";
+  }
+
+  /*! used as an introduction to the concept list */
+  QCString trConceptListDescription(bool extractAll) override {
+    QCString result = "Список всех  ";
+    if (!extractAll)
+      result += "задокументированных ";
+    result += "концептов с их краткими описаниями:";
+    return result;
+  }
+
+  /*! used to introduce the definition of the C++20 concept */
+  QCString trConceptDefinition() override { return "Определение концепта"; }
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.9.4
+  //////////////////////////////////////////////////////////////////////////
+
+  QCString trPackageList() override { return "Список пакетов"; }
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.9.6
+  //////////////////////////////////////////////////////////////////////////
+
+  /*! This is used for translation of the word that will be
+   *  followed by a single name of the VHDL process flowchart.
+   */
+  QCString trFlowchart() override { return "Блок-схема:"; }
+
+  /*! Please translate also updated body of the method
+   *  trMemberFunctionDocumentation(), now better adapted for
+   *  VHDL sources documentation.
+   */
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.9.7
+  //////////////////////////////////////////////////////////////////////////
+  /*! used in the compound documentation before a list of related symbols.
+   *
+   *  Supersedes trRelatedFunctions
+   */
+  QCString trRelatedSymbols() override { return "Относящиеся к классу:"; }
+
+  /*! subscript for the related symbols
+   *
+   *  Supersedes trRelatedSubscript
+   */
+  QCString trRelatedSymbolsSubscript() override { return "(не члены класса)"; }
+
+  /*! used in the class documentation as a header before the list of all
+   * related classes.
+   *
+   * Supersedes trRelatedFunctionDocumentation
+   */
+  QCString trRelatedSymbolDocumentation() override {
+    return "Друзья класса и относящимся к классу обозначения";
+  }
+
+  /*! the compound type as used for the xrefitems */
+  QCString trCompoundType(ClassDef::CompoundType compType,
+                          SrcLangExt lang) override {
+    QCString result;
+    switch (compType) {
+    case ClassDef::Class:
+      if (lang == SrcLangExt::Fortran)
+        trType(true, true);
+      else
+        result = trClass(true, true);
+      break;
+    case ClassDef::Struct:
+      result = "Структура";
+      break;
+    case ClassDef::Union:
+      result = "Объединение";
+      break;
+    case ClassDef::Interface:
+      result = "Интерфейс";
+      break;
+    case ClassDef::Protocol:
+      result = "Протокол";
+      break;
+    case ClassDef::Category:
+      result = "Категория";
+      break;
+    case ClassDef::Exception:
+      result = "Исключение";
+      break;
+    case ClassDef::Service:
+      result = "Служба";
+      break;
+    case ClassDef::Singleton:
+      result = "Синглтон";
+      break;
+    default:
+      break;
+    }
+    return result;
+  }
+
+  QCString
+  trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override {
+    bool extractAll = Config_getBool(EXTRACT_ALL);
+    QCString result = "Список всех  ";
+    if (!extractAll)
+      result += "задокументированных ";
+
+    switch (hl) {
+    case FileMemberHighlight::All:
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
+        result += "функций, переменных, макроопределений, перечислителей и "
+                  "определений типов";
+      } else {
+        result += "прикреплённых файлов";
+      }
+      break;
+    case FileMemberHighlight::Functions:
+      result += "функций";
+      break;
+    case FileMemberHighlight::Variables:
+      result += "переменных";
+      break;
+    case FileMemberHighlight::Typedefs:
+      result += "определений типов";
+      break;
+    case FileMemberHighlight::Sequences:
+      result += "последовательностей";
+      break;
+    case FileMemberHighlight::Dictionaries:
+      result += "словарей";
+      break;
+    case FileMemberHighlight::Enums:
+      result += "перечислителей";
+      break;
+    case FileMemberHighlight::EnumValues:
+      result += "значений перечислителей";
+      break;
+    case FileMemberHighlight::Defines:
+      result += "макроопределений";
+      break;
+    case FileMemberHighlight::Total: // for completeness
+      break;
+    }
+    result += " соссылками на ";
+    if (extractAll)
+      result += "файлы, к которым они относятся:";
+    else
+      result += "документацию:";
+    return result;
+  }
+  QCString
+  trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override {
+    bool extractAll = Config_getBool(EXTRACT_ALL);
+    QCString result = "Список всех  ";
+    if (!extractAll) {
+      result += "задокументированных ";
+    }
+
+    switch (hl) {
+    case ClassMemberHighlight::All:
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
+        result += "полей структур и объединений";
+      } else {
+        result += "членов класса";
+      }
+      break;
+    case ClassMemberHighlight::Functions:
+      result += "функций";
+      break;
+    case ClassMemberHighlight::Variables:
+      result += "переменных";
+      break;
+    case ClassMemberHighlight::Typedefs:
+      result += "определений типов";
+      break;
+    case ClassMemberHighlight::Enums:
+      result += "перечислителей";
+      break;
+    case ClassMemberHighlight::EnumValues:
+      result += "значений перечислителей";
+      break;
+    case ClassMemberHighlight::Properties:
+      result += "свойств";
+      break;
+    case ClassMemberHighlight::Events:
+      result += "событий";
+      break;
+    case ClassMemberHighlight::Related:
+      result += "связанных символов";
+      break;
+    case ClassMemberHighlight::Total: // for completeness
+      break;
+    }
+    result += " со ссылками на ";
+    if (!extractAll) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
+        result += "документацию каждого поля структуры/объединения:";
+      } else {
+        result += "документацию класса каждого члена:";
+      }
+    } else {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
+        result += "структуры/объединения, к которым они относятся:";
+      } else {
+        result += "классы, к которым они относятся:";
+      }
+    }
+    return result;
+  }
+  QCString trNamespaceMembersDescriptionTotal(
+      NamespaceMemberHighlight::Enum hl) override {
+    bool extractAll = Config_getBool(EXTRACT_ALL);
+    QCString result = "Список всех ";
+    if (!extractAll)
+      result += "задокументированных ";
+    QCString singularResult = "";
+    QCString pluralResult = "";
+    switch (hl) {
+    case NamespaceMemberHighlight::All:
+      singularResult = "члена";
+      pluralResult = "членов";
+      break;
+    case NamespaceMemberHighlight::Functions:
+      singularResult = "функции";
+      pluralResult = "функций";
+      break;
+    case NamespaceMemberHighlight::Variables:
+      singularResult = "переменной";
+      pluralResult = "переменных";
+      break;
+    case NamespaceMemberHighlight::Typedefs:
+      singularResult = "определения";
+      pluralResult = "определений типов";
+      break;
+    case NamespaceMemberHighlight::Sequences:
+      singularResult = "последовательности";
+      pluralResult = "последовательностей";
+      break;
+    case NamespaceMemberHighlight::Dictionaries:
+      singularResult = "словаря";
+      pluralResult = "словарей";
+      break;
+    case NamespaceMemberHighlight::Enums:
+      singularResult = "перечислителя";
+      pluralResult = "перечислителей";
+      break;
+    case NamespaceMemberHighlight::EnumValues:
+      singularResult = "значения";
+      pluralResult = "значений перечислителей";
+      break;
+    case NamespaceMemberHighlight::Total: // for completeness
+      break;
+    }
+    result += pluralResult + " со ссылками на ";
+    if (extractAll)
+      result +=
+          "документацию пространства имён для каждого " + singularResult + ":";
+    else
+      result += "пространство имён, к которому они принадлежат:";
+    return result;
+  }
+  QCString trDefinition() override { return "Определения"; }
+  QCString trDeclaration() override { return "Объявления"; }
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.9.8
+  //////////////////////////////////////////////////////////////////////////
+
+  QCString trTopics() override { return "Разделы"; }
+  QCString trTopicDocumentation() override { return "Документация разделов"; }
+  QCString trTopicList() override { return "Список разделов"; }
+  QCString trTopicIndex() override { return "Указатель разделов"; }
+  QCString trTopicListDescription() override {
+    return "Список всех разделов c краткими описаниями:";
+  }
+  QCString
+  trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override {
+    bool extractAll = Config_getBool(EXTRACT_ALL);
+    QCString result = "Список всех ";
+    if (!extractAll)
+      result += "задокументированных ";
+    QCString singularResult = "";
+    QCString pluralResult = "";
+    switch (hl) {
+    case ModuleMemberHighlight::All:
+      singularResult = "члена";
+      pluralResult = "членов";
+      break;
+    case ModuleMemberHighlight::Functions:
+      singularResult = "функции";
+      pluralResult = "функций";
+      break;
+    case ModuleMemberHighlight::Variables:
+      singularResult = "переменной";
+      pluralResult = "переменных";
+      break;
+    case ModuleMemberHighlight::Typedefs:
+      singularResult = "определения";
+      pluralResult = "определений типов";
+      break;
+    case ModuleMemberHighlight::Enums:
+      singularResult = "перечислителя";
+      pluralResult = "перечислителей";
+      break;
+    case ModuleMemberHighlight::EnumValues:
+      singularResult = "значения";
+      pluralResult = "значений перечислителей";
+      break;
+    case ModuleMemberHighlight::Total: // for completeness
+      break;
+    };
+    result += pluralResult + " со ссылками на ";
+    if (extractAll)
+      result += "на документацию модуля для каждого " + singularResult + ":";
+    else
+      result += "на модуль к которому они принадлежат:";
+    return result;
+  }
+  QCString trExportedModules() override { return "Экспортируемые модули"; }
+
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.10.0
+  //////////////////////////////////////////////////////////////////////////
+
+  QCString trCopyToClipboard() override { return "Скопировать в буфер обмена"; }
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.11.0
+  //////////////////////////////////////////////////////////////////////////
+  QCString trImportant() override { return "Важно!"; }
 };
 
 #endif

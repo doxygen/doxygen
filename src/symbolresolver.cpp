@@ -239,7 +239,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
     // split off the explicit scope part
     explicitScopePart=name.left(qualifierIndex);
     // todo: improve namespace alias substitution
-    replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
+    replaceNamespaceAliases(explicitScopePart);
     name=name.mid(qualifierIndex+2);
   }
 
@@ -400,7 +400,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     // split off the explicit scope part
     explicitScopePart=name.left(qualifierIndex);
     // todo: improve namespace alias substitution
-    replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
+    replaceNamespaceAliases(explicitScopePart);
     name=name.mid(qualifierIndex+2);
   }
   AUTO_TRACE_ADD("qualifierIndex={} name={} explicitScopePart={}",qualifierIndex,name,explicitScopePart);
@@ -416,7 +416,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   const auto &range  = (range1.empty() && (i=name.find('<'))!=-1) ? Doxygen::symbolMap->find(name.left(i)) : range1;
   if (range.empty())
   {
-    AUTO_TRACE_ADD("no symbols (including unspecialized)");
+    AUTO_TRACE_ADD("no symbols with name '{}' (including unspecialized)",name);
     return nullptr;
   }
   AUTO_TRACE_ADD("{} -> {} candidates",name,range.size());

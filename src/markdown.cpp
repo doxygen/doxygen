@@ -621,6 +621,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "throws",         endOfLabel },
     { "tparam",         endOfLabel },
     { "typedef",        endOfLine  },
+    { "plantumlfile",   endOfLine  },
     { "union",          endOfLine  },
     { "until",          endOfLine  },
     { "var",            endOfLine  },
@@ -3633,7 +3634,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
     case ExplicitPageResult::explicitPage:
       {
         // look for `@page label My Title\n` and capture `label` (match[1]) and ` My Title` (match[2])
-        static const reg::Ex re(R"([\\@]page\s+(\a[\w-]*)(\s*[^\n]*)\n)");
+        static const reg::Ex re(R"([ ]*[\\@]page\s+(\a[\w-]*)(\s*[^\n]*)\n)");
         reg::Match match;
         std::string s = docs.str();
         if (reg::search(s,match,re))

@@ -142,7 +142,8 @@ FileNameLinkedMap    *Doxygen::imageNameLinkedMap = nullptr;       // images
 FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = nullptr;     // dot files
 FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = nullptr;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = nullptr;     // dia files
-StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace aliases
+FileNameLinkedMap    *Doxygen::plantUmlFileNameLinkedMap = nullptr;// plantuml files
+NamespaceAliasInfoMap Doxygen::namespaceAliasMap;            // all namespace aliases
 StringMap             Doxygen::tagDestinationMap;            // all tag locations
 StringUnorderedSet    Doxygen::tagFileSet;                   // all tag file names
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
@@ -204,6 +205,7 @@ void clearAll()
   Doxygen::dotFileNameLinkedMap->clear();
   Doxygen::mscFileNameLinkedMap->clear();
   Doxygen::diaFileNameLinkedMap->clear();
+  Doxygen::plantUmlFileNameLinkedMap->clear();
   Doxygen::tagDestinationMap.clear();
   SectionManager::instance().clear();
   CitationManager::instance().clear();
@@ -2011,6 +2013,8 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
       if (nd==nullptr) scope = fd;
       usingDef = resolver.resolveSymbol(scope,name);
 
+      //printf("usingDef(scope=%s,name=%s)=%s\n",qPrint(nd?nd->qualifiedName():""),qPrint(name),usingDef?qPrint(usingDef->qualifiedName()):"nullptr");
+
       if (!usingDef)
       {
         usingDef = getClass(name); // try direct lookup, this is needed to get
@@ -2158,7 +2162,188 @@ static void findUsingDeclImports(const Entry *root)
         }
       }
     }
+  }
+  else if (root->section.isUsingDecl() &&
+           (root->parent()->section.isNamespace() || root->parent()->section.isEmpty()) && // namespace or global member
+           root->lang==SrcLangExt::Cpp                                                     // do we also want this for e.g. Fortran? (see test case 095)
+          )
+  {
+    AUTO_TRACE("Found using declaration '{}' inside section {}", root->name, root->parent()->section);
+    Definition *scope = nullptr;
+    NamespaceDefMutable *nd = nullptr;
+    FileDef *fd = root->parent()->fileDef();
+    if (!root->parent()->name.isEmpty())
+    {
+      QCString fullName=removeRedundantWhiteSpace(root->parent()->name);
+      fullName=stripAnonymousNamespaceScope(fullName);
+      nd = toNamespaceDefMutable(getResolvedNamespace(fullName));
+      scope = nd;
+    }
+    else
+    {
+      scope = fd;
+    }
+    if (scope)
+    {
+      AUTO_TRACE_ADD("found scope '{}'",scope->name());
+      SymbolResolver resolver;
+      const Definition *def = resolver.resolveSymbol(scope,root->name);
+      if (def && def->definitionType()==Definition::TypeMember)
+      {
+        int i=root->name.find("::");
+        QCString memName;
+        if (i!=-1)
+        {
+          memName = root->name.right(root->name.length()-i-2);
+        }
+        else
+        {
+          memName = root->name;
+        }
+        const MemberDef *md = toMemberDef(def);
+        AUTO_TRACE_ADD("found member '{}' for name '{}'",md->qualifiedName(),root->name);
+        QCString fileName = root->fileName;
+        if (fileName.isEmpty() && root->tagInfo())
+        {
+          fileName = root->tagInfo()->tagName;
+        }
+        const ArgumentList &templAl = md->templateArguments();
+        const ArgumentList &al = md->argumentList();
 
+        auto newMd = createMemberDef(
+            fileName,root->startLine,root->startColumn,
+            md->typeString(),memName,md->argsString(),
+            md->excpString(),root->protection,root->virt,
+            md->isStatic(),Relationship::Member,md->memberType(),
+            templAl,al,root->metaData
+            );
+        auto newMmd = toMemberDefMutable(newMd.get());
+        if (nd)
+        {
+          newMmd->setNamespace(nd);
+          nd->insertMember(newMd.get());
+        }
+        if (fd)
+        {
+          newMmd->setFileDef(fd);
+          fd->insertMember(newMd.get());
+        }
+        if (!root->doc.isEmpty() || !root->brief.isEmpty())
+        {
+          newMmd->setDocumentation(root->doc,root->docFile,root->docLine);
+          newMmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          newMmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+        }
+        else
+        {
+          newMmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+          newMmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+          newMmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+        }
+        newMmd->setDefinition(md->definition());
+        applyMemberOverrideOptions(root,newMmd);
+        newMmd->addQualifiers(root->qualifiers);
+        newMmd->setBitfields(md->bitfieldString());
+        newMmd->addSectionsToDefinition(root->anchors);
+        newMmd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
+        newMmd->setBodyDef(md->getBodyDef());
+        newMmd->setInitializer(md->initializer());
+        newMmd->setRequiresClause(md->requiresClause());
+        newMmd->setMaxInitLines(md->initializerLines());
+        newMmd->setMemberGroupId(root->mGrpId);
+        newMmd->setMemberSpecifiers(md->getMemberSpecifiers());
+        newMmd->setVhdlSpecifiers(md->getVhdlSpecifiers());
+        newMmd->setLanguage(root->lang);
+        newMmd->setId(root->id);
+        MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
+        mn->push_back(std::move(newMd));
+#if 0 // insert an alias instead of a copy
+        const MemberDef *md = toMemberDef(def);
+        AUTO_TRACE_ADD("found member '{}' for name '{}'",md->qualifiedName(),root->name);
+        auto aliasMd = createMemberDefAlias(nd,md);
+        QCString aliasFullName = nd->qualifiedName()+"::"+aliasMd->localName();
+        if (nd && aliasMd.get())
+        {
+          nd->insertMember(aliasMd.get());
+        }
+        if (fd && aliasMd.get())
+        {
+          fd->insertMember(aliasMd.get());
+        }
+        MemberName *mn = Doxygen::memberNameLinkedMap->add(aliasFullName);
+        mn->push_back(std::move(aliasMd));
+#endif
+      }
+      else if (def && def->definitionType()==Definition::TypeClass)
+      {
+        const ClassDef *cd = toClassDef(def);
+        QCString copyFullName;
+        if (nd==nullptr)
+        {
+          copyFullName = cd->localName();
+        }
+        else
+        {
+          copyFullName = nd->qualifiedName()+"::"+cd->localName();
+        }
+        if (Doxygen::classLinkedMap->find(copyFullName)==nullptr)
+        {
+          ClassDefMutable *ncdm = toClassDefMutable(
+              Doxygen::classLinkedMap->add(copyFullName,
+                cd->deepCopy(copyFullName)));
+          AUTO_TRACE_ADD("found class '{}' for name '{}' copy '{}' obj={}",cd->qualifiedName(),root->name,copyFullName,(void*)ncdm);
+          if (ncdm)
+          {
+            if (nd) ncdm->moveTo(nd);
+            if ((!root->doc.isEmpty() || !root->brief.isEmpty())) // use docs at using statement
+            {
+              ncdm->setDocumentation(root->doc,root->docFile,root->docLine);
+              ncdm->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+            }
+            else // use docs from used class
+            {
+              ncdm->setDocumentation(cd->documentation(),cd->docFile(),cd->docLine());
+              ncdm->setBriefDescription(cd->briefDescription(),cd->briefFile(),cd->briefLine());
+            }
+            if (nd)
+            {
+              nd->addInnerCompound(ncdm);
+            }
+            if (fd)
+            {
+              if (ncdm) ncdm->setFileDef(fd);
+              fd->insertClass(ncdm);
+            }
+          }
+        }
+#if 0 // insert an alias instead of a copy
+        auto aliasCd = createClassDefAlias(nd,cd);
+        QCString aliasFullName;
+        if (nd==nullptr)
+        {
+          aliasFullName = aliasCd->localName();
+        }
+        else
+        {
+          aliasFullName = nd->qualifiedName()+"::"+aliasCd->localName();
+        }
+        AUTO_TRACE_ADD("found class '{}' for name '{}' aliasFullName='{}'",cd->qualifiedName(),root->name,aliasFullName);
+        auto acd = Doxygen::classLinkedMap->add(aliasFullName,std::move(aliasCd));
+        if (nd && acd)
+        {
+          nd->addInnerCompound(acd);
+        }
+        if (fd && acd)
+        {
+          fd->insertClass(acd);
+        }
+#endif
+      }
+      else if (scope)
+      {
+        AUTO_TRACE_ADD("no symbol with name '{}' in scope {}",root->name,scope->name());
+      }
+    }
   }
   for (const auto &e : root->children()) findUsingDeclImports(e.get());
 }
@@ -4180,12 +4365,8 @@ static void findUsedClassesForClass(const Entry *root,
 
           int sp=usedClassName.find('<');
           if (sp==-1) sp=0;
-          int si=usedClassName.findRev("::",sp);
-          if (si!=-1)
-          {
-            // replace any namespace aliases
-            replaceNamespaceAliases(usedClassName,si);
-          }
+          // replace any namespace aliases
+          replaceNamespaceAliases(usedClassName);
           // add any template arguments to the class
           QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
           //printf("    usedName=%s usedClassName=%s templSpec=%s\n",qPrint(usedName),qPrint(usedClassName),qPrint(templSpec));
@@ -4636,7 +4817,7 @@ static bool findClassRelation(
         if (!found && si!=-1)
         {
           // replace any namespace aliases
-          replaceNamespaceAliases(baseClassName,si);
+          replaceNamespaceAliases(baseClassName);
           baseClass = resolver.resolveClassMutable(explicitGlobalScope ? Doxygen::globalScope : context,
                                      baseClassName,
                                      mode==Undocumented,
@@ -4664,7 +4845,7 @@ static bool findClassRelation(
           auto it = Doxygen::namespaceAliasMap.find(baseClassName.str());
           if (it!=Doxygen::namespaceAliasMap.end()) // see if it is indeed a class.
           {
-            baseClass=getClassMutable(it->second.c_str());
+            baseClass=getClassMutable(QCString(it->second.alias));
             found = baseClass!=nullptr && baseClass!=cd;
           }
         }
@@ -11038,6 +11219,7 @@ void initDoxygen()
   Doxygen::dotFileNameLinkedMap = nullptr;
   Doxygen::mscFileNameLinkedMap = nullptr;
   Doxygen::diaFileNameLinkedMap = nullptr;
+  Doxygen::plantUmlFileNameLinkedMap = nullptr;
 
 }
 
@@ -11055,6 +11237,7 @@ void cleanUpDoxygen()
   delete Doxygen::dotFileNameLinkedMap;
   delete Doxygen::mscFileNameLinkedMap;
   delete Doxygen::diaFileNameLinkedMap;
+  delete Doxygen::plantUmlFileNameLinkedMap;
   Doxygen::mainPage.reset();
   delete Doxygen::pageLinkedMap;
   delete Doxygen::exampleLinkedMap;
@@ -11515,6 +11698,7 @@ void adjustConfiguration()
   Doxygen::dotFileNameLinkedMap = new FileNameLinkedMap;
   Doxygen::mscFileNameLinkedMap = new FileNameLinkedMap;
   Doxygen::diaFileNameLinkedMap = new FileNameLinkedMap;
+  Doxygen::plantUmlFileNameLinkedMap = new FileNameLinkedMap;
 
   setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -11866,6 +12050,24 @@ void searchInputFiles()
   {
     readFileOrDirectory(s.c_str(),                         // s
                         Doxygen::diaFileNameLinkedMap,     // fnDict
+                        nullptr,                           // exclSet
+                        nullptr,                           // patList
+                        nullptr,                           // exclPatList
+                        nullptr,                           // resultList
+                        nullptr,                           // resultSet
+                        alwaysRecursive,                   // recursive
+                        TRUE,                              // errorIfNotExist
+                        &killSet);                         // killSet
+  }
+  g_s.end();
+
+  g_s.begin("Searching for plantuml files...\n");
+  killSet.clear();
+  const StringVector &plantUmlFileList=Config_getList(PLANTUMLFILE_DIRS);
+  for (const auto &s : plantUmlFileList)
+  {
+    readFileOrDirectory(s.c_str(),                         // s
+                        Doxygen::plantUmlFileNameLinkedMap,// fnDict
                         nullptr,                           // exclSet
                         nullptr,                           // patList
                         nullptr,                           // exclPatList

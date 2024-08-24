@@ -1675,31 +1675,111 @@ NamespaceDefMutable *toNamespaceDefMutable(Definition *d)
 
 // --- Helpers
 
+static NamespaceDef *getResolvedNamespaceRec(StringSet &namespacesTried,const NamespaceAliasInfo &aliasInfo);
+
+static QCString replaceNamespaceAliasesRec(StringSet &namespacesTried,const QCString &name)
+{
+  QCString result = name;
+  //printf("> replaceNamespaceAliasesRec(%s)\n",qPrint(name));
+  if (namespacesTried.find(name.str())==namespacesTried.end())
+  {
+    namespacesTried.insert(name.str());
+    size_t p = 0;
+    for (;;)
+    {
+      size_t i = name.str().find("::",p);
+      if (i==std::string::npos)
+      {
+        auto it = Doxygen::namespaceAliasMap.find(name.str());
+        if (it != Doxygen::namespaceAliasMap.end())
+        {
+          //printf("found map %s->%s\n",qPrint(name),qPrint(it->second.alias));
+          auto ns = getResolvedNamespaceRec(namespacesTried,it->second);
+          if (ns)
+          {
+            result = replaceNamespaceAliasesRec(namespacesTried,ns->qualifiedName());
+          }
+        }
+        break;
+      }
+      else
+      {
+        auto it = Doxygen::namespaceAliasMap.find(name.left(i).str());
+        if (it != Doxygen::namespaceAliasMap.end())
+        {
+          //printf("found map %s|%s->%s\n",qPrint(name.left(i)),qPrint(name.mid(i)),qPrint(it->second.alias));
+          auto ns = getResolvedNamespaceRec(namespacesTried,it->second);
+          if (ns)
+          {
+            result = replaceNamespaceAliasesRec(namespacesTried,ns->qualifiedName()+name.mid(i));
+            break;
+          }
+        }
+      }
+      p = i+2;
+    }
+  }
+  //printf("< replaceNamespaceAliasesRec(%s)=%s\n",qPrint(name),qPrint(result));
+  return result;
+}
+
+static NamespaceDef *getResolvedNamespaceRec(StringSet &namespacesTried,const NamespaceAliasInfo &aliasInfo)
+{
+  size_t j = aliasInfo.context.length();
+  for (;;)
+  {
+    if (j>0)
+    {
+      //printf("candidate %s|::%s\n",qPrint(aliasInfo.context.substr(0,j)),qPrint(aliasInfo.alias));
+      auto candidate = replaceNamespaceAliasesRec(namespacesTried,aliasInfo.context.substr(0,j)+"::"+aliasInfo.alias);
+      auto nd = Doxygen::namespaceLinkedMap->find(candidate);
+      if (nd)
+      {
+        return nd;
+      }
+    }
+    if (j>0) // strip one level from context, i.e. given N1::N2::N3
+             // j==10 -> j==6 (N1::N2::N3->N1::N2), and then
+             // j==6  -> j==2 (N1::N2->N1), and then
+             // j==2  -> j==std::string::npos (N1->"")
+    {
+      j = aliasInfo.context.rfind("::",j-1);
+    }
+    else
+    {
+      j = std::string::npos;
+    }
+    if (j==std::string::npos)
+    {
+      //printf("candidate %s\n",qPrint(aliasInfo.alias));
+      auto candidate = replaceNamespaceAliasesRec(namespacesTried,QCString(aliasInfo.alias));
+      auto nd = Doxygen::namespaceLinkedMap->find(candidate);
+      if (nd)
+      {
+        return nd;
+      }
+      break;
+    }
+  }
+  return nullptr;
+}
+
+void replaceNamespaceAliases(QCString &name)
+{
+  //printf("> replaceNamespaceAliases(%s)\n",qPrint(name));
+  StringSet namespacesTried;
+  name = replaceNamespaceAliasesRec(namespacesTried,name);
+  //printf("< replaceNamespaceAliases: result=%s\n",qPrint(name));
+}
 
 NamespaceDef *getResolvedNamespace(const QCString &name)
 {
+  //printf("> getResolvedNamespace(%s)\n",qPrint(name));
   if (name.isEmpty()) return nullptr;
-  auto it = Doxygen::namespaceAliasMap.find(name.str());
-  if (it!=Doxygen::namespaceAliasMap.end())
-  {
-    int count=0; // recursion detection guard
-    StringUnorderedMap::iterator it2;
-    while ((it2=Doxygen::namespaceAliasMap.find(it->second))!=Doxygen::namespaceAliasMap.end() &&
-           count<10)
-    {
-      it=it2;
-      count++;
-    }
-    if (count==10)
-    {
-      warn_uncond("possible recursive namespace alias detected for %s!\n",qPrint(name));
-    }
-    return Doxygen::namespaceLinkedMap->find(it->second);
-  }
-  else
-  {
-    return Doxygen::namespaceLinkedMap->find(name);
-  }
+  StringSet namespacesTried;
+  auto ns = getResolvedNamespaceRec(namespacesTried,NamespaceAliasInfo(name.str()));
+  //printf("< getResolvedNamespace(%s)=%s\n",qPrint(name),ns?qPrint(ns->qualifiedName()):"nullptr");
+  return ns;
 }
 
 //--------------------------------------------------------------------------------------

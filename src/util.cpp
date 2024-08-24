@@ -388,6 +388,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   QCString result;
   if (qualifiedName.isEmpty())
   {
+    AUTO_TRACE_EXIT("empty name");
     return result;
   }
 
@@ -1689,7 +1690,14 @@ static QCString getCanonicalTypeForIdentifier(
         type.stripPrefix("typename ");
         type = stripTemplateSpecifiersFromScope(type,FALSE);
       }
-      result = getCanonicalTypeForIdentifier(d,fs,type,mType->getLanguage(),tSpec,count+1);
+      if (!type.isEmpty()) // see issue #11065
+      {
+        result = getCanonicalTypeForIdentifier(d,fs,type,mType->getLanguage(),tSpec,count+1);
+      }
+      else
+      {
+        result = word;
+      }
     }
     else
     {
@@ -5206,8 +5214,10 @@ QCString stripExtension(const QCString &fName)
   return stripExtensionGeneral(fName, Doxygen::htmlFileExtension);
 }
 
+#if 0
 void replaceNamespaceAliases(QCString &scope,size_t i)
 {
+  printf("replaceNamespaceAliases(%s,%zu)\n",qPrint(scope),i);
   while (i>0)
   {
     QCString ns = scope.left(i);
@@ -5222,7 +5232,9 @@ void replaceNamespaceAliases(QCString &scope,size_t i)
     }
     if (i>0 && ns==scope.left(i)) break;
   }
+  printf("result=%s\n",qPrint(scope));
 }
+#endif
 
 QCString stripPath(const QCString &s)
 {
@@ -5558,7 +5570,7 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
   if (qualifierIndex!=-1)
   {
     explicitScopePart = name.left(qualifierIndex);
-    replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
+    replaceNamespaceAliases(explicitScopePart);
     name = name.mid(qualifierIndex+2);
   }
   //printf("explicitScopePart=%s\n",qPrint(explicitScopePart));
