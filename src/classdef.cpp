@@ -926,8 +926,9 @@ std::unique_ptr<ClassDefImpl::IMPL> ClassDefImpl::IMPL::deepCopy() const
 std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
 {
   AUTO_TRACE("name='{}'",name);
-  std::unique_ptr<ClassDefImpl> result(new ClassDefImpl(
-        getDefFileName(),getDefLine(),getDefColumn(),name,compoundType(),std::string(),std::string(),true,m_impl->isJavaEnum));
+  auto result = std::make_unique<ClassDefImpl>(
+        getDefFileName(),getDefLine(),getDefColumn(),name,compoundType(),
+        std::string(),std::string(),true,m_impl->isJavaEnum);
   // copy other members
   result->m_impl = m_impl->deepCopy();
 

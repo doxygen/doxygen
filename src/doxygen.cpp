@@ -2286,30 +2286,36 @@ static void findUsingDeclImports(const Entry *root)
         {
           copyFullName = nd->qualifiedName()+"::"+cd->localName();
         }
-        auto ncd = cd->deepCopy(copyFullName);
-        AUTO_TRACE_ADD("found class '{}' for name '{}' copy '{}' obj={}",cd->qualifiedName(),root->name,copyFullName,(void*)ncd.get());
-        ClassDefMutable *ncdm = toClassDefMutable(ncd.get());
-        if (ncdm && nd) ncdm->moveTo(nd);
-        if (ncdm && (!root->doc.isEmpty() || !root->brief.isEmpty())) // use docs at using statement
+        if (Doxygen::classLinkedMap->find(copyFullName)==nullptr)
         {
-          ncdm->setDocumentation(root->doc,root->docFile,root->docLine);
-          ncdm->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          ClassDefMutable *ncdm = toClassDefMutable(
+              Doxygen::classLinkedMap->add(copyFullName,
+                cd->deepCopy(copyFullName)));
+          AUTO_TRACE_ADD("found class '{}' for name '{}' copy '{}' obj={}",cd->qualifiedName(),root->name,copyFullName,(void*)ncdm);
+          if (ncdm)
+          {
+            if (nd) ncdm->moveTo(nd);
+            if ((!root->doc.isEmpty() || !root->brief.isEmpty())) // use docs at using statement
+            {
+              ncdm->setDocumentation(root->doc,root->docFile,root->docLine);
+              ncdm->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+            }
+            else // use docs from used class
+            {
+              ncdm->setDocumentation(cd->documentation(),cd->docFile(),cd->docLine());
+              ncdm->setBriefDescription(cd->briefDescription(),cd->briefFile(),cd->briefLine());
+            }
+            if (nd)
+            {
+              nd->addInnerCompound(ncdm);
+            }
+            if (fd)
+            {
+              if (ncdm) ncdm->setFileDef(fd);
+              fd->insertClass(ncdm);
+            }
+          }
         }
-        else if (ncdm) // use docs from used class
-        {
-          ncdm->setDocumentation(cd->documentation(),cd->docFile(),cd->docLine());
-          ncdm->setBriefDescription(cd->briefDescription(),cd->briefFile(),cd->briefLine());
-        }
-        if (nd)
-        {
-          nd->addInnerCompound(ncd.get());
-        }
-        if (fd)
-        {
-          if (ncdm) ncdm->setFileDef(fd);
-          fd->insertClass(const_cast<ClassDef*>(ncd.get()));
-        }
-        Doxygen::classLinkedMap->add(copyFullName,std::move(ncd));
 #if 0 // insert an alias instead of a copy
         auto aliasCd = createClassDefAlias(nd,cd);
         QCString aliasFullName;
@@ -2333,9 +2339,9 @@ static void findUsingDeclImports(const Entry *root)
         }
 #endif
       }
-      else
+      else if (scope)
       {
-        AUTO_TRACE_ADD("no symbol with name '{}' in scope {}",root->name,nd->name());
+        AUTO_TRACE_ADD("no symbol with name '{}' in scope {}",root->name,scope->name());
       }
     }
   }
