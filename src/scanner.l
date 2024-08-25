@@ -1968,7 +1968,7 @@ NONLopt [^\n]*
                                           initEntry(yyscanner);
                                           BEGIN(Using);
                                         }
-<FindMembers>"using"{BN}+/("::"{ID}("::"{ID}*))? {
+<FindMembers>"using"{BN}+/("::"{ID}("::"{ID})*)? {
                                           if (yyextra->insideJava) REJECT;
                                           yyextra->current->startLine=yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
