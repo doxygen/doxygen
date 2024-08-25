@@ -5168,6 +5168,7 @@ StringVector ClassDefImpl::getQualifiers() const
 
 bool ClassDefImpl::containsOverload(const MemberDef *md) const
 {
+  AUTO_TRACE("name={}",md->name());
   const auto &mni = m_impl->allMemberNameInfoLinkedMap.find(md->name());
   if (mni)
   {
@@ -5183,10 +5184,12 @@ bool ClassDefImpl::containsOverload(const MemberDef *md) const
           );
       if (found)
       {
+        AUTO_TRACE_EXIT("true");
         return true;
       }
     }
   }
+  AUTO_TRACE_EXIT("false");
   return false;
 }
 

@@ -2025,6 +2025,7 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
       {
         usingDef = Doxygen::hiddenClassLinkedMap->find(name); // check if it is already hidden
       }
+#if 0
       if (!usingDef)
       {
         AUTO_TRACE_ADD("New using class '{}' (sec={})! #tArgLists={}",
@@ -2039,19 +2040,23 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
           usingDef = usingCd;
         }
       }
+#endif
       else
       {
         AUTO_TRACE_ADD("Found used type '{}' in scope='{}'",
             usingDef->name(), nd ? nd->name(): fd ? fd->name() : QCString("<unknown>"));
       }
 
-      if (nd)
+      if (usingDef)
       {
-        nd->addUsingDeclaration(usingDef);
-      }
-      else if (fd)
-      {
-        fd->addUsingDeclaration(usingDef);
+        if (nd)
+        {
+          nd->addUsingDeclaration(usingDef);
+        }
+        else if (fd)
+        {
+          fd->addUsingDeclaration(usingDef);
+        }
       }
     }
   }
@@ -2086,13 +2091,14 @@ static void findUsingDeclImports(const Entry *root)
     if (cd)
     {
       AUTO_TRACE_ADD("found class '{}'",cd->name());
-      int i=root->name.find("::");
+      int i=root->name.findRev("::");
       if (i!=-1)
       {
         QCString scope=root->name.left(i);
         QCString memName=root->name.right(root->name.length()-i-2);
         SymbolResolver resolver;
         const ClassDef *bcd = resolver.resolveClass(cd,scope); // todo: file in fileScope parameter
+        AUTO_TRACE_ADD("name={} scope={} bcd={}",scope,cd?cd->name():"<none>",bcd?bcd->name():"<none>");
         if (bcd && bcd!=cd)
         {
           AUTO_TRACE_ADD("found class '{}' memName='{}'",bcd->name(),memName);
@@ -2116,6 +2122,7 @@ static void findUsingDeclImports(const Entry *root)
 
                 if (!cd->containsOverload(md))
                 {
+                  AUTO_TRACE_ADD("creating new member {} for class {}",memName,cd->name());
                   auto newMd = createMemberDef(
                       fileName,root->startLine,root->startColumn,
                       md->typeString(),memName,md->argsString(),
@@ -2255,7 +2262,7 @@ static void findUsingDeclImports(const Entry *root)
         newMmd->setVhdlSpecifiers(md->getVhdlSpecifiers());
         newMmd->setLanguage(root->lang);
         newMmd->setId(root->id);
-        MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
+        MemberName *mn = Doxygen::functionNameLinkedMap->add(memName);
         mn->push_back(std::move(newMd));
 #if 0 // insert an alias instead of a copy
         const MemberDef *md = toMemberDef(def);
@@ -2308,11 +2315,13 @@ static void findUsingDeclImports(const Entry *root)
             if (nd)
             {
               nd->addInnerCompound(ncdm);
+              nd->addUsingDeclaration(ncdm);
             }
             if (fd)
             {
               if (ncdm) ncdm->setFileDef(fd);
               fd->insertClass(ncdm);
+              fd->addUsingDeclaration(ncdm);
             }
           }
         }
