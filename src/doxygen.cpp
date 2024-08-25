@@ -2194,7 +2194,7 @@ static void findUsingDeclImports(const Entry *root)
     {
       AUTO_TRACE_ADD("found scope '{}'",scope->name());
       SymbolResolver resolver;
-      const Definition *def = resolver.resolveSymbol(scope,root->name);
+      const Definition *def = resolver.resolveSymbol(root->name.startsWith("::") ? nullptr : scope,root->name);
       if (def && def->definitionType()==Definition::TypeMember)
       {
         int i=root->name.find("::");
