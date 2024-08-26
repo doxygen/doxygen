@@ -114,7 +114,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
 
   //printf("content\n====\n%s\n=====\n->\n-----\n%s\n------\n",qPrint(content),qPrint(text));
 
-  QCString qcOutDir(outDir);
+  QCString qcOutDir(substitute(outDir,"\\","/"));
   uint32_t pos = qcOutDir.findRev("/");
   QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
   Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
