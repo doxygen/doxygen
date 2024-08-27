@@ -3387,7 +3387,7 @@ static void addDefine(yyscan_t yyscanner)
   {
     state->localDefines.erase(it);
   }
-  state->localDefines.insert(std::make_pair(def.name.str(),def));
+  state->localDefines.emplace(def.name.str(),def);
 }
 
 static void addMacroDefinition(yyscan_t yyscanner)
@@ -3928,7 +3928,7 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
         def.fileDef      = state->yyFileDef;
         def.fileName     = fileName;
         def.varArgs      = hasVarArgs;
-        state->contextDefines.insert(std::make_pair(def.name.str(),def));
+        state->contextDefines.emplace(def.name.str(),def);
 
         //printf("#define '%s' '%s' #nargs=%d hasVarArgs=%d\n",
         //  qPrint(def.name),qPrint(def.definition),def.nargs,def.varArgs);
@@ -3956,7 +3956,7 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
         def.nonRecursive = nonRecursive;
         def.fileDef      = state->yyFileDef;
         def.fileName     = fileName;
-        state->contextDefines.insert(std::make_pair(def.name.str(),def));
+        state->contextDefines.emplace(def.name.str(),def);
       }
     }
   }
@@ -4114,7 +4114,7 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
       }
     }
     // add the macro definition for this file to the global map
-    Doxygen::macroDefinitions.emplace(std::make_pair(state->fileName.str(),std::move(state->macroDefinitions)));
+    Doxygen::macroDefinitions.emplace(state->fileName.str(),std::move(state->macroDefinitions));
   }
 
   //yyextra->defineManager.endContext();

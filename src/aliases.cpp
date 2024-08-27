@@ -137,14 +137,14 @@ static void addValidAliasToMap(std::string_view alias)
     if (it==g_aliasInfoMap.end()) // insert new alias
     {
       AliasOverloads overloads { { numParams, AliasInfo(aliasValue, separator) } };
-      g_aliasInfoMap.insert(std::make_pair(aliasName,overloads));
+      g_aliasInfoMap.emplace(aliasName,overloads);
     }
     else // replace exiting alias with new definition
     {
       auto it2 = it->second.find(numParams);
       if (it2==it->second.end()) // new alias overload for the given number of parameters
       {
-        it->second.insert(std::make_pair(numParams, AliasInfo(aliasValue,separator)));
+        it->second.emplace(numParams, AliasInfo(aliasValue,separator));
       }
       else // replace alias with new definition
       {

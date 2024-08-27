@@ -1937,7 +1937,7 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
         scope+="::";
       }
       scope+=path.mid(i+1);
-      yyextra->packageNameCache.insert(std::make_pair(path.str(),scope.str()));
+      yyextra->packageNameCache.emplace(path.str(),scope.str());
       return scope;
     }
   }

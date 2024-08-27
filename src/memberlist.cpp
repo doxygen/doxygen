@@ -669,7 +669,7 @@ void MemberList::writeDocumentation(OutputList &ol,
     if (md->isDetailedSectionVisible(m_container) &&
         !(md->isEnumValue() && !showInline))
     {
-      auto it = overloadInfo.insert(std::make_pair(md->name().str(),OverloadInfo())).first;
+      auto it = overloadInfo.emplace(md->name().str(),OverloadInfo()).first;
       it->second.total++;
     }
   }
@@ -742,7 +742,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
     if (md && md->hasDetailedDescription())
     {
-      auto it = overloadInfo.insert(std::make_pair(md->name().str(),OverloadInfo())).first;
+      auto it = overloadInfo.emplace(md->name().str(),OverloadInfo()).first;
       it->second.total++;
     }
   }

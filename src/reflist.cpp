@@ -33,7 +33,7 @@ RefItem *RefList::add()
   std::unique_ptr<RefItem> item = std::make_unique<RefItem>(m_id,this);
   RefItem *result = item.get();
   m_entries.push_back(std::move(item));
-  m_lookup.insert({m_id,result});
+  m_lookup.emplace(m_id,result);
   return result;
 }
 

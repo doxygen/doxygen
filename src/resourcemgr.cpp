@@ -48,7 +48,7 @@ void ResourceMgr::registerResources(std::initializer_list<Resource> resources)
 {
   for (auto &res : resources)
   {
-    p->resources.insert({res.name,res});
+    p->resources.emplace(res.name,res);
   }
 }
 

@@ -78,11 +78,7 @@ CitationManager::CitationManager() : p(new Private)
 void CitationManager::insert(const QCString &label)
 {
   QCString lowerCaseLabel = label.lower();
-  p->entries.insert(
-      std::make_pair(
-        lowerCaseLabel.str(),
-        std::make_unique<CiteInfoImpl>(lowerCaseLabel)
-      ));
+  p->entries.emplace(lowerCaseLabel.str(),std::make_unique<CiteInfoImpl>(lowerCaseLabel));
 }
 
 const CiteInfo *CitationManager::find(const QCString &label) const

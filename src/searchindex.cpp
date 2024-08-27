@@ -58,7 +58,7 @@ void SearchIndex::IndexWord::addUrlIndex(int idx,bool hiPriority)
   if (it==m_urls.end())
   {
     //printf("URLInfo::URLInfo(%d)\n",idx);
-    it = m_urls.insert(std::make_pair(idx,URLInfo(idx,0))).first;
+    it = m_urls.emplace(idx,URLInfo(idx,0)).first;
   }
   it->second.freq+=2;
   if (hiPriority) it->second.freq|=1; // mark as high priority document
@@ -162,13 +162,13 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   if (it == m_url2IdMap.end()) // new entry
   {
     m_urlIndex = m_urlMaxIndex++;
-    m_url2IdMap.insert(std::make_pair(baseUrl.str(),m_urlIndex));
-    m_urls.insert(std::make_pair(m_urlIndex,URL(name,url)));
+    m_url2IdMap.emplace(baseUrl.str(),m_urlIndex);
+    m_urls.emplace(m_urlIndex,URL(name,url));
   }
   else // existing entry
   {
     m_urlIndex=it->second;
-    m_urls.insert(std::make_pair(it->second,URL(name,url)));
+    m_urls.emplace(it->second,URL(name,url));
   }
 }
 
@@ -204,7 +204,7 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
   {
     //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
     m_index[idx].emplace_back(wStr);
-    it = m_words.insert({ wStr.str(), static_cast<int>(m_index[idx].size())-1 }).first;
+    it = m_words.emplace( wStr.str(), static_cast<int>(m_index[idx].size())-1 ).first;
   }
   m_index[idx][it->second].addUrlIndex(m_urlIndex,hiPriority);
   bool found=FALSE;
@@ -484,7 +484,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
     }
     e.extId = extId;
     e.url  = url;
-    it = m_docEntries.insert({key.str(),e}).first;
+    it = m_docEntries.emplace(key.str(),e).first;
     //printf("searchIndexExt %s : %s\n",qPrint(e->name),qPrint(e->url));
   }
   m_current = &it->second;

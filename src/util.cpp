@@ -3841,7 +3841,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
     else
     {
       num = g_usedNamesCount;
-      g_usedNames.insert(std::make_pair(name.str(),g_usedNamesCount++));
+      g_usedNames.emplace(name.str(),g_usedNamesCount++);
     }
     result.sprintf("a%05d",num);
   }
@@ -5405,7 +5405,7 @@ bool updateLanguageMapping(const QCString &extension,const QCString &language)
     g_extLookup.erase(it2); // language was already register for this ext
   }
   //printf("registering extension %s\n",qPrint(extName));
-  g_extLookup.insert(std::make_pair(extName.str(),parserId));
+  g_extLookup.emplace(extName.str(),parserId);
   if (!Doxygen::parserManager->registerExtension(extName,it1->parserName))
   {
     err("Failed to assign extension %s to parser %s for language %s\n",

@@ -115,7 +115,7 @@ class SectionRefs
     //! Adds a non-owning section reference.
     void add(const SectionInfo *si)
     {
-      m_lookup.insert({toStdString(si->label()),si});
+      m_lookup.emplace(toStdString(si->label()),si);
       m_entries.push_back(si);
     }
 

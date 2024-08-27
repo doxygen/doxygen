@@ -161,7 +161,7 @@ static void drawDirectory(TextStream &t, const DirDef *const directory, const Do
       "color=\""     << getDirectoryBorderColor(property)                            << "\", ";
   common_attributes(t, directory, property)
       << "];\n";
-  directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
+  directoriesInGraph.emplace(directory->getOutputFileBase().str(), directory);
 }
 
 /** Checks, if the directory is a the maximum drawn directory level. */
@@ -197,7 +197,7 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
     outputStream << "    " << directory->getOutputFileBase() << " [shape=plaintext, "
         "label=\"" << DotNode::convertLabel(directory->shortName()) << "\""
         "];\n";
-    directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
+    directoriesInGraph.emplace(directory->getOutputFileBase().str(), directory);
   }
 }
 
@@ -222,9 +222,9 @@ static void addDependencies(DirRelations &dependencies,const DirDef *const srcDi
       QCString relationName;
       relationName.sprintf("dir_%06d_%06d", srcDir->dirIndex(), dstDir->dirIndex());
       bool directRelation = isLeaf ? usedDirectory->hasDirectDstDeps() : usedDirectory->hasDirectDeps();
-      auto &&dependency = std::make_unique<DirRelation>(relationName, srcDir, usedDirectory.get());
-      auto &&pair = std::make_pair(std::move(dependency),directRelation);
-      dependencies.emplace_back(std::move(pair));
+      dependencies.emplace_back(
+          std::make_unique<DirRelation>(relationName, srcDir, usedDirectory.get()),
+          directRelation);
     }
   }
 }
@@ -288,7 +288,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
 {
   DirDefMap dirsInGraph;
 
-  dirsInGraph.insert(std::make_pair(dd->getOutputFileBase().str(),dd));
+  dirsInGraph.emplace(dd->getOutputFileBase().str(),dd);
 
   std::vector<const DirDef *> usedDirsNotDrawn, usedDirsDrawn;
   for (const auto& usedDir : dd->usedDirs())

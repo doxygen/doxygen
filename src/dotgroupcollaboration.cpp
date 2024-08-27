@@ -28,7 +28,7 @@ DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
   QCString tooltip = gd->briefDescriptionAsTooltip();
   m_rootNode = new DotNode(this, gd->groupTitle(), tooltip, tmp_url, TRUE );
   m_rootNode->markAsVisible();
-  m_usedNodes.insert(std::make_pair(gd->name().str(), m_rootNode));
+  m_usedNodes.emplace(gd->name().str(), m_rootNode);
 
   m_diskName = gd->getOutputFileBase();
 
@@ -72,7 +72,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
       QCString tooltip = d->briefDescriptionAsTooltip();
       nnode = new DotNode(this, d->groupTitle(), tooltip, url );
       nnode->markAsVisible();
-      m_usedNodes.insert(std::make_pair(d->name().str(), nnode));
+      m_usedNodes.emplace(d->name().str(), nnode);
     }
     else
     {
@@ -93,7 +93,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
       QCString tooltip = def->briefDescriptionAsTooltip();
       nnode = new DotNode(this, def->groupTitle(), tooltip, url );
       nnode->markAsVisible();
-      m_usedNodes.insert(std::make_pair(def->name().str(), nnode));
+      m_usedNodes.emplace(def->name().str(), nnode);
     }
     else
     {
@@ -200,7 +200,7 @@ void DotGroupCollaboration::addCollaborationMember(
         QCString tooltip = d->briefDescriptionAsTooltip();
         nnode = new DotNode(this, d->groupTitle(), tooltip, tmp_str );
         nnode->markAsVisible();
-        m_usedNodes.insert(std::make_pair(d->name().str(), nnode));
+        m_usedNodes.emplace(d->name().str(), nnode);
       }
       tmp_str = def->qualifiedName();
       addEdge( m_rootNode, nnode, eType, tmp_str, url );

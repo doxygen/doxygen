@@ -877,7 +877,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
     return nullptr; // typedef already done
   }
 
-  auto typedef_it = m_resolvedTypedefs.insert({qname.str(),md}).first; // put on the trace list
+  auto typedef_it = m_resolvedTypedefs.emplace(qname.str(),md).first; // put on the trace list
 
   const ClassDef *typeClass = md->getClassDef();
   QCString type = md->typeString(); // get the "value" of the typedef
@@ -1064,7 +1064,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
       int i=-1;
       if (newScope->definitionType()==Definition::TypeNamespace)
       {
-        visitedNamespaces.insert({newScope->name().str(),newScope});
+        visitedNamespaces.emplace(newScope->name().str(),newScope);
         // this part deals with the case where item is a class
         // A::B::C but is explicit referenced as A::C, where B is imported
         // in A via a using directive.

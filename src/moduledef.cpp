@@ -155,7 +155,7 @@ void ModuleDefImpl::addPartition(ModuleDefImpl *mod)
   std::string qName = mod->qualifiedName().str();
   if (m_partitions.find(qName)==m_partitions.end())
   {
-    m_partitions.insert(std::make_pair(qName,mod));
+    m_partitions.emplace(qName,mod);
   }
 }
 
@@ -185,13 +185,13 @@ void ModuleDefImpl::addHeader(int line,const QCString &headerName,bool isSystem)
 void ModuleDefImpl::addImport(int line,const QCString &moduleName,const QCString &partitionName,bool isExported)
 {
   AUTO_TRACE("name={}:line={},module={},partition={}",name(),line,moduleName,partitionName);
-  m_imports.insert(std::make_pair(getDefFileName().str()+":"+std::to_string(line),ImportInfo(this,moduleName,line,partitionName,isExported)));
+  m_imports.emplace(getDefFileName().str()+":"+std::to_string(line),ImportInfo(this,moduleName,line,partitionName,isExported));
 }
 
 void ModuleDefImpl::addExportedModule(const QCString &moduleName,const ImportInfo &info)
 {
   AUTO_TRACE("name={}:moduleName={},import={}",name(),moduleName,info.importName);
-  m_exportedModules.insert(std::make_pair(moduleName.str(),info));
+  m_exportedModules.emplace(moduleName.str(),info);
 }
 
 void ModuleDefImpl::addClassToModule(const Entry *root,ClassDef *cd)
@@ -1198,7 +1198,7 @@ void ModuleManager::createModuleDef(const QCString &fileName,int line,int column
   {
     ModuleList ml;
     ml.push_back(mod);
-    p->moduleNameMap.insert(std::make_pair(moduleName.str(),ml));
+    p->moduleNameMap.emplace(moduleName.str(),ml);
   }
   else
   {
@@ -1246,7 +1246,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
   else // import outside of a module
   {
     AUTO_TRACE_ADD("outside module");
-    p->externalImports.insert(std::make_pair(moduleFile.str(),ImportInfo(nullptr,importName,line,partitionName)));
+    p->externalImports.emplace(moduleFile.str(),ImportInfo(nullptr,importName,line,partitionName));
   }
 }
 

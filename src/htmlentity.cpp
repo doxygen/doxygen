@@ -328,7 +328,7 @@ HtmlEntityMapper::HtmlEntityMapper()
 {
   for (const auto &entity : g_htmlEntities)
   {
-    m_name2sym.insert(std::make_pair(entity.item,entity.symb));
+    m_name2sym.emplace(entity.item,entity.symb);
   }
   validate();
 }

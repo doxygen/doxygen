@@ -99,7 +99,7 @@ class VariableContext
     void addVariable(const QCString &name,ScopedTypeVariant stv)
     {
       Scope *scope = m_scopes.empty() ? &m_globalScope : &m_scopes.back();
-      scope->emplace(std::make_pair(name.str(),std::move(stv))); // add it to a list
+      scope->emplace(name.str(),std::move(stv)); // add it to a list
     }
     const ScopedTypeVariant *findVariable(const QCString &name)
     {

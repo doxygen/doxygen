@@ -426,7 +426,7 @@ class ConfigImpl
     {
       ConfigString *result = new ConfigString(name,doc);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.insert(std::make_pair(name,result));
+      m_dict.emplace(name,result);
       return result;
     }
 
@@ -440,7 +440,7 @@ class ConfigImpl
     {
       ConfigEnum *result = new ConfigEnum(name,doc,defVal);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.insert(std::make_pair(name,result));
+      m_dict.emplace(name,result);
       return result;
     }
 
@@ -452,7 +452,7 @@ class ConfigImpl
     {
       ConfigList *result = new ConfigList(name,doc);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.insert(std::make_pair(name,result));
+      m_dict.emplace(name,result);
       return result;
     }
 
@@ -467,7 +467,7 @@ class ConfigImpl
     {
       ConfigInt *result = new ConfigInt(name,doc,minVal,maxVal,defVal);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.insert(std::make_pair(name,result));
+      m_dict.emplace(name,result);
       return result;
     }
 
@@ -481,23 +481,25 @@ class ConfigImpl
     {
       ConfigBool *result = new ConfigBool(name,doc,defVal);
       m_options.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.insert(std::make_pair(name,result));
+      m_dict.emplace(name,result);
       return result;
     }
+
     /*! Adds an option that has become obsolete. */
     ConfigOption *addObsolete(const char *name,ConfigOption::OptionType orgType)
     {
       ConfigObsolete *result = new ConfigObsolete(name,orgType);
       m_obsolete.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.insert(std::make_pair(name,result));
+      m_dict.emplace(name,result);
       return result;
     }
+
     /*! Adds an option that has been disabled at compile time. */
     ConfigOption *addDisabled(const char *name)
     {
       ConfigDisabled *result = new ConfigDisabled(name);
       m_disabled.push_back(std::unique_ptr<ConfigOption>(result));
-      m_dict.insert(std::make_pair(name,result));
+      m_dict.emplace(name,result);
       return result;
     }
     /*! @} */

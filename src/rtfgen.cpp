@@ -431,7 +431,7 @@ void RTFGenerator::init()
     }
     else
     {
-      rtf_Style.insert(std::make_pair(def->name, StyleData(def->reference, def->definition)));
+      rtf_Style.emplace(def->name, StyleData(def->reference, def->definition));
     }
     def++;
   }
@@ -2838,7 +2838,7 @@ QCString rtfFormatBmkStr(const QCString &name)
   }
 
   QCString tag = g_nextTag;
-  auto result = g_tagMap.insert( std::make_pair(name.str(), g_nextTag.str()) );
+  auto result = g_tagMap.emplace(name.str(), g_nextTag.str());
 
   if (result.second) // new item was added
   {

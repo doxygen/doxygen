@@ -239,13 +239,13 @@ void ClangTUParser::parse()
   p->ufs[0].Filename = qstrdup(fileName.data());
   p->ufs[0].Contents = p->sources[0].data();
   p->ufs[0].Length   = p->sources[0].length();
-  p->fileMapping.insert({fileName.data(),0});
+  p->fileMapping.emplace(fileName.data(),0);
   size_t i=1;
   for (auto it  = p->filesInSameTU.begin();
             it != p->filesInSameTU.end() && i<numUnsavedFiles;
           ++it, i++)
   {
-    p->fileMapping.insert({it->c_str(),static_cast<uint32_t>(i)});
+    p->fileMapping.emplace(it->c_str(),static_cast<uint32_t>(i));
     p->sources[i]      = detab(fileToString(it->c_str(),filterSourceFiles,TRUE),refIndent);
     p->ufs[i].Filename = qstrdup(it->c_str());
     p->ufs[i].Contents = p->sources[i].data();

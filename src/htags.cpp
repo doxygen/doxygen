@@ -136,7 +136,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
           QCString value = line.mid(sep+1).stripWhiteSpace();
           int ext=value.findRev('.');
           if (ext!=-1) value=value.left(ext); // strip extension
-          g_symbolMap.insert(std::make_pair(key.str(),value.str()));
+          g_symbolMap.emplace(key.str(),value.str());
           //printf("Key/Value=(%s,%s)\n",qPrint(key),qPrint(value));
         }
       }

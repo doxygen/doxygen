@@ -129,7 +129,7 @@ void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
         if (it==Doxygen::memberGroupInfoMap.end())
         {
           //printf("    use membergroup %d\n",m_memberGroupId);
-          Doxygen::memberGroupInfoMap.insert(std::make_pair(m_memberGroupId,std::move(info)));
+          Doxygen::memberGroupInfoMap.emplace(m_memberGroupId,std::move(info));
         }
       }
       m_memberGroupRelates = e->relates;

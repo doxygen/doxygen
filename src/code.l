@@ -2754,7 +2754,7 @@ static void addUsingDirective(yyscan_t yyscanner,const QCString &name)
     const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(name);
     if (nd)
     {
-      yyextra->theUsingContext.insert(std::make_pair(name.str(),nd));
+      yyextra->theUsingContext.emplace(name.str(),nd);
     }
   }
 }

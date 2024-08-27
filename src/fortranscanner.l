@@ -2193,7 +2193,7 @@ void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
           name.remove(0, end+1);
       }
 
-      procMap.insert(std::make_pair(name.str(), cf));
+      procMap.emplace(name.str(), cf);
     }
   }
 
@@ -2563,7 +2563,7 @@ static void startScope(yyscan_t yyscanner,Entry *scope)
   //cout<<"start scope: "<<scope->name<<endl;
   yyextra->current_root= scope; /* start substructure */
 
-  yyextra->modifiers.insert(std::make_pair(scope, std::map<std::string,SymbolModifiers>()));
+  yyextra->modifiers.emplace(scope, std::map<std::string,SymbolModifiers>());
 
   // create new current with possibly different defaults...
   yyextra->current = std::make_shared<Entry>();
@@ -2742,7 +2742,7 @@ static void resolveTypeBoundProcedures(Entry *scope)
         {
           if (cf->section.isFunction())
           {
-            procMap.insert(std::make_pair(cf->name.str(), cf));
+            procMap.emplace(cf->name.str(), cf);
           }
         }
         procMapCreated = true;
@@ -2767,7 +2767,7 @@ static void resolveTypeBoundProcedures(Entry *scope)
           ct->docLine = proc->docLine;
           ct->docFile = proc->docFile;
         }
-        methodMap.insert(std::make_pair(ct->name.str(), ct));
+        methodMap.emplace(ct->name.str(), ct);
       }
     }
 
@@ -2788,7 +2788,7 @@ static void resolveTypeBoundProcedures(Entry *scope)
           if (cf->section.isClass() && cf->spec.isInterface() && cf->type=="abstract")
           {
             std::shared_ptr<Entry> ci = cf->children().front();
-            interfMap.insert(std::make_pair(ci->name.str(), ci));
+            interfMap.emplace(ci->name.str(), ci);
           }
         }
         interfMapCreated = true;
@@ -2814,7 +2814,7 @@ static void resolveTypeBoundProcedures(Entry *scope)
           ct->docFile = proc->docFile;
         }
 
-        methodMap.insert(std::make_pair(ct->name.str(), ct));
+        methodMap.emplace(ct->name.str(), ct);
       }
     }
 

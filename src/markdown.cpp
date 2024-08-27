@@ -3273,7 +3273,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
         // handle previous line
         if (isLinkRef(data.substr(pi,i-pi),id,link,title))
         {
-          linkRefs.insert({id.lower().str(),LinkRef(link,title)});
+          linkRefs.emplace(id.lower().str(),LinkRef(link,title));
         }
         else
         {
@@ -3336,7 +3336,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
       {
         //printf("found link ref: id='%s' link='%s' title='%s'\n",
         //       qPrint(id),qPrint(link),qPrint(title));
-        linkRefs.insert({id.lower().str(),LinkRef(link,title)});
+        linkRefs.emplace(id.lower().str(),LinkRef(link,title));
         i=ref+pi;
         end=i+1;
       }
@@ -3380,7 +3380,7 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
     {
       //printf("found link ref: id='%s' link='%s' title='%s'\n",
       //    qPrint(id),qPrint(link),qPrint(title));
-      linkRefs.insert({id.lower().str(),LinkRef(link,title)});
+      linkRefs.emplace(id.lower().str(),LinkRef(link,title));
     }
     else
     {

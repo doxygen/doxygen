@@ -344,7 +344,7 @@ const MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,Memb
     QCString tkey=cd->symbolName()+"@"+md->name();
     if (g_varMap.find(tkey.str())==g_varMap.end())
     {
-      g_varMap.insert({tkey.str(),md});
+      g_varMap.emplace(tkey.str(),md);
     }
   }
   it=g_varMap.find(keyType.str());
@@ -376,7 +376,7 @@ void VhdlDocGen::findAllPackages( ClassDef *cdef)
         {
           cList.push_back(cd);
           VhdlDocGen::findAllPackages(cd);
-          g_packages.insert({cdef,cList});
+          g_packages.emplace(cdef,cList);
         }
       }
     }//for
@@ -3148,7 +3148,7 @@ void FlowChart::writeShape(TextStream &t,const FlowChart &fl)
 
 #ifdef DEBUGFLOW
   QCString qq(getNodeName(fl.id));
-  g_keyMap.insert({qq.str(),fl.id});
+  g_keyMap.emplace(qq.str(),fl.id);
 #endif
 
   bool dec=(fl.type & DECLN);

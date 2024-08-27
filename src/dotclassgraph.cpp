@@ -103,7 +103,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors colo
       n->addParent(bn);
     }
     bn->setDistance(distance);
-    m_usedNodes.insert(std::make_pair(fullName.str(),bn));
+    m_usedNodes.emplace(fullName.str(),bn);
     //printf(" add new child node '%s' to %s hidden=%d url=%s\n",
     //    qPrint(className),qPrint(n->label()),cd->isHidden(),qPrint(tmp_url));
 
@@ -333,7 +333,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
     cd
   );
   m_startNode->setDistance(0);
-  m_usedNodes.insert(std::make_pair(className.str(),m_startNode));
+  m_usedNodes.emplace(className.str(),m_startNode);
 
   buildGraph(cd,m_startNode,TRUE,1);
   if (t==GraphType::Inheritance) buildGraph(cd,m_startNode,FALSE,1);

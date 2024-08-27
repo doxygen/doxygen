@@ -357,7 +357,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           /* append module name to use dict */
                                           yyextra->useEntry = UseEntry();
                                           yyextra->useEntry.module = tmp;
-                                          yyextra->useMembers.insert(std::make_pair(tmp.str(), yyextra->useEntry));
+                                          yyextra->useMembers.emplace(tmp.str(), yyextra->useEntry);
                                           addUse(yyscanner,tmp);
                                         }
 <Use,UseOnly,Import>{BS},{BS}           { codifyLines(yyscanner,yytext); }

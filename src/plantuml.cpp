@@ -352,7 +352,7 @@ static void addPlantumlFiles(PlantumlManager::FilesMap &plantumlFiles,
   auto kv = plantumlFiles.find(key);
   if (kv==plantumlFiles.end())
   {
-    kv = plantumlFiles.insert(std::make_pair(key,StringVector())).first;
+    kv = plantumlFiles.emplace(key,StringVector()).first;
   }
   kv->second.push_back(value);
 }
@@ -364,7 +364,7 @@ static void addPlantumlContent(PlantumlManager::ContentMap &plantumlContent,
   auto kv = plantumlContent.find(key);
   if (kv==plantumlContent.end())
   {
-    kv = plantumlContent.insert(std::make_pair(key,PlantumlContent("",outDir,srcFile,srcLine))).first;
+    kv = plantumlContent.emplace(key,PlantumlContent("",outDir,srcFile,srcLine)).first;
   }
   kv->second.content+=puContent;
 }

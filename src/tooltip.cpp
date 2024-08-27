@@ -82,7 +82,7 @@ void TooltipManager::addTooltip(const Definition *d)
     id+="_"+anc;
   }
   id = "a" + id;
-  p->tooltipInfo.insert(std::make_pair(id.str(),d));
+  p->tooltipInfo.emplace(id.str(),d);
   //printf("%p: addTooltip(%s)\n",this,id.data());
 }
 
@@ -97,7 +97,7 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
     it = g_tooltipsWrittenPerFile.find(id);
     if (it==g_tooltipsWrittenPerFile.end()) // new file
     {
-      it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::unordered_set<std::string>())).first;
+      it = g_tooltipsWrittenPerFile.emplace(id,std::unordered_set<std::string>()).first;
     }
   }
 

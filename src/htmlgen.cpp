@@ -643,7 +643,7 @@ static void fillColorStyleMap(const QCString &definitions,StringUnorderedMap &ma
       int semi = line.findRev(';');
       assert(semi!=-1);
       std::string value = line.mid(separator+1,semi-separator-1).stripWhiteSpace().str();
-      map.insert(std::make_pair(key,value));
+      map.emplace(key,value);
       //printf("var(%s)=%s\n",qPrint(key),qPrint(value));
     }
     p=i+1;

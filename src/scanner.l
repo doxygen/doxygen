@@ -1882,11 +1882,11 @@ NONLopt [^\n]*
                                           std::string ctx = yyextra->current_root->name.str();
                                           if (ctx.empty())
                                           {
-                                            Doxygen::namespaceAliasMap.insert({yyextra->aliasName.str(),NamespaceAliasInfo(std::string(yytext),std::string())});
+                                            Doxygen::namespaceAliasMap.emplace(yyextra->aliasName.str(),NamespaceAliasInfo(std::string(yytext),std::string()));
                                           }
                                           else
                                           {
-                                            Doxygen::namespaceAliasMap.insert({ctx+"::"+yyextra->aliasName.str(),NamespaceAliasInfo(std::string(yytext),ctx)});
+                                            Doxygen::namespaceAliasMap.emplace(ctx+"::"+yyextra->aliasName.str(),NamespaceAliasInfo(std::string(yytext),ctx));
                                           }
                                         }
 <NSAliasArg>";"                         {
@@ -1921,7 +1921,7 @@ NONLopt [^\n]*
                                           if (!yyextra->aliasName.isEmpty())
                                           {
                                             std::string aliasValue = removeRedundantWhiteSpace(substitute(yyextra->aliasName,"\\","::")).str();
-                                            Doxygen::namespaceAliasMap.insert({yytext,NamespaceAliasInfo(aliasValue)});
+                                            Doxygen::namespaceAliasMap.emplace(yytext,NamespaceAliasInfo(aliasValue));
                                           }
                                           yyextra->aliasName.clear();
                                         }

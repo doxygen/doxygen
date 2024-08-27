@@ -67,7 +67,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
                          nullptr);                // cd
         n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
-        m_usedNodes.insert(std::make_pair(in.str(),bn));
+        m_usedNodes.emplace(in.str(),bn);
         bn->setDistance(distance);
 
         if (bfd) buildGraph(bn,bfd,distance+1);
@@ -134,7 +134,7 @@ DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
                             tmp_url,
                             TRUE);    // root node
   m_startNode->setDistance(0);
-  m_usedNodes.insert(std::make_pair(fd->absFilePath().str(),m_startNode));
+  m_usedNodes.emplace(fd->absFilePath().str(),m_startNode);
   buildGraph(m_startNode,fd,1);
 
   int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);

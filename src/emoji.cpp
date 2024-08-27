@@ -1903,12 +1903,12 @@ EmojiEntityMapper::EmojiEntityMapper()
 {
   for (size_t i = 0; i < g_numEmojiEntities; i++)
   {
-    m_name2symGh.insert(std::make_pair(g_emojiEntities[i].name, static_cast<int>(i)));
+    m_name2symGh.emplace(g_emojiEntities[i].name, static_cast<int>(i));
   }
   for (size_t i = 0; i < g_numEmojiCompatibilityEntities; i++)
   {
     int ii = symbol2index(g_emojiCompatibilityEntities[i].newName);
-    if (ii != -1) m_name2symGh.insert(std::make_pair(g_emojiCompatibilityEntities[i].oldName, ii));
+    if (ii != -1) m_name2symGh.emplace(g_emojiCompatibilityEntities[i].oldName, ii);
   }
 }
 

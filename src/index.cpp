@@ -186,7 +186,7 @@ static void MemberIndexMap_add(Index::MemberIndexMap &map,const std::string &let
   }
   else
   {
-    map.insert(std::make_pair(letter,std::vector<const MemberDef*>({md})));
+    map.emplace(letter,std::vector<const MemberDef*>({md}));
   }
 }
 
@@ -1580,7 +1580,7 @@ static void writeFileIndex(OutputList &ol)
         }
         else // new path -> create path entry + append
         {
-          pathMap.insert(std::make_pair(path.str(),outputFiles.size()));
+          pathMap.emplace(path.str(),outputFiles.size());
           outputFiles.emplace_back(path);
           outputFiles.back().files.push_back(fd.get());
         }
@@ -2300,8 +2300,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
         }
         else // new entry
         {
-          classesByLetter.insert(
-              std::make_pair(letter, std::vector<const ClassDef*>({ cd.get() })));
+          classesByLetter.emplace(letter, std::vector<const ClassDef*>({ cd.get() }));
         }
       }
     }

@@ -133,7 +133,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
       {
         //printf("formula not found adding it under id=%d\n",id);
         formula = p->formulas.add(text.c_str(),id,width,height);
-        p->formulaIdMap.insert(std::make_pair(id,formula));
+        p->formulaIdMap.emplace(id,formula);
       }
 
       if (formula) // if an entry in the repository exists also check if there is a generated image
@@ -698,7 +698,7 @@ int FormulaManager::addFormula(const std::string &formulaText,int width,int heig
   // add new formula
   int id = static_cast<int>(p->formulas.size());
   formula = p->formulas.add(formulaText.c_str(),id,width,height);
-  p->formulaIdMap.insert(std::make_pair(id,formula));
+  p->formulaIdMap.emplace(id,formula);
   return id;
 }
 

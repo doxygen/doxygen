@@ -3065,7 +3065,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     }
     if (root->bodyLine!=-1 && root->endBodyLine!=-1) // store the body location for later use
     {
-      Doxygen::staticInitMap.insert(std::make_pair(name.str(),BodyInfo{root->startLine,root->bodyLine,root->endBodyLine}));
+      Doxygen::staticInitMap.emplace(name.str(),BodyInfo{root->startLine,root->bodyLine,root->endBodyLine});
     }
 
 
@@ -4281,7 +4281,7 @@ static TemplateNameMap getTemplateArgumentsInName(const ArgumentList &templateAr
       {
         if (templateNames.find(n)==templateNames.end())
         {
-          templateNames.insert(std::make_pair(n,count));
+          templateNames.emplace(n,count);
         }
       }
     }
@@ -5070,7 +5070,7 @@ static void findClassEntries(const Entry *root)
 {
   if (isClassSection(root))
   {
-    g_classEntries.insert({root->name.str(),root});
+    g_classEntries.emplace(root->name.str(),root);
   }
   for (const auto &e : root->children()) findClassEntries(e.get());
 }
@@ -5202,7 +5202,7 @@ static void computeTemplateClassRelations()
                     actualTemplateNames.find(actArg.type.str())==actualTemplateNames.end()
                    )
                 {
-                  actualTemplateNames.insert(std::make_pair(actArg.type.str(),static_cast<int>(templIndex)));
+                  actualTemplateNames.emplace(actArg.type.str(),static_cast<int>(templIndex));
                 }
               }
 
@@ -10182,8 +10182,7 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const QCString &tagLi
 
   if (!destName.isEmpty())
   {
-    Doxygen::tagDestinationMap.insert(
-        std::make_pair(fi.absFilePath(), destName.str()));
+    Doxygen::tagDestinationMap.emplace(fi.absFilePath(), destName.str());
     msg("Reading tag file '%s', location '%s'...\n",qPrint(fileName),qPrint(destName));
   }
   else

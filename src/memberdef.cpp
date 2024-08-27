@@ -4534,7 +4534,7 @@ const MemberList *MemberDefImpl::getSectionList(const Definition *container) con
 void MemberDefImpl::setSectionList(const Definition *container,const MemberList *sl)
 {
   //printf("MemberDefImpl::setSectionList(%s,%p) name=%s\n",qPrint(d->name()),sl,qPrint(name()));
-  m_sectionMap.insert(std::make_pair(container,sl));
+  m_sectionMap.emplace(container,sl);
 }
 
 Specifier MemberDefImpl::virtualness(int count) const
