@@ -193,6 +193,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     bool isLinkableInProject() const override;
     bool isLinkable() const override;
     bool hasDocumentation() const override;
+    bool hasUserDocumentation() const override;
     bool isDeleted() const override;
     bool isBriefSectionVisible() const override;
     bool isDetailedSectionVisible(MemberListContainer container) const override;
@@ -805,6 +806,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isLinkable(); }
     bool hasDocumentation() const override
     { return getMdAlias()->hasDocumentation(); }
+    bool hasUserDocumentation() const override
+    { return getMdAlias()->hasUserDocumentation(); }
     bool isDeleted() const override
     { return getMdAlias()->isDeleted(); }
     bool isBriefSectionVisible() const override
@@ -4078,16 +4081,25 @@ void MemberDefImpl::warnIfUndocumented() const
   const Definition *d=nullptr;
   QCString t;
   if (cd)
-    t=cd->compoundTypeString(), d=cd;
+  {
+    t=cd->compoundTypeString();
+    d=cd;
+  }
   else if (nd)
   {
-    d=nd;
     t=nd->compoundTypeString();
+    d=nd;
   }
   else if (gd)
-    t="group", d=gd;
+  {
+    t="group";
+    d=gd;
+  }
   else
-    t="file", d=fd;
+  {
+    t="file";
+    d=fd;
+  }
   bool extractAll = Config_getBool(EXTRACT_ALL);
 
   //printf("%s:warnIfUndoc: hasUserDocs=%d isFriendClass=%d protection=%d isRef=%d isDel=%d\n",
@@ -4105,7 +4117,7 @@ void MemberDefImpl::warnIfUndocumented() const
     QCString sep = getLanguageSpecificSeparator(lang,TRUE);
     warn_undoc(getDefFileName(),getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
          qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),qPrint(t),
-         qPrint(sep=="::"?d->name():substitute(d->name(),"::",sep)));
+         qPrint(substitute(d->name(),"::",sep)));
   }
   else if (!hasDetailedDescription())
   {
@@ -6280,6 +6292,18 @@ QCString MemberDefImpl::documentation() const
   else
   {
     return DefinitionMixin::documentation();
+  }
+}
+
+bool MemberDefImpl::hasUserDocumentation() const
+{
+  if (m_templateMaster)
+  {
+    return m_templateMaster->hasUserDocumentation();
+  }
+  else
+  {
+    return DefinitionMixin::hasUserDocumentation();
   }
 }
 
