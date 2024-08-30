@@ -692,6 +692,7 @@ QCString stripTemplateSpecifiers(const QCString &s)
 static Definition *buildScopeFromQualifiedName(const QCString &name_,SrcLangExt lang,const TagInfo *tagInfo)
 {
   QCString name = stripTemplateSpecifiers(name_);
+  name.stripPrefix("::");
   int level = name.contains("::");
   //printf("buildScopeFromQualifiedName(%s) level=%d\n",qPrint(name),level);
   int i=0, p=0, l=0;
@@ -814,7 +815,7 @@ static Definition *findScopeFromQualifiedName(NamespaceDefMutable *startScope,co
       // scope match between the used class and nestedNameSpecifier.
       for (const auto &usedName : g_usingDeclarations)
       {
-        //printf("Checking using class %s\n",ui.currentKey());
+        //printf("Checking using class %s\n",usedName.c_str());
         if (rightScopeMatch(usedName.c_str(),nestedNameSpecifier))
         {
           // ui.currentKey() is the fully qualified name of nestedNameSpecifier

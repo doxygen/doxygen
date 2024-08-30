@@ -1285,6 +1285,7 @@ void DefinitionImpl::setOuterScope(Definition *d)
     m_impl->outerScope = d;
   }
   m_impl->hidden = m_impl->hidden || d->isHidden();
+  assert(m_impl->def!=m_impl->outerScope);
 }
 
 const QCString &DefinitionImpl::localName() const

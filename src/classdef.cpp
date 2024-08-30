@@ -58,7 +58,7 @@ static QCString makeQualifiedNameWithTemplateParameters(const ClassDef *cd,
 {
   //bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
   bool hideScopeNames = Config_getBool(HIDE_SCOPE_NAMES);
-  //printf("qualifiedNameWithTemplateParameters() localName=%s\n",qPrint(localName()));
+  //printf("qualifiedNameWithTemplateParameters() localName=%s\n",qPrint(cd->localName()));
   QCString scName;
   const Definition *d=cd->getOuterScope();
   if (d)
@@ -944,13 +944,15 @@ std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
   for (const auto &innerCd : m_impl->innerClasses)
   {
     QCString innerName = name+"::"+innerCd->localName();
-    auto cdCopy = innerCd->deepCopy(innerName);
-    auto cd = Doxygen::classLinkedMap->add(innerName,std::move(cdCopy));
-    result->addInnerCompound(cd);
-    ClassDefMutable *cdm = toClassDefMutable(cd);
-    if (cdm)
+    if (Doxygen::classLinkedMap->find(innerName)==nullptr)
     {
-      cdm->setOuterScope(result.get());
+      auto cd = Doxygen::classLinkedMap->add(innerName,innerCd->deepCopy(innerName));
+      result->addInnerCompound(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
+      if (cdm)
+      {
+        cdm->setOuterScope(result.get());
+      }
     }
   }
 
