@@ -2183,6 +2183,11 @@ NONLopt [^\n]*
                                           *yyextra->pCopyHereDocGString << yytext;
                                           BEGIN(CopyHereDocEnd);
                                         }
+<CopyHereDoc>"\""{ID}/"\""              { // PHP quoted heredoc
+                                          yyextra->delimiter = &yytext[1];
+                                          *yyextra->pCopyHereDocGString << yytext;
+                                          BEGIN(CopyHereDocEnd);
+                                        }
 <CopyHereDoc>"'"{ID}/"'"                { // PHP nowdoc
                                           yyextra->delimiter = &yytext[1];
                                           *yyextra->pCopyHereDocGString << yytext;
@@ -2190,6 +2195,10 @@ NONLopt [^\n]*
                                         }
 <HereDoc>{ID}                           { // PHP heredoc
                                           yyextra->delimiter = yytext;
+                                          BEGIN(HereDocEnd);
+                                        }
+<HereDoc>"\""{ID}/"\""                  { // PHP quoted heredoc
+                                          yyextra->delimiter = &yytext[1];
                                           BEGIN(HereDocEnd);
                                         }
 <HereDoc>"'"{ID}/"'"                    { // PHP nowdoc
