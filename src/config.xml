@@ -254,7 +254,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  Using the \c PROJECT_BRIEF tag one can provide an optional one line description
- for a project that appears at the top of each page and should give viewer
+ for a project that appears at the top of each page and should give viewers
  a quick idea about the purpose of the project. Keep the description short.
 ]]>
       </docs>
@@ -297,7 +297,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  format and will distribute the generated files over these directories.
  Enabling this option can be useful when feeding Doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise
- causes performance problems for the file system.
+ cause performance problems for the file system.
  Adapt \c CREATE_SUBDIRS_LEVEL to control the number of sub-directories.
 ]]>
       </docs>
@@ -485,7 +485,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c SHORT_NAMES tag is set to \c YES, Doxygen will generate much shorter
- (but less readable) file names. This can be useful is your file systems
+ (but less readable) file names. This can be useful if your file system
  doesn't support long names like on DOS, Mac, or CD-ROM.
 ]]>
       </docs>
@@ -1540,10 +1540,10 @@ PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
       <docs>
 <![CDATA[
  This tag can be used to specify the character encoding of the source files that Doxygen
- parses
+ parses.
  The \c INPUT_FILE_ENCODING tag can be used to specify character encoding on a per file pattern
  basis. Doxygen will compare the file name with each pattern and apply the
- encoding instead of the default \ref cfg_input_encoding "INPUT_ENCODING") if there is a match.
+ encoding instead of the default \ref cfg_input_encoding "INPUT_ENCODING" if there is a match.
  The character encodings are a list of the form: pattern=encoding (like `*.php=ISO-8859-1`).
 
  \sa \ref cfg_input_encoding "INPUT_ENCODING" for further information on supported encodings.
@@ -2411,7 +2411,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  project file that can be read by Microsoft's HTML Help Workshop
  on Windows.
   In the beginning of 2021 Microsoft took the original page, with a.o. the download links,
-  offline the HTML help workshop was already many years in maintenance mode).
+  offline (the HTML help workshop was already many years in maintenance mode).
   You can download the HTML help workshop from the web archives at
   <a href="http://web.archive.org/web/20160201063255/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">Installation executable</a>.
 <br>
