@@ -767,6 +767,10 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
         bool localLink = parser->context.memberDef ? member->getClassDef()==parser->context.memberDef->getClassDef() : FALSE;
         m_text = member->objCMethodName(localLink,parser->context.inSeeBlock);
       }
+      else if (Config_getBool(HIDE_SCOPE_NAMES))
+      {
+        m_text=stripScope(m_text);
+      }
 
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
