@@ -600,7 +600,7 @@ Token DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childre
       switch (tok.value())
       {
         case TokenRetval::TK_HTMLTAG:
-          if (insideLI(parent) && Mappers::htmlTagMapper->map(context.token->name) && context.token->endTag)
+          if (insideLI(parent) && Mappers::htmlTagMapper->map(context.token->name)!=HtmlTagType::UNKNOWN && context.token->endTag)
           { // ignore </li> as the end of a style command
             continue;
           }
@@ -994,7 +994,7 @@ void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
  * @param[out] width     the extracted width specifier
  * @param[out] height    the extracted height specifier
  */
-void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent, DocNodeList &children, QCString &width,QCString &height)
+void DocParser::defaultHandleTitleAndSize(const CommandType cmd, DocNodeVariant *parent, DocNodeList &children, QCString &width,QCString &height)
 {
   AUTO_TRACE();
   auto ns = AutoNodeStack(this,parent);
@@ -1216,58 +1216,58 @@ reparsetoken:
     case TokenRetval::TK_COMMAND_BS:
       switch (Mappers::cmdMapper->map(tokenName))
       {
-        case CMD_BSLASH:
+        case CommandType::CMD_BSLASH:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_BSlash);
           break;
-        case CMD_AT:
+        case CommandType::CMD_AT:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_At);
           break;
-        case CMD_LESS:
+        case CommandType::CMD_LESS:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Less);
           break;
-        case CMD_GREATER:
+        case CommandType::CMD_GREATER:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Greater);
           break;
-        case CMD_AMP:
+        case CommandType::CMD_AMP:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Amp);
           break;
-        case CMD_DOLLAR:
+        case CommandType::CMD_DOLLAR:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Dollar);
           break;
-        case CMD_HASH:
+        case CommandType::CMD_HASH:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Hash);
           break;
-        case CMD_DCOLON:
+        case CommandType::CMD_DCOLON:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_DoubleColon);
           break;
-        case CMD_PERCENT:
+        case CommandType::CMD_PERCENT:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Percent);
           break;
-        case CMD_NDASH:
+        case CommandType::CMD_NDASH:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Minus);
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Minus);
           break;
-        case CMD_MDASH:
+        case CommandType::CMD_MDASH:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Minus);
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Minus);
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Minus);
           break;
-        case CMD_QUOTE:
+        case CommandType::CMD_QUOTE:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Quot);
           break;
-        case CMD_PUNT:
+        case CommandType::CMD_PUNT:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Dot);
           break;
-        case CMD_PLUS:
+        case CommandType::CMD_PLUS:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Plus);
           break;
-        case CMD_MINUS:
+        case CommandType::CMD_MINUS:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Minus);
           break;
-        case CMD_EQUAL:
+        case CommandType::CMD_EQUAL:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Equal);
           break;
-        case CMD_EMPHASIS:
+        case CommandType::CMD_EMPHASIS:
           {
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
@@ -1276,12 +1276,12 @@ reparsetoken:
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
-	      AUTO_TRACE_ADD("CMD_EMPHASIS: reparsing");
+	      AUTO_TRACE_ADD("CommandType::CMD_EMPHASIS: reparsing");
               goto reparsetoken;
             }
           }
           break;
-        case CMD_BOLD:
+        case CommandType::CMD_BOLD:
           {
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
@@ -1290,12 +1290,12 @@ reparsetoken:
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
-	      AUTO_TRACE_ADD("CMD_BOLD: reparsing");
+	      AUTO_TRACE_ADD("CommandType::CMD_BOLD: reparsing");
               goto reparsetoken;
             }
           }
           break;
-        case CMD_CODE:
+        case CommandType::CMD_CODE:
           {
             children.append<DocStyleChange>(this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,TRUE);
             tok=handleStyleArgument(parent,children,tokenName);
@@ -1304,12 +1304,12 @@ reparsetoken:
             if (tok.is(TokenRetval::TK_NEWPARA)) goto handlepara;
             else if (tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_HTMLTAG))
             {
-	      AUTO_TRACE_ADD("CMD_CODE: reparsing");
+	      AUTO_TRACE_ADD("CommandType::CMD_CODE: reparsing");
               goto reparsetoken;
             }
           }
           break;
-        case CMD_HTMLONLY:
+        case CommandType::CMD_HTMLONLY:
           {
             tokenizer.setStateHtmlOnly();
             tok = tokenizer.lex();
@@ -1321,7 +1321,7 @@ reparsetoken:
             tokenizer.setStatePara();
           }
           break;
-        case CMD_MANONLY:
+        case CommandType::CMD_MANONLY:
           {
             tokenizer.setStateManOnly();
             tok = tokenizer.lex();
@@ -1333,7 +1333,7 @@ reparsetoken:
             tokenizer.setStatePara();
           }
           break;
-        case CMD_RTFONLY:
+        case CommandType::CMD_RTFONLY:
           {
             tokenizer.setStateRtfOnly();
             tok = tokenizer.lex();
@@ -1345,7 +1345,7 @@ reparsetoken:
             tokenizer.setStatePara();
           }
           break;
-        case CMD_LATEXONLY:
+        case CommandType::CMD_LATEXONLY:
           {
             tokenizer.setStateLatexOnly();
             tok = tokenizer.lex();
@@ -1357,7 +1357,7 @@ reparsetoken:
             tokenizer.setStatePara();
           }
           break;
-        case CMD_XMLONLY:
+        case CommandType::CMD_XMLONLY:
           {
             tokenizer.setStateXmlOnly();
             tok = tokenizer.lex();
@@ -1369,7 +1369,7 @@ reparsetoken:
             tokenizer.setStatePara();
           }
           break;
-        case CMD_DBONLY:
+        case CommandType::CMD_DBONLY:
           {
             tokenizer.setStateDbOnly();
             tok = tokenizer.lex();
@@ -1381,29 +1381,29 @@ reparsetoken:
             tokenizer.setStatePara();
           }
           break;
-        case CMD_FORMULA:
+        case CommandType::CMD_FORMULA:
           {
             children.append<DocFormula>(this,parent,context.token->id);
           }
           break;
-        case CMD_ANCHOR:
-        case CMD_IANCHOR:
+        case CommandType::CMD_ANCHOR:
+        case CommandType::CMD_IANCHOR:
           {
             handleAnchor(parent,children);
           }
           break;
-        case CMD_IPREFIX:
+        case CommandType::CMD_IPREFIX:
           {
             handlePrefix(parent,children);
           }
           break;
-        case CMD_INTERNALREF:
+        case CommandType::CMD_INTERNALREF:
           {
             handleInternalRef(parent,children);
             tokenizer.setStatePara();
           }
           break;
-        case CMD_SETSCOPE:
+        case CommandType::CMD_SETSCOPE:
           {
             tokenizer.setStateSetScope();
             (void)tokenizer.lex();
@@ -1412,16 +1412,16 @@ reparsetoken:
             tokenizer.setStatePara();
           }
           break;
-        case CMD_IMAGE:
+        case CommandType::CMD_IMAGE:
           handleImage(parent,children);
           break;
-        case CMD_ILINE:
+        case CommandType::CMD_ILINE:
           tokenizer.pushState();
           tokenizer.setStateILine();
           (void)tokenizer.lex();
           tokenizer.popState();
           break;
-        case CMD_IFILE:
+        case CommandType::CMD_IFILE:
           tokenizer.pushState();
           tokenizer.setStateIFile();
           (void)tokenizer.lex();
@@ -1435,13 +1435,13 @@ reparsetoken:
       {
         switch (Mappers::htmlTagMapper->map(tokenName))
         {
-          case HTML_DIV:
+          case HtmlTagType::HTML_DIV:
             warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <div> tag in heading");
             break;
-          case HTML_PRE:
+          case HtmlTagType::HTML_PRE:
             warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <pre> tag in heading");
             break;
-          case HTML_BOLD:
+          case HtmlTagType::HTML_BOLD:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Bold,tokenName,&context.token->attribs);
@@ -1451,7 +1451,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Bold,tokenName);
             }
             break;
-          case HTML_S:
+          case HtmlTagType::HTML_S:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::S,tokenName,&context.token->attribs);
@@ -1461,7 +1461,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::S,tokenName);
             }
             break;
-          case HTML_STRIKE:
+          case HtmlTagType::HTML_STRIKE:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Strike,tokenName,&context.token->attribs);
@@ -1471,7 +1471,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Strike,tokenName);
             }
             break;
-          case HTML_DEL:
+          case HtmlTagType::HTML_DEL:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Del,tokenName,&context.token->attribs);
@@ -1481,7 +1481,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Del,tokenName);
             }
             break;
-          case HTML_UNDERLINE:
+          case HtmlTagType::HTML_UNDERLINE:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Underline,tokenName,&context.token->attribs);
@@ -1491,7 +1491,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Underline,tokenName);
             }
             break;
-          case HTML_INS:
+          case HtmlTagType::HTML_INS:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Ins,tokenName,&context.token->attribs);
@@ -1501,8 +1501,8 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Ins,tokenName);
             }
             break;
-          case HTML_CODE:
-          case XML_C:
+          case HtmlTagType::HTML_CODE:
+          case HtmlTagType::XML_C:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Code,tokenName,&context.token->attribs);
@@ -1512,7 +1512,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Code,tokenName);
             }
             break;
-          case HTML_EMPHASIS:
+          case HtmlTagType::HTML_EMPHASIS:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Italic,tokenName,&context.token->attribs);
@@ -1522,7 +1522,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Italic,tokenName);
             }
             break;
-          case HTML_SUB:
+          case HtmlTagType::HTML_SUB:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Subscript,tokenName,&context.token->attribs);
@@ -1532,7 +1532,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Subscript,tokenName);
             }
             break;
-          case HTML_SUP:
+          case HtmlTagType::HTML_SUP:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Superscript,tokenName,&context.token->attribs);
@@ -1542,7 +1542,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Superscript,tokenName);
             }
             break;
-          case HTML_CENTER:
+          case HtmlTagType::HTML_CENTER:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Center,tokenName,&context.token->attribs);
@@ -1552,7 +1552,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Center,tokenName);
             }
             break;
-          case HTML_SMALL:
+          case HtmlTagType::HTML_SMALL:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Small,tokenName,&context.token->attribs);
@@ -1562,7 +1562,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Small,tokenName);
             }
             break;
-          case HTML_CITE:
+          case HtmlTagType::HTML_CITE:
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Cite,tokenName,&context.token->attribs);
@@ -1572,7 +1572,7 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Cite,tokenName);
             }
             break;
-          case HTML_IMG:
+          case HtmlTagType::HTML_IMG:
             if (!context.token->endTag)
               handleImg(parent,children,context.token->attribs);
 	    break;
