@@ -617,7 +617,7 @@ void DocSecRefList::parse()
     {
       switch (Mappers::cmdMapper->map(parser()->context.token->name))
       {
-        case CMD_SECREFITEM:
+        case CommandType::CMD_SECREFITEM:
           {
             tok=parser()->tokenizer.lex();
             if (!tok.is(TokenRetval::TK_WHITESPACE))
@@ -637,7 +637,7 @@ void DocSecRefList::parse()
             children().get_last<DocSecRefItem>()->parse();
           }
           break;
-        case CMD_ENDSECREFLIST:
+        case CommandType::CMD_ENDSECREFLIST:
           return;
         default:
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '%c%s' as part of a \\secreflist",
@@ -766,6 +766,10 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
         const MemberDef *member = toMemberDef(compound);
         bool localLink = parser->context.memberDef ? member->getClassDef()==parser->context.memberDef->getClassDef() : FALSE;
         m_text = member->objCMethodName(localLink,parser->context.inSeeBlock);
+      }
+      else if (Config_getBool(HIDE_SCOPE_NAMES))
+      {
+        m_text=stripScope(m_text);
       }
 
       m_file = compound->getOutputFileBase();
@@ -965,7 +969,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
         case TokenRetval::TK_COMMAND_BS:
           switch (Mappers::cmdMapper->map(parser()->context.token->name))
           {
-            case CMD_ENDLINK:
+            case CommandType::CMD_ENDLINK:
               if (isJavaLink)
               {
                 warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'{@link...' ended with '%c%s' command",
@@ -1049,7 +1053,7 @@ DocDotFile::DocDotFile(DocParser *parser,DocNodeVariant *parent,const QCString &
 bool DocDotFile::parse()
 {
   bool ok = false;
-  parser()->defaultHandleTitleAndSize(CMD_DOTFILE,thisVariant(),children(),p->width,p->height);
+  parser()->defaultHandleTitleAndSize(CommandType::CMD_DOTFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name,ambig);
@@ -1087,7 +1091,7 @@ DocMscFile::DocMscFile(DocParser *parser,DocNodeVariant *parent,const QCString &
 bool DocMscFile::parse()
 {
   bool ok = false;
-  parser()->defaultHandleTitleAndSize(CMD_MSCFILE,thisVariant(),children(),p->width,p->height);
+  parser()->defaultHandleTitleAndSize(CommandType::CMD_MSCFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name,ambig);
@@ -1127,7 +1131,7 @@ DocDiaFile::DocDiaFile(DocParser *parser,DocNodeVariant *parent,const QCString &
 bool DocDiaFile::parse()
 {
   bool ok = false;
-  parser()->defaultHandleTitleAndSize(CMD_DIAFILE,thisVariant(),children(),p->width,p->height);
+  parser()->defaultHandleTitleAndSize(CommandType::CMD_DIAFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name,ambig);
@@ -1166,7 +1170,7 @@ DocPlantUmlFile::DocPlantUmlFile(DocParser *parser,DocNodeVariant *parent,const 
 bool DocPlantUmlFile::parse()
 {
   bool ok = false;
-  parser()->defaultHandleTitleAndSize(CMD_PLANTUMLFILE,thisVariant(),children(),p->width,p->height);
+  parser()->defaultHandleTitleAndSize(CommandType::CMD_PLANTUMLFILE,thisVariant(),children(),p->width,p->height);
 
   bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::plantUmlFileNameLinkedMap,p->name,ambig);
@@ -1247,7 +1251,7 @@ bool DocImage::isSVG() const
 
 void DocImage::parse()
 {
-  parser()->defaultHandleTitleAndSize(CMD_IMAGE,thisVariant(),children(),p->width,p->height);
+  parser()->defaultHandleTitleAndSize(CommandType::CMD_IMAGE,thisVariant(),children(),p->width,p->height);
 }
 
 
@@ -1268,8 +1272,8 @@ Token DocHtmlHeader::parse()
       {
         case TokenRetval::TK_HTMLTAG:
           {
-            int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-            if (tagId==HTML_H1 && parser()->context.token->endTag) // found </h1> tag
+            HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+            if (tagId==HtmlTagType::HTML_H1 && parser()->context.token->endTag) // found </h1> tag
             {
               if (m_level!=1)
               {
@@ -1278,7 +1282,7 @@ Token DocHtmlHeader::parse()
               }
               goto endheader;
             }
-            else if (tagId==HTML_H2 && parser()->context.token->endTag) // found </h2> tag
+            else if (tagId==HtmlTagType::HTML_H2 && parser()->context.token->endTag) // found </h2> tag
             {
               if (m_level!=2)
               {
@@ -1287,7 +1291,7 @@ Token DocHtmlHeader::parse()
               }
               goto endheader;
             }
-            else if (tagId==HTML_H3 && parser()->context.token->endTag) // found </h3> tag
+            else if (tagId==HtmlTagType::HTML_H3 && parser()->context.token->endTag) // found </h3> tag
             {
               if (m_level!=3)
               {
@@ -1296,7 +1300,7 @@ Token DocHtmlHeader::parse()
               }
               goto endheader;
             }
-            else if (tagId==HTML_H4 && parser()->context.token->endTag) // found </h4> tag
+            else if (tagId==HtmlTagType::HTML_H4 && parser()->context.token->endTag) // found </h4> tag
             {
               if (m_level!=4)
               {
@@ -1305,7 +1309,7 @@ Token DocHtmlHeader::parse()
               }
               goto endheader;
             }
-            else if (tagId==HTML_H5 && parser()->context.token->endTag) // found </h5> tag
+            else if (tagId==HtmlTagType::HTML_H5 && parser()->context.token->endTag) // found </h5> tag
             {
               if (m_level!=5)
               {
@@ -1314,7 +1318,7 @@ Token DocHtmlHeader::parse()
               }
               goto endheader;
             }
-            else if (tagId==HTML_H6 && parser()->context.token->endTag) // found </h6> tag
+            else if (tagId==HtmlTagType::HTML_H6 && parser()->context.token->endTag) // found </h6> tag
             {
               if (m_level!=6)
               {
@@ -1323,14 +1327,14 @@ Token DocHtmlHeader::parse()
               }
               goto endheader;
             }
-            else if (tagId==HTML_A)
+            else if (tagId==HtmlTagType::HTML_A)
             {
               if (!parser()->context.token->endTag)
               {
                 parser()->handleAHref(thisVariant(),children(),parser()->context.token->attribs);
               }
             }
-            else if (tagId==HTML_BR)
+            else if (tagId==HtmlTagType::HTML_BR)
             {
               children().append<DocLineBreak>(parser(),thisVariant(),parser()->context.token->attribs);
             }
@@ -1368,10 +1372,10 @@ void DocHtmlSummary::parse()
   Token tok = parser()->tokenizer.lex();
   while (!tok.is_any_of(TokenRetval::TK_NONE, TokenRetval::TK_EOF))
   {
-    int tagId = 0;
+    HtmlTagType tagId = HtmlTagType::UNKNOWN;
     // check of </summary>
     if (tok.value()==TokenRetval::TK_HTMLTAG &&
-        (tagId=Mappers::htmlTagMapper->map(parser()->context.token->name))==XML_SUMMARY &&
+        (tagId=Mappers::htmlTagMapper->map(parser()->context.token->name))==HtmlTagType::XML_SUMMARY &&
         parser()->context.token->endTag
        )
     {
@@ -1453,12 +1457,12 @@ Token DocHRef::parse()
       {
         case TokenRetval::TK_HTMLTAG:
           {
-            int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-            if (tagId==HTML_A && parser()->context.token->endTag) // found </a> tag
+            HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+            if (tagId==HtmlTagType::HTML_A && parser()->context.token->endTag) // found </a> tag
             {
               goto endhref;
             }
-            else if (tagId==HTML_BR)
+            else if (tagId==HtmlTagType::HTML_BR)
             {
               children().append<DocLineBreak>(parser(),thisVariant(),parser()->context.token->attribs);
             }
@@ -1605,22 +1609,22 @@ Token DocIndexEntry::parse()
       case TokenRetval::TK_COMMAND_BS:
         switch (Mappers::cmdMapper->map(parser()->context.token->name))
         {
-          case CMD_BSLASH:  m_entry+='\\';  break;
-          case CMD_AT:      m_entry+='@';   break;
-          case CMD_LESS:    m_entry+='<';   break;
-          case CMD_GREATER: m_entry+='>';   break;
-          case CMD_AMP:     m_entry+='&';   break;
-          case CMD_DOLLAR:  m_entry+='$';   break;
-          case CMD_HASH:    m_entry+='#';   break;
-          case CMD_DCOLON:  m_entry+="::";  break;
-          case CMD_PERCENT: m_entry+='%';   break;
-          case CMD_NDASH:   m_entry+="--";  break;
-          case CMD_MDASH:   m_entry+="---"; break;
-          case CMD_QUOTE:   m_entry+='"';   break;
-          case CMD_PUNT:    m_entry+='.';   break;
-          case CMD_PLUS:    m_entry+='+';   break;
-          case CMD_MINUS:   m_entry+='-';   break;
-          case CMD_EQUAL:   m_entry+='=';   break;
+          case CommandType::CMD_BSLASH:  m_entry+='\\';  break;
+          case CommandType::CMD_AT:      m_entry+='@';   break;
+          case CommandType::CMD_LESS:    m_entry+='<';   break;
+          case CommandType::CMD_GREATER: m_entry+='>';   break;
+          case CommandType::CMD_AMP:     m_entry+='&';   break;
+          case CommandType::CMD_DOLLAR:  m_entry+='$';   break;
+          case CommandType::CMD_HASH:    m_entry+='#';   break;
+          case CommandType::CMD_DCOLON:  m_entry+="::";  break;
+          case CommandType::CMD_PERCENT: m_entry+='%';   break;
+          case CommandType::CMD_NDASH:   m_entry+="--";  break;
+          case CommandType::CMD_MDASH:   m_entry+="---"; break;
+          case CommandType::CMD_QUOTE:   m_entry+='"';   break;
+          case CommandType::CMD_PUNT:    m_entry+='.';   break;
+          case CommandType::CMD_PLUS:    m_entry+='+';   break;
+          case CommandType::CMD_MINUS:   m_entry+='-';   break;
+          case CommandType::CMD_EQUAL:   m_entry+='=';   break;
           default:
                warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected command %s found as argument of \\addindex",
                               qPrint(parser()->context.token->name));
@@ -1685,8 +1689,8 @@ Token DocHtmlCaption::parse()
       {
         case TokenRetval::TK_HTMLTAG:
           {
-            int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-            if (tagId==HTML_CAPTION && parser()->context.token->endTag) // found </caption> tag
+            HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+            if (tagId==HtmlTagType::HTML_CAPTION && parser()->context.token->endTag) // found </caption> tag
             {
               retval = Token::make_RetVal_OK();
               goto endcaption;
@@ -1734,12 +1738,12 @@ Token DocHtmlCell::parse()
     retval=par->parse();
     if (retval.is(TokenRetval::TK_HTMLTAG))
     {
-      int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-      if (tagId==HTML_TD && parser()->context.token->endTag) // found </td> tag
+      HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+      if (tagId==HtmlTagType::HTML_TD && parser()->context.token->endTag) // found </td> tag
       {
         retval = Token::make_TK_NEWPARA(); // ignore the tag
       }
-      else if (tagId==HTML_TH && parser()->context.token->endTag) // found </th> tag
+      else if (tagId==HtmlTagType::HTML_TH && parser()->context.token->endTag) // found </th> tag
       {
         retval = Token::make_TK_NEWPARA(); // ignore the tag
       }
@@ -1768,12 +1772,12 @@ Token DocHtmlCell::parseXml()
     retval=par->parse();
     if (retval.is(TokenRetval::TK_HTMLTAG))
     {
-      int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-      if (tagId==XML_ITEM && parser()->context.token->endTag) // found </item> tag
+      HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+      if (tagId==HtmlTagType::XML_ITEM && parser()->context.token->endTag) // found </item> tag
       {
         retval = Token::make_TK_NEWPARA(); // ignore the tag
       }
-      else if (tagId==XML_DESCRIPTION && parser()->context.token->endTag) // found </description> tag
+      else if (tagId==HtmlTagType::XML_DESCRIPTION && parser()->context.token->endTag) // found </description> tag
       {
         retval = Token::make_TK_NEWPARA(); // ignore the tag
       }
@@ -1901,11 +1905,11 @@ Token DocHtmlRow::parse()
   // should find a html tag now
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
-    int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==HTML_TD && !parser()->context.token->endTag) // found <td> tag
+    HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+    if (tagId==HtmlTagType::HTML_TD && !parser()->context.token->endTag) // found <td> tag
     {
     }
-    else if (tagId==HTML_TH && !parser()->context.token->endTag) // found <th> tag
+    else if (tagId==HtmlTagType::HTML_TH && !parser()->context.token->endTag) // found <th> tag
     {
       isHeading=TRUE;
     }
@@ -1965,11 +1969,11 @@ Token DocHtmlRow::parseXml(bool isHeading)
   // should find a html tag now
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
-    int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==XML_TERM && !parser()->context.token->endTag) // found <term> tag
+    HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+    if (tagId==HtmlTagType::XML_TERM && !parser()->context.token->endTag) // found <term> tag
     {
     }
-    else if (tagId==XML_DESCRIPTION && !parser()->context.token->endTag) // found <description> tag
+    else if (tagId==HtmlTagType::XML_DESCRIPTION && !parser()->context.token->endTag) // found <description> tag
     {
     }
     else // found some other tag
@@ -2043,25 +2047,25 @@ getrow:
   // should find a html tag now
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
-    int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==HTML_THEAD && !parser()->context.token->endTag) // found <thead> tag
+    HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+    if (tagId==HtmlTagType::HTML_THEAD && !parser()->context.token->endTag) // found <thead> tag
     {
       goto getrow;
     }
-    else if (tagId==HTML_TBODY && !parser()->context.token->endTag) // found <tbody> tag
+    else if (tagId==HtmlTagType::HTML_TBODY && !parser()->context.token->endTag) // found <tbody> tag
     {
       goto getrow;
     }
-    else if (tagId==HTML_TFOOT && !parser()->context.token->endTag) // found <tfoot> tag
+    else if (tagId==HtmlTagType::HTML_TFOOT && !parser()->context.token->endTag) // found <tfoot> tag
     {
       goto getrow;
     }
-    else if (tagId==HTML_TR && !parser()->context.token->endTag) // found <tr> tag
+    else if (tagId==HtmlTagType::HTML_TR && !parser()->context.token->endTag) // found <tr> tag
     {
       // no caption, just rows
       retval = Token::make_RetVal_TableRow();
     }
-    else if (tagId==HTML_CAPTION && !parser()->context.token->endTag) // found <caption> tag
+    else if (tagId==HtmlTagType::HTML_CAPTION && !parser()->context.token->endTag) // found <caption> tag
     {
       if (m_caption)
       {
@@ -2118,16 +2122,16 @@ Token DocHtmlTable::parseXml()
   // skip whitespace
   while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
   // should find a html tag now
-  int tagId=0;
+  HtmlTagType tagId=HtmlTagType::UNKNOWN;
   bool isHeader=FALSE;
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==XML_ITEM && !parser()->context.token->endTag) // found <item> tag
+    if (tagId==HtmlTagType::XML_ITEM && !parser()->context.token->endTag) // found <item> tag
     {
       retval = Token::make_RetVal_TableRow();
     }
-    if (tagId==XML_LISTHEADER && !parser()->context.token->endTag) // found <listheader> tag
+    if (tagId==HtmlTagType::XML_LISTHEADER && !parser()->context.token->endTag) // found <listheader> tag
     {
       retval = Token::make_RetVal_TableRow();
       isHeader=TRUE;
@@ -2146,7 +2150,7 @@ Token DocHtmlTable::parseXml()
   computeTableGrid();
 
   tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-  return tagId==XML_LIST && parser()->context.token->endTag ? Token::make_RetVal_OK() : retval;
+  return tagId==HtmlTagType::XML_LIST && parser()->context.token->endTag ? Token::make_RetVal_OK() : retval;
 }
 
 /** Helper class to compute the grid for an HTML style table */
@@ -2238,7 +2242,7 @@ Token DocHtmlDescTitle::parse()
             bool isJavaLink=FALSE;
             switch (Mappers::cmdMapper->map(cmdName))
             {
-              case CMD_REF:
+              case CommandType::CMD_REF:
                 {
                   tok=parser()->tokenizer.lex();
                   if (!tok.is(TokenRetval::TK_WHITESPACE))
@@ -2264,10 +2268,10 @@ Token DocHtmlDescTitle::parse()
                   }
                 }
                 break;
-              case CMD_JAVALINK:
+              case CommandType::CMD_JAVALINK:
                 isJavaLink=TRUE;
                 // fall through
-              case CMD_LINK:
+              case CommandType::CMD_LINK:
                 {
                   tok=parser()->tokenizer.lex();
                   if (!tok.is(TokenRetval::TK_WHITESPACE))
@@ -2311,28 +2315,28 @@ Token DocHtmlDescTitle::parse()
           break;
         case TokenRetval::TK_HTMLTAG:
           {
-            int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-            if (tagId==HTML_DD && !parser()->context.token->endTag) // found <dd> tag
+            HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+            if (tagId==HtmlTagType::HTML_DD && !parser()->context.token->endTag) // found <dd> tag
             {
               retval = Token::make_RetVal_DescData();
               goto endtitle;
             }
-            else if (tagId==HTML_DT && parser()->context.token->endTag)
+            else if (tagId==HtmlTagType::HTML_DT && parser()->context.token->endTag)
             {
               // ignore </dt> tag.
             }
-            else if (tagId==HTML_DT)
+            else if (tagId==HtmlTagType::HTML_DT)
             {
               // missing <dt> tag.
               retval = Token::make_RetVal_DescTitle();
               goto endtitle;
             }
-            else if (tagId==HTML_DL && parser()->context.token->endTag)
+            else if (tagId==HtmlTagType::HTML_DL && parser()->context.token->endTag)
             {
               retval = Token::make_RetVal_EndDesc();
               goto endtitle;
             }
-            else if (tagId==HTML_A)
+            else if (tagId==HtmlTagType::HTML_A)
             {
               if (!parser()->context.token->endTag)
               {
@@ -2403,8 +2407,8 @@ Token DocHtmlDescList::parse()
   // should find a html tag now
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
-    int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==HTML_DT && !parser()->context.token->endTag) // found <dt> tag
+    HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+    if (tagId==HtmlTagType::HTML_DT && !parser()->context.token->endTag) // found <dt> tag
     {
       // continue
     }
@@ -2536,13 +2540,13 @@ Token DocHtmlList::parse()
   // should find a html tag now
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
-    int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==HTML_LI && !parser()->context.token->endTag) // found <li> tag
+    HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+    if (tagId==HtmlTagType::HTML_LI && !parser()->context.token->endTag) // found <li> tag
     {
       // ok, we can go on.
     }
-    else if (((m_type==Unordered && tagId==HTML_UL) ||
-              (m_type==Ordered   && tagId==HTML_OL)
+    else if (((m_type==Unordered && tagId==HtmlTagType::HTML_UL) ||
+              (m_type==Ordered   && tagId==HtmlTagType::HTML_OL)
              ) && parser()->context.token->endTag
             ) // found empty list
     {
@@ -2611,9 +2615,9 @@ Token DocHtmlList::parseXml()
   // should find a html tag now
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
-    int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+    HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
     //printf("parser()->context.token->name=%s parser()->context.token->endTag=%d\n",qPrint(parser()->context.token->name),parser()->context.token->endTag);
-    if (tagId==XML_ITEM && !parser()->context.token->endTag) // found <item> tag
+    if (tagId==HtmlTagType::XML_ITEM && !parser()->context.token->endTag) // found <item> tag
     {
       // ok, we can go on.
     }
@@ -3151,9 +3155,9 @@ Token DocParamList::parseXml(const QCString &paramName)
     if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) break;
 
   } while (retval.is(TokenRetval::RetVal_CloseXml) &&
-           Mappers::htmlTagMapper->map(parser()->context.token->name)!=XML_PARAM &&
-           Mappers::htmlTagMapper->map(parser()->context.token->name)!=XML_TYPEPARAM &&
-           Mappers::htmlTagMapper->map(parser()->context.token->name)!=XML_EXCEPTION);
+           Mappers::htmlTagMapper->map(parser()->context.token->name)!=HtmlTagType::XML_PARAM &&
+           Mappers::htmlTagMapper->map(parser()->context.token->name)!=HtmlTagType::XML_TYPEPARAM &&
+           Mappers::htmlTagMapper->map(parser()->context.token->name)!=HtmlTagType::XML_EXCEPTION);
 
   if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF)) /* premature end of comment block */
   {
@@ -3951,10 +3955,10 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   Token retval = Token::make_RetVal_OK();
-  int cmdId = Mappers::cmdMapper->map(cmdName);
+  CommandType cmdId = Mappers::cmdMapper->map(cmdName);
   switch (cmdId)
   {
-    case CMD_UNKNOWN:
+    case CommandType::UNKNOWN:
       {
         std::string str{cmdChar};
         children().append<DocWord>(parser(),thisVariant(),str.c_str() + cmdName);
@@ -3968,187 +3972,187 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         }
       }
       break;
-    case CMD_EMPHASIS:
+    case CommandType::CMD_EMPHASIS:
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE);
               retval=parser()->handleStyleArgument(thisVariant(),children(),cmdName);
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,cmdName,FALSE);
       if (!retval.is(TokenRetval::TK_WORD)) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
       break;
-    case CMD_BOLD:
+    case CommandType::CMD_BOLD:
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Bold,cmdName,TRUE);
       retval=parser()->handleStyleArgument(thisVariant(),children(),cmdName);
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Bold,cmdName,FALSE);
       if (!retval.is(TokenRetval::TK_WORD)) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
       break;
-    case CMD_CODE:
+    case CommandType::CMD_CODE:
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE);
       retval=parser()->handleStyleArgument(thisVariant(),children(),cmdName);
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE);
       if (!retval.is(TokenRetval::TK_WORD)) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
       break;
-    case CMD_BSLASH:
+    case CommandType::CMD_BSLASH:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_BSlash);
       break;
-    case CMD_AT:
+    case CommandType::CMD_AT:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_At);
       break;
-    case CMD_LESS:
+    case CommandType::CMD_LESS:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Less);
       break;
-    case CMD_GREATER:
+    case CommandType::CMD_GREATER:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Greater);
       break;
-    case CMD_AMP:
+    case CommandType::CMD_AMP:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Amp);
       break;
-    case CMD_DOLLAR:
+    case CommandType::CMD_DOLLAR:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Dollar);
       break;
-    case CMD_HASH:
+    case CommandType::CMD_HASH:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Hash);
       break;
-    case CMD_PIPE:
+    case CommandType::CMD_PIPE:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Pipe);
       break;
-    case CMD_DCOLON:
+    case CommandType::CMD_DCOLON:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_DoubleColon);
       break;
-    case CMD_PERCENT:
+    case CommandType::CMD_PERCENT:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Percent);
       break;
-    case CMD_NDASH:
+    case CommandType::CMD_NDASH:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
       break;
-    case CMD_MDASH:
+    case CommandType::CMD_MDASH:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
       break;
-    case CMD_QUOTE:
+    case CommandType::CMD_QUOTE:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Quot);
       break;
-    case CMD_PUNT:
+    case CommandType::CMD_PUNT:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Dot);
       break;
-    case CMD_PLUS:
+    case CommandType::CMD_PLUS:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Plus);
       break;
-    case CMD_MINUS:
+    case CommandType::CMD_MINUS:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
       break;
-    case CMD_EQUAL:
+    case CommandType::CMD_EQUAL:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Equal);
       break;
-    case CMD_SA:
+    case CommandType::CMD_SA:
       parser()->context.inSeeBlock=TRUE;
       retval = handleSimpleSection(DocSimpleSect::See);
       parser()->context.inSeeBlock=FALSE;
       break;
-    case CMD_RETURN:
+    case CommandType::CMD_RETURN:
       retval = handleSimpleSection(DocSimpleSect::Return);
       parser()->context.hasReturnCommand=TRUE;
       break;
-    case CMD_AUTHOR:
+    case CommandType::CMD_AUTHOR:
       retval = handleSimpleSection(DocSimpleSect::Author);
       break;
-    case CMD_AUTHORS:
+    case CommandType::CMD_AUTHORS:
       retval = handleSimpleSection(DocSimpleSect::Authors);
       break;
-    case CMD_VERSION:
+    case CommandType::CMD_VERSION:
       retval = handleSimpleSection(DocSimpleSect::Version);
       break;
-    case CMD_SINCE:
+    case CommandType::CMD_SINCE:
       retval = handleSimpleSection(DocSimpleSect::Since);
       break;
-    case CMD_DATE:
+    case CommandType::CMD_DATE:
       retval = handleSimpleSection(DocSimpleSect::Date);
       break;
-    case CMD_NOTE:
+    case CommandType::CMD_NOTE:
       retval = handleSimpleSection(DocSimpleSect::Note);
       break;
-    case CMD_WARNING:
+    case CommandType::CMD_WARNING:
       retval = handleSimpleSection(DocSimpleSect::Warning);
       break;
-    case CMD_PRE:
+    case CommandType::CMD_PRE:
       retval = handleSimpleSection(DocSimpleSect::Pre);
       break;
-    case CMD_POST:
+    case CommandType::CMD_POST:
       retval = handleSimpleSection(DocSimpleSect::Post);
       break;
-    case CMD_COPYRIGHT:
+    case CommandType::CMD_COPYRIGHT:
       retval = handleSimpleSection(DocSimpleSect::Copyright);
       break;
-    case CMD_INVARIANT:
+    case CommandType::CMD_INVARIANT:
       retval = handleSimpleSection(DocSimpleSect::Invar);
       break;
-    case CMD_REMARK:
+    case CommandType::CMD_REMARK:
       retval = handleSimpleSection(DocSimpleSect::Remark);
       break;
-    case CMD_ATTENTION:
+    case CommandType::CMD_ATTENTION:
       retval = handleSimpleSection(DocSimpleSect::Attention);
       break;
-    case CMD_IMPORTANT:
+    case CommandType::CMD_IMPORTANT:
       retval = handleSimpleSection(DocSimpleSect::Important);
       break;
-    case CMD_PAR:
+    case CommandType::CMD_PAR:
       retval = handleSimpleSection(DocSimpleSect::User);
       break;
-    case CMD_LI:
+    case CommandType::CMD_LI:
       {
         children().append<DocSimpleList>(parser(),thisVariant());
         retval = children().get_last<DocSimpleList>()->parse();
       }
       break;
-    case CMD_SECTION:
+    case CommandType::CMD_SECTION:
       {
         handleSection(cmdChar,cmdName);
         retval = Token::make_RetVal_Section();
       }
       break;
-    case CMD_SUBSECTION:
+    case CommandType::CMD_SUBSECTION:
       {
         handleSection(cmdChar,cmdName);
         retval = Token::make_RetVal_Subsection();
       }
       break;
-    case CMD_SUBSUBSECTION:
+    case CommandType::CMD_SUBSUBSECTION:
       {
         handleSection(cmdChar,cmdName);
         retval = Token::make_RetVal_Subsubsection();
       }
       break;
-    case CMD_PARAGRAPH:
+    case CommandType::CMD_PARAGRAPH:
       {
         handleSection(cmdChar,cmdName);
         retval = Token::make_RetVal_Paragraph();
       }
       break;
-    case CMD_SUBPARAGRAPH:
+    case CommandType::CMD_SUBPARAGRAPH:
       {
         handleSection(cmdChar,cmdName);
         retval = Token::make_RetVal_SubParagraph();
       }
       break;
-    case CMD_SUBSUBPARAGRAPH:
+    case CommandType::CMD_SUBSUBPARAGRAPH:
       {
         handleSection(cmdChar,cmdName);
         retval = Token::make_RetVal_SubSubParagraph();
       }
       break;
-    case CMD_ISTARTCODE:
+    case CommandType::CMD_ISTARTCODE:
       {
         parser()->tokenizer.setStateICode();
         retval = handleStartCode();
       }
       break;
-    case CMD_STARTCODE:
+    case CommandType::CMD_STARTCODE:
       {
         parser()->tokenizer.setStateCode();
         retval = handleStartCode();
       }
       break;
-    case CMD_HTMLONLY:
+    case CommandType::CMD_HTMLONLY:
       {
         parser()->tokenizer.setStateHtmlOnly();
         retval = parser()->tokenizer.lex();
@@ -4160,7 +4164,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_MANONLY:
+    case CommandType::CMD_MANONLY:
       {
         parser()->tokenizer.setStateManOnly();
         retval = parser()->tokenizer.lex();
@@ -4172,7 +4176,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_RTFONLY:
+    case CommandType::CMD_RTFONLY:
       {
         parser()->tokenizer.setStateRtfOnly();
         retval = parser()->tokenizer.lex();
@@ -4184,7 +4188,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_LATEXONLY:
+    case CommandType::CMD_LATEXONLY:
       {
         parser()->tokenizer.setStateLatexOnly();
         retval = parser()->tokenizer.lex();
@@ -4196,7 +4200,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_XMLONLY:
+    case CommandType::CMD_XMLONLY:
       {
         parser()->tokenizer.setStateXmlOnly();
         retval = parser()->tokenizer.lex();
@@ -4208,7 +4212,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_DBONLY:
+    case CommandType::CMD_DBONLY:
       {
         parser()->tokenizer.setStateDbOnly();
         retval = parser()->tokenizer.lex();
@@ -4220,7 +4224,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_ILITERAL:
+    case CommandType::CMD_ILITERAL:
       {
         DocVerbatim::Type t = DocVerbatim::JavaDocLiteral;
         parser()->tokenizer.setStateILiteralOpt();
@@ -4267,10 +4271,10 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_IVERBATIM:
-    case CMD_VERBATIM:
+    case CommandType::CMD_IVERBATIM:
+    case CommandType::CMD_VERBATIM:
       {
-        if (cmdId == CMD_VERBATIM)
+        if (cmdId == CommandType::CMD_VERBATIM)
         {
           parser()->tokenizer.setStateVerbatim();
         }
@@ -4287,7 +4291,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_DOT:
+    case CommandType::CMD_DOT:
       {
         children().append<DocVerbatim>(parser(),thisVariant(),
                                        parser()->context.context,
@@ -4298,7 +4302,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         DocVerbatim *dv = children().get_last<DocVerbatim>();
         parser()->tokenizer.setStatePara();
         QCString width,height;
-        parser()->defaultHandleTitleAndSize(CMD_DOT,&children().back(),dv->children(),width,height);
+        parser()->defaultHandleTitleAndSize(CommandType::CMD_DOT,&children().back(),dv->children(),width,height);
         parser()->tokenizer.setStateDot();
         retval = parser()->tokenizer.lex();
         dv->setText(parser()->context.token->verb);
@@ -4317,7 +4321,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_MSC:
+    case CommandType::CMD_MSC:
       {
         children().append<DocVerbatim>(parser(),thisVariant(),
                                        parser()->context.context,
@@ -4328,7 +4332,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         DocVerbatim *dv = children().get_last<DocVerbatim>();
         parser()->tokenizer.setStatePara();
         QCString width,height;
-        parser()->defaultHandleTitleAndSize(CMD_MSC,&children().back(),dv->children(),width,height);
+        parser()->defaultHandleTitleAndSize(CommandType::CMD_MSC,&children().back(),dv->children(),width,height);
         parser()->tokenizer.setStateMsc();
         retval = parser()->tokenizer.lex();
         dv->setText(parser()->context.token->verb);
@@ -4342,7 +4346,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_STARTUML:
+    case CommandType::CMD_STARTUML:
       {
         QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         parser()->tokenizer.setStatePlantUMLOpt();
@@ -4411,7 +4415,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         dv->setEngine(engine);
         parser()->tokenizer.setStatePara();
         QCString width,height;
-        parser()->defaultHandleTitleAndSize(CMD_STARTUML,&children().back(),dv->children(),width,height);
+        parser()->defaultHandleTitleAndSize(CommandType::CMD_STARTUML,&children().back(),dv->children(),width,height);
         parser()->tokenizer.setStatePlantUML();
         retval = parser()->tokenizer.lex();
         int line = 0;
@@ -4442,58 +4446,58 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_ENDPARBLOCK:
+    case CommandType::CMD_ENDPARBLOCK:
       retval = Token::make_RetVal_EndParBlock();
       break;
-    case CMD_ENDICODE:
-    case CMD_ENDCODE:
-    case CMD_ENDHTMLONLY:
-    case CMD_ENDMANONLY:
-    case CMD_ENDRTFONLY:
-    case CMD_ENDLATEXONLY:
-    case CMD_ENDXMLONLY:
-    case CMD_ENDDBONLY:
-    case CMD_ENDLINK:
-    case CMD_ENDVERBATIM:
-    case CMD_ENDIVERBATIM:
-    case CMD_ENDILITERAL:
-    case CMD_ENDDOT:
-    case CMD_ENDMSC:
-    case CMD_ENDUML:
+    case CommandType::CMD_ENDICODE:
+    case CommandType::CMD_ENDCODE:
+    case CommandType::CMD_ENDHTMLONLY:
+    case CommandType::CMD_ENDMANONLY:
+    case CommandType::CMD_ENDRTFONLY:
+    case CommandType::CMD_ENDLATEXONLY:
+    case CommandType::CMD_ENDXMLONLY:
+    case CommandType::CMD_ENDDBONLY:
+    case CommandType::CMD_ENDLINK:
+    case CommandType::CMD_ENDVERBATIM:
+    case CommandType::CMD_ENDIVERBATIM:
+    case CommandType::CMD_ENDILITERAL:
+    case CommandType::CMD_ENDDOT:
+    case CommandType::CMD_ENDMSC:
+    case CommandType::CMD_ENDUML:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command %s",qPrint(parser()->context.token->name));
       break;
-    case CMD_PARAM:
+    case CommandType::CMD_PARAM:
       retval = handleParamSection(cmdName,DocParamSect::Param,FALSE,parser()->context.token->paramDir);
       break;
-    case CMD_TPARAM:
+    case CommandType::CMD_TPARAM:
       retval = handleParamSection(cmdName,DocParamSect::TemplateParam,FALSE,parser()->context.token->paramDir);
       break;
-    case CMD_RETVAL:
+    case CommandType::CMD_RETVAL:
       retval = handleParamSection(cmdName,DocParamSect::RetVal);
       break;
-    case CMD_EXCEPTION:
+    case CommandType::CMD_EXCEPTION:
       retval = handleParamSection(cmdName,DocParamSect::Exception);
       break;
-    case CMD_XREFITEM:
+    case CommandType::CMD_XREFITEM:
       retval = handleXRefItem();
       break;
-    case CMD_LINEBREAK:
+    case CommandType::CMD_LINEBREAK:
       {
         children().append<DocLineBreak>(parser(),thisVariant());
       }
       break;
-    case CMD_IANCHOR:
-    case CMD_ANCHOR:
+    case CommandType::CMD_IANCHOR:
+    case CommandType::CMD_ANCHOR:
       {
         parser()->handleAnchor(thisVariant(),children());
       }
       break;
-    case CMD_IPREFIX:
+    case CommandType::CMD_IPREFIX:
       {
         parser()->handlePrefix(thisVariant(),children());
       }
       break;
-    case CMD_ADDINDEX:
+    case CommandType::CMD_ADDINDEX:
       {
         children().append<DocIndexEntry>(parser(),thisVariant(),
                      parser()->context.scope!=Doxygen::globalScope?parser()->context.scope:nullptr,
@@ -4501,76 +4505,76 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         retval = children().get_last<DocIndexEntry>()->parse();
       }
       break;
-    case CMD_INTERNAL:
+    case CommandType::CMD_INTERNAL:
       retval = Token::make_RetVal_Internal();
       break;
-    case CMD_ENDINTERNAL:
+    case CommandType::CMD_ENDINTERNAL:
       retval = Token::make_RetVal_EndInternal();
       break;
-    case CMD_PARBLOCK:
+    case CommandType::CMD_PARBLOCK:
       {
         children().append<DocParBlock>(parser(),thisVariant());
         retval = children().get_last<DocParBlock>()->parse();
       }
       break;
-    case CMD_COPYDOC:   // fall through
-    case CMD_COPYBRIEF: // fall through
-    case CMD_COPYDETAILS:
+    case CommandType::CMD_COPYDOC:   // fall through
+    case CommandType::CMD_COPYBRIEF: // fall through
+    case CommandType::CMD_COPYDETAILS:
       //retval = Token::make_RetVal_CopyDoc();
       // these commands should already be resolved by processCopyDoc()
       break;
-    case CMD_INCLUDE:
+    case CommandType::CMD_INCLUDE:
       handleInclude(cmdName,DocInclude::Include);
       break;
-    case CMD_INCWITHLINES:
+    case CommandType::CMD_INCWITHLINES:
       handleInclude(cmdName,DocInclude::IncWithLines);
       break;
-    case CMD_DONTINCLUDE:
+    case CommandType::CMD_DONTINCLUDE:
       handleInclude(cmdName,DocInclude::DontInclude);
       break;
-    case CMD_HTMLINCLUDE:
+    case CommandType::CMD_HTMLINCLUDE:
       handleInclude(cmdName,DocInclude::HtmlInclude);
       break;
-    case CMD_LATEXINCLUDE:
+    case CommandType::CMD_LATEXINCLUDE:
       handleInclude(cmdName,DocInclude::LatexInclude);
       break;
-    case CMD_RTFINCLUDE:
+    case CommandType::CMD_RTFINCLUDE:
       handleInclude(cmdName,DocInclude::RtfInclude);
       break;
-    case CMD_MANINCLUDE:
+    case CommandType::CMD_MANINCLUDE:
       handleInclude(cmdName,DocInclude::ManInclude);
       break;
-    case CMD_XMLINCLUDE:
+    case CommandType::CMD_XMLINCLUDE:
       handleInclude(cmdName,DocInclude::XmlInclude);
       break;
-    case CMD_DOCBOOKINCLUDE:
+    case CommandType::CMD_DOCBOOKINCLUDE:
       handleInclude(cmdName,DocInclude::DocbookInclude);
       break;
-    case CMD_VERBINCLUDE:
+    case CommandType::CMD_VERBINCLUDE:
       handleInclude(cmdName,DocInclude::VerbInclude);
       break;
-    case CMD_SNIPPET:
+    case CommandType::CMD_SNIPPET:
       handleInclude(cmdName,DocInclude::Snippet);
       break;
-    case CMD_SNIPWITHLINES:
+    case CommandType::CMD_SNIPWITHLINES:
       handleInclude(cmdName,DocInclude::SnippetWithLines);
       break;
-    case CMD_SKIP:
+    case CommandType::CMD_SKIP:
       handleIncludeOperator(cmdName,DocIncOperator::Skip);
       break;
-    case CMD_UNTIL:
+    case CommandType::CMD_UNTIL:
       handleIncludeOperator(cmdName,DocIncOperator::Until);
       break;
-    case CMD_SKIPLINE:
+    case CommandType::CMD_SKIPLINE:
       handleIncludeOperator(cmdName,DocIncOperator::SkipLine);
       break;
-    case CMD_LINE:
+    case CommandType::CMD_LINE:
       handleIncludeOperator(cmdName,DocIncOperator::Line);
       break;
-    case CMD_IMAGE:
+    case CommandType::CMD_IMAGE:
       parser()->handleImage(thisVariant(),children());
       break;
-    case CMD_DOTFILE:
+    case CommandType::CMD_DOTFILE:
       if (!Config_getBool(HAVE_DOT))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
@@ -4581,77 +4585,77 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         handleFile<DocDotFile>(cmdName);
       }
       break;
-    case CMD_VHDLFLOW:
+    case CommandType::CMD_VHDLFLOW:
       handleVhdlFlow();
       break;
-    case CMD_MSCFILE:
+    case CommandType::CMD_MSCFILE:
       handleFile<DocMscFile>(cmdName);
       break;
-    case CMD_DIAFILE:
+    case CommandType::CMD_DIAFILE:
       handleFile<DocDiaFile>(cmdName);
       break;
-    case CMD_PLANTUMLFILE:
+    case CommandType::CMD_PLANTUMLFILE:
       handleFile<DocPlantUmlFile>(cmdName);
       break;
-    case CMD_LINK:
+    case CommandType::CMD_LINK:
       handleLink(cmdName,FALSE);
       break;
-    case CMD_JAVALINK:
+    case CommandType::CMD_JAVALINK:
       handleLink(cmdName,TRUE);
       break;
-    case CMD_CITE:
+    case CommandType::CMD_CITE:
       handleCite(cmdChar,cmdName);
       break;
-    case CMD_EMOJI:
+    case CommandType::CMD_EMOJI:
       handleEmoji(cmdChar,cmdName);
       break;
-    case CMD_DOXYCONFIG:
+    case CommandType::CMD_DOXYCONFIG:
       handleDoxyConfig(cmdChar,cmdName);
       break;
-    case CMD_REF: // fall through
-    case CMD_SUBPAGE:
+    case CommandType::CMD_REF: // fall through
+    case CommandType::CMD_SUBPAGE:
       handleRef(cmdChar,cmdName);
       break;
-    case CMD_SECREFLIST:
+    case CommandType::CMD_SECREFLIST:
       {
         children().append<DocSecRefList>(parser(),thisVariant());
         children().get_last<DocSecRefList>()->parse();
       }
       break;
-    case CMD_SECREFITEM:
+    case CommandType::CMD_SECREFITEM:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command '%c%s'",cmdChar,qPrint(parser()->context.token->name));
       break;
-    case CMD_ENDSECREFLIST:
+    case CommandType::CMD_ENDSECREFLIST:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command '%c%s'",cmdChar,qPrint(parser()->context.token->name));
       break;
-    case CMD_FORMULA:
+    case CommandType::CMD_FORMULA:
       {
         children().append<DocFormula>(parser(),thisVariant(),parser()->context.token->id);
       }
       break;
-    //case CMD_LANGSWITCH:
+    //case CommandType::CMD_LANGSWITCH:
     //  retval = handleLanguageSwitch();
     //  break;
-    case CMD_INTERNALREF:
+    case CommandType::CMD_INTERNALREF:
       //warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected command %s",qPrint(parser()->context.token->name));
       {
         parser()->handleInternalRef(thisVariant(),children());
         parser()->tokenizer.setStatePara();
       }
       break;
-    case CMD_INHERITDOC:
+    case CommandType::CMD_INHERITDOC:
       handleInheritDoc();
       break;
-    case CMD_SHOWDATE:
+    case CommandType::CMD_SHOWDATE:
       handleShowDate(cmdChar,cmdName);
       break;
-    case CMD_ILINE:
+    case CommandType::CMD_ILINE:
       handleILine(cmdChar,cmdName);
       break;
-    case CMD_IFILE:
+    case CommandType::CMD_IFILE:
       handleIFile(cmdChar,cmdName);
       break;
-    case CMD_SETSCOPE:
+    case CommandType::CMD_SETSCOPE:
       {
         parser()->tokenizer.setStateSetScope();
         (void)parser()->tokenizer.lex();
@@ -4695,17 +4699,17 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
 {
   AUTO_TRACE("tagName={} #tagHtmlAttrs={}",tagName,tagHtmlAttribs.size());
   Token retval = Token::make_RetVal_OK();
-  int tagId = Mappers::htmlTagMapper->map(tagName);
-  if (parser()->context.token->emptyTag && !(tagId&XML_CmdMask) &&
-      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P
-      && tagId!=HTML_DIV && tagId!=HTML_SPAN)
+  HtmlTagType tagId = Mappers::htmlTagMapper->map(tagName);
+  if (parser()->context.token->emptyTag && !(tagId>HtmlTagType::XML_CmdMask) &&
+      tagId!=HtmlTagType::UNKNOWN && tagId!=HtmlTagType::HTML_IMG && tagId!=HtmlTagType::HTML_BR && tagId!=HtmlTagType::HTML_HR && tagId!=HtmlTagType::HTML_P
+      && tagId!=HtmlTagType::HTML_DIV && tagId!=HtmlTagType::HTML_SPAN)
   {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"HTML tag ('<%s/>') may not use the 'empty tag' XHTML syntax.",
                      qPrint(tagName));
   }
   switch (tagId)
   {
-    case HTML_UL:
+    case HtmlTagType::HTML_UL:
       if (!parser()->context.token->emptyTag)
       {
         children().append<DocHtmlList>(parser(),thisVariant(),
@@ -4713,7 +4717,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         retval=children().get_last<DocHtmlList>()->parse();
       }
       break;
-    case HTML_OL:
+    case HtmlTagType::HTML_OL:
       if (!parser()->context.token->emptyTag)
       {
         children().append<DocHtmlList>(parser(),thisVariant(),
@@ -4721,7 +4725,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         retval=children().get_last<DocHtmlList>()->parse();
       }
       break;
-    case HTML_LI:
+    case HtmlTagType::HTML_LI:
       if (parser()->context.token->emptyTag) break;
       if (!insideUL(thisVariant()) && !insideOL(thisVariant()))
       {
@@ -4732,25 +4736,25 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         retval = Token::make_RetVal_ListItem();
       }
       break;
-    case HTML_BOLD:
+    case HtmlTagType::HTML_BOLD:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Bold,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_S:
+    case HtmlTagType::HTML_S:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::S,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_STRIKE:
+    case HtmlTagType::HTML_STRIKE:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Strike,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_DEL:
+    case HtmlTagType::HTML_DEL:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Del,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_UNDERLINE:
+    case HtmlTagType::HTML_UNDERLINE:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Underline,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_INS:
+    case HtmlTagType::HTML_INS:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Ins,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_CODE:
+    case HtmlTagType::HTML_CODE:
       if (parser()->context.token->emptyTag) break;
       if (parser()->context.xmlComment)
         // for C# source or inside a <summary> or <remark> section we
@@ -4764,49 +4768,49 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Code,tagName,&parser()->context.token->attribs);
       }
       break;
-    case HTML_EMPHASIS:
+    case HtmlTagType::HTML_EMPHASIS:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Italic,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_DIV:
+    case HtmlTagType::HTML_DIV:
       parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Div,tagName,&parser()->context.token->attribs);
       if (parser()->context.token->emptyTag) parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Div,tagName);
       break;
-    case HTML_SPAN:
+    case HtmlTagType::HTML_SPAN:
       parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Span,tagName,&parser()->context.token->attribs);
       if (parser()->context.token->emptyTag) parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Span,tagName);
       break;
-    case HTML_SUB:
+    case HtmlTagType::HTML_SUB:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Subscript,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_SUP:
+    case HtmlTagType::HTML_SUP:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Superscript,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_CENTER:
+    case HtmlTagType::HTML_CENTER:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Center,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_SMALL:
+    case HtmlTagType::HTML_SMALL:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Small,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_CITE:
+    case HtmlTagType::HTML_CITE:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Cite,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_PRE:
+    case HtmlTagType::HTML_PRE:
       if (parser()->context.token->emptyTag) break;
       parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Preformatted,tagName,&parser()->context.token->attribs);
       setInsidePreformatted(TRUE);
       parser()->tokenizer.setInsidePre(TRUE);
       break;
-    case HTML_P:
+    case HtmlTagType::HTML_P:
       retval = Token::make_TK_NEWPARA();
       break;
-    case HTML_DL:
+    case HtmlTagType::HTML_DL:
       if (!parser()->context.token->emptyTag)
       {
         children().append<DocHtmlDescList>(parser(),thisVariant(),tagHtmlAttribs);
         retval=children().get_last<DocHtmlDescList>()->parse();
       }
       break;
-    case HTML_DT:
+    case HtmlTagType::HTML_DT:
       if (insideDL(thisVariant()))
       {
         retval = Token::make_RetVal_DescTitle();
@@ -4816,7 +4820,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <dt> found");
       }
       break;
-    case HTML_DD:
+    case HtmlTagType::HTML_DD:
       if (insideDL(thisVariant()))
       {
         retval = Token::make_RetVal_DescData();
@@ -4826,74 +4830,74 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <dd> found");
       }
       break;
-    case HTML_TABLE:
+    case HtmlTagType::HTML_TABLE:
       if (!parser()->context.token->emptyTag)
       {
         children().append<DocHtmlTable>(parser(),thisVariant(),tagHtmlAttribs);
         retval=children().get_last<DocHtmlTable>()->parse();
       }
       break;
-    case HTML_TR:
+    case HtmlTagType::HTML_TR:
       retval = Token::make_RetVal_TableRow();
       break;
-    case HTML_TD:
+    case HtmlTagType::HTML_TD:
       retval = Token::make_RetVal_TableCell();
       break;
-    case HTML_TH:
+    case HtmlTagType::HTML_TH:
       retval = Token::make_RetVal_TableHCell();
       break;
-    case HTML_THEAD:
-    case HTML_TBODY:
-    case HTML_TFOOT:
+    case HtmlTagType::HTML_THEAD:
+    case HtmlTagType::HTML_TBODY:
+    case HtmlTagType::HTML_TFOOT:
       // for time being ignore </t....> tag
       break;
-    case HTML_CAPTION:
+    case HtmlTagType::HTML_CAPTION:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <caption> found");
       break;
-    case HTML_BR:
+    case HtmlTagType::HTML_BR:
       {
         children().append<DocLineBreak>(parser(),thisVariant(),tagHtmlAttribs);
       }
       break;
-    case HTML_HR:
+    case HtmlTagType::HTML_HR:
       {
         children().append<DocHorRuler>(parser(),thisVariant(),tagHtmlAttribs);
       }
       break;
-    case HTML_A:
+    case HtmlTagType::HTML_A:
       retval = parser()->handleAHref(thisVariant(),children(),tagHtmlAttribs);
       break;
-    case HTML_H1:
+    case HtmlTagType::HTML_H1:
       if (!parser()->context.token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,1);
       break;
-    case HTML_H2:
+    case HtmlTagType::HTML_H2:
       if (!parser()->context.token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,2);
       break;
-    case HTML_H3:
+    case HtmlTagType::HTML_H3:
       if (!parser()->context.token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,3);
       break;
-    case HTML_H4:
+    case HtmlTagType::HTML_H4:
       if (!parser()->context.token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,4);
       break;
-    case HTML_H5:
+    case HtmlTagType::HTML_H5:
       if (!parser()->context.token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,5);
       break;
-    case HTML_H6:
+    case HtmlTagType::HTML_H6:
       if (!parser()->context.token->emptyTag) retval=handleHtmlHeader(tagHtmlAttribs,6);
       break;
-    case HTML_IMG:
+    case HtmlTagType::HTML_IMG:
       {
         parser()->handleImg(thisVariant(),children(),tagHtmlAttribs);
       }
       break;
-    case HTML_DETAILS:
+    case HtmlTagType::HTML_DETAILS:
       if (!parser()->context.token->emptyTag)
       {
         children().append<DocHtmlDetails>(parser(),thisVariant(),tagHtmlAttribs);
         retval=children().get_last<DocHtmlDetails>()->parse();
       }
       break;
-    case HTML_BLOCKQUOTE:
+    case HtmlTagType::HTML_BLOCKQUOTE:
       if (!parser()->context.token->emptyTag)
       {
         children().append<DocHtmlBlockQuote>(parser(),thisVariant(),tagHtmlAttribs);
@@ -4901,7 +4905,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
       }
       break;
 
-    case XML_SUMMARY:
+    case HtmlTagType::XML_SUMMARY:
       if (insideDetails(thisVariant()))
       {
         if (!parser()->context.token->emptyTag)
@@ -4923,28 +4927,28 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         }
       }
       break;
-    case XML_REMARKS:
-    case XML_EXAMPLE:
+    case HtmlTagType::XML_REMARKS:
+    case HtmlTagType::XML_EXAMPLE:
       parser()->context.xmlComment=TRUE;
       // fall through
-    case XML_VALUE:
-    case XML_PARA:
+    case HtmlTagType::XML_VALUE:
+    case HtmlTagType::XML_PARA:
       if (!children().empty())
       {
         retval = Token::make_TK_NEWPARA();
       }
       break;
-    case XML_DESCRIPTION:
+    case HtmlTagType::XML_DESCRIPTION:
       if (insideTable(thisVariant()))
       {
         retval = Token::make_RetVal_TableCell();
       }
       break;
-    case XML_C:
+    case HtmlTagType::XML_C:
       parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Code,tagName,&parser()->context.token->attribs);
       break;
-    case XML_PARAM:
-    case XML_TYPEPARAM:
+    case HtmlTagType::XML_PARAM:
+    case HtmlTagType::XML_TYPEPARAM:
       {
         parser()->context.xmlComment=TRUE;
         QCString paramName;
@@ -4954,24 +4958,24 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
           {
             if (Config_getBool(WARN_NO_PARAMDOC))
             {
-              warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"empty 'name' attribute for <param%s> tag.",tagId==XML_PARAM?"":"type");
+              warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"empty 'name' attribute for <param%s> tag.",tagId==HtmlTagType::XML_PARAM?"":"type");
             }
           }
           else
           {
             retval = handleParamSection(paramName,
-                tagId==XML_PARAM ? DocParamSect::Param : DocParamSect::TemplateParam,
+                tagId==HtmlTagType::XML_PARAM ? DocParamSect::Param : DocParamSect::TemplateParam,
                 TRUE);
           }
         }
         else
         {
-          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Missing 'name' attribute from <param%s> tag.",tagId==XML_PARAM?"":"type");
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Missing 'name' attribute from <param%s> tag.",tagId==HtmlTagType::XML_PARAM?"":"type");
         }
       }
       break;
-    case XML_PARAMREF:
-    case XML_TYPEPARAMREF:
+    case HtmlTagType::XML_PARAMREF:
+    case HtmlTagType::XML_TYPEPARAMREF:
       {
         QCString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
@@ -4984,11 +4988,11 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         }
         else
         {
-          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Missing 'name' attribute from <param%sref> tag.",tagId==XML_PARAMREF?"":"type");
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Missing 'name' attribute from <param%sref> tag.",tagId==HtmlTagType::XML_PARAMREF?"":"type");
         }
       }
       break;
-    case XML_EXCEPTION:
+    case HtmlTagType::XML_EXCEPTION:
       {
         parser()->context.xmlComment=TRUE;
         QCString exceptName;
@@ -5003,8 +5007,8 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         }
       }
       break;
-    case XML_ITEM:
-    case XML_LISTHEADER:
+    case HtmlTagType::XML_ITEM:
+    case HtmlTagType::XML_LISTHEADER:
       if (insideTable(thisVariant()))
       {
         retval = Token::make_RetVal_TableRow();
@@ -5018,25 +5022,25 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"lonely <item> tag found");
       }
       break;
-    case XML_RETURNS:
+    case HtmlTagType::XML_RETURNS:
       parser()->context.xmlComment=TRUE;
       retval = handleSimpleSection(DocSimpleSect::Return,TRUE);
       parser()->context.hasReturnCommand=TRUE;
       break;
-    case XML_TERM:
+    case HtmlTagType::XML_TERM:
       if (insideTable(thisVariant()))
       {
         retval = Token::make_RetVal_TableCell();
       }
       break;
-    case XML_SEE:
+    case HtmlTagType::XML_SEE:
       // I'm not sure if <see> is the same as <seealso> or if it
       // should you link a member without producing a section. The
       // C# specification is extremely vague about this (but what else
       // can we expect from Microsoft...)
       {
         QCString cref;
-        //printf("XML_SEE: empty tag=%d\n",parser()->context.token->emptyTag);
+        //printf("HtmlTagType::XML_SEE: empty tag=%d\n",parser()->context.token->emptyTag);
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
           unescapeCRef(cref);
@@ -5079,7 +5083,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         }
       }
       break;
-    case XML_SEEALSO:
+    case HtmlTagType::XML_SEEALSO:
       {
         parser()->context.xmlComment=TRUE;
         QCString cref;
@@ -5112,7 +5116,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         }
       }
       break;
-    case XML_LIST:
+    case HtmlTagType::XML_LIST:
       {
         QCString type;
         findAttribute(tagHtmlAttribs,"type",&type);
@@ -5134,16 +5138,16 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         }
       }
       break;
-    case XML_INCLUDE:
-    case XML_PERMISSION:
+    case HtmlTagType::XML_INCLUDE:
+    case HtmlTagType::XML_PERMISSION:
       // These tags are defined in .Net but are currently unsupported
       parser()->context.xmlComment=TRUE;
       break;
-    case HTML_UNKNOWN:
+    case HtmlTagType::UNKNOWN:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unsupported xml/html tag <%s> found", qPrint(tagName));
       children().append<DocWord>(parser(),thisVariant(), "<"+tagName+parser()->context.token->attribsStr+">");
       break;
-  case XML_INHERITDOC:
+  case HtmlTagType::XML_INHERITDOC:
       handleInheritDoc();
       break;
   default:
@@ -5159,11 +5163,11 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
 Token DocPara::handleHtmlEndTag(const QCString &tagName)
 {
   AUTO_TRACE("tagName={}",tagName);
-  int tagId = Mappers::htmlTagMapper->map(tagName);
+  HtmlTagType tagId = Mappers::htmlTagMapper->map(tagName);
   Token retval = Token::make_RetVal_OK();
   switch (tagId)
   {
-    case HTML_UL:
+    case HtmlTagType::HTML_UL:
       if (!insideUL(thisVariant()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </ul> tag without matching <ul>");
@@ -5173,7 +5177,7 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
         retval = Token::make_RetVal_EndList();
       }
       break;
-    case HTML_OL:
+    case HtmlTagType::HTML_OL:
       if (!insideOL(thisVariant()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </ol> tag without matching <ol>");
@@ -5183,7 +5187,7 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
         retval = Token::make_RetVal_EndList();
       }
       break;
-    case HTML_LI:
+    case HtmlTagType::HTML_LI:
       if (!insideLI(thisVariant()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </li> tag without matching <li>");
@@ -5193,7 +5197,7 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
         // ignore </li> tags
       }
       break;
-    case HTML_DETAILS:
+    case HtmlTagType::HTML_DETAILS:
       if (!insideDetails(thisVariant()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </details> tag without matching <details>");
@@ -5203,7 +5207,7 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
         retval = Token::make_RetVal_EndHtmlDetails();
       }
       break;
-    case HTML_BLOCKQUOTE:
+    case HtmlTagType::HTML_BLOCKQUOTE:
       if (!insideBlockQuote(thisVariant()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found </blockquote> tag without matching <blockquote>");
@@ -5213,151 +5217,151 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
         retval = Token::make_RetVal_EndBlockQuote();
       }
       break;
-    case HTML_BOLD:
+    case HtmlTagType::HTML_BOLD:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Bold,tagName);
       break;
-    case HTML_S:
+    case HtmlTagType::HTML_S:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::S,"s");
       break;
-    case HTML_STRIKE:
+    case HtmlTagType::HTML_STRIKE:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Strike,tagName);
       break;
-    case HTML_DEL:
+    case HtmlTagType::HTML_DEL:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Del,tagName);
       break;
-    case HTML_UNDERLINE:
+    case HtmlTagType::HTML_UNDERLINE:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Underline,tagName);
       break;
-    case HTML_INS:
+    case HtmlTagType::HTML_INS:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Ins,tagName);
       break;
-    case HTML_CODE:
+    case HtmlTagType::HTML_CODE:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Code,tagName);
       break;
-    case HTML_EMPHASIS:
+    case HtmlTagType::HTML_EMPHASIS:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Italic,tagName);
       break;
-    case HTML_DIV:
+    case HtmlTagType::HTML_DIV:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Div,tagName);
       break;
-    case HTML_SPAN:
+    case HtmlTagType::HTML_SPAN:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Span,tagName);
       break;
-    case HTML_SUB:
+    case HtmlTagType::HTML_SUB:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Subscript,tagName);
       break;
-    case HTML_SUP:
+    case HtmlTagType::HTML_SUP:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Superscript,tagName);
       break;
-    case HTML_CENTER:
+    case HtmlTagType::HTML_CENTER:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Center,tagName);
       break;
-    case HTML_SMALL:
+    case HtmlTagType::HTML_SMALL:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Small,tagName);
       break;
-    case HTML_CITE:
+    case HtmlTagType::HTML_CITE:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Cite,tagName);
       break;
-    case HTML_PRE:
+    case HtmlTagType::HTML_PRE:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Preformatted,tagName);
       setInsidePreformatted(FALSE);
       parser()->tokenizer.setInsidePre(FALSE);
       break;
-    case HTML_P:
+    case HtmlTagType::HTML_P:
       retval = Token::make_TK_NEWPARA();
       break;
-    case HTML_DL:
+    case HtmlTagType::HTML_DL:
       retval = Token::make_RetVal_EndDesc();
       break;
-    case HTML_DT:
+    case HtmlTagType::HTML_DT:
       // ignore </dt> tag
       break;
-    case HTML_DD:
+    case HtmlTagType::HTML_DD:
       // ignore </dd> tag
       break;
-    case HTML_TABLE:
+    case HtmlTagType::HTML_TABLE:
       retval = Token::make_RetVal_EndTable();
       break;
-    case HTML_TR:
+    case HtmlTagType::HTML_TR:
       // ignore </tr> tag
       break;
-    case HTML_TD:
+    case HtmlTagType::HTML_TD:
       // ignore </td> tag
       break;
-    case HTML_TH:
+    case HtmlTagType::HTML_TH:
       // ignore </th> tag
       break;
-    case HTML_THEAD:
-    case HTML_TBODY:
-    case HTML_TFOOT:
+    case HtmlTagType::HTML_THEAD:
+    case HtmlTagType::HTML_TBODY:
+    case HtmlTagType::HTML_TFOOT:
       // for time being ignore </t....> tag
       break;
-    case HTML_CAPTION:
+    case HtmlTagType::HTML_CAPTION:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </caption> found");
       break;
-    case HTML_BR:
+    case HtmlTagType::HTML_BR:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal </br> tag found");
       break;
-    case HTML_H1:
+    case HtmlTagType::HTML_H1:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </h1> found");
       break;
-    case HTML_H2:
+    case HtmlTagType::HTML_H2:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </h2> found");
       break;
-    case HTML_H3:
+    case HtmlTagType::HTML_H3:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </h3> found");
       break;
-    case HTML_H4:
+    case HtmlTagType::HTML_H4:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </h4> found");
       break;
-    case HTML_H5:
+    case HtmlTagType::HTML_H5:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </h5> found");
       break;
-    case HTML_H6:
+    case HtmlTagType::HTML_H6:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </h6> found");
       break;
-    case HTML_IMG:
+    case HtmlTagType::HTML_IMG:
       break;
-    case HTML_HR:
+    case HtmlTagType::HTML_HR:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal </hr> tag found");
       break;
-    case HTML_A:
+    case HtmlTagType::HTML_A:
       //warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </a> found");
       // ignore </a> tag (can be part of <a name=...></a>
       break;
 
-    case XML_TERM:
+    case HtmlTagType::XML_TERM:
       break;
-    case XML_SUMMARY:
+    case HtmlTagType::XML_SUMMARY:
       retval = Token::make_TK_NEWPARA();
       break;
-    case XML_REMARKS:
-    case XML_PARA:
-    case XML_VALUE:
-    case XML_EXAMPLE:
-    case XML_PARAM:
-    case XML_LIST:
-    case XML_TYPEPARAM:
-    case XML_RETURNS:
-    case XML_SEE:
-    case XML_SEEALSO:
-    case XML_EXCEPTION:
-    case XML_INHERITDOC:
+    case HtmlTagType::XML_REMARKS:
+    case HtmlTagType::XML_PARA:
+    case HtmlTagType::XML_VALUE:
+    case HtmlTagType::XML_EXAMPLE:
+    case HtmlTagType::XML_PARAM:
+    case HtmlTagType::XML_LIST:
+    case HtmlTagType::XML_TYPEPARAM:
+    case HtmlTagType::XML_RETURNS:
+    case HtmlTagType::XML_SEE:
+    case HtmlTagType::XML_SEEALSO:
+    case HtmlTagType::XML_EXCEPTION:
+    case HtmlTagType::XML_INHERITDOC:
       retval = Token::make_RetVal_CloseXml();
       break;
-    case XML_C:
+    case HtmlTagType::XML_C:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Code,tagName);
       break;
-    case XML_ITEM:
-    case XML_LISTHEADER:
-    case XML_INCLUDE:
-    case XML_PERMISSION:
-    case XML_DESCRIPTION:
-    case XML_PARAMREF:
-    case XML_TYPEPARAMREF:
+    case HtmlTagType::XML_ITEM:
+    case HtmlTagType::XML_LISTHEADER:
+    case HtmlTagType::XML_INCLUDE:
+    case HtmlTagType::XML_PERMISSION:
+    case HtmlTagType::XML_DESCRIPTION:
+    case HtmlTagType::XML_PARAMREF:
+    case HtmlTagType::XML_TYPEPARAMREF:
       // These tags are defined in .Net but are currently unsupported
       break;
-    case HTML_UNKNOWN:
+    case HtmlTagType::UNKNOWN:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unsupported xml/html tag </%s> found", qPrint(tagName));
       children().append<DocWord>(parser(),thisVariant(),"</"+tagName+">");
       break;
@@ -5574,14 +5578,14 @@ reparsetoken:
       case TokenRetval::TK_COMMAND_BS:
         {
           // see if we have to start a simple section
-          int cmd = Mappers::cmdMapper->map(parser()->context.token->name);
+          CommandType cmd = Mappers::cmdMapper->map(parser()->context.token->name);
           const DocNodeVariant *n=parent();
           while (n && !std::holds_alternative<DocSimpleSect>(*n) &&
                       !std::holds_alternative<DocParamSect>(*n))
           {
             n=::parent(n);
           }
-          if (cmd&SIMPLESECT_BIT)
+          if (cmd>CommandType::SIMPLESECT_BIT)
           {
             if (n)  // already in a simple section
             {
@@ -5597,7 +5601,7 @@ reparsetoken:
           while (n && !std::holds_alternative<DocSimpleListItem>(*n)) n=::parent(n);
           if (n)
           {
-            if (cmd==CMD_LI)
+            if (cmd==CommandType::CMD_LI)
             {
               retval = Token::make_RetVal_ListItem();
               goto endparagraph;
@@ -5934,55 +5938,55 @@ void DocText::parse()
       case TokenRetval::TK_COMMAND_BS:
         switch (Mappers::cmdMapper->map(parser()->context.token->name))
         {
-          case CMD_BSLASH:
+          case CommandType::CMD_BSLASH:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_BSlash);
             break;
-          case CMD_AT:
+          case CommandType::CMD_AT:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_At);
             break;
-          case CMD_LESS:
+          case CommandType::CMD_LESS:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Less);
             break;
-          case CMD_GREATER:
+          case CommandType::CMD_GREATER:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Greater);
             break;
-          case CMD_AMP:
+          case CommandType::CMD_AMP:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Amp);
             break;
-          case CMD_DOLLAR:
+          case CommandType::CMD_DOLLAR:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Dollar);
             break;
-          case CMD_HASH:
+          case CommandType::CMD_HASH:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Hash);
             break;
-          case CMD_DCOLON:
+          case CommandType::CMD_DCOLON:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_DoubleColon);
             break;
-          case CMD_PERCENT:
+          case CommandType::CMD_PERCENT:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Percent);
             break;
-          case CMD_NDASH:
+          case CommandType::CMD_NDASH:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
             break;
-          case CMD_MDASH:
+          case CommandType::CMD_MDASH:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
             break;
-          case CMD_QUOTE:
+          case CommandType::CMD_QUOTE:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Quot);
             break;
-          case CMD_PUNT:
+          case CommandType::CMD_PUNT:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Dot);
             break;
-          case CMD_PLUS:
+          case CommandType::CMD_PLUS:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Plus);
             break;
-          case CMD_MINUS:
+          case CommandType::CMD_MINUS:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Minus);
             break;
-          case CMD_EQUAL:
+          case CommandType::CMD_EQUAL:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Equal);
             break;
           default:
