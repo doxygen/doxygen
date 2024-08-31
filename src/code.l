@@ -1521,6 +1521,17 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <ObjCCallComment>{CPPC}|{CCS}        { yyextra->currentCtx->comment << yytext; }
 <ObjCCallComment>\n               { yyextra->currentCtx->comment << *yytext; }
 <ObjCCallComment>.                { yyextra->currentCtx->comment << *yytext; }
+<ObjCCall>"self."{ID}             {
+                                    QCString id = &yytext[5];
+                                    yyextra->currentCtx->format+=escapeWord(yyscanner,"self")+".";
+                                    yyextra->currentCtx->format+=escapeObject(yyscanner,id.data());
+                                    if (yyextra->braceCount==0)
+                                    {
+                                      yyextra->currentCtx->objectTypeOrName=id;
+                                      DBG_CTX((stderr,"new type=%s\n",qPrint(yyextra->currentCtx->objectTypeOrName)));
+                                      BEGIN(ObjCMName);
+                                    }
+                                  }
 <ObjCCall>{ID}                    {
                                     yyextra->currentCtx->format+=escapeObject(yyscanner,yytext);
                                     if (yyextra->braceCount==0)
@@ -3908,7 +3919,16 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
             if (it!=yyextra->wordMap.end())
             {
               QCString word = it->second;
+              bool isKeyword = word=="self";
+              if (isKeyword)
+              {
+                startFontClass(yyscanner,"keyword");
+              }
               codifyLines(yyscanner,word);
+              if (isKeyword)
+              {
+                endFontClass(yyscanner);
+              }
             }
           }
           else if (nc=='d') // comment block
