@@ -794,6 +794,8 @@ NONLopt [^\n]*
                                             yyextra->current->section = EntryType::makeFunction();
                                             yyextra->language = yyextra->current->lang = SrcLangExt::ObjC;
                                             yyextra->insideObjC = TRUE;
+                                            yyextra->yyBegColNr  = yyextra->yyColNr;
+                                            yyextra->yyBegLineNr = yyextra->yyLineNr;
                                             yyextra->current->virt = Specifier::Virtual;
 
                                             yyextra->current->isStatic=yytext[0]=='+';
@@ -803,11 +805,13 @@ NONLopt [^\n]*
                                         }
 <ObjCMethod>"("                         { // start of method's return type
                                           BEGIN( ObjCReturnType );
+                                          yyextra->current->type.clear();
+                                          yyextra->roundCount=0;
                                         }
 <ObjCMethod>{ID}                        { // found method name
                                           if (yyextra->current->type.isEmpty())
                                           {
-                                            yyextra->current->type = "id";
+                                            yyextra->current->type += "id";
                                           }
                                           yyextra->current->name = yytext;
                                           storeClangId(yyscanner,yytext);
@@ -818,11 +822,27 @@ NONLopt [^\n]*
                                           yyextra->current->argList.push_back(a);
                                           BEGIN( ObjCParams );
                                         }
-<ObjCReturnType>[^)]*                   { // TODO: check if nested branches are possible.
-                                          yyextra->current->type = yytext;
+<ObjCReturnType>[^()]*                  {
+                                          yyextra->current->type += yytext;
+                                        }
+<ObjCReturnType>"(^)("                  { // Block return type
+                                          yyextra->current->type += yytext;
+                                          yyextra->roundCount++;
+                                        }
+<ObjCReturnType>"("                     {
+                                          yyextra->current->type += yytext;
+                                          yyextra->roundCount++;
                                         }
 <ObjCReturnType>")"                     {
-                                          BEGIN( ObjCMethod );
+                                          if (yyextra->roundCount<=0)
+                                          {
+                                            BEGIN( ObjCMethod );
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->type += yytext;
+                                            yyextra->roundCount--;
+                                          }
                                         }
 <ObjCParams>({ID})?{BN}*":"             { // Keyword of parameter
                                           QCString keyw = yytext;

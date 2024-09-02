@@ -1437,7 +1437,7 @@ const QCString &FileDefImpl::name() const
 
 void FileDefImpl::addSourceRef(int line,const Definition *d,const MemberDef *md)
 {
-  //printf("FileDefImpl::addSourceDef(%d,%p,%p)\n",line,d,md);
+  //printf("FileDefImpl::addSourceRef(%d,%s,%s)\n",line,qPrint(d?d->name():"nullptr"),qPrint(md?md->name():"nullptr"));
   if (d)
   {
     m_srcDefMap.emplace(line,d);

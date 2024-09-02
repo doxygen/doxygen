@@ -3788,6 +3788,19 @@ static void buildFunctionList(const Entry *root)
         addMethodToClass(root,cd,root->type,rname,root->args,isFriend,
                          root->protection,root->isStatic,root->virt,root->spec,root->relates);
       }
+      else if (root->parent()->section.isObjcImpl() && cd)
+      {
+        const MemberDef *md = cd->getMemberByName(rname);
+        if (md)
+        {
+          MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(md));
+          if (mdm)
+          {
+            mdm->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+            mdm->setBodyDef(root->fileDef());
+          }
+        }
+      }
       else if (!root->parent()->section.isCompound() && !root->parent()->section.isObjcImpl() &&
                !isMember &&
                (root->relates.isEmpty() || root->relatesType==RelatesType::Duplicate) &&
@@ -4105,7 +4118,7 @@ static void transferFunctionDocumentation()
   // find matching function declaration and definitions.
   for (const auto &mn : *Doxygen::functionNameLinkedMap)
   {
-    //printf("memberName=%s count=%d\n",mn->memberName(),mn->count());
+    //printf("memberName=%s count=%zu\n",qPrint(mn->memberName()),mn->size());
     /* find a matching function declaration and definition for this function */
     for (const auto &imdec : *mn)
     {

@@ -106,6 +106,17 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				  yyextra->name += yytext;
   				  BEGIN(Operator);
   				}
+<Start>{ID}({B}*"*")?{B}*"("{B}*"^"{B}*")"{B}*"(" { // Objective-C 2.0 block return type
+  				  if (!yyextra->insideObjC) 
+				  {
+				    REJECT;
+				  }
+				  else
+				  {
+  				    addType(yyscanner);
+				    yyextra->type += yytext;
+				  }
+                                }
 <Start>{ID}{B}*"("{B}*{ID}{B}*")" { // Objective-C class categories
   				  if (!yyextra->insideObjC) 
 				  {

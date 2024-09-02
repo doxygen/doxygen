@@ -1005,7 +1005,6 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
 
 void DefinitionImpl::setBodySegment(int defLine, int bls,int ble)
 {
-  //printf("setBodySegment(%d,%d) for %s\n",bls,ble,qPrint(name()));
   if (!m_impl->body) m_impl->body = make_DeepCopyUnique<BodyInfo>();
   m_impl->body->defLine   = defLine;
   m_impl->body->startLine = bls;
