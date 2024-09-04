@@ -699,7 +699,7 @@ class FilterCache
       {
         char c=0;
         while ((c=*p)!='\n' && c!=0) p++; // search until end of the line
-        p++;
+        if (c!=0) p++;
         it->second.push_back(p-str.data());
       }
     }
