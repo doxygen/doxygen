@@ -2976,7 +2976,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
           tolower(data[end+2])=='e' && (data[end+3]=='>' || data[end+3]==' ')) // <pre> tag
       {
         // skip part until including </pre>
-        end  = end + processHtmlTagWrite(data.substr(end-1),end-1,false) + 2;
+        end  = end + processHtmlTagWrite(data.substr(end-1),end-1,false);
         break;
       }
       else
