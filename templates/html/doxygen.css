@@ -1811,6 +1811,10 @@ tt, code, kbd, samp
 {
   display: inline-block;
 }
+tt, code, kbd, samp code
+{
+  vertical-align: top;
+}
 /* @end */
 
 u {
