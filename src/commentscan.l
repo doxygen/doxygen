@@ -476,6 +476,7 @@ struct commentscanYY_state
   GuardType        guardType = Guard_If;     // kind of guards for conditional section
   QCString         functionProto;            // function prototype
   GuardedSectionStack *guards = nullptr;     // tracks nested conditional sections (if,ifnot,..)
+  bool             inInclude = false;        // signal whether of not we are inside an included file (i.e. verbatim included).
   Entry           *current = nullptr;        // working entry
 
   bool             needNewEntry = FALSE;
@@ -3022,13 +3023,22 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleFile(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,EntryType::makeFileDoc);
-  if (!stop)
+  if (yyextra->inInclude)
   {
-    yyextra->current->name = yyextra->fileName;
+    yyextra->current->inbodyDocs.clear(); // in case the file command is not the first command of the block
+    BEGIN( SkipInternal );
+    return false;
   }
-  BEGIN( FileDocArg1 );
-  return stop;
+  else
+  {
+    bool stop=makeStructuralIndicator(yyscanner,EntryType::makeFileDoc);
+    if (!stop)
+    {
+      yyextra->current->name = yyextra->fileName;
+    }
+    BEGIN( FileDocArg1 );
+    return stop;
+  }
 }
 
 static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &)
@@ -4676,7 +4686,8 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
                        /* in,out */ int &position,
                        /* out */    bool &newEntryNeeded,
                        /* in */     bool markdownSupport,
-                       /* inout */  GuardedSectionStack *guards
+                       /* inout */  GuardedSectionStack *guards,
+                       /* in */     bool inInclude
                       )
 {
   AUTO_TRACE("comment='{}' fileName={} lineNr={} isBrief={} isAutoBriefOn={} inInbody={}"
@@ -4687,6 +4698,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
 
   initParser(yyscanner);
   yyextra->guards = guards;
+  yyextra->inInclude = inInclude;
   yyextra->langParser     = parser;
   yyextra->current        = curEntry;
   yyextra->current->docLine = (lineNr > 1 ? lineNr : 1);

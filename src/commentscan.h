@@ -88,6 +88,7 @@ class CommentScanner
      *         needs to be started.
      *  @param[in] markdownEnabled Indicates if markdown specific processing should be done.
      *  @param[inout] guards Tracks nested conditional sections (if,ifnot,..)
+     *  @param[in] inInclude signal whether of not we are inside an included file (i.e. verbatim included)
      *  @returns TRUE if the comment requires further processing. The
      *         parameter \a newEntryNeeded will typically be true in this case and
      *         \a position will indicate the offset inside the \a comment string
@@ -106,7 +107,8 @@ class CommentScanner
                            int &position,
                            bool &newEntryNeeded,
                            bool markdownEnabled,
-                           GuardedSectionStack *guards
+                           GuardedSectionStack *guards,
+                           bool inInclude = false
                           );
     void initGroupInfo(Entry *entry);
     void enterFile(const QCString &fileName,int lineNr);

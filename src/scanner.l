@@ -114,6 +114,7 @@ struct scannerYY_state
   int              yyBegLineNr  = 1 ;
   int              yyColNr      = 1 ;
   int              yyBegColNr   = 1 ;
+  int              inInclude    = 0 ;
   QCString         fileName;
   MethodTypes      mtype = MethodTypes::Method;
   bool             isStatic = false;
@@ -2730,6 +2731,18 @@ NONLopt [^\n]*
                                         }
 <PreLineCtrl>"\""[^\n\"]*"\""           {
                                           yyextra->fileName = stripQuotes(yytext);
+                                          if (yyextra->lastPreLineCtrlContext==ReadBody ||
+                                              yyextra->lastPreLineCtrlContext==ReadNSBody ||
+                                              yyextra->lastPreLineCtrlContext==ReadBodyIntf)
+                                          {
+                                            yyextra->current->program << yytext;
+                                          }
+                                        }
+<PreLineCtrl>{Bopt}[0-9]+               {
+                                          if (QCString(yytext).toInt() == 1)
+                                            yyextra->inInclude++;
+                                          else
+                                            yyextra->inInclude--;
                                           if (yyextra->lastPreLineCtrlContext==ReadBody ||
                                               yyextra->lastPreLineCtrlContext==ReadNSBody ||
                                               yyextra->lastPreLineCtrlContext==ReadBodyIntf)
@@ -7932,7 +7945,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
         position,
         needsEntry,
         Config_getBool(MARKDOWN_SUPPORT),
-        &guards
+        &guards,
+        yyextra->inInclude > 0
         )
      )
   {
@@ -7998,7 +8012,8 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
              position,
              needsEntry,
              Config_getBool(MARKDOWN_SUPPORT),
-             &guards
+             &guards,
+             yyextra->inInclude > 0
             )
           )
       {
