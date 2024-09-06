@@ -7314,6 +7314,7 @@ static void findEnums(const Entry *root)
 {
   if (root->section.isEnum())
   {
+    AUTO_TRACE("name={}",root->name);
     ClassDefMutable     *cd        = nullptr;
     FileDef             *fd        = nullptr;
     NamespaceDefMutable *nd        = nullptr;
@@ -7379,6 +7380,7 @@ static void findEnums(const Entry *root)
     if (!name.isEmpty())
     {
       // new enum type
+      AUTO_TRACE_ADD("new enum at line {} of {}",root->bodyLine,root->fileName);
       auto md = createMemberDef(
           root->fileName,root->startLine,root->startColumn,
           QCString(),name,QCString(),QCString(),
@@ -7484,6 +7486,7 @@ static void addEnumValuesToEnums(const Entry *root)
   if (root->section.isEnum())
     // non anonymous enumeration
   {
+    AUTO_TRACE("name={}",root->name);
     ClassDefMutable     *cd        = nullptr;
     FileDef             *fd        = nullptr;
     NamespaceDefMutable *nd        = nullptr;
@@ -7567,7 +7570,7 @@ static void addEnumValuesToEnums(const Entry *root)
           // use raw pointer in this loop, since we modify mn and can then invalidate mdp.
           if (md && md->isEnumerate() && !root->children().empty())
           {
-            //printf("   enum with %zu children\n",root->children().size());
+            AUTO_TRACE_ADD("enum {} with {} children",md->name(),root->children().size());
             for (const auto &e : root->children())
             {
               SrcLangExt sle = root->lang;
@@ -7591,6 +7594,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   {
                     fileName = e->tagInfo()->tagName;
                   }
+                  AUTO_TRACE_ADD("strong enum value {}",e->name);
                   auto fmd = createMemberDef(
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,QCString(),
@@ -7607,6 +7611,8 @@ static void addEnumValuesToEnums(const Entry *root)
                   fmmd->setOuterScope(md->getOuterScope());
                   fmmd->setTagInfo(e->tagInfo());
                   fmmd->setLanguage(e->lang);
+                  fmmd->setBodySegment(e->startLine,e->bodyLine,e->endBodyLine);
+                  fmmd->setBodyDef(e->fileDef());
                   fmmd->setId(e->id);
                   fmmd->setDocumentation(e->doc,e->docFile,e->docLine);
                   fmmd->setBriefDescription(e->brief,e->briefFile,e->briefLine);
@@ -7625,6 +7631,7 @@ static void addEnumValuesToEnums(const Entry *root)
               }
               else
               {
+                AUTO_TRACE_ADD("enum value {}",e->name);
                 //printf("e->name=%s isRelated=%d\n",qPrint(e->name),isRelated);
                 MemberName *fmn=nullptr;
                 MemberNameLinkedMap *emnsd = isRelated ? Doxygen::functionNameLinkedMap : mnsd;
