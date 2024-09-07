@@ -78,7 +78,7 @@
 <li>Remove temporary file [<a href="https://github.com/doxygen/doxygen/commit/8bb715af5ecade5aa39bde044d5da3a3efc5e791">view</a>]</li>
 <li>Warning in case of `0.` as start of a list. [<a href="https://github.com/doxygen/doxygen/commit/c8a6d5b5229c1f47274ba0e51aa612afebbc124a">view</a>]</li>
 <li>With the simple file ``` /// \file ``` and setting ``` GENERATE_RTF=YES ``` we get in the messages a number of times the message: ``` Style &#39;Heading6&#39; redefines \s5. ``` [<a href="https://github.com/doxygen/doxygen/commit/b3056dad73b6dc667ea7f752ffe4f1d05b4f8f0c">view</a>]</li>
-<li>Python class vaiables type and initial value [<a href="https://github.com/doxygen/doxygen/commit/19ee614e6b2a8d8a10f54ea29e82b3a26589f93d">view</a>]</li>
+<li>Python class variables type and initial value [<a href="https://github.com/doxygen/doxygen/commit/19ee614e6b2a8d8a10f54ea29e82b3a26589f93d">view</a>]</li>
 <li>Fix buffer overflow in Markdown parser [<a href="https://github.com/doxygen/doxygen/commit/28b51a7f199d003b309e9dab52457759d5fd7691">view</a>]</li>
 <li>Add code coloring for Fortran RANK statement [<a href="https://github.com/doxygen/doxygen/commit/58ff5c32d6da8c485b7819819a55eb474f36b03e">view</a>]</li>
 <li>Fixed a number of coverity warnings [<a href="https://github.com/doxygen/doxygen/commit/6221f43137ebb2c3daa5cffae807105825612b8b">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/997d86f3bed2a0384561046a912c356867c53c37">view</a>]</li>
