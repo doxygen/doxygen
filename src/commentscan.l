@@ -3379,7 +3379,7 @@ static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const String
 static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  addOutput(yyscanner,"@addindex ");
+  addOutput(yyscanner,yytext);
   BEGIN(LineParam);
   return FALSE;
 }
