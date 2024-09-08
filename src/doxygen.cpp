@@ -11074,8 +11074,8 @@ static void devUsage()
   msg("  -b          making messages output unbuffered\n");
 #if ENABLE_TRACING
   msg("  -t        [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout)\n");
-  msg("  -t_notime [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout),\n"
-      "                                   but without time and thread information\n");
+  msg("  -t_time   [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout),\n"
+      "                                   and include time and thread information\n");
 #endif
   msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
   Debug::printFlags();
@@ -11323,7 +11323,7 @@ void readConfiguration(int argc, char **argv)
   QCString traceName;
   bool genConfig=false;
   bool shortList=false;
-  bool traceTiming=true;
+  bool traceTiming=false;
   Config::CompareMode diffList=Config::CompareMode::Full;
   bool updateConfig=false;
   bool quiet = false;
@@ -11377,11 +11377,17 @@ void readConfiguration(int argc, char **argv)
       case 't':
         {
 #if ENABLE_TRACING
-          if (!strcmp(argv[optInd]+1,"t_notime")) traceTiming = false;
-          else if (!strcmp(argv[optInd]+1,"t")) traceTiming=true;
+          if (!strcmp(argv[optInd]+1,"t_time"))
+          {
+            traceTiming = true;
+          }
+          else if (!strcmp(argv[optInd]+1,"t"))
+          {
+            traceTiming = false;
+          }
           else
           {
-            err("option should be \"-t\" or \"-t_notime\", found: \"%s\".\n",argv[optInd]);
+            err("option should be \"-t\" or \"-t_time\", found: \"%s\".\n",argv[optInd]);
             cleanUpDoxygen();
             exit(1);
           }
