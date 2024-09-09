@@ -1542,17 +1542,16 @@ static void findMemberLink(yyscan_t yyscanner,
   //    yyextra->currentDefinition?qPrint(yyextra->currentDefinition->name()):"<none>",
   //    yyextra->currentMemberDef?qPrint(yyextra->currentMemberDef->name()):"<none>"
   //    );
-  bool found = false;
   if (yyextra->currentDefinition)
   {
     const auto &v = Doxygen::symbolMap->find(symName);
     for (const auto &p : v)
     {
-      if (findMemberLink(yyscanner,ol,p,symName)) found = true;
+      if (findMemberLink(yyscanner,ol,p,symName)) return;
     }
   }
   //printf("sym %s not found\n",&yytext[5]);
-  if (!found) codify(yyscanner,symName);
+  codify(yyscanner,symName);
 }
 
 static void incrementFlowKeyWordCount(yyscan_t yyscanner)
