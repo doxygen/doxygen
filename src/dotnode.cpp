@@ -424,7 +424,9 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     t << "<<TABLE CELLBORDER=\"0\" BORDER=\"1\">";
     t << hr_start << convertLabel(m_label,true) << hr_end;
     auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
-    if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
+    if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE &&
+        dotUmlDetails!=DOT_UML_DETAILS_t::NONE_FLD &&
+        dotUmlDetails!=DOT_UML_DETAILS_t::NONE_ATTR_FLD)
     {
       bool lineWritten = false;
       t << sep;
@@ -609,6 +611,11 @@ void DotNode::writeArrow(TextStream &t,
   t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0 -> Node1' is used
   if (!ei->label().isEmpty())
   {
+  if (!(Config_getBool(UML_LOOK) &&
+        (Config_getEnum(DOT_UML_DETAILS)==DOT_UML_DETAILS_t::NONE_ATTR ||
+         Config_getEnum(DOT_UML_DETAILS)==DOT_UML_DETAILS_t::NONE_ATTR_FLD) &&
+        (gt==Inheritance || gt==Collaboration))
+     )
     t << ",label=\" " << convertLabel(ei->label()) << "\",fontcolor=\"grey\" ";
   }
   if (Config_getBool(UML_LOOK) &&
