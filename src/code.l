@@ -577,8 +577,18 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
                                           yyextra->bracketCount = 0;
 
-                                          DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
-                                          yyextra->scopeStack.push(INNERBLOCK);
+                                          DBG_CTX((stderr,"** type='%s' name='%s'\n",qPrint(yyextra->type),qPrint(yyextra->name)));
+                                          if (yyextra->type.find("enum ")!=-1)
+                                          { // for strong enums we need to start a scope
+                                            DBG_CTX((stderr,"** scope stack push SCOPEBLOCK\n"));
+                                            pushScope(yyscanner,yyextra->name);
+                                            yyextra->scopeStack.push(SCOPEBLOCK);
+                                          }
+                                          else
+                                          {
+                                            DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
+                                            yyextra->scopeStack.push(INNERBLOCK);
+                                          }
 
                                           if (yyextra->searchingForBody)
                                           {
@@ -985,9 +995,10 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <Body>{KEYWORD}/([^a-z_A-Z0-9])         {
                                           if (yyextra->lang==SrcLangExt::Java && qstrcmp("internal",yytext) ==0) REJECT;
                                           if (skipLanguageSpecificKeyword(yyscanner,yytext)) REJECT;
+                                          QCString text=yytext;
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
-                                          if (QCString(yytext)=="typedef")
+                                          if (text=="typedef" || text.find("enum ")!=-1) // typedef or strong enum
                                           {
                                             addType(yyscanner);
                                             yyextra->name+=yytext;
@@ -2557,7 +2568,7 @@ static void startCodeLine(yyscan_t yyscanner)
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
       yyextra->insideBody = FALSE;
       yyextra->searchingForBody = TRUE;
-      yyextra->realScope = d->name();
+      yyextra->realScope = d!=Doxygen::globalScope ? d->name() : "";
       yyextra->type.clear();
       yyextra->name.clear();
       yyextra->args.clear();
@@ -3071,11 +3082,15 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   {
     scopeName = substitute(scopeName,".","::"); // for C#/Java namespaces
   }
+  if (!yyextra->scopeName.isEmpty())
+  {
+    scopeName = yyextra->scopeName+"::"+scopeName;
+  }
   const ScopedTypeVariant *lcd=nullptr;
   const Definition *sym=nullptr;
   bool isLocal=FALSE;
 
-  DBG_CTX((stderr,"generateClassOrGlobalLink(name=%s)\n",qPrint(scopeName)));
+  DBG_CTX((stderr,"generateClassOrGlobalLink(name=%s) yyextra->scopeName=%s scopeName=%s\n",qPrint(scName),qPrint(yyextra->scopeName),qPrint(scopeName)));
   if (!yyextra->isPrefixedWithThis || (lcd=yyextra->theVarContext.findVariable(scopeName))==nullptr) // not a local variable
   {
     int i=scopeName.find('<');
@@ -4203,7 +4218,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  DBG_CTX((stderr,"***parseCode() exBlock=%d exName=%s fd=%p className=%s searchCtx=%s\n",
+  DBG_CTX((stderr,"***parseCode() exBlock=%d exName=%s fd=%p scopeName=%s searchCtx=%s\n",
            exBlock,qPrint(exName),(void*)fd,qPrint(scopeName),searchCtx?qPrint(searchCtx->name()):"<none>"));
 
   if (s.isEmpty()) return;

@@ -1885,7 +1885,7 @@ void VhdlDocGen::writeSource(const MemberDef* mdef,OutputList& ol,const QCString
   MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(mdef));
   if (mdm)
   {
-    mdm->writeSourceDef(ol,cname);
+    mdm->writeSourceDef(ol);
     if (mdef->hasReferencesRelation()) mdm->writeSourceRefs(ol,cname);
     if (mdef->hasReferencedByRelation()) mdm->writeSourceReffedBy(ol,cname);
   }

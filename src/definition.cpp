@@ -954,7 +954,7 @@ QCString DefinitionImpl::getSourceAnchor() const
 }
 
 /*! Write a reference to the source code defining this definition */
-void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
+void DefinitionImpl::writeSourceDef(OutputList &ol) const
 {
   //printf("DefinitionImpl::writeSourceRef %d %p\n",bodyLine,bodyDef);
   QCString fn = getSourceFileBase();

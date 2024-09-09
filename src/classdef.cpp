@@ -1627,7 +1627,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
     ol.endDescForItem();
     ol.endExamples();
   }
-  writeSourceDef(ol,name());
+  writeSourceDef(ol);
   ol.endTextBlock();
 }
 

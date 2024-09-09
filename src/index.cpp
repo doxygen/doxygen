@@ -461,16 +461,22 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
   bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
   const MemberVector &enumList = md->enumFieldList();
   bool isDir = !enumList.empty() && md->isEnumerate();
-  QCString name = def->definitionType()==Definition::TypeModule ? md->qualifiedName() : md->name();
-  if (md->getOuterScope()==def || md->getOuterScope()==Doxygen::globalScope)
+  auto defType = def->definitionType();
+  bool namespaceMemberInFileDocs = md->getNamespaceDef() && defType==Definition::TypeFile;
+  bool lAddToIndex = addToIndex && !namespaceMemberInFileDocs;
+  QCString name = namespaceMemberInFileDocs || defType==Definition::TypeModule ?
+                  md->qualifiedName() : md->name();
+  if (md->getOuterScope()==def ||
+      (md->getNamespaceDef()!=nullptr && defType==Definition::TypeFile) ||
+      md->getOuterScope()==Doxygen::globalScope)
   {
     Doxygen::indexList->addContentsItem(isDir,
-        name,md->getReference(),md->getOutputFileBase(),md->anchor(),FALSE,addToIndex && md->getGroupDef()==nullptr);
+        name,md->getReference(),md->getOutputFileBase(),md->anchor(),FALSE,lAddToIndex && md->getGroupDef()==nullptr);
   }
   else // inherited member
   {
     Doxygen::indexList->addContentsItem(isDir,
-        name,def->getReference(),def->getOutputFileBase(),md->anchor(),FALSE,addToIndex && md->getGroupDef()==nullptr);
+        name,def->getReference(),def->getOutputFileBase(),md->anchor(),FALSE,lAddToIndex && md->getGroupDef()==nullptr);
   }
   if (isDir)
   {
@@ -482,15 +488,21 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
     {
       if (!hideUndocMembers || emd->hasDocumentation())
       {
-        if (emd->getOuterScope()==def || emd->getOuterScope()==Doxygen::globalScope)
+        namespaceMemberInFileDocs = emd->getNamespaceDef() && defType==Definition::TypeFile;
+        lAddToIndex = addToIndex && !namespaceMemberInFileDocs;
+        QCString ename = namespaceMemberInFileDocs || defType==Definition::TypeModule ?
+                         emd->qualifiedName() : emd->name();
+        if (emd->getOuterScope()==def ||
+            (emd->getNamespaceDef()!=nullptr && defType==Definition::TypeFile) ||
+            emd->getOuterScope()==Doxygen::globalScope)
         {
           Doxygen::indexList->addContentsItem(FALSE,
-              emd->name(),emd->getReference(),emd->getOutputFileBase(),emd->anchor(),FALSE,addToIndex && emd->getGroupDef()==nullptr);
+              ename,emd->getReference(),emd->getOutputFileBase(),emd->anchor(),FALSE,lAddToIndex && emd->getGroupDef()==nullptr);
         }
         else // inherited member
         {
           Doxygen::indexList->addContentsItem(FALSE,
-              emd->name(),def->getReference(),def->getOutputFileBase(),emd->anchor(),FALSE,addToIndex && emd->getGroupDef()==nullptr);
+              ename,def->getReference(),def->getOutputFileBase(),emd->anchor(),FALSE,lAddToIndex && emd->getGroupDef()==nullptr);
         }
       }
     }

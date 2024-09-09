@@ -108,7 +108,7 @@ class DefinitionImpl
     void setArtificial(bool b);
     void setExported(bool b);
     void setLanguage(SrcLangExt lang);
-    void writeSourceDef(OutputList &ol,const QCString &scopeName) const;
+    void writeSourceDef(OutputList &ol) const;
     void writeInlineCode(OutputList &ol,const QCString &scopeName) const;
     bool hasSourceRefs() const;
     bool hasSourceReffedBy() const;
@@ -253,8 +253,8 @@ class DefinitionMixin : public Base
     { m_impl.setExported(b); }
     void setLanguage(SrcLangExt lang) override
     { m_impl.setLanguage(lang); }
-    void writeSourceDef(OutputList &ol,const QCString &scopeName) const override
-    { m_impl.writeSourceDef(ol,scopeName); }
+    void writeSourceDef(OutputList &ol) const override
+    { m_impl.writeSourceDef(ol); }
     void writeInlineCode(OutputList &ol,const QCString &scopeName) const override
     { m_impl.writeInlineCode(ol,scopeName); }
     bool hasSourceRefs() const override

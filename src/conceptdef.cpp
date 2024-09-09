@@ -480,7 +480,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
           QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
 
-    writeSourceDef(ol,name());
+    writeSourceDef(ol);
     ol.endTextBlock();
   }
 }

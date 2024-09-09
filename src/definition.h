@@ -372,7 +372,7 @@ class DefinitionMutable
     //-----------------------------------------------------------------------------------
     // --- writing output ----
     //-----------------------------------------------------------------------------------
-    virtual void writeSourceDef(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual void writeSourceDef(OutputList &ol) const = 0;
     virtual void writeInlineCode(OutputList &ol,const QCString &scopeName) const = 0;
     virtual bool hasSourceRefs() const = 0;
     virtual bool hasSourceReffedBy() const = 0;
