@@ -602,28 +602,15 @@ void HtmlHelp::addContentsItem(bool isDir,
 void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
                             const QCString &sectionAnchor,const QCString &word)
 {
-  if (md)
+  if (context && md)
   {
-    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    if (context==nullptr) // global member
-    {
-      if (md->getGroupDef())
-        context = md->getGroupDef();
-      else if (md->getFileDef())
-        context = md->getFileDef();
-    }
-    if (context==nullptr) return; // should not happen
-
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();
-    QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
     QCString level2  = md->name() + argStr;
-    QCString contRef = separateMemberPages ? cfname : cfiname;
-    QCString memRef  = cfname;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
-    p->index.addItem(level1,level2,contRef,anchor,TRUE,FALSE);
-    p->index.addItem(level2,level1,memRef,anchor,TRUE,TRUE);
+    p->index.addItem(level1,level2,cfname,anchor,TRUE,FALSE);
+    p->index.addItem(level2,level1,cfname,anchor,TRUE,TRUE);
   }
   else if (context)
   {

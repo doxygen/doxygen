@@ -189,28 +189,15 @@ static QCString makeRef(const QCString & withoutExtension, const QCString & anch
   if (anchor.isEmpty()) return result;
   return result+"#"+anchor;
 }
+
 void Crawlmap::addIndexItem(const Definition *context, const MemberDef *md,
                             const QCString &sectionAnchor, const QCString &title)
 {
   if (md) // member
   {
-    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    if (context==nullptr) // global member
-    {
-      if (md->getGroupDef())
-        context = md->getGroupDef();
-      else if (md->getFileDef())
-        context = md->getFileDef();
-    }
-    if (context==nullptr) return; // should not happen
     QCString cfname  = md->getOutputFileBase();
-    //QCString argStr  = md->argsString();
-    QCString cfiname = context->getOutputFileBase();
-    QCString contRef = separateMemberPages ? cfname : cfiname;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
-    QCString ref;
-
-    ref = makeRef(contRef, anchor);
+    QCString ref     = makeRef(cfname, anchor);
     p->crawlLinks.insert(ref.str());
   }
   else if (context) // container

@@ -350,7 +350,7 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
       blank << "<title>Validator / crawler helper</title>\n";
       blank << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
       blank << "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=11\"/>\n";
-    
+
       blank << "<meta name=\"generator\" content=\"Doxygen " + getDoxygenVersion() + "\"/>\n";
       blank << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>\n";
       blank << "</head>\n";
@@ -375,28 +375,17 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   //       md?md->name().data():"<none>",
   //       qPrint(word));
 
-  if (md) // member
+  if (context && md) // member
   {
-    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    if (context==nullptr) // global member
-    {
-      if (md->getGroupDef())
-        context = md->getGroupDef();
-      else if (md->getFileDef())
-        context = md->getFileDef();
-    }
-    if (context==nullptr) return; // should not happen
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();
-    QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
     QCString level2  = !word.isEmpty() ? word : md->name();
-    QCString contRef = separateMemberPages ? cfname : cfiname;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
     QCString ref;
 
     // <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
-    ref = makeRef(contRef, anchor);
+    ref = makeRef(cfname, anchor);
     QCString id = level1+"::"+level2;
     writeIndent(p->index,3);
     p->index << "<keyword name=\"" << convertToXML(level2 + argStr) << "\""

@@ -333,17 +333,8 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     case SrcLangExt::Unknown: lang="unknown"; break;    // should not happen!
   }
 
-  if (md)
+  if (context && md)
   {
-    if (context==nullptr)
-    {
-      if (md->getGroupDef())
-        context = md->getGroupDef();
-      else if (md->getFileDef())
-        context = md->getFileDef();
-    }
-    if (context==nullptr) return; // should not happen
-
     switch (md->memberType())
     {
       case MemberType::Define:
@@ -402,16 +393,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       case MemberType::Dictionary:
         type="dictionary"; break;
     }
-    cd = md->getClassDef();
-    nd = md->getNamespaceDef();
-    if (cd)
-    {
-      scope = cd->qualifiedName();
-    }
-    else if (nd)
-    {
-      scope = nd->name();
-    }
+    scope = md->getScopeString();
     fd = md->getFileDef();
     if (fd)
     {
