@@ -791,7 +791,7 @@ void SymbolResolver::Private::getResolvedSymbol(
       const MemberDef *md = toMemberDef(d);
 
       bool match = true;
-      AUTO_TRACE_ADD("member={} args={}",md->name(),argListToString(md->argumentList()));
+      AUTO_TRACE_ADD("member={} args={} isCallable()={}",md->name(),argListToString(md->argumentList()),md->isCallable());
       if (md->isCallable() && !args.isEmpty())
       {
         QCString actArgs;
@@ -1602,7 +1602,8 @@ const Definition *SymbolResolver::resolveSymbol(const Definition *scope,
   if (scope==nullptr) scope=Doxygen::globalScope;
   VisitedKeys visitedKeys;
   const Definition *result = p->getResolvedSymbolRec(visitedKeys,scope,name,args,checkCV,insideCode,&p->typeDef,&p->templateSpec,&p->resolvedType);
-  AUTO_TRACE_EXIT("result={}", qPrint(result?result->qualifiedName():QCString()));
+  AUTO_TRACE_EXIT("result={}{}", qPrint(result?result->qualifiedName():QCString()),
+                                 qPrint(result && result->definitionType()==Definition::TypeMember ? toMemberDef(result)->argsString() : QCString()));
   return result;
 }
 

@@ -5491,7 +5491,8 @@ bool MemberDefImpl::isCallable() const
          isSignal() ||
          isConstructor() ||
          isDestructor() ||
-         isObjCMethod();
+         isObjCMethod() ||
+         isFriend();
 }
 
 ClassDef *MemberDefImpl::relatedAlso() const
