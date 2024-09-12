@@ -10,19 +10,19 @@
         <enumvalue id="classns2_1_1_class_1ab3fe6da2ca4a96a226618492312b1761ac5836008c1649301e29351a55db8f65c" prot="public">
           <name>Flag</name>
           <briefdescription>
-            <para>A flag of Enum1 in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+            <para>A flag of Enum1 in a class in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
         </enumvalue>
         <briefdescription>
-          <para>A first enum class in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+          <para>A first enum class in a class in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_strong_enum.cpp" line="62" column="1" bodyfile="058_strong_enum.cpp" bodystart="62" bodyend="64"/>
+        <location file="058_strong_enum.cpp" line="138" column="1" bodyfile="058_strong_enum.cpp" bodystart="138" bodyend="140"/>
       </memberdef>
       <memberdef kind="enum" id="classns2_1_1_class_1ae96c8ec290b0bdb3b718ccd891450b5d" prot="public" static="no" strong="yes">
         <type/>
@@ -31,19 +31,19 @@
         <enumvalue id="classns2_1_1_class_1ae96c8ec290b0bdb3b718ccd891450b5dac5836008c1649301e29351a55db8f65c" prot="public">
           <name>Flag</name>
           <briefdescription>
-            <para>A flag of Enum2 in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+            <para>A flag of Enum2 in a class in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
         </enumvalue>
         <briefdescription>
-          <para>A second enum class in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+          <para>A second enum class in a class in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_strong_enum.cpp" line="66" column="1" bodyfile="058_strong_enum.cpp" bodystart="66" bodyend="68"/>
+        <location file="058_strong_enum.cpp" line="142" column="1" bodyfile="058_strong_enum.cpp" bodystart="142" bodyend="144"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -51,7 +51,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="058_strong_enum.cpp" line="59" column="1" bodyfile="058_strong_enum.cpp" bodystart="60" bodyend="69"/>
+    <location file="058_strong_enum.cpp" line="135" column="1" bodyfile="058_strong_enum.cpp" bodystart="136" bodyend="145"/>
     <listofallmembers>
       <member refid="classns2_1_1_class_1ab3fe6da2ca4a96a226618492312b1761" prot="public" virt="non-virtual">
         <scope>ns2::Class</scope>

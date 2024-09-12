@@ -7583,6 +7583,8 @@ static void addEnumValuesToEnums(const Entry *root)
                 //printf("md->qualifiedName()=%s e->name=%s tagInfo=%p name=%s\n",
                 //    qPrint(md->qualifiedName()),qPrint(e->name),(void*)e->tagInfo(),qPrint(e->name));
                 QCString qualifiedName = root->name;
+                if (!scope.isEmpty() && root->tagInfo())
+                  qualifiedName = scope + "::" + qualifiedName;
                 if (isJavaLike)
                 {
                   qualifiedName=substitute(qualifiedName,"::",".");

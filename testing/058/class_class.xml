@@ -3,6 +3,27 @@
   <compounddef id="class_class" kind="class" language="C++" prot="public">
     <compoundname>Class</compoundname>
     <sectiondef kind="public-type">
+      <memberdef kind="enum" id="class_class_1ab6f24dd08d6388bb0ee4af2ce2e5d197" prot="public" static="no" strong="no">
+        <type/>
+        <name>WeakEnum</name>
+        <qualifiedname>Class::WeakEnum</qualifiedname>
+        <enumvalue id="class_class_1ab6f24dd08d6388bb0ee4af2ce2e5d197a564f79e0b117290cf148cc51613b04be" prot="public">
+          <name>WeakEnumFlag</name>
+          <briefdescription>
+            <para>A flag of WeakEnum in a class in global scope. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para>A weak enum in a class in global scope. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="058_strong_enum.cpp" line="197" column="1" bodyfile="058_strong_enum.cpp" bodystart="197" bodyend="199"/>
+      </memberdef>
       <memberdef kind="enum" id="class_class_1a2f3072754ba509a9e86403439b18fddb" prot="public" static="no" strong="yes">
         <type/>
         <name>Enum1</name>
@@ -10,19 +31,19 @@
         <enumvalue id="class_class_1a2f3072754ba509a9e86403439b18fddbac5836008c1649301e29351a55db8f65c" prot="public">
           <name>Flag</name>
           <briefdescription>
-            <para>A flag of Enum1 in global scope. </para>
+            <para>A flag of Enum1 in a class in global scope. </para>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
         </enumvalue>
         <briefdescription>
-          <para>A first enum class in global scope. </para>
+          <para>A first enum class in a class in global scope. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_strong_enum.cpp" line="98" column="1" bodyfile="058_strong_enum.cpp" bodystart="98" bodyend="100"/>
+        <location file="058_strong_enum.cpp" line="201" column="1" bodyfile="058_strong_enum.cpp" bodystart="201" bodyend="203"/>
       </memberdef>
       <memberdef kind="enum" id="class_class_1af09ec8b7238c8a302c251b1cfe1de13d" prot="public" static="no" strong="yes">
         <type/>
@@ -31,19 +52,19 @@
         <enumvalue id="class_class_1af09ec8b7238c8a302c251b1cfe1de13dac5836008c1649301e29351a55db8f65c" prot="public">
           <name>Flag</name>
           <briefdescription>
-            <para>A flag of Enum2 in global scope. </para>
+            <para>A flag of Enum2 in a class in global scope. </para>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
         </enumvalue>
         <briefdescription>
-          <para>A second enum class in global scope. </para>
+          <para>A second enum class in a class in global scope. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_strong_enum.cpp" line="102" column="1" bodyfile="058_strong_enum.cpp" bodystart="102" bodyend="104"/>
+        <location file="058_strong_enum.cpp" line="205" column="1" bodyfile="058_strong_enum.cpp" bodystart="205" bodyend="207"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -51,7 +72,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="058_strong_enum.cpp" line="95" column="1" bodyfile="058_strong_enum.cpp" bodystart="96" bodyend="105"/>
+    <location file="058_strong_enum.cpp" line="194" column="1" bodyfile="058_strong_enum.cpp" bodystart="195" bodyend="208"/>
     <listofallmembers>
       <member refid="class_class_1a2f3072754ba509a9e86403439b18fddb" prot="public" virt="non-virtual">
         <scope>Class</scope>
@@ -60,6 +81,14 @@
       <member refid="class_class_1af09ec8b7238c8a302c251b1cfe1de13d" prot="public" virt="non-virtual">
         <scope>Class</scope>
         <name>Enum2</name>
+      </member>
+      <member refid="class_class_1ab6f24dd08d6388bb0ee4af2ce2e5d197" prot="public" virt="non-virtual">
+        <scope>Class</scope>
+        <name>WeakEnum</name>
+      </member>
+      <member refid="class_class_1ab6f24dd08d6388bb0ee4af2ce2e5d197a564f79e0b117290cf148cc51613b04be" prot="public" virt="non-virtual">
+        <scope>Class</scope>
+        <name>WeakEnumFlag</name>
       </member>
     </listofallmembers>
   </compounddef>
