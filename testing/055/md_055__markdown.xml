@@ -24,6 +24,7 @@
             <ulink url="http://example.com/last-line">Upper-cased reference link on last line</ulink>
           </para>
           <para>Dash - NDash <ndash/> MDash <mdash/> EDash - ENDash -- EMDash --- E3Dash ---</para>
+          <para>Dashes in links shouldn't cause out-of-bounds assertions: <ulink url="https://doxygen.nl"><ndash/></ulink> <ulink url="https://doxygen.nl"><mdash/></ulink></para>
         </sect2>
         <sect2 id="md_055__markdown_1autotoc_md3">
           <title>Markdown in HTML</title>
