@@ -20,7 +20,7 @@ void cstyle( int theory );
  * Often, developers are unaware that this is not (by default) a valid Doxygen
  * comment block!
  *
- * However, as long as JAVADOC_BLOCK = YES is added to the Doxyfile, it will
+ * However, as long as JAVADOC_BANNER = YES is added to the Doxyfile, it will
  * work as expected.
  *
  * This style of commenting behaves well with clang-format.
