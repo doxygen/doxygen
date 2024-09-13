@@ -3209,18 +3209,27 @@ static void buildTypedefList(const Entry *root)
       scope=root->parent()->name; //stripAnonymousNamespaceScope(root->parent->name);
     }
     ClassDefMutable *cd=getClassMutable(scope);
+    NamespaceDef *nd=getResolvedNamespace(scope);
     MemberName *mn = Doxygen::functionNameLinkedMap->find(rname);
     bool found=false;
     if (mn) // symbol with the same name already found
     {
       for (auto &imd : *mn)
       {
+        if (!imd->isTypedef())
+          continue;
+
         QCString rtype = root->type;
         rtype.stripPrefix("typedef ");
+
+        // merge the typedefs only if they're not both grouped, and both are
+        // either part of the same class, part of the same namespace, or both
+        // are global (i.e., neither in a class or a namespace)
         bool notBothGrouped = root->groups.empty() || imd->getGroupDef()==nullptr; // see example #100
+        bool bothSameScope = (!cd && !nd) || (cd && imd->getClassDef() == cd) || (nd && imd->getNamespaceDef() == nd);
         //printf("imd->isTypedef()=%d imd->typeString()=%s root->type=%s\n",imd->isTypedef(),
         //    qPrint(imd->typeString()),qPrint(root->type));
-        if (imd->isTypedef() && notBothGrouped && imd->typeString()==rtype)
+        if (notBothGrouped && bothSameScope && imd->typeString()==rtype)
         {
           MemberDefMutable *md = toMemberDefMutable(imd.get());
           if (md)
@@ -3255,6 +3264,10 @@ static void buildTypedefList(const Entry *root)
     if (found)
     {
       AUTO_TRACE_ADD("typedef '{}' already found",rname);
+      // mark the entry as processed, as we copied everything from it elsewhere
+      // also, otherwise, due to containing `typedef` it may later get treated
+      // as a function typedef in filterMemberDocumentation, which is incorrect
+      root->markAsProcessed();
     }
     else
     {
