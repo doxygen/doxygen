@@ -338,7 +338,14 @@ void Portable::unsetenv(const QCString &variable)
 QCString Portable::getenv(const QCString &variable)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    return ::getenv(variable.data());
+    #define ENV_BUFSIZE 32768
+    LPTSTR pszVal = (LPTSTR) malloc(ENV_BUFSIZE*sizeof(TCHAR));
+    if (GetEnvironmentVariable(variable.data(),pszVal,ENV_BUFSIZE) == 0) return "";
+    QCString out;
+    out = pszVal;
+    free(pszVal);
+    return out;
+    #undef ENV_BUFSIZE
 #else
     if(!environmentLoaded) // if the environment variables are not loaded already...
     {                      // ...call loadEnvironment to store them in class
