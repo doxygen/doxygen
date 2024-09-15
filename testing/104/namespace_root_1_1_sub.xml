@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespace_root_1_1_sub" kind="namespace" language="C++">
+    <compoundname>Root::Sub</compoundname>
+    <innerclass refid="struct_root_1_1_sub_1_1_struct" prot="public">Root::Sub::Struct</innerclass>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="104__typedef__merging_8cpp_1a244ea95b1131245341a73ee5615ce973" prot="public" static="no">
+        <type>double</type>
+        <definition>typedef double Root::Sub::Double</definition>
+        <argsstring/>
+        <name>Double</name>
+        <qualifiedname>Root::Sub::Double</qualifiedname>
+        <briefdescription>
+          <para>Another typedef in Sub, not related to <ref refid="struct_root_1_1_sub_1_1_struct" kindref="compound">Struct</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="104_typedef_merging.cpp" line="16" column="18" bodyfile="104_typedef_merging.cpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="104_typedef_merging.cpp" line="14" column="1"/>
+  </compounddef>
+</doxygen>
