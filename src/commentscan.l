@@ -4265,18 +4265,6 @@ static void addXRefItem(yyscan_t yyscanner,
 }
 
 //-----------------------------------------------------------------------------
-inline bool qqisspace(char c)
-{ return c==' ' || c=='\t'; }
-
-    QCString qStripEndWhiteSpace(QCString rep)
-    {
-      size_t sl = rep.length();
-      if (sl==0 || (!qqisspace(rep[sl-1]))) return rep;
-      size_t start=0,end=sl-1;
-      while (end>start && qqisspace(rep[end])) end--;
-      return QCString(rep.mid(start,1+end-start));
-    }
-
 
 // Adds a formula text to the list/dictionary of formulas if it was
 // not already added. Returns the label of the formula.
@@ -4285,10 +4273,15 @@ static QCString addFormula(yyscan_t yyscanner)
   std::unique_lock<std::mutex> lock(g_formulaMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString formLabel;
-  int cnt = 0;
-  QCString stripForm = stripLeadingAndTrailingEmptyLines(yyextra->formulaText,cnt);
-  if (yyextra->formulaText.stripWhiteSpace(true).endsWith("\n")) stripForm += "\n";
-  int id = FormulaManager::instance().addFormula((yyextra->formulaPreText + stripForm + yyextra->formulaPostText).str());
+  QCString formula = (yyextra->formulaPreText +
+                      yyextra->formulaText.stripLeadingAndTrailingEmptyLines() +
+                      yyextra->formulaPostText).stripWhiteSpace();
+  //printf("formulaText=\n=1=\n{%s}\n=2=\n{%s}\n=3=\n{%s}\n===",
+  //    qPrint(yyextra->formulaText),
+  //    qPrint(yyextra->formulaText.stripLeadingAndTrailingEmptyLines()),
+  //    qPrint(formula)
+  //    );
+  int id = FormulaManager::instance().addFormula(formula.str());
   formLabel.sprintf("\\_form#%d",id);
   for (int i=0;i<yyextra->formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
                                                          // keep the warnings

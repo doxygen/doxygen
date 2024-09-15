@@ -155,46 +155,6 @@ static int computeIndent(const char *str,size_t length)
 
 //--------------------------------------------------------------------------
 
-static QCString stripEmptyLines(const QCString &s)
-{
-  if (s.isEmpty()) return QCString();
-  int end=static_cast<int>(s.length());
-  int start=0,p=0;
-  // skip leading empty lines
-  for (;;)
-  {
-    int c;
-    while ((c=s[p]) && (c==' ' || c=='\t')) p++;
-    if (s[p]=='\n')
-    {
-      start=++p;
-    }
-    else
-    {
-      break;
-    }
-  }
-  // skip trailing empty lines
-  p=end-1;
-  if (p>=start && s.at(p)=='\n') p--;
-  while (p>=start)
-  {
-    int c;
-    while ((c=s[p]) && (c==' ' || c=='\t')) p--;
-    if (s[p]=='\n')
-    {
-      end=p;
-    }
-    else
-    {
-      break;
-    }
-    p--;
-  }
-  //printf("stripEmptyLines(%d-%d)\n",start,end);
-  return s.mid(start,end-start);
-}
-
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 //--------------------------------------------------------------------------
 
@@ -885,16 +845,16 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.verb+=yytext;
                        }
 <St_Verbatim>{CMD}"endverbatim" {
-                         yyextra->token.verb=stripEmptyLines(yyextra->token.verb);
+                         yyextra->token.verb = yyextra->token.verb.stripLeadingAndTrailingEmptyLines();
                          return Token::make_RetVal_OK();
                        }
 <St_ILiteral>{CMD}"endiliteral " { // note extra space as this is artificially added
                          // remove spaces that have been added
-                         yyextra->token.verb=yyextra->token.verb.mid(1,yyextra->token.verb.length()-2);
+                         yyextra->token.verb = yyextra->token.verb.mid(1,yyextra->token.verb.length()-2);
                          return Token::make_RetVal_OK();
                        }
 <St_iVerbatim>{CMD}"endiverbatim" {
-                         yyextra->token.verb=stripEmptyLines(yyextra->token.verb);
+                         yyextra->token.verb = yyextra->token.verb.stripLeadingAndTrailingEmptyLines();
                          return Token::make_RetVal_OK();
                        }
 <St_Verbatim,St_iVerbatim,St_ILiteral>[^\\@\n]+ |
