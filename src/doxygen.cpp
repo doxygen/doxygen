@@ -3209,71 +3209,70 @@ static void buildTypedefList(const Entry *root)
       scope=root->parent()->name; //stripAnonymousNamespaceScope(root->parent->name);
     }
     ClassDefMutable *cd=getClassMutable(scope);
-    if (cd && scope+"::"==rname.left(scope.length()+2)) // found A::f inside A
+    NamespaceDef *nd=getResolvedNamespace(scope);
+    MemberName *mn = Doxygen::functionNameLinkedMap->find(rname);
+    bool found=false;
+    if (mn) // symbol with the same name already found
     {
-      // strip scope from name
-      rname=rname.right(rname.length()-root->parent()->name.length()-2);
-    }
-    QCString rtype = root->type;
-    rtype.stripPrefix("typedef ");
-    if (!root->parent()->name.isEmpty() && root->parent()->section.isCompound() && cd)
-    {
-      AUTO_TRACE_ADD("typedef '{}' in class '{}'", rname,cd->name());
-      addVariableToClass(root,cd,MemberType::Typedef,rtype,rname,root->args,false,nullptr,
-                         root->protection,Relationship::Member);
-    }
-    else
-    {
-      MemberName *mn = Doxygen::functionNameLinkedMap->find(rname);
-      bool found=false;
-      if (mn) // symbol with the same name already found
+      for (auto &imd : *mn)
       {
-        for (auto &imd : *mn)
-        {
-          bool notBothGrouped = root->groups.empty() || imd->getGroupDef()==nullptr; // see example #100
-                                                                                     //printf("imd->isTypedef()=%d imd->typeString()=%s root->type=%s\n",imd->isTypedef(),
-                                                                                     //    qPrint(imd->typeString()),qPrint(root->type));
-          if (imd->isTypedef() && notBothGrouped && imd->typeString()==rtype)
-          {
-            MemberDefMutable *md = toMemberDefMutable(imd.get());
-            if (md)
-            {
-              md->setDocumentation(root->doc,root->docFile,root->docLine);
-              md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-              md->setDocsForDefinition(!root->proto);
-              md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-              md->addSectionsToDefinition(root->anchors);
-              md->setRefItems(root->sli);
-              md->addQualifiers(root->qualifiers);
+        if (!imd->isTypedef())
+          continue;
 
-              // merge ingroup specifiers
-              if (md->getGroupDef()==nullptr && !root->groups.empty())
-              {
-                addMemberToGroups(root,md);
-              }
-              else if (md->getGroupDef()!=nullptr && root->groups.empty())
-              {
-                //printf("existing member is grouped, new member not\n");
-              }
-              else if (md->getGroupDef()!=nullptr && !root->groups.empty())
-              {
-                //printf("both members are grouped\n");
-              }
-              found=true;
-              break;
+        QCString rtype = root->type;
+        rtype.stripPrefix("typedef ");
+
+        // merge the typedefs only if they're not both grouped, and both are
+        // either part of the same class, part of the same namespace, or both
+        // are global (i.e., neither in a class or a namespace)
+        bool notBothGrouped = root->groups.empty() || imd->getGroupDef()==nullptr; // see example #100
+        bool bothSameScope = (!cd && !nd) || (cd && imd->getClassDef() == cd) || (nd && imd->getNamespaceDef() == nd);
+        //printf("imd->isTypedef()=%d imd->typeString()=%s root->type=%s\n",imd->isTypedef(),
+        //    qPrint(imd->typeString()),qPrint(root->type));
+        if (notBothGrouped && bothSameScope && imd->typeString()==rtype)
+        {
+          MemberDefMutable *md = toMemberDefMutable(imd.get());
+          if (md)
+          {
+            md->setDocumentation(root->doc,root->docFile,root->docLine);
+            md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+            md->setDocsForDefinition(!root->proto);
+            md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+            md->addSectionsToDefinition(root->anchors);
+            md->setRefItems(root->sli);
+            md->addQualifiers(root->qualifiers);
+
+            // merge ingroup specifiers
+            if (md->getGroupDef()==nullptr && !root->groups.empty())
+            {
+              addMemberToGroups(root,md);
             }
+            else if (md->getGroupDef()!=nullptr && root->groups.empty())
+            {
+              //printf("existing member is grouped, new member not\n");
+            }
+            else if (md->getGroupDef()!=nullptr && !root->groups.empty())
+            {
+              //printf("both members are grouped\n");
+            }
+            found=true;
+            break;
           }
         }
       }
-      if (found)
-      {
-        AUTO_TRACE_ADD("typedef '{}' already found",rname);
-      }
-      else
-      {
-        AUTO_TRACE_ADD("new typedef '{}'",rname);
-        addVariable(root);
-      }
+    }
+    if (found)
+    {
+      AUTO_TRACE_ADD("typedef '{}' already found",rname);
+      // mark the entry as processed, as we copied everything from it elsewhere
+      // also, otherwise, due to containing `typedef` it may later get treated
+      // as a function typedef in filterMemberDocumentation, which is incorrect
+      root->markAsProcessed();
+    }
+    else
+    {
+      AUTO_TRACE_ADD("new typedef '{}'",rname);
+      addVariable(root);
     }
 
   }
