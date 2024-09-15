@@ -253,6 +253,8 @@ class QCString
       return QCString(m_rep.substr(start,1+end-start));
     }
 
+    QCString stripLeadingAndTrailingEmptyLines() const;
+
     // Returns a quoted copy of this string, unless it is already quoted.
     // Note that trailing and leading whitespace is removed.
     QCString quoted() const

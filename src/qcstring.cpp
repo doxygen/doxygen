@@ -570,3 +570,44 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   return result;
 }
 
+QCString QCString::stripLeadingAndTrailingEmptyLines() const
+{
+  if (isEmpty()) return QCString();
+  const std::string &s = m_rep;
+  int end=static_cast<int>(s.length());
+  int start=0,p=0;
+  // skip leading empty lines
+  for (;;)
+  {
+    int c;
+    while ((c=s[p]) && (c==' ' || c=='\t')) p++;
+    if (s[p]=='\n')
+    {
+      start=++p;
+    }
+    else
+    {
+      break;
+    }
+  }
+  // skip trailing empty lines
+  p=end-1;
+  if (p>=start && s.at(p)=='\n') p--;
+  while (p>=start)
+  {
+    int c;
+    while ((c=s[p]) && (c==' ' || c=='\t')) p--;
+    if (s[p]=='\n')
+    {
+      end=p+1;
+    }
+    else
+    {
+      break;
+    }
+    p--;
+  }
+  //printf("stripLeadingAndTrailingEmptyLines(%d-%d)\n",start,end);
+  return s.substr(start,end-start);
+}
+
