@@ -591,7 +591,7 @@ DETAILEDHTMLOPTEND {ENDCODE}
 SUMMARY   ("summary"|"SUMMARY")
 REMARKS   ("remarks"|"REMARKS")
 AHTML     [aA]{BN}*
-ANCHTML   ("idname"|"IDNAME")"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
+ANCHTML   ("id"|"name"|"ID"|"NAME")"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
