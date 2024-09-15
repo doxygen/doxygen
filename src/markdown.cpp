@@ -1774,6 +1774,7 @@ int Markdown::Private::isHeaderline(std::string_view data, bool allowAdjustLevel
   size_t i=0, c=0;
   const size_t size = data.size();
   while (i<size && data[i]==' ') i++;
+  if (i==size) return 0;
 
   // test of level 1 header
   if (data[i]=='=')
