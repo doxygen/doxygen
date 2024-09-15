@@ -466,6 +466,8 @@ struct commentscanYY_state
   OutputContext    inContext;              // are we inside the brief, details or xref part
   bool             briefEndsAtDot = FALSE; // does the brief description stop at a dot?
   QCString         formulaText;            // Running text of a formula
+  QCString         formulaPreText;         // Start command of a formula
+  QCString         formulaPostText;        // End command of a formula
   QCString         formulaEnv;             // environment name
   int              formulaNewLines = 0;    // amount of new lines in the formula
   QCString        *pOutputString = nullptr;  // pointer to string to which the output is appended.
@@ -1043,30 +1045,38 @@ STopt  [^\n@\\]*
                                         }
 <Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
                                           setOutput(yyscanner,OutputDoc);
-                                          yyextra->formulaText="\\begin";
+                                          yyextra->formulaText="";
+                                          yyextra->formulaPreText="\\begin";
+                                          yyextra->formulaPostText="";
                                           yyextra->formulaEnv=QCString(yytext).stripWhiteSpace().mid(2);
                                           if (yyextra->formulaEnv.at(yyextra->formulaEnv.length()-1)=='{')
                                           {
                                             // remove trailing open brace
                                             yyextra->formulaEnv=yyextra->formulaEnv.left(yyextra->formulaEnv.length()-1);
                                           }
-                                          yyextra->formulaText+=yyextra->formulaEnv;
+                                          yyextra->formulaPreText+=yyextra->formulaEnv;
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaLong);
                                         }
 <Comment>{B}*{CMD}"f$"                  { // start of a inline formula
-                                          yyextra->formulaText="$";
+                                          yyextra->formulaText="";
+                                          yyextra->formulaPreText="$";
+                                          yyextra->formulaPostText="";
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaShort);
                                         }
 <Comment>{B}*{CMD}"f("                  { // start of a inline formula
                                           yyextra->formulaText="";
+                                          yyextra->formulaPreText="";
+                                          yyextra->formulaPostText="";
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaRound);
                                         }
 <Comment>{B}*{CMD}"f["                  { // start of a block formula
                                           setOutput(yyscanner,OutputDoc);
-                                          yyextra->formulaText="\\[";
+                                          yyextra->formulaText="";
+                                          yyextra->formulaPreText="\\[";
+                                          yyextra->formulaPostText="";
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaLong);
                                         }
@@ -1247,7 +1257,7 @@ STopt  [^\n@\\]*
  /* --------------   Rules for handling formulas ---------------- */
 
 <ReadFormulaShort,ReadFormulaShortSection>{CMD}"f$" { // end of inline formula
-                                          yyextra->formulaText+="$";
+                                          yyextra->formulaPostText+="$";
                                           QCString form = addFormula(yyscanner);
                                           addOutput(yyscanner," "+form);
                                           if (YY_START == ReadFormulaShort)
@@ -1274,13 +1284,13 @@ STopt  [^\n@\\]*
                                           }
                                         }
 <ReadFormulaLong>{CMD}"f]"              { // end of block formula
-                                          yyextra->formulaText+="\\]";
+                                          yyextra->formulaPostText+="\\]";
                                           addOutput(yyscanner," "+addFormula(yyscanner));
                                           BEGIN(Comment);
                                         }
 <ReadFormulaLong>{CMD}"f}"              { // end of custom env formula
-                                          yyextra->formulaText+="\\end";
-                                          yyextra->formulaText+=yyextra->formulaEnv;
+                                          yyextra->formulaPostText+="\\end";
+                                          yyextra->formulaPostText+=yyextra->formulaEnv;
                                           addOutput(yyscanner," "+addFormula(yyscanner));
                                           BEGIN(Comment);
                                         }
@@ -1929,12 +1939,16 @@ STopt  [^\n@\\]*
                                           BEGIN( Comment );
                                         }
 <SectionTitle>{B}*{CMD}"f$"             {
-                                          yyextra->formulaText="$";
+                                          yyextra->formulaText="";
+                                          yyextra->formulaPreText="$";
+                                          yyextra->formulaPostText="";
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaShortSection);
                                         }
 <SectionTitle>{B}*{CMD}"f("             { // start of a inline formula
                                           yyextra->formulaText="";
+                                          yyextra->formulaPreText="";
+                                          yyextra->formulaPostText="";
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaRoundSection);
                                         }
@@ -4251,6 +4265,18 @@ static void addXRefItem(yyscan_t yyscanner,
 }
 
 //-----------------------------------------------------------------------------
+inline bool qqisspace(char c)
+{ return c==' ' || c=='\t'; }
+
+    QCString qStripEndWhiteSpace(QCString rep)
+    {
+      size_t sl = rep.length();
+      if (sl==0 || (!qqisspace(rep[sl-1]))) return rep;
+      size_t start=0,end=sl-1;
+      while (end>start && qqisspace(rep[end])) end--;
+      return QCString(rep.mid(start,1+end-start));
+    }
+
 
 // Adds a formula text to the list/dictionary of formulas if it was
 // not already added. Returns the label of the formula.
@@ -4259,7 +4285,10 @@ static QCString addFormula(yyscan_t yyscanner)
   std::unique_lock<std::mutex> lock(g_formulaMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString formLabel;
-  int id = FormulaManager::instance().addFormula(yyextra->formulaText.str());
+  int cnt = 0;
+  QCString stripForm = stripLeadingAndTrailingEmptyLines(yyextra->formulaText,cnt);
+  if (yyextra->formulaText.stripWhiteSpace(true).endsWith("\n")) stripForm += "\n";
+  int id = FormulaManager::instance().addFormula((yyextra->formulaPreText + stripForm + yyextra->formulaPostText).str());
   formLabel.sprintf("\\_form#%d",id);
   for (int i=0;i<yyextra->formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
                                                          // keep the warnings
