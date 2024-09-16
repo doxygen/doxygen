@@ -2732,7 +2732,14 @@ static MemberDef *addVariableToFile(
   //md->setOuterScope(fd);
   if (!root->explicitExternal)
   {
-    mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+    if (mmd->isEnumValue())
+    {
+      mmd->setBodySegment(root->bodyLine,root->bodyLine,root->endBodyLine);
+    }
+    else
+    {
+      mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+    }
     mmd->setBodyDef(fd);
   }
   addMemberToGroups(root,md.get());
@@ -7610,7 +7617,14 @@ static void addEnumValuesToEnums(const Entry *root)
                   fmmd->setOuterScope(md->getOuterScope());
                   fmmd->setTagInfo(e->tagInfo());
                   fmmd->setLanguage(e->lang);
-                  fmmd->setBodySegment(e->startLine,e->bodyLine,e->endBodyLine);
+                  if (fmmd->isEnumValue())
+                  {
+                    fmmd->setBodySegment(e->bodyLine,e->bodyLine,e->endBodyLine);
+                  }
+                  else
+                  {
+                    fmmd->setBodySegment(e->startLine,e->bodyLine,e->endBodyLine);
+                  }
                   fmmd->setBodyDef(e->fileDef());
                   fmmd->setId(e->id);
                   fmmd->setDocumentation(e->doc,e->docFile,e->docLine);
