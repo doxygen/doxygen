@@ -843,6 +843,10 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
       {
         found=TRUE;
       }
+      else if (c==0)
+      {
+        break;
+      }
     }
     //printf(" -> readCodeFragment(%s,%d,%d) lineNr=%d\n",fileName,startLine,endLine,lineNr);
     if (found)
@@ -871,11 +875,12 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
         int size_read=0;
         do
         {
-          // read up to maxLineLength-1 bytes, the last byte being zero
+          // read up to blockSize-1 non-zero characters
           int i=0;
-          while ((c=*p++) && i<blockSize-1)
+          while ((c=*p) && i<blockSize-1)
           {
             lineStr[i++]=c;
+            p++;
             if (c=='\n') break; // stop at end of the line
           }
           lineStr[i]=0;
