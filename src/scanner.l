@@ -4060,8 +4060,16 @@ NONLopt [^\n]*
                                           if (!yyextra->current->name.isEmpty())
                                           {
                                             yyextra->current->fileName   = yyextra->fileName;
-                                            yyextra->current->startLine  = yyextra->yyLineNr;
-                                            yyextra->current->startColumn = yyextra->yyColNr;
+                                            if (yyextra->current_root->section.isEnum() || yyextra->current_root->spec.isEnum())
+                                            {
+                                              yyextra->current->startLine  = yyextra->current->bodyLine;
+                                              yyextra->current->startColumn = yyextra->current->bodyColumn;
+                                            }
+                                            else
+                                            {
+                                              yyextra->current->startLine  = yyextra->yyLineNr;
+                                              yyextra->current->startColumn = yyextra->yyColNr;
+                                            }
                                             if (!yyextra->current_root->spec.isEnum())
                                             {
                                               yyextra->current->type       = "@"; // enum marker
