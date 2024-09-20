@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
-  <compounddef id="namespace_a_namespace_1_1_0d0" kind="namespace" language="C++">
+  <compounddef id="namespace_a_namespace_1_1_0d130315250316227335362355006121037335073327177063" kind="namespace" language="C++">
     <compoundname>ANamespace</compoundname>
     <sectiondef kind="enum">
-      <memberdef kind="enum" id="namespace_a_namespace_1_1_0d0_1a96ab6574751fdf6a53ceec8a3896c45d" prot="public" static="no" strong="yes">
+      <memberdef kind="enum" id="namespace_a_namespace_1_1_0d130315250316227335362355006121037335073327177063_1a80c23b2c34d4baaf4e21819ff9c3dcd6" prot="public" static="no" strong="yes">
         <type/>
         <name>Boolean</name>
         <qualifiedname>ANamespace::Boolean</qualifiedname>
-        <enumvalue id="namespace_a_namespace_1_1_0d0_1a96ab6574751fdf6a53ceec8a3896c45daf8320b26d30ab433c5a54546d21f414c" prot="public">
+        <enumvalue id="namespace_a_namespace_1_1_0d130315250316227335362355006121037335073327177063_1a80c23b2c34d4baaf4e21819ff9c3dcd6af8320b26d30ab433c5a54546d21f414c" prot="public">
           <name>False</name>
           <briefdescription>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
         </enumvalue>
-        <enumvalue id="namespace_a_namespace_1_1_0d0_1a96ab6574751fdf6a53ceec8a3896c45daf827cf462f62848df37c5e1e94a4da74" prot="public">
+        <enumvalue id="namespace_a_namespace_1_1_0d130315250316227335362355006121037335073327177063_1a80c23b2c34d4baaf4e21819ff9c3dcd6af827cf462f62848df37c5e1e94a4da74" prot="public">
           <name>True</name>
           <briefdescription>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
         </enumvalue>
-        <enumvalue id="namespace_a_namespace_1_1_0d0_1a96ab6574751fdf6a53ceec8a3896c45da2767828026039e8ba7b38973cbb701f2" prot="public">
+        <enumvalue id="namespace_a_namespace_1_1_0d130315250316227335362355006121037335073327177063_1a80c23b2c34d4baaf4e21819ff9c3dcd6a2767828026039e8ba7b38973cbb701f2" prot="public">
           <name>FileNotFound</name>
           <briefdescription>
           </briefdescription>

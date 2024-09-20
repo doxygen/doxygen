@@ -3877,6 +3877,27 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
   return result;
 }
 
+QCString generateAnonymousAnchor(const QCString &fileName,int count)
+{
+  QCString fn = stripFromPath(fileName)+":"+QCString().setNum(count);
+  const int sig_size=16;
+  uint8_t md5_sig[sig_size];
+  MD5Buffer(fn.data(),static_cast<unsigned int>(fn.length()),md5_sig);
+  char result[sig_size*3+2];
+  char *p = result;
+  *p++='@';
+  for (int i=0;i<sig_size;i++)
+  {
+    static const char oct[]="01234567";
+    uint8_t byte = md5_sig[i];
+    *p++=oct[(byte>>6)&7];
+    *p++=oct[(byte>>3)&7];
+    *p++=oct[(byte>>0)&7];
+  }
+  *p='\0';
+  return result;
+}
+
 QCString relativePathToRoot(const QCString &name)
 {
   QCString result;

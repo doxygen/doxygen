@@ -1547,6 +1547,7 @@ static void processTagLessClasses(const ClassDef *rootCd,
     MemberList *ml = cd->getMemberList(MemberListType::PubAttribs());
     if (ml)
     {
+      int pos=0;
       for (const auto &md : *ml)
       {
         QCString type = md->typeString();
@@ -1559,7 +1560,7 @@ static void processTagLessClasses(const ClassDef *rootCd,
             if (type.find(icd->name())!=-1) // matching tag less struct/union
             {
               QCString name = md->name();
-              if (md->isAnonymous()) name = "__unnamed" + name.right(name.length()-1)+"__";
+              if (md->isAnonymous()) name = "__unnamed" + QCString().setNum(pos++)+"__";
               if (!prefix.isEmpty()) name.prepend(prefix+".");
               //printf("    found %s for class %s\n",qPrint(name),qPrint(cd->name()));
               ClassDefMutable *ncd = createTagLessInstance(rootCd,icd,name);
@@ -7379,7 +7380,7 @@ static void findEnums(const Entry *root)
     if (!name.isEmpty())
     {
       // new enum type
-      AUTO_TRACE_ADD("new enum at line {} of {}",root->bodyLine,root->fileName);
+      AUTO_TRACE_ADD("new enum {} at line {} of {}",name,root->bodyLine,root->fileName);
       auto md = createMemberDef(
           root->fileName,root->startLine,root->startColumn,
           QCString(),name,QCString(),QCString(),
@@ -8837,7 +8838,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
         auto ctx = std::make_shared<DocContext>(cd,*g_outputList);
         auto processFile = [ctx]()
         {
-          msg("Generating docs for compound %s...\n",qPrint(ctx->cd->name()));
+          msg("Generating docs for compound %s...\n",qPrint(ctx->cd->displayName()));
 
           // skip external references, anonymous compounds and
           // template instances
@@ -8875,7 +8876,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
         if ( !cd->isHidden() && !cd->isEmbeddedInOuterScope() &&
               cd->isLinkableInProject() && cd->templateMaster()==nullptr)
         {
-          msg("Generating docs for compound %s...\n",qPrint(cd->name()));
+          msg("Generating docs for compound %s...\n",qPrint(cd->displayName()));
 
           cd->writeDocumentation(*g_outputList);
           cd->writeMemberList(*g_outputList);
@@ -8943,7 +8944,7 @@ static void generateConceptDocs()
         ) && !cd->isHidden() && cd->isLinkableInProject()
        )
     {
-      msg("Generating docs for concept %s...\n",qPrint(cd->name()));
+      msg("Generating docs for concept %s...\n",qPrint(cd->displayName()));
       cd->writeDocumentation(*g_outputList);
     }
   }
@@ -9912,7 +9913,7 @@ static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
               && !ctx->cdm->isHidden() && !ctx->cdm->isEmbeddedInOuterScope()
              )
           {
-            msg("Generating docs for compound %s...\n",qPrint(ctx->cdm->name()));
+            msg("Generating docs for compound %s...\n",qPrint(ctx->cdm->displayName()));
             ctx->cdm->writeDocumentation(ctx->ol);
             ctx->cdm->writeMemberList(ctx->ol);
           }
@@ -9943,7 +9944,7 @@ static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
             && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
            )
         {
-          msg("Generating docs for compound %s...\n",qPrint(cd->name()));
+          msg("Generating docs for compound %s...\n",qPrint(cd->displayName()));
 
           cdm->writeDocumentation(*g_outputList);
           cdm->writeMemberList(*g_outputList);
@@ -9982,7 +9983,7 @@ static void generateNamespaceDocs()
       NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
       if (ndm)
       {
-        msg("Generating docs for namespace %s\n",qPrint(nd->name()));
+        msg("Generating docs for namespace %s\n",qPrint(nd->displayName()));
         ndm->writeDocumentation(*g_outputList);
       }
     }

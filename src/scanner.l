@@ -33,7 +33,6 @@ typedef yyguts_t *yyscan_t;
 #include <algorithm>
 #include <vector>
 #include <utility>
-#include <atomic>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -60,9 +59,6 @@ typedef yyguts_t *yyscan_t;
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
-
-static AtomicInt  anonCount;
-static AtomicInt  anonNSCount;
 
 struct scannerYY_state
 {
@@ -213,6 +209,9 @@ struct scannerYY_state
 
   int              fakeNS  = 0; //<! number of file scoped namespaces in CSharp file
   TextStream       dummyTextStream;
+
+  int              anonCount = 0;
+  int              anonNSCount = 0;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -246,6 +245,7 @@ static void setJavaProtection(yyscan_t yyscanner);
 static void storeClangId(yyscan_t yyscanner,const char *id);
 static void startVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize=0);
 static bool endVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize=0);
+
 
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
@@ -4354,7 +4354,7 @@ NONLopt [^\n]*
                                           BEGIN(MemberSpecSkip);
                                         }
 <TypedefName>";"                        { /* typedef of anonymous type */
-                                          yyextra->current->name.sprintf("@%d",anonCount++);
+                                          yyextra->current->name = generateAnonymousAnchor(yyextra->fileName,yyextra->anonCount++);
                                           if (yyextra->current->section.isEnum() || yyextra->current->spec.isEnum())
                                           {
                                             yyextra->current->program << ','; // add field terminator
@@ -4429,7 +4429,7 @@ NONLopt [^\n]*
                                                 {
                                                   // anonymous compound yyextra->inside -> insert dummy variable name
                                                   //printf("Adding anonymous variable for scope %s\n",qPrint(p->name));
-                                                  yyextra->msName.sprintf("@%d",anonCount++);
+                                                  yyextra->msName = generateAnonymousAnchor(yyextra->fileName,yyextra->anonCount++);
                                                   break;
                                                 }
                                               }
@@ -6339,12 +6339,12 @@ NONLopt [^\n]*
                                               }
                                               else // use invisible name
                                               {
-                                                yyextra->current->name.sprintf("@%d",anonNSCount.load());
+                                                yyextra->current->name = generateAnonymousAnchor(yyextra->fileName,yyextra->anonNSCount);
                                               }
                                             }
                                             else
                                             {
-                                              yyextra->current->name.sprintf("@%d",anonCount++);
+                                              yyextra->current->name = generateAnonymousAnchor(yyextra->fileName,yyextra->anonCount++);
                                             }
                                           }
                                           yyextra->curlyCount=0;
@@ -7846,7 +7846,6 @@ static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString
 
 //-----------------------------------------------------------------------------
 
-
 void fixArgumentListForJavaScript(ArgumentList &al)
 {
   for (Argument &a : al)
@@ -7859,6 +7858,7 @@ void fixArgumentListForJavaScript(ArgumentList &al)
   }
 }
 
+//-----------------------------------------------------------------------------
 
 static void startCommentBlock(yyscan_t yyscanner,bool brief)
 {
@@ -8168,6 +8168,8 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->yyLineNr      = 1 ;
   yyextra->yyBegLineNr   = 1;
   yyextra->yyBegColNr    = 0;
+  yyextra->anonCount     = 0;
+  yyextra->anonNSCount   = 0;
   yyextra->fileName = fileName;
   yyextra->clangParser = clangParser;
   setContext(yyscanner);
@@ -8222,7 +8224,7 @@ static void parseMain(yyscan_t yyscanner,
 
   parseCompounds(yyscanner,rt);
 
-  anonNSCount++;
+  yyextra->anonNSCount++;
 
   // add additional entries that were created during processing
   for (auto &[parent,child]: yyextra->outerScopeEntries)

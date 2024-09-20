@@ -253,6 +253,8 @@ QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement=QC
 
 QCString convertNameToFile(const QCString &name,bool allowDots=FALSE,bool allowUnderscore=FALSE);
 
+QCString generateAnonymousAnchor(const QCString &fileName,int count);
+
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName,
                           bool allowEmptyClass=FALSE);

@@ -2243,12 +2243,12 @@ void generateXML()
     }
     for (const auto &cd : *Doxygen::conceptLinkedMap)
     {
-      msg("Generating XML output for concept %s\n",qPrint(cd->name()));
+      msg("Generating XML output for concept %s\n",qPrint(cd->displayName()));
       generateXMLForConcept(cd.get(),t);
     }
     for (const auto &nd : *Doxygen::namespaceLinkedMap)
     {
-      msg("Generating XML output for namespace %s\n",qPrint(nd->name()));
+      msg("Generating XML output for namespace %s\n",qPrint(nd->displayName()));
       generateXMLForNamespace(nd.get(),t);
     }
     for (const auto &fn : *Doxygen::inputNameLinkedMap)

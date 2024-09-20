@@ -44,6 +44,10 @@ static QCString makeDisplayName(const NamespaceDef *nd,bool includeScope)
   {
     result = substitute(result,"::",sep);
   }
+  if (nd->isAnonymous())
+  {
+    result = removeAnonymousScopes(result);
+  }
   //printf("makeDisplayName() %s->%s lang=%d\n",qPrint(name()),qPrint(result),lang);
   return result;
 }
