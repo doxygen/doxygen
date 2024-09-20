@@ -176,7 +176,7 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
 
   auto count=std::count_if(m_outputGenList.begin(),m_outputGenList.end(),
                            [](const auto &e) { return e.enabled; });
-  if (count>0)
+  if (count>0 || Config_getBool(GENERATE_XML))
   {
     // we want to validate irrespective of the number of output formats
     // specified as:
@@ -204,7 +204,7 @@ void OutputList::parseText(const QCString &textStr)
   auto count=std::count_if(m_outputGenList.begin(),m_outputGenList.end(),
                            [](const auto &e) { return e.enabled; });
 
-  if (count>0)
+  if (count>0 || Config_getBool(GENERATE_XML))
   {
     // we want to validate irrespective of the number of output formats
     // specified as:
