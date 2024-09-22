@@ -5157,6 +5157,26 @@ static void findUsedTemplateInstances()
   }
 }
 
+static void warnUndocumentedNamespaces()
+{
+  AUTO_TRACE();
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
+  {
+    if (!nd->hasDocumentation())
+    {
+      if ((guessSection(nd->getDefFileName()).isHeader() ||
+           nd->getLanguage() == SrcLangExt::Fortran) &&     // Fortran doesn't have header files.
+          !Config_getBool(HIDE_UNDOC_NAMESPACES)            // undocumented namespaces are visible
+         )
+      {
+        warn_undoc(nd->getDefFileName(),nd->getDefLine(), "%s %s is not documented.",
+                   nd->getLanguage() == SrcLangExt::Fortran ? "Module" : "Namespace",
+                   qPrint(nd->name()));
+      }
+    }
+  }
+}
+
 static void computeClassRelations()
 {
   AUTO_TRACE();
@@ -12628,6 +12648,10 @@ void parseInput()
 
   g_s.begin("Flushing cached template relations that have become invalid...\n");
   flushCachedTemplateRelations();
+  g_s.end();
+
+  g_s.begin("Warn for undocumented namespaces...\n");
+  warnUndocumentedNamespaces();
   g_s.end();
 
   g_s.begin("Computing class relations...\n");
