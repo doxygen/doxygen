@@ -1000,8 +1000,8 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
         //printf("list: Has children %s: %d\n",qPrint(cd->name()),hasChildren);
         if (cd->isLinkable())
         {
-          //printf("Writing class %s isLinkable()=%d isLinkableInProject()=%d cd->templateMaster()=%p\n",
-          //    qPrint(cd->displayName()),cd->isLinkable(),cd->isLinkableInProject(),cd->templateMaster());
+          //printf("Writing class %s isLinkable()=%d isLinkableInProject()=%d cd->isImplicitTemplateinstance()=%d\n",
+          //    qPrint(cd->displayName()),cd->isLinkable(),cd->isLinkableInProject(),cd->isImplicitTemplateInstance());
           ol.startIndexItem(cd->getReference(),cd->getOutputFileBase());
           ol.parseText(cd->displayName());
           ol.endIndexItem(cd->getReference(),cd->getOutputFileBase());
@@ -1716,12 +1716,12 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
       int count=0;
       for (const auto &ccd : cd->getClasses())
       {
-        if (ccd->isLinkableInProject() && ccd->templateMaster()==nullptr)
+        if (ccd->isLinkableInProject() && !ccd->isImplicitTemplateInstance())
         {
           count++;
         }
       }
-      if (classVisibleInIndex(cd) && cd->templateMaster()==nullptr)
+      if (classVisibleInIndex(cd) && !cd->isImplicitTemplateInstance())
       {
         if (ftv)
         {
@@ -2101,7 +2101,7 @@ static int countAnnotatedClasses(int *cp, ClassDef::CompoundType ct)
     {
       continue;
     }
-    if (cd->isLinkableInProject() && cd->templateMaster()==nullptr)
+    if (cd->isLinkableInProject() && !cd->isImplicitTemplateInstance())
     {
       if (!cd->isEmbeddedInOuterScope())
       {
@@ -2150,7 +2150,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
       ol.disable(OutputType::Docbook);
       ol.disable(OutputType::RTF);
     }
-    if (cd->isLinkableInProject() && cd->templateMaster()==nullptr)
+    if (cd->isLinkableInProject() && !cd->isImplicitTemplateInstance())
     {
       ol.startIndexKey();
       if (cd->getLanguage()==SrcLangExt::VHDL)
@@ -2255,7 +2255,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   {
     if (sliceOpt && cd->compoundType() != ct)
       continue;
-    if (cd->isLinkableInProject() && cd->templateMaster()==nullptr)
+    if (cd->isLinkableInProject() && !cd->isImplicitTemplateInstance())
     {
       if (cd->getLanguage()==SrcLangExt::VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
         continue;
@@ -2297,7 +2297,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
     if (cd->getLanguage()==SrcLangExt::VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
       continue;
 
-    if (cd->isLinkableInProject() && cd->templateMaster()==nullptr)
+    if (cd->isLinkableInProject() && !cd->isImplicitTemplateInstance())
     {
       QCString className = cd->className();
       int index = getPrefixIndex(className);
@@ -2841,7 +2841,7 @@ void Index::addClassMemberNameToIndex(const MemberDef *md)
   if (md->isLinkableInProject() &&
       (cd=md->getClassDef())    &&
       cd->isLinkableInProject() &&
-      cd->templateMaster()==nullptr)
+      !cd->isImplicitTemplateInstance())
   {
     QCString n = md->name();
     std::string letter = getUTF8CharAt(n.str(),getPrefixIndex(n));

@@ -275,9 +275,11 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     bool containsOverload(const MemberDef *md) const override;
     ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const override;
+    bool isImplicitTemplateInstance() const override;
 
     void insertBaseClass(ClassDef *,const QCString &name,Protection p,Specifier s,const QCString &t=QCString()) override;
     void insertSubClass(ClassDef *,Protection p,Specifier s,const QCString &t=QCString()) override;
+    void insertExplicitTemplateInstance(ClassDef *instance,const QCString &spec) override;
     void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) override;
     void insertMember(MemberDef *) override;
     void insertUsedFile(const FileDef *) override;
@@ -299,6 +301,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void setTemplateArguments(const ArgumentList &al) override;
     void setTemplateBaseClassNames(const TemplateNameMap &templateNames) override;
     void setTemplateMaster(const ClassDef *tm) override;
+    void setImplicitTemplateInstance(bool b) override;
     void setTypeConstraints(const ArgumentList &al) override;
     void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) override;
     void makeTemplateArgument(bool b=TRUE) override;
@@ -600,6 +603,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                              const QCString &templSpec,bool &freshInstance) const override
     { return getCdAlias()->insertTemplateInstance(fileName,startLine,startColumn,templSpec,freshInstance); }
+    bool isImplicitTemplateInstance() const override
+    { return getCdAlias()->isImplicitTemplateInstance(); }
 
     void writeDocumentation(OutputList &ol) const override
     { getCdAlias()->writeDocumentation(ol); }
@@ -799,6 +804,8 @@ class ClassDefImpl::IMPL
 
     bool hasCollaborationGraph = false;
     CLASS_GRAPH_t typeInheritanceGraph = CLASS_GRAPH_t::NO;
+
+    bool implicitTemplateInstance = false;
 };
 
 void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
@@ -4256,6 +4263,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
       templateClass->setOuterScope(getOuterScope());
       templateClass->setHidden(isHidden());
       templateClass->setArtificial(isArtificial());
+      templateClass->setImplicitTemplateInstance(true);
       m_impl->templateInstances.emplace_back(templSpec,templateClass);
 
       // also add nested classes
@@ -4273,12 +4281,18 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
           innerClass->setOuterScope(templateClass);
           innerClass->setHidden(isHidden());
           innerClass->setArtificial(TRUE);
+          innerClass->setImplicitTemplateInstance(true);
         }
       }
       freshInstance=TRUE;
     }
   }
   return templateClass;
+}
+
+void ClassDefImpl::insertExplicitTemplateInstance(ClassDef *templateClass,const QCString &templSpec)
+{
+  m_impl->templateInstances.emplace_back(templSpec,templateClass);
 }
 
 void ClassDefImpl::setTemplateBaseClassNames(const TemplateNameMap &templateNames)
@@ -4904,6 +4918,16 @@ const TemplateInstanceList &ClassDefImpl::getTemplateInstances() const
 const ClassDef *ClassDefImpl::templateMaster() const
 {
   return m_impl->templateMaster;
+}
+
+bool ClassDefImpl::isImplicitTemplateInstance() const
+{
+  return m_impl->implicitTemplateInstance;
+}
+
+void ClassDefImpl::setImplicitTemplateInstance(bool b)
+{
+  m_impl->implicitTemplateInstance = b;
 }
 
 bool ClassDefImpl::isTemplate() const

@@ -5125,6 +5125,22 @@ static void findInheritedTemplateInstances()
   }
 }
 
+static void makeTemplateInstanceRelation(const Entry *root,ClassDefMutable *cd)
+{
+  AUTO_TRACE("root->name={} cd={}",root->name,cd->name());
+  int i = root->name.find('<');
+  if (i!=-1)
+  {
+    ClassDefMutable *master = getClassMutable(root->name.left(i));
+    if (master && !cd->templateMaster())
+    {
+      AUTO_TRACE_ADD("class={} master={}",cd->name(),cd->templateMaster()?cd->templateMaster()->name():"<none>",master->name());
+      cd->setTemplateMaster(master);
+      master->insertExplicitTemplateInstance(cd,root->name.mid(i));
+    }
+  }
+}
+
 static void findUsedTemplateInstances()
 {
   AUTO_TRACE();
@@ -5135,6 +5151,7 @@ static void findUsedTemplateInstances()
     if (cdm)
     {
       findUsedClassesForClass(root,cdm,cdm,cdm,TRUE);
+      makeTemplateInstanceRelation(root,cdm);
       cdm->addTypeConstraints();
     }
   }
