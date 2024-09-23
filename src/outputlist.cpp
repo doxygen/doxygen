@@ -176,19 +176,16 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
 
   auto count=std::count_if(m_outputGenList.begin(),m_outputGenList.end(),
                            [](const auto &e) { return e.enabled; });
-  if (count>0)
-  {
-    // we want to validate irrespective of the number of output formats
-    // specified as:
-    // - when only XML format there should be warnings as well (XML has its own write routines)
-    // - no formats there should be warnings as well
-    auto parser { createDocParser() };
-    auto ast    { validatingParseDoc(*parser.get(),
-                                     fileName,startLine,
-                                     ctx,md,docStr,indexWords,isExample,exampleName,
-                                     singleLine,linkFromIndex,markdownSupport) };
-    if (ast) writeDoc(ast.get(),ctx,md);
-  }
+  // we want to validate irrespective of the number of output formats
+  // specified as:
+  // - when only XML format there should be warnings as well (XML has its own write routines)
+  // - no formats there should be warnings as well
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),
+                                   fileName,startLine,
+                                   ctx,md,docStr,indexWords,isExample,exampleName,
+                                   singleLine,linkFromIndex,markdownSupport) };
+  if (ast && count>0) writeDoc(ast.get(),ctx,md);
 }
 
 void OutputList::startFile(const QCString &name,const QCString &manName,const QCString &title, int hierarchyLevel)
@@ -204,17 +201,14 @@ void OutputList::parseText(const QCString &textStr)
   auto count=std::count_if(m_outputGenList.begin(),m_outputGenList.end(),
                            [](const auto &e) { return e.enabled; });
 
-  if (count>0)
-  {
-    // we want to validate irrespective of the number of output formats
-    // specified as:
-    // - when only XML format there should be warnings as well (XML has its own write routines)
-    // - no formats there should be warnings as well
-    auto parser { createDocParser() };
-    auto ast { validatingParseText(*parser.get(), textStr) };
+  // we want to validate irrespective of the number of output formats
+  // specified as:
+  // - when only XML format there should be warnings as well (XML has its own write routines)
+  // - no formats there should be warnings as well
+  auto parser { createDocParser() };
+  auto ast { validatingParseText(*parser.get(), textStr) };
 
-    if (ast) writeDoc(ast.get(),nullptr,nullptr);
-  }
+  if (ast && count>0) writeDoc(ast.get(),nullptr,nullptr);
 }
 
 //--------------------------------------------------------------------------
