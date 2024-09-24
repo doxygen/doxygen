@@ -5132,7 +5132,7 @@ static void makeTemplateInstanceRelation(const Entry *root,ClassDefMutable *cd)
   if (i!=-1)
   {
     ClassDefMutable *master = getClassMutable(root->name.left(i));
-    if (master && !cd->templateMaster())
+    if (master && master!=cd && !cd->templateMaster())
     {
       AUTO_TRACE_ADD("class={} master={}",cd->name(),cd->templateMaster()?cd->templateMaster()->name():"<none>",master->name());
       cd->setTemplateMaster(master);
