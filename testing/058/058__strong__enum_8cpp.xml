@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="058__strong__enum_8cpp" kind="file" language="C++">
+    <compoundname>058_strong_enum.cpp</compoundname>
+    <innerclass refid="classns_1_1_class" prot="public">ns::Class</innerclass>
+    <innerclass refid="classns2_1_1_class" prot="public">ns2::Class</innerclass>
+    <innerclass refid="class_class" prot="public">Class</innerclass>
+    <innernamespace refid="namespacens">ns</innernamespace>
+    <innernamespace refid="namespacens2">ns2</innernamespace>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="058__strong__enum_8cpp_1a78847f7aaf46e1552ff29bd28e43dc1e" prot="public" static="no" strong="no">
+        <type/>
+        <name>WeakEnum</name>
+        <enumvalue id="058__strong__enum_8cpp_1a78847f7aaf46e1552ff29bd28e43dc1ea5d050f381f1b6808b5be9471b38d84dc" prot="public">
+          <name>WeakEnumFlag</name>
+          <briefdescription>
+            <para>A flag of WeakEnum in global scope. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para>A weak enum in global scope. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="058_strong_enum.cpp" line="170" column="1" bodyfile="058_strong_enum.cpp" bodystart="170" bodyend="172"/>
+      </memberdef>
+      <memberdef kind="enum" id="058__strong__enum_8cpp_1ad62e57bc2f353e6d34f90be57ccd7e68" prot="public" static="no" strong="yes">
+        <type/>
+        <name>Enum1</name>
+        <enumvalue id="058__strong__enum_8cpp_1ad62e57bc2f353e6d34f90be57ccd7e68ac5836008c1649301e29351a55db8f65c" prot="public">
+          <name>Flag</name>
+          <briefdescription>
+            <para>A flag of Enum1 in global scope. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para>A first enum class in global scope. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="058_strong_enum.cpp" line="182" column="1" bodyfile="058_strong_enum.cpp" bodystart="182" bodyend="184"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Main file. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>Links to local enums:</para>
+      <para>
+        <itemizedlist>
+          <listitem>
+            <para>
+              <ref refid="058__strong__enum_8cpp_1a78847f7aaf46e1552ff29bd28e43dc1e" kindref="member">WeakEnum</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="058__strong__enum_8cpp_1a78847f7aaf46e1552ff29bd28e43dc1ea5d050f381f1b6808b5be9471b38d84dc" kindref="member">WeakEnumFlag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="058__strong__enum_8cpp_1ad62e57bc2f353e6d34f90be57ccd7e68" kindref="member">Enum1</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="058__strong__enum_8cpp_1ad62e57bc2f353e6d34f90be57ccd7e68ac5836008c1649301e29351a55db8f65c" kindref="member">Enum1::Flag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="namespacens_1ae1f34c335e28aa1731323b3e11a2a931" kindref="member">ns::WeakEnum</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="namespacens_1ae1f34c335e28aa1731323b3e11a2a931a1de955c7063694330784b8b97c21fb77" kindref="member">ns::WeakEnumFlag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="namespacens_1ac257745401bfcbbf57c1a13a2105bb1d" kindref="member">ns::Enum1</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="namespacens_1ac257745401bfcbbf57c1a13a2105bb1dac5836008c1649301e29351a55db8f65c" kindref="member">ns::Enum1::Flag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="classns_1_1_class_1a94d1289927541db775091eb0b1095564" kindref="member">ns::Class::WeakEnum</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="classns_1_1_class_1a94d1289927541db775091eb0b1095564a3c23d6adaba5e701bb69fd7a9c16fa21" kindref="member">ns::Class::WeakEnumFlag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="classns_1_1_class_1a2f5b74a27a12bfc86e653a13178317e4" kindref="member">ns::Class::Enum2</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="classns_1_1_class_1a2f5b74a27a12bfc86e653a13178317e4ac5836008c1649301e29351a55db8f65c" kindref="member">ns::Class::Enum2::Flag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="class_class_1ab6f24dd08d6388bb0ee4af2ce2e5d197" kindref="member">Class::WeakEnum</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="class_class_1ab6f24dd08d6388bb0ee4af2ce2e5d197a564f79e0b117290cf148cc51613b04be" kindref="member">Class::WeakEnumFlag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="class_class_1af09ec8b7238c8a302c251b1cfe1de13d" kindref="member">Class::Enum2</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="class_class_1af09ec8b7238c8a302c251b1cfe1de13dac5836008c1649301e29351a55db8f65c" kindref="member">Class::Enum2::Flag</ref>
+            </para>
+          </listitem>
+        </itemizedlist>
+      </para>
+      <para>Links to enums in a tagfile:</para>
+      <para>
+        <itemizedlist>
+          <listitem>
+            <para>
+              <ref refid="external.html_1ExternalWeakEnum" kindref="member" external="/tagfile_058.tag">ExternalWeakEnum</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external.html_1ExternalWeakEnumFlag" kindref="member" external="/tagfile_058.tag">ExternalWeakEnumFlag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external.html_1ExternalEnum1" kindref="member" external="/tagfile_058.tag">ExternalEnum1</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external.html_1ExternalEnum1ac5836008c1649301e29351a55db8f65c" kindref="member" external="/tagfile_058.tag">ExternalEnum1::Flag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-ns.html_1WeakEnum" kindref="member" external="/tagfile_058.tag">external::ns::WeakEnum</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-ns.html_1WeakEnumFlag" kindref="member" external="/tagfile_058.tag">external::ns::WeakEnumFlag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="ns.html_1Enum1" kindref="member" external="/tagfile_058.tag">external::ns::Enum1</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-ns.html_1Enum1ac5836008c1649301e29351a55db8f65c" kindref="member" external="/tagfile_058.tag">external::ns::Enum1::Flag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-ns-class.html_1WeakEnum" kindref="member" external="/tagfile_058.tag">external::ns::Class::WeakEnum</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-ns-class.html_1WeakEnumFlag" kindref="member" external="/tagfile_058.tag">external::ns::Class::WeakEnumFlag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-ns-class.html_1Enum2" kindref="member" external="/tagfile_058.tag">external::ns::Class::Enum2</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-ns-class.html_1Enum2ac5836008c1649301e29351a55db8f65c" kindref="member" external="/tagfile_058.tag">external::ns::Class::Enum2::Flag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-class.html_1WeakEnum" kindref="member" external="/tagfile_058.tag">ExternalClass::WeakEnum</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-class.html_1WeakEnumFlag" kindref="member" external="/tagfile_058.tag">ExternalClass::WeakEnumFlag</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-class.html_1Enum1" kindref="member" external="/tagfile_058.tag">ExternalClass::Enum1</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="external-class.html_1Enum1ac5836008c1649301e29351a55db8f65c" kindref="member" external="/tagfile_058.tag">ExternalClass::Enum1::Flag</ref>
+            </para>
+          </listitem>
+        </itemizedlist>
+      </para>
+    </detaileddescription>
+    <location file="058_strong_enum.cpp"/>
+  </compounddef>
+</doxygen>

@@ -127,7 +127,7 @@ class Tester:
                 if m:
                     key   = m.group('name')
                     value = m.group('value')
-                    if (key=='config'):
+                    if key in ['config', 'tagfile']:
                         value = value.replace('$INPUTDIR',self.args.inputdir)
                     # print('key=%s value=%s' % (key,value))
                     config.setdefault(key, []).append(value)
@@ -149,6 +149,8 @@ class Tester:
             if 'config' in self.config:
                 for option in self.config['config']:
                     print(option, file=f)
+            if 'tagfile' in self.config:
+                print('TAGFILES=%s' % ' \\n '.join(self.config['tagfile']), file=f)
             if (self.args.xml or self.args.xmlxsd):
                 print('GENERATE_XML=YES', file=f)
                 print('XML_OUTPUT=%s/out' % self.test_out, file=f)
@@ -257,6 +259,8 @@ class Tester:
                 if data:
                     # strip version
                     data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
+                    # strip absolute paths to tagfiles
+                    data = data.replace(r'external="' + os.path.realpath(self.args.inputdir), r'external="')
                 else:
                     print('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out))
                     return False
@@ -310,6 +314,8 @@ class Tester:
                     if data:
                         # strip version
                         data = re.sub(r'xsd" version="[0-9.-]+"','xsd" version=""',data).rstrip('\n')
+                        # strip absolute paths to tagfiles
+                        data = data.replace(' external="' + os.path.realpath(self.args.inputdir), ' external="')
                     else:
                         msg += ('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out),)
                         break
