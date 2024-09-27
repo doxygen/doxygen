@@ -116,6 +116,10 @@ if __name__=="__main__":
 \endcode
 
 When invoking it with the `-d image_dir` option the images will by downloaded in the `image_dir` directory.
+When invoking it with the `--remove` option when fetching the images the images  that are not present will no
+be present in the output directory (otherwise they will be present with size `0`)
+When invoking it with the `-s` option when fetching the images the images no messages about fetching / skipping
+images will be given, just messages about non retrievable images.
 By means of the Doxygen configuration parameter
 \ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" the requested directory can be selected.
 
