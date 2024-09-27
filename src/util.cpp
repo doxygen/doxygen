@@ -2884,6 +2884,7 @@ bool resolveRef(/* in */  const QCString &scName,
     bool checkScope
     )
 {
+  AUTO_TRACE("scope={} name={} inSeeBlock={}",scName,name,inSeeBlock);
   //printf("resolveRef(scope=%s,name=%s,inSeeBlock=%d)\n",qPrint(scName),qPrint(name),inSeeBlock);
   QCString tsName = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
@@ -2905,6 +2906,7 @@ bool resolveRef(/* in */  const QCString &scName,
                         tsName.startsWith("::") ||    // ::foo in local scope
                         scName==nullptr                     // #foo  in global scope
                        );
+  bool allowTypeOnly=false;
 
   // default result values
   *resContext=nullptr;
@@ -2912,16 +2914,17 @@ bool resolveRef(/* in */  const QCString &scName,
 
   if (bracePos==-1) // simple name
   {
-    ClassDef *cd=nullptr;
-    NamespaceDef *nd=nullptr;
-    ConceptDef *cnd=nullptr;
-
     // the following if() was commented out for releases in the range
     // 1.5.2 to 1.6.1, but has been restored as a result of bug report 594787.
     if (!inSeeBlock && scopePos==-1 && isLowerCase(tsName))
     { // link to lower case only name => do not try to autolink
+      AUTO_TRACE_ADD("false");
       return FALSE;
     }
+
+    ClassDef *cd=nullptr;
+    NamespaceDef *nd=nullptr;
+    ConceptDef *cnd=nullptr;
 
     //printf("scName=%s fullName=%s\n",qPrint(scName),qPrint(fullName));
 
@@ -2942,6 +2945,7 @@ bool resolveRef(/* in */  const QCString &scName,
         ASSERT(nd!=nullptr);
         *resContext = nd;
       }
+      AUTO_TRACE_ADD("true");
       return TRUE;
     }
     else if (scName==fullName || (!inSeeBlock && scopePos==-1))
@@ -2950,8 +2954,14 @@ bool resolveRef(/* in */  const QCString &scName,
       //printf("found scName=%s fullName=%s scName==fullName=%d "
       //    "inSeeBlock=%d scopePos=%d!\n",
       //    qPrint(scName),qPrint(fullName),scName==fullName,inSeeBlock,scopePos);
-      return FALSE;
+
+      // at this point we have a bare word that is not a class or namespace
+      // we should also allow typedefs or enums to be linked, but not for instance member
+      // functions, otherwise 'Foo' would always link to the 'Foo()' constructor instead of the
+      // 'Foo' class. So we use this flag as a filter.
+      allowTypeOnly=true;
     }
+
     // continue search...
   }
 
@@ -3014,10 +3024,24 @@ bool resolveRef(/* in */  const QCString &scName,
       //printf("not global member!\n");
       *resContext=nullptr;
       *resMember=nullptr;
+      AUTO_TRACE_ADD("false");
       return FALSE;
     }
     //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
-    if      (result.md) { *resMember=result.md; *resContext=result.md; }
+    if      (result.md) {
+      if (!allowTypeOnly || result.md->isTypedef() || result.md->isEnumerate())
+      {
+        *resMember=result.md;
+        *resContext=result.md;
+      }
+      else // md is not a type, but we explicitly expect one
+      {
+        *resContext=nullptr;
+        *resMember=nullptr;
+        AUTO_TRACE_ADD("false");
+        return FALSE;
+      }
+    }
     else if (result.cd) *resContext=result.cd;
     else if (result.nd) *resContext=result.nd;
     else if (result.fd) *resContext=result.fd;
@@ -3025,16 +3049,19 @@ bool resolveRef(/* in */  const QCString &scName,
     else         { *resContext=nullptr; *resMember=nullptr; return FALSE; }
     //printf("member=%s (md=%p) anchor=%s linkable()=%d context=%s\n",
     //    qPrint(md->name()), md, qPrint(md->anchor()), md->isLinkable(), qPrint((*resContext)->name()));
+    AUTO_TRACE_ADD("true");
     return TRUE;
   }
   else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupLinkedMap->find(nameStr)))
   { // group link
     *resContext=gd;
+    AUTO_TRACE_ADD("true");
     return TRUE;
   }
   else if ((cnd=Doxygen::conceptLinkedMap->find(nameStr)))
   {
     *resContext=cnd;
+    AUTO_TRACE_ADD("true");
     return TRUE;
   }
   else if (tsName.find('.')!=-1) // maybe a link to a file
@@ -3044,24 +3071,29 @@ bool resolveRef(/* in */  const QCString &scName,
     if (fd && !ambig)
     {
       *resContext=fd;
+      AUTO_TRACE_ADD("true");
       return TRUE;
     }
   }
 
   if (tryUnspecializedVersion)
   {
-    return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,nullptr,checkScope);
+    bool b = resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,nullptr,checkScope);
+    AUTO_TRACE_ADD("{}",b);
+    return b;
   }
   if (bracePos!=-1) // Try without parameters as well, could be a constructor invocation
   {
     *resContext=getClass(fullName.left(bracePos));
     if (*resContext)
     {
+      AUTO_TRACE_ADD("true");
       return TRUE;
     }
   }
   //printf("resolveRef: %s not found!\n",qPrint(name));
 
+  AUTO_TRACE_ADD("false");
   return FALSE;
 }
 

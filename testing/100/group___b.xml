@@ -27,10 +27,10 @@
           </detaileddescription>
         </enumvalue>
         <briefdescription>
-          <para>E in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+          <para><ref refid="group___b_1gaa57b8491d1d8fc1014dd54bcf83b130a" kindref="member">E</ref> in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
         </briefdescription>
         <detaileddescription>
-          <para>More for E in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+          <para>More for <ref refid="group___a_1gaa57b8491d1d8fc1014dd54bcf83b130a" kindref="member">E</ref> in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -44,10 +44,10 @@
         <argsstring/>
         <name>T</name>
         <briefdescription>
-          <para>T in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+          <para><ref refid="group___b_1ga5a6fd16639bb7ebdbd75952dc246cf51" kindref="member">T</ref> in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
         </briefdescription>
         <detaileddescription>
-          <para>More for T in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+          <para>More for <ref refid="group___a_1ga5a6fd16639bb7ebdbd75952dc246cf51" kindref="member">T</ref> in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>

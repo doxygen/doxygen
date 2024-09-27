@@ -798,7 +798,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
       )
      )
   {
-    //printf("resolveRef %s = %p (linkable?=%d)\n",qPrint(context.token->name),(void*)member,member ? member->isLinkable() : FALSE);
+    //printf("ADD %s = %p (linkable?=%d)\n",qPrint(context.token->name),(void*)member,member ? member->isLinkable() : FALSE);
     if (member && member->isLinkable()) // member link
     {
       AUTO_TRACE_ADD("resolved reference as member link");
@@ -874,6 +874,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   }
   else // normal non-linkable word
   {
+    AUTO_TRACE_ADD("non-linkable");
     if (context.token->name.startsWith("#"))
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"explicit link request to '%s' could not be resolved",qPrint(name));

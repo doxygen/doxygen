@@ -265,6 +265,7 @@ class Tester:
                     print(data,file=f)
         shutil.rmtree(self.test_out+'/out',ignore_errors=True)
         os.remove(self.test_out+'/Doxyfile')
+        os.remove(self.test_out+'/warnings.log')
         return True
 
     # check the relevant files of a doxygen run with the reference material
