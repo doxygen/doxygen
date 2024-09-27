@@ -559,11 +559,11 @@ class Tester:
                 index_xml = []
                 index_xml.append(glob.glob('%s/index.xml' % (xmlxsd_output)))
                 index_xml.append(glob.glob('%s/*/*/index.xml' % (xmlxsd_output)))
-                index_xml = ' '.join(list(itertools.chain.from_iterable(index_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+                index_xml = ' '.join(list(itertools.chain.from_iterable(index_xml))).replace('\\','/')
                 index_xsd = []
                 index_xsd.append(glob.glob('%s/index.xsd' % (xmlxsd_output)))
                 index_xsd.append(glob.glob('%s/*/*/index.xsd' % (xmlxsd_output)))
-                index_xsd = ' '.join(list(itertools.chain.from_iterable(index_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+                index_xsd = ' '.join(list(itertools.chain.from_iterable(index_xsd))).replace('\\','/')
                 exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,index_xsd,index_xml)
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
@@ -584,11 +584,11 @@ class Tester:
                 doxyfile_xml = []
                 doxyfile_xml.append(glob.glob('%s/Doxyfile.xml' % (xmlxsd_output)))
                 doxyfile_xml.append(glob.glob('%s/*/*/Doxyfile.xml' % (xmlxsd_output)))
-                doxyfile_xml = ' '.join(list(itertools.chain.from_iterable(doxyfile_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+                doxyfile_xml = ' '.join(list(itertools.chain.from_iterable(doxyfile_xml))).replace('\\','/')
                 doxyfile_xsd = []
                 doxyfile_xsd.append(glob.glob('%s/doxyfile.xsd' % (xmlxsd_output)))
                 doxyfile_xsd.append(glob.glob('%s/*/*/doxyfile.xsd' % (xmlxsd_output)))
-                doxyfile_xsd = ' '.join(list(itertools.chain.from_iterable(doxyfile_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+                doxyfile_xsd = ' '.join(list(itertools.chain.from_iterable(doxyfile_xsd))).replace('\\','/')
                 exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,doxyfile_xsd,doxyfile_xml)
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
@@ -609,7 +609,7 @@ class Tester:
                 compound_xml = []
                 compound_xml.append(glob.glob('%s/*.xml' % (xmlxsd_output)))
                 compound_xml.append(glob.glob('%s/*/*/*.xml' % (xmlxsd_output)))
-                compound_xml = ' '.join(list(itertools.chain.from_iterable(compound_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+                compound_xml = ' '.join(list(itertools.chain.from_iterable(compound_xml))).replace('\\','/')
                 compound_xml = re.sub(r' [^ ]*/index.xml','',compound_xml)
                 compound_xml = re.sub(r'[^ ]*/index.xml ','',compound_xml)
                 compound_xml = re.sub(r' [^ ]*/Doxyfile.xml','',compound_xml)
@@ -618,7 +618,7 @@ class Tester:
                 compound_xsd = []
                 compound_xsd.append(glob.glob('%s/compound.xsd' % (xmlxsd_output)))
                 compound_xsd.append(glob.glob('%s/*/*/compound.xsd' % (xmlxsd_output)))
-                compound_xsd = ' '.join(list(itertools.chain.from_iterable(compound_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+                compound_xsd = ' '.join(list(itertools.chain.from_iterable(compound_xsd))).replace('\\','/')
                 exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,compound_xsd,compound_xml)
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
