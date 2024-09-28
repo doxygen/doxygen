@@ -27,6 +27,7 @@
 #include "growbuf.h"
 #include "entry.h"
 #include "commentscan.h"
+#include "linkedmap.h"
 
 #include <map>
 #include <unordered_map>
@@ -35,6 +36,16 @@
 
 const char *bibTmpFile = "bibTmpFile_";
 const char *bibTmpDir  = "bibTmpDir/";
+
+//! class that provide information about the p[osition of a citation name
+class CitePosition
+{
+  public:
+    CitePosition(const QCString &fn, int l) : fileName(fn), lineNr(l) {}
+
+    QCString    fileName;
+    int         lineNr;
+};
 
 static QCString getBibFile(const QCString &inFile)
 {
@@ -63,6 +74,7 @@ struct CitationManager::Private
 {
   std::map< std::string,std::unique_ptr<CiteInfoImpl> > entries;
   std::unordered_map< int,std::string > formulaCite;
+  std::unordered_map< std::string, CitePosition > citePosition;
 };
 
 CitationManager &CitationManager::instance()
@@ -136,10 +148,12 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   QCString citeName;
 
   std::string lineStr;
+  int lineCount = 0;
   while (getline(f,lineStr))
   {
     int i = -1;
     QCString line(lineStr);
+    lineCount++;
     if (line.stripWhiteSpace().startsWith("@"))
     {
       // assumption entry like: "@book { name," or "@book { name" (spaces optional)
@@ -148,6 +162,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
       while (j==-1 && getline(f,lineStr))
       {
         line = lineStr;
+        lineCount++;
         j = line.find('{');
       }
       // search for the name
@@ -173,11 +188,26 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
           if (citeName.isEmpty() && getline(f,lineStr))
           {
             line = lineStr;
+            lineCount++;
             k = line.find(',');
           }
         }
       }
       //printf("citeName = #%s#\n",qPrint(citeName));
+      if (!citeName.isEmpty())
+      {
+        std::string lCiteName = citeName.lower().str();
+        auto it = p->citePosition.find(lCiteName);
+        if (it != p->citePosition.end())
+        {
+          warn(bibFile,lineCount,"multiple use of citation name '%s', (first occurrence: %s, line %d)",
+               qPrint(lCiteName),qPrint(it->second.fileName),it->second.lineNr);
+        }
+        else
+        {
+          p->citePosition.emplace(lCiteName,CitePosition(bibFile,lineCount));
+        }
+      }
     }
     else if ((i=line.find("crossref"))!=-1 && !citeName.isEmpty()) /* assumption cross reference is on one line and the only item */
     {
