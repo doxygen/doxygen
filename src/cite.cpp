@@ -41,22 +41,11 @@ const char *bibTmpDir  = "bibTmpDir/";
 class CitePosition
 {
   public:
-    CitePosition(const QCString &citeName, const QCString &fileName, int lineNr) :
-        m_citeName(citeName), m_lineNr(lineNr), m_fileName(fileName)
-    {
-    }
+    CitePosition(const QCString &fn, int l) : fileName(fn), lineNr(l) {}
 
-    QCString    citeName()   const { return m_citeName;    }
-    int         lineNr()     const { return m_lineNr;     }
-    QCString    fileName()   const { return m_fileName;   }
-
-  private:
-    QCString    m_citeName;
-    int         m_lineNr;
-    QCString    m_fileName;
+    QCString    fileName;
+    int         lineNr;
 };
-
-static LinkedMap<CitePosition> citePosition;
 
 static QCString getBibFile(const QCString &inFile)
 {
@@ -85,6 +74,7 @@ struct CitationManager::Private
 {
   std::map< std::string,std::unique_ptr<CiteInfoImpl> > entries;
   std::unordered_map< int,std::string > formulaCite;
+  std::unordered_map< std::string, CitePosition > citePosition;
 };
 
 CitationManager &CitationManager::instance()
@@ -206,15 +196,16 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
       //printf("citeName = #%s#\n",qPrint(citeName));
       if (!citeName.isEmpty())
       {
-        const CitePosition *cp = citePosition.find(citeName.lower());
-        if (cp)
+        std::string lCiteName = citeName.lower().str();
+        auto it = p->citePosition.find(lCiteName);
+        if (it != p->citePosition.end())
         {
           warn(bibFile,lineCount,"multiple use of citation name '%s', (first occurrence: %s, line %d)",
-               qPrint(cp->citeName()),qPrint(cp->fileName()),cp->lineNr());
+               qPrint(lCiteName),qPrint(it->second.fileName),it->second.lineNr);
         }
         else
         {
-          citePosition.add(citeName.lower(),bibFile,lineCount);
+          p->citePosition.emplace(lCiteName,CitePosition(bibFile,lineCount));
         }
       }
     }
