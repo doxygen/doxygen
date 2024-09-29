@@ -51,15 +51,15 @@ try:
     import urllib.request as urlrequest
 except ImportError:
     import urllib as urlrequest
-
+ 
 unicode_re = re.compile(r'.*?/unicode/(.*?).png\?.*')
-
+ 
 def get_emojis():
     response  = urlrequest.urlopen('https://api.github.com/emojis')
     raw_data  = response.read()
     return json.loads(raw_data)
-
-def download_images(dir_name):
+ 
+def download_images(dir_name, silent):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
     json_data = get_emojis()
@@ -69,12 +69,21 @@ def download_images(dir_name):
         image_name = image+'.png'
         cur_item=cur_item+1
         if url.find('/unicode/')==-1 or not os.path.isfile(dir_name+'/'+image_name):
+            success = True
             with open(dir_name+'/'+image_name,'wb') as file:
-                print('%s/%s: fetching %s' % (cur_item,num_items,image_name))
-                file.write(urlrequest.urlopen(url).read())
+                if not silent:
+                    print('%s/%s: fetching %s' % (cur_item,num_items,image_name))
+                try:
+                    file.write(urlrequest.urlopen(url).read())
+                except:
+                    print('Unable to fetch %s' % (image_name))
+                    success = False
+            if not success:
+                os.remove(dir_name+'/'+image_name)
         else:
-            print('%s/%s: skipping %s' % (cur_item,num_items,image_name))
-
+            if not silent:
+                print('%s/%s: skipping %s' % (cur_item,num_items,image_name))
+ 
 def produce_table():
     json_data = get_emojis()
     lines = []
@@ -90,20 +99,27 @@ def produce_table():
     print("{")
     print(out_str)
     print("};")
-
+ 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d','--dir',help='directory to place images in')
-    group.add_argument('-t','--table',help='generate code fragment',action='store_true')
+
+    parser.add_argument('-d','--dir',help='directory to place images in')
+    parser.add_argument('-t','--table',help='generate code fragment',action='store_true')
+    parser.add_argument('-s','--silent',help='silent mode',action='store_true')
     args = parser.parse_args()
+
     if args.table:
         produce_table()
-    else:
-        download_images(args.dir)
-
+    if args.dir:
+        download_images(args.dir, args.silent)
 \endcode
-When invoking it with the `-d image_dir` option the images will by downloaded in the `image_dir` directory.
+
+When invoking the script with the `-d image_dir` option,
+the images will by downloaded to the `image_dir` directory.
+
+When invoking the script with the `-s` option,
+no progress messages are shown while fetching the images, except for when fetching an image fails.
+
 By means of the Doxygen configuration parameter
 \ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" the requested directory can be selected.
 
