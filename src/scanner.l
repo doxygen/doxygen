@@ -5075,6 +5075,10 @@ NONLopt [^\n]*
                                             BEGIN(CopyArgPHPString);
                                           }
                                         }
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>"<="|">="|"<=>" {
+                                          *yyextra->copyArgString+=yytext;
+                                          yyextra->fullArgString+=yytext;
+                                        }
 <ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>\n  {
                                           lineCount(yyscanner);
                                           *yyextra->copyArgString+=*yytext;
