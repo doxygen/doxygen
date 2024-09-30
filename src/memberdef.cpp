@@ -1837,7 +1837,7 @@ void MemberDefImpl::_computeLinkableInProject()
   }
   const NamespaceDef *nspace = getNamespaceDef();
   const FileDef *fileDef = getFileDef();
-  if (!groupDef && nspace && m_related==Relationship::Member && !nspace->isLinkableInProject()
+  if (!groupDef && nspace /*&& m_related==Relationship::Member*/ && !nspace->isLinkableInProject()
       && (fileDef==nullptr || !fileDef->isLinkableInProject()))
   {
     AUTO_TRACE_ADD("in not linkable namespace");
@@ -1845,7 +1845,7 @@ void MemberDefImpl::_computeLinkableInProject()
     return;
   }
   if (!groupDef && !nspace &&
-      m_related==Relationship::Member && !classDef &&
+      /*m_related==Relationship::Member &&*/ !classDef &&
       fileDef && !fileDef->isLinkableInProject())
   {
     AUTO_TRACE_ADD("in not linkable file");

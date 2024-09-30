@@ -195,7 +195,7 @@ static QCString makeRef(const QCString & withoutExtension, const QCString & anch
 void Crawlmap::addIndexItem(const Definition *context, const MemberDef *md,
                             const QCString &sectionAnchor, const QCString &title)
 {
-  if (md) // member
+  if (context && md) // member
   {
     QCString cfname  = md->getOutputFileBase();
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
