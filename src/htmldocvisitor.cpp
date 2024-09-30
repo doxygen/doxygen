@@ -796,7 +796,6 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
       forceStartParagraph(inc);
       break;
     case DocInclude::Snippet:
-    case DocInclude::SnippetTrimLeft:
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
       m_ci.startCodeFragment("DoxyCode");
@@ -805,7 +804,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                        inc.blockId(),
                                        inc.context(),
                                        inc.type()==DocInclude::SnippetWithLines,
-                                       inc.type()==DocInclude::SnippetTrimLeft
+                                       inc.trimLeft()
                                       );
       m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(inc);

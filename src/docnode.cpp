@@ -295,7 +295,6 @@ void DocInclude::parse()
       parser()->readTextFileByName(m_file,m_text);
       break;
     case Snippet:
-    case SnippetTrimLeft:
     case SnippetWithLines:
       parser()->readTextFileByName(m_file,m_text);
       // check here for the existence of the blockId inside the file, so we
@@ -3736,6 +3735,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   QCString saveCmdName = cmdName;
   Token tok=parser()->tokenizer.lex();
   bool isBlock = false;
+  bool trimLeft = false;
   bool localScope = false;
   if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
   {
@@ -3748,6 +3748,11 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
       return std::find(optList.begin(),optList.end(),kw)!=optList.end();
     };
     localScope = contains("local");
+    if (t==DocInclude::Snippet && contains("trimleft"))
+    {
+      trimLeft = true;
+    }
+
     if (t==DocInclude::Include && contains("lineno"))
     {
       t = DocInclude::IncWithLines;
@@ -3759,10 +3764,6 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     else if (t==DocInclude::DontInclude && contains("lineno"))
     {
       t = DocInclude::DontIncWithLines;
-    }
-    else if (t==DocInclude::Snippet && contains("trimleft"))
-    {
-      t = DocInclude::SnippetTrimLeft;
     }
     tok=parser()->tokenizer.lex();
     if (!tok.is(TokenRetval::TK_WHITESPACE))
@@ -3803,7 +3804,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   }
   QCString fileName = parser()->context.token->name;
   QCString blockId;
-  if (t==DocInclude::Snippet || t==DocInclude::SnippetWithLines || t == DocInclude::SnippetTrimLeft)
+  if (t==DocInclude::Snippet || t==DocInclude::SnippetWithLines)
   {
     if (fileName == "this") fileName=parser()->context.fileName;
     parser()->tokenizer.setStateSnippet();
@@ -3825,7 +3826,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
                                 t,
                                 parser()->context.isExample,
                                 parser()->context.exampleName,
-                                blockId,isBlock);
+                                blockId,isBlock,trimLeft);
   children().get_last<DocInclude>()->parse();
 }
 

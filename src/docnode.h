@@ -416,14 +416,14 @@ class DocInclude : public DocNode
   public:
   enum Type { Include, DontInclude, VerbInclude, HtmlInclude, LatexInclude,
 	      IncWithLines, Snippet , SnippetWithLines,
-	      DontIncWithLines, RtfInclude, ManInclude, DocbookInclude, XmlInclude,
-              SnippetTrimLeft};
+	      DontIncWithLines, RtfInclude, ManInclude, DocbookInclude, XmlInclude
+            };
     DocInclude(DocParser *parser,DocNodeVariant *parent,const QCString &file,
                const QCString &context, Type t,
                bool isExample,const QCString &exampleFile,
-               const QCString &blockId, bool isBlock)
+               const QCString &blockId, bool isBlock, bool trimLeft)
     : DocNode(parser,parent), m_file(file), m_context(context), m_type(t),
-      m_isExample(isExample), m_isBlock(isBlock),
+      m_isExample(isExample), m_isBlock(isBlock), m_trimLeft(trimLeft),
       m_exampleFile(exampleFile), m_blockId(blockId) {}
     QCString file() const        { return m_file; }
     QCString extension() const   { int i=m_file.findRev('.'); return i!=-1 ? m_file.mid(i) : QCString(); }
@@ -434,6 +434,7 @@ class DocInclude : public DocNode
     bool isExample() const       { return m_isExample; }
     QCString exampleFile() const { return m_exampleFile; }
     bool isBlock() const         { return m_isBlock; }
+    bool trimLeft() const        { return m_trimLeft; }
     void parse();
 
   private:
@@ -443,6 +444,7 @@ class DocInclude : public DocNode
     Type      m_type;
     bool      m_isExample;
     bool      m_isBlock;
+    bool      m_trimLeft;
     QCString  m_exampleFile;
     QCString  m_blockId;
 };
