@@ -330,6 +330,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
       m_t << "\\par\n";
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       getCodeParser(lang).parseCode(m_ci,s.context(),s.text(),langExt,
+                                    Config_getBool(STRIP_CODE_COMMENTS),
                                     s.isExample(),s.exampleFile());
       //m_t << "\\par\n";
       m_t << "}\n";
@@ -474,6 +475,7 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
          getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                            inc.text(),
                                            langExt,
+                                           inc.stripCodeComments(),
                                            inc.isExample(),
                                            inc.exampleFile(),
                                            fd.get(),   // fileDef,
@@ -492,7 +494,9 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       m_t << "\\par\n";
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
-                                        inc.text(),langExt,inc.isExample(),
+                                        inc.text(),langExt,
+                                        inc.stripCodeComments(),
+                                        inc.isExample(),
                                         inc.exampleFile(),
                                         nullptr,     // fileDef
                                         -1,    // startLine
@@ -534,7 +538,8 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
                                          inc.blockId(),
                                          inc.context(),
                                          inc.type()==DocInclude::SnippetWithLines,
-                                         inc.type()==DocInclude::SnippetTrimLeft
+                                         inc.type()==DocInclude::SnippetTrimLeft,
+                                         inc.stripCodeComments()
                                         );
       m_t << "}";
       break;
@@ -574,6 +579,7 @@ void RTFDocVisitor::operator()(const DocIncOperator &op)
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),op.text(),langExt,
+                                        op.stripCodeComments(),
                                         op.isExample(),op.exampleFile(),
                                         fd.get(),     // fileDef
                                         op.line(),    // startLine

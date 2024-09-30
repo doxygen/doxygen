@@ -37,6 +37,7 @@ class SQLCodeParser : public CodeParserInterface
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt,
+                   bool stripCodeComments,
                    bool isExampleBlock,
                    const QCString &exampleName=QCString(),
                    const FileDef *fileDef=nullptr,

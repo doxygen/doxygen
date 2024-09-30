@@ -1062,6 +1062,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
                       scopeName,        // scope
                       codeFragment,     // input
                       m_impl->lang,     // lang
+                      Config_getBool(STRIP_CODE_COMMENTS),
                       FALSE,            // isExample
                       QCString(),       // exampleName
                       m_impl->body->fileDef,  // fileDef

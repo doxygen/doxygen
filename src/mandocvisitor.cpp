@@ -207,6 +207,7 @@ void ManDocVisitor::operator()(const DocVerbatim &s)
       m_t << ".nf\n";
       getCodeParser(lang).parseCode(m_ci,s.context(),s.text(),
                                         langExt,
+                                        Config_getBool(STRIP_CODE_COMMENTS),
                                         s.isExample(),s.exampleFile());
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
@@ -268,6 +269,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
          getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                            inc.text(),
                                            langExt,
+                                           inc.stripCodeComments(),
                                            inc.isExample(),
                                            inc.exampleFile(),
                                            fd.get(), // fileDef,
@@ -290,6 +292,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
       getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                         inc.text(),
                                         langExt,
+                                        inc.stripCodeComments(),
                                         inc.isExample(),
                                         inc.exampleFile(),
                                         nullptr,     // fileDef
@@ -336,7 +339,8 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                           inc.blockId(),
                                           inc.context(),
                                           inc.type()==DocInclude::SnippetWithLines,
-                                          inc.type()==DocInclude::SnippetTrimLeft
+                                          inc.type()==DocInclude::SnippetTrimLeft,
+                                          inc.stripCodeComments()
                                          );
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
@@ -377,6 +381,7 @@ void ManDocVisitor::operator()(const DocIncOperator &op)
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),op.text(),langExt,
+                                        op.stripCodeComments(),
                                         op.isExample(),op.exampleFile(),
                                         fd.get(),     // fileDef
                                         op.line(),    // startLine

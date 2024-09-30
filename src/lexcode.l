@@ -79,6 +79,7 @@ struct lexcodeYY_state
      size_t        fencedSize = 0;
      bool          nestedComment = false;
 
+     bool          stripCodeComments;
      bool          exampleBlock;
      QCString      exampleName;
      QCString      classScope;
@@ -1146,6 +1147,7 @@ static void handleCCode(yyscan_t yyscanner)
                yyextra->classScope,
                yyextra->CCodeBuffer,
                SrcLangExt::Cpp,
+               yyextra->stripCodeComments,
                yyextra->exampleBlock,
                yyextra->exampleName,
                yyextra->sourceFileDef,
@@ -1196,6 +1198,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &scopeName,
                const QCString &input,
                SrcLangExt,
+               bool stripCodeComments,
                bool isExampleBlock,
                const QCString &exampleName,
                const FileDef *fileDef,
@@ -1238,6 +1241,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
     yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
 
   yyextra->startCCodeLine = yyextra->yyLineNr;
+  yyextra->stripCodeComments = stripCodeComments;
   yyextra->exampleBlock  = isExampleBlock;
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;

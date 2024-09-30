@@ -21,6 +21,7 @@ void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &,    // scopeName
                const QCString &     input,
                SrcLangExt,          // lang
+               bool,                // stripCodeComments
                bool,                // isExampleBlock
                const QCString &,    // exampleName
                const FileDef *      fileDef,

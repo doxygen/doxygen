@@ -113,6 +113,7 @@ struct codeYY_state
   bool          insideCodeLine = FALSE;
   bool          skipCodify = FALSE;  //!< for CSharp files scoped namespace {
 
+  bool          stripCodeComments = TRUE;
   bool          exampleBlock = FALSE;
   QCString      exampleName;
   QCString      exampleFile;
@@ -2050,7 +2051,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <*>\n({B}*{CPPC}[!/][^\n]*\n)+            { // remove special one-line comment
                                           if (YY_START==SkipCPP) REJECT;
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             skipHiddenComment(yyscanner,yytext);
                                             nextCodeLine(yyscanner);
@@ -2073,7 +2074,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           unput('\n');
                                         }
 <*>\n{B}*{CPPC}"@"[{}].*\n                  { // remove one-line group marker
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             skipHiddenComment(yyscanner,yytext);
                                             nextCodeLine(yyscanner);
@@ -2091,7 +2092,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <*>\n{B}*{CCS}"@"[{}]                      { // remove one-line group marker
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
                                             yyextra->yyLineNr++;
@@ -2110,7 +2111,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <*>^{B}*{CPPC}"@"[{}].*\n                   { // remove one-line group marker
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             skipHiddenComment(yyscanner,yytext);
                                             nextCodeLine(yyscanner);
@@ -2123,7 +2124,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <*>^{B}*{CCS}"@"[{}]                       { // remove multi-line group marker
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
                                             BEGIN(RemoveSpecialCComment);
@@ -2141,7 +2142,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <*>^{B}*{CPPC}[!/][^\n]*                  { // remove special one-line comment
-                                          if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (!yyextra->stripCodeComments)
                                           {
                                             startFontClass(yyscanner,"comment");
                                             codifyLines(yyscanner,yytext);
@@ -2150,7 +2151,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <*>{CPPC}[!/][^\n]*                       { // strip special one-line comment
                                           if (YY_START==SkipComment || YY_START==SkipString) REJECT;
-                                          if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (!yyextra->stripCodeComments)
                                           {
                                             startFontClass(yyscanner,"comment");
                                             codifyLines(yyscanner,yytext);
@@ -2158,7 +2159,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <*>\n{B}*{CCS}[!*]/{NCOMM}               {
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             skipHiddenComment(yyscanner,yytext);
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
@@ -2177,7 +2178,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <*>^{B}*{CCS}"*"[*]+/[^/]                  { // special C "banner" comment block at a new line
-                                          if (Config_getBool(JAVADOC_BANNER) && Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (Config_getBool(JAVADOC_BANNER) && yyextra->stripCodeComments)
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
                                             BEGIN(RemoveSpecialCComment);
@@ -2195,7 +2196,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                         }
 <*>^{B}*{CCS}[!*]/{NCOMM}               { // special C comment block at a new line
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
                                             BEGIN(RemoveSpecialCComment);
@@ -2214,7 +2215,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <*>{CCS}[!*]/{NCOMM}                    { // special C comment block half way a line
                                           if (YY_START==SkipString) REJECT;
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
                                             BEGIN(RemoveSpecialCComment);
@@ -2233,7 +2234,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <*>{CCS}("!"?){CCE}                     {
                                           if (YY_START==SkipString) REJECT;
-                                          if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (!yyextra->stripCodeComments)
                                           {
                                             startFontClass(yyscanner,"comment");
                                             yyextra->code->codify(yytext);
@@ -4211,7 +4212,7 @@ bool CCodeParser::insideCodeLine() const
 }
 
 void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const QCString &s,
-                SrcLangExt lang,bool exBlock, const QCString &exName,const FileDef *fd,
+                SrcLangExt lang,bool stripCodeComments,bool exBlock,const QCString &exName,const FileDef *fd,
                 int startLine,int endLine,bool inlineFragment,
                 const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
                 bool collectXRefs)
@@ -4257,6 +4258,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   while (!yyextra->scopeStack.empty()) yyextra->scopeStack.pop();
   yyextra->scopeName     = scopeName;
   DBG_CTX((stderr,"parseCCode %s\n",qPrint(scopeName)));
+  yyextra->stripCodeComments  = stripCodeComments;
   yyextra->exampleBlock  = exBlock;
   yyextra->exampleName   = exName;
   yyextra->sourceFileDef = fd;

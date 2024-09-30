@@ -87,6 +87,7 @@ struct DocParserContext
   size_t       includeFileLength = 0;
   int          includeFileLine;
   bool         includeFileShowLineNo = false;
+  bool         stripCodeComments = true;
 
   TokenInfo *token = nullptr;
   int      lineNo = 0;

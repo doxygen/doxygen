@@ -1191,12 +1191,14 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
       intf->parseCode(devNullList,QCString(),
                        fileToString(absFilePath(),TRUE,TRUE),
                        getLanguage(),
+                       Config_getBool(STRIP_CODE_COMMENTS),
                        FALSE,QCString(),this
                       );
     }
     intf->parseCode(codeOL,QCString(),
         fileToString(absFilePath(),filterSourceFiles,TRUE),
         getLanguage(),      // lang
+        Config_getBool(STRIP_CODE_COMMENTS),
         FALSE,              // isExampleBlock
         QCString(),         // exampleName
         this,               // fileDef
@@ -1240,6 +1242,7 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
             devNullList,QCString(),
             fileToString(absFilePath(),filterSourceFiles,TRUE),
             getLanguage(),
+            Config_getBool(STRIP_CODE_COMMENTS),
             FALSE,QCString(),this
            );
   }

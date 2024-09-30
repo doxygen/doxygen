@@ -584,6 +584,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
                                         s.context(),
                                         s.text(),
                                         langExt,
+                                        Config_getBool(STRIP_CODE_COMMENTS),
                                         s.isExample(),
                                         s.exampleFile(),
                                         nullptr,     // fileDef
@@ -736,6 +737,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                         inc.context(),
                                         inc.text(),
                                         langExt,
+                                        inc.stripCodeComments(),
                                         inc.isExample(),
                                         inc.exampleFile(),
                                         nullptr,     // fileDef
@@ -759,6 +761,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                            inc.context(),
                                            inc.text(),
                                            langExt,
+                                           inc.stripCodeComments(),
                                            inc.isExample(),
                                            inc.exampleFile(),
                                            fd.get(),   // fileDef,
@@ -805,7 +808,8 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                        inc.blockId(),
                                        inc.context(),
                                        inc.type()==DocInclude::SnippetWithLines,
-                                       inc.type()==DocInclude::SnippetTrimLeft
+                                       inc.type()==DocInclude::SnippetTrimLeft,
+                                       inc.stripCodeComments()
                                       );
       m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(inc);
@@ -843,6 +847,7 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
                                 op.context(),
                                 op.text(),
                                 langExt,
+                                op.stripCodeComments(),
                                 op.isExample(),
                                 op.exampleFile(),
                                 fd.get(),     // fileDef
