@@ -225,6 +225,8 @@ static QCString stripFuncPtr(const QCString &type);
 static bool nameIsOperator(QCString &name);
 void fixArgumentListForJavaScript(ArgumentList &al);
 static bool startOfRequiresExpression(const QCString &req);
+static QCString extractBeginRawStringDelimiter(const char *str);
+static QCString extractEndRawStringDelimiter(const char *str);
 
 // forward declarations for statefull functions
 static void initParser(yyscan_t yyscanner);
@@ -3097,11 +3099,8 @@ NONLopt [^\n]*
                                           }
                                           else
                                           {
-                                            QCString text=yytext;
-                                            yyextra->current->initializer << text;
-                                            int i=text.find('"');
-                                            yyextra->delimiter = yytext+i+1;
-                                            yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                            yyextra->current->initializer << yytext;
+                                            yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                             yyextra->lastRawStringContext = YY_START;
                                             yyextra->pCopyRawGString = &yyextra->current->initializer;
                                             BEGIN(RawGString);
@@ -3109,9 +3108,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <RawGString>{RAWEND}                    {
-                                          QCString delimiter = yytext+1;
-                                          delimiter=delimiter.left(delimiter.length()-1);
-                                          if (delimiter==yyextra->delimiter)
+                                          if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                                           {
                                             *yyextra->pCopyRawGString << yytext;
                                             BEGIN(yyextra->lastRawStringContext);
@@ -3134,9 +3131,7 @@ NONLopt [^\n]*
 <RawString>{RAWEND}                     {
                                           *yyextra->pCopyRawString+=yytext;
                                           yyextra->fullArgString+=yytext;
-                                          QCString delimiter = yytext+1;
-                                          delimiter=delimiter.left(delimiter.length()-1);
-                                          if (delimiter==yyextra->delimiter)
+                                          if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                                           {
                                             BEGIN(yyextra->lastRawStringContext);
                                           }
@@ -3480,11 +3475,8 @@ NONLopt [^\n]*
                                           *yyextra->pCopyRoundGString << yytext;
                                         }
 <GCopyRound>{RAWBEGIN}                  {
-                                          QCString text=yytext;
                                           *yyextra->pCopyRoundGString << yytext;
-                                          int i=text.find('"');
-                                          yyextra->delimiter = yytext+i+1;
-                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           yyextra->lastRawStringContext = YY_START;
                                           yyextra->pCopyRawGString = yyextra->pCopyRoundGString;
                                           BEGIN(RawGString);
@@ -4176,11 +4168,8 @@ NONLopt [^\n]*
                                           }
                                         }
 <ReadBody,ReadNSBody,ReadBodyIntf>{RAWBEGIN} {
-                                            QCString text=yytext;
-                                            yyextra->current->program << text;
-                                            int i=text.find('"');
-                                            yyextra->delimiter = yytext+i+1;
-                                            yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                            yyextra->current->program << yytext;
+                                            yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                             yyextra->lastRawStringContext = YY_START;
                                             yyextra->pCopyRawGString = &yyextra->current->program;
                                             BEGIN(RawGString);
@@ -4802,8 +4791,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                         }
 <ReadFuncArgType,CopyArgRound,CopyArgSquare,CopyArgSharp,ReadTempArgs>{RAWBEGIN}      {
-                                          yyextra->delimiter = yytext+2;
-                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           yyextra->lastRawStringContext = YY_START;
                                           yyextra->pCopyRawString = yyextra->copyArgString;
                                           *yyextra->pCopyRawString+=yytext;
@@ -5715,9 +5703,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <SkipCurly,SkipCurlyCpp>{B}*{RAWBEGIN}  {
-                                          QCString raw=QCString(yytext).stripWhiteSpace();
-                                          yyextra->delimiter = raw.mid(2);
-                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           yyextra->lastRawStringContext = YY_START;
                                           yyextra->dummyRawString.clear();
                                           yyextra->pCopyRawString = &yyextra->dummyRawString;
@@ -7582,6 +7568,20 @@ static inline int computeIndent(const char *s,int startIndent)
     else col++;
   }
   return col;
+}
+
+static QCString extractBeginRawStringDelimiter(const char *rawStart)
+{
+  QCString text=rawStart;
+  int i = text.find('"');
+  assert(i!=-1);
+  return text.mid(i+1,text.length()-i-2); // text=...R"xyz( -> delimiter=xyz
+}
+
+static QCString extractEndRawStringDelimiter(const char *rawEnd)
+{
+  QCString text=rawEnd;
+  return text.mid(1,text.length()-2); // text=)xyz" -> delimiter=xyz
 }
 
 static inline void initMethodProtection(yyscan_t yyscanner,Protection prot)
