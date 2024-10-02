@@ -3090,7 +3090,7 @@ NONLopt [^\n]*
                                             yyextra->current->initializer << *yytext;
                                           }
                                         }
-<ReadBody,ReadNSBody,ReadBodyIntf,ReadInitializer,ReadInitializerPtr>{RAWBEGIN} { // C++11 raw string
+<ReadInitializer,ReadInitializerPtr>{RAWBEGIN} { // C++11 raw string
                                           if (!yyextra->insideCpp)
                                           {
                                             REJECT;
@@ -3109,12 +3109,16 @@ NONLopt [^\n]*
                                           }
                                         }
 <RawGString>{RAWEND}                    {
-                                          *yyextra->pCopyRawGString << yytext;
                                           QCString delimiter = yytext+1;
                                           delimiter=delimiter.left(delimiter.length()-1);
                                           if (delimiter==yyextra->delimiter)
                                           {
+                                            *yyextra->pCopyRawGString << yytext;
                                             BEGIN(yyextra->lastRawStringContext);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
                                           }
                                         }
 <RawGString>[^)\n]+                     {
@@ -3472,8 +3476,18 @@ NONLopt [^\n]*
                                            yyextra->pSkipVerbString=yyextra->pCopyRoundGString;
                                            BEGIN(SkipVerbString);
                                         }
-<GCopyRound>[^"'()\n\/,]+               {
+<GCopyRound>[^"'()\n\/,R]+              { // R because of raw string start
                                           *yyextra->pCopyRoundGString << yytext;
+                                        }
+<GCopyRound>{RAWBEGIN}                  {
+                                          QCString text=yytext;
+                                          *yyextra->pCopyRoundGString << yytext;
+                                          int i=text.find('"');
+                                          yyextra->delimiter = yytext+i+1;
+                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->lastRawStringContext = YY_START;
+                                          yyextra->pCopyRawGString = yyextra->pCopyRoundGString;
+                                          BEGIN(RawGString);
                                         }
 <GCopyRound>.                           {
                                           *yyextra->pCopyRoundGString << *yytext;
@@ -4160,6 +4174,16 @@ NONLopt [^\n]*
                                           {
                                             REJECT;
                                           }
+                                        }
+<ReadBody,ReadNSBody,ReadBodyIntf>{RAWBEGIN} {
+                                            QCString text=yytext;
+                                            yyextra->current->program << text;
+                                            int i=text.find('"');
+                                            yyextra->delimiter = yytext+i+1;
+                                            yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                            yyextra->lastRawStringContext = YY_START;
+                                            yyextra->pCopyRawGString = &yyextra->current->program;
+                                            BEGIN(RawGString);
                                         }
 <ReadBody,ReadNSBody,ReadBodyIntf>\"    { yyextra->current->program << yytext ;
                                           yyextra->pCopyQuotedGString = &yyextra->current->program;
