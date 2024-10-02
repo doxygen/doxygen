@@ -3090,7 +3090,7 @@ NONLopt [^\n]*
                                             yyextra->current->initializer << *yytext;
                                           }
                                         }
-<ReadInitializer,ReadInitializerPtr>{RAWBEGIN} { // C++11 raw string
+<ReadBody,ReadNSBody,ReadBodyIntf,ReadInitializer,ReadInitializerPtr>{RAWBEGIN} { // C++11 raw string
                                           if (!yyextra->insideCpp)
                                           {
                                             REJECT;
@@ -4102,8 +4102,8 @@ NONLopt [^\n]*
                                           yyextra->lastSquareContext = YY_START;
                                           BEGIN(SkipSquare);
                                         }
-<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<\\\$]*   { yyextra->current->program << yytext ; }
-<ReadBody,ReadNSBody,ReadBodyIntf>{CPPC}.*                { yyextra->current->program << yytext ; }
+<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<\\\$R]* { yyextra->current->program << yytext ; } // R because of raw string start
+<ReadBody,ReadNSBody,ReadBodyIntf>{CPPC}.*               { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"#".* { if (!yyextra->insidePHP)
                                             REJECT;
                                           // append PHP comment.
