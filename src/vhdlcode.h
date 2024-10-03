@@ -33,6 +33,7 @@ class VHDLCodeParser : public CodeParserInterface
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
+                   bool stripCodeComments,
                    bool isExampleBlock,
                    const QCString &exampleName=QCString(),
                    const FileDef *fileDef=nullptr,

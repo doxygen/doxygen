@@ -35,7 +35,8 @@ class CodeFragmentManager
                    const QCString &blockId,
                    const QCString &scopeName,
                    bool showLineNumbers,
-                   bool trimLeft
+                   bool trimLeft,
+                   bool stripCodeComments
                    );
   private:
     CodeFragmentManager();

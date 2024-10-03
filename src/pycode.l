@@ -95,6 +95,7 @@ struct pycodeYY_state
   int           paramParens = 0;
 
   bool          insideBody = false;
+  bool          stripCodeComments = true;
   bool          exampleBlock = FALSE;
   QCString      exampleName;
 
@@ -747,7 +748,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                     }
 <DocBlock>{NEWLINE}                 { // comment block ends at the end of this line
                                       // remove special comment (default config)
-                                      if (Config_getBool(STRIP_CODE_COMMENTS))
+                                      if (yyextra->stripCodeComments)
                                       {
                                         yyextra->yyLineNr+=((QCString)yyextra->docBlock).contains('\n');
                                         yyextra->endComment=TRUE;
@@ -811,7 +812,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                   }
 
 <*><<EOF>>                        {
-                                    if (YY_START==DocBlock && !Config_getBool(STRIP_CODE_COMMENTS))
+                                    if (YY_START==DocBlock && !yyextra->stripCodeComments)
                                     {
                                       startFontClass(yyscanner,"comment");
                                       codifyLines(yyscanner,yyextra->docBlock);
@@ -1607,6 +1608,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
     const QCString &/* scopeName */,
     const QCString &input,
     SrcLangExt /*lang*/,
+    bool stripCodeComments,
     bool isExampleBlock,
     const QCString &exampleName,
     const FileDef *fileDef,
@@ -1644,6 +1646,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
     yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
 
 
+  yyextra->stripCodeComments = stripCodeComments;
   yyextra->exampleBlock  = isExampleBlock;
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;

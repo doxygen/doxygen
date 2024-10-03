@@ -90,6 +90,7 @@ class CodeParserInterface
      *  @param[in] scopeName Name of scope to which the code belongs.
      *  @param[in] input Actual code in the form of a string
      *  @param[in] lang The programming language of the code fragment.
+     *  @param[in] stripCodeComments signals whether or not for the code block the doxygen comments should be stripped.
      *  @param[in] isExampleBlock TRUE iff the code is part of an example.
      *  @param[in] exampleName Name of the example.
      *  @param[in] fileDef File definition to which the code
@@ -110,6 +111,7 @@ class CodeParserInterface
                            const QCString &scopeName,
                            const QCString &input,
                            SrcLangExt lang,
+                           bool stripCodeComments,
                            bool isExampleBlock,
                            const QCString &exampleName=QCString(),
                            const FileDef *fileDef=nullptr,

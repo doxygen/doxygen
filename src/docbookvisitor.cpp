@@ -343,6 +343,7 @@ DB_VIS_C
       getCodeParser(m_langExt).parseCode(m_ci,s.context(),
                                          s.text(),
                                          langExt,
+                                         Config_getBool(STRIP_CODE_COMMENTS),
                                          s.isExample(),
                                          s.exampleFile());
       m_t << "</computeroutput></literallayout>";
@@ -463,6 +464,7 @@ DB_VIS_C
         getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                                   inc.text(),
                                                   langExt,
+                                                  inc.stripCodeComments(),
                                                   inc.isExample(),
                                                   inc.exampleFile(), fd.get());
         m_t << "</computeroutput></literallayout>";
@@ -473,6 +475,7 @@ DB_VIS_C
       getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                                 inc.text(),
                                                 langExt,
+                                                inc.stripCodeComments(),
                                                 inc.isExample(),
                                                 inc.exampleFile());
       m_t << "</computeroutput></literallayout>";
@@ -502,7 +505,8 @@ DB_VIS_C
                                           inc.blockId(),
                                           inc.context(),
                                           inc.type()==DocInclude::SnippetWithLines,
-                                          inc.type()==DocInclude::SnippetTrimLeft
+                                          inc.type()==DocInclude::SnippetTrimLeft,
+                                          inc.stripCodeComments()
                                          );
       m_t << "</computeroutput></literallayout>";
       break;
@@ -537,7 +541,9 @@ DB_VIS_C
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),
-                                        op.text(),langExt,op.isExample(),
+                                        op.text(),langExt,
+                                        op.stripCodeComments(),
+                                        op.isExample(),
                                         op.exampleFile(),
                                         fd.get(),     // fileDef
                                         op.line(),    // startLine

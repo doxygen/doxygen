@@ -68,6 +68,7 @@ struct xmlcodeYY_state
   bool          insideCodeLine = false;
   const Definition   *searchCtx = nullptr;
 
+  bool          stripCodeComments = true;
   bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
@@ -417,6 +418,7 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &/* scopeName */,
                const QCString &input,
                SrcLangExt,
+               bool stripCodeComments,
                bool isExampleBlock,
                const QCString &exampleName,
                const FileDef *fileDef,
@@ -454,6 +456,7 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   else
     yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
 
+  yyextra->stripCodeComments = stripCodeComments;
   yyextra->exampleBlock  = isExampleBlock;
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;

@@ -96,6 +96,7 @@ struct vhdlcodeYY_state
   bool          insideCodeLine = false;
   const Definition *searchCtx = nullptr;
 
+  bool          stripCodeComments = true;
   bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
@@ -887,7 +888,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       int i=text.find("--");
                                       if (text.mid(i,3)=="--!") // && // hide special comment
                                       {
-                                        if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                        if (!yyextra->stripCodeComments)
                                         {
                                           codifyLines(yyscanner,text,QCString(),false,true);
                                         }
@@ -904,7 +905,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       if (text.mid(i,3)=="--!")
                                       {
                                         // hide special comment
-                                        if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                        if (!yyextra->stripCodeComments)
                                         {
                                           codifyLines(yyscanner,text,QCString(),false,true);
                                         }
@@ -1623,6 +1624,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
                                const QCString &/* className */,
                                const QCString &s,
                                SrcLangExt,
+                               bool stripCodeComments,
                                bool exBlock,
                                const QCString &exName,
                                const FileDef *fd,
@@ -1666,6 +1668,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
 
 
   // yyextra->theCallContext.clear();
+  yyextra->stripCodeComments = stripCodeComments;
   yyextra->exampleBlock  = exBlock;
   yyextra->exampleName   = exName;
   yyextra->sourceFileDef = fd;
