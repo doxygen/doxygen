@@ -2731,10 +2731,11 @@ Commands for displaying examples
   tag of Doxygen's configuration file.
 
   You can add the option `lineno` to enable line numbers for the included code if desired.
-  You can add the option `stripcodecomments` that will always hide any special comments
-  from the included code irrespective of the setting of
-  \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" or you can add the option
-  `nostripcodecomments` that will always show the special comments.
+
+  You can add the option `strip` that will always hide any special comments
+  from the included code, overruling the
+  \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" setting, or add the option
+  `nostrip` to always show the special comments.
 
   The class and member declarations and definitions inside the code fragment
   are 'remembered' during the parsing of the comment block that contained
@@ -2803,11 +2804,11 @@ Commands for displaying examples
   - The `option` `doc` can be used to treat the file as documentation rather than code.
   - The `option` `local` can be used make Doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
-  - The `option` `stripcodecomments` can be used so that any special comment will always be hidden
-  from the included code irrespective of the setting of
-  \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" or you can use the `option`
-  `nostripcodecomments` that will always show the special comments. These options have no effect in
-  combination with the `option` `doc`.
+  - The `option` `strip` can be used to always hide any special comments
+    from the included code, overruling the
+    \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" setting, and option
+    `nostrip` can be used to always show the special comments.
+  These options have no effect in combination with the `option` `doc`.
 
   When using option `doc`, there is also the option `raise` that can be specified to raise
   all sections found in the referenced file by a certain amount. For example
@@ -2956,11 +2957,11 @@ Commands for displaying examples
  - The `option` `doc` can be used to treat the file as documentation rather than code.
  - The `option` `local` can be used make Doxygen interpret the code as if it was in the
                class or namespace in which the include command appears, rather than the global namespace.
-  - The `option` `stripcodecomments` can be used so that any special comment will always be hidden
-  from the included code irrespective of the setting of
-  \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" or you can use the `option`
-  `nostripcodecomments` that will always show the special comments. These options have no effect in
-  combination with the `option` `doc`.
+ - The `option` `strip` can be used to always hide any special comments
+   from the included code, overruling the
+   \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" setting, and option
+   `nostrip` can be used to always show the special comments.
+  These options have no effect in combination with the `option` `doc`.
 
  When using option `doc`, there is also the option `raise` that can be specified to raise
  all sections found in the referenced file by a certain amount. For example

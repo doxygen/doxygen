@@ -133,7 +133,7 @@ static void findXRefSymbols(FileDef *fd)
                 QCString(),
                 fileToString(fd->absFilePath()),
                 lang,
-                Config_getBool(STRIP_CODE_COMMENTS),
+                FALSE,
                 FALSE,
                 QCString(),
                 fd);

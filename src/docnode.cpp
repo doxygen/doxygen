@@ -3602,7 +3602,7 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   auto it2 = children().size()>=2 ? std::prev(it1)              : children().end();
   DocNodeVariant *n1 = it1!=children().end() ? &(*it1) : nullptr;
   DocNodeVariant *n2 = it2!=children().end() ? &(*it2) : nullptr;
-  //TODO get from context the stripCodeComments() 
+  //TODO get from context the stripCodeComments()
   bool stripCodeComments = Config_getBool(STRIP_CODE_COMMENTS);
   children().append<DocIncOperator>(parser(),thisVariant(),t,
                                     parser()->context.token->name,
@@ -3758,8 +3758,14 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
       return std::find(optList.begin(),optList.end(),kw)!=optList.end();
     };
     localScope = contains("local");
-    if (contains("nostripcodecomments")) stripCodeComments = false;
-    else if (contains("stripcodecomments")) stripCodeComments = true;
+    if (contains("nostrip"))
+    {
+      stripCodeComments = false;
+    }
+    else if (contains("strip"))
+    {
+      stripCodeComments = true;
+    }
 
     if (t==DocInclude::Include && contains("lineno"))
     {

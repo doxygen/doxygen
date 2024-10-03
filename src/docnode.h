@@ -496,8 +496,8 @@ class DocIncOperator : public DocNode
     QCString  m_context;
     bool     m_isFirst = false;
     bool     m_isLast = false;
-    bool     m_isExample = false;
     bool     m_stripCodeComments = true;
+    bool     m_isExample = false;
     QCString  m_exampleFile;
     QCString m_includeFileName;
 };
