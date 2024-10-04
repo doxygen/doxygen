@@ -655,7 +655,7 @@ void MainWindow::runComplete()
   }
   else
   {
-    m_outputLog->append(APPQT(tr("*** Cancelled by user\n")));
+    m_outputLog->append(APPQT(tr("*** Canceled by user\n")));
   }
   m_outputLog->ensureCursorVisible();
   m_run->setText(tr("Run doxygen"));

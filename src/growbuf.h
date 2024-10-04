@@ -23,7 +23,7 @@
 
 #define GROW_AMOUNT 1024*4
 
-/** Class representing a string buffer optimised for growing. */
+/** Class representing a string buffer optimized for growing. */
 class GrowBuf
 {
   public:

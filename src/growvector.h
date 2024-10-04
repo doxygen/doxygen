@@ -22,7 +22,7 @@
 
 #include "construct.h"
 
-/** @brief std::vector like container optimised for pushing elements to the back.
+/** @brief std::vector like container optimized for pushing elements to the back.
  *
  *  It differs from std::vector in that it can grow without invalidating
  *  pointers to its members just like std::deque and std::list.
