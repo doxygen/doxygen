@@ -212,7 +212,6 @@ class PrintDocVisitor
         case DocInclude::XmlInclude: printf("xmlinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;
         case DocInclude::Snippet: printf("snippet"); break;
-        case DocInclude::SnippetTrimLeft: printf("snippettrimleft"); break;
         case DocInclude::SnippetWithLines: printf("snipwithlines"); break;
       }
       printf("\"/>");

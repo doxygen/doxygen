@@ -326,7 +326,6 @@ void ManDocVisitor::operator()(const DocInclude &inc)
       m_firstCol=TRUE;
       break;
     case DocInclude::Snippet:
-    case DocInclude::SnippetTrimLeft:
     case DocInclude::SnippetWithLines:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
@@ -336,7 +335,7 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                           inc.blockId(),
                                           inc.context(),
                                           inc.type()==DocInclude::SnippetWithLines,
-                                          inc.type()==DocInclude::SnippetTrimLeft
+                                          inc.trimLeft()
                                          );
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
