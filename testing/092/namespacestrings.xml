@@ -524,7 +524,7 @@ Appends <emphasis>item</emphasis> to <emphasis>vector</emphasis> if <emphasis>it
           <defname>vector</defname>
         </param>
         <briefdescription>
-          <para>Pack function specialised for TYPE(String) as a replacement for the intrinsic. </para>
+          <para>Pack function specialized for TYPE(String) as a replacement for the intrinsic. </para>
         </briefdescription>
         <detaileddescription>
           <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername direction="in">array</parametername></parameternamelist><parameterdescription><para>The array of things to pack.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">mask</parametername></parameternamelist><parameterdescription><para>Shall be the same size as <emphasis>array</emphasis>. The intrinsic form simply requires conformability, but that's a trivial case to implement in client code.</para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername direction="in">vector</parametername></parameternamelist><parameterdescription><para>Optional. Shall have at least as many elements as there are .TRUE. elements in <emphasis>mask</emphasis>.</para></parameterdescription></parameteritem></parameterlist><simplesect kind="return"><para>If <emphasis>vector</emphasis> is present, the result size is that of <emphasis>vector</emphasis>, otherwise the result size is the number <emphasis>t</emphasis> of true elements in <emphasis>mask</emphasis>.</para></simplesect>

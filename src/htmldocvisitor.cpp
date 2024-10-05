@@ -269,7 +269,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
     {
         // The open attribute is a boolean attribute.
         // Specifies that the details should be visible (open) to the user
-        // As it is a boolean attribute the initialisation value is of no interest
+        // As it is a boolean attribute the initialization value is of no interest
         result+=" ";
         result+=att.name;
         result+="=\"true\"";

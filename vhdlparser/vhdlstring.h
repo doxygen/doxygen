@@ -26,7 +26,7 @@ namespace vhdl {
 }
 
 
-/** @brief Minimal string class with std::string like behaviour that fulfills the JavaCC
+/** @brief Minimal string class with std::string like behavior that fulfills the JavaCC
  *  string requirements.
  */
 

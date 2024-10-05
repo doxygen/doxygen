@@ -2207,7 +2207,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
 #if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
-      // So this and other regressions should be analysed and fixed before this can be enabled
+      // So this and other regressions should be analyzed and fixed before this can be enabled
   // disable any boolean options that depend on disabled options
   for (const auto &option : m_options)
   {

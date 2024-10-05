@@ -1058,10 +1058,10 @@ class TranslatorEnglish : public Translator
         "<li>%A dark green arrow is used for protected inheritance.</li>\n"
         "<li>%A dark red arrow is used for private inheritance.</li>\n"
         "<li>%A purple dashed arrow is used if a class is contained or used "
-        "by another class. The arrow is labelled with the variable(s) "
+        "by another class. The arrow is labeled with the variable(s) "
         "through which the pointed class or struct is accessible.</li>\n"
         "<li>%A yellow dashed arrow denotes a relation between a template instance and "
-        "the template class it was instantiated from. The arrow is labelled with "
+        "the template class it was instantiated from. The arrow is labeled with "
         "the template parameters of the instance.</li>\n"
         "</ul>\n";
     }
@@ -1894,7 +1894,7 @@ class TranslatorEnglish : public Translator
     QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "enable" : "disable";
-      return "click to "+opt+" panel synchronisation";
+      return "click to "+opt+" panel synchronization";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a

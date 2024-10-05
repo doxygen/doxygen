@@ -332,7 +332,7 @@ void createJavaScriptSearchIndex()
           g_searchIndexInfo[SEARCH_INDEX_CLASSES].add(SearchTerm(n,cd.get()));
         }
       }
-      else // non slice optimisation: group all types under classes
+      else // non slice optimization: group all types under classes
       {
         g_searchIndexInfo[SEARCH_INDEX_CLASSES].add(SearchTerm(n,cd.get()));
       }
