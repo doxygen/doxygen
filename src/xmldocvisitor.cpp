@@ -484,7 +484,6 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
       m_t << "</verbatim>";
       break;
     case DocInclude::Snippet:
-    case DocInclude::SnippetTrimLeft:
     case DocInclude::SnippetWithLines:
       m_t << "<programlisting filename=\"" << inc.file() << "\">";
       CodeFragmentManager::instance().parseCodeFragment(m_ci,
@@ -492,7 +491,7 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
                                        inc.blockId(),
                                        inc.context(),
                                        inc.type()==DocInclude::SnippetWithLines,
-                                       inc.type()==DocInclude::SnippetTrimLeft,
+                                       inc.trimLeft(),
                                        inc.stripCodeComments()
                                       );
       m_t << "</programlisting>";

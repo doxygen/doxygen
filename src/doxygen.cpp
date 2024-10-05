@@ -182,7 +182,7 @@ static StringSet        g_usingDeclarations; // used classes
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
 
-// keywords recognised as compounds
+// keywords recognized as compounds
 static const StringUnorderedSet g_compoundKeywords =
 { "template class", "template struct", "class", "struct", "union", "interface", "exception" };
 
@@ -10637,7 +10637,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
         results.emplace_back(threadPool.queue(processFile));
       }
     }
-    // synchronise with the Entry result lists produced and add them to the root
+    // synchronize with the Entry result lists produced and add them to the root
     for (auto &f : results)
     {
       auto l = f.get();
@@ -10675,7 +10675,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
         results.emplace_back(threadPool.queue(processFile));
       }
     }
-    // synchronise with the Entry result lists produced and add them to the root
+    // synchronize with the Entry result lists produced and add them to the root
     for (auto &f : results)
     {
       auto l = f.get();
@@ -10706,7 +10706,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
       // dispatch the work and collect the future results
       results.emplace_back(threadPool.queue(processFile));
     }
-    // synchronise with the Entry results produced and add them to the root
+    // synchronize with the Entry results produced and add them to the root
     for (auto &f : results)
     {
       root->moveToSubEntryAndKeep(f.get());
@@ -11275,7 +11275,7 @@ void initDoxygen()
   //Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::indexList = new IndexList;
 
-  // initialisation of these globals depends on
+  // initialization of these globals depends on
   // configuration switches so we need to postpone these
   Doxygen::globalScope     = nullptr;
   Doxygen::inputNameLinkedMap   = nullptr;

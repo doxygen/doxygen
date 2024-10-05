@@ -497,7 +497,6 @@ DB_VIS_C
       m_t << "</literallayout>";
       break;
     case DocInclude::Snippet:
-    case DocInclude::SnippetTrimLeft:
     case DocInclude::SnippetWithLines:
       m_t << "<literallayout><computeroutput>";
       CodeFragmentManager::instance().parseCodeFragment(m_ci,
@@ -505,7 +504,7 @@ DB_VIS_C
                                           inc.blockId(),
                                           inc.context(),
                                           inc.type()==DocInclude::SnippetWithLines,
-                                          inc.type()==DocInclude::SnippetTrimLeft,
+                                          inc.trimLeft(),
                                           inc.stripCodeComments()
                                          );
       m_t << "</computeroutput></literallayout>";

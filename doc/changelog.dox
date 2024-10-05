@@ -252,7 +252,7 @@ href="https://github.com/doxygen/doxygen/commit/a2ae848c6f63e25cd18c5717116997b2
 <li>QT help problems with tag files [<a href="https://github.com/doxygen/doxygen/commit/c42b99e85ec1950604da772a91ac379cb5a42674">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/c9ce08db0bd84426a6f150348777badcac525da3">view</a>]</li>
 <li>Single line snippet didn&#39;t show [<a href="https://github.com/doxygen/doxygen/commit/c80d345defd9b8e53a377dec3f1b7112491731ba">view</a>]</li>
 <li>Support unicode characters in referenced file names [<a href="https://github.com/doxygen/doxygen/commit/9acb711f9ee9f5c45400d44e9bb0530c11cb28f5">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/c6fa06f86ac72a557f56e1083b7bc8e844107d93">view</a>]</li>
-<li>Waring with ingroup command at end of alias [<a href="https://github.com/doxygen/doxygen/commit/04f17aff126f55ef864139b7d26ac07012544df4">view</a>]</li>
+<li>Warning with ingroup command at end of alias [<a href="https://github.com/doxygen/doxygen/commit/04f17aff126f55ef864139b7d26ac07012544df4">view</a>]</li>
 <li>Warning for Fortran on <tt>\code</tt> command [<a href="https://github.com/doxygen/doxygen/commit/3857210386c8ca2c5939d09a45a94611ce2fc959">view</a>]</li>
 <li>Warnings due to multiple &quot;sectioning&quot; commands inside an <tt>\if</tt> type construct [<a href="https://github.com/doxygen/doxygen/commit/36f35b5202e196855e2969db1ef2901f51856bdb">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/effa6d95f726232a709a13fb4e4e075bc0a7a629">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/bd373c91cf7a05ce496f92e405ee37da8c1378e7">view</a>]</li>
 <li>When having markdown code like: ~~~ [<a href="https://github.com/doxygen/doxygen/commit/a870cd4695aa98788022ccb8d0c0c8e507421572">view</a>]</li>
@@ -2637,7 +2637,7 @@ and
 <li>Small spelling correction in portable.cpp [<a href="https://github.com/doxygen/doxygen/commit/ba4e098a09da73738bd0f849492719bc37d36f1b">view</a>]</li>
 <li>Specifying filename in preprocessor debug output [<a href="https://github.com/doxygen/doxygen/commit/8616d8e1ee61d3fc1a929a04f1594b0f417da7c2">view</a>]</li>
 <li>Unknown configuration enum values [<a href="https://github.com/doxygen/doxygen/commit/9c9e30b295ca8b0a2130aa00c26bb5aa40a0e608">view</a>]</li>
-<li>Updated test 024 to better test spacing behaviour. [<a href="https://github.com/doxygen/doxygen/commit/b47de248b2c4d54bd83a4c679fa6a58dbaf3fe11">view</a>]</li>
+<li>Updated test 024 to better test spacing behavior. [<a href="https://github.com/doxygen/doxygen/commit/b47de248b2c4d54bd83a4c679fa6a58dbaf3fe11">view</a>]</li>
 <li>Warnings in case of a VHDL error [<a href="https://github.com/doxygen/doxygen/commit/5bda6a19dcb48720ee57fc099f7ad14e4ad15b0a">view</a>]</li>
 <li>commentscan.l: replace QStack by std::stack [<a href="https://github.com/doxygen/doxygen/commit/5e815d8f3dd1cad071a6152b458c08f197bb00d2">view</a>]</li>
 <li>fixed some parser bugs,make parser ready for javacc 7.0.5 [<a href="https://github.com/doxygen/doxygen/commit/543a30dfcf050c772a5ef5420c821acbfe3cac9f">view</a>]</li>
@@ -3211,7 +3211,7 @@ href="https://github.com/doxygen/doxygen/commit/9d83d43f0d8b7058e2f89371a6ab276c
 <li>remove PLANTUML_RUN_FAST because FAST is default. [<a href="https://github.com/doxygen/doxygen/commit/51bba9d513b22bd92d90127657b76f51d4555fa8">view</a>]</li>
 <li>secref command output shows in 1 column (HTML) [<a href="https://github.com/doxygen/doxygen/commit/6c731ddf5f77247ef07f9772a9d80d7eedba9d19">view</a>]</li>
 <li>source arrangement [<a href="https://github.com/doxygen/doxygen/commit/ccdf5ee278d7029c055954a733f0db90e47e075d">view</a>]</li>
-<li>spelling error: suported -&gt; supported [<a href="https://github.com/doxygen/doxygen/commit/e182d98227fe78ff58fe541b25683f0a034e3aab">view</a>]</li>
+<li>spelling error: supported -&gt; supported [<a href="https://github.com/doxygen/doxygen/commit/e182d98227fe78ff58fe541b25683f0a034e3aab">view</a>]</li>
 <li>sqlcode.l: generate a reentrant scanner [<a href="https://github.com/doxygen/doxygen/commit/52e32ead5d8152d75a18f3cc7f4b7e5c7bb38b29">view</a>]</li>
 <li>take doc group out of commentscan.l [<a href="https://github.com/doxygen/doxygen/commit/b30e834cd04881ddeaadf8c78a9e716b4dd6a689">view</a>]</li>
 <li>testing: add a test for TOC levels in the XML output. [<a href="https://github.com/doxygen/doxygen/commit/c3768085f8ab68cd61bae4d132b74d9edd813ce0">view</a>]</li>
@@ -4012,7 +4012,7 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5808">5808</a> - Doxygen don&#39;t support longer key in bibtex [<a href="https://github.com/doxygen/doxygen/commit/b0fc11e4a891e51bb4d982730efecddac2ef807e">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5809">5809</a> - \cite still rejects valid BibTeX keys [<a href="https://github.com/doxygen/doxygen/commit/b1601548308c8a6ec586a406155d24f80d75aafd">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5821">5821</a> - using plantuml cause a popup &quot;openwith&quot; windows when calling java.exe [<a href="https://github.com/doxygen/doxygen/commit/51ee1b0633fbfa935da08c8a13f70da6fc1c074d">view</a>]</li>
-<li>Bug <a href="https://github.com/doxygen/doxygen/issues/5826">5826</a> - PATCH: Honour SOURCE_DATE_EPOCH environment variable for reproducible output [<a href="https://github.com/doxygen/doxygen/commit/b31266c1076c6284116f17241d9e8aa048f88e60">view</a>]</li>
+<li>Bug <a href="https://github.com/doxygen/doxygen/issues/5826">5826</a> - PATCH: Honor SOURCE_DATE_EPOCH environment variable for reproducible output [<a href="https://github.com/doxygen/doxygen/commit/b31266c1076c6284116f17241d9e8aa048f88e60">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5830">5830</a> - XML not documenting a class in python [<a href="https://github.com/doxygen/doxygen/commit/288afe7d4fe0953f5717b0ac85f805f78d96afa4">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5831">5831</a> - XML empty &lt;argsstring/&gt; in python [<a href="https://github.com/doxygen/doxygen/commit/a1b3f7b1157b8e7b392bfcd6c6452c664bf5a7c2">view</a>]</li>
 <li>Bug <a href="https://github.com/doxygen/doxygen/issues/5832">5832</a> - last entry missing in a @name group of typedefs [<a href="https://github.com/doxygen/doxygen/commit/21d14b3c7697f8807065070f5850259b1b6550e4">view</a>]</li>
@@ -4931,7 +4931,7 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
 <li> doc/language.doc generated from the updated sources (bgcolored)</li>
 <li> doc/language.tpl -- UTF-8 reflected in the langhowto template</li>
 <li> doc/language.tpl -- trailing spaces removed</li>
-<li> doc/translator.py -- coloured status in HTML</li>
+<li> doc/translator.py -- colored status in HTML</li>
 <li> doxygen /** style creates spurious code blocks with markdown enabled</li>
 <li> doxygen version 1.8.5 throws many "Internal Inconsistency" errors when parsing .idl files</li>
 <li> doxygen.sty.h was not ignored and not included/generated properly</li>
@@ -5347,7 +5347,7 @@ href="https://github.com/doxygen/doxygen/commit/a697caadf1912d0d74faa208f4cff887
        when using C++11 style enums.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4920">4920</a>: Even though HIDE_UNDOC_MEMBERS was enabled, the navigation
        still showed undocumented members.</li>
-<li>   id <a href="https://github.com/doxygen/doxygen/issues/4921">4921</a>: Fixed back button behaviour when using the navigation tree.</li>
+<li>   id <a href="https://github.com/doxygen/doxygen/issues/4921">4921</a>: Fixed back button behavior when using the navigation tree.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4927">4927</a>: Added anchors to refs in the index.qhp TOC.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/"></a>: Added XML declaration to index.qhp TOC.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4932">4932</a>: When a class and its base class has the same nested class,
@@ -6714,7 +6714,7 @@ make sure you add the following:
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3627">3627</a>, <a href="https://github.com/doxygen/doxygen/issues/3648">3648</a>: The title of pages whose label had an underscore
                   was not shown</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3631">3631</a>: Include guard not starting with #ifndef SOME_GUARD_H were not
-                  recognised as such.</li>
+                  recognized as such.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3632">3632</a>: Setting SEARCHENGINE to YES and GENERATE_HTML to NO caused
                   error that search results directory could not be created.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3635">3635</a>, <a href="https://github.com/doxygen/doxygen/issues/3655">3655</a>: typedef'ed enums or struct with the same as the
@@ -6821,7 +6821,7 @@ make sure you add the following:
                   was enabled.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3549">3549</a>: Scope was not hidden for members in the todo list even
                   though HIDE_SCOPE_NAMES was set to YES.</li>
-<li>   id <a href="https://github.com/doxygen/doxygen/issues/3562">3562</a>: Struct variable with explicit struct keyword got labelled
+<li>   id <a href="https://github.com/doxygen/doxygen/issues/3562">3562</a>: Struct variable with explicit struct keyword got labeled
                   with [read] attribute.</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/3545">3545</a>: PHP was not parsed properly when it appeared in a
                   &lt;script language="php"&gt; section.</li>
@@ -11817,7 +11817,7 @@ make sure you add the following:
        option: <code>INCLUDE_FILE_PATTERNS</code>. This tag can be used to
        set the file patterns for the include files (if left empty the
        <code>FILE_PATTERNS</code> will be used, which was also the old
-       behaviour). </li>
+       behavior). </li>
 <li>   Added a couple of commands for kdoc compatibility: <code>@p</code>,
        <code>@li</code>, <code>@em</code>.
        Also made @ref a bit less strict.</li>

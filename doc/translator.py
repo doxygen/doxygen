@@ -62,7 +62,7 @@
                was prefixed by backslash (was LaTeX related error).
   2013/02/19 - Better diagnostics when translator_xx.h is too crippled.
   2013/06/25 - TranslatorDecoder checks removed after removing the class.
-  2013/09/04 - Coloured status in langhowto. *ALMOST up-to-date* category
+  2013/09/04 - Colored status in langhowto. *ALMOST up-to-date* category
                of translators introduced.
   2014/06/16 - unified for Python 2.6+ and 3.0+
   """

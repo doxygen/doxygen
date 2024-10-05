@@ -269,7 +269,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
     {
         // The open attribute is a boolean attribute.
         // Specifies that the details should be visible (open) to the user
-        // As it is a boolean attribute the initialisation value is of no interest
+        // As it is a boolean attribute the initialization value is of no interest
         result+=" ";
         result+=att.name;
         result+="=\"true\"";
@@ -799,7 +799,6 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
       forceStartParagraph(inc);
       break;
     case DocInclude::Snippet:
-    case DocInclude::SnippetTrimLeft:
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
       m_ci.startCodeFragment("DoxyCode");
@@ -808,7 +807,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                        inc.blockId(),
                                        inc.context(),
                                        inc.type()==DocInclude::SnippetWithLines,
-                                       inc.type()==DocInclude::SnippetTrimLeft,
+                                       inc.trimLeft(),
                                        inc.stripCodeComments()
                                       );
       m_ci.endCodeFragment("DoxyCode");
