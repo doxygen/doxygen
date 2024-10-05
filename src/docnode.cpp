@@ -282,6 +282,7 @@ void DocInclude::parse()
       parser()->context.includeFileLength = m_text.length();
       parser()->context.includeFileLine   = 0;
       parser()->context.includeFileShowLineNo = (m_type == DontIncWithLines || m_type == IncWithLines);
+      parser()->context.stripCodeComments = m_stripCodeComments;
       //printf("parser->context.includeFile=<<%s>>\n",qPrint(parser->context.includeFileText));
       break;
     case VerbInclude:
@@ -359,6 +360,7 @@ void DocIncOperator::parse()
       }
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = parser()->context.includeFileShowLineNo;
+      m_stripCodeComments = parser()->context.stripCodeComments;
       break;
     case SkipLine:
       while (o<l)
@@ -391,6 +393,7 @@ void DocIncOperator::parse()
       }
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = parser()->context.includeFileShowLineNo;
+      m_stripCodeComments = parser()->context.stripCodeComments;
       break;
     case Skip:
       while (o<l)
@@ -420,6 +423,7 @@ void DocIncOperator::parse()
       }
       parser()->context.includeFileOffset = so; // set pointer to start of new line
       m_showLineNo = parser()->context.includeFileShowLineNo;
+      m_stripCodeComments = parser()->context.stripCodeComments;
       break;
     case Until:
       bo=o;
@@ -453,6 +457,7 @@ void DocIncOperator::parse()
       }
       parser()->context.includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = parser()->context.includeFileShowLineNo;
+      m_stripCodeComments = parser()->context.stripCodeComments;
       break;
   }
   if (!found)
@@ -3597,11 +3602,15 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   auto it2 = children().size()>=2 ? std::prev(it1)              : children().end();
   DocNodeVariant *n1 = it1!=children().end() ? &(*it1) : nullptr;
   DocNodeVariant *n2 = it2!=children().end() ? &(*it2) : nullptr;
+  //TODO get from context the stripCodeComments()
+  bool stripCodeComments = Config_getBool(STRIP_CODE_COMMENTS);
   children().append<DocIncOperator>(parser(),thisVariant(),t,
                                     parser()->context.token->name,
                                     parser()->context.context,
+                                    stripCodeComments,
                                     parser()->context.isExample,
-                                    parser()->context.exampleName);
+                                    parser()->context.exampleName
+                                    );
   DocIncOperator *op = children().get_last<DocIncOperator>();
   DocIncOperator *n1_docIncOp = std::get_if<DocIncOperator>(n1);
   DocWhiteSpace  *n1_docWs    = std::get_if<DocWhiteSpace >(n1);
@@ -3737,6 +3746,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   Token tok=parser()->tokenizer.lex();
   bool isBlock = false;
   bool localScope = false;
+  bool stripCodeComments = Config_getBool(STRIP_CODE_COMMENTS);
   if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
   {
     parser()->tokenizer.setStateOptions();
@@ -3748,6 +3758,15 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
       return std::find(optList.begin(),optList.end(),kw)!=optList.end();
     };
     localScope = contains("local");
+    if (contains("nostrip"))
+    {
+      stripCodeComments = false;
+    }
+    else if (contains("strip"))
+    {
+      stripCodeComments = true;
+    }
+
     if (t==DocInclude::Include && contains("lineno"))
     {
       t = DocInclude::IncWithLines;
@@ -3823,6 +3842,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
                                 fileName,
                                 localScope ? parser()->context.context : "",
                                 t,
+                                stripCodeComments,
                                 parser()->context.isExample,
                                 parser()->context.exampleName,
                                 blockId,isBlock);

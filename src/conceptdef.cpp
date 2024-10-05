@@ -433,7 +433,7 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
     if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
     TextStream conceptDef;
     conceptDef << m_initializer;
-    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt::Cpp,false,QCString(),
+    intf->parseCode(codeOL,scopeName,conceptDef.str(),SrcLangExt::Cpp,Config_getBool(STRIP_CODE_COMMENTS),false,QCString(),
                     m_fileDef, -1,-1,true,nullptr,false,this);
     codeOL.endCodeFragment("DoxyCode");
 }

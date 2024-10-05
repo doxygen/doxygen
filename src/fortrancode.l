@@ -151,6 +151,7 @@ struct fortrancodeYY_state
   bool          insideBody = false;      //!< inside subprog/program body? => create links
   const char *  currentFontClass = nullptr;
 
+  bool          stripCodeComments = true;
   bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
@@ -691,7 +692,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <DocBlock>"\n"                          { // comment block ends at the end of this line
                                           // remove special comment (default config)
                                           yyextra->contLineNr++;
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
+                                          if (yyextra->stripCodeComments)
                                           {
                                             yyextra->yyLineNr+=yyextra->docBlock.contains('\n');
                                             yyextra->yyLineNr+=1;
@@ -834,7 +835,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <*><<EOF>>                              {
                                           if (YY_START == DocBlock) {
-                                            if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                            if (!yyextra->stripCodeComments)
                                             {
                                               startFontClass(yyscanner,"comment");
                                               codifyLines(yyscanner,yyextra->docBlock);
@@ -1488,6 +1489,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
                    const QCString & /* scopeName */,
                    const QCString & input,
                    SrcLangExt /*lang*/,
+                   bool stripCodeComments,
                    bool isExampleBlock,
                    const QCString & exampleName,
                    const FileDef * fileDef,
@@ -1538,6 +1540,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   else
     yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
 
+  yyextra->stripCodeComments = stripCodeComments;
   yyextra->exampleBlock  = isExampleBlock;
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;

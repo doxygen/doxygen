@@ -1867,6 +1867,7 @@ void VhdlDocGen::writeSource(const MemberDef* mdef,OutputList& ol,const QCString
                        QCString(),       // scope
                        codeFragment,     // input
                        SrcLangExt::VHDL,  // lang
+                       Config_getBool(STRIP_CODE_COMMENTS),
                        FALSE,            // isExample
                        QCString(),       // exampleName
                        mdef->getFileDef(), // fileDef

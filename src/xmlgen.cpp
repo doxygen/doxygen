@@ -408,6 +408,7 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
                 QCString(),   // scopeName
                 fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),
                 langExt,     // lang
+                Config_getBool(STRIP_CODE_COMMENTS),
                 FALSE,       // isExampleBlock
                 QCString(),  // exampleName
                 fd,          // fileDef

@@ -3422,7 +3422,7 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
     intf->resetCodeParserState();
     auto &codeOL = ol.codeGenerators();
     codeOL.startCodeFragment("DoxyCode");
-    intf->parseCode(codeOL,scopeName,m_initializer,srcLangExt,FALSE,QCString(),getFileDef(),
+    intf->parseCode(codeOL,scopeName,m_initializer,srcLangExt,Config_getBool(STRIP_CODE_COMMENTS),FALSE,QCString(),getFileDef(),
                      -1,-1,TRUE,this,FALSE,this);
     codeOL.endCodeFragment("DoxyCode");
 }
