@@ -7,7 +7,7 @@
  *  \include example_test.cpp
  *  More text.
  *  \include{lineno} example_test.cpp
- *  Same example with stipped comments
+ *  Same example with stripped comments
  *  \include{lineno,strip} example_test.cpp
  *  End.
  */
