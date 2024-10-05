@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="another_page" kind="page">
+    <compoundname>another_page</compoundname>
+    <title>Example with stipped comments</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Here is the same example with stipped comments <programlisting filename="example_test.cpp"><codeline lineno="1"><highlight class="normal"/></codeline><codeline lineno="2"><highlight class="normal"/><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>main()</highlight></codeline><codeline lineno="3"><highlight class="normal">{</highlight></codeline><codeline lineno="4"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>a<sp/>=<sp/></highlight><highlight class="stringliteral">"Some<sp/>special<sp/>character<sp/>here:<sp/><sp value="7"/><sp/>"</highlight><highlight class="normal">;</highlight></codeline><codeline lineno="5"><highlight class="normal"/></codeline><codeline lineno="6"><highlight class="normal"><sp/><sp/>Test<sp/>t;</highlight></codeline><codeline lineno="7"><highlight class="normal"><sp/><sp/>t.example();</highlight></codeline><codeline lineno="8"><highlight class="normal">}</highlight></codeline><codeline lineno="9"><highlight class="normal"/></codeline></programlisting> End. </para>
+    </detaileddescription>
+    <location file="032_include.cpp"/>
+  </compounddef>
+</doxygen>
