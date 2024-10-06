@@ -4802,7 +4802,7 @@ bool resolveLink(/* in */ const char *scName,
     resAnchor=cd->anchor();
     return TRUE;
   }
-  else if ((cd=getClass(linkRefPHP)) && (SrcLangExt_PHP==cd->getLanguage())) // class link
+  else if ((cd=getClass(linkRefPHP)) && (SrcLangExt::PHP==cd->getLanguage())) // class link
   {
     *resContext=cd;
     resAnchor=cd->anchor();
