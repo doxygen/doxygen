@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Parker Waechter & Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,276 +16,291 @@
 #ifndef RTFGEN_H
 #define RTFGEN_H
 
+#include <array>
+
+#include "config.h"
 #include "outputgen.h"
 
-class QFile;
+class OutputCodeList;
+
+/** Generator for RTF code fragments */
+class RTFCodeGenerator : public OutputCodeIntf
+{
+  public:
+    RTFCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
+
+    OutputType type() const override { return OutputType::RTF; }
+    void codify(const QCString &text) override;
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<RTFCodeGenerator>(*this); }
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip) override;
+    void writeTooltip(const QCString &,
+                      const DocLinkInfo &,
+                      const QCString &,
+                      const QCString &,
+                      const SourceLinkInfo &,
+                      const SourceLinkInfo &
+                     ) override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool) override;
+    void startCodeLine(int) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &) override {}
+    void startCodeFragment(const QCString &style) override;
+    void endCodeFragment(const QCString &) override;
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
+
+  private:
+    friend class RTFGenerator;
+    void setSourceFileName(const QCString &name);
+    void setIndentLevel(int level) { m_indentLevel=level; }
+    QCString rtf_Code_DepthStyle();
+    int  m_col = 0;
+    TextStream *m_t;
+    bool m_doxyCodeLineOpen = false;
+    QCString m_sourceFileName;
+    int m_indentLevel = 0;
+};
+
 
 /** Generator for RTF output. */
-class RTFGenerator : public OutputGenerator
+class RTFGenerator : public OutputGenerator, public OutputGenIntf
 {
   public:
     RTFGenerator();
-   ~RTFGenerator();
-    static void init();
-    static void writeStyleSheetFile(QFile &f);
-    static void writeExtensionsFile(QFile &file);
-
-    void enable() 
-    { if (m_genStack->top()) m_active=*m_genStack->top(); else m_active=TRUE; }
-    void disable() { m_active=FALSE; }
-    void enableIf(OutputType o)  { if (o==RTF) enable();  }
-    void disableIf(OutputType o) { if (o==RTF) disable(); }
-    void disableIfNot(OutputType o) { if (o!=RTF) disable(); }
-    bool isEnabled(OutputType o) { return (o==RTF && m_active); } 
-    OutputGenerator *get(OutputType o) { return (o==RTF) ? this : 0; }
-
-    void writeDoc(DocNode *,const Definition *,const MemberDef *);
-
-    void startFile(const char *name,const char *manName,const char *title);
-    void writeSearchInfo() {}
-    void writeFooter(const char *) {}
-    void endFile();
-    void clearBuffer();
-    //void postProcess(QByteArray &);
-    
-    void startIndexSection(IndexSections);
-    void endIndexSection(IndexSections);
-    void writePageLink(const char *,bool);
-    void startProjectNumber();
-    void endProjectNumber();
-    void writeStyleInfo(int part);
-    void startTitleHead(const char *);
-    void startTitle();
-    void endTitleHead(const char *,const char *name);
-    void endTitle() {} 
-
-    void newParagraph();
-    void startParagraph(const char *classDef);
-    void endParagraph();
-    void writeString(const char *text);
-    void startIndexListItem();
-    void endIndexListItem();
-    void startIndexList();
-    void endIndexList();
-    void startIndexKey();
-    void endIndexKey();
-    void startIndexValue(bool);
-    void endIndexValue(const char *,bool);
-    void startItemList();
-    void endItemList();
-    void startIndexItem(const char *ref,const char *file);
-    void endIndexItem(const char *ref,const char *file);
-    void docify(const char *text);
-    void codify(const char *text);
-    void writeObjectLink(const char *ref,const char *file,
-                         const char *anchor,const char *name);
-    void writeCodeLink(const char *ref, const char *file,
-                       const char *anchor,const char *name,
-                       const char *tooltip);
-    void writeTooltip(const char *, const DocLinkInfo &, const char *,
-                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
-                     ) {}
-    void startTextLink(const char *f,const char *anchor);
-    void endTextLink();
-    void startHtmlLink(const char *url);
-    void endHtmlLink();
-    void startTypewriter() { t << "{\\f2 "; }
-    void endTypewriter()   { t << "}";      }
-    void startGroupHeader(int);
-    void endGroupHeader(int);
-    //void writeListItem();
-    void startItemListItem();
-    void endItemListItem();
-
-    void startMemberSections() {}
-    void endMemberSections() {} 
-    void startHeaderSection() {}
-    void endHeaderSection() {}
-    void startMemberHeader(const char *,int) { startGroupHeader(FALSE); }
-    void endMemberHeader() { endGroupHeader(FALSE); }
-    void startMemberSubtitle(); 
-    void endMemberSubtitle(); 
-    void startMemberDocList() {}
-    void endMemberDocList() {}
-    void startMemberList();
-    void endMemberList();
-    void startInlineHeader();
-    void endInlineHeader();
-    void startAnonTypeScope(int) {}
-    void endAnonTypeScope(int) {}
-    void startMemberItem(const char *,int,const char *);
-    void endMemberItem();
-    void startMemberTemplateParams() {}
-    void endMemberTemplateParams(const char *,const char *) {}
-    void insertMemberAlign(bool) {}
-    void insertMemberAlignLeft(int,bool){}
-
-    void writeRuler() { rtfwriteRuler_thin(); }
-	
-    void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment();
-    void endCodeFragment();
-    void writeLineNumber(const char *,const char *,const char *,int l);
-    void startCodeLine(bool);
-    void endCodeLine();
-    void startEmphasis() { t << "{\\i ";  }
-    void endEmphasis()   { t << "}"; }
-    void startBold()     { t << "{\\b "; }
-    void endBold()       { t << "}"; }
-    void startDescription();
-    void endDescription();
-    void startDescItem();
-    void endDescItem();
-    void lineBreak(const char *style=0);
-    void startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool);
-    void endMemberDoc(bool);
-    void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
-    void endDoxyAnchor(const char *,const char *);
-    void writeChar(char c);
-    void writeLatexSpacing() {};//{ t << "\\hspace{0.3cm}"; }
-    void writeStartAnnoItem(const char *type,const char *file, 
-                            const char *path,const char *name);
-    void writeEndAnnoItem(const char *name);
-    void startSubsection();
-    void endSubsection();
-    void startSubsubsection();
-    void endSubsubsection();
-    void startCenter()      { t << "{\\qc" << endl; }
-    void endCenter()        { t << "}"; }
-    void startSmall()       { t << "{\\sub "; }
-    void endSmall()         { t << "}"; }
-
-    void startMemberDescription(const char *,const char *,bool);
-    void endMemberDescription();
-    void startMemberDeclaration() {} 
-    void endMemberDeclaration(const char *,const char *) {}
-    void writeInheritedSectionTitle(const char *,const char *,const char *,
-                      const char *,const char *,const char *) {}
-    void startDescList(SectionTypes);
-    void startExamples();
-    void endExamples();
-    void startParamList(ParamListTypes,const char *);
-    void endParamList();
-    //void writeDescItem();
-    void startDescForItem();
-    void endDescForItem();
-    void startSection(const char *,const char *,SectionInfo::SectionType);
-    void endSection(const char *,SectionInfo::SectionType);
-    void addIndexItem(const char *,const char *);
-    void startIndent();
-    void endIndent();
-    void writeSynopsis()     {}
-    void startClassDiagram();
-    void endClassDiagram(const ClassDiagram &,const char *filename,const char *name);
-    void startPageRef();
-    void endPageRef(const char *,const char *);
-    void startQuickIndices() {}
-    void endQuickIndices() {}
-    void writeSplitBar(const char *) {}
-    void writeNavigationPath(const char *) {}
-    void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem,const char *) {}
-    void writeSummaryLink(const char *,const char *,const char *,bool) {}
-    void startContents() {}
-    void endContents() {}
-    void writeNonBreakableSpace(int);
-	
-    void startDescTable(const char *title);
-    void endDescTable();
-    void startDescTableRow();
-    void endDescTableRow();
-    void startDescTableTitle();
-    void endDescTableTitle();
-    void startDescTableData();
-    void endDescTableData();
-    
-    void startDotGraph();
-    void endDotGraph(DotClassGraph &);
-    void startInclDepGraph();
-    void endInclDepGraph(DotInclDepGraph &);
-    void startGroupCollaboration();
-    void endGroupCollaboration(DotGroupCollaboration &g);
-    void startCallGraph();
-    void endCallGraph(DotCallGraph &);
-    void startDirDepGraph();
-    void endDirDepGraph(DotDirDeps &g);
-    void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
-
-    void startMemberGroupHeader(bool);
-    void endMemberGroupHeader();
-    void startMemberGroupDocs();
-    void endMemberGroupDocs();
-    void startMemberGroup();
-    void endMemberGroup(bool);
-    
-    void startTextBlock(bool dense);
-    void endTextBlock(bool);
-    void lastIndexPage();
-
-    void startMemberDocPrefixItem() {}
-    void endMemberDocPrefixItem() {}
-    void startMemberDocName(bool) {}
-    void endMemberDocName() {}
-    void startParameterType(bool,const char *);
-    void endParameterType();
-    void startParameterName(bool) {}
-    void endParameterName(bool,bool,bool) {}
-    void startParameterList(bool) {}
-    void endParameterList() {}
-    void exceptionEntry(const char*,bool);
-
-    void startConstraintList(const char  *);
-    void startConstraintParam();
-    void endConstraintParam();
-    void startConstraintType();
-    void endConstraintType();
-    void startConstraintDocs();
-    void endConstraintDocs();
-    void endConstraintList();
-
-    void startMemberDocSimple(bool);
-    void endMemberDocSimple(bool);
-    void startInlineMemberType();
-    void endInlineMemberType();
-    void startInlineMemberName();
-    void endInlineMemberName();
-    void startInlineMemberDoc();
-    void endInlineMemberDoc();
-
-    void startLabels();
-    void writeLabel(const char *l,bool isLast);
-    void endLabels();
-
-    void startFontClass(const char *);
-    void endFontClass();
-
-    void writeCodeAnchor(const char *) {}
-    void setCurrentDoc(const Definition *,const char *,bool) {}
-    void addWord(const char *,bool) {}
-
-    static bool preProcessFileInplace(const char *path,const char *name);
-    
-  private:
     RTFGenerator(const RTFGenerator &);
     RTFGenerator &operator=(const RTFGenerator &);
+    RTFGenerator(RTFGenerator &&) = delete;
+    RTFGenerator &operator=(RTFGenerator &&) = delete;
+   ~RTFGenerator();
 
-    const char *rtf_BList_DepthStyle();
-    const char *rtf_CList_DepthStyle();
-    const char *rtf_EList_DepthStyle();
-    const char *rtf_LCList_DepthStyle();
-    const char *rtf_DList_DepthStyle();
-    const char *rtf_Code_DepthStyle();
-    void incrementIndentLevel();
-    void decrementIndentLevel();
-    int  m_col;
-    bool m_prettyCode;
+    static void init();
+    static void writeStyleSheetFile(TextStream &t);
+    static void writeExtensionsFile(TextStream &t);
 
-    bool m_bstartedBody;  // has startbody been called yet?
-    int  m_listLevel; // // RTF does not really have a additive indent...manually set list level.
-    bool m_omitParagraph; // should a the next paragraph command be ignored?
-    int  m_numCols; // number of columns in a table
-    QCString m_relPath;
+    void setRelativePath(const QCString &path);
+    void setSourceFileName(const QCString &sourceFileName);
+    static bool preProcessFileInplace(const QCString &path,const QCString &name);
 
+    void clearBuffer();
+
+    //-------------------------------------------------------
+
+    OutputType type() const override { return OutputType::RTF; }
+    std::unique_ptr<OutputGenIntf> clone() override { return std::make_unique<RTFGenerator>(*this); }
+    void addCodeGen(OutputCodeList &list) override;
+    void cleanup() override;
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int) override;
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id,int hierarchyLevel) override;
+    void endFile() override;
+
+    void writeSearchInfo() override {}
+    void writeFooter(const QCString &) override {}
+
+    void startPageDoc(const QCString &) override {}
+    void endPageDoc() override {}
+    void startIndexSection(IndexSection) override;
+    void endIndexSection(IndexSection) override;
+    void writePageLink(const QCString &,bool) override;
+    void startProjectNumber() override;
+    void endProjectNumber() override;
+    void writeStyleInfo(int part) override;
+    void startTitleHead(const QCString &) override;
+    void endTitleHead(const QCString &,const QCString &name) override;
+
+    void startParagraph(const QCString &classDef) override;
+    void endParagraph() override;
+    void writeString(const QCString &text) override;
+    void startIndexListItem() override;
+    void endIndexListItem() override;
+    void startIndexList() override;
+    void endIndexList() override;
+    void startIndexKey() override;
+    void endIndexKey() override;
+    void startIndexValue(bool) override;
+    void endIndexValue(const QCString &,bool) override;
+    void startItemList() override;
+    void endItemList() override;
+    void startIndexItem(const QCString &ref,const QCString &file) override;
+    void endIndexItem(const QCString &ref,const QCString &file) override;
+    void docify(const QCString &text) override;
+    void writeObjectLink(const QCString &ref,const QCString &file,
+                         const QCString &anchor,const QCString &name) override;
+    void startTextLink(const QCString &f,const QCString &anchor) override;
+    void endTextLink() override;
+    void startTypewriter() override { m_t << "{\\f2 "; }
+    void endTypewriter() override { m_t << "}";      }
+    void startGroupHeader(int) override;
+    void endGroupHeader(int) override;
+    void startItemListItem() override;
+    void endItemListItem() override;
+
+    void startMemberSections() override {}
+    void endMemberSections() override {}
+    void startHeaderSection() override {}
+    void endHeaderSection() override {}
+    void startMemberHeader(const QCString &,int) override { startGroupHeader(0); }
+    void endMemberHeader() override { endGroupHeader(FALSE); }
+    void startMemberSubtitle() override;
+    void endMemberSubtitle() override;
+    void startMemberDocList() override {}
+    void endMemberDocList() override {}
+    void startMemberList() override;
+    void endMemberList() override;
+    void startInlineHeader() override;
+    void endInlineHeader() override;
+    void startAnonTypeScope(int) override {}
+    void endAnonTypeScope(int) override {}
+    void startMemberItem(const QCString &,MemberItemType,const QCString &) override;
+    void endMemberItem(MemberItemType) override;
+    void startMemberTemplateParams() override {}
+    void endMemberTemplateParams(const QCString &,const QCString &) override {}
+    void startCompoundTemplateParams() override;
+    void endCompoundTemplateParams() override;
+    void insertMemberAlign(bool) override {}
+    void insertMemberAlignLeft(MemberItemType,bool) override {}
+
+    void writeRuler() override { rtfwriteRuler_thin(); }
+
+    void writeAnchor(const QCString &fileName,const QCString &name) override;
+    void startEmphasis() override { m_t << "{\\i ";  }
+    void endEmphasis() override { m_t << "}"; }
+    void startBold() override { m_t << "{\\b "; }
+    void endBold() override { m_t << "}"; }
+    void lineBreak(const QCString &style=QCString()) override;
+    void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool) override;
+    void endMemberDoc(bool) override;
+    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override;
+    void endDoxyAnchor(const QCString &,const QCString &) override;
+    void addLabel(const QCString &,const QCString &) override;
+    void writeChar(char c) override;
+    void writeLatexSpacing() override {};//{ m_t << "\\hspace{0.3cm}"; }
+    void writeStartAnnoItem(const QCString &type,const QCString &file,
+                            const QCString &path,const QCString &name) override;
+    void startCenter() override { m_t << "{\\qc\n"; }
+    void endCenter() override { m_t << "}"; }
+    void startSmall() override { m_t << "{\\sub "; }
+    void endSmall() override { m_t << "}"; }
+
+    void startMemberDescription(const QCString &,const QCString &,bool) override;
+    void endMemberDescription() override;
+    void startMemberDeclaration() override {}
+    void endMemberDeclaration(const QCString &,const QCString &) override {}
+    void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
+                      const QCString &,const QCString &,const QCString &) override;
+    void startExamples() override;
+    void endExamples() override;
+    void startDescForItem() override;
+    void endDescForItem() override;
+    void startSection(const QCString &,const QCString &,SectionType) override;
+    void endSection(const QCString &,SectionType) override;
+    void addIndexItem(const QCString &,const QCString &) override;
+    void startIndent() override;
+    void endIndent() override;
+    void writeSynopsis() override {}
+    void startClassDiagram() override;
+    void endClassDiagram(const ClassDiagram &,const QCString &filename,const QCString &name) override;
+    void startPageRef() override;
+    void endPageRef(const QCString &,const QCString &) override;
+    void startQuickIndices() override {}
+    void endQuickIndices() override {}
+    void writeSplitBar(const QCString &) override {}
+    void writeNavigationPath(const QCString &) override {}
+    void writeLogo() override {}
+    void writeQuickLinks(HighlightedItem,const QCString &) override {}
+    void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void startContents() override {}
+    void endContents() override {}
+    void writeNonBreakableSpace(int) override;
+
+    void startDescTable(const QCString &title,const bool hasInits) override;
+    void endDescTable() override;
+    void startDescTableRow() override;
+    void endDescTableRow() override;
+    void startDescTableTitle() override;
+    void endDescTableTitle() override;
+    void startDescTableInit() override;
+    void endDescTableInit() override;
+    void startDescTableData() override;
+    void endDescTableData() override;
+
+    void startDotGraph() override;
+    void endDotGraph(DotClassGraph &) override;
+    void startInclDepGraph() override;
+    void endInclDepGraph(DotInclDepGraph &) override;
+    void startGroupCollaboration() override;
+    void endGroupCollaboration(DotGroupCollaboration &g) override;
+    void startCallGraph() override;
+    void endCallGraph(DotCallGraph &) override;
+    void startDirDepGraph() override;
+    void endDirDepGraph(DotDirDeps &g) override;
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &) override {}
+
+    void startMemberGroupHeader(bool) override;
+    void endMemberGroupHeader() override;
+    void startMemberGroupDocs() override;
+    void endMemberGroupDocs() override;
+    void startMemberGroup() override;
+    void endMemberGroup(bool) override;
+
+    void startTextBlock(bool dense) override;
+    void endTextBlock(bool) override;
+    void lastIndexPage() override;
+
+    void startMemberDocPrefixItem() override {}
+    void endMemberDocPrefixItem() override {}
+    void startMemberDocName(bool) override {}
+    void endMemberDocName() override {}
+    void startParameterType(bool,const QCString &) override;
+    void endParameterType() override;
+    void startParameterName(bool) override {}
+    void endParameterName() override {}
+    void startParameterExtra() override {}
+    void endParameterExtra(bool,bool,bool) override;
+    void startParameterDefVal(const char *s) override { docify(s); startTypewriter(); }
+    void endParameterDefVal() override { endTypewriter(); }
+    void startParameterList(bool) override;
+    void endParameterList() override {}
+    void exceptionEntry(const QCString &,bool) override;
+
+    void startConstraintList(const QCString &) override;
+    void startConstraintParam() override;
+    void endConstraintParam() override;
+    void startConstraintType() override;
+    void endConstraintType() override;
+    void startConstraintDocs() override;
+    void endConstraintDocs() override;
+    void endConstraintList() override;
+
+    void startMemberDocSimple(bool) override;
+    void endMemberDocSimple(bool) override;
+    void startInlineMemberType() override;
+    void endInlineMemberType() override;
+    void startInlineMemberName() override;
+    void endInlineMemberName() override;
+    void startInlineMemberDoc() override;
+    void endInlineMemberDoc() override;
+
+    void startLabels() override;
+    void writeLabel(const QCString &l,bool isLast) override;
+    void endLabels() override;
+
+    void writeLocalToc(const SectionRefs &,const LocalToc &) override {}
+
+    void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
+    void endPlainFile() override { OutputGenerator::endPlainFile(); }
+
+  private:
+    QCString rtf_BList_DepthStyle();
+    QCString rtf_CList_DepthStyle();
+    QCString rtf_EList_DepthStyle();
+    QCString rtf_LCList_DepthStyle();
+    QCString rtf_DList_DepthStyle();
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
@@ -295,8 +308,34 @@ class RTFGenerator : public OutputGenerator
     void rtfwriteRuler_emboss();
     void rtfwriteRuler_thick();
     void rtfwriteRuler_thin();
-    void writeRTFReference(const char *label);
-    //char *getMultiByte(int c);
+    void writeRTFReference(const QCString &label);
+    void newParagraph();
+
+    int indentLevel() const;
+    void incIndentLevel();
+    void decIndentLevel();
+
+    bool m_bstartedBody = false;  // has startbody been called yet?
+    bool m_omitParagraph = false; // should a the next paragraph command be ignored?
+    int  m_numCols = 0; // number of columns in a table
+    QCString m_relPath;
+    int  m_hierarchyLevel = 0;
+
+    // RTF does not really have a additive indent...manually set list level.
+    static const int maxIndentLevels = 13;
+    int m_indentLevel = 0;
+    struct RTFListItemInfo
+    {
+      bool isEnum = false;
+      int number = 1;
+      char type = '1';
+    };
+    std::array<RTFListItemInfo,maxIndentLevels> m_listItemInfo;
+    std::unique_ptr<OutputCodeList> m_codeList;
+    RTFCodeGenerator *m_codeGen;
 };
+
+QCString rtfFormatBmkStr(const QCString &name);
+
 
 #endif

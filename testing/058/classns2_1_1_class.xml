@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="classns2_1_1_class" kind="class" language="C++" prot="public">
+    <compoundname>ns2::Class</compoundname>
+    <sectiondef kind="public-type">
+      <memberdef kind="enum" id="classns2_1_1_class_1ab3fe6da2ca4a96a226618492312b1761" prot="public" static="no" strong="yes">
+        <type/>
+        <name>Enum1</name>
+        <qualifiedname>ns2::Class::Enum1</qualifiedname>
+        <enumvalue id="classns2_1_1_class_1ab3fe6da2ca4a96a226618492312b1761ac5836008c1649301e29351a55db8f65c" prot="public">
+          <name>Flag</name>
+          <briefdescription>
+            <para>A flag of <ref refid="classns2_1_1_class_1ab3fe6da2ca4a96a226618492312b1761" kindref="member">Enum1</ref> in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para>A first enum class in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="058_strong_enum.cpp" line="62" column="1" bodyfile="058_strong_enum.cpp" bodystart="62" bodyend="64"/>
+      </memberdef>
+      <memberdef kind="enum" id="classns2_1_1_class_1ae96c8ec290b0bdb3b718ccd891450b5d" prot="public" static="no" strong="yes">
+        <type/>
+        <name>Enum2</name>
+        <qualifiedname>ns2::Class::Enum2</qualifiedname>
+        <enumvalue id="classns2_1_1_class_1ae96c8ec290b0bdb3b718ccd891450b5dac5836008c1649301e29351a55db8f65c" prot="public">
+          <name>Flag</name>
+          <briefdescription>
+            <para>A flag of <ref refid="classns2_1_1_class_1ae96c8ec290b0bdb3b718ccd891450b5d" kindref="member">Enum2</ref> in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para>A second enum class in <ref refid="namespacens2" kindref="compound">ns2</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="058_strong_enum.cpp" line="66" column="1" bodyfile="058_strong_enum.cpp" bodystart="66" bodyend="68"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="058_strong_enum.cpp" line="59" column="1" bodyfile="058_strong_enum.cpp" bodystart="60" bodyend="69"/>
+    <listofallmembers>
+      <member refid="classns2_1_1_class_1ab3fe6da2ca4a96a226618492312b1761" prot="public" virt="non-virtual">
+        <scope>ns2::Class</scope>
+        <name>Enum1</name>
+      </member>
+      <member refid="classns2_1_1_class_1ae96c8ec290b0bdb3b718ccd891450b5d" prot="public" virt="non-virtual">
+        <scope>ns2::Class</scope>
+        <name>Enum2</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

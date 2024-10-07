@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,50 +20,52 @@
 
 #include "parserintf.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class FileDef;
 class MemberDef;
 class QCString;
 class Definition;
 
-void codeFreeScanner();
-
-
 class FortranCodeParser : public CodeParserInterface
 {
   public:
-    FortranCodeParser(FortranFormat format=FortranFormat_Unknown) : m_format(format) { }
-    void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
+    FortranCodeParser(FortranFormat format=FortranFormat::Unknown);
+   ~FortranCodeParser() override;
+    NON_COPYABLE(FortranCodeParser)
+
+    void parseCode(OutputCodeList &codeOutIntf,
+                   const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
+                   bool stripCodeComments,
                    bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
+                   const QCString &exampleName=QCString(),
+                   const FileDef *fileDef=nullptr,
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=0,
+                   const MemberDef *memberDef=nullptr,
                    bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=0,
+                   const Definition *searchCtx=nullptr,
                    bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
+                  ) override;
+    void resetCodeParserState() override;
 
   private:
-    FortranFormat m_format;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 class FortranCodeParserFree : public FortranCodeParser
 {
   public:
-    FortranCodeParserFree() : FortranCodeParser(FortranFormat_Free) { }
+    FortranCodeParserFree() : FortranCodeParser(FortranFormat::Free) { }
 };
 
 class FortranCodeParserFixed : public FortranCodeParser
 {
   public:
-    FortranCodeParserFixed() : FortranCodeParser(FortranFormat_Fixed) { }
+    FortranCodeParserFixed() : FortranCodeParser(FortranFormat::Fixed) { }
 };
 
 #endif

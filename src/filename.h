@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,57 +16,61 @@
 #ifndef FILENAME_H
 #define FILENAME_H
 
-#include <qdict.h>
-#include <qlist.h>
-#include "filedef.h"
+#include <memory>
+#include <vector>
+
+#include "linkedmap.h"
+#include "utf8.h"
+#include "util.h"
+
+class FileDef;
 
 /** Class representing all files with a certain base name */
-class FileName : public FileList
+class FileName : public std::vector< std::unique_ptr<FileDef> >
 {
   public:
-    FileName(const char *fn,const char *name);
-   ~FileName();
-    const char *fileName() const { return name; }
-    const char *fullName() const { return fName; }
-    void generateDiskNames();
+    FileName(const QCString &nm,const QCString &fn) : m_name(nm), m_fName(fn), m_pathName("tmp") {}
+    QCString fileName() const { return m_name; }
+    QCString fullName() const { return m_fName; }
+    QCString path() const { return m_pathName; }
 
   private:
-    int compareValues(const FileDef *item1,const FileDef *item2) const;
-    QCString name;
-    QCString fName;
+    QCString m_name;
+    QCString m_fName;
+    QCString m_pathName;
 };
 
-/** Iterator for FileDef objects in a FileName list. */
-class FileNameIterator : public QListIterator<FileDef>
+//! Custom combined key compare and hash functor that uses a lower case string in
+//! case CASE_SENSE_NAMES is set to NO.
+class FileNameFn
 {
   public:
-    FileNameIterator(const FileName &list);
-};
-
-/** Class representing a list of FileName objects. */
-class FileNameList : public QList<FileName>
-{
-  public:
-    FileNameList();
-   ~FileNameList();
-    void generateDiskNames();
+    //! used as hash function
+    std::size_t operator()(const std::string& input) const noexcept
+    {
+      return std::hash<std::string>()(searchKey(input));
+    }
+    //! used as equal operator
+    bool operator() (const std::string &t1, const std::string &t2) const
+    {
+      return searchKey(t1) == searchKey(t2);
+    }
   private:
-    int compareValues(const FileName *item1,const FileName *item2) const;
+    std::string searchKey(const std::string &input) const
+    {
+      std::string key = input;
+      if (!getCaseSenseNames())
+      {
+        key = convertUTF8ToLower(key);
+      }
+      return key;
+    }
 };
 
-/** Iterator for FileName objects in a FileNameList. */
-class FileNameListIterator : public QListIterator<FileName>
+/** Ordered dictionary of FileName objects. */
+class FileNameLinkedMap : public LinkedMap<FileName,FileNameFn,FileNameFn,
+                                           std::unordered_multimap<std::string,FileName*,FileNameFn,FileNameFn> >
 {
-  public:
-    FileNameListIterator( const FileNameList &list );
-};
-
-/** Unsorted dictionary of FileName objects. */
-class FileNameDict : public QDict<FileName>
-{
-  public:
-    FileNameDict(uint size);
-   ~FileNameDict() {}
 };
 
 #endif

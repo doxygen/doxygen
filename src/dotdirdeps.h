@@ -16,6 +16,8 @@
 #ifndef DOTDIRDEPS_H
 #define DOTDIRDEPS_H
 
+#include <memory>
+
 #include "dotgraph.h"
 #include "dirdef.h"
 
@@ -24,28 +26,32 @@ class DotDirDeps : public DotGraph
 {
   public:
     DotDirDeps(const DirDef *dir);
-    ~DotDirDeps();
+    ~DotDirDeps() override;
+    NON_COPYABLE(DotDirDeps)
+
     bool isTrivial() const;
-    QCString writeGraph(FTextStream &out,
+    QCString writeGraph(TextStream &out,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
-                        const char *path,
-                        const char *fileName,
-                        const char *relPath,
+                        const QCString &path,
+                        const QCString &fileName,
+                        const QCString &relPath,
                         bool writeImageMap=TRUE,
                         int graphId=-1,
                         bool linkRelations=TRUE);
 
   protected:
-    virtual QCString getBaseName() const;
-    virtual QCString getMapLabel() const;
-    virtual void computeTheGraph();
-    virtual QCString getImgAltText() const;
+    QCString getBaseName() const override;
+    QCString getMapLabel() const override;
+    void computeTheGraph() override;
+    QCString getImgAltText() const override;
 
   private:
-    const DirDef *m_dir = 0;
+    const DirDef *m_dir = nullptr;
 
     bool m_linkRelations = false;
 };
+
+using DotDirDepsPtr = std::shared_ptr<DotDirDeps>;
 
 #endif

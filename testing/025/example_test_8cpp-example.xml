@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="example_test_8cpp-example" kind="example">
     <compoundname>example_test.cpp</compoundname>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
       <para>This is an example of how to use the <ref refid="class_test" kindref="compound">Test</ref> class.</para>
-      <para>More details about this example. <programlisting filename="example_test.cpp"><codeline><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>main()</highlight></codeline><codeline><highlight class="normal">{</highlight></codeline><codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>a<sp/>=<sp/></highlight><highlight class="stringliteral">"Some<sp/>special<sp/>character<sp/>here:<sp/><sp value="7"/><sp/>"</highlight><highlight class="normal">;</highlight></codeline><codeline><highlight class="normal"/></codeline><codeline><highlight class="normal"><sp/><sp/><ref refid="class_test" kindref="compound">Test</ref><sp/>t;</highlight></codeline><codeline><highlight class="normal"><sp/><sp/>t.<ref refid="class_test_1a47b775f65718978f1ffcd96376f8ecfa" kindref="member">example</ref>();</highlight></codeline><codeline><highlight class="normal">}</highlight></codeline><codeline><highlight class="normal"/></codeline></programlisting> </para>
+      <para>More details about this example. <programlisting filename="example_test.cpp"><codeline><highlight class="normal"/></codeline><codeline><highlight class="normal"/><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>main()</highlight></codeline><codeline><highlight class="normal">{</highlight></codeline><codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>a<sp/>=<sp/></highlight><highlight class="stringliteral">"Some<sp/>special<sp/>character<sp/>here:<sp/><sp value="7"/><sp/>"</highlight><highlight class="normal">;</highlight></codeline><codeline><highlight class="normal"/></codeline><codeline><highlight class="normal"><sp/><sp/><ref refid="class_test" kindref="compound">Test</ref><sp/>t;</highlight></codeline><codeline><highlight class="normal"><sp/><sp/>t.<ref refid="class_test_1a47b775f65718978f1ffcd96376f8ecfa" kindref="member">example</ref>();</highlight></codeline><codeline><highlight class="normal">}</highlight></codeline><codeline><highlight class="normal"/></codeline></programlisting> </para>
     </detaileddescription>
+    <location file="025_example.cpp"/>
   </compounddef>
 </doxygen>

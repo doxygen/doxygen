@@ -12,7 +12,9 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-PROJECT_NAME      = "Doxygen"
+PROJECT_NAME      = "Manual"
+PROJECT_LOGO      = doxygen_logo.svg height=35px
+PROJECT_ICON      = ../doc/doxygen.ico
 OUTPUT_DIRECTORY  = ..
 HTML_HEADER       = 
 HTML_FOOTER       = 
@@ -23,37 +25,44 @@ GENERATE_TREEVIEW = YES
 EXTRACT_ALL       = NO
 EXTRACT_PRIVATE   = NO
 GENERATE_MAN      = NO
-GENERATE_LATEX    = YES
-GENERATE_HTML     = YES
+GENERATE_LATEX    = $(GENERATE_LATEX)
+GENERATE_HTML     = $(GENERATE_HTML)
 GENERATE_HTMLHELP = NO
 GENERATE_RTF      = NO
 GENERATE_XML      = NO
 HTML_COLORSTYLE_SAT = 0
 ENABLED_SECTIONS  = logo_on
 ENABLE_PREPROCESSING = NO
+HTML_COLORSTYLE   = TOGGLE
+FULL_SIDEBAR      = YES
 CASE_SENSE_NAMES  = NO
-IMAGE_PATH        = .
-INPUT             = index.doc install.doc starting.doc docblocks.doc markdown.doc \
-                    lists.doc grouping.doc formulas.doc tables.doc diagrams.doc preprocessing.doc \
-                    autolink.doc output.doc searching.doc extsearch.doc customize.doc custcmd.doc \
-                    external.doc faq.doc trouble.doc features.doc \
-		    doxygen_usage.doc doxywizard_usage.doc \
-		    config.doc commands.doc htmlcmds.doc xmlcmds.doc emojisup.doc language.doc \
-                    perlmod.doc perlmod_tree.doc arch.doc changelog.doc
-FILE_PATTERNS     = *.cpp *.h *.doc
-EXAMPLE_PATH      = ../examples
+IMAGE_PATH        = . images
+INPUT             = $(INDEX_DOC) install.dox starting.dox docblocks.dox additional.dox \
+					markdown.dox lists.dox grouping.dox formulas.dox tables.dox diagrams.dox preprocessing.dox \
+                    autolink.dox output.dox searching.dox extsearch.dox customize.dox custcmd.dox \
+                    external.dox faq.dox trouble.dox features.dox doxygen_usage.dox doxywizard_usage.dox \
+					config.dox commands.dox htmlcmds.dox xmlcmds.dox emojisup.dox language.dox \
+                    perlmod.dox arch.dox changelog.dox 
+FILE_PATTERNS     = *.cpp *.h
+EXAMPLE_PATH      = ../examples .
 RECURSIVE         = NO
 TAGFILES          =
 ALLEXTERNALS      = NO
-SEARCHENGINE      = NO
+SEARCHENGINE      = YES
 PDF_HYPERLINKS    = YES
 USE_PDFLATEX      = YES
 STRIP_CODE_COMMENTS = NO
-HTML_STYLESHEET   = doxygen_manual.css
-HTML_EXTRA_FILES  = doxygen_logo.gif
-HTML_EXTRA_FILES += doxygen_logo_low.gif
-ALIASES           = LaTeX="\f$\mbox{\LaTeX}\f$"
-ALIASES          += TeX="\f$\mbox{\TeX}\f$"
+HTML_EXTRA_STYLESHEET   = doxygen_manual.css
+HTML_EXTRA_FILES  = doxygen_logo.svg
+HTML_EXTRA_FILES += translator_report.txt
+ALIASES           = LaTeX="\f({\LaTeX}\f)"
+ALIASES          += TeX="\f({\TeX}\f)"
+ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
+ALIASES          += startalign=" \latexonly\noalign{\endlatexonly"
+ALIASES          += endalign=" \latexonly}\endlatexonly"
+ALIASES          += startendhtmltag{1}="\startalign\anchor htmltag_\1 \addindex \"\<\1\>\" ^^ \anchor htmltag_end\1 \addindex \"\</\1\>\"\endalign <tt>\<\1\></tt> / <tt>\</\1\></tt>"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty
 LATEX_EMOJI_DIRECTORY  = ../doc
+WARN_AS_ERROR = FAIL_ON_WARNINGS
+HTML_PROJECT_COOKIE = doxygen_docs

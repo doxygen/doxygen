@@ -64,7 +64,7 @@ public:
  * Backs up the input stream by amount steps. Lexer calls this method if it
  * had already read some characters, but could not use them to match a
  * (longer) token. So, they will be used again as the prefix of the next
- * token and it is the implemetation's responsibility to do this right.
+ * token and it is the implementation's responsibility to do this right.
  */
   virtual inline void backup(int amount) {
     inBuf += amount;
@@ -268,4 +268,4 @@ protected:
 }
 
 #endif
-/* JavaCC - OriginalChecksum=c5b4b2e72393f865547f405cc9def169 (do not edit this line) */
+/* JavaCC - OriginalChecksum=bad90284b44db6b5391a68c8a6a7b893 (do not edit this line) */

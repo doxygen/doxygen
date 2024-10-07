@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="016__copydoc_8c" kind="file" language="C++">
     <compoundname>016_copydoc.c</compoundname>
     <sectiondef kind="func">
@@ -28,7 +28,7 @@
         <argsstring>()</argsstring>
         <name>func_brief</name>
         <briefdescription>
-          <para>Brief description. </para>
+          <para>Brief description.   </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -44,7 +44,7 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-          <para>Detailed description. </para>
+          <para>Detailed description.   </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -56,10 +56,10 @@
         <argsstring>()</argsstring>
         <name>func_doc</name>
         <briefdescription>
-          <para>Brief description. </para>
+          <para>Brief description.   </para>
         </briefdescription>
         <detaileddescription>
-          <para>Detailed description. More text. </para>
+          <para>Detailed description.   More text. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>

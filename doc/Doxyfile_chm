@@ -13,8 +13,16 @@
 @INCLUDE = Doxyfile
       GENERATE_LATEX         = NO
       HTML_OUTPUT            = chm
+      HTML_COPY_CLIPBOARD    = NO
       GENERATE_HTMLHELP      = YES
       GENERATE_TREEVIEW      = NO
+      HTML_DYNAMIC_MENUS     = NO
       HHC_LOCATION           = "$(HTML_HELP_COMPILER)"
       CHM_FILE               = index.chm
       BINARY_TOC             = YES
+      FULL_SIDEBAR           = NO
+      PROJECT_NAME           = "Doxygen"
+      PROJECT_LOGO           =
+      HTML_COLORSTYLE        = LIGHT
+      SEARCHENGINE           = NO
+      HTML_EXTRA_STYLESHEET  = doxygen_manual_chm.css

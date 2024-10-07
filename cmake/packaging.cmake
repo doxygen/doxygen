@@ -1,14 +1,14 @@
 ##### set CPack properties #####
 #
 # Good doc/tutorial/example:
-# - http://www.cmake.org/Wiki/CMake:CPackPackageGenerators
-# - http://www.cmake.org/cmake/help/v3.3/module/CPack.html
-# - http://sourceforge.net/p/klusters/klusters/ci/master/tree/CMakeLists.txt
+# - https://gitlab.kitware.com/cmake/community/-/wikis/doc/cpack/PackageGenerators
+# - https://www.cmake.org/cmake/help/v3.3/module/CPack.html
+# - https://sourceforge.net/p/klusters/klusters/ci/master/tree/CMakeLists.txt
 #
 # This cmake script should generate same packages (deb,rpm) as:
-# - http://mirror.debian.ikoula.com/debian/pool/main/d/doxygen
+# - https://mirror.debian.ikoula.com/debian/pool/main/d/doxygen
 # - http://archive.ubuntu.com/ubuntu/pool/main/d/doxygen (http://old-releases.ubuntu.com/ubuntu/pool/main/d/doxygen)
-# - http://rpmfind.net/linux/rpm2html/search.php?query=doxygen
+# - https://rpmfind.net/linux/rpm2html/search.php?query=doxygen
 
 set(CPACK_STRIP_FILES      ON)
 set(CPACK_PACKAGE_NAME     ${PROJECT_NAME} )
@@ -18,7 +18,8 @@ set(CPACK_PACKAGE_VENDOR   "Dimitri van Heesch")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Generate documentation from C, C++, Java, Python and other languages")
 set(CPACK_PACKAGE_DESCRIPTION "Doxygen is the de facto standard tool for generating documentation from annotated C++ sources.
  But many other popular programming languages are supported:
- C, Objective-C, C#, PHP, Java, Python, Fortran, VHDL, Tcl, D (some extent) and IDL (Corba, Microsoft, and UNO/OpenOffice flavors).
+ C, Objective-C, C#, PHP, Java, Python, Fortran, D (some extent), and IDL (Corba, Microsoft, and UNO/OpenOffice flavors).
+ Doxygen also supports the hardware description language VHDL.
  .
  Three usages:
  .
@@ -42,22 +43,22 @@ set(CPACK_RESOURCE_FILE_README      ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 set(CPACK_RPM_PACKAGE_DESCRIPTION   ${CPACK_PACKAGE_DESCRIPTION})
 set(CPACK_RPM_PACKAGE_LICENSE       "GPLv2")
 set(CPACK_RPM_PACKAGE_GROUP         "Development/Tools")
-set(CPACK_RPM_PACKAGE_URL           "http://doxygen.org/")
+set(CPACK_RPM_PACKAGE_URL           "https://doxygen.org/")
 set(CPACK_RPM_PACKAGE_REQUIRES      "/sbin/chkconfig, /bin/mktemp, /bin/rm, /bin/mv, libstdc++ >= 2.96")
 set(CPACK_RPM_PACKAGE_SUGGESTS      "doxygen-latex, doxygen-doc, doxygen-gui, graphviz, libclang1")
 
 # Variables specific to CPack DEB generator
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION})
 set(CPACK_DEBIAN_PACKAGE_SECTION     "devel")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE    "http://doxygen.org/")
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS   YES) #set(CPACK_DEBIAN_PACKAGE_DEPENDS    "libc6, libclang1-3.6, libgcc1, libsqlite3-0, libstdc++6, libxapian22")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE    "https://doxygen.org/")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS   YES) #set(CPACK_DEBIAN_PACKAGE_DEPENDS    "libc6, libclang1-3.6, libgcc1, libstdc++6, libxapian22")
 set(CPACK_DEBIAN_PACKAGE_SUGGESTS    "doxygen-latex, doxygen-doc, doxygen-gui, graphviz, libclang1")
 set(CPACK_DEBIAN_PACKAGE_CONFLICTS   "graphviz (<< 1.12)")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER  "Matthias Klose <doko@debian.org>")  # Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 
 # Variables specific to CPack NSIS generator
 set(CPACK_NSIS_MUI_ICON         ${CMAKE_CURRENT_SOURCE_DIR}/addon/doxywizard/doxywizard.ico)
-set(CPACK_NSIS_URL_INFO_ABOUT   "http://doxygen.org/")
+set(CPACK_NSIS_URL_INFO_ABOUT   "https://doxygen.org/")
 set(CPACK_NSIS_PACKAGE_NAME     ${PROJECT_NAME})
 
 # Variables specific to CPack DragNDrop generator

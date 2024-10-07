@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -17,10 +17,35 @@
 #define COMMENTSCAN_H
 
 #include <memory>
+#include <stack>
+
 #include "types.h"
+#include "construct.h"
 
 class Entry;
 class OutlineParserInterface;
+
+class GuardedSection
+{
+  public:
+    GuardedSection(bool parentVisible)
+      : m_parentVisible(parentVisible) {}
+    void setEnabled(bool enabled) { m_enabled = enabled; }
+    bool isEnabled() const { return m_enabled; }
+    void setEnabledFound() { m_enabledFound = true; }
+    bool isEnabledFound() const { return m_enabledFound; }
+    bool parentVisible() const { return m_parentVisible; }
+    void setElse() { m_hasElse = true; }
+    bool hasElse() const { return m_hasElse; }
+
+  private:
+    bool m_parentVisible;
+    bool m_enabledFound = false;
+    bool m_enabled = false;
+    bool m_hasElse = false;
+};
+
+using GuardedSectionStack = std::stack<GuardedSection>;
 
 /** @file
  *  @brief Interface for the comment block scanner */
@@ -30,6 +55,7 @@ class CommentScanner
   public:
     CommentScanner();
    ~CommentScanner();
+    NON_COPYABLE(CommentScanner)
 
     /** Invokes the comment block parser with the request to parse a
      *  single comment block.
@@ -60,6 +86,8 @@ class CommentScanner
      *  @param[out] newEntryNeeded Boolean that is TRUE if the comment block parser
      *         finds that a the comment block finishes the entry and a new one
      *         needs to be started.
+     *  @param[in] markdownEnabled Indicates if markdown specific processing should be done.
+     *  @param[inout] guards Tracks nested conditional sections (if,ifnot,..)
      *  @returns TRUE if the comment requires further processing. The
      *         parameter \a newEntryNeeded will typically be true in this case and
      *         \a position will indicate the offset inside the \a comment string
@@ -76,15 +104,17 @@ class CommentScanner
                            bool isInbody,
                            Protection &prot,
                            int &position,
-                           bool &newEntryNeeded
+                           bool &newEntryNeeded,
+                           bool markdownEnabled,
+                           GuardedSectionStack *guards
                           );
     void initGroupInfo(Entry *entry);
-    void enterFile(const char *fileName,int lineNr);
-    void leaveFile(const char *fileName,int lineNr);
-    void enterCompound(const char *fileName,int line,const char *name);
-    void leaveCompound(const char *fileName,int line,const char *name);
-    void open(Entry *e,const char *fileName,int line,bool implicit=false);
-    void close(Entry *e,const char *fileName,int line,bool foundInline,bool implicit=false);
+    void enterFile(const QCString &fileName,int lineNr);
+    void leaveFile(const QCString &fileName,int lineNr);
+    void enterCompound(const QCString &fileName,int line,const QCString &name);
+    void leaveCompound(const QCString &fileName,int line,const QCString &name);
+    void open(Entry *e,const QCString &fileName,int line,bool implicit=false);
+    void close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit=false);
   private:
     struct Private;
     std::unique_ptr<Private> p;

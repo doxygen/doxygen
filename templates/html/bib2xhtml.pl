@@ -58,6 +58,8 @@ sub html_ent {
 	s/\!\`/&iexcl;/g;
 	s/\-\-\-/&mdash;/g;
 	s/([^\!])\-\-([^\>])/$1&ndash;$2/g;
+	s/(CITEREF_[^\!])&ndash;([^\>])/$1--$2/g;
+	s/(CITEREF_[^\!])&mdash;([^\>])/$1---$2/g;
 	s/\\([aA]lpha)\b/&$1;/g;
 	s/\\([bB]eta)\b/&$1;/g;
 	s/\\([gG]amma)\b/&$1;/g;
@@ -118,11 +120,14 @@ sub html_ent {
 	s/\\lfloor\b/&lfloor;/g;
 	s/\\rfloor\b/&rfloor;/g;
 }
+$bdebug = 0;
 foreach (@ARGV) {
   if (/\.bib$/) {
     $bibfile = $_;
     $bibfile =~ s/\.bib$//;
     push(@bibfiles,$bibfile);
+  } elsif ("$_" eq "-d") {
+    $bdebug = 1;
   } else {
     $htmlfile = $_;
   }
@@ -198,7 +203,7 @@ while (<BBLFILE>) {
 	next loop;
     }
     $nentry++;
-    ($bcite, $blabel) = m+<dt><a name=\"([^\"]*)\">\[([^\]]*)\]</a></dt><dd>+;
+    ($bcite, $blabel) = m:<dt><a\s+name=\"([^\"]*)\">\[([^\]]*)\]</a></dt><dd>:;
     $blabel = "$nentry";
     $bibcite{$bcite} = $blabel;
 }
@@ -216,13 +221,14 @@ while (<BBLFILE>) {
     s/\\\{/\002/g;
     s/\\\}/\003/g;
     s/\\\$/\004/g;
+    s/\n  / /g;
     {
 	local ($c, $l, $z) = (0, 0, ());
 	s/([\{\}])/join("","\001",($1 eq "\{" ? $z[$l++]=$c++ : $z[--$l]),$1)/ge;
     }
     s/\%\n//g;
     s/(\.(<\/cite>|<\/a>|\')+)\./$1/g;
-    s:(<dt><a name=\"[^\"]*\">\[)[^\]]*(\]</a></dt><dd>):$1$nentry$2:;
+    s:(<dt><a\s+name=\"[^\"]*\">\[)[^\]]*(\]</a></dt><dd>):$1$nentry$2:;
     while (m/(\\(cite(label)?)(\001\d+)\{([^\001]+)\4\})/) {
 	$old = $1;
 	$cmd = $2;
@@ -315,5 +321,7 @@ close (OHTMLFILE);
 close(HTMLFILE);
 chmod($mode, "$htmlfile$$");
 rename("$htmlfile$$", $htmlfile);
-unlink(@tmpfiles);
+if ($bdebug == 0) {
+  unlink(@tmpfiles);
+}
 exit(0);

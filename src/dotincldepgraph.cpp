@@ -17,113 +17,102 @@
 #include "dotnode.h"
 #include "util.h"
 #include "config.h"
+#include "textstream.h"
 
 void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
 {
-  QList<IncludeInfo> *includeFiles = m_inverse ? fd->includedByFileList() : fd->includeFileList();
-  if (includeFiles)
+  const IncludeInfoList &includeFiles = m_inverse ? fd->includedByFileList() : fd->includeFileList();
+  for (const auto &ii : includeFiles)
   {
-    QListIterator<IncludeInfo> ili(*includeFiles);
-    IncludeInfo *ii;
-    for (;(ii=ili.current());++ili)
+    const FileDef *bfd = ii.fileDef;
+    QCString in = ii.includeName;
+    //printf(">>>> in='%s' bfd=%p\n",qPrint(ii->includeName),bfd);
+    bool doc=TRUE,src=FALSE;
+    if (bfd)
     {
-      const FileDef *bfd = ii->fileDef;
-      QCString in = ii->includeName;
-      //printf(">>>> in='%s' bfd=%p\n",ii->includeName.data(),bfd);
-      bool doc=TRUE,src=FALSE;
-      if (bfd)
+      in  = bfd->absFilePath();
+      doc = bfd->isLinkable() && !bfd->isHidden();
+      src = bfd->generateSourceFile();
+    }
+    if (doc || src || !Config_getBool(HIDE_UNDOC_RELATIONS))
+    {
+      QCString url="";
+      if (bfd) url=bfd->getOutputFileBase();
+      if (!doc && src)
       {
-        in  = bfd->absFilePath();
-        doc = bfd->isLinkable() && !bfd->isHidden();
-        src = bfd->generateSourceFile();
+        url=bfd->getSourceFileBase();
       }
-      if (doc || src || !Config_getBool(HIDE_UNDOC_RELATIONS))
+      auto it = m_usedNodes.find(in.str());
+      if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
-        QCString url="";
-        if (bfd) url=bfd->getOutputFileBase().copy();
-        if (!doc && src)
+        DotNode *bn = it->second;
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
+        bn->addParent(n);
+        bn->setDistance(distance);
+      }
+      else
+      {
+        QCString tmp_url;
+        QCString tooltip;
+        if (bfd)
         {
-          url=bfd->getSourceFileBase();
+          tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
+          tooltip = bfd->briefDescriptionAsTooltip();
         }
-        DotNode *bn = m_usedNodes->find(in);
-        if (bn) // file is already a node in the graph
-        {
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
-        }
-        else
-        {
-          QCString tmp_url;
-          QCString tooltip;
-          if (bfd)
-          {
-            tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
-            tooltip = bfd->briefDescriptionAsTooltip();
-          }
-          bn = new DotNode(getNextNodeNumber(),// n
-                           ii->includeName,   // label
-                           tooltip,           // tip
-                           tmp_url,           // url
-                           FALSE,             // rootNode
-                           0);                // cd
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          m_usedNodes->insert(in,bn);
-          bn->setDistance(distance);
+        DotNode *bn = new DotNode(this,
+                         ii.includeName,   // label
+                         tooltip,           // tip
+                         tmp_url,           // url
+                         FALSE,             // rootNode
+                         nullptr);                // cd
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
+        bn->addParent(n);
+        m_usedNodes.emplace(in.str(),bn);
+        bn->setDistance(distance);
 
-          if (bfd) buildGraph(bn,bfd,distance+1);
-        }
+        if (bfd) buildGraph(bn,bfd,distance+1);
       }
     }
   }
 }
 
-void DotInclDepGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
+void DotInclDepGraph::determineVisibleNodes(DotNodeDeque &queue, int &maxNodes)
 {
-  while (queue.count()>0 && maxNodes>0)
+  while (!queue.empty() && maxNodes>0)
   {
-    DotNode *n = queue.take(0);
+    DotNode *n = queue.front();
+    queue.pop_front();
     if (!n->isVisible() && n->distance()<=Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
     {
       n->markAsVisible();
       maxNodes--;
       // add direct children
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        const DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          queue.append(dn);
-        }
+        queue.push_back(dn);
       }
     }
   }
 }
 
-void DotInclDepGraph::determineTruncatedNodes(QList<DotNode> &queue)
+void DotInclDepGraph::determineTruncatedNodes(DotNodeDeque &queue)
 {
-  while (queue.count()>0)
+  while (!queue.empty())
   {
-    DotNode *n = queue.take(0);
+    DotNode *n = queue.front();
+    queue.pop_front();
     if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
     {
       bool truncated = FALSE;
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        const DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
+        if (!dn->isVisible())
         {
-          if (!dn->isVisible())
-          {
-            truncated = TRUE;
-          }
-          else
-          {
-            queue.append(dn);
-          }
+          truncated = TRUE;
+        }
+        else
+        {
+          queue.push_back(dn);
         }
       }
       n->markAsTruncated(truncated);
@@ -134,34 +123,32 @@ void DotInclDepGraph::determineTruncatedNodes(QList<DotNode> &queue)
 DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
 {
   m_inverse = inverse;
-  ASSERT(fd!=0);
+  ASSERT(fd!=nullptr);
   m_inclDepFileName   = fd->includeDependencyGraphFileName();
   m_inclByDepFileName = fd->includedByDependencyGraphFileName();
   QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
   QCString tooltip = fd->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(getNextNodeNumber(),
+  m_startNode = new DotNode(this,
                             fd->docName(),
                             tooltip,
-                            tmp_url.data(),
+                            tmp_url,
                             TRUE);    // root node
   m_startNode->setDistance(0);
-  m_usedNodes = new QDict<DotNode>(1009);
-  m_usedNodes->insert(fd->absFilePath(),m_startNode);
+  m_usedNodes.emplace(fd->absFilePath().str(),m_startNode);
   buildGraph(m_startNode,fd,1);
 
   int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
-  QList<DotNode> openNodeQueue;
-  openNodeQueue.append(m_startNode);
+  DotNodeDeque openNodeQueue;
+  openNodeQueue.push_back(m_startNode);
   determineVisibleNodes(openNodeQueue,maxNodes);
   openNodeQueue.clear();
-  openNodeQueue.append(m_startNode);
+  openNodeQueue.push_back(m_startNode);
   determineTruncatedNodes(openNodeQueue);
 }
 
 DotInclDepGraph::~DotInclDepGraph()
 {
   DotNode::deleteNodes(m_startNode);
-  delete m_usedNodes;
 }
 
 QCString DotInclDepGraph::getBaseName() const
@@ -178,7 +165,7 @@ QCString DotInclDepGraph::getBaseName() const
 
 void DotInclDepGraph::computeTheGraph()
 {
-  computeGraph(m_startNode, Dependency, m_graphFormat, "", FALSE,
+  computeGraph(m_startNode, GraphType::Dependency, m_graphFormat, "", FALSE,
                m_inverse, m_startNode->label(), m_theGraph);
 }
 
@@ -194,12 +181,12 @@ QCString DotInclDepGraph::getMapLabel() const
   }
 }
 
-QCString DotInclDepGraph::writeGraph(FTextStream &out,
+QCString DotInclDepGraph::writeGraph(TextStream &out,
                                      GraphOutputFormat graphFormat,
                                      EmbeddedOutputFormat textFormat,
-                                     const char *path,
-                                     const char *fileName,
-                                     const char *relPath,
+                                     const QCString &path,
+                                     const QCString &fileName,
+                                     const QCString &relPath,
                                      bool generateImageMap,
                                      int graphId)
 {
@@ -208,7 +195,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
 
 bool DotInclDepGraph::isTrivial() const
 {
-  return m_startNode->children()==0;
+  return m_startNode->children().empty();
 }
 
 bool DotInclDepGraph::isTooBig() const
@@ -218,24 +205,20 @@ bool DotInclDepGraph::isTooBig() const
 
 int DotInclDepGraph::numNodes() const
 {
-  return m_startNode->children() ? m_startNode->children()->count() : 0;
+  return static_cast<int>(m_startNode->children().size());
 }
 
-void DotInclDepGraph::writeXML(FTextStream &t)
+void DotInclDepGraph::writeXML(TextStream &t)
 {
-  QDictIterator<DotNode> dni(*m_usedNodes);
-  DotNode *node;
-  for (;(node=dni.current());++dni)
+  for (const auto &[name,node] : m_usedNodes)
   {
     node->writeXML(t,FALSE);
   }
 }
 
-void DotInclDepGraph::writeDocbook(FTextStream &t)
+void DotInclDepGraph::writeDocbook(TextStream &t)
 {
-  QDictIterator<DotNode> dni(*m_usedNodes);
-  DotNode *node;
-  for (;(node=dni.current());++dni)
+  for (const auto &[name,node] : m_usedNodes)
   {
     node->writeDocbook(t,FALSE);
   }

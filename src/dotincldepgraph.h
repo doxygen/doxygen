@@ -16,42 +16,51 @@
 #ifndef DOTINCLDEPGRAPH_H
 #define DOTINCLDEPGRAPH_H
 
+#include <memory>
+
 #include "qcstring.h"
 #include "filedef.h"
 
+#include "dotnode.h"
 #include "dotgraph.h"
+
+class TextStream;
 
 /** Representation of an include dependency graph */
 class DotInclDepGraph : public DotGraph
 {
   public:
     DotInclDepGraph(const FileDef *fd,bool inverse);
-    ~DotInclDepGraph();
-    QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
-                        const char *path,const char *fileName,const char *relPath,
+    ~DotInclDepGraph() override;
+    NON_COPYABLE(DotInclDepGraph)
+
+    QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+                        const QCString &path,const QCString &fileName,const QCString &relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;
-    void writeXML(FTextStream &t);
-    void writeDocbook(FTextStream &t);
+    void writeXML(TextStream &t);
+    void writeDocbook(TextStream &t);
 
   protected:
-    virtual QCString getBaseName() const;
-    virtual QCString getMapLabel() const;
-    virtual void computeTheGraph();
+    QCString getBaseName() const override;
+    QCString getMapLabel() const override;
+    void computeTheGraph() override;
 
   private:
     QCString diskName() const;
     void buildGraph(DotNode *n,const FileDef *fd,int distance);
-    void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes);
-    void determineTruncatedNodes(QList<DotNode> &queue);
+    void determineVisibleNodes(DotNodeDeque &queue,int &maxNodes);
+    void determineTruncatedNodes(DotNodeDeque &queue);
 
     DotNode        *m_startNode;
-    QDict<DotNode> *m_usedNodes;
+    DotNodeMap      m_usedNodes;
     QCString        m_inclDepFileName;
     QCString        m_inclByDepFileName;
     bool            m_inverse;
 };
+
+using DotInclDepGraphPtr = std::shared_ptr<DotInclDepGraph>;
 
 #endif

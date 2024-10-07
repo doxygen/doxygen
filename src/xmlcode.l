@@ -1,10 +1,10 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,6 +19,18 @@
 
 %option never-interactive
 %option prefix="xmlcodeYY"
+%option reentrant
+%option extra-type="struct xmlcodeYY_state *"
+%option noyy_top_state
+%option nounput
+%option noyywrap
+%top{
+#include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
+}
 
 %{
 
@@ -36,201 +48,65 @@
 #include "filedef.h"
 #include "tooltip.h"
 #include "message.h"
+#include "debug.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-static CodeOutputInterface * g_code;
-static QCString      g_curClassName;
-static QCString      g_parmType;
-static QCString      g_parmName;
-static const char *  g_inputString;     //!< the code fragment as text
-static int           g_inputPosition;   //!< read offset during parsing 
-static int           g_inputLines;      //!< number of line in the code fragment
-static int           g_yyLineNr;        //!< current line number
-static bool          g_needsTermination;
-static const Definition   *g_searchCtx;
-
-static bool          g_exampleBlock;
-static QCString      g_exampleName;
-static QCString      g_exampleFile;
-
-static QCString      g_type;
-static QCString      g_name;
-static QCString      g_args;
-static QCString      g_classScope;
-   
-static QCString      g_CurrScope;
-   
-static FileDef *     g_sourceFileDef;
-static Definition *  g_currentDefinition;
-static MemberDef *   g_currentMemberDef;
-static bool          g_includeCodeFragment;
-static const char *  g_currentFontClass;
-
-static const char *stateToString(int state);
-
-static void codify(const char* text) 
-{ 
-  g_code->codify(text);
-}
-
-static void setCurrentDoc(const QCString &anchor)
+struct xmlcodeYY_state
 {
-  if (Doxygen::searchIndex)
-  {
-    if (g_searchCtx)
-    {
-      Doxygen::searchIndex->setCurrentDoc(g_searchCtx,g_searchCtx->anchor(),FALSE);
-    }
-    else
-    {
-      Doxygen::searchIndex->setCurrentDoc(g_sourceFileDef,anchor,TRUE);
-    }
-  }
-}
+  OutputCodeList * code;
+  QCString      curClassName;
+  QCString      parmType;
+  QCString      parmName;
+  const char *  inputString = nullptr;     //!< the code fragment as text
+  int           inputPosition = 0;   //!< read offset during parsing
+  QCString      fileName;
+  int           inputLines = 0;      //!< number of line in the code fragment
+  int           yyLineNr = 0;        //!< current line number
+  bool          insideCodeLine = false;
+  const Definition   *searchCtx = nullptr;
 
-/*! start a new line of code, inserting a line number if g_sourceFileDef
- * is TRUE. If a definition starts at the current line, then the line
- * number is linked to the documentation of that definition.
- */
-static void startCodeLine()
-{
-  if (g_sourceFileDef)
-  {   
-    Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
-    
-    if (!g_includeCodeFragment && d && d->isLinkableInProject())
-    {
-      g_currentDefinition = d;
-      g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
-      //g_insideBody = FALSE;
-      g_classScope = d->name().copy();
-      QCString lineAnchor;
-      lineAnchor.sprintf("l%05d",g_yyLineNr);
-      if (g_currentMemberDef)
-      {
-        g_code->writeLineNumber(g_currentMemberDef->getReference(),
-                            g_currentMemberDef->getOutputFileBase(),
-                            g_currentMemberDef->anchor(),g_yyLineNr);
-        setCurrentDoc(lineAnchor);
-      }
-      else
-      {
-        g_code->writeLineNumber(d->getReference(),
-                            d->getOutputFileBase(),
-                            0,g_yyLineNr);
-        setCurrentDoc(lineAnchor);
-      }
-    }
-    else
-    {
-      g_code->writeLineNumber(0,0,0,g_yyLineNr);
-    }
-  }
-  
-  g_code->startCodeLine(g_sourceFileDef);
-  
-  if (g_currentFontClass)
-  {
-    g_code->startFontClass(g_currentFontClass);
-  }
-}
+  bool          stripCodeComments = true;
+  bool          exampleBlock = false;
+  QCString      exampleName;
+  QCString      exampleFile;
 
-static void endFontClass()
-{
-  if (g_currentFontClass)
-  {
-    g_code->endFontClass();
-    g_currentFontClass=0;
-  }
-}
+  QCString      type;
+  QCString      name;
+  QCString      args;
+  QCString      classScope;
 
-static void endCodeLine()
-{
-  endFontClass();
-  g_code->endCodeLine();
-}
+  QCString      CurrScope;
 
-static void nextCodeLine()
-{
-  const char *fc = g_currentFontClass;
-  endCodeLine();
-  if (g_yyLineNr<g_inputLines) 
-  {
-    g_currentFontClass = fc;
-    startCodeLine();
-  }
-}
+  std::unique_ptr<FileDef> exampleFileDef;
+  const FileDef *     sourceFileDef = nullptr;
+  const Definition *  currentDefinition = nullptr;
+  const MemberDef *   currentMemberDef = nullptr;
+  bool          includeCodeFragment = false;
+  const char *  currentFontClass = nullptr;
+};
 
-static void codifyLines(char *text)
-{
-  char *p=text,*sp=p;
-  char c;
-  bool done=FALSE;
-  
-  while (!done)
-  {
-    sp=p;
-    
-    while ((c=*p++) && c!='\n') { }
-    
-    if (c=='\n')
-    {
-      g_yyLineNr++;
-      *(p-1)='\0';
-      g_code->codify(sp);
-      nextCodeLine();
-    }
-    else
-    {
-      g_code->codify(sp);
-      done=TRUE;
-    }
-  }
-}
+[[maybe_unused]] static const char *stateToString(int state);
 
-static void startFontClass(const char *s)
-{
-  endFontClass();
-  g_code->startFontClass(s);
-  g_currentFontClass=s;
-}
-
-/*! counts the number of lines in the input */
-static int countLines()
-{
-  const char *p=g_inputString;
-  char c;
-  int count=1;
-  while ((c=*p)) 
-  { 
-    p++ ; 
-    if (c=='\n') count++;  
-  }
-  if (p>g_inputString && *(p-1)!='\n') 
-  { // last line does not end with a \n, so we add an extra
-    // line and explicitly terminate the line after parsing.
-    count++, 
-    g_needsTermination=TRUE; 
-  } 
-  return count;
-}
+static void codify(yyscan_t yyscanner,const char* text);
+static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
+static void startCodeLine(yyscan_t yyscanner);
+static void endFontClass(yyscan_t yyscanner);
+static void endCodeLine(yyscan_t yyscanner);
+static void nextCodeLine(yyscan_t yyscanner);
+static void codifyLines(yyscan_t yyscanner,const char *text);
+static void startFontClass(yyscan_t yyscanner,const char *s);
+static int  countLines(yyscan_t yyscanner);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
 #undef YY_INPUT
-#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
+#define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
-static int yyread(char *buf,int max_size)
-{
-  int c=0;
-  while( c < max_size && g_inputString[g_inputPosition] )
-  {
-    *buf = g_inputString[g_inputPosition++] ;
-    c++; buf++;
-  }
-  return c;
-}
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -243,65 +119,71 @@ namechar    [:A-Za-z\200-\377_0-9.-]
 esc         "&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
 name        {namestart}{namechar}*
 comment     {open}"!--"([^-]|"-"[^-])*"--"{close}
+cdata       {open}"![CDATA["([^\]]|"\]"[^\]])*"]]"{close}
 data        "random string"
-string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
- 
+string      \"([^\"&]|{esc})*\"|\'([^'&]|{esc})*\'
+
 %option noyywrap
 %option nounput
 
 %%
 
 <INITIAL>{ws}       {
-                        codifyLines(yytext);
+                        codifyLines(yyscanner,yytext);
                     }
 <INITIAL>"/"        {
-                        endFontClass();
-                        codify(yytext);
+                        endFontClass(yyscanner);
+                        codify(yyscanner,yytext);
                     }
 <INITIAL>"="        {
-                        endFontClass();
-                        codify(yytext);
+                        endFontClass(yyscanner);
+                        codify(yyscanner,yytext);
                     }
 <INITIAL>{close}    {
-                        endFontClass();
-                        codify(yytext);
+                        endFontClass(yyscanner);
+                        codify(yyscanner,yytext);
                     }
 <INITIAL>{name}     {
-                        startFontClass("keyword");
-                        codify(yytext);
-                        endFontClass();
+                        startFontClass(yyscanner,"keyword");
+                        codify(yyscanner,yytext);
+                        endFontClass(yyscanner);
                     }
 <INITIAL>{string}   {
-                        startFontClass("stringliteral");
-                        codifyLines(yytext);
-                        endFontClass();
+                        startFontClass(yyscanner,"stringliteral");
+                        codifyLines(yyscanner,yytext);
+                        endFontClass(yyscanner);
                     }
-                    
+{cdata}             {
+                        startFontClass(yyscanner,"xmlcdata");
+                        codifyLines(yyscanner,yytext);
+                        endFontClass(yyscanner);
+                    }
+
 {open}{ws}?{name}   {
                         // Write the < in a different color
                         char openBracket[] = { yytext[0], '\0' };
-                        codify(openBracket);
-                        
+                        codify(yyscanner,openBracket);
+
                         // Then write the rest
                         yytext++;
-                        startFontClass("keywordtype");
-                        codify(yytext);
-                        endFontClass();
-                        
+                        startFontClass(yyscanner,"keywordtype");
+                        codify(yyscanner,yytext);
+                        endFontClass(yyscanner);
+
                         BEGIN(INITIAL);
                     }
 {open}{ws}?"/"{name} {
                         // Write the "</" in a different color
                         char closeBracket[] = { yytext[0], yytext[1], '\0' };
-                        endFontClass();
-                        codify(closeBracket);
-                        
+                        endFontClass(yyscanner);
+                        codify(yyscanner,closeBracket);
+
                         // Then write the rest
                         yytext++; // skip the '<'
                         yytext++; // skip the '/'
-                        startFontClass("keywordtype");
-                        codify(yytext);
-                        endFontClass();
+                        startFontClass(yyscanner,"keywordtype");
+                        codify(yyscanner,yytext);
+                        endFontClass(yyscanner);
 
                         BEGIN(INITIAL);
                     }
@@ -310,129 +192,306 @@ string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
                         // yytext++; // <
                         // *yytext = '<'; // replace '!' with '<'
 
-                        startFontClass("comment");
-                        codifyLines(yytext);
-                        endFontClass();
+                        startFontClass(yyscanner,"comment");
+                        codifyLines(yyscanner,yytext);
+                        endFontClass(yyscanner);
                     }
 {nl}                {
-                        codifyLines(yytext);
+                        codifyLines(yyscanner,yytext);
                     }
 
 .                   {
                         //printf("!ERROR(%c)\n", *yytext);
-                        codifyLines(yytext);
+                        codifyLines(yyscanner,yytext);
                     }
 
 %%
 
-void parseXmlCode(
-    CodeOutputInterface &od,
-    const char * /*className*/,
-    const QCString &s,
-    bool exBlock,
-    const char *exName,
-    FileDef *fd,
-    int startLine,
-    int endLine,
-    bool inlineFragment,
-    const MemberDef *,
-    bool,const Definition *searchCtx,
-    bool /*collectXRefs*/
-    ) 
-{  
-  if (s.isEmpty()) return;
-  printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
-  
-  g_code = &od;
-  g_inputString   = s;
-  g_inputPosition = 0;
-  g_currentFontClass = 0;
-  g_needsTermination = FALSE;
-  g_searchCtx=searchCtx;
-  
-  if (startLine!=-1)
-    g_yyLineNr    = startLine;
-  else
-    g_yyLineNr    = 1;
-  
-  if (endLine!=-1)
-    g_inputLines  = endLine+1;
-  else
-    g_inputLines  = g_yyLineNr + countLines() - 1;
-  
-  g_exampleBlock  = exBlock; 
-  g_exampleName   = exName;
-  g_sourceFileDef = fd;
+//----------------------------------------------------------------------------------------
 
-  bool cleanupSourceDef = FALSE;
-  
-  if (exBlock && fd==0)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  int inputPosition = yyextra->inputPosition;
+  const char *s = yyextra->inputString + inputPosition;
+  int c=0;
+  while( c < max_size && *s)
   {
-    // create a dummy filedef for the example
-    g_sourceFileDef = createFileDef("",(exName?exName:"generated"));
-    cleanupSourceDef = TRUE;
+    *buf++ = *s++;
+    c++;
   }
-  
-  if (g_sourceFileDef) 
-  {
-    setCurrentDoc("l00001");
-  }
-
-  g_includeCodeFragment = inlineFragment;
-  // Starts line 1 on the output  
-  startCodeLine();
-
-  xmlcodeYYrestart( xmlcodeYYin );
-
-  xmlcodeYYlex();
-
-  if (g_needsTermination)
-  {
-    endCodeLine();
-  }
-  if (cleanupSourceDef)
-  {
-    // delete the temporary file definition used for this example
-    delete g_sourceFileDef;
-    g_sourceFileDef=0;
-  }
-  
-  printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
-  return;
+  yyextra->inputPosition += c;
+  return c;
 }
 
-void resetXmlCodeParserState() 
+static void codify(yyscan_t yyscanner,const char* text)
 {
-  g_currentDefinition = 0;
-  g_currentMemberDef = 0;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->code->codify(text);
 }
 
-//----------------------------------------------------------------------------
-
-void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const char *scopeName,
-               const QCString &input,
-               SrcLangExt,
-               bool isExampleBlock,
-               const char *exampleName,
-               FileDef *fileDef,
-               int startLine,
-               int endLine,
-               bool inlineFragment,
-               const MemberDef *memberDef,
-               bool showLineNumbers,
-               const Definition *searchCtx,
-               bool collectXRefs
-              )
+static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
 {
-  parseXmlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-                fileDef,startLine,endLine,inlineFragment,memberDef,
-                showLineNumbers,searchCtx,collectXRefs);
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (Doxygen::searchIndex.enabled())
+  {
+    if (yyextra->searchCtx)
+    {
+      Doxygen::searchIndex.setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+    }
+    else
+    {
+      Doxygen::searchIndex.setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+    }
+  }
+}
+
+/*! start a new line of code, inserting a line number if yyextra->sourceFileDef
+ * is true. If a definition starts at the current line, then the line
+ * number is linked to the documentation of that definition.
+ */
+static void startCodeLine(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->sourceFileDef)
+  {
+    const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
+
+    if (!yyextra->includeCodeFragment && d && d->isLinkableInProject())
+    {
+      yyextra->currentDefinition = d;
+      yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
+      //yyextra->insideBody = false;
+      yyextra->classScope = d->name();
+      QCString lineAnchor;
+      lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
+      if (yyextra->currentMemberDef)
+      {
+        yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
+                            yyextra->currentMemberDef->getOutputFileBase(),
+                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
+        setCurrentDoc(yyscanner,lineAnchor);
+      }
+      else
+      {
+        yyextra->code->writeLineNumber(d->getReference(),
+                            d->getOutputFileBase(),
+                            QCString(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
+        setCurrentDoc(yyscanner,lineAnchor);
+      }
+    }
+    else
+    {
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
+    }
+  }
+
+  yyextra->code->startCodeLine(yyextra->yyLineNr);
+  yyextra->insideCodeLine = true;
+
+  if (yyextra->currentFontClass)
+  {
+    yyextra->code->startFontClass(yyextra->currentFontClass);
+  }
+}
+
+static void endFontClass(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->currentFontClass)
+  {
+    yyextra->code->endFontClass();
+    yyextra->currentFontClass=0;
+  }
+}
+
+static void endCodeLine(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  endFontClass(yyscanner);
+  yyextra->code->endCodeLine();
+  yyextra->insideCodeLine = false;
+}
+
+static void nextCodeLine(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  const char *fc = yyextra->currentFontClass;
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
+  if (yyextra->yyLineNr<yyextra->inputLines)
+  {
+    yyextra->currentFontClass = fc;
+    startCodeLine(yyscanner);
+  }
+}
+
+static void codifyLines(yyscan_t yyscanner,const char *text)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  const char *p=text,*sp=p;
+  char c;
+  bool done=false;
+  while (!done)
+  {
+    sp=p;
+    while ((c=*p++) && c!='\n') { }
+    if (c=='\n')
+    {
+      yyextra->yyLineNr++;
+      size_t l = static_cast<size_t>(p-sp-1);
+      std::string tmp(sp,l);
+      yyextra->code->codify(tmp.c_str());
+      nextCodeLine(yyscanner);
+    }
+    else
+    {
+      yyextra->code->codify(sp);
+      done=true;
+    }
+  }
+}
+
+static void startFontClass(yyscan_t yyscanner,const char *s)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  endFontClass(yyscanner);
+  yyextra->code->startFontClass(s);
+  yyextra->currentFontClass=s;
+}
+
+/*! counts the number of lines in the input */
+static int countLines(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  const char *p=yyextra->inputString;
+  char c;
+  int count=1;
+  while ((c=*p))
+  {
+    p++ ;
+    if (c=='\n') count++;
+  }
+  if (p>yyextra->inputString && *(p-1)!='\n')
+  { // last line does not end with a \n, so we add an extra
+    // line and explicitly terminate the line after parsing.
+    count++;
+  }
+  return count;
+}
+
+//----------------------------------------------------------------------------------------
+
+struct XMLCodeParser::Private
+{
+  yyscan_t yyscanner;
+  xmlcodeYY_state state;
+};
+
+XMLCodeParser::XMLCodeParser() : p(std::make_unique<Private>())
+{
+  xmlcodeYYlex_init_extra(&p->state,&p->yyscanner);
+#ifdef FLEX_DEBUG
+  xmlcodeYYset_debug(Debug::isFlagSet(Debug::Lex_xmlcode)?1:0,p->yyscanner);
+#endif
+  resetCodeParserState();
+}
+
+XMLCodeParser::~XMLCodeParser()
+{
+  xmlcodeYYlex_destroy(p->yyscanner);
 }
 
 void XMLCodeParser::resetCodeParserState()
 {
-  resetXmlCodeParserState();
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->currentDefinition = nullptr;
+  yyextra->currentMemberDef = nullptr;
 }
+
+void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
+               const QCString &/* scopeName */,
+               const QCString &input,
+               SrcLangExt,
+               bool stripCodeComments,
+               bool isExampleBlock,
+               const QCString &exampleName,
+               const FileDef *fileDef,
+               int startLine,
+               int endLine,
+               bool inlineFragment,
+               const MemberDef * /* memberDef */,
+               bool /* showLineNumbers */,
+               const Definition *searchCtx,
+               bool/* collectXRefs */ 
+              )
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+
+  if (input.isEmpty()) return;
+
+  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
+
+  yyextra->code = &codeOutIntf;
+  yyextra->inputString   = input.data();
+  yyextra->inputPosition = 0;
+  yyextra->currentFontClass = nullptr;
+  yyextra->insideCodeLine = false;
+  yyextra->searchCtx = searchCtx;
+
+  if (startLine!=-1)
+    yyextra->yyLineNr    = startLine;
+  else
+    yyextra->yyLineNr    = 1;
+
+  if (endLine!=-1)
+    yyextra->inputLines  = endLine+1;
+  else
+    yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
+
+  yyextra->stripCodeComments = stripCodeComments;
+  yyextra->exampleBlock  = isExampleBlock;
+  yyextra->exampleName   = exampleName;
+  yyextra->sourceFileDef = fileDef;
+
+  if (isExampleBlock && fileDef==0)
+  {
+    // create a dummy filedef for the example
+    yyextra->exampleFileDef = createFileDef("",(!exampleName.isEmpty()?exampleName:QCString("generated")));
+    yyextra->sourceFileDef = yyextra->exampleFileDef.get();
+  }
+
+  if (yyextra->sourceFileDef)
+  {
+    setCurrentDoc(yyscanner,"l00001");
+  }
+
+  yyextra->includeCodeFragment = inlineFragment;
+  // Starts line 1 on the output
+  startCodeLine(yyscanner);
+
+  xmlcodeYYrestart( nullptr, yyscanner );
+
+  xmlcodeYYlex(yyscanner);
+
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
+  if (yyextra->exampleFileDef)
+  {
+    // delete the temporary file definition used for this example
+    yyextra->exampleFileDef.reset();
+    yyextra->sourceFileDef=nullptr;
+  }
+}
+
 
 #include "xmlcode.l.h"

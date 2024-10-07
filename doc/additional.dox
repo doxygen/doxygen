@@ -1,0 +1,128 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page additional Additional Documentation
+\tableofcontents{html,latex}
+
+\section custom_pages Custom Pages
+
+Doxygen can be also be used to create custom pages that are not part of the API of your library/program.
+The purpose of such pages is to enrich your documentation with anything else that you think the user may find useful.
+
+To create custom pages, use one of the supported file extension: `.dox`, `.txt`, or `.md`.
+Doxygen will treat a .dox or .txt file as a C/C++ source file, and a .md file as a Markdown file.
+
+For a .dox or .txt file, one can use a single Doxygen comment, like so:
+
+\c manual/index.dox
+\code
+/** \mainpage My Library Manual
+- Building
+- Basics
+- Examples
+*/
+\endcode
+
+You'll note that the \ref cmdmainpage "\\mainpage" command was used, which tells Doxygen to use this page as, well, the main page.
+For other pages, prefix them with the \ref cmdpage "\\page" command.
+
+By default Doxygen will not know about these custom files, so we'll need to let it know through the `INPUT` attribute in our
+Doxyfile. For the about example add this line to your Doxyfile:
+
+\code
+INPUT  = manual/index.dox
+\endcode
+
+Next, we may want to add the instructions on how to build the project, so we create `manual/building/index.dox`.
+As you read a bit more of the documentation, you will find out that Doxygen supports a
+subset of the \ref htmlcmds "HTML" tags, so we can write the following:
+
+\code
+/** \page Building
+
+<h2>Linux</h2>
+<p>
+  A simple way to build this project is with cmake, clone the repository, cd into the root of the project and run:
+</p>
+
+<pre>
+  <code>
+    mkdir my_build
+    cmake -S . -B my_build
+    cd my_build
+    cmake --build .
+  </code>
+</pre>
+
+*/
+\endcode
+
+But you can of course also do the same using the popular \ref markdown "Markdown" notation:
+
+\verbatim
+# Building
+
+## Linux
+
+A simple way to build this project is with cmake, clone the repository,
+cd into the root of the project and run:
+
+    mkdir my_build
+    cmake -S . -B my_build
+    cd my_build
+    cmake --build .
+\endverbatim
+
+\section scaling Scaling Up
+
+\subsection automatically_adding_files Automatically Adding Files
+
+At this point we could now go ahead and add `manual/building/index.dox` to our INPUT's with comma separation,
+but this might become annoying over time as we build up our manual, instead we'll just change it reference our manual folder:
+
+\code
+INPUT                  = manual/
+\endcode
+
+And set 
+
+\code
+RECURSIVE              = YES
+\endcode
+
+To make sure as we add any subdirectories of the manual as we create more organization and content.
+
+\subsection treeview Side Panel Treeview
+
+As your manual scales up, you might want to also have a nice tree view to show you where you are in the manual to stay organized.
+This is easy enough to set up, turn it on with
+
+\code
+GENERATE_TREEVIEW      = YES
+\endcode
+
+In your `Doxyfile`.
+
+You'll recall that our \c manual/index.dox file is pretty bland, without any links pointing anywhere,
+by using the \ref cmdref "\\ref" command we can add links between various topics, and doing so will automatically
+start to populate our treeview.
+
+If you notice that your tree is more like a pile of leaves then you can remedy this by checking
+out \ref subpaging.
+
+This discussion should give you some direction on how to build a scalable manual to enrich your documentation,
+from here you might want to customize your \ref layout "layout".
+
+*/
+

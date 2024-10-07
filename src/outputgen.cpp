@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,63 +15,47 @@
  *
  */
 
+#include <stdexcept>
+
 #include <stdlib.h>
 
-#include <qfile.h>
-
+#include "doxygen.h"
 #include "outputgen.h"
 #include "message.h"
 #include "portable.h"
 
-OutputGenerator::OutputGenerator()
+OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
-  m_file=0;
-  m_active=TRUE;
-  m_genStack = new QStack<bool>;
-  m_genStack->setAutoDelete(TRUE);
 }
 
-OutputGenerator::~OutputGenerator()
+void OutputGenerator::startPlainFile(const QCString &name)
 {
-  //printf("OutputGenerator::~OutputGenerator()\n");
-  delete m_file;
-  delete m_genStack;
-}
-
-void OutputGenerator::startPlainFile(const char *name)
-{
-  //printf("startPlainFile(%s)\n",name);
+  //printf("startPlainFile(%s)\n",qPrint(name));
   m_fileName=m_dir+"/"+name;
-  m_file = new QFile(m_fileName);
-  if (!m_file->open(IO_WriteOnly))
+  m_file = Portable::fopen(m_fileName.data(),"wb");
+  if (m_file==nullptr)
   {
-    term("Could not open file %s for writing\n",m_fileName.data());
+    term("Could not open file %s for writing\n",qPrint(m_fileName));
   }
-  t.setDevice(m_file);
+  m_t.setFile(m_file);
 }
 
 void OutputGenerator::endPlainFile()
 {
-  t.unsetDevice();
-  delete m_file;
-  m_file=0;
-  m_fileName.resize(0);
+  m_t.flush();
+  m_t.setStream(nullptr);
+  Portable::fclose(m_file);
+  m_fileName.clear();
 }
 
-void OutputGenerator::pushGeneratorState()
+QCString OutputGenerator::dir() const
 {
-  m_genStack->push(new bool(isEnabled()));
-  //printf("%p:pushGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
+  return m_dir;
 }
 
-void OutputGenerator::popGeneratorState()
+QCString OutputGenerator::fileName() const
 {
-  //printf("%p:popGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
-  bool *lb = m_genStack->pop();
-  ASSERT(lb!=0);
-  if (lb==0) return; // for some robustness against superfluous \endhtmlonly commands.
-  if (*lb) enable(); else disable();
-  delete lb;
+  return m_fileName;
 }
 

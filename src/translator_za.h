@@ -38,7 +38,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
-    virtual QCString idLanguage()
+    QCString idLanguage() override
     { return "afrikaans"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
@@ -55,41 +55,51 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      * The Afrikaans LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
-    virtual QCString latexLanguageSupportCommand()
+    QCString latexLanguageSupportCommand() override
     {
-      //should we use return "\\usepackage[afrikaans]{babel}\n";
-      // not sure - for now return an empty string
-      return "";
+      return "\\usepackage[afrikaans]{babel}\n";
+    }
+    QCString trISOLang() override
+    {
+      return "af";
+    }
+    QCString getLanguageString() override
+    {
+      return "0x436 Afrikaans";
     }
 
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    virtual QCString trRelatedFunctions()
+    QCString trRelatedFunctions() override
     { return "Verwante Funksies"; }
 
     /*! subscript for the related functions. */
-    virtual QCString trRelatedSubscript()
+    QCString trRelatedSubscript() override
     { return "(Let daarop dat hierdie nie lede funksies is nie.)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    virtual QCString trDetailedDescription()
+    QCString trDetailedDescription() override
     { return "Detail Beskrywing"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    QCString trDetails() override
+    { return "Besonderhede"; }
+
     /*! header that is put before the list of typedefs. */
-    virtual QCString trMemberTypedefDocumentation()
+    QCString trMemberTypedefDocumentation() override
     { return "Lede Typedef Dokumentasie"; }
 
     /*! header that is put before the list of enumerations. */
-    virtual QCString trMemberEnumerationDocumentation()
+    QCString trMemberEnumerationDocumentation() override
     { return "Lede Enumerasie Dokumentasie"; }
 
     /*! header that is put before the list of member functions. */
-    virtual QCString trMemberFunctionDocumentation()
+    QCString trMemberFunctionDocumentation() override
     { return "Lede Funksie Dokumentasie"; }
 
     /*! header that is put before the list of member attributes. */
-    virtual QCString trMemberDataDocumentation()
+    QCString trMemberDataDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -102,45 +112,45 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore()
+    QCString trMore() override
     { return "Meer detail..."; }
 
     /*! put in the class documentation */
-    virtual QCString trListOfAllMembers()
+    QCString trListOfAllMembers() override
     { return "Lys van alle lede"; }
 
     /*! used as the title of the "list of all members" page of a class */
-    virtual QCString trMemberList()
+    QCString trMemberList() override
     { return "Lede Lys"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    virtual QCString trThisIsTheListOfAllMembers()
-    { return "Hierdie is 'n volledige lys van lede vir "; }
+    QCString trThisIsTheListOfAllMembers() override
+    { return "Hierdie is 'n volledige lys van lede vir"; }
 
     /*! this is the remainder of the sentence after the class name */
-    virtual QCString trIncludingInheritedMembers()
+    QCString trIncludingInheritedMembers() override
     { return ", insluitend alle afgeleide lede."; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    QCString trGeneratedAutomatically(const QCString &s) override
     { QCString result="Automaties gegenereer deur Doxygen";
-      if (s) result+=(QCString)" vir "+s;
+      if (!s.isEmpty()) result+=" vir "+s;
       result+=" van die bron kode af.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
-    virtual QCString trEnumName()
+    QCString trEnumName() override
     { return "enum naam"; }
 
     /*! put after an enum value in the list of all members */
-    virtual QCString trEnumValue()
+    QCString trEnumValue() override
     { return "enum waarde"; }
 
     /*! put after an undocumented member in the list of all members */
-    virtual QCString trDefinedIn()
+    QCString trDefinedIn() override
     { return "gedefinieër in"; }
 
     // quick reference sections
@@ -148,15 +158,15 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    virtual QCString trModules()
+    QCString trModules() override
     { return "Modules"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    virtual QCString trClassHierarchy()
+    QCString trClassHierarchy() override
     { return "Klas Hierargie"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    virtual QCString trCompoundList()
+    QCString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -169,11 +179,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    virtual QCString trFileList()
+    QCString trFileList() override
     { return "Leër Lys"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    virtual QCString trCompoundMembers()
+    QCString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -186,7 +196,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! This is put above each page as a link to all members of files. */
-    virtual QCString trFileMembers()
+    QCString trFileMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -199,25 +209,25 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! This is put above each page as a link to all related pages. */
-    virtual QCString trRelatedPages()
+    QCString trRelatedPages() override
     { return "Verwante Bladsye"; }
 
     /*! This is put above each page as a link to all examples. */
-    virtual QCString trExamples()
+    QCString trExamples() override
     { return "Voorbeelde"; }
 
     /*! This is put above each page as a link to the search engine. */
-    virtual QCString trSearch()
+    QCString trSearch() override
     { return "Soek"; }
 
     /*! This is an introduction to the class hierarchy. */
-    virtual QCString trClassHierarchyDescription()
+    QCString trClassHierarchyDescription() override
     {
       return "Hierdie afgeleide lys word rofweg gesorteer: ";
     }
 
     /*! This is an introduction to the list with all files. */
-    virtual QCString trFileListDescription(bool extractAll)
+    QCString trFileListDescription(bool extractAll) override
     {
       QCString result="Hier is 'n lys van alle  ";
       if (!extractAll) result+="gedokumenteerde ";
@@ -226,12 +236,16 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! This is an introduction to the annotated compound list. */
-    virtual QCString trCompoundListDescription()
+    QCString trCompoundListDescription() override
     {
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return " Data strukture met kort beskrywings:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Klasse met kort beskrywings:";
       }
       else
       {
@@ -241,7 +255,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! This is an introduction to the page with all class members. */
-    virtual QCString trCompoundMembersDescription(bool extractAll)
+    QCString trCompoundMembersDescription(bool extractAll) override
     {
       QCString result="'n Lys van alle ";
       if (!extractAll)
@@ -283,7 +297,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! This is an introduction to the page with all file members. */
-    virtual QCString trFileMembersDescription(bool extractAll)
+    QCString trFileMembersDescription(bool extractAll) override
     {
       QCString result="'n Lys van alle ";
       if (!extractAll) result+="gedokumenteerde ";
@@ -305,37 +319,37 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    virtual QCString trExamplesDescription()
+    QCString trExamplesDescription() override
     { return "'n Lys van alle voorbeelde:"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    virtual QCString trRelatedPagesDescription()
+    QCString trRelatedPagesDescription() override
     { return "'n Lys van alle verwante dokumentasie:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    virtual QCString trModulesDescription()
+    QCString trModulesDescription() override
     { return "'n Lys van alle modules:"; }
 
     /*! This is used in HTML as the title of index.html. */
-    virtual QCString trDocumentation()
-    { return "Dokumentasie"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentasie"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    virtual QCString trModuleIndex()
+    QCString trModuleIndex() override
     { return "Module Indeks"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    virtual QCString trHierarchicalIndex()
+    QCString trHierarchicalIndex() override
     { return "Hierargiese Indeks"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    virtual QCString trCompoundIndex()
+    QCString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -350,23 +364,27 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex()
+    QCString trFileIndex() override
     { return "Leër Indeks"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    virtual QCString trModuleDocumentation()
+    QCString trModuleDocumentation() override
     { return "Module Dokumentasie"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    virtual QCString trClassDocumentation()
+    QCString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Data Strukture Dokumentasie";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
       }
       else
       {
@@ -377,95 +395,83 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    virtual QCString trFileDocumentation()
+    QCString trFileDocumentation() override
     { return "Leër Dokumentasie"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Voorbeeld Dokumentasie"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Bladsy Dokumentasie"; }
-
     /*! This is used in LaTeX as the title of the document */
-    virtual QCString trReferenceManual()
+    QCString trReferenceManual() override
     { return "Verwysings Handleiding"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    virtual QCString trDefines()
+    QCString trDefines() override
     { return "Definiesies"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    virtual QCString trTypedefs()
+    QCString trTypedefs() override
     { return "Typedefs"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    virtual QCString trEnumerations()
+    QCString trEnumerations() override
     { return "Enumerations"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    virtual QCString trFunctions()
+    QCString trFunctions() override
     { return "Funksies"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trVariables()
+    QCString trVariables() override
     { return "Veranderlikes"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trEnumerationValues()
+    QCString trEnumerationValues() override
     { return "Enumeration waardes"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    virtual QCString trDefineDocumentation()
+    QCString trDefineDocumentation() override
     { return "Define Documentation"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    virtual QCString trTypedefDocumentation()
+    QCString trTypedefDocumentation() override
     { return "Typedef Dokumentasie"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    virtual QCString trEnumerationTypeDocumentation()
+    QCString trEnumerationTypeDocumentation() override
     { return "Enumeration Type Dokumentasie"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    virtual QCString trFunctionDocumentation()
+    QCString trFunctionDocumentation() override
     { return "Funksie Dokumentasie"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    virtual QCString trVariableDocumentation()
+    QCString trVariableDocumentation() override
     { return "Veranderlike Dokumentasie"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    virtual QCString trCompounds()
+    QCString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -480,54 +486,50 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
-      QCString result=(QCString)"Gegenereer op "+date;
-      if (projName) result+=(QCString)" vir "+projName;
-      result+=(QCString)" deur";
+      QCString result="Gegenereer op "+date;
+      if (!projName.isEmpty()) result+=" vir "+projName;
+      result+=" deur";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    QCString trClassDiagram(const QCString &clName) override
     {
-      return (QCString)"Afleidings diagram vir "+clName+":";
+      return "Afleidings diagram vir "+clName+":";
     }
 
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Slegs vir interne gebruik."; }
-
     /*! this text is generated when the \\warning command is used. */
-    virtual QCString trWarning()
+    QCString trWarning() override
     { return "Waarskuwing"; }
 
     /*! this text is generated when the \\version command is used. */
-    virtual QCString trVersion()
+    QCString trVersion() override
     { return "Weergawe"; }
 
     /*! this text is generated when the \\date command is used. */
-    virtual QCString trDate()
+    QCString trDate() override
     { return "Datum"; }
 
     /*! this text is generated when the \\return command is used. */
-    virtual QCString trReturns()
+    QCString trReturns() override
     { return "Returns"; }
 
     /*! this text is generated when the \\sa command is used. */
-    virtual QCString trSeeAlso()
+    QCString trSeeAlso() override
     { return "Sien ook"; }
 
     /*! this text is generated when the \\param command is used. */
-    virtual QCString trParameters()
+    QCString trParameters() override
     { return "Parameters"; }
 
     /*! this text is generated when the \\exception command is used. */
-    virtual QCString trExceptions()
+    QCString trExceptions() override
     { return "Exceptions"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    virtual QCString trGeneratedBy()
+    QCString trGeneratedBy() override
     { return "Gegenereer deur"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -535,11 +537,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    virtual QCString trNamespaceList()
+    QCString trNamespaceList() override
     { return "Namespace Lys"; }
 
     /*! used as an introduction to the namespace list */
-    virtual QCString trNamespaceListDescription(bool extractAll)
+    QCString trNamespaceListDescription(bool extractAll) override
     {
       QCString result="'n Lys van alle ";
       if (!extractAll) result+="gedokumenteerde ";
@@ -550,7 +552,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    virtual QCString trFriends()
+    QCString trFriends() override
     { return "Friends"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -560,7 +562,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
-    virtual QCString trRelatedFunctionDocumentation()
+    QCString trRelatedFunctionDocumentation() override
     { return "Friends En Verwante Funksie Dokumentasie"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -568,11 +570,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" klas"; break;
@@ -590,7 +592,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    QCString trFileReference(const QCString &fileName) override
     {
       QCString result=fileName;
       result+=" Leër Verwysing";
@@ -598,43 +600,42 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    QCString trNamespaceReference(const QCString &namespaceName) override
     {
       QCString result=namespaceName;
       result+=" Namespace Verwysing";
       return result;
     }
 
-    virtual QCString trPublicMembers()
+    QCString trPublicMembers() override
     { return "Publieke Lede Funksies"; }
-    virtual QCString trPublicSlots()
+    QCString trPublicSlots() override
     { return "Publieke Slots"; }
-    virtual QCString trSignals()
+    QCString trSignals() override
     { return "Signals"; }
-    virtual QCString trStaticPublicMembers()
+    QCString trStaticPublicMembers() override
     { return "Statiese Publieke Lede Funksies"; }
-    virtual QCString trProtectedMembers()
+    QCString trProtectedMembers() override
     { return "Beskermde Lede Funksies"; }
-    virtual QCString trProtectedSlots()
+    QCString trProtectedSlots() override
     { return "Beskermde Slots"; }
-    virtual QCString trStaticProtectedMembers()
+    QCString trStaticProtectedMembers() override
     { return "Statiese Beskermde Lede Funksies"; }
-    virtual QCString trPrivateMembers()
+    QCString trPrivateMembers() override
     { return "Private Lede Funksies"; }
-    virtual QCString trPrivateSlots()
+    QCString trPrivateSlots() override
     { return "Private Slots"; }
-    virtual QCString trStaticPrivateMembers()
+    QCString trStaticPrivateMembers() override
     { return "Statiese Private Lede Funksies"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    virtual QCString trWriteList(int numEntries)
+    QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -654,7 +655,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritsList(int numEntries)
+    QCString trInheritsList(int numEntries) override
     {
       return "Afgelei van"+trWriteList(numEntries)+".";
     }
@@ -662,7 +663,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritedByList(int numEntries)
+    QCString trInheritedByList(int numEntries) override
     {
       return "Afgelei van"+trWriteList(numEntries)+".";
     }
@@ -670,7 +671,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    virtual QCString trReimplementedFromList(int numEntries)
+    QCString trReimplementedFromList(int numEntries) override
     {
       return "Hergeimplimenteer van "+trWriteList(numEntries)+".";
     }
@@ -678,17 +679,17 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    virtual QCString trReimplementedInList(int numEntries)
+    QCString trReimplementedInList(int numEntries) override
     {
       return "Hergeimplimenter in "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    virtual QCString trNamespaceMembers()
+    QCString trNamespaceMembers() override
     { return "Namespace Lede"; }
 
     /*! This is an introduction to the page with all namespace members */
-    virtual QCString trNamespaceMemberDescription(bool extractAll)
+    QCString trNamespaceMemberDescription(bool extractAll) override
     {
       QCString result="'n Lys van alle ";
       if (!extractAll) result+="gedokumenteerde ";
@@ -702,13 +703,13 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    virtual QCString trNamespaceIndex()
+    QCString trNamespaceIndex() override
     { return "Namespace Indeks"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    virtual QCString trNamespaceDocumentation()
+    QCString trNamespaceDocumentation() override
     { return "Namespace Dokumentasie"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -718,7 +719,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    virtual QCString trNamespaces()
+    QCString trNamespaces() override
     { return "Namespaces"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -728,11 +729,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single)
+    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Die dokumentasie vir hierdie ";
+      QCString result="Die dokumentasie vir hierdie ";
       switch(compType)
       {
         case ClassDef::Class:      result+="klas"; break;
@@ -754,29 +755,29 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    virtual QCString trReturnValues()
+    QCString trReturnValues() override
     { return "Return waardes"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    virtual QCString trMainPage()
+    QCString trMainPage() override
     { return "Hoof Bladsy"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    virtual QCString trPageAbbreviation()
+    QCString trPageAbbreviation() override
     { return "p."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDefinedAtLineInSourceFile()
+    QCString trDefinedAtLineInSourceFile() override
     {
       return "Gedefinieër by lyn @0 van leër @1.";
     }
-    virtual QCString trDefinedInSourceFile()
+    QCString trDefinedInSourceFile() override
     {
       return "Definisie in leër @0.";
     }
@@ -785,7 +786,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDeprecated()
+    QCString trDeprecated() override
     {
       return "Verouderd";
     }
@@ -795,68 +796,68 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    QCString trCollaborationDiagram(const QCString &clName) override
     {
-      return (QCString)"Samewerkings diagram vir "+clName+":";
+      return "Samewerkings diagram vir "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    QCString trInclDepGraph(const QCString &fName) override
     {
-      return (QCString)"Insluitings afhanklikheid diagram vir "+fName+":";
+      return "Insluitings afhanklikheid diagram vir "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
-    virtual QCString trConstructorDocumentation()
+    QCString trConstructorDocumentation() override
     {
       return "Konstruktor & Destruktor Dokumentasie";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    virtual QCString trGotoSourceCode()
+    QCString trGotoSourceCode() override
     {
       return "Skakel na die bron kode van hierdie leër.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    virtual QCString trGotoDocumentation()
+    QCString trGotoDocumentation() override
     {
       return "Skakel na die dokumentasie van hierdie leër.";
     }
     /*! Text for the \\pre command */
-    virtual QCString trPrecondition()
+    QCString trPrecondition() override
     {
       return "Prekondisie";
     }
     /*! Text for the \\post command */
-    virtual QCString trPostcondition()
+    QCString trPostcondition() override
     {
       return "Postkondisie";
     }
     /*! Text for the \\invariant command */
-    virtual QCString trInvariant()
+    QCString trInvariant() override
     {
       return "Invariant";
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    virtual QCString trInitialValue()
+    QCString trInitialValue() override
     {
       return "Oorspronklike waarde:";
     }
     /*! Text used the source code in the file index */
-    virtual QCString trCode()
+    QCString trCode() override
     {
       return "kode";
     }
-    virtual QCString trGraphicalHierarchy()
+    QCString trGraphicalHierarchy() override
     {
       return "Grafiese Klasse Hierargie";
     }
-    virtual QCString trGotoGraphicalHierarchy()
+    QCString trGotoGraphicalHierarchy() override
     {
       return "Skakel na die grafiese klasse hierargie";
     }
-    virtual QCString trGotoTextualHierarchy()
+    QCString trGotoTextualHierarchy() override
     {
       return "Skakel na die teks klasse hierargie";
     }
-    virtual QCString trPageIndex()
+    QCString trPageIndex() override
     {
       return "Bladsy Indeks";
     }
@@ -865,15 +866,15 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trNote()
+    QCString trNote() override
     {
       return "Nota";
     }
-    virtual QCString trPublicTypes()
+    QCString trPublicTypes() override
     {
       return "Publieke Tipes";
     }
-    virtual QCString trPublicAttribs()
+    QCString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -884,31 +885,31 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         return "Publieke Public Attributes";
       }
     }
-    virtual QCString trStaticPublicAttribs()
+    QCString trStaticPublicAttribs() override
     {
       return "Statiese Publieke Attribute";
     }
-    virtual QCString trProtectedTypes()
+    QCString trProtectedTypes() override
     {
       return "Beskermde Tipes";
     }
-    virtual QCString trProtectedAttribs()
+    QCString trProtectedAttribs() override
     {
       return "Beskermde Attribute";
     }
-    virtual QCString trStaticProtectedAttribs()
+    QCString trStaticProtectedAttribs() override
     {
       return "Statiese Beskermde Attribute";
     }
-    virtual QCString trPrivateTypes()
+    QCString trPrivateTypes() override
     {
       return "Private Tipes";
     }
-    virtual QCString trPrivateAttribs()
+    QCString trPrivateAttribs() override
     {
       return "Private Attribute";
     }
-    virtual QCString trStaticPrivateAttribs()
+    QCString trStaticPrivateAttribs() override
     {
       return "Statiese Private Attribute";
     }
@@ -918,12 +919,12 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\todo item */
-    virtual QCString trTodo()
+    QCString trTodo() override
     {
       return "Aksies";
     }
     /*! Used as the header of the todo list */
-    virtual QCString trTodoList()
+    QCString trTodoList() override
     {
       return "Aksie Lys";
     }
@@ -932,24 +933,24 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trReferencedBy()
+    QCString trReferencedBy() override
     {
       return "Verwysing van";
     }
-    virtual QCString trRemarks()
+    QCString trRemarks() override
     {
       return "Opmerkings";
     }
-    virtual QCString trAttention()
+    QCString trAttention() override
     {
       return "Aandag";
     }
-    virtual QCString trInclByDepGraph()
+    QCString trInclByDepGraph() override
     {
       return "Hierdie diagram verduidelik watter leërs direk of"
              "indirek hierdie leër insluit:";
     }
-    virtual QCString trSince()
+    QCString trSince() override
     {
       return "Sederd";
     }
@@ -959,14 +960,14 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    virtual QCString trLegendTitle()
+    QCString trLegendTitle() override
     {
       return "Diagram beskrywing";
     }
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
-    virtual QCString trLegendDocs()
+    QCString trLegendDocs() override
     {
       return
         "Hierdie bladsy beskryf die diagram konvensies wat gebruik word "
@@ -1029,7 +1030,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    virtual QCString trLegend()
+    QCString trLegend() override
     {
       return "beskrywing";
     }
@@ -1039,12 +1040,12 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    virtual QCString trTest()
+    QCString trTest() override
     {
       return "Toets";
     }
     /*! Used as the header of the test list */
-    virtual QCString trTestList()
+    QCString trTestList() override
     {
       return "Toets Lys";
     }
@@ -1054,12 +1055,12 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    virtual QCString trProperties()
+    QCString trProperties() override
     {
       return "Eienskappe";
     }
     /*! Used as a section header for IDL property documentation */
-    virtual QCString trPropertyDocumentation()
+    QCString trPropertyDocumentation() override
     {
       return "Eienskap Dokumentasie";
     }
@@ -1069,7 +1070,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    virtual QCString trClasses()
+    QCString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -1081,27 +1082,22 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    QCString trPackage(const QCString &name) override
     {
-      return (QCString)"Pakket "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Pakket Lys";
+      return "Pakket "+name;
     }
     /*! The description of the package index page */
-    virtual QCString trPackageListDescription()
+    QCString trPackageListDescription() override
     {
       return "Die pakkette met kort beskrywings (indien beskikbaar):";
     }
     /*! The link name in the Quick links header for each page */
-    virtual QCString trPackages()
+    QCString trPackages() override
     {
       return "Pakkette";
     }
     /*! Text shown before a multi-line define */
-    virtual QCString trDefineValue()
+    QCString trDefineValue() override
     {
       return "Waarde:";
     }
@@ -1111,12 +1107,12 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    virtual QCString trBug()
+    QCString trBug() override
     {
       return "Bug";
     }
     /*! Used as the header of the bug list */
-    virtual QCString trBugList()
+    QCString trBugList() override
     {
       return "Bug Lys";
     }
@@ -1150,7 +1146,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      * </pre>
      *
      */
-    virtual QCString trRTFansicp()
+    QCString trRTFansicp() override
     {
       return "1252";
     }
@@ -1159,13 +1155,13 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    virtual QCString trRTFCharSet()
+    QCString trRTFCharSet() override
     {
       return "0";
     }
 
     /*! Used as header RTF general index */
-    virtual QCString trRTFGeneralIndex()
+    QCString trRTFGeneralIndex() override
     {
       return "Indeks";
     }
@@ -1174,77 +1170,63 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Klas" : "klas"));
-      if (!singular)  result+="se";
-      return result;
+      return createNoun(first_capital, singular, "klas", "se");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Leër" : "leër"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "leër", "s");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool first_capital, bool singular)
+    QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Namespace" : "namespace"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "namespace", "s");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Groep" : "groep"));
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(first_capital, singular, "groep", "e");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Bladsy" : "bladsy"));
-      if (!singular)  result+="e";
-      return result;
+      return createNoun(first_capital, singular, "bladsy", "e");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Lid" : "lid"));
-      if (!singular)  result = (first_capital ? "Lede" : "lede");
-      return result;
+      return createNoun(first_capital, singular, "l", "ede", "id");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool first_capital, bool singular)
+    QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "global", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1253,11 +1235,9 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Outeur" : "outeur"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "outeur", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1266,7 +1246,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 
     /*! This text is put before the list of members referenced by a member
      */
-    virtual QCString trReferences()
+    QCString trReferences() override
     {
       return "Verwysings";
     }
@@ -1278,7 +1258,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    virtual QCString trImplementedFromList(int numEntries)
+    QCString trImplementedFromList(int numEntries) override
     {
       return "Implimenteer "+trWriteList(numEntries)+".";
     }
@@ -1286,7 +1266,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    virtual QCString trImplementedInList(int numEntries)
+    QCString trImplementedInList(int numEntries) override
     {
       return "Geimplimenteer in "+trWriteList(numEntries)+".";
     }
@@ -1298,7 +1278,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    virtual QCString trRTFTableOfContents()
+    QCString trRTFTableOfContents() override
     {
       return "Inhoudsopgawe";
     }
@@ -1310,7 +1290,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    virtual QCString trDeprecatedList()
+    QCString trDeprecatedList() override
     {
       return "Verouderde Lys";
     }
@@ -1322,12 +1302,12 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    virtual QCString trEvents()
+    QCString trEvents() override
     {
       return "Events";
     }
     /*! Header used for the documentation section of a class' events. */
-    virtual QCString trEventDocumentation()
+    QCString trEventDocumentation() override
     {
       return "Event Dokumentasie";
     }
@@ -1338,35 +1318,39 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    virtual QCString trPackageTypes()
+    QCString trPackageTypes() override
     {
       return "Pakket Tipes";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    QCString trPackageFunctions() override
     {
       return "Pakket Funksies";
+    }
+    QCString trPackageMembers() override
+    {
+      return "Pakket Lede";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    QCString trStaticPackageFunctions() override
     {
       return "Statiese Pakket Funksies";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    virtual QCString trPackageAttribs()
+    QCString trPackageAttribs() override
     {
       return "Pakket Eienskappe";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    virtual QCString trStaticPackageAttribs()
+    QCString trStaticPackageAttribs() override
     {
       return "Statiese Pakket Eienskappe";
     }
@@ -1378,12 +1362,12 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    virtual QCString trAll()
+    QCString trAll() override
     {
       return "Alle Lede";
     }
     /*! Put in front of the call graph for a function. */
-    virtual QCString trCallGraph()
+    QCString trCallGraph() override
     {
       return "'n gebruiks diagram vir hierdie funksie:";
     }
@@ -1395,7 +1379,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    virtual QCString trSearchResultsTitle()
+    QCString trSearchResultsTitle() override
     {
       return "Soektog Resultate";
     }
@@ -1407,7 +1391,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    virtual QCString trSearchResults(int numDocuments)
+    QCString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1426,7 +1410,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    virtual QCString trSearchMatches()
+    QCString trSearchMatches() override
     {
       return "Teikens:";
     }
@@ -1437,7 +1421,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    virtual QCString trSourceFile(QCString& filename)
+    QCString trSourceFile(const QCString& filename) override
     {
       return filename + " Bron kode Leër";
     }
@@ -1449,43 +1433,33 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    virtual QCString trDirIndex()
+    QCString trDirIndex() override
     { return "Directory Hiërargie"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    virtual QCString trDirDocumentation()
+    QCString trDirDocumentation() override
     { return "Directory Documentasie"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
-    virtual QCString trDirectories()
+    QCString trDirectories() override
     { return "Directories"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Hierdie directory hiërargie is min of meer alfabeties "
-             "gesorteer:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    QCString trDirReference(const QCString &dirName) override
     { QCString result=dirName; result+=" Directory Verwysing"; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
-    virtual QCString trDir(bool first_capital, bool singular)
+    QCString trDir(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Director" : "director"));
-      if (singular) result+="y"; else result+="ies";
-      return result;
+      return createNoun(first_capital, singular, "director", "ies", "y");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1495,7 +1469,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    virtual QCString trOverloadText()
+    QCString trOverloadText() override
     {
        return "Hierdie is 'n oorlaaide lede funksie, "
               "vertoon vir volledigheid. Dit verskil slegs van die bogegewe "
@@ -1507,7 +1481,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
-    virtual QCString trCallerGraph()
+    QCString trCallerGraph() override
     {
       return "Hier is die roep skema vir die funksie:";
     }
@@ -1515,7 +1489,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    virtual QCString trEnumerationValueDocumentation()
+    QCString trEnumerationValueDocumentation() override
     { return "Enumerator Dokumentasie"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1523,23 +1497,23 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    virtual QCString trMemberFunctionDocumentationFortran()
+    QCString trMemberFunctionDocumentationFortran() override
     { return "Lede Funksie/Subroetine Dokumentasie"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    virtual QCString trCompoundListFortran()
+    QCString trCompoundListFortran() override
     { return "Data Tipes Lys"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    virtual QCString trCompoundMembersFortran()
+    QCString trCompoundMembersFortran() override
     { return "Data Velde"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    virtual QCString trCompoundListDescriptionFortran()
+    QCString trCompoundListDescriptionFortran() override
     { return "Hier is die data tipes met kort beskrywings:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
       QCString result="Hier is 'n lys van alle ";
       if (!extractAll)
@@ -1562,39 +1536,39 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    virtual QCString trCompoundIndexFortran()
+    QCString trCompoundIndexFortran() override
     { return "Data Tipe Indeks"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    virtual QCString trTypeDocumentation()
+    QCString trTypeDocumentation() override
     { return "Data Tipe Dokumentasie"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    virtual QCString trSubprograms()
+    QCString trSubprograms() override
     { return "Funksies/Subroetines"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    virtual QCString trSubprogramDocumentation()
+    QCString trSubprogramDocumentation() override
     { return "Funksies/Subroetine Dokumentasie"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     virtual QCString trDataTypes()
+     QCString trDataTypes() override
     { return "Data Tipes"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    virtual QCString trModulesList()
+    QCString trModulesList() override
     { return "Modules Lys"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    virtual QCString trModulesListDescription(bool extractAll)
+    QCString trModulesListDescription(bool extractAll) override
     {
       QCString result="Hier is 'n lys van alle ";
       if (!extractAll) result+="gedokumenteerde ";
@@ -1603,11 +1577,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Module"; break;
@@ -1624,7 +1598,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    QCString trModuleReference(const QCString &namespaceName) override
     {
       QCString result=namespaceName;
       result+=" Module Bron";
@@ -1632,11 +1606,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    virtual QCString trModulesMembers()
+    QCString trModulesMembers() override
     { return "Module Lede"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    virtual QCString trModulesMemberDescription(bool extractAll)
+    QCString trModulesMemberDescription(bool extractAll) override
     {
       QCString result="Hier is 'n lys van alle ";
       if (!extractAll) result+="gedokumenteerde ";
@@ -1655,27 +1629,25 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    virtual QCString trModulesIndex()
+    QCString trModulesIndex() override
     { return "Modules Indeks"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool first_capital, bool singular)
+    QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Module" : "module"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "module", "s");
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single)
+    QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single) override
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this ";
+      QCString result="Die dokumentasie vir hierdie ";
       switch(compType)
       {
         case ClassDef::Class:      result+="module"; break;
@@ -1687,7 +1659,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         case ClassDef::Exception:  result+="eksepsie"; break;
         default: break;
       }
-      result+=" is gegenereer vanaf die foldende leer";
+      result+=" is gegenereer vanaf die volgende leër";
       if (single) result+=":"; else result+="s:";
       return result;
     }
@@ -1695,29 +1667,46 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trType(bool first_capital, bool singular)
+    QCString trType(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tipe" : "tipe"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "tipe", "s");
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trSubprogram(bool first_capital, bool singular)
+    QCString trSubprogram(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Subprogram" : "subprogram"));
-      if (!singular)  result+="me";
-      return result;
+      return createNoun(first_capital, singular, "subprogram", "me");
     }
 
     /*! C# Type Constraint list */
-    virtual QCString trTypeConstraints()
+    QCString trTypeConstraints() override
     {
       return "Tipe Limiete";
     }
 
+    QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
+    {
+      static const char *days_short[]   = { "Ma.", "Di.", "Wo.", "Do.", "Vr.", "Sa.", "So." };
+      static const char *days_full[]    = { "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrydag", "Saterdag", "Sondag" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    QCString trMonth(int month, bool first_capital, bool full) override
+    {
+      static const char *months_short[] = { "Jan.", "Feb.", "Mrt.", "Apr.", "Mei", "Jun.", "Jul.", "Aug.", "Sep.", "Okt.", "Nov.", "Des." };
+      static const char *months_full[]  = { "Januarie", "Februarie", "Maart", "April", "Mei", "Junie", "Julie", "Augustus", "September", "Oktober", "November", "Desember" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    QCString trDayPeriod(bool period) override
+    {
+      static const char *dayPeriod[] = { "vm.", "nm." };
+      return dayPeriod[period?1:0];
+    }
 };
 
 #endif

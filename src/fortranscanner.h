@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -27,17 +27,15 @@
 class FortranOutlineParser : public OutlineParserInterface
 {
   public:
-    FortranOutlineParser(FortranFormat format=FortranFormat_Unknown);
-   ~FortranOutlineParser();
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char *fileName,
+    FortranOutlineParser(FortranFormat format=FortranFormat::Unknown);
+   ~FortranOutlineParser() override;
+    NON_COPYABLE(FortranOutlineParser)
+    void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    bool sameTranslationUnit,
-                    QStrList &filesInSameTranslationUnit);
-    bool needsPreprocessing(const QCString &extension) const;
-    void parsePrototype(const char *text);
+                    ClangTUParser *clangParser) override;
+    bool needsPreprocessing(const QCString &extension) const override;
+    void parsePrototype(const QCString &text) override;
 
   private:
     struct Private;
@@ -47,14 +45,15 @@ class FortranOutlineParser : public OutlineParserInterface
 class FortranOutlineParserFree : public FortranOutlineParser
 {
   public:
-    FortranOutlineParserFree() : FortranOutlineParser(FortranFormat_Free) { }
+    FortranOutlineParserFree() : FortranOutlineParser(FortranFormat::Free) { }
 };
 
 class FortranOutlineParserFixed : public FortranOutlineParser
 {
   public:
-    FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat_Fixed) { }
+    FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat::Fixed) { }
 };
 
+const char* prepassFixedForm(const char* contents, int *hasContLine, int fixedCommentAfter);
 
 #endif

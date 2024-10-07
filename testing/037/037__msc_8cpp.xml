@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="037__msc_8cpp" kind="file" language="C++">
+    <compoundname>037_msc.cpp</compoundname>
+    <innerclass refid="class_sender" prot="public">Sender</innerclass>
+    <innerclass refid="class_receiver" prot="public">Receiver</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A bit more complex msc diagram, with also parallel events. <msc>
+Sender_1,Receiver_1,Sender1_1,
+Sender,Receiver,Sender1,
+Sender_2,Receiver_2,Sender1_2;
+
+Sender_1-&gt;Receiver_1 [label="Command()", URL="\ref Receiver::Command()"],
+Sender1_1&lt;-Receiver_1 [label="Ack()", URL="\ref Sender::Ack()", ID="1"];
+
+Sender-&gt;Receiver [label="Command()", URL="\ref Receiver::Command()"];
+Sender1&lt;-Receiver [label="Ack()", URL="\ref Sender::Ack()", ID="1"];
+Sender_2-&gt;Receiver_2 [label="Command()", URL="\ref Receiver::Command()"],
+Sender1_2&lt;-Receiver_2 [label="Ack()", URL="\ref Sender::Ack()", ID="1"];
+</msc>
+ </para>
+    </detaileddescription>
+    <location file="037_msc.cpp"/>
+  </compounddef>
+</doxygen>

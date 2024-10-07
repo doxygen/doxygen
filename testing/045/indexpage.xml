@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
@@ -9,7 +9,7 @@
       <para>
         <toclist>
           <tocitem id="index_1item1">First Item</tocitem>
-          <tocitem id="item2_1item2">Second Item</tocitem>
+          <tocitem id="item2">Second Item</tocitem>
           <tocitem id="item2_1item3">Third Item</tocitem>
         </toclist>
       </para>
@@ -19,5 +19,6 @@
         <para>Section 1 text. </para>
       </sect1>
     </detaileddescription>
+    <location file="045_refitem.dox"/>
   </compounddef>
 </doxygen>

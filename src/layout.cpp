@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,46 +16,71 @@
  *
  */
 
+#include <array>
+
+#include <assert.h>
+
+#include "types.h"
 #include "layout.h"
 #include "message.h"
 #include "language.h"
-#include "vhdldocgen.h"
 #include "util.h"
 #include "doxygen.h"
 #include "version.h"
 #include "config.h"
+#include "xml.h"
+#include "resourcemgr.h"
+#include "docparser.h"
+#include "docnode.h"
+#include "debug.h"
 
-#include <assert.h>
-#include <qxml.h>
-#include <qfile.h>
-#include <qstring.h>
-#include <qfileinfo.h>
-#include <qtextstream.h>
-
-static const char layout_default[] =
-#include "layout_default.xml.h"
-;
-
-#define ADD_OPTION(langId,text) "|"+QCString().setNum(langId)+"="+text
-
-#define COMPILE_FOR_1_OPTION(def,langId1,text1) \
-  def+ADD_OPTION(langId1,text1)
-
-#define COMPILE_FOR_2_OPTIONS(def,langId1,text1,langId2,text2) \
-  COMPILE_FOR_1_OPTION(def,langId1,text1)+ADD_OPTION(langId2,text2)
-
-#define COMPILE_FOR_3_OPTIONS(def,langId1,text1,langId2,text2,langId3,text3) \
-  COMPILE_FOR_2_OPTIONS(def,langId1,text1,langId2,text2)+ADD_OPTION(langId3,text3)
-
-#define COMPILE_FOR_4_OPTIONS(def,langId1,text1,langId2,text2,langId3,text3,langId4,text4) \
-  COMPILE_FOR_3_OPTIONS(def,langId1,text1,langId2,text2,langId3,text3)+ADD_OPTION(langId4,text4)
-
-#define COMPILE_FOR_5_OPTIONS(def,langId1,text1,langId2,text2,langId3,text3,langId4,text4,langId5,text5) \
-  COMPILE_FOR_4_OPTIONS(def,langId1,text1,langId2,text2,langId3,text3,langId4,text4)+ADD_OPTION(langId5,text5)
-
-static bool elemIsVisible(const QXmlAttributes &attrib,bool defVal=TRUE)
+inline QCString compileOptions(const QCString &def)
 {
-  QCString visible = attrib.value("visible").utf8();
+  return def;
+}
+
+inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1)
+{
+  return compileOptions(def)+"|"+QCString().setNum(static_cast<long>(langId1))+"="+value1;
+}
+
+inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
+                                                   SrcLangExt langId2,const QCString &value2)
+{
+  return compileOptions(def,langId1,value1)+
+         "|"+QCString().setNum(static_cast<long>(langId2))+"="+value2;
+}
+
+inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
+                                                   SrcLangExt langId2,const QCString &value2,
+                                                   SrcLangExt langId3,const QCString &value3)
+{
+  return compileOptions(def,langId1,value1,langId2,value2)+
+         "|"+QCString().setNum(static_cast<long>(langId3))+"="+value3;
+}
+
+inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
+                                                   SrcLangExt langId2,const QCString &value2,
+                                                   SrcLangExt langId3,const QCString &value3,
+                                                   SrcLangExt langId4,const QCString &value4)
+{
+  return compileOptions(def,langId1,value1,langId2,value2,langId3,value3)+
+         "|"+QCString().setNum(static_cast<long>(langId4))+"="+value4;
+}
+
+inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCString &value1,
+                                                   SrcLangExt langId2,const QCString &value2,
+                                                   SrcLangExt langId3,const QCString &value3,
+                                                   SrcLangExt langId4,const QCString &value4,
+                                                   SrcLangExt langId5,const QCString &value5)
+{
+  return compileOptions(def,langId1,value1,langId2,value2,langId3,value3,langId4,value4)+
+         "|"+QCString().setNum(static_cast<long>(langId5))+"="+value5;
+}
+
+static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE)
+{
+  QCString visible = XMLHandlers::value(attrib,"visible");
   if (visible.isEmpty()) return defVal;
   if (visible.at(0)=='$' && visible.length()>1)
   {
@@ -63,34 +88,50 @@ static bool elemIsVisible(const QXmlAttributes &attrib,bool defVal=TRUE)
     const ConfigValues::Info *opt = ConfigValues::instance().get(id);
     if (opt && opt->type==ConfigValues::Info::Bool)
     {
-      return ConfigValues::instance().*((ConfigValues::InfoBool*)opt)->item;
+      return ConfigValues::instance().*(opt->value.b);
+    }
+    else if (opt && opt->type==ConfigValues::Info::String)
+    {
+      return opt->getBooleanRepresentation();
     }
     else if (!opt)
     {
-      err("found unsupported value %s for visible attribute in layout file\n",
-          visible.data());
+      err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
+          qPrint(visible),(defVal?"yes":"no"));
+      return defVal;
     }
   }
-  return visible!="no" && visible!="0";
+  QCString visibleLow = visible.lower();
+  if (visibleLow=="no" || visibleLow=="false" || visibleLow=="0") return FALSE;
+  else if (visibleLow=="yes" || visibleLow=="true" || visibleLow=="1") return TRUE;
+  else
+  {
+    err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
+        qPrint(visible),(defVal?"yes":"no"));
+    return defVal;
+  }
+}
+
+static bool parentIsVisible(LayoutNavEntry *parent)
+{
+  return parent==nullptr || parent->visible();
 }
 
 //---------------------------------------------------------------------------------
 
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
-    const char *file) const
+    const QCString &file) const
 {
-  LayoutNavEntry *result=0;
-  QListIterator<LayoutNavEntry> li(m_children);
-  LayoutNavEntry *entry;
-  for (li.toFirst();(entry=li.current());++li)
+  LayoutNavEntry *result=nullptr;
+  for (const auto &entry : m_children)
   {
-    // depth first search, needed to find the entry furthest from the 
+    // depth first search, needed to find the entry furthest from the
     // root in case an entry is in the tree twice
     result = entry->find(kind,file);
     if (result) return result;
-    if (entry->kind()==kind && (file==0 || entry->baseFile()==file))
+    if (entry->kind()==kind && (file==QCString() || entry->baseFile()==file))
     {
-      return entry;
+      return entry.get();
     }
   }
   return result;
@@ -99,26 +140,33 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
 QCString LayoutNavEntry::url() const
 {
   QCString url = baseFile().stripWhiteSpace();
-  if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) || 
-      (kind()==LayoutNavEntry::UserGroup && url.left(9)=="usergroup"))
+  if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) ||
+      (kind()==LayoutNavEntry::UserGroup && url.startsWith("usergroup")))
   {
-    url+=Doxygen::htmlFileExtension;
+    addHtmlExtensionIfMissing(url);
   }
-  else if (url.left(5)=="@ref " || url.left(5)=="\\ref ")
+  else if (url.startsWith("@ref ") || url.startsWith("\\ref "))
   {
-    const Definition *d = 0;
-    QCString anchor;
-    bool found=FALSE;
-    if (resolveLink(0,url.mid(5).stripWhiteSpace(),TRUE,&d,anchor))
+    bool found=false;
+    QCString relPath = "";
+    QCString context = QCString();
+    auto parser { createDocParser() };
+    auto dfAst  { createRef( *parser.get(), url.mid(5).stripWhiteSpace(), context ) };
+    auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+    const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
+    if (!df->file().isEmpty() || !df->anchor().isEmpty())
     {
-      if (d && d->isLinkable()) 
+      found = true;
+      url=externalRef(relPath,df->ref(),TRUE);
+      if (!df->file().isEmpty())
       {
-        url=d->getOutputFileBase()+Doxygen::htmlFileExtension;
-        if (!anchor.isEmpty())
-        {
-          url+="#"+anchor;
-        }
-        found=TRUE;
+        QCString fn = df->file();
+        addHtmlExtensionIfMissing(fn);
+        url += fn;
+      }
+      if (!df->anchor().isEmpty())
+      {
+        url += "#" + df->anchor();
       }
     }
     if (!found)
@@ -126,836 +174,98 @@ QCString LayoutNavEntry::url() const
       msg("explicit link request to '%s' in layout file '%s' could not be resolved\n",qPrint(url.mid(5)),qPrint(Config_getString(LAYOUT_FILE)));
     }
   }
-  //printf("LayoutNavEntry::url()=%s\n",url.data());
+  //printf("LayoutNavEntry::url()=%s\n",qPrint(url));
   return url;
 }
 
 //---------------------------------------------------------------------------------
 
-class LayoutParser : public QXmlDefaultHandler
+class LayoutParser
 {
-  private:
-    class StartElementHandler
-    {
-        typedef void (LayoutParser::*Handler)(const QXmlAttributes &attrib); 
-      public:
-        StartElementHandler(LayoutParser *parent, Handler h) 
-          : m_parent(parent), m_handler(h) {}
-        virtual ~StartElementHandler() {}
-        virtual void operator()(const QXmlAttributes &attrib) 
-        { 
-          (m_parent->*m_handler)(attrib); 
-        }
-      protected:
-        StartElementHandler() : m_parent(0), m_handler(0) {}
-      private:
-        LayoutParser *m_parent;
-        Handler m_handler;
-    };
-
-    class StartElementHandlerKind : public StartElementHandler
-    {
-        typedef void (LayoutParser::*Handler)(LayoutDocEntry::Kind kind,
-                                              const QXmlAttributes &attrib); 
-      public:
-        StartElementHandlerKind(LayoutParser *parent, LayoutDocEntry::Kind k,Handler h) 
-          : m_parent(parent), m_kind(k), m_handler(h) {}
-        void operator()(const QXmlAttributes &attrib) 
-        { 
-          (m_parent->*m_handler)(m_kind,attrib); 
-        }
-      private:
-        LayoutParser *m_parent;
-        LayoutDocEntry::Kind m_kind;
-        Handler m_handler;
-    };
-
-    class StartElementHandlerSection : public StartElementHandler
-    {
-        typedef void (LayoutParser::*Handler)(LayoutDocEntry::Kind kind,
-                                              const QXmlAttributes &attrib,
-                                              const QCString &title); 
-      public:
-        StartElementHandlerSection(LayoutParser *parent, LayoutDocEntry::Kind k,Handler h,
-                                const QCString &title) 
-          : m_parent(parent), m_kind(k), m_handler(h), m_title(title) {}
-        void operator()(const QXmlAttributes &attrib) 
-        { 
-          (m_parent->*m_handler)(m_kind,attrib,m_title); 
-        }
-      private:
-        LayoutParser *m_parent;
-        LayoutDocEntry::Kind m_kind;
-        Handler m_handler;
-        QCString m_title;
-    };
-
-    class StartElementHandlerMember : public StartElementHandler
-    {
-        typedef void (LayoutParser::*Handler)(const QXmlAttributes &attrib,
-                                              MemberListType type,
-                                              const QCString &title,
-                                              const QCString &subtitle); 
-      public:
-        StartElementHandlerMember(LayoutParser *parent, 
-                                  Handler h,
-                                  MemberListType type,
-                                  const QCString &tl,
-                                  const QCString &ss = QCString()
-                                 ) 
-          : m_parent(parent), m_handler(h), m_type(type),
-            m_title(tl), m_subscript(ss) {}
-        void operator()(const QXmlAttributes &attrib) 
-        { 
-          (m_parent->*m_handler)(attrib,m_type,m_title,m_subscript); 
-        }
-      private:
-        LayoutParser *m_parent;
-        Handler m_handler;
-        MemberListType m_type;
-        QCString m_title;
-        QCString m_subscript;
-    };
-
-    class StartElementHandlerNavEntry : public StartElementHandler
-    {
-        typedef void (LayoutParser::*Handler)(LayoutNavEntry::Kind kind,
-                                              const QXmlAttributes &attrib,
-                                              const QCString &title); 
-      public:
-        StartElementHandlerNavEntry(LayoutParser *parent,
-                               LayoutNavEntry::Kind kind, 
-                               Handler h,
-                               const QCString &tl
-                              ) 
-          : m_parent(parent), m_kind(kind), m_handler(h), m_title(tl) {}
-        void operator()(const QXmlAttributes &attrib) 
-        { 
-          (m_parent->*m_handler)(m_kind,attrib,m_title); 
-        }
-      private:
-        LayoutParser *m_parent;
-        LayoutNavEntry::Kind m_kind;
-        Handler m_handler;
-        QCString m_title;
-    };
-
-    class EndElementHandler
-    {
-        typedef void (LayoutParser::*Handler)(); 
-      public:
-        EndElementHandler(LayoutParser *parent, Handler h) : m_parent(parent), m_handler(h) {}
-        void operator()() { (m_parent->*m_handler)(); }
-      private:
-        LayoutParser *m_parent;
-        Handler m_handler;
-    };
-
-
   public:
     static LayoutParser &instance()
     {
-      static LayoutParser *theInstance = new LayoutParser;
-      return *theInstance;
-    }
-    void init()
-    {
-      m_sHandler.setAutoDelete(TRUE);
-      m_eHandler.setAutoDelete(TRUE);
-      m_part = -1; // invalid
-      m_rootNav = 0;
-
-      //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      //bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);  
-      //bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-      bool sliceOpt    = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-
-      // start & end handlers
-      m_sHandler.insert("doxygenlayout", 
-          new StartElementHandler(this,&LayoutParser::startLayout));
-      m_eHandler.insert("doxygenlayout", 
-          new EndElementHandler(this,&LayoutParser::endLayout));
-
-      // class layout handlers
-      m_sHandler.insert("navindex", 
-          new StartElementHandler(this,&LayoutParser::startNavIndex));
-      m_sHandler.insert("navindex/tab", 
-          new StartElementHandler(this,&LayoutParser::startNavEntry));
-      m_eHandler.insert("navindex/tab", 
-          new EndElementHandler(this,&LayoutParser::endNavEntry));
-      m_eHandler.insert("navindex", 
-          new EndElementHandler(this,&LayoutParser::endNavIndex));
-
-      // class layout handlers
-      m_sHandler.insert("class", 
-          new StartElementHandler(this,&LayoutParser::startClass));
-      m_sHandler.insert("class/briefdescription", 
-          new StartElementHandlerKind(this,LayoutDocEntry::BriefDesc,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("class/detaileddescription", 
-          new StartElementHandlerSection(this,LayoutDocEntry::DetailedDesc,&LayoutParser::startSectionEntry,
-                                         theTranslator->trDetailedDescription()));
-      m_sHandler.insert("class/authorsection", 
-          new StartElementHandlerKind(this,LayoutDocEntry::AuthorSection,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("class/includes", 
-          new StartElementHandlerKind(this,LayoutDocEntry::ClassIncludes,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("class/inheritancegraph", 
-          new StartElementHandlerKind(this,LayoutDocEntry::ClassInheritanceGraph,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("class/collaborationgraph", 
-          new StartElementHandlerKind(this,LayoutDocEntry::ClassCollaborationGraph,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("class/allmemberslink", 
-          new StartElementHandlerKind(this,LayoutDocEntry::ClassAllMembersLink,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("class/usedfiles", 
-          new StartElementHandlerKind(this,LayoutDocEntry::ClassUsedFiles,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("class/memberdecl", 
-          new StartElementHandler(this,&LayoutParser::startMemberDecl));
-      m_sHandler.insert("class/memberdecl/membergroups", 
-          new StartElementHandlerKind(this,LayoutDocEntry::MemberGroups,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("class/memberdecl/nestedclasses", 
-          new StartElementHandlerSection(this,LayoutDocEntry::ClassNestedClasses,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_2_OPTIONS(
-                                           theTranslator->trCompounds(),
-                                           SrcLangExt_VHDL,theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
-                                           SrcLangExt_Fortran,theTranslator->trDataTypes()
-                                         )));
-      m_sHandler.insert("class/memberdecl/services",
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_services,theTranslator->trServices()));
-      m_sHandler.insert("class/memberdecl/interfaces",
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_interfaces,theTranslator->trInterfaces()));
-      m_sHandler.insert("class/memberdecl/publictypes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pubTypes,theTranslator->trPublicTypes()));
-      m_sHandler.insert("class/memberdecl/publicslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pubSlots,theTranslator->trPublicSlots())); 
-      m_sHandler.insert("class/memberdecl/signals", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_signals,theTranslator->trSignals())); 
-      m_sHandler.insert("class/memberdecl/publicmethods", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pubMethods,
-                                        COMPILE_FOR_2_OPTIONS(
-                                          theTranslator->trPublicMembers(),
-                                          SrcLangExt_ObjC,theTranslator->trInstanceMethods(),
-                                          SrcLangExt_Slice,theTranslator->trOperations()
-                                        ))); 
-      m_sHandler.insert("class/memberdecl/publicstaticmethods", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pubStaticMethods,
-                                        COMPILE_FOR_1_OPTION(
-                                          theTranslator->trStaticPublicMembers(),
-                                          SrcLangExt_ObjC,theTranslator->trClassMethods()
-                                        ))); 
-      m_sHandler.insert("class/memberdecl/publicattributes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pubAttribs,
-                                        COMPILE_FOR_1_OPTION(
-                                          theTranslator->trPublicAttribs(),
-                                          SrcLangExt_Slice,theTranslator->trDataMembers()
-                                        ))); 
-      m_sHandler.insert("class/memberdecl/publicstaticattributes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pubStaticAttribs,theTranslator->trStaticPublicAttribs())); 
-      m_sHandler.insert("class/memberdecl/protectedtypes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_proTypes,theTranslator->trProtectedTypes())); 
-      m_sHandler.insert("class/memberdecl/protectedslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_proSlots,theTranslator->trProtectedSlots())); 
-      m_sHandler.insert("class/memberdecl/protectedmethods", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_proMethods,theTranslator->trProtectedMembers())); 
-      m_sHandler.insert("class/memberdecl/protectedstaticmethods", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_proStaticMethods,theTranslator->trStaticProtectedMembers()));
-      m_sHandler.insert("class/memberdecl/protectedattributes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_proAttribs,theTranslator->trProtectedAttribs())); 
-      m_sHandler.insert("class/memberdecl/protectedstaticattributes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_proStaticAttribs,theTranslator->trStaticProtectedAttribs())); 
-      m_sHandler.insert("class/memberdecl/packagetypes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pacTypes,theTranslator->trPackageTypes())); 
-      m_sHandler.insert("class/memberdecl/packagemethods", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pacMethods,theTranslator->trPackageMembers())); 
-      m_sHandler.insert("class/memberdecl/packagestaticmethods", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pacStaticMethods,theTranslator->trStaticPackageMembers())); 
-      m_sHandler.insert("class/memberdecl/packageattributes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pacAttribs,theTranslator->trPackageAttribs())); 
-      m_sHandler.insert("class/memberdecl/packagestaticattributes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_pacStaticAttribs,theTranslator->trStaticPackageAttribs())); 
-      m_sHandler.insert("class/memberdecl/properties", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_properties,theTranslator->trProperties())); 
-      m_sHandler.insert("class/memberdecl/events", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_events,theTranslator->trEvents())); 
-      m_sHandler.insert("class/memberdecl/privatetypes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_priTypes,theTranslator->trPrivateTypes())); 
-      m_sHandler.insert("class/memberdecl/privateslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_priSlots,theTranslator->trPrivateSlots())); 
-      m_sHandler.insert("class/memberdecl/privatemethods", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_priMethods,theTranslator->trPrivateMembers())); 
-      m_sHandler.insert("class/memberdecl/privatestaticmethods", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_priStaticMethods,theTranslator->trStaticPrivateMembers())); 
-      m_sHandler.insert("class/memberdecl/privateattributes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_priAttribs,theTranslator->trPrivateAttribs())); 
-      m_sHandler.insert("class/memberdecl/privatestaticattributes", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_priStaticAttribs,theTranslator->trStaticPrivateAttribs())); 
-      m_sHandler.insert("class/memberdecl/friends", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_friends,theTranslator->trFriends()));
-      m_sHandler.insert("class/memberdecl/related", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_related,theTranslator->trRelatedFunctions(),
-                                        theTranslator->trRelatedSubscript())); 
-      m_eHandler.insert("class/memberdecl", 
-          new EndElementHandler(this,&LayoutParser::endMemberDecl));
-      m_sHandler.insert("class/memberdef", 
-          new StartElementHandler(this,&LayoutParser::startMemberDef));
-      m_sHandler.insert("class/memberdef/inlineclasses", 
-          new StartElementHandlerSection(this,LayoutDocEntry::ClassInlineClasses,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_1_OPTION(
-                                           theTranslator->trClassDocumentation(),
-                                           SrcLangExt_Fortran,theTranslator->trTypeDocumentation()
-                                         )));
-      m_sHandler.insert("class/memberdef/typedefs", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_typedefMembers,theTranslator->trMemberTypedefDocumentation()));
-      m_sHandler.insert("class/memberdef/enums", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_enumMembers,theTranslator->trMemberEnumerationDocumentation()));
-      m_sHandler.insert("class/memberdef/services",
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_serviceMembers,theTranslator->trInterfaces()));
-      m_sHandler.insert("class/memberdef/interfaces",
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_interfaceMembers,theTranslator->trInterfaces()));
-      m_sHandler.insert("class/memberdef/constructors", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_constructors,theTranslator->trConstructorDocumentation()));
-      m_sHandler.insert("class/memberdef/functions", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_functionMembers,
-                                        COMPILE_FOR_3_OPTIONS(
-                                          theTranslator->trMemberFunctionDocumentation(),
-                                          SrcLangExt_ObjC,theTranslator->trMethodDocumentation(),
-                                          SrcLangExt_Fortran,theTranslator->trMemberFunctionDocumentationFortran(),
-                                          SrcLangExt_Slice,theTranslator->trOperationDocumentation()
-                                        )));
-      m_sHandler.insert("class/memberdef/related", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation()));
-      m_sHandler.insert("class/memberdef/variables", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_variableMembers,
-                                        COMPILE_FOR_1_OPTION(
-                                          theTranslator->trMemberDataDocumentation(),
-                                          SrcLangExt_Slice,theTranslator->trDataMemberDocumentation()
-                                        ))); 
-      m_sHandler.insert("class/memberdef/properties", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_propertyMembers,theTranslator->trPropertyDocumentation()));
-      m_sHandler.insert("class/memberdef/events", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_eventMembers,theTranslator->trEventDocumentation()));
-      m_eHandler.insert("class/memberdef", 
-          new EndElementHandler(this,&LayoutParser::endMemberDef));
-      m_eHandler.insert("class", 
-          new EndElementHandler(this,&LayoutParser::endClass));
-
-
-      // namespace layout handlers
-      m_sHandler.insert("namespace", 
-          new StartElementHandler(this,&LayoutParser::startNamespace));
-      m_sHandler.insert("namespace/briefdescription", 
-          new StartElementHandlerKind(this,LayoutDocEntry::BriefDesc,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("namespace/detaileddescription", 
-          new StartElementHandlerSection(this,LayoutDocEntry::DetailedDesc,&LayoutParser::startSectionEntry,
-                                         theTranslator->trDetailedDescription()));
-      m_sHandler.insert("namespace/authorsection", 
-          new StartElementHandlerKind(this,LayoutDocEntry::AuthorSection,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("namespace/memberdecl", 
-          new StartElementHandler(this,&LayoutParser::startMemberDecl));
-      m_sHandler.insert("namespace/memberdecl/nestednamespaces", 
-          new StartElementHandlerSection(this,LayoutDocEntry::NamespaceNestedNamespaces,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_5_OPTIONS(
-                                           theTranslator->trNamespaces(),
-                                           SrcLangExt_Java,theTranslator->trPackages(),
-                                           SrcLangExt_VHDL,theTranslator->trPackages(),
-                                           SrcLangExt_IDL,theTranslator->trModules(),
-                                           SrcLangExt_Fortran,theTranslator->trModules(),
-                                           SrcLangExt_Slice,(sliceOpt ?
-                                                             theTranslator->trModules() :
-                                                             theTranslator->trNamespaces()))));
-      m_sHandler.insert("namespace/memberdecl/constantgroups",
-          new StartElementHandlerSection(this,LayoutDocEntry::NamespaceNestedConstantGroups,&LayoutParser::startSectionEntry,
-                                         theTranslator->trConstantGroups()));
-      m_sHandler.insert("namespace/memberdecl/interfaces", 
-          new StartElementHandlerSection(this,LayoutDocEntry::NamespaceInterfaces,&LayoutParser::startSectionEntry,
-                                         theTranslator->trSliceInterfaces()));
-      m_sHandler.insert("namespace/memberdecl/classes", 
-          new StartElementHandlerSection(this,LayoutDocEntry::NamespaceClasses,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_2_OPTIONS(
-                                           theTranslator->trCompounds(),
-                                           SrcLangExt_VHDL,theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
-                                           SrcLangExt_Fortran,theTranslator->trDataTypes()
-                                         )));
-      m_sHandler.insert("namespace/memberdecl/structs", 
-          new StartElementHandlerSection(this,LayoutDocEntry::NamespaceStructs,&LayoutParser::startSectionEntry,
-                                         theTranslator->trStructs()));
-      m_sHandler.insert("namespace/memberdecl/exceptions", 
-          new StartElementHandlerSection(this,LayoutDocEntry::NamespaceExceptions,&LayoutParser::startSectionEntry,
-                                         theTranslator->trExceptions()));
-      m_sHandler.insert("namespace/memberdecl/membergroups", 
-          new StartElementHandlerKind(this,LayoutDocEntry::MemberGroups,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("namespace/memberdecl/typedefs", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decTypedefMembers,theTranslator->trTypedefs()));
-      m_sHandler.insert("namespace/memberdecl/sequences", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decSequenceMembers,theTranslator->trSequences()));
-      m_sHandler.insert("namespace/memberdecl/dictionaries", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decDictionaryMembers,theTranslator->trDictionaries()));
-      m_sHandler.insert("namespace/memberdecl/enums", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decEnumMembers,theTranslator->trEnumerations()));
-      m_sHandler.insert("namespace/memberdecl/functions", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decFuncMembers,
-                                        COMPILE_FOR_2_OPTIONS(
-                                          theTranslator->trFunctions(),
-                                          SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                          SrcLangExt_VHDL,theTranslator->trFunctionAndProc()
-                                        )));
-      m_sHandler.insert("namespace/memberdecl/variables", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decVarMembers,
-                                        sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables()));
-      m_eHandler.insert("namespace/memberdecl", 
-          new EndElementHandler(this,&LayoutParser::endMemberDecl));
-      m_sHandler.insert("namespace/memberdef", 
-          new StartElementHandler(this,&LayoutParser::startMemberDef));
-      m_sHandler.insert("namespace/memberdef/inlineclasses", 
-          new StartElementHandlerSection(this,LayoutDocEntry::NamespaceInlineClasses,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_1_OPTION(
-                                           theTranslator->trClassDocumentation(),
-                                           SrcLangExt_Fortran,theTranslator->trTypeDocumentation()
-                                         )));
-      m_sHandler.insert("namespace/memberdef/typedefs", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docTypedefMembers,theTranslator->trTypedefDocumentation()));
-      m_sHandler.insert("namespace/memberdef/sequences", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docSequenceMembers,theTranslator->trSequenceDocumentation()));
-      m_sHandler.insert("namespace/memberdef/dictionaries", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docDictionaryMembers,
-                                        theTranslator->trDictionaryDocumentation()));
-      m_sHandler.insert("namespace/memberdef/enums", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docEnumMembers,theTranslator->trEnumerationTypeDocumentation()));
-      m_sHandler.insert("namespace/memberdef/functions", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docFuncMembers,
-                                        COMPILE_FOR_1_OPTION(
-                                          theTranslator->trFunctionDocumentation(),
-                                          SrcLangExt_Fortran,theTranslator->trSubprogramDocumentation()
-                                        )));
-      m_sHandler.insert("namespace/memberdef/variables", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docVarMembers,
-                                        sliceOpt ? theTranslator->trConstantDocumentation() :
-                                        theTranslator->trVariableDocumentation()));
-      m_eHandler.insert("namespace/memberdef", 
-          new EndElementHandler(this,&LayoutParser::endMemberDef));
-      m_eHandler.insert("namespace", 
-          new EndElementHandler(this,&LayoutParser::endNamespace));
-
-      // file layout handlers
-      m_sHandler.insert("file", 
-          new StartElementHandler(this,&LayoutParser::startFile));
-      m_sHandler.insert("file/briefdescription", 
-          new StartElementHandlerKind(this,LayoutDocEntry::BriefDesc,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("file/detaileddescription", 
-          new StartElementHandlerSection(this,LayoutDocEntry::DetailedDesc,&LayoutParser::startSectionEntry,
-                                         theTranslator->trDetailedDescription()));
-      m_sHandler.insert("file/authorsection", 
-          new StartElementHandlerKind(this,LayoutDocEntry::AuthorSection,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("file/includes", 
-          new StartElementHandlerKind(this,LayoutDocEntry::FileIncludes,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("file/includegraph", 
-          new StartElementHandlerKind(this,LayoutDocEntry::FileIncludeGraph,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("file/includedbygraph", 
-          new StartElementHandlerKind(this,LayoutDocEntry::FileIncludedByGraph,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("file/sourcelink", 
-          new StartElementHandlerKind(this,LayoutDocEntry::FileSourceLink,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("file/memberdecl/membergroups", 
-          new StartElementHandlerKind(this,LayoutDocEntry::MemberGroups,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("file/memberdecl", 
-          new StartElementHandler(this,&LayoutParser::startMemberDecl));
-      m_sHandler.insert("file/memberdecl/interfaces", 
-          new StartElementHandlerSection(this,LayoutDocEntry::FileInterfaces,&LayoutParser::startSectionEntry,
-                                         theTranslator->trSliceInterfaces()));
-      m_sHandler.insert("file/memberdecl/classes", 
-          new StartElementHandlerSection(this,LayoutDocEntry::FileClasses,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_2_OPTIONS(
-                                           theTranslator->trCompounds(),
-                                           SrcLangExt_VHDL,theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
-                                           SrcLangExt_Fortran,theTranslator->trDataTypes()
-                                         )));
-      m_sHandler.insert("file/memberdecl/structs", 
-          new StartElementHandlerSection(this,LayoutDocEntry::FileStructs,&LayoutParser::startSectionEntry,
-                                         theTranslator->trStructs()));
-      m_sHandler.insert("file/memberdecl/exceptions", 
-          new StartElementHandlerSection(this,LayoutDocEntry::FileExceptions,&LayoutParser::startSectionEntry,
-                                         theTranslator->trExceptions()));
-      m_sHandler.insert("file/memberdecl/namespaces", 
-          new StartElementHandlerSection(this,LayoutDocEntry::FileNamespaces,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_4_OPTIONS(
-                                           theTranslator->trNamespaces(),
-                                           SrcLangExt_Java,theTranslator->trPackages(),
-                                           SrcLangExt_IDL,theTranslator->trModules(),
-                                           SrcLangExt_Fortran,theTranslator->trModules(),
-                                           SrcLangExt_Slice,theTranslator->trModules()
-                                         )));
-      m_sHandler.insert("file/memberdecl/constantgroups",
-          new StartElementHandlerSection(this,LayoutDocEntry::FileConstantGroups,&LayoutParser::startSectionEntry,
-                                         theTranslator->trConstantGroups()));
-      m_sHandler.insert("file/memberdecl/defines", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decDefineMembers,theTranslator->trDefines()));
-      m_sHandler.insert("file/memberdecl/typedefs", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decTypedefMembers,theTranslator->trTypedefs()));
-      m_sHandler.insert("file/memberdecl/sequences", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decSequenceMembers,theTranslator->trSequences()));
-      m_sHandler.insert("file/memberdecl/dictionaries", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decDictionaryMembers,theTranslator->trDictionaries()));
-      m_sHandler.insert("file/memberdecl/enums", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decEnumMembers,theTranslator->trEnumerations()));
-      m_sHandler.insert("file/memberdecl/functions", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decFuncMembers,
-                                        COMPILE_FOR_2_OPTIONS(
-                                          theTranslator->trFunctions(),
-                                          SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                          SrcLangExt_VHDL,theTranslator->trFunctionAndProc()
-                                        )));
-      m_sHandler.insert("file/memberdecl/variables", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decVarMembers,
-                                        sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables()));
-
-      m_eHandler.insert("file/memberdecl", 
-          new EndElementHandler(this,&LayoutParser::endMemberDecl));
-      m_sHandler.insert("file/memberdef", 
-          new StartElementHandler(this,&LayoutParser::startMemberDef));
-      m_sHandler.insert("file/memberdef/inlineclasses", 
-          new StartElementHandlerSection(this,LayoutDocEntry::FileInlineClasses,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_1_OPTION(
-                                           theTranslator->trClassDocumentation(),
-                                           SrcLangExt_Fortran,theTranslator->trTypeDocumentation()
-                                         )));
-      m_sHandler.insert("file/memberdef/defines", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docDefineMembers,theTranslator->trDefineDocumentation()));
-      m_sHandler.insert("file/memberdef/typedefs", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docTypedefMembers,theTranslator->trTypedefDocumentation()));
-      m_sHandler.insert("file/memberdef/sequences", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docSequenceMembers,theTranslator->trSequenceDocumentation()));
-      m_sHandler.insert("file/memberdef/dictionaries", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docDictionaryMembers,
-                                        theTranslator->trDictionaryDocumentation()));
-      m_sHandler.insert("file/memberdef/enums", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docEnumMembers,
-                                        theTranslator->trEnumerationTypeDocumentation()));
-      m_sHandler.insert("file/memberdef/functions", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docFuncMembers,
-                                        COMPILE_FOR_1_OPTION(
-                                          theTranslator->trFunctionDocumentation(),
-                                          SrcLangExt_Fortran,theTranslator->trSubprogramDocumentation()
-                                        )));
-      m_sHandler.insert("file/memberdef/variables", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docVarMembers,theTranslator->trVariableDocumentation()));
-      m_eHandler.insert("file/memberdef", 
-          new EndElementHandler(this,&LayoutParser::endMemberDef));
-      m_eHandler.insert("file", 
-          new EndElementHandler(this,&LayoutParser::endFile));
-
-      // group layout handlers
-      m_sHandler.insert("group", 
-          new StartElementHandler(this,&LayoutParser::startGroup));
-      m_sHandler.insert("group/briefdescription", 
-          new StartElementHandlerKind(this,LayoutDocEntry::BriefDesc,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("group/detaileddescription", 
-          new StartElementHandlerSection(this,LayoutDocEntry::DetailedDesc,&LayoutParser::startSectionEntry,
-                                         theTranslator->trDetailedDescription()));
-      m_sHandler.insert("group/authorsection", 
-          new StartElementHandlerKind(this,LayoutDocEntry::AuthorSection,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("group/groupgraph", 
-          new StartElementHandlerKind(this,LayoutDocEntry::GroupGraph,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("group/memberdecl/membergroups", 
-          new StartElementHandlerKind(this,LayoutDocEntry::MemberGroups,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("group/memberdecl", 
-          new StartElementHandler(this,&LayoutParser::startMemberDecl));
-      m_sHandler.insert("group/memberdecl/classes", 
-          new StartElementHandlerSection(this,LayoutDocEntry::GroupClasses,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_2_OPTIONS(
-                                           theTranslator->trCompounds(),
-                                           SrcLangExt_VHDL,theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
-                                           SrcLangExt_Fortran,theTranslator->trDataTypes()
-                                         )));
-      m_sHandler.insert("group/memberdecl/namespaces", 
-          new StartElementHandlerSection(this,LayoutDocEntry::GroupNamespaces,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_2_OPTIONS(
-                                           theTranslator->trNamespaces(),
-                                           SrcLangExt_Java,theTranslator->trPackages(),
-                                           SrcLangExt_Fortran,theTranslator->trModules()
-                                         )));
-      m_sHandler.insert("group/memberdecl/dirs", 
-          new StartElementHandlerSection(this,LayoutDocEntry::GroupDirs,&LayoutParser::startSectionEntry,
-                                         theTranslator->trDirectories()
-                                         ));
-      m_sHandler.insert("group/memberdecl/nestedgroups", 
-          new StartElementHandlerSection(this,LayoutDocEntry::GroupNestedGroups,&LayoutParser::startSectionEntry,
-                                         theTranslator->trModules()
-                                         ));
-      m_sHandler.insert("group/memberdecl/files", 
-          new StartElementHandlerSection(this,LayoutDocEntry::GroupFiles,&LayoutParser::startSectionEntry,
-                                         theTranslator->trFile(TRUE,FALSE)
-                                         ));
-
-      m_sHandler.insert("group/memberdecl/defines", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decDefineMembers,theTranslator->trDefines()));
-      m_sHandler.insert("group/memberdecl/typedefs", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decTypedefMembers,theTranslator->trTypedefs()));
-      m_sHandler.insert("group/memberdecl/sequences", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decSequenceMembers,theTranslator->trSequences()));
-      m_sHandler.insert("group/memberdecl/dictionaries", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decDictionaryMembers,theTranslator->trDictionaries()));
-      m_sHandler.insert("group/memberdecl/enums", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decEnumMembers,theTranslator->trEnumerations()));
-      m_sHandler.insert("group/memberdecl/enumvalues", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decEnumValMembers,theTranslator->trEnumerationValues()));
-      m_sHandler.insert("group/memberdecl/functions", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decFuncMembers,
-                                        COMPILE_FOR_2_OPTIONS(
-                                          theTranslator->trFunctions(),
-                                          SrcLangExt_Fortran,theTranslator->trSubprograms(),
-                                          SrcLangExt_VHDL,theTranslator->trFunctionAndProc()
-                                        )));
-      m_sHandler.insert("group/memberdecl/variables", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decVarMembers,theTranslator->trVariables()));
-      m_sHandler.insert("group/memberdecl/signals", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decSignalMembers,theTranslator->trSignals()));
-      m_sHandler.insert("group/memberdecl/publicslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decPubSlotMembers,theTranslator->trPublicSlots()));
-      m_sHandler.insert("group/memberdecl/protectedslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decProSlotMembers,theTranslator->trProtectedSlots()));
-      m_sHandler.insert("group/memberdecl/privateslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decPriSlotMembers,theTranslator->trPrivateSlots()));
-      m_sHandler.insert("group/memberdecl/events", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decEventMembers,theTranslator->trEvents()));
-      m_sHandler.insert("group/memberdecl/properties", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decPropMembers,theTranslator->trProperties()));
-      m_sHandler.insert("group/memberdecl/friends", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
-                                        MemberListType_decFriendMembers,theTranslator->trFriends()));
-      m_eHandler.insert("group/memberdecl", 
-          new EndElementHandler(this,&LayoutParser::endMemberDecl));
-      m_sHandler.insert("group/memberdef", 
-          new StartElementHandler(this,&LayoutParser::startMemberDef));
-      m_sHandler.insert("group/memberdef/pagedocs", 
-          new StartElementHandlerKind(this,LayoutDocEntry::GroupPageDocs,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("group/memberdef/inlineclasses", 
-          new StartElementHandlerSection(this,LayoutDocEntry::GroupInlineClasses,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_1_OPTION(
-                                           theTranslator->trClassDocumentation(),
-                                           SrcLangExt_Fortran,theTranslator->trTypeDocumentation()
-                                         )));
-      m_sHandler.insert("group/memberdef/defines", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docDefineMembers,theTranslator->trDefineDocumentation()));
-      m_sHandler.insert("group/memberdef/typedefs", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docTypedefMembers,theTranslator->trTypedefDocumentation()));
-      m_sHandler.insert("group/memberdef/sequences", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docSequenceMembers,theTranslator->trSequenceDocumentation()));
-      m_sHandler.insert("group/memberdef/dictionaries", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docDictionaryMembers,
-                                        theTranslator->trDictionaryDocumentation()));
-      m_sHandler.insert("group/memberdef/enums", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docEnumMembers,theTranslator->trEnumerationTypeDocumentation()));
-      m_sHandler.insert("group/memberdef/enumvalues", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docEnumValMembers,theTranslator->trEnumerationValueDocumentation()));
-      m_sHandler.insert("group/memberdef/functions", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docFuncMembers,
-                                        COMPILE_FOR_1_OPTION(
-                                          theTranslator->trFunctionDocumentation(),
-                                          SrcLangExt_Fortran,theTranslator->trSubprogramDocumentation()
-                                       )));
-      m_sHandler.insert("group/memberdef/variables", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docVarMembers,theTranslator->trVariableDocumentation()));
-      m_sHandler.insert("group/memberdef/signals", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docSignalMembers,theTranslator->trSignals())); 
-      m_sHandler.insert("group/memberdef/publicslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docPubSlotMembers,theTranslator->trPublicSlots()));
-      m_sHandler.insert("group/memberdef/protectedslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docProSlotMembers,theTranslator->trProtectedSlots()));
-      m_sHandler.insert("group/memberdef/privateslots", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docPriSlotMembers,theTranslator->trPrivateSlots()));
-      m_sHandler.insert("group/memberdef/events", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docEventMembers,theTranslator->trEvents()));
-      m_sHandler.insert("group/memberdef/properties", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docPropMembers,theTranslator->trProperties()));
-      m_sHandler.insert("group/memberdef/friends", 
-          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberListType_docFriendMembers,theTranslator->trFriends()));
-      m_eHandler.insert("group/memberdef", 
-          new EndElementHandler(this,&LayoutParser::endMemberDef));
-      m_eHandler.insert("group", 
-          new EndElementHandler(this,&LayoutParser::endGroup));
-
-      // directory layout handlers
-      m_sHandler.insert("directory", 
-          new StartElementHandler(this,&LayoutParser::startDirectory));
-      m_sHandler.insert("directory/briefdescription", 
-          new StartElementHandlerKind(this,LayoutDocEntry::BriefDesc,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("directory/detaileddescription", 
-          new StartElementHandlerSection(this,LayoutDocEntry::DetailedDesc,&LayoutParser::startSectionEntry,
-                                         theTranslator->trDetailedDescription()));
-      m_sHandler.insert("directory/directorygraph", 
-          new StartElementHandlerKind(this,LayoutDocEntry::DirGraph,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("directory/memberdecl", 
-          new StartElementHandler(this,&LayoutParser::startMemberDecl));
-      m_sHandler.insert("directory/memberdecl/dirs", 
-          new StartElementHandlerKind(this,LayoutDocEntry::DirSubDirs,&LayoutParser::startSimpleEntry));
-      m_sHandler.insert("directory/memberdecl/files", 
-          new StartElementHandlerKind(this,LayoutDocEntry::DirFiles,&LayoutParser::startSimpleEntry));
-      m_eHandler.insert("directory/memberdecl", 
-          new EndElementHandler(this,&LayoutParser::endMemberDecl));
-      m_eHandler.insert("directory", 
-          new EndElementHandler(this,&LayoutParser::endDirectory));
+      static LayoutParser theInstance;
+      return theInstance;
     }
 
-    void startSimpleEntry(LayoutDocEntry::Kind k,const QXmlAttributes &attrib)
+    // =========== XMLHandler events
+    void setDocumentLocator(const XMLLocator *locator)
     {
-      bool isVisible = elemIsVisible(attrib);
-      if (m_part!=-1 && isVisible)
+      m_locator = locator;
+    }
+    void error( const std::string &fileName,int lineNr,const std::string &msg)
+    {
+      warn(fileName.c_str(),lineNr,"%s",msg.c_str());
+    }
+    void startElement( const std::string &name, const XMLHandlers::Attributes& attrib );
+    void endElement( const std::string &name );
+
+    void startSimpleEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib)
+    {
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(k));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(k,isVisible));
       }
     }
 
-    void startSectionEntry(LayoutDocEntry::Kind k,const QXmlAttributes &attrib,
+    // ============ Specific callbacks
+
+    void startSectionEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib,
                            const QCString &title)
     {
-      bool isVisible = elemIsVisible(attrib);
-      QCString userTitle = attrib.value("title").utf8();
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      QCString userTitle = XMLHandlers::value(attrib,"title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
-      //    title.data(),userTitle.data());
+      //    qPrint(title),qPrint(userTitle));
       if (userTitle.isEmpty())  userTitle = title;
-      if (m_part!=-1 && isVisible)
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySection(k,userTitle));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySection>(k,userTitle,isVisible));
       }
     }
 
 
-    void startMemberDeclEntry(const QXmlAttributes &attrib,MemberListType type,
+    void startMemberDeclEntry(const XMLHandlers::Attributes &attrib,MemberListType type,
                               const QCString &title,const QCString &subscript)
     {
-      //QCString visible = convertToQCString(attrib.value("visible"));
-      //bool isVisible = visible.isEmpty() || (visible!="no" && visible!="0");
-      QCString userTitle     = attrib.value("title").utf8();
-      QCString userSubscript = attrib.value("subtitle").utf8();
+      QCString userTitle     = XMLHandlers::value(attrib,"title");
+      QCString userSubscript = XMLHandlers::value(attrib,"subtitle");
       if (userTitle.isEmpty())     userTitle     = title;
       if (userSubscript.isEmpty()) userSubscript = subscript;
-      //printf("memberdecl: %s\n",userTitle.data());
-      if (m_part!=-1 /*&& isVisible*/)
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntryMemberDecl(type,userTitle,userSubscript));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntryMemberDecl>(type,userTitle,userSubscript));
       }
     }
 
-    void startMemberDefEntry(const QXmlAttributes &attrib,MemberListType type,
+    void startMemberDefEntry(const XMLHandlers::Attributes &attrib,MemberListType type,
                              const QCString &title,const QCString &)
     {
-      QCString userTitle = attrib.value("title").utf8();
+      QCString userTitle = XMLHandlers::value(attrib,"title");
       if (userTitle.isEmpty()) userTitle = title;
-      //printf("memberdef: %s\n",userTitle.data());
-      if (m_part!=-1 /*&& isVisible*/)
+      //printf("memberdef: %s\n",qPrint(userTitle));
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntryMemberDef(type,userTitle));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntryMemberDef>(type,userTitle));
       }
     }
 
-    void startLayout(const QXmlAttributes &)
+    void startLayout(const XMLHandlers::Attributes &)
     {
     }
 
-    void endLayout()
-    {
-    }
-
-    void startNavIndex(const QXmlAttributes &)
+    void startNavIndex(const XMLHandlers::Attributes &)
     {
       m_scope="navindex/";
       m_rootNav = LayoutDocManager::instance().rootNavEntry();
-      if (m_rootNav) m_rootNav->clear();
+      if (m_rootNav)
+      {
+        m_rootNav->clear();
+      }
     }
 
     void endNavIndex()
@@ -964,21 +274,20 @@ class LayoutParser : public QXmlDefaultHandler
       if (m_rootNav && !m_rootNav->find(LayoutNavEntry::MainPage))
       {
         // no MainPage node... add one as the first item of the root node...
-        new LayoutNavEntry(m_rootNav,LayoutNavEntry::MainPage, TRUE, 
-            /*Config_getBool(GENERATE_TREEVIEW) ? "main" :*/ "index",
-            theTranslator->trMainPage(),"",TRUE);
+        m_rootNav->prependChild(std::make_unique<LayoutNavEntry>(m_rootNav,LayoutNavEntry::MainPage, TRUE,
+                                                   "index",theTranslator->trMainPage(),""));
       }
     }
 
-    void startNavEntry(const QXmlAttributes &attrib)
+    void startNavEntry(const XMLHandlers::Attributes &attrib)
     {
-      static bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);  
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);  
-      static bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
+      bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
                                           Config_getBool(GRAPHICAL_HIERARCHY);
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
       static struct NavEntryMap
       {
         const char *typeStr;       // type attribute name in the XML file
@@ -1003,23 +312,44 @@ class LayoutParser : public QXmlDefaultHandler
           theTranslator->trRelatedPagesDescription(),
           "pages"
         },
+        { "topics",
+          LayoutNavEntry::Topics,
+          theTranslator->trTopics(),
+          QCString(),
+          theTranslator->trTopicListDescription(),
+          "topics"
+        },
         { "modules",
           LayoutNavEntry::Modules,
           theTranslator->trModules(),
-          QCString(),
+          theTranslator->trModulesList(),
           theTranslator->trModulesDescription(),
           "modules"
+        },
+        { "modulelist",
+          LayoutNavEntry::ModuleList,
+          theTranslator->trModulesList(),
+          QCString(),
+          theTranslator->trModulesListDescription(extractAll),
+          "modules"
+        },
+        { "modulemembers",
+          LayoutNavEntry::ModuleMembers,
+          theTranslator->trModulesMembers(),
+          QCString(),
+          theTranslator->trModulesMemberDescription(extractAll),
+          "modulemembers"
         },
         { "namespaces",
           LayoutNavEntry::Namespaces,
           javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModules() : theTranslator->trNamespaces(),
-          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
           javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
         },
         { "namespacelist",
           LayoutNavEntry::NamespaceList,
-          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
           QCString(),
           javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
@@ -1031,16 +361,23 @@ class LayoutParser : public QXmlDefaultHandler
           fortranOpt || sliceOpt ? theTranslator->trModulesMemberDescription(extractAll) : theTranslator->trNamespaceMemberDescription(extractAll),
           "namespacemembers"
         },
+        { "concepts",
+          LayoutNavEntry::Concepts,
+          theTranslator->trConcept(true,false),
+          theTranslator->trConceptList(),
+          theTranslator->trConceptListDescription(extractAll),
+          "concepts"
+        },
         { "classindex",
           LayoutNavEntry::ClassIndex,
-          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trCompoundIndex(),
+          fortranOpt ? theTranslator->trCompoundIndexFortran() : vhdlOpt ? theTranslator->trDesignUnitIndex() : theTranslator->trCompoundIndex(),
           QCString(),
           QCString(),
           "classes"
         },
         { "classes",
           LayoutNavEntry::Classes,
-          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? theTranslator->trDesignUnitList() : theTranslator->trClasses(),
+          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trClasses(),
           theTranslator->trCompoundList(),
           fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
           "annotated"
@@ -1164,13 +501,6 @@ class LayoutParser : public QXmlDefaultHandler
           theTranslator->trFileMembersDescription(extractAll),
           "globals"
         },
-        //{ "dirs",
-        //  LayoutNavEntry::Dirs,
-        //  theTranslator->trDirectories(),
-        //  QCString(),
-        //  theTranslator->trDirDescription(),
-        //  "dirs"
-        //},
         { "examples",
           LayoutNavEntry::Examples,
           theTranslator->trExamples(),
@@ -1192,45 +522,43 @@ class LayoutParser : public QXmlDefaultHandler
           QCString(),
           "usergroup"
         },
-        { 0, // end of list
-          (LayoutNavEntry::Kind)0,
+        { nullptr, // end of list
+          static_cast<LayoutNavEntry::Kind>(0),
           QCString(),
           QCString(),
           QCString(),
           QCString()
         }
       };
-      LayoutNavEntry::Kind kind;
       // find type in the table
       int i=0;
-      QString type = attrib.value("type");
+      QCString type = XMLHandlers::value(attrib,"type");
       while (mapping[i].typeStr)
       {
         if (mapping[i].typeStr==type)
-        {
-          kind = mapping[i].kind;
           break;
-        }
         i++;
       }
-      if (mapping[i].typeStr==0) 
+      if (mapping[i].typeStr==nullptr)
       {
+        std::string fileName = m_locator->fileName();
         if (type.isEmpty())
         {
-          err("an entry tag within a navindex has no type attribute! Check your layout file!\n");
+          warn(fileName.c_str(),m_locator->lineNr(),"an entry tag within a navindex has no type attribute! Check your layout file!");
         }
         else
         {
-          err("the type '%s' is not supported for the entry tag within a navindex! Check your layout file!\n",type.data());
+          warn(fileName.c_str(),m_locator->lineNr(),"the type '%s' is not supported for the entry tag within a navindex! Check your layout file!",qPrint(type));
         }
         m_invalidEntry=TRUE;
         return;
       }
+      LayoutNavEntry::Kind kind = mapping[i].kind;
       QCString baseFile = mapping[i].baseFile;
-      QCString title = attrib.value("title").utf8();
-      bool isVisible = elemIsVisible(attrib);
+      QCString title = XMLHandlers::value(attrib,"title");
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (title.isEmpty()) // use default title
-      { 
+      {
         title = mapping[i].mainName; // use title for main row
         if (m_rootNav!=LayoutDocManager::instance().rootNavEntry() && !mapping[i].subName.isEmpty())
         {
@@ -1238,12 +566,12 @@ class LayoutParser : public QXmlDefaultHandler
                                       // this is mainly done to get compatible naming with older versions.
         }
       }
-      QCString intro = attrib.value("intro").utf8();
+      QCString intro = XMLHandlers::value(attrib,"intro");
       if (intro.isEmpty()) // use default intro text
       {
         intro = mapping[i].intro;
       }
-      QCString url = attrib.value("url").utf8();
+      QCString url = XMLHandlers::value(attrib,"url");
       if (mapping[i].kind==LayoutNavEntry::User && !url.isEmpty())
       {
         baseFile=url;
@@ -1252,7 +580,14 @@ class LayoutParser : public QXmlDefaultHandler
       {
         if (!url.isEmpty())
         {
-          baseFile=url;
+          if (url == "[none]")
+          {
+            baseFile = QCString();
+          }
+          else
+          {
+            baseFile=url;
+          }
         }
         else
         {
@@ -1260,7 +595,7 @@ class LayoutParser : public QXmlDefaultHandler
         }
       }
       // create new item and make it the new root
-      m_rootNav = new LayoutNavEntry(m_rootNav,kind,isVisible,baseFile,title,intro);
+      m_rootNav = LayoutDocManager::instance().createChildNavEntry(m_rootNav,kind,isVisible,baseFile,title,intro);
     }
 
     void endNavEntry()
@@ -1270,102 +605,77 @@ class LayoutParser : public QXmlDefaultHandler
       m_invalidEntry=FALSE;
     }
 
-    void startClass(const QXmlAttributes &)
+    void recurseNavEntryChildren(LayoutNavEntry &lne)
     {
-      LayoutDocManager::instance().clear(LayoutDocManager::Class);
-      m_scope="class/";
-      m_part = (int)LayoutDocManager::Class;
+      bool vis = lne.visible();
+      for (const auto &lne1 : lne.children())
+      {
+        lne1->setVisible(vis && lne1->visible());
+        recurseNavEntryChildren(*lne1);
+      }
     }
 
-    void endClass()
+    void startTop(const XMLHandlers::Attributes &attrib,LayoutDocManager::LayoutPart part,
+                  const QCString &scope, LayoutNavEntry::Kind nav)
     {
-      m_scope="";
-      m_part = -1;
+      LayoutDocManager::instance().clear(part);
+      m_scope = scope;
+      m_part = part;
+      m_visible = elemIsVisible(attrib);
+      auto *lne = LayoutDocManager::instance().rootNavEntry()->find(nav);
+      if (lne)
+      {
+        m_visible = m_visible && lne->visible();
+        lne->setVisible(m_visible);
+        recurseNavEntryChildren(*lne);
+      }
     }
 
-    void startNamespace(const QXmlAttributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::Namespace);
-      m_scope="namespace/";
-      m_part = (int)LayoutDocManager::Namespace;
-    }
-
-    void endNamespace()
-    {
-      m_scope="";
-      m_part = -1;
-    }
-
-    void startFile(const QXmlAttributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::File);
-      m_scope="file/";
-      m_part = (int)LayoutDocManager::File;
-    }
-
-    void endFile()
+    void endTop()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
-    void startGroup(const QXmlAttributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::Group);
-      m_scope="group/";
-      m_part = (int)LayoutDocManager::Group;
-    }
-
-    void endGroup()
-    {
-      m_scope="";
-      m_part = -1;
-    }
-
-    void startDirectory(const QXmlAttributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::Directory);
-      m_scope="directory/";
-      m_part = (int)LayoutDocManager::Directory;
-    }
-
-    void endDirectory()
-    {
-      m_scope="";
-      m_part = -1;
-    }
-
-    void startMemberDef(const QXmlAttributes &)
+    void startMemberDef(const XMLHandlers::Attributes &attrib)
     {
       m_scope+="memberdef/";
-      if (m_part!=-1)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDefStart));
+        bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefStart,isVisible));
       }
     }
 
     void endMemberDef()
     {
+      QCString scopeOrg = m_scope;
       int i=m_scope.findRev("memberdef/");
       if (i!=-1)
       {
         m_scope=m_scope.left(i);
-        if (m_part!=-1)
+        if (m_part!=LayoutDocManager::Undefined)
         {
-          LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd));
+          bool isVisible = true;
+          for (const auto &lde : LayoutDocManager::instance().docEntries(m_part))
+          {
+            if (lde->kind() == LayoutDocEntry::MemberDefStart)
+            {
+               isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
+            }
+          }
+          LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefEnd,isVisible));
         }
       }
     }
 
-    void startMemberDecl(const QXmlAttributes &)
+    void startMemberDecl(const XMLHandlers::Attributes &attrib)
     {
       m_scope+="memberdecl/";
-      if (m_part!=-1)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclStart));
+        bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclStart,isVisible));
       }
     }
 
@@ -1375,218 +685,836 @@ class LayoutParser : public QXmlDefaultHandler
       if (i!=-1)
       {
         m_scope=m_scope.left(i);
-        if (m_part!=-1)
+        if (m_part!=LayoutDocManager::Undefined)
         {
-          LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd));
+          bool isVisible = true;
+          for (const auto &lde : LayoutDocManager::instance().docEntries(m_part))
+          {
+            if (lde->kind() == LayoutDocEntry::MemberDeclStart)
+            {
+               isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
+            }
+          }
+          LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclEnd,isVisible));
         }
       }
     }
 
-    // reimplemented from QXmlDefaultHandler
-    bool startElement( const QString&, const QString&, 
-                       const QString& name, const QXmlAttributes& attrib )
-    {
-      //printf("startElement [%s]::[%s]\n",m_scope.data(),name.data());
-      StartElementHandler *handler = m_sHandler[m_scope+name.utf8()];
-      if (handler)
-      {
-        (*handler)(attrib);
-      }
-      else
-      {
-        err("Unexpected start tag '%s' found in scope='%s'!\n",
-            name.data(),m_scope.data());
-      }
-      return TRUE;
-    }
-    bool endElement( const QString&, const QString&, const QString& name )
-    {
-      //printf("endElement [%s]::[%s]\n",m_scope.data(),name.data());
-      EndElementHandler *handler;
-      if (!m_scope.isEmpty() && m_scope.right(name.length()+1)==name.utf8()+"/")
-      { // element ends current scope
-        handler = m_eHandler[m_scope.left(m_scope.length()-1)];
-      }
-      else // continue with current scope
-      {
-        handler = m_eHandler[m_scope+name.utf8()];
-      }
-      if (handler)
-      {
-        (*handler)();
-      }
-      return TRUE;
-    }
-    bool startDocument()
-    {
-      return TRUE;
-    }
-
   private:
-    LayoutParser() : m_sHandler(163), m_eHandler(17), m_invalidEntry(FALSE), m_part(0), m_rootNav(NULL) { }
-   ~LayoutParser() { delete m_rootNav; }
-
-    QDict<StartElementHandler> m_sHandler;
-    QDict<EndElementHandler>   m_eHandler;
     QCString m_scope;
-    int m_part;
-    LayoutNavEntry *m_rootNav;
-    bool m_invalidEntry;
+    LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
+    LayoutNavEntry *m_rootNav = nullptr;
+    bool m_invalidEntry = false;
+    bool m_visible = true;
     static int m_userGroupCount;
+    const XMLLocator *m_locator = nullptr;
 };
-
-int LayoutParser::m_userGroupCount=0;
 
 //---------------------------------------------------------------------------------
 
-class LayoutErrorHandler : public QXmlErrorHandler
-{
-  public:
-    LayoutErrorHandler(const char *fn) : fileName(fn) {}
-    bool warning( const QXmlParseException &exception )
-    {
-      warn_uncond("at line %d column %d of %s: %s\n",
-          exception.lineNumber(),exception.columnNumber(),fileName.data(),
-          exception.message().data());
-      return FALSE;
-    }
-    bool error( const QXmlParseException &exception )
-    {
-      err("at line %d column %d of %s: %s\n",
-          exception.lineNumber(),exception.columnNumber(),fileName.data(),
-          exception.message().data());
-      return FALSE;
-    }
-    bool fatalError( const QXmlParseException &exception )
-    {
-      err("fatal: at line %d column %d of %s: %s\n",
-          exception.lineNumber(),exception.columnNumber(),fileName.data(),
-          exception.message().data());
-      return FALSE;
-    }
-    QString errorString() { return ""; }
+namespace {
 
-  private:
-    QString errorMsg;
-    QString fileName;
+struct ElementCallbacks
+{
+  using StartCallback = std::function<void(LayoutParser&,const XMLHandlers::Attributes&)>;
+  using EndCallback   = std::function<void(LayoutParser&)>;
+
+  StartCallback startCb;
+  EndCallback   endCb = [](LayoutParser &){};
 };
+
+template<class...Args>
+static auto startCb(void (LayoutParser::*fn)(Args...))
+{
+  return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr); };
+}
+
+template<class...Args>
+static auto startCb(void (LayoutParser::*fn)(Args...),
+                    LayoutDocEntry::Kind kind
+                   )
+{
+  return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(kind,attr); };
+}
+
+template<class...Args>
+static auto startCb(void (LayoutParser::*fn)(Args...),
+                    LayoutDocEntry::Kind kind,
+                    const std::function<QCString()> &title
+                   )
+{
+  return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(kind,attr,title()); };
+}
+
+template<class...Args>
+static auto startCb(void (LayoutParser::*fn)(Args...),
+                    MemberListType type,
+                    const std::function<QCString()> &title
+                   )
+{
+  return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,type,title(),QCString()); };
+}
+
+template<class...Args>
+static auto startCb(void (LayoutParser::*fn)(Args...),
+                    MemberListType type,
+                    const std::function<QCString()> &title,
+                    const std::function<QCString()> &subtitle
+                   )
+{
+  return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,type,title(),subtitle()); };
+}
+
+template<class...Args>
+static auto startCb(void (LayoutParser::*fn)(Args...),
+                    LayoutDocManager::LayoutPart part,
+                    const QCString &scope,
+                    LayoutNavEntry::Kind nav
+                   )
+{
+  return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,part,scope,nav); };
+}
+
+static auto endCb(void (LayoutParser::*fn)())
+{
+  return [=](LayoutParser &parser) { (parser.*fn)(); };
+}
+
+static const std::map< std::string, ElementCallbacks > g_elementHandlers =
+{
+  // path/name
+  { "doxygenlayout",                              { startCb(&LayoutParser::startLayout) } },
+  { "navindex",                                   { startCb(&LayoutParser::startNavIndex), endCb(&LayoutParser::endNavIndex) } },
+  { "navindex/tab",                               { startCb(&LayoutParser::startNavEntry),
+                                                    endCb(&LayoutParser::endNavEntry)
+                                                  } },
+
+  // class layout handlers
+  { "class",                                      { startCb(&LayoutParser::startTop,LayoutDocManager::Class,"class/",LayoutNavEntry::Classes),
+                                                    endCb(&LayoutParser::endTop)
+                                                  } },
+  { "class/briefdescription",                     { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::BriefDesc) } },
+  { "class/detaileddescription",                  { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::DetailedDesc,
+                                                            [](){ return compileOptions(theTranslator->trDetailedDescription()); })
+                                                  } },
+  { "class/authorsection",                        { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::AuthorSection) } },
+  { "class/includes",                             { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::ClassIncludes) } },
+  { "class/inheritancegraph",                     { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::ClassInheritanceGraph) } },
+  { "class/collaborationgraph",                   { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::ClassCollaborationGraph) } },
+  { "class/allmemberslink",                       { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::ClassAllMembersLink) } },
+  { "class/usedfiles",                            { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::ClassUsedFiles) } },
+  { "class/memberdecl",                           { startCb(&LayoutParser::startMemberDecl), endCb(&LayoutParser::endMemberDecl) } },
+  { "class/memberdecl/membergroups",              { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::MemberGroups) } },
+  { "class/memberdecl/nestedclasses",             { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::ClassNestedClasses,
+                                                            []() { return compileOptions(/*default*/        theTranslator->trCompounds(),
+                                                                                         SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::Fortran,theTranslator->trDataTypes()); })
+                                                  } },
+  { "class/memberdecl/services",                  { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::Services(),
+                                                            []() { return compileOptions(theTranslator->trServices()); })
+                                                  } },
+  { "class/memberdecl/interfaces",                { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::Interfaces(),
+                                                            []() { return compileOptions(theTranslator->trInterfaces()); })
+                                                  } },
+  { "class/memberdecl/publictypes",               { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::PubTypes(),
+                                                            []() { return compileOptions(theTranslator->trPublicTypes()); })
+                                                  } },
+  { "class/memberdecl/publicslots",               { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::PubSlots(),
+                                                            []() { return compileOptions(theTranslator->trPublicSlots()); })
+                                                  } },
+  { "class/memberdecl/signals",                   { startCb(&LayoutParser::startMemberDeclEntry,MemberListType::Signals(),
+                                                            []() { return compileOptions(theTranslator->trSignals()); })
+                                                  } },
+  { "class/memberdecl/publicmethods",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PubMethods(),
+                                                            []() { return compileOptions(/* default */    theTranslator->trPublicMembers(),
+                                                                                         SrcLangExt::ObjC, theTranslator->trInstanceMethods(),
+                                                                                         SrcLangExt::Slice,theTranslator->trOperations()); })
+                                                  } },
+  { "class/memberdecl/publicstaticmethods",       { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PubStaticMethods(),
+                                                            []() { return compileOptions(/* default */    theTranslator->trStaticPublicMembers(),
+                                                                                         SrcLangExt::ObjC, theTranslator->trClassMethods()); })
+                                                  } },
+  { "class/memberdecl/publicattributes",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PubAttribs(),
+                                                            []() { return compileOptions(/* default */    theTranslator->trPublicAttribs(),
+                                                                                         SrcLangExt::Slice,theTranslator->trDataMembers()); })
+                                                  } },
+  { "class/memberdecl/publicstaticattributes",    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PubStaticAttribs(),
+                                                            []() { return compileOptions(theTranslator->trStaticPublicAttribs()); })
+                                                  } },
+  { "class/memberdecl/protectedtypes",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProTypes(),
+                                                            []() { return compileOptions(theTranslator->trProtectedTypes()); })
+                                                  } },
+  { "class/memberdecl/protectedslots",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProSlots(),
+                                                            []() { return compileOptions(theTranslator->trProtectedSlots()); })
+                                                  } },
+  { "class/memberdecl/protectedmethods",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProMethods(),
+                                                            []() { return compileOptions(theTranslator->trProtectedMembers()); })
+                                                  } },
+  { "class/memberdecl/protectedstaticmethods",    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProStaticMethods(),
+                                                            []() { return compileOptions(theTranslator->trStaticProtectedMembers()); })
+                                                  } },
+  { "class/memberdecl/protectedattributes",       { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProAttribs(),
+                                                            []() { return compileOptions(theTranslator->trProtectedAttribs()); })
+                                                  } },
+  { "class/memberdecl/protectedstaticattributes", { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::ProStaticAttribs(),
+                                                            []() { return compileOptions(theTranslator->trStaticProtectedAttribs()); })
+                                                  } },
+  { "class/memberdecl/packagetypes",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacTypes(),
+                                                            []() { return compileOptions(theTranslator->trPackageTypes()); })
+                                                  } },
+  { "class/memberdecl/packagemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacMethods(),
+                                                            []() { return compileOptions(theTranslator->trPackageFunctions()); })
+                                                  } },
+  { "class/memberdecl/packagestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacStaticMethods(),
+                                                            []() { return compileOptions(theTranslator->trStaticPackageFunctions()); })
+                                                  } },
+  { "class/memberdecl/packageattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacAttribs(),
+                                                            []() { return compileOptions(theTranslator->trPackageAttribs()); })
+                                                  } },
+  { "class/memberdecl/packagestaticattributes",   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PacStaticAttribs(),
+                                                            []() { return compileOptions(theTranslator->trStaticPackageAttribs()); })
+                                                  } },
+  { "class/memberdecl/properties",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Properties(),
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
+                                                  } },
+  { "class/memberdecl/events",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Events(),
+                                                            []() { return compileOptions(theTranslator->trEvents()); })
+                                                  } },
+  { "class/memberdecl/privatetypes",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriTypes(),
+                                                            []() { return compileOptions(theTranslator->trPrivateTypes()); })
+                                                  } },
+  { "class/memberdecl/privateslots",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriSlots(),
+                                                            []() { return compileOptions(theTranslator->trPrivateSlots()); })
+                                                  } },
+  { "class/memberdecl/privatemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriMethods(),
+                                                            []() { return compileOptions(theTranslator->trPrivateMembers()); })
+                                                  } },
+  { "class/memberdecl/privatestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriStaticMethods(),
+                                                            []() { return compileOptions(theTranslator->trStaticPrivateMembers()); })
+                                                  } },
+  { "class/memberdecl/privateattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriAttribs(),
+                                                            []() { return compileOptions(theTranslator->trPrivateAttribs()); })
+                                                  } },
+  { "class/memberdecl/privatestaticattributes",   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::PriStaticAttribs(),
+                                                            []() { return compileOptions(theTranslator->trStaticPrivateAttribs()); })
+                                                  } },
+  { "class/memberdecl/friends",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Friends(),
+                                                            []() { return compileOptions(theTranslator->trFriends()); })
+                                                  } },
+  { "class/memberdecl/related",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Related(),
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbols()); },
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbolsSubscript()); })
+                                                  } },
+  { "class/memberdef",                            { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
+  { "class/memberdef/inlineclasses",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ClassInlineClasses,
+                                                            []() { return compileOptions(/* default */      theTranslator->trClassDocumentation(),
+                                                                           SrcLangExt::Fortran,theTranslator->trTypeDocumentation()); })
+                                                  } },
+  { "class/memberdef/typedefs",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::TypedefMembers(),
+                                                            []() { return compileOptions(theTranslator->trMemberTypedefDocumentation()); })
+                                                  } },
+  { "class/memberdef/enums",                      { startCb(&LayoutParser::startMemberDefEntry, MemberListType::EnumMembers(),
+                                                            []() { return compileOptions(theTranslator->trMemberEnumerationDocumentation()); })
+                                                  } },
+  { "class/memberdef/services",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::ServiceMembers(),
+                                                            []() { return compileOptions(theTranslator->trInterfaces()); })
+                                                  } },
+  { "class/memberdef/interfaces",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType::InterfaceMembers(),
+                                                            []() { return compileOptions(theTranslator->trInterfaces()); })
+                                                  } },
+  { "class/memberdef/constructors",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType::Constructors(),
+                                                            []() { return compileOptions(theTranslator->trConstructorDocumentation()); })
+                                                  } },
+  { "class/memberdef/functions",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::FunctionMembers(),
+                                                            []() { return compileOptions(/* default */      theTranslator->trMemberFunctionDocumentation(), SrcLangExt::ObjC,   theTranslator->trMethodDocumentation(),
+                                                                           SrcLangExt::Fortran,theTranslator->trMemberFunctionDocumentationFortran(),
+                                                                           SrcLangExt::Slice,  theTranslator->trOperationDocumentation()); })
+                                                  } },
+  { "class/memberdef/related",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::RelatedMembers(),
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbolDocumentation()); })
+                                                  } },
+  { "class/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::VariableMembers(),
+                                                            []() { return compileOptions(/* default */      theTranslator->trMemberDataDocumentation(),
+                                                                           SrcLangExt::Slice,  theTranslator->trDataMemberDocumentation()); })
+                                                  } },
+  { "class/memberdef/properties",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType::PropertyMembers(),
+                                                            []() { return compileOptions(theTranslator->trPropertyDocumentation()); })
+                                                  } },
+  { "class/memberdef/events",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType::EventMembers(),
+                                                            []() { return compileOptions(theTranslator->trEventDocumentation()); })
+                                                  } },
+
+  // concept layout handlers
+  { "concept",                                    { startCb(&LayoutParser::startTop,LayoutDocManager::Concept,"concept/",LayoutNavEntry::Concepts),
+                                                    endCb(&LayoutParser::endTop)
+                                                  } },
+  { "concept/briefdescription",                   { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc) } },
+  { "concept/definition",                         { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ConceptDefinition,
+                                                            []() { return compileOptions(theTranslator->trConceptDefinition()); }),
+                                                  } },
+  { "concept/includes",                           { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::ClassIncludes)  } },
+  { "concept/sourcelink",                         { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::FileSourceLink) } },
+  { "concept/detaileddescription",                { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::DetailedDesc,
+                                                            []() { return compileOptions(theTranslator->trDetailedDescription()); })
+                                                  } },
+  { "concept/authorsection",                      { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::AuthorSection) } },
+  // namespace layout handlers
+  { "namespace",                                  { startCb(&LayoutParser::startTop,LayoutDocManager::Namespace,"namespace/",LayoutNavEntry::Namespaces),
+                                                    endCb(&LayoutParser::endTop)
+                                                  } },
+  { "namespace/briefdescription",                 { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc) } },
+  { "namespace/detaileddescription",              { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::DetailedDesc,
+                                                            []() { return compileOptions(theTranslator->trDetailedDescription()); })
+                                                  } },
+  { "namespace/authorsection",                    { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::AuthorSection) } },
+  { "namespace/memberdecl",                       { startCb(&LayoutParser::startMemberDecl),
+                                                    endCb(&LayoutParser::endMemberDecl)
+                                                  } },
+  { "namespace/memberdecl/nestednamespaces",      { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceNestedNamespaces,
+                                                            []() { return compileOptions(/* default */      theTranslator->trNamespaces(),
+                                                                           SrcLangExt::Java,   theTranslator->trPackages(),
+                                                                           SrcLangExt::VHDL,   theTranslator->trPackages(),
+                                                                           SrcLangExt::IDL,    theTranslator->trModules(),
+                                                                           SrcLangExt::Fortran,theTranslator->trModules(),
+                                                                           SrcLangExt::Slice,(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
+                                                                                              theTranslator->trModules() :
+                                                                                              theTranslator->trNamespaces())); })
+                                                  } },
+  { "namespace/memberdecl/constantgroups",        { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceNestedConstantGroups,
+                                                            []() { return compileOptions(theTranslator->trConstantGroups()); })
+                                                  } },
+  { "namespace/memberdecl/interfaces",            { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceInterfaces,
+                                                            []() { return compileOptions(theTranslator->trSliceInterfaces()); })
+                                                  } },
+  { "namespace/memberdecl/classes",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceClasses,
+                                                            []() { return compileOptions(/* default */      theTranslator->trCompounds(),
+                                                                           SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                           SrcLangExt::Fortran,theTranslator->trDataTypes()); })
+                                                  } },
+  { "namespace/memberdecl/concepts",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceConcepts,
+                                                            []() { return compileOptions(theTranslator->trConcept(true,false)); })
+                                                  } },
+  { "namespace/memberdecl/structs",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceStructs,
+                                                            []() { return compileOptions(theTranslator->trStructs()); })
+                                                  } },
+  { "namespace/memberdecl/exceptions",            { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceExceptions,
+                                                            []() { return compileOptions(theTranslator->trExceptions()); })
+                                                  } },
+  { "namespace/memberdecl/membergroups",          { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::MemberGroups) } },
+  { "namespace/memberdecl/typedefs",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecTypedefMembers(),
+                                                            []() { return compileOptions(theTranslator->trTypedefs()); })
+                                                  } },
+  { "namespace/memberdecl/sequences",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecSequenceMembers(),
+                                                            []() { return compileOptions(theTranslator->trSequences()); })
+                                                  } },
+  { "namespace/memberdecl/dictionaries",          { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDictionaryMembers(),
+                                                            []() { return compileOptions(theTranslator->trDictionaries()); })
+                                                  } },
+  { "namespace/memberdecl/enums",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerations()); })
+                                                  } },
+  { "namespace/memberdecl/functions",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFuncMembers(),
+                                                            []() { return compileOptions(/* default */      theTranslator->trFunctions(),
+                                                                           SrcLangExt::Fortran,theTranslator->trSubprograms(),
+                                                                           SrcLangExt::VHDL,   theTranslator->trFunctionAndProc()); })
+                                                  } },
+  { "namespace/memberdecl/variables",             { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecVarMembers(),
+                                                            []() { return compileOptions(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
+                                                                                              theTranslator->trConstants() :
+                                                                                              theTranslator->trVariables()); })
+                                                  } },
+  { "namespace/memberdecl/properties",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Properties(),
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
+                                                  } },
+  { "namespace/memberdef",                        { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
+  { "namespace/memberdef/inlineclasses",          { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceInlineClasses,
+                                                            []() { return compileOptions(/* default */      theTranslator->trClassDocumentation(),
+                                                                           SrcLangExt::Fortran,theTranslator->trTypeDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/typedefs",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocTypedefMembers(),
+                                                            []() { return compileOptions(theTranslator->trTypedefDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/sequences",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocSequenceMembers(),
+                                                            []() { return compileOptions(theTranslator->trSequenceDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/dictionaries",           { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDictionaryMembers(),
+                                                            []() { return compileOptions(theTranslator->trDictionaryDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/enums",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEnumMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerationTypeDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/functions",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocFuncMembers(),
+                                                            []() { return compileOptions(/* default */      theTranslator->trFunctionDocumentation(),
+                                                                           SrcLangExt::Fortran,theTranslator->trSubprogramDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/variables",              { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocVarMembers(),
+                                                            []() { return compileOptions(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
+                                                                                              theTranslator->trConstantDocumentation() :
+                                                                                              theTranslator->trVariableDocumentation()); })
+                                                  } },
+  { "namespace/memberdef/properties",             { startCb(&LayoutParser::startMemberDefEntry, MemberListType::PropertyMembers(),
+                                                            []() { return compileOptions(theTranslator->trPropertyDocumentation()); })
+                                                  } },
+
+  // file layout handlers
+  { "file",                                       { startCb(&LayoutParser::startTop,LayoutDocManager::File,"file/",LayoutNavEntry::Files),
+                                                    endCb(&LayoutParser::endTop)
+                                                  } },
+  { "file/briefdescription",                      { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc) } },
+  { "file/detaileddescription",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::DetailedDesc,
+                                                            []() { return compileOptions(theTranslator->trDetailedDescription()); })
+                                                  } },
+  { "file/authorsection",                         { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::AuthorSection)       } },
+  { "file/includes",                              { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::FileIncludes)        } },
+  { "file/includegraph",                          { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::FileIncludeGraph)    } },
+  { "file/includedbygraph",                       { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::FileIncludedByGraph) } },
+  { "file/sourcelink",                            { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::FileSourceLink)      } },
+  { "file/memberdecl/membergroups",               { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::MemberGroups)        } },
+  { "file/memberdecl",                            { startCb(&LayoutParser::startMemberDecl), endCb(&LayoutParser::endMemberDecl)  } },
+  { "file/memberdecl/interfaces",                 { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileInterfaces,
+                                                            []() { return compileOptions(theTranslator->trSliceInterfaces()); })
+                                                  } },
+  { "file/memberdecl/classes",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileClasses,
+                                                            []() { return compileOptions(/* default */      theTranslator->trCompounds(),
+                                                                                         SrcLangExt::VHDL,   theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::Fortran,theTranslator->trDataTypes()); })
+                                                  } },
+  { "file/memberdecl/concepts",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::FileConcepts,
+                                                            []() { return compileOptions(theTranslator->trConcept(true,false)); })
+                                                  } },
+  { "file/memberdecl/structs",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileStructs,
+                                                            []() { return compileOptions(theTranslator->trStructs()); })
+                                                  } },
+  { "file/memberdecl/exceptions",                 { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileExceptions,
+                                                            []() { return compileOptions(theTranslator->trExceptions()); })
+                                                  } },
+  { "file/memberdecl/namespaces",                 { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileNamespaces,
+                                                            []() { return compileOptions(/* default */      theTranslator->trNamespaces(),
+                                                                                         SrcLangExt::Java,   theTranslator->trPackages(),
+                                                                                         SrcLangExt::IDL,    theTranslator->trModules(),
+                                                                                         SrcLangExt::Fortran,theTranslator->trModules(),
+                                                                                         SrcLangExt::Slice,  theTranslator->trModules()); })
+                                                  } },
+  { "file/memberdecl/constantgroups",             { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileConstantGroups,
+                                                            []() { return compileOptions(theTranslator->trConstantGroups()); })
+                                                  } },
+  { "file/memberdecl/defines",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDefineMembers(),
+                                                            []() { return compileOptions(theTranslator->trDefines()); })
+                                                  } },
+  { "file/memberdecl/typedefs",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecTypedefMembers(),
+                                                            []() { return compileOptions(theTranslator->trTypedefs()); })
+                                                  } },
+  { "file/memberdecl/sequences",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecSequenceMembers(),
+                                                            []() { return compileOptions(theTranslator->trSequences()); })
+                                                  } },
+  { "file/memberdecl/dictionaries",               { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDictionaryMembers(),
+                                                            []() { return compileOptions(theTranslator->trDictionaries()); })
+                                                  } },
+  { "file/memberdecl/enums",                      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerations()); })
+                                                  } },
+  { "file/memberdecl/functions",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFuncMembers(),
+                                                            []() { return compileOptions(/* default */      theTranslator->trFunctions(),
+                                                                                         SrcLangExt::Fortran,theTranslator->trSubprograms(),
+                                                                                         SrcLangExt::VHDL,   theTranslator->trFunctionAndProc()); })
+                                                  } },
+  { "file/memberdecl/variables",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecVarMembers(),
+                                                            []() { return compileOptions(Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
+                                                                                                            theTranslator->trConstants() :
+                                                                                                            theTranslator->trVariables()); })
+                                                  } },
+  { "file/memberdecl/properties",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::Properties(),
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
+                                                  } },
+  { "file/memberdef",                             { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
+
+  { "file/memberdef/inlineclasses",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileInlineClasses,
+                                                            []() { return compileOptions(/* default */       theTranslator->trClassDocumentation(),
+                                                                                         SrcLangExt::Fortran, theTranslator->trTypeDocumentation()); })
+                                                  } },
+  { "file/memberdef/defines",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDefineMembers(),
+                                                            []() { return compileOptions(theTranslator->trDefineDocumentation()); })
+                                                  } },
+  { "file/memberdef/typedefs",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocTypedefMembers(),
+                                                            []() { return compileOptions(theTranslator->trTypedefDocumentation()); })
+                                                  } },
+  { "file/memberdef/sequences",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocSequenceMembers(),
+                                                            []() { return compileOptions(theTranslator->trSequenceDocumentation()); })
+                                                  } },
+  { "file/memberdef/dictionaries",                { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDictionaryMembers(),
+                                                            []() { return compileOptions(theTranslator->trDictionaryDocumentation()); })
+                                                  } },
+  { "file/memberdef/enums",                       { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEnumMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerationTypeDocumentation()); })
+                                                  } },
+  { "file/memberdef/functions",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocFuncMembers(),
+                                                            []() { return compileOptions(/* default */       theTranslator->trFunctionDocumentation(),
+                                                                                         SrcLangExt::Fortran, theTranslator->trSubprogramDocumentation()); })
+                                                  } },
+  { "file/memberdef/variables",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocVarMembers(),
+                                                            []() { return compileOptions(theTranslator->trVariableDocumentation()); })
+                                                  } },
+
+  { "file/memberdef/properties",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::PropertyMembers(),
+                                                            []() { return compileOptions(theTranslator->trPropertyDocumentation()); })
+                                                  } },
+  // group layout handlers
+  { "group",                                      { startCb(&LayoutParser::startTop,LayoutDocManager::Group,"group/",LayoutNavEntry::None),
+                                                    endCb(&LayoutParser::endTop)
+                                                  } },
+  { "group/briefdescription",                     { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc) } },
+  { "group/detaileddescription",                  { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::DetailedDesc,
+                                                            []() { return compileOptions(theTranslator->trDetailedDescription()); })
+                                                  } },
+  { "group/authorsection",                        { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::AuthorSection) } },
+  { "group/groupgraph",                           { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::GroupGraph)    } },
+  { "group/memberdecl",                           { startCb(&LayoutParser::startMemberDecl), endCb(&LayoutParser::endMemberDecl) } },
+  { "group/memberdecl/membergroups",              { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::MemberGroups)  } },
+  { "group/memberdecl/classes",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupClasses,
+                                                            []() { return compileOptions(/* default */       theTranslator->trCompounds(),
+                                                                                         SrcLangExt::VHDL,    theTranslator->trVhdlType(VhdlSpecifier::ENTITY,FALSE),
+                                                                                         SrcLangExt::Fortran, theTranslator->trDataTypes()); })
+                                                  } },
+  { "group/memberdecl/concepts",                  { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupConcepts,
+                                                            []() { return compileOptions(theTranslator->trConcept(true,false)); })
+                                                  } },
+  { "group/memberdecl/modules",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupModules,
+                                                            []() { return compileOptions(theTranslator->trModule(true,false)); })
+                                                  } },
+  { "group/memberdecl/namespaces",                { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupNamespaces,
+                                                            []() { return compileOptions(/* default */       theTranslator->trNamespaces(),
+                                                                                         SrcLangExt::Java,    theTranslator->trPackages(),
+                                                                                         SrcLangExt::Fortran, theTranslator->trModules()); })
+                                                  } },
+  { "group/memberdecl/dirs",                      { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupDirs,
+                                                            []() { return compileOptions(theTranslator->trDirectories()); })
+                                                  } },
+  { "group/memberdecl/nestedgroups",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupNestedGroups,
+                                                            []() { return compileOptions(theTranslator->trTopics()); })
+                                                  } },
+  { "group/memberdecl/files",                     { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupFiles,
+                                                            []() { return compileOptions(theTranslator->trFile(TRUE,FALSE)); })
+                                                  } },
+  { "group/memberdecl/defines",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDefineMembers(),
+                                                            []() { return compileOptions(theTranslator->trDefines()); })
+                                                  } },
+  { "group/memberdecl/typedefs",                  { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecTypedefMembers(),
+                                                            []() { return compileOptions(theTranslator->trTypedefs()); })
+                                                  } },
+  { "group/memberdecl/sequences",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecSequenceMembers(),
+                                                            []() { return compileOptions(theTranslator->trSequences()); })
+                                                  } },
+  { "group/memberdecl/dictionaries",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecDictionaryMembers(),
+                                                            []() { return compileOptions(theTranslator->trDictionaries()); })
+                                                  } },
+  { "group/memberdecl/enums",                     { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerations()); })
+                                                  } },
+  { "group/memberdecl/enumvalues",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumValMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerationValues()); })
+                                                  } },
+  { "group/memberdecl/functions",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFuncMembers(),
+                                                            []() { return compileOptions(/* default */      theTranslator->trFunctions(),
+                                                                                         SrcLangExt::Fortran,theTranslator->trSubprograms(),
+                                                                                         SrcLangExt::VHDL,   theTranslator->trFunctionAndProc()); })
+                                                  } },
+  { "group/memberdecl/variables",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecVarMembers(),
+                                                            []() { return compileOptions(theTranslator->trVariables()); })
+                                                  } },
+  { "group/memberdecl/signals",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecSignalMembers(),
+                                                            []() { return compileOptions(theTranslator->trSignals()); })
+                                                  } },
+  { "group/memberdecl/publicslots",               { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecPubSlotMembers(),
+                                                            []() { return compileOptions(theTranslator->trPublicSlots()); })
+                                                  } },
+  { "group/memberdecl/protectedslots",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecProSlotMembers(),
+                                                            []() { return compileOptions(theTranslator->trProtectedSlots()); })
+                                                  } },
+  { "group/memberdecl/privateslots",              { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecPriSlotMembers(),
+                                                            []() { return compileOptions(theTranslator->trPrivateSlots()); })
+                                                  } },
+  { "group/memberdecl/events",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEventMembers(),
+                                                            []() { return compileOptions(theTranslator->trEvents()); })
+                                                  } },
+  { "group/memberdecl/properties",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecPropMembers(),
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
+                                                  } },
+  { "group/memberdecl/friends",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFriendMembers(),
+                                                            []() { return compileOptions(theTranslator->trFriends()); })
+                                                  } },
+  { "group/memberdef",                            { startCb(&LayoutParser::startMemberDef), endCb(&LayoutParser::endMemberDef) } },
+  { "group/memberdef/pagedocs",                   { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::GroupPageDocs)    } },
+  { "group/memberdef/inlineclasses",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupInlineClasses,
+                                                            []() { return compileOptions(/* default */      theTranslator->trClassDocumentation(),
+                                                                                         SrcLangExt::Fortran,theTranslator->trTypeDocumentation()); })
+                                                  } },
+  { "group/memberdef/defines",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDefineMembers(),
+                                                            []() { return compileOptions(theTranslator->trDefineDocumentation()); })
+                                                  } },
+  { "group/memberdef/typedefs",                   { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocTypedefMembers(),
+                                                            []() { return compileOptions(theTranslator->trTypedefDocumentation()); })
+                                                  } },
+  { "group/memberdef/sequences",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocSequenceMembers(),
+                                                            []() { return compileOptions(theTranslator->trSequenceDocumentation()); })
+                                                  } },
+  { "group/memberdef/dictionaries",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocDictionaryMembers(),
+                                                            []() { return compileOptions(theTranslator->trDictionaryDocumentation()); })
+                                                  } },
+  { "group/memberdef/enums",                      { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEnumMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerationTypeDocumentation()); })
+                                                  } },
+  { "group/memberdef/enumvalues",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEnumValMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerationValueDocumentation()); })
+                                                  } },
+  { "group/memberdef/functions",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocFuncMembers(),
+                                                            []() { return compileOptions(/* default */      theTranslator->trFunctionDocumentation(),
+                                                                                         SrcLangExt::Fortran,theTranslator->trSubprogramDocumentation()); })
+                                                  } },
+  { "group/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocVarMembers(),
+                                                            []() { return compileOptions(theTranslator->trVariableDocumentation()); })
+                                                  } },
+  { "group/memberdef/signals",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocSignalMembers(),
+                                                            []() { return compileOptions(theTranslator->trSignals()); })
+                                                  } },
+  { "group/memberdef/publicslots",                { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocPubSlotMembers(),
+                                                            []() { return compileOptions(theTranslator->trPublicSlots()); })
+                                                  } },
+  { "group/memberdef/protectedslots",             { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocProSlotMembers(),
+                                                            []() { return compileOptions(theTranslator->trProtectedSlots()); })
+                                                  } },
+  { "group/memberdef/privateslots",               { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocPriSlotMembers(),
+                                                            []() { return compileOptions(theTranslator->trPrivateSlots()); })
+                                                  } },
+  { "group/memberdef/events",                     { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocEventMembers(),
+                                                            []() { return compileOptions(theTranslator->trEvents()); })
+                                                  } },
+  { "group/memberdef/properties",                 { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocPropMembers(),
+                                                            []() { return compileOptions(theTranslator->trProperties()); })
+                                                  } },
+  { "group/memberdef/friends",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType::DocFriendMembers(),
+                                                            []() { return compileOptions(theTranslator->trFriends()); })
+                                                  } },
+
+  // module layout handlers
+  { "module",                                     { startCb(&LayoutParser::startTop,LayoutDocManager::Module,"module/",LayoutNavEntry::Modules),
+                                                    endCb(&LayoutParser::endTop)
+                                                  } },
+  { "module/briefdescription",                    { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc) } },
+  { "module/exportedmodules",                     { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ModuleExports,
+                                                            []() { return compileOptions(theTranslator->trExportedModules()); })
+                                                  } },
+  { "module/detaileddescription",                 { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::DetailedDesc,
+                                                            []() { return compileOptions(theTranslator->trDetailedDescription()); })
+                                                  } },
+  { "module/authorsection",                       { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::AuthorSection) } },
+  { "module/memberdecl",                          { startCb(&LayoutParser::startMemberDecl), endCb(&LayoutParser::endMemberDecl) } },
+  { "module/memberdecl/concepts",                 { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ModuleConcepts,
+                                                            []() { return compileOptions(theTranslator->trConcept(true,false)); })
+                                                  } },
+  { "module/memberdecl/classes",                  { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ModuleClasses,
+                                                            []() { return compileOptions(theTranslator->trCompounds()); })
+                                                  } },
+  { "module/memberdecl/enums",                    { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecEnumMembers(),
+                                                            []() { return compileOptions(theTranslator->trEnumerations()); })
+                                                  } },
+  { "module/memberdecl/typedefs",                 { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecTypedefMembers(),
+                                                            []() { return compileOptions(theTranslator->trTypedefs()); })
+                                                  } },
+  { "module/memberdecl/functions",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecFuncMembers(),
+                                                            []() { return compileOptions(theTranslator->trFunctions()); })
+                                                  } },
+  { "module/memberdecl/variables",                { startCb(&LayoutParser::startMemberDeclEntry, MemberListType::DecVarMembers(),
+                                                            []() { return compileOptions(theTranslator->trVariables()); })
+                                                  } },
+  { "module/memberdecl/membergroups",             { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::MemberGroups)  } },
+  { "module/memberdecl/files",                    { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ModuleUsedFiles,
+                                                            []() { return compileOptions(theTranslator->trFile(TRUE,FALSE)); })
+                                                  } },
+
+  // directory layout handlers
+  { "directory",                                  { startCb(&LayoutParser::startTop,LayoutDocManager::Directory,"directory/",LayoutNavEntry::None),
+                                                    endCb(&LayoutParser::endTop)
+                                                  } },
+  { "directory/briefdescription",                 { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc)          } },
+  { "directory/detaileddescription",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::DetailedDesc,
+                                                            []() { return compileOptions(theTranslator->trDetailedDescription()); })
+                                                  } },
+  { "directory/directorygraph",                   { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::DirGraph)           } },
+  { "directory/memberdecl",                       { startCb(&LayoutParser::startMemberDecl), endCb(&LayoutParser::endMemberDecl) } },
+  { "directory/memberdecl/dirs",                  { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::DirSubDirs)         } },
+  { "directory/memberdecl/files",                 { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::DirFiles)           } },
+};
+
+} // namespace
+
+void LayoutParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib )
+{
+  //printf("startElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
+  auto it = g_elementHandlers.find(m_scope.str()+name);
+  if (it!=g_elementHandlers.end())
+  {
+    it->second.startCb(*this,attrib);
+  }
+  else
+  {
+    std::string fileName = m_locator->fileName();
+    warn(fileName.c_str(),m_locator->lineNr(),"Unexpected start tag '%s' found in scope='%s'!",
+        qPrint(name),qPrint(m_scope));
+  }
+}
+
+void LayoutParser::endElement( const std::string &name )
+{
+  //printf("endElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
+  auto it=g_elementHandlers.end();
+
+  if (!m_scope.isEmpty() && m_scope.right(name.length()+1)==name+"/")
+  { // element ends current scope
+    it = g_elementHandlers.find(m_scope.left(m_scope.length()-1).str());
+  }
+  else // continue with current scope
+  {
+    it = g_elementHandlers.find(m_scope.str()+name);
+  }
+  if (it!=g_elementHandlers.end())
+  {
+    it->second.endCb(*this);
+  }
+}
+
+//---------------------------------------------------------------------------------
+
+int LayoutParser::m_userGroupCount=0;
 
 //---------------------------------------------------------------------------------
 
 class LayoutDocManager::Private
 {
   public:
-    QList<LayoutDocEntry> docEntries[LayoutDocManager::NrParts];
-    LayoutNavEntry *rootNav;
+    std::array<LayoutDocEntryList,LayoutDocManager::NrParts> docEntries;
+    LayoutNavEntry rootNav;
 };
 
-LayoutDocManager::LayoutDocManager()
+LayoutDocManager::LayoutDocManager() : d(std::make_unique<Private>())
 {
-  d = new Private;
-  int i;
-  for (i=0;i<LayoutDocManager::NrParts;i++)
-  {
-    d->docEntries[i].setAutoDelete(TRUE);
-  }
-  d->rootNav = new LayoutNavEntry;
-  LayoutParser::instance().init();
-}
-
-
-void LayoutDocManager::init()
-{
-  // parse the default layout
-  LayoutErrorHandler errorHandler( "layout_default.xml" );
-  QXmlInputSource source;
-  source.setData( layout_default );
-  QXmlSimpleReader reader;
-  reader.setContentHandler( &LayoutParser::instance() );
-  reader.setErrorHandler( &errorHandler );
-  reader.parse( source );
 }
 
 LayoutDocManager::~LayoutDocManager()
 {
-  delete d->rootNav;
-  delete d;
+}
+
+void LayoutDocManager::init()
+{
+  LayoutParser &layoutParser = LayoutParser::instance();
+  XMLHandlers handlers;
+  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
+  handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
+  handlers.error        = [&layoutParser](const std::string &fileName,int lineNr,const std::string &msg) { layoutParser.error(fileName,lineNr,msg); };
+  XMLParser parser(handlers);
+  layoutParser.setDocumentLocator(&parser);
+  constexpr auto layoutFile = "layout_default.xml";
+  QCString layout_default = ResourceMgr::instance().getAsString(layoutFile);
+  parser.parse(layoutFile,layout_default.data(),Debug::isFlagSet(Debug::Lex_xml),
+               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",layoutFile); },
+               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",layoutFile); }
+              );
 }
 
 LayoutDocManager & LayoutDocManager::instance()
 {
-  static LayoutDocManager *theInstance = new LayoutDocManager;
-  return *theInstance;
+  static LayoutDocManager theInstance;
+  return theInstance;
 }
 
-const QList<LayoutDocEntry> &LayoutDocManager::docEntries(LayoutDocManager::LayoutPart part) const
+const LayoutDocEntryList &LayoutDocManager::docEntries(LayoutDocManager::LayoutPart part) const
 {
-  return d->docEntries[(int)part];
+  return d->docEntries[static_cast<int>(part)];
 }
 
 LayoutNavEntry* LayoutDocManager::rootNavEntry() const
 {
-  return d->rootNav;
+  return &d->rootNav;
 }
 
-void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntry *e)
+LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry *parent,LayoutNavEntry::Kind k,bool vs,const QCString &bf,
+                                                      const QCString &tl,const QCString &intro)
 {
-  d->docEntries[(int)p].append(e);
+  if (parent==nullptr) parent = &d->rootNav;
+  auto ptr = std::make_unique<LayoutNavEntry>(parent,k,vs,bf,tl,intro);
+  auto child = ptr.get();
+  parent->addChild(std::move(ptr));
+  return child;
+}
+
+void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntryPtr &&e)
+{
+  d->docEntries[static_cast<int>(p)].push_back(std::move(e));
 }
 
 void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
 {
-  d->docEntries[(int)p].clear();
+  d->docEntries[static_cast<int>(p)].clear();
 }
 
-void LayoutDocManager::parse(const char *fileName)
+void LayoutDocManager::parse(const QCString &fileName, const char *data)
 {
-  LayoutErrorHandler errorHandler(fileName);
-  QXmlInputSource source;
-  source.setData(fileToString(fileName));
-  QXmlSimpleReader reader;
-  reader.setContentHandler( &LayoutParser::instance() );
-  reader.setErrorHandler( &errorHandler );
-  reader.parse( source );
+  LayoutParser &layoutParser = LayoutParser::instance();
+  XMLHandlers handlers;
+  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
+  handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
+  handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
+  XMLParser parser(handlers);
+  layoutParser.setDocumentLocator(&parser);
+  parser.parse(fileName.data(),
+               data ? data : fileToString(fileName).data(),
+               Debug::isFlagSet(Debug::Lex_xml),
+               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",qPrint(fileName)); },
+               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",qPrint(fileName)); },
+               transcodeCharacterStringToUTF8
+              );
 }
 
 //---------------------------------------------------------------------------------
 
-void writeDefaultLayoutFile(const char *fileName)
+void writeDefaultLayoutFile(const QCString &fileName)
 {
-  QFile f(fileName);
-  bool ok = openOutputFile(fileName,f);
-  if (!ok)
+  std::ofstream f;
+  if (openOutputFile(fileName,f))
   {
-    err("Failed to open file %s for writing!\n",fileName);
+    TextStream t(&f);
+    QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
+    t << substitute(layout_default,"$doxygenversion",getDoxygenVersion());
+  }
+  else
+  {
+    err("Failed to open file %s for writing!\n",qPrint(fileName));
     return;
   }
-  QTextStream t(&f);
-  t.setEncoding(QTextStream::UnicodeUTF8);
-  t << substitute(layout_default,"$doxygenversion",getVersion());
+  f.close();
 }
 
 //----------------------------------------------------------------------------------
 
 // Convert input to a title.
-// The format of input can be a simple title "A title" or in case there are different 
+// The format of input can be a simple title "A title" or in case there are different
 // titles for some programming languages they can take the following form:
 // "A title|16=Another title|8=Yet Another title"
 // where the number is a value of SrcLangExt in decimal notation (i.e. 16=Java, 8=IDL).
 QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
 {
-  int i,s=0,e=input.find('|');
+  int s=0,e=input.find('|');
   if (e==-1) return input; // simple title case
   int e1=e;
   while (e!=-1) // look for 'number=title' pattern separated by '|'
   {
     s=e+1;
     e=input.find('|',s);
-    i=input.find('=',s);
+    int i=input.find('=',s);
     assert(i>s);
-    int key=input.mid(s,i-s).toInt();
-    if (key==(int)lang) // found matching key
+    SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
+    if (key==lang) // found matching key
     {
-      if (e==-1) e=input.length();
+      if (e==-1) e=static_cast<int>(input.length());
       return input.mid(i+1,e-i-1);
     }
   }

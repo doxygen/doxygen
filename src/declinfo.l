@@ -20,6 +20,13 @@
 %option noyywrap
 %option reentrant
 %option extra-type="struct declinfoYY_state *"
+%top{
+#include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
+}
 
 %{
 
@@ -35,11 +42,12 @@
 #include "util.h"
 #include "message.h"
 #include "types.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 #define YY_NEVER_INTERACTIVE 1
-  
+
 /* -----------------------------------------------------------------
  *
  *	statics
@@ -56,6 +64,7 @@ struct declinfoYY_state
      QCString     name;
      QCString     args;
      int          sharpCount;
+     int          roundCount;
      bool         classTempListFound;
      bool         funcTempListFound;
      QCString     exceptionString;
@@ -63,7 +72,8 @@ struct declinfoYY_state
      bool         insidePHP;
 };
 
-static const char *stateToString(int state);
+[[maybe_unused]] static const char *stateToString(int state);
+
 static void addType(yyscan_t yyscanner);
 static void addTypeName(yyscan_t yyscanner);
 static int yyread(char *buf,int max_size, yyscan_t yyscanner);
@@ -72,20 +82,23 @@ static int yyread(char *buf,int max_size, yyscan_t yyscanner);
  */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
 %}
 
 B       [ \t]
-ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
+Bopt    {B}*
+ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 
-%x      Start
+%x  Start
 %x	Template
 %x	ReadArgs
 %x	Operator
-%x	FuncPtr
-%x	EndTemplate
-%x	StripTempArgs
-%x	SkipSharp
-%x      ReadExceptions
+%x	DeclType
+%x  ReadExceptions
 
 %%
 
@@ -93,6 +106,17 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				  yyextra->name += yytext;
   				  BEGIN(Operator);
   				}
+<Start>{ID}({B}*"*")?{B}*"("{B}*"^"{B}*")"{B}*"(" { // Objective-C 2.0 block return type
+  				  if (!yyextra->insideObjC) 
+				  {
+				    REJECT;
+				  }
+				  else
+				  {
+  				    addType(yyscanner);
+				    yyextra->type += yytext;
+				  }
+                                }
 <Start>{ID}{B}*"("{B}*{ID}{B}*")" { // Objective-C class categories
   				  if (!yyextra->insideObjC) 
 				  {
@@ -109,26 +133,36 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				    REJECT;
 				  }
   				  addTypeName(yyscanner);
-				  yyextra->name += removeRedundantWhiteSpace(yytext);
+				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
   				}
+<Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
+ 				  if (!yyextra->scope.isEmpty())
+				  {
+				    yyextra->scope+=QCString("::")+yytext;
+				  }
+				  else
+				  {
+  				    yyextra->scope = yytext;
+				  }
+                                }
 <Start>([~!]{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
                                         // the / was add to deal with multi-
                                         // dimensional C++ arrays like A[][15]
                                         // the leading ~ is for a destructor
                                         // the leading ! is for a C++/CLI finalizer (see bug 456475 and 635198)
   				  addTypeName(yyscanner);
-				  yyextra->name += removeRedundantWhiteSpace(yytext);
+				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
   				}
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
- 				  if (!yyextra->scope.isEmpty())
+ 				  if (!yyextra->scope.isEmpty() && !yyextra->scope.endsWith("::"))
 				  {
-				    yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
+                                    if (!yyextra->name.isEmpty()) yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
 				  }
 				  else
 				  {
-  				    yyextra->scope = yyextra->name.copy(); // yyextra->scope becomes yyextra->name
+  				    yyextra->scope = yyextra->name; // yyextra->scope becomes yyextra->name
 				  }
-				  yyextra->name.resize(0);
+				  yyextra->name.clear();
   				}
 <Start>{B}*":"			{ // Objective-C argument separator
   				  yyextra->name+=yytext;
@@ -141,17 +175,36 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				  addType(yyscanner);
   				}
 <Start>{B}*"("({ID}"::")*{B}*[&*]({B}*("const"|"volatile"){B}+)?	{
+                                  if (yyextra->insidePHP) REJECT;
   				  addType(yyscanner);
-				  QCString text=yytext;
+				  QCString text(yytext);
 				  yyextra->type+=text.stripWhiteSpace();
   				}
 <Start>{B}*")"			{
   				  yyextra->type+=")";
   				}
+<Start>{B}*"decltype"/{B}*"("	{
+					  yyextra->roundCount=0;
+					  yyextra->type="decltype";
+					  BEGIN(DeclType);
+					}
+<DeclType>{B}*"("	{
+						++yyextra->roundCount;
+						yyextra->type+="(";
+					}
+<DeclType>{B}*")"	{
+						yyextra->type+=")";
+						if (--yyextra->roundCount == 0) {
+							BEGIN(Start);
+						}
+					}
+<DeclType>.	{
+						yyextra->type+=yytext;
+					}
 <Start>{B}*"("			{ // TODO: function pointers
-  				  yyextra->args+="(";
-  				  BEGIN(ReadArgs);
-  				}
+						yyextra->args+="(";
+						BEGIN(ReadArgs);
+					}
 <Start>{B}*"["			{
   				  yyextra->args+="[";
 				  BEGIN(ReadArgs);
@@ -159,31 +212,47 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*"<"			{
   				  yyextra->name+="<";
 				  yyextra->sharpCount=0;
+                                  yyextra->roundCount=0;
   				  BEGIN(Template);
   				}
 <Template>"<<"			{ yyextra->name+="<<"; }
 <Template>">>"			{ yyextra->name+=">>"; }
+<Template>"("                   { yyextra->name+="(";
+                                  yyextra->roundCount++;
+                                }
+<Template>")"                   { yyextra->name+=")";
+                                  if (yyextra->roundCount>0)
+                                  {
+                                    yyextra->roundCount--;
+                                  }
+                                }
 <Template>"<"			{
   				  yyextra->name+="<";
-  				  yyextra->sharpCount++;
+                                  if (yyextra->roundCount==0)
+                                  {
+  				    yyextra->sharpCount++;
+                                  }
   				}
 <Template>">"			{
   				  yyextra->name+=">";
-  				  if (yyextra->sharpCount)
-				    --yyextra->sharpCount;
-				  else
-				  {
-				    BEGIN(Start);
-				  }
+                                  if (yyextra->roundCount==0)
+                                  {
+                                    if (yyextra->sharpCount)
+                                      --yyextra->sharpCount;
+                                    else
+                                    {
+                                      BEGIN(Start);
+                                    }
+                                  }
   				}
 <Template>.			{
   				  yyextra->name+=*yytext;
   				}
-<Operator>{B}*"("{B}*")"{B}*"<>"{B}*/"("	{
+<Operator>{B}*"("{B}*")"{B}*"<>"{Bopt}/"("	{
   				  yyextra->name+="() <>";
 				  BEGIN(ReadArgs);
   				}
-<Operator>{B}*"("{B}*")"{B}*/"("	{
+<Operator>{B}*"("{B}*")"{Bopt}/"("	{
   				  yyextra->name+="()";
 				  BEGIN(ReadArgs);
   				}
@@ -210,20 +279,20 @@ static void addType(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("addType() yyextra->type='%s' yyextra->scope='%s' yyextra->name='%s'\n",
-  //       yyextra->type.data(),yyextra->scope.data(),yyextra->name.data());
+  //       qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name));
   if (yyextra->name.isEmpty() && yyextra->scope.isEmpty()) return;
   if (!yyextra->type.isEmpty()) yyextra->type+=" ";
   if (!yyextra->scope.isEmpty()) yyextra->type+=yyextra->scope+"::";
   yyextra->type+=yyextra->name;
-  yyextra->scope.resize(0);
-  yyextra->name.resize(0);
+  yyextra->scope.clear();
+  yyextra->name.clear();
 }
 
 static void addTypeName(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("addTypeName() yyextra->type='%s' yyextra->scope='%s' yyextra->name='%s'\n",
-  //       yyextra->type.data(),yyextra->scope.data(),yyextra->name.data());
+  //       qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name));
   if (yyextra->name.isEmpty() || 
       yyextra->name.at(yyextra->name.length()-1)==':')  // end of Objective-C keyword => append to yyextra->name not yyextra->type
   {
@@ -231,19 +300,19 @@ static void addTypeName(yyscan_t yyscanner)
   }
   if (!yyextra->type.isEmpty()) yyextra->type+=' ';
   yyextra->type+=yyextra->name;
-  yyextra->name.resize(0);
+  yyextra->name.clear();
 }
 
 static int yyread(char *buf,int max_size, yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-    int c=0;
-    while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
-    {
-	*buf = yyextra->inputString[yyextra->inputPosition++] ;
-	c++; buf++;
-    }
-    return c;
+  int c=0;
+  while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
+  {
+    *buf = yyextra->inputString[yyextra->inputPosition++] ;
+    c++; buf++;
+  }
+  return c;
 }
 
 /*@ public interface------------------------------------------------------------
@@ -262,32 +331,32 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   struct yyguts_t *yyg = (struct yyguts_t*)g_yyscanner;
 
 #ifdef FLEX_DEBUG
-  declinfoYYset_debug(1,g_yyscanner);
+  declinfoYYset_debug(Debug::isFlagSet(Debug::Lex_declinfo)?1:0,g_yyscanner);
 #endif
 
-  printlex(yy_flex_debug, TRUE, __FILE__, NULL);
-  yyextra->inputString   = decl;
+  DebugLex debugLex(Debug::Lex_declinfo,__FILE__, NULL);
+  yyextra->inputString   = decl.data();
   //printf("Input='%s'\n",yyextra->inputString);
   yyextra->inputPosition      = 0;
   yyextra->classTempListFound = FALSE;
   yyextra->funcTempListFound  = FALSE;
-  yyextra->insideObjC = lang==SrcLangExt_ObjC;
-  yyextra->insidePHP  = lang==SrcLangExt_PHP;
-  yyextra->scope.resize(0);
-  yyextra->className.resize(0);
-  yyextra->classTempList.resize(0);
-  yyextra->funcTempList.resize(0);
-  yyextra->name.resize(0);
-  yyextra->type.resize(0);
-  yyextra->args.resize(0);
-  yyextra->exceptionString.resize(0);
+  yyextra->insideObjC = lang==SrcLangExt::ObjC;
+  yyextra->insidePHP  = lang==SrcLangExt::PHP;
+  yyextra->scope.clear();
+  yyextra->className.clear();
+  yyextra->classTempList.clear();
+  yyextra->funcTempList.clear();
+  yyextra->name.clear();
+  yyextra->type.clear();
+  yyextra->args.clear();
+  yyextra->exceptionString.clear();
   // first we try to find the yyextra->type, yyextra->scope, yyextra->name and arguments
   declinfoYYrestart( yyin, g_yyscanner );
   BEGIN( Start );
   declinfoYYlex(g_yyscanner);
 
   //printf("yyextra->type='%s' class='%s' yyextra->name='%s' yyextra->args='%s'\n",
-  //        yyextra->type.data(),yyextra->scope.data(),yyextra->name.data(),yyextra->args.data());
+  //        qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name),qPrint(yyextra->args));
 
   int nb = yyextra->name.findRev('[');
   if (nb!=-1 && yyextra->args.isEmpty()) // correct for [] in yyextra->name ambiguity (due to Java return yyextra->type allowing [])
@@ -296,32 +365,11 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
     yyextra->name=yyextra->name.left(nb);
   }
 
-#if 0
-  {
-    int l=yyextra->scope.length();
-    int i=0;
-    int skipCount=0;
-    cl.resize(0);
-    ctl.resize(0);
-    for (i=0;i<l;i++)
-    {
-      char c=yyextra->scope.at(i);
-      if (c=='<') 
-	skipCount++;
-      else if (c=='>') 
-	skipCount--;
-      else if (skipCount==0) 
-	cl+=c;
-    }
-  }
-  cl=stripTemplateSpecifiersFromScope(removeRedundantWhiteSpace(yyextra->scope),FALSE); 
-  ctl.resize(0);
-#endif
-
   cl=yyextra->scope;
   n=removeRedundantWhiteSpace(yyextra->name);
-  int il,ir;
-  if ((il=n.find('<'))!=-1 && (ir=n.findRev('>'))!=-1)
+  int il=n.find('<'), ir=n.findRev('>');
+  if (il!=-1 && ir!=-1 && n.at(il+1)!='=')
+    // prevent <=>
     // TODO: handle cases like where n="operator<< <T>" 
   {
     ftl=removeRedundantWhiteSpace(n.right(n.length()-il));
@@ -334,15 +382,14 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   a=removeRedundantWhiteSpace(yyextra->args);
   exc=removeRedundantWhiteSpace(yyextra->exceptionString);
   
-  if (!t.isEmpty() && t.at(t.length()-1)==')') // for function pointers
+  if (!t.isEmpty() && !t.startsWith("decltype") && t.at(t.length()-1)==')') // for function pointers
   {
     a.prepend(")");
     t=t.left(t.length()-1);
   }
   //printf("yyextra->type='%s' class='%s' yyextra->name='%s' yyextra->args='%s'\n",
-  //        t.data(),cl.data(),n.data(),a.data());
+  //        qPrint(t),qPrint(cl),qPrint(n),qPrint(a));
 
-  printlex(yy_flex_debug, FALSE, __FILE__, NULL);
   declinfoYYlex_destroy(g_yyscanner);
   return;
 }
@@ -360,8 +407,8 @@ void dumpDecl(const char *s)
   parseFuncDecl(s,yyextra->className,classTNames,yyextra->type,yyextra->name,yyextra->args,funcTNames);
   msg("yyextra->type='%s' class='%s' classTempl='%s' yyextra->name='%s' "
          "funcTemplateNames='%s' yyextra->args='%s'\n",
-	    yyextra->type.data(),yyextra->className.data(),classTNames.data(),
-	    yyextra->name.data(),funcTNames.data(),yyextra->args.data()
+	    qPrint(yyextra->type),qPrint(yyextra->className),qPrint(classTNames),
+	    qPrint(yyextra->name),qPrint(funcTNames),qPrint(yyextra->args)
 	);
 }
 
@@ -379,6 +426,5 @@ int main()
   dumpDecl("void ( * yyextra->Name < T > :: bla ) ( int, char * )"); 
 }
 #endif
-
 
 #include "declinfo.l.h"

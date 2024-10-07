@@ -1,6 +1,6 @@
 <!--
 // objective: test markdown parsing
-// check: md_055_markdown.xml
+// check: md_055__markdown.xml
 -->
 
 # Foo
@@ -22,3 +22,10 @@ More text
 [U]: http://example.com/last-line
 
 Dash - NDash -- MDash --- EDash \- ENDash \-- EMDash \--- E3Dash \-\-\-
+
+Dashes in links shouldn't cause out-of-bounds assertions:
+[--](https://doxygen.nl) [---](https://doxygen.nl)
+
+## Markdown in HTML
+
+<h3>**Header3** blah _blah_ `blah`</h3>

@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "VhdlParser.h"
-// super class for VhdlParserTokenManager 
+// super class for VhdlParserTokenManager
 // is generated in vhdlparser.jj
 // -option TOKEN_MANAGER_SUPER_CLASS = "TokenParser"
 // sets the Vhdlparser in vhdljjparser.cpp
@@ -26,7 +26,7 @@ namespace vhdl {
 }
 
 
-/** @brief Minimal string class with std::string like behaviour that fulfills the JavaCC
+/** @brief Minimal string class with std::string like behavior that fulfills the JavaCC
  *  string requirements.
  */
 
@@ -58,7 +58,7 @@ class VhdlString
     }
     VhdlString(const char *s)
     {
-      m_len = strlen(s);
+      m_len = (int)strlen(s);
       m_str=(char*)malloc(m_len+1);
       memcpy(m_str,s,m_len+1);
     }
@@ -87,7 +87,7 @@ class VhdlString
     }
     VhdlString& append(const char *s)
     {
-      return append(s,strlen(s));
+      return append(s,(int)strlen(s));
     }
     VhdlString& append(const VhdlString &other)
     {
@@ -95,7 +95,7 @@ class VhdlString
     }
     VhdlString substr(int pos=0,int len=-1)
     {
-      return VhdlString(m_str?m_str+pos:0,len==-1?m_len-pos:m_len);
+      return VhdlString(m_str ? m_str+pos : nullptr, len==-1 ? m_len-pos : m_len);
     }
     int copy(char *s,int len,int pos=0) const
     {
@@ -123,9 +123,6 @@ class VhdlString
     int   m_len;
 };
 
-// declare it static otherwise we will get:
-//   multiple definition of `operator+(char const*, VhdlString)'
-// as we are in an include file
-static VhdlString   operator+ (const char *s, VhdlString v) { return VhdlString(s).append(v); }
+inline VhdlString   operator+ (const char *s, VhdlString v) { return VhdlString(s).append(v); }
 
 #endif

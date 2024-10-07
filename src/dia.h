@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,16 +15,17 @@
  *
  */
 
-#ifndef _DIA_H
-#define _DIA_H
+#ifndef DIA_H
+#define DIA_H
 
 class QCString;
-class FTextStream;
 
-enum DiaOutputFormat { DIA_BITMAP , DIA_EPS };
+enum class DiaOutputFormat { BITMAP , EPS };
 
-void writeDiaGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,DiaOutputFormat format);
+
+void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,DiaOutputFormat format,
+                           const QCString &srcFile,int srcLine);
 
 #endif
 

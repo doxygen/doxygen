@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="class_interface" kind="class" language="C++" prot="public" abstract="yes">
     <compoundname>Interface</compoundname>
     <sectiondef kind="public-func">
@@ -8,6 +8,7 @@
         <definition>void Interface::load</definition>
         <argsstring>()</argsstring>
         <name>load</name>
+        <qualifiedname>Interface::load</qualifiedname>
         <briefdescription>
           <para>Load things. </para>
         </briefdescription>
@@ -25,6 +26,7 @@
         <definition>virtual void Interface::doLoad</definition>
         <argsstring>()=0</argsstring>
         <name>doLoad</name>
+        <qualifiedname>Interface::doLoad</qualifiedname>
         <briefdescription>
           <para>Pure virtual implementation for <ref refid="class_interface_1ab58d3008a7001cbb47f2fa5a5a1aeefa" kindref="member">load()</ref> </para>
         </briefdescription>
@@ -40,6 +42,7 @@
         <definition>virtual void Interface::doOtherStuff</definition>
         <argsstring>()</argsstring>
         <name>doOtherStuff</name>
+        <qualifiedname>Interface::doOtherStuff</qualifiedname>
         <briefdescription>
           <para>Non-pure virtual function. </para>
         </briefdescription>
@@ -55,6 +58,7 @@
         <definition>virtual void Interface::doSomethingUndocumented</definition>
         <argsstring>()</argsstring>
         <name>doSomethingUndocumented</name>
+        <qualifiedname>Interface::doSomethingUndocumented</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -68,6 +72,7 @@
         <definition>void Interface::someUtility</definition>
         <argsstring>()</argsstring>
         <name>someUtility</name>
+        <qualifiedname>Interface::someUtility</qualifiedname>
         <briefdescription>
           <para>A non-virtual private function, not extracted. </para>
         </briefdescription>
@@ -83,7 +88,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="080_extract_private_virtual.cpp" line="6" column="16" bodyfile="080_extract_private_virtual.cpp" bodystart="6" bodyend="35"/>
+    <location file="080_extract_private_virtual.cpp" line="6" column="1" bodyfile="080_extract_private_virtual.cpp" bodystart="6" bodyend="35"/>
     <listofallmembers>
       <member refid="class_interface_1a328e0a16ccee5d796ca93801a055d27d" prot="private" virt="pure-virtual">
         <scope>Interface</scope>

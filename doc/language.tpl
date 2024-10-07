@@ -1,6 +1,6 @@
 
-ATTENTION! This is the template for generating language.doc. If you want to
-change the language.doc, make the changes here and inside maintainers.txt.
+ATTENTION! This is the template for generating language.dox. If you want to
+change the language.dox, make the changes here and inside maintainers.txt.
 
 /******************************************************************************
  * %(editnote)s
@@ -54,36 +54,29 @@ This short HOWTO explains how to add support for the new language to doxygen:
 
 Just follow the following steps:
 <ol>
-<li>Tell me for which language you want to add support. If no one else
+<li>Tell me for which language (say `YourLanguage`) you want to add support. If no one else
     is already working on support for that language, you will be
     assigned as the maintainer for the language.
+<li>Add to the file `doxygen/src/config.xml`, at the appropriate place in
+    the \ref cfg_output_language "OUTPUT_LANGUAGE" part, the line:
+\verbatim
+      <value name='YourLanguage'/>
+\endverbatim
 <li>Create a copy of `doxygen/src/translator_en.h` and name it
     `doxygen/src/translator_<your_2_letter_country_code>.h`
     I'll use `xx` in the rest of this document (and `XX` for the uppercase version).
 <li>Edit `doxygen/src/language.cpp`:
     Add the following code:
 \verbatim
-#ifdef LANG_XX
 #include<translator_xx.h>
-#endif
 \endverbatim
-    Remember to use the same symbol `LANG_XX` that was added to `doxygen/src/lang_cfg.h`.
     <p>Now, in <code>setTranslator()</code> add
 \verbatim
-#ifdef LANG_XX
-    else if (L_EQUAL("your_language_name"))
-    {
-      theTranslator = new TranslatorYourLanguage;
-    }
-#endif
+case OUTPUT_LANGUAGE_t::YourLanguage: theTranslator = new TranslatorYourLanguage; break;
 \endverbatim
-    after the <code>if { ... }</code>. I.e., it must be placed after the code
-    for creating the English translator at the beginning, and before the
-    <code>else { ... }</code> part that creates the translator for the
-    default language (English again).
 <li>Edit <code>doxygen/src/translator_xx.h</code>:
    <ul>
-   <li>Use the UTF-8 capable editor and open the file using the UTF-8 mode.
+   <li>Use the UTF-8 capable editor and open the file using the UTF-8 mode (non BOM mode).
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code>
        twice (i.e. in the \c \#ifndef and \c \#define preprocessor commands at
        the beginning of the file).
@@ -106,34 +99,18 @@ Just follow the following steps:
            See the HTML specification for the codes.
      </ul>
    </ul>
-<li>
-    <ul>
-      <li>On *nix systems:<br>
-    <ul>
-        <li>Rerun the `configure` script from the root (i.e. in the \c doxygen  directory) so
-        that it generates `doxygen/src/lang_cfg.h`.
-        This file should now contain a  \c \#define for your language code.<br>
-        <li>Run \c make again from the root (i.e. in the \c doxygen
-        directory) of the distribution, in order to regenerate the `Makefile`s.
-    </ul>
-      <li> On Windows:<br>
-    <ul>
-       <li>stop Visual Stdio<br>
-       <li>open a command window<br>
-       <li>goto the directory `doxygen\src`<br>
-       <li>give the command `python languages.py > ..\winbuild\Languages.rules`<br>
-       <li>close the command window<br>
-       <li>start Visual Studio again<br>
-       <li>Your language should now be selectable in the `General` part of the `Settings` of the `Properties`
-       window of `lang_cfg.py`, by default Your language will be `on`. Rebuild `doxygen` (and `doxywizard`) now.
-    </ul>
-    </ul>
+<li>Edit <code>doxygen/doc/maintainers.txt</code> and add yourself to the list of maintainers like:
+    \code
+         TranslatorYourLanguage
+         <your name>: <your dot email at your dot domain>
+    \endcode
+<li>Build the documentation by giving the appropriate build command (like: `make docs`).
 <li>Now you can use <code>OUTPUT_LANGUAGE = your_language_name</code>
     in the config file to generate output in your language.
-<li>Send <code>translator_xx.h</code> to me so I can add it to doxygen.
+<li>The preferred way is to clone the doxygen repository at GitHub and make a Pull Request.
+    Alternatively send <code>translator_xx.h</code> to me so I can add it to doxygen.
     Send also your name and e-mail address to be included in the
-    \c maintainers.txt list. You can also clone the doxygen repository
-    at GitHub and make a Pull Request later.
+    \c maintainers.txt list.
 </ol>
 
 
@@ -267,9 +244,7 @@ new methods from the source files for each of the languages.
 The information is stored in the translator report ASCII file
 (\c %(translatorReportFileName)s).
 
-\htmlonly If you compiled this documentation
-from sources and if you have also doxygen sources available the
-link %(translatorReportLink)s should be valid.\endhtmlonly
+\htmlonly You can find this file as %(translatorReportLink)s.\endhtmlonly
 
 Looking at the base class of the language translator, the script
 guesses also the status of the translator -- see the last column of

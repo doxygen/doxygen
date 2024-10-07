@@ -27,12 +27,12 @@
  *  The Argument list as a whole can be pure, constant or volatile.
  *
  *  Examples of input strings are:
- *  \code
+ *  \verbatim
  *    "(int a,int b) const"
  *    "(const char *s="hello world",int=5) = 0"
  *    "<class T,class N>"
  *    "(char c,const char)"
- *  \endcode
+ *  \endverbatim
  *
  *  Note: It is not always possible to distinguish between the name and 
  *        type of an argument. In case of doubt the name is added to the
@@ -43,6 +43,13 @@
 %option prefix="defargsYY"
 %option reentrant
 %option extra-type="struct defargsYY_state *"
+%top{
+#include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
+}
 
 %{
 
@@ -53,30 +60,29 @@
 //#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qregexp.h>
-#include <qcstringlist.h>
 
 #include "defargs.h"
 #include "entry.h"
 #include "util.h"
 #include "arguments.h"
 #include "message.h"
+#include "debug.h"
   
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
-  
+
 /* -----------------------------------------------------------------
  *	state variables
  */
 struct defargsYY_state
 {
-  defargsYY_state(const char *inStr,ArgumentList &al,SrcLangExt l)
+  defargsYY_state(const char *inStr,std::unique_ptr<ArgumentList> &al,SrcLangExt l)
     : inputString(inStr), argList(al), lang(l) {}
   const char      *inputString;
-  ArgumentList    &argList;
+  std::unique_ptr<ArgumentList> &argList;
   SrcLangExt       lang;
   int              inputPosition = 0;
-  QCString        *copyArgValue = 0;
+  QCString        *copyArgValue = nullptr;
   QCString         curArgTypeName;
   QCString         curArgDefValue;
   QCString         curArgName;
@@ -86,6 +92,7 @@ struct defargsYY_state
   QCString         curTypeConstraint;
   QCString         extraTypeChars;
   int              argRoundCount = 0;
+  int              argSquareCount = 0;
   int              argSharpCount = 0;
   int              argCurlyCount = 0;
   int              readArgContext = 0;
@@ -95,7 +102,8 @@ struct defargsYY_state
   QCString         delimiter;
 };
 
-static const char *stateToString(int state);
+[[maybe_unused]] static const char *stateToString(int state);
+
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static bool nameIsActuallyPartOfType(QCString &name);
 
@@ -104,12 +112,25 @@ static bool nameIsActuallyPartOfType(QCString &name);
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
+
 %}
 
 B       [ \t]
-ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+Bopt    {B}*
+ID	[$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
+
+  // C start comment 
+CCS   "/\*"
+  // C end comment
+CCE   "*\/"
+  // Cpp comment 
+CPPC  "/\/"
 
 %option noyywrap
 
@@ -118,6 +139,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 %x      CopyRawString
 %x	CopyArgRound
 %x	CopyArgRound2
+%x	CopyArgSquare
 %x	CopyArgSharp
 %x	CopyArgCurly
 %x	ReadFuncArgType
@@ -151,7 +173,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadFuncArgDef>"'"\\."'"		{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"."'"			{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>{RAWBEGIN}              { yyextra->curArgDefValue+=yytext; 
-                                          QCString text=yytext;
+                                          QCString text(yytext);
                                           int i=text.find('"');
                                           yyextra->delimiter = yytext+i+1;
                                           yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
@@ -161,7 +183,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  yyextra->curArgDefValue+=*yytext;
   					  BEGIN( CopyArgString );
   					}
-<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*\^]+{B}*/{ID} { 
+<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*\^]+{Bopt}/{ID} { 
   					  // function pointer as argument
 					  yyextra->curArgTypeName+=yytext;
 					  //yyextra->curArgTypeName=yyextra->curArgTypeName.simplifyWhiteSpace();
@@ -185,17 +207,20 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgPtr>")"			{ // redundant braces detected / remove them
-					  int i=yyextra->curArgTypeName.findRev('('),l=yyextra->curArgTypeName.length();
+					  int i=yyextra->curArgTypeName.findRev('(');
+                                          int l=static_cast<int>(yyextra->curArgTypeName.length());
 					  if (i!=-1)
+                                          {
 					    yyextra->curArgTypeName=yyextra->curArgTypeName.left(i)+
 					                   yyextra->curArgTypeName.right(l-i-1);
+                                          }
 					  yyextra->curArgTypeName+=yyextra->curArgName;
 					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgType>"<="|">="|"->"|">>"|"<<" { // handle operators in defargs
   					  yyextra->curArgTypeName+=yytext;
   					}
-<ReadFuncArgType,ReadFuncArgDef>[({<]	{	 
+<ReadFuncArgType,ReadFuncArgDef>[({<\[]	{	 
 					  if (YY_START==ReadFuncArgType)
 					  {
 					    yyextra->curArgTypeName+=*yytext;
@@ -211,6 +236,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    yyextra->argRoundCount=0; 
 					    BEGIN( CopyArgRound ); 
+					  }
+					  else if (*yytext=='[')
+					  {
+					    yyextra->argSquareCount=0; 
+					    BEGIN( CopyArgSquare ); 
 					  }
 					  else if (*yytext=='{')
 					  {
@@ -246,6 +276,26 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <CopyArgRound>")"/{B}*                  {
 					  *yyextra->copyArgValue += *yytext;
 					  if (yyextra->argRoundCount>0) yyextra->argRoundCount--;
+					  else BEGIN( yyextra->readArgContext );
+                                        }
+<CopyArgSquare>"["                      {
+                                           yyextra->argSquareCount++;
+                                           *yyextra->copyArgValue += *yytext;
+                                        }
+<CopyArgSquare>"]"({B}*{ID})* {
+					  *yyextra->copyArgValue += yytext;
+					  if (yyextra->argSquareCount>0) 
+					  {
+					    yyextra->argRoundCount--;
+					  }
+					  else 
+					  {
+					    BEGIN( yyextra->readArgContext );
+					  }
+  					}
+<CopyArgSquare>"]"/{B}*                  {
+					  *yyextra->copyArgValue += *yytext;
+					  if (yyextra->argSquareCount>0) yyextra->argSquareCount--;
 					  else BEGIN( yyextra->readArgContext );
                                         }
 <CopyArgSharp>"<<"                      {
@@ -315,7 +365,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <CopyRawString>{RAWEND}                 {
 					  yyextra->curArgDefValue+=yytext;
-                                          QCString delimiter = yytext+1;
+                                          QCString delimiter(yytext+1);
                                           delimiter=delimiter.left(delimiter.length()-1);
                                           if (delimiter==yyextra->delimiter)
                                           {
@@ -329,10 +379,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadFuncArgType>"="			{
 					  BEGIN( ReadFuncArgDef );
   					}
-<ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*("/*"[*!]|"//"[/!])"<" {
+<ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*({CCS}[*!]|{CPPC}[/!])"<" {
 					  yyextra->lastDocContext=YY_START;
 					  yyextra->lastDocChar=*yytext;  
-					  QCString text=yytext;
+					  QCString text(yytext);
 					  if (text.find("//")!=-1)
 					    BEGIN( ReadDocLine );
 					  else
@@ -348,19 +398,19 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    yyextra->curArgTypeName=removeRedundantWhiteSpace(yyextra->curArgTypeName);
 					    yyextra->curArgDefValue=yyextra->curArgDefValue.stripWhiteSpace();
-					    //printf("curArgType='%s' curArgDefVal='%s'\n",yyextra->curArgTypeName.data(),yyextra->curArgDefValue.data());
-					    int l=yyextra->curArgTypeName.length();
+					    //printf("curArgType='%s' curArgDefVal='%s'\n",qPrint(yyextra->curArgTypeName),qPrint(yyextra->curArgDefValue));
+					    int l = static_cast<int>(yyextra->curArgTypeName.length());
 					    if (l>0)
 					    {
 					      int i=l-1;
-					      while (i>=0 && (isspace((uchar)yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='.')) i--;
+					      while (i>=0 && (isspace((uint8_t)yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='.')) i--;
 					      while (i>=0 && (isId(yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='$')) i--;
 					      Argument a;
-					      a.attrib  = yyextra->curArgAttrib.copy();
+					      a.attrib  = yyextra->curArgAttrib;
                                               a.typeConstraint = yyextra->curTypeConstraint.stripWhiteSpace();
 					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
-					      //        a->type.data(),a->name.data(),i,l);
-					      a.array.resize(0);
+					      //        qPrint(a->type),qPrint(a->name),i,l);
+					      a.array.clear();
 					      if (i==l-1 && yyextra->curArgTypeName.at(i)==')') // function argument
 					      {
 						int bi=yyextra->curArgTypeName.find('(');
@@ -387,20 +437,22 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						// and need to correct it to avoid seeing a nameless parameter
 						// "struct A" as a parameter with type "struct" and name "A".
 						int sv=0;
-						if      (a.type.left(6)=="const ")    sv=6;
-						else if (a.type.left(9)=="volatile ") sv=9;
+						if      (a.type.startsWith("const "))    sv=6;
+						else if (a.type.startsWith("volatile ")) sv=9;
 
 						if (a.type.mid(sv)=="struct"    ||
 						    a.type.mid(sv)=="union"     ||
 						    a.type.mid(sv)=="class"     ||
 						    a.type.mid(sv)=="typename"  ||
+						    a.type=="const"             ||
+						    a.type=="volatile"          ||
 						    nameIsActuallyPartOfType(a.name)
 						   )
 						{
 						  a.type = a.type + " " + a.name;
-						  a.name.resize(0);
+						  a.name.clear();
 						}
-						//printf(" --> a->type='%s' a->name='%s'\n",a->type.data(),a->name.data());
+						//printf(" --> a->type='%s' a->name='%s'\n",qPrint(a->type),qPrint(a->name));
 					      }
 					      else // assume only the type was specified, try to determine name later 
 					      {
@@ -412,12 +464,12 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                                 a.type = "";
                                               }
 					      a.array  += removeRedundantWhiteSpace(yyextra->curArgArray);
-					      //printf("array=%s\n",a->array.data());
-					      int alen = a.array.length();
+					      //printf("array=%s\n",qPrint(a->array));
+					      size_t alen = a.array.length();
 					      if (alen>2 && a.array.at(0)=='(' && 
 						            a.array.at(alen-1)==')') // fix-up for int *(a[10])
 					      {
-						int i=a.array.find('[')-1;
+						i=a.array.find('[')-1;
 						a.array = a.array.mid(1,alen-2);
 						if (i>0 && a.name.isEmpty())
 						{
@@ -425,18 +477,18 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						  a.array = a.array.mid(i);
 						}
 					      }
-					      a.defval = yyextra->curArgDefValue.copy();
-					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",a->type.data(),a->name.data(),a->defval.data());
+					      a.defval = yyextra->curArgDefValue;
+					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",qPrint(a->type),qPrint(a->name),qPrint(a->defval));
 					      a.docs   = yyextra->curArgDocs.stripWhiteSpace();
-					      //printf("Argument '%s' '%s' adding docs='%s'\n",a->type.data(),a->name.data(),a->docs.data());
-					      yyextra->argList.push_back(a);
+					      //printf("Argument '%s' '%s' adding docs='%s'\n",qPrint(a->type),qPrint(a->name),qPrint(a->docs));
+					      yyextra->argList->push_back(a);
 					    }
-					    yyextra->curArgAttrib.resize(0);
-					    yyextra->curArgTypeName.resize(0);
-					    yyextra->curArgDefValue.resize(0);
-					    yyextra->curArgArray.resize(0);
-					    yyextra->curArgDocs.resize(0);
-                                            yyextra->curTypeConstraint.resize(0);
+					    yyextra->curArgAttrib.clear();
+					    yyextra->curArgTypeName.clear();
+					    yyextra->curArgDefValue.clear();
+					    yyextra->curArgArray.clear();
+					    yyextra->curArgDocs.clear();
+                                            yyextra->curTypeConstraint.clear();
 					    if (*yytext==')')
 					    {
 					      BEGIN(FuncQual);
@@ -449,25 +501,25 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <ReadFuncArgType,ReadFuncArgPtr>"extends" {
-                                           if (yyextra->lang!=SrcLangExt_Java)
+                                           if (yyextra->lang!=SrcLangExt::Java)
                                            {
                                              REJECT;
                                            }
                                            else
                                            {
-                                             yyextra->curTypeConstraint.resize(0);
+                                             yyextra->curTypeConstraint.clear();
                                              yyextra->lastExtendsContext=YY_START;
                                              BEGIN(ReadTypeConstraint);
                                            }
                                         }
 <ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} { 
-  					  QCString name=yytext; //resolveDefines(yytext);
+  					  QCString name(yytext);
 					  if (YY_START==ReadFuncArgType && yyextra->curArgArray=="[]") // Java style array
 					  {
 					    yyextra->curArgTypeName+=" []";
-					    yyextra->curArgArray.resize(0);
+					    yyextra->curArgArray.clear();
 					  }
-					  //printf("resolveName '%s'->'%s'\n",yytext,name.data());
+					  //printf("resolveName '%s'->'%s'\n",yytext,qPrint(name));
   					  yyextra->curArgTypeName+=name;
 					}
 <ReadFuncArgType,ReadFuncArgPtr>.	{ 
@@ -480,11 +532,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadFuncArgDef,CopyArgString,CopyRawString>.		{
 					  yyextra->curArgDefValue+=*yytext;
   					}
-<CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>{ID}  {
-  					  QCString name=yytext; //resolveDefines(yytext);
-					  *yyextra->copyArgValue+=name;
+<CopyArgRound,CopyArgRound2,CopyArgSquare,CopyArgSharp,CopyArgCurly>{ID}  {
+					  *yyextra->copyArgValue+=yytext;
 					}
-<CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
+<CopyArgRound,CopyArgRound2,CopyArgSquare,CopyArgSharp,CopyArgCurly>.  {
 					  *yyextra->copyArgValue += *yytext;
 					}
 <ReadTypeConstraint>[,)>]               {
@@ -498,23 +549,25 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           yyextra->curTypeConstraint+=' ';
                                         }
 <FuncQual>"const"		       	{
-					  yyextra->argList.constSpecifier=TRUE;
+					  yyextra->argList->setConstSpecifier(TRUE);
 					}
 <FuncQual>"volatile"		    	{
-					  yyextra->argList.volatileSpecifier=TRUE;
+					  yyextra->argList->setVolatileSpecifier(TRUE);
 					}
+<FuncQual>"override"                    {
+                                        }
 <FuncQual>"&"		    	        {
-                                          yyextra->argList.refQualifier=RefQualifierLValue;
+                                          yyextra->argList->setRefQualifier(RefQualifierType::LValue);
 					}
 <FuncQual>"&&"		    	        {
-                                          yyextra->argList.refQualifier=RefQualifierRValue;
+                                          yyextra->argList->setRefQualifier(RefQualifierType::RValue);
 					}
 <FuncQual,TrailingReturn>"="{B}*"0"  	{
-					  yyextra->argList.pureSpecifier=TRUE;
+					  yyextra->argList->setPureSpecifier(TRUE);
                                           BEGIN(FuncQual);
 					}
 <FuncQual>"->"                          { // C++11 trailing return type
-                                          yyextra->argList.trailingReturnType=" -> ";
+                                          yyextra->argList->setTrailingReturnType(QCString(" -> "));
                                           BEGIN(TrailingReturn);
                                         }
 <TrailingReturn>{B}/("final"|"override"){B}*  {
@@ -522,10 +575,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>.                       {
-                                          yyextra->argList.trailingReturnType+=yytext;
+                                          yyextra->argList->setTrailingReturnType(yyextra->argList->trailingReturnType()+yytext);
                                         }
 <TrailingReturn>\n                      {
-                                          yyextra->argList.trailingReturnType+=yytext;
+                                          yyextra->argList->setTrailingReturnType(yyextra->argList->trailingReturnType()+yytext);
                                         }
 <FuncQual>")"{B}*"["[^]]*"]"		{ // for functions returning a pointer to an array, 
                                           // i.e. ")[]" in "int (*f(int))[4]" with argsString="(int))[4]"
@@ -537,7 +590,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadDocLine>[^\n]+			{
   					  yyextra->curArgDocs+=yytext;
   					}
-<ReadDocBlock>"*/"			{ 
+<ReadDocBlock>{CCE}			{ 
   					  if (yyextra->lastDocChar!=0)
 					    unput(yyextra->lastDocChar);
   					  BEGIN(yyextra->lastDocContext); 
@@ -553,7 +606,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadDocBlock>.				{
   					  yyextra->curArgDocs+=*yytext;
   					}
-<*>("/*"[*!]|"//"[/!])("<"?)		{
+<*>({CCS}[*!]|{CPPC}[/!])("<"?)		{
   					  yyextra->lastDocContext=YY_START;
 					  yyextra->lastDocChar=0;  
 					  if (yytext[1]=='/')
@@ -634,13 +687,12 @@ void
 class KeywordHash
 {
   private:
-    static inline unsigned int hash (const char *str, size_t len);
+    static inline size_t hash (const char *str, size_t len);
   public:
     static const char *find (const char *str, size_t len);
 };
 
-inline unsigned int
-KeywordHash::hash (const char *str, size_t len)
+inline size_t KeywordHash::hash (const char *str, size_t len)
 {
   static const unsigned char asso_values[] =
   {
@@ -671,7 +723,7 @@ KeywordHash::hash (const char *str, size_t len)
     49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
     49, 49, 49, 49, 49, 49
   };
-  unsigned int hval = len;
+  size_t hval = len;
 
   switch (hval)
   {
@@ -687,8 +739,7 @@ KeywordHash::hash (const char *str, size_t len)
   return hval;
 }
 
-const char *
-KeywordHash::find (const char *str, size_t len)
+const char * KeywordHash::find (const char *str, size_t len)
 {
   static const char * const wordlist[] =
   {
@@ -732,7 +783,7 @@ KeywordHash::find (const char *str, size_t len)
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
   {
-    unsigned int key = hash (str, len);
+    size_t key = hash (str, len);
 
     if (key <= MAX_HASH_VALUE)
     {
@@ -742,7 +793,7 @@ KeywordHash::find (const char *str, size_t len)
         return s;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 //--- end gperf generated code ----------------------------------------------------------
@@ -750,40 +801,41 @@ KeywordHash::find (const char *str, size_t len)
 /* bug_520975 */
 static bool nameIsActuallyPartOfType(QCString &name)
 {
-  return KeywordHash::find(name.data(),name.length())!=0;
+  return KeywordHash::find(name.data(),name.length())!=nullptr;
 }
 
 /*! Converts an argument string into an ArgumentList.
+ *  \param[in] lang language of the current argument list
  *  \param[in] argsString the list of Arguments.
- *  \param[out] al a reference to resulting argument list pointer.
  *  \param[out] extraTypeChars point to string to which trailing characters 
  *              for complex types are written to
  */
  
-void stringToArgumentList(SrcLangExt lang, const char *argsString,ArgumentList& al,QCString *extraTypeChars)
+std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCString &argsString,QCString *extraTypeChars)
 {
-  if (argsString==0) return;
+  std::unique_ptr<ArgumentList> al = std::make_unique<ArgumentList>();
+  if (argsString.isEmpty()) return al;
 
   yyscan_t yyscanner;
-  defargsYY_state extra(argsString,al,lang);
+  defargsYY_state extra(argsString.data(),al,lang);
   defargsYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
-  defargsYYset_debug(1,yyscanner);
+  defargsYYset_debug(Debug::isFlagSet(Debug::Lex_defargs)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  printlex(yy_flex_debug, TRUE, __FILE__, NULL);
+  DebugLex debugLex(Debug::Lex_defargs, __FILE__, nullptr);
 
-  defargsYYrestart( 0, yyscanner );
+  defargsYYrestart( nullptr, yyscanner );
   BEGIN( Start );
   defargsYYlex(yyscanner);
-  if (yyextra->argList.empty())
+  if (yyextra->argList->empty())
   {
-    yyextra->argList.noParameters = TRUE;
+    yyextra->argList->setNoParameters(TRUE);
   }
   if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
-  //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
-  printlex(yy_flex_debug, FALSE, __FILE__, NULL);
+  //printf("stringToArgumentList(%s) result=%s\n",argsString,qPrint(argListToString(*al)));
   defargsYYlex_destroy(yyscanner);
+  return al;
 }
 
 #include "defargs.l.h"

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="group___b" kind="group">
+    <compoundname>B</compoundname>
+    <title>B</title>
+    <innerfile refid="more__100__b_8c">more_100_b.c</innerfile>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="group___b_1gaa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no" strong="no">
+        <type/>
+        <name>E</name>
+        <enumvalue id="group___b_1ggaa57b8491d1d8fc1014dd54bcf83b130aa42a4ade1acd55a49164099104990e09f" prot="public">
+          <name>A</name>
+          <briefdescription>
+            <para>A in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+          </briefdescription>
+          <detaileddescription>
+            <para>More for A in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="group___b_1ggaa57b8491d1d8fc1014dd54bcf83b130aa3f2a77ecd272aa6d6b5902faa5e5fc68" prot="public">
+          <name>B</name>
+          <briefdescription>
+            <para>B in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+          </briefdescription>
+          <detaileddescription>
+            <para>More for B in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para><ref refid="group___b_1gaa57b8491d1d8fc1014dd54bcf83b130a" kindref="member">E</ref> in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for <ref refid="group___a_1gaa57b8491d1d8fc1014dd54bcf83b130a" kindref="member">E</ref> in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_100_b.c" line="14" column="1" bodyfile="more_100_b.c" bodystart="14" bodyend="24"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="group___b_1ga5a6fd16639bb7ebdbd75952dc246cf51" prot="public" static="no">
+        <type>struct <ref refid="structs" kindref="compound">s</ref></type>
+        <definition>typedef struct s T</definition>
+        <argsstring/>
+        <name>T</name>
+        <briefdescription>
+          <para><ref refid="group___b_1ga5a6fd16639bb7ebdbd75952dc246cf51" kindref="member">T</ref> in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for <ref refid="group___a_1ga5a6fd16639bb7ebdbd75952dc246cf51" kindref="member">T</ref> in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_100_b.c" line="45" column="16" bodyfile="more_100_b.c" bodystart="45" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="group___b_1gacb559820d9ca11295b4500f179ef6392" prot="public" static="yes" mutable="no">
+        <type>int</type>
+        <definition>int i</definition>
+        <argsstring/>
+        <name>i</name>
+        <briefdescription>
+          <para>i in more_100_a.c. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for i in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_100_b.c" line="52" column="12" bodyfile="more_100_b.c" bodystart="52" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="group___b_1gabc536d5f4f9a56b7edcce32ed3a06140" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>static void f</definition>
+        <argsstring>(void)</argsstring>
+        <name>f</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>f() in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for f() in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_100_b.c" line="38" column="13" bodyfile="more_100_b.c" bodystart="38" bodyend="38"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="group___b_1gaf316c33cc298530f245e8b55330e86b5" prot="public" static="no">
+        <name>D</name>
+        <initializer>1</initializer>
+        <briefdescription>
+          <para>D in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for D in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_100_b.c" line="31" column="9" bodyfile="more_100_b.c" bodystart="31" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

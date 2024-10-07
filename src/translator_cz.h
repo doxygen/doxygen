@@ -20,6 +20,28 @@
 
 // Updates:
 // --------
+// 2022/08/30 - Updated for "new since 1.9.6" by: <petyovsky@vut.cz>
+//              Changed translation: `trMemberFunctionDocumentation()`.
+//              Added new translation: `trFlowchart()`.
+// 2022/08/25 - Updated for "new since 1.9.4" by: <petyovsky@vut.cz>
+//              removed all implicit conversion from QCString to const char *,
+//              fixed issues: #7434, #8404, #9192,
+//              fixed typo and spacing in: `trLegendDocs()`,
+//              fixed plural in: `trTemplateParameters()`,
+//              better translation considering the context: `trMemberTypedefDocumentation()`,
+//                `trMemberEnumerationDocumentation()`, `trMemberFunctionDocumentation()`,
+//                `trMemberDataDocumentation()`, `trDefineDocumentation()`, `trDirDocumentation()`,
+//                `trTypeDocumentation()`.
+//              updated translation in context of non OO languages: `trHierarchicalIndex()`
+//                `trGotoGraphicalHierarchy()`, `trGotoTextualHierarchy()`, `trCompoundMembersFortran()`.
+//              updated translation in: `trNoMatches()`, trPackageAttribs(), trStaticPackageAttribs().
+//              fixed wrong translation in: `trCompoundReferenceFortran()` of `case ClassDef::Class:`.
+//              unified translation string in: `trGeneratedFromFilesFortran` according to `trGeneratedFromFiles()`.
+//              fixed wrong wording in: `trCompoundReferenceSlice` of `case ClassDef::Interface:` when `isLocal==true`.
+//              minor spacing and comments changes for better convergence to the reference file: `translator_en.h`.
+//              all unclear or fuzzy czech translations marked with ???.
+// 2021/08/31 - Updated for "new since 1.9.3" by: <petyovsky@vut.cz>.
+// 2021/01/22 - Updated for "new since 1.9.2" by: <petyovsky@vut.cz>.
 // 2013/04/11 - Updates for "new since 1.8.4".
 // 2012/07/31 - Updates for "new since 1.8.2".
 // 2012/04/10 - Updates for "new since 1.8.0".
@@ -85,15 +107,58 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public TranslatorAdapter_1_8_15
+/*!
+ When defining a translator class for the new language, follow
+ the description in the documentation.  One of the steps says
+ that you should copy the translator_en.h (this) file to your
+ translator_xx.h new file.  Your new language should use the
+ Translator class as the base class.  This means that you need to
+ implement exactly the same (pure virtual) override methods as the
+ TranslatorEnglish does.  Because of this, it is a good idea to
+ start with the copy of TranslatorEnglish and replace the strings
+ one by one.
+
+ It is not necessary to include "translator.h" or
+ "translator_adapter.h" here.  The files are included in the
+ language.cpp correctly.  Not including any of the mentioned
+ files frees the maintainer from thinking about whether the
+ first, the second, or both files should be included or not, and
+ why.  This holds namely for localized translators because their
+ base class is changed occasionally to adapter classes when the
+ Translator class changes the interface, or back to the
+ Translator class (by the local maintainer) when the localized
+ translator is made up-to-date again.
+*/
+class TranslatorCzech : public TranslatorAdapter_1_9_6
 {
   public:
+
     // --- Language control methods -------------------
 
-    virtual QCString idLanguage()
+    /*! Used for identification of the language. The identification
+     * should not be translated. It should be replaced by the name
+     * of the language in English using lower-case characters only
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
+     * the identification used in language.cpp.
+     */
+    QCString idLanguage() override
     { return "czech"; }
 
-    virtual QCString latexLanguageSupportCommand()
+    /*! Used to get the LaTeX command(s) for the language support.
+     *  This method should return string with commands that switch
+     *  LaTeX to the desired language.  For example
+     *  <pre>"\\usepackage[german]{babel}\n"
+     *  </pre>
+     *  or
+     *  <pre>"\\usepackage{polski}\n"
+     *  "\\usepackage[latin2]{inputenc}\n"
+     *  "\\usepackage[T1]{fontenc}\n"
+     *  </pre>
+     *
+     * The English LaTeX does not use such commands.  Because of this
+     * the empty string is returned in this implementation.
+     */
+    QCString latexLanguageSupportCommand() override
     {
       return "\\usepackage[T2A]{fontenc}\n"
              "\\usepackage[czech]{babel}\n"
@@ -105,86 +170,108 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
              "\\makeatother\n";
     }
 
+    QCString trISOLang() override
+    {
+      return "cs";
+    }
+
+    QCString getLanguageString() override
+    {
+      return "0x405 Czech";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    virtual QCString trRelatedFunctions()
+    QCString trRelatedFunctions() override
     { return "Související funkce"; }
 
     /*! subscript for the related functions. */
-    virtual QCString trRelatedSubscript()
+    QCString trRelatedSubscript() override
     { return "(Uvedené funkce nejsou členskými funkcemi.)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    virtual QCString trDetailedDescription()
+    QCString trDetailedDescription() override
     { return "Detailní popis"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    QCString trDetails() override
+    { return "Podrobnosti"; }
+
     /*! header that is put before the list of typedefs. */
-    virtual QCString trMemberTypedefDocumentation()
-    { return "Dokumentace k členským typům"; }
+    QCString trMemberTypedefDocumentation() override
+    { return "Dokumentace členských typů"; }
 
     /*! header that is put before the list of enumerations. */
-    virtual QCString trMemberEnumerationDocumentation()
-    { return "Dokumentace k členským výčtům"; }
+    QCString trMemberEnumerationDocumentation() override
+    { return "Dokumentace členských výčtů"; }
 
     /*! header that is put before the list of member functions. */
-    virtual QCString trMemberFunctionDocumentation()
-    { return "Dokumentace k metodám"; }
-
-    /*! header that is put before the list of member attributes. */
-    virtual QCString trMemberDataDocumentation()
+    QCString trMemberFunctionDocumentation() override
     {
-      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
-        return "Dokumentace k položkám";
+        return "Dokumentace členských funkcí/procedur/procesů";
       }
       else
       {
-        return "Dokumentace k datovým členům";
+        return "Dokumentace členských funkcí";
+      }
+    }
+
+    /*! header that is put before the list of member attributes. */
+    QCString trMemberDataDocumentation() override
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Dokumentace položek";
+      }
+      else
+      {
+        return "Dokumentace datových členů";
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore()
+    QCString trMore() override
     { return "..."; }
 
     /*! put in the class documentation */
-    virtual QCString trListOfAllMembers()
+    QCString trListOfAllMembers() override
     { return "Seznam všech členů"; }
 
     /*! used as the title of the "list of all members" page of a class */
-    virtual QCString trMemberList()
+    QCString trMemberList() override
     { return "Seznam členů třídy"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    virtual QCString trThisIsTheListOfAllMembers()
-    { return "Zde naleznete úplný seznam členů třídy "; }
+    QCString trThisIsTheListOfAllMembers() override
+    { return "Zde naleznete úplný seznam členů třídy"; }
 
     /*! this is the remainder of the sentence after the class name */
-    virtual QCString trIncludingInheritedMembers()
+    QCString trIncludingInheritedMembers() override
     { return ", včetně všech zděděných členů."; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
-    { QCString result("Generováno automaticky programem Doxygen "
-                      "ze zdrojových textů");
-      if (s) result += QCString(" projektu ") + s;
-      result += ".";
+    QCString trGeneratedAutomatically(const QCString &s) override
+    { QCString result="Vygenerováno automaticky programem Doxygen "
+                      "ze zdrojových textů";
+      if (!s.isEmpty()) result+=" projektu "+s;
+      result+=".";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
-    virtual QCString trEnumName()
+    QCString trEnumName() override
     { return "jméno výčtu"; }
 
     /*! put after an enum value in the list of all members */
-    virtual QCString trEnumValue()
+    QCString trEnumValue() override
     { return "hodnota výčtu"; }
 
     /*! put after an undocumented member in the list of all members */
-    virtual QCString trDefinedIn()
+    QCString trDefinedIn() override
     { return "definován v"; }
 
     // quick reference sections
@@ -192,15 +279,15 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    virtual QCString trModules()
+    QCString trModules() override
     { return "Moduly"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    virtual QCString trClassHierarchy()
+    QCString trClassHierarchy() override
     { return "Hierarchie tříd"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    virtual QCString trCompoundList()
+    QCString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -213,11 +300,11 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    virtual QCString trFileList()
+    QCString trFileList() override
     { return "Seznam souborů"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    virtual QCString trCompoundMembers()
+    QCString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -230,7 +317,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to all members of files. */
-    virtual QCString trFileMembers()
+    QCString trFileMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -243,25 +330,33 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to all related pages. */
-    virtual QCString trRelatedPages()
+    QCString trRelatedPages() override
     { return "Ostatní stránky"; }
 
     /*! This is put above each page as a link to all examples. */
-    virtual QCString trExamples()
+    QCString trExamples() override
     { return "Příklady"; }
 
     /*! This is put above each page as a link to the search engine. */
-    virtual QCString trSearch()
+    QCString trSearch() override
     { return "Hledat"; }
 
     /*! This is an introduction to the class hierarchy. */
-    virtual QCString trClassHierarchyDescription()
-    { return "Zde naleznete seznam, vyjadřující vztah dědičnosti tříd. "
-             "Je seřazen přibližně (ale ne úplně) podle abecedy:";
+    QCString trClassHierarchyDescription() override
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Zde je hierarchický seznam všech entit:";
+      }
+      else
+      {
+        return "Zde naleznete seznam, vyjadřující vztah dědičnosti tříd. "
+               "Je seřazen přibližně (ale ne úplně) podle abecedy:";
+      }
     }
 
     /*! This is an introduction to the list with all files. */
-    virtual QCString trFileListDescription(bool extractAll)
+    QCString trFileListDescription(bool extractAll) override
     {
       QCString result="Zde naleznete seznam všech ";
       if (!extractAll) result+="dokumentovaných ";
@@ -270,55 +365,47 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     }
 
     /*! This is an introduction to the annotated compound list. */
-    virtual QCString trCompoundListDescription()
+    QCString trCompoundListDescription() override
     {
+
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Následující seznam obsahuje identifikace datových "
-                      "struktur a jejich stručné popisy:";
+               "struktur a jejich stručné popisy:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Následující seznam obsahuje identifikace tříd. "
+               "V seznamu jsou uvedeny jejich stručné popisy:";
       }
       else
       {
         return "Následující seznam obsahuje především identifikace "
-                      "tříd, ale nacházejí se zde i další netriviální prvky, "
-                      "jako jsou struktury (struct), unie (union) a rozhraní "
-                      "(interface). V seznamu jsou uvedeny jejich stručné "
-                      "popisy:";
+               "tříd, ale nacházejí se zde i další netriviální prvky, "
+               "jako jsou struktury (struct), unie (union) a rozhraní "
+               "(interface). V seznamu jsou uvedeny jejich stručné "
+               "popisy:";
       }
     }
 
     /*! This is an introduction to the page with all class members. */
-    virtual QCString trCompoundMembersDescription(bool extractAll)
+    QCString trCompoundMembersDescription(bool extractAll) override
     {
-      QCString result= "Zde naleznete seznam všech ";
+      QCString result="Zde naleznete seznam všech ";
       if (!extractAll)
       {
-        result += "dokumentovaných ";
+        result+="dokumentovaných ";
       }
-
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result += "položek struktur (struct) a unií (union) ";
+        result+="položek struktur (struct) a unií (union)";
       }
       else
       {
-        result += "členů tříd ";
+        result+="členů tříd";
       }
-
-      result += "s odkazy na ";
-
-      if (extractAll)
-      {
-        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-        {
-          result += "dokumentaci struktur/unií, ke kterým příslušejí:";
-        }
-        else
-        {
-          result += "dokumentaci tříd, ke kterým příslušejí:";
-        }
-      }
-      else
+      result+=" s odkazy na ";
+      if (!extractAll)
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
@@ -329,12 +416,22 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
           result+="třídy, ke kterým příslušejí:";
         }
       }
-
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="dokumentaci struktur/unií, ke kterým příslušejí:";
+        }
+        else
+        {
+          result+="dokumentaci tříd, ke kterým příslušejí:";
+        }
+      }
       return result;
     }
 
     /*! This is an introduction to the page with all file members. */
-    virtual QCString trFileMembersDescription(bool extractAll)
+    QCString trFileMembersDescription(bool extractAll) override
     {
       QCString result="Zde naleznete seznam všech ";
       if (!extractAll) result+="dokumentovaných ";
@@ -342,57 +439,55 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funkcí, proměnných, maker, výčtů a definic typů (typedef) "
-                "s odkazy na ";
+                "s odkazy";
       }
       else
       {
         result+="symbolů, které jsou definovány na úrovni svých souborů. "
-                "Pro každý symbol je uveden odkaz na ";
+                "Pro každý symbol je uveden odkaz";
       }
-
+      result+=" na ";
       if (extractAll)
         result+="soubory, ke kterým příslušejí:";
       else
         result+="dokumentaci:";
-
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    virtual QCString trExamplesDescription()
+    QCString trExamplesDescription() override
     { return "Zde naleznete seznam všech příkladů:"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    virtual QCString trRelatedPagesDescription()
+    QCString trRelatedPagesDescription() override
     { return "Následující seznam odkazuje na další stránky projektu:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    virtual QCString trModulesDescription()
+    QCString trModulesDescription() override
     { return "Zde naleznete seznam všech modulů:"; }
 
     // index titles (the project name is prepended for these)
 
-
     /*! This is used in HTML as the title of index.html. */
-    virtual QCString trDocumentation()
-    { return "Dokumentace"; }
+    QCString trDocumentation(const QCString &projName) override
+    { return (!projName.isEmpty()?projName + " " : "") + "Dokumentace"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    virtual QCString trModuleIndex()
+    QCString trModuleIndex() override
     { return "Rejstřík modulů"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    virtual QCString trHierarchicalIndex()
-    { return "Rejstřík hierarchie tříd"; }
+    QCString trHierarchicalIndex() override
+    { return "Rejstřík hierarchie"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    virtual QCString trCompoundIndex()
+    QCString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -407,23 +502,27 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex()
+    QCString trFileIndex() override
     { return "Rejstřík souborů"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    virtual QCString trModuleDocumentation()
+    QCString trModuleDocumentation() override
     { return "Dokumentace modulů"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    virtual QCString trClassDocumentation()
+    QCString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Dokumentace datových struktur";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
       }
       else
       {
@@ -434,99 +533,87 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    virtual QCString trFileDocumentation()
+    QCString trFileDocumentation() override
     { return "Dokumentace souborů"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Dokumentace příkladů"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Dokumentace souvisejících stránek"; }
-
     /*! This is used in LaTeX as the title of the document */
-    virtual QCString trReferenceManual()
+    QCString trReferenceManual() override
     { return "Referenční příručka"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    virtual QCString trDefines()
+    QCString trDefines() override
     { return "Definice maker"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    virtual QCString trTypedefs()
+    QCString trTypedefs() override
     { return "Definice typů"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    virtual QCString trEnumerations()
+    QCString trEnumerations() override
     { return "Výčty"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    virtual QCString trFunctions()
+    QCString trFunctions() override
     { return "Funkce"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trVariables()
+    QCString trVariables() override
     { return "Proměnné"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    virtual QCString trEnumerationValues()
+    QCString trEnumerationValues() override
     { return "Hodnoty výčtu"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    virtual QCString trDefineDocumentation()
-    { return "Dokumentace k definicím maker"; }
+    QCString trDefineDocumentation() override
+    { return "Dokumentace definic maker"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    virtual QCString trTypedefDocumentation()
+    QCString trTypedefDocumentation() override
     { return "Dokumentace definic typů"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    virtual QCString trEnumerationTypeDocumentation()
+    QCString trEnumerationTypeDocumentation() override
     { return "Dokumentace výčtových typů"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    virtual QCString trFunctionDocumentation()
+    QCString trFunctionDocumentation() override
     { return "Dokumentace funkcí"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    virtual QCString trVariableDocumentation()
+    QCString trVariableDocumentation() override
     { return "Dokumentace proměnných"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    virtual QCString trCompounds()
+    QCString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "Datové struktry";
+        return "Datové struktury";
       }
       else
       {
@@ -537,78 +624,74 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
     {
-      QCString result("Generováno ");
-      result += date;
-      if (projName)
-          result += QCString(" pro projekt ") + projName;
-      result += " programem";
+      QCString result="Vygenerováno dne: "+date;
+      if (!projName.isEmpty()) result +=", pro projekt: "+projName;
+      result+=", programem";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    QCString trClassDiagram(const QCString &clName) override
     {
-      return QCString("Diagram dědičnosti pro třídu ") + clName;
+      return "Diagram dědičnosti pro třídu "+clName+":";
     }
 
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Pouze pro vnitřní použití."; }
-
     /*! this text is generated when the \\warning command is used. */
-    virtual QCString trWarning()
+    QCString trWarning() override
     { return "Pozor"; }
 
     /*! this text is generated when the \\version command is used. */
-    virtual QCString trVersion()
+    QCString trVersion() override
     { return "Verze"; }
 
     /*! this text is generated when the \\date command is used. */
-    virtual QCString trDate()
+    QCString trDate() override
     { return "Datum"; }
 
     /*! this text is generated when the \\return command is used. */
-    virtual QCString trReturns()
+    QCString trReturns() override
     { return "Návratová hodnota"; }
 
     /*! this text is generated when the \\sa command is used. */
-    virtual QCString trSeeAlso()
+    QCString trSeeAlso() override
     { return "Viz také"; }
 
     /*! this text is generated when the \\param command is used. */
-    virtual QCString trParameters()
+    QCString trParameters() override
     { return "Parametry"; }
 
     /*! this text is generated when the \\exception command is used. */
-    virtual QCString trExceptions()
+    QCString trExceptions() override
     { return "Výjimky"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    virtual QCString trGeneratedBy()
-    { return "Generováno programem"; }
+    QCString trGeneratedBy() override
+    { return "Vygenerováno programem"; }
 
-    // new since 0.49-990307
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990307
+//////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    virtual QCString trNamespaceList()
-    { return "Seznam prostorů jmen"; }
+    QCString trNamespaceList() override
+    { return "Seznam jmenných prostorů"; }
 
     /*! used as an introduction to the namespace list */
-    virtual QCString trNamespaceListDescription(bool extractAll)
+    QCString trNamespaceListDescription(bool extractAll) override
     {
       QCString result="Zde naleznete seznam všech ";
       if (!extractAll) result+="dokumentovaných ";
-      result+="prostorů jmen se stručným popisem:";
+      result+="jmenných prostorů se stručným popisem:";
       return result;
     }
 
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    virtual QCString trFriends()
-    { return "Friends"; }
+    QCString trFriends() override
+    { return "Přátelé třídy"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
@@ -617,29 +700,29 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
-    virtual QCString trRelatedFunctionDocumentation()
-    { return "Dokumentace k friends"; }
+    QCString trRelatedFunctionDocumentation() override
+    { return "Dokumentace přátel a souvisejících funkcí třídy"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
-      QCString result("Dokumentace ");
+      QCString result="Dokumentace ";
       if (isTemplate) result += "šablony ";
       switch(compType)
       {
-        case ClassDef::Class:      result += "třídy "; break;
-        case ClassDef::Struct:     result += "struktury "; break;
-        case ClassDef::Union:      result += "unie "; break;
-        case ClassDef::Interface:  result += "rozhraní "; break;
-        case ClassDef::Protocol:   result += "protokolu "; break;
-        case ClassDef::Category:   result += "kategorie "; break;
-        case ClassDef::Exception:  result += "výjimky "; break;
+        case ClassDef::Class:      result+="třídy "; break;
+        case ClassDef::Struct:     result+="struktury "; break;
+        case ClassDef::Union:      result+="unie "; break;
+        case ClassDef::Interface:  result+="rozhraní "; break;
+        case ClassDef::Protocol:   result+="protokolu "; break;
+        case ClassDef::Category:   result+="kategorie "; break;
+        case ClassDef::Exception:  result+="výjimky "; break;
         default: break;
       }
       result += clName;
@@ -647,17 +730,17 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    QCString trFileReference(const QCString &fileName) override
     {
-      QCString result("Dokumentace souboru ");
+      QCString result="Dokumentace souboru ";
       result+=fileName;
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    QCString trNamespaceReference(const QCString &namespaceName) override
     {
-      QCString result("Dokumentace prostoru jmen ");
+      QCString result="Dokumentace jmenného prostoru ";
       result+=namespaceName;
       return result;
     }
@@ -665,36 +748,35 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*
      *  these are for the member sections of a class, struct or union
      */
-    virtual QCString trPublicMembers()
+    QCString trPublicMembers() override
     { return "Veřejné metody"; }
-    virtual QCString trPublicSlots()
+    QCString trPublicSlots() override
     { return "Veřejné sloty"; }
-    virtual QCString trSignals()
+    QCString trSignals() override
     { return "Signály"; }
-    virtual QCString trStaticPublicMembers()
+    QCString trStaticPublicMembers() override
     { return "Statické veřejné metody"; }
-    virtual QCString trProtectedMembers()
+    QCString trProtectedMembers() override
     { return "Chráněné metody"; }
-    virtual QCString trProtectedSlots()
+    QCString trProtectedSlots() override
     { return "Chráněné sloty"; }
-    virtual QCString trStaticProtectedMembers()
+    QCString trStaticProtectedMembers() override
     { return "Statické chráněné metody"; }
-    virtual QCString trPrivateMembers()
+    QCString trPrivateMembers() override
     { return "Privátní metody"; }
-    virtual QCString trPrivateSlots()
+    QCString trPrivateSlots() override
     { return "Privátní sloty"; }
-    virtual QCString trStaticPrivateMembers()
+    QCString trStaticPrivateMembers() override
     { return "Statické privátní metody"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    virtual QCString trWriteList(int numEntries)
+    QCString trWriteList(int numEntries) override
     {
       QCString result;
-      int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (int i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
         result+=generateMarker(i); // generate marker for entry i in the list
@@ -714,9 +796,9 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritsList(int numEntries)
+    QCString trInheritsList(int numEntries) override
     {
-      QCString result("Dědí z ");
+      QCString result="Dědí z ";
       result += (numEntries == 1) ? "bázové třídy " : "bázových tříd ";
       result += trWriteList(numEntries) + ".";
       return result;
@@ -725,9 +807,9 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritedByList(int numEntries)
+    QCString trInheritedByList(int numEntries) override
     {
-      QCString result("Zděděna ");
+      QCString result="Zděděna ";
       result += (numEntries == 1) ? "třídou " : "třídami ";
       result += trWriteList(numEntries) + ".";
       return result;
@@ -736,9 +818,9 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    virtual QCString trReimplementedFromList(int numEntries)
+    QCString trReimplementedFromList(int numEntries) override
     {
-      QCString result("Reimplementuje stejnojmenný prvek z ");
+      QCString result="Reimplementuje stejnojmenný prvek z ";
       result += trWriteList(numEntries) + ".";
       return result;
     }
@@ -746,41 +828,39 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    virtual QCString trReimplementedInList(int numEntries)
+    QCString trReimplementedInList(int numEntries) override
     {
-      QCString result("Reimplementováno v ");
-      result += trWriteList(numEntries) + ".";
-      return result;
+      return "Reimplementováno v "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    virtual QCString trNamespaceMembers()
-    { return "Symboly v prostorech jmen"; }
+    QCString trNamespaceMembers() override
+    { return "Symboly ve jmenném prostoru"; }
 
     /*! This is an introduction to the page with all namespace members */
-    virtual QCString trNamespaceMemberDescription(bool extractAll)
+    QCString trNamespaceMemberDescription(bool extractAll) override
     {
       QCString result="Zde naleznete seznam všech ";
       if (!extractAll) result+="dokumentovaných ";
-      result+="symbolů, které jsou definovány ve svých prostorech jmen. "
+      result+="symbolů, které jsou definovány ve svých jmenných prostorech. "
               "U každého je uveden odkaz na ";
       if (extractAll)
-        result+="dokumentaci příslušného prostoru jmen:";
+        result+="dokumentaci příslušného jmenného prostoru:";
       else
-        result+="příslušný prostor jmen:";
+        result+="příslušný jmenný prostor:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    virtual QCString trNamespaceIndex()
-    { return "Rejstřík prostorů jmen"; }
+    QCString trNamespaceIndex() override
+    { return "Rejstřík jmenných prostorů"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    virtual QCString trNamespaceDocumentation()
-    { return "Dokumentace prostorů jmen"; }
+    QCString trNamespaceDocumentation() override
+    { return "Dokumentace jmenných prostorů"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -789,8 +869,8 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    virtual QCString trNamespaces()
-    { return "Prostory jmen"; }
+    QCString trNamespaces() override
+    { return "Jmenné prostory"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -799,25 +879,25 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single)
-    { // here s is one of " Class", " Struct" or " Union"
-      // single is true implies a single file
-      QCString result=(QCString)"Dokumentace pro ";
+    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single) override
+    { // single is true implies a single file
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      QCString result="Dokumentace pro ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="tuto třídu"; break;
-        case ClassDef::Struct:     result+="tuto strukturu (struct)"; break;
-        case ClassDef::Union:      result+="tuto unii (union)"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"tuto návrhovou jednotku":"tuto třídu"; break;
+        case ClassDef::Struct:     result+="tuto strukturu"; break;
+        case ClassDef::Union:      result+="tuto unii"; break;
         case ClassDef::Interface:  result+="toto rozhraní"; break;
-        case ClassDef::Protocol:   result+="tento protokol "; break;
-        case ClassDef::Category:   result+="tuto kategorii "; break;
+        case ClassDef::Protocol:   result+="tento protokol"; break;
+        case ClassDef::Category:   result+="tuto kategorii"; break;
         case ClassDef::Exception:  result+="tuto výjimku"; break;
         default: break;
       }
-      result+=" byla generována z ";
-      if (single) result+="následujícího souboru:";
-      else        result+="následujících souborů:";
+      result+=" byla vygenerována z následující";
+      if (single) result+="ho souboru:";
+      else        result+="ch souborů:";
       return result;
     }
 
@@ -826,29 +906,29 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    virtual QCString trReturnValues()
+    QCString trReturnValues() override
     { return "Vracené hodnoty"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    virtual QCString trMainPage()
+    QCString trMainPage() override
     { return "Hlavní stránka"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    virtual QCString trPageAbbreviation()
+    QCString trPageAbbreviation() override
     { return "s."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDefinedAtLineInSourceFile()
+    QCString trDefinedAtLineInSourceFile() override
     {
       return "Definice je uvedena na řádku @0 v souboru @1.";
     }
-    virtual QCString trDefinedInSourceFile()
+    QCString trDefinedInSourceFile() override
     {
       return "Definice v souboru @0.";
     }
@@ -857,7 +937,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDeprecated()
+    QCString trDeprecated() override
     {
       return "Zastaralé";
     }
@@ -867,69 +947,70 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    QCString trCollaborationDiagram(const QCString &clName) override
     {
-      return (QCString)"Diagram tříd pro "+clName+":";
+      return "Diagram pro "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    QCString trInclDepGraph(const QCString &fName) override
     {
-      return (QCString)"Graf závislostí na vkládaných souborech "
-                    "pro "+fName+":";
+      return "Graf závislostí na vkládaných souborech pro "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
-    virtual QCString trConstructorDocumentation()
+    QCString trConstructorDocumentation() override
     {
       return "Dokumentace konstruktoru a destruktoru";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    virtual QCString trGotoSourceCode()
+    QCString trGotoSourceCode() override
     {
       return "Zobrazit zdrojový text tohoto souboru.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    virtual QCString trGotoDocumentation()
+    QCString trGotoDocumentation() override
     {
       return "Zobrazit dokumentaci tohoto souboru.";
     }
+
+    /*! ??? Jak to prelozit? Bylo by dobre, kdyby se ozval nekdo, kdo to pouziva.*/
     /*! Text for the \\pre command */
-    virtual QCString trPrecondition()
+    QCString trPrecondition() override
     {
-      return "Precondition";
+      return "Precondition";    // ???
     }
     /*! Text for the \\post command */
-    virtual QCString trPostcondition()
+    QCString trPostcondition() override
     {
-      return "Postcondition";
+      return "Postcondition";    // ???
     }
     /*! Text for the \\invariant command */
-    virtual QCString trInvariant()
+    QCString trInvariant() override
     {
-      return "Invariant";
+      return "Invariant";    // ???
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    virtual QCString trInitialValue()
+    QCString trInitialValue() override
     {
-      return "Initializer:";
+      return "Inicializační hodnota:";
     }
     /*! Text used the source code in the file index */
-    virtual QCString trCode()
+    QCString trCode() override
     {
       return "zdrojový text";
     }
-    virtual QCString trGraphicalHierarchy()
+    QCString trGraphicalHierarchy() override
     {
       return "Grafické zobrazení hierarchie tříd";
     }
-    virtual QCString trGotoGraphicalHierarchy()
+    QCString trGotoGraphicalHierarchy() override
     {
-      return "Zobrazit grafickou podobu hierarchie tříd";
+      return "Zobrazit grafickou podobu hierarchie";
     }
-    virtual QCString trGotoTextualHierarchy()
+    QCString trGotoTextualHierarchy() override
     {
-      return "Zobrazit textovou podobu hierarchie tříd";
+      return "Zobrazit textovou podobu hierarchie";
     }
-    virtual QCString trPageIndex()
+    QCString trPageIndex() override
     {
       return "Rejstřík stránek";
     }
@@ -938,15 +1019,15 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trNote()
+    QCString trNote() override
     {
       return "Poznámka";
     }
-    virtual QCString trPublicTypes()
+    QCString trPublicTypes() override
     {
       return "Veřejné typy";
     }
-    virtual QCString trPublicAttribs()
+    QCString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -957,31 +1038,31 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
         return "Veřejné atributy";
       }
     }
-    virtual QCString trStaticPublicAttribs()
+    QCString trStaticPublicAttribs() override
     {
       return "Statické veřejné atributy";
     }
-    virtual QCString trProtectedTypes()
+    QCString trProtectedTypes() override
     {
       return "Chráněné typy";
     }
-    virtual QCString trProtectedAttribs()
+    QCString trProtectedAttribs() override
     {
       return "Chráněné atributy";
     }
-    virtual QCString trStaticProtectedAttribs()
+    QCString trStaticProtectedAttribs() override
     {
       return "Statické chráněné atributy";
     }
-    virtual QCString trPrivateTypes()
+    QCString trPrivateTypes() override
     {
       return "Privátní typy";
     }
-    virtual QCString trPrivateAttribs()
+    QCString trPrivateAttribs() override
     {
       return "Privátní atributy";
     }
-    virtual QCString trStaticPrivateAttribs()
+    QCString trStaticPrivateAttribs() override
     {
       return "Statické privátní atributy";
     }
@@ -990,13 +1071,13 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 // new since 1.1.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a marker that is put before a todo item */
-    virtual QCString trTodo()
+    /*! Used as a marker that is put before a \\todo item */
+    QCString trTodo() override
     {
       return "Plánované úpravy";
     }
     /*! Used as the header of the todo list */
-    virtual QCString trTodoList()
+    QCString trTodoList() override
     {
       return "Seznam plánovaných úprav";
     }
@@ -1005,43 +1086,45 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trReferencedBy()
+    QCString trReferencedBy() override
     {
       return "Používá se v";
     }
-    virtual QCString trRemarks()
+    QCString trRemarks() override
     {
-      return "Poznámky"; // ??? not checked in a context
+      return "Poznámky";    // ??? not checked in a context
     }
-    virtual QCString trAttention()
+    QCString trAttention() override
     {
-      return "Upozornění"; // ??? not checked in a context
+      return "Upozornění";    // ??? not checked in a context
     }
-    virtual QCString trInclByDepGraph()
+    QCString trInclByDepGraph() override
     {
       return "Následující graf ukazuje, které soubory přímo nebo "
              "nepřímo vkládají tento soubor:";
     }
-    virtual QCString trSince()
+    QCString trSince() override
     {
-      return "Od"; // ??? not checked in a context
+      return "Od";    // ??? not checked in a context
     }
 
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    virtual QCString trLegendTitle()
+    QCString trLegendTitle() override
     {
       return "Vysvětlivky ke grafu";
     }
-    /*! page explaining how the dot graph's should be interpreted */
-    virtual QCString trLegendDocs()
+    /*! page explaining how the dot graph's should be interpreted
+     *  The %A in the text below are to prevent link to classes called "A".
+     */
+    QCString trLegendDocs() override
     {
       return
         "Zde naleznete vysvětlení, jak mají být interpretovány grafy, "
-        "které byly generovány programem doxygen.<p>\n"
+        "které byly vygenerovány programem doxygen.<p>\n"
         "Uvažujte následující příklad:\n"
         "\\code\n"
         "/*! Neviditelná třída, která se v grafu nezobrazuje, protože "
@@ -1076,43 +1159,46 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
         "};\n"
         "\\endcode\n"
         "K výše uvedenému bude vygenerován následující graf:"
-        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
         "Bloky (tj. uzly) v uvedeném grafu mají následující význam:\n"
+        "</p>\n"
         "<ul>\n"
         "<li>Šedě vyplněný obdélník reprezentuje strukturu nebo třídu, "
-            "pro kterou byl graf generován.\n"
+            "pro kterou byl graf vygenerován.</li>\n"
         "<li>Obdélník s černým obrysem označuje dokumentovanou "
-            "strukturu nebo třídu.\n"
+            "strukturu nebo třídu.</li>\n"
         "<li>Obdélník s šedým obrysem označuje nedokumentovanou "
-            "strukturu nebo třídu.\n"
+            "strukturu nebo třídu.</li>\n"
         "<li>Obdélník s červeným obrysem označuje dokumentovanou "
             "strukturu nebo třídu, pro kterou\n"
             "nejsou zobrazeny všechny vztahy dědičnosti nebo obsažení. "
             "Graf je ořezán v případě, kdy jej\n"
-            "není možné umístit do vymezeného prostoru.\n"
+            "není možné umístit do vymezeného prostoru.</li>\n"
         "</ul>\n"
+        "<p>\n"
         "Šipky (tj. hrany grafu) mají následující význam:\n"
+        "</p>\n"
         "<ul>\n"
-        "<li>Tmavě modrá šipka se používá pro označení vztahu veřejné "
-            "dědičnosti (public) mezi dvěma třídami.\n"
+        "<li>Modrá šipka se používá pro označení vztahu veřejné "
+            "dědičnosti (public) mezi dvěma třídami.</li>\n"
         "<li>Tmavě zelená šipka označuje vztah chráněné dědičnosti "
-            "(protected).\n"
+            "(protected).</li>\n"
         "<li>Tmavě červená šipka označuje vztah privátní dědičnosti "
-            "(private).\n"
+            "(private).</li>\n"
         "<li>Purpurová šipka kreslená čárkovaně se používá v případě, "
             "kdy je třída obsažena v jiné třídě,\n"
-            "nebo kdy je používána jinou třídou. Je označena identifikátorem "
-            "jedné nebo více proměných, přes které\n"
-            "je třída nebo struktura zpřístupněna.\n"
+            "nebo kdy je používána jinou třídou. Šipka je označena "
+            "identifikátorem jedné nebo více proměnných, přes které\n"
+            "je třída nebo struktura zpřístupněna.</li>\n"
         "<li>Žlutá šipka kreslená čárkovaně vyjadřuje vztah mezi instancí šablony "
             "a šablonou třídy, na základě které byla\n"
-            "instance šablony vytvořena. V popisu šipky jsou uvedeny  příslušné"
-            " parametry šablony.\n"
+            "instance šablony vytvořena. V popisu šipky jsou uvedeny příslušné "
+            "parametry šablony.</li>\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    virtual QCString trLegend()
+    QCString trLegend() override
     {
       return "vysvětlivky";
     }
@@ -1122,13 +1208,12 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    virtual QCString trTest()
+    QCString trTest() override
     {
       return "Test";
     }
-
     /*! Used as the header of the test list */
-    virtual QCString trTestList()
+    QCString trTestList() override
     {
       return "Seznam testů";
     }
@@ -1138,47 +1223,48 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    virtual QCString trProperties()
+    QCString trProperties() override
     {
       return "Vlastnosti";
     }
     /*! Used as a section header for IDL property documentation */
-    virtual QCString trPropertyDocumentation()
+    QCString trPropertyDocumentation() override
     {
-      return "Dokumentace k vlastnosti";
+      return "Dokumentace vlastností";
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    virtual QCString trClasses()
+    QCString trClasses() override
     {
-      return "Třídy";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Datové struktury";
+      }
+      else
+      {
+        return "Třídy";
+      }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    QCString trPackage(const QCString &name) override
     {
-      return QCString("Balík ") + name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Seznam balíků";
+      return "Balík "+name;
     }
     /*! The description of the package index page */
-    virtual QCString trPackageListDescription()
+    QCString trPackageListDescription() override
     {
-      return "Zde naleznete seznam balíků se stručným popisem "
-                    "(pokud byl uveden):";
+      return "Zde naleznete seznam balíků se stručným popisem (pokud byl uveden):";
     }
     /*! The link name in the Quick links header for each page */
-    virtual QCString trPackages()
+    QCString trPackages() override
     {
       return "Balíky";
     }
     /*! Text shown before a multi-line define */
-    virtual QCString trDefineValue()
+    QCString trDefineValue() override
     {
       return "Hodnota:";
     }
@@ -1188,34 +1274,61 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    virtual QCString trBug()
+    QCString trBug() override
     {
       return "Chyba";
     }
     /*! Used as the header of the bug list */
-    virtual QCString trBugList()
+    QCString trBugList() override
     {
       return "Seznam chyb";
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.2.6-20010422
+// new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file */
-    virtual QCString trRTFansicp()
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
+     * <pre>
+     * Codepage number:
+     * Charset Name       Charset Value(hex)  Codepage number
+     * ------------------------------------------------------
+     * DEFAULT_CHARSET           1 (x01)
+     * SYMBOL_CHARSET            2 (x02)
+     * OEM_CHARSET             255 (xFF)
+     * ANSI_CHARSET              0 (x00)            1252
+     * RUSSIAN_CHARSET         204 (xCC)            1251
+     * EE_CHARSET              238 (xEE)            1250
+     * GREEK_CHARSET           161 (xA1)            1253
+     * TURKISH_CHARSET         162 (xA2)            1254
+     * BALTIC_CHARSET          186 (xBA)            1257
+     * HEBREW_CHARSET          177 (xB1)            1255
+     * ARABIC _CHARSET         178 (xB2)            1256
+     * SHIFTJIS_CHARSET        128 (x80)             932
+     * HANGEUL_CHARSET         129 (x81)             949
+     * GB2313_CHARSET          134 (x86)             936
+     * CHINESEBIG5_CHARSET     136 (x88)             950
+     * </pre>
+     *
+     */
+    QCString trRTFansicp() override
     {
       return "1250";
     }
 
-    /*! Used as ansicpg for RTF fcharset */
-    virtual QCString trRTFCharSet()
+
+    /*! Used as ansicpg for RTF fcharset
+     *  \see trRTFansicp() for a table of possible values.
+     */
+    QCString trRTFCharSet() override
     {
       return "238";
     }
 
     /*! Used as header RTF general index */
-    virtual QCString trRTFGeneralIndex()
+    QCString trRTFGeneralIndex() override
     {
       return "Rejstřík";
     }
@@ -1224,78 +1337,65 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    QCString trClass(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Tříd" : "tříd"));
-      result += singular ? "a" : "y";
-      return result;
+      return createNoun(first_capital, singular, "tříd", "y", "a");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    QCString trFile(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Soubor" : "soubor"));
-      if (!singular)  result+="y";
-      return result;
+      return createNoun(first_capital, singular, "soubor", "y");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool first_capital, bool singular)
+    QCString trNamespace(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Prostor" : "prostor"));
-      if (!singular)  result+="y";
-      result+=" jmen";
-      return result;
+      return createNoun(first_capital, singular, "jmenn", "é", "ý") +
+             createNoun(false, singular, " prostor", "y");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    QCString trGroup(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Skupin" : "skupin"));
-      result += singular ? "a" : "y";
-      return result;
+      return createNoun(first_capital, singular, "skupin", "y", "a");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    QCString trPage(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Stránk" : "stránk"));
-      result += singular ? "a" : "y";
-      return result;
+      return createNoun(first_capital, singular, "stránk", "y", "a");
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    QCString trMember(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Člen" : "člen"));
-      if (!singular)
-          result += "y";
-      return result;
+      return createNoun(first_capital, singular, "člen", "y");
     }
 
-    /*! ??? Jak to prelozit? Bylo by dobre, kdyby se ozval nekdo,
-     * kdo to pouziva.
+    /*! ??? Jak to prelozit? Bylo by dobre, kdyby se ozval nekdo, kdo to pouziva.*/
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
      */
-    virtual QCString trGlobal(bool first_capital, bool singular)
+    QCString trGlobal(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";
-      return result;
+      return createNoun(first_capital, singular, "global", "s");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1304,11 +1404,9 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    QCString trAuthor(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Auto" : "auto"));
-      result += (singular) ? "r" : "ři";
-      return result;
+      return createNoun(first_capital, singular, "auto", "ři", "r");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1317,7 +1415,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 
     /*! This text is put before the list of members referenced by a member
      */
-    virtual QCString trReferences()
+    QCString trReferences() override
     {
       return "Odkazuje se na";
     }
@@ -1329,15 +1427,15 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    virtual QCString trImplementedFromList(int numEntries)
+    QCString trImplementedFromList(int numEntries) override
     {
       return "Implementuje "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
-     *  all members that implement this member.
+     *  all members that implement this abstract member.
      */
-    virtual QCString trImplementedInList(int numEntries)
+    QCString trImplementedInList(int numEntries) override
     {
       return "Implementováno v "+trWriteList(numEntries)+".";
     }
@@ -1349,7 +1447,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    virtual QCString trRTFTableOfContents()
+    QCString trRTFTableOfContents() override
     {
       return "Obsah";
     }
@@ -1361,7 +1459,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    virtual QCString trDeprecatedList()
+    QCString trDeprecatedList() override
     {
       return "Seznam zastaralých prvků";
     }
@@ -1373,12 +1471,12 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    virtual QCString trEvents()
+    QCString trEvents() override
     {
       return "Události";
     }
     /*! Header used for the documentation section of a class' events. */
-    virtual QCString trEventDocumentation()
+    QCString trEventDocumentation() override
     {
       return "Dokumentace událostí";
     }
@@ -1389,37 +1487,41 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    virtual QCString trPackageTypes()
+    QCString trPackageTypes() override
     {
       return "Typy v balíku";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    QCString trPackageFunctions() override
     {
       return "Funkce v balíku";
+    }
+    QCString trPackageMembers() override
+    {
+      return "Členy v balíku";    // ??? not checked in a context
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    QCString trStaticPackageFunctions() override
     {
       return "Statické funkce v balíku";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    virtual QCString trPackageAttribs()
+    QCString trPackageAttribs() override
     {
-      return "Atributy balíku";
+      return "Atributy v balíku";    // ??? not checked in a context
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    virtual QCString trStaticPackageAttribs()
+    QCString trStaticPackageAttribs() override
     {
-      return "Statické atributy balíku";
+      return "Statické atributy v balíku";    // ??? not checked in a context
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1429,12 +1531,12 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    virtual QCString trAll()
+    QCString trAll() override
     {
       return "Vše";
     }
     /*! Put in front of the call graph for a function. */
-    virtual QCString trCallGraph()
+    QCString trCallGraph() override
     {
       return "Tato funkce volá...";
     }
@@ -1446,7 +1548,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    virtual QCString trSearchResultsTitle()
+    QCString trSearchResultsTitle() override
     {
       return "Výsledky vyhledávání";
     }
@@ -1458,7 +1560,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    virtual QCString trSearchResults(int numDocuments)
+    QCString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1466,7 +1568,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
       }
       else if (numDocuments==1)
       {
-        return "Nalezen jediný dokument, který vyhovuje vašemu dotazu.";
+        return "Nalezen jeden dokument, který vyhovuje vašemu dotazu.";
       }
       else
       {
@@ -1478,7 +1580,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    virtual QCString trSearchMatches()
+    QCString trSearchMatches() override
     {
       return "Nalezená slova:";
     }
@@ -1489,63 +1591,45 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    virtual QCString trSourceFile(QCString& filename)
+    QCString trSourceFile(const QCString& filename) override
     {
-      return QCString("Zdrojový soubor ") + filename;
+      return "Zdrojový soubor " + filename;
     }
-
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.9
 //////////////////////////////////////////////////////////////////////////
 
-
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    virtual QCString trDirIndex()
+    QCString trDirIndex() override
     { return "Hierarchie adresářů"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    virtual QCString trDirDocumentation()
-    { return "Dokumentace k adresářům"; }
+    QCString trDirDocumentation() override
+    { return "Dokumentace adresářů"; }
 
     /*! This is used as the title of the directory index and also in the
-     *  Quick links of a HTML page, to link to the directory hierarchy.
+     *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    virtual QCString trDirectories()
+    QCString trDirectories() override
     { return "Adresáře"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-        return "Následující hierarchie adresářů je zhruba, "
-                      "ale ne úplně, řazena podle abecedy:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
-    {
-        QCString result = "Reference k adresáři ";
-        result += dirName;
-        return result;
-    }
+    QCString trDirReference(const QCString &dirName) override
+    { QCString result="Reference k adresáři "; result+=dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    virtual QCString trDir(bool first_capital, bool singular)
+    QCString trDir(bool first_capital, bool singular) override
     {
-        QCString result((first_capital ? "Adresář" : "adresář"));
-        if ( ! singular)
-            result += "e";
-        return result;
+      return createNoun(first_capital, singular, "adresář", "e");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1555,7 +1639,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    virtual QCString trOverloadText()
+    QCString trOverloadText() override
     {
        return "Jde o přetíženou (overloaded) metodu, "
               "která má usnadnit používání. Od výše uvedené metody se liší "
@@ -1566,44 +1650,41 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 // new since 1.4.6
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trCallerGraph()
+    /*! This is used to introduce a caller (or called-by) graph */
+    QCString trCallerGraph() override
     {
       return "Tuto funkci volají...";
     }
 
-
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    virtual QCString trEnumerationValueDocumentation()
-    {
-      return "Dokumentace výčtových hodnot";
-    }
+    QCString trEnumerationValueDocumentation() override
+    { return "Dokumentace výčtových hodnot"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    virtual QCString trMemberFunctionDocumentationFortran()
+    QCString trMemberFunctionDocumentationFortran() override
     { return "Dokumentace členských funkcí/podprogramů"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    virtual QCString trCompoundListFortran()
+    QCString trCompoundListFortran() override
     { return "Seznam datových typů"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    virtual QCString trCompoundMembersFortran()
-    { return "Datová pole"; }
+    QCString trCompoundMembersFortran() override
+    { return "Datové položky"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    virtual QCString trCompoundListDescriptionFortran()
+    QCString trCompoundListDescriptionFortran() override
     { return "Datové typy se stručnými popisy:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    QCString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-
       QCString result="Následuje seznam všech ";
       if (!extractAll)
       {
@@ -1617,7 +1698,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
       }
       else
       {
-          result+="příslušné datové typy:";
+         result+="příslušné datové typy:";
       }
       return result;
     }
@@ -1625,39 +1706,39 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    virtual QCString trCompoundIndexFortran()
+    QCString trCompoundIndexFortran() override
     { return "Rejstřík datových typů"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    virtual QCString trTypeDocumentation()
-    { return "Dokumentace k datovým typům"; }
+    QCString trTypeDocumentation() override
+    { return "Dokumentace datových typů"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    virtual QCString trSubprograms()
+    QCString trSubprograms() override
     { return "Funkce/podprogramy"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    virtual QCString trSubprogramDocumentation()
+    QCString trSubprogramDocumentation() override
     { return "Dokumentace funkce/podprogramu"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     virtual QCString trDataTypes()
+     QCString trDataTypes() override
     { return "Datové typy"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    virtual QCString trModulesList()
+    QCString trModulesList() override
     { return "Seznam modulů"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    virtual QCString trModulesListDescription(bool extractAll)
+    QCString trModulesListDescription(bool extractAll) override
     {
       QCString result="Následuje seznam všech ";
       if (!extractAll) result+="dokumentovaných ";
@@ -1666,29 +1747,28 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool isTemplate)
+                                    bool isTemplate) override
     {
-      QCString result("Dokumentace ");
+      QCString result="Dokumentace ";
       if (isTemplate) result += "šablony ";
       switch(compType)
       {
-        case ClassDef::Class:      result += "třídy "; break;
-        case ClassDef::Struct:     result += "typu "; break;
-        case ClassDef::Union:      result += "unie "; break;
-        case ClassDef::Interface:  result += "rozhraní "; break;
-        case ClassDef::Protocol:   result += "protokolu "; break;
-        case ClassDef::Category:   result += "kategorie "; break;
-        case ClassDef::Exception:  result += "výjimky "; break;
+        case ClassDef::Class:      result+="modulu "; break;
+        case ClassDef::Struct:     result+="typu "; break;
+        case ClassDef::Union:      result+="unie "; break;
+        case ClassDef::Interface:  result+="rozhraní "; break;
+        case ClassDef::Protocol:   result+="protokolu "; break;
+        case ClassDef::Category:   result+="kategorie "; break;
+        case ClassDef::Exception:  result+="výjimky "; break;
         default: break;
       }
-      result += clName;
+      result+=clName;
       return result;
-
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    QCString trModuleReference(const QCString &namespaceName) override
     {
       QCString result="Dokumentace modulu ";
       result += namespaceName;
@@ -1696,11 +1776,11 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    virtual QCString trModulesMembers()
+    QCString trModulesMembers() override
     { return "Části modulu"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    virtual QCString trModulesMemberDescription(bool extractAll)
+    QCString trModulesMemberDescription(bool extractAll) override
     {
       QCString result="Následuje seznam všech ";
       if (!extractAll) result+="dokumentovaných ";
@@ -1719,66 +1799,63 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    virtual QCString trModulesIndex()
+    QCString trModulesIndex() override
     { return "Rejstřík modulů"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool first_capital, bool singular)
+    QCString trModule(bool first_capital, bool singular) override
     {
-      QCString result((first_capital ? "Modul" : "modul"));
-      if (!singular)  result+="y";
-      return result;
+      return createNoun(first_capital, singular, "modul", "y");
     }
+
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool single)
-    { // here s is one of " Module", " Struct" or " Union"
+    QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single) override
+    {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentace ";
+      QCString result="Dokumentace pro ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="k tomuto modulu"; break;
-        case ClassDef::Struct:     result+="k tomuto typu"; break;
-        case ClassDef::Union:      result+="k této unii"; break;
-        case ClassDef::Interface:  result+="k tomuto rozhraní"; break;
-        case ClassDef::Protocol:   result+="k tomuto protokolu"; break;
-        case ClassDef::Category:   result+="k této kategorii"; break;
-        case ClassDef::Exception:  result+="k této výjimce"; break;
+        case ClassDef::Class:      result+="tento modul"; break;
+        case ClassDef::Struct:     result+="tento typ"; break;
+        case ClassDef::Union:      result+="tuto unii"; break;
+        case ClassDef::Interface:  result+="toto rozhraní"; break;
+        case ClassDef::Protocol:   result+="tento protokol"; break;
+        case ClassDef::Category:   result+="tuto kategorii"; break;
+        case ClassDef::Exception:  result+="tuto výjimku"; break;
         default: break;
       }
-      result+=" byla vygenerována z ";
-      if (single) result+="následujícího souboru:";
-      else result+="následujících souborů:";
-      return result;
-    }
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trType(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Typ" : "typ"));
-      if (!singular)  result+="y";
-      return result;
-    }
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trSubprogram(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Podprogram" : "podprogram"));
-      if (!singular)  result+="y";
+      result+=" byla vygenerována z následující";
+      if (single) result+="ho souboru:";
+      else result+="ch souborů:";
       return result;
     }
 
-    /*! C# Type Contraint list */
-    virtual QCString trTypeConstraints()
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    QCString trType(bool first_capital, bool singular) override
+    {
+      return createNoun(first_capital, singular, "typ", "y");
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    QCString trSubprogram(bool first_capital, bool singular) override
+    {
+      return createNoun(first_capital, singular, "podprogram", "y");
+    }
+
+    /*! C# Type Constraint list */
+    QCString trTypeConstraints() override
     {
       return "Omezení typů (Type Constraints)";
     }
@@ -1788,33 +1865,33 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    QCString trDirRelation(const QCString &name) override
     {
-      return "Relace " + QCString(name);
+      return "Relace "+name;    // ??? not checked in a context
     }
 
     /*! Loading message shown when loading search results */
-    virtual QCString trLoading()
+    QCString trLoading() override
     {
       return "Načítám...";
     }
 
     /*! Label used for search results in the global namespace */
-    virtual QCString trGlobalNamespace()
+    QCString trGlobalNamespace() override
     {
-      return "Globální prostor jmen";
+      return "Globální jmenný prostor";
     }
 
     /*! Message shown while searching */
-    virtual QCString trSearching()
+    QCString trSearching() override
     {
       return "Vyhledávám...";
     }
 
     /*! Text shown when no search results are found */
-    virtual QCString trNoMatches()
+    QCString trNoMatches() override
     {
-      return "Nic se nenašlo";
+      return "Nebylo nic nalezeno";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1825,18 +1902,18 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    QCString trFileIn(const QCString &name) override
     {
-      return (QCString)"Soubor v "+name;
+      return "Soubor v "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    QCString trIncludesFileIn(const QCString &name) override
     {
-      return (QCString)"Vkládá (include) soubor z "+name;
+      return "Vkládá (include) soubor z "+name;
     }
 
     /** Compiles a date string.
@@ -1849,21 +1926,46 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+    QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime) override
     {
       static const char *days[]   = { "po","út","st","čt","pá","so","ne" };
       static const char *months[] = { "led","úno","bře","dub","kvě","čer","čec","srp","zář","říj","lis","pro" };
       QCString sdate;
-      sdate.sprintf("%s %d. %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d. %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d.%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d.%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) override
+    {
+      static const char *days_short[]   = { "po", "út", "st", "čt", "pá", "so", "ne" };
+      static const char *days_full[]    = { "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    QCString trMonth(int month, bool first_capital, bool full) override
+    {
+      static const char *months_short[] = { "led", "úno", "bře", "dub", "kvě", "čvn", "čvc", "srp", "zář", "říj", "lis", "pro" };
+      static const char *months_full[]  = { "leden", "únor", "březen", "duben", "květen", "červen", "červenec", "srpen", "září", "říjen", "listopad", "prosinec" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    QCString trDayPeriod(bool period) override
+    {
+      static const char *dayPeriod[] = { "dop.", "odp." };
+      return dayPeriod[period?1:0];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1871,55 +1973,55 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
-    virtual QCString trCiteReferences()
+    QCString trCiteReferences() override
     { return "Odkazy na literaturu"; }
 
     /*! Text for copyright paragraph */
-    virtual QCString trCopyright()
+    QCString trCopyright() override
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
-    { return QCString("Graf závislosti na adresářích pro  ")+name+":"; }
+    QCString trDirDepGraph(const QCString &name) override
+    { return "Graf závislosti na adresářích pro "+name+":"; }    // ??? not checked in a context
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
-    virtual QCString trDetailLevel()
+    QCString trDetailLevel() override
     { return "úroveň detailů"; }
 
     /*! Section header for list of template parameters */
-    virtual QCString trTemplateParameters()
-    { return "Parametry šablon"; }
+    QCString trTemplateParameters() override
+    { return "Parametry šablony"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
-    virtual QCString trAndMore(const QCString &number)
+    QCString trAndMore(const QCString &number) override
     { return "a "+number+" další(ch)..."; }
 
     /*! Used file list for a Java enum */
-    virtual QCString trEnumGeneratedFromFiles(bool single)
-    { QCString result = "Dokumentace pro tento výčet byla generována z ";
+    QCString trEnumGeneratedFromFiles(bool single) override
+    { QCString result = "Dokumentace pro tento výčet byla vygenerována z následující";
       if (single)
-          result += "následujícího souboru:";
+          result += "ho souboru:";
       else
-          result += "následujících souborů:";
+          result += "ch souborů:";
       return result;
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
-    { return "Reference k výčtu "+QCString(name); }
+    QCString trEnumReference(const QCString &name) override
+    { return "Reference k výčtu "+name; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
-    { return QCString(members)+" dědí se z "+what; }
+    QCString trInheritedFrom(const QCString &members,const QCString &what) override
+    { return members+" dědí se z "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
-    virtual QCString trAdditionalInheritedMembers()
+    QCString trAdditionalInheritedMembers() override
     { return "Další zděděné členy"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1930,7 +2032,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
      *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
-    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    QCString trPanelSynchronisationTooltip(bool enable) override
     {
       QCString opt = enable ? "povolit" : "zakázat";
       return opt + " synchronizaci panelů";
@@ -1940,7 +2042,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
      *  a category. Note that the @1 marker is required and is replaced
      *  by a link.
      */
-    virtual QCString trProvidedByCategory()
+    QCString trProvidedByCategory() override
     {
       return "Deklarováno v kategorii @0.";
     }
@@ -1949,7 +2051,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
      *  Note that the @1 marker is required and is replaced by a link to
      *  the class method.
      */
-    virtual QCString trExtendsClass()
+    QCString trExtendsClass() override
     {
       return "Rozšiřuje třídu @0.";
     }
@@ -1957,7 +2059,7 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! Used as the header of a list of class methods in Objective-C.
      *  These are similar to static public member functions in C++.
      */
-    virtual QCString trClassMethods()
+    QCString trClassMethods() override
     {
       return "Metody třídy";
     }
@@ -1965,24 +2067,16 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
     /*! Used as the header of a list of instance methods in Objective-C.
      *  These are similar to public member functions in C++.
      */
-    virtual QCString trInstanceMethods()
+    QCString trInstanceMethods() override
     {
       return "Metody instance";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
-    virtual QCString trMethodDocumentation()
+    QCString trMethodDocumentation() override
     {
       return "Dokumentace metody";
-    }
-
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Návrhové schéma";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1990,59 +2084,411 @@ class TranslatorCzech : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /** old style UNO IDL services: implemented interfaces */
-    virtual QCString trInterfaces()
+    QCString trInterfaces() override
     { return "Exportovaná rozhraní"; }
 
     /** old style UNO IDL services: inherited services */
-    virtual QCString trServices()
+    QCString trServices() override
     { return "Začleněné služby"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroups()
+    QCString trConstantGroups() override
     { return "Konstantní skupiny"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const char *namespaceName)
+    QCString trConstantGroupReference(const QCString &namespaceName) override
     {
       QCString result="Konstantní skupiny z ";
-      result += namespaceName;
+      result+=namespaceName;
       return result;
     }
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const char *sName)
+    QCString trServiceReference(const QCString &sName) override
     {
       QCString result="Popis služby ";
-      result += sName;
+      result+=sName;
       return result;
     }
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const char *sName)
+    QCString trSingletonReference(const QCString &sName) override
     {
       QCString result="Popis singletonu ";
-      result += sName;
+      result+=sName;
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    QCString trServiceGeneratedFromFiles(bool single) override
     {
       // single is true implies a single file
-      QCString result="Dokumentace k této službě byla generována ";
-      if (single) result+="z následujícího souboru:";
-      else        result+="z následujících souborů:";
+      QCString result="Dokumentace k této službě byla vygenerována z následující";
+      if (single) result+="ho souboru:";
+      else        result+="ch souborů:";
       return result;
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    QCString trSingletonGeneratedFromFiles(bool single) override
     {
       // single is true implies a single file
-      QCString result="Dokumentace k tomuto singletonu byla generována ";
-      if (single) result+="z následujícího souboru:";
-      else        result+="z následujících souborů:";
+      QCString result="Dokumentace k tomuto singletonu byla vygenerována z následující";
+      if (single) result+="ho souboru:";
+      else        result+="ch souborů:";
       return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
 
+    /** VHDL design unit hierarchy */
+    QCString trDesignUnitHierarchy() override
+    { return "Hierarchie návrhových jednotek"; }
+    /** VHDL design unit list */
+    QCString trDesignUnitList() override
+    { return "Seznam návrhových jednotek"; }
+    /** VHDL design unit members */
+    QCString trDesignUnitMembers() override
+    { return "Seznam členů návrhových jednotek"; }
+    /** VHDL design unit list description */
+    QCString trDesignUnitListDescription() override
+    {
+        return "Zde naleznete seznam všech členů návrhové jednotky s odkazy na "
+            "entity, ke kterým příslušejí:";
+    }
+    /** VHDL design unit index */
+    QCString trDesignUnitIndex() override
+    { return "Rejstřík návrhových jednotek"; }
+    /** VHDL design units */
+    QCString trDesignUnits() override
+    { return "Návrhové jednotky"; }
+    /** VHDL functions/procedures/processes */
+    QCString trFunctionAndProc() override
+    { return "Funkce/Procedury/Procesy"; }
+    /** VHDL type */
+    QCString trVhdlType(VhdlSpecifier type,bool single) override
+    {
+      switch(type)
+      {
+        case VhdlSpecifier::LIBRARY:
+          if (single) return "Knihovna";
+          else        return "Knihovny";
+        case VhdlSpecifier::PACKAGE:
+          if (single) return "Balík";
+          else        return "Balíky";
+        case VhdlSpecifier::SIGNAL:
+          if (single) return "Signál";
+          else        return "Signály";
+        case VhdlSpecifier::COMPONENT:
+          if (single) return "Komponenta";
+          else        return "Komponenty";
+        case VhdlSpecifier::CONSTANT:
+          if (single) return "Konstanta";
+          else        return "Konstanty";
+        case VhdlSpecifier::ENTITY:
+          if (single) return "Entita";
+          else        return "Entity";
+        case VhdlSpecifier::TYPE:
+          if (single) return "Typ";
+          else        return "Typy";
+        case VhdlSpecifier::SUBTYPE:
+          if (single) return "Subtyp";
+          else        return "Subtypy";
+        case VhdlSpecifier::FUNCTION:
+          if (single) return "Funkce";
+          else        return "Funkce";
+        case VhdlSpecifier::RECORD:
+          if (single) return "Záznam";
+          else        return "Záznamy";
+        case VhdlSpecifier::PROCEDURE:
+          if (single) return "Procedura";
+          else        return "Procedury";
+        case VhdlSpecifier::ARCHITECTURE:
+          if (single) return "Architektura";
+          else        return "Architektury";
+        case VhdlSpecifier::ATTRIBUTE:
+          if (single) return "Atribut";
+          else        return "Atributy";
+        case VhdlSpecifier::PROCESS:
+          if (single) return "Proces";
+          else        return "Procesy";
+        case VhdlSpecifier::PORT:
+          if (single) return "Brána";
+          else        return "Brány";
+        case VhdlSpecifier::USE:
+          if (single) return "Klauzule use";
+          else        return "Klauzule use";
+        case VhdlSpecifier::GENERIC:
+          if (single) return "Generický parametr";
+          else        return "Generické parametry";
+        case VhdlSpecifier::PACKAGE_BODY:
+          return "Tělo balíku";
+        case VhdlSpecifier::UNITS:
+          return "Fyzikální jednotky";
+        case VhdlSpecifier::SHAREDVARIABLE:
+          if (single) return "Sdílená proměnná";
+          else        return "Sdílené proměnné";
+        case VhdlSpecifier::VFILE:
+          if (single) return "Soubor";
+          else        return "Soubory";
+        case VhdlSpecifier::GROUP:
+          if (single) return "Skupina";
+          else        return "Skupiny";
+        case VhdlSpecifier::INSTANTIATION:
+          if (single) return "Vložená instance";
+          else        return "Vložené instance";
+        case VhdlSpecifier::ALIAS:
+          if (single) return "Alias";
+          else        return "Aliasy";
+        case VhdlSpecifier::CONFIG:
+          if (single) return "Konfigurace";
+          else        return "Konfigurace";
+        case VhdlSpecifier::MISCELLANEOUS:
+          return "Ostatní";
+        case VhdlSpecifier::UCF_CONST:
+          return "Omezení (constraints)";
+        default:
+          return "Třída";
+      }
+    }
+    QCString trCustomReference(const QCString &name) override
+    { return "Dokumentace pro "+name; }
+
+    /* Slice */
+    QCString trConstants() override
+    {
+        return "Konstanty";
+    }
+    QCString trConstantDocumentation() override
+    {
+        return "Dokumentace konstant";
+    }
+    QCString trSequences() override
+    {
+        return "Sekvence";
+    }
+    QCString trSequenceDocumentation() override
+    {
+        return "Dokumentace sekvence";
+    }
+    QCString trDictionaries() override
+    {
+        return "Slovníky";
+    }
+    QCString trDictionaryDocumentation() override
+    {
+        return "Dokumentace slovníku";
+    }
+    QCString trSliceInterfaces() override
+    {
+        return "Rozhraní";
+    }
+    QCString trInterfaceIndex() override
+    {
+        return "Rejstřík rozhraní";
+    }
+    QCString trInterfaceList() override
+    {
+        return "Seznam rozhraní";
+    }
+    QCString trInterfaceListDescription() override
+    {
+        return "Následující seznam obsahuje jména rozhraní a jejich stručné popisy:";
+    }
+    QCString trInterfaceHierarchy() override
+    {
+        return "Hierarchie rozhraní";
+    }
+    QCString trInterfaceHierarchyDescription() override
+    {
+        return "Zde naleznete seznam, vyjadřující vztah dědičnosti rozhraní. Je seřazen přibližně (ale ne úplně) podle abecedy:";
+    }
+    QCString trInterfaceDocumentation() override
+    {
+        return "Dokumentace rozhraní";
+    }
+    QCString trStructs() override
+    {
+        return "Struktury";
+    }
+    QCString trStructIndex() override
+    {
+        return "Rejstřík struktur";
+    }
+    QCString trStructList() override
+    {
+        return "Seznam struktur";
+    }
+    QCString trStructListDescription() override
+    {
+        return "Následující seznam obsahuje jména struktur a jejich stručné popisy:";
+    }
+    QCString trStructDocumentation() override
+    {
+        return "Dokumentace struktur";
+    }
+    QCString trExceptionIndex() override
+    {
+        return "Rejstřík vyjímek";
+    }
+    QCString trExceptionList() override
+    {
+        return "Seznam vyjímek";
+    }
+    QCString trExceptionListDescription() override
+    {
+        return "Následující seznam obsahuje jména výjímek a jejich stručné popisy:";
+    }
+    QCString trExceptionHierarchy() override
+    {
+        return "Hierarchie vyjímek";
+    }
+    QCString trExceptionHierarchyDescription() override
+    {
+        return "Zde naleznete seznam, vyjadřující vztah dědičnosti vyjímek. Je seřazen přibližně (ale ne úplně) podle abecedy:";
+    }
+    QCString trExceptionDocumentation() override
+    {
+        return "Dokumentace vyjímek";
+    }
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result="Dokumentace";
+      if (isLocal) result+=" lokální";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" třídy "; break;
+        case ClassDef::Struct:     result+=" struktury "; break;
+        case ClassDef::Union:      result+=" unie "; break;
+        case ClassDef::Interface:
+                                   if (isLocal) result+="ho";
+                                   result+=" rozhraní "; break;
+        case ClassDef::Protocol:
+                                   if (isLocal) result+="ho";
+                                   result+=" protokolu "; break;
+        case ClassDef::Category:   result+=" kategorie "; break;
+        case ClassDef::Exception:  result+=" vyjímky "; break;
+        default: break;
+      }
+      result+=clName;
+      return result;
+    }
+    QCString trOperations() override
+    {
+        return "Operace";
+    }
+    QCString trOperationDocumentation() override
+    {
+        return "Dokumentace operace";
+    }
+    QCString trDataMembers() override
+    {
+        return "Datové členy";
+    }
+    QCString trDataMemberDocumentation() override
+    {
+        return "Dokumentace datových členů";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    QCString trDesignUnitDocumentation() override
+    { return "Dokumentace návrhové jednotky"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    QCString trConcept(bool first_capital, bool singular) override
+    {
+      return createNoun(first_capital, singular, "koncept", "y");
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    QCString trConceptReference(const QCString &conceptName) override
+    {
+      QCString result="Dokumentace konceptu ";
+      result+=conceptName;
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    QCString trConceptList() override
+    { return "Seznam konceptů"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    QCString trConceptIndex() override
+    { return "Rejstřík konceptů"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    QCString trConceptDocumentation() override
+    { return "Dokumentace konceptů"; }
+
+    /*! used as an introduction to the concept list */
+    QCString trConceptListDescription(bool extractAll) override
+    {
+      QCString result="Následuje seznam všech ";
+      if (!extractAll) result+="dokumentovaných ";
+      result+="konceptů se stručnými popisy:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    QCString trConceptDefinition() override
+    {
+      return "Definice konceptů";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPackageList() override
+    { return "Seznam balíků"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    QCString trFlowchart() override
+    { return "Vývojový diagram:"; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     *  Done.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! the compound type as used for the xrefitems */
+    QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt::Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result = "Struktury"; break;
+        case ClassDef::Union:      result = "Unie"; break;
+        case ClassDef::Interface:  result = "Rozhraní"; break;
+        case ClassDef::Protocol:   result = "Protokolu"; break;
+        case ClassDef::Category:   result = "Kategorie"; break;
+        case ClassDef::Exception:  result = "Výjimky"; break;
+        case ClassDef::Service:    result = "Služby"; break;
+        case ClassDef::Singleton:  result = "Singletonu"; break;
+        default: break;
+      }
+      return result;
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

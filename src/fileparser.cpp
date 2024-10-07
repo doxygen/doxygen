@@ -15,34 +15,39 @@
 
 #include "fileparser.h"
 #include "outputgen.h"
+#include "outputlist.h"
 
-void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const char *,     // scopeName
+void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
+               const QCString &,    // scopeName
                const QCString &     input,
-               SrcLangExt,       // lang
-               bool,             // isExampleBlock
-               const char *,     // exampleName
-               FileDef *            fileDef,
+               SrcLangExt,          // lang
+               bool,                // stripCodeComments
+               bool,                // isExampleBlock
+               const QCString &,    // exampleName
+               const FileDef *      fileDef,
                int                  startLine,
                int                  endLine,
-               bool,             // inlineFragment
-               const MemberDef *,  // memberDef
+               bool                 inlineFragment,
+               const MemberDef *,   // memberDef
                bool                 showLineNumbers,
-               const Definition *, // searchCtx,
-               bool              // collectXRefs
+               const Definition *,  // searchCtx,
+               bool                 // collectXRefs
               )
 {
   int lineNr = startLine!=-1 ? startLine : 1;
-  int length = input.length();
-  int i=0;
+  size_t length = input.length();
+  size_t i=0;
   while (i<length && (endLine==-1 || lineNr<=endLine))
   {
-    int j=i;
+    size_t j=i;
     while (j<length && input[j]!='\n') j++;
     QCString lineStr = input.mid(i,j-i);
-    codeOutIntf.startCodeLine(fileDef != 0 && showLineNumbers);
-    if (fileDef != 0 && showLineNumbers) codeOutIntf.writeLineNumber(0,0,0,lineNr);
-    if (!lineStr.isEmpty()) codeOutIntf.codify(lineStr);
+    codeOutIntf.startCodeLine(lineNr);
+    if (fileDef != nullptr && showLineNumbers)
+    {
+      codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr,!inlineFragment);
+    }
+    if (!lineStr.isEmpty()) codeOutIntf.codify(lineStr.data());
     codeOutIntf.endCodeLine();
     lineNr++;
     i=j+1;

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,42 +16,38 @@
  */
 
 #include <algorithm>
+#include <atomic>
 #include <stdlib.h>
-#include <qfile.h>
+
 #include "entry.h"
 #include "util.h"
 #include "section.h"
 #include "doxygen.h"
 #include "arguments.h"
 #include "config.h"
-//------------------------------------------------------------------
-
-#define HEADER ('D'<<24)+('O'<<16)+('X'<<8)+'!'
 
 //------------------------------------------------------------------
 
-int Entry::num=0;
+static AtomicInt g_num;
 
-Entry::Entry()
+Entry::Entry() : section(EntryType::makeEmpty()), program(static_cast<size_t>(0)), initializer(static_cast<size_t>(0))
 {
   //printf("Entry::Entry(%p)\n",this);
-  num++;
-  m_parent=0;
-  section = EMPTY_SEC;
+  g_num++;
+  m_parent=nullptr;
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
-  hasTagInfo = FALSE;
-  relatesType = Simple;
+  hasTagInfo = false;
+  relatesType = RelatesType::Simple;
   hidden = FALSE;
   groupDocType = GROUPDOC_NORMAL;
   reset();
 }
 
-Entry::Entry(const Entry &e)
+Entry::Entry(const Entry &e) : section(e.section)
 {
   //printf("Entry::Entry(%p):copy\n",this);
-  num++;
-  section     = e.section;
+  g_num++;
   type        = e.type;
   name        = e.name;
   hasTagInfo  = e.hasTagInfo;
@@ -59,23 +55,22 @@ Entry::Entry(const Entry &e)
   protection  = e.protection;
   mtype       = e.mtype;
   spec        = e.spec;
+  vhdlSpec    = e.vhdlSpec;
   initLines   = e.initLines;
-  stat        = e.stat;
+  isStatic    = e.isStatic;
   localToc    = e.localToc;
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
   subGrouping = e.subGrouping;
-  callGraph   = e.callGraph;
-  callerGraph = e.callerGraph;
-  referencedByRelation = e.referencedByRelation;
-  referencesRelation   = e.referencesRelation;
+  commandOverrides = e.commandOverrides;
+  exported    = e.exported;
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
   argList     = e.argList;
   tArgLists   = e.tArgLists;
-  program     = e.program;
-  initializer = e.initializer;
+  program.str(e.program.str());
+  initializer.str(e.initializer.str());
   includeFile = e.includeFile;
   includeName = e.includeName;
   doc         = e.doc;
@@ -95,6 +90,7 @@ Entry::Entry(const Entry &e)
   exception   = e.exception;
   typeConstr  = e.typeConstr;
   bodyLine    = e.bodyLine;
+  bodyColumn  = e.bodyColumn;
   endBodyLine = e.endBodyLine;
   mGrpId      = e.mGrpId;
   anchors     = e.anchors;
@@ -109,7 +105,9 @@ Entry::Entry(const Entry &e)
   id          = e.id;
   extends     = e.extends;
   groups      = e.groups;
+  req         = e.req;
   m_fileDef   = e.m_fileDef;
+  qualifiers  = e.qualifiers;
 
   m_parent    = e.m_parent;
   // deep copy child entries
@@ -122,11 +120,11 @@ Entry::Entry(const Entry &e)
 
 Entry::~Entry()
 {
-  //printf("Entry::~Entry(%p) num=%d\n",this,num);
+  //printf("Entry::~Entry(%p) num=%d\n",this,g_num);
   //printf("Deleting entry %d name %s type %x children %d\n",
-  //       num,name.data(),section,sublist->count());
+  //       num,qPrint(name),section,sublist->count());
 
-  num--;
+  g_num--;
 }
 
 void Entry::moveToSubEntryAndRefresh(Entry *&current)
@@ -149,7 +147,7 @@ void Entry::moveToSubEntryAndKeep(Entry *current)
   m_sublist.emplace_back(current);
 }
 
-void Entry::moveToSubEntryAndKeep(std::shared_ptr<Entry> &current)
+void Entry::moveToSubEntryAndKeep(std::shared_ptr<Entry> current)
 {
   current->m_parent=this;
   m_sublist.push_back(current);
@@ -182,68 +180,65 @@ void Entry::removeSubEntry(const Entry *e)
 
 void Entry::reset()
 {
-  static bool entryCallGraph   = Config_getBool(CALL_GRAPH);
-  static bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
-  static bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
-  static bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
   //printf("Entry::reset()\n");
-  name.resize(0);
-  type.resize(0);
-  args.resize(0);
-  bitfields.resize(0);
-  exception.resize(0);
-  program.resize(0);
-  includeFile.resize(0);
-  includeName.resize(0);
-  doc.resize(0);
-  docFile.resize(0);
+  name.clear();
+  type.clear();
+  args.clear();
+  bitfields.clear();
+  exception.clear();
+  program.str(std::string());
+  includeFile.clear();
+  includeName.clear();
+  doc.clear();
+  docFile.clear();
   docLine=-1;
-  relates.resize(0);
-  relatesType=Simple;
-  brief.resize(0);
-  briefFile.resize(0);
+  relates.clear();
+  relatesType=RelatesType::Simple;
+  brief.clear();
+  briefFile.clear();
   briefLine=-1;
-  inbodyDocs.resize(0);
-  inbodyFile.resize(0);
+  inbodyDocs.clear();
+  inbodyFile.clear();
   inbodyLine=-1;
-  inside.resize(0);
-  fileName.resize(0);
-  initializer.resize(0);
+  inside.clear();
+  fileName.clear();
+  initializer.str(std::string());
   initLines = -1;
   startLine = 1;
   startColumn = 1;
   bodyLine = -1;
+  bodyColumn = 1;
   endBodyLine = -1;
   mGrpId = -1;
-  callGraph   = entryCallGraph;
-  callerGraph = entryCallerGraph;
-  referencedByRelation = entryReferencedByRelation;
-  referencesRelation   = entryReferencesRelation;
-  section = EMPTY_SEC;
-  mtype   = Method;
-  virt    = Normal;
-  stat    = FALSE;
-  proto   = FALSE;
-  explicitExternal = FALSE;
-  spec  = 0;
-  lang = SrcLangExt_Unknown;
-  hidden = FALSE;
-  artificial = FALSE;
-  subGrouping = TRUE;
-  protection = Public;
+  commandOverrides.reset();
+  exported = false;
+  section = EntryType::makeEmpty();
+  mtype   = MethodTypes::Method;
+  virt    = Specifier::Normal;
+  isStatic = false;
+  proto   = false;
+  explicitExternal = false;
+  spec.reset();
+  vhdlSpec = VhdlSpecifier::UNKNOWN;
+  lang = SrcLangExt::Unknown;
+  hidden = false;
+  artificial = false;
+  subGrouping = true;
+  protection = Protection::Public;
   groupDocType = GROUPDOC_NORMAL;
-  id.resize(0);
-  metaData.resize(0);
+  id.clear();
+  metaData.clear();
   m_sublist.clear();
   extends.clear();
   groups.clear();
   anchors.clear();
-  argList.clear();
-  tArgLists.clear();
   argList.reset();
+  tArgLists.clear();
   typeConstr.reset();
   sli.clear();
-  m_fileDef = 0;
+  req.clear();
+  m_fileDef = nullptr;
+  qualifiers.clear();
 }
 
 void Entry::setFileDef(FileDef *fd)
@@ -254,14 +249,5 @@ void Entry::setFileDef(FileDef *fd)
       childNode->setFileDef(fd);
   }
 }
-
-void Entry::addSpecialListItem(const char *listName,int itemId)
-{
-  ListItemInfo ili;
-  ili.type = listName;
-  ili.itemId = itemId;
-  sli.push_back(ili);
-}
-
 
 //------------------------------------------------------------------

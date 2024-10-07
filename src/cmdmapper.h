@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,21 +13,26 @@
  *
  */
 
-#ifndef _CMDMAPPER_H
-#define _CMDMAPPER_H
+#ifndef CMDMAPPER_H
+#define CMDMAPPER_H
 
-#include <qdict.h>
+#include <unordered_map>
+#include <string>
+#include <memory>
+#include "qcstring.h"
 
-struct CommandMap;
+template<typename T>
+using CommandMap = std::unordered_map< std::string, T >;
 
-const int SIMPLESECT_BIT = 0x1000;
 
-enum CommandType
+enum class CommandType
 {
-  CMD_UNKNOWN      = 0,
-  CMD_ADDINDEX     = 1,   
+  SIMPLESECT_BIT = 0x1000,
+
+  UNKNOWN          = 0,
+  CMD_ADDINDEX     = 1,
   CMD_AMP          = 2,
-  CMD_ANCHOR       = 3,  
+  CMD_ANCHOR       = 3,
   CMD_AT           = 4,
   CMD_ATTENTION    = 5  | SIMPLESECT_BIT,
   CMD_AUTHOR       = 6  | SIMPLESECT_BIT,
@@ -38,18 +40,18 @@ enum CommandType
   CMD_BOLD         = 8,
   CMD_BSLASH       = 9,
   CMD_CODE         = 10,
-  CMD_COPYDOC      = 11,      
+  CMD_COPYDOC      = 11,
   CMD_DATE         = 12 | SIMPLESECT_BIT,
   CMD_DOLLAR       = 13,
-  CMD_DONTINCLUDE  = 14,   
-  CMD_DOTFILE      = 15,      
+  CMD_DONTINCLUDE  = 14,
+  CMD_DOTFILE      = 15,
   CMD_EMPHASIS     = 16,
-  CMD_ENDCODE      = 17,      
-  CMD_ENDHTMLONLY  = 18,  
-  CMD_ENDLATEXONLY = 19, 
-  CMD_ENDLINK      = 20,      
+  CMD_ENDCODE      = 17,
+  CMD_ENDHTMLONLY  = 18,
+  CMD_ENDLATEXONLY = 19,
+  CMD_ENDLINK      = 20,
   CMD_ENDSECREFLIST= 21,
-  CMD_ENDVERBATIM  = 22, 
+  CMD_ENDVERBATIM  = 22,
   CMD_ENDXMLONLY   = 23,
   CMD_EXCEPTION    = 24 | SIMPLESECT_BIT,
   CMD_FORMULA      = 25,
@@ -57,9 +59,9 @@ enum CommandType
   CMD_HASH         = 27,
   CMD_HTMLINCLUDE  = 28,
   CMD_HTMLONLY     = 29,
-  CMD_IMAGE        = 30,           
+  CMD_IMAGE        = 30,
   CMD_INCLUDE      = 31,
-  CMD_INTERNAL     = 32,         
+  CMD_INTERNAL     = 32,
   CMD_INTERNALREF  = 33,
   CMD_INVARIANT    = 34 | SIMPLESECT_BIT ,
   CMD_LATEXONLY    = 35,
@@ -67,11 +69,11 @@ enum CommandType
   CMD_LI           = 37,
   CMD_LINE         = 38,
   CMD_LINEBREAK    = 39,
-  CMD_LINK         = 40,             
+  CMD_LINK         = 40,
   CMD_NOTE         = 41 | SIMPLESECT_BIT,
   CMD_PAR          = 42 | SIMPLESECT_BIT,
   CMD_PARAM        = 43 | SIMPLESECT_BIT,
-  CMD_PERCENT      = 44, 
+  CMD_PERCENT      = 44,
   CMD_POST         = 45 | SIMPLESECT_BIT,
   CMD_PRE          = 46 | SIMPLESECT_BIT,
   CMD_REF          = 47,
@@ -115,7 +117,7 @@ enum CommandType
   CMD_COPYRIGHT    = 85 | SIMPLESECT_BIT,
   CMD_CITE         = 86,
   CMD_SNIPPET      = 87,
-  CMD_RTFONLY      = 88, 
+  CMD_RTFONLY      = 88,
   CMD_ENDRTFONLY   = 89,
   CMD_PIPE         = 90,
   CMD_VHDLFLOW     = 91,
@@ -142,12 +144,30 @@ enum CommandType
   CMD_RTFINCLUDE   = 112,
   CMD_DOCBOOKINCLUDE= 113,
   CMD_MANINCLUDE   = 114,
-  CMD_XMLINCLUDE   = 115
+  CMD_XMLINCLUDE   = 115,
+  CMD_ILINE        = 116,
+  CMD_ILITERAL     = 117,
+  CMD_ENDILITERAL  = 118,
+  CMD_IFILE        = 119,
+  CMD_SHOWDATE     = 120,
+  CMD_ISTARTCODE   = 121,
+  CMD_ENDICODE     = 122,
+  CMD_IVERBATIM    = 123,
+  CMD_ENDIVERBATIM = 124,
+  CMD_IANCHOR      = 125,
+  CMD_DOXYCONFIG   = 126,
+  CMD_IMPORTANT    = 127 | SIMPLESECT_BIT,
+  CMD_SUBPARAGRAPH = 128,
+  CMD_SUBSUBPARAGRAPH = 129,
+  CMD_IPREFIX      = 130,
+  CMD_PLANTUMLFILE = 131
 };
 
-enum HtmlTagType
+enum class HtmlTagType
 {
-  HTML_UNKNOWN   = 0,
+  SIMPLESECT_BIT = 0x1000,
+
+  UNKNOWN        = 0,
   HTML_CENTER    = 1,
   HTML_TABLE     = 2,
   HTML_CAPTION   = 3,
@@ -186,6 +206,11 @@ enum HtmlTagType
   HTML_INS       = 36,
   HTML_DEL       = 37,
   HTML_S         = 38,
+  HTML_DETAILS   = 39,
+  HTML_CITE      = 40,
+  HTML_THEAD     = 41,
+  HTML_TBODY     = 42,
+  HTML_TFOOT     = 43,
 
   XML_CmdMask    = 0x100,
 
@@ -214,25 +239,46 @@ enum HtmlTagType
   XML_INHERITDOC   = XML_CmdMask + 22
 };
 
+
 /** Class representing a mapping from command names to command IDs. */
+template<typename T>
 class Mapper
 {
   public:
-    int map(const char *n);
-    QCString find(const int n);
-    Mapper(const CommandMap *cm,bool caseSensitive);
+    T map(const QCString &n) const
+    {
+      if (n.isEmpty()) return T::UNKNOWN;
+      QCString name = n;
+      if (!m_cs) name=name.lower();
+      auto it = m_map.find(name.str());
+      return it!=m_map.end() ? it->second : T::UNKNOWN;
+    }
+
+    QCString find(const T n) const
+    {
+      for (const auto &[name,id] : m_map)
+      {
+        T curVal = id;
+        // https://stackoverflow.com/a/15889501/1657886
+        if (curVal == n || (curVal == (static_cast<T>(static_cast<int>(n) | static_cast<int>(T::SIMPLESECT_BIT))))) return name.c_str();
+      }
+      return QCString();
+    }
+
+    Mapper(const CommandMap<T> &cm,bool caseSensitive) : m_map(cm), m_cs(caseSensitive)
+    {
+    }
+
   private:
-    QDict<int> m_map;
+    const CommandMap<T> &m_map;
     bool m_cs;
 };
 
-/** Class representing a namespace for the doxygen and HTML command mappers. */
-struct Mappers
+/** Namespace for the doxygen and HTML command mappers. */
+namespace Mappers
 {
-  static void freeMappers();
-  static Mapper *cmdMapper;
-  static Mapper *htmlTagMapper;
-};
-
+  extern const Mapper<CommandType> *cmdMapper;
+  extern const Mapper<HtmlTagType> *htmlTagMapper;
+}
 
 #endif

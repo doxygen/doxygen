@@ -16,76 +16,75 @@
 #ifndef DOXYGEN_H
 #define DOXYGEN_H
 
-#include <qdatetime.h>
-#include <qcache.h>
-#include <qstrlist.h>
-#include <qdict.h>
-#include <qintdict.h>
+#include <mutex>
 
-#include "ftextstream.h"
-#include "sortdict.h"
+#include "containers.h"
 #include "membergroup.h"
 #include "dirdef.h"
 #include "memberlist.h"
+#include "define.h"
+#include "cache.h"
+#include "symbolmap.h"
+#include "searchindex.h"
+
+#define THREAD_LOCAL thread_local
+#define AtomicInt    std::atomic_int
 
 class RefList;
-class PageSList;
-class PageSDict;
+class PageLinkedMap;
 class PageDef;
-class SearchIndexIntf;
 class ParserManager;
-class ObjCache;
-class Store;
-class QFileInfo;
 class BufStr;
-class CiteDict;
 class MemberDef;
 class GroupDef;
-class GroupSDict;
+class GroupLinkedMap;
 class FileDef;
 class ClassDef;
-class ClassSDict;
-class GenericsSDict;
-class MemberNameSDict;
-class FileNameDict;
-class FileNameList;
-class NamespaceSDict;
+class ClassLinkedMap;
+class ConceptLinkedMap;
+class MemberNameLinkedMap;
+class FileNameLinkedMap;
+class NamespaceLinkedMap;
 class NamespaceDef;
-class DefinitionIntf;
-class DirSDict;
-class DirRelation;
+class DirRelationLinkedMap;
 class IndexList;
-class FormulaList;
-class FormulaDict;
-class FormulaNameDict;
-class SectionDict;
 class Preprocessor;
 struct MemberGroupInfo;
-
-typedef QList<QCString>    StringList;
-typedef QListIterator<QCString>    StringListIterator;
-//typedef QDict<FileDef>     FileDict;
-//typedef QDict<GroupDef>    GroupDict;
-
-class StringDict : public QDict<QCString>
-{
-  public:
-    StringDict(uint size=17) : QDict<QCString>(size) {}
-    virtual ~StringDict() {}
-};
+class NamespaceDefMutable;
 
 struct LookupInfo
 {
-  LookupInfo() : classDef(0), typeDef(0) {}
-  LookupInfo(const ClassDef *cd,const MemberDef *td,QCString ts,QCString rt)
-    : classDef(cd), typeDef(td), templSpec(ts),resolvedType(rt) {}
-  const ClassDef  *classDef;
-  const MemberDef *typeDef;
+  LookupInfo() = default;
+  LookupInfo(const Definition *d,const MemberDef *td,const QCString &ts,const QCString &rt)
+    : definition(d), typeDef(td), templSpec(ts), resolvedType(rt) {}
+  const Definition  *definition = nullptr;
+  const MemberDef *typeDef = nullptr;
   QCString   templSpec;
   QCString   resolvedType;
 };
 
-extern QCString g_spaces;
+struct InputFileEncoding
+{
+  InputFileEncoding() {}
+  InputFileEncoding(const QCString &pat, const QCString &enc) : pattern(pat), encoding(enc) {}
+  QCString pattern;
+  QCString encoding;
+};
+
+struct NamespaceAliasInfo
+{
+  NamespaceAliasInfo(const std::string &a,const std::string &ctx=std::string()) : alias(a), context(ctx) {}
+  std::string alias;
+  std::string context;
+};
+
+using InputFileEncodingList = std::vector<InputFileEncoding>;
+
+using ClangUsrMap = std::unordered_map<std::string,const Definition *>;
+
+using StaticInitMap = std::unordered_map<std::string,BodyInfo>;
+
+using NamespaceAliasInfoMap = std::unordered_map<std::string,NamespaceAliasInfo>;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
  *
@@ -94,101 +93,74 @@ extern QCString g_spaces;
 class Doxygen
 {
   public:
-    static ClassSDict               *classSDict;
-    static ClassSDict               *hiddenClasses;
-    static PageSDict                *exampleSDict;
-    static PageSDict                *pageSDict;
-    static PageDef                  *mainPage;
-    static bool                      insideMainPage;
-    static FileNameDict             *includeNameDict;
-    static FileNameDict             *exampleNameDict;
-    static QDict<void>               inputPaths;
-    static FileNameDict             *inputNameDict;
-    static FileNameList             *inputNameList;
-    static FileNameDict             *imageNameDict;
-    static FileNameDict             *dotFileNameDict;
-    static FileNameDict             *mscFileNameDict;
-    static FileNameDict             *diaFileNameDict;
-    static QStrList                  tagfileList;
-    static MemberNameSDict          *memberNameSDict;
-    static MemberNameSDict          *functionNameSDict;
-    static SectionDict              *sectionDict;
-    static StringDict                namespaceAliasDict;
-    static GroupSDict               *groupSDict;
-    static NamespaceSDict           *namespaceSDict;
-    static FormulaList              *formulaList;
-    static FormulaDict              *formulaDict;
-    static FormulaDict              *formulaNameDict;
-    static StringDict                tagDestinationDict;
-    static StringDict                aliasDict;
-    static QIntDict<MemberGroupInfo> memGrpInfoDict;
-    static QDict<void>               expandAsDefinedDict;
-    static NamespaceDef             *globalScope;
-    static QDict<RefList>           *xrefLists; // array of xref lists: todo, test, bug, deprecated ...
+    static ClassLinkedMap           *classLinkedMap;
+    static ClassLinkedMap           *hiddenClassLinkedMap;
+    static ConceptLinkedMap         *conceptLinkedMap;
+    static PageLinkedMap            *exampleLinkedMap;
+    static PageLinkedMap            *pageLinkedMap;
+    static std::unique_ptr<PageDef>  mainPage;
+    static FileNameLinkedMap        *includeNameLinkedMap;
+    static FileNameLinkedMap        *exampleNameLinkedMap;
+    static StringUnorderedSet        inputPaths;
+    static FileNameLinkedMap        *inputNameLinkedMap;
+    static FileNameLinkedMap        *imageNameLinkedMap;
+    static FileNameLinkedMap        *dotFileNameLinkedMap;
+    static FileNameLinkedMap        *mscFileNameLinkedMap;
+    static FileNameLinkedMap        *diaFileNameLinkedMap;
+    static FileNameLinkedMap        *plantUmlFileNameLinkedMap;
+    static MemberNameLinkedMap      *memberNameLinkedMap;
+    static MemberNameLinkedMap      *functionNameLinkedMap;
+    static NamespaceAliasInfoMap     namespaceAliasMap;
+    static GroupLinkedMap           *groupLinkedMap;
+    static NamespaceLinkedMap       *namespaceLinkedMap;
+    static StringMap                 tagDestinationMap;
+    static StringUnorderedSet        tagFileSet;
+    static MemberGroupInfoMap        memberGroupInfoMap;
+    static StringUnorderedSet        expandAsDefinedSet;
+    static std::unique_ptr<NamespaceDef> globalNamespaceDef;
+    static NamespaceDefMutable      *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
-    static QTime                     runningTime;
-    static SearchIndexIntf          *searchIndex;
-    static QDict<DefinitionIntf>    *symbolMap;
-    static QDict<Definition>        *clangUsrMap;
-    static bool                      outputToWizard;
-    static QDict<int>               *htmlDirMap;
-    static QCache<LookupInfo>       *lookupCache;
-    static DirSDict                 *directories;
-    static SDict<DirRelation>        dirRelations;
+    static SearchIndexIntf           searchIndex;
+    static SymbolMap<Definition>    *symbolMap;
+    static ClangUsrMap              *clangUsrMap;
+    static Cache<std::string,LookupInfo> *typeLookupCache;
+    static Cache<std::string,LookupInfo> *symbolLookupCache;
+    static DirLinkedMap             *dirLinkedMap;
+    static DirRelationLinkedMap      dirRelations;
     static ParserManager            *parserManager;
     static bool                      suppressDocWarnings;
-    static Store                    *symbolStorage;
-    static QCString                  objDBFileName;
-    static QCString                  entryDBFileName;
     static QCString                  filterDBFileName;
-    static CiteDict                 *citeDict;
-    static bool                      gatherDefines;
-    static bool                      userComments;
     static IndexList                *indexList;
-    static int                       subpageNestingLevel;
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
-    static bool                      markdownSupport;
-    static GenericsSDict            *genericsDict;
-    static Preprocessor             *preprocessor;
+    static DefinesPerFileList        macroDefinitions;
+    static bool                      clangAssistedParsing;
+    static QCString                  verifiedDotPath;
+    static InputFileEncodingList     inputFileEncodingList;
+    static std::mutex                countFlowKeywordsMutex;
+    static std::mutex                addExampleMutex;
+    static StaticInitMap             staticInitMap;
 };
 
 void initDoxygen();
 void readConfiguration(int argc, char **argv);
 void checkConfiguration();
 void adjustConfiguration();
-void searchInputFiles(StringList &inputFiles);
 void parseInput();
 void generateOutput();
-void readAliases();
-void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
-int readFileOrDirectory(const char *s,
-                        FileNameList *fnList,
-                        FileNameDict *fnDict,
-                        StringDict *exclDict,
-                        QStrList *patList,
-                        QStrList *exclPatList,
-                        StringList *resultList,
-                        StringDict *resultDict,
+void readFileOrDirectory(const QCString &s,
+                        FileNameLinkedMap *fnDict,
+                        StringUnorderedSet *exclSet,
+                        const StringVector *patList,
+                        const StringVector *exclPatList,
+                        StringVector *resultList,
+                        StringUnorderedSet *resultSet,
                         bool recursive,
                         bool errorIfNotExist=TRUE,
-                        QDict<void> *killDict = 0,
-                        QDict<void> *paths = 0
+                        StringUnorderedSet *killSet = nullptr,
+                        StringUnorderedSet *paths = nullptr
                        );
-int readDir(QFileInfo *fi,
-            FileNameList *fnList,
-            FileNameDict *fnDict,
-            StringDict  *exclDict,
-            QStrList *patList,
-            QStrList *exclPatList,
-            StringList *resultList,
-            StringDict *resultDict,
-            bool errorIfNotExist,
-            bool recursive,
-            QDict<void> *killDict
-           );
-void copyAndFilterFile(const char *fileName,BufStr &dest);
 
 #endif
