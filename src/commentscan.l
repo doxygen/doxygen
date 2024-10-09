@@ -1547,8 +1547,11 @@ STopt  [^\n@\\]*
                                           }
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
-                                          addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
-                                          addOutput(yyscanner,"\" \\iline " + QCString().setNum(yyextra->lineNr + extraLineNr) + " \\ilinebr ");
+                                          if ( yyextra->current->groupDocType!=Entry::GROUPDOC_NORMAL)
+                                          {
+                                            addOutput(yyscanner," \\ifile \""+ yyextra->fileName);
+                                            addOutput(yyscanner,"\" \\iline " + QCString().setNum(yyextra->lineNr + extraLineNr) + " \\ilinebr ");
+                                          }
                                           BEGIN( Comment );
                                         }
 <GroupDocArg2>.                         { // title (stored in type)
