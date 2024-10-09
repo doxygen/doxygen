@@ -6302,7 +6302,7 @@ QCString stripIndentation(const QCString &s)
   }
 
   // no indent to remove -> we're done
-  if (minIndent==0) return s;
+  if (minIndent==0) return substitute(s,"@ilinebr","\\ilinebr");
 
   // remove minimum indentation for each line
   TextStream result;
@@ -6344,6 +6344,11 @@ QCString stripIndentation(const QCString &s)
       {
         p+=skipAmount; // remove the indent
       }
+    }
+    else if (c=='@' && qstrncmp(p,"ilinebr",7)==0)
+    {
+      result << "\\ilinebr";
+      p+=7;
     }
     else // copy anything until the end of the line
     {
