@@ -53,6 +53,9 @@ class DocbookCodeGenerator : public OutputCodeIntf
     OutputType type() const override { return OutputType::Docbook; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<DocbookCodeGenerator>(m_t); }
     void codify(const QCString &text) override;
+    void stripCodeComments(bool b) override;
+    void startSpecialComment() override;
+    void endSpecialComment() override;
     void writeCodeLink(CodeSymbolType type,
         const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
@@ -91,6 +94,8 @@ class DocbookCodeGenerator : public OutputCodeIntf
     bool        m_insideSpecialHL = false;
     QCString    m_relPath;
     QCString    m_sourceFileName;
+    bool        m_stripCodeComments = false;
+    bool        m_hide = false;
 };
 
 class DocbookGenerator : public OutputGenerator, public OutputGenIntf

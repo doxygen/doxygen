@@ -57,6 +57,9 @@ class Doxyparse : public OutputCodeIntf
     OutputType type() const override { return OutputType::Extension; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<Doxyparse>(m_fd); }
     void codify(const QCString &) override {}
+    void stripCodeComments(bool) override {}
+    void startSpecialComment() override {}
+    void endSpecialComment() override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
     void startCodeLine(int) override {}
     void endCodeLine() override {}

@@ -49,6 +49,9 @@ class OutputCodeDefer : public OutputCodeIntf
     OutputType type() const override { return m_codeGen->type(); }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<OutputCodeDefer>(*this); }
     void codify(const QCString &s) override { m_codeGen->codify(s); }
+    void stripCodeComments(bool b) override { m_codeGen->stripCodeComments(b); }
+    void startSpecialComment() override { m_codeGen->startSpecialComment(); }
+    void endSpecialComment() override { m_codeGen->endSpecialComment(); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
@@ -109,6 +112,9 @@ class OutputCodeRecorder : public OutputCodeIntf
   public:
     OutputType type() const override { return OutputType::Recorder; }
     void codify(const QCString &s) override;
+    void stripCodeComments(bool b) override;
+    void startSpecialComment() override;
+    void endSpecialComment() override;
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<OutputCodeRecorder>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
@@ -222,6 +228,14 @@ class OutputCodeList
 
     void codify(const QCString &s)
     { foreach(&OutputCodeIntf::codify,s); }
+
+    void stripCodeComments(bool b)
+    { foreach(&OutputCodeIntf::stripCodeComments,b); }
+
+    void startSpecialComment()
+    { foreach(&OutputCodeIntf::startSpecialComment); }
+    void endSpecialComment()
+    { foreach(&OutputCodeIntf::endSpecialComment); }
 
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,

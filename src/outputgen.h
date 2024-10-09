@@ -70,6 +70,9 @@ class OutputCodeIntf
     virtual OutputType type() const = 0;
     virtual std::unique_ptr<OutputCodeIntf> clone() = 0;
     virtual void codify(const QCString &s) = 0;
+    virtual void stripCodeComments(bool b) = 0;
+    virtual void startSpecialComment() = 0;
+    virtual void endSpecialComment() = 0;
     virtual void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,

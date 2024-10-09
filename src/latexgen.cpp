@@ -75,6 +75,7 @@ void LatexCodeGenerator::setSourceFileName(const QCString &name)
 
 void LatexCodeGenerator::codify(const QCString &str)
 {
+  if (m_hide) return;
   if (!str.isEmpty())
   {
     const char *p=str.data();
@@ -155,12 +156,27 @@ void LatexCodeGenerator::codify(const QCString &str)
   }
 }
 
+void LatexCodeGenerator::stripCodeComments(bool b)
+{
+  m_stripCodeComments = b;
+}
+
+void LatexCodeGenerator::startSpecialComment()
+{
+  m_hide = m_stripCodeComments;
+}
+
+void LatexCodeGenerator::endSpecialComment()
+{
+  m_hide = false;
+}
 
 void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
                                    const QCString &ref,const QCString &f,
                                    const QCString &anchor,const QCString &name,
                                    const QCString &)
 {
+  if (m_hide) return;
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   size_t l = name.length();
@@ -183,6 +199,7 @@ void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
 
 void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool writeLineAnchor)
 {
+  if (m_hide) return;
   bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_doxyCodeLineOpen)
@@ -229,6 +246,7 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
 
 void LatexCodeGenerator::startCodeLine(int)
 {
+  if (m_hide) return;
   m_col=0;
   if (!m_doxyCodeLineOpen)
   {
@@ -239,6 +257,7 @@ void LatexCodeGenerator::startCodeLine(int)
 
 void LatexCodeGenerator::endCodeLine()
 {
+  if (m_hide) return;
   if (m_doxyCodeLineOpen)
   {
     *m_t << "}";
@@ -249,11 +268,13 @@ void LatexCodeGenerator::endCodeLine()
 
 void LatexCodeGenerator::startFontClass(const QCString &name)
 {
+  if (m_hide) return;
   *m_t << "\\textcolor{" << name << "}{";
 }
 
 void LatexCodeGenerator::endFontClass()
 {
+  if (m_hide) return;
   *m_t << "}";
 }
 

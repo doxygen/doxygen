@@ -32,6 +32,9 @@ class RTFCodeGenerator : public OutputCodeIntf
 
     OutputType type() const override { return OutputType::RTF; }
     void codify(const QCString &text) override;
+    void stripCodeComments(bool b) override;
+    void startSpecialComment() override;
+    void endSpecialComment() override;
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<RTFCodeGenerator>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
@@ -65,6 +68,8 @@ class RTFCodeGenerator : public OutputCodeIntf
     bool m_doxyCodeLineOpen = false;
     QCString m_sourceFileName;
     int m_indentLevel = 0;
+    bool m_stripCodeComments = false;
+    bool m_hide = false;
 };
 
 

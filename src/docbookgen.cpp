@@ -152,8 +152,24 @@ DocbookCodeGenerator::DocbookCodeGenerator(TextStream *t) : m_t(t)
 
 void DocbookCodeGenerator::codify(const QCString &text)
 {
+  if (m_hide) return;
   Docbook_DB(("(codify \"%s\")\n",text));
   writeDocbookCodeString(*m_t,text,m_col);
+}
+
+void DocbookCodeGenerator::stripCodeComments(bool b)
+{
+  m_stripCodeComments = b;
+}
+
+void DocbookCodeGenerator::startSpecialComment()
+{
+  m_hide = m_stripCodeComments;
+}
+
+void DocbookCodeGenerator::endSpecialComment()
+{
+  m_hide = false;
 }
 
 void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
@@ -161,6 +177,7 @@ void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
     const QCString &anchor,const QCString &name,
     const QCString &tooltip)
 {
+  if (m_hide) return;
   Docbook_DB(("(writeCodeLink)\n"));
   writeDocbookLink(*m_t,ref,file,anchor,name,tooltip);
   m_col+=name.length();
@@ -171,6 +188,7 @@ void DocbookCodeGenerator::writeCodeLinkLine(CodeSymbolType,
     const QCString &,const QCString &name,
     const QCString &,bool writeLineAnchor)
 {
+  if (m_hide) return;
   Docbook_DB(("(writeCodeLinkLine)\n"));
   if (!writeLineAnchor) return;
   *m_t << "<anchor xml:id=\"_" << stripExtensionGeneral(stripPath(file),".xml");
@@ -189,6 +207,7 @@ void DocbookCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, c
 
 void DocbookCodeGenerator::startCodeLine(int)
 {
+  if (m_hide) return;
   Docbook_DB(("(startCodeLine)\n"));
   m_insideCodeLine=TRUE;
   m_col=0;
@@ -196,6 +215,7 @@ void DocbookCodeGenerator::startCodeLine(int)
 
 void DocbookCodeGenerator::endCodeLine()
 {
+  if (m_hide) return;
   if (m_insideCodeLine) *m_t << "\n";
   Docbook_DB(("(endCodeLine)\n"));
   m_lineNumber = -1;
@@ -206,6 +226,7 @@ void DocbookCodeGenerator::endCodeLine()
 
 void DocbookCodeGenerator::startFontClass(const QCString &colorClass)
 {
+  if (m_hide) return;
   Docbook_DB(("(startFontClass)\n"));
   *m_t << "<emphasis role=\"" << colorClass << "\">";
   m_insideSpecialHL=TRUE;
@@ -213,6 +234,7 @@ void DocbookCodeGenerator::startFontClass(const QCString &colorClass)
 
 void DocbookCodeGenerator::endFontClass()
 {
+  if (m_hide) return;
   Docbook_DB(("(endFontClass)\n"));
   *m_t << "</emphasis>"; // non DocBook
   m_insideSpecialHL=FALSE;
@@ -226,6 +248,7 @@ void DocbookCodeGenerator::writeCodeAnchor(const QCString &)
 void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,
     const QCString &anchor,int l,bool writeLineAnchor)
 {
+  if (m_hide) return;
   Docbook_DB(("(writeLineNumber)\n"));
   m_insideCodeLine = TRUE;
   if (Config_getBool(SOURCE_BROWSER))

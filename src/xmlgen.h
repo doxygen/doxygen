@@ -25,6 +25,9 @@ class XMLCodeGenerator : public OutputCodeIntf
     OutputType type() const override { return OutputType::XML; }
 
     void codify(const QCString &text) override;
+    void stripCodeComments(bool b) override;
+    void startSpecialComment() override;
+    void endSpecialComment() override;
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<XMLCodeGenerator>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
@@ -51,13 +54,15 @@ class XMLCodeGenerator : public OutputCodeIntf
     TextStream *m_t;
     QCString m_refId;
     QCString m_external;
-    int m_lineNumber;
-    bool m_isMemberRef;
-    size_t m_col;
+    int m_lineNumber = -1;
+    bool m_isMemberRef = false;
+    size_t m_col = 0;
 
-    bool m_insideCodeLine;
-    bool m_normalHLNeedStartTag;
-    bool m_insideSpecialHL;
+    bool m_insideCodeLine = false;
+    bool m_normalHLNeedStartTag = true;
+    bool m_insideSpecialHL = false;
+    bool m_stripCodeComments = false;
+    bool m_hide = false;
 };
 
 void generateXML();

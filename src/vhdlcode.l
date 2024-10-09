@@ -96,7 +96,6 @@ struct vhdlcodeYY_state
   bool          insideCodeLine = false;
   const Definition *searchCtx = nullptr;
 
-  bool          stripCodeComments = true;
   bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
@@ -109,6 +108,8 @@ struct vhdlcodeYY_state
   const MemberDef *   currentMemberDef = nullptr;
   bool          includeCodeFragment = false;
   const char *  currentFontClass = nullptr;
+  bool          insideSpecialComment = false;
+  int           lastCopyCommentContext = 0;
 
   bool          lexInit = false;
   int           braceCount = 0;
@@ -116,8 +117,7 @@ struct vhdlcodeYY_state
   std::vector<const Definition *> foldStack;
 };
 
-
-static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text);
+static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text,bool specialComment=false);
 static void generateMemLink(yyscan_t yyscanner,OutputCodeList &ol,QCString &clName,QCString& memberName);
 static bool writeColoredWord(yyscan_t yyscanner,QCString& word );
 static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &clName, bool typeOnly=false, const QCString &curr_class=QCString());
@@ -134,8 +134,8 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                   const QCString &text);
 static void generateFuncLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberDef* mdef);
 static int  countLines(yyscan_t yyscanner);
-static void endFontClass(yyscan_t yyscanner);
-static void startFontClass(yyscan_t yyscanner,const char *s);
+static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment=false);
+static void endFontClass(yyscan_t yyscanner,bool specialComment=false);
 static void appStringLower(QCString& qcs,const char* text);
 static void codifyMapLines(yyscan_t yyscanner,const QCString &text);
 static void writeFuncProto(yyscan_t yyscanner);
@@ -213,6 +213,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 %x ClassesName
 %x Map
 %x End
+%x CopyComment
 
 %%
 
@@ -883,36 +884,46 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       yyextra->code->codify(yytext);
                                     }
 
+
+<*>\n?"--!"[^\n]*/\n{B}*"--!"       { // found special multi-line comment on its own line
+                                      if (YY_START!=CopyComment)
+                                      {
+                                        startFontClass(yyscanner,"comment",true);
+                                        yyextra->lastCopyCommentContext=YY_START;
+                                        BEGIN(CopyComment);
+                                      }
+                                      codifyLines(yyscanner,yytext,QCString(),false,true);
+                                    }
 <*>\n{TEXTT}                        { // found normal or special comment on its own line
                                       QCString text(yytext);
                                       int i=text.find("--");
-                                      if (text.mid(i,3)=="--!") // && // hide special comment
+                                      bool isSpecialComment = i!=-1 && yytext[i+2]=='!';
+                                      if (isSpecialComment && YY_START!=CopyComment)
                                       {
-                                        if (!yyextra->stripCodeComments)
-                                        {
-                                          codifyLines(yyscanner,text,QCString(),false,true);
-                                        }
-                                        else yyextra->yyLineNr++; // skip complete line, but count line
+                                        startFontClass(yyscanner,"comment",true);
                                       }
-                                      else // normal comment
+                                      codifyLines(yyscanner,text,QCString(),false,true);
+                                      if (isSpecialComment)
                                       {
-                                        codifyLines(yyscanner,text,QCString(),false,true);
+                                        endFontClass(yyscanner,true);
+                                      }
+                                      if (YY_START==CopyComment)
+                                      {
+                                        BEGIN(yyextra->lastCopyCommentContext);
                                       }
                                     }
 <*>{TEXTT}                          { // found normal or special comment after something
                                       QCString text(yytext);
                                       int i=text.find("--");
-                                      if (text.mid(i,3)=="--!")
+                                      bool isSpecialComment = i!=-1 && yytext[i+2]=='!';
+                                      if (isSpecialComment)
                                       {
-                                        // hide special comment
-                                        if (!yyextra->stripCodeComments)
-                                        {
-                                          codifyLines(yyscanner,text,QCString(),false,true);
-                                        }
+                                        startFontClass(yyscanner,"comment",true);
                                       }
-                                      else // normal comment
+                                      codifyLines(yyscanner,yytext,QCString(),false,true);
+                                      if (isSpecialComment)
                                       {
-                                        codifyLines(yyscanner,text,QCString(),false,true);
+                                        endFontClass(yyscanner,true);
                                       }
                                     }
 
@@ -1438,33 +1449,50 @@ static int countLines(yyscan_t yyscanner)
   return count;
 }
 
-static void endFontClass(yyscan_t yyscanner)
+static void endFontClass(yyscan_t yyscanner,bool specialComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("endFontClass: specialComment=%d insideSpecialComment=%d\n",
+  //    specialComment,yyextra->insideSpecialComment);
   if (yyextra->currentFontClass)
   {
     yyextra->code->endFontClass();
     yyextra->currentFontClass=0;
   }
+  if (specialComment && yyextra->insideSpecialComment)
+  {
+    yyextra->code->endSpecialComment();
+    yyextra->insideSpecialComment=false;
+  }
 }
 
-static void startFontClass(yyscan_t yyscanner,const char *s)
+static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (s==nullptr) return;
-  endFontClass(yyscanner);
-  yyextra->code->startFontClass(s);
-  yyextra->currentFontClass=s;
+  //printf("startFontClass(%s): specialComment=%d insideSpecialComment=%d\n",s,
+  //    specialComment,yyextra->insideSpecialComment);
+  if (specialComment)
+  {
+    yyextra->code->startSpecialComment();
+    yyextra->insideSpecialComment = true;
+  }
+  if (qstrcmp(yyextra->currentFontClass,s)!=0)
+  {
+    endFontClass(yyscanner);
+    yyextra->code->startFontClass(s);
+    yyextra->currentFontClass=s;
+  }
 }
 
-static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text)
+static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text,bool specialComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (s==nullptr || text.isEmpty()) return;
   //printf("writeFont(yyscanner,%d,\"%s\")\n",yyextra->yyLineNr,text);
-  yyextra->code->startFontClass(s);
+  startFontClass(yyscanner,s,specialComment);
   yyextra->code->codify(text);
-  yyextra->code->endFontClass();
+  endFontClass(yyscanner,specialComment);
 }
 
 //----------------------------------------------------------------------------
@@ -1647,6 +1675,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
     const ClassDef *dd=memberDef->getClassDef();
     if (dd) yyextra->currClass=dd->name();
   }
+  od.stripCodeComments(stripCodeComments);
   resetCodeParserState();
   yyextra->code = &od;
   yyextra->inputString   = s.data();
@@ -1655,6 +1684,7 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   yyextra->insideCodeLine = false;
   yyextra->searchCtx = searchCtx;
   yyextra->foldStack.clear();
+  yyextra->insideSpecialComment = false;
 
   if (startLine!=-1)
     yyextra->yyLineNr    = startLine;
@@ -1668,7 +1698,6 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
 
 
   // yyextra->theCallContext.clear();
-  yyextra->stripCodeComments = stripCodeComments;
   yyextra->exampleBlock  = exBlock;
   yyextra->exampleName   = exName;
   yyextra->sourceFileDef = fd;

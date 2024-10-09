@@ -54,6 +54,9 @@ class XRefDummyCodeGenerator : public OutputCodeIntf
     OutputType type() const override { return OutputType::Extension; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<XRefDummyCodeGenerator>(m_fd); }
     void codify(const QCString &) override {}
+    void stripCodeComments(bool) override {}
+    void startSpecialComment() override {}
+    void endSpecialComment() override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,

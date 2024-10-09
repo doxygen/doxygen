@@ -34,6 +34,9 @@ class LatexCodeGenerator : public OutputCodeIntf
     OutputType type() const override { return OutputType::Latex; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<LatexCodeGenerator>(*this); }
     void codify(const QCString &text) override;
+    void stripCodeComments(bool b) override;
+    void startSpecialComment() override;
+    void endSpecialComment() override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
@@ -80,6 +83,8 @@ class LatexCodeGenerator : public OutputCodeIntf
     bool m_doxyCodeLineOpen = false;
     int m_usedTableLevel = 0;
     bool m_insideTabbing = false;
+    bool m_stripCodeComments = false;
+    bool m_hide = false;
 };
 
 /** Generator for LaTeX output. */

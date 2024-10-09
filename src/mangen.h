@@ -30,6 +30,9 @@ class ManCodeGenerator : public OutputCodeIntf
     OutputType type() const override { return OutputType::Man; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<ManCodeGenerator>(*this); }
     void codify(const QCString &text) override;
+    void stripCodeComments(bool b) override;
+    void startSpecialComment() override;
+    void endSpecialComment() override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
@@ -55,6 +58,8 @@ class ManCodeGenerator : public OutputCodeIntf
   private:
     int  m_col = 0;
     TextStream *m_t;
+    bool m_stripCodeComments = false;
+    bool m_hide = false;
 };
 
 /** Generator for Man page output. */

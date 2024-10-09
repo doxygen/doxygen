@@ -150,8 +150,8 @@ struct fortrancodeYY_state
 
   bool          insideBody = false;      //!< inside subprog/program body? => create links
   const char *  currentFontClass = nullptr;
+  bool          insideSpecialComment = false;
 
-  bool          stripCodeComments = true;
   bool          exampleBlock = false;
   QCString      exampleName;
   QCString      exampleFile;
@@ -186,8 +186,8 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
 
 //----------------------------------------------------------------------------
 
-static void endFontClass(yyscan_t yyscanner);
-static void startFontClass(yyscan_t yyscanner,const char *s);
+static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment=false);
+static void endFontClass(yyscan_t yyscanner,bool specialComment=false);
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static void addToSearchIndex(yyscan_t yyscanner,const QCString &text);
 static void startCodeLine(yyscan_t yyscanner);
@@ -692,19 +692,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <DocBlock>"\n"                          { // comment block ends at the end of this line
                                           // remove special comment (default config)
                                           yyextra->contLineNr++;
-                                          if (yyextra->stripCodeComments)
-                                          {
-                                            yyextra->yyLineNr+=yyextra->docBlock.contains('\n');
-                                            yyextra->yyLineNr+=1;
-                                            nextCodeLine(yyscanner);
-                                            yyextra->endComment=TRUE;
-                                          }
-                                          else // do not remove comment
-                                          {
-                                            startFontClass(yyscanner,"comment");
-                                            codifyLines(yyscanner,yyextra->docBlock);
-                                            endFontClass(yyscanner);
-                                          }
+                                          startFontClass(yyscanner,"comment");
+                                          codifyLines(yyscanner,yyextra->docBlock);
+                                          endFontClass(yyscanner);
                                           unput(*yytext);
                                           yyextra->contLineNr--;
                                           pop_state(yyscanner);
@@ -834,13 +824,11 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->code->codify(QCString(yytext));
                                         }
 <*><<EOF>>                              {
-                                          if (YY_START == DocBlock) {
-                                            if (!yyextra->stripCodeComments)
-                                            {
-                                              startFontClass(yyscanner,"comment");
-                                              codifyLines(yyscanner,yyextra->docBlock);
-                                              endFontClass(yyscanner);
-                                            }
+                                          if (YY_START == DocBlock)
+                                          {
+                                            startFontClass(yyscanner,"comment");
+                                            codifyLines(yyscanner,yyextra->docBlock);
+                                            endFontClass(yyscanner);
                                           }
                                           yyterminate();
                                         }
@@ -864,7 +852,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
   return c;
 }
 
-static void endFontClass(yyscan_t yyscanner)
+static void endFontClass(yyscan_t yyscanner,bool specialComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->currentFontClass)
@@ -872,14 +860,23 @@ static void endFontClass(yyscan_t yyscanner)
     yyextra->code->endFontClass();
     yyextra->currentFontClass=nullptr;
   }
+  if (specialComment && yyextra->insideSpecialComment)
+  {
+    yyextra->code->endSpecialComment();
+    yyextra->insideSpecialComment=false;
+  }
 }
 
-static void startFontClass(yyscan_t yyscanner,const char *s)
+static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (specialComment)
+  {
+    yyextra->code->startSpecialComment();
+    yyextra->insideSpecialComment = true;
+  }
   // if font class is already set don't stop and start it.
-  // strcmp does not like null pointers as input.
-  if (!yyextra->currentFontClass || !s || strcmp(yyextra->currentFontClass,s))
+  if (qstrcmp(yyextra->currentFontClass,s)!=0)
   {
     endFontClass(yyscanner);
     yyextra->code->startFontClass(QCString(s));
@@ -1514,6 +1511,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   //                bool collectXRefs, FortranFormat format)
   if (input.isEmpty()) return;
   DebugLex debugLex(Debug::Lex_fortrancode, __FILE__, fileDef ? qPrint(fileDef->fileName()): nullptr);
+  codeOutIntf.stripCodeComments(stripCodeComments);
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
@@ -1540,11 +1538,11 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   else
     yyextra->inputLines  = yyextra->yyLineNr + countLines(yyscanner) - 1;
 
-  yyextra->stripCodeComments = stripCodeComments;
   yyextra->exampleBlock  = isExampleBlock;
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;
   yyextra->foldStack.clear();
+  yyextra->insideSpecialComment = false;
   if (isExampleBlock && fileDef==nullptr)
   {
     // create a dummy filedef for the example

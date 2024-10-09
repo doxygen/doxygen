@@ -23,6 +23,9 @@ class DevNullCodeGenerator : public OutputCodeIntf
     OutputType type() const override { return OutputType::Null; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<DevNullCodeGenerator>(*this); }
     void codify(const QCString &) override {}
+    void stripCodeComments(bool) override {}
+    void startSpecialComment() override {}
+    void endSpecialComment() override {}
     void writeCodeLink(CodeSymbolType,
                                const QCString &,const QCString &,
                                const QCString &,const QCString &,
