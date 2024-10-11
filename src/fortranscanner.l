@@ -3068,7 +3068,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   bool needsEntry = FALSE;
   Markdown markdown(yyextra->fileName,lineNr);
   GuardedSectionStack guards;
-  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
+  QCString strippedDoc = stripIndentation(doc);
+  QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,lineNr) : strippedDoc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         yyextra->docBlockInBody ? yyextra->subrCurrent.back().get() : yyextra->current.get(),
