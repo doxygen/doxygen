@@ -73,6 +73,18 @@ class HtmlCodeGenerator : public OutputCodeIntf
     bool m_lineOpen = false;
     bool m_stripCodeComments = false;
     bool m_hide = false;
+    struct LineInfo
+    {
+      LineInfo() {}
+      LineInfo(const QCString &r,const QCString &f,const QCString &a,int l,bool wa)
+        : ref(r), fileName(f), anchor(a), line(l), writeAnchor(wa) {}
+      QCString ref;
+      QCString fileName;
+      QCString anchor;
+      int line = -1;
+      bool writeAnchor = false;
+    };
+    LineInfo m_lastLineInfo;
 };
 
 /** Generator for HTML output */

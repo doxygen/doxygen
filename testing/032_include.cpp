@@ -8,6 +8,6 @@
  *  More text.
  *  \include{lineno} example_test.cpp
  *  Here is the same example with stripped comments
- *  \include{strip} example_test.cpp
+ *  \include{lineno,strip} example_test.cpp
  *  End.
  */

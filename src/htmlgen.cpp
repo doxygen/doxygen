@@ -799,11 +799,13 @@ void HtmlCodeGenerator::stripCodeComments(bool b)
 void HtmlCodeGenerator::startSpecialComment()
 {
   m_hide = m_stripCodeComments;
+  //*m_t << "[START]";
 }
 
 void HtmlCodeGenerator::endSpecialComment()
 {
   m_hide = false;
+  //*m_t << "[END]";
 }
 
 
@@ -812,6 +814,7 @@ void HtmlCodeGenerator::endSpecialComment()
 void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
                                     const QCString &anchor,int l,bool writeLineAnchor)
 {
+  m_lastLineInfo = LineInfo(ref,filename,anchor,l,writeLineAnchor);
   if (m_hide) return;
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
@@ -1022,7 +1025,10 @@ void HtmlCodeGenerator::endCodeFragment(const QCString &)
 
 void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
 {
-  if (m_hide) return;
+  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to end the line
+  {
+    *m_t << "</div>\n";
+  }
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
   qsnprintf(lineNumber,maxLineNrStr,"%05d",lineNr);
@@ -1030,12 +1036,32 @@ void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const Q
           "\" data-start=\"" << startMarker <<
           "\" data-end=\"" << endMarker <<
           "\">\n";
+  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to restart the line
+  {
+    *m_t << "<div class=\"line\">";
+  }
+  m_hide=false;
 }
 
 void HtmlCodeGenerator::endFold()
 {
-  if (m_hide) return;
+  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to end the line
+  {
+    *m_t << "</div>\n";
+  }
   *m_t << "</div>\n";
+  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to start the line
+  {
+    *m_t << "<div class=\"line\">";
+    bool wasHidden=m_hide;
+    m_hide = false;
+    writeLineNumber(m_lastLineInfo.ref,
+                    m_lastLineInfo.fileName,
+                    m_lastLineInfo.anchor,
+                    m_lastLineInfo.line+1,
+                    m_lastLineInfo.writeAnchor);
+    m_hide = wasHidden;
+  }
 }
 
 //--------------------------------------------------------------------------
