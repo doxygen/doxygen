@@ -101,7 +101,7 @@ jobs:
     - name: Install LaTeX (MacOS)
       run: |
         brew update
-        brew install python@3.12 # TEMP hack
+        brew install python@3 # TEMP hack
         brew install --cask mactex;
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-13'
