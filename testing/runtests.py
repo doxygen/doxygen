@@ -59,6 +59,224 @@ def clean_header(errmsg):
                 rtnmsg+="\n"
     return rtnmsg
  
+class Sqlite2Jsonml:
+    import sqlite3
+    import json
+    def __init__(self, inputdir, test_out):
+        self.inputdir = inputdir
+        self.test_out = test_out
+        self.doxygen_version = None
+        self.dbname = os.path.join(self.test_out, "out", "doxygen_sqlite3.db")
+
+    def __dict_factory(self, cursor, row):
+        d = {}
+        for idx, col in enumerate(cursor.description):
+            d[col[0]] = row[idx]
+        return d
+
+    def __open_db(self):
+        if not os.path.isfile(self.dbname):
+            raise BaseException("invalid database %s" % self.dbname )
+        self.conn = self.sqlite3.connect(self.dbname)
+        self.conn.execute('PRAGMA temp_store = MEMORY;')
+        self.conn.row_factory = self.__dict_factory
+        return True
+
+    def __db2dict(self):
+        tables=self.conn.execute("SELECT name FROM sqlite_master WHERE type='table' OR type='view';")
+        o = {}
+        for t in tables.fetchall():
+            t_name = t['name']
+            q = f'SELECT * FROM {t_name}'
+            print("%s" % q)
+            c = self.conn.execute(q)
+            o.update([(t_name,[])])
+            for r in c.fetchall():
+                o[t_name].append(r)
+        # delete it so it won't be compared against the reference Json.
+        if 'meta' in o:
+            del o['meta']
+        return o
+
+    def __get_file_name(self, deffile_id):
+        rv = self.conn.execute("SELECT COUNT(name) FROM path WHERE rowid=?",[deffile_id]).fetchone()
+        if rv['COUNT(name)'] > 1:
+            sys.stderr.write("WARNING: non-uniq fileid [%s]. Considering only the first match." % deffile_id)
+        for r in self.conn.execute("SELECT name FROM path WHERE rowid=?",[deffile_id]).fetchall():
+                return r['name']
+        return ""
+
+    def __get_refid(self, rlist, rowid):
+        for el in rlist:
+            if el['rowid'] == rowid:
+                return el['refid']
+        return None
+
+    def sql2jsonml(self):
+        if not self.__open_db():
+            return None
+        try:
+            r = self.conn.execute("select * from meta").fetchone()
+            self.doxygen_version = r['doxygen_version']
+        except self.sqlite3.OperationalError as e:
+            print("SQL_ERROR:%s"%e)
+            return None
+        out_root = ["doxygen", {"version": self.doxygen_version, "xml:lang":"en-US"}]
+        r=[]
+        prot_tbl = ['public']
+        virt_tbl = ['non-virtual']
+        try:
+            r = self.conn.execute("select * from compounddef").fetchall()
+        except self.sqlite3.OperationalError as e:
+            print("SQL_ERROR:%s"%e)
+            return None
+
+        tables = self.__db2dict()
+        for includes in tables['includes']:
+            print("includes:%s" % includes)
+        for compounddef in tables['compounddef']:
+            print("compounddef:%s" % compounddef)
+            cdef = ['compounddef']
+            o = {}
+            o['id'] = self.__get_refid(tables['refid'],compounddef['rowid'])
+            o['kind'] = compounddef['kind']
+            if 'language' in compounddef and compounddef['language'] is not None:
+                o['language'] = compounddef['language']
+            if 'prot' in compounddef and compounddef['prot'] is not None:
+                o['prot'] = prot_tbl[compounddef['prot']]
+            cdef.append(o)
+            cdef.append(['compoundname', compounddef['name']])
+            if compounddef['name'] == 'index':
+                cdef.append(['title', compounddef['title']])
+            for sectiondef in tables['sectiondef']:
+                _tbl = ['no','yes']
+                sdef = []
+                o = {}
+                o['kind'] = sectiondef['kind']
+                sdef.append('sectiondef')
+                sdef.append(o)
+                for memberdef in tables['memberdef']:
+                    mdef = ['memberdef',
+                        {
+                        'const': _tbl[memberdef['const']],
+                        'explicit': _tbl[memberdef['explicit']],
+                        'id': self.__get_refid(tables['refid'],memberdef['rowid']),
+                        'inline': _tbl[memberdef['inline']],
+                        'kind': memberdef['kind'],
+                        'prot': prot_tbl[memberdef['prot']],
+                        'static': _tbl[memberdef['static']],
+                        'virt': virt_tbl[memberdef['virt']],
+                        }
+                    ]
+                    mdef.append(['type',memberdef['type']])
+                    mdef.append(['definition',memberdef['definition']])
+                    mdef.append(['argsstring',memberdef['argsstring']])
+                    mdef.append(['name',memberdef['name']])
+                    mdef.append(['qualifiedname',memberdef['qualifiedname']])
+                    for param in tables['memberdef_param_view']:
+                        if param['rowid'] == memberdef['rowid']:
+                            mdefp = ['param',
+                                ['type', param['type']],
+                                ['declname', param['declname']]
+                            ]
+                            mdef.append(mdefp)
+
+                    if memberdef['briefdescription']:
+                        try:
+                            _json_str = '["briefdescription", %s]' % memberdef['briefdescription']
+                            _json = self.json.loads(_json_str)
+                            mdef.append(_json)
+                        except ValueError as e:
+                            print(e)
+                            print(memberdef['briefdescription'])
+                    else:
+                        mdef.append(['briefdescription'])
+
+                    if memberdef['detaileddescription']:
+                        try:
+                            _json_str = '["detaileddescription", %s]' % memberdef['detaileddescription']
+                            _json = self.json.loads(_json_str)
+                            mdef.append(_json)
+                        except ValueError as e:
+                            print(e)
+                            print(memberdef['detaileddescription'])
+                    if memberdef['inbodydescription']:
+                        try:
+                            _json_str = '["inbodydescription", %s]' % memberdef['inbodydescription']
+                            _json = self.json.loads(_json_str)
+                            mdef.append(_json)
+                        except ValueError as e:
+                            print(e)
+                            print(memberdef['inbodydescription'])
+                    else:
+                        mdef.append(['inbodydescription'])
+                    mdef.append(["location",{
+                        "column":memberdef['defcolumn'],
+                        "declcolumn":memberdef['declcolumn'],
+                        "declfile":self.__get_file_name(memberdef['declfile_id']),
+                        "declline":memberdef['declline'],
+                        "file":self.__get_file_name(memberdef['deffile_id']),
+                        "line":memberdef['defline'],
+                        }])
+                    sdef.append(mdef)
+                cdef.append(sdef)
+
+            if compounddef['briefdescription']:
+                try:
+                    _json_str = '["briefdescription", %s]' % compounddef['briefdescription']
+                    _json = self.json.loads(_json_str)
+                    cdef.append(_json)
+                except ValueError as e:
+                    print(e)
+                    print(compounddef['briefdescription'])
+            else:
+                cdef.append(['briefdescription'])
+            if compounddef['detaileddescription']:
+                try:
+                    _json_str = '["detaileddescription", %s]' % compounddef['detaileddescription']
+                    _json = self.json.loads(_json_str)
+                    cdef.append(_json)
+                except ValueError as e:
+                    print(e)
+                    print(compounddef['detaileddescription'])
+            else:
+                cdef.append(['detaileddescription'])
+            fname = self.__get_file_name(compounddef['deffile_id'])
+            cdef.append(["location",{"file":fname}])
+            out_root.append(cdef)
+        tst_jsonml=os.path.join(self.test_out, "out", "sql2jsonml.json")
+        with open(tst_jsonml, "w") as f:
+            print(self.json.dumps(out_root, indent=4, sort_keys=True, separators=(',',':')), file=f)
+        return tst_jsonml
+
+    def __xsltproc(self, f_xsl, f_xml):
+        from lxml import etree
+        import json
+        import sys
+        transform = etree.XSLT(etree.parse(f_xsl))
+        doc = etree.parse(f_xml)
+        result = transform(doc)
+        return str(result)
+
+    def __combine_xml(self):
+        f_xsl = os.path.join(self.test_out, "out", "combine.xslt")
+        f_xml = os.path.join(self.test_out, "out", "index.xml")
+        result = self.__xsltproc(f_xsl, f_xml)
+        with open(f_xml, "w") as f:
+            print(result, file=f)
+        return f_xml
+
+    def xml2jsonml(self):
+        ref_jsonml = os.path.join(self.test_out, "out", "combined-index.json")
+        with open(ref_jsonml, "w") as f:
+            f_xml = self.__combine_xml()
+            cdir = os.path.dirname(__file__)
+            xml_to_jsonml = os.path.join(cdir, 'xml-to-jsonml.xsl')
+            result = self.__xsltproc(xml_to_jsonml, f_xml)
+            res_json = self.json.loads(result)
+            print(self.json.dumps(res_json, indent=4, sort_keys=True, separators=(',',':')), file=f)
+        return ref_jsonml
+
 class Tester:
     def __init__(self,args,test):
         self.args      = args
@@ -154,6 +372,11 @@ class Tester:
                 print('XML_OUTPUT=%s/out' % self.test_out, file=f)
             else:
                 print('GENERATE_XML=NO', file=f)
+            if (self.args.sqlite3):
+                print('GENERATE_SQLITE3=YES', file=f)
+                print('SQLITE3_OUTPUT=%s/out' % self.test_out , file=f)
+            else:
+                print('GENERATE_SQLITE3=NO', file=f)
             if (self.args.rtf):
                 print('GENERATE_RTF=YES', file=f)
                 print('RTF_HYPERLINKS=YES', file=f)
@@ -287,6 +510,7 @@ class Tester:
         failed_docbook=False
         failed_rtf=False
         failed_xmlxsd=False
+        failed_sqlite3=False
         msg = ()
         # look for files to check against the reference
         if self.args.xml or self.args.xmlxsd:
@@ -335,11 +559,11 @@ class Tester:
                 index_xml = []
                 index_xml.append(glob.glob('%s/index.xml' % (xmlxsd_output)))
                 index_xml.append(glob.glob('%s/*/*/index.xml' % (xmlxsd_output)))
-                index_xml = ' '.join(list(itertools.chain.from_iterable(index_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+                index_xml = ' '.join(list(itertools.chain.from_iterable(index_xml))).replace('\\','/')
                 index_xsd = []
                 index_xsd.append(glob.glob('%s/index.xsd' % (xmlxsd_output)))
                 index_xsd.append(glob.glob('%s/*/*/index.xsd' % (xmlxsd_output)))
-                index_xsd = ' '.join(list(itertools.chain.from_iterable(index_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+                index_xsd = ' '.join(list(itertools.chain.from_iterable(index_xsd))).replace('\\','/')
                 exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,index_xsd,index_xml)
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
@@ -360,11 +584,11 @@ class Tester:
                 doxyfile_xml = []
                 doxyfile_xml.append(glob.glob('%s/Doxyfile.xml' % (xmlxsd_output)))
                 doxyfile_xml.append(glob.glob('%s/*/*/Doxyfile.xml' % (xmlxsd_output)))
-                doxyfile_xml = ' '.join(list(itertools.chain.from_iterable(doxyfile_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+                doxyfile_xml = ' '.join(list(itertools.chain.from_iterable(doxyfile_xml))).replace('\\','/')
                 doxyfile_xsd = []
                 doxyfile_xsd.append(glob.glob('%s/doxyfile.xsd' % (xmlxsd_output)))
                 doxyfile_xsd.append(glob.glob('%s/*/*/doxyfile.xsd' % (xmlxsd_output)))
-                doxyfile_xsd = ' '.join(list(itertools.chain.from_iterable(doxyfile_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+                doxyfile_xsd = ' '.join(list(itertools.chain.from_iterable(doxyfile_xsd))).replace('\\','/')
                 exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,doxyfile_xsd,doxyfile_xml)
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
@@ -385,7 +609,7 @@ class Tester:
                 compound_xml = []
                 compound_xml.append(glob.glob('%s/*.xml' % (xmlxsd_output)))
                 compound_xml.append(glob.glob('%s/*/*/*.xml' % (xmlxsd_output)))
-                compound_xml = ' '.join(list(itertools.chain.from_iterable(compound_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+                compound_xml = ' '.join(list(itertools.chain.from_iterable(compound_xml))).replace('\\','/')
                 compound_xml = re.sub(r' [^ ]*/index.xml','',compound_xml)
                 compound_xml = re.sub(r'[^ ]*/index.xml ','',compound_xml)
                 compound_xml = re.sub(r' [^ ]*/Doxyfile.xml','',compound_xml)
@@ -394,7 +618,7 @@ class Tester:
                 compound_xsd = []
                 compound_xsd.append(glob.glob('%s/compound.xsd' % (xmlxsd_output)))
                 compound_xsd.append(glob.glob('%s/*/*/compound.xsd' % (xmlxsd_output)))
-                compound_xsd = ' '.join(list(itertools.chain.from_iterable(compound_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+                compound_xsd = ' '.join(list(itertools.chain.from_iterable(compound_xsd))).replace('\\','/')
                 exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,compound_xsd,compound_xml)
                 exe_string1 = exe_string
                 exe_string += ' %s' % (redirx)
@@ -523,13 +747,25 @@ class Tester:
                 failed_latex=True
             elif not self.args.keep:
                 shutil.rmtree(latex_output,ignore_errors=True)
+        if (self.args.sqlite3):
+            failed_sqlite3=False
+            s2j = Sqlite2Jsonml(self.args.inputdir, self.test_out)
+            sql_jsonml = s2j.sql2jsonml()
+            if not sql_jsonml:
+                failed_sqlite3=True
+            ref_jsonml = s2j.xml2jsonml()
+            if not ref_jsonml:
+                failed_sqlite3=True
+            (failed_sqlite3,sqlite3_msg) = self.compare_ok(sql_jsonml,ref_jsonml,self.test_name)
+            if failed_sqlite3:
+                msg+= (sqlite3_msg,)
 
         warnings = xopen(self.test_out + "/warnings.log",'r',encoding='ISO-8859-1').read()
         failed_warn =  len(warnings)!=0
         if failed_warn:
             msg += (warnings,)
 
-        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
+        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd or failed_sqlite3:
             testmgr.ok(False,self.test_name,msg)
             return False
 
@@ -661,6 +897,8 @@ def main():
         action="store_true")
     parser.add_argument('--clang',help='use CLANG_ASSISTED_PARSING, works only when '
                 'doxygen has been compiled with "use_libclang"',
+        action="store_true")
+    parser.add_argument('--sqlite3',help='create sqlite3 output and check',
         action="store_true")
     parser.add_argument('--keep',help='keep result directories',
         action="store_true")
