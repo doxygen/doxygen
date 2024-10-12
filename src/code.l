@@ -113,7 +113,6 @@ struct codeYY_state
   bool          insideCodeLine = FALSE;
   bool          skipCodify = FALSE;  //!< for CSharp files scoped namespace {
 
-  bool          stripCodeComments = TRUE;
   bool          exampleBlock = FALSE;
   QCString      exampleName;
   QCString      exampleFile;
@@ -160,6 +159,7 @@ struct codeYY_state
   SrcLangExt    lang = SrcLangExt::Unknown;
   bool          insideObjC = FALSE;
   bool          insideProtocolList = FALSE;
+  bool          insideSpecialComment = false;
 
   bool          lexInit = FALSE;
 
@@ -209,8 +209,8 @@ static void setClassScope(yyscan_t yyscanner,const QCString &name);
 static void startCodeLine(yyscan_t yyscanner);
 static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
-static void startFontClass(yyscan_t yyscanner,const char *s);
-static void endFontClass(yyscan_t yyscanner);
+static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment=false);
+static void endFontClass(yyscan_t yyscanner,bool specialComment=false);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static void codifyLines(yyscan_t yyscanner,const char *text);
 static void incrementFlowKeyWordCount(yyscan_t yyscanner);
@@ -258,7 +258,6 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
 static bool startsWithKeyword(const QCString &str,const QCString &kw);
 static void endCodeFold(yyscan_t yyscanner);
-static void skipHiddenComment(yyscan_t yyscanner,const char *text);
 
 /* -----------------------------------------------------------------
  */
@@ -348,7 +347,6 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 %x      SkipCPP
 %x      SkipComment
 %x      SkipCxxComment
-%x      RemoveSpecialCComment
 %x      Body
 %x      FuncCall
 %x      MemberCall
@@ -1966,7 +1964,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <SkipComment>{CCS}("!"?){CCE}           {
                                           yyextra->code->codify(yytext);
-                                          endFontClass(yyscanner);
+                                          endFontClass(yyscanner,true);
                                           BEGIN( yyextra->lastCContext ) ;
                                         }
 <SkipComment>{CPPC}|{CCS}               {
@@ -1977,7 +1975,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <SkipComment>[ \t]*{CCE}                {
                                           yyextra->code->codify(yytext);
-                                          endFontClass(yyscanner);
+                                          endFontClass(yyscanner,true);
                                           if (yyextra->lastCContext==SkipCPP)
                                           {
                                             startFontClass(yyscanner,"preprocessor");
@@ -1999,50 +1997,6 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <SkipCxxComment>.                       {
                                           yyextra->code->codify(yytext);
                                         }
-<RemoveSpecialCComment>{CCE}{B}*\n({B}*\n)*({B}*(({CPPC}"@"[{}])|({CCS}"@"[{}]{CCE})){B}*\n)?{B}*{CCS}[*!]/{NCOMM} {
-                                          skipHiddenComment(yyscanner,yytext);
-                                        }
-<RemoveSpecialCComment>{CCE}{B}*\n({B}*\n)*({B}*(({CPPC}"@"[{}])|({CCS}"@"[{}]{CCE})){B}*\n)? {
-                                          if (yyextra->lastSpecialCContext==SkipCxxComment)
-                                          { // force end of C++ comment here
-                                            skipHiddenComment(yyscanner,yytext);
-                                            nextCodeLine(yyscanner);
-                                            endFontClass(yyscanner);
-                                            BEGIN( yyextra->lastCContext ) ;
-                                          }
-                                          else
-                                          {
-                                            yyextra->yyLineNr+=QCString(yytext).contains('\n');
-                                            if (yytext[yyleng-1]=='\n')
-                                            {
-                                              yyextra->yyLineNr--;
-                                              unput('\n');
-                                            }
-                                            else
-                                            {
-                                              nextCodeLine(yyscanner);
-                                            }
-                                            BEGIN(yyextra->lastSpecialCContext);
-                                          }
-                                        }
-<RemoveSpecialCComment>{CCE}            {
-                                          if (!yyextra->insideCodeLine)
-                                          {
-                                            startCodeLine(yyscanner);
-                                          }
-                                          BEGIN(yyextra->lastSpecialCContext);
-                                        }
-<RemoveSpecialCComment>[^*\n]+
-<RemoveSpecialCComment>{CPPC}|{CCS}
-<RemoveSpecialCComment>\n               {
-                                           yyextra->yyLineNr++;
-                                           if (yyextra->insideCodeLine)
-                                           {
-                                             endCodeLine(yyscanner);
-                                           }
-                                           endCodeFold(yyscanner);
-                                        }
-<RemoveSpecialCComment>.
 <MemberCall>[^a-z_A-Z0-9(\n]            {
                                           yyextra->code->codify(yytext);
                                           yyextra->type.clear();
@@ -2051,20 +2005,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <*>\n({B}*{CPPC}[!/][^\n]*\n)+            { // remove special one-line comment
                                           if (YY_START==SkipCPP) REJECT;
-                                          if (yyextra->stripCodeComments)
-                                          {
-                                            skipHiddenComment(yyscanner,yytext);
-                                            nextCodeLine(yyscanner);
-                                          }
-                                          else
-                                          {
-                                            startFontClass(yyscanner,"comment");
-                                            codifyLines(yyscanner,yytext);
-                                            endFontClass(yyscanner);
-                                          }
+                                          startFontClass(yyscanner,"comment",true);
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner,true);
                                           if (YY_START==SkipCxxComment)
                                           {
-                                            endFontClass(yyscanner);
                                             BEGIN( yyextra->lastCContext ) ;
                                           }
                                         }
@@ -2073,173 +2018,100 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN( yyextra->lastSkipCppContext ) ;
                                           unput('\n');
                                         }
-<*>\n{B}*{CPPC}"@"[{}].*\n                  { // remove one-line group marker
-                                          if (yyextra->stripCodeComments)
-                                          {
-                                            skipHiddenComment(yyscanner,yytext);
-                                            nextCodeLine(yyscanner);
-                                          }
-                                          else
-                                          {
-                                            startFontClass(yyscanner,"comment");
-                                            codifyLines(yyscanner,yytext);
-                                            endFontClass(yyscanner);
-                                          }
+<*>\n{B}*{CPPC}"@"[{}].*\n              { // remove one-line group marker
+                                          startFontClass(yyscanner,"comment",true);
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner,true);
                                           if (YY_START==SkipCxxComment)
                                           {
-                                            endFontClass(yyscanner);
                                             BEGIN( yyextra->lastCContext ) ;
                                           }
                                         }
-<*>\n{B}*{CCS}"@"[{}]                      { // remove one-line group marker
-                                          if (yyextra->stripCodeComments)
+<*>\n{B}*{CCS}"@"[{}]                   { // remove one-line group marker
+                                          // check is to prevent getting stuck in skipping C++ comments
+                                          if (YY_START != SkipComment && YY_START != SkipCxxComment)
                                           {
-                                            if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
-                                            yyextra->yyLineNr++;
-                                            BEGIN(RemoveSpecialCComment);
+
+                                            yyextra->lastCContext = YY_START ;
                                           }
-                                          else
-                                          {
-                                            // check is to prevent getting stuck in skipping C++ comments
-                                            if (YY_START != SkipComment && YY_START != SkipCxxComment)
-                                            {
-                                              yyextra->lastCContext = YY_START ;
-                                            }
-                                            startFontClass(yyscanner,"comment");
-                                            codifyLines(yyscanner,yytext);
-                                            BEGIN(SkipComment);
-                                          }
+                                          startFontClass(yyscanner,"comment",true);
+                                          codifyLines(yyscanner,yytext);
+                                          BEGIN(SkipComment);
                                         }
-<*>^{B}*{CPPC}"@"[{}].*\n                   { // remove one-line group marker
-                                          if (yyextra->stripCodeComments)
-                                          {
-                                            skipHiddenComment(yyscanner,yytext);
-                                            nextCodeLine(yyscanner);
-                                          }
-                                          else
-                                          {
-                                            startFontClass(yyscanner,"comment");
-                                            codifyLines(yyscanner,yytext);
-                                            endFontClass(yyscanner);
-                                          }
+<*>^{B}*{CPPC}"@"[{}].*\n               { // remove one-line group marker
+                                          startFontClass(yyscanner,"comment",true);
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner,true);
                                         }
-<*>^{B}*{CCS}"@"[{}]                       { // remove multi-line group marker
-                                          if (yyextra->stripCodeComments)
+<*>^{B}*{CCS}"@"[{}]                    { // remove multi-line group marker
+                                          // check is to prevent getting stuck in skipping C++ comments
+                                          if (YY_START != SkipComment && YY_START != SkipCxxComment)
                                           {
-                                            if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
-                                            BEGIN(RemoveSpecialCComment);
+                                            yyextra->lastCContext = YY_START ;
                                           }
-                                          else
-                                          {
-                                            // check is to prevent getting stuck in skipping C++ comments
-                                            if (YY_START != SkipComment && YY_START != SkipCxxComment)
-                                            {
-                                              yyextra->lastCContext = YY_START ;
-                                            }
-                                            startFontClass(yyscanner,"comment");
-                                            yyextra->code->codify(yytext);
-                                            BEGIN(SkipComment);
-                                          }
+                                          startFontClass(yyscanner,"comment",true);
+                                          yyextra->code->codify(yytext);
+                                          BEGIN(SkipComment);
                                         }
-<*>^{B}*{CPPC}[!/][^\n]*                  { // remove special one-line comment
-                                          if (!yyextra->stripCodeComments)
-                                          {
-                                            startFontClass(yyscanner,"comment");
-                                            codifyLines(yyscanner,yytext);
-                                            endFontClass(yyscanner);
-                                          }
+<*>^{B}*{CPPC}[!/][^\n]*                { // remove special one-line comment
+                                          startFontClass(yyscanner,"comment",true);
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner,true);
                                         }
 <*>{CPPC}[!/][^\n]*                       { // strip special one-line comment
                                           if (YY_START==SkipComment || YY_START==SkipString) REJECT;
-                                          if (!yyextra->stripCodeComments)
-                                          {
-                                            startFontClass(yyscanner,"comment");
-                                            codifyLines(yyscanner,yytext);
-                                            endFontClass(yyscanner);
-                                          }
+                                          startFontClass(yyscanner,"comment",true);
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner,true);
                                         }
-<*>\n{B}*{CCS}[!*]/{NCOMM}               {
-                                          if (yyextra->stripCodeComments)
+<*>\n{B}*{CCS}[!*]/{NCOMM}              {
+                                          // check is to prevent getting stuck in skipping C++ comments
+                                          if (YY_START != SkipComment && YY_START != SkipCxxComment)
                                           {
-                                            skipHiddenComment(yyscanner,yytext);
-                                            if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
-                                            BEGIN(RemoveSpecialCComment);
+                                            yyextra->lastCContext = YY_START ;
                                           }
-                                          else
-                                          {
-                                            // check is to prevent getting stuck in skipping C++ comments
-                                            if (YY_START != SkipComment && YY_START != SkipCxxComment)
-                                            {
-                                              yyextra->lastCContext = YY_START ;
-                                            }
-                                            startFontClass(yyscanner,"comment");
-                                            codifyLines(yyscanner,yytext);
-                                            BEGIN(SkipComment);
-                                          }
+                                          startFontClass(yyscanner,"comment",true);
+                                          codifyLines(yyscanner,yytext);
+                                          BEGIN(SkipComment);
                                         }
-<*>^{B}*{CCS}"*"[*]+/[^/]                  { // special C "banner" comment block at a new line
-                                          if (Config_getBool(JAVADOC_BANNER) && yyextra->stripCodeComments)
+<*>^{B}*{CCS}"*"[*]+/[^/]               { 
+                                          // check is to prevent getting stuck in skipping C++ comments
+                                          if (YY_START != SkipComment && YY_START != SkipCxxComment)
                                           {
-                                            if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
-                                            BEGIN(RemoveSpecialCComment);
+                                            yyextra->lastCContext = YY_START ;
                                           }
-                                          else
-                                          {
-                                            // check is to prevent getting stuck in skipping C++ comments
-                                            if (YY_START != SkipComment && YY_START != SkipCxxComment)
-                                            {
-                                              yyextra->lastCContext = YY_START ;
-                                            }
-                                            startFontClass(yyscanner,"comment");
-                                            yyextra->code->codify(yytext);
-                                            BEGIN(SkipComment);
-                                          }
+                                          // special C "banner" comment block at a new line
+                                          startFontClass(yyscanner,"comment",Config_getBool(JAVADOC_BANNER));
+                                          yyextra->code->codify(yytext);
+                                          BEGIN(SkipComment);
                                         }
 <*>^{B}*{CCS}[!*]/{NCOMM}               { // special C comment block at a new line
-                                          if (yyextra->stripCodeComments)
+                                          // check is to prevent getting stuck in skipping C++ comments
+                                          if (YY_START != SkipComment && YY_START != SkipCxxComment)
                                           {
-                                            if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
-                                            BEGIN(RemoveSpecialCComment);
+                                            yyextra->lastCContext = YY_START ;
                                           }
-                                          else
-                                          {
-                                            // check is to prevent getting stuck in skipping C++ comments
-                                            if (YY_START != SkipComment && YY_START != SkipCxxComment)
-                                            {
-                                              yyextra->lastCContext = YY_START ;
-                                            }
-                                            startFontClass(yyscanner,"comment");
-                                            yyextra->code->codify(yytext);
-                                            BEGIN(SkipComment);
-                                          }
+                                          startFontClass(yyscanner,"comment",true);
+                                          yyextra->code->codify(yytext);
+                                          BEGIN(SkipComment);
                                         }
 <*>{CCS}[!*]/{NCOMM}                    { // special C comment block half way a line
                                           if (YY_START==SkipString) REJECT;
-                                          if (yyextra->stripCodeComments)
+                                          // check is to prevent getting stuck in skipping C++ comments
+                                          if (YY_START != SkipComment && YY_START != SkipCxxComment)
                                           {
-                                            if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
-                                            BEGIN(RemoveSpecialCComment);
+                                            yyextra->lastCContext = YY_START ;
                                           }
-                                          else
-                                          {
-                                            // check is to prevent getting stuck in skipping C++ comments
-                                            if (YY_START != SkipComment && YY_START != SkipCxxComment)
-                                            {
-                                              yyextra->lastCContext = YY_START ;
-                                            }
-                                            startFontClass(yyscanner,"comment");
-                                            yyextra->code->codify(yytext);
-                                            BEGIN(SkipComment);
-                                          }
+                                          startFontClass(yyscanner,"comment",true);
+                                          yyextra->code->codify(yytext);
+                                          BEGIN(SkipComment);
                                         }
 <*>{CCS}("!"?){CCE}                     {
                                           if (YY_START==SkipString) REJECT;
-                                          if (!yyextra->stripCodeComments)
-                                          {
-                                            startFontClass(yyscanner,"comment");
-                                            yyextra->code->codify(yytext);
-                                            endFontClass(yyscanner);
-                                          }
+                                          bool specialComment = QCString(yytext).find('!')!=-1;
+                                          startFontClass(yyscanner,"comment",specialComment);
+                                          yyextra->code->codify(yytext);
+                                          endFontClass(yyscanner,specialComment);
                                         }
 <SkipComment>[^\*\n]+                   {
                                           yyextra->code->codify(yytext);
@@ -2473,21 +2345,6 @@ static void endCodeFold(yyscan_t yyscanner)
       //fprintf(stderr,"no end of block dd=%s end=%d\n",qPrint(dd->qualifiedName()),dd->getEndBodyLine());
       break;
     }
-  }
-}
-
-static void skipHiddenComment(yyscan_t yyscanner,const char *text)
-{
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int count=QCString(text).contains('\n');
-  if (yyextra->insideCodeLine)
-  {
-    endCodeLine(yyscanner);
-  }
-  for (int i=0;i<count;i++)
-  {
-    yyextra->yyLineNr++;
-    endCodeFold(yyscanner);
   }
 }
 
@@ -3621,7 +3478,7 @@ static int countLines(yyscan_t yyscanner)
   return count;
 }
 
-static void endFontClass(yyscan_t yyscanner)
+static void endFontClass(yyscan_t yyscanner,bool specialComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->currentFontClass)
@@ -3629,12 +3486,22 @@ static void endFontClass(yyscan_t yyscanner)
     yyextra->code->endFontClass();
     yyextra->currentFontClass=nullptr;
   }
+  if (specialComment && yyextra->insideSpecialComment)
+  {
+    yyextra->code->endSpecialComment();
+    yyextra->insideSpecialComment = false;
+  }
 }
 
-static void startFontClass(yyscan_t yyscanner,const char *s)
+static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
+  if (specialComment)
+  {
+    yyextra->code->startSpecialComment();
+    yyextra->insideSpecialComment = true;
+  }
   yyextra->code->startFontClass(QCString(s));
   yyextra->currentFontClass=s;
 }
@@ -4226,6 +4093,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
 
   DebugLex debugLex(Debug::Lex_code, __FILE__, fd ? qPrint(fd->fileName()): !exName.isEmpty() ? qPrint(exName) : nullptr);
 
+  od.stripCodeComments(stripCodeComments);
   yyextra->code = &od;
   yyextra->inputString   = s.data();
   yyextra->fileName      = fd ? fd->fileName():"";
@@ -4238,6 +4106,7 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   yyextra->inFunctionTryBlock = FALSE;
   yyextra->symbolResolver.setFileScope(fd);
   yyextra->foldStack.clear();
+  yyextra->insideSpecialComment = false;
 
   if (startLine!=-1)
     yyextra->yyLineNr    = startLine;
@@ -4258,7 +4127,6 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &scopeName,const Q
   while (!yyextra->scopeStack.empty()) yyextra->scopeStack.pop();
   yyextra->scopeName     = scopeName;
   DBG_CTX((stderr,"parseCCode %s\n",qPrint(scopeName)));
-  yyextra->stripCodeComments  = stripCodeComments;
   yyextra->exampleBlock  = exBlock;
   yyextra->exampleName   = exName;
   yyextra->sourceFileDef = fd;

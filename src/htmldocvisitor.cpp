@@ -587,13 +587,13 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
                                         Config_getBool(STRIP_CODE_COMMENTS),
                                         s.isExample(),
                                         s.exampleFile(),
-                                        nullptr,     // fileDef
-                                        -1,    // startLine
-                                        -1,    // endLine
-                                        FALSE, // inlineFragment
-                                        nullptr,     // memberDef
-                                        TRUE,  // show line numbers
-                                        m_ctx  // search context
+                                        nullptr, // fileDef
+                                        -1,      // startLine
+                                        -1,      // endLine
+                                        true,    // inlineFragment
+                                        nullptr, // memberDef
+                                        true,    // show line numbers
+                                        m_ctx    // search context
                                        );
       m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(s);
@@ -765,12 +765,12 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                            inc.isExample(),
                                            inc.exampleFile(),
                                            fd.get(),   // fileDef,
-                                           -1,    // start line
-                                           -1,    // end line
-                                           FALSE, // inline fragment
-                                           nullptr,     // memberDef
-                                           TRUE,  // show line numbers
-                                           m_ctx  // search context
+                                           -1,         // start line
+                                           -1,         // end line
+                                           true,       // inline fragment
+                                           nullptr,    // memberDef
+                                           true,       // show line numbers
+                                           m_ctx       // search context
                                            );
          m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
@@ -851,11 +851,11 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
                                 op.exampleFile(),
                                 fd.get(),     // fileDef
                                 op.line(),    // startLine
-                                -1,    // endLine
-                                FALSE, // inline fragment
-                                nullptr,     // memberDef
+                                -1,           // endLine
+                                true,         // inline fragment
+                                nullptr,      // memberDef
                                 op.showLineNo(),  // show line numbers
-                                m_ctx  // search context
+                                m_ctx         // search context
                                );
     }
     pushHidden(m_hide);

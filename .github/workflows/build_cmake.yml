@@ -100,8 +100,8 @@ jobs:
 
     - name: Install LaTeX (MacOS)
       run: |
-        brew update
-        brew install --cask mactex;
+        brew update || true
+        brew install --cask mactex || true
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-13'
 

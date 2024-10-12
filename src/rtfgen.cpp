@@ -18,6 +18,7 @@
 #include <mutex>
 #include <stdlib.h>
 #include <algorithm>
+#include <unordered_map>
 
 #include "rtfgen.h"
 #include "config.h"
@@ -119,6 +120,7 @@ void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
                                  const QCString &anchor,const QCString &name,
                                  const QCString &)
 {
+  if (m_hide) return;
   if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
   {
     QCString refName;
@@ -149,6 +151,7 @@ void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
 
 void RTFCodeGenerator::codify(const QCString &str)
 {
+  if (m_hide) return;
   // note that RTF does not have a "verbatim", so "\n" means
   // nothing... add a "newParagraph()";
   //static char spaces[]="        ";
@@ -182,6 +185,22 @@ void RTFCodeGenerator::codify(const QCString &str)
   }
 }
 
+void RTFCodeGenerator::stripCodeComments(bool b)
+{
+  m_stripCodeComments = b;
+}
+
+void RTFCodeGenerator::startSpecialComment()
+{
+  m_hide = m_stripCodeComments;
+}
+
+void RTFCodeGenerator::endSpecialComment()
+{
+  m_hide = false;
+}
+
+
 void RTFCodeGenerator::startCodeFragment(const QCString &)
 {
   DBG_RTF(*m_t << "{\\comment (startCodeFragment) }\n")
@@ -201,6 +220,7 @@ void RTFCodeGenerator::endCodeFragment(const QCString &)
 
 void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool writeLineAnchor)
 {
+  if (m_hide) return;
   bool rtfHyperlinks = Config_getBool(RTF_HYPERLINKS);
 
   m_doxyCodeLineOpen = true;
@@ -244,36 +264,46 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
 
 void RTFCodeGenerator::startCodeLine(int)
 {
+  if (m_hide) return;
   m_doxyCodeLineOpen = true;
   m_col=0;
 }
 
 void RTFCodeGenerator::endCodeLine()
 {
+  if (m_hide) return;
   if (m_doxyCodeLineOpen) *m_t << "\\par\n";
   m_doxyCodeLineOpen = false;
 }
 
 void RTFCodeGenerator::startFontClass(const QCString &name)
 {
+  if (m_hide) return;
   int cod = 2;
-  QCString qname(name);
-  if (qname == "keyword")            cod = 17;
-  else if (qname == "keywordtype")   cod = 18;
-  else if (qname == "keywordflow")   cod = 19;
-  else if (qname == "comment")       cod = 20;
-  else if (qname == "preprocessor")  cod = 21;
-  else if (qname == "stringliteral") cod = 22;
-  else if (qname == "charliteral")   cod = 23;
-  else if (qname == "vhdldigit")     cod = 24;
-  else if (qname == "vhdlchar")      cod = 25;
-  else if (qname == "vhdlkeyword")   cod = 26;
-  else if (qname == "vhdllogic")     cod = 27;
+  static const std::unordered_map<std::string,int> map {
+   { "keyword",       17 },
+   { "keywordtype",   18 },
+   { "keywordflow",   19 },
+   { "comment",       20 },
+   { "preprocessor",  21 },
+   { "stringliteral", 22 },
+   { "charliteral",   23 },
+   { "vhdldigit",     24 },
+   { "vhdlchar",      25 },
+   { "vhdlkeyword",   26 },
+   { "vhdllogic",     27 }
+  };
+  auto it = map.find(name.str());
+  if (it != map.end())
+  {
+    cod = it->second;
+  }
   *m_t << "{\\cf" << cod << " ";
 }
 
 void RTFCodeGenerator::endFontClass()
 {
+  if (m_hide) return;
   *m_t << "}";
 }
 

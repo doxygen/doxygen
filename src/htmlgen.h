@@ -34,6 +34,9 @@ class HtmlCodeGenerator : public OutputCodeIntf
     OutputType type() const override { return OutputType::Html; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<HtmlCodeGenerator>(*this); }
     void codify(const QCString &text) override;
+    void stripCodeComments(bool b) override;
+    void startSpecialComment() override;
+    void endSpecialComment() override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
@@ -62,12 +65,26 @@ class HtmlCodeGenerator : public OutputCodeIntf
                         const QCString &ref,const QCString &file,
                         const QCString &anchor,const QCString &name,
                         const QCString &tooltip);
-    void docify(const QCString &str);
+    //void docify(const QCString &str);
     TextStream *m_t;
     size_t m_col = 0;
     QCString m_relPath;
     QCString m_fileName;
     bool m_lineOpen = false;
+    bool m_stripCodeComments = false;
+    bool m_hide = false;
+    struct LineInfo
+    {
+      LineInfo() {}
+      LineInfo(const QCString &r,const QCString &f,const QCString &a,int l,bool wa)
+        : ref(r), fileName(f), anchor(a), line(l), writeAnchor(wa) {}
+      QCString ref;
+      QCString fileName;
+      QCString anchor;
+      int line = -1;
+      bool writeAnchor = false;
+    };
+    LineInfo m_lastLineInfo;
 };
 
 /** Generator for HTML output */

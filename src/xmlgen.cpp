@@ -179,15 +179,15 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 
 //-------------------------------------------------------------------------------------------
 
-XMLCodeGenerator::XMLCodeGenerator(TextStream *t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
-      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE)
+XMLCodeGenerator::XMLCodeGenerator(TextStream *t) : m_t(t)
 {
 }
 
 /** Generator for producing XML formatted source code. */
 void XMLCodeGenerator::codify(const QCString &text)
 {
-  XML_DB(("(codify \"%s\")\n",text));
+  if (m_hide) return;
+  XML_DB(("(codify \"%s\")\n",qPrint(text)));
   if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
   {
     *m_t << "<highlight class=\"normal\">";
@@ -195,11 +195,28 @@ void XMLCodeGenerator::codify(const QCString &text)
   }
   writeXMLCodeString(*m_t,text,m_col);
 }
+
+void XMLCodeGenerator::stripCodeComments(bool b)
+{
+  m_stripCodeComments = b;
+}
+
+void XMLCodeGenerator::endSpecialComment()
+{
+  m_hide = false;
+}
+
+void XMLCodeGenerator::startSpecialComment()
+{
+  m_hide = m_stripCodeComments;
+}
+
 void XMLCodeGenerator::writeCodeLink(CodeSymbolType,
                    const QCString &ref,const QCString &file,
                    const QCString &anchor,const QCString &name,
                    const QCString &tooltip)
 {
+  if (m_hide) return;
   XML_DB(("(writeCodeLink)\n"));
   if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
   {
@@ -209,14 +226,18 @@ void XMLCodeGenerator::writeCodeLink(CodeSymbolType,
   writeXMLLink(*m_t,ref,file,anchor,name,tooltip);
   m_col+=name.length();
 }
+
 void XMLCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                   const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                  )
 {
+  if (m_hide) return;
   XML_DB(("(writeToolTip)\n"));
 }
+
 void XMLCodeGenerator::startCodeLine(int)
 {
+  if (m_hide) return;
   XML_DB(("(startCodeLine)\n"));
   *m_t << "<codeline";
   if (m_lineNumber!=-1)
@@ -243,8 +264,10 @@ void XMLCodeGenerator::startCodeLine(int)
   m_insideCodeLine=TRUE;
   m_col=0;
 }
+
 void XMLCodeGenerator::endCodeLine()
 {
+  if (m_hide) return;
   XML_DB(("(endCodeLine)\n"));
   if (!m_insideSpecialHL && !m_normalHLNeedStartTag)
   {
@@ -257,8 +280,10 @@ void XMLCodeGenerator::endCodeLine()
   m_external.clear();
   m_insideCodeLine=FALSE;
 }
+
 void XMLCodeGenerator::startFontClass(const QCString &colorClass)
 {
+  if (m_hide) return;
   XML_DB(("(startFontClass)\n"));
   if (m_insideCodeLine && !m_insideSpecialHL && !m_normalHLNeedStartTag)
   {
@@ -268,19 +293,25 @@ void XMLCodeGenerator::startFontClass(const QCString &colorClass)
   *m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
   m_insideSpecialHL=TRUE;
 }
+
 void XMLCodeGenerator::endFontClass()
 {
+  if (m_hide) return;
   XML_DB(("(endFontClass)\n"));
   *m_t << "</highlight>"; // non DocBook
   m_insideSpecialHL=FALSE;
 }
+
 void XMLCodeGenerator::writeCodeAnchor(const QCString &)
 {
+  if (m_hide) return;
   XML_DB(("(writeCodeAnchor)\n"));
 }
+
 void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &compId,
                      const QCString &anchorId,int l,bool)
 {
+  if (m_hide) return;
   XML_DB(("(writeLineNumber)\n"));
   // we remember the information provided here to use it
   // at the <codeline> start tag.
@@ -293,6 +324,7 @@ void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &co
     if (!extRef.isEmpty()) m_external=extRef;
   }
 }
+
 void XMLCodeGenerator::finish()
 {
   if (m_insideCodeLine) endCodeLine();

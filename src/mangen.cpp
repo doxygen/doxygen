@@ -128,6 +128,7 @@ void ManCodeGenerator::endCodeFragment(const QCString &)
 
 void ManCodeGenerator::writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool)
 {
+  if (m_hide) return;
   *m_t << l << " ";
   m_col=0;
 }
@@ -137,6 +138,7 @@ void ManCodeGenerator::writeCodeLink(CodeSymbolType,
                                  const QCString &, const QCString &name,
                                  const QCString &)
 {
+  if (m_hide) return;
   if (!name.isEmpty())
   {
     const char *p=name.data();
@@ -159,6 +161,7 @@ void ManCodeGenerator::writeCodeLink(CodeSymbolType,
 
 void ManCodeGenerator::codify(const QCString &str)
 {
+  if (m_hide) return;
   //static char spaces[]="        ";
   if (!str.isEmpty())
   {
@@ -184,6 +187,21 @@ void ManCodeGenerator::codify(const QCString &str)
     }
     //printf("%s",str);fflush(stdout);
   }
+}
+
+void ManCodeGenerator::stripCodeComments(bool b)
+{
+  m_stripCodeComments = b;
+}
+
+void ManCodeGenerator::startSpecialComment()
+{
+  m_hide = m_stripCodeComments;
+}
+
+void ManCodeGenerator::endSpecialComment()
+{
+  m_hide = false;
 }
 
 

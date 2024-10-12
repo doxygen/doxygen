@@ -42,12 +42,10 @@ struct CodeFragmentManager::Private
   {
     QCString fileContents;
     QCString fileContentsTrimLeft;
-    FragmentInfo() { recorderCodeList.add<OutputCodeRecorder>(); recorderCodeListStripped.add<OutputCodeRecorder>();}
+    FragmentInfo() { recorderCodeList.add<OutputCodeRecorder>(); }
     void findBlockMarkers();
     OutputCodeList recorderCodeList;
-    OutputCodeList recorderCodeListStripped;
     OutputCodeList recorderCodeListTrimLeft;
-    OutputCodeList recorderCodeListTrimLeftStripped;
     std::map<int,BlockMarker> blocks;
     std::map<std::string,const BlockMarker*> blocksById;
     std::mutex mutex;
@@ -227,7 +225,6 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     fileContentsTrimLeft.resize(d-fileContentsTrimLeft.data());
     //printf("result after trimming:\n=====%s=====\n",qPrint(fileContentsTrimLeft));
     recorderCodeListTrimLeft.add<OutputCodeRecorder>();
-    recorderCodeListTrimLeftStripped.add<OutputCodeRecorder>();
   }
 }
 
@@ -350,24 +347,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
           scopeName,
           codeFragment->fileContents,
           langExt,            // lang
-          false,              // strip code comments
-          false,              // isExampleBlock
-          QCString(),         // exampleName
-          fd.get(),           // fileDef
-          -1,                 // startLine
-          -1,                 // endLine
-          true,               // inlineFragment
-          nullptr,            // memberDef
-          true,               // showLineNumbers
-          nullptr,            // searchCtx
-          false               // collectXRefs
-          );
-
-      intf->parseCode(codeFragment->recorderCodeListStripped,
-          scopeName,
-          codeFragment->fileContents,
-          langExt,            // lang
-          true,               // strip code comments
+          false,              // strip code comments (overruled before replaying)
           false,              // isExampleBlock
           QCString(),         // exampleName
           fd.get(),           // fileDef
@@ -386,24 +366,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
           scopeName,
           codeFragment->fileContentsTrimLeft,
           langExt,            // lang
-          false,              // strip code comments
-          false,              // isExampleBlock
-          QCString(),         // exampleName
-          fd.get(),           // fileDef
-          -1,                 // startLine
-          -1,                 // endLine
-          true,               // inlineFragment
-          nullptr,            // memberDef
-          true,               // showLineNumbers
-          nullptr,            // searchCtx
-          false               // collectXRefs
-          );
-
-      intf->parseCode(codeFragment->recorderCodeListTrimLeftStripped,
-          scopeName,
-          codeFragment->fileContentsTrimLeft,
-          langExt,            // lang
-          true,               // strip code comments
+          false,              // strip code comments (overruled before replaying)
           false,              // isExampleBlock
           QCString(),         // exampleName
           fd.get(),           // fileDef
@@ -427,25 +390,15 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     AUTO_TRACE_ADD("replay(start={},end={}) fileContentsTrimLeft.empty()={}",startLine,endLine,codeFragment->fileContentsTrimLeft.isEmpty());
     if (!trimLeft || codeFragment->fileContentsTrimLeft.isEmpty()) // replay the normal version
     {
-      if (stripCodeComments)
-      {
-        codeFragment->recorderCodeListStripped.get<OutputCodeRecorder>(OutputType::Recorder)->replay(codeOutList,startLine+1,endLine,showLineNumbers);
-      }
-      else
-      {
-        codeFragment->recorderCodeList.get<OutputCodeRecorder>(OutputType::Recorder)->replay(codeOutList,startLine+1,endLine,showLineNumbers);
-      }
+      auto recorder = codeFragment->recorderCodeList.get<OutputCodeRecorder>(OutputType::Recorder);
+      recorder->stripCodeComments(stripCodeComments);
+      recorder->replay(codeOutList,startLine+1,endLine,showLineNumbers);
     }
     else // replay the trimmed version
     {
-      if (stripCodeComments)
-      {
-        codeFragment->recorderCodeListTrimLeftStripped.get<OutputCodeRecorder>(OutputType::Recorder)->replay(codeOutList,startLine+1,endLine,showLineNumbers);
-      }
-      else
-      {
-        codeFragment->recorderCodeListTrimLeft.get<OutputCodeRecorder>(OutputType::Recorder)->replay(codeOutList,startLine+1,endLine,showLineNumbers);
-      }
+      auto recorder = codeFragment->recorderCodeListTrimLeft.get<OutputCodeRecorder>(OutputType::Recorder);
+      recorder->stripCodeComments(stripCodeComments);
+      recorder->replay(codeOutList,startLine+1,endLine,showLineNumbers);
     }
   }
   else

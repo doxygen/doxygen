@@ -724,6 +724,7 @@ void HtmlCodeGenerator::setRelativePath(const QCString &path)
 
 void HtmlCodeGenerator::codify(const QCString &str)
 {
+  if (m_hide) return;
   int tabSize = Config_getInt(TAB_SIZE);
   if (!str.isEmpty())
   {
@@ -790,54 +791,31 @@ void HtmlCodeGenerator::codify(const QCString &str)
   }
 }
 
-void HtmlCodeGenerator::docify(const QCString &str)
+void HtmlCodeGenerator::stripCodeComments(bool b)
 {
-  if (!str.isEmpty())
-  {
-    const char *p=str.data();
-    while (*p)
-    {
-      char c=*p++;
-      switch(c)
-      {
-        case '<':  *m_t << "&lt;"; break;
-        case '>':  *m_t << "&gt;"; break;
-        case '&':  *m_t << "&amp;"; break;
-        case '"':  *m_t << "&quot;"; break;
-        case '\\':
-          if (*p=='<')
-            { *m_t << "&lt;"; p++; }
-          else if (*p=='>')
-            { *m_t << "&gt;"; p++; }
-	  else if (*p=='(')
-            { *m_t << "\\&zwj;("; p++; }
-          else if (*p==')')
-            { *m_t << "\\&zwj;)"; p++; }
-          else
-            *m_t << "\\";
-          break;
-        default:
-          {
-            uint8_t uc = static_cast<uint8_t>(c);
-            if (uc<32 && !isspace(c))
-            {
-              *m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
-            }
-            else
-            {
-              *m_t << c;
-            }
-          }
-          break;
-      }
-    }
-  }
+  m_stripCodeComments = b;
 }
+
+void HtmlCodeGenerator::startSpecialComment()
+{
+  m_hide = m_stripCodeComments;
+  //*m_t << "[START]";
+}
+
+void HtmlCodeGenerator::endSpecialComment()
+{
+  m_hide = false;
+  //*m_t << "[END]";
+}
+
+
 
 
 void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
                                     const QCString &anchor,int l,bool writeLineAnchor)
 {
+  m_lastLineInfo = LineInfo(ref,filename,anchor,l,writeLineAnchor);
+  if (m_hide) return;
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
   char lineAnchor[maxLineNrStr];
@@ -869,6 +847,7 @@ void HtmlCodeGenerator::writeCodeLink(CodeSymbolType type,
                                       const QCString &anchor, const QCString &name,
                                       const QCString &tooltip)
 {
+  if (m_hide) return;
   const char *hl = codeSymbolType2Str(type);
   QCString hlClass = "code";
   if (hl)
@@ -884,6 +863,7 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
                                       const QCString &anchor, const QCString &name,
                                       const QCString &tooltip)
 {
+  if (m_hide) return;
   if (!ref.isEmpty())
   {
     *m_t << "<a class=\"" << className << "Ref\" ";
@@ -901,7 +881,7 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
   *m_t << "\"";
   if (!tooltip.isEmpty()) *m_t << " title=\"" << convertToHtml(tooltip) << "\"";
   *m_t << ">";
-  docify(name);
+  codify(name);
   *m_t << "</a>";
   m_col+=name.length();
 }
@@ -911,6 +891,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
                                      const SourceLinkInfo &defInfo,
                                      const SourceLinkInfo &declInfo)
 {
+  if (m_hide) return;
   *m_t << "<div class=\"ttc\" id=\"" << id << "\">";
   *m_t << "<div class=\"ttname\">";
   if (!docInfo.url.isEmpty())
@@ -922,7 +903,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
                           fileName()==fn,fn,docInfo.anchor);
     *m_t << "\">";
   }
-  docify(docInfo.name);
+  codify(docInfo.name);
   if (!docInfo.url.isEmpty())
   {
     *m_t << "</a>";
@@ -932,14 +913,14 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
   if (!decl.isEmpty())
   {
     *m_t << "<div class=\"ttdeci\">";
-    docify(decl);
+    codify(decl);
     *m_t << "</div>";
   }
 
   if (!desc.isEmpty())
   {
     *m_t << "<div class=\"ttdoc\">";
-    docify(desc);
+    codify(desc);
     *m_t << "</div>";
   }
 
@@ -987,6 +968,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
 
 void HtmlCodeGenerator::startCodeLine(int)
 {
+  if (m_hide) return;
   m_col=0;
   if (!m_lineOpen)
   {
@@ -997,6 +979,7 @@ void HtmlCodeGenerator::startCodeLine(int)
 
 void HtmlCodeGenerator::endCodeLine()
 {
+  if (m_hide) return;
   if (m_col == 0)
   {
     *m_t << " ";
@@ -1011,16 +994,19 @@ void HtmlCodeGenerator::endCodeLine()
 
 void HtmlCodeGenerator::startFontClass(const QCString &s)
 {
+  if (m_hide) return;
   *m_t << "<span class=\"" << s << "\">";
 }
 
 void HtmlCodeGenerator::endFontClass()
 {
+  if (m_hide) return;
   *m_t << "</span>";
 }
 
 void HtmlCodeGenerator::writeCodeAnchor(const QCString &anchor)
 {
+  if (m_hide) return;
   *m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
@@ -1039,6 +1025,10 @@ void HtmlCodeGenerator::endCodeFragment(const QCString &)
 
 void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
 {
+  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to end the line
+  {
+    *m_t << "</div>\n";
+  }
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
   qsnprintf(lineNumber,maxLineNrStr,"%05d",lineNr);
@@ -1046,11 +1036,32 @@ void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const Q
           "\" data-start=\"" << startMarker <<
           "\" data-end=\"" << endMarker <<
           "\">\n";
+  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to restart the line
+  {
+    *m_t << "<div class=\"line\">";
+  }
+  m_hide=false;
 }
 
 void HtmlCodeGenerator::endFold()
 {
+  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to end the line
+  {
+    *m_t << "</div>\n";
+  }
   *m_t << "</div>\n";
+  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to start the line
+  {
+    *m_t << "<div class=\"line\">";
+    bool wasHidden=m_hide;
+    m_hide = false;
+    writeLineNumber(m_lastLineInfo.ref,
+                    m_lastLineInfo.fileName,
+                    m_lastLineInfo.anchor,
+                    m_lastLineInfo.line+1,
+                    m_lastLineInfo.writeAnchor);
+    m_hide = wasHidden;
+  }
 }
 
 //--------------------------------------------------------------------------

@@ -234,6 +234,27 @@ void OutputCodeRecorder::codify(const QCString &s)
                       );
 }
 
+void OutputCodeRecorder::stripCodeComments(bool b)
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol) { ol->stripCodeComments(b); }
+                      );
+}
+
+void OutputCodeRecorder::startSpecialComment()
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol) { ol->startSpecialComment(); }
+                      );
+}
+
+void OutputCodeRecorder::endSpecialComment()
+{
+  m_calls.emplace_back([]() { return true; },
+                       [=](OutputCodeList *ol) { ol->endSpecialComment(); }
+                      );
+}
+
 void OutputCodeRecorder::writeCodeLink(CodeSymbolType type,
                    const QCString &ref,const QCString &file,
                    const QCString &anchor,const QCString &name,
