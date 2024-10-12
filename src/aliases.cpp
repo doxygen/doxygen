@@ -159,7 +159,8 @@ static void addValidAliasToMap(std::string_view alias)
 
 static std::string escapeAlias(std::string_view value)
 {
-  std::string newValue = substituteStringView(value,"^^","@ilinebr ");
+  std::string newValue = substituteStringView(value,"^^ ","@ilinebr ");
+  newValue = substituteStringView(newValue,"^^","@ilinebr ");
   //printf("escapeAlias('%s')='%s'\n",qPrint(std::string{value}),qPrint(newValue));
   return newValue;
 }
