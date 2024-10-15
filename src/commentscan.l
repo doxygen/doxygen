@@ -4771,6 +4771,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   }
 
   yyextra->current->doc=stripLeadingAndTrailingEmptyLines(yyextra->current->doc,yyextra->current->docLine);
+  yyextra->current->brief=stripLeadingAndTrailingEmptyLines(yyextra->current->brief,yyextra->current->docLine);
 
   if (yyextra->current->section.isFileDoc() && yyextra->current->doc.isEmpty())
   {
