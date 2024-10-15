@@ -45,7 +45,6 @@ struct CodeFragmentManager::Private
     FragmentInfo() { recorderCodeList.add<OutputCodeRecorder>(); }
     void findBlockMarkers();
     OutputCodeList recorderCodeList;
-    OutputCodeList recorderCodeListTrimLeft;
     std::map<int,BlockMarker> blocks;
     std::map<std::string,const BlockMarker*> blocksById;
     std::mutex mutex;
@@ -148,7 +147,6 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     }
     return col;
   };
-  bool needsTrimLeft=false;
   lineNr=1;
   const char *startBuf = s;
   for (auto &kv : blocks)
@@ -170,7 +168,6 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
       }
     }
     marker.indent = minIndent;
-    if (minIndent>0) needsTrimLeft=true;
 
     AUTO_TRACE_ADD("found snippet key='{}' range=[{}..{}] indent={}",
         marker.key,
@@ -178,53 +175,6 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
         marker.lines[1]-1,
         marker.indent);
     s=e;
-  }
-
-  AUTO_TRACE_ADD("needsTrimLeft={}",needsTrimLeft);
-  // create trimmed version of fileContents (if needed)
-  if (needsTrimLeft)
-  {
-    fileContentsTrimLeft = fileContents;
-    char *d = fileContentsTrimLeft.rawData();          // destination pointer
-    startBuf = s = d;                                  // source pointer
-    const char *e = s + fileContentsTrimLeft.length(); // end of string pointer
-    lineNr=1;
-    int tabSize=Config_getInt(TAB_SIZE);
-    for (const auto &kv : blocks)
-    {
-      auto &marker = kv.second;
-      if (marker.indent>0)
-      {
-        const char *ss = gotoLine(startBuf,s,lineNr,marker.lines[0]+1);
-        while (s < ss) *d++=*s++; // copy until start of indented section
-
-        // find position of the end of the marker
-        const char *ee = gotoLine(startBuf,ss,marker.lines[0]+1,marker.lines[1]);
-        lineNr=marker.lines[1];
-
-        // process lines until the end of the indented block
-        while (s < ee)
-        {
-          int col = 0;
-          char cc = 0;
-          // skip over indentation
-          while (col < marker.indent && (cc=*s++))
-          {
-            if (cc==' ') col++;
-            else if (cc=='\t') col+=tabSize-(col%tabSize);
-          }
-          // copy until the end of the line
-          while ((cc=*s++) && cc!='\n') *d++=cc;
-          if (cc) *d++=cc; // copy newline
-        }
-      }
-    }
-    // copy part after the last indented block
-    while (s < e) *d++=*s++;
-    // shrink the string for the indentation that was removed
-    fileContentsTrimLeft.resize(d-fileContentsTrimLeft.data());
-    //printf("result after trimming:\n=====%s=====\n",qPrint(fileContentsTrimLeft));
-    recorderCodeListTrimLeft.add<OutputCodeRecorder>();
   }
 }
 
@@ -292,8 +242,8 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
                                             bool             stripCodeComments
                                            )
 {
-  AUTO_TRACE("CodeFragmentManager::parseCodeFragment({},blockId={},scopeName={},showLineNumber={},trimLeft={}",
-      fileName, blockId, scopeName, showLineNumbers, trimLeft);
+  AUTO_TRACE("CodeFragmentManager::parseCodeFragment({},blockId={},scopeName={},showLineNumber={},trimLeft={},stripCodeComments={}",
+      fileName, blockId, scopeName, showLineNumbers, trimLeft, stripCodeComments);
   std::string fragmentKey=fileName.str()+":"+scopeName.str();
   std::unordered_map< std::string,std::unique_ptr<Private::FragmentInfo> >::iterator it;
   bool inserted = false;
@@ -313,8 +263,6 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
   std::lock_guard lock(codeFragment->mutex);
   if (inserted) // new entry, need to parse the file and record the output and cache it
   {
-
-
     SrcLangExt langExt = getLanguageFromFileName(fileName);
     FileInfo cfi( fileName.str() );
     auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
@@ -360,25 +308,6 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
           false               // collectXRefs
           );
     }
-    if (codeFragment->fileContentsTrimLeft.length()>0) // also need to parse a version with trimmed indentation
-    {
-      intf->parseCode(codeFragment->recorderCodeListTrimLeft,
-          scopeName,
-          codeFragment->fileContentsTrimLeft,
-          langExt,            // lang
-          false,              // strip code comments (overruled before replaying)
-          false,              // isExampleBlock
-          QCString(),         // exampleName
-          fd.get(),           // fileDef
-          -1,                 // startLine
-          -1,                 // endLine
-          true,               // inlineFragment
-          nullptr,            // memberDef
-          true,               // showLineNumbers
-          nullptr,            // searchCtx
-          false               // collectXRefs
-          );
-    }
   }
   // use the recorded OutputCodeList from the cache to output a pre-recorded fragment
   auto blockKv = codeFragment->blocksById.find(blockId.str());
@@ -387,19 +316,17 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     const auto &marker = blockKv->second;
     int startLine = marker->lines[0];
     int endLine   = marker->lines[1];
-    AUTO_TRACE_ADD("replay(start={},end={}) fileContentsTrimLeft.empty()={}",startLine,endLine,codeFragment->fileContentsTrimLeft.isEmpty());
-    if (!trimLeft || codeFragment->fileContentsTrimLeft.isEmpty()) // replay the normal version
-    {
-      auto recorder = codeFragment->recorderCodeList.get<OutputCodeRecorder>(OutputType::Recorder);
-      recorder->stripCodeComments(stripCodeComments);
-      recorder->replay(codeOutList,startLine+1,endLine,showLineNumbers);
-    }
-    else // replay the trimmed version
-    {
-      auto recorder = codeFragment->recorderCodeListTrimLeft.get<OutputCodeRecorder>(OutputType::Recorder);
-      recorder->stripCodeComments(stripCodeComments);
-      recorder->replay(codeOutList,startLine+1,endLine,showLineNumbers);
-    }
+    int indent    = marker->indent;
+    AUTO_TRACE_ADD("replay(start={},end={},indent={}) fileContentsTrimLeft.empty()={}",
+        startLine,endLine,indent,codeFragment->fileContentsTrimLeft.isEmpty());
+    auto recorder = codeFragment->recorderCodeList.get<OutputCodeRecorder>(OutputType::Recorder);
+    recorder->replay(codeOutList,
+                    startLine+1,
+                    endLine,
+                    showLineNumbers,
+                    stripCodeComments,
+                    trimLeft ? static_cast<size_t>(indent) : 0
+                   );
   }
   else
   {

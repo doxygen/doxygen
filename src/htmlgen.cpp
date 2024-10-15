@@ -724,68 +724,80 @@ void HtmlCodeGenerator::setRelativePath(const QCString &path)
 
 void HtmlCodeGenerator::codify(const QCString &str)
 {
-  if (m_hide) return;
-  int tabSize = Config_getInt(TAB_SIZE);
   if (!str.isEmpty())
   {
+    int tabSize = Config_getInt(TAB_SIZE);
     const char *p=str.data();
-    while (*p)
+    if (m_hide) // only update column count
     {
-      char c=*p++;
-      switch(c)
+      m_col = updateColumnCount(p,m_col);
+    }
+    else // actually output content and keep track of m_col
+    {
+      while (*p)
       {
-        case '\t': {
-                     int spacesToNextTabStop = tabSize - (m_col%tabSize);
-                     *m_t << Doxygen::spaces.left(spacesToNextTabStop);
-                     m_col+=spacesToNextTabStop;
-                   }
-                   break;
-        case '\n': *m_t << "\n"; m_col=0;
-                   break;
-        case '\r': break;
-        case '<':  *m_t << "&lt;"; m_col++;
-                   break;
-        case '>':  *m_t << "&gt;"; m_col++;
-                   break;
-        case '&':  *m_t << "&amp;"; m_col++;
-                   break;
-        case '\'': *m_t << "&#39;"; m_col++; // &apos; is not valid XHTML
-                   break;
-        case '"':  *m_t << "&quot;"; m_col++;
-                   break;
-        case '\\':
-                   if (*p=='<')
+        char c=*p++;
+        switch(c)
+        {
+          case '\t': {
+                       int spacesToNextTabStop = tabSize - (m_col%tabSize);
+                       while (spacesToNextTabStop--)
+                       {
+                         if (m_col>=m_stripIndentAmount) *m_t << " ";
+                         m_col++;
+                       }
+                     }
+                     break;
+          case ' ':  if (m_col>=m_stripIndentAmount) *m_t << " ";
+                     m_col++;
+                     break;
+          case '\n': *m_t << "\n"; m_col=0;
+                     break;
+          case '\r': break;
+          case '<':  *m_t << "&lt;"; m_col++;
+                     break;
+          case '>':  *m_t << "&gt;"; m_col++;
+                     break;
+          case '&':  *m_t << "&amp;"; m_col++;
+                     break;
+          case '\'': *m_t << "&#39;"; m_col++; // &apos; is not valid XHTML
+                     break;
+          case '"':  *m_t << "&quot;"; m_col++;
+                     break;
+          case '\\':
+                     if (*p=='<')
                      { *m_t << "&lt;"; p++; }
-                   else if (*p=='>')
+                     else if (*p=='>')
                      { *m_t << "&gt;"; p++; }
-		   else if (*p=='(')
+                     else if (*p=='(')
                      { *m_t << "\\&zwj;("; m_col++;p++; }
-                   else if (*p==')')
+                     else if (*p==')')
                      { *m_t << "\\&zwj;)"; m_col++;p++; }
-                   else
-                     *m_t << "\\";
-                   m_col++;
-                   break;
-        default:
-          {
-            uint8_t uc = static_cast<uint8_t>(c);
-            if (uc<32)
-            {
-              *m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
-              m_col++;
-            }
-            else if (uc<0x80) // printable ASCII char
-            {
-              *m_t << c;
-              m_col++;
-            }
-            else // multibyte UTF-8 char
-            {
-              p=writeUTF8Char(*m_t,p-1);
-              m_col++;
-            }
-          }
-          break;
+                     else
+                       *m_t << "\\";
+                     m_col++;
+                     break;
+          default:
+                     {
+                       uint8_t uc = static_cast<uint8_t>(c);
+                       if (uc<32)
+                       {
+                         *m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+                         m_col++;
+                       }
+                       else if (uc<0x80) // printable ASCII char
+                       {
+                         *m_t << c;
+                         m_col++;
+                       }
+                       else // multibyte UTF-8 char
+                       {
+                         p=writeUTF8Char(*m_t,p-1);
+                         m_col++;
+                       }
+                     }
+                     break;
+        }
       }
     }
   }
@@ -804,12 +816,14 @@ void HtmlCodeGenerator::startSpecialComment()
 
 void HtmlCodeGenerator::endSpecialComment()
 {
-  m_hide = false;
   //*m_t << "[END]";
+  m_hide = false;
 }
 
-
-
+void HtmlCodeGenerator::setStripIndentAmount(size_t amount)
+{
+  m_stripIndentAmount = amount;
+}
 
 void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
                                     const QCString &anchor,int l,bool writeLineAnchor)
@@ -863,6 +877,7 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
                                       const QCString &anchor, const QCString &name,
                                       const QCString &tooltip)
 {
+  m_col+=name.length();
   if (m_hide) return;
   if (!ref.isEmpty())
   {
@@ -883,7 +898,6 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
   *m_t << ">";
   codify(name);
   *m_t << "</a>";
-  m_col+=name.length();
 }
 
 void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docInfo,
@@ -968,8 +982,8 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
 
 void HtmlCodeGenerator::startCodeLine(int)
 {
-  if (m_hide) return;
   m_col=0;
+  if (m_hide) return;
   if (!m_lineOpen)
   {
     *m_t << "<div class=\"line\">";
@@ -1043,6 +1057,20 @@ void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const Q
   m_hide=false;
 }
 
+void HtmlCodeGenerator::_startOpenLine()
+{
+  *m_t << "<div class=\"line\">";
+  bool wasHidden=m_hide;
+  m_hide = false;
+  m_lineOpen = true;
+  writeLineNumber(m_lastLineInfo.ref,
+      m_lastLineInfo.fileName,
+      m_lastLineInfo.anchor,
+      m_lastLineInfo.line+1,
+      m_lastLineInfo.writeAnchor);
+  m_hide = wasHidden;
+}
+
 void HtmlCodeGenerator::endFold()
 {
   if (m_lineOpen) // if we have a hidden comment in a code fold, we need to end the line
@@ -1050,17 +1078,9 @@ void HtmlCodeGenerator::endFold()
     *m_t << "</div>\n";
   }
   *m_t << "</div>\n";
-  if (m_lineOpen) // if we have a hidden comment in a code fold, we need to start the line
+  if (m_lineOpen)
   {
-    *m_t << "<div class=\"line\">";
-    bool wasHidden=m_hide;
-    m_hide = false;
-    writeLineNumber(m_lastLineInfo.ref,
-                    m_lastLineInfo.fileName,
-                    m_lastLineInfo.anchor,
-                    m_lastLineInfo.line+1,
-                    m_lastLineInfo.writeAnchor);
-    m_hide = wasHidden;
+    _startOpenLine();
   }
 }
 

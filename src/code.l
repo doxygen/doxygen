@@ -2006,8 +2006,9 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <*>\n({B}*{CPPC}[!/][^\n]*\n)+            { // remove special one-line comment
                                           if (YY_START==SkipCPP) REJECT;
                                           startFontClass(yyscanner,"comment",true);
-                                          codifyLines(yyscanner,yytext);
+                                          codifyLines(yyscanner,QCString(yytext).left(yyleng-1));
                                           endFontClass(yyscanner,true);
+                                          codifyLines(yyscanner,"\n");
                                           if (YY_START==SkipCxxComment)
                                           {
                                             BEGIN( yyextra->lastCContext ) ;
@@ -2020,8 +2021,9 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <*>\n{B}*{CPPC}"@"[{}].*\n              { // remove one-line group marker
                                           startFontClass(yyscanner,"comment",true);
-                                          codifyLines(yyscanner,yytext);
+                                          codifyLines(yyscanner,QCString(yytext).left(yyleng-1));
                                           endFontClass(yyscanner,true);
+                                          codifyLines(yyscanner,"\n");
                                           if (YY_START==SkipCxxComment)
                                           {
                                             BEGIN( yyextra->lastCContext ) ;
@@ -2031,7 +2033,6 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           // check is to prevent getting stuck in skipping C++ comments
                                           if (YY_START != SkipComment && YY_START != SkipCxxComment)
                                           {
-
                                             yyextra->lastCContext = YY_START ;
                                           }
                                           startFontClass(yyscanner,"comment",true);
@@ -2040,8 +2041,9 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <*>^{B}*{CPPC}"@"[{}].*\n               { // remove one-line group marker
                                           startFontClass(yyscanner,"comment",true);
-                                          codifyLines(yyscanner,yytext);
+                                          codifyLines(yyscanner,QCString(yytext).left(yyleng-1));
                                           endFontClass(yyscanner,true);
+                                          codifyLines(yyscanner,"\n");
                                         }
 <*>^{B}*{CCS}"@"[{}]                    { // remove multi-line group marker
                                           // check is to prevent getting stuck in skipping C++ comments

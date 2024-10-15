@@ -400,6 +400,7 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
 {
   if (m_hide) return;
   SrcLangExt langExt = getLanguageFromFileName(inc.extension());
+  //printf("XMLDocVisitor: DocInclude type=%d trimleft=%d\n",inc.type(),inc.trimLeft());
   switch(inc.type())
   {
     case DocInclude::IncWithLines:

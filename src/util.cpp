@@ -7198,3 +7198,32 @@ void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2)
   if (Config_getBool(INLINE_SOURCES)!=md2->hasInlineSource()) md1->overrideInlineSource(md2->hasInlineSource());
 }
 
+int updateColumnCount(const char *s,int col)
+{
+  if (s)
+  {
+    const int tabSize = Config_getInt(TAB_SIZE);
+    char c;
+    while ((c=*s++))
+    {
+      switch(c)
+      {
+        case '\t': col+=tabSize - (col%tabSize);
+                   break;
+        case '\n': col=0;
+                   break;
+        default:
+                   col++;
+                   if (c<0) // multi-byte character
+                   {
+                     int numBytes = getUTF8CharNumBytes(c);
+                     for (int i=0;i<numBytes-1 && (c=*s++);i++) {} // skip over extra chars
+                     if (c==0) return col; // end of string half way a multibyte char
+                   }
+                   break;
+      }
+    }
+  }
+  return col;
+}
+

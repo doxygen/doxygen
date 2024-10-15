@@ -37,6 +37,7 @@ class HtmlCodeGenerator : public OutputCodeIntf
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
+    void setStripIndentAmount(size_t amount) override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
@@ -65,6 +66,7 @@ class HtmlCodeGenerator : public OutputCodeIntf
                         const QCString &ref,const QCString &file,
                         const QCString &anchor,const QCString &name,
                         const QCString &tooltip);
+    void _startOpenLine();
     //void docify(const QCString &str);
     TextStream *m_t;
     size_t m_col = 0;
@@ -85,6 +87,7 @@ class HtmlCodeGenerator : public OutputCodeIntf
       bool writeAnchor = false;
     };
     LineInfo m_lastLineInfo;
+    size_t m_stripIndentAmount = 0;
 };
 
 /** Generator for HTML output */

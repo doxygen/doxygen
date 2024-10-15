@@ -66,37 +66,50 @@ inline void writeXMLString(TextStream &t,const QCString &s)
   t << convertToXML(s);
 }
 
-inline void writeXMLCodeString(TextStream &t,const QCString &str, size_t &col)
+inline void writeXMLCodeString(bool hide,TextStream &t,const QCString &str, size_t &col, size_t stripIndentAmount)
 {
   if (str.isEmpty()) return;
+  const int tabSize = Config_getInt(TAB_SIZE);
   const char *s = str.data();
   char c=0;
-  while ((c=*s++))
+  if (hide) // only update column count
   {
-    switch(c)
+    col=updateColumnCount(s,col);
+  }
+  else // actually output content and keep track of m_col
+  {
+    while ((c=*s++))
     {
-      case '\t':
+      switch(c)
       {
-        int tabSize = Config_getInt(TAB_SIZE);
-	int spacesToNextTabStop = tabSize - (col%tabSize);
-	col+=spacesToNextTabStop;
-	while (spacesToNextTabStop--) t << "<sp/>";
-	break;
-	}
-      case ' ':  t << "<sp/>"; col++;  break;
-      case '<':  t << "&lt;"; col++;   break;
-      case '>':  t << "&gt;"; col++;   break;
-      case '&':  t << "&amp;"; col++;  break;
-      case '\'': t << "&apos;"; col++; break;
-      case '"':  t << "&quot;"; col++; break;
-      case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
-      case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
-      case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
-      case 27: case 28: case 29: case 30: case 31:
-        // encode invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
-        t << "<sp value=\"" << int(c) << "\"/>";
-        break;
-      default:   s=writeUTF8Char(t,s-1); col++; break;
+        case '\t':
+          {
+            int spacesToNextTabStop = tabSize - (col%tabSize);
+            while (spacesToNextTabStop--)
+            {
+              if (col>=stripIndentAmount) t << "<sp/>";
+              col++;
+            }
+            break;
+          }
+        case ' ':
+          if (col>=stripIndentAmount) t << "<sp/>";
+          col++;
+          break;
+        case '<':  t << "&lt;";   col++; break;
+        case '>':  t << "&gt;";   col++; break;
+        case '&':  t << "&amp;";  col++; break;
+        case '\'': t << "&apos;"; col++; break;
+        case '"':  t << "&quot;"; col++; break;
+        case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
+        case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
+        case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
+        case 27: case 28: case 29: case 30: case 31:
+                   // encode invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
+                   t << "<sp value=\"" << int(c) << "\"/>";
+                   break;
+        default:   s=writeUTF8Char(t,s-1); col++; break;
+      }
     }
   }
 }
@@ -186,14 +199,13 @@ XMLCodeGenerator::XMLCodeGenerator(TextStream *t) : m_t(t)
 /** Generator for producing XML formatted source code. */
 void XMLCodeGenerator::codify(const QCString &text)
 {
-  if (m_hide) return;
   XML_DB(("(codify \"%s\")\n",qPrint(text)));
-  if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
+  if (!m_hide && m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
   {
     *m_t << "<highlight class=\"normal\">";
     m_normalHLNeedStartTag=FALSE;
   }
-  writeXMLCodeString(*m_t,text,m_col);
+  writeXMLCodeString(m_hide,*m_t,text,m_col,m_stripIndentAmount);
 }
 
 void XMLCodeGenerator::stripCodeComments(bool b)
@@ -209,6 +221,11 @@ void XMLCodeGenerator::endSpecialComment()
 void XMLCodeGenerator::startSpecialComment()
 {
   m_hide = m_stripCodeComments;
+}
+
+void XMLCodeGenerator::setStripIndentAmount(size_t amount)
+{
+  m_stripIndentAmount = amount;
 }
 
 void XMLCodeGenerator::writeCodeLink(CodeSymbolType,
@@ -237,6 +254,7 @@ void XMLCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, const
 
 void XMLCodeGenerator::startCodeLine(int)
 {
+  m_col=0;
   if (m_hide) return;
   XML_DB(("(startCodeLine)\n"));
   *m_t << "<codeline";
@@ -274,7 +292,10 @@ void XMLCodeGenerator::endCodeLine()
     *m_t << "</highlight>";
     m_normalHLNeedStartTag=TRUE;
   }
-  *m_t << "</codeline>\n"; // non DocBook
+  if (m_insideCodeLine)
+  {
+    *m_t << "</codeline>\n";
+  }
   m_lineNumber = -1;
   m_refId.clear();
   m_external.clear();

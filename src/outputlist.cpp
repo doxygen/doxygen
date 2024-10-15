@@ -230,29 +230,27 @@ void OutputCodeRecorder::startNewLine(int lineNr)
 void OutputCodeRecorder::codify(const QCString &s)
 {
   m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol) { ol->codify(s); }
-                      );
-}
-
-void OutputCodeRecorder::stripCodeComments(bool b)
-{
-  m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol) { ol->stripCodeComments(b); }
+                       [=](OutputCodeList *ol) { ol->codify(s); },
+                       m_insideSpecialComment
                       );
 }
 
 void OutputCodeRecorder::startSpecialComment()
 {
+  m_insideSpecialComment=true;
   m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol) { ol->startSpecialComment(); }
+                       [=](OutputCodeList *ol) { ol->startSpecialComment(); },
+                       true
                       );
 }
 
 void OutputCodeRecorder::endSpecialComment()
 {
   m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol) { ol->endSpecialComment(); }
+                       [=](OutputCodeList *ol) { ol->endSpecialComment(); },
+                       true
                       );
+  m_insideSpecialComment=false;
 }
 
 void OutputCodeRecorder::writeCodeLink(CodeSymbolType type,
@@ -261,7 +259,8 @@ void OutputCodeRecorder::writeCodeLink(CodeSymbolType type,
                    const QCString &tooltip)
 {
   m_calls.emplace_back([](){ return true; },
-                       [=](OutputCodeList *ol) { ol->writeCodeLink(type,ref,file,anchor,name,tooltip); }
+                       [=](OutputCodeList *ol) { ol->writeCodeLink(type,ref,file,anchor,name,tooltip); },
+                       m_insideSpecialComment
                       );
 }
 
@@ -270,7 +269,8 @@ void OutputCodeRecorder::writeLineNumber(const QCString &ref,const QCString &fil
 {
   startNewLine(lineNumber);
   m_calls.emplace_back([&]() { return m_showLineNumbers; },
-                       [=](OutputCodeList *ol) { ol->writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
+                       [=](OutputCodeList *ol) { ol->writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); },
+                       m_insideSpecialComment
                       );
 }
 
@@ -278,7 +278,8 @@ void OutputCodeRecorder::writeTooltip(const QCString &id, const DocLinkInfo &doc
                   const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
 {
   m_calls.emplace_back([](){ return true; },
-                       [=](OutputCodeList *ol) { ol->writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
+                       [=](OutputCodeList *ol) { ol->writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); },
+                       m_insideSpecialComment
                       );
 }
 
@@ -286,35 +287,40 @@ void OutputCodeRecorder::startCodeLine(int lineNr)
 {
   startNewLine(lineNr);
   m_calls.emplace_back([](){ return true; },
-                       [=](OutputCodeList *ol) { ol->startCodeLine(lineNr); }
+                       [=](OutputCodeList *ol) { ol->startCodeLine(lineNr); },
+                       m_insideSpecialComment
                       );
 }
 
 void OutputCodeRecorder::endCodeLine()
 {
   m_calls.emplace_back([](){ return true; },
-                       [=](OutputCodeList *ol) { ol->endCodeLine(); }
+                       [=](OutputCodeList *ol) { ol->endCodeLine(); },
+                       m_insideSpecialComment
                       );
 }
 
 void OutputCodeRecorder::startFontClass(const QCString &c)
 {
   m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol) { ol->startFontClass(c); }
+                       [=](OutputCodeList *ol) { ol->startFontClass(c); },
+                       m_insideSpecialComment
                       );
 }
 
 void OutputCodeRecorder::endFontClass()
 {
   m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol){ ol->endFontClass(); }
+                       [=](OutputCodeList *ol){ ol->endFontClass(); },
+                       m_insideSpecialComment
                       );
 }
 
 void OutputCodeRecorder::writeCodeAnchor(const QCString &name)
 {
   m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol){ ol->writeCodeAnchor(name); }
+                       [=](OutputCodeList *ol){ ol->writeCodeAnchor(name); },
+                       m_insideSpecialComment
                       );
 }
 
@@ -329,23 +335,38 @@ void OutputCodeRecorder::endCodeFragment(const QCString &style)
 void OutputCodeRecorder::startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
 {
   m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol) { ol->startFold(lineNr,startMarker,endMarker); }
+                       [=](OutputCodeList *ol) { ol->startFold(lineNr,startMarker,endMarker); },
+                       m_insideSpecialComment
                       );
 }
 
 void OutputCodeRecorder::endFold()
 {
   m_calls.emplace_back([]() { return true; },
-                       [=](OutputCodeList *ol) { ol->endFold(); }
+                       [=](OutputCodeList *ol) { ol->endFold(); },
+                       m_insideSpecialComment
                       );
 }
 
-void OutputCodeRecorder::replay(OutputCodeList &ol,int startLine,int endLine,bool showLineNumbers)
+void OutputCodeRecorder::replay(OutputCodeList &ol,int startLine,int endLine,bool showLineNumbers,bool
+    stripCodeComments,size_t stripIndentAmount)
 {
   size_t startIndex = startLine>0 && startLine<=(int)m_lineOffset.size() ? m_lineOffset[startLine-1] : 0;
   size_t endIndex   = endLine>0   && endLine  <=(int)m_lineOffset.size() ? m_lineOffset[  endLine-1] : m_calls.size();
   //printf("startIndex=%zu endIndex=%zu\n",startIndex,endIndex);
+
+  // configure run time properties of the rendering
+  ol.stripCodeComments(stripCodeComments);
+  ol.setStripIndentAmount(stripIndentAmount);
   m_showLineNumbers = showLineNumbers;
+
+  // in case the start of the special comment marker is outside of the fragment, start it here
+  if (startIndex<endIndex && m_calls[startIndex].insideSpecialComment)
+  {
+    ol.startSpecialComment();
+  }
+
+  // render the requested fragment of the pre-recorded output
   for (size_t i=startIndex; i<endIndex; i++)
   {
     if (m_calls[i].condition()) m_calls[i].function(&ol);

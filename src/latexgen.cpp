@@ -75,7 +75,6 @@ void LatexCodeGenerator::setSourceFileName(const QCString &name)
 
 void LatexCodeGenerator::codify(const QCString &str)
 {
-  if (m_hide) return;
   if (!str.isEmpty())
   {
     const char *p=str.data();
@@ -84,38 +83,53 @@ void LatexCodeGenerator::codify(const QCString &str)
     int tabSize = Config_getInt(TAB_SIZE);
     static THREAD_LOCAL char *result = nullptr;
     static THREAD_LOCAL int lresult = 0;
-    while ((c=*p))
+    if (m_hide) // only update column count
     {
-      switch(c)
+      m_col = updateColumnCount(p,m_col);
+    }
+    else // actually output content and keep track of m_col
+    {
+      while ((c=*p))
       {
-        case 0x0c: p++;  // remove ^L
-                   break;
-        case ' ':  *m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
-                   m_col++;
-                   p++;
-                   break;
-        case '^':  *m_t <<"\\string^";
-                   m_col++;
-                   p++;
-                   break;
-        case '`':  *m_t <<"\\`{}";
-                   m_col++;
-                   p++;
-                   break;
-        case '\t': {
-                     int spacesToNextTabStop = tabSize - (m_col%tabSize);
-                     for (int i = 0; i < spacesToNextTabStop; i++) *m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
-                     m_col+=spacesToNextTabStop;
+        switch(c)
+        {
+          case 0x0c: p++;  // remove ^L
+                     break;
+          case ' ':  if (m_col>=m_stripIndentAmount)
+                     {
+                       *m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
+                     }
+                     m_col++;
                      p++;
-                   }
-                   break;
-        case '\n': *m_t << '\n';
-                   m_col=0;
-                   p++;
-                   break;
-        default:
-                   {
-                     int i=0;
+                     break;
+          case '^':  *m_t <<"\\string^";
+                     m_col++;
+                     p++;
+                     break;
+          case '`':  *m_t <<"\\`{}";
+                     m_col++;
+                     p++;
+                     break;
+          case '\t': {
+                       int spacesToNextTabStop = tabSize - (m_col%tabSize);
+                       while (spacesToNextTabStop--)
+                       {
+                         if (m_col>=m_stripIndentAmount)
+                         {
+                           *m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
+                         }
+                         m_col++;
+                       }
+                       p++;
+                     }
+                     break;
+          case '\n': *m_t << '\n';
+                     m_col=0;
+                     p++;
+                     break;
+          default:
+                     {
+                       int i=0;
 
 #undef  COPYCHAR
 // helper macro to copy a single utf8 character, dealing with multibyte chars.
@@ -133,24 +147,25 @@ void LatexCodeGenerator::codify(const QCString &str)
                        m_col++;                                     \
                      } while(0)
 
-                     // gather characters until we find whitespace or another special character
-                     COPYCHAR();
-                     while ((c=*p) &&
-                            c!=0x0c && c!='\t' && c!='\n' && c!=' ' && c!='^'
-                           )
-                     {
+                       // gather characters until we find whitespace or another special character
                        COPYCHAR();
+                       while ((c=*p) &&
+                              c!=0x0c && c!='\t' && c!='\n' && c!=' ' && c!='^'
+                             )
+                       {
+                         COPYCHAR();
+                       }
+                       result[i]=0; // add terminator
+                       filterLatexString(*m_t,result,
+                                         m_insideTabbing, // insideTabbing
+                                         true,  // insidePre
+                                         false, // insideItem
+                                         m_usedTableLevel>0, // insideTable
+                                         false  // keepSpaces
+                                        );
                      }
-                     result[i]=0; // add terminator
-                     filterLatexString(*m_t,result,
-                                       m_insideTabbing, // insideTabbing
-                                       true,  // insidePre
-                                       false, // insideItem
-                                       m_usedTableLevel>0, // insideTable
-                                       false  // keepSpaces
-                                      );
-                   }
-                   break;
+                     break;
+        }
       }
     }
   }
@@ -169,6 +184,11 @@ void LatexCodeGenerator::startSpecialComment()
 void LatexCodeGenerator::endSpecialComment()
 {
   m_hide = false;
+}
+
+void LatexCodeGenerator::setStripIndentAmount(size_t amount)
+{
+  m_stripIndentAmount = amount;
 }
 
 void LatexCodeGenerator::writeCodeLink(CodeSymbolType,

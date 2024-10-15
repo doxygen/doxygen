@@ -73,6 +73,7 @@ class OutputCodeIntf
     virtual void stripCodeComments(bool b) = 0;
     virtual void startSpecialComment() = 0;
     virtual void endSpecialComment() = 0;
+    virtual void setStripIndentAmount(size_t) = 0;
     virtual void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,

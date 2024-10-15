@@ -161,31 +161,44 @@ void ManCodeGenerator::writeCodeLink(CodeSymbolType,
 
 void ManCodeGenerator::codify(const QCString &str)
 {
-  if (m_hide) return;
-  //static char spaces[]="        ";
+  const int tabSize = Config_getInt(TAB_SIZE);
+  const int stripAmount = static_cast<int>(m_stripIndentAmount);
   if (!str.isEmpty())
   {
+    char c;
     const char *p=str.data();
-    while (*p)
+    if (m_hide)
     {
-      char c=*p++;
-      switch(c)
-      {
-        case '-':  *m_t << "\\-"; break; // see  bug747780
-        case '.':   *m_t << "\\&."; break; // see  bug652277
-        case '\t':  {
-                      int spacesToNextTabStop = Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
-                      *m_t << Doxygen::spaces.left(spacesToNextTabStop);
-                      m_col+=spacesToNextTabStop;
-                    }
-                    break;
-        case '\n':  *m_t << "\n"; m_col=0; break;
-        case '\\':  *m_t << "\\\\"; m_col++; break;
-        case '\"':  // no break!
-        default:    p=writeUTF8Char(*m_t,p-1); m_col++; break;
-      }
+      m_col = updateColumnCount(p,m_col);
     }
-    //printf("%s",str);fflush(stdout);
+    else
+    {
+      while ((c=*p++))
+      {
+        switch(c)
+        {
+          case '-':  *m_t << "\\-"; break; // see  bug747780
+          case '.':   *m_t << "\\&."; break; // see  bug652277
+          case '\t':  {
+                        int spacesToNextTabStop = tabSize - (m_col%tabSize);
+                        while (spacesToNextTabStop--)
+                        {
+                          if (m_col>=stripAmount) *m_t << " ";
+                          m_col++;
+                        }
+                      }
+                      break;
+          case ' ':   if (m_col>=stripAmount) *m_t << " ";
+                      m_col++;
+                      break;
+          case '\n':  *m_t << "\n"; m_col=0; break;
+          case '\\':  *m_t << "\\\\"; m_col++; break;
+          case '\"':  // no break!
+          default:    p=writeUTF8Char(*m_t,p-1); m_col++; break;
+        }
+      }
+      //printf("%s",str);fflush(stdout);
+    }
   }
 }
 
@@ -204,6 +217,10 @@ void ManCodeGenerator::endSpecialComment()
   m_hide = false;
 }
 
+void ManCodeGenerator::setStripIndentAmount(size_t amount)
+{
+  m_stripIndentAmount = amount;
+}
 
 //-------------------------------------------------------------------------------
 

@@ -52,6 +52,7 @@ class OutputCodeDefer : public OutputCodeIntf
     void stripCodeComments(bool b) override { m_codeGen->stripCodeComments(b); }
     void startSpecialComment() override { m_codeGen->startSpecialComment(); }
     void endSpecialComment() override { m_codeGen->endSpecialComment(); }
+    void setStripIndentAmount(size_t amount) override { m_codeGen->setStripIndentAmount(amount); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
@@ -112,9 +113,10 @@ class OutputCodeRecorder : public OutputCodeIntf
   public:
     OutputType type() const override { return OutputType::Recorder; }
     void codify(const QCString &s) override;
-    void stripCodeComments(bool b) override;
+    void stripCodeComments(bool) override {}
     void startSpecialComment() override;
     void endSpecialComment() override;
+    void setStripIndentAmount(size_t) override {}
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<OutputCodeRecorder>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
@@ -134,20 +136,23 @@ class OutputCodeRecorder : public OutputCodeIntf
     void startFold(int lineNr,const QCString &startMarker,const QCString &endMarker) override;
     void endFold() override;
 
-    void replay(OutputCodeList &ol,int startLine,int endLine,bool showLineNumbers);
+    void replay(OutputCodeList &ol,int startLine,int endLine,bool showLineNumbers,bool stripComment,size_t stripIndentAmount);
   private:
     void startNewLine(int lineNr);
     struct CallInfo
     {
       using ConditionFunc = std::function<bool()>;
       using OutputFunc    = std::function<void(OutputCodeList*)>;
-      CallInfo(ConditionFunc &&c,OutputFunc &&f) : condition(std::move(c)), function(std::move(f)) {}
+      CallInfo(ConditionFunc &&c,OutputFunc &&f,bool insideComment)
+        : condition(std::move(c)), function(std::move(f)), insideSpecialComment(insideComment) {}
       ConditionFunc  condition;
       OutputFunc     function;
+      bool           insideSpecialComment = false;
     };
     std::vector<CallInfo> m_calls;
     std::vector<size_t>   m_lineOffset;
     bool m_showLineNumbers = false;
+    bool m_insideSpecialComment = false;
 };
 
 
@@ -234,8 +239,12 @@ class OutputCodeList
 
     void startSpecialComment()
     { foreach(&OutputCodeIntf::startSpecialComment); }
+
     void endSpecialComment()
     { foreach(&OutputCodeIntf::endSpecialComment); }
+
+    void setStripIndentAmount(size_t amount)
+    { foreach(&OutputCodeIntf::setStripIndentAmount,amount); }
 
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,

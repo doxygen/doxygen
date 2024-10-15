@@ -120,6 +120,7 @@ void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
                                  const QCString &anchor,const QCString &name,
                                  const QCString &)
 {
+  m_col+=name.length();
   if (m_hide) return;
   if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
   {
@@ -151,35 +152,44 @@ void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
 
 void RTFCodeGenerator::codify(const QCString &str)
 {
-  if (m_hide) return;
   // note that RTF does not have a "verbatim", so "\n" means
   // nothing... add a "newParagraph()";
-  //static char spaces[]="        ";
+  const int tabSize = Config_getInt(TAB_SIZE);
+  const int stripAmount = static_cast<int>(m_stripIndentAmount);
   if (!str.isEmpty())
   {
+    char c;
     const char *p=str.data();
-
-    while (*p)
+    if (m_hide)
     {
-      //static bool MultiByte = FALSE;
-
-      char c=*p++;
-
-      switch(c)
+      m_col = updateColumnCount(p,m_col);
+    }
+    else
+    {
+      while ((c=*p++))
       {
-        case '\t':  {
-                      int spacesToNextTabStop = Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
-                      *m_t << Doxygen::spaces.left(spacesToNextTabStop);
-                      m_col+=spacesToNextTabStop;
+        switch(c)
+        {
+          case '\t':  {
+                        int spacesToNextTabStop = tabSize - (m_col%tabSize);
+                        while (spacesToNextTabStop--)
+                        {
+                          if (m_col>=stripAmount) *m_t << " ";
+                          m_col++;
+                        }
+                      }
                       break;
-                    }
-        case '\n':  *m_t << "\\par\n";
-                    m_col=0;
-                    break;
-        case '{':   *m_t << "\\{"; m_col++;          break;
-        case '}':   *m_t << "\\}"; m_col++;          break;
-        case '\\':  *m_t << "\\\\"; m_col++;         break;
-        default:    p=writeUTF8Char(*m_t,p-1); m_col++; break;
+          case ' ':   if (m_col>=stripAmount) *m_t << " ";
+                      m_col++;
+                      break;
+          case '\n':  *m_t << "\\par\n";
+                      m_col=0;
+                      break;
+          case '{':   *m_t << "\\{"; m_col++;          break;
+          case '}':   *m_t << "\\}"; m_col++;          break;
+          case '\\':  *m_t << "\\\\"; m_col++;         break;
+          default:    p=writeUTF8Char(*m_t,p-1); m_col++; break;
+        }
       }
     }
   }
@@ -200,6 +210,10 @@ void RTFCodeGenerator::endSpecialComment()
   m_hide = false;
 }
 
+void RTFCodeGenerator::setStripIndentAmount(size_t amount)
+{
+  m_stripIndentAmount = amount;
+}
 
 void RTFCodeGenerator::startCodeFragment(const QCString &)
 {

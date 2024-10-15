@@ -470,4 +470,6 @@ QCString projectLogoFile();
 
 void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
 
+int updateColumnCount(const char *s,int col);
+
 #endif

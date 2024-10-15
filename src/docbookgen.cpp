@@ -80,44 +80,57 @@ inline void writeDocbookString(TextStream &t,const QCString &s)
   t << convertToDocBook(s);
 }
 
-inline void writeDocbookCodeString(TextStream &t,const QCString &str, size_t &col)
+inline void writeDocbookCodeString(bool hide,TextStream &t,const QCString &str, size_t &col, size_t stripIndentAmount)
 {
   if (str.isEmpty()) return;
+  const int tabSize = Config_getInt(TAB_SIZE);
   const char *s = str.data();
   char c=0;
-  while ((c=*s++))
+  if (hide)
   {
-    switch(c)
+    col = updateColumnCount(s,col);
+  }
+  else
+  {
+    while ((c=*s++))
     {
-      case '\t':
-        {
-          int tabSize = Config_getInt(TAB_SIZE);
-          int spacesToNextTabStop = tabSize - (col%tabSize);
-          col+=spacesToNextTabStop;
-          while (spacesToNextTabStop--) t << "&#32;";
-          break;
-        }
-      case ' ':  t << "&#32;"; col++;  break;
-      case '<':  t << "&lt;"; col++;   break;
-      case '>':  t << "&gt;"; col++;   break;
-      case '&':  t << "&amp;"; col++;  break;
-      case '\'': t << "&apos;"; col++; break;
-      case '"':  t << "&quot;"; col++; break;
-      default:
-        {
-          uint8_t uc = static_cast<uint8_t>(c);
-          static const char *hex="0123456789ABCDEF";
-          if (uc<32)
+      switch(c)
+      {
+        case '\t':
           {
-            t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+            int spacesToNextTabStop = tabSize - (col%tabSize);
+            while (spacesToNextTabStop--)
+            {
+              if (col>=stripIndentAmount) t << "&#32;";
+              col++;
+            }
+            break;
           }
-          else
-          {
-            t << c;
-          }
+        case ' ':
+          if (col>=stripIndentAmount) t << "&#32;";
           col++;
-        }
-        break;
+          break;
+        case '<':  t << "&lt;"; col++;   break;
+        case '>':  t << "&gt;"; col++;   break;
+        case '&':  t << "&amp;"; col++;  break;
+        case '\'': t << "&apos;"; col++; break;
+        case '"':  t << "&quot;"; col++; break;
+        default:
+                   {
+                     uint8_t uc = static_cast<uint8_t>(c);
+                     static const char *hex="0123456789ABCDEF";
+                     if (uc<32)
+                     {
+                       t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+                     }
+                     else
+                     {
+                       t << c;
+                     }
+                     col++;
+                   }
+                   break;
+      }
     }
   }
 }
@@ -152,9 +165,8 @@ DocbookCodeGenerator::DocbookCodeGenerator(TextStream *t) : m_t(t)
 
 void DocbookCodeGenerator::codify(const QCString &text)
 {
-  if (m_hide) return;
   Docbook_DB(("(codify \"%s\")\n",text));
-  writeDocbookCodeString(*m_t,text,m_col);
+  writeDocbookCodeString(m_hide,*m_t,text,m_col,static_cast<size_t>(m_stripIndentAmount));
 }
 
 void DocbookCodeGenerator::stripCodeComments(bool b)
@@ -170,6 +182,11 @@ void DocbookCodeGenerator::startSpecialComment()
 void DocbookCodeGenerator::endSpecialComment()
 {
   m_hide = false;
+}
+
+void DocbookCodeGenerator::setStripIndentAmount(size_t amount)
+{
+  m_stripIndentAmount = amount;
 }
 
 void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,

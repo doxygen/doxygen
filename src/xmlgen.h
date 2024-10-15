@@ -28,6 +28,7 @@ class XMLCodeGenerator : public OutputCodeIntf
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
+    void setStripIndentAmount(size_t amount) override;
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<XMLCodeGenerator>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
@@ -63,6 +64,7 @@ class XMLCodeGenerator : public OutputCodeIntf
     bool m_insideSpecialHL = false;
     bool m_stripCodeComments = false;
     bool m_hide = false;
+    size_t  m_stripIndentAmount = 0;
 };
 
 void generateXML();

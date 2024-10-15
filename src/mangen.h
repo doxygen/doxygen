@@ -33,6 +33,7 @@ class ManCodeGenerator : public OutputCodeIntf
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
+    void setStripIndentAmount(size_t amount) override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
@@ -60,6 +61,7 @@ class ManCodeGenerator : public OutputCodeIntf
     TextStream *m_t;
     bool m_stripCodeComments = false;
     bool m_hide = false;
+    size_t m_stripIndentAmount = 0;
 };
 
 /** Generator for Man page output. */

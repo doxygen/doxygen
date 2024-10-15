@@ -279,7 +279,6 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                            nullptr,     // memberDef
                                            TRUE
 					   );
-         if (!m_firstCol) m_t << "\n";
          m_t << ".fi\n";
          m_t << ".PP\n";
          m_firstCol=TRUE;
@@ -302,7 +301,6 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                         nullptr,     // memberDef
                                         FALSE
 				       );
-      if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";
       m_firstCol=TRUE;
@@ -341,7 +339,6 @@ void ManDocVisitor::operator()(const DocInclude &inc)
                                           inc.trimLeft(),
                                           inc.stripCodeComments()
                                          );
-      if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";
       m_firstCol=TRUE;

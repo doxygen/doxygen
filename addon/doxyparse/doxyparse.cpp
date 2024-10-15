@@ -60,6 +60,7 @@ class Doxyparse : public OutputCodeIntf
     void stripCodeComments(bool) override {}
     void startSpecialComment() override {}
     void endSpecialComment() override {}
+    void setStripIndentAmount(size_t) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
     void startCodeLine(int) override {}
     void endCodeLine() override {}

@@ -35,6 +35,7 @@ class RTFCodeGenerator : public OutputCodeIntf
     void stripCodeComments(bool b) override;
     void startSpecialComment() override;
     void endSpecialComment() override;
+    void setStripIndentAmount(size_t amount) override;
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<RTFCodeGenerator>(*this); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
@@ -70,6 +71,7 @@ class RTFCodeGenerator : public OutputCodeIntf
     int m_indentLevel = 0;
     bool m_stripCodeComments = false;
     bool m_hide = false;
+    size_t m_stripIndentAmount = 0;
 };
 
 

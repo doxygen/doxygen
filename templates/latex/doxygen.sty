@@ -122,6 +122,7 @@
 % Used by @code ... @endcode
 \newenvironment{DoxyCode}[1]{%
   \par%
+  \vspace{2pt}%
   \scriptsize%
   \normalfont\ttfamily%
   \rightskip0pt plus 1fil%
@@ -129,14 +130,14 @@
   \settowidth{\CodeWidthChar}{?}%
   \settoheight{\CodeHeightChar}{?}%
   \setlength{\parskip}{0ex plus 0ex minus 0ex}%
-  \ifthenelse{\equal{#1}{0}}
-  {
+  \ifthenelse{\equal{#1}{0}}%
+  {%
     {\lccode`~32 \lowercase{\global\let~}\NiceSpace}\obeyspaces%
-  }
-  {
+  }%
+  {%
     {\lccode`~32 \lowercase{\global\let~}}\obeyspaces%
-  }
-
+  }%
+  \vspace{2pt}%
 }{%
   \normalfont%
   \normalsize%

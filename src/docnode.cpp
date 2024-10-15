@@ -3771,17 +3771,11 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
       trimLeft = true;
     }
 
-    if (t==DocInclude::Include && contains("lineno"))
+    if (contains("lineno"))
     {
-      t = DocInclude::IncWithLines;
-    }
-    else if (t==DocInclude::Snippet && contains("lineno"))
-    {
-      t = DocInclude::SnippetWithLines;
-    }
-    else if (t==DocInclude::DontInclude && contains("lineno"))
-    {
-      t = DocInclude::DontIncWithLines;
+      if      (t==DocInclude::Include)     t = DocInclude::IncWithLines;
+      else if (t==DocInclude::Snippet)     t = DocInclude::SnippetWithLines;
+      else if (t==DocInclude::DontInclude) t = DocInclude::DontIncWithLines;
     }
     tok=parser()->tokenizer.lex();
     if (!tok.is(TokenRetval::TK_WHITESPACE))
