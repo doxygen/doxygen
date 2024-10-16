@@ -162,7 +162,7 @@ void ManCodeGenerator::writeCodeLink(CodeSymbolType,
 void ManCodeGenerator::codify(const QCString &str)
 {
   const int tabSize = Config_getInt(TAB_SIZE);
-  const int stripAmount = static_cast<int>(m_stripIndentAmount);
+  const size_t stripAmount = m_stripIndentAmount;
   if (!str.isEmpty())
   {
     char c;
