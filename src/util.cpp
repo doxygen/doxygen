@@ -7203,7 +7203,7 @@ void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2)
   if (Config_getBool(INLINE_SOURCES)!=md2->hasInlineSource()) md1->overrideInlineSource(md2->hasInlineSource());
 }
 
-int updateColumnCount(const char *s,int col)
+size_t updateColumnCount(const char *s,size_t col)
 {
   if (s)
   {

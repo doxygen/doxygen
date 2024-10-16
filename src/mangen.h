@@ -57,7 +57,7 @@ class ManCodeGenerator : public OutputCodeIntf
     void endFold() override {}
 
   private:
-    int  m_col = 0;
+    size_t m_col = 0;
     TextStream *m_t;
     bool m_stripCodeComments = false;
     bool m_hide = false;
