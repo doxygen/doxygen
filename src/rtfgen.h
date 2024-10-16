@@ -64,7 +64,7 @@ class RTFCodeGenerator : public OutputCodeIntf
     void setSourceFileName(const QCString &name);
     void setIndentLevel(int level) { m_indentLevel=level; }
     QCString rtf_Code_DepthStyle();
-    int  m_col = 0;
+    size_t  m_col = 0;
     TextStream *m_t;
     bool m_doxyCodeLineOpen = false;
     QCString m_sourceFileName;

@@ -6302,7 +6302,7 @@ QCString stripIndentation(const QCString &s)
   }
 
   // no indent to remove -> we're done
-  if (minIndent==0) return s;
+  if (minIndent==0) return substitute(s,"@ilinebr","\\ilinebr");
 
   // remove minimum indentation for each line
   TextStream result;
@@ -6344,6 +6344,11 @@ QCString stripIndentation(const QCString &s)
       {
         p+=skipAmount; // remove the indent
       }
+    }
+    else if (c=='@' && qstrncmp(p,"ilinebr",7)==0)
+    {
+      result << "\\ilinebr";
+      p+=7;
     }
     else // copy anything until the end of the line
     {
@@ -7198,7 +7203,7 @@ void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2)
   if (Config_getBool(INLINE_SOURCES)!=md2->hasInlineSource()) md1->overrideInlineSource(md2->hasInlineSource());
 }
 
-int updateColumnCount(const char *s,int col)
+size_t updateColumnCount(const char *s,size_t col)
 {
   if (s)
   {
