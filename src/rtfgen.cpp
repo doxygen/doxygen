@@ -155,7 +155,6 @@ void RTFCodeGenerator::codify(const QCString &str)
   // note that RTF does not have a "verbatim", so "\n" means
   // nothing... add a "newParagraph()";
   const int tabSize = Config_getInt(TAB_SIZE);
-  const int stripAmount = static_cast<int>(m_stripIndentAmount);
   if (!str.isEmpty())
   {
     char c;
@@ -174,12 +173,12 @@ void RTFCodeGenerator::codify(const QCString &str)
                         int spacesToNextTabStop = tabSize - (m_col%tabSize);
                         while (spacesToNextTabStop--)
                         {
-                          if (m_col>=stripAmount) *m_t << " ";
+                          if (m_col>=m_stripIndentAmount) *m_t << " ";
                           m_col++;
                         }
                       }
                       break;
-          case ' ':   if (m_col>=stripAmount) *m_t << " ";
+          case ' ':   if (m_col>=m_stripIndentAmount) *m_t << " ";
                       m_col++;
                       break;
           case '\n':  *m_t << "\\par\n";
