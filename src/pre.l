@@ -4059,7 +4059,7 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
     size_t pos=0;
     while (pos<output.size())
     {
-      putchar(output[pos]);
+      Debug::print(Debug::Preprocessor,0,"%c", output[pos]);
       if (output[pos]=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
       pos++;
     }
