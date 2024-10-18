@@ -360,15 +360,29 @@ void OutputCodeRecorder::replay(OutputCodeList &ol,int startLine,int endLine,boo
   ol.setStripIndentAmount(stripIndentAmount);
   m_showLineNumbers = showLineNumbers;
 
+  bool insideSpecialComment = false;
   // in case the start of the special comment marker is outside of the fragment, start it here
   if (startIndex<endIndex && m_calls[startIndex].insideSpecialComment)
   {
     ol.startSpecialComment();
+    insideSpecialComment = true;
   }
 
   // render the requested fragment of the pre-recorded output
   for (size_t i=startIndex; i<endIndex; i++)
   {
-    if (m_calls[i].condition()) m_calls[i].function(&ol);
+    if (m_calls[i].condition())
+    {
+      insideSpecialComment = m_calls[i].insideSpecialComment;
+      m_calls[i].function(&ol);
+    }
+  }
+
+  // if we end the fragment inside a special comment, make sure we end it,
+  // and also the code line
+  if (insideSpecialComment)
+  {
+    ol.endSpecialComment();
+    ol.endCodeLine();
   }
 }

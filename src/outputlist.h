@@ -143,8 +143,8 @@ class OutputCodeRecorder : public OutputCodeIntf
     {
       using ConditionFunc = std::function<bool()>;
       using OutputFunc    = std::function<void(OutputCodeList*)>;
-      CallInfo(ConditionFunc &&c,OutputFunc &&f,bool insideComment)
-        : condition(std::move(c)), function(std::move(f)), insideSpecialComment(insideComment) {}
+      CallInfo(ConditionFunc &&c,OutputFunc &&f,bool ic)
+        : condition(std::move(c)), function(std::move(f)), insideSpecialComment(ic) {}
       ConditionFunc  condition;
       OutputFunc     function;
       bool           insideSpecialComment = false;

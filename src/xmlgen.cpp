@@ -348,16 +348,19 @@ void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &co
 
 void XMLCodeGenerator::finish()
 {
+  XML_DB(("(finish insideCodeLine=%d)\n",m_insideCodeLine));
   if (m_insideCodeLine) endCodeLine();
 }
 
 void XMLCodeGenerator::startCodeFragment(const QCString &)
 {
+  XML_DB(("(startCodeFragment)\n"));
   *m_t << "    <programlisting>\n";
 }
 
 void XMLCodeGenerator::endCodeFragment(const QCString &)
 {
+  XML_DB(("(endCodeFragment)\n"));
   *m_t << "    </programlisting>\n";
 }
 
@@ -471,8 +474,8 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
                 nullptr,           // memberDef
                 TRUE         // showLineNumbers
                 );
+  //xmlList.get<XMLCodeGenerator>(OutputType::XML)->finish();
   xmlList.endCodeFragment("DoxyCode");
-  xmlList.get<XMLCodeGenerator>(OutputType::XML)->finish();
 }
 
 static void writeMemberReference(TextStream &t,const Definition *def,const MemberDef *rmd,const QCString &tagName)
