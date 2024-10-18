@@ -306,6 +306,7 @@ struct preYY_state
   DefineMap                                localDefines;   // macros defined in this file
   DefineList                               macroDefinitions;
   LinkedMap<PreIncludeInfo>                includeRelations;
+  StringVector                             pragmaList;
 
   int                lastContext = 0;
   bool               lexRulesPart = false;
@@ -448,6 +449,7 @@ WSopt [ \t\r]*
 %x      RulesRoundSquare
 %x      RulesRound
 %x      RulesRoundQuest
+%x      PragmaOnce
 
 %%
 
@@ -1063,6 +1065,21 @@ WSopt [ \t\r]*
                                         }
 <Command>"pragma"{B}+"once"             {
                                           yyextra->expectGuard = FALSE;
+                                          if (std::find(yyextra->pragmaList.begin(), yyextra->pragmaList.end(), yyextra->fileName.data()) != yyextra->pragmaList.end())
+                                          {
+                                            outputChar(yyscanner,'\n');
+                                            BEGIN(PragmaOnce);
+                                          }
+                                          else
+                                          {
+                                            yyextra->pragmaList.push_back(yyextra->fileName.data());
+                                          }
+                                        }
+<PragmaOnce>.                           {}
+<PragmaOnce>\n                          {}
+<PragmaOnce><<EOF>>                     {
+                                          yyextra->expectGuard = FALSE;
+                                          BEGIN(Start);
                                         }
 <Command>{ID}                           { // unknown directive
                                           BEGIN(IgnoreLine);
@@ -2048,7 +2065,7 @@ WSopt [ \t\r]*
                                         }
 <*>{CCS}/{CCE}                          |
 <*>{CCS}[*!]?                           {
-                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || YY_START==IDLquote)
+                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || YY_START==IDLquote || YY_START == PragmaOnce)
                                           {
                                             REJECT;
                                           }
@@ -2070,7 +2087,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <*>{CPPC}[/!]?                          {
-                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt::Fortran || YY_START==IDLquote)
+                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt::Fortran || YY_START==IDLquote || YY_START == PragmaOnce)
                                           {
                                             REJECT;
                                           }
@@ -4015,6 +4032,7 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
   state->includeStack.clear();
   state->expandedDict.clear();
   state->contextDefines.clear();
+  state->pragmaList.clear();
   while (!state->condStack.empty()) state->condStack.pop();
 
   setFileName(yyscanner,fileName);
