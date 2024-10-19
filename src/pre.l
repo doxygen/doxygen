@@ -4053,17 +4053,39 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
   {
     std::lock_guard<std::mutex> lock(g_debugMutex);
     Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %zu bytes):\n",qPrint(fileName),output.size());
-    int line=1;
-    Debug::print(Debug::Preprocessor,0,"---------\n");
-    if (!Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"00001 ");
-    size_t pos=0;
-    while (pos<output.size())
+    std::string contents;
+    if (Debug::isFlagSet(Debug::NoLineNo))
     {
-      Debug::print(Debug::Preprocessor,0,"%c", output[pos]);
-      if (output[pos]=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
-      pos++;
+      contents=output;
     }
-    Debug::print(Debug::Preprocessor,0,"\n---------\n");
+    else // need to add line numbers
+    {
+      int line=1;
+      bool startOfLine = true;
+      size_t content_size = output.size() +
+                            output.size()*6/40; // assuming 40 chars per line on average
+                                                // and 6 chars extra for the line number
+      contents.reserve(content_size);
+      size_t pos=0;
+      while (pos<output.size())
+      {
+        if (startOfLine)
+        {
+          char lineNrStr[10];
+          snprintf(lineNrStr,10,"%05d ",line++);
+          contents+=lineNrStr;
+        }
+        contents   += output[pos];
+        startOfLine = output[pos]=='\n';
+        pos++;
+      }
+    }
+    char end[2]={0,0};
+    if (!contents.empty() && contents[contents.length()-1]!='\n')
+    {
+      end[0]='\n';
+    }
+    Debug::print(Debug::Preprocessor,0,"---------\n%s%s---------\n",contents.c_str(),end);
     if (yyextra->contextDefines.size()>0)
     {
       Debug::print(Debug::Preprocessor,0,"Macros accessible in this file (%s):\n", qPrint(fileName));
