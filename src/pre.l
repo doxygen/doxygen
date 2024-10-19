@@ -306,7 +306,7 @@ struct preYY_state
   DefineMap                                localDefines;   // macros defined in this file
   DefineList                               macroDefinitions;
   LinkedMap<PreIncludeInfo>                includeRelations;
-  StringVector                             pragmaList;
+  StringUnorderedSet                       pragmaSet;
 
   int                lastContext = 0;
   bool               lexRulesPart = false;
@@ -1065,14 +1065,14 @@ WSopt [ \t\r]*
                                         }
 <Command>"pragma"{B}+"once"             {
                                           yyextra->expectGuard = FALSE;
-                                          if (std::find(yyextra->pragmaList.begin(), yyextra->pragmaList.end(), yyextra->fileName.data()) != yyextra->pragmaList.end())
+                                          if (yyextra->pragmaSet.find(yyextra->fileName.str())!=yyextra->pragmaSet.end())
                                           {
                                             outputChar(yyscanner,'\n');
                                             BEGIN(PragmaOnce);
                                           }
                                           else
                                           {
-                                            yyextra->pragmaList.push_back(yyextra->fileName.data());
+                                            yyextra->pragmaSet.insert(yyextra->fileName.data());
                                           }
                                         }
 <PragmaOnce>.                           {}
@@ -4032,7 +4032,7 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
   state->includeStack.clear();
   state->expandedDict.clear();
   state->contextDefines.clear();
-  state->pragmaList.clear();
+  state->pragmaSet.clear();
   while (!state->condStack.empty()) state->condStack.pop();
 
   setFileName(yyscanner,fileName);
