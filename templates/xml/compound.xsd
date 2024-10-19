@@ -174,8 +174,10 @@
     <xsd:sequence>
       <xsd:element name="header" type="xsd:string" minOccurs="0" />
       <xsd:element name="description" type="descriptionType" minOccurs="0" />
-      <xsd:element name="memberdef" type="memberdefType" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="member" type="MemberType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:choice maxOccurs="unbounded">
+        <xsd:element name="memberdef" type="memberdefType" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element name="member" type="MemberType" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="kind" type="DoxSectionKind" />
   </xsd:complexType>
