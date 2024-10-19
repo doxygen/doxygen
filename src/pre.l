@@ -4089,8 +4089,8 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
       {
         if (startOfLine)
         {
-          char lineNrStr[10];
-          snprintf(lineNrStr,10,"%05d ",line++);
+          char lineNrStr[15];
+          snprintf(lineNrStr,15,"%05d ",line++);
           contents+=lineNrStr;
         }
         contents   += output[pos];
