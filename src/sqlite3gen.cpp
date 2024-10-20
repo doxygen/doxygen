@@ -1460,6 +1460,21 @@ static void getSQLDesc(SqlStmt &s,const char *col,const QCString &value,const De
     )
   );
 }
+
+static void getSQLDescCompound(SqlStmt &s,const char *col,const QCString &value,const Definition *def)
+{
+  bindTextParameter(
+    s,
+    col,
+    getSQLDocBlock(
+      def,
+      def,
+      value,
+      def->docFile(),
+      def->docLine()
+    )
+  );
+}
 ////////////////////////////////////////////
 
 /* (updated Sep 01 2018)
@@ -1990,8 +2005,8 @@ static void generateSqlite3ForClass(const ClassDef *cd)
     }
   }
 
-  getSQLDesc(compounddef_insert,":briefdescription",cd->briefDescription(),cd);
-  getSQLDesc(compounddef_insert,":detaileddescription",cd->documentation(),cd);
+  getSQLDescCompound(compounddef_insert,":briefdescription",cd->briefDescription(),cd);
+  getSQLDescCompound(compounddef_insert,":detaileddescription",cd->documentation(),cd);
 
   step(compounddef_insert);
 
@@ -2060,8 +2075,8 @@ static void generateSqlite3ForConcept(const ConceptDef *cd)
   bindIntParameter(compounddef_insert,":line",cd->getDefLine());
   bindIntParameter(compounddef_insert,":column",cd->getDefColumn());
 
-  getSQLDesc(compounddef_insert,":briefdescription",cd->briefDescription(),cd);
-  getSQLDesc(compounddef_insert,":detaileddescription",cd->documentation(),cd);
+  getSQLDescCompound(compounddef_insert,":briefdescription",cd->briefDescription(),cd);
+  getSQLDescCompound(compounddef_insert,":detaileddescription",cd->documentation(),cd);
 
   step(compounddef_insert);
 
@@ -2093,8 +2108,8 @@ static void generateSqlite3ForModule(const ModuleDef *mod)
   bindIntParameter(compounddef_insert,":line",mod->getDefLine());
   bindIntParameter(compounddef_insert,":column",mod->getDefColumn());
 
-  getSQLDesc(compounddef_insert,":briefdescription",mod->briefDescription(),mod);
-  getSQLDesc(compounddef_insert,":detaileddescription",mod->documentation(),mod);
+  getSQLDescCompound(compounddef_insert,":briefdescription",mod->briefDescription(),mod);
+  getSQLDescCompound(compounddef_insert,":detaileddescription",mod->documentation(),mod);
 
   step(compounddef_insert);
 
@@ -2150,8 +2165,8 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   bindIntParameter(compounddef_insert,":line",nd->getDefLine());
   bindIntParameter(compounddef_insert,":column",nd->getDefColumn());
 
-  getSQLDesc(compounddef_insert,":briefdescription",nd->briefDescription(),nd);
-  getSQLDesc(compounddef_insert,":detaileddescription",nd->documentation(),nd);
+  getSQLDescCompound(compounddef_insert,":briefdescription",nd->briefDescription(),nd);
+  getSQLDescCompound(compounddef_insert,":detaileddescription",nd->documentation(),nd);
 
   step(compounddef_insert);
 
