@@ -171,7 +171,6 @@ CMD               ("\\"|"@")
 BB                [ \t]+
 B                 [ \t]*
 NEWLINE           \n
-BN                [ \t\n]
 
 DIGIT             [0-9]
 
@@ -184,11 +183,9 @@ BOOL              ("True"|"False")
 LETTER            [A-Za-z\x80-\xFF]
 NONEMPTY          [A-Za-z0-9_\x80-\xFF]
 EXPCHAR           [#(){}\[\],:.%/\\=`*~|&<>!;+-]
-NONEMPTYEXP       [^ \t\n:]
 PARAMNONEMPTY     [^ \t\n():]
 IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
 SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
-BORDER            ([^A-Za-z0-9])
 
 TRISINGLEQUOTE    {STRINGPREFIX}?"'''"(!)?
 TRIDOUBLEQUOTE    {STRINGPREFIX}?"\"\"\""(!)?
@@ -200,12 +197,7 @@ LONGSTRINGITEM    ({LONGSTRINGCHAR}|{ESCAPESEQ})
 SMALLQUOTE        ("\"\""|"\""|"'"|"''")
 LONGSTRINGBLOCK   ({LONGSTRINGITEM}|{SMALLQUOTE})
 
-SHORTSTRING       ("'"{SHORTSTRINGITEM}*"'"|'"'{SHORTSTRINGITEM}*'"')
-SHORTSTRINGITEM   ({SHORTSTRINGCHAR}|{ESCAPESEQ})
-SHORTSTRINGCHAR   [^\\\n"]
-STRINGLITERAL     {STRINGPREFIX}?( {SHORTSTRING} | {LONGSTRING})
 STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
-FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
 POUNDCOMMENT      "#"[^#\n][^\n]*
 SCRIPTCOMMENT      "#!".*
 

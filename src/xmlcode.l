@@ -120,7 +120,6 @@ esc         "&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
 name        {namestart}{namechar}*
 comment     {open}"!--"([^-]|"-"[^-])*"--"{close}
 cdata       {open}"![CDATA["([^\]]|"\]"[^\]])*"]]"{close}
-data        "random string"
 string      \"([^\"&]|{esc})*\"|\'([^'&]|{esc})*\'
 
 %option noyywrap

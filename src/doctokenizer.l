@@ -176,7 +176,6 @@ static inline const char *getLexerFILE() {return __FILE__;}
 
 CMD       ("\\"|"@")
 WS        [ \t\r\n]
-NONWS     [^ \t\r\n]
 BLANK     [ \t\r]
 BLANKopt  {BLANK}*
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
@@ -189,7 +188,6 @@ DOXYCFG   [A-Z][A-Z_0-9]*
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xFF.+-]+"@"[a-z_A-Z0-9\x80-\xFf-]+("."[a-z_A-Z0-9\x80-\xFf\-]+)+[a-z_A-Z0-9\x80-\xFf\-]+
 MAILWS    [\t a-z_A-Z0-9\x80-\xFF+-]
 MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"|"point"|"POINT"|"_point_"|"_POINT_"){BLANK}+{MAILWS}+
-OPTSTARS  ("/""/"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
 OLISTITEM {BLANK}*("0"|[1-9][0-9]*)"."{BLANK}

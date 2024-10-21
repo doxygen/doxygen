@@ -226,7 +226,6 @@ VFILEMASK {FILECHARS}("."{FILECHARS})*
 FILEMASK  {VFILEMASK}|{HFILEMASK}
 
 B         [ \t]
-ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 
 OPTS      "{"[^}]*"}"{B}*
 

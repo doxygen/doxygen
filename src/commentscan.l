@@ -570,7 +570,6 @@ static inline const char *getLexerFILE() {return __FILE__;}
 
        /* start command character */
 CMD       ("\\"|"@")
-XREFCMD   {CMD}("bug"|"deprecated"|"test"|"todo"|"xrefitem")
 PRE       ("pre"|"PRE")
 TABLE     ("table"|"TABLE")
 P         [pP]
@@ -595,10 +594,8 @@ REMARKS   ("remarks"|"REMARKS")
 AHTML     [aA]{BN}*
 ANCHTML   ("id"|"name"|"ID"|"NAME")"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
 BN        [ \t\n\r]
-BL        [ \t\r]*"\n"
 B         [ \t]
 Bopt      {B}*
-BS        ^(({B}*"/""/")?)(({B}*"*"+)?){B}*
 ATTR      ({B}+[^>\n]*)?
 DOCNL     "\n"|"\\ilinebr"
 LC        "\\"{B}*"\n"
@@ -624,8 +621,6 @@ IFILELINE  ("\\ifile \""[^"]*"\" \\iline "[0-9]+" "("iprefix \""[^"]*"\" ")?("ir
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
-CPPC  "/\/"
 
   // end of section title with asterisk
 STAopt [^\n@\\*]*
