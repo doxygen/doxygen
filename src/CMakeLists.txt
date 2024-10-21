@@ -312,6 +312,7 @@ add_library(doxymain STATIC
     searchindex_js.cpp
     sitemap.cpp
     sqlite3gen.cpp
+    jsonmldocvisitor.cpp
     stlsupport.cpp
     symbolresolver.cpp
     tagreader.cpp
