@@ -11106,6 +11106,7 @@ static void dumpSymbolMap()
 // print developer options of Doxygen
 static void devUsage()
 {
+  Debug::clearFlag(Debug::Time);
   msg("Developer parameters:\n");
   msg("  -m          dump symbol map\n");
   msg("  -b          making messages output unbuffered\n");
@@ -11124,6 +11125,7 @@ static void devUsage()
 
 static void version(const bool extended)
 {
+  Debug::clearFlag(Debug::Time);
   QCString versionString = getFullVersion();
   msg("%s\n",qPrint(versionString));
   if (extended)
@@ -11151,6 +11153,7 @@ static void version(const bool extended)
 
 static void usage(const QCString &name,const QCString &versionString)
 {
+  Debug::clearFlag(Debug::Time);
   msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2024\n\n",qPrint(versionString));
   msg("You can use Doxygen in a number of ways:\n\n");
   msg("1) Use Doxygen to generate a template configuration file*:\n");
