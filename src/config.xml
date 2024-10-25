@@ -1790,6 +1790,17 @@ PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 ]]>
       </docs>
     </option>
+    <option type='bool' id='IMPLICIT_DIR_DOCS' defval='1'>
+      <docs>
+<![CDATA[
+ If the \c IMPLICIT_DIR_DOCS tag is set to \c YES, any `README.md` file found in sub-directories
+ of the project's root, is used as the documentation for that sub-directory, except when the
+ `README.md` starts with a \ref cmddir "\\dir", \ref cmdpage "\\page" or \ref cmdmainpage "\\mainpage" command.
+ If set to \c NO, the `README.md` file needs to start with an explicit \ref cmddir "\\dir" command in order
+ to be used as directory documentation.
+]]>
+      </docs>
+    </option>
     <option type='int' id='FORTRAN_COMMENT_AFTER' defval='72' minval='7' maxval='10000'>
       <docs>
 <![CDATA[

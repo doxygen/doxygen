@@ -67,6 +67,7 @@ enum class ExplicitPageResult
 {
   explicitPage,      /**< docs start with a page command */
   explicitMainPage,  /**< docs start with a mainpage command */
+  explicitDirPage,   /**< docs start with a dir command */
   notExplicit        /**< docs doesn't start with either page or mainpage */
 };
 
@@ -3405,6 +3406,14 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
     {
       i++;
     }
+    if (i<size-5 && data[i]=='<' && qstrncmp(&data[i],"<!--!",5)==0) // skip over <!--! marker
+    {
+      i+=5;
+      while (i<size && (data[i]==' ' || data[i]=='\n')) // skip over spaces after the <!--! marker
+      {
+        i++;
+      }
+    }
     if (i<size-1 &&
         (data[i]=='\\' || data[i]=='@') &&
         (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
@@ -3420,6 +3429,14 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
         AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitMainPage");
         return ExplicitPageResult::explicitMainPage;
       }
+    }
+    else if (i<size-1 &&
+             (data[i]=='\\' || data[i]=='@') &&
+             (qstrncmp(&data[i+1],"dir\n",4)==0 || qstrncmp(&data[i+1],"dir ",4)==0)
+            )
+    {
+      AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitDirPage");
+      return ExplicitPageResult::explicitDirPage;
     }
   }
   AUTO_TRACE_EXIT("result=ExplicitPageResult::notExplicit");
@@ -3584,19 +3601,20 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   }
   int indentLevel=title.isEmpty() ? 0 : -1;
   markdown.setIndentLevel(indentLevel);
-  QCString fn      = FileInfo(fileName.str()).fileName();
+  FileInfo fi(fileName.str());
+  QCString fn      = fi.fileName();
   QCString titleFn = stripExtensionGeneral(fn,getFileNameExtension(fn));
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   QCString mdFileNameId = markdownFileNameToId(fileName);
   bool wasEmpty = id.isEmpty();
   if (wasEmpty) id = mdFileNameId;
+  QCString relFileName = stripFromPath(fileName);
+  bool isSubdirDocs = Config_getBool(IMPLICIT_DIR_DOCS) && relFileName.lower().endsWith("/readme.md");
   switch (isExplicitPage(docs))
   {
     case ExplicitPageResult::notExplicit:
       if (!mdfileAsMainPage.isEmpty() &&
-          (fn==mdfileAsMainPage || // name reference
-           FileInfo(fileName.str()).absFilePath()==
-           FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
+          (fi.absFilePath()==FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
          )
       {
         docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
@@ -3608,6 +3626,10 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
+      else if (isSubdirDocs)
+      {
+        docs.prepend("@dir\\ilinebr ");
+      }
       else
       {
         if (title.isEmpty())
@@ -3617,7 +3639,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         }
         if (!wasEmpty)
         {
-          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr @ianchor{" + stripFromPath(fileName) + "} " + mdFileNameId + "\\ilinebr ");
+          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr @ianchor{" + relFileName + "} " + mdFileNameId + "\\ilinebr ");
         }
         else if (!generatedId.isEmpty())
         {
@@ -3653,6 +3675,8 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       }
       break;
     case ExplicitPageResult::explicitMainPage:
+      break;
+    case ExplicitPageResult::explicitDirPage:
       break;
   }
   int lineNr=1;
