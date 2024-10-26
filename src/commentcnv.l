@@ -705,7 +705,7 @@ SLASHopt [/]*
                                        BEGIN(yyextra->lastCommentContext);
                                      }
                                    }
-<VerbatimCode>[\\@]("enddot"|"endcode"|"endmsc"|"enduml") { /* end of verbatim block */
+<VerbatimCode>[\\@]("enddot"|"endcode"|"endmsc"|"enduml")/("{")? { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     if (&yytext[1]==yyextra->blockName)
 				     {
