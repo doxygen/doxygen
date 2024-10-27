@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <cassert>
 
 #include "symbolresolver.h"
 #include "util.h"
@@ -36,6 +37,9 @@
 
 static std::mutex g_cacheMutex;
 static std::recursive_mutex g_cacheTypedefMutex;
+
+static std::mutex g_substMapMutex;
+static std::unordered_map<std::string, std::pair<QCString,const MemberDef *> > g_substMap;
 
 //--------------------------------------------------------------------------------------
 
@@ -1154,6 +1158,7 @@ const Definition *SymbolResolver::Private::followPath(VisitedKeys &visitedKeys,
 {
   AUTO_TRACE("start={},path={}",start?start->name():QCString(), path);
   int is=0,ps=0,l=0;
+
   const Definition *current=start;
   // for each part of the explicit scope
   while ((is=getScopeFragment(path,ps,&l))!=-1)
@@ -1240,6 +1245,7 @@ const Definition *SymbolResolver::Private::followPath(VisitedKeys &visitedKeys,
     }
     ps=is+l;
   }
+
   AUTO_TRACE_EXIT("result={}",current?current->name():QCString());
   return current; // path could be followed
 }
@@ -1497,6 +1503,24 @@ QCString SymbolResolver::Private::substTypedef(
   MemberDef *bestMatch=nullptr;
   int minDistance=10000; // init at "infinite"
 
+  std::string key;
+  const int maxAddrSize = 20;
+  char ptr_str[maxAddrSize];
+  int num = qsnprintf(ptr_str,maxAddrSize,"%p:",(void *)scope);
+  assert(num>0);
+  key.reserve(num+name.length()+1);
+  key+=ptr_str;
+  key+=name.str();
+  {
+    std::lock_guard lock(g_substMapMutex);
+    auto it = g_substMap.find(key);
+    if (it!=g_substMap.end())
+    {
+      if (pTypeDef) *pTypeDef = it->second.second;
+      return it->second.first;
+    }
+  }
+
   for (Definition *d : range)
   {
     // only look at members
@@ -1524,6 +1548,13 @@ QCString SymbolResolver::Private::substTypedef(
   {
     result = bestMatch->typeString();
     if (pTypeDef) *pTypeDef=bestMatch;
+  }
+
+  // cache the result of the computation to give a faster answers next time, especially relevant
+  // if `range` has many arguments (i.e. there are many symbols with the same name in different contexts)
+  {
+    std::lock_guard lock(g_substMapMutex);
+    g_substMap.emplace(key,std::make_pair(result,bestMatch));
   }
 
   AUTO_TRACE_EXIT("result={}",result);
