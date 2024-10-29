@@ -1754,10 +1754,12 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
         case '\'': insideSQuote=TRUE; break;
         case '\\': // fall through, begin of command
         case '@':  // fall through, begin of command
-        case ' ':  // fall through
         case '\t': // fall through
         case '\n':
           found=(round==0);
+          break;
+        case ' ':  // allow spaces in cast operator (see issue #11169)
+          found=(round==0) && (j<8 || qstrncmp(data+j-8,"operator",8)!=0);
           break;
       }
     }
@@ -1777,6 +1779,8 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
     }
     if (!found) j++;
   }
+
+  // include const and volatile
   if (qstrncmp(data+j," const",6)==0)
   {
     j+=6;
@@ -1785,8 +1789,16 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
   {
     j+=9;
   }
+
+  // allow '&' or '&&' or ' &' or ' &&' at the end
+  size_t k=j;
+  while (k<len && data[k]==' ') k++;
+  if      (k<len-1 && data[k]=='&' && data[k+1]=='&') j=k+2;
+  else if (k<len   && data[k]=='&'                  ) j=k+1;
+
+  // do not include punctuation added by Definition::_setBriefDescription()
   size_t e=j;
-  if (j>0 && data[j-1]=='.') { e--; } // do not include punctuation added by Definition::_setBriefDescription()
+  if (j>0 && data[j-1]=='.') { e--; }
   QCString id(data+s,e-s);
   //printf("extractCopyDocId='%s' input='%s'\n",qPrint(id),&data[s]);
   return id;
