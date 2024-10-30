@@ -211,6 +211,7 @@ enum class HtmlTagType
   HTML_THEAD     = 41,
   HTML_TBODY     = 42,
   HTML_TFOOT     = 43,
+  HTML_KBD       = 44,
 
   XML_CmdMask    = 0x100,
 

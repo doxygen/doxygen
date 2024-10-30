@@ -613,6 +613,7 @@ void PerlModDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Preformatted:  style = "preformatted"; break;
     case DocStyleChange::Div:           style = "div"; break;
     case DocStyleChange::Span:          style = "span"; break;
+    case DocStyleChange::Kbd:           style = "kbd"; break;
   }
   openItem("style");
   m_output.addFieldQuotedString("style", style)

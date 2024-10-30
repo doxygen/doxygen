@@ -409,6 +409,7 @@ void LatexDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Italic:
       if (s.enable()) m_t << "{\\itshape ";     else m_t << "}";
       break;
+    case DocStyleChange::Kbd:
     case DocStyleChange::Code:
       if (s.enable()) m_t << "{\\ttfamily ";   else m_t << "}";
       break;
