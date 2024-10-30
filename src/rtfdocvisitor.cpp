@@ -274,6 +274,7 @@ void RTFDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Italic:
       if (s.enable()) m_t << "{\\i ";     else m_t << "} ";
       break;
+    case DocStyleChange::Kbd:
     case DocStyleChange::Code:
       if (s.enable()) m_t << "{\\f2 ";   else m_t << "} ";
       break;

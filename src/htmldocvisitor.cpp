@@ -505,6 +505,9 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Italic:
       if (s.enable()) m_t << "<em" << htmlAttribsToString(s.attribs()) << ">";     else m_t << "</em>";
       break;
+    case DocStyleChange::Kbd:
+      if (s.enable()) m_t << "<kbd" << htmlAttribsToString(s.attribs()) << ">";   else m_t << "</kbd>";
+      break;
     case DocStyleChange::Code:
       if (s.enable()) m_t << "<code" << htmlAttribsToString(s.attribs()) << ">";   else m_t << "</code>";
       break;

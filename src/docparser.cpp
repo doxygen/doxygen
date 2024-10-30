@@ -1513,6 +1513,16 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Code,tokenName);
             }
             break;
+          case HtmlTagType::HTML_KBD:
+            if (!context.token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Kbd,tokenName,&context.token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Kbd,tokenName);
+            }
+            break;
           case HtmlTagType::HTML_EMPHASIS:
             if (!context.token->endTag)
             {

@@ -1807,11 +1807,11 @@ th.markdownTableHeadCenter, td.markdownTableBodyCenter {
 	text-align: center
 }
 
-tt, code, kbd, samp
+tt, code, kbd
 {
   display: inline-block;
 }
-tt, code, kbd, samp code
+tt, code, kbd
 {
   vertical-align: top;
 }
