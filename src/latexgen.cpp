@@ -798,7 +798,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   QCString style = Config_getString(LATEX_BIB_STYLE);
   if (style.isEmpty())
   {
-    style="plain";
+    style="plainnat";
   }
 
   TextStream tg;

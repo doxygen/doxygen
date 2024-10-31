@@ -3297,7 +3297,7 @@ The following block name is set based on whether or not a feature is used in the
 ]]>
       </docs>
     </option>
-    <option type='string' id='LATEX_BIB_STYLE' format='string' defval='plain' depends='GENERATE_LATEX'>
+    <option type='string' id='LATEX_BIB_STYLE' format='string' defval='plainnat' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
  The \c LATEX_BIB_STYLE tag can be used to specify the style to use for the
