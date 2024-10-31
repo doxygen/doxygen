@@ -2188,8 +2188,10 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
                              QCString &lang,size_t &start,size_t &end,size_t &offset)
 {
   AUTO_TRACE("data='{}' refIndent={}",Trace::trunc(data),refIndent);
-  auto isWordChar = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z'); };
-  auto isLangChar = [&](char c) { return c=='.' || isWordChar(c);                  };
+  const char dot = '.';
+  auto isAlphaChar  = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z'); };
+  auto isAlphaNChar = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9'); };
+  auto isLangChar   = [&](char c) { return c==dot || isAlphaChar(c); };
   // rules: at least 3 ~~~, end of the block same amount of ~~~'s, otherwise
   // return FALSE
   size_t i=0;
@@ -2213,6 +2215,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   if (i<size && data[i]=='{') // extract .py from ```{.py} ... ```
   {
     i++; // skip over {
+    if (data[i] == dot) i++; // skip over initial dot
     size_t startLang=i;
     while (i<size && (data[i]!='\n' && data[i]!='}')) i++; // find matching }
     if (i<size && data[i]=='}')
@@ -2228,15 +2231,20 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   }
   else if (i<size && isLangChar(data[i])) /// extract python or .py from ```python...``` or ```.py...```
   {
+    if (data[i] == dot) i++; // skip over initial dot
     size_t startLang=i;
-    i++;
-    while (i<size && isWordChar(data[i])) i++; // find end of language specifier
+    if (i<size && isAlphaChar(data[i])) //check first character of language specifier
+    {
+      i++;
+      while (i<size && isAlphaNChar(data[i])) i++; // find end of language specifier
+    }
     lang = data.substr(startLang,i-startLang);
   }
   else // no language specified
   {
     lang="";
   }
+
   start=i;
   while (i<size)
   {
