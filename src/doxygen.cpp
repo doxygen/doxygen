@@ -292,6 +292,7 @@ static bool findClassRelation(
 
 static Definition *findScopeFromQualifiedName(NamespaceDefMutable *startScope,const QCString &n,
                                               FileDef *fileScope,const TagInfo *tagInfo);
+static void resolveTemplateInstanceInType(const Entry *root,const Definition *scope,const MemberDef *md);
 
 static void addPageToContext(PageDef *pd,Entry *root)
 {
@@ -2524,6 +2525,11 @@ static MemberDef *addVariableToClass(
   cd->insertUsedFile(root->fileDef());
   root->markAsProcessed();
 
+  if (mtype==MemberType::Typedef)
+  {
+    resolveTemplateInstanceInType(root,cd,md.get());
+  }
+
   // add the member to the global list
   MemberDef *result = md.get();
   mn = Doxygen::memberNameLinkedMap->add(name);
@@ -2756,10 +2762,17 @@ static MemberDef *addVariableToFile(
 
   root->markAsProcessed();
 
+  if (mtype==MemberType::Typedef)
+  {
+    resolveTemplateInstanceInType(root,nd,md.get());
+  }
+
   // add member definition to the list of globals
   MemberDef *result = md.get();
   mn = Doxygen::functionNameLinkedMap->add(name);
   mn->push_back(std::move(md));
+
+
 
   return result;
 }
@@ -4598,6 +4611,38 @@ static void findTemplateInstanceRelation(const Entry *root,
     }
   }
 }
+
+//----------------------------------------------------------------------
+
+static void resolveTemplateInstanceInType(const Entry *root,const Definition *scope,const MemberDef *md)
+{
+  // For a statement like 'using X = T<A>', add a template instance 'T<A>' as a symbol, so it can
+  // be used to match arguments (see issue #11111)
+  AUTO_TRACE();
+  QCString ttype = md->typeString();
+  ttype.stripPrefix("typedef ");
+  int ti=ttype.find('<');
+  if (ti!=-1)
+  {
+    QCString templateClassName = ttype.left(ti);
+    SymbolResolver resolver(root->fileDef());
+    ClassDefMutable *baseClass = resolver.resolveClassMutable(scope ? scope : Doxygen::globalScope,
+                                           templateClassName, true, true);
+    AUTO_TRACE_ADD("templateClassName={} baseClass={}",templateClassName,baseClass?baseClass->name():"<none>");
+    if (baseClass)
+    {
+      const ArgumentList &tl = baseClass->templateArguments();
+      TemplateNameMap templateNames = getTemplateArgumentsInName(tl,templateClassName.str());
+      findTemplateInstanceRelation(root,md->getOuterScope(),
+          baseClass,
+          ttype.mid(ti),
+          templateNames,
+          baseClass->isArtificial());
+    }
+  }
+}
+
+//----------------------------------------------------------------------
 
 static bool isRecursiveBaseClass(const QCString &scope,const QCString &name)
 {
