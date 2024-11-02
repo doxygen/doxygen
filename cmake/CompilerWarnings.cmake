@@ -60,6 +60,7 @@ function(set_project_warnings project_name)
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output
                  # (ie printf)
+      -Wpedantic # warn if non-standard C++ is used
 
       # turn off warning caused by generated code (flex)
       -Wno-unused-parameter

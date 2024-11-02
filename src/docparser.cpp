@@ -316,6 +316,10 @@ void DocParser::checkUnOrMultipleDocumentedParams()
         {
           // allow undocumented self / cls parameter for Python
         }
+        else if (lang==SrcLangExt::Cpp && (a.type=="this" || a.type.startsWith("this ")))
+        {
+          // allow undocumented this (for C++23 deducing this), see issue #11123
+        }
         else if (!argName.isEmpty())
         {
           size_t count = context.paramsFound.count(argName.str());
