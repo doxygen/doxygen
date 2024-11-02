@@ -1761,6 +1761,8 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->virt       = yyextra->virt;
   yyextra->current->isStatic   = yyextra->isStatic;
   yyextra->current->lang       = SrcLangExt::Python;
+  yyextra->current->type.clear();
+  yyextra->current->name.clear();
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
   yyextra->isStatic = FALSE;
 }
@@ -1773,7 +1775,7 @@ static void newEntry(yyscan_t yyscanner)
   {
     for (auto &v : yyextra->current_root->children())
     {
-      //printf("candidate %s section=%s!\n",qPrint(v->name),v->section.to_string().c_str());
+      //printf("candidate %s<->%s section=%s!\n",qPrint(v->name),qPrint(yyextra->current->name), v->section.to_string().c_str());
       if (v->name==yyextra->current->name && v->section==yyextra->current->section) // name is already added, don't add it again
       {
         if (v->doc.isEmpty() && !yyextra->current->doc.isEmpty())
@@ -1790,12 +1792,13 @@ static void newEntry(yyscan_t yyscanner)
         }
         if (v->type.isEmpty() && !yyextra->current->type.isEmpty())
         {
+          //printf("copying type '%s' from '%s' to '%s'\n",qPrint(yyextra->current->type),qPrint(yyextra->current->name),qPrint(v->name));
           v->type      = yyextra->current->type;
         }
         found=true;
+        break;
       }
     }
-    yyextra->checkDupEntry=false;
   }
   if (!found)
   {
@@ -2176,6 +2179,8 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       yyextra->current = std::make_shared<Entry>();
       initEntry(yyscanner);
 
+      yyextra->checkDupEntry = false;
+
       QCString name = ce->name;
       yyextra->commentScanner.enterCompound(yyextra->fileName,yyextra->yyLineNr,name);
 
@@ -2214,6 +2219,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   yyextra->yyLineNr= 1 ;
   yyextra->fileName = fileName;
+  yyextra->checkDupEntry = false;
   //setContext();
   msg("Parsing file %s...\n",qPrint(yyextra->fileName));
 
