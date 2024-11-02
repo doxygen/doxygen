@@ -2137,6 +2137,7 @@ NONLopt [^\n]*
                                           // *yyextra->currentTemplateSpec+='>';
                                           if (yyextra->roundCount==0 && --yyextra->sharpCount<=0)
                                           {
+                                            yyextra->current->name = yyextra->current->name.simplifyWhiteSpace();
                                             //printf("Found %s\n",qPrint(yyextra->current->name));
                                             BEGIN(FindMembers);
                                           }
@@ -2145,7 +2146,10 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->current->name+='>';
                                           // *yyextra->currentTemplateSpec+='>';
-                                          --yyextra->sharpCount;
+                                          if (yyextra->roundCount==0)
+                                          {
+                                            --yyextra->sharpCount;
+                                          }
                                           if (yyextra->roundCount==0 && yyextra->sharpCount<=0)
                                           {
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
@@ -5096,7 +5100,11 @@ NONLopt [^\n]*
                                           *yyextra->copyArgString+=*yytext;
                                           yyextra->fullArgString+=*yytext;
                                         }
-<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>.          {
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>{ID} {
+                                          *yyextra->copyArgString+=yytext;
+                                          yyextra->fullArgString+=yytext;
+                                        }
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>. {
                                           *yyextra->copyArgString+=*yytext;
                                           yyextra->fullArgString+=*yytext;
                                         }

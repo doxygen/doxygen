@@ -2836,6 +2836,7 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
   }
 }
 
+//--------------------------------------------------------------------------------------
 
 /*! Returns TRUE iff \a type is a class within scope \a context.
  *  Used to detect variable declarations that look like function prototypes.
@@ -2969,6 +2970,89 @@ static bool isVarWithConstructor(const Entry *root)
   return result;
 }
 
+//--------------------------------------------------------------------------------------
+
+/*! Searches for the end of a template in prototype \a s starting from
+ *  character position \a startPos. If the end was found the position
+ *  of the closing \> is returned, otherwise -1 is returned.
+ *
+ *  Handles exotic cases such as
+ *  \code
+ *    Class<(id<0)>
+ *    Class<bits<<2>
+ *    Class<"<">
+ *    Class<'<'>
+ *    Class<(")<")>
+ *  \endcode
+ */
+static int findEndOfTemplate(const QCString &s,size_t startPos)
+{
+  // locate end of template
+  size_t e=startPos;
+  int brCount=1;
+  int roundCount=0;
+  size_t len = s.length();
+  bool insideString=FALSE;
+  bool insideChar=FALSE;
+  char pc = 0;
+  while (e<len && brCount!=0)
+  {
+    char c=s.at(e);
+    switch(c)
+    {
+      case '<':
+        if (!insideString && !insideChar)
+        {
+          if (e<len-1 && s.at(e+1)=='<')
+            e++;
+          else if (roundCount==0)
+            brCount++;
+        }
+        break;
+      case '>':
+        if (!insideString && !insideChar)
+        {
+          if (e<len-1 && s.at(e+1)=='>')
+            e++;
+          else if (roundCount==0)
+            brCount--;
+        }
+        break;
+      case '(':
+        if (!insideString && !insideChar)
+          roundCount++;
+        break;
+      case ')':
+        if (!insideString && !insideChar)
+          roundCount--;
+        break;
+      case '"':
+        if (!insideChar)
+        {
+          if (insideString && pc!='\\')
+            insideString=FALSE;
+          else
+            insideString=TRUE;
+        }
+        break;
+      case '\'':
+        if (!insideString)
+        {
+          if (insideChar && pc!='\\')
+            insideChar=FALSE;
+          else
+            insideChar=TRUE;
+        }
+        break;
+    }
+    pc = c;
+    e++;
+  }
+  return brCount==0 ? static_cast<int>(e) : -1;
+}
+
+//--------------------------------------------------------------------------------------
+
 static void addVariable(const Entry *root,int isFuncPtr=-1)
 {
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
@@ -3057,7 +3141,25 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
   QCString annScopePrefix=scope.left(scope.length()-classScope.length());
 
-  if (name.findRev("::")!=-1)
+
+  // Look for last :: not part of template specifier
+  int p=-1;
+  for (size_t i=0;i<name.length()-1;i++)
+  {
+    if (name[i]==':' && name[i+1]==':')
+    {
+      p=static_cast<int>(i);
+    }
+    else if (name[i]=='<') // skip over template parts,
+                           // i.e. A::B<C::D> => p=1 and
+                           //      A<B::C>::D => p=8
+    {
+      int e = findEndOfTemplate(name,i+1);
+      if (e!=-1) i=static_cast<int>(e);
+    }
+  }
+
+  if (p!=-1) // found it
   {
     if (type=="friend class" || type=="friend struct" ||
         type=="friend union")
@@ -4654,85 +4756,6 @@ static bool isRecursiveBaseClass(const QCString &scope,const QCString &name)
   }
   bool result = rightScopeMatch(scope,n);
   return result;
-}
-
-/*! Searches for the end of a template in prototype \a s starting from
- *  character position \a startPos. If the end was found the position
- *  of the closing \> is returned, otherwise -1 is returned.
- *
- *  Handles exotic cases such as
- *  \code
- *    Class<(id<0)>
- *    Class<bits<<2>
- *    Class<"<">
- *    Class<'<'>
- *    Class<(")<")>
- *  \endcode
- */
-static int findEndOfTemplate(const QCString &s,size_t startPos)
-{
-  // locate end of template
-  size_t e=startPos;
-  int brCount=1;
-  int roundCount=0;
-  size_t len = s.length();
-  bool insideString=FALSE;
-  bool insideChar=FALSE;
-  char pc = 0;
-  while (e<len && brCount!=0)
-  {
-    char c=s.at(e);
-    switch(c)
-    {
-      case '<':
-        if (!insideString && !insideChar)
-        {
-          if (e<len-1 && s.at(e+1)=='<')
-            e++;
-          else if (roundCount==0)
-            brCount++;
-        }
-        break;
-      case '>':
-        if (!insideString && !insideChar)
-        {
-          if (e<len-1 && s.at(e+1)=='>')
-            e++;
-          else if (roundCount==0)
-            brCount--;
-        }
-        break;
-      case '(':
-        if (!insideString && !insideChar)
-          roundCount++;
-        break;
-      case ')':
-        if (!insideString && !insideChar)
-          roundCount--;
-        break;
-      case '"':
-        if (!insideChar)
-        {
-          if (insideString && pc!='\\')
-            insideString=FALSE;
-          else
-            insideString=TRUE;
-        }
-        break;
-      case '\'':
-        if (!insideString)
-        {
-          if (insideChar && pc!='\\')
-            insideChar=FALSE;
-          else
-            insideChar=TRUE;
-        }
-        break;
-    }
-    pc = c;
-    e++;
-  }
-  return brCount==0 ? static_cast<int>(e) : -1;
 }
 
 static int findTemplateSpecializationPosition(const QCString &name)
