@@ -70,6 +70,7 @@ struct declinfoYY_state
      QCString     exceptionString;
      bool         insideObjC;
      bool         insidePHP;
+     bool         insidePython;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -176,6 +177,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				}
 <Start>{B}*"("({ID}"::")*{B}*[&*]({B}*("const"|"volatile"){B}+)?	{
                                   if (yyextra->insidePHP) REJECT;
+                                  if (yyextra->insidePython) REJECT;
   				  addType(yyscanner);
 				  QCString text(yytext);
 				  yyextra->type+=text.stripWhiteSpace();
@@ -342,6 +344,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   yyextra->funcTempListFound  = FALSE;
   yyextra->insideObjC = lang==SrcLangExt::ObjC;
   yyextra->insidePHP  = lang==SrcLangExt::PHP;
+  yyextra->insidePython  = lang==SrcLangExt::Python;
   yyextra->scope.clear();
   yyextra->className.clear();
   yyextra->classTempList.clear();
