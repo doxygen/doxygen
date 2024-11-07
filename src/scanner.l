@@ -3908,7 +3908,7 @@ NONLopt [^\n]*
                                         }
 <IDLAttribute>.                         {
                                         }
-<IDLPropName>{BN}*{ID}{BN}*             {
+<IDLPropName>{BN}*{ID}({BN}*[*]*{BN}*)? {
                                           // return type (probably HRESULT) - skip it
 
                                           if (yyextra->odlProp)
