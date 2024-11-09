@@ -5853,8 +5853,9 @@ bool readInputFile(const QCString &fileName,std::string &contents,bool filter,bo
       return FALSE;
     }
     // read the file
-    contents.resize(fi.size());
-    f.read(contents.data(),fi.size());
+    auto fileSize = fi.size();
+    contents.resize(fileSize);
+    f.read(contents.data(),fileSize);
     if (f.fail())
     {
       err("problems while reading file %s\n",qPrint(fileName));
