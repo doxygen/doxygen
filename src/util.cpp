@@ -231,7 +231,7 @@ QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement)
   if (s.isEmpty()) return s;
   static const reg::Ex marker(R"(@\d+)");
   std::string result = reg::replace(s.str(),marker,
-                                    replacement.isEmpty() ? replacement.data() : "__anonymous__");
+                                    !replacement.isEmpty() ? replacement.data() : "__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",qPrint(s),qPrint(result));
   return QCString(result);
 }

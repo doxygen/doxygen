@@ -6742,12 +6742,12 @@ static void findMember(const Entry *root,
     funcSpec.clear();
   }
 
+  //namespaceName=removeAnonymousScopes(namespaceName);
+  if (!Config_getBool(EXTRACT_ANON_NSPACES) && scopeName.find('@')!=-1) return; // skip stuff in anonymous namespace...
+
   // split scope into a namespace and a class part
   extractNamespaceName(scopeName,className,namespaceName,TRUE);
   AUTO_TRACE_ADD("scopeName='{}' className='{}' namespaceName='{}'",scopeName,className,namespaceName);
-
-  //namespaceName=removeAnonymousScopes(namespaceName);
-  if (namespaceName.find('@')!=-1) return; // skip stuff in anonymous namespace...
 
   //printf("namespaceName='%s' className='%s'\n",qPrint(namespaceName),qPrint(className));
   // merge class and namespace scopes again
