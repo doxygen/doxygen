@@ -829,6 +829,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <CComment,CNComment>"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
+                                     if (yyextra->lang==SrcLangExt::Markdown) REJECT;
                                      if (yyextra->col>yyextra->blockHeadCol)
                                      {
                                        //printf("new blockHeadCol=%d\n",yyextra->blockHeadCol);
