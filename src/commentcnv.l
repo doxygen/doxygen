@@ -828,7 +828,17 @@ SLASHopt [/]*
 <CComment,CNComment>[^ `~<\\!@*\n{\"'\/-]*    { /* anything that is not a '*' or command */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
-<CComment,CNComment>"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
+<CComment,CNComment>^{B}*"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
+                                     if (yyextra->lang==SrcLangExt::Markdown) REJECT;
+                                     int i = 0;
+                                     yyextra->col = 0;
+                                     int tabSize=Config_getInt(TAB_SIZE);
+                                     while (yytext[i] == ' ' || yytext[i] == '\t')
+                                     {
+	                               if (yytext[i] == '\t') yyextra->col+=tabSize-(yyextra->col%tabSize);
+	                               else yyextra->col++;
+                                       i++;
+                                     }
                                      if (yyextra->col>yyextra->blockHeadCol)
                                      {
                                        //printf("new blockHeadCol=%d\n",yyextra->blockHeadCol);
@@ -877,6 +887,7 @@ SLASHopt [/]*
                                      yyextra->commentStack.push(yyextra->lineNr);
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
+<CComment,CNComment>^{B}*"*"+"/"   |
 <CComment,CNComment>"*"+"/"                  { /* end of C comment */
                                      if (yyextra->lang==SrcLangExt::Python ||
                                          yyextra->lang==SrcLangExt::Markdown)
