@@ -287,6 +287,7 @@ ASSIGNOP  "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
 LOGICOP   "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"|"<=>"
 BITOP     "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
+FUNCOP    "operator"("()"|"[]"|{B}+[^;\n]+)
 MODULE_ID ({ID}".")*{ID}
 LINENR    {B}*[1-9][0-9]*
 FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@]
@@ -1998,7 +1999,7 @@ NONLopt [^\n]*
                                           BEGIN(Using);
                                         }
 <Using>"namespace"{BN}+                 { lineCount(yyscanner); BEGIN(UsingDirective); }
-<Using>("::")?({ID}{BN}*("::"|"."){BN}*)*({ID}|{OPERATOR}) {
+<Using>("::")?({ID}{BN}*("::"|"."){BN}*)*({ID}|{OPERATOR}|{FUNCOP}) {
                                           lineCount(yyscanner);
                                           yyextra->current->name=yytext;
                                           yyextra->current->fileName = yyextra->fileName;

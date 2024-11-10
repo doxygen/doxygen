@@ -2080,6 +2080,55 @@ static void applyMemberOverrideOptions(const Entry *root,MemberDefMutable *md)
 
 //----------------------------------------------------------------------
 
+static void createUsingMemberImportForClass(const Entry *root,ClassDefMutable *cd,const MemberDef *md,
+                                      const QCString &fileName,const QCString &memName)
+{
+  AUTO_TRACE("creating new member {} for class {}",memName,cd->name());
+  const ArgumentList &templAl = md->templateArguments();
+  const ArgumentList &al = md->argumentList();
+  auto newMd = createMemberDef(
+      fileName,root->startLine,root->startColumn,
+      md->typeString(),memName,md->argsString(),
+      md->excpString(),root->protection,root->virt,
+      md->isStatic(),Relationship::Member,md->memberType(),
+      templAl,al,root->metaData
+      );
+  auto newMmd = toMemberDefMutable(newMd.get());
+  newMmd->setMemberClass(cd);
+  cd->insertMember(newMd.get());
+  if (!root->doc.isEmpty() || !root->brief.isEmpty())
+  {
+    newMmd->setDocumentation(root->doc,root->docFile,root->docLine);
+    newMmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    newMmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  }
+  else
+  {
+    newMmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+    newMmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+    newMmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+  }
+  newMmd->setDefinition(md->definition());
+  applyMemberOverrideOptions(root,newMmd);
+  newMmd->addQualifiers(root->qualifiers);
+  newMmd->setBitfields(md->bitfieldString());
+  newMmd->addSectionsToDefinition(root->anchors);
+  newMmd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
+  newMmd->setBodyDef(md->getBodyDef());
+  newMmd->setInitializer(md->initializer());
+  newMmd->setRequiresClause(md->requiresClause());
+  newMmd->setMaxInitLines(md->initializerLines());
+  newMmd->setMemberGroupId(root->mGrpId);
+  newMmd->setMemberSpecifiers(md->getMemberSpecifiers());
+  newMmd->setVhdlSpecifiers(md->getVhdlSpecifiers());
+  newMmd->setLanguage(root->lang);
+  newMmd->setId(root->id);
+  MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
+  mn->push_back(std::move(newMd));
+}
+
+static std::unordered_map<std::string,std::vector<ClassDefMutable*>> g_usingClassMap;
+
 static void findUsingDeclImports(const Entry *root)
 {
   if (root->section.isUsingDecl() &&
@@ -2120,51 +2169,18 @@ static void findUsingDeclImports(const Entry *root)
                 {
                   fileName = root->tagInfo()->tagName;
                 }
-                const ArgumentList &templAl = md->templateArguments();
-                const ArgumentList &al = md->argumentList();
-
                 if (!cd->containsOverload(md))
                 {
-                  AUTO_TRACE_ADD("creating new member {} for class {}",memName,cd->name());
-                  auto newMd = createMemberDef(
-                      fileName,root->startLine,root->startColumn,
-                      md->typeString(),memName,md->argsString(),
-                      md->excpString(),root->protection,root->virt,
-                      md->isStatic(),Relationship::Member,md->memberType(),
-                      templAl,al,root->metaData
-                      );
-                  auto newMmd = toMemberDefMutable(newMd.get());
-                  newMmd->setMemberClass(cd);
-                  cd->insertMember(newMd.get());
-                  if (!root->doc.isEmpty() || !root->brief.isEmpty())
+                  createUsingMemberImportForClass(root,cd,md,fileName,memName);
+                  // also insert the member into copies of the class
+                  auto it = g_usingClassMap.find(cd->qualifiedName().str());
+                  if (it != g_usingClassMap.end())
                   {
-                    newMmd->setDocumentation(root->doc,root->docFile,root->docLine);
-                    newMmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-                    newMmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+                    for (const auto &copyCd : it->second)
+                    {
+                      createUsingMemberImportForClass(root,copyCd,md,fileName,memName);
+                    }
                   }
-                  else
-                  {
-                    newMmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
-                    newMmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
-                    newMmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
-                  }
-                  newMmd->setDefinition(md->definition());
-                  applyMemberOverrideOptions(root,newMmd);
-                  newMmd->addQualifiers(root->qualifiers);
-                  newMmd->setBitfields(md->bitfieldString());
-                  newMmd->addSectionsToDefinition(root->anchors);
-                  newMmd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
-                  newMmd->setBodyDef(md->getBodyDef());
-                  newMmd->setInitializer(md->initializer());
-                  newMmd->setRequiresClause(md->requiresClause());
-                  newMmd->setMaxInitLines(md->initializerLines());
-                  newMmd->setMemberGroupId(root->mGrpId);
-                  newMmd->setMemberSpecifiers(md->getMemberSpecifiers());
-                  newMmd->setVhdlSpecifiers(md->getVhdlSpecifiers());
-                  newMmd->setLanguage(root->lang);
-                  newMmd->setId(root->id);
-                  MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
-                  mn->push_back(std::move(newMd));
                 }
               }
             }
@@ -2302,6 +2318,7 @@ static void findUsingDeclImports(const Entry *root)
               Doxygen::classLinkedMap->add(copyFullName,
                 cd->deepCopy(copyFullName)));
           AUTO_TRACE_ADD("found class '{}' for name '{}' copy '{}' obj={}",cd->qualifiedName(),root->name,copyFullName,(void*)ncdm);
+          g_usingClassMap[cd->qualifiedName().str()].push_back(ncdm);
           if (ncdm)
           {
             if (nd) ncdm->moveTo(nd);
@@ -12745,6 +12762,7 @@ void parseInput()
   findObjCMethodDefinitions(root.get());
   findMemberDocumentation(root.get()); // may introduce new members !
   findUsingDeclImports(root.get()); // may introduce new members !
+  g_usingClassMap.clear();
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
   transferStaticInstanceInitializers();

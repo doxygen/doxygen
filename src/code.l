@@ -2942,7 +2942,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   {
     scopeName = substitute(scopeName,".","::"); // for C#/Java namespaces
   }
-  if (!yyextra->scopeName.isEmpty())
+  if (yyextra->currentDefinition==nullptr && !yyextra->scopeName.isEmpty())
   {
     scopeName = yyextra->scopeName+"::"+scopeName;
   }
