@@ -828,7 +828,9 @@ SLASHopt [/]*
 <CComment,CNComment>[^ `~<\\!@*\n{\"'\/-]*    { /* anything that is not a '*' or command */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
-<CComment,CNComment>"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
+<CComment,CNComment>^{B}*"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
+                                     if (yyextra->lang==SrcLangExt::Markdown) REJECT;
+                                     yyextra->col = computeIndent(yytext);
                                      if (yyextra->col>yyextra->blockHeadCol)
                                      {
                                        //printf("new blockHeadCol=%d\n",yyextra->blockHeadCol);
@@ -877,6 +879,7 @@ SLASHopt [/]*
                                      yyextra->commentStack.push(yyextra->lineNr);
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
+<CComment,CNComment>^{B}*"*"+"/"   |
 <CComment,CNComment>"*"+"/"                  { /* end of C comment */
                                      if (yyextra->lang==SrcLangExt::Python ||
                                          yyextra->lang==SrcLangExt::Markdown)
