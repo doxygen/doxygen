@@ -830,15 +830,7 @@ SLASHopt [/]*
                                    }
 <CComment,CNComment>^{B}*"*"+[^*\/<\\@\n{\"]*      { /* stars without slashes */
                                      if (yyextra->lang==SrcLangExt::Markdown) REJECT;
-                                     int i = 0;
-                                     yyextra->col = 0;
-                                     int tabSize=Config_getInt(TAB_SIZE);
-                                     while (yytext[i] == ' ' || yytext[i] == '\t')
-                                     {
-	                               if (yytext[i] == '\t') yyextra->col+=tabSize-(yyextra->col%tabSize);
-	                               else yyextra->col++;
-                                       i++;
-                                     }
+                                     yyextra->col = computeIndent(yytext);
                                      if (yyextra->col>yyextra->blockHeadCol)
                                      {
                                        //printf("new blockHeadCol=%d\n",yyextra->blockHeadCol);
