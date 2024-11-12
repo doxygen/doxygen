@@ -382,6 +382,7 @@ NONLopt [^\n]*
 %x      Comment
 %x      PackageName
 %x      JavaImport
+%x      IDLImport
 %x      PHPUse
 %x      PHPUseAs
 %x      CSAccessorDecl
@@ -1963,20 +1964,33 @@ NONLopt [^\n]*
                                           QCString scope=yytext;
                                           yyextra->current->name=removeRedundantWhiteSpace(substitute(scope.left(scope.length()-1),".","::"));
                                           yyextra->current->fileName = yyextra->fileName;
+                                          bool ambig = false;
+                                          FileDef *incFd = findFileDef(Doxygen::inputNameLinkedMap,yyextra->fileName,ambig);
+                                          if (incFd)
+                                          {
+                                            incFd->addIncludeDependency(nullptr,scope,IncludeKind::ImportModule);
+                                          }
                                           yyextra->current->section = EntryType::makeUsingDir();
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
                                           BEGIN(Using);
                                         }
 <JavaImport>({ID}{BN}*"."{BN}*)+{ID}    { // class import => add as a using declaration
-                                          ModuleManager::instance().addImport(yyextra->fileName,
-                                                                              yyextra->yyLineNr,
-                                                                              yytext,
-                                                                              yyextra->current->exported);
                                           lineCount(yyscanner);
                                           QCString scope=yytext;
                                           yyextra->current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
                                           yyextra->current->fileName = yyextra->fileName;
+                                          bool ambig = false;
+                                          FileDef *fromFd = findFileDef(Doxygen::inputNameLinkedMap,yyextra->fileName,ambig);
+                                          FileDef *toFd = findFileDef(Doxygen::inputNameLinkedMap,scope,ambig);
+                                          if (fromFd)
+                                          {
+                                            fromFd->addIncludeDependency(toFd,scope,IncludeKind::ImportModule);
+                                          }
+                                          if (toFd && fromFd)
+                                          {
+                                            toFd->addIncludedByDependency(fromFd,fromFd->docName(),IncludeKind::ImportModule);
+                                          }
                                           if (yyextra->insideD)
                                           {
                                             yyextra->current->section = EntryType::makeUsingDir();
@@ -1990,6 +2004,23 @@ NONLopt [^\n]*
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
                                           BEGIN(Using);
+                                        }
+<IDLImport>"\""[^"]*"\""                {
+                                          QCString fileName(&yytext[1],yyleng-2);
+                                          bool ambig = false;
+                                          FileDef *fromFd = findFileDef(Doxygen::inputNameLinkedMap,yyextra->fileName,ambig);
+                                          FileDef *toFd = findFileDef(Doxygen::inputNameLinkedMap,fileName,ambig);
+                                          if (fromFd)
+                                          {
+                                            fromFd->addIncludeDependency(toFd,fileName,IncludeKind::ImportModule);
+                                          }
+                                          if (toFd && fromFd)
+                                          {
+                                            toFd->addIncludedByDependency(fromFd,fromFd->docName(),IncludeKind::ImportModule);
+                                          }
+                                        }
+<IDLImport>";"                          {
+                                          BEGIN(FindMembers);
                                         }
 <FindMembers>"using"{BN}+/("::"{ID}("::"{ID})*)? {
                                           if (yyextra->insideJava) REJECT;
@@ -2430,7 +2461,7 @@ NONLopt [^\n]*
                                           else if ((yyextra->insideIDL || yyextra->insideJava || yyextra->insideD) && yyleng==6 && qstrcmp(yytext,"import")==0)
                                           {
                                             if (yyextra->insideIDL)
-                                              BEGIN(NextSemi);
+                                              BEGIN(IDLImport);
                                             else // yyextra->insideJava or yyextra->insideD
                                               BEGIN(JavaImport);
                                           }

@@ -1484,7 +1484,7 @@ void FileDefImpl::addUsingDeclaration(const Definition *d)
 
 void FileDefImpl::addIncludeDependency(const FileDef *fd,const QCString &incName,IncludeKind kind)
 {
-  //printf("FileDefImpl::addIncludeDependency(%p,%s,%d)\n",fd,incName,local);
+  //printf("FileDefImpl::addIncludeDependency(%p,%s,%d)\n",(void*)fd,qPrint(incName),kind);
   QCString iName = fd ? fd->absFilePath() : incName;
   if (!iName.isEmpty() && m_includeMap.find(iName.str())==m_includeMap.end())
   {

@@ -52,7 +52,7 @@ enum class IncludeKind : uint32_t
   ImportLocalObjC   = 0x0008,
   ImportSystem      = 0x0010, // C++20 header import
   ImportLocal       = 0x0020, // C++20 header import
-  ImportModule      = 0x0040  // C++20 module import
+  ImportModule      = 0x0040  // C++20/Java module import
 };
 
 inline constexpr uint32_t operator|(IncludeKind a, IncludeKind b) { return static_cast<uint32_t>(a) | static_cast<uint32_t>(b); }
