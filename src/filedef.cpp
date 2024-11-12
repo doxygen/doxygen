@@ -73,7 +73,7 @@ QCString includeStatement(SrcLangExt lang,IncludeKind kind)
 QCString includeOpen(SrcLangExt lang,IncludeKind kind)
 {
   if (lang==SrcLangExt::Java || kind==IncludeKind::ImportModule) return "";
-  if (kind & IncludeKind_LocalMask)
+  if ((kind & IncludeKind_LocalMask) || (lang==SrcLangExt::IDL))
   {
     return "\"";
   }
@@ -85,7 +85,9 @@ QCString includeOpen(SrcLangExt lang,IncludeKind kind)
 
 QCString includeClose(SrcLangExt lang,IncludeKind kind)
 {
-  if (lang==SrcLangExt::Java || lang==SrcLangExt::IDL) return ";";
+  if (lang==SrcLangExt::IDL) return "\";";
+  else if (lang==SrcLangExt::Java) return ";";
+
   switch (kind)
   {
     case IncludeKind::ImportLocal:       return "\";";
