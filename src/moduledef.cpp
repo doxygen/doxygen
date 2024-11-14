@@ -185,13 +185,13 @@ void ModuleDefImpl::addHeader(int line,const QCString &headerName,bool isSystem)
 void ModuleDefImpl::addImport(int line,const QCString &moduleName,const QCString &partitionName,bool isExported)
 {
   AUTO_TRACE("name={}:line={},module={},partition={}",name(),line,moduleName,partitionName);
-  m_imports.emplace(getDefFileName().str()+":"+std::to_string(line),ImportInfo(this,moduleName,line,partitionName,isExported));
+  m_imports[getDefFileName().str()+":"+std::to_string(line)].push_back(ImportInfo(this,moduleName,line,partitionName,isExported));
 }
 
 void ModuleDefImpl::addExportedModule(const QCString &moduleName,const ImportInfo &info)
 {
   AUTO_TRACE("name={}:moduleName={},import={}",name(),moduleName,info.importName);
-  m_exportedModules.emplace(moduleName.str(),info);
+  m_exportedModules[moduleName.str()].push_back(info);
 }
 
 void ModuleDefImpl::addClassToModule(const Entry *root,ClassDef *cd)
@@ -886,32 +886,35 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
-    for (auto &[moduleName,importInfo] : m_exportedModules)
+    for (const auto &[moduleName,importInfoList] : m_exportedModules)
     {
-      ModuleDef *mod = ModuleManager::instance().getPrimaryInterface(importInfo.importName);
-      ol.startMemberDeclaration();
-      ol.startMemberItem(importInfo.importName,OutputGenerator::MemberItemType::Normal);
-      ol.docify(theTranslator->trModule(FALSE,TRUE)+" ");
-      ol.insertMemberAlign();
-      if (mod && mod->isLinkable())
+      for (const auto &importInfo : importInfoList)
       {
-        ol.writeObjectLink(mod->getReference(),mod->getOutputFileBase(),QCString(),mod->displayName());
+        ModuleDef *mod = ModuleManager::instance().getPrimaryInterface(importInfo.importName);
+        ol.startMemberDeclaration();
+        ol.startMemberItem(importInfo.importName,OutputGenerator::MemberItemType::Normal);
+        ol.docify(theTranslator->trModule(FALSE,TRUE)+" ");
+        ol.insertMemberAlign();
+        if (mod && mod->isLinkable())
+        {
+          ol.writeObjectLink(mod->getReference(),mod->getOutputFileBase(),QCString(),mod->displayName());
+        }
+        else
+        {
+          ol.startBold();
+          ol.docify(importInfo.importName);
+          ol.endBold();
+        }
+        ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
+        if (mod && !mod->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        {
+          ol.startMemberDescription(mod->getOutputFileBase());
+          ol.generateDoc(briefFile(),briefLine(),mod,nullptr,mod->briefDescription(),FALSE,FALSE,
+              QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+          ol.endMemberDescription();
+        }
+        ol.endMemberDeclaration(QCString(),QCString());
       }
-      else
-      {
-        ol.startBold();
-        ol.docify(importInfo.importName);
-        ol.endBold();
-      }
-      ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-      if (mod && !mod->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
-      {
-        ol.startMemberDescription(mod->getOutputFileBase());
-        ol.generateDoc(briefFile(),briefLine(),mod,nullptr,mod->briefDescription(),FALSE,FALSE,
-            QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-        ol.endMemberDescription();
-      }
-      ol.endMemberDeclaration(QCString(),QCString());
     }
     ol.endMemberList();
   }
@@ -1246,7 +1249,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
   else // import outside of a module
   {
     AUTO_TRACE_ADD("outside module");
-    p->externalImports.emplace(moduleFile.str(),ImportInfo(nullptr,importName,line,partitionName));
+    p->externalImports[moduleFile.str()].emplace_back(nullptr,importName,line,partitionName);
   }
 }
 
@@ -1301,32 +1304,38 @@ void ModuleManager::addTagInfo(const QCString &fileName,const QCString &tagFile,
 void ModuleManager::resolvePartitionsRecursively(ModuleDef *intfMod, ModuleDef *mod)
 {
   AUTO_TRACE();
-  for (auto &[partitionFileName,importInfo] : mod->getImports()) // foreach import
+  for (auto &[partitionFileName,importInfoList] : mod->getImports()) // foreach import
   {
-    AUTO_TRACE_ADD("partitionFileName={} importName={} partitionName={}",
-        partitionFileName,importInfo.importName,importInfo.partitionName);
-    if (importInfo.importName==intfMod->name() && !importInfo.partitionName.isEmpty() &&
-        importInfo.exported) // that is an exported partition of this module
+    for (auto &importInfo : importInfoList)
     {
-      auto it = p->moduleNameMap.find(importInfo.importName.str());
-      if (it != p->moduleNameMap.end())
+      AUTO_TRACE_ADD("partitionFileName={} importName={} partitionName={}",
+          partitionFileName,importInfo.importName,importInfo.partitionName);
+      if (importInfo.importName==intfMod->name() && !importInfo.partitionName.isEmpty() &&
+          importInfo.exported) // that is an exported partition of this module
       {
-        for (auto importedMod : it->second)
+        auto it = p->moduleNameMap.find(importInfo.importName.str());
+        if (it != p->moduleNameMap.end())
         {
-          if (importedMod->qualifiedName()==importInfo.importName+":"+importInfo.partitionName)
+          for (auto importedMod : it->second)
           {
-            AUTO_TRACE_ADD("Interface module {} exports partition {}:{}",
-                mod->name(),importedMod->name(),importedMod->partitionName());
-            toModuleDefImpl(intfMod)->addPartition(toModuleDefImpl(importedMod));
-            toModuleDefImpl(importedMod)->setPrimaryInterface(intfMod);
-            for (const auto &[partitionFileName_,partitionImportInfo] : importedMod->getImports())
+            if (importedMod->qualifiedName()==importInfo.importName+":"+importInfo.partitionName)
             {
-              if (partitionImportInfo.exported && intfMod->name()!=partitionImportInfo.importName)
+              AUTO_TRACE_ADD("Interface module {} exports partition {}:{}",
+                  mod->name(),importedMod->name(),importedMod->partitionName());
+              toModuleDefImpl(intfMod)->addPartition(toModuleDefImpl(importedMod));
+              toModuleDefImpl(importedMod)->setPrimaryInterface(intfMod);
+              for (const auto &[partitionFileName_,partitionImportInfoList] : importedMod->getImports())
               {
-                toModuleDefImpl(intfMod)->addExportedModule(partitionImportInfo.importName,partitionImportInfo);
+                for (const auto &partitionImportInfo : partitionImportInfoList)
+                {
+                  if (partitionImportInfo.exported && intfMod->name()!=partitionImportInfo.importName)
+                  {
+                    toModuleDefImpl(intfMod)->addExportedModule(partitionImportInfo.importName,partitionImportInfo);
+                  }
+                }
               }
+              resolvePartitionsRecursively(intfMod,importedMod);
             }
-            resolvePartitionsRecursively(intfMod,importedMod);
           }
         }
       }
@@ -1345,11 +1354,14 @@ void ModuleManager::resolvePartitions()
     }
 
     // copy exported imports to m_exportedModules
-    for (const auto &[fileName,importInfo] : mod->getImports())
+    for (const auto &[fileName,importInfoList] : mod->getImports())
     {
-      if (importInfo.exported && mod->name()!=importInfo.importName)
+      for (const auto &importInfo : importInfoList)
       {
-        toModuleDefImpl(mod)->addExportedModule(importInfo.importName,importInfo);
+        if (importInfo.exported && mod->name()!=importInfo.importName)
+        {
+          toModuleDefImpl(mod)->addExportedModule(importInfo.importName,importInfo);
+        }
       }
     }
 
@@ -1372,37 +1384,61 @@ void ModuleManager::resolveImports()
     FileDef *fd = mod->getFileDef();
     if (fd)
     {
-      for (const auto &[fileName,importInfo] : mod->getImports())
+      for (const auto &[fileName,importInfoList] : mod->getImports())
       {
-        ModuleDef *importedModule = getPrimaryInterface(importInfo.importName);
-        const FileDef *importedFd = importedModule ? importedModule->getFileDef() : nullptr;
-        AUTO_TRACE_ADD("module: addIncludeDependency {}->{}:{} fd={}",
-             mod->qualifiedName(), importInfo.qualifiedName(), importInfo.line, fd?fd->absFilePath():"");
-        fd->addIncludeDependency(importedFd,importInfo.qualifiedName(),IncludeKind::ImportModule);
+        for (const auto &importInfo : importInfoList)
+        {
+          ModuleDef *importedModule = getPrimaryInterface(importInfo.importName);
+          const FileDef *importedFd = importedModule ? importedModule->getFileDef() : nullptr;
+          AUTO_TRACE_ADD("module: addIncludeDependency {}->{}:{} fd={}",
+              mod->qualifiedName(), importInfo.qualifiedName(), importInfo.line, fd?fd->absFilePath():"");
+          fd->addIncludeDependency(importedFd,importInfo.qualifiedName(),IncludeKind::ImportModule);
+        }
       }
     }
   }
-  for (const auto &[fileName,importInfo] : p->externalImports)
+  for (const auto &[fileName,importInfoList] : p->externalImports)
   {
-    bool ambig = false;
-    FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,QCString(fileName),ambig);
-    if (fd)
+    for (const auto &importInfo : importInfoList)
     {
-      ModuleDef *mod = getPrimaryInterface(importInfo.importName);
-      FileDef *importedFd = mod ? mod->getFileDef() : nullptr;
-      fd->addIncludeDependency(importedFd,importInfo.importName,IncludeKind::ImportModule);
+      bool ambig = false;
+      FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,QCString(fileName),ambig);
+      AUTO_TRACE_ADD("externalImport name={} fd={}",fileName,(void*)fd);
+      if (fd)
+      {
+        ModuleDef *mod = getPrimaryInterface(importInfo.importName);
+        FileDef *importedFd = mod ? mod->getFileDef() : nullptr;
+        fd->addIncludeDependency(importedFd,importInfo.importName,IncludeKind::ImportModule);
+        if (importedFd)
+        {
+          importedFd->addIncludedByDependency(fd,stripFromPath(QCString(fileName)),IncludeKind::ImportModule);
+        }
+      }
+      else
+      {
+        fd->addIncludeDependency(nullptr,importInfo.importName,IncludeKind::ImportModule);
+      }
     }
   }
   for (const auto &headerInfo : p->headers)
   {
     bool ambig = false;
     FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,headerInfo.fileName,ambig);
+    AUTO_TRACE_ADD("header name={} fd={}",headerInfo.fileName,(void*)fd);
     if (fd)
     {
       QCString resolvedHeader = determineAbsoluteIncludeName(headerInfo.fileName,headerInfo.headerName);
       FileDef *importFd = findFileDef(Doxygen::inputNameLinkedMap,resolvedHeader,ambig);
       fd->addIncludeDependency(importFd, headerInfo.headerName,
                                headerInfo.isSystem ? IncludeKind::ImportSystem : IncludeKind::ImportLocal);
+      if (importFd)
+      {
+        importFd->addIncludedByDependency(fd,headerInfo.fileName,IncludeKind::ImportModule);
+      }
+    }
+    else
+    {
+      fd->addIncludeDependency(nullptr,headerInfo.headerName,IncludeKind::ImportModule);
     }
   }
 }
@@ -1468,7 +1504,7 @@ void ModuleManager::writeDocumentation(OutputList &ol)
 int ModuleManager::numDocumentedModules() const
 {
   int count=0;
-  for (auto &mod : p->moduleFileMap) // foreach module
+  for (const auto &mod : p->moduleFileMap) // foreach module
   {
     if (mod->isPrimaryInterface()) count++;
   }
@@ -1523,7 +1559,7 @@ ModuleDef *ModuleManager::getPrimaryInterface(const QCString &moduleName) const
   auto it = p->moduleNameMap.find(moduleName.str());
   if (it != p->moduleNameMap.end())
   {
-    for (auto &mod : it->second)
+    for (const auto &mod : it->second)
     {
       if (mod->isPrimaryInterface())
       {
@@ -1536,7 +1572,7 @@ ModuleDef *ModuleManager::getPrimaryInterface(const QCString &moduleName) const
 
 void ModuleManager::addListReferences()
 {
-  for (auto &mod : p->moduleFileMap) // foreach module
+  for (const auto &mod : p->moduleFileMap) // foreach module
   {
     if (mod->isPrimaryInterface()) toModuleDefImpl(mod)->addListReferences();
   }
@@ -1544,7 +1580,7 @@ void ModuleManager::addListReferences()
 
 void ModuleManager::addMembersToMemberGroup()
 {
-  for (auto &mod : p->moduleFileMap) // foreach module
+  for (const auto &mod : p->moduleFileMap) // foreach module
   {
     if (mod->isPrimaryInterface()) toModuleDefImpl(mod)->addMembersToMemberGroup();
   }
@@ -1552,7 +1588,7 @@ void ModuleManager::addMembersToMemberGroup()
 
 void ModuleManager::distributeMemberGroupDocumentation()
 {
-  for (auto &mod : p->moduleFileMap) // foreach module
+  for (const auto &mod : p->moduleFileMap) // foreach module
   {
     if (mod->isPrimaryInterface()) toModuleDefImpl(mod)->distributeMemberGroupDocumentation();
   }

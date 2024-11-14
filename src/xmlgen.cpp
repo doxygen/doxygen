@@ -1352,17 +1352,20 @@ static void writeExports(const ImportInfoMap &exportMap,TextStream &t)
 {
   if (exportMap.empty()) return;
   t << "    <exports>\n";
-  for (auto &[moduleName,importInfo] : exportMap)
+  for (const auto &[moduleName,importInfoList] : exportMap)
   {
-    t << "      <export";
-    ModuleDef *mod = ModuleManager::instance().getPrimaryInterface(importInfo.importName);
-    if (mod && mod->isLinkableInProject())
+    for (const auto &importInfo : importInfoList)
     {
-      t << " refid=\"" << mod->getOutputFileBase() << "\"";
+      t << "      <export";
+      ModuleDef *mod = ModuleManager::instance().getPrimaryInterface(importInfo.importName);
+      if (mod && mod->isLinkableInProject())
+      {
+        t << " refid=\"" << mod->getOutputFileBase() << "\"";
+      }
+      t << ">";
+      t << importInfo.importName;
+      t << "</export>\n";
     }
-    t << ">";
-    t << importInfo.importName;
-    t << "</export>\n";
   }
   t << "    </exports>\n";
 }

@@ -56,8 +56,9 @@ struct ImportInfo
   }
 };
 
+using ImportInfoList = std::vector<ImportInfo>;
 using ModuleMap = std::unordered_map<std::string,ModuleDef *>;
-using ImportInfoMap = std::unordered_map<std::string,ImportInfo>;
+using ImportInfoMap = std::unordered_map<std::string,ImportInfoList>;
 
 
 class ModuleDef : public DefinitionMutable, public Definition
