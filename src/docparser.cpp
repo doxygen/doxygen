@@ -777,10 +777,17 @@ void DocParser::handleUnclosedStyleCommands()
 
 void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
 {
+  // helper to check if word w starts with any of the words in AUTOLINK_IGNORE_WORDS
+  auto ignoreWord = [](const QCString &w) -> bool {
+    const auto &list = Config_getList(AUTOLINK_IGNORE_WORDS);
+    return std::find_if(list.begin(), list.end(),
+                       [&w](const auto &ignore) { return w.startsWith(ignore); }
+                      )!=list.end();
+  };
   QCString name = linkToText(context.lang,context.token->name,TRUE);
   AUTO_TRACE("word={}",name);
   bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
-  if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
+  if ((!autolinkSupport && !ignoreAutoLinkFlag) || ignoreWord(context.token->name)) // no autolinking -> add as normal word
   {
     children.append<DocWord>(this,parent,name);
     return;
