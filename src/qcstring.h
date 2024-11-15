@@ -495,6 +495,11 @@ class QCString
       return m_rep.rfind(s,0)==0; // looking "backward" starting and ending at index 0
     }
 
+    bool startsWith( const std::string &s) const
+    {
+      return m_rep.rfind(s,0)==0; // looking "backward" starting and ending at index 0
+    }
+
     bool startsWith( const QCString &s ) const
     {
       if (m_rep.empty() || s.isEmpty()) return s.isEmpty();
@@ -506,6 +511,12 @@ class QCString
       if (m_rep.empty() || s==nullptr) return s==nullptr;
       size_t l = strlen(s);
       return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s, l)==0;
+    }
+
+    bool endsWith(const std::string &s) const
+    {
+      size_t l = s.length();
+      return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s)==0;
     }
 
     bool endsWith(const QCString &s) const

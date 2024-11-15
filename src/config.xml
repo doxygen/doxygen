@@ -728,16 +728,17 @@ Go to the <a href="commands.html">next</a> section or return to the
  or namespaces to their corresponding documentation. Such a link can be
  prevented in individual cases by putting a \c % sign in front of the word or
  globally by setting \c AUTOLINK_SUPPORT to \c NO. Words listed in the
- \c AUTOLINK_IGNORED_TOKENS tag are excluded from automatic linking.
+ \c AUTOLINK_IGNORE_WORDS tag are excluded from automatic linking.
 ]]>
       </docs>
     </option>
-    <option type='list' id='AUTOLINK_IGNORED_TOKENS' format='string' depends='AUTOLINK_SUPPORT'>
+    <option type='list' id='AUTOLINK_IGNORE_WORDS' format='string' depends='AUTOLINK_SUPPORT'>
       <docs>
 <![CDATA[
-  This tag specifies a list of keywords that shall be ignored when generating
-  links via the AUTOLINK_SUPPORT. This list does not affect affect links
-  explictly created using the \# and the \\link ..  \\endlink commands.
+  This tag specifies a list of words that, when matching the start of a word in the documentation,
+  will suppress auto links generation, if it is enabled via AUTOLINK_SUPPORT. 
+  This list does not affect affect links explictly created using \# or 
+  the \ref cmdlink "\\link" or \ref cmdref "\\ref" commands.
 ]]>
       </docs>
     </option>
