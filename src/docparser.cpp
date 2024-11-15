@@ -775,12 +775,26 @@ void DocParser::handleUnclosedStyleCommands()
   }
 }
 
+bool DocParser::matchWord(const QCString &word,const StringVector &l)
+{
+  for (const auto &s : l)
+  {
+    std::string prefix = s.substr(0,word.length());
+    if (qstrcmp(prefix.c_str(),word)==0)
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
 {
   QCString name = linkToText(context.lang,context.token->name,TRUE);
   AUTO_TRACE("word={}",name);
   bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
-  if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
+  if ((!autolinkSupport && !ignoreAutoLinkFlag)
+      || matchWord(context.token->name,Config_getList(AUTOLINK_IGNORED_TOKENS))) // no autolinking -> add as normal word
   {
     children.append<DocWord>(this,parent,name);
     return;
