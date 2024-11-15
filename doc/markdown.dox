@@ -301,6 +301,8 @@ Also here you can use \@ref to link to an image:
 
 The caption text is optional.
 
+\note Don't forget to add the path of the image to the \ref cfg_image_path "IMAGE_PATH".
+
 \subsection md_autolink Automatic Linking
 
 To create a link to an URL or e-mail address Markdown supports the following
