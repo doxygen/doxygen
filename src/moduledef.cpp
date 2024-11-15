@@ -1414,10 +1414,6 @@ void ModuleManager::resolveImports()
           importedFd->addIncludedByDependency(fd,stripFromPath(QCString(fileName)),IncludeKind::ImportModule);
         }
       }
-      else
-      {
-        fd->addIncludeDependency(nullptr,importInfo.importName,IncludeKind::ImportModule);
-      }
     }
   }
   for (const auto &headerInfo : p->headers)
@@ -1435,10 +1431,6 @@ void ModuleManager::resolveImports()
       {
         importFd->addIncludedByDependency(fd,headerInfo.fileName,IncludeKind::ImportModule);
       }
-    }
-    else
-    {
-      fd->addIncludeDependency(nullptr,headerInfo.headerName,IncludeKind::ImportModule);
     }
   }
 }
