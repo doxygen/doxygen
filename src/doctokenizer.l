@@ -223,8 +223,10 @@ ANONNS    "anonymous_namespace{"[^}]*"}"
 SCOPEPRE  (({ID}{TEMPLPART}?)|{ANONNS}){SCOPESEP}
 SCOPEKEYS ":"({ID}":")*
 SCOPECPP  {SCOPEPRE}*(~)?{ID}{TEMPLPART}?
+SCOPECPPN {SCOPEPRE}*(~)?{ID}
 SCOPEOBJC {SCOPEPRE}?{ID}{SCOPEKEYS}?
 SCOPEMASK {SCOPECPP}|{SCOPEOBJC}
+SCOPEMSKN {SCOPECPPN}|{SCOPEOBJC}
 FUNCARG   "("{FUNCPART}")"({BLANK}*("volatile"|"const"){BLANK})?
 FUNCARG2  "("{FUNCPART}")"({BLANK}*("volatile"|"const"))?
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
@@ -235,6 +237,7 @@ OPMASK    ({BLANK}*{OPNORM}{FUNCARG})
 OPMASKOPT ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
 OPMASKOP2 ({BLANK}*{OPNORM}{FUNCARG2}?)|({OPCAST}{FUNCARG2})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
+LNKWORDN  ("::"|"#")?{SCOPEMSKN}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  (({SCOPEPRE}*"operator"{OPMASK})|({SCOPEPRE}"operator"{OPMASKOPT})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})){CVSPEC}?
 LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
@@ -623,20 +626,19 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 
   /********* patterns for linkable words ******************/
 
-<St_Para>{ID}/"<"{HTMLKEYW}">" { /* this rule is to prevent opening html
+<St_Para>{ID}/"<"{HTMLKEYW}">"+ { /* this rule is to prevent opening html
                                   * tag to be recognized as a templated classes
                                   */
                          yyextra->token.name = yytext;
                          return Token::make_TK_LNKWORD();
-                        }
-<St_Para>{LNKWORD1}/"<tt>" { // prevent <tt> html tag to be parsed as template arguments
+                       }
+<St_Para>{LNKWORDN}/("<"{HTMLKEYW}">")+ { // prevent <br> html tag to be parsed as template arguments
                          yyextra->token.name = yytext;
                          return Token::make_TK_LNKWORD();
                        }
-<St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
-<St_Para>{LNKWORD1}                  |
-<St_Para>{LNKWORD1}{FUNCARG}         |
-<St_Para>{LNKWORD2}                  |
+<St_Para>{LNKWORD1}                   |
+<St_Para>{LNKWORD1}{FUNCARG}          |
+<St_Para>{LNKWORD2}                   |
 <St_Para>{LNKWORD3}    {
                          yyextra->token.name = yytext;
                          return Token::make_TK_LNKWORD();
