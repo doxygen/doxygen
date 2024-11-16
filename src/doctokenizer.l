@@ -623,17 +623,32 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 
   /********* patterns for linkable words ******************/
 
+<St_Para>{ID}/("<br>"|"<BR>")+ {
+                         yyextra->token.name = yytext;
+                         return Token::make_TK_LNKWORD();
+                        }
 <St_Para>{ID}/"<"{HTMLKEYW}">" { /* this rule is to prevent opening html
                                   * tag to be recognized as a templated classes
                                   */
                          yyextra->token.name = yytext;
                          return Token::make_TK_LNKWORD();
                         }
-<St_Para>{LNKWORD1}/"<tt>" { // prevent <tt> html tag to be parsed as template arguments
+<St_Para>{LNKWORD1}/"<TT>"   { // prevent <TT> html tag to be parsed as template arguments
                          yyextra->token.name = yytext;
                          return Token::make_TK_LNKWORD();
                        }
-<St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
+<St_Para>{LNKWORD1}/"<tt>"   { // prevent <tt> html tag to be parsed as template arguments
+                         yyextra->token.name = yytext;
+                         return Token::make_TK_LNKWORD();
+                       }
+<St_Para>{LNKWORD1}/"<BR>"   { // prevent <BR> html tag to be parsed as template arguments
+                         yyextra->token.name = yytext;
+                         return Token::make_TK_LNKWORD();
+                       }
+<St_Para>{LNKWORD1}/"<br>"   { // prevent <br> html tag to be parsed as template arguments
+                         yyextra->token.name = yytext;
+                         return Token::make_TK_LNKWORD();
+                       }
 <St_Para>{LNKWORD1}                  |
 <St_Para>{LNKWORD1}{FUNCARG}         |
 <St_Para>{LNKWORD2}                  |
