@@ -1224,7 +1224,10 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <ModuleImport>\n                        { codifyLines(yyscanner,yytext); }
 
 <Body>{SCOPENAME}/{BN}*[:;,)\]]         { // "int var;" or "var, var2" or "debug(f) macro" , or int var : 5;
-                                          if (startsWithKeyword(yytext,"typedef")) REJECT;
+                                          if (startsWithKeyword(yytext,"typedef") || startsWithKeyword(yytext,"using"))
+                                          {
+                                            REJECT;
+                                          }
                                           addType(yyscanner);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
@@ -1248,7 +1251,10 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           endFontClass(yyscanner);
                                         }
 <Body>{SCOPENAME}/{B}*                  { // p->func()
-                                          if (startsWithKeyword(yytext,"typedef")) REJECT;
+                                          if (startsWithKeyword(yytext,"typedef") || startsWithKeyword(yytext,"using"))
+                                          {
+                                            REJECT;
+                                          }
                                           addType(yyscanner);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
