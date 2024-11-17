@@ -199,7 +199,6 @@ if(enable_coverage)
 endif()
 
 add_library(doxycfg STATIC
-    ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/configimpl.cpp
     ${GENERATED_SRC}/configimpl.l.h
     ${GENERATED_SRC}/configoptions.cpp
@@ -211,6 +210,8 @@ add_library(doxycfg STATIC
     debug.cpp
     trace.cpp
 )
+add_dependencies(doxycfg generate_configvalues_header)
+
 target_link_libraries(doxycfg PRIVATE
     spdlog::spdlog
 )
@@ -223,7 +224,6 @@ add_library(doxymain STATIC
     #
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
-    ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
     #
@@ -328,6 +328,7 @@ target_link_libraries(doxymain PRIVATE
     spdlog::spdlog
 )
 add_sanitizers(doxymain)
+add_dependencies(doxymain generate_configvalues_header)
 
 # LLVM/clang headers give a lot of warnings with -Wshadow and -Wcast-align so we disable them for
 # the one file that includes them.
