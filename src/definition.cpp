@@ -17,10 +17,11 @@
 #include <iterator>
 #include <unordered_map>
 #include <string>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <optional>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cassert>
 
 #include "anchor.h"
 #include "md5.h"
@@ -53,38 +54,6 @@
 
 //-----------------------------------------------------------------------------------------
 
-//! Helper class add copy/assignment support to std::unique_ptr by making a deep copy
-//! Note that T may not be a polymorphic type
-template<class T>
-class DeepCopyUniquePtr : public std::unique_ptr<T>
-{
-  public:
-    using std::unique_ptr<T>::unique_ptr;
-    DeepCopyUniquePtr(const DeepCopyUniquePtr &other)
-       : std::unique_ptr<T>(other ? new T(*other) : nullptr)
-    {
-    }
-    DeepCopyUniquePtr &operator=(const DeepCopyUniquePtr &other)
-    {
-      if (*this!=other) this->reset(other ? new T(*other) : nullptr);
-      return *this;
-    }
-    DeepCopyUniquePtr(DeepCopyUniquePtr &&other) : std::unique_ptr<T>(std::move(other)) {}
-    DeepCopyUniquePtr &operator=(DeepCopyUniquePtr &&other)
-    {
-      std::unique_ptr<T>::operator=(std::move(other));
-      return *this;
-    }
-   ~DeepCopyUniquePtr() = default;
-};
-
-//! Helper to create an object wrapped in a DeepCopyUniquePtr.
-template<typename T, typename... Args>
-DeepCopyUniquePtr<T> make_DeepCopyUnique(Args&&... args)
-{
-  return DeepCopyUniquePtr<T>(new T(std::forward<Args>(args)...));
-}
-
 /** Private data associated with a Symbol DefinitionImpl object. */
 class DefinitionImpl::IMPL
 {
@@ -101,10 +70,11 @@ class DefinitionImpl::IMPL
     RefItemVector xrefListItems;
     GroupList partOfGroups;
 
-    DeepCopyUniquePtr<DocInfo>   details;    // not exported
-    DeepCopyUniquePtr<DocInfo>   inbodyDocs; // not exported
-    DeepCopyUniquePtr<BriefInfo> brief;      // not exported
-    DeepCopyUniquePtr<BodyInfo>  body;       // not exported
+    std::optional<DocInfo>   details;    // not exported
+    std::optional<DocInfo>   inbodyDocs; // not exported
+    std::optional<BriefInfo> brief;      // not exported
+    std::optional<BodyInfo>  body;       // not exported
+
     QCString   briefSignatures;
     QCString   docSignatures;
 
@@ -430,31 +400,32 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
   if (!_docsAlreadyAdded(doc,m_impl->docSignatures))
   {
     //printf("setting docs for %s: '%s'\n",qPrint(name()),qPrint(m_doc));
-    if (!m_impl->details)
+    if (!m_impl->details.has_value())
     {
-      m_impl->details = make_DeepCopyUnique<DocInfo>();
+      m_impl->details = std::make_optional<DocInfo>();
     }
-    if (m_impl->details->doc.isEmpty()) // fresh detailed description
+    DocInfo &details = m_impl->details.value();
+    if (details.doc.isEmpty()) // fresh detailed description
     {
-      m_impl->details->doc = doc;
+      details.doc = doc;
     }
     else if (atTop) // another detailed description, append it to the start
     {
-      m_impl->details->doc = doc+"\n\n"+m_impl->details->doc;
+      details.doc = doc+"\n\n"+details.doc;
     }
     else // another detailed description, append it to the end
     {
-      m_impl->details->doc += "\n\n"+doc;
+      details.doc += "\n\n"+doc;
     }
     if (docLine!=-1) // store location if valid
     {
-      m_impl->details->file = docFile;
-      m_impl->details->line = docLine;
+      details.file = docFile;
+      details.line = docLine;
     }
     else
     {
-      m_impl->details->file = docFile;
-      m_impl->details->line = 1;
+      details.file = docFile;
+      details.line = 1;
     }
   }
 }
@@ -498,20 +469,21 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
     else
     {
       //fprintf(stderr,"DefinitionImpl::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
-      if (!m_impl->brief)
+      if (!m_impl->brief.has_value())
       {
-        m_impl->brief = make_DeepCopyUnique<BriefInfo>();
+        m_impl->brief = std::make_optional<BriefInfo>();
       }
-      m_impl->brief->doc=brief;
+      BriefInfo &briefInfo = m_impl->brief.value();
+      briefInfo.doc=brief;
       if (briefLine!=-1)
       {
-        m_impl->brief->file = briefFile;
-        m_impl->brief->line = briefLine;
+        briefInfo.file = briefFile;
+        briefInfo.line = briefLine;
       }
       else
       {
-        m_impl->brief->file = briefFile;
-        m_impl->brief->line = 1;
+        briefInfo.file = briefFile;
+        briefInfo.line = 1;
       }
     }
   }
@@ -529,19 +501,20 @@ void DefinitionImpl::setBriefDescription(const QCString &b,const QCString &brief
 
 void DefinitionImpl::_setInbodyDocumentation(const QCString &doc,const QCString &inbodyFile,int inbodyLine)
 {
-  if (!m_impl->inbodyDocs)
+  if (!m_impl->inbodyDocs.has_value())
   {
-    m_impl->inbodyDocs = make_DeepCopyUnique<DocInfo>();
+    m_impl->inbodyDocs = std::make_optional<DocInfo>();
   }
-  if (m_impl->inbodyDocs->doc.isEmpty()) // fresh inbody docs
+  DocInfo &inbodyDocs = m_impl->inbodyDocs.value();
+  if (inbodyDocs.doc.isEmpty()) // fresh inbody docs
   {
-    m_impl->inbodyDocs->doc  = doc;
-    m_impl->inbodyDocs->file = inbodyFile;
-    m_impl->inbodyDocs->line = inbodyLine;
+    inbodyDocs.doc  = doc;
+    inbodyDocs.file = inbodyFile;
+    inbodyDocs.line = inbodyLine;
   }
   else // another inbody documentation fragment, append this to the end
   {
-    m_impl->inbodyDocs->doc += QCString("\n\n")+doc;
+    inbodyDocs.doc += QCString("\n\n")+doc;
   }
 }
 
@@ -1010,16 +983,23 @@ void DefinitionImpl::writeSourceDef(OutputList &ol) const
 
 void DefinitionImpl::setBodySegment(int defLine, int bls,int ble)
 {
-  if (!m_impl->body) m_impl->body = make_DeepCopyUnique<BodyInfo>();
-  m_impl->body->defLine   = defLine;
-  m_impl->body->startLine = bls;
-  m_impl->body->endLine   = ble;
+  if (!m_impl->body.has_value())
+  {
+    m_impl->body = std::make_optional<BodyInfo>();
+  }
+  BodyInfo &body = m_impl->body.value();
+  body.defLine   = defLine;
+  body.startLine = bls;
+  body.endLine   = ble;
 }
 
 void DefinitionImpl::setBodyDef(const FileDef *fd)
 {
-  if (!m_impl->body) m_impl->body = make_DeepCopyUnique<BodyInfo>();
-  m_impl->body->fileDef=fd;
+  if (!m_impl->body.has_value())
+  {
+    m_impl->body = std::make_optional<BodyInfo>();
+  }
+  m_impl->body.value().fileDef=fd;
 }
 
 bool DefinitionImpl::hasSources() const
