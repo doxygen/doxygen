@@ -139,8 +139,8 @@ class DefinitionImpl
     bool _docsAlreadyAdded(const QCString &doc,QCString &sigList);
 
     // PIMPL idiom
-    class IMPL;
-    std::unique_ptr<IMPL> m_impl; // internal structure holding all private data
+    class Private;
+    std::unique_ptr<Private> p; // internal structure holding all private data
 };
 
 template<class Base>
