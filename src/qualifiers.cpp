@@ -68,5 +68,5 @@ void insertQualifier(QualifierInfoVector &svm, std::string qual, std::string cls
   nw->label = qual;
   nw->classes = sv;
   svm.push_back(nw);
-};
+}
 
