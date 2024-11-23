@@ -21,6 +21,7 @@
 #include <mutex>
 
 #include "tooltip.h"
+#include "qualifiers.h"
 #include "definition.h"
 #include "outputlist.h"
 #include "util.h"

@@ -932,7 +932,7 @@ void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.startLabels();
-    ol.writeLabel("published",false);
+    ol.writeLabel("published",StringVector{"published"},false);
     ol.endLabels();
     ol.popGeneratorState();
   }
@@ -941,7 +941,7 @@ void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.startLabels();
-    ol.writeLabel("export",false);
+    ol.writeLabel("export",StringVector{"export"},false);
     ol.endLabels();
     ol.popGeneratorState();
   }

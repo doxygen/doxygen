@@ -21,6 +21,7 @@
 #include <unordered_set>
 
 #include "containers.h"
+#include "qualifiers.h"
 #include "definition.h"
 #include "arguments.h"
 #include "membergroup.h"
@@ -328,7 +329,7 @@ class ClassDef : public Definition
     virtual bool hasNonReferenceSuperClass() const = 0;
 
     virtual QCString requiresClause() const = 0;
-    virtual StringVector getQualifiers() const = 0;
+    virtual QualifierInfoVector getQualifiers() const = 0;
 
     virtual bool containsOverload(const MemberDef *md) const = 0;
 
@@ -403,7 +404,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setTagLessReference(const ClassDef *cd) = 0;
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
-    virtual void addQualifiers(const StringVector &qualifiers) = 0;
+    virtual void addQualifiers(const QualifierInfoVector &qualifiers) = 0;
         // inheritance graph related members
     virtual CLASS_GRAPH_t hasInheritanceGraph() const = 0;
     virtual void overrideInheritanceGraph(CLASS_GRAPH_t e) = 0;

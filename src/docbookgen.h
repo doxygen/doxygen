@@ -308,7 +308,7 @@ class DocbookGenerator : public OutputGenerator, public OutputGenIntf
     void endInlineMemberDoc() override;
 
     void startLabels() override;
-    void writeLabel(const QCString &,bool) override;
+    void writeLabel(const QCString &,const StringVector &,bool) override;
     void endLabels() override;
 
     void writeLocalToc(const SectionRefs &sr,const LocalToc &lt) override;

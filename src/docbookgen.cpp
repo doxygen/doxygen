@@ -1013,7 +1013,7 @@ void  DocbookGenerator::startLabels()
 DB_GEN_C
 }
 
-void  DocbookGenerator::writeLabel(const QCString &l,bool isLast)
+void  DocbookGenerator::writeLabel(const QCString &l,const StringVector &,bool isLast)
 {
 DB_GEN_C
   m_t << "<computeroutput>[" << l << "]</computeroutput>";

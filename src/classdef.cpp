@@ -271,7 +271,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     bool isSliceLocal() const override;
     bool hasNonReferenceSuperClass() const override;
     QCString requiresClause() const override;
-    StringVector getQualifiers() const override;
+    QualifierInfoVector getQualifiers() const override;
     bool containsOverload(const MemberDef *md) const override;
     ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const override;
@@ -297,7 +297,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void setCompoundType(CompoundType t) override;
     void setClassName(const QCString &name) override;
     void setClassSpecifier(TypeSpecifier spec) override;
-    void addQualifiers(const StringVector &qualifiers) override;
+    void addQualifiers(const QualifierInfoVector &qualifiers) override;
     void setTemplateArguments(const ArgumentList &al) override;
     void setTemplateBaseClassNames(const TemplateNameMap &templateNames) override;
     void setTemplateMaster(const ClassDef *tm) override;
@@ -586,7 +586,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->hasNonReferenceSuperClass(); }
     QCString requiresClause() const override
     { return getCdAlias()->requiresClause(); }
-    StringVector getQualifiers() const override
+    QualifierInfoVector getQualifiers() const override
     { return getCdAlias()->getQualifiers(); }
     bool containsOverload(const MemberDef *md) const override
     { return getCdAlias()->containsOverload(md); }
@@ -800,7 +800,7 @@ class ClassDefImpl::IMPL
     /** C++20 requires clause */
     QCString requiresClause;
 
-    StringVector qualifiers;
+    QualifierInfoVector qualifiers;
 
     bool hasCollaborationGraph = false;
     CLASS_GRAPH_t typeInheritanceGraph = CLASS_GRAPH_t::NO;
@@ -2702,32 +2702,25 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
 
 void ClassDefImpl::addClassAttributes(OutputList &ol) const
 {
-  StringVector sl;
-  if (isFinal())    sl.emplace_back("final");
-  if (isSealed())   sl.emplace_back("sealed");
-  if (isAbstract()) sl.emplace_back("abstract");
-  if (isExported()) sl.emplace_back("export");
-  if (getLanguage()==SrcLangExt::IDL && isPublished()) sl.emplace_back("published");
+  QualifierInfoVector slm;
+  if (isFinal())    insertQualifier(slm,"final");
+  if (isSealed())   insertQualifier(slm,"sealed");
+  if (isAbstract()) insertQualifier(slm,"abstract");
+  if (isExported()) insertQualifier(slm,"export");
+  if (getLanguage()==SrcLangExt::IDL && isPublished()) insertQualifier(slm,"published");
 
-  for (const auto &sx : m_impl->qualifiers)
-  {
-    bool alreadyAdded = std::find(sl.begin(), sl.end(), sx) != sl.end();
-    if (!alreadyAdded)
-    {
-      sl.push_back(sx);
-    }
-  }
+  mergeQualifier(slm, m_impl->qualifiers);
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
-  if (!sl.empty())
+  if (!slm.empty())
   {
     ol.startLabels();
     size_t i=0;
-    for (const auto &s : sl)
+    for (const auto &qi : slm)
     {
       i++;
-      ol.writeLabel(s.c_str(),i==sl.size());
+      ol.writeLabel(qi->label.c_str(),qi->classes,i==slm.size());
     }
     ol.endLabels();
   }
@@ -5176,19 +5169,12 @@ void ClassDefImpl::setClassSpecifier(TypeSpecifier spec)
   m_impl->spec = spec;
 }
 
-void ClassDefImpl::addQualifiers(const StringVector &qualifiers)
+void ClassDefImpl::addQualifiers(const QualifierInfoVector &qualifiers)
 {
-  for (const auto &sx : qualifiers)
-  {
-    bool alreadyAdded = std::find(m_impl->qualifiers.begin(), m_impl->qualifiers.end(), sx) != m_impl->qualifiers.end();
-    if (!alreadyAdded)
-    {
-      m_impl->qualifiers.push_back(sx);
-    }
-  }
+  mergeQualifier(m_impl->qualifiers,qualifiers);
 }
 
-StringVector ClassDefImpl::getQualifiers() const
+QualifierInfoVector ClassDefImpl::getQualifiers() const
 {
   return m_impl->qualifiers;
 }

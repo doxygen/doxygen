@@ -900,7 +900,7 @@ void ManGenerator::startLabels()
 {
 }
 
-void ManGenerator::writeLabel(const QCString &l,bool isLast)
+void ManGenerator::writeLabel(const QCString &l,const StringVector &,bool isLast)
 {
   m_t << "\\fR [" << l << "]\\fP";
   if (!isLast) m_t << ", ";

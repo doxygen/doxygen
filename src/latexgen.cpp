@@ -2280,7 +2280,7 @@ void LatexGenerator::startLabels()
   m_t << "\\hspace{0.3cm}";
 }
 
-void LatexGenerator::writeLabel(const QCString &l,bool isLast)
+void LatexGenerator::writeLabel(const QCString &l,const StringVector &,bool isLast)
 {
   m_t << "{\\ttfamily [" << l << "]}";
   if (!isLast) m_t << ", ";

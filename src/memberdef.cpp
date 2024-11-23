@@ -27,6 +27,7 @@
 #include "message.h"
 #include "htmlhelp.h"
 #include "language.h"
+#include "translator_en.h"
 #include "outputlist.h"
 #include "example.h"
 #include "membergroup.h"
@@ -245,7 +246,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     const MemberDef *categoryRelation() const override;
     QCString displayName(bool=TRUE) const override;
     QCString getDeclType() const override;
-    StringVector getLabels(const Definition *container) const override;
+    QualifierInfoVector getLabels(const Definition *container) const override;
     const ArgumentList &typeConstraints() const override;
     QCString requiresClause() const override;
     QCString documentation() const override;
@@ -350,8 +351,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                    bool onlyText=FALSE) const override;
     void resolveUnnamedParameters(const MemberDef *md) override;
-    void addQualifiers(const StringVector &qualifiers) override;
-    StringVector getQualifiers() const override;
+    void addQualifiers(const QualifierInfoVector &qualifiers) override;
+    QualifierInfoVector getQualifiers() const override;
     ClassDefMutable *getClassDefMutable() override;
     void setModuleDef(ModuleDef *mod) override;
 
@@ -460,8 +461,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     MemberGroup *m_memberGroup = nullptr; // group's member definition
     GroupDef *m_group = nullptr;          // group in which this member is in
     Grouping::GroupPri_t m_grouppri = Grouping::GROUPING_AUTO_DEF; // priority of this definition
-    QCString m_groupFileName;   // file where this grouping was defined
-    int m_groupStartLine = 0;       // line  "      "      "     "     "
+    QCString m_groupFileName;       // file where this grouping was defined
+    int m_groupStartLine = 0;       // line where this grouping was defined
     MemberDef *m_groupMember = nullptr;
 
     bool m_isTypedefValCached = false;
@@ -476,7 +477,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     QCString m_explicitOutputFileBase;
 
     // to store extra qualifiers
-    StringVector m_qualifiers;
+    QualifierInfoVector m_qualifiers;
 
     // objective-c
     bool m_implOnly = false; // function found in implementation but not
@@ -878,7 +879,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->sourceRefName(); }
     bool hasEnumValues() const override
     { return getMdAlias()->hasEnumValues(); }
-    StringVector getQualifiers() const override
+    QualifierInfoVector getQualifiers() const override
     { return getMdAlias()->getQualifiers(); }
     const MemberDef *templateMaster() const override
     { return getMdAlias()->templateMaster(); }
@@ -910,7 +911,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->displayName(b); }
     QCString getDeclType() const override
     { return getMdAlias()->getDeclType(); }
-    StringVector getLabels(const Definition *container) const override
+    QualifierInfoVector getLabels(const Definition *container) const override
     { return getMdAlias()->getLabels(container); }
     const ArgumentList &typeConstraints() const override
     { return getMdAlias()->typeConstraints(); }
@@ -2784,9 +2785,9 @@ bool MemberDefImpl::isDetailedSectionVisible(MemberListContainer container) cons
   return result;
 }
 
-StringVector MemberDefImpl::getLabels(const Definition *container) const
+QualifierInfoVector MemberDefImpl::getLabels(const Definition *container) const
 {
-  StringVector sl;
+  QualifierInfoVector slm;
   bool inlineInfo = Config_getBool(INLINE_INFO);
 
   Specifier lvirt=virtualness();
@@ -2811,86 +2812,96 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
     bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     if (optVhdl)
     {
-      sl.push_back(theTranslator->trVhdlType(getVhdlSpecifiers(),TRUE).str());
+      Translator *theEnglishTranslator;
+      if (theTranslator->idLanguage() == "english")
+      {
+        theEnglishTranslator = theTranslator;
+      }
+      else
+      {
+        theEnglishTranslator = new TranslatorEnglish;
+      }
+      insertQualifier(slm,theTranslator->trVhdlType(getVhdlSpecifiers(),true).str(),
+                      theEnglishTranslator->trVhdlType(getVhdlSpecifiers(),true).str());
     }
     else
     {
-      if (isFriend())                                   sl.emplace_back("friend");
-      else if (isRelated())                             sl.emplace_back("related");
+      if (isFriend())                                   insertQualifier(slm,"friend");
+      else if (isRelated())                             insertQualifier(slm,"related");
       else
       {
-        if      (isExternal())                          sl.emplace_back("extern");
-        if      (inlineInfo && isInline())              sl.emplace_back("inline");
-        if      (isExplicit())                          sl.emplace_back("explicit");
-        if      (isMutable())                           sl.emplace_back("mutable");
-        if      (isStatic())                            sl.emplace_back("static");
-        if      (isGettable())                          sl.emplace_back("get");
-        if      (isProtectedGettable())                 sl.emplace_back("protected get");
-        if      (isSettable())                          sl.emplace_back("set");
-        if      (isProtectedSettable())                 sl.emplace_back("protected set");
+        if      (isExternal())                          insertQualifier(slm,"extern");
+        if      (inlineInfo && isInline())              insertQualifier(slm,"inline");
+        if      (isExplicit())                          insertQualifier(slm,"explicit");
+        if      (isMutable())                           insertQualifier(slm,"mutable");
+        if      (isStatic())                            insertQualifier(slm,"static");
+        if      (isGettable())                          insertQualifier(slm,"get");
+        if      (isProtectedGettable())                 insertQualifier(slm,"protected get");
+        if      (isSettable())                          insertQualifier(slm,"set");
+        if      (isProtectedSettable())                 insertQualifier(slm,"protected set");
         if (extractPrivate)
         {
-          if    (isPrivateGettable())                   sl.emplace_back("private get");
-          if    (isPrivateSettable())                   sl.emplace_back("private set");
+          if    (isPrivateGettable())                   insertQualifier(slm,"private get");
+          if    (isPrivateSettable())                   insertQualifier(slm,"private set");
         }
-        if      (isNoDiscard())                         sl.emplace_back("nodiscard");
-        if      (isConstExpr())                         sl.emplace_back("constexpr");
-        if      (isConstEval())                         sl.emplace_back("consteval");
-        if      (isConstInit())                         sl.emplace_back("constinit");
-        if      (isAddable())                           sl.emplace_back("add");
-        if      (!isUNOProperty() && isRemovable())     sl.emplace_back("remove");
-        if      (isRaisable())                          sl.emplace_back("raise");
-        if      (isReadable())                          sl.emplace_back("read");
-        if      (isWritable())                          sl.emplace_back("write");
-        if      (isFinal())                             sl.emplace_back("final");
-        if      (isAbstract())                          sl.emplace_back("abstract");
-        if      (isOverride())                          sl.emplace_back("override");
-        if      (isInitonly())                          sl.emplace_back("initonly");
-        if      (isSealed())                            sl.emplace_back("sealed");
-        if      (isNew())                               sl.emplace_back("new");
-        if      (isOptional())                          sl.emplace_back("optional");
-        if      (isRequired())                          sl.emplace_back("required");
-        if      (isExported())                          sl.emplace_back("export");
+        if      (isNoDiscard())                         insertQualifier(slm,"nodiscard");
+        if      (isConstExpr())                         insertQualifier(slm,"constexpr");
+        if      (isConstEval())                         insertQualifier(slm,"consteval");
+        if      (isConstInit())                         insertQualifier(slm,"constinit");
+        if      (isAddable())                           insertQualifier(slm,"add");
+        if      (!isUNOProperty() && isRemovable())     insertQualifier(slm,"remove");
+        if      (isRaisable())                          insertQualifier(slm,"raise");
+        if      (isReadable())                          insertQualifier(slm,"read");
+        if      (isWritable())                          insertQualifier(slm,"write");
+        if      (isFinal())                             insertQualifier(slm,"final");
+        if      (isAbstract())                          insertQualifier(slm,"abstract");
+        if      (isOverride())                          insertQualifier(slm,"override");
+        if      (isInitonly())                          insertQualifier(slm,"initonly");
+        if      (isSealed())                            insertQualifier(slm,"sealed");
+        if      (isNew())                               insertQualifier(slm,"new");
+        if      (isOptional())                          insertQualifier(slm,"optional");
+        if      (isRequired())                          insertQualifier(slm,"required");
+        if      (isExported())                          insertQualifier(slm,"export");
 
-        if      (isNonAtomic())                         sl.emplace_back("nonatomic");
-        else if (isObjCProperty())                      sl.emplace_back("atomic");
+        if      (isNonAtomic())                         insertQualifier(slm,"nonatomic");
+        else if (isObjCProperty())                      insertQualifier(slm,"atomic");
 
         // mutual exclusive Objective 2.0 property attributes
-        if      (isAssign())                            sl.emplace_back("assign");
-        else if (isCopy())                              sl.emplace_back("copy");
-        else if (isRetain())                            sl.emplace_back("retain");
-        else if (isWeak())                              sl.emplace_back("weak");
-        else if (lang!=SrcLangExt::CSharp && isStrong()) sl.emplace_back("strong");
-        else if (isUnretained())                        sl.emplace_back("unsafe_unretained");
+        if      (isAssign())                            insertQualifier(slm,"assign");
+        else if (isCopy())                              insertQualifier(slm,"copy");
+        else if (isRetain())                            insertQualifier(slm,"retain");
+        else if (isWeak())                              insertQualifier(slm,"weak");
+        else if (lang!=SrcLangExt::CSharp && isStrong()) insertQualifier(slm,"strong");
+        else if (isUnretained())                        insertQualifier(slm,"unsafe_unretained");
 
         if (!isObjCMethod())
         {
-          if      (protection()==Protection::Protected) sl.emplace_back("protected");
-          else if (protection()==Protection::Private)   sl.emplace_back("private");
-          else if (protection()==Protection::Package)   sl.emplace_back("package");
+          if      (protection()==Protection::Protected) insertQualifier(slm,"protected");
+          else if (protection()==Protection::Private)   insertQualifier(slm,"private");
+          else if (protection()==Protection::Package)   insertQualifier(slm,"package");
 
-          if      (lvirt==Specifier::Virtual)           sl.emplace_back("virtual");
-          else if (lvirt==Specifier::Pure)              sl.emplace_back("pure virtual");
-          if      (isSignal())                          sl.emplace_back("signal");
-          if      (isSlot())                            sl.emplace_back("slot");
-          if      (isDefault())                         sl.emplace_back("default");
-          if      (isDelete())                          sl.emplace_back("delete");
-          if      (isNoExcept())                        sl.emplace_back("noexcept");
-          if      (isAttribute())                       sl.emplace_back("attribute");
-          if      (isUNOProperty())                     sl.emplace_back("property");
-          if      (isReadonly())                        sl.emplace_back("readonly");
-          if      (isBound())                           sl.emplace_back("bound");
-          if      (isUNOProperty() && isRemovable())    sl.emplace_back("removable");
-          if      (isConstrained())                     sl.emplace_back("constrained");
-          if      (isTransient())                       sl.emplace_back("transient");
-          if      (isMaybeVoid())                       sl.emplace_back("maybevoid");
-          if      (isMaybeDefault())                    sl.emplace_back("maybedefault");
-          if      (isMaybeAmbiguous())                  sl.emplace_back("maybeambiguous");
-          if      (isPublished())                       sl.emplace_back("published"); // enum
+          if      (lvirt==Specifier::Virtual)           insertQualifier(slm,"virtual");
+          else if (lvirt==Specifier::Pure)              insertQualifier(slm,"pure virtual");
+          if      (isSignal())                          insertQualifier(slm,"signal");
+          if      (isSlot())                            insertQualifier(slm,"slot");
+          if      (isDefault())                         insertQualifier(slm,"default");
+          if      (isDelete())                          insertQualifier(slm,"delete");
+          if      (isNoExcept())                        insertQualifier(slm,"noexcept");
+          if      (isAttribute())                       insertQualifier(slm,"attribute");
+          if      (isUNOProperty())                     insertQualifier(slm,"property");
+          if      (isReadonly())                        insertQualifier(slm,"readonly");
+          if      (isBound())                           insertQualifier(slm,"bound");
+          if      (isUNOProperty() && isRemovable())    insertQualifier(slm,"removable");
+          if      (isConstrained())                     insertQualifier(slm,"constrained");
+          if      (isTransient())                       insertQualifier(slm,"transient");
+          if      (isMaybeVoid())                       insertQualifier(slm,"maybevoid");
+          if      (isMaybeDefault())                    insertQualifier(slm,"maybedefault");
+          if      (isMaybeAmbiguous())                  insertQualifier(slm,"maybeambiguous");
+          if      (isPublished())                       insertQualifier(slm,"published"); // enum
         }
         if (isObjCProperty() && isImplementation())
         {
-          sl.emplace_back("implementation");
+          insertQualifier(slm,"implementation");
         }
       }
       if (getClassDef() &&
@@ -2899,25 +2910,18 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
           !isRelated()
          )
       {
-        sl.emplace_back("inherited");
+        insertQualifier(slm,"inherited");
       }
     }
   }
   else if (isObjCMethod() && isImplementation())
   {
-    sl.emplace_back("implementation");
+    insertQualifier(slm,"implementation");
   }
 
-  for (const auto &sx : m_qualifiers)
-  {
-    bool alreadyAdded = std::find(sl.begin(), sl.end(), sx) != sl.end();
-    if (!alreadyAdded)
-    {
-      sl.push_back(sx);
-    }
-  }
+  mergeQualifier(slm, m_qualifiers);
 
-  return sl;
+  return slm;
 }
 
 void MemberDefImpl::_writeCallGraph(OutputList &ol) const
@@ -3540,7 +3544,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   ol.pushGeneratorState();
 
   bool htmlEndLabelTable=FALSE;
-  StringVector sl = getLabels(scopedContainer);
+  QualifierInfoVector slm = getLabels(scopedContainer);
 
   static const reg::Ex r(R"(@\d+)");
   reg::Match match;
@@ -3645,7 +3649,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       }
     }
 
-    if (!sl.empty())
+    if (!slm.empty())
     {
       ol.pushGeneratorState();
       ol.disableAll();
@@ -3757,14 +3761,14 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   ol.pushGeneratorState();
   ol.disable(OutputType::Html);
-  if (!sl.empty())
+  if (!slm.empty())
   {
     ol.startLabels();
     size_t count=0;
-    for (const auto &s : sl)
+    for (const auto qi : slm)
     {
       count++;
-      ol.writeLabel(s.c_str(),count==sl.size());
+      ol.writeLabel(qi->label.c_str(),qi->classes,count==slm.size());
     }
     ol.endLabels();
   }
@@ -3791,10 +3795,10 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     ol.writeString("  <td class=\"mlabels-right\">\n");
     ol.startLabels();
     size_t count=0;
-    for (const auto &s : sl)
+    for (const auto qi : slm)
     {
       count++;
-      ol.writeLabel(s.c_str(),count==sl.size());
+      ol.writeLabel(qi->label.c_str(),qi->classes,count==slm.size());
     }
     ol.endLabels();
     ol.writeString("  </td>\n");
@@ -5818,21 +5822,14 @@ void MemberDefImpl::mergeMemberSpecifiers(TypeSpecifier s)
   m_memSpec.merge(s);
 }
 
-StringVector MemberDefImpl::getQualifiers() const
+QualifierInfoVector MemberDefImpl::getQualifiers() const
 {
   return m_qualifiers;
 }
 
-void MemberDefImpl::addQualifiers(const StringVector &qualifiers)
+void MemberDefImpl::addQualifiers(const QualifierInfoVector &qualifiers)
 {
-  for (const auto &sx : qualifiers)
-  {
-    bool alreadyAdded = std::find(m_qualifiers.begin(), m_qualifiers.end(), sx) != m_qualifiers.end();
-    if (!alreadyAdded)
-    {
-      m_qualifiers.push_back(sx);
-    }
-  }
+  mergeQualifier(m_qualifiers, qualifiers);
 }
 
 void MemberDefImpl::setBitfields(const QCString &s)

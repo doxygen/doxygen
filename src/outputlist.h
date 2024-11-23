@@ -23,6 +23,7 @@
 #include <stack>
 #include <functional>
 
+#include "containers.h"
 #include "outputgen.h"
 #include "doxygen.h"
 
@@ -736,8 +737,8 @@ class OutputList
     { foreach(&OutputGenIntf::endInlineMemberDoc); }
     void startLabels()
     { foreach(&OutputGenIntf::startLabels); }
-    void writeLabel(const QCString &l,bool isLast)
-    { foreach(&OutputGenIntf::writeLabel,l,isLast); }
+    void writeLabel(const QCString &l,const StringVector &cls,bool isLast)
+    { foreach(&OutputGenIntf::writeLabel,l,cls,isLast); }
     void endLabels()
     { foreach(&OutputGenIntf::endLabels); }
     void writeLocalToc(const SectionRefs &refs,const LocalToc &lt)

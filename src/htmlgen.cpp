@@ -3420,12 +3420,17 @@ void HtmlGenerator::startLabels()
   m_t << "<span class=\"mlabels\">";
 }
 
-void HtmlGenerator::writeLabel(const QCString &l,bool /*isLast*/)
+void HtmlGenerator::writeLabel(const QCString &l,const StringVector &cls,bool /*isLast*/)
 {
   DBG_HTML(m_t << "<!-- writeLabel(" << l << ") -->\n";)
   //m_t << "<tt>[" << l << "]</tt>";
   //if (!isLast) m_t << ", ";
-  m_t << "<span class=\"mlabel\">" << l << "</span>";
+  m_t << "<span class=\"mlabel";
+  for (auto & elem : cls)
+  {
+    m_t << " " << elem;
+  }
+  m_t << "\">" << l << "</span>";
 }
 
 void HtmlGenerator::endLabels()
