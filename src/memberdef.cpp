@@ -2176,9 +2176,12 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
         a.type,                  // text
         FALSE                    // autoBreak
         );
-    ol.docify(" ");
-    ol.docify(a.name);
-    if (a.defval.length()!=0)
+    if (!a.name.isEmpty())
+    {
+      ol.docify(" ");
+      ol.docify(a.name);
+    }
+    if (!a.defval.isEmpty())
     {
       ol.docify(" = ");
       ol.docify(a.defval);
