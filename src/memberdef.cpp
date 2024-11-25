@@ -3606,7 +3606,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
     const ClassDef *cd=getClassDef();
     const NamespaceDef *nd=getNamespaceDef();
-    bool first=TRUE;
     if (!m_defTmpArgLists.empty() && lang==SrcLangExt::Cpp)
       // definition has explicit template parameter declarations
     {
@@ -3614,7 +3613,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       {
         if (!tal.empty())
         {
-          if (!first) ol.docify(" ");
           ol.startMemberDocPrefixItem();
           _writeTemplatePrefix(ol,scopedContainer,tal);
           ol.endMemberDocPrefixItem();
@@ -3630,7 +3628,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         {
           if (!tal.empty())
           {
-            if (!first) ol.docify(" ");
             ol.startMemberDocPrefixItem();
             _writeTemplatePrefix(ol,scopedContainer,tal,false);
             ol.endMemberDocPrefixItem();
