@@ -1056,7 +1056,8 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     return FALSE; // member has no function like argument list
   }
 
-  if (!md->isDefine()) ol.docify(" ");
+  bool isDefine = md->isDefine();
+  if (isDefine) ol.docify(" ");
 
   //printf("writeDefArgList(%d)\n",defArgList->count());
   ol.endMemberDocName();
@@ -1091,7 +1092,6 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
 
   bool first=TRUE;
   bool paramTypeStarted=FALSE;
-  bool isDefine = md->isDefine();
   auto alIt = defArgList.begin();
   while (alIt!=defArgList.end())
   {
@@ -1198,10 +1198,6 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
           if (key!=",") key+=":"; // for normal keywords add colon
         }
         ol.endParameterExtra(false,false,!md->isObjCMethod());
-        if (paramTypeStarted)
-        {
-          ol.endParameterType();
-        }
         ol.startParameterType(FALSE,key);
         paramTypeStarted=TRUE;
       }
