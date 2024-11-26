@@ -20,6 +20,7 @@ runs:
     if: config.os == 'windows-latest'
 
   - name: Install LaTeX (Linux)
+    shell: bash
     run: |
       sudo apt update --fix-missing
       sudo apt upgrade
@@ -28,6 +29,7 @@ runs:
     if: startsWith(config.os,'ubuntu-')
 
   - name: Install LaTeX (MacOS)
+    shell: bash
     run: |
       brew update || true
       brew install --cask mactex || true
@@ -35,6 +37,7 @@ runs:
     if: startsWith(config.os,'macos-')
 
   - name: Install libclang (Ubuntu 20.04)
+    shell: bash
     run: |
       sudo apt update
       sudo apt remove llvm-8 clang-8 libclang-common-8-dev clang-format-8 libllvm8
@@ -56,6 +59,7 @@ runs:
     if: config.os == 'ubuntu-20.04'
 
   - name: Install libxapian (Ubuntu 20.04)
+    shell: bash
     run: |
       sudo apt update
       sudo apt install libxapian-dev
@@ -73,12 +77,14 @@ runs:
     if: config.os == 'windows-latest'
 
   - name: Install Ghostscript (Linux)
+    shell: bash
     run: |
       sudo apt update
       sudo apt-get install ghostscript
     if: startsWith(config.os,'ubuntu-')
 
   - name: Install Ghostscript (Windows)
+    shell: bash
     run:
       choco install ghostscript
     if: config.os == 'windows-latest'
@@ -93,12 +99,14 @@ runs:
     if: config.os == 'windows-latest'
 
   - name: Install xmllint (Linux)
+    shell: bash
     run: |
        sudo apt-get update
        sudo apt-get install libxml2-utils
     if: startsWith(config.os,'ubuntu-')
 
   - name: Install xmllint (MacOS)
+    shell: bash
     run: |
        brew install --force --overwrite python@3.11 # temp hack
        brew install --force --overwrite python@3.12 # temp hack
@@ -107,6 +115,7 @@ runs:
     if: startsWith(config.os,'macos-')
 
   - name: Install bison (MacOS)
+    shell: bash
     run: |
       brew update
       brew install bison;
@@ -115,18 +124,21 @@ runs:
     if: startsWith(config.os,'macos-')
 
   - name: Install bison/flex (Windows)
+    shell: bash
     run: |
       #Choco-Install -PackageName winflexbison
       choco install winflexbison3
     if: config.os == 'windows-latest'
 
   - name: Install Graphviz (Linux)
+    shell: bash
     run: |
       sudo apt update
       sudo apt-get install graphviz
     if: startsWith(config.os,'ubuntu-')
 
   - name: Install Graphviz (MacOS)
+    shell: bash
     run: |
       if ! brew install graphviz; then
         # Workaround issue with unexpected symlinks: https://github.com/actions/runner-images/issues/6817
@@ -139,6 +151,7 @@ runs:
     if: startsWith(config.os,'macos-')
 
   - name: Install Graphviz (Windows)
+    shell: bash
     run:
       choco install graphviz.portable
     if: config.os == 'windows-latest'
@@ -148,6 +161,7 @@ runs:
     if: config.os == 'windows-latest'
 
   - name: Refresh Env (Windows)
+    shell: bash
     run: |
       Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
       refreshenv
