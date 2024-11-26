@@ -233,18 +233,18 @@ runs:
   - name: Configure
     shell: cmake -P {0}
     run: |
-      set(ENV{CC} ${{ ${{ inputs.config.cc }} }})
-      set(ENV{CXX} ${{ ${{ inputs.config.cxx }} }})
+      set(ENV{CC} ${{ inputs.config.cc }})
+      set(ENV{CXX} ${{ inputs.config.cxx }})
 
       execute_process(
         COMMAND cmake
           -S .
           -B build
-          -D CMAKE_BUILD_TYPE=${{ ${{ inputs.config.build_type }} }}
-          -G "${{ ${{ inputs.config.build_gen }} }}"
+          -D CMAKE_BUILD_TYPE=${{ inputs.config.build_type }}
+          -G "${{ inputs.config.build_gen }}"
           -Dbuild_doc=YES
           -Dbuild_wizard=YES
-          ${{ ${{ inputs.config.cmake_extra_opts }} }}
+          ${{ inputs.config.cmake_extra_opts }}
         RESULT_VARIABLE result
       )
       if (NOT result EQUAL 0)
@@ -273,7 +273,7 @@ runs:
   - name: Archive build artifacts
     uses: actions/upload-artifact@v4
     with:
-      name: "${{ ${{ inputs.config.name }} }} build artifacts"
+      name: "${{ inputs.config.name }} build artifacts"
       path: build/bin/
 
   - name: Run tests (Linux / MacOS)
