@@ -419,7 +419,8 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         path: artifacts/
-    - name: Show results:
+
+    - name: Show results
       run: |
         ls artifacts/
 
