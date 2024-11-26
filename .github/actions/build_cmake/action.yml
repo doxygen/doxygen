@@ -4,7 +4,6 @@ inputs:
   config:
     description: platform specific info
     required: true
-outputs:
 runs:
   using: "composite"
   steps:
