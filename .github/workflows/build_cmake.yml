@@ -411,3 +411,16 @@ jobs:
          force_orphan: true
       if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
 
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      -name: Download all artifacts
+       uses: actions/download-artifact@v3
+       with:
+         path: artifacts/
+     -name: Show results:
+      run: |
+         ls artifacts/
+
+
