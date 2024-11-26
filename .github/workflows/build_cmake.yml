@@ -415,11 +415,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      -name: Download all artifacts
+     - name: Download all artifacts
        uses: actions/download-artifact@v3
        with:
          path: artifacts/
-     -name: Show results:
+    - name: Show results:
       run: |
          ls artifacts/
 
