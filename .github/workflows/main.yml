@@ -82,7 +82,12 @@ jobs:
     - name: Build doxygen
       uses: ./.github/actions/build_cmake
       with:
-        config: ${{ matrix.config }}
+        config_name: ${{ matrix.config.name }}
+        config_os: ${{ matrix.config.os }}
+        config_build_type: ${{ matrix.config.build_type }}
+        config_cc: ${{ matrix.config.cc }}
+        config_cxx: ${{ matrix.config.cxx }}
+        config_build_gen: ${{ matrix.config.build_gen }}
 
 #    - name: Checkout doxygen
 #      uses: actions/checkout@v4

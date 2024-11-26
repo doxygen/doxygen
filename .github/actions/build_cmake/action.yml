@@ -1,8 +1,23 @@
 name: Build for Doxygen
 description: Steps to build doxygen for a single platform
 inputs:
-  config:
-    description: platform specific info
+  config_name:
+    description: Platform name
+    required: true
+  config_os:
+    description: Operating system to use
+    required: true
+  config_build_type:
+    description: Release or debug build
+    required: true
+  config_cc:
+    description: C compiler name
+    required: true
+  config_cxx:
+    description: C++ compiler name
+    required: true
+  config_build_gen:
+    description: CMake build generator to use
     required: true
 
 runs:
@@ -18,7 +33,7 @@ runs:
     with:
       url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
       target: .
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Install LaTeX (Linux)
     shell: bash
@@ -27,7 +42,7 @@ runs:
       sudo apt upgrade
       sudo apt update
       sudo apt-get install texlive texlive-latex-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
-    if: startsWith(${{ inputs.config.os }},'ubuntu-')
+    if: startsWith(${{ inputs.config_os }},'ubuntu-')
 
   - name: Install LaTeX (MacOS)
     shell: bash
@@ -35,7 +50,7 @@ runs:
       brew update || true
       brew install --cask mactex || true
       echo "/Library/TeX/texbin/" >> $GITHUB_PATH
-    if: startsWith(${{ inputs.config.os }},'macos-')
+    if: startsWith(${{ inputs.config_os }},'macos-')
 
   - name: Install libclang (Ubuntu 20.04)
     shell: bash
@@ -57,14 +72,14 @@ runs:
       ls -al /etc/alternatives/clang++
       which clang++
       clang++ -v
-    if: ${{ inputs.config.os }} == 'ubuntu-20.04'
+    if: ${{ inputs.config_os }} == 'ubuntu-20.04'
 
   - name: Install libxapian (Ubuntu 20.04)
     shell: bash
     run: |
       sudo apt update
       sudo apt install libxapian-dev
-    if: ${{ inputs.config.os }} == 'ubuntu-20.04'
+    if: ${{ inputs.config_os }} == 'ubuntu-20.04'
 
   - name: Install LaTeX (Windows)
     uses: teatimeguest/setup-texlive-action@v3
@@ -75,20 +90,20 @@ runs:
         babel-dutch
         cjk
         bibtex
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Install Ghostscript (Linux)
     shell: bash
     run: |
       sudo apt update
       sudo apt-get install ghostscript
-    if: startsWith(${{ inputs.config.os }},'ubuntu-')
+    if: startsWith(${{ inputs.config_os }},'ubuntu-')
 
   - name: Install Ghostscript (Windows)
     shell: bash
     run:
       choco install ghostscript
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Setting Ghostscript paths (Windows)
     shell: bash
@@ -97,14 +112,14 @@ runs:
       export PATH="$GSpath:$PATH"
       export GSpath=`echo "$GSpath" | sed -e "s%/c%C:%"`
       echo "$GSpath" >> $GITHUB_PATH
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Install xmllint (Linux)
     shell: bash
     run: |
        sudo apt-get update
        sudo apt-get install libxml2-utils
-    if: startsWith(${{ inputs.config.os }},'ubuntu-')
+    if: startsWith(${{ inputs.config_os }},'ubuntu-')
 
   - name: Install xmllint (MacOS)
     shell: bash
@@ -113,7 +128,7 @@ runs:
        brew install --force --overwrite python@3.12 # temp hack
        brew update
        brew install libxml2
-    if: startsWith(${{ inputs.config.os }},'macos-')
+    if: startsWith(${{ inputs.config_os }},'macos-')
 
   - name: Install bison (MacOS)
     shell: bash
@@ -122,21 +137,21 @@ runs:
       brew install bison;
       echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
       #echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-    if: startsWith(${{ inputs.config.os }},'macos-')
+    if: startsWith(${{ inputs.config_os }},'macos-')
 
   - name: Install bison/flex (Windows)
     shell: bash
     run: |
       #Choco-Install -PackageName winflexbison
       choco install winflexbison3
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Install Graphviz (Linux)
     shell: bash
     run: |
       sudo apt update
       sudo apt-get install graphviz
-    if: startsWith(${{ inputs.config.os }},'ubuntu-')
+    if: startsWith(${{ inputs.config_os }},'ubuntu-')
 
   - name: Install Graphviz (MacOS)
     shell: bash
@@ -149,36 +164,36 @@ runs:
         # Try again
         brew install graphviz
       fi
-    if: startsWith(${{ inputs.config.os }},'macos-')
+    if: startsWith(${{ inputs.config_os }},'macos-')
 
   - name: Install Graphviz (Windows)
     shell: bash
     run:
       choco install graphviz.portable
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Setup VS Environment (Windows)
     uses: seanmiddleditch/gha-setup-vsdevenv@master
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Refresh Env (Windows)
     shell: bash
     run: |
       Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
       refreshenv
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Install Qt 6
     uses: jurplel/install-qt-action@v4
     with:
       version: 6.2.*
-    if: startsWith(${{ inputs.config.os }},'macos-')
+    if: startsWith(${{ inputs.config_os }},'macos-')
 
   - name: Install Qt 5
     uses: jurplel/install-qt-action@v4
     with:
       version: 5.*
-    if: startsWith(${{ inputs.config.os }},'macos-')!=true
+    if: startsWith(${{ inputs.config_os }},'macos-')!=true
 
   - name: Check tool versions (Linux / MacOS)
     shell: bash
@@ -203,7 +218,7 @@ runs:
       dot -V;
       echo "=== ghostscript ===";
       gs --version;
-    if: ${{ inputs.config.os }} != 'windows-latest'
+    if: ${{ inputs.config_os }} != 'windows-latest'
 
   - name: Check tool versions (Windows)
     shell: bash
@@ -228,23 +243,23 @@ runs:
       dot -V;
       echo "=== ghostscript ===";
       gswin64c --version;
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Configure
     shell: cmake -P {0}
     run: |
-      set(ENV{CC} ${{ inputs.config.cc }})
-      set(ENV{CXX} ${{ inputs.config.cxx }})
+      set(ENV{CC} ${{ inputs.config_cc }})
+      set(ENV{CXX} ${{ inputs.config_cxx }})
 
       execute_process(
         COMMAND cmake
           -S .
           -B build
-          -D CMAKE_BUILD_TYPE=${{ inputs.config.build_type }}
-          -G "${{ inputs.config.build_gen }}"
+          -D CMAKE_BUILD_TYPE=${{ inputs.config_build_type }}
+          -G "${{ inputs.config_build_gen }}"
           -Dbuild_doc=YES
           -Dbuild_wizard=YES
-          ${{ inputs.config.cmake_extra_opts }}
+          ${{ inputs.config_cmake_extra_opts }}
         RESULT_VARIABLE result
       )
       if (NOT result EQUAL 0)
@@ -273,7 +288,7 @@ runs:
   - name: Archive build artifacts
     uses: actions/upload-artifact@v4
     with:
-      name: "${{ inputs.config.name }} build artifacts"
+      name: "${{ inputs.config_name }} build artifacts"
       path: build/bin/
 
   - name: Run tests (Linux / MacOS)
@@ -290,7 +305,7 @@ runs:
       if (NOT result EQUAL 0)
         message(FATAL_ERROR "Running tests failed!")
       endif()
-    if: ${{ inputs.config.os }} != 'windows-latest'
+    if: ${{ inputs.config_os }} != 'windows-latest'
 
   - name: Run tests (Windows)
     shell: cmake -P {0}
@@ -306,7 +321,7 @@ runs:
       if (NOT result EQUAL 0)
         message(FATAL_ERROR "Running tests failed!")
       endif()
-    if: ${{ inputs.config.os }} == 'windows-latest'
+    if: ${{ inputs.config_os }} == 'windows-latest'
 
   - name: Generate documentation
     shell: cmake -P {0}
