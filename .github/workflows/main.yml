@@ -78,8 +78,9 @@ jobs:
             build_gen: "NMake Makefiles"
           }
     steps:
+    - uses: actions/checkout@v3
     - name: Build doxygen
-      uses: ./.github/workflows/build_cmake.yml
+      uses: ./.github/actions/build_cmake
       with:
         config: ${{ matrix.config }}
 
