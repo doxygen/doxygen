@@ -1057,7 +1057,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
   }
 
   bool isDefine = md->isDefine();
-  if (isDefine) ol.docify(" ");
+  if (!isDefine) ol.docify(" ");
 
   //printf("writeDefArgList(%d)\n",defArgList->count());
   ol.endMemberDocName();
