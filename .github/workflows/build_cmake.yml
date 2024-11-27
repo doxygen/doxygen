@@ -413,12 +413,13 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }} # Runs only on push events, not on pull requests
     needs: build
     steps:
     - name: Download all artifacts
       uses: actions/download-artifact@v3
       with:
-        path: artifacts/
+        name: Ubuntu Latest GCC Release build artifacts
 
     - name: Show results
       run: |
