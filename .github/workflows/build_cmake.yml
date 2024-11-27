@@ -422,6 +422,6 @@ jobs:
 
     - name: Show results
       run: |
-        ls artifacts/
+        ls
 
 
