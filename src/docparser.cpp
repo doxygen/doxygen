@@ -1270,6 +1270,12 @@ reparsetoken:
         case CommandType::CMD_PUNT:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Dot);
           break;
+        case CommandType::CMD_EXCLAMATION:
+          children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Exclam);
+          break;
+        case CommandType::CMD_QUESTION:
+          children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Quest);
+          break;
         case CommandType::CMD_PLUS:
           children.append<DocSymbol>(this,parent,HtmlEntityMapper::Sym_Plus);
           break;

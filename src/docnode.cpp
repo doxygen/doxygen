@@ -1630,6 +1630,8 @@ Token DocIndexEntry::parse()
           case CommandType::CMD_PLUS:    m_entry+='+';   break;
           case CommandType::CMD_MINUS:   m_entry+='-';   break;
           case CommandType::CMD_EQUAL:   m_entry+='=';   break;
+          case CommandType::CMD_EXCLAMATION: m_entry+='!'; break;
+          case CommandType::CMD_QUESTION: m_entry+='?';  break;
           default:
                warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected command %s found as argument of \\addindex",
                               qPrint(parser()->context.token->name));
@@ -4050,6 +4052,12 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
     case CommandType::CMD_PUNT:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Dot);
       break;
+    case CommandType::CMD_EXCLAMATION:
+      children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Exclam);
+      break;
+    case CommandType::CMD_QUESTION:
+      children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Quest);
+      break;
     case CommandType::CMD_PLUS:
       children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Plus);
       break;
@@ -6000,6 +6008,12 @@ void DocText::parse()
             break;
           case CommandType::CMD_PUNT:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Dot);
+            break;
+          case CommandType::CMD_EXCLAMATION:
+            children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Exclam);
+            break;
+          case CommandType::CMD_QUESTION:
+            children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Quest);
             break;
           case CommandType::CMD_PLUS:
             children().append<DocSymbol>(parser(),thisVariant(),HtmlEntityMapper::Sym_Plus);

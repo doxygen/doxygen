@@ -121,6 +121,8 @@ static const CommandMap<CommandType> g_cmdMap =
   { "-",             CommandType::CMD_MINUS },
   { "::",            CommandType::CMD_DCOLON },
   { "\"",            CommandType::CMD_QUOTE },
+  { "!",             CommandType::CMD_EXCLAMATION },
+  { "?",             CommandType::CMD_QUESTION },
   { "_internalref",  CommandType::CMD_INTERNALREF },
   { "dot",           CommandType::CMD_DOT },
   { "msc",           CommandType::CMD_MSC },
