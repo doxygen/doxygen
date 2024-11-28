@@ -18,11 +18,24 @@
 #ifndef COMMENTCNV_H
 #define COMMENTCNV_H
 
-class BufStr;
-class QCString;
+#include <string>
 
-extern void convertCppComments(BufStr *inBuf,BufStr *outBuf,
-                               const QCString &fileName);
+/** @file
+ *  @brief First pass comment processing.
+ */
+
+/** Converts the comments in a file.
+ *  @param inBuf    input buffer holding the file content.
+ *  @param outBuf   output buffer to which the results after conversion are written to.
+ *  @param fn       the name of the file from which the comments originate.
+ *
+ *  The following is converted:
+ *  - C++ style multiline doxygen comments are converted to C style doxygen comments.
+ *  - conditional sections are processed.
+ *  - aliases are expanded.
+ */
+void convertCppComments(const std::string &inBuf,std::string &outBuf,
+                        const std::string &fn);
 
 #endif
 

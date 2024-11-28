@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -18,13 +16,15 @@
 #ifndef CLASSDEF_H
 #define CLASSDEF_H
 
+#include <memory>
 #include <vector>
-#include <set>
+#include <unordered_set>
 
 #include "containers.h"
 #include "definition.h"
 #include "arguments.h"
 #include "membergroup.h"
+#include "configvalues.h"
 
 struct Argument;
 class MemberDef;
@@ -39,7 +39,6 @@ class NamespaceDef;
 class MemberDef;
 class ExampleList;
 class MemberNameInfoLinkedMap;
-class PackageDef;
 class GroupDef;
 struct IncludeInfo;
 class ClassDefImpl;
@@ -48,6 +47,7 @@ class ClassDefMutable;
 class UsesClassList;
 class ConstraintClassList;
 class MemberGroupList;
+class ModuleDef;
 
 /** Class that contains information about an inheritance relation.
  */
@@ -83,16 +83,16 @@ using BaseClassList = std::vector<BaseClassDef>;
 /** Class that contains information about a template instance relation */
 struct TemplateInstanceDef
 {
-  TemplateInstanceDef(const QCString &ts,const ClassDef *cd) : templSpec(ts), classDef(cd) {}
+  TemplateInstanceDef(const QCString &ts,ClassDef *cd) : templSpec(ts), classDef(cd) {}
   QCString templSpec;
-  const ClassDef *classDef;
+  ClassDef *classDef;
 };
 
 using TemplateInstanceList = std::vector<TemplateInstanceDef>;
 
 using TemplateNameMap = std::map<std::string,int>;
 
-using ClassDefSet = std::set<const ClassDef*>;
+using ClassDefSet = std::unordered_set<const ClassDef*>;
 
 
 /** A abstract class representing of a compound symbol.
@@ -103,6 +103,8 @@ using ClassDefSet = std::set<const ClassDef*>;
 class ClassDef : public Definition
 {
   public:
+    ABSTRACT_BASE_CLASS(ClassDef)
+
     /** The various compound types */
     enum CompoundType { Class,     //=Entry::CLASS_SEC,
                         Struct,    //=Entry::STRUCT_SEC,
@@ -115,34 +117,20 @@ class ClassDef : public Definition
                         Singleton, //=Entry::CLASS_SEC
                       };
 
+    virtual std::unique_ptr<ClassDef> deepCopy(const QCString &name) const = 0;
+    virtual void moveTo(Definition *) = 0;
+
     //-----------------------------------------------------------------------------------
     // --- getters
     //-----------------------------------------------------------------------------------
 
-    /** Used for RTTI, this is a class */
-    virtual DefType definitionType() const = 0;
-
-    /** Returns the unique base name (without extension) of the class's file on disk */
-    virtual QCString getOutputFileBase() const = 0;
     virtual QCString getInstanceOutputFileBase() const = 0;
-
-    /** Returns the base name for the source code file */
-    virtual QCString getSourceFileBase() const = 0;
-
-    /** If this class originated from a tagfile, this will return the tag file reference */
-    virtual QCString getReference() const = 0;
-
-    /** Returns TRUE if this class is imported via a tag file */
-    virtual bool isReference() const = 0;
 
     /** Returns TRUE if this is a local class definition, see EXTRACT_LOCAL_CLASSES */
     virtual bool isLocal() const = 0;
 
     /** returns the classes nested into this class */
     virtual ClassLinkedRefMap getClasses() const = 0;
-
-    /** returns TRUE if this class has documentation */
-    virtual bool hasDocumentation() const = 0;
 
     /** returns TRUE if this class has a non-empty detailed description */
     virtual bool hasDetailedDescription() const = 0;
@@ -152,9 +140,6 @@ class ClassDef : public Definition
 
     /** returns the file name to use for the inheritance graph */
     virtual QCString inheritanceGraphFileName() const = 0;
-
-    /** Returns the name as it is appears in the documentation */
-    virtual QCString displayName(bool includeScope=TRUE) const = 0;
 
     /** Returns the type of compound this is, i.e. class/struct/union/.. */
     virtual CompoundType compoundType() const = 0;
@@ -187,15 +172,6 @@ class ClassDef : public Definition
      */
     virtual Protection protection() const = 0;
 
-    /** returns TRUE iff a link is possible to this item within this project.
-     */
-    virtual bool isLinkableInProject() const = 0;
-
-    /** return TRUE iff a link to this class is possible (either within
-     *  this project, or as a cross-reference to another project).
-     */
-    virtual bool isLinkable() const = 0;
-
     /** the class is visible in a class diagram, or class hierarchy */
     virtual bool isVisibleInHierarchy() const = 0;
 
@@ -216,16 +192,18 @@ class ClassDef : public Definition
      */
     virtual FileDef      *getFileDef() const = 0;
 
-    /** Returns the Java package this class is in or 0 if not applicable.
+    /** Returns the C++20 module in which this compound's definition can be found.
      */
+    virtual ModuleDef    *getModuleDef() const = 0;
 
+    /** Returns the member with the given name */
     virtual const MemberDef *getMemberByName(const QCString &) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect base class of this
      *  class. This function will recursively traverse all branches of the
      *  inheritance tree.
      */
-    virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const = 0;
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec=QCString()) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect sub class of this
      *  class.
@@ -260,12 +238,6 @@ class ClassDef : public Definition
 
     virtual bool isTemplateArgument() const = 0;
 
-    /** Returns the definition of a nested compound if
-     *  available, or 0 otherwise.
-     *  @param name The name of the nested compound
-     */
-    virtual const Definition *findInnerCompound(const QCString &name) const = 0;
-
     /** Returns the template parameter lists that form the template
      *  declaration of this class.
      *
@@ -276,7 +248,7 @@ class ClassDef : public Definition
     virtual ArgumentLists getTemplateParameterLists() const = 0;
 
     virtual QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const = 0;
+        const ArgumentLists *actualParams=nullptr,uint32_t *actualParamIndex=nullptr) const = 0;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.
@@ -331,7 +303,6 @@ class ClassDef : public Definition
 
     virtual bool isUsedOnly() const = 0;
 
-    virtual QCString anchor() const = 0;
     virtual bool isEmbeddedInOuterScope() const = 0;
 
     virtual bool isSimple() const = 0;
@@ -357,6 +328,11 @@ class ClassDef : public Definition
     virtual bool hasNonReferenceSuperClass() const = 0;
 
     virtual QCString requiresClause() const = 0;
+    virtual StringVector getQualifiers() const = 0;
+
+    virtual bool containsOverload(const MemberDef *md) const = 0;
+
+    virtual bool isImplicitTemplateInstance() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- count members ----
@@ -364,9 +340,8 @@ class ClassDef : public Definition
 
     virtual int countMembersIncludingGrouped(MemberListType lt,
                 const ClassDef *inheritedFrom,bool additional) const = 0;
-    virtual int countInheritanceNodes() const = 0;
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const = 0;
+                MemberListType lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- helpers ----
@@ -374,27 +349,51 @@ class ClassDef : public Definition
 
     virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- write output ----
+    //-----------------------------------------------------------------------------------
+
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                  const QCString &header,bool localNames) const = 0;
-
+    virtual void writeDocumentation(OutputList &ol) const = 0;
+    virtual void writeDocumentationForInnerClasses(OutputList &ol) const = 0;
+    virtual void writeMemberPages(OutputList &ol) const = 0;
+    virtual void writeMemberList(OutputList &ol) const = 0;
+    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
+    virtual void writeSummaryLinks(OutputList &ol) const = 0;
+    virtual void writeInlineDocumentation(OutputList &ol) const = 0;
+    virtual void writeTagFile(TextStream &) const = 0;
+    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+                 MemberListType lt,const QCString &title,
+                 const QCString &subTitle=QCString(),
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=nullptr,
+                 MemberListType lt2=MemberListType::Invalid(),bool invert=FALSE,bool showAlways=FALSE) const = 0;
+    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
+                 const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
 };
 
 class ClassDefMutable : public DefinitionMutable, public ClassDef
 {
   public:
+    ABSTRACT_BASE_CLASS(ClassDefMutable)
+
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
 
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setFileDef(FileDef *fd) = 0;
+    virtual void setModuleDef(ModuleDef *md) = 0;
     virtual void setSubGrouping(bool enabled) = 0;
     virtual void setProtection(Protection p) = 0;
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) = 0;
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const QCString &name) = 0;
-    virtual void setClassSpecifier(uint64 spec) = 0;
+    virtual void setClassSpecifier(TypeSpecifier spec) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;
@@ -402,9 +401,17 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
     virtual void setTagLessReference(const ClassDef *cd) = 0;
-    virtual void setName(const QCString &name) = 0;
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
+    virtual void addQualifiers(const StringVector &qualifiers) = 0;
+        // inheritance graph related members
+    virtual CLASS_GRAPH_t hasInheritanceGraph() const = 0;
+    virtual void overrideInheritanceGraph(CLASS_GRAPH_t e) = 0;
+    virtual void setImplicitTemplateInstance(bool b) = 0;
+
+    // collaboration graph related members
+    virtual bool hasCollaborationGraph() const = 0;
+    virtual void overrideCollaborationGraph(bool e) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
@@ -412,10 +419,10 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
 
     virtual void insertBaseClass(ClassDef *,const QCString &name,Protection p,Specifier s,const QCString &t=QCString()) = 0;
     virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const QCString &t=QCString()) = 0;
+    virtual void insertExplicitTemplateInstance(ClassDef *instance,const QCString &spec) = 0;
     virtual void insertMember(MemberDef *) = 0;
     virtual void insertUsedFile(const FileDef *) = 0;
     virtual void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
     virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file) = 0;
     virtual void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
     virtual void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
@@ -435,39 +442,17 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void countMembers() = 0;
     virtual void sortAllMembersList() = 0;
 
-    //-----------------------------------------------------------------------------------
-    // --- write output ----
-    //-----------------------------------------------------------------------------------
-
-    virtual void writeDocumentation(OutputList &ol) const = 0;
-    virtual void writeDocumentationForInnerClasses(OutputList &ol) const = 0;
-    virtual void writeMemberPages(OutputList &ol) const = 0;
-    virtual void writeMemberList(OutputList &ol) const = 0;
-    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
-                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
-    virtual void writeSummaryLinks(OutputList &ol) const = 0;
-    virtual void writeInlineDocumentation(OutputList &ol) const = 0;
-    virtual void writeTagFile(TextStream &) = 0;
-    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
-                 MemberListType lt,const QCString &title,
-                 const QCString &subTitle=QCString(),
-                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
-                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
-    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
-                 const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
-
 
 };
 
 /** Factory method to create a new ClassDef object */
-ClassDefMutable *createClassDef(
+std::unique_ptr<ClassDef> createClassDef(
              const QCString &fileName,int startLine,int startColumn,
              const QCString &name,ClassDef::CompoundType ct,
              const QCString &ref=QCString(),const QCString &fName=QCString(),
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
-ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd);
+std::unique_ptr<ClassDef> createClassDefAlias(const Definition *newScope,const ClassDef *cd);
 
 // --- Cast functions
 
@@ -475,7 +460,6 @@ ClassDef            *toClassDef(Definition *d);
 ClassDef            *toClassDef(DefinitionMutable *d);
 const ClassDef      *toClassDef(const Definition *d);
 ClassDefMutable     *toClassDefMutable(Definition *d);
-ClassDefMutable     *toClassDefMutable(const Definition *d);
 
 // --- Helpers
 //
@@ -484,11 +468,11 @@ inline ClassDefMutable *getClassMutable(const QCString &key)
 {
   return toClassDefMutable(getClass(key));
 }
-bool hasVisibleRoot(const BaseClassList &bcl);
+bool classHasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool classVisibleInIndex(const ClassDef *cd);
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
-Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Public,int level=0);
+Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Protection::Public,int level=0);
 
 //------------------------------------------------------------------------
 
@@ -496,12 +480,7 @@ Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,
  */
 struct UsesClassDef
 {
-  UsesClassDef(ClassDef *cd) : classDef(cd)
-  {
-  }
- ~UsesClassDef()
-  {
-  }
+  UsesClassDef(ClassDef *cd) : classDef(cd) {}
   void addAccessor(const QCString &s)
   {
     if (accessors.find(s.str())==accessors.end())
@@ -533,12 +512,7 @@ class UsesClassList : public std::vector<UsesClassDef>
  */
 struct ConstraintClassDef
 {
-  ConstraintClassDef(ClassDef *cd) : classDef(cd)
-  {
-  }
- ~ConstraintClassDef()
-  {
-  }
+  ConstraintClassDef(ClassDef *cd) : classDef(cd) {}
   void addAccessor(const QCString &s)
   {
     if (accessors.find(s.str())==accessors.end())

@@ -18,6 +18,10 @@ function(set_project_warnings project_name)
               # declared in the for-loop is used outside the for-loop scope
       /w14296 # 'operator': expression is always 'boolean_value'
       /w14311 # 'variable': pointer truncation from 'type1' to 'type2'
+      /w14456 # declaration of 'name' hides previous local declaration
+      /w14457 # declaration of 'name' hides function parameter
+      /w14458 # declaration of 'name' hides class member
+      /w14459 # declaration of 'name' hides global declaration
       /w14545 # expression before comma evaluates to a function which is missing
               # an argument list
       /w14546 # function call before comma missing argument list
@@ -56,6 +60,7 @@ function(set_project_warnings project_name)
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output
                  # (ie printf)
+      -Wpedantic # warn if non-standard C++ is used
 
       # turn off warning caused by generated code (flex)
       -Wno-unused-parameter
@@ -63,6 +68,9 @@ function(set_project_warnings project_name)
       -Wno-sign-conversion
       -Wno-format-nonliteral
       -Wno-shorten-64-to-32
+
+      # allow comma removal for empty __VA_ARGS__ in ,##__VA_ARGS__
+      -Wno-gnu-zero-variadic-macro-arguments
 
       # enable to turn warnings into errors
       #-Werror

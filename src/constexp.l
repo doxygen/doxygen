@@ -32,17 +32,14 @@
 #include "cppvalue.h"
 #include "ce_parse.hpp" // generated header file
 #include "message.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define USE_STATE2STRING 0
+[[maybe_unused]] static const char *stateToString(int state);
 
-#if USE_STATE2STRING
-static const char *stateToString(int state);
-#endif
-
-static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner);
+static int yyread(char *buf,int max_size,yyscan_t yyscanner);
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
@@ -110,10 +107,10 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 %%
 
-static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner)
+static int yyread(char *buf,int max_size,yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = static_cast<struct yyguts_t*>(yyscanner);
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -129,48 +126,44 @@ struct ConstExpressionParser::Private
 };
 
 
-ConstExpressionParser::ConstExpressionParser()
+ConstExpressionParser::ConstExpressionParser() : p(std::make_unique<Private>())
 {
-  p = new Private;
   constexpYYlex_init_extra(&p->constexpYY_extra, &p->yyscanner);
 }
 
 ConstExpressionParser::~ConstExpressionParser()
 {
   constexpYYlex_destroy(p->yyscanner);
-  delete p;
 }
 
-bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::string &s)
+bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::string &s, const std::string &orgStr)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
 #ifdef FLEX_DEBUG
-  constexpYYset_debug(1,p->yyscanner);
+  constexpYYset_debug(Debug::isFlagSet(Debug::Lex_constexp)?1:0,p->yyscanner);
 #endif
 
   yyextra->constExpFileName = fileName;
   yyextra->constExpLineNr = lineNr;
+  yyextra->orgString = orgStr;
   yyextra->inputString = s;
   yyextra->inputPosition = 0;
   constexpYYrestart( yyin, p->yyscanner );
 
-  printlex(yy_flex_debug, true, __FILE__, fileName);
+  DebugLex debugLex(Debug::Lex_constexp, __FILE__, fileName);
   //printf("Expression: '%s'\n",qPrint(s));
 
   constexpYYparse(p->yyscanner);
 
   //printf("Result: %ld\n",(long)g_resultValue);
-  printlex(yy_flex_debug, false, __FILE__, fileName);
   bool result = static_cast<long>(yyextra->resultValue)!=0;
 
   return result;
 }
 
 extern "C" {
-  int constexpYYwrap(yyscan_t yyscanner) { return 1; }
+  int constexpYYwrap(yyscan_t /* yyscanner */) { return 1; }
 }
 
-#if USE_STATE2STRING
 #include "constexp.l.h"
-#endif

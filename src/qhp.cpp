@@ -12,11 +12,11 @@
  */
 
 #include <algorithm>
-#include <fstream>
 #include <memory>
 #include <string.h>
 #include <vector>
 #include <cassert>
+#include <mutex>
 
 #include "config.h"
 #include "debug.h"
@@ -27,6 +27,12 @@
 #include "qhp.h"
 #include "textstream.h"
 #include "util.h"
+#include "portable.h"
+#include "language.h"
+#include "version.h"
+
+static std::once_flag g_blankWritten;
+
 
 static inline void writeIndent(TextStream &t,int indent)
 {
@@ -43,14 +49,14 @@ class QhpSectionTree
     {
       enum class Type { Root, Dir, Section };
       // constructor for root node
-      Node() : type(Type::Root), parent(0) {}
+      Node() : type(Type::Root), parent(nullptr) {}
       // constructor for dir node
       Node(Node *parent_) : type(Type::Dir), parent(parent_) {}
       // constructor for section node
       Node(Node *parent_, const QCString &title_,const QCString &ref_)
                           : type(Type::Section), parent(parent_), title(title_), ref(ref_) {}
       Type type;
-      Node *parent = 0;
+      Node *parent = nullptr;
       QCString title;
       QCString ref;
       std::vector<std::unique_ptr<Node>> children;
@@ -126,7 +132,7 @@ class QhpSectionTree
     }
     void decLevel()
     {
-      assert(m_current->parent!=0);
+      assert(m_current->parent!=nullptr);
       if (m_current->parent)
       {
         m_current = m_current->parent;
@@ -172,7 +178,7 @@ static QCString makeFileName(const QCString & withoutExtension)
     }
     else // add specified HTML extension
     {
-      result = addHtmlExtensionIfMissing(result);
+      addHtmlExtensionIfMissing(result);
     }
   }
   return result;
@@ -187,13 +193,8 @@ static QCString makeRef(const QCString & withoutExtension, const QCString & anch
   return result+"#"+anchor;
 }
 
-Qhp::Qhp() : p(std::make_unique<Private>())
-{
-}
-
-Qhp::~Qhp()
-{
-}
+Qhp::Qhp() : p(std::make_unique<Private>()) {}
+Qhp::~Qhp() = default;
 
 void Qhp::initialize()
 {
@@ -211,7 +212,7 @@ void Qhp::initialize()
   ..
   */
   QCString fileName = Config_getString(HTML_OUTPUT) + "/" + qhpFileName;
-  p->docFile.open( fileName.str(), std::ofstream::out | std::ofstream::binary);
+  p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
   {
     term("Could not open file %s for writing\n", fileName.data());
@@ -252,7 +253,7 @@ void Qhp::initialize()
   if (std::find(sectionFilterAttributes.begin(), sectionFilterAttributes.end(), "doxygen") ==
       sectionFilterAttributes.end())
   {
-    sectionFilterAttributes.push_back("doxygen");
+    sectionFilterAttributes.emplace_back("doxygen");
   }
   for (const auto &attr : sectionFilterAttributes)
   {
@@ -310,7 +311,7 @@ void Qhp::decContentsDepth()
   p->sectionTree.decLevel();
 }
 
-void Qhp::addContentsItem(bool isDir, const QCString & name,
+void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
                           const QCString & /*ref*/, const QCString & file,
                           const QCString &anchor, bool /* separateIndex */,
                           bool /* addToNavIndex */,
@@ -329,6 +330,38 @@ void Qhp::addContentsItem(bool isDir, const QCString & name,
   QCString f = file;
   if (!f.isEmpty() && f.at(0)=='^') return; // absolute URL not supported
 
+  if (f.isEmpty())
+  {
+    f = "doxygen_blank";
+    addHtmlExtensionIfMissing(f);
+    std::call_once(g_blankWritten,[this,&f]()
+    {
+      QCString fileName = Config_getString(HTML_OUTPUT) + "/" + f;
+      std::ofstream blankFile = Portable::openOutputStream(fileName); // we just need an empty file
+      if (!blankFile.is_open())
+      {
+        term("Could not open file %s for writing\n", qPrint(fileName));
+      }
+      TextStream blank;
+      blank.setStream(&blankFile);
+      blank << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+      blank << "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"" + theTranslator->trISOLang() + "\">\n";
+      blank << "<head>\n";
+      blank << "<title>Validator / crawler helper</title>\n";
+      blank << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
+      blank << "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=11\"/>\n";
+
+      blank << "<meta name=\"generator\" content=\"Doxygen " + getDoxygenVersion() + "\"/>\n";
+      blank << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>\n";
+      blank << "</head>\n";
+      blank << "<body>\n";
+      blank << "</body>\n";
+      blank << "</html>\n";
+      blank.flush();
+      blankFile.close();
+      addFile(f);
+    });
+  }
   QCString finalRef = makeRef(f, anchor);
   p->sectionTree.addSection(name,finalRef);
 }
@@ -342,28 +375,17 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   //       md?md->name().data():"<none>",
   //       qPrint(word));
 
-  if (md) // member
+  if (context && md) // member
   {
-    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    if (context==0) // global member
-    {
-      if (md->getGroupDef())
-        context = md->getGroupDef();
-      else if (md->getFileDef())
-        context = md->getFileDef();
-    }
-    if (context==0) return; // should not happen
     QCString cfname  = md->getOutputFileBase();
     QCString argStr  = md->argsString();
-    QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
     QCString level2  = !word.isEmpty() ? word : md->name();
-    QCString contRef = separateMemberPages ? cfname : cfiname;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
     QCString ref;
 
     // <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
-    ref = makeRef(contRef, anchor);
+    ref = makeRef(cfname, anchor);
     QCString id = level1+"::"+level2;
     writeIndent(p->index,3);
     p->index << "<keyword name=\"" << convertToXML(level2 + argStr) << "\""

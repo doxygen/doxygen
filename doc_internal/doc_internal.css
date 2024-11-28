@@ -1,0 +1,31 @@
+dl.multicol {
+        -moz-column-gap: 1em;
+        -webkit-column-gap: 1em;
+        column-gap: 1em;
+        -moz-column-count: 3;
+        -webkit-column-count: 3;
+        column-count: 3;
+        list-style-type: none;
+}
+ul.multicol {
+        font-family: courier,monospace;
+}
+
+body {
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
+}
+
+::-webkit-scrollbar {
+        background-color: var(--scrollbar-background-color);
+        height: 12px;
+        width: 12px;
+}
+::-webkit-scrollbar-thumb {
+        border-radius: 6px;
+        box-shadow: inset 0 0 12px 12px var(--scrollbar-thumb-color);
+        border: solid 2px transparent;
+}
+::-webkit-scrollbar-corner {
+        background-color: var(--scrollbar-background-color);
+}
+

@@ -18,7 +18,10 @@
 #include "filesystem.hpp"
 #include "dir.h"
 
+#include <utility>
+
 namespace fs = ghc::filesystem;
+
 
 //-----------------------------------------------------------------------------------------------
 
@@ -31,9 +34,33 @@ DirEntry::DirEntry() : p(std::make_unique<Private>())
 {
 }
 
-DirEntry::~DirEntry()
+DirEntry::DirEntry(const DirEntry &de) : p(std::make_unique<Private>())
 {
+  p->entry = de.p->entry;
 }
+
+DirEntry &DirEntry::operator=(const DirEntry &de)
+{
+  if (this!=&de)
+  {
+    p = std::make_unique<Private>();
+    p->entry = de.p->entry;
+  }
+  return *this;
+}
+
+DirEntry::DirEntry(DirEntry &&de) : p(std::make_unique<Private>())
+{
+  p = std::move(de.p);
+}
+
+DirEntry &DirEntry::operator=(DirEntry &&de)
+{
+  p = std::move(de.p);
+  return *this;
+}
+
+DirEntry::~DirEntry() = default;
 
 bool DirEntry::is_directory() const
 {
@@ -60,9 +87,10 @@ std::string DirEntry::path() const
 struct DirIterator::Private
 {
   Private() : it() {}
-  Private(const std::string &path) : it(path) {}
+  Private(const std::string &path) : it(path,ec) {}
   fs::directory_iterator it;
-  mutable DirEntry current;
+  std::error_code ec;
+  DirEntry current;
 };
 
 DirIterator::DirIterator() : p(std::make_unique<Private>())
@@ -76,10 +104,8 @@ DirIterator::DirIterator(const std::string &path) : p(std::make_unique<Private>(
 DirIterator::DirIterator(const DirIterator &it) : p(std::make_unique<Private>())
 {
   p->it = it.p->it;
-}
-
-DirIterator::~DirIterator()
-{
+  p->ec = it.p->ec;
+  p->current = it.p->current;
 }
 
 DirIterator &DirIterator::operator=(const DirIterator &it)
@@ -87,8 +113,29 @@ DirIterator &DirIterator::operator=(const DirIterator &it)
   if (&it!=this)
   {
     p->it = it.p->it;
+    p->ec = it.p->ec;
+    p->current = it.p->current;
   }
   return *this;
+}
+
+DirIterator::DirIterator(DirIterator &&it) : p(std::make_unique<Private>())
+{
+  std::exchange(p->it,it.p->it);
+  std::exchange(p->ec,it.p->ec);
+  std::exchange(p->current,it.p->current);
+}
+
+DirIterator &DirIterator::operator=(DirIterator &&it)
+{
+  std::exchange(p->it,it.p->it);
+  std::exchange(p->ec,it.p->ec);
+  std::exchange(p->current,it.p->current);
+  return *this;
+}
+
+DirIterator::~DirIterator()
+{
 }
 
 DirIterator DirIterator::operator++()
@@ -156,6 +203,17 @@ Dir &Dir::operator=(const Dir &d)
   {
     p->path = d.p->path;
   }
+  return *this;
+}
+
+Dir::Dir(Dir &&d) : p(std::make_unique<Private>())
+{
+  std::exchange(p->path,d.p->path);
+}
+
+Dir &Dir::operator=(Dir &&d)
+{
+  std::exchange(p->path,d.p->path);
   return *this;
 }
 

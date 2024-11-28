@@ -20,16 +20,19 @@
 #define HTMLHELP_H
 
 #include <memory>
-#include "index.h"
+#include "qcstring.h"
+#include "construct.h"
+#include "indexlist.h"
 
 class Definition;
+class MemberDef;
 
 /** A class that generated the HTML Help specific files.
  *
  *  These files can be used with the Microsoft HTML Help workshop
  *  to generate compressed HTML files (.chm).
  */
-class HtmlHelp  : public IndexIntf
+class HtmlHelp : public IndexIntf
 {
     /*! used in imageNumber param of HTMLHelp::addContentsItem() function
         to specify document icon in tree view.
@@ -58,9 +61,10 @@ class HtmlHelp  : public IndexIntf
       TOOL,             TOOL_NEW
     };
   public:
-    //static HtmlHelp *getInstance();
     HtmlHelp();
     ~HtmlHelp();
+    NON_COPYABLE(HtmlHelp)
+
     void initialize();
     void finalize();
     void incContentsDepth();

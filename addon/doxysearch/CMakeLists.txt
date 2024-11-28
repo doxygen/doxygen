@@ -13,6 +13,7 @@ include_directories(
 )
 add_executable(doxyindexer
                doxyindexer.cpp
+               ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 target_link_libraries(doxyindexer
@@ -26,6 +27,7 @@ target_link_libraries(doxyindexer
 
 add_executable(doxysearch.cgi
                doxysearch.cpp
+               ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 target_link_libraries(doxysearch.cgi

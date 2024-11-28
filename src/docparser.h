@@ -21,6 +21,8 @@
 
 #include "qcstring.h"
 #include "growvector.h"
+#include "construct.h"
+#include "types.h"
 
 class MemberDef;
 class Definition;
@@ -31,7 +33,7 @@ class Definition;
 class IDocParser
 {
   public:
-    virtual ~IDocParser() = default;
+    ABSTRACT_BASE_CLASS(IDocParser)
 };
 
 //! @brief pointer to parser interface
@@ -46,18 +48,19 @@ IDocParserPtr createDocParser();
 class IDocNodeAST
 {
   public:
-    virtual ~IDocNodeAST() = default;
+    ABSTRACT_BASE_CLASS(IDocNodeAST)
+
     virtual bool isEmpty() const = 0;
 };
 
 using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
 
 /*! Main entry point for the comment block parser.
- *  @param parser    The parser object created via createDocParser()
+ *  @param parserIntf The parser object created via createDocParser()
  *  @param fileName  File in which the documentation block is found (or the
  *                   name of the example file in case isExample is TRUE).
  *  @param startLine Line at which the documentation block is found.
- *  @param context   Class or namespace to which this block belongs.
+ *  @param ctx       Class or namespace to which this block belongs.
  *  @param md        Member definition to which the documentation belongs.
  *                   Can be 0.
  *  @param input     String representation of the documentation block.
@@ -75,8 +78,8 @@ using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
  *  @returns         An object representing the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
-IDocNodeASTPtr validatingParseDoc(IDocParser &parser,const QCString &fileName,int startLine,
-                            const Definition *context, const MemberDef *md,
+IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,const QCString &fileName,int startLine,
+                            const Definition *ctx, const MemberDef *md,
                             const QCString &input,bool indexWords,
                             bool isExample,const QCString &exampleName,
                             bool singleLine,bool linkFromIndex,
@@ -87,7 +90,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parser,const QCString &fileName,in
  */
 IDocNodeASTPtr validatingParseText(IDocParser &parser,const QCString &input);
 
-IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCString &context);
+IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCString &context, const QCString &srcFile = "", int srcLine = -1);
 
 //--------------------------------------------------------------------------------
 
@@ -97,6 +100,5 @@ IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCStrin
 void docFindSections(const QCString &input,
                      const Definition *d,
                      const QCString &fileName);
-
 
 #endif

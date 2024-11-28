@@ -34,7 +34,7 @@ class Define
     QCString definition;
     QCString fileName;
     QCString args;
-    FileDef *fileDef = 0;
+    FileDef *fileDef = nullptr;
     int lineNr = 1;
     int columnNr = 1;
     int nargs = -1;
@@ -42,6 +42,7 @@ class Define
     bool varArgs = FALSE;
     bool isPredefined = FALSE;
     bool nonRecursive = FALSE;
+    bool expandAsDefined = FALSE;
 };
 
 /** List of all macro definitions */

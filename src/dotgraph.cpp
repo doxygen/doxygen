@@ -13,12 +13,12 @@
 *
 */
 
-#include <sstream>
 #include <mutex>
+#include <regex>
 
 #include "config.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "md5.h"
 #include "message.h"
 #include "util.h"
@@ -29,6 +29,7 @@
 #include "dotnode.h"
 #include "dotfilepatcher.h"
 #include "fileinfo.h"
+#include "portable.h"
 
 #define MAP_CMD "cmapx"
 
@@ -45,7 +46,7 @@ static bool sameMd5Signature(const QCString &baseName,
   bool same = false;
   char md5stored[33];
   md5stored[0]=0;
-  std::ifstream f(baseName.str()+".md5",std::ifstream::in | std::ifstream::binary);
+  std::ifstream f = Portable::openInputStream(baseName+".md5",true);
   if (f.is_open())
   {
     // read checksum
@@ -105,7 +106,7 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 
 QCString DotGraph::imgName() const
 {
-  return m_baseName + ((m_graphFormat == GOF_BITMAP) ?
+  return m_baseName + ((m_graphFormat == GraphOutputFormat::BITMAP) ?
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
@@ -155,9 +156,9 @@ bool DotGraph::prepareDotFile()
   }
 
   char sigStr[33];
-  uchar md5_sig[16];
+  uint8_t md5_sig[16];
   // calculate md5
-  MD5Buffer(m_theGraph.data(), m_theGraph.length(), md5_sig);
+  MD5Buffer(m_theGraph.data(), static_cast<unsigned int>(m_theGraph.length()), md5_sig);
   // convert result to a string
   MD5SigToString(md5_sig, sigStr);
 
@@ -165,7 +166,7 @@ bool DotGraph::prepareDotFile()
 
   if (sameMd5Signature(absBaseName(), sigStr) &&
       deliverablesPresent(absImgName(),
-                          m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
+                          m_graphFormat == GraphOutputFormat::BITMAP && m_generateImageMap ? absMapName() : QCString()
                          )
      )
   {
@@ -176,7 +177,7 @@ bool DotGraph::prepareDotFile()
   // need to rebuild the image
 
   // write .dot file because image was new or has changed
-  std::ofstream f(absDotName().str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(absDotName());
   if (!f.is_open())
   {
     err("Could not open file %s for writing\n",qPrint(absDotName()));
@@ -185,14 +186,14 @@ bool DotGraph::prepareDotFile()
   f << m_theGraph;
   f.close();
 
-  if (m_graphFormat == GOF_BITMAP)
+  if (m_graphFormat == GraphOutputFormat::BITMAP)
   {
     // run dot to create a bitmap image
     DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
     if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
   }
-  else if (m_graphFormat == GOF_EPS)
+  else if (m_graphFormat == GraphOutputFormat::EPS)
   {
     // run dot to create a .eps image
     DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
@@ -211,7 +212,7 @@ bool DotGraph::prepareDotFile()
 void DotGraph::generateCode(TextStream &t)
 {
   QCString imgExt = getDotImageExtension();
-  if (m_graphFormat==GOF_BITMAP && m_textFormat==EOF_DocBook)
+  if (m_graphFormat==GraphOutputFormat::BITMAP && m_textFormat==EmbeddedOutputFormat::DocBook)
   {
     t << "<para>\n";
     t << "    <informalfigure>\n";
@@ -225,7 +226,7 @@ void DotGraph::generateCode(TextStream &t)
     t << "    </informalfigure>\n";
     t << "</para>\n";
   }
-  else if (m_graphFormat==GOF_BITMAP && m_generateImageMap) // produce HTML to include the image
+  else if (m_graphFormat==GraphOutputFormat::BITMAP && m_generateImageMap) // produce HTML to include the image
   {
     if (imgExt=="svg") // add link to SVG file without map file
     {
@@ -241,7 +242,7 @@ void DotGraph::generateCode(TextStream &t)
         int mapId = DotManager::instance()->
                createFilePatcher(m_fileName)->
                addSVGObject(m_baseName,absImgName(),m_relPath);
-        t << "<!-- SVG " << mapId << " -->\n";
+        t << "<!-- " << "SVG " << mapId << " -->";
       }
       if (!m_noDivTag) t << "</div>\n";
     }
@@ -260,7 +261,7 @@ void DotGraph::generateCode(TextStream &t)
       }
     }
   }
-  else if (m_graphFormat==GOF_EPS) // produce tex to include the .eps image
+  else if (m_graphFormat==GraphOutputFormat::EPS) // produce tex to include the .eps image
   {
     if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
     {
@@ -274,8 +275,6 @@ void DotGraph::generateCode(TextStream &t)
 
 void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph ";
   if (title.isEmpty())
   {
@@ -292,16 +291,11 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
     t << " // INTERACTIVE_SVG=YES\n";
   }
   t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
-  if (Config_getBool(DOT_TRANSPARENT))
-  {
-    t << "  bgcolor=\"transparent\";\n";
-  }
-  t << "  edge [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\","
-         "labelfontname=\"" << fontName << "\","
-         "labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\",shape=record];\n";
+  t << "  bgcolor=\"transparent\";\n";
+  QCString c = Config_getString(DOT_COMMON_ATTR);
+  if (!c.isEmpty()) c += ",";
+  t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
+  t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }
 
 void DotGraph::writeGraphFooter(TextStream &t)
@@ -326,7 +320,7 @@ void DotGraph::computeGraph(DotNode *root,
     md5stream << "  rankdir=\"" << rank << "\";\n";
   }
   root->clearWriteFlag();
-  root->write(md5stream, gt, format, gt!=CallGraph && gt!=Dependency, TRUE, backArrows);
+  root->write(md5stream, gt, format, gt!=GraphType::CallGraph && gt!=GraphType::Dependency, TRUE, backArrows);
   if (renderParents)
   {
     for (const auto &pn : root->parents())

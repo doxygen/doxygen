@@ -26,13 +26,14 @@ int constexpYYerror(yyscan_t yyscanner, const char *s)
 {
   struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
   warn(yyextra->constExpFileName.c_str(), yyextra->constExpLineNr,
-       "preprocessing issue while doing constant expression evaluation: %s: input='%s'",s,yyextra->inputString.c_str());
+       "preprocessing issue while doing constant expression evaluation: %s:\n    input='%s'\n    doxygen interpretation '%s'",
+       s,yyextra->orgString.c_str(),yyextra->inputString.c_str());
   return 0;
 }
 
 %}
 
-%name-prefix "constexpYY"
+%define api.prefix {constexpYY}
 %define api.pure full
 %lex-param {yyscan_t yyscanner}
 %parse-param {yyscan_t yyscanner}
@@ -265,32 +266,32 @@ primary_expression: constant
 constant: TOK_OCTALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseOctal(yyextra->strToken);
+	    $$ = CPPValue::parseOctal(yyextra->strToken);
 	  }
 	| TOK_DECIMALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseDecimal(yyextra->strToken);
+	    $$ = CPPValue::parseDecimal(yyextra->strToken);
 	  }
 	| TOK_HEXADECIMALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseHexadecimal(yyextra->strToken);
+	    $$ = CPPValue::parseHexadecimal(yyextra->strToken);
 	  }
 	| TOK_BINARYINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseBinary(yyextra->strToken);
+	    $$ = CPPValue::parseBinary(yyextra->strToken);
 	  }
 	| TOK_CHARACTER
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseCharacter(yyextra->strToken);
+	    $$ = CPPValue::parseCharacter(yyextra->strToken);
 	  }
 	| TOK_FLOAT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseFloat(yyextra->strToken);
+	    $$ = CPPValue::parseFloat(yyextra->strToken);
 	  }
 ;
 

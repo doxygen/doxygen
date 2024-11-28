@@ -1,6 +1,6 @@
 
-ATTENTION! This is the template for generating language.doc. If you want to
-change the language.doc, make the changes here and inside maintainers.txt.
+ATTENTION! This is the template for generating language.dox. If you want to
+change the language.dox, make the changes here and inside maintainers.txt.
 
 /******************************************************************************
  * %(editnote)s
@@ -54,9 +54,14 @@ This short HOWTO explains how to add support for the new language to doxygen:
 
 Just follow the following steps:
 <ol>
-<li>Tell me for which language you want to add support. If no one else
+<li>Tell me for which language (say `YourLanguage`) you want to add support. If no one else
     is already working on support for that language, you will be
     assigned as the maintainer for the language.
+<li>Add to the file `doxygen/src/config.xml`, at the appropriate place in
+    the \ref cfg_output_language "OUTPUT_LANGUAGE" part, the line:
+\verbatim
+      <value name='YourLanguage'/>
+\endverbatim
 <li>Create a copy of `doxygen/src/translator_en.h` and name it
     `doxygen/src/translator_<your_2_letter_country_code>.h`
     I'll use `xx` in the rest of this document (and `XX` for the uppercase version).
@@ -67,11 +72,11 @@ Just follow the following steps:
 \endverbatim
     <p>Now, in <code>setTranslator()</code> add
 \verbatim
-    case OUTPUT_LANGUAGE_t::YourLanguage:          theTranslator = new TranslatorYourLanguage; break;
+case OUTPUT_LANGUAGE_t::YourLanguage: theTranslator = new TranslatorYourLanguage; break;
 \endverbatim
 <li>Edit <code>doxygen/src/translator_xx.h</code>:
    <ul>
-   <li>Use the UTF-8 capable editor and open the file using the UTF-8 mode.
+   <li>Use the UTF-8 capable editor and open the file using the UTF-8 mode (non BOM mode).
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code>
        twice (i.e. in the \c \#ifndef and \c \#define preprocessor commands at
        the beginning of the file).

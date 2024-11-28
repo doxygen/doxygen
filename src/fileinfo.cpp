@@ -64,21 +64,21 @@ bool FileInfo::isFile() const
 {
   std::error_code ec;
   fs::file_status status = fs::status(m_name,ec);
-  return !ec && fs::is_regular_file(status);
+  return !ec && fs::is_regular_file(std::move(status));
 }
 
 bool FileInfo::isDir() const
 {
   std::error_code ec;
   fs::file_status status = fs::status(m_name,ec);
-  return !ec && fs::is_directory(status);
+  return !ec && fs::is_directory(std::move(status));
 }
 
 bool FileInfo::isSymLink() const
 {
   std::error_code ec;
-  fs::file_status status = fs::status(m_name,ec);
-  return !ec && fs::is_symlink(status);
+  fs::file_status status = fs::symlink_status(m_name,ec);
+  return !ec && fs::is_symlink(std::move(status));
 }
 
 std::string FileInfo::readLink() const

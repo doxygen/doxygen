@@ -56,20 +56,20 @@ class PrintDocVisitor
     void operator()(const DocSymbol &s)
     {
       indent_leaf();
-      const char *res = HtmlEntityMapper::instance()->utf8(s.symbol(),TRUE);
+      const char *res = HtmlEntityMapper::instance().utf8(s.symbol(),TRUE);
       if (res)
       {
         printf("%s",res);
       }
       else
       {
-        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
       }
     }
     void operator()(const DocEmoji &s)
     {
       indent_leaf();
-      const char *res = EmojiEntityMapper::instance()->name(s.index());
+      const char *res = EmojiEntityMapper::instance().name(s.index());
       if (res)
       {
         printf("%s",res);
@@ -120,6 +120,9 @@ class PrintDocVisitor
         case DocStyleChange::Italic:
           if (s.enable()) printf("<italic>"); else printf("</italic>");
           break;
+        case DocStyleChange::Kbd:
+          if (s.enable()) printf("<kbd>"); else printf("</kbd>");
+          break;
         case DocStyleChange::Code:
           if (s.enable()) printf("<code>"); else printf("</code>");
           break;
@@ -146,30 +149,6 @@ class PrintDocVisitor
           break;
         case DocStyleChange::Span:
           if (s.enable()) printf("<span>"); else printf("</span>");
-          break;
-        case DocStyleChange::Details:
-          if (s.enable())
-          {
-            indent_pre();
-            printf("<details>\n");
-          }
-          else
-          {
-            indent_post();
-            printf("</details>\n");
-          }
-          break;
-        case DocStyleChange::Summary:
-          if (s.enable())
-          {
-            indent_pre();
-            printf("<summary>\n");
-          }
-          else
-          {
-            indent_post();
-            printf("</summary>\n");
-          }
           break;
       }
     }
@@ -236,12 +215,7 @@ class PrintDocVisitor
         case DocInclude::XmlInclude: printf("xmlinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;
         case DocInclude::Snippet: printf("snippet"); break;
-        case DocInclude::SnipWithLines: printf("snipwithlines"); break;
-        case DocInclude::SnippetDoc:
-        case DocInclude::IncludeDoc:
-          err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-              "Please create a bug report\n",__FILE__);
-          break;
+        case DocInclude::SnippetWithLines: printf("snipwithlines"); break;
       }
       printf("\"/>");
     }
@@ -323,7 +297,19 @@ class PrintDocVisitor
     void operator()(const DocAutoListItem &li)
     {
       indent_pre();
-      printf("<li>\n");
+      switch (li.itemNumber())
+      {
+        case DocAutoList::Unchecked: // unchecked
+          printf("<li class=\"unchecked\">\n");
+          break;
+        case DocAutoList::Checked_x: // checked with x
+        case DocAutoList::Checked_X: // checked with X
+          printf("<li class=\"checked\">\n");
+          break;
+        default:
+          printf("<li>\n");
+          break;
+      }
       visitChildren(li);
       indent_post();
       printf("</li>\n");
@@ -365,6 +351,7 @@ class PrintDocVisitor
 	case DocSimpleSect::Invar: printf("invar"); break;
 	case DocSimpleSect::Remark: printf("remark"); break;
 	case DocSimpleSect::Attention: printf("attention"); break;
+	case DocSimpleSect::Important: printf("important"); break;
 	case DocSimpleSect::User: printf("user"); break;
 	case DocSimpleSect::Rcs: printf("rcs"); break;
 	case DocSimpleSect::Unknown: printf("unknown"); break;
@@ -409,6 +396,10 @@ class PrintDocVisitor
     {
       indent_pre();
       printf("<sect%d>\n",s.level());
+      if (s.title())
+      {
+        std::visit(*this, *s.title());
+      }
       visitChildren(s);
       indent_post();
       printf("</sect%d>\n",s.level());
@@ -530,6 +521,37 @@ class PrintDocVisitor
       indent_post();
       printf("</a>\n");
     }
+    void operator()(const DocHtmlSummary &summary)
+    {
+      indent_pre();
+      printf("<summary");
+      for (const auto &opt : summary.attribs())
+      {
+        printf(" %s=\"%s\"",qPrint(opt.name),qPrint(opt.value));
+      }
+      printf(">\n");
+      visitChildren(summary);
+      indent_post();
+      printf("</summary>\n");
+    }
+    void operator()(const DocHtmlDetails &details)
+    {
+      indent_pre();
+      printf("<details");
+      for (const auto &opt : details.attribs())
+      {
+        printf(" %s=\"%s\"",qPrint(opt.name),qPrint(opt.value));
+      }
+      printf(">\n");
+      auto summary = details.summary();
+      if (summary)
+      {
+        std::visit(*this,*summary);
+      }
+      visitChildren(details);
+      indent_post();
+      printf("</details>\n");
+    }
     void operator()(const DocHtmlHeader &header)
     {
       indent_pre();
@@ -578,6 +600,14 @@ class PrintDocVisitor
       visitChildren(df);
       indent_post();
       printf("</diafile>\n");
+    }
+    void operator()(const DocPlantUmlFile &df)
+    {
+      indent_pre();
+      printf("<plantumlfile src=\"%s\">\n",qPrint(df.name()));
+      visitChildren(df);
+      indent_post();
+      printf("</plantumlfile>\n");
     }
     void operator()(const DocLink &lnk)
     {

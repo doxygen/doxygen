@@ -23,7 +23,6 @@
 \RequirePackage{enumitem}
 \RequirePackage{alphalph}
 \RequirePackage[normalem]{ulem} % for strikeout, but don't modify emphasis
-\RequirePackage{enumitem}
 
 %---------- Internal commands used in this style file ----------------
 
@@ -106,7 +105,15 @@
 % Necessary for hanging indent
 \newlength{\DoxyCodeWidth}
 
-\newcommand\DoxyCodeLine[1]{\hangpara{\DoxyCodeWidth}{1}{#1}\par}
+\newcommand\DoxyCodeLine[1]{
+  \ifthenelse{\equal{\detokenize{#1}}{}}
+  {
+    \vspace*{\baselineskip}
+  }
+  {
+    \hangpara{\DoxyCodeWidth}{1}{#1}\par
+  }
+}
 
 \newcommand\NiceSpace{%
      \discretionary{}{\kern\fontdimen2\font}{\kern\fontdimen2\font}%
@@ -115,6 +122,7 @@
 % Used by @code ... @endcode
 \newenvironment{DoxyCode}[1]{%
   \par%
+  \vspace{2pt}%
   \scriptsize%
   \normalfont\ttfamily%
   \rightskip0pt plus 1fil%
@@ -122,14 +130,14 @@
   \settowidth{\CodeWidthChar}{?}%
   \settoheight{\CodeHeightChar}{?}%
   \setlength{\parskip}{0ex plus 0ex minus 0ex}%
-  \ifthenelse{\equal{#1}{0}}
-  {
+  \ifthenelse{\equal{#1}{0}}%
+  {%
     {\lccode`~32 \lowercase{\global\let~}\NiceSpace}\obeyspaces%
-  }
-  {
+  }%
+  {%
     {\lccode`~32 \lowercase{\global\let~}}\obeyspaces%
-  }
-
+  }%
+  \vspace{2pt}%
 }{%
   \normalfont%
   \normalsize%
@@ -192,6 +200,10 @@
 \setlist[DoxyItemize,3]{label=\textasteriskcentered}
 \setlist[DoxyItemize,4]{label=\textperiodcentered}
 
+% Used for check boxes
+\newcommand{\DoxyUnchecked}{$\square$}
+\newcommand{\DoxyChecked}{\rlap{\raisebox{0.3ex}{\hspace{0.4ex}\tiny \checkmark}}$\square$}
+
 % Used by description lists (using <dl> ... </dl>)
 \newenvironment{DoxyDescription}{%
   \description%
@@ -224,6 +236,13 @@
 
 % Used by @attention
 \newenvironment{DoxyAttention}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @important
+\newenvironment{DoxyImportant}[1]{%
   \begin{DoxyDesc}{#1}%
 }{%
   \end{DoxyDesc}%
@@ -365,14 +384,16 @@
 }
 
 % Used for fields simple class style enums
-\newenvironment{DoxyEnumFields}[1]{%
+\newenvironment{DoxyEnumFields}[2][]{%
     \tabulinesep=1mm%
     \par%
-    \begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
+    \ifthenelse{\equal{#1}{2}}%
+      {\begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|}}%
+      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,r]|X[-1,l]|}}% with init value
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
     \hline%
     \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
     \hline%
     \endhead%
 }{%
@@ -382,7 +403,7 @@
 
 % Used for parameters within a detailed function description
 \newenvironment{DoxyParamCaption}{%
-  \renewcommand{\item}[2][]{\\ \hspace*{2.0cm} ##1 {\em ##2}}% 
+  \renewcommand{\item}[3][]{\\ \hspace*{2.0cm} ##1 {\em ##2}##3}% 
 }{%
 }
 
@@ -516,8 +537,26 @@
   \end{list}%
 }
 
+% Used when hyperlinks are turned on
+\newcommand{\doxylink}[2]{%
+  \mbox{\hyperlink{#1}{#2}}%
+}
+
+% Used when hyperlinks are turned on
+% Third argument is the SectionType, see the doxygen internal
+% documentation for the values (relevant: Page ... Subsubsection).
+\newcommand{\doxysectlink}[3]{%
+  \mbox{\hyperlink{#1}{#2}}%
+}
 % Used when hyperlinks are turned off
 \newcommand{\doxyref}[3]{%
+  \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
+}
+
+% Used when hyperlinks are turned off
+% Fourth argument is the SectionType, see the doxygen internal
+% documentation for the values (relevant: Page ... Subsubsection).
+\newcommand{\doxysectref}[4]{%
   \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
 }
 
@@ -543,6 +582,7 @@
 \definecolor{preprocessor}{rgb}{0.5,0.38,0.125}
 \definecolor{stringliteral}{rgb}{0.0,0.125,0.25}
 \definecolor{charliteral}{rgb}{0.0,0.5,0.5}
+\definecolor{xmlcdata}{rgb}{0.0,0.0,0.0}
 \definecolor{vhdldigit}{rgb}{1.0,0.0,1.0}
 \definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}
 \definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}
@@ -557,10 +597,29 @@
 % possibility to have sections etc. be within the margins
 % unfortunately had to copy part of book.cls and add \raggedright
 \makeatletter
+\newcounter{subsubsubsection}[subsubsection]
+\newcounter{subsubsubsubsection}[subsubsubsection]
+\newcounter{subsubsubsubsubsection}[subsubsubsubsection]
+\newcounter{subsubsubsubsubsubsection}[subsubsubsubsubsection]
+\renewcommand{\thesubsubsubsection}{\thesubsubsection.\arabic{subsubsubsection}}
+\renewcommand{\thesubsubsubsubsection}{\thesubsubsubsection.\arabic{subsubsubsubsection}}
+\renewcommand{\thesubsubsubsubsubsection}{\thesubsubsubsubsection.\arabic{subsubsubsubsubsection}}
+\renewcommand{\thesubsubsubsubsubsubsection}{\thesubsubsubsubsubsection.\arabic{subsubsubsubsubsubsection}}
+\newcommand{\subsubsubsectionmark}[1]{}
+\newcommand{\subsubsubsubsectionmark}[1]{}
+\newcommand{\subsubsubsubsubsectionmark}[1]{}
+\newcommand{\subsubsubsubsubsubsectionmark}[1]{}
+\def\toclevel@subsubsubsection{4}
+\def\toclevel@subsubsubsubsection{5}
+\def\toclevel@subsubsubsubsubsection{6}
+\def\toclevel@subsubsubsubsubsubsection{7}
+\def\toclevel@paragraph{8}
+\def\toclevel@subparagraph{9}
+
 \newcommand\doxysection{\@startsection {section}{1}{\z@}%
-                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
-                                   {2.3ex \@plus.2ex}%
-                                   {\raggedright\normalfont\Large\bfseries}}
+                                     {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                     {2.3ex \@plus.2ex}%
+                                     {\raggedright\normalfont\Large\bfseries}}
 \newcommand\doxysubsection{\@startsection{subsection}{2}{\z@}%
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
@@ -569,19 +628,78 @@
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
                                      {\raggedright\normalfont\normalsize\bfseries}}
-\newcommand\doxyparagraph{\@startsection{paragraph}{4}{\z@}%
-                                    {3.25ex \@plus1ex \@minus.2ex}%
-                                    {-1em}%
-                                    {\raggedright\normalfont\normalsize\bfseries}}
-\newcommand\doxysubparagraph{\@startsection{subparagraph}{5}{\parindent}%
-                                       {3.25ex \@plus1ex \@minus .2ex}%
-                                       {-1em}%
-                                      {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubsubsubsubsection{\@startsection{subsubsubsubsection}{5}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubsubsubsubsubsection{\@startsection{subsubsubsubsubsection}{6}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubsubsubsubsubsubsection{\@startsection{subsubsubsubsubsubsection}{7}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxyparagraph{\@startsection{paragraph}{8}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubparagraph{\@startsection{subparagraph}{9}{\parindent}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}    
+                                  
+\newcommand\l@subsubsubsection{\@dottedtocline{4}{10.0em}{7.8em}}
+\newcommand\l@subsubsubsubsection{\@dottedtocline{5}{13.0em}{9.4em}}
+\newcommand\l@subsubsubsubsubsection{\@dottedtocline{6}{15.0em}{11em}}
+\newcommand\l@subsubsubsubsubsubsection{\@dottedtocline{7}{18.0em}{12.6em}}
+\renewcommand\l@paragraph{\@dottedtocline{8}{21.0em}{14.2em}}
+\renewcommand\l@subparagraph{\@dottedtocline{9}{24.0em}{15.8em}}
 \makeatother
+% the sectsty doesn't look to be maintained but gives, in our case, some warning like:
+% LaTeX Warning: Command \underline  has changed.
+%               Check if current package is valid.
+% unfortunately had to copy the relevant part
+\newcommand*{\doxypartfont}          [1]
+   {\gdef\SS@partnumberfont{\SS@sectid{0}\SS@nopart\SS@makeulinepartchap#1}
+    \gdef\SS@parttitlefont{\SS@sectid{0}\SS@titlepart\SS@makeulinepartchap#1}}
+\newcommand*{\doxychapterfont}       [1]
+   {\gdef\SS@chapnumfont{\SS@sectid{1}\SS@nopart\SS@makeulinepartchap#1}
+    \gdef\SS@chaptitlefont{\SS@sectid{1}\SS@titlepart\SS@makeulinepartchap#1}}
+\newcommand*{\doxysectionfont}       [1]
+   {\gdef\SS@sectfont{\SS@sectid{2}\SS@rr\SS@makeulinesect#1}}
+\newcommand*{\doxysubsectionfont}    [1]
+   {\gdef\SS@subsectfont{\SS@sectid{3}\SS@rr\SS@makeulinesect#1}}
+\newcommand*{\doxysubsubsectionfont} [1]
+   {\gdef\SS@subsubsectfont{\SS@sectid{4}\SS@rr\SS@makeulinesect#1}}
+\newcommand*{\doxyparagraphfont}     [1]
+   {\gdef\SS@parafont{\SS@sectid{5}\SS@rr\SS@makeulinesect#1}}
+\newcommand*{\doxysubparagraphfont}  [1]
+   {\gdef\SS@subparafont{\SS@sectid{6}\SS@rr\SS@makeulinesect#1}}
+\newcommand*{\doxyminisecfont}  [1]
+   {\gdef\SS@minisecfont{\SS@sectid{7}\SS@rr\SS@makeulinepartchap#1}}
+\newcommand*{\doxyallsectionsfont}   [1] {\doxypartfont{#1}%
+                                          \doxychapterfont{#1}%
+                                          \doxysectionfont{#1}%
+                                          \doxysubsectionfont{#1}%
+                                          \doxysubsubsectionfont{#1}%
+                                          \doxyparagraphfont{#1}%
+                                          \doxysubparagraphfont{#1}%
+                                          \doxyminisecfont{#1}}%
 % Define caption that is also suitable in a table
+% for usage with hyperlinks
 \makeatletter
 \def\doxyfigcaption{%
 \H@refstepcounter{figure}%
+\@dblarg{\@caption{figure}}}
+
+% for usage without hyperlinks
+\def\doxyfigcaptionnolink{%
+\refstepcounter{figure}%
 \@dblarg{\@caption{figure}}}
 \makeatother
 

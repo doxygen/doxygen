@@ -1,6 +1,7 @@
 // objective: test the \overload command
 // check: class_test.xml
-
+class Rect;
+class Point;
 class Test 
 {
   public:

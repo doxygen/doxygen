@@ -30,6 +30,7 @@ class MemberDef;
 class ClassDef;
 class NamespaceDef;
 class FileDef;
+class ModuleDef;
 class GroupDef;
 class OutputList;
 class Definition;
@@ -44,22 +45,21 @@ class MemberGroup
     //MemberGroup();
     MemberGroup(const Definition *container,int id,const QCString &header,
                 const QCString &docs,const QCString &docFile,int docLine,MemberListContainer con);
-   ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
-    void insertMember(const MemberDef *md);
+    void insertMember(MemberDef *md);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,bool inGroup,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                bool showInline=FALSE) const;
     void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const;
     void writeDocumentationPage(OutputList &ol,const QCString &scopeName,
                const DefinitionMutable *container) const;
-    void writeTagFile(TextStream &);
+    void writeTagFile(TextStream &,bool qualifiedName=false);
     void addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
                const ClassDef *inheritedFrom,const QCString &inheritId) const;
@@ -78,6 +78,7 @@ class MemberGroup
     int numDocMembers() const;
     int numDocEnumValues() const;
     const Definition *container() const;
+    const Definition *memberContainer() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void addListReferences(Definition *d);
@@ -90,7 +91,7 @@ class MemberGroup
   private:
     const Definition *m_container;
     std::unique_ptr<MemberList> memberList;      // list of all members in the group
-    MemberList *inDeclSection = 0;
+    MemberList *inDeclSection = nullptr;
     int grpId = 0;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file

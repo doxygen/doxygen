@@ -20,18 +20,21 @@
 
 #include "classdef.h"
 #include "config.h"
+#include "datetime.h"
+#include "index.h"
+#include "construct.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator
 {
   public:
+    ABSTRACT_BASE_CLASS(Translator)
 
     /*! This method is used to provide warning message that is displayed
      *  if the user chooses a language whose translation is not up to date.
      *  It is implemented by the adapter classes.
      */
     virtual QCString updateNeededMessage() { return QCString(); }
-    virtual ~Translator() = default;
 
     // Please, have a look at comments inside the translator_en.h file
     // to learn the meaning of the following methods.  The translator_en.h
@@ -69,17 +72,13 @@ class Translator
      */
     virtual QCString latexCommandName()
     {
-      QCString latex_command = Config_getString(LATEX_CMD_NAME);
-      if (latex_command.isEmpty()) latex_command = "latex";
-      if (Config_getBool(USE_PDFLATEX))
-      {
-        if (latex_command == "latex") latex_command = "pdflatex";
-      }
-      return latex_command;
+      return p_latexCommandName("pdflatex");
     }
     virtual QCString trISOLang() = 0;
 
     /** language codes for Html help
+
+       <pre>
        0x402 Bulgarian
        0x405 Czech
        0x406 Danish
@@ -112,8 +111,10 @@ class Translator
        0x412 Korean
        0x804 Chinese (PRC)
        0x404 Chinese (Taiwan)
+       </pre>
 
        New LCIDs:
+       <pre>
        0x421 Indonesian
        0x41A Croatian
        0x418 Romanian
@@ -128,17 +129,22 @@ class Translator
        0x42A Vietnamese
        0x429 Persian (Iran)
        0xC01 Arabic (Egypt) - I don't know which version of arabic is used inside translator_ar.h ,
-       so I have chosen Egypt at random
+             so I have chosen Egypt at random
+       </pre>
 
       Code for Esperanto should be as shown below but the htmlhelp compiler 1.3 does not support this
       (and no newer version is available).
+      <pre>
       0x48f Esperanto
+      </pre>
       So do a fallback to the default language
+      <pre>
       0x409 English (United States)
+      </pre>
 
-
+      <pre>
       0xC1A Serbian (Serbia, Cyrillic)
-
+      </pre>
     */
     virtual QCString getLanguageString() = 0;
 
@@ -152,6 +158,7 @@ class Translator
     virtual QCString trRelatedFunctions() = 0;
     virtual QCString trRelatedSubscript() = 0;
     virtual QCString trDetailedDescription() = 0;
+    virtual QCString trDetails() = 0;
     virtual QCString trMemberTypedefDocumentation() = 0;
     virtual QCString trMemberEnumerationDocumentation() = 0;
     virtual QCString trMemberFunctionDocumentation() = 0;
@@ -188,7 +195,7 @@ class Translator
 
     // index titles (the project name is prepended for these)
 
-    virtual QCString trDocumentation() = 0;
+    virtual QCString trDocumentation(const QCString &projName) = 0;
     virtual QCString trModuleIndex() = 0;
     virtual QCString trHierarchicalIndex() = 0;
     virtual QCString trCompoundIndex() = 0;
@@ -196,7 +203,6 @@ class Translator
     virtual QCString trModuleDocumentation() = 0;
     virtual QCString trClassDocumentation() = 0;
     virtual QCString trFileDocumentation() = 0;
-    virtual QCString trExampleDocumentation() = 0;
     virtual QCString trReferenceManual() = 0;
     virtual QCString trDefines() = 0;
     virtual QCString trTypedefs() = 0;
@@ -532,7 +538,7 @@ class Translator
 // new since 1.3.8
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSourceFile(QCString& filename) = 0;
+    virtual QCString trSourceFile(const QCString& filename) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.9
@@ -605,7 +611,10 @@ class Translator
     virtual QCString trIncludesFileIn(const QCString &name) = 0;
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime) = 0;
+                                DateTimeType includeTime) = 0;
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) = 0;
+    virtual QCString trMonth(int month, bool first_capital, bool full) = 0;
+    virtual QCString trDayPeriod(bool period) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
@@ -662,7 +671,7 @@ class Translator
     virtual QCString trDesignUnitIndex() = 0;
     virtual QCString trDesignUnits() = 0;
     virtual QCString trFunctionAndProc() = 0;
-    virtual QCString trVhdlType(uint64 type,bool single) = 0;
+    virtual QCString trVhdlType(VhdlSpecifier type,bool single) = 0;
     virtual QCString trCustomReference(const QCString &name) = 0;
 
     virtual QCString trConstants() = 0;
@@ -717,6 +726,78 @@ class Translator
 // new since 1.9.4
 //////////////////////////////////////////////////////////////////////////
     virtual QCString trPackageList() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trFlowchart() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trRelatedSymbols() = 0;
+    virtual QCString trRelatedSymbolsSubscript() = 0;
+    virtual QCString trRelatedSymbolDocumentation() = 0;
+
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) = 0;
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) = 0;
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) = 0;
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) = 0;
+    virtual QCString trDefinition() = 0;
+    virtual QCString trDeclaration() = 0;
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trTopics() = 0;
+    virtual QCString trTopicDocumentation() = 0;
+    virtual QCString trTopicList() = 0;
+    virtual QCString trTopicIndex() = 0;
+    virtual QCString trTopicListDescription() = 0;
+    virtual QCString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) = 0;
+    virtual QCString trExportedModules() = 0;
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trCopyToClipboard() = 0;
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trImportant() = 0;
+
+  protected:
+    QCString p_latexCommandName(const QCString &latexCmd)
+    {
+      QCString latex_command = Config_getString(LATEX_CMD_NAME);
+      if (latex_command.isEmpty()) latex_command = "latex";
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        if (latex_command == "latex") latex_command = latexCmd;
+      }
+      return latex_command;
+    }
+    /*! For easy flexible-noun implementation.
+     *  \internal
+     */
+    QCString createNoun(bool first_capital, bool singular,
+                        const QCString &base,
+                        const QCString &plurSuffix, const QCString &singSuffix = "" )
+    {
+      QCString result;
+      if (first_capital)
+      {
+        std::string res = getUTF8CharAt(base.str(),0);
+        res = convertUTF8ToUpper(res);
+        result = res.c_str();
+        result += base.mid(res.length());
+      }
+      else
+      {
+        result = base;
+      }
+      result += (singular ? singSuffix : plurSuffix);
+      return result;
+    }
 };
 
 #endif

@@ -31,6 +31,7 @@ class MemberLists;
 class FileList;
 class ClassLinkedRefMap;
 class ConceptLinkedRefMap;
+class ModuleLinkedRefMap;
 class NamespaceLinkedRefMap;
 class FileDef;
 class ClassDef;
@@ -44,36 +45,35 @@ class DirDef;
 class FTVHelp;
 class Entry;
 class MemberDef;
+class ModuleDef;
 
 /** A model of a group of symbols. */
 class GroupDef : public DefinitionMutable, public Definition
 {
   public:
-    virtual DefType definitionType() const = 0;
-    virtual QCString getOutputFileBase() const = 0;
-    virtual QCString anchor() const = 0;
-    virtual QCString displayName(bool=TRUE) const = 0;
+    ABSTRACT_BASE_CLASS(GroupDef)
+
     virtual QCString groupTitle() const = 0;
     virtual void setGroupTitle( const QCString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
-    virtual void addFile(const FileDef *def) = 0;
-    virtual bool addClass(const ClassDef *def) = 0;
-    virtual bool addConcept(const ConceptDef *def) = 0;
-    virtual bool addNamespace(const NamespaceDef *def) = 0;
-    virtual void addGroup(const GroupDef *def) = 0;
-    virtual void addPage(const PageDef *def) = 0;
-    virtual void addExample(const PageDef *def) = 0;
+    virtual void addFile(FileDef *def) = 0;
+    virtual bool containsFile(const FileDef *def) const = 0;
+    virtual bool addClass(ClassDef *def) = 0;
+    virtual bool addConcept(ConceptDef *def) = 0;
+    virtual bool addModule(ModuleDef *def) = 0;
+    virtual bool addNamespace(NamespaceDef *def) = 0;
+    virtual void addGroup(GroupDef *def) = 0;
+    virtual void addPage(PageDef *def) = 0;
+    virtual void addExample(PageDef *def) = 0;
     virtual void addDir(DirDef *dd) = 0;
-    virtual bool insertMember(const MemberDef *def,bool docOnly=FALSE) = 0;
+    virtual bool insertMember(MemberDef *def,bool docOnly=FALSE) = 0;
     virtual void removeMember(MemberDef *md) = 0;
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeMemberPages(OutputList &ol) = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
+    virtual void writeMemberPages(OutputList &ol, int hierarchyLevel) = 0;
     virtual void writeTagFile(TextStream &) = 0;
     virtual size_t numDocMembers() const = 0;
-    virtual bool isLinkableInProject() const = 0;
-    virtual bool isLinkable() const = 0;
+    virtual bool isVisibleInHierarchy() const = 0;
     virtual bool isASubGroup() const = 0;
     virtual void computeAnchors() = 0;
     virtual void countMembers() = 0;
@@ -98,6 +98,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual const FileList &getFiles() const = 0;
     virtual const ClassLinkedRefMap &getClasses() const = 0;
     virtual const ConceptLinkedRefMap &getConcepts() const = 0;
+    virtual const ModuleLinkedRefMap &getModules() const = 0;
     virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
     virtual const GroupList &getSubGroups() const = 0;
     virtual const PageLinkedRefMap &getPages() const = 0;
@@ -106,10 +107,13 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual bool hasDetailedDescription() const = 0;
     virtual void sortSubGroups() = 0;
 
+    // group graph related members
+    virtual bool hasGroupGraph() const = 0;
+    virtual void overrideGroupGraph(bool e) = 0;
 };
 
-GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
-                                const QCString &title,const QCString &refFileName=QCString());
+std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,
+                                         const QCString &title,const QCString &refFileName=QCString());
 
 // --- Cast functions
 
@@ -122,12 +126,13 @@ class GroupLinkedMap : public LinkedMap<GroupDef>
 {
 };
 
-class GroupList : public std::vector<const GroupDef *>
+class GroupList : public std::vector<GroupDef *>
 {
 };
 
 void addClassToGroups    (const Entry *root,ClassDef *cd);
 void addConceptToGroups  (const Entry *root,ConceptDef *cd);
+void addModuleToGroups   (const Entry *root,ModuleDef *mod);
 void addNamespaceToGroups(const Entry *root,NamespaceDef *nd);
 void addGroupToGroups    (const Entry *root,GroupDef *subGroup);
 void addMemberToGroups   (const Entry *root,MemberDef *md);

@@ -33,7 +33,7 @@ bool ClassLinkedRefMap::declVisible(const ClassDef::CompoundType *filter) const
   for (const auto &cd : *this)
   {
     if (!cd->isAnonymous() &&
-        (filter==0 || *filter==cd->compoundType())
+        (filter==nullptr || *filter==cd->compoundType())
        )
     {
       bool isLink = cd->isLinkable();
@@ -60,8 +60,8 @@ void ClassLinkedRefMap::writeDeclaration(OutputList &ol,const ClassDef::Compound
     //printf("  ClassLinkedRefMap::writeDeclaration for %s\n",cd->name().data());
     if (!cd->isAnonymous() &&
         !cd->isExtension() &&
-        (cd->protection()!=Private || extractPrivate) &&
-        (filter==0 || *filter==cd->compoundType())
+        (cd->protection()!=Protection::Private || extractPrivate) &&
+        (filter==nullptr || *filter==cd->compoundType())
        )
     {
       //printf("writeDeclarationLink()\n");
@@ -91,7 +91,7 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
         cd->isLinkableInProject() &&
         cd->isEmbeddedInOuterScope() &&
         !cd->isAlias() &&
-        (container==0 || cd->partOfGroups().empty()) // if container==0 -> show as part of the group docs, otherwise only show if not part of a group
+        (container==nullptr || cd->partOfGroups().empty()) // if container==nullptr -> show as part of the group docs, otherwise only show if not part of a group
        )
     {
       //printf("  showing class %s\n",cd->name().data());
@@ -104,11 +104,7 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
         ol.endGroupHeader();
         found=TRUE;
       }
-      ClassDefMutable *cdm = toClassDefMutable(cd);
-      if (cdm)
-      {
-        cdm->writeInlineDocumentation(ol);
-      }
+      cd->writeInlineDocumentation(ol);
     }
   }
 }

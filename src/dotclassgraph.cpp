@@ -23,12 +23,12 @@
 #include "config.h"
 #include "util.h"
 
-void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
+void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors color,
   const QCString &label,const QCString &usedName,const QCString &templSpec,bool base,int distance)
 {
   if (Config_getBool(HIDE_UNDOC_CLASSES) && !cd->isLinkable()) return;
 
-  int edgeStyle = (!label.isEmpty() || prot==EdgeInfo::Orange || prot==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
+  EdgeInfo::Styles edgeStyle = (!label.isEmpty() || color==EdgeInfo::Orange || color==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
   QCString fullName;
   if (cd->isAnonymous())
@@ -60,12 +60,12 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
     DotNode *bn = it->second;
     if (base)
     {
-      n->addChild(bn,prot,edgeStyle,label);
+      n->addChild(bn,color,edgeStyle,label);
       bn->addParent(n);
     }
     else
     {
-      bn->addChild(n,prot,edgeStyle,label);
+      bn->addChild(n,color,edgeStyle,label);
       n->addParent(bn);
     }
     bn->setDistance(distance);
@@ -85,7 +85,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
       }
     }
     QCString tooltip = cd->briefDescriptionAsTooltip();
-    DotNode *bn = new DotNode(getNextNodeNumber(),
+    DotNode *bn = new DotNode(this,
       displayName,
       tooltip,
       tmp_url,
@@ -94,16 +94,16 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
     );
     if (base)
     {
-      n->addChild(bn,prot,edgeStyle,label);
+      n->addChild(bn,color,edgeStyle,label);
       bn->addParent(n);
     }
     else
     {
-      bn->addChild(n,prot,edgeStyle,label);
+      bn->addChild(n,color,edgeStyle,label);
       n->addParent(bn);
     }
     bn->setDistance(distance);
-    m_usedNodes.insert(std::make_pair(fullName.str(),bn));
+    m_usedNodes.emplace(fullName.str(),bn);
     //printf(" add new child node '%s' to %s hidden=%d url=%s\n",
     //    qPrint(className),qPrint(n->label()),cd->isHidden(),qPrint(tmp_url));
 
@@ -252,16 +252,16 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
   //    qPrint(cd->name()),distance,base);
   // ---- Add inheritance relations
 
-  if (m_graphType == Inheritance || m_graphType==Collaboration)
+  if (m_graphType == GraphType::Inheritance || m_graphType==GraphType::Collaboration)
   {
     for (const auto &bcd : base ? cd->baseClasses() : cd->subClasses())
     {
       //printf("-------- inheritance relation %s->%s templ='%s'\n",
       //            qPrint(cd->name()),qPrint(bcd->classDef->name()),qPrint(bcd->templSpecifiers));
-      addClass(bcd.classDef,n,bcd.prot,QCString(),bcd.usedName,bcd.templSpecifiers,base,distance);
+      addClass(bcd.classDef,n,EdgeInfo::protectionToColor(bcd.prot),QCString(),bcd.usedName,bcd.templSpecifiers,base,distance);
     }
   }
-  if (m_graphType == Collaboration)
+  if (m_graphType == GraphType::Collaboration)
   {
     // ---- Add usage relations
 
@@ -325,7 +325,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
   }
   QCString className = cd->displayName();
   QCString tooltip = cd->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(getNextNodeNumber(),
+  m_startNode = new DotNode(this,
     className,
     tooltip,
     tmp_url,
@@ -333,15 +333,15 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
     cd
   );
   m_startNode->setDistance(0);
-  m_usedNodes.insert(std::make_pair(className.str(),m_startNode));
+  m_usedNodes.emplace(className.str(),m_startNode);
 
   buildGraph(cd,m_startNode,TRUE,1);
-  if (t==Inheritance) buildGraph(cd,m_startNode,FALSE,1);
+  if (t==GraphType::Inheritance) buildGraph(cd,m_startNode,FALSE,1);
 
-  m_lrRank = determineVisibleNodes(m_startNode,Config_getInt(DOT_GRAPH_MAX_NODES),t==Inheritance);
+  m_lrRank = determineVisibleNodes(m_startNode,Config_getInt(DOT_GRAPH_MAX_NODES),t==GraphType::Inheritance);
   DotNodeDeque openNodeQueue;
   openNodeQueue.push_back(m_startNode);
-  determineTruncatedNodes(openNodeQueue,t==Inheritance);
+  determineTruncatedNodes(openNodeQueue,t==GraphType::Inheritance);
 
   m_collabFileName = cd->collaborationGraphFileName();
   m_inheritFileName = cd->inheritanceGraphFileName();
@@ -349,7 +349,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
 
 bool DotClassGraph::isTrivial() const
 {
-  if (m_graphType==Inheritance)
+  if (m_graphType==GraphType::Inheritance)
     return m_startNode->children().empty() && m_startNode->parents().empty();
   else
     return !Config_getBool(UML_LOOK) && m_startNode->children().empty();
@@ -364,7 +364,7 @@ int DotClassGraph::numNodes() const
 {
   size_t numNodes = 0;
   numNodes+= m_startNode->children().size();
-  if (m_graphType==Inheritance)
+  if (m_graphType==GraphType::Inheritance)
   {
     numNodes+= m_startNode->parents().size();
   }
@@ -380,10 +380,10 @@ QCString DotClassGraph::getBaseName() const
 {
   switch (m_graphType)
   {
-  case Collaboration:
+  case GraphType::Collaboration:
     return m_collabFileName;
     break;
-  case Inheritance:
+  case GraphType::Inheritance:
     return m_inheritFileName;
     break;
   default:
@@ -400,7 +400,7 @@ void DotClassGraph::computeTheGraph()
     m_graphType,
     m_graphFormat,
     m_lrRank ? "LR" : "",
-    m_graphType == Inheritance,
+    m_graphType == GraphType::Inheritance,
     TRUE,
     m_startNode->label(),
     m_theGraph
@@ -412,10 +412,10 @@ QCString DotClassGraph::getMapLabel() const
   QCString mapName;
   switch (m_graphType)
   {
-  case Collaboration:
+  case GraphType::Collaboration:
     mapName="coll_map";
     break;
-  case Inheritance:
+  case GraphType::Inheritance:
     mapName="inherit_map";
     break;
   default:
@@ -430,10 +430,10 @@ QCString DotClassGraph::getImgAltText() const
 {
   switch (m_graphType)
   {
-  case Collaboration:
+  case GraphType::Collaboration:
     return "Collaboration graph";
     break;
-  case Inheritance:
+  case GraphType::Inheritance:
     return "Inheritance graph";
     break;
   default:
@@ -460,24 +460,24 @@ QCString DotClassGraph::writeGraph(TextStream &out,
 
 void DotClassGraph::writeXML(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeXML(t,TRUE);
+    node->writeXML(t,TRUE);
   }
 }
 
 void DotClassGraph::writeDocbook(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeDocbook(t,TRUE);
+    node->writeDocbook(t,TRUE);
   }
 }
 
 void DotClassGraph::writeDEF(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeDEF(t);
+    node->writeDEF(t);
   }
 }

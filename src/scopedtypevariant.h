@@ -18,6 +18,7 @@
 
 #include <utility>
 #include <vector>
+#include <variant>
 
 #include "qcstring.h"
 #include "definition.h"
@@ -38,135 +39,29 @@ class LocalDef
 /*! Variant class for a scoped type.
  *
  *  Variants:
- *  - Dummy: a type used for hiding a global type.
- *  - Local: a locally defined type (e.g. found inside a function)
- *  - Global: a globally defined type (processed by doxygen in an earlier pass).
+ *  - DummyDef: a type used for hiding a global type.
+ *  - LocalDef: a locally defined type (e.g. found inside a function)
+ *  - GlobalDef: a globally defined type (processed by doxygen in an earlier pass).
  */
 class ScopedTypeVariant
 {
   public:
-    //! possible variant types
-    enum Variant
-    {
-      Global,
-      Local,
-      Dummy
-    };
-    //! default constructor for creating a variant of type Dummy
-    ScopedTypeVariant() : m_variant(Dummy)
-    {
-      m_u.globalDef = 0;
-    }
-    //! constructor for creating a variant of type Global
-    explicit ScopedTypeVariant(const Definition *d)
-    {
-      if (d)
-      {
-        m_name = d->name();
-        m_variant = Global;
-        m_u.globalDef = d;
-      }
-      else
-      {
-        m_variant = Dummy;
-        m_u.globalDef = 0;
-      }
-    }
-    //! constructor for creating a variant of type Local
+    struct DummyDef {};
+    using GlobalDef = const Definition *;
+    using Variant = std::variant<DummyDef,LocalDef,GlobalDef>;
+    explicit ScopedTypeVariant(GlobalDef d = nullptr)
+      : m_name(d ? d->name() : QCString()), m_variant(d ? Variant(d) : Variant(DummyDef())) {}
     explicit ScopedTypeVariant(const QCString &name)
-    {
-      m_name = name;
-      m_variant = Local;
-      m_u.localDef = new LocalDef;
-    }
-    //! copy constructor
-    ScopedTypeVariant(const ScopedTypeVariant &stv)
-    {
-      m_variant = stv.m_variant;
-      m_name    = stv.m_name;
-      if (m_variant==Local)
-      {
-        m_u.localDef = new LocalDef(*stv.m_u.localDef);
-      }
-      else if (m_variant==Global)
-      {
-        m_u.globalDef = stv.m_u.globalDef;
-      }
-    }
-    //! move constructor
-    ScopedTypeVariant(ScopedTypeVariant &&stv) noexcept : ScopedTypeVariant()
-    {
-      swap(*this,stv);
-    }
-    //! assignment operator
-    ScopedTypeVariant &operator=(ScopedTypeVariant stv)
-    {
-      swap(*this,stv);
-      return *this;
-    }
-    //! destructor
-   ~ScopedTypeVariant()
-    {
-      if (m_variant==Local)
-      {
-        delete m_u.localDef;
-      }
-    }
-    //! swap function
-    friend void swap(ScopedTypeVariant &first,ScopedTypeVariant &second)
-    {
-      using std::swap; // enable ADL
-      swap(first.m_variant,second.m_variant);
-      swap(first.m_name,second.m_name);
-      swap(first.m_u.globalDef,second.m_u.globalDef);
-    }
-    //! Turn the variant into a Global type
-    void setGlobal(const Definition *def)
-    {
-      if (m_variant==Local)
-      {
-        delete m_u.localDef;
-      }
-      m_variant = Global;
-      m_name = def->name();
-      m_u.globalDef = def;
-    }
-    //! Turn the variant into a Local type
-    LocalDef *setLocal(const QCString &name)
-    {
-      if (m_variant==Local)
-      {
-        delete m_u.localDef;
-      }
-      m_variant = Local;
-      m_name = name;
-      m_u.localDef = new LocalDef;
-      return m_u.localDef;
-    }
-    //! Turn the variant into a Dummy type
-    void setDummy()
-    {
-      if (m_variant==Local)
-      {
-        delete m_u.localDef;
-      }
-      m_variant = Dummy;
-      m_name = "";
-      m_u.localDef=0;
-    }
-    Variant type() const { return m_variant; }
-    QCString name() const { return m_name; }
-    LocalDef *localDef() const { return m_variant==Local ? m_u.localDef : 0; }
-    const Definition *globalDef() const { return m_variant==Global ? m_u.globalDef : 0; }
+      : m_name(name), m_variant(LocalDef()) {}
+    QCString name() const               { return m_name; }
+    LocalDef *localDef()                { return std::get_if<LocalDef>(&m_variant); }
+    const LocalDef *localDef() const    { return std::get_if<LocalDef>(&m_variant); }
+    const Definition *globalDef() const { auto pp = std::get_if<GlobalDef>(&m_variant); return pp ? *pp : nullptr; }
+    bool isDummy() const                { return std::holds_alternative<DummyDef>(m_variant); }
 
   private:
-    Variant m_variant;
     QCString m_name;
-    union
-    {
-      const Definition *globalDef;
-      LocalDef *localDef;
-    } m_u;
+    Variant m_variant;
 };
 
 //-----------------------------------------------------------------------------
@@ -183,7 +78,7 @@ class VariableContext
 
     void pushScope()
     {
-      m_scopes.push_back(Scope());
+      m_scopes.emplace_back();
     }
     void popScope()
     {
@@ -204,11 +99,11 @@ class VariableContext
     void addVariable(const QCString &name,ScopedTypeVariant stv)
     {
       Scope *scope = m_scopes.empty() ? &m_globalScope : &m_scopes.back();
-      scope->emplace(std::make_pair(name.str(),std::move(stv))); // add it to a list
+      scope->emplace(name.str(),std::move(stv)); // add it to a list
     }
     const ScopedTypeVariant *findVariable(const QCString &name)
     {
-      const ScopedTypeVariant *result = 0;
+      const ScopedTypeVariant *result = nullptr;
       if (name.isEmpty()) return result;
 
       // search from inner to outer scope
@@ -246,9 +141,10 @@ class CallContext
   public:
     struct Ctx
     {
-      Ctx(const QCString &name_,const QCString &type_) : name(name_), type(type_) {}
+      Ctx(const QCString &name_,const QCString &type_, int bracketCount_) : name(name_), type(type_), bracketCount(bracketCount_) {}
       QCString name;
       QCString type;
+      int bracketCount;
       ScopedTypeVariant stv;
     };
 
@@ -259,26 +155,27 @@ class CallContext
     void setScope(const ScopedTypeVariant &stv)
     {
       Ctx &ctx = m_stvList.back();
-      ctx.stv=std::move(stv);
+      ctx.stv=stv;
     }
-    void pushScope(const QCString &name_,const QCString &type_)
+    void pushScope(const QCString &name_,const QCString &type_, int bracketCount_)
     {
-      m_stvList.push_back(Ctx(name_,type_));
+      m_stvList.emplace_back(name_,type_,bracketCount_);
     }
-    void popScope(QCString &name_,QCString &type_)
+    void popScope(QCString &name_,QCString &type_, int &bracketCount_)
     {
       if (m_stvList.size()>1)
       {
         const Ctx &ctx = m_stvList.back();
         name_ = ctx.name;
         type_ = ctx.type;
+        bracketCount_ = ctx.bracketCount;
         m_stvList.pop_back();
       }
     }
     void clear()
     {
       m_stvList.clear();
-      m_stvList.push_back(Ctx(QCString(),QCString()));
+      m_stvList.emplace_back(QCString(),QCString(),0);
     }
     const ScopedTypeVariant getScope() const
     {

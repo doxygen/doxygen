@@ -24,12 +24,16 @@
 #ifndef FTVHELP_H
 #define FTVHELP_H
 
+#include <memory>
 #include <vector>
-#include "index.h"
+#include "qcstring.h"
+#include "construct.h"
+#include "indexlist.h"
 
 class Definition;
+class MemberDef;
 class TextStream;
-struct FTVNode;
+
 
 /** A class that generates a dynamic tree view side panel.
  */
@@ -38,6 +42,8 @@ class FTVHelp : public IndexIntf
   public:
     FTVHelp(bool LTI);
     ~FTVHelp();
+    NON_COPYABLE(FTVHelp)
+
     void initialize();
     void finalize();
     void incContentsDepth();
@@ -59,16 +65,35 @@ class FTVHelp : public IndexIntf
     static void generateTreeViewImages();
     void generateTreeViewScripts();
   private:
-    void generateTree(TextStream &t,const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index);
-    QCString generateIndentLabel(FTVNode *n,int level);
-    void generateIndent(TextStream &t,FTVNode *n,bool opened);
-    void generateLink(TextStream &t,FTVNode *n);
-    std::vector< std::vector<FTVNode*> > m_indentNodes;
-    int m_indent;
-    bool m_topLevelIndex;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
-extern const char *JAVASCRIPT_LICENSE_TEXT;
+constexpr auto JAVASCRIPT_LICENSE_TEXT = R"LIC(/*
+ @licstart  The following is the entire license notice for the JavaScript code in this file.
+
+ The MIT License (MIT)
+
+ Copyright (C) 1997-2020 by Dimitri van Heesch
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ and associated documentation files (the "Software"), to deal in the Software without restriction,
+ including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all copies or
+ substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ @licend  The above is the entire license notice for the JavaScript code in this file
+*/
+)LIC";
 
 #endif /* FTVHELP_H */
 

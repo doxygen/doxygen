@@ -42,6 +42,7 @@
 
 #define MAX_INCLUDE_DEPTH 10
 
+#define USE_STATE2STRING 0
 
 /* -----------------------------------------------------------------
  *
@@ -57,20 +58,20 @@ struct ConfigFileState
   QString fileName;
 };
 
-static const QHash<QString,Input*>   *g_options;
-static FILE                          *g_file;
+static const QHash<QString,Input*>   *g_options=nullptr;
+static FILE                          *g_file=nullptr;
 static QString                        g_yyFileName;
 static QString                        g_includeName;
 static QVariant                       g_includePathList;
 static QStack<ConfigFileState*>       g_includeStack;
-static int                            g_includeDepth;
-static QVariant                      *g_arg;
-static Input                         *g_curOption=0;
+static int                            g_includeDepth=0;
+static QVariant                      *g_arg=nullptr;
+static Input                         *g_curOption=nullptr;
 static QByteArray                     g_str;
 static std::unique_ptr<TextCodecAdapter> g_codec = std::make_unique<TextCodecAdapter>("UTF-8");
 static QString                        g_codecName = QString::fromLatin1("UTF-8");
 static QString                        g_cmd;
-static bool                           g_isEnum;
+static bool                           g_isEnum=false;
 
 static const char *stateToString(int state);
 
@@ -79,16 +80,16 @@ static const char *stateToString(int state);
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
-static yy_size_t yyread(char *buf,yy_size_t maxSize)
+static int yyread(char *buf,int maxSize)
 {
     // no file included
     if (g_includeStack.isEmpty())
     {
-      return fread(buf,1,maxSize,g_file);
+      return static_cast<int>(fread(buf,1,maxSize,g_file));
     }
     else
     {
-      return fread(buf,1,maxSize,g_includeStack.top()->file);
+      return static_cast<int>(fread(buf,1,maxSize,g_includeStack.top()->file));
     }
 }
 
@@ -301,12 +302,12 @@ static FILE *tryPath(const QString &path,const QString &fileName)
   if (fi.exists() && fi.isFile())
   {
     FILE *f = fopen(absName.toLocal8Bit(),"r");
-    if (f==NULL)
+    if (f==nullptr)
       config_err("could not open file %s for reading\n",qPrintable(absName));
     else
       return f;
   }
-  return NULL;
+  return nullptr;
 }
 
 static FILE *findFile(const QString &fileName)
@@ -374,6 +375,9 @@ static void readIncludeFile(const QString &incName)
   }
 }
 
+#if USE_STATE2STRING
+static const char *stateToString(int state);
+#endif
 
 %}
 
@@ -401,7 +405,7 @@ static void readIncludeFile(const QString &incName)
                                            g_cmd = g_codec->decode(yytext);
                                            g_cmd=g_cmd.left(g_cmd.length()-1).trimmed();
 					   g_curOption = g_options->value(g_cmd);
-					   if (g_curOption==0) // oops not known
+					   if (g_curOption==nullptr) // oops not known
 					   {
 					     config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
 						 qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
@@ -460,7 +464,7 @@ static void readIncludeFile(const QString &incName)
                                           g_cmd=g_codec->decode(yytext);
                                           g_cmd=g_cmd.left(g_cmd.length()-2).trimmed();
 					  g_curOption = g_options->value(g_cmd);
-					  if (g_curOption==0) // oops not known
+					  if (g_curOption==nullptr) // oops not known
 					  {
 					    config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
 						yytext,yylineno,qPrintable(g_yyFileName));
@@ -737,7 +741,7 @@ bool parseConfig(
   config_open();
   QHashIterator<QString, Input*> i(options);
   g_file = fopen(fileName.toLocal8Bit(),"r");
-  if (g_file==NULL) return false;
+  if (g_file==nullptr) return false;
 
   // reset all values
   i.toFront();
@@ -832,4 +836,6 @@ void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
     }
   }
 }
+#if USE_STATE2STRING
 #include "config_doxyw.l.h"
+#endif

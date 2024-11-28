@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -16,17 +16,20 @@
 #ifndef CMDMAPPER_H
 #define CMDMAPPER_H
 
-#include <map>
+#include <unordered_map>
 #include <string>
+#include <memory>
 #include "qcstring.h"
 
-struct CommandMap;
+template<typename T>
+using CommandMap = std::unordered_map< std::string, T >;
 
-const int SIMPLESECT_BIT = 0x1000;
 
-enum CommandType
+enum class CommandType
 {
-  CMD_UNKNOWN      = 0,
+  SIMPLESECT_BIT = 0x1000,
+
+  UNKNOWN          = 0,
   CMD_ADDINDEX     = 1,
   CMD_AMP          = 2,
   CMD_ANCHOR       = 3,
@@ -145,13 +148,28 @@ enum CommandType
   CMD_ILINE        = 116,
   CMD_ILITERAL     = 117,
   CMD_ENDILITERAL  = 118,
-  CMD_EXCLAMATION  = 119,
-  CMD_QUESTION     = 120,
+  CMD_IFILE        = 119,
+  CMD_SHOWDATE     = 120,
+  CMD_ISTARTCODE   = 121,
+  CMD_ENDICODE     = 122,
+  CMD_IVERBATIM    = 123,
+  CMD_ENDIVERBATIM = 124,
+  CMD_IANCHOR      = 125,
+  CMD_DOXYCONFIG   = 126,
+  CMD_IMPORTANT    = 127 | SIMPLESECT_BIT,
+  CMD_SUBPARAGRAPH = 128,
+  CMD_SUBSUBPARAGRAPH = 129,
+  CMD_IPREFIX      = 130,
+  CMD_PLANTUMLFILE = 131,
+  CMD_EXCLAMATION  = 132,
+  CMD_QUESTION     = 133
 };
 
-enum HtmlTagType
+enum class HtmlTagType
 {
-  HTML_UNKNOWN   = 0,
+  SIMPLESECT_BIT = 0x1000,
+
+  UNKNOWN        = 0,
   HTML_CENTER    = 1,
   HTML_TABLE     = 2,
   HTML_CAPTION   = 3,
@@ -192,6 +210,10 @@ enum HtmlTagType
   HTML_S         = 38,
   HTML_DETAILS   = 39,
   HTML_CITE      = 40,
+  HTML_THEAD     = 41,
+  HTML_TBODY     = 42,
+  HTML_TFOOT     = 43,
+  HTML_KBD       = 44,
 
   XML_CmdMask    = 0x100,
 
@@ -222,24 +244,44 @@ enum HtmlTagType
 
 
 /** Class representing a mapping from command names to command IDs. */
+template<typename T>
 class Mapper
 {
   public:
-    int map(const QCString &n);
-    QCString find(const int n);
-    Mapper(const CommandMap *cm,bool caseSensitive);
+    T map(const QCString &n) const
+    {
+      if (n.isEmpty()) return T::UNKNOWN;
+      QCString name = n;
+      if (!m_cs) name=name.lower();
+      auto it = m_map.find(name.str());
+      return it!=m_map.end() ? it->second : T::UNKNOWN;
+    }
+
+    QCString find(const T n) const
+    {
+      for (const auto &[name,id] : m_map)
+      {
+        T curVal = id;
+        // https://stackoverflow.com/a/15889501/1657886
+        if (curVal == n || (curVal == (static_cast<T>(static_cast<int>(n) | static_cast<int>(T::SIMPLESECT_BIT))))) return name.c_str();
+      }
+      return QCString();
+    }
+
+    Mapper(const CommandMap<T> &cm,bool caseSensitive) : m_map(cm), m_cs(caseSensitive)
+    {
+    }
+
   private:
-    std::map<std::string,int> m_map;
+    const CommandMap<T> &m_map;
     bool m_cs;
 };
 
-/** Class representing a namespace for the doxygen and HTML command mappers. */
-struct Mappers
+/** Namespace for the doxygen and HTML command mappers. */
+namespace Mappers
 {
-  static void freeMappers();
-  static Mapper *cmdMapper;
-  static Mapper *htmlTagMapper;
-};
-
+  extern const Mapper<CommandType> *cmdMapper;
+  extern const Mapper<HtmlTagType> *htmlTagMapper;
+}
 
 #endif

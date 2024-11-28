@@ -143,7 +143,7 @@ void Expert::createTopics(const QDomElement &rootElem)
       QString setting = childElem.attribute(SA("setting"));
       if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
       {
-        items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
+        items.append(new QTreeWidgetItem((QTreeWidget*)nullptr,QStringList(name)));
         QWidget *widget = createTopicWidget(childElem);
         m_topics[name] = widget;
         m_topicStack->addWidget(widget);
@@ -223,11 +223,14 @@ static QString getDocsForNode(const QDomElement &child)
       }
       docsVal = docsVal.nextSiblingElement();
     }
-    docs+=SA("<br/>");
-    docs+=SA("<br/>");
-    docs+=SA(" The default value is: <code>")+
-          child.attribute(SA("defval"))+
-          SA("</code>.");
+    if (child.attribute(SA("defval")) != SA(""))
+    {
+      docs+=SA("<br/>");
+      docs+=SA("<br/>");
+      docs+=SA(" The default value is: <code>")+
+            child.attribute(SA("defval"))+
+            SA("</code>.");
+    }
     docs+= SA("<br/>");
   }
   else if (type==SA("int"))
@@ -482,6 +485,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(SA("\\>"),SA("&gt;"));
   regexp.setPattern(SA(" (http:[^ \\)]*)([ \\)])"));
   docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
+  regexp.setPattern(SA(" (https:[^ \\)]*)([ \\)])"));
+  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
   // LaTeX name as formula -> LaTeX
   regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
   docs.replace(regexp,SA("LaTeX"));
@@ -699,7 +704,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1())))
     {
        Input *parentOption = m_options[dependsOn];
-       if (parentOption==0)
+       if (parentOption==nullptr)
        {
          printf("%s has depends=%s that is not valid\n",
              qPrintable(id),qPrintable(dependsOn));
@@ -841,7 +846,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
 bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
 {
   // write global header
-  t << "# Doxyfile " << getDoxygenVersion() << "\n\n";
+  t << "# Doxyfile " << getDoxygenVersion().c_str() << "\n\n";
   if (!brief && !condensed)
   {
     t << convertToComment(m_header);
@@ -935,7 +940,7 @@ static bool getBoolOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return stringVariantToBool(option->value());
 }
 
@@ -943,7 +948,7 @@ static QString getStringOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
   Input *option = model[name];
-  Q_ASSERT(option!=0);
+  Q_ASSERT(option!=nullptr);
   return option->value().toString();
 }
 

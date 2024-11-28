@@ -16,9 +16,10 @@
 #define TOOLTIP_H
 
 #include <memory>
+#include "construct.h"
 
 class Definition;
-class CodeOutputInterface;
+class OutputCodeList;
 
 //! Class that manages the tooltips for a source file
 class TooltipManager
@@ -26,12 +27,13 @@ class TooltipManager
   public:
     TooltipManager();
    ~TooltipManager();
+    NON_COPYABLE(TooltipManager)
 
     /** add a tooltip for a given symbol definition */
-    void addTooltip(CodeOutputInterface &ol,const Definition *d);
+    void addTooltip(const Definition *d);
 
     /** write the list of all collected tooltip to the given outputs */
-    void writeTooltips(CodeOutputInterface &ol);
+    void writeTooltips(OutputCodeList &ol);
 
   private:
     class Private;

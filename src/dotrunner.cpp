@@ -14,6 +14,25 @@
 */
 
 #include <cassert>
+#include <cmath>
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4242 )
+#pragma warning( disable : 4244 )
+#pragma warning( disable : 4996 )
+#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+#include <gunzip.hh>
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 #include "dotrunner.h"
 #include "util.h"
@@ -29,6 +48,9 @@
 // It is anyway hard to view these size of images
 #define MAX_LATEX_GRAPH_INCH  150
 #define MAX_LATEX_GRAPH_SIZE  (MAX_LATEX_GRAPH_INCH * 72)
+
+//#define DBG(x) printf x
+#define DBG(x) do {} while(0)
 
 //-----------------------------------------------------------------------------------------
 
@@ -65,26 +87,26 @@ static void checkPngResult(const QCString &imgName)
 
 static bool resetPDFSize(const int width,const int height, const QCString &base)
 {
-  std::string tmpName   = base.str()+".tmp";
-  std::string patchFile = base.str()+".dot";
+  QCString tmpName   = base+".tmp";
+  QCString patchFile = base+".dot";
   Dir thisDir;
-  if (!thisDir.rename(patchFile,tmpName))
+  if (!thisDir.rename(patchFile.str(),tmpName.str()))
   {
     err("Failed to rename file %s to %s!\n",qPrint(patchFile),qPrint(tmpName));
     return FALSE;
   }
-  std::ifstream fi(tmpName,std::ifstream::in);
-  std::ofstream t(patchFile,std::ofstream::out | std::ofstream::binary);
+  std::ifstream fi = Portable::openInputStream(tmpName);
+  std::ofstream t  = Portable::openOutputStream(patchFile);
   if (!fi.is_open())
   {
     err("problem opening file %s for patching!\n",qPrint(tmpName));
-    thisDir.rename(tmpName,patchFile);
+    thisDir.rename(tmpName.str(),patchFile.str());
     return FALSE;
   }
   if (!t.is_open())
   {
     err("problem opening file %s for patching!\n",qPrint(patchFile));
-    thisDir.rename(tmpName,patchFile);
+    thisDir.rename(tmpName.str(),patchFile.str());
     return FALSE;
   }
   std::string line;
@@ -101,40 +123,126 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
   fi.close();
   t.close();
   // remove temporary file
-  thisDir.remove(tmpName);
+  thisDir.remove(tmpName.str());
   return TRUE;
 }
 
 bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,bool isEps)
 {
-  const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
-  size_t bblen = strlen(bb);
-  FILE *f = Portable::fopen(fileName,"rb");
-  if (!f)
+  std::ifstream f = Portable::openInputStream(fileName);
+  if (!f.is_open())
   {
-    //printf("readBoundingBox: could not open %s\n",fileName);
-    return FALSE;
+    err("Failed to open file %s for extracting bounding box\n",qPrint(fileName));
+    return false;
   }
-  const int maxLineLen=1024;
-  char buf[maxLineLen];
-  while (fgets(buf,maxLineLen,f)!=NULL)
+
+  // read file contents into string 'contents'
+  std::stringstream buffer;
+  buffer << f.rdbuf();
+  std::string contents = buffer.str();
+
+  // start of bounding box marker we are looking for
+  const std::string boundingBox = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
+
+  // helper routine to extract the bounding boxes width and height
+  auto extractBoundingBox = [&fileName,&boundingBox,&width,&height](const char *s) -> bool
   {
-     const char *p = strstr(buf,bb);
-     if (p) // found PageBoundingBox or /MediaBox string
-     {
-       int x,y;
-       fclose(f);
-       if (sscanf(p+bblen,"%d %d %d %d",&x,&y,width,height)!=4)
-       {
-         //printf("readBoundingBox sscanf fail\n");
-         return FALSE;
-       }
-       return TRUE;
-     }
+    int x=0, y=0;
+    double w=0, h=0;
+    if (sscanf(s+boundingBox.length(),"%d %d %lf %lf",&x,&y,&w,&h)==4)
+    {
+      *width  = static_cast<int>(std::ceil(w));
+      *height = static_cast<int>(std::ceil(h));
+      return true;
+    }
+    err("Failed to extract bounding box from generated diagram file %s\n",qPrint(fileName));
+    return false;
+  };
+
+  // compressed segment start and end markers
+  const std::string streamStart = "stream\n";
+  const std::string streamEnd = "\nendstream";
+
+  auto detectDeflateStreamStart = [&streamStart](const char *s)
+  {
+    size_t len = streamStart.length();
+    bool streamOK = strncmp(s,streamStart.c_str(),len)==0;
+    if (streamOK) // ASCII marker matches, check stream header bytes as well
+    {
+      unsigned short header1 = static_cast<unsigned char>(s[len])<<8; // CMF byte
+      if (header1) // not end of string
+      {
+        unsigned short header = (static_cast<unsigned char>(s[len+1])) | header1; // FLG byte
+        // check for correct header (see https://www.rfc-editor.org/rfc/rfc1950)
+        return ((header&0x8F20)==0x0800) && (header%31)==0;
+      }
+    }
+    return false;
+  };
+
+  const size_t l = contents.length();
+  size_t i=0;
+  while (i<l)
+  {
+    if (!isEps && contents[i]=='s' && detectDeflateStreamStart(&contents[i]))
+    { // compressed stream start
+      int col=17;
+      i+=streamStart.length();
+      const size_t start=i;
+      DBG(("---- start stream at offset %08x\n",(int)i));
+      while (i<l)
+      {
+        if (contents[i]=='\n' && strncmp(&contents[i],streamEnd.c_str(),streamEnd.length())==0)
+        { // compressed block found in range [start..i]
+          DBG(("\n---- end stream at offset %08x\n",(int)i));
+          // decompress it into decompressBuf
+          std::vector<char> decompressBuf;
+          const char *source = &contents[start];
+          const size_t sourceLen = i-start;
+          size_t sourcePos = 0;
+          decompressBuf.reserve(sourceLen*2);
+          auto getter = [source,&sourcePos,sourceLen]() -> int {
+            return sourcePos<sourceLen ? static_cast<unsigned char>(source[sourcePos++]) : EOF;
+          };
+          auto putter = [&decompressBuf](const char c) -> int {
+            decompressBuf.push_back(c); return c;
+          };
+          Deflate(getter,putter);
+          // convert decompression buffer to string
+          std::string s(decompressBuf.begin(), decompressBuf.end());
+          DBG(("decompressed_data=[[[\n%s\n]]]\n",s.c_str()));
+          // search for bounding box marker
+          const size_t idx = s.find(boundingBox);
+          if (idx!=std::string::npos) // found bounding box in uncompressed data
+          {
+            return extractBoundingBox(s.c_str()+idx);
+          }
+          // continue searching after end stream marker
+          i+=streamEnd.length();
+          break;
+        }
+        else // compressed stream character
+        {
+          if (col>16) { col=0; DBG(("\n%08x: ",static_cast<int>(i))); }
+          DBG(("%02x ",static_cast<unsigned char>(contents[i])));
+          col++;
+          i++;
+        }
+      }
+    }
+    else if (((isEps && contents[i]=='%') || (!isEps && contents[i]=='/')) &&
+             strncmp(&contents[i],boundingBox.c_str(),boundingBox.length())==0)
+    { // uncompressed bounding box
+      return extractBoundingBox(&contents[i]);
+    }
+    else // uncompressed stream character
+    {
+      i++;
+    }
   }
-  err("Failed to extract bounding box from generated diagram file %s\n",qPrint(fileName));
-  fclose(f);
-  return FALSE;
+  err("Failed to find bounding box in generated diagram file %s\n",qPrint(fileName));
+  // nothing found
+  return false;
 }
 
 //---------------------------------------------------------------------------------
@@ -210,7 +318,7 @@ bool DotRunner::run()
   // As there should be only one pdf file be generated, we don't need code for regenerating multiple pdf files in one call
   for (auto& s : m_jobs)
   {
-    if (s.format.left(3)=="pdf")
+    if (s.format.startsWith("pdf"))
     {
       int width=0,height=0;
       if (!readBoundingBox(s.output,&width,&height,FALSE)) goto error;
@@ -222,7 +330,7 @@ bool DotRunner::run()
       }
     }
 
-    if (s.format.left(3)=="png")
+    if (s.format.startsWith("png"))
     {
       checkPngResult(s.output);
     }
@@ -248,65 +356,9 @@ bool DotRunner::run()
   }
   return TRUE;
 error:
-  err_full(srcFile,srcLine,"Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
+  err_full(srcFile,srcLine,"Problems running dot: exit code=%d, command='%s', arguments='%s'",
     exitCode,qPrint(m_dotExe),qPrint(dotArgs));
   return FALSE;
 }
 
 
-//--------------------------------------------------------------------
-
-void DotRunnerQueue::enqueue(DotRunner *runner)
-{
-  std::lock_guard<std::mutex> locker(m_mutex);
-  m_queue.push(runner);
-  m_bufferNotEmpty.notify_all();
-}
-
-DotRunner *DotRunnerQueue::dequeue()
-{
-  std::unique_lock<std::mutex> locker(m_mutex);
-
-  // wait until something is added to the queue
-  m_bufferNotEmpty.wait(locker, [this]() { return !m_queue.empty(); });
-
-  DotRunner *result = m_queue.front();
-  m_queue.pop();
-  return result;
-}
-
-size_t DotRunnerQueue::size() const
-{
-  std::lock_guard<std::mutex> locker(m_mutex);
-  return m_queue.size();
-}
-
-//--------------------------------------------------------------------
-
-DotWorkerThread::DotWorkerThread(DotRunnerQueue *queue)
-  : m_queue(queue)
-{
-}
-
-DotWorkerThread::~DotWorkerThread()
-{
-  if (isRunning())
-  {
-    wait();
-  }
-}
-
-void DotWorkerThread::run()
-{
-  DotRunner *runner;
-  while ((runner=m_queue->dequeue()))
-  {
-    runner->run();
-  }
-}
-
-void DotWorkerThread::start()
-{
-  assert(!m_thread);
-  m_thread = std::make_unique<std::thread>(&DotWorkerThread::run, this);
-}

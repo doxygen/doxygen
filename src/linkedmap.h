@@ -95,7 +95,7 @@ class LinkedMap
         std::string key(k ? k : "");
         Ptr ptr = std::make_unique<T>(QCString(k),std::forward<Args>(args)...);
         result = ptr.get();
-        m_lookup.insert({key,result});
+        m_lookup.emplace(key,result);
         m_entries.push_back(std::move(ptr));
       }
       return result;
@@ -110,7 +110,7 @@ class LinkedMap
       {
         Ptr ptr = std::make_unique<T>(k,std::forward<Args>(args)...);
         result = ptr.get();
-        m_lookup.insert({key,result});
+        m_lookup.emplace(key,result);
         m_entries.push_back(std::move(ptr));
       }
       return result;
@@ -127,7 +127,7 @@ class LinkedMap
       {
         std::string key(k ? k : "");
         result = ptr.get();
-        m_lookup.insert({key,result});
+        m_lookup.emplace(key,result);
         m_entries.push_back(std::move(ptr));
       }
       return result;
@@ -140,7 +140,7 @@ class LinkedMap
       if (result==nullptr)
       {
         result = ptr.get();
-        m_lookup.insert({key,result});
+        m_lookup.emplace(key,result);
         m_entries.push_back(std::move(ptr));
       }
       return result;
@@ -158,7 +158,7 @@ class LinkedMap
         std::string key(k ? k : "");
         Ptr ptr = std::make_unique<T>(key.c_str(),std::forward<Args>(args)...);
         result = ptr.get();
-        m_lookup.insert({key,result});
+        m_lookup.emplace(key,result);
         m_entries.push_front(std::move(ptr));
       }
       return result;
@@ -172,7 +172,7 @@ class LinkedMap
       {
         Ptr ptr = std::make_unique<T>(key,std::forward<Args>(args)...);
         result = ptr.get();
-        m_lookup.insert({key.str(),result});
+        m_lookup.emplace(key.str(),result);
         m_entries.push_front(std::move(ptr));
       }
       return result;
@@ -286,7 +286,7 @@ class LinkedRefMap
       if (find(k)==nullptr) // new element
       {
         std::string key(k ? k : "");
-        m_lookup.insert({key,obj});
+        m_lookup.emplace(key,obj);
         m_entries.push_back(obj);
         return true;
       }
@@ -301,7 +301,7 @@ class LinkedRefMap
       std::string key = k.str();
       if (find(key)==nullptr) // new element
       {
-        m_lookup.insert({key,obj});
+        m_lookup.emplace(key,obj);
         m_entries.push_back(obj);
         return true;
       }
@@ -319,7 +319,7 @@ class LinkedRefMap
       if (find(k)==nullptr) // new element
       {
         std::string key(k ? k : "");
-        m_lookup.insert({key,obj});
+        m_lookup.emplace(key,obj);
         m_entries.insert(m_entries.begin(),obj);
         return true;
       }
@@ -333,7 +333,7 @@ class LinkedRefMap
     {
       if (find(key)==nullptr) // new element
       {
-        m_lookup.insert({key.str(),obj});
+        m_lookup.emplace(key.str(),obj);
         m_entries.insert(m_entries.begin(),obj);
         return true;
       }

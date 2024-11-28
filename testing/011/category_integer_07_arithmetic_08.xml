@@ -20,7 +20,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="011_category.m" line="8" column="6"/>
+        <location file="011_category.m" line="19" column="1"/>
       </memberdef>
       <memberdef kind="function" id="category_integer_07_arithmetic_08_1ae4ff0b0c62b6809e8f5bcee9baa6e521" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>id</type>
@@ -39,7 +39,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="011_category.m" line="8" column="6"/>
+        <location file="011_category.m" line="21" column="1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
