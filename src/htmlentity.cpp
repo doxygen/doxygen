@@ -317,7 +317,9 @@ static const std::vector<HtmlEntityInfo> g_htmlEntities
 /* 13 */  { SYM(Plus),     "+",            "+",          "+",                    "+",             "+",                      "+",      "+",           { "+",          HtmlEntityMapper::Perl_char    }},
 /* 14 */  { SYM(Dot),      ".",            ".",          ".",                    ".",             ".",                      ".",      ".",           { ".",          HtmlEntityMapper::Perl_char    }},
 /* 15 */  { SYM(Colon),    ":",            ":",          ":",                    ":",             ":",                      ":",      ":",           { ":",          HtmlEntityMapper::Perl_char    }},
-/* 16 */  { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          HtmlEntityMapper::Perl_char    }}
+/* 16 */  { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          HtmlEntityMapper::Perl_char    }},
+/* 17 */  { SYM(Exclam),   "!",            "!",          "!",                    "!",             "!",                      "!",      "!",           { "!",          HtmlEntityMapper::Perl_char    }},
+/* 18 */  { SYM(Quest),    "?",            "&quest;",    "?",                    "?",             "?",                      "?",      "?",           { "?",          HtmlEntityMapper::Perl_char    }}
 };
 
 //! Number of doxygen commands mapped as if it were HTML entities

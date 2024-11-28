@@ -1701,7 +1701,7 @@ int Markdown::Private::processSpecialCommand(std::string_view data, size_t offse
   if (size>1 && data[0]=='\\') // escaped characters
   {
     char c=data[1];
-    if (c=='[' || c==']' || c=='*' || c=='!' || c=='(' || c==')' || c=='`' || c=='_')
+    if (c=='[' || c==']' || c=='*' || c=='(' || c==')' || c=='`' || c=='_')
     {
       out+=data[1];
       AUTO_TRACE_EXIT("2");
