@@ -5848,7 +5848,7 @@ static bool findGlobalMember(const Entry *root,
         for (const auto &md : *mn)
         {
           warnMsg+="\n  '";
-          warnMsg+=substitute(md->declaration(),"%","%%");
+          warnMsg+=substitute(replaceAnonymousScopes(md->declaration()),"%","%%");
           warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
         }
       }
@@ -6410,7 +6410,7 @@ static void addMemberFunction(const Entry *root,
             warnMsg+=md->typeString();
             warnMsg+=' ';
           }
-          QCString qScope = cd->qualifiedNameWithTemplateParameters();
+          QCString qScope = replaceAnonymousScopes(cd->qualifiedNameWithTemplateParameters());
           if (!qScope.isEmpty())
             warnMsg+=qScope+"::"+md->name();
           warnMsg+=md->argsString();
