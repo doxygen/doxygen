@@ -226,64 +226,6 @@ static bool isInvisibleNode(const DocNodeVariant &node)
   return false;
 }
 
-static void mergeHtmlAttributes(const HtmlAttribList &attribs, HtmlAttribList &mergeInto)
-{
-  for (const auto &att : attribs)
-  {
-    auto it = std::find_if(std::begin(mergeInto),std::end(mergeInto),
-                           [&att](const auto &opt) { return opt.name==att.name; });
-    if (it!=std::end(mergeInto)) // attribute name already in mergeInto
-    {
-       it->value = it->value + " " + att.value;
-    }
-    else // attribute name not yet in mergeInto
-    {
-      mergeInto.push_back(att);
-    }
-  }
-}
-
-static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAltValue = nullptr)
-{
-  QCString result;
-  for (const auto &att : attribs)
-  {
-    if (!att.value.isEmpty())  // ignore attribute without values as they
-                                // are not XHTML compliant, with the exception
-				// of the alt attribute with the img tag
-    {
-      if (att.name=="alt" && pAltValue) // optionally return the value of alt separately
-                                         // need to convert <img> to <object> for SVG images,
-                                         // which do not support the alt attribute
-      {
-        *pAltValue = att.value;
-      }
-      else
-      {
-        result+=" ";
-        result+=att.name;
-        result+="=\""+convertToXML(att.value)+"\"";
-      }
-    }
-    else if (att.name=="open")
-    {
-        // The open attribute is a boolean attribute.
-        // Specifies that the details should be visible (open) to the user
-        // As it is a boolean attribute the initialization value is of no interest
-        result+=" ";
-        result+=att.name;
-        result+="=\"true\"";
-    }
-    else if (att.name=="nowrap") // In XHTML, attribute minimization is forbidden, and the nowrap attribute must be defined as <td nowrap="nowrap">.
-    {
-        result+=" ";
-        result+=att.name;
-        result+="=\"nowrap\"";
-    }
-  }
-  return result;
-}
-
 static QCString makeShortName(const QCString &name)
 {
   QCString shortName = name;
@@ -468,14 +410,14 @@ void HtmlDocVisitor::operator()(const DocURL &u)
 void HtmlDocVisitor::operator()(const DocLineBreak &br)
 {
   if (m_hide) return;
-  m_t << "<br "<< htmlAttribsToString(br.attribs()) << " />\n";
+  m_t << "<br "<< br.attribs().toString() << " />\n";
 }
 
 void HtmlDocVisitor::operator()(const DocHorRuler &hr)
 {
   if (m_hide) return;
   forceEndParagraph(hr);
-  m_t << "<hr "<< htmlAttribsToString(hr.attribs()) << " />\n";
+  m_t << "<hr "<< hr.attribs().toString() << " />\n";
   forceStartParagraph(hr);
 }
 
@@ -485,43 +427,67 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
   switch (s.style())
   {
     case DocStyleChange::Bold:
-      if (s.enable()) m_t << "<b" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</b>";
+      if (s.enable()) m_t << "<b" << s.attribs().toString() << ">";      else m_t << "</b>";
       break;
     case DocStyleChange::S:
-      if (s.enable()) m_t << "<s" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</s>";
+      if (s.enable()) m_t << "<s" << s.attribs().toString() << ">";      else m_t << "</s>";
       break;
     case DocStyleChange::Strike:
-      if (s.enable()) m_t << "<strike" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</strike>";
+      if (s.enable()) m_t << "<strike" << s.attribs().toString() << ">"; else m_t << "</strike>";
       break;
     case DocStyleChange::Del:
-      if (s.enable()) m_t << "<del" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</del>";
+      if (s.enable()) m_t << "<del" << s.attribs().toString() << ">";    else m_t << "</del>";
       break;
     case DocStyleChange::Underline:
-      if (s.enable()) m_t << "<u" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</u>";
+      if (s.enable()) m_t << "<u" << s.attribs().toString() << ">";      else m_t << "</u>";
       break;
     case DocStyleChange::Ins:
-      if (s.enable()) m_t << "<ins" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</ins>";
+      if (s.enable()) m_t << "<ins" << s.attribs().toString() << ">";    else m_t << "</ins>";
       break;
     case DocStyleChange::Italic:
-      if (s.enable()) m_t << "<em" << htmlAttribsToString(s.attribs()) << ">";     else m_t << "</em>";
+      if (s.enable())
+      {
+        auto attribs = s.attribs();
+        if (s.tagName()=="a")
+        {
+          attribs.mergeAttribute("class","arg");
+        }
+        m_t << "<em" << attribs.toString() << ">";
+      }
+      else
+      {
+        m_t << "</em>";
+      }
       break;
     case DocStyleChange::Kbd:
-      if (s.enable()) m_t << "<kbd" << htmlAttribsToString(s.attribs()) << ">";   else m_t << "</kbd>";
+      if (s.enable()) m_t << "<kbd" << s.attribs().toString() << ">";    else m_t << "</kbd>";
       break;
     case DocStyleChange::Code:
-      if (s.enable()) m_t << "<code" << htmlAttribsToString(s.attribs()) << ">";   else m_t << "</code>";
+      if (s.enable())
+      {
+        auto attribs = s.attribs();
+        if (s.tagName()=="p")
+        {
+          attribs.mergeAttribute("class","param");
+        }
+        m_t << "<code" << attribs.toString() << ">";
+      }
+      else
+      {
+        m_t << "</code>";
+      }
       break;
     case DocStyleChange::Subscript:
-      if (s.enable()) m_t << "<sub" << htmlAttribsToString(s.attribs()) << ">";    else m_t << "</sub>";
+      if (s.enable()) m_t << "<sub" << s.attribs().toString() << ">"; else m_t << "</sub>";
       break;
     case DocStyleChange::Superscript:
-      if (s.enable()) m_t << "<sup" << htmlAttribsToString(s.attribs()) << ">";    else m_t << "</sup>";
+      if (s.enable()) m_t << "<sup" << s.attribs().toString() << ">"; else m_t << "</sup>";
       break;
     case DocStyleChange::Center:
       if (s.enable())
       {
         forceEndParagraph(s);
-        m_t << "<center" << htmlAttribsToString(s.attribs()) << ">";
+        m_t << "<center" << s.attribs().toString() << ">";
       }
       else
       {
@@ -530,16 +496,16 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       }
       break;
     case DocStyleChange::Small:
-      if (s.enable()) m_t << "<small" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</small>";
+      if (s.enable()) m_t << "<small" << s.attribs().toString() << ">";  else m_t << "</small>";
       break;
     case DocStyleChange::Cite:
-      if (s.enable()) m_t << "<cite" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</cite>";
+      if (s.enable()) m_t << "<cite" << s.attribs().toString() << ">";  else m_t << "</cite>";
       break;
     case DocStyleChange::Preformatted:
       if (s.enable())
       {
         forceEndParagraph(s);
-        m_t << "<pre" << htmlAttribsToString(s.attribs()) << ">";
+        m_t << "<pre" << s.attribs().toString() << ">";
         m_insidePre=TRUE;
       }
       else
@@ -553,7 +519,7 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       if (s.enable())
       {
         forceEndParagraph(s);
-        m_t << "<div" << htmlAttribsToString(s.attribs()) << ">";
+        m_t << "<div" << s.attribs().toString() << ">";
       }
       else
       {
@@ -562,7 +528,7 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       }
       break;
     case DocStyleChange::Span:
-      if (s.enable()) m_t << "<span" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</span>";
+      if (s.enable()) m_t << "<span" << s.attribs().toString() << ">";  else m_t << "</span>";
       break;
   }
 }
@@ -724,7 +690,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
 void HtmlDocVisitor::operator()(const DocAnchor &anc)
 {
   if (m_hide) return;
-  m_t << "<a class=\"anchor\" id=\"" << anc.anchor() << "\"" << htmlAttribsToString(anc.attribs()) << "></a>";
+  m_t << "<a class=\"anchor\" id=\"" << anc.anchor() << "\"" << anc.attribs().toString() << "></a>";
 }
 
 void HtmlDocVisitor::operator()(const DocInclude &inc)
@@ -1352,9 +1318,9 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   if (needsTagBefore)
   {
     if (contexts(t))
-      m_t << "<p class=\"" << contexts(t) << "\"" << htmlAttribsToString(p.attribs()) << ">";
+      m_t << "<p class=\"" << contexts(t) << "\"" << p.attribs().toString() << ">";
     else
-      m_t << "<p" << htmlAttribsToString(p.attribs()) << ">";
+      m_t << "<p" << p.attribs().toString() << ">";
   }
 
   visitChildren(p);
@@ -1511,11 +1477,11 @@ void HtmlDocVisitor::operator()(const DocHtmlList &s)
   forceEndParagraph(s);
   if (s.type()==DocHtmlList::Ordered)
   {
-    m_t << "<ol" << htmlAttribsToString(s.attribs());
+    m_t << "<ol" << s.attribs().toString();
   }
   else
   {
-    m_t << "<ul" << htmlAttribsToString(s.attribs());
+    m_t << "<ul" << s.attribs().toString();
   }
   m_t << ">\n";
   visitChildren(s);
@@ -1534,7 +1500,7 @@ void HtmlDocVisitor::operator()(const DocHtmlList &s)
 void HtmlDocVisitor::operator()(const DocHtmlListItem &i)
 {
   if (m_hide) return;
-  m_t << "<li" << htmlAttribsToString(i.attribs()) << ">";
+  m_t << "<li" << i.attribs().toString() << ">";
   if (!i.isPreformatted()) m_t << "\n";
   visitChildren(i);
   m_t << "</li>\n";
@@ -1544,7 +1510,7 @@ void HtmlDocVisitor::operator()(const DocHtmlDescList &dl)
 {
   if (m_hide) return;
   forceEndParagraph(dl);
-  m_t << "<dl" << htmlAttribsToString(dl.attribs()) << ">\n";
+  m_t << "<dl" << dl.attribs().toString() << ">\n";
   visitChildren(dl);
   m_t << "</dl>\n";
   forceStartParagraph(dl);
@@ -1553,7 +1519,7 @@ void HtmlDocVisitor::operator()(const DocHtmlDescList &dl)
 void HtmlDocVisitor::operator()(const DocHtmlDescTitle &dt)
 {
   if (m_hide) return;
-  m_t << "<dt" << htmlAttribsToString(dt.attribs()) << ">";
+  m_t << "<dt" << dt.attribs().toString() << ">";
   visitChildren(dt);
   m_t << "</dt>\n";
 }
@@ -1561,7 +1527,7 @@ void HtmlDocVisitor::operator()(const DocHtmlDescTitle &dt)
 void HtmlDocVisitor::operator()(const DocHtmlDescData &dd)
 {
   if (m_hide) return;
-  m_t << "<dd" << htmlAttribsToString(dd.attribs()) << ">";
+  m_t << "<dd" << dd.attribs().toString() << ">";
   visitChildren(dd);
   m_t << "</dd>\n";
 }
@@ -1581,14 +1547,14 @@ void HtmlDocVisitor::operator()(const DocHtmlTable &t)
     }
   }
 
-  QCString attrs = htmlAttribsToString(t.attribs());
+  QCString attrs = t.attribs().toString();
   if (attrs.isEmpty())
   {
     m_t << "<table class=\"doxtable\">\n";
   }
   else
   {
-    m_t << "<table" << htmlAttribsToString(t.attribs()) << ">\n";
+    m_t << "<table" << t.attribs().toString() << ">\n";
   }
   if (t.caption())
   {
@@ -1602,7 +1568,7 @@ void HtmlDocVisitor::operator()(const DocHtmlTable &t)
 void HtmlDocVisitor::operator()(const DocHtmlRow &tr)
 {
   if (m_hide) return;
-  m_t << "<tr" << htmlAttribsToString(tr.attribs()) << ">\n";
+  m_t << "<tr" << tr.attribs().toString() << ">\n";
   visitChildren(tr);
   m_t << "</tr>\n";
 }
@@ -1612,11 +1578,11 @@ void HtmlDocVisitor::operator()(const DocHtmlCell &c)
   if (m_hide) return;
   if (c.isHeading())
   {
-    m_t << "<th" << htmlAttribsToString(c.attribs()) << ">";
+    m_t << "<th" << c.attribs().toString() << ">";
   }
   else
   {
-    m_t << "<td" << htmlAttribsToString(c.attribs()) << ">";
+    m_t << "<td" << c.attribs().toString() << ">";
   }
   visitChildren(c);
   if (c.isHeading()) m_t << "</th>"; else m_t << "</td>";
@@ -1625,7 +1591,7 @@ void HtmlDocVisitor::operator()(const DocHtmlCell &c)
 void HtmlDocVisitor::operator()(const DocHtmlCaption &c)
 {
   if (m_hide) return;
-  m_t << "<caption" << htmlAttribsToString(c.attribs()) << ">";
+  m_t << "<caption" << c.attribs().toString() << ">";
   visitChildren(c);
   m_t << "</caption>\n";
 }
@@ -1647,7 +1613,7 @@ void HtmlDocVisitor::operator()(const DocHRef &href)
   {
     QCString url = correctURL(href.url(),href.relPath());
     m_t << "<a href=\"" << convertToHtml(url)  << "\""
-        << htmlAttribsToString(href.attribs()) << ">";
+        << href.attribs().toString() << ">";
   }
   visitChildren(href);
   m_t << "</a>";
@@ -1656,7 +1622,7 @@ void HtmlDocVisitor::operator()(const DocHRef &href)
 void HtmlDocVisitor::operator()(const DocHtmlSummary &s)
 {
   if (m_hide) return;
-  m_t << "<summary " << htmlAttribsToString(s.attribs()) << ">\n";
+  m_t << "<summary " << s.attribs().toString() << ">\n";
   visitChildren(s);
   m_t << "</summary>\n";
 }
@@ -1665,7 +1631,7 @@ void HtmlDocVisitor::operator()(const DocHtmlDetails &d)
 {
   if (m_hide) return;
   forceEndParagraph(d);
-  m_t << "<details " << htmlAttribsToString(d.attribs()) << ">\n";
+  m_t << "<details " << d.attribs().toString() << ">\n";
   auto summary = d.summary();
   if (summary)
   {
@@ -1680,7 +1646,7 @@ void HtmlDocVisitor::operator()(const DocHtmlHeader &header)
 {
   if (m_hide) return;
   forceEndParagraph(header);
-  m_t << "<h" << header.level() << htmlAttribsToString(header.attribs()) << ">";
+  m_t << "<h" << header.level() << header.attribs().toString() << ">";
   visitChildren(header);
   m_t << "</h" << header.level() << ">\n";
   forceStartParagraph(header);
@@ -1712,17 +1678,13 @@ void HtmlDocVisitor::operator()(const DocImage &img)
     }
     // 16 cases: url.isEmpty() | typeSVG | inlineImage | img.hasCaption()
 
-    HtmlAttribList extraAttribs;
+    HtmlAttribList attribs = img.attribs();
     if (typeSVG)
     {
-      HtmlAttrib opt;
-      opt.name  = "style";
-      opt.value = "pointer-events: none;";
-      extraAttribs.push_back(opt);
+      attribs.mergeAttribute("style","pointer-events: none;");
     }
     QCString alt;
-    mergeHtmlAttributes(img.attribs(),extraAttribs);
-    QCString attrs = htmlAttribsToString(extraAttribs,&alt);
+    QCString attrs = attribs.toString(&alt);
     QCString src;
     if (url.isEmpty())
     {
@@ -2085,7 +2047,7 @@ void HtmlDocVisitor::operator()(const DocHtmlBlockQuote &b)
 {
   if (m_hide) return;
   forceEndParagraph(b);
-  m_t << "<blockquote class=\"doxtable\"" << htmlAttribsToString(b.attribs()) << ">\n";
+  m_t << "<blockquote class=\"doxtable\"" << b.attribs().toString() << ">\n";
   visitChildren(b);
   m_t << "</blockquote>\n";
   forceStartParagraph(b);
