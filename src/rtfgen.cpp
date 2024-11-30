@@ -2824,7 +2824,7 @@ void RTFGenerator::startLabels()
 {
 }
 
-void RTFGenerator::writeLabel(const QCString &l,bool isLast)
+void RTFGenerator::writeLabel(const QCString &l,const StringVector &,bool isLast)
 {
   m_t << "{\\f2 [" << l << "]}";
   if (!isLast) m_t << ", ";

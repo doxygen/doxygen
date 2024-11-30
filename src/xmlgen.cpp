@@ -16,6 +16,7 @@
 #include <stdlib.h>
 
 #include "textstream.h"
+#include "qualifiers.h"
 #include "xmlgen.h"
 #include "doxygen.h"
 #include "message.h"
@@ -998,9 +999,9 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       << convertToXML(rbmd->name()) << "</reimplementedby>\n";
   }
 
-  for (const auto &qmd : md->getQualifiers())
+  for (auto & qi : md->getQualifiers())
   {
-    t << "        <qualifier>" << convertToXML(qmd.c_str()) << "</qualifier>\n";
+    t << "        <qualifier>" << convertToXML(qi->label.c_str()) << "</qualifier>\n";
   }
 
   if (md->isFriendClass()) // for friend classes we show a link to the class as a "parameter"
@@ -1580,9 +1581,9 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     t << "    </requiresclause>\n";
   }
 
-  for (const auto &qcd : cd->getQualifiers())
+  for (auto & qi : cd->getQualifiers())
   {
-    t << "    <qualifier>" << convertToXML(qcd.c_str()) << "</qualifier>\n";
+    t << "    <qualifier>" << convertToXML(qi->label.c_str()) << "</qualifier>\n";
   }
 
   t << "    <briefdescription>\n";

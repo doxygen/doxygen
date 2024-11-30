@@ -27,6 +27,7 @@
 #include "textstream.h"
 #include "docparser.h"
 #include "construct.h"
+#include "containers.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -313,7 +314,7 @@ class OutputGenIntf
     virtual void startInlineMemberDoc() = 0;
     virtual void endInlineMemberDoc() = 0;
     virtual void startLabels() = 0;
-    virtual void writeLabel(const QCString &l,bool isLast) = 0;
+    virtual void writeLabel(const QCString &l,const StringVector &cls,bool isLast) = 0;
     virtual void endLabels() = 0;
     virtual void writeLocalToc(const SectionRefs &refs,const LocalToc &lt) = 0;
     virtual void cleanup() = 0;

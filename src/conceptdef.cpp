@@ -504,7 +504,7 @@ void ConceptDefImpl::addConceptAttributes(OutputList &ol) const
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.startLabels();
-    ol.writeLabel("export",false);
+    ol.writeLabel("export",StringVector{"export"},false);
     ol.endLabels();
     ol.popGeneratorState();
   }

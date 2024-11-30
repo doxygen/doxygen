@@ -66,6 +66,7 @@ typedef yyguts_t *yyscan_t;
 #include "trace.h"
 #include "debug.h"
 #include "stringutil.h"
+#include "qualifiers.h"
 
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -520,8 +521,8 @@ struct commentscanYY_state
   QCString         htmlAnchorStr;
   bool             htmlAnchor = false;
   bool             CScode = false;
+  StringVector     qualifierClasses;
 };
-
 
 static std::mutex g_sectionMutex;
 static std::mutex g_formulaMutex;
@@ -1751,12 +1752,12 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the qualifier command ----- */
 <Qualifier>{LABELID}                    { // unquoted version, simple label
-                                          yyextra->current->qualifiers.emplace_back(yytext);
+                                          mergeQualifier(yyextra->current->qualifiers, yytext, yyextra->qualifierClasses);
                                           BEGIN( Comment );
                                         }
 <Qualifier>"\""[^\"]*"\""               { // quotes version, add without quotes
-                                          std::string inp(yytext);
-                                          yyextra->current->qualifiers.push_back(inp.substr(1,yyleng-2));
+                                          std::string inp = std::string(yytext).substr(1,yyleng-2);
+                                          mergeQualifier(yyextra->current->qualifiers, inp, yyextra->qualifierClasses);
                                           BEGIN( Comment );
                                         }
 <Qualifier>{DOCNL}                      { // missing argument
@@ -3903,10 +3904,30 @@ static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, co
   return FALSE;
 }
 
-static bool handleQualifier(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
+static bool handleQualifier(yyscan_t yyscanner,const QCString &cmd, const StringVector &optList)
 {
+  static const reg::Ex className(R"([a-zA-Z][a-zA-Z0-9_-]*)");
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->currentCmd = cmd;
+  yyextra->qualifierClasses.clear();
+  for (const auto &opt_ : optList)
+  {
+    std::string opt = QCString(opt_).stripWhiteSpace().str();
+    reg::Match match;
+    if (opt.empty())
+    {
+      continue;
+    }
+    else if (!reg::match(opt,match,className))
+    {
+      warn(yyextra->fileName,yyextra->lineNr,"Option '%s' contains non supported character with '\\%s' command", qPrint(opt),qPrint(cmd));
+    }
+    else if (std::find(yyextra->qualifierClasses.begin(), yyextra->qualifierClasses.end(), opt) == yyextra->qualifierClasses.end())
+    {
+      yyextra->qualifierClasses.push_back(opt);
+    }
+    opt = "";
+  }
   BEGIN(Qualifier);
   return FALSE;
 }

@@ -656,13 +656,15 @@ Structural indicators
       option \ref cfg_show_enum_values "SHOW_ENUM_VALUES"
 
 <hr>
-\section cmdqualifier \\qualifier \<label\> | "(text)"
+\section cmdqualifier \\qualifier['{'[option][,option]*'}'] \<label\> | "(text)"
 
   \addindex \\qualifier
 
   With this command it is possible to add custom qualifier labels
   to members and classes. These labels will be shown in the output in the same way
   as the automatically generated labels such as "static", "inline", and "final".
+
+  The `option` is the name to be appended of the HTML class atribute for the qualifier.
 
   For instance to indicate that a function is only meant for testing purposes
   one could add `\qualifier test`

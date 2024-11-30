@@ -25,6 +25,7 @@
 #include <sys/types.h>
 
 #include "types.h"
+#include "qualifiers.h"
 #include "definition.h"
 #include "arguments.h"
 #include "classdef.h"
@@ -265,8 +266,8 @@ class MemberDef : public Definition
     virtual const MemberDef *categoryRelation() const = 0;
 
     virtual QCString getDeclType() const = 0;
-    virtual StringVector getLabels(const Definition *container) const = 0;
-    virtual StringVector getQualifiers() const = 0;
+    virtual QualifierInfoVector getLabels(const Definition *container) const = 0;
+    virtual QualifierInfoVector getQualifiers() const = 0;
 
     virtual const ArgumentList &typeConstraints() const = 0;
 
@@ -405,7 +406,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void setRequiresClause(const QCString &req) = 0;
 
-    virtual void addQualifiers(const StringVector &qualifiers) = 0;
+    virtual void addQualifiers(const QualifierInfoVector &qualifiers) = 0;
 
     virtual void setModuleDef(ModuleDef *mod) = 0;
 

@@ -321,7 +321,7 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     void endInlineMemberDoc() override;
 
     void startLabels() override;
-    void writeLabel(const QCString &l,bool isLast) override;
+    void writeLabel(const QCString &l,const StringVector &cls,bool isLast) override;
     void endLabels() override;
 
     void writeLocalToc(const SectionRefs &sr,const LocalToc &lt) override;
