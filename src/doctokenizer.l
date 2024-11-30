@@ -1640,8 +1640,8 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
     // search for end of name
     while (i<(int)yyleng && !isspace((uint8_t)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
     int endName=i;
-    HtmlAttrib opt;
-    opt.name  = tagText.mid(startName,endName-startName).lower();
+    QCString optName,optValue;
+    optName  = tagText.mid(startName,endName-startName).lower();
     // skip spaces
     while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     if (tagText.at(i)=='=') // option has value
@@ -1677,20 +1677,20 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
         endAttrib=i;
         if (i<(int)yyleng) { c=tagText.at(++i);}
       }
-      opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib);
-      if (opt.name == "align") opt.value = opt.value.lower();
-      else if (opt.name == "valign")
+      optValue  = tagText.mid(startAttrib,endAttrib-startAttrib);
+      if (optName == "align") optValue = optValue.lower();
+      else if (optName == "valign")
       {
-        opt.value = opt.value.lower();
-        if (opt.value == "center") opt.value="middle";
+        optValue = optValue.lower();
+        if (optValue == "center") optValue="middle";
       }
     }
     else // start next option
     {
     }
     //printf("=====> Adding option name=<%s> value=<%s>\n",
-    //    qPrint(opt.name),qPrint(opt.value));
-    yyextra->token.attribs.push_back(opt);
+    //    qPrint(optName),qPrint(optValue));
+    yyextra->token.attribs.emplace_back(optName,optValue);
   }
   yyextra->token.attribsStr = tagText.mid(startAttribList,i-startAttribList);
 }
