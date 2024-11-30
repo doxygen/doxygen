@@ -482,46 +482,55 @@ void HtmlDocVisitor::operator()(const DocHorRuler &hr)
 void HtmlDocVisitor::operator()(const DocStyleChange &s)
 {
   if (m_hide) return;
+  HtmlAttribList extraAttribs;
+  if (s.enable())
+  {
+    HtmlAttrib opt;
+    opt.name  = "class";
+    opt.value = "doxygen_" + s.tagName();
+    extraAttribs.push_back(opt);
+    mergeHtmlAttributes(s.attribs(),extraAttribs);
+  }
   switch (s.style())
   {
     case DocStyleChange::Bold:
-      if (s.enable()) m_t << "<b" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</b>";
+      if (s.enable()) m_t << "<b"  << htmlAttribsToString(extraAttribs) << ">";      else m_t << "</b>";
       break;
     case DocStyleChange::S:
-      if (s.enable()) m_t << "<s" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</s>";
+      if (s.enable()) m_t << "<s"  << htmlAttribsToString(extraAttribs) << ">";      else m_t << "</s>";
       break;
     case DocStyleChange::Strike:
-      if (s.enable()) m_t << "<strike" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</strike>";
+      if (s.enable()) m_t << "<strike"  << htmlAttribsToString(extraAttribs) << ">";      else m_t << "</strike>";
       break;
     case DocStyleChange::Del:
-      if (s.enable()) m_t << "<del" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</del>";
+      if (s.enable()) m_t << "<del"  << htmlAttribsToString(extraAttribs) << ">";      else m_t << "</del>";
       break;
     case DocStyleChange::Underline:
-      if (s.enable()) m_t << "<u" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</u>";
+      if (s.enable()) m_t << "<u"  << htmlAttribsToString(extraAttribs) << ">";      else m_t << "</u>";
       break;
     case DocStyleChange::Ins:
-      if (s.enable()) m_t << "<ins" << htmlAttribsToString(s.attribs()) << ">";      else m_t << "</ins>";
+      if (s.enable()) m_t << "<ins"  << htmlAttribsToString(extraAttribs) << ">";      else m_t << "</ins>";
       break;
     case DocStyleChange::Italic:
-      if (s.enable()) m_t << "<em" << htmlAttribsToString(s.attribs()) << ">";     else m_t << "</em>";
+      if (s.enable()) m_t << "<em"  << htmlAttribsToString(extraAttribs) << ">";     else m_t << "</em>";
       break;
     case DocStyleChange::Kbd:
-      if (s.enable()) m_t << "<kbd" << htmlAttribsToString(s.attribs()) << ">";   else m_t << "</kbd>";
+      if (s.enable()) m_t << "<kbd"  << htmlAttribsToString(extraAttribs) << ">";   else m_t << "</kbd>";
       break;
     case DocStyleChange::Code:
-      if (s.enable()) m_t << "<code" << htmlAttribsToString(s.attribs()) << ">";   else m_t << "</code>";
+      if (s.enable()) m_t << "<code"  << htmlAttribsToString(extraAttribs) << ">";   else m_t << "</code>";
       break;
     case DocStyleChange::Subscript:
-      if (s.enable()) m_t << "<sub" << htmlAttribsToString(s.attribs()) << ">";    else m_t << "</sub>";
+      if (s.enable()) m_t << "<sub"  << htmlAttribsToString(extraAttribs) << ">";    else m_t << "</sub>";
       break;
     case DocStyleChange::Superscript:
-      if (s.enable()) m_t << "<sup" << htmlAttribsToString(s.attribs()) << ">";    else m_t << "</sup>";
+      if (s.enable()) m_t << "<sup"  << htmlAttribsToString(extraAttribs) << ">";    else m_t << "</sup>";
       break;
     case DocStyleChange::Center:
       if (s.enable())
       {
         forceEndParagraph(s);
-        m_t << "<center" << htmlAttribsToString(s.attribs()) << ">";
+        m_t << "<center"  << htmlAttribsToString(extraAttribs) << ">";
       }
       else
       {
@@ -530,16 +539,16 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       }
       break;
     case DocStyleChange::Small:
-      if (s.enable()) m_t << "<small" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</small>";
+      if (s.enable()) m_t << "<small"  << htmlAttribsToString(extraAttribs) << ">";  else m_t << "</small>";
       break;
     case DocStyleChange::Cite:
-      if (s.enable()) m_t << "<cite" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</cite>";
+      if (s.enable()) m_t << "<cite"  << htmlAttribsToString(extraAttribs) << ">";  else m_t << "</cite>";
       break;
     case DocStyleChange::Preformatted:
       if (s.enable())
       {
         forceEndParagraph(s);
-        m_t << "<pre" << htmlAttribsToString(s.attribs()) << ">";
+        m_t << "<pre"  << htmlAttribsToString(extraAttribs) << ">";
         m_insidePre=TRUE;
       }
       else
@@ -553,7 +562,7 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       if (s.enable())
       {
         forceEndParagraph(s);
-        m_t << "<div" << htmlAttribsToString(s.attribs()) << ">";
+        m_t << "<div"  << htmlAttribsToString(extraAttribs) << ">";
       }
       else
       {
@@ -562,7 +571,7 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       }
       break;
     case DocStyleChange::Span:
-      if (s.enable()) m_t << "<span" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</span>";
+      if (s.enable()) m_t << "<span"  << htmlAttribsToString(extraAttribs) << ">";  else m_t << "</span>";
       break;
   }
 }
