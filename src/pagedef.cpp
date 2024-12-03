@@ -24,6 +24,7 @@
 #include "namespacedef.h"
 #include "reflist.h"
 #include "definitionimpl.h"
+#include "indexlist.h"
 
 //------------------------------------------------------------------------------------------
 
@@ -31,37 +32,39 @@ class PageDefImpl : public DefinitionMixin<PageDef>
 {
   public:
     PageDefImpl(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
-    virtual ~PageDefImpl();
+    ~PageDefImpl() override;
+    NON_COPYABLE(PageDefImpl)
 
-    virtual void setFileName(const QCString &name);
-    virtual void setLocalToc(const LocalToc &tl);
-    virtual void setShowLineNo(bool);
-    virtual DefType definitionType() const { return TypePage; }
-    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
-    virtual bool isLinkableInProject() const { return /*hasDocumentation() &&*/ !isReference(); }
-    virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
-    virtual QCString getOutputFileBase() const;
-    virtual QCString anchor() const { return QCString(); }
-    virtual void findSectionsInDocumentation();
-    virtual QCString title() const { return m_title; }
-    virtual const GroupDef * getGroupDef() const;
-    virtual const PageLinkedRefMap &getSubPages() const { return m_subPages; }
-    virtual void addInnerCompound(const Definition *d);
-    virtual bool visibleInIndex() const;
-    virtual bool documentedPage() const;
-    virtual bool hasSubPages() const;
-    virtual bool hasParentPage() const;
-    virtual bool hasTitle() const;
-    virtual LocalToc localToc() const { return m_localToc; }
-    virtual void setPageScope(Definition *d){ m_pageScope = d; }
-    virtual Definition *getPageScope() const { return m_pageScope; }
-    virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionMixin::name(); }
-    virtual bool showLineNo() const;
-    virtual void setTitle(const QCString &title);
-    virtual void writeDocumentation(OutputList &ol);
-    virtual void writeTagFile(TextStream &);
-    virtual void setNestingLevel(int l);
-    virtual void writePageDocumentation(OutputList &ol) const;
+    void setFileName(const QCString &name) override;
+    void setLocalToc(const LocalToc &tl) override;
+    void setShowLineNo(bool) override;
+    DefType definitionType() const override { return TypePage; }
+    CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Default; }
+    bool isLinkableInProject() const override { return /*hasDocumentation() &&*/ !isReference(); }
+    bool isLinkable() const override { return isLinkableInProject() || isReference(); }
+    QCString getOutputFileBase() const override;
+    QCString anchor() const override { return QCString(); }
+    void findSectionsInDocumentation() override;
+    QCString title() const override { return m_title; }
+    const GroupDef * getGroupDef() const override;
+    const PageLinkedRefMap &getSubPages() const override { return m_subPages; }
+    void addInnerCompound(Definition *d) override;
+    bool visibleInIndex() const override;
+    bool documentedPage() const override;
+    bool hasSubPages() const override;
+    bool hasParentPage() const override;
+    bool hasTitle() const override;
+    LocalToc localToc() const override { return m_localToc; }
+    void setPageScope(Definition *d) override { m_pageScope = d; }
+    Definition *getPageScope() const override { return m_pageScope; }
+    QCString displayName(bool=TRUE) const override { return hasTitle() ? m_title : DefinitionMixin::name(); }
+    bool showLineNo() const override;
+    void setTitle(const QCString &title) override;
+    void writeDocumentation(OutputList &ol) override;
+    void writeTagFile(TextStream &) override;
+    void setNestingLevel(int l) override;
+    void writePageDocumentation(OutputList &ol) const override;
+    void addSectionsToIndex() override;
 
   private:
     QCString m_fileName;
@@ -73,9 +76,9 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     bool m_showLineNo;
 };
 
-PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
+std::unique_ptr<PageDef> createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
 {
-  return new PageDefImpl(f,l,n,d,t);
+  return std::make_unique<PageDefImpl>(f,l,n,d,t);
 }
 
 //------------------------------------------------------------------------------------------
@@ -85,7 +88,7 @@ PageDefImpl::PageDefImpl(const QCString &f,int l,const QCString &n,
  : DefinitionMixin(f,l,1,n), m_title(!t.isEmpty() ? t : n)
 {
   setDocumentation(d,f,l);
-  m_pageScope = 0;
+  m_pageScope = nullptr;
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
   m_showLineNo = FALSE;
@@ -99,11 +102,12 @@ void PageDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
+  docFindSections(inbodyDocumentation(),this,docFile());
 }
 
 const GroupDef *PageDefImpl::getGroupDef() const
 {
-  return !partOfGroups().empty() ? partOfGroups().front() : 0;
+  return !partOfGroups().empty() ? partOfGroups().front() : nullptr;
 }
 
 QCString PageDefImpl::getOutputFileBase() const
@@ -119,11 +123,11 @@ void PageDefImpl::setFileName(const QCString &name)
   m_fileName = name;
 }
 
-void PageDefImpl::addInnerCompound(const Definition *def)
+void PageDefImpl::addInnerCompound(Definition *def)
 {
   if (def->definitionType()==Definition::TypePage)
   {
-    PageDef *pd = const_cast<PageDef*>(toPageDef(def));
+    PageDef *pd = toPageDef(def);
     if (pd)
     {
       m_subPages.add(pd->name(),pd);
@@ -137,6 +141,56 @@ void PageDefImpl::addInnerCompound(const Definition *def)
         pd->setNestingLevel(m_nestingLevel+1);
       }
     }
+  }
+}
+
+void PageDefImpl::addSectionsToIndex()
+{
+  const SectionRefs &sectionRefs = getSectionRefs();
+  if (sectionRefs.empty()) return;
+  //printf("PageDefImpl::addSectionsToIndex()\n");
+  int level=1;
+  for (auto it = sectionRefs.begin(); it!=sectionRefs.end(); ++it)
+  {
+    const SectionInfo *si = *it;
+    SectionType type = si->type();
+    if (type.isSection())
+    {
+      //printf("  level=%d title=%s\n",level,qPrint(si->title));
+      int nextLevel = type.level();
+      if (nextLevel>level)
+      {
+        for (int i=level;i<nextLevel;i++)
+        {
+          Doxygen::indexList->incContentsDepth();
+        }
+      }
+      else if (nextLevel<level)
+      {
+        for (int i=nextLevel;i<level;i++)
+        {
+          Doxygen::indexList->decContentsDepth();
+        }
+      }
+      QCString title = si->title();
+      if (title.isEmpty()) title = si->label();
+      title = parseCommentAsText(this,nullptr,title,si->fileName(),si->lineNr());
+      // determine if there is a next level inside this item, but be aware of the anchor and table section references.
+      auto it_next = std::next(it);
+      bool isDir = (it_next!=sectionRefs.end()) ?  ((*it_next)->type().isSection() && (*it_next)->type().level() > nextLevel) : false;
+      Doxygen::indexList->addContentsItem(isDir,title,
+                                         getReference(),
+                                         getOutputFileBase(),
+                                         si->label(),
+                                         false,
+                                         true);
+      level = nextLevel;
+    }
+  }
+  while (level>1)
+  {
+    Doxygen::indexList->decContentsDepth();
+    level--;
   }
 }
 
@@ -159,10 +213,18 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
   }
   if (!found) // not one of the generated related pages
   {
+    QCString fn = getOutputFileBase();
+    addHtmlExtensionIfMissing(fn);
     tagFile << "  <compound kind=\"page\">\n";
     tagFile << "    <name>" << name() << "</name>\n";
     tagFile << "    <title>" << convertToXML(title()) << "</title>\n";
-    tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
+    tagFile << "    <filename>" << fn << "</filename>\n";
+    for (const auto &subPage : m_subPages)
+    {
+      QCString sfn = subPage->getOutputFileBase();
+      addHtmlExtensionIfMissing(sfn);
+      tagFile << "    <subpage>" << sfn << "</subpage>\n";
+    }
     writeDocAnchorsToTagFile(tagFile);
     tagFile << "  </compound>\n";
   }
@@ -171,8 +233,15 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
 void PageDefImpl::writeDocumentation(OutputList &ol)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  int hierarchyLevel = -1; // Pages start at the root
+  PageDef *pd = this;
+  while (pd->hasParentPage())
+  {
+    pd = (PageDef *)pd->getOuterScope();
+    ++hierarchyLevel;
+  }
 
-  //outputList->disable(OutputGenerator::Man);
+  //outputList->disable(OutputType::Man);
   QCString pageName,manPageName;
   pageName    = escapeCharsInString(name(),FALSE,TRUE);
   manPageName = escapeCharsInString(name(),TRUE,TRUE);
@@ -182,25 +251,15 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //1.{
 
-  if (m_nestingLevel>0
-      //&& // a sub page
-      //(Doxygen::mainPage==0 || getOuterScope()!=Doxygen::mainPage) // and not a subpage of the mainpage
-     )
-  {
-    // do not generate sub page output for RTF and LaTeX, as these are
-    // part of their parent page
-    ol.disableAll();
-    ol.enable(OutputGenerator::Man);
-    ol.enable(OutputGenerator::Html);
-  }
-
   ol.pushGeneratorState();
   //2.{
-  ol.disableAllBut(OutputGenerator::Man);
-  startFile(ol,getOutputFileBase(),manPageName,title(),HLI_Pages,!generateTreeView);
+  ol.disableAllBut(OutputType::Man);
+  startFile(ol,getOutputFileBase(),manPageName,title(),HighlightedItem::Pages,!generateTreeView,
+            QCString() /* altSidebarName */, hierarchyLevel);
   ol.enableAll();
-  ol.disable(OutputGenerator::Man);
-  startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,!generateTreeView);
+  ol.disable(OutputType::Man);
+  startFile(ol,getOutputFileBase(),pageName,title(),HighlightedItem::Pages,!generateTreeView,
+            QCString() /* altSidebarName */, hierarchyLevel);
   ol.popGeneratorState();
   //2.}
 
@@ -221,19 +280,16 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   // save old generator state and write title only to Man generator
   ol.pushGeneratorState();
   //2.{
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.startTitleHead(manPageName);
   ol.endTitleHead(manPageName, manPageName);
   if (si)
   {
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Man);
     ol.writeString(" - ");
-    ol.popGeneratorState();
 
     if (si->title() != manPageName)
     {
-      ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
+      ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),TRUE,FALSE,
                      QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       ol.endSection(si->label(),si->type());
     }
@@ -241,33 +297,36 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //2.}
 
-  // for Latex the section is already generated as a chapter in the index!
   ol.pushGeneratorState();
   //2.{
-  ol.disable(OutputGenerator::Latex);
-  ol.disable(OutputGenerator::Docbook);
-  ol.disable(OutputGenerator::RTF);
-  ol.disable(OutputGenerator::Man);
-  if (hasTitle() && !name().isEmpty() && si!=0)
+  ol.disable(OutputType::Man);
+  QCString title;
+  if (this == Doxygen::mainPage.get() && !hasTitle())
+    title = theTranslator->trMainPage();
+  else
+    title = m_title;
+
+  if (!title.isEmpty() && !name().isEmpty() && si!=nullptr)
   {
     ol.startPageDoc(si->title());
     //ol.startSection(si->label,si->title,si->type);
-    startTitle(ol,getOutputFileBase(),this);
-    ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
-                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-    //stringToSearchIndex(getOutputFileBase(),
-    //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
-    //                    si->title);
-    //ol.endSection(si->label,si->type);
-    endTitle(ol,getOutputFileBase(),name());
+    ol.startHeaderSection();
+    ol.startTitleHead(getOutputFileBase());
+    ol.parseText(title);
+    ol.endTitleHead(getOutputFileBase(),title);
+    ol.endHeaderSection();
+
+    /*ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),TRUE,FALSE,
+                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));*/
   }
   else
     ol.startPageDoc("");
-  ol.startContents();
   ol.popGeneratorState();
   //2.}
 
-  if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled() || m_localToc.isDocbookEnabled()) && hasSections())
+  ol.startContents();
+  if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled() || m_localToc.isDocbookEnabled())
+    && hasSections())
   {
     writeToc(ol, m_localToc);
   }
@@ -278,7 +337,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
   if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
   {
-    endFileWithNavPath(getOuterScope(),ol);
+    endFileWithNavPath(ol,getOuterScope());
   }
   else
   {
@@ -296,23 +355,40 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
   if (hasBriefDescription() && !SectionManager::instance().find(name()))
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.disableAllBut(OutputType::Man);
     ol.writeString(" - ");
     ol.popGeneratorState();
   }
-  ol.generateDoc(
+  ol.disableAllBut(OutputType::Html);
+    ol.generateDoc(
       docFile(),           // fileName
       docLine(),           // startLine
       this,                // context
-      0,                   // memberdef
+      nullptr,             // memberdef
       docStr,              // docStr
-      TRUE,                // index words
-      FALSE,               // not an example
-      QCString(),                   // exampleName
-      FALSE,               // singleLine
-      FALSE,               // linkFromIndex
+      true,                // index words
+      false,               // not an example
+      QCString(),          // exampleName
+      false,               // singleLine
+      false,               // linkFromIndex
       TRUE                 // markdown support
       );
+  ol.enableAll();
+  ol.disable(OutputType::Html);
+    ol.generateDoc(
+      docFile(),           // fileName
+      docLine(),           // startLine
+      this,                // context
+      nullptr,             // memberdef
+      docStr,              // docStr
+      false,               // index words
+      false,               // not an example
+      QCString(),          // exampleName
+      false,               // singleLine
+      false,               // linkFromIndex
+      TRUE                 // markdown support
+      );
+  ol.enable(OutputType::Html);
   ol.endTextBlock();
 
   if (hasSubPages())
@@ -321,29 +397,13 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
     // parent page.
     ol.pushGeneratorState();
     ol.disableAll();
-    ol.enable(OutputGenerator::Latex);
-    ol.enable(OutputGenerator::Docbook);
-    ol.enable(OutputGenerator::RTF);
+    ol.enable(OutputType::Latex);
+    ol.enable(OutputType::Docbook);
+    ol.enable(OutputType::RTF);
 
     for (const auto &subPage : m_subPages)
     {
-      SectionType sectionType = SectionType::Paragraph;
-      switch (m_nestingLevel)
-      {
-        case  0: sectionType = SectionType::Page;          break;
-        case  1: sectionType = SectionType::Section;       break;
-        case  2: sectionType = SectionType::Subsection;    break;
-        case  3: sectionType = SectionType::Subsubsection; break;
-        default: sectionType = SectionType::Paragraph;     break;
-      }
-      QCString title = subPage->title();
-      if (title.isEmpty()) title = subPage->name();
-      ol.startSection(subPage->name(),title,sectionType);
-      ol.parseText(title);
-      ol.endSection(subPage->name(),sectionType);
-      Doxygen::subpageNestingLevel++;
-      subPage->writePageDocumentation(ol);
-      Doxygen::subpageNestingLevel--;
+      ol.writePageLink(subPage->getOutputFileBase(), FALSE);
     }
 
     ol.popGeneratorState();
@@ -356,8 +416,7 @@ bool PageDefImpl::visibleInIndex() const
   return // not part of a group
          !getGroupDef() &&
          // not an externally defined page
-         (!isReference() || externalPages)
-         ;
+         (!isReference() || externalPages);
 }
 
 bool PageDefImpl::documentedPage() const
@@ -407,27 +466,27 @@ void PageDefImpl::setTitle(const QCString &title)
 
 PageDef *toPageDef(Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   if (d && typeid(*d)==typeid(PageDefImpl))
   {
     return static_cast<PageDef*>(d);
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 
 const PageDef *toPageDef(const Definition *d)
 {
-  if (d==0) return 0;
+  if (d==nullptr) return nullptr;
   if (d && typeid(*d)==typeid(PageDefImpl))
   {
     return static_cast<const PageDef*>(d);
   }
   else
   {
-    return 0;
+    return nullptr;
   }
 }
 

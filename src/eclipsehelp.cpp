@@ -13,13 +13,12 @@
  *
  */
 
-#include <fstream>
-
 #include "eclipsehelp.h"
 #include "util.h"
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
+#include "portable.h"
 
 struct EclipseHelp::Private
 {
@@ -59,7 +58,6 @@ struct EclipseHelp::Private
 
 EclipseHelp::EclipseHelp() : p(std::make_unique<Private>()) {}
 EclipseHelp::~EclipseHelp() = default;
-EclipseHelp::EclipseHelp(EclipseHelp&&) = default;
 
 /*!
  * \brief Initialize the Eclipse generator
@@ -71,7 +69,7 @@ void EclipseHelp::initialize()
 {
   // -- open the contents file
   QCString name = Config_getString(HTML_OUTPUT) + "/toc.xml";
-  p->tocstream.open(name.str(), std::ofstream::out | std::ofstream::binary);
+  p->tocstream = Portable::openOutputStream(name);
   if (!p->tocstream.is_open())
   {
     term("Could not open file %s for writing\n", qPrint(name));
@@ -107,7 +105,7 @@ void EclipseHelp::finalize()
   p->tocstream.close();
 
   QCString name = Config_getString(HTML_OUTPUT) + "/plugin.xml";
-  std::ofstream t(name.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream t = Portable::openOutputStream(name);
   if (t.is_open())
   {
     QCString docId = Config_getString(ECLIPSE_DOC_ID);
@@ -174,6 +172,8 @@ void EclipseHelp::addContentsItem(
   p->closedTag();
   if (!file.isEmpty())
   {
+    QCString fn = file;
+    addHtmlExtensionIfMissing(fn);
     switch (file[0]) // check for special markers (user defined URLs)
     {
       case '^':
@@ -190,8 +190,7 @@ void EclipseHelp::addContentsItem(
       default:
         p->indent();
         p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-        p->tocstream << " href=\"" << convertToXML(p->pathprefix)
-                    << addHtmlExtensionIfMissing(file);
+        p->tocstream << " href=\"" << convertToXML(p->pathprefix) << fn;
         if (!anchor.isEmpty())
         {
           p->tocstream << "#" << anchor;

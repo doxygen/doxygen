@@ -4,16 +4,42 @@ The following table gives an overview of the doxygen internal special commands
 and the version in which they were introduced.
 
 \secreflist
+\refitem cmdialias \\ialias
 \refitem cmdendicode \\endicode
 \refitem cmdendiliteral \\endiliteral
+\refitem cmdendiskip \\endiskip
 \refitem cmdendiverbatim \\endiverbatim
+\refitem cmdianchor \\ianchor
 \refitem cmdicode \\icode
 \refitem cmdifile \\ifile
 \refitem cmdiline \\iline
 \refitem cmdilinebr \\ilinebr
 \refitem cmdiliteral \\iliteral
+\refitem cmdiprefix \\iprefix
+\refitem cmdiraise \\iraise
+\refitem cmdiskip \\iskip
 \refitem cmdiverbatim \\iverbatim
 \endsecreflist
+
+<hr>
+\section cmdialias \\ialias{name}
+
+ \addindex \\ialias
+ This command is used to prevent endless recursive expansion of aliases. For an alias `name` the command `\ialias{name}` is 
+ inserted after its expansion, and then the expanded string is reparsed, but until the `\ialias` is processed the `name` 
+ is not considered for further alias expansion.
+
+\since doxygen version 1.11.0
+
+<hr>
+\section cmdianchor \\ianchor{title} anchor
+
+  \addindex \\ianchor
+  This command has a similar syntax and function as the command `\anchor`, but is internally used
+  for the `@page` command in markdown files. Unlike `\anchor` it has an additional `title` option that
+  is used as the link text in references to the page.
+
+\since doxygen version 1.9.7
 
 <hr>
 \section cmdilinebr \\ilinebr
@@ -33,7 +59,7 @@ and the version in which they were introduced.
 \since doxygen version 1.8.19
 
 <hr>
-\section cmdifile \\ifile <filename>
+\section cmdifile \\ifile \<filename\>
   \addindex \\ifile
 
   Internal doxygen command to reset the current filename in a documentation block
@@ -43,7 +69,7 @@ and the version in which they were introduced.
 \since doxygen version 1.9.5
 
 <hr>
-\section cmdiline \\iline <linenr>
+\section cmdiline \\iline \<linenr\>
   \addindex \\iline
 
   Internal doxygen command to reset the current line counter in a documentation block
@@ -53,7 +79,7 @@ and the version in which they were introduced.
 \since doxygen version 1.9.2
 
 <hr>
-\section cmdicode \\icode['{'<word>'}']
+\section cmdicode \\icode['{'\<word\>'}']
 
   \addindex \\icode
   This command has a similar syntax and function as the command `\code`, but is internally used
@@ -73,7 +99,7 @@ and the version in which they were introduced.
 \since doxygen version 1.9.5
 
 <hr>
-\section cmdiliteral \\iliteral['{'<option>'}']
+\section cmdiliteral \\iliteral['{'\<option\>'}']
   \addindex \\iliteral
 
   This command is to replace the Java documentation commands `{@literal .... }` and
@@ -105,6 +131,46 @@ and the version in which they were introduced.
   a `\endverbatim` as this would terminate the `\verbatim` block.
 
 \since doxygen version 1.9.5
+
+<hr>
+\section cmdiraise \\iraise \<amount\>
+  \addindex \\iraise
+
+  Internal doxygen command to increase the section level by a given `amount`.
+  After processing `\iraise 1` for instance, a `\section s1` will be treated as a `\subsection s1`.
+  Inserted when processing `\include{doc}` with the `raise` option.
+
+\since doxygen version 1.11.0
+
+<hr>
+\section cmdiskip \\iskip
+  \addindex \\iskip
+
+  Internal doxygen command to suppress evaluation of whitespace to determine the indentation
+  of a comment block. Evaluation will continue as normal when the matching 
+  \ref cmdendiskip "\\endiskip" command is found.
+  Inserted when processing commands that contain literal text like `\startuml`, `\verbatim`, `<code>` etc.
+
+\since doxygen version 1.12.0
+
+<hr>
+\section cmdiprefix \\iprefix "<label>"
+  \addindex \\iprefix
+
+  Internal doxygen command to prefix section labels references for \c \\ref and \c \\link commands.
+  After processing `\iprefix "pf_"` for instance, a <code>\\ref s1</code> will be treated as 
+  if <code>\\ref pf_s1</code> was written.
+  Inserted internally when processing `\include{doc}` with the `prefix` option.
+
+\since doxygen version 1.11.0
+
+<hr>
+\section cmdendiskip \\endiskip
+
+  \addindex \\endiskip
+  Ends a block of text that was started with a \ref cmdiskip "\\iskip" command.
+
+\since doxygen version 1.12.0
 
 <hr>
 \section cmdendiverbatim \\endiverbatim

@@ -13,9 +13,8 @@
  *
  */
 
-#include <set>
+#include <unordered_set>
 #include <stack>
-#include <fstream>
 
 #include "docsets.h"
 #include "config.h"
@@ -28,6 +27,7 @@
 #include "namespacedef.h"
 #include "util.h"
 #include "textstream.h"
+#include "portable.h"
 
 struct DocSets::Private
 {
@@ -37,13 +37,12 @@ struct DocSets::Private
   std::ofstream ttf;
   TextStream    tts;
   std::stack<bool> indentStack;
-  std::set<std::string> scopes;
+  std::unordered_set<std::string> scopes;
 };
 
 
 DocSets::DocSets() : p(std::make_unique<Private>()) {}
 DocSets::~DocSets() = default;
-DocSets::DocSets(DocSets &&) = default;
 
 void DocSets::initialize()
 {
@@ -66,7 +65,7 @@ void DocSets::initialize()
   // -- write Makefile
   {
     QCString mfName = Config_getString(HTML_OUTPUT) + "/Makefile";
-    std::ofstream ts(mfName.str(),std::ofstream::out | std::ofstream::binary);
+    std::ofstream ts = Portable::openOutputStream(mfName);
     if (!ts.is_open())
     {
       term("Could not open file %s for writing\n",qPrint(mfName));
@@ -115,7 +114,7 @@ void DocSets::initialize()
   // -- write Info.plist
   {
     QCString plName = Config_getString(HTML_OUTPUT) + "/Info.plist";
-    std::ofstream ts(plName.str(),std::ofstream::out | std::ofstream::binary);
+    std::ofstream ts = Portable::openOutputStream(plName);
     if (!ts.is_open())
     {
       term("Could not open file %s for writing\n",qPrint(plName));
@@ -151,7 +150,7 @@ void DocSets::initialize()
 
   // -- start Nodes.xml
   QCString notes = Config_getString(HTML_OUTPUT) + "/Nodes.xml";
-  p->ntf.open(notes.str(),std::ofstream::out | std::ofstream::binary);
+  p->ntf = Portable::openOutputStream(notes);
   if (!p->ntf.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(notes));
@@ -169,7 +168,7 @@ void DocSets::initialize()
   p->indentStack.push(true);
 
   QCString tokens = Config_getString(HTML_OUTPUT) + "/Tokens.xml";
-  p->ttf.open(tokens.str(),std::ofstream::out | std::ofstream::binary);
+  p->ttf = Portable::openOutputStream(tokens);
   if (!p->ttf.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(tokens));
@@ -234,7 +233,7 @@ void DocSets::addContentsItem(bool isDir,
 {
   (void)isDir;
   //printf("DocSets::addContentsItem(%s) depth=%zu\n",name,p->indentStack.size());
-  if (ref==0)
+  if (ref==nullptr)
   {
     if (!p->indentStack.top())
     {
@@ -257,7 +256,9 @@ void DocSets::addContentsItem(bool isDir,
       }
       else if (!file.isEmpty()) // doxygen generated file
       {
-        p->nts << addHtmlExtensionIfMissing(file);
+        QCString fn = file;
+        addHtmlExtensionIfMissing(fn);
+        p->nts << fn;
       }
       p->nts << "</Path>\n";
       if (!file.isEmpty() && !anchor.isEmpty())
@@ -271,11 +272,11 @@ void DocSets::addContentsItem(bool isDir,
 void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
                            const QCString &,const QCString &)
 {
-  if (md==0 && context==0) return;
+  if (md==nullptr && context==nullptr) return;
 
-  const FileDef *fd      = 0;
-  const ClassDef *cd     = 0;
-  const NamespaceDef *nd = 0;
+  const FileDef *fd      = nullptr;
+  const ClassDef *cd     = nullptr;
+  const NamespaceDef *nd = nullptr;
 
   if (md)
   {
@@ -291,7 +292,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
 
   // determine language
   QCString lang;
-  SrcLangExt langExt = SrcLangExt_Cpp;
+  SrcLangExt langExt = SrcLangExt::Cpp;
   if (md)
   {
     langExt = md->getLanguage();
@@ -302,52 +303,43 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   }
   switch (langExt)
   {
-    case SrcLangExt_Cpp:
-    case SrcLangExt_ObjC:
+    case SrcLangExt::Cpp:
+    case SrcLangExt::ObjC:
       {
         if (md && (md->isObjCMethod() || md->isObjCProperty()))
           lang="occ";  // Objective C/C++
         else if (fd && fd->name().lower().endsWith(".c"))
           lang="c";    // Plain C
-        else if (cd==0 && nd==0)
+        else if (cd==nullptr && nd==nullptr)
           lang="c";    // Plain C symbol outside any class or namespace
         else
           lang="cpp";  // C++
       }
       break;
-    case SrcLangExt_IDL:     lang="idl"; break;        // IDL
-    case SrcLangExt_CSharp:  lang="csharp"; break;     // C#
-    case SrcLangExt_PHP:     lang="php"; break;        // PHP4/5
-    case SrcLangExt_D:       lang="d"; break;          // D
-    case SrcLangExt_Java:    lang="java"; break;       // Java
-    case SrcLangExt_JS:      lang="javascript"; break; // JavaScript
-    case SrcLangExt_Python:  lang="python"; break;     // Python
-    case SrcLangExt_Fortran: lang="fortran"; break;    // Fortran
-    case SrcLangExt_VHDL:    lang="vhdl"; break;       // VHDL
-    case SrcLangExt_XML:     lang="xml"; break;        // DBUS XML
-    case SrcLangExt_SQL:     lang="sql"; break;        // Sql
-    case SrcLangExt_Markdown:lang="markdown"; break;   // Markdown
-    case SrcLangExt_Slice:   lang="slice"; break;      // Slice
-    case SrcLangExt_Lex:     lang="lex"; break;        // Lex
-    case SrcLangExt_Unknown: lang="unknown"; break;    // should not happen!
+    case SrcLangExt::IDL:     lang="idl"; break;        // IDL
+    case SrcLangExt::CSharp:  lang="csharp"; break;     // C#
+    case SrcLangExt::PHP:     lang="php"; break;        // PHP4/5
+    case SrcLangExt::D:       lang="d"; break;          // D
+    case SrcLangExt::Java:    lang="java"; break;       // Java
+    case SrcLangExt::JS:      lang="javascript"; break; // JavaScript
+    case SrcLangExt::Python:  lang="python"; break;     // Python
+    case SrcLangExt::Fortran: lang="fortran"; break;    // Fortran
+    case SrcLangExt::VHDL:    lang="vhdl"; break;       // VHDL
+    case SrcLangExt::XML:     lang="xml"; break;        // DBUS XML
+    case SrcLangExt::SQL:     lang="sql"; break;        // Sql
+    case SrcLangExt::Markdown:lang="markdown"; break;   // Markdown
+    case SrcLangExt::Slice:   lang="slice"; break;      // Slice
+    case SrcLangExt::Lex:     lang="lex"; break;        // Lex
+    case SrcLangExt::Unknown: lang="unknown"; break;    // should not happen!
   }
 
-  if (md)
+  if (context && md)
   {
-    if (context==0)
-    {
-      if (md->getGroupDef())
-        context = md->getGroupDef();
-      else if (md->getFileDef())
-        context = md->getFileDef();
-    }
-    if (context==0) return; // should not happen
-
     switch (md->memberType())
     {
-      case MemberType_Define:
+      case MemberType::Define:
         type="macro"; break;
-      case MemberType_Function:
+      case MemberType::Function:
         if (cd && (cd->compoundType()==ClassDef::Interface ||
               cd->compoundType()==ClassDef::Class))
         {
@@ -366,51 +358,42 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
         else
           type="func";
         break;
-      case MemberType_Variable:
+      case MemberType::Variable:
         type="data"; break;
-      case MemberType_Typedef:
+      case MemberType::Typedef:
         type="tdef"; break;
-      case MemberType_Enumeration:
+      case MemberType::Enumeration:
         type="enum"; break;
-      case MemberType_EnumValue:
+      case MemberType::EnumValue:
         type="econst"; break;
         //case MemberDef::Prototype:
         //  type="prototype"; break;
-      case MemberType_Signal:
+      case MemberType::Signal:
         type="signal"; break;
-      case MemberType_Slot:
+      case MemberType::Slot:
         type="slot"; break;
-      case MemberType_Friend:
+      case MemberType::Friend:
         type="ffunc"; break;
-      case MemberType_DCOP:
+      case MemberType::DCOP:
         type="dcop"; break;
-      case MemberType_Property:
+      case MemberType::Property:
         if (cd && cd->compoundType()==ClassDef::Protocol)
           type="intfp";         // interface property
         else
           type="instp";         // instance property
         break;
-      case MemberType_Event:
+      case MemberType::Event:
         type="event"; break;
-      case MemberType_Interface:
+      case MemberType::Interface:
         type="ifc"; break;
-      case MemberType_Service:
+      case MemberType::Service:
         type="svc"; break;
-      case MemberType_Sequence:
+      case MemberType::Sequence:
         type="sequence"; break;
-      case MemberType_Dictionary:
+      case MemberType::Dictionary:
         type="dictionary"; break;
     }
-    cd = md->getClassDef();
-    nd = md->getNamespaceDef();
-    if (cd)
-    {
-      scope = cd->qualifiedName();
-    }
-    else if (nd)
-    {
-      scope = nd->name();
-    }
+    scope = md->getScopeString();
     fd = md->getFileDef();
     if (fd)
     {
@@ -420,15 +403,15 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   }
   else if (context && context->isLinkable())
   {
-    if (fd==0 && context->definitionType()==Definition::TypeFile)
+    if (fd==nullptr && context->definitionType()==Definition::TypeFile)
     {
       fd = toFileDef(context);
     }
-    if (cd==0 && context->definitionType()==Definition::TypeClass)
+    if (cd==nullptr && context->definitionType()==Definition::TypeClass)
     {
       cd = toClassDef(context);
     }
-    if (nd==0 && context->definitionType()==Definition::TypeNamespace)
+    if (nd==nullptr && context->definitionType()==Definition::TypeNamespace)
     {
       nd = toNamespaceDef(context);
     }
@@ -505,7 +488,9 @@ void DocSets::writeToken(TextStream &t,
     t << "      <Scope>" << convertToXML(scope) << "</Scope>\n";
   }
   t << "    </TokenIdentifier>\n";
-  t << "    <Path>" << addHtmlExtensionIfMissing(d->getOutputFileBase()) << "</Path>\n";
+  QCString fn = d->getOutputFileBase();
+  addHtmlExtensionIfMissing(fn);
+  t << "    <Path>" << fn << "</Path>\n";
   if (!anchor.isEmpty())
   {
     t << "    <Anchor>" << anchor << "</Anchor>\n";

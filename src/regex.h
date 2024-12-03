@@ -18,8 +18,11 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <iterator>
+
+#include "construct.h"
 
 /** Namespace for the regular expression functions */
 namespace reg
@@ -91,7 +94,7 @@ class Ex
      *  literal characters.
      *
      */
-    Ex(const std::string &pattern, Mode mode=Mode::RegEx);
+    Ex(std::string_view pattern, Mode mode=Mode::RegEx);
 
     /** Destroys the regular expression object. Frees resources. */
    ~Ex();
@@ -102,11 +105,10 @@ class Ex
      *  @param pos   The position in the string at which to start the match.
      *  @returns true iff a match is found. Details are stored in the match object.
      */
-    bool match(const std::string &str,Match &match,size_t pos=0) const;
+    bool match(std::string_view str,Match &match,size_t pos=0) const;
     bool isValid() const;
   private:
-    Ex(const Ex &) = delete;
-    Ex &operator=(const Ex &e) = delete;
+    NON_COPYABLE(Ex)
 
     class Private;
     std::unique_ptr<Private> p;
@@ -117,7 +119,7 @@ class SubMatch
 {
   public:
     /** Creates a match for a single capture range given a non-owning pointer to the string. */
-    SubMatch(const std::string *str) : m_str(str) {}
+    SubMatch(std::string_view str) : m_str(str) {}
 
     /** Returns the position in the string at which the match starts. */
     size_t position()    const { return m_pos; }
@@ -126,7 +128,7 @@ class SubMatch
     size_t length()      const { return m_len; }
 
     /** Returns the matching part as a string */
-    std::string str()    const { return m_str ?  m_str->substr(m_pos,m_len) : std::string(); }
+    std::string str()    const { return std::string{m_str.substr(m_pos,m_len)}; }
 
   private:
     friend class Match;
@@ -135,7 +137,7 @@ class SubMatch
     void setMatch(size_t pos,size_t len) { m_pos=pos; m_len=len; }
     size_t m_pos = std::string::npos;
     size_t m_len = std::string::npos;
-    const std::string *m_str = nullptr;
+    std::string_view m_str;
 };
 
 /** Object representing the matching results. It consists of an array of
@@ -160,7 +162,7 @@ class Match
     size_t length()   const { return m_subMatches[0].length();   }
 
     /** Return a string representing the matching part. */
-    std::string str() const { return m_subMatches[0].str(); }
+    std::string str() const { return std::string{m_subMatches[0].str()}; }
 
     /** Return the part of the string before the match */
     SubMatch prefix() const { SubMatch m(m_str); m.setMatch(0,position()); return m; }
@@ -169,10 +171,10 @@ class Match
     SubMatch suffix() const
     {
       SubMatch m(m_str);
-      if (m_str)
+      if (!m_str.empty())
       {
         size_t e = position()+length();
-        m.setMatch(e,m_str->length()-e);
+        m.setMatch(e,m_str.length()-e);
       }
       return m;
     }
@@ -187,7 +189,7 @@ class Match
 
   private:
     friend class Ex;
-    void init(const std::string *str)
+    void init(std::string_view str)
     {
       m_subMatches.clear();
       m_subMatches.emplace_back(str);
@@ -220,7 +222,7 @@ class Match
 
     std::vector<SubMatch> m_subMatches;
     size_t m_captureIndex=0;
-    const std::string *m_str = nullptr;
+    std::string_view m_str;
     bool m_insideCapture=false;
 };
 
@@ -241,8 +243,8 @@ class Iterator
     /** Creates an iterator for input string \a str, using regular expression \a re to search.
      *  @note the string and regular expression objects should remain valid while iterating.
      */
-    Iterator(const std::string &str, const Ex &re, size_t pos=0)
-      : m_str(&str), m_re(&re), m_pos(pos) { findNext(); }
+    Iterator(std::string_view str, const Ex &re, size_t pos=0)
+      : m_str(str), m_re(&re), m_pos(pos) { findNext(); }
 
     // Iterator holds pointers, so prevent temporaries to be passed as string or
     // regular expression
@@ -268,8 +270,8 @@ class Iterator
   private:
     void findNext()
     {
-      if (!m_re || !m_str) { m_pos=std::string::npos; return; } // end marker
-      if (m_re->match(*m_str,m_match,m_pos))
+      if (!m_re || m_str.empty()) { m_pos=std::string::npos; return; } // end marker
+      if (m_re->match(m_str,m_match,m_pos))
       {
         m_pos=m_match.position()+m_match.length(); // update m_pos to point beyond last match
       }
@@ -278,7 +280,7 @@ class Iterator
         m_pos=std::string::npos;
       }
     }
-    const std::string *m_str = nullptr;
+    std::string_view m_str;
     const Ex *m_re = nullptr;
     size_t m_pos = std::string::npos;
     Match m_match;
@@ -308,28 +310,28 @@ class Iterator
  *
  *  @see Ex::Ex() for details on the regular expression patterns.
  */
-bool search(const std::string &str,Match &match,const Ex &re,size_t pos=0);
+bool search(std::string_view str,Match &match,const Ex &re,size_t pos=0);
 
 /** Search in a given string \a str starting at position \a pos for a match against regular expression \a re.
  *  Returns true iff a match was found.
  */
-bool search(const std::string &str,const Ex &re,size_t pos=0);
+bool search(std::string_view str,const Ex &re,size_t pos=0);
 
 /** Matches a given string \a str for a match against regular expression \a re.
  *  Returns true iff a match was found for the whole string.
  *  Any capture groups are returned via the \a match object.
  */
-bool match(const std::string &str,Match &match,const Ex &re);
+bool match(std::string_view str,Match &match,const Ex &re);
 
 /** Matches a given string \a str for a match against regular expression \a re.
  *  Returns true iff a match was found for the whole string.
  */
-bool match(const std::string &str,const Ex &re);
+bool match(std::string_view str,const Ex &re);
 
 /** Searching in a given input string \a for parts that match regular expression \a re and
  *  replaces those parts by string \a replacement.
  */
-std::string replace(const std::string &str,const Ex &re,const std::string &replacement);
+std::string replace(std::string_view str,const Ex &re,std::string_view replacement);
 
 } // namespace
 

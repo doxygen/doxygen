@@ -32,15 +32,18 @@ class DotGfxHierarchyTable : public DotGraph
 {
   public:
     DotGfxHierarchyTable(const QCString &prefix="",ClassDef::CompoundType ct=ClassDef::Class);
+   ~DotGfxHierarchyTable() override = default;
+    NON_COPYABLE(DotGfxHierarchyTable)
+
     void createGraph(DotNode *rootNode,TextStream &t,const QCString &path,
                      const QCString &fileName,int id);
     void writeGraph(TextStream &t,const QCString &path, const QCString &fileName);
     const std::vector<DotNode*> subGraphs() const { return m_rootSubgraphs; }
 
   protected:
-    virtual QCString getBaseName() const;
-    virtual QCString getMapLabel() const;
-    virtual void computeTheGraph();
+    QCString getBaseName() const override;
+    QCString getMapLabel() const override;
+    void computeTheGraph() override;
 
   private:
     void addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSet &visited);

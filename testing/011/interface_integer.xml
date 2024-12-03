@@ -34,7 +34,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="011_category.m" line="8" column="6"/>
+        <location file="011_category.m" line="12" column="1"/>
       </memberdef>
       <memberdef kind="function" id="interface_integer_1ad2f47761103b2442ff7b3fbfe33ec6c9" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>id</type>
@@ -53,7 +53,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="011_category.m" line="8" column="6"/>
+        <location file="011_category.m" line="14" column="1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

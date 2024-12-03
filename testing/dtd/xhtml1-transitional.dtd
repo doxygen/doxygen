@@ -35,6 +35,10 @@
      - added picture tag
        - added source tag
      - adjusted possible children of a number of elements so they support the picture tag
+     - added details and summary tag
+     - added placeholder to input tag
+     - added allowfullscreen to iframe tag
+     - added data-start and data-end to div tag (needed for code folding)
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -211,7 +215,7 @@
 <!--=================== Text Elements ====================================-->
 
 <!ENTITY % special.extra
-   "object | applet | img | map | iframe | picture">
+   "object | applet | img | map | iframe | picture | details | summary">
 	
 <!ENTITY % special.basic
 	"br | span | bdo">
@@ -252,7 +256,7 @@
 <!ENTITY % blocktext "pre | hr | blockquote | address | center | noframes">
 
 <!ENTITY % block
-    "p | %heading; | div | %lists; | %blocktext; | isindex |fieldset | table">
+    "p | %heading; | div | %lists; | %blocktext; | isindex |fieldset | table | details | summary">
 
 <!-- %Flow; mixes block and inline and is used for list items etc. -->
 <!ENTITY % Flow "(#PCDATA | %block; | form | %inline; | %misc; | picture)*">
@@ -416,6 +420,7 @@
   align       %ImgAlign;     #IMPLIED
   height      %Length;       #IMPLIED
   width       %Length;       #IMPLIED
+  allowfullscreen (true|false)   "true"
   >
 
 <!-- alternate content container for non frame-based rendering -->
@@ -442,6 +447,20 @@
 
 <!ELEMENT div %Flow;>  <!-- generic language/style container -->
 <!ATTLIST div
+  %attrs;
+  %TextAlign;
+  data-start %Text; #IMPLIED
+  data-end   %Text; #IMPLIED
+  >
+
+<!ELEMENT details %Flow;>  <!-- generic language/style container -->
+<!ATTLIST details
+  %attrs;
+  %TextAlign;
+  >
+
+<!ELEMENT summary %Flow;>  <!-- generic language/style container -->
+<!ATTLIST summary
   %attrs;
   %TextAlign;
   >
@@ -963,6 +982,7 @@
   onchange    %Script;       #IMPLIED
   accept      %ContentTypes; #IMPLIED
   align       %ImgAlign;     #IMPLIED
+  placeholder CDATA          #IMPLIED
   >
 
 <!ELEMENT select (optgroup|option)+>  <!-- option selector -->

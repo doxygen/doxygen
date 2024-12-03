@@ -24,14 +24,14 @@
 #include "docvisitor.h"
 #include "docnode.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for RTF output. */
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
+    RTFDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt, int hierarchyLevel = 0);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -80,12 +80,14 @@ class RTFDocVisitor : public DocVisitor
     void operator()(const DocHtmlCell &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlSummary &);
     void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);
@@ -118,6 +120,7 @@ class RTFDocVisitor : public DocVisitor
                    const QCString &anchor);
     void endLink(const QCString &ref);
     QCString getStyle(const QCString &name);
+    QCString getListTable(const int id);
 
     int indentLevel() const;
     void incIndentLevel();
@@ -137,7 +140,7 @@ class RTFDocVisitor : public DocVisitor
     //--------------------------------------
 
     TextStream &m_t;
-    CodeOutputInterface &m_ci;
+    OutputCodeList &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;
     bool m_lastIsPara = false;
@@ -145,9 +148,11 @@ class RTFDocVisitor : public DocVisitor
 
     static const int maxIndentLevels = 13;
     int m_indentLevel = 0;
+    int m_hierarchyLevel = 0;
     struct RTFListItemInfo
     {
       bool isEnum = false;
+      bool isCheck = false;
       int number = 1;
       char type = '1';
     };

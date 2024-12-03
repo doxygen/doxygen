@@ -29,40 +29,12 @@ OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
   //printf("OutputGenerator::OutputGenerator()\n");
 }
 
-OutputGenerator::~OutputGenerator()
-{
-  //printf("OutputGenerator::~OutputGenerator()\n");
-}
-
-OutputGenerator::OutputGenerator(const OutputGenerator &og) : m_t(nullptr)
-{
-  m_dir = og.m_dir;
-  // we don't copy the other fields.
-  // after copying startPlainFile() should be called
-  if (og.m_t.stream()!=nullptr)
-  {
-    throw std::runtime_error("OutputGenerator copy constructor called while a file is processing");
-  }
-}
-
-OutputGenerator &OutputGenerator::operator=(const OutputGenerator &og)
-{
-  m_dir = og.m_dir;
-  // we don't copy the other fields.
-  // after assignment startPlainFile() should be called
-  if (og.m_t.stream()!=nullptr)
-  {
-    throw std::runtime_error("OutputGenerator assignment operator called while a file is processing");
-  }
-  return *this;
-}
-
 void OutputGenerator::startPlainFile(const QCString &name)
 {
   //printf("startPlainFile(%s)\n",qPrint(name));
   m_fileName=m_dir+"/"+name;
   m_file = Portable::fopen(m_fileName.data(),"wb");
-  if (m_file==0)
+  if (m_file==nullptr)
   {
     term("Could not open file %s for writing\n",qPrint(m_fileName));
   }
@@ -74,7 +46,7 @@ void OutputGenerator::endPlainFile()
   m_t.flush();
   m_t.setStream(nullptr);
   Portable::fclose(m_file);
-  m_fileName.resize(0);
+  m_fileName.clear();
 }
 
 QCString OutputGenerator::dir() const
@@ -85,64 +57,5 @@ QCString OutputGenerator::dir() const
 QCString OutputGenerator::fileName() const
 {
   return m_fileName;
-}
-
-void OutputGenerator::pushGeneratorState()
-{
-  m_genStack.push(isEnabled());
-  //printf("%p:pushGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
-}
-
-void OutputGenerator::popGeneratorState()
-{
-  //printf("%p:popGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
-  if (!m_genStack.empty())
-  {
-    bool lb = m_genStack.top();
-    m_genStack.pop();
-    if (lb) enable(); else disable();
-  }
-}
-
-void OutputGenerator::enable()
-{
-  if (!m_genStack.empty())
-  {
-    m_active=m_genStack.top();
-  }
-  else
-  {
-    m_active=true;
-  }
-}
-
-void OutputGenerator::disable()
-{
-  m_active=false;
-}
-
-void OutputGenerator::enableIf(OutputGenerator::OutputType o)
-{
-  if (o==type()) enable();
-}
-
-void OutputGenerator::disableIf(OutputGenerator::OutputType o)
-{
-  if (o==type()) disable();
-}
-
-void OutputGenerator::disableIfNot(OutputGenerator::OutputType o)
-{
-  if (o!=type()) disable();
-}
-
-bool OutputGenerator::isEnabled(OutputGenerator::OutputType o)
-{
-  return (o==type() && m_active);
-}
-
-OutputGenerator *OutputGenerator::get(OutputGenerator::OutputType o)
-{
-  return (o==type()) ? this : 0;
 }
 

@@ -34,106 +34,107 @@ struct STLInfo
 static STLInfo g_stlinfo[] =
 {
   // className              baseClass1                      baseClass2             templType1     templName1     templType2    templName2     virtInheritance  // iterators
-  { "allocator",            0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // deprecated
-  { "smart_ptr",            0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "unique_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "shared_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++14
-  { "weak_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "atomic",               0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "atomic_ref",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++20
-  { "lock_guard",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "unique_lock",          0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
-  { "shared_lock",          0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++14
-  { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "error_code",           0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "error_category",       0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "system_error",         0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "error_condition",      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "thread",               0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "jthread",              0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "mutex",                0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "timed_mutex",          0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "recursive_mutex",      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "recursive_timed_mutex",0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
-  { "shared_mutex",         0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++17
-  { "shared_timed_mutex",   0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++14
-  { "basic_ios",            "ios_base",                     0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_istream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
-  { "basic_ostream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
-  { "basic_iostream",       "basic_istream<Char>",          "basic_ostream<Char>", "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_ifstream",       "basic_istream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_ofstream",       "basic_ostream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_fstream",        "basic_iostream<Char>",         0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_istringstream",  "basic_istream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_ostringstream",  "basic_ostream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "basic_stringstream",   "basic_iostream<Char>",         0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
-  { "ios",                  "basic_ios<char>",              0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wios",                 "basic_ios<wchar_t>",           0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "istream",              "basic_istream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wistream",             "basic_istream<wchar_t>",       0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ostream",              "basic_ostream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wostream",             "basic_ostream<wchar_t>",       0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ifstream",             "basic_ifstream<char>",         0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wifstream",            "basic_ifstream<wchar_t>",      0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ofstream",             "basic_ofstream<char>",         0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wofstream",            "basic_ofstream<wchar_t>",      0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "fstream",              "basic_fstream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wfstream",             "basic_fstream<wchar_t>",       0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "istringstream",        "basic_istringstream<char>",    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wistringstream",       "basic_istringstream<wchar_t>", 0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ostringstream",        "basic_ostringstream<char>",    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wostringstream",       "basic_ostringstream<wchar_t>", 0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "stringstream",         "basic_stringstream<char>",     0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "wstringstream",        "basic_stringstream<wchar_t>",  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "basic_string",         0,                              0,                     "Char",        0,             0,            0,             FALSE,              TRUE  },
-  { "string",               "basic_string<char>",           0,                     0,             0,             0,            0,             FALSE,              TRUE  },
-  { "wstring",              "basic_string<wchar_t>",        0,                     0,             0,             0,            0,             FALSE,              TRUE  },
-  { "u8string",             "basic_string<char8_t>",        0,                     0,             0,             0,            0,             FALSE,              TRUE  }, // C++20
-  { "u16string",            "basic_string<char16_t>",       0,                     0,             0,             0,            0,             FALSE,              TRUE  }, // C++11
-  { "u32string",            "basic_string<char32_t>",       0,                     0,             0,             0,            0,             FALSE,              TRUE  }, // C++11
-  { "basic_string_view",    0,                              0,                     "Char",        0,             0,            0,             FALSE,              TRUE  },
-  { "string_view",          "basic_string_view<char>",      0,                     0,             0,             0,            0,             FALSE,              TRUE  }, // C++17
-  { "wstring_view",         "basic_string_view<wchar_t>",   0,                     0,             0,             0,            0,             FALSE,              TRUE  }, // C++17
-  { "u8string_view",        "basic_string_view<char8_t>",   0,                     0,             0,             0,            0,             FALSE,              TRUE  }, // C++20
-  { "u16string_view",       "basic_string_view<char16_t>",  0,                     0,             0,             0,            0,             FALSE,              TRUE  }, // C++17
-  { "u32string_view",       "basic_string_view<char32_t>",  0,                     0,             0,             0,            0,             FALSE,              TRUE  }, // C++17
-  { "complex",              0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bitset",               0,                              0,                     "Bits",        0,             0,            0,             FALSE,              FALSE },
-  { "deque",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
-  { "list",                 0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
-  { "forward_list",         0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  }, // C++11
-  { "map",                  0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
-  { "unordered_map",        0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  }, // C++11
-  { "multimap",             0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
-  { "unordered_multimap",   0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  }, // C++11
-  { "set",                  0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
-  { "unordered_set",        0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  }, // C++11
-  { "multiset",             0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
-  { "unordered_multiset",   0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  }, // C++11
-  { "array",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  }, // C++11
-  { "vector",               0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
-  { "span",                 0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  }, // C++20
-  { "queue",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "priority_queue",       0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "stack",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "valarray",             0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "exception",            0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bad_alloc",            "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bad_cast",             "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bad_typeid",           "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "logic_error",          "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "ios_base::failure",    "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "runtime_error",        "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "bad_exception",        "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "domain_error",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "invalid_argument",     "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "length_error",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "out_of_range",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "range_error",          "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "overflow_error",       "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { "underflow_error",      "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
-  { 0,                      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }
+  { "allocator",            nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              false },
+  { "auto_ptr",             nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // deprecated
+  { "smart_ptr",            nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++11
+  { "unique_ptr",           nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++11
+  { "shared_ptr",           nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++14
+  { "weak_ptr",             nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++11
+  { "atomic",               nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++11
+  { "atomic_ref",           nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++20
+  { "lock_guard",           nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++11
+  { "unique_lock",          nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++11
+  { "shared_lock",          nullptr,                        nullptr,               "T",           "ptr",         nullptr,      nullptr,       false,              false }, // C++14
+  { "ios_base",             nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "error_code",           nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "error_category",       nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "system_error",         nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "error_condition",      nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "thread",               nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "jthread",              nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "mutex",                nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "timed_mutex",          nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "recursive_mutex",      nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "recursive_timed_mutex",nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++11
+  { "shared_mutex",         nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++17
+  { "shared_timed_mutex",   nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }, // C++14
+  { "basic_ios",            "ios_base",                     nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "basic_istream",        "basic_ios<Char>",              nullptr,               "Char",        nullptr,       nullptr,      nullptr,       true,               false },
+  { "basic_ostream",        "basic_ios<Char>",              nullptr,               "Char",        nullptr,       nullptr,      nullptr,       true,               false },
+  { "basic_iostream",       "basic_istream<Char>",          "basic_ostream<Char>", "Char",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "basic_ifstream",       "basic_istream<Char>",          nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "basic_ofstream",       "basic_ostream<Char>",          nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "basic_fstream",        "basic_iostream<Char>",         nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "basic_istringstream",  "basic_istream<Char>",          nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "basic_ostringstream",  "basic_ostream<Char>",          nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "basic_stringstream",   "basic_iostream<Char>",         nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "ios",                  "basic_ios<char>",              nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wios",                 "basic_ios<wchar_t>",           nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "istream",              "basic_istream<char>",          nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wistream",             "basic_istream<wchar_t>",       nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "ostream",              "basic_ostream<char>",          nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wostream",             "basic_ostream<wchar_t>",       nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "ifstream",             "basic_ifstream<char>",         nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wifstream",            "basic_ifstream<wchar_t>",      nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "ofstream",             "basic_ofstream<char>",         nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wofstream",            "basic_ofstream<wchar_t>",      nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "fstream",              "basic_fstream<char>",          nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wfstream",             "basic_fstream<wchar_t>",       nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "istringstream",        "basic_istringstream<char>",    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wistringstream",       "basic_istringstream<wchar_t>", nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "ostringstream",        "basic_ostringstream<char>",    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wostringstream",       "basic_ostringstream<wchar_t>", nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "stringstream",         "basic_stringstream<char>",     nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "wstringstream",        "basic_stringstream<wchar_t>",  nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "basic_string",         nullptr,                        nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              true  },
+  { "string",               "basic_string<char>",           nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  },
+  { "wstring",              "basic_string<wchar_t>",        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  },
+  { "u8string",             "basic_string<char8_t>",        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  }, // C++20
+  { "u16string",            "basic_string<char16_t>",       nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  }, // C++11
+  { "u32string",            "basic_string<char32_t>",       nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  }, // C++11
+  { "basic_string_view",    nullptr,                        nullptr,               "Char",        nullptr,       nullptr,      nullptr,       false,              true  },
+  { "string_view",          "basic_string_view<char>",      nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  }, // C++17
+  { "wstring_view",         "basic_string_view<wchar_t>",   nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  }, // C++17
+  { "u8string_view",        "basic_string_view<char8_t>",   nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  }, // C++20
+  { "u16string_view",       "basic_string_view<char16_t>",  nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  }, // C++17
+  { "u32string_view",       "basic_string_view<char32_t>",  nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              true  }, // C++17
+  { "complex",              nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "bitset",               nullptr,                        nullptr,               "Bits",        nullptr,       nullptr,      nullptr,       false,              false },
+  { "deque",                nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              true  },
+  { "list",                 nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              true  },
+  { "forward_list",         nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              true  }, // C++11
+  { "pair",                 nullptr,                        nullptr,               "T1",          "first_type",  "T2",         "second_type", false,              false },
+  { "map",                  nullptr,                        nullptr,               "K",           "keys",        "T",          "elements",    false,              true  },
+  { "unordered_map",        nullptr,                        nullptr,               "K",           "keys",        "T",          "elements",    false,              true  }, // C++11
+  { "multimap",             nullptr,                        nullptr,               "K",           "keys",        "T",          "elements",    false,              true  },
+  { "unordered_multimap",   nullptr,                        nullptr,               "K",           "keys",        "T",          "elements",    false,              true  }, // C++11
+  { "set",                  nullptr,                        nullptr,               "K",           "keys",        nullptr,      nullptr,       false,              true  },
+  { "unordered_set",        nullptr,                        nullptr,               "K",           "keys",        nullptr,      nullptr,       false,              true  }, // C++11
+  { "multiset",             nullptr,                        nullptr,               "K",           "keys",        nullptr,      nullptr,       false,              true  },
+  { "unordered_multiset",   nullptr,                        nullptr,               "K",           "keys",        nullptr,      nullptr,       false,              true  }, // C++11
+  { "array",                nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              true  }, // C++11
+  { "vector",               nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              true  },
+  { "span",                 nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              true  }, // C++20
+  { "queue",                nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              false },
+  { "priority_queue",       nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              false },
+  { "stack",                nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              false },
+  { "valarray",             nullptr,                        nullptr,               "T",           "elements",    nullptr,      nullptr,       false,              false },
+  { "exception",            nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "bad_alloc",            "exception",                    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "bad_cast",             "exception",                    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "bad_typeid",           "exception",                    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "logic_error",          "exception",                    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "ios_base::failure",    "exception",                    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "runtime_error",        "exception",                    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "bad_exception",        "exception",                    nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "domain_error",         "logic_error",                  nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "invalid_argument",     "logic_error",                  nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "length_error",         "logic_error",                  nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "out_of_range",         "logic_error",                  nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "range_error",          "runtime_error",                nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "overflow_error",       "runtime_error",                nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { "underflow_error",      "runtime_error",                nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false },
+  { nullptr,                nullptr,                        nullptr,               nullptr,       nullptr,       nullptr,      nullptr,       false,              false }
 };
 
 static void addSTLMember(const std::shared_ptr<Entry> &root,const char *type,const char *name)
@@ -141,11 +142,11 @@ static void addSTLMember(const std::shared_ptr<Entry> &root,const char *type,con
   std::shared_ptr<Entry> memEntry = std::make_shared<Entry>();
   memEntry->name       = name;
   memEntry->type       = type;
-  memEntry->protection = Public;
-  memEntry->section    = Entry::VARIABLE_SEC;
+  memEntry->protection = Protection::Public;
+  memEntry->section    = EntryType::makeVariable();
   memEntry->brief      = "STL member";
-  memEntry->hidden     = FALSE;
-  memEntry->artificial = TRUE;
+  memEntry->hidden     = false;
+  memEntry->artificial = true;
   root->moveToSubEntryAndKeep(memEntry);
 }
 
@@ -155,10 +156,10 @@ static void addSTLIterator(const std::shared_ptr<Entry> &classEntry,const QCStri
   iteratorClassEntry->fileName  = "[STL]";
   iteratorClassEntry->startLine = 1;
   iteratorClassEntry->name      = name;
-  iteratorClassEntry->section   = Entry::CLASS_SEC;
+  iteratorClassEntry->section   = EntryType::makeClass();
   iteratorClassEntry->brief     = "STL iterator class";
-  iteratorClassEntry->hidden    = FALSE;
-  iteratorClassEntry->artificial= TRUE;
+  iteratorClassEntry->hidden    = false;
+  iteratorClassEntry->artificial= true;
   classEntry->moveToSubEntryAndKeep(iteratorClassEntry);
 }
 
@@ -173,20 +174,20 @@ static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
   classEntry->fileName  = "[STL]";
   classEntry->startLine = 1;
   classEntry->name      = fullName;
-  classEntry->section   = Entry::CLASS_SEC;
+  classEntry->section = EntryType::makeClass();
   classEntry->brief     = "STL class";
-  classEntry->hidden    = FALSE;
-  classEntry->artificial= TRUE;
+  classEntry->hidden    = false;
+  classEntry->artificial= true;
 
   // add template arguments to class
-  if (info->templType1)
+  if (info->templType1 != nullptr)
   {
     ArgumentList al;
     Argument a;
     a.type="typename";
     a.name=info->templType1;
     al.push_back(a);
-    if (info->templType2) // another template argument
+    if (info->templType2 != nullptr) // another template argument
     {
       a.type="typename";
       a.name=info->templType2;
@@ -195,11 +196,11 @@ static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
     classEntry->tArgLists.push_back(al);
   }
   // add member variables
-  if (info->templName1)
+  if (info->templName1 != nullptr)
   {
     addSTLMember(classEntry,info->templType1,info->templName1);
   }
-  if (info->templName2)
+  if (info->templName2 != nullptr)
   {
     addSTLMember(classEntry,info->templType2,info->templName2);
   }
@@ -213,20 +214,21 @@ static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
     memEntry->name       = "operator->";
     memEntry->args       = "()";
     memEntry->type       = "T*";
-    memEntry->protection = Public;
-    memEntry->section    = Entry::FUNCTION_SEC;
+    memEntry->protection = Protection::Public;
+    memEntry->section = EntryType::makeFunction();
     memEntry->brief      = "STL member";
-    memEntry->hidden     = FALSE;
-    memEntry->artificial = FALSE;
+    memEntry->hidden     = false;
+    memEntry->artificial = false;
     classEntry->moveToSubEntryAndKeep(memEntry);
   }
-  if (info->baseClass1)
+  Specifier virt = info->virtualInheritance ? Specifier::Virtual : Specifier::Normal;
+  if (info->baseClass1 != nullptr)
   {
-    classEntry->extends.push_back(BaseInfo(info->baseClass1,Public,info->virtualInheritance?Virtual:Normal));
+    classEntry->extends.emplace_back(info->baseClass1, Protection::Public, virt);
   }
-  if (info->baseClass2)
+  if (info->baseClass2 != nullptr)
   {
-    classEntry->extends.push_back(BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
+    classEntry->extends.emplace_back(info->baseClass2, Protection::Public, virt);
   }
   if (info->iterators)
   {
@@ -246,13 +248,13 @@ static void addSTLClasses(const std::shared_ptr<Entry> &root)
   namespaceEntry->fileName  = "[STL]";
   namespaceEntry->startLine = 1;
   namespaceEntry->name      = "std";
-  namespaceEntry->section   = Entry::NAMESPACE_SEC;
+  namespaceEntry->section = EntryType::makeNamespace();
   namespaceEntry->brief     = "STL namespace";
-  namespaceEntry->hidden    = FALSE;
-  namespaceEntry->artificial= TRUE;
+  namespaceEntry->hidden    = false;
+  namespaceEntry->artificial= true;
 
   STLInfo *info = g_stlinfo;
-  while (info->className)
+  while (info->className != nullptr)
   {
     addSTLClass(namespaceEntry,info);
     info++;

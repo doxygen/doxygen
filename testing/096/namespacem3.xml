@@ -2,6 +2,7 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="namespacem3" kind="namespace" language="C++">
     <compoundname>m3</compoundname>
+    <innerclass refid="structm3_1_1t1" prot="public">m3::t1</innerclass>
     <innerclass refid="structm3_1_1t4" prot="public">m3::t4</innerclass>
     <briefdescription>
     </briefdescription>

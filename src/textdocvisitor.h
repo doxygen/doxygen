@@ -50,7 +50,7 @@ class TextDocVisitor : public DocVisitor
     void operator()(const DocFormula &)      {}
     void operator()(const DocIndexEntry &)   {}
     void operator()(const DocSimpleSectSep &){}
-    void operator()(const DocCite &)         {}
+    void operator()(const DocCite &);
     void operator()(const DocSeparator &)    { m_t << " "; }
 
     //--------------------------------------
@@ -85,12 +85,14 @@ class TextDocVisitor : public DocVisitor
     void operator()(const DocHtmlCaption &c)     { visitChildren(c);  }
     void operator()(const DocInternal &i)        { visitChildren(i);  }
     void operator()(const DocHRef &h)            { visitChildren(h);  }
+    void operator()(const DocHtmlSummary &s)     { visitChildren(s);  }
     void operator()(const DocHtmlDetails &d)     { visitChildren(d);  }
     void operator()(const DocHtmlHeader &h)      { visitChildren(h);  }
     void operator()(const DocImage &i)           { visitChildren(i);  }
     void operator()(const DocDotFile &df)        { visitChildren(df); }
     void operator()(const DocMscFile &df)        { visitChildren(df); }
     void operator()(const DocDiaFile &df)        { visitChildren(df); }
+    void operator()(const DocPlantUmlFile &df)   { visitChildren(df); }
     void operator()(const DocLink &l)            { visitChildren(l);  }
     void operator()(const DocRef &r)             { visitChildren(r);  }
     void operator()(const DocSecRefItem &s)      { visitChildren(s);  }

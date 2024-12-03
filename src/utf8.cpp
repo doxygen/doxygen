@@ -68,7 +68,7 @@ static inline uint32_t decode_utf8( const char* data , int numBytes ) noexcept
 
 static inline uint32_t convertUTF8CharToUnicode(const char *s,size_t bytesLeft,int &len)
 {
-  if (s==0 || bytesLeft==0)
+  if (s==nullptr || bytesLeft==0)
   {
     len=0;
     return 0;
@@ -129,13 +129,13 @@ std::string getUTF8CharAt(const std::string &input,size_t pos)
   if (input.length()<=pos) return std::string();
   int numBytes=getUTF8CharNumBytes(input[pos]);
   if (input.length()<pos+numBytes) return std::string();
-  return input.substr(pos,pos+numBytes);
+  return input.substr(pos,numBytes);
 }
 
 uint32_t getUnicodeForUTF8CharAt(const std::string &input,size_t pos)
 {
   std::string charS = getUTF8CharAt(input,pos);
-  int len;
+  int len=0;
   return convertUTF8CharToUnicode(charS.c_str(),charS.length(),len);
 }
 
@@ -153,10 +153,10 @@ static inline std::string caseConvert(const std::string &input,
                                       char (*asciiConversionFunc)(uint32_t code),
                                       const char *(*conversionFunc)(uint32_t code))
 {
-  uint32_t code;
+  uint32_t code=0;
   std::string result;
   result.reserve(input.length()); // assume all ASCII characters
-  int len;
+  int len=0;
   size_t bytesLeft = input.length();
   const char *p = input.c_str();
   while ((code=convertUTF8CharToUnicode(p,bytesLeft,len)))
@@ -196,7 +196,7 @@ std::string convertUTF8ToUpper(const std::string &input)
 
 const char *writeUTF8Char(TextStream &t,const char *s)
 {
-  if (s==0) return 0;
+  if (s==nullptr) return nullptr;
   uint8_t len = getUTF8CharNumBytes(*s);
   for (uint8_t i=0;i<len;i++)
   {
@@ -218,7 +218,7 @@ bool lastUTF8CharIsMultibyte(const std::string &input)
 bool isUTF8CharUpperCase(const std::string &input,size_t pos)
 {
   if (input.length()<=pos) return false;
-  int len;
+  int len=0;
   // turn the UTF8 character at position pos into a unicode value
   uint32_t code = convertUTF8CharToUnicode(input.c_str()+pos,input.length()-pos,len);
   // check if the character can be converted to lower case, if so it was an upper case character
@@ -229,5 +229,11 @@ int isUTF8NonBreakableSpace(const char *input)
 {
   return (static_cast<unsigned char>(input[0])==0xC2 &&
           static_cast<unsigned char>(input[1])==0xA0) ? 2 : 0;
+}
+
+bool isUTF8PunctuationCharacter(uint32_t unicode)
+{
+  bool b = isPunctuationCharacter(unicode);
+  return b;
 }
 

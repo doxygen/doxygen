@@ -43,11 +43,11 @@ struct Argument
   QCString typeConstraint;  /*!< Used for Java generics: \<T extends C\> */
 };
 
-enum RefQualifierType
+enum class RefQualifierType
 {
-  RefQualifierNone,
-  RefQualifierLValue,
-  RefQualifierRValue
+  None,
+  LValue,
+  RValue
 };
 
 /*! \brief This class represents an function or template argument list.
@@ -76,9 +76,9 @@ class ArgumentList
       m_constSpecifier = FALSE;
       m_volatileSpecifier = FALSE;
       m_pureSpecifier = FALSE;
-      m_trailingReturnType.resize(0);
+      m_trailingReturnType.clear();
       m_isDeleted = FALSE;
-      m_refQualifier = RefQualifierNone;
+      m_refQualifier = RefQualifierType::None;
       m_noParameters = FALSE;
     }
 
@@ -130,7 +130,7 @@ class ArgumentList
     /*! method with =delete */
     bool m_isDeleted = FALSE;
     /*! C++11 ref qualifier */
-    RefQualifierType m_refQualifier = RefQualifierNone;
+    RefQualifierType m_refQualifier = RefQualifierType::None;
     /*! is it an explicit empty list */
     bool m_noParameters = FALSE;
 };

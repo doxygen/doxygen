@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="group___d" kind="group">
+    <compoundname>D</compoundname>
+    <title>D</title>
+    <innernamespace refid="namespace_n_s">NS</innernamespace>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="group___d_1gaa48c7d518127686d87b3be640e03f505" prot="public" static="no" strong="no">
+        <type/>
+        <name>ED</name>
+        <qualifiedname>NS::ED</qualifiedname>
+        <enumvalue id="group___d_1gaa48c7d518127686d87b3be640e03f505a26d0194cad20fe68cbd84e179aad417c" prot="public">
+          <name>ED1</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+            <para>Enumerator ED1. </para>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="group___d_1gaa48c7d518127686d87b3be640e03f505ae708495fb11eaeafbebdbf9bb4904b20" prot="public">
+          <name>ED2</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+            <para>Enumerator ED2. </para>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Enum <ref refid="group___d_1gaa48c7d518127686d87b3be640e03f505" kindref="member">ED</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_100_d.cpp" line="3" column="3" bodyfile="more_100_d.cpp" bodystart="3" bodyend="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

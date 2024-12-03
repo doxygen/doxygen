@@ -23,7 +23,7 @@
 static QCString getUniqueId(const MemberDef *md)
 {
   const MemberDef *def = md->memberDefinition();
-  if (def==0) def = md;
+  if (def==nullptr) def = md;
   QCString result = def->getReference()+"$"+
          def->getOutputFileBase()+"#"+
          def->anchor();
@@ -35,14 +35,14 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
   auto refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       QCString uniqueId = getUniqueId(rmd);
       auto it = m_usedNodes.find(uniqueId.str());
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -60,16 +60,16 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
         }
         QCString tooltip = rmd->briefDescriptionAsTooltip();
         DotNode *bn = new DotNode(
-            getNextNodeNumber(),
+            this,
             linkToText(rmd->getLanguage(),name,FALSE),
             tooltip,
             uniqueId,
             0 //distance
             );
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
-        m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
+        m_usedNodes.emplace(uniqueId.str(),bn);
 
         buildGraph(bn,rmd,distance+1);
       }
@@ -133,14 +133,14 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
     name = md->qualifiedName();
   }
   QCString tooltip = md->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(getNextNodeNumber(),
+  m_startNode = new DotNode(this,
     linkToText(md->getLanguage(),name,FALSE),
     tooltip,
     uniqueId,
     TRUE     // root node
   );
   m_startNode->setDistance(0);
-  m_usedNodes.insert(std::make_pair(uniqueId.str(),m_startNode));
+  m_usedNodes.emplace(uniqueId.str(),m_startNode);
   buildGraph(m_startNode,md,1);
 
   int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
@@ -166,7 +166,7 @@ void DotCallGraph::computeTheGraph()
 {
   computeGraph(
     m_startNode,
-    CallGraph,
+    GraphType::CallGraph,
     m_graphFormat,
     m_inverse ? "RL" : "LR",
     FALSE,
@@ -189,7 +189,7 @@ QCString DotCallGraph::writeGraph(
         const QCString &relPath,bool generateImageMap,
         int graphId)
 {
-  m_doNotAddImageToIndex = textFormat!=EOF_Html;
+  m_doNotAddImageToIndex = textFormat!=EmbeddedOutputFormat::Html;
 
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
@@ -214,7 +214,7 @@ bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
   auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       return FALSE;
     }

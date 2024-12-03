@@ -5,7 +5,7 @@ import argparse, glob, itertools, re, shutil, os, sys
 import subprocess
 import shlex
 
-config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
+config_reg = re.compile(r'.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
 hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
 pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
@@ -56,6 +56,7 @@ def clean_header(errmsg):
                 cnt-=1
             else:
                 rtnmsg+=o
+                rtnmsg+="\n"
     return rtnmsg
  
 class Tester:
@@ -137,8 +138,11 @@ class Tester:
         shutil.rmtree(self.test_out,ignore_errors=True)
         os.mkdir(self.test_out)
         shutil.copy(self.args.inputdir+'/Doxyfile',self.test_out)
+        inputs = '%s/%s' % (self.args.inputdir,self.test)
+        for i in self.config.get('input', []):
+            inputs += ' %s/%s' % (self.args.inputdir,i)
         with xopen(self.test_out+'/Doxyfile','a') as f:
-            print('INPUT=%s/%s' % (self.args.inputdir,self.test), file=f)
+            print('INPUT=%s' % inputs, file=f)
             print('STRIP_FROM_PATH=%s' % self.args.inputdir, file=f)
             print('EXAMPLE_PATH=%s' % self.args.inputdir, file=f)
             print('WARN_LOGFILE=%s/warnings.log' % self.test_out, file=f)
@@ -196,7 +200,7 @@ class Tester:
         if (self.args.noredir):
             redir=''
 
-        if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
+        if os.system('%s %s %s/Doxyfile %s' % (self.args.doxygen,self.args.doxygen_dbg,self.test_out,redir))!=0:
             print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
             sys.exit(1)
 
@@ -261,6 +265,7 @@ class Tester:
                     print(data,file=f)
         shutil.rmtree(self.test_out+'/out',ignore_errors=True)
         os.remove(self.test_out+'/Doxyfile')
+        os.remove(self.test_out+'/warnings.log')
         return True
 
     # check the relevant files of a doxygen run with the reference material
@@ -615,15 +620,18 @@ def main():
         'update the reference file(s) for the given test',action="store_true")
     parser.add_argument('--doxygen',nargs='?',default='doxygen',help=
         'path/name of the doxygen executable')
+    parser.add_argument('--doxygen_dbg',nargs='?',default='',help=
+        'the doxygen debugging arguments')
     parser.add_argument('--xmllint',nargs='?',default='xmllint',help=
         'path/name of the xmllint executable')
     parser.add_argument('--id',nargs='+',dest='ids',action='append',type=int,help=
-        'run test with number n only (the option can be specified to run test with '
-        'number n only (the option can be specified multiple times')
+        'run test number n (the option can be specified multiple times)')
     parser.add_argument('--start_id',dest='start_id',type=int,help=
         'run tests starting with number n')
     parser.add_argument('--end_id',dest='end_id',type=int,help=
         'run tests ending with number n')
+    parser.add_argument('--exclude_id',nargs='+',dest='exclude_ids',action='append',type=int,help=
+        'run without test number n (the option can be specified multiple times)')
     parser.add_argument('--all',help=
         'can be used in combination with -updateref to update the reference files '
         'for all tests.',action="store_true")
@@ -658,7 +666,7 @@ def main():
         action="store_true")
     parser.add_argument('--cfg',nargs='+',dest='cfgs',action='append',help=
         'run test with extra doxygen configuration settings '
-        '(the option may be specified multiple times')
+        '(the option may be specified multiple times)')
 
     test_flags = split_and_keep(os.getenv('TEST_FLAGS', default=''), '--')
 
@@ -677,22 +685,24 @@ def main():
     if args.start_id:
         if args.end_id:
             for id in range(args.start_id, args.end_id + 1):
-                tests.append(glob.glob('%s_*'%id))
-                tests.append(glob.glob('0%s_*'%id))
-                tests.append(glob.glob('00%s_*'%id))
+                tests.append(glob.glob('%03d_*'%int(id)))
         else:
             parser.error('--start_id requires --end_id')
     elif args.end_id:
         parser.error('--end_id requires --start_id')
     if args.ids:  # test ids are given by user
         for id in list(itertools.chain.from_iterable(args.ids)):
-            tests.append(glob.glob('%s_*'%id))
-            tests.append(glob.glob('0%s_*'%id))
-            tests.append(glob.glob('00%s_*'%id))
+            tests.append(glob.glob('%03d_*'%int(id)))
     if (not args.ids and not args.start_id):  # find all tests
         tests = sorted(glob.glob('[0-9][0-9][0-9]_*'))
     else:
         tests = list(itertools.chain.from_iterable(tests))
+
+    if args.exclude_ids:  # test ids are given by user
+        for id in list(itertools.chain.from_iterable(args.exclude_ids)):
+            x=glob.glob('%03d_*'%int(id))
+            if len(x):
+              tests.remove(x[0])
     os.chdir(starting_directory)
 
     # create test manager to run the tests

@@ -20,19 +20,20 @@
 #define MANDOCVISITOR_H
 
 #include <iostream>
+#include <array>
 
 #include "qcstring.h"
 #include "docvisitor.h"
 #include "docnode.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class ManDocVisitor : public DocVisitor
 {
   public:
-    ManDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
+    ManDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -81,12 +82,14 @@ class ManDocVisitor : public DocVisitor
     void operator()(const DocHtmlCell &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlSummary &);
     void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
     void operator()(const DocLink &lnk);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);
@@ -121,21 +124,21 @@ class ManDocVisitor : public DocVisitor
     //--------------------------------------
 
     TextStream &m_t;
-    CodeOutputInterface &m_ci;
+    OutputCodeList &m_ci;
     bool m_insidePre;
     bool m_hide;
     bool m_firstCol;
     int  m_indent;
     QCString m_langExt;
+
+    struct ManListItemInfo
+    {
+      int number;
+      char type;
+    };
+    static const int maxIndentLevels = 13;
+
+    std::array<ManListItemInfo,maxIndentLevels> m_listItemInfo;
 };
 
-struct ManListItemInfo
-{
-  int number;
-  char type;
-};
-
-const int man_maxIndentLevels = 13;
-
-extern ManListItemInfo man_listItemInfo[man_maxIndentLevels];
 #endif

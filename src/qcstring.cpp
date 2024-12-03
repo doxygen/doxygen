@@ -23,19 +23,19 @@
 
 inline char toLowerChar(char c)
 {
-  return static_cast<char>(tolower(static_cast<unsigned char>(c)));
+  return c>='A' && c<='Z' ? c|0x20 : c;
 }
 
 QCString &QCString::sprintf( const char *format, ... )
 {
   va_list ap;
   va_start( ap, format );
-  const int minlen=256;
-  int l = length();
-  if (l<minlen) { resize(minlen); l=minlen; }
-  int n=vsnprintf( rawData(), l, format, ap);
-  if (n<0) n=l;
-  resize(n+1);
+  const size_t minlen=256;
+  size_t l = length();
+  if (l<minlen) { resize(minlen+1); l=minlen; }
+  int n=vsnprintf( rawData(), l+1, format, ap);
+  if (n<0) n=static_cast<int>(l);
+  resize(n);
   va_end( ap );
   return *this;
 }
@@ -43,7 +43,7 @@ QCString &QCString::sprintf( const char *format, ... )
 int QCString::find( char c, int index, bool cs ) const
 {
   if (index<0 || index>=static_cast<int>(length())) return -1; // index outside string
-  const char *pos;
+  const char *pos = nullptr;
   if (cs)
   {
     pos = strchr(data()+index,c);
@@ -53,18 +53,18 @@ int QCString::find( char c, int index, bool cs ) const
     pos = data()+index;
     c = toLowerChar(c);
     while (*pos && toLowerChar(*pos)!=c) pos++;
-    if (!*pos && c) pos=0; // not found
+    if (!*pos && c) pos=nullptr; // not found
   }
   return pos ? static_cast<int>(pos - data()) : -1;
 }
 
 int QCString::find( const char *str, int index, bool cs ) const
 {
-  int l = length();
+  int l = static_cast<int>(length());
   if (index<0 || index>=l) return -1; // index outside string
   if (!str)  return -1;               // no string to search for
   if (!*str) return index;           // empty string matching at index
-  const char *pos;
+  const char *pos = nullptr;
   if (cs) // case sensitive
   {
     pos = strstr(data()+index,str);
@@ -78,7 +78,7 @@ int QCString::find( const char *str, int index, bool cs ) const
       if (qstrnicmp(pos,str,len)==0) break;
       pos++;
     }
-    if (!*pos) pos = 0; // not found
+    if (!*pos) pos = nullptr; // not found
   }
   return pos ? static_cast<int>(pos - data()) : -1;
 }
@@ -91,8 +91,8 @@ int QCString::find( const QCString &str, int index, bool cs ) const
 int QCString::findRev( char c, int index, bool cs) const
 {
   const char *b = data();
-  const char *pos;
-  int len = length();
+  const char *pos = nullptr;
+  int len = static_cast<int>(length());
   if (len==0) return -1; // empty string
   if (index<0) // start from end
   {
@@ -122,8 +122,8 @@ int QCString::findRev( char c, int index, bool cs) const
 
 int QCString::findRev( const char *str, int index, bool cs) const
 {
-  int slen = qstrlen(str);
-  int len = length();
+  int slen = static_cast<int>(qstrlen(str));
+  int len = static_cast<int>(length());
   if (index<0) index = len-slen; // start from end
   else if (index>len) return -1; // bad index
   else if (index+slen>len) index=len-slen; // str would be too long
@@ -163,7 +163,7 @@ int QCString::contains( char c, bool cs ) const
 
 int QCString::contains( const char *str, bool cs ) const
 {
-  if (str==0 || length()==0) return 0;
+  if (str==nullptr || length()==0) return 0;
   int count=0;
   const char *pos = data();
   int len = qstrlen(str);
@@ -187,7 +187,7 @@ QCString QCString::simplifyWhiteSpace() const
   if ( isEmpty() )                            // nothing to do
     return *this;
 
-  QCString result( length()+1 );
+  QCString result( length(), ExplicitSize );
   const char *from  = data();
   char *to    = result.rawData();
   char *first = to;
@@ -205,7 +205,7 @@ QCString QCString::simplifyWhiteSpace() const
   if ( to > first && *(to-1) == 0x20 )
     to--;
   *to = '\0';
-  result.resize( static_cast<int>(to - result.data()) + 1 );
+  result.resize( static_cast<int>(to - result.data()) );
   return result;
 }
 
@@ -236,14 +236,14 @@ short QCString::toShort(bool *ok, int base) const
   return static_cast<short>(v);
 }
 
-ushort QCString::toUShort(bool *ok,int base) const
+uint16_t QCString::toUShort(bool *ok,int base) const
 {
-  ulong v = toULong( ok, base );
+  unsigned long v = toULong( ok, base );
   if ( ok && *ok && (v > 65535) ) {
     *ok = FALSE;
     v = 0;
   }
-  return static_cast<ushort>(v);
+  return static_cast<uint16_t>(v);
 }
 
 int QCString::toInt(bool *ok, int base) const
@@ -251,9 +251,9 @@ int QCString::toInt(bool *ok, int base) const
   return static_cast<int>(toLong( ok, base ));
 }
 
-uint QCString::toUInt(bool *ok,int base) const
+uint32_t QCString::toUInt(bool *ok,int base) const
 {
-  return static_cast<uint>(toULong( ok, base ));
+  return static_cast<uint32_t>(toULong( ok, base ));
 }
 
 
@@ -261,7 +261,7 @@ long QCString::toLong(bool *ok,int base) const
 {
   const char *p = data();
   long val=0;
-  int l = length();
+  int l = static_cast<int>(length());
   const long max_mult = INT_MAX / base;
   bool is_ok = FALSE;
   int neg = 0;
@@ -283,7 +283,7 @@ long QCString::toLong(bool *ok,int base) const
     goto bye;
   while ( l && ok_in_base(*p,base) ) {
     l--;
-    int dv;
+    int dv = 0;
     if ( *p>='0' && *p<='9' ) {
       dv = *p-'0';
     } else {
@@ -309,12 +309,12 @@ bye:
   return is_ok ? val : 0;
 }
 
-ulong QCString::toULong(bool *ok,int base) const
+unsigned long QCString::toULong(bool *ok,int base) const
 {
   const char *p = data();
-  ulong val=0;
-  int l = length();
-  const ulong max_mult = 429496729;		// UINT_MAX/10, rounded down
+  unsigned long val=0;
+  int l = static_cast<int>(length());
+  const unsigned long max_mult = 429496729;		// UINT_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
@@ -328,7 +328,7 @@ ulong QCString::toULong(bool *ok,int base) const
     goto bye;
   while ( l && ok_in_base(*p,base) ) {
     l--;
-    uint dv;
+    uint32_t dv = 0;
     if ( *p>='0' && *p<='9' ) {
       dv = *p-'0';
     } else {
@@ -353,12 +353,12 @@ bye:
   return is_ok ? val : 0;
 }
 
-uint64 QCString::toUInt64(bool *ok,int base) const
+uint64_t QCString::toUInt64(bool *ok,int base) const
 {
   const char *p = data();
-  uint64 val=0;
-  int l = length();
-  const uint64 max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
+  uint64_t val=0;
+  int l = static_cast<int>(length());
+  const uint64_t max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
@@ -372,7 +372,7 @@ uint64 QCString::toUInt64(bool *ok,int base) const
     goto bye;
   while ( l && ok_in_base(*p,base) ) {
     l--;
-    uint dv;
+    uint32_t dv = 0;
     if ( *p>='0' && *p<='9' ) {
       dv = *p-'0';
     } else {
@@ -401,95 +401,99 @@ bye:
 
 void *qmemmove( void *dst, const void *src, size_t len )
 {
-    char *d;
-    const char *s;
-    if ( dst > src ) {
-	d = static_cast<char *>(dst) + len - 1;
-	s = static_cast<const char *>(src) + len - 1;
-	while ( len-- )
-	    *d-- = *s--;
-    } else if ( dst < src ) {
-	d = static_cast<char *>(dst);
-	s = static_cast<const char *>(src);
-	while ( len-- )
-	    *d++ = *s++;
-    }
-    return dst;
+  if ( dst > src ) {
+    char *d = static_cast<char *>(dst) + len - 1;
+    const char *s = static_cast<const char *>(src) + len - 1;
+    while ( len-- )
+      *d-- = *s--;
+  }
+  else if ( dst < src ) {
+    char *d = static_cast<char *>(dst);
+    const char *s = static_cast<const char *>(src);
+    while ( len-- )
+      *d++ = *s++;
+  }
+  return dst;
 }
 
 char *qstrdup( const char *str )
 {
-    if ( !str )
-	return 0;
-    char *dst = new char[qstrlen(str)+1];
-    return strcpy( dst, str );
+  if ( !str )
+    return nullptr;
+  char *dst = new char[qstrlen(str)+1];
+  return strcpy( dst, str );
+}
+
+void qstrfree( const char *str )
+{
+  delete[](str);
 }
 
 char *qstrncpy( char *dst, const char *src, size_t len )
 {
-    if ( !src )
-	return 0;
-    strncpy( dst, src, len );
-    if ( len > 0 )
-	dst[len-1] = '\0';
-    return dst;
+  if ( !src )
+    return nullptr;
+  strncpy( dst, src, len );
+  if ( len > 0 )
+    dst[len-1] = '\0';
+  return dst;
 }
 
 int qstricmp( const char *s1, const char *s2 )
 {
-    if ( !s1 || !s2 )
-    {
-      return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
-    }
-    int res;
-    char c;
-    for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
-    {
-      if ( !c )				// strings are equal
-        break;
-    }
-    return res;
+  if ( !s1 || !s2 )
+  {
+    return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
+  }
+  int res = 0;
+  char c = 0;
+  for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
+  {
+    if ( !c ) // strings are equal
+      break;
+  }
+  return res;
 }
 
 int qstrnicmp( const char *s1, const char *s2, size_t len )
 {
-    if ( !s1 || !s2 )
-    {
-      return static_cast<int>(s2 - s1);
-    }
-    for ( ; len--; s1++, s2++ )
-    {
-        char c = toLowerChar(*s1);
-        int res = c-toLowerChar(*s2);
-	if ( res!=0 ) // strings are not equal
-	    return res;
-	if ( c==0 ) // strings are equal
-	    break;
-    }
-    return 0;
+  if ( !s1 || !s2 )
+  {
+    return static_cast<int>(s2 - s1);
+  }
+  for ( ; len--; s1++, s2++ )
+  {
+    char c = toLowerChar(*s1);
+    int res = c-toLowerChar(*s2);
+    if ( res!=0 ) // strings are not equal
+      return res;
+    if ( c==0 ) // strings are equal
+      break;
+  }
+  return 0;
 }
 
 /// substitute all occurrences of \a src in \a s by \a dst
 QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
 {
   if (s.isEmpty() || src.isEmpty()) return s;
-  const char *p, *q;
-  int srcLen = src.length();
-  int dstLen = dst.length();
-  int resLen;
+  const char *q = nullptr, *p = nullptr;
+  size_t srcLen = src.length();
+  size_t dstLen = dst.length();
+  size_t resLen = 0;
   if (srcLen!=dstLen)
   {
-    int count;
-    for (count=0, p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen) count++;
+    int count = 0;
+    for (p = s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen) count++;
     resLen = s.length()+count*(dstLen-srcLen);
   }
   else // result has same size as s
   {
     resLen = s.length();
   }
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
+  QCString result(resLen, QCString::ExplicitSize);
+  char *r = result.rawData();
+  for (p = s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen)
   {
     int l = static_cast<int>(q-p);
     memcpy(r,p,l);
@@ -514,23 +518,23 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
 QCString substitute(const QCString &s,const QCString &src,const QCString &dst,int skip_seq)
 {
   if (s.isEmpty() || src.isEmpty()) return s;
-  const char *p, *q;
-  int srcLen = src.length();
-  int dstLen = dst.length();
-  int resLen;
+  const char *p = nullptr, *q = nullptr;
+  size_t srcLen = src.length();
+  size_t dstLen = dst.length();
+  size_t resLen = 0;
   if (srcLen!=dstLen)
   {
-    int count;
-    for (count=0, p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen) count++;
+    int count = 0;
+    for (p=s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen) count++;
     resLen = s.length()+count*(dstLen-srcLen);
   }
   else // result has same size as s
   {
     resLen = s.length();
   }
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
+  QCString result(resLen, QCString::ExplicitSize);
+  char *r = result.rawData();
+  for (p = s.data(); (q=strstr(p,src.data()))!=nullptr; p=q+srcLen)
   {
     // search a consecutive sequence of src
     int seq = 0, skip = 0;
@@ -561,8 +565,49 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     r+=dstLen;
   }
   qstrcpy(r,p);
-  result.resize(static_cast<int>(strlen(result.data())+1));
+  result.resize(strlen(result.data()));
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
+}
+
+QCString QCString::stripLeadingAndTrailingEmptyLines() const
+{
+  if (isEmpty()) return QCString();
+  const std::string &s = m_rep;
+  int end=static_cast<int>(s.length());
+  int start=0,p=0;
+  // skip leading empty lines
+  for (;;)
+  {
+    int c;
+    while ((c=s[p]) && (c==' ' || c=='\t')) p++;
+    if (s[p]=='\n')
+    {
+      start=++p;
+    }
+    else
+    {
+      break;
+    }
+  }
+  // skip trailing empty lines
+  p=end-1;
+  if (p>=start && s.at(p)=='\n') p--;
+  while (p>=start)
+  {
+    int c;
+    while ((c=s[p]) && (c==' ' || c=='\t')) p--;
+    if (s[p]=='\n')
+    {
+      end=p+1;
+    }
+    else
+    {
+      break;
+    }
+    p--;
+  }
+  //printf("stripLeadingAndTrailingEmptyLines(%d-%d)\n",start,end);
+  return s.substr(start,end-start);
 }
 

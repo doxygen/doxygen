@@ -27,6 +27,7 @@
 #include "version.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "classlist.h"
 #include "config.h"
@@ -45,7 +46,7 @@
 #include "portable.h"
 #include "dir.h"
 
-class Doxyparse : public CodeOutputInterface
+class Doxyparse : public OutputCodeIntf
 {
   public:
     Doxyparse(const FileDef *fd) : m_fd(fd) {}
@@ -53,9 +54,15 @@ class Doxyparse : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
+    OutputType type() const override { return OutputType::Extension; }
+    std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<Doxyparse>(m_fd); }
     void codify(const QCString &) override {}
+    void stripCodeComments(bool) override {}
+    void startSpecialComment() override {}
+    void endSpecialComment() override {}
+    void setStripIndentAmount(size_t) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
-    void startCodeLine(bool) override {}
+    void startCodeLine(int) override {}
     void endCodeLine() override {}
     void writeCodeAnchor(const QCString &) override {}
     void startFontClass(const QCString &) override {}
@@ -64,10 +71,10 @@ class Doxyparse : public CodeOutputInterface
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,
                               const QCString &,const QCString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
-    void addWord(const QCString &,bool) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
+    void startFold(int,const QCString &,const QCString &) override {}
+    void endFold() override {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
     {
@@ -97,13 +104,13 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  Doxyparse *parse = new Doxyparse(fd);
+  std::unique_ptr<OutputCodeIntf> parse = std::make_unique<Doxyparse>(fd);
+  OutputCodeList parseList;
+  parseList.add(std::move(parse));
 
   // parse the source code
-  intf->parseCode(*parse, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
-
-  // dismiss the object.
-  delete parse;
+  intf->parseCode(parseList, QCString(), fileToString(fd->absFilePath()), lang,
+                  FALSE, FALSE, QCString(), fd);
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
@@ -175,7 +182,7 @@ static void printNumberOfConditionalPaths(const MemberDef* md) {
 }
 
 static int isPartOfCStruct(const MemberDef * md) {
-  return is_c_code && md->getClassDef() != NULL;
+  return is_c_code && md->getClassDef() != nullptr;
 }
 
 std::string sanitizeString(std::string data) {
@@ -235,25 +242,25 @@ static void referenceTo(const MemberDef* md) {
 }
 
 void protectionInformation(Protection protection) {
-  if (protection == Public) {
+  if (protection == Protection::Public) {
     printProtection("public");
   }
-  else if (protection == Protected) {
+  else if (protection == Protection::Protected) {
     printProtection("protected");
   }
-  else if (protection == Private) {
+  else if (protection == Protection::Private) {
     printProtection("private");
   }
-  else if (protection == Package) {
+  else if (protection == Protection::Package) {
     printProtection("package");
   }
 }
 
 void cModule(const ClassDef* cd) {
-  const MemberList* ml = cd->getMemberList(MemberListType_variableMembers);
+  const MemberList* ml = cd->getMemberList(MemberListType::VariableMembers());
   if (ml) {
     const FileDef *fd = cd->getFileDef();
-    const MemberList *fd_ml = fd->getMemberList(MemberListType_allMembersList);
+    const MemberList *fd_ml = fd->getMemberList(MemberListType::AllMembersList());
     if (!fd_ml || fd_ml->size() == 0) {
       printModule(fd->getOutputFileBase().data());
       printDefines();
@@ -338,11 +345,11 @@ void listMembers(const MemberList *ml) {
 
 void listAllMembers(const ClassDef* cd) {
   // methods
-  listMembers(cd->getMemberList(MemberListType_functionMembers));
+  listMembers(cd->getMemberList(MemberListType::FunctionMembers()));
   // constructors
-  listMembers(cd->getMemberList(MemberListType_constructors));
+  listMembers(cd->getMemberList(MemberListType::Constructors()));
   // attributes
-  listMembers(cd->getMemberList(MemberListType_variableMembers));
+  listMembers(cd->getMemberList(MemberListType::VariableMembers()));
 }
 
 static void classInformation(const ClassDef* cd) {
@@ -398,7 +405,7 @@ static void listSymbols() {
   for (const auto &fn : *Doxygen::inputNameLinkedMap) {
     for (const auto &fd : *fn) {
       printFile(fd->absFilePath().data());
-      MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
+      MemberList *ml = fd->getMemberList(MemberListType::AllMembersList());
       if (ml && ml->size() > 0) {
         printModule(fd->getOutputFileBase().data());
         printDefines();
@@ -429,7 +436,7 @@ int main(int argc,char **argv) {
     }
     else if (!strcmp(argv[1],"--version"))
     {
-      printf("%s version: %s\n",argv[0],getFullVersion());
+      printf("%s version: %s\n",argv[0],getFullVersion().c_str());
       exit(0);
     }
   }
@@ -470,6 +477,7 @@ int main(int argc,char **argv) {
   Config_updateBool(WARNINGS,FALSE);
   Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
   Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
   // Extract as much as possible
   Config_updateBool(EXTRACT_ALL,TRUE);
   Config_updateBool(EXTRACT_STATIC,TRUE);
@@ -492,7 +500,7 @@ int main(int argc,char **argv) {
     if (strcmp(argv[i], "-") == 0) {
       char filename[1024];
       while (1) {
-        scanf("%s[^\n]", filename);
+        (void)scanf("%s[^\n]", filename);
         if (feof(stdin)) {
           break;
         }
@@ -530,7 +538,7 @@ int main(int argc,char **argv) {
 
   std::string cleanup_command = "rm -rf ";
   cleanup_command += tmpdir.str();
-  system(cleanup_command.c_str());
+  (void)system(cleanup_command.c_str());
 
   exit(0);
 }

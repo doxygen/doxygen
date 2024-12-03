@@ -30,26 +30,24 @@
 
 static AtomicInt g_num;
 
-Entry::Entry()
+Entry::Entry() : section(EntryType::makeEmpty()), program(static_cast<size_t>(0)), initializer(static_cast<size_t>(0))
 {
   //printf("Entry::Entry(%p)\n",this);
   g_num++;
-  m_parent=0;
-  section = EMPTY_SEC;
+  m_parent=nullptr;
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
-  hasTagInfo = FALSE;
-  relatesType = Simple;
+  hasTagInfo = false;
+  relatesType = RelatesType::Simple;
   hidden = FALSE;
   groupDocType = GROUPDOC_NORMAL;
   reset();
 }
 
-Entry::Entry(const Entry &e)
+Entry::Entry(const Entry &e) : section(e.section)
 {
   //printf("Entry::Entry(%p):copy\n",this);
   g_num++;
-  section     = e.section;
   type        = e.type;
   name        = e.name;
   hasTagInfo  = e.hasTagInfo;
@@ -57,16 +55,15 @@ Entry::Entry(const Entry &e)
   protection  = e.protection;
   mtype       = e.mtype;
   spec        = e.spec;
+  vhdlSpec    = e.vhdlSpec;
   initLines   = e.initLines;
-  stat        = e.stat;
+  isStatic    = e.isStatic;
   localToc    = e.localToc;
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
   subGrouping = e.subGrouping;
-  callGraph   = e.callGraph;
-  callerGraph = e.callerGraph;
-  referencedByRelation = e.referencedByRelation;
-  referencesRelation   = e.referencesRelation;
+  commandOverrides = e.commandOverrides;
+  exported    = e.exported;
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
@@ -110,6 +107,7 @@ Entry::Entry(const Entry &e)
   groups      = e.groups;
   req         = e.req;
   m_fileDef   = e.m_fileDef;
+  qualifiers  = e.qualifiers;
 
   m_parent    = e.m_parent;
   // deep copy child entries
@@ -182,32 +180,28 @@ void Entry::removeSubEntry(const Entry *e)
 
 void Entry::reset()
 {
-  bool entryCallGraph   = Config_getBool(CALL_GRAPH);
-  bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
-  bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
-  bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
   //printf("Entry::reset()\n");
-  name.resize(0);
-  type.resize(0);
-  args.resize(0);
-  bitfields.resize(0);
-  exception.resize(0);
+  name.clear();
+  type.clear();
+  args.clear();
+  bitfields.clear();
+  exception.clear();
   program.str(std::string());
-  includeFile.resize(0);
-  includeName.resize(0);
-  doc.resize(0);
-  docFile.resize(0);
+  includeFile.clear();
+  includeName.clear();
+  doc.clear();
+  docFile.clear();
   docLine=-1;
-  relates.resize(0);
-  relatesType=Simple;
-  brief.resize(0);
-  briefFile.resize(0);
+  relates.clear();
+  relatesType=RelatesType::Simple;
+  brief.clear();
+  briefFile.clear();
   briefLine=-1;
-  inbodyDocs.resize(0);
-  inbodyFile.resize(0);
+  inbodyDocs.clear();
+  inbodyFile.clear();
   inbodyLine=-1;
-  inside.resize(0);
-  fileName.resize(0);
+  inside.clear();
+  fileName.clear();
   initializer.str(std::string());
   initLines = -1;
   startLine = 1;
@@ -216,25 +210,24 @@ void Entry::reset()
   bodyColumn = 1;
   endBodyLine = -1;
   mGrpId = -1;
-  callGraph   = entryCallGraph;
-  callerGraph = entryCallerGraph;
-  referencedByRelation = entryReferencedByRelation;
-  referencesRelation   = entryReferencesRelation;
-  section = EMPTY_SEC;
-  mtype   = Method;
-  virt    = Normal;
-  stat    = FALSE;
-  proto   = FALSE;
-  explicitExternal = FALSE;
-  spec  = 0;
-  lang = SrcLangExt_Unknown;
-  hidden = FALSE;
-  artificial = FALSE;
-  subGrouping = TRUE;
-  protection = Public;
+  commandOverrides.reset();
+  exported = false;
+  section = EntryType::makeEmpty();
+  mtype   = MethodTypes::Method;
+  virt    = Specifier::Normal;
+  isStatic = false;
+  proto   = false;
+  explicitExternal = false;
+  spec.reset();
+  vhdlSpec = VhdlSpecifier::UNKNOWN;
+  lang = SrcLangExt::Unknown;
+  hidden = false;
+  artificial = false;
+  subGrouping = true;
+  protection = Protection::Public;
   groupDocType = GROUPDOC_NORMAL;
-  id.resize(0);
-  metaData.resize(0);
+  id.clear();
+  metaData.clear();
   m_sublist.clear();
   extends.clear();
   groups.clear();
@@ -243,8 +236,9 @@ void Entry::reset()
   tArgLists.clear();
   typeConstr.reset();
   sli.clear();
-  req.resize(0);
-  m_fileDef = 0;
+  req.clear();
+  m_fileDef = nullptr;
+  qualifiers.clear();
 }
 
 void Entry::setFileDef(FileDef *fd)

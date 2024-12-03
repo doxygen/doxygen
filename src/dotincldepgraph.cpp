@@ -46,7 +46,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -59,15 +59,15 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
           tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
           tooltip = bfd->briefDescriptionAsTooltip();
         }
-        DotNode *bn = new DotNode(getNextNodeNumber(),// n
+        DotNode *bn = new DotNode(this,
                          ii.includeName,   // label
                          tooltip,           // tip
                          tmp_url,           // url
                          FALSE,             // rootNode
-                         0);                // cd
-        n->addChild(bn,0,0);
+                         nullptr);                // cd
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
-        m_usedNodes.insert(std::make_pair(in.str(),bn));
+        m_usedNodes.emplace(in.str(),bn);
         bn->setDistance(distance);
 
         if (bfd) buildGraph(bn,bfd,distance+1);
@@ -123,18 +123,18 @@ void DotInclDepGraph::determineTruncatedNodes(DotNodeDeque &queue)
 DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
 {
   m_inverse = inverse;
-  ASSERT(fd!=0);
+  ASSERT(fd!=nullptr);
   m_inclDepFileName   = fd->includeDependencyGraphFileName();
   m_inclByDepFileName = fd->includedByDependencyGraphFileName();
   QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
   QCString tooltip = fd->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(getNextNodeNumber(),
+  m_startNode = new DotNode(this,
                             fd->docName(),
                             tooltip,
                             tmp_url,
                             TRUE);    // root node
   m_startNode->setDistance(0);
-  m_usedNodes.insert(std::make_pair(fd->absFilePath().str(),m_startNode));
+  m_usedNodes.emplace(fd->absFilePath().str(),m_startNode);
   buildGraph(m_startNode,fd,1);
 
   int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
@@ -165,7 +165,7 @@ QCString DotInclDepGraph::getBaseName() const
 
 void DotInclDepGraph::computeTheGraph()
 {
-  computeGraph(m_startNode, Dependency, m_graphFormat, "", FALSE,
+  computeGraph(m_startNode, GraphType::Dependency, m_graphFormat, "", FALSE,
                m_inverse, m_startNode->label(), m_theGraph);
 }
 
@@ -210,16 +210,16 @@ int DotInclDepGraph::numNodes() const
 
 void DotInclDepGraph::writeXML(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeXML(t,FALSE);
+    node->writeXML(t,FALSE);
   }
 }
 
 void DotInclDepGraph::writeDocbook(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeDocbook(t,FALSE);
+    node->writeDocbook(t,FALSE);
   }
 }

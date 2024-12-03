@@ -19,6 +19,7 @@
 #include <initializer_list>
 
 #include "qcstring.h"
+#include "construct.h"
 
 /** @brief Compiled resource */
 struct Resource
@@ -59,6 +60,8 @@ class ResourceMgr
 
     ResourceMgr();
    ~ResourceMgr();
+    NON_COPYABLE(ResourceMgr)
+
     class Private;
     std::unique_ptr<Private> p;
 };

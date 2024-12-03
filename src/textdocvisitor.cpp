@@ -20,33 +20,68 @@
 #include "message.h"
 #include "util.h"
 #include "htmlentity.h"
+#include "cite.h"
 #include "emoji.h"
 
 //-------------------------------------------------------------------------
 
 void TextDocVisitor::operator()(const DocSymbol &s)
 {
-  const char *res = HtmlEntityMapper::instance()->html(s.symbol());
+  const char *res = HtmlEntityMapper::instance().html(s.symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("text: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("text: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
 void TextDocVisitor::operator()(const DocEmoji &s)
 {
-  const char *res = EmojiEntityMapper::instance()->name(s.index());
+  // the TextDocVisitor is only invoked for the JS part of the HTML output
+  const char *res = EmojiEntityMapper::instance().unicode(s.index());
   if (res)
   {
-    filter(res);
+    const char *p = res;
+    while (*p)
+    {
+      switch(*p)
+      {
+        case '&': case '#':
+          break;
+        case 'x':
+          m_t << "\\u{";
+          break;
+        case ';':
+          m_t << "}";
+          break;
+        default:
+          m_t << *p;
+          break;
+      }
+      p++;
+    }
   }
   else
   {
     filter(s.name());
+  }
+}
+
+void TextDocVisitor::operator()(const DocCite &cite)
+{
+  if (!cite.file().isEmpty())
+  {
+    QCString anchor = cite.anchor();
+    QCString anchorPrefix = CitationManager::instance().anchorPrefix();
+    anchor = anchor.mid(anchorPrefix.length()); // strip prefix
+    m_t << anchor;
+  }
+  else
+  {
+    filter(cite.text());
   }
 }
 
@@ -55,15 +90,11 @@ void TextDocVisitor::filter(const QCString &str)
   if (str.isEmpty()) return;
   //printf("TextDocVisitor::filter(%s)\n",str);
   const char *p=str.data();
-  char c;
   while (*p)
   {
-    c=*p++;
-    switch(c)
-    {
-      case '\n':  m_t << " ";      break;
-      default:    m_t << c;
-    }
+    char c = *p++;
+    if (c=='\n') c=' ';
+    else m_t << c;
   }
 }
 

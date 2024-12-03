@@ -25,6 +25,7 @@
 #include <type_traits>
 
 #include "qcstring.h"
+#include "construct.h"
 
 /** @brief Text streaming class that buffers data.
  *
@@ -37,20 +38,20 @@ class TextStream final
   public:
     /** Creates an empty stream object.
      */
-    TextStream()
+    explicit TextStream(size_t capacity = INITIAL_CAPACITY)
     {
-      m_buffer.reserve(INITIAL_CAPACITY);
+      m_buffer.reserve(capacity);
     }
     /** Create a text stream object for writing to a std::ostream.
      *  @note data is buffered until flush() is called or the object is destroyed.
      */
-    TextStream(std::ostream *s) : m_s(s)
+    explicit TextStream(std::ostream *s) : m_s(s)
     {
       m_buffer.reserve(INITIAL_CAPACITY);
     }
     /** Create a text stream, initializing the buffer with string \a s
      */
-    TextStream(const std::string &s) : m_buffer(s)
+    explicit TextStream(const std::string &s) : m_buffer(s)
     {
       m_buffer.reserve(s.length()+INITIAL_CAPACITY);
     }
@@ -58,8 +59,7 @@ class TextStream final
     /** Writes any data that is buffered to the attached std::ostream */
    ~TextStream() { flush(); }
 
-    TextStream(const TextStream &) = delete;
-    TextStream &operator=(const TextStream &) = delete;
+    ONLY_DEFAULT_MOVABLE(TextStream)
 
     /** Sets or changes the std::ostream to write to.
      *  @note Any data already buffered will be flushed.
@@ -176,7 +176,7 @@ class TextStream final
             >
     TextStream &operator<<( T i)
     {
-      output_int32(static_cast<uint>(i),false);
+      output_int32(static_cast<uint32_t>(i),false);
       return static_cast<TextStream&>(*this);
     }
 

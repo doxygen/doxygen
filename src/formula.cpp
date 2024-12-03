@@ -13,6 +13,11 @@
  *
  */
 
+#include <map>
+#include <vector>
+#include <string>
+#include <utility>
+
 #include "formula.h"
 #include "message.h"
 #include "config.h"
@@ -23,22 +28,16 @@
 #include "dir.h"
 #include "regex.h"
 #include "linkedmap.h"
-
-#include <map>
-#include <vector>
-#include <string>
-#include <utility>
-#include <fstream>
+#include "threadpool.h"
+#include "portable.h"
+#include "latexgen.h"
+#include "debug.h"
 
 // TODO: remove these dependencies
 #include "doxygen.h"   // for Doxygen::indexList
 #include "indexlist.h" // for Doxygen::indexList
 
-static int determineInkscapeVersion(Dir &thisDir);
-
-// Remove the temporary files
-#define RM_TMP_FILES (true)
-//#define RM_TMP_FILES (false)
+static int determineInkscapeVersion(const Dir &thisDir);
 
 struct FormulaManager::Private
 {
@@ -60,21 +59,20 @@ FormulaManager &FormulaManager::instance()
 
 void FormulaManager::initFromRepository(const QCString &dir)
 {
-  std::ifstream f(dir.str()+"/formula.repository",std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(dir+"/formula.repository");
   if (f.is_open())
   {
-    uint formulaCount=0;
+    uint32_t formulaCount=0;
     msg("Reading formula repository...\n");
     std::string readLine;
     std::string line;
     std::string prefix("\\_form#");
-    int lineNr;
     int nextLineNr=1;
     bool hasNextLine = !getline(f,readLine).fail();
     while (hasNextLine)
     {
       line = readLine;
-      lineNr = nextLineNr;
+      int lineNr = nextLineNr;
 
       // look ahead a bit because a formula can be spread over several lines
       while ((hasNextLine = !getline(f,readLine).fail()))
@@ -119,7 +117,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
       }
 
       auto it = p->formulaIdMap.find(id);
-      Formula *formula=0;
+      Formula *formula=nullptr;
       if (it!=p->formulaIdMap.end()) // formula already found in a repository for another output format
       {
         formula = it->second;
@@ -135,7 +133,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
       {
         //printf("formula not found adding it under id=%d\n",id);
         formula = p->formulas.add(text.c_str(),id,width,height);
-        p->formulaIdMap.insert(std::make_pair(id,formula));
+        p->formulaIdMap.emplace(id,formula);
       }
 
       if (formula) // if an entry in the repository exists also check if there is a generated image
@@ -185,22 +183,14 @@ void FormulaManager::checkRepositories()
 
 void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate)
 {
-  QCString macroFile = Config_getString(FORMULA_MACROFILE);
-  QCString stripMacroFile;
-  if (!macroFile.isEmpty())
-  {
-    FileInfo fi(macroFile.str());
-    macroFile=fi.absFilePath();
-    stripMacroFile = fi.fileName();
-  }
-
   // generate a latex file containing one formula per page.
   QCString texName=fileName+".tex";
-  std::ofstream f(texName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(texName);
   if (f.is_open())
   {
     TextStream t(&f);
     t << "\\documentclass{article}\n";
+    t << "\\usepackage{iftex}\n";
     t << "\\usepackage{ifthen}\n";
     t << "\\usepackage{epsfig}\n"; // for those who want to include images
     t << "\\usepackage[utf8]{inputenc}\n"; // looks like some older distributions with newunicode package 1.1 need this option.
@@ -214,11 +204,15 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
 
     writeExtraLatexPackages(t);
     writeLatexSpecialFormulaChars(t);
+
+    QCString macroFile = Config_getString(FORMULA_MACROFILE);
     if (!macroFile.isEmpty())
     {
-      copyFile(macroFile,stripMacroFile);
+      FileInfo fi(macroFile.str());
+      QCString stripMacroFile = fi.fileName();
       t << "\\input{" << stripMacroFile << "}\n";
     }
+
     t << "\\pagestyle{empty}\n";
     t << "\\begin{document}\n";
     for (const auto &formula : p->formulas)
@@ -247,18 +241,17 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
 static bool createDVIFile(const QCString &fileName)
 {
   QCString latexCmd = "latex";
-  char args[4096];
-  Portable::sysTimerStart();
+  const size_t argsLen = 4096;
+  char args[argsLen];
   int rerunCount=1;
   while (rerunCount<8)
   {
     //printf("Running latex...\n");
-    sprintf(args,"-interaction=batchmode %s >%s",qPrint(fileName),Portable::devNull());
+    qsnprintf(args,argsLen,"-interaction=batchmode %s >%s",qPrint(fileName),Portable::devNull());
     if ((Portable::system(latexCmd,args)!=0) || (Portable::system(latexCmd,args)!=0))
     {
       err("Problems running latex. Check your installation or look "
           "for typos in %s.tex and check %s.log!\n",qPrint(fileName),qPrint(fileName));
-      Portable::sysTimerStop();
       return false;
     }
     // check the log file if we need to run latex again to resolve references
@@ -270,41 +263,36 @@ static bool createDVIFile(const QCString &fileName)
     }
     rerunCount++;
   }
-  Portable::sysTimerStop();
   return true;
 }
 
 static bool createPostscriptFile(const QCString &fileName,const QCString &formBase,int pageIndex)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   // run dvips to convert the page with number pageIndex to an
   // postscript file.
-  sprintf(args,"-q -D 600 -n 1 -p %d -o %s_tmp.ps %s.dvi",pageIndex,qPrint(formBase),qPrint(fileName));
-  Portable::sysTimerStart();
+  qsnprintf(args,argsLen,"-q -D 600 -n 1 -p %d -o %s_tmp.ps %s.dvi",pageIndex,qPrint(formBase),qPrint(fileName));
   if (Portable::system("dvips",args)!=0)
   {
     err("Problems running dvips. Check your installation!\n");
-    Portable::sysTimerStop();
     return false;
   }
-  Portable::sysTimerStop();
   return true;
 }
 
 static bool createEPSbboxFile(const QCString &formBase)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   // extract the bounding box for the postscript file
-  sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=bbox %s_tmp.ps 2>%s_tmp.epsi",
+  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=bbox %s_tmp.ps 2>%s_tmp.epsi",
       qPrint(formBase),qPrint(formBase));
-  Portable::sysTimerStart();
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
     err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
-    Portable::sysTimerStop();
     return false;
   }
-  Portable::sysTimerStop();
   return true;
 }
 
@@ -323,7 +311,7 @@ static bool extractBoundingBox(const QCString &formBase,
     }
     else
     {
-      err("Couldn't extract bounding box from %s_tmp.epsi",qPrint(formBase));
+      err("Couldn't extract bounding box from %s_tmp.epsi\n",qPrint(formBase));
       return false;
     }
     i = eps.find("%%HiResBoundingBox:");
@@ -333,7 +321,7 @@ static bool extractBoundingBox(const QCString &formBase,
     }
     else
     {
-      err("Couldn't extract high resolution bounding box from %s_tmp.epsi",qPrint(formBase));
+      err("Couldn't extract high resolution bounding box from %s_tmp.epsi\n",qPrint(formBase));
       return false;
     }
   }
@@ -341,17 +329,18 @@ static bool extractBoundingBox(const QCString &formBase,
   return true;
 }
 
-double FormulaManager::updateFormulaSize(int pageNum,int x1,int y1,int x2,int y2)
+static std::mutex g_formulaUpdateMutex;
+
+static double updateFormulaSize(Formula *formula,int x1,int y1,int x2,int y2)
 {
   double scaleFactor = 1.25;
   int zoomFactor = Config_getInt(FORMULA_FONTSIZE);
   if (zoomFactor<8 || zoomFactor>50) zoomFactor=10;
   scaleFactor *= zoomFactor/10.0;
 
-  auto it = p->formulaIdMap.find(pageNum);
-  if (it!=p->formulaIdMap.end())
+  if (formula)
   {
-    Formula *formula = it->second;
+    std::lock_guard<std::mutex> lock(g_formulaUpdateMutex);
     formula->setWidth(static_cast<int>((x2-x1)*scaleFactor+0.5));
     formula->setHeight(static_cast<int>((y2-y1)*scaleFactor+0.5));
   }
@@ -360,33 +349,30 @@ double FormulaManager::updateFormulaSize(int pageNum,int x1,int y1,int x2,int y2
 
 static bool createCroppedPDF(const QCString &formBase,int x1,int y1,int x2,int y2)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   // crop the image to its bounding box
-  sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=pdfwrite"
+  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=pdfwrite"
               " -o %s_tmp.pdf -c \"[/CropBox [%d %d %d %d] /PAGES pdfmark\" -f %s_tmp.ps",
       qPrint(formBase),x1,y1,x2,y2,qPrint(formBase));
-  Portable::sysTimerStart();
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
     err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
-    Portable::sysTimerStop();
     return false;
   }
-  Portable::sysTimerStop();
   return true;
 }
 
 static bool createCroppedEPS(const QCString &formBase)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   // crop the image to its bounding box
-  sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=eps2write"
+  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=eps2write"
               " -o %s_tmp.eps -f %s_tmp.ps",qPrint(formBase),qPrint(formBase));
-  Portable::sysTimerStart();
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
     err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
-    Portable::sysTimerStop();
     return false;
   }
   return true;
@@ -394,22 +380,21 @@ static bool createCroppedEPS(const QCString &formBase)
 
 static bool createSVGFromPDF(const QCString &formBase,const QCString &outFile)
 {
-  char args[4096];
-  sprintf(args,"%s_tmp.pdf %s",qPrint(formBase),qPrint(outFile));
-  Portable::sysTimerStart();
+  const size_t argsLen = 4096;
+  char args[argsLen];
+  qsnprintf(args,argsLen,"%s_tmp.pdf %s",qPrint(formBase),qPrint(outFile));
   if (Portable::system("pdf2svg",args)!=0)
   {
     err("Problems running pdf2svg. Check your installation!\n");
-    Portable::sysTimerStop();
     return false;
   }
-  Portable::sysTimerStop();
   return true;
 }
 
-static bool createSVGFromPDFviaInkscape(Dir &thisDir,const QCString &formBase,const QCString &outFile)
+static bool createSVGFromPDFviaInkscape(const Dir &thisDir,const QCString &formBase,const QCString &outFile)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   int inkscapeVersion = determineInkscapeVersion(thisDir);
   if (inkscapeVersion == -1)
   {
@@ -418,20 +403,17 @@ static bool createSVGFromPDFviaInkscape(Dir &thisDir,const QCString &formBase,co
   }
   else if (inkscapeVersion == 0)
   {
-    sprintf(args,"-l %s -z %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
+    qsnprintf(args,argsLen,"-l %s -z %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
   }
   else // inkscapeVersion >= 1
   {
-    sprintf(args,"--export-type=svg --export-filename=%s %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
+    qsnprintf(args,argsLen,"--export-type=svg --export-filename=%s %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
   }
-  Portable::sysTimerStart();
   if (Portable::system("inkscape",args)!=0)
   {
     err("Problems running inkscape. Check your installation!\n");
-    Portable::sysTimerStop();
     return false;
   }
-  Portable::sysTimerStop();
   return true;
 }
 
@@ -442,8 +424,8 @@ static bool updateEPSBoundingBox(const QCString &formBase,
 {
   // read back %s_tmp.eps and replace
   // bounding box values with x1,y1,x2,y2 and remove the HiResBoundingBox
-  std::ifstream epsIn(formBase.str()+"_tmp.eps",std::ifstream::in);
-  std::ofstream epsOut(formBase.str()+"_tmp_corr.eps",std::ofstream::out | std::ofstream::binary);
+  std::ifstream epsIn  = Portable::openInputStream(formBase+"_tmp.eps");
+  std::ofstream epsOut = Portable::openOutputStream(formBase+"_tmp_corr.eps");
   if (epsIn.is_open() && epsOut.is_open())
   {
     std::string line;
@@ -451,11 +433,11 @@ static bool updateEPSBoundingBox(const QCString &formBase,
     {
       if (line.rfind("%%BoundingBox",0)==0)
       {
-        epsOut << "%%BoundingBox: " << x1 << " " << y1 << " " << x2 << " " << y2 << "\n";
+        epsOut << "%%BoundingBox: " << std::max(0,x1-1) << " " << std::max(0,y1-1) << " " << (x2+1) << " " << (y2+1) << "\n";
       }
       else if (line.rfind("%%HiResBoundingBox",0)==0)
       {
-        epsOut << "%%HiResBoundingBox: " << x1hi << " " << y1hi << " " << x2hi << " " << y2hi << "\n";
+        epsOut << "%%HiResBoundingBox: " << std::max(0.0,x1hi-1.0) << " " << std::max(0.0,y1hi-1.0) << " " << (x2hi+1.0) << " " << (y2hi+1.0) << "\n";
       }
       else
       {
@@ -476,19 +458,96 @@ static bool updateEPSBoundingBox(const QCString &formBase,
 
 static bool createPNG(const QCString &formBase,const QCString &outFile,double scaleFactor)
 {
-  char args[4096];
-  Portable::sysTimerStop();
-  sprintf(args,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pnggray -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
+  const size_t argsLen = 4096;
+  char args[argsLen];
+  qsnprintf(args,argsLen,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pngalpha -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
                "-r%d -sOutputFile=%s %s_tmp_corr.eps",static_cast<int>(scaleFactor*72),qPrint(outFile),qPrint(formBase));
-  Portable::sysTimerStart();
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
     err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
-    Portable::sysTimerStop();
     return false;
   }
-  Portable::sysTimerStop();
   return true;
+}
+
+static StringVector generateFormula(const Dir &thisDir,const QCString &formulaFileName,Formula *formula,int pageNum,int pageIndex,
+                                    FormulaManager::Format format,FormulaManager::HighDPI hd,FormulaManager::Mode mode)
+{
+  StringVector tempFiles;
+  QCString outputFile;
+  outputFile.sprintf("form_%d%s.%s",pageNum, mode==FormulaManager::Mode::Light?"":"_dark", format==FormulaManager::Format::Vector?"svg":"png");
+  msg("Generating image %s for formula\n",qPrint(outputFile));
+
+  QCString formBase;
+  formBase.sprintf("_form%d%s",pageNum,mode==FormulaManager::Mode::Light?"":"_dark");
+
+  if (!createPostscriptFile(formulaFileName,formBase,pageIndex)) return tempFiles;
+
+  int x1=0,y1=0,x2=0,y2=0;
+  double x1hi=0.0,y1hi=0.0,x2hi=0.0,y2hi=0.0;
+  if (mode==FormulaManager::Mode::Light)
+  {
+    if (!createEPSbboxFile(formBase)) return tempFiles;
+    // extract the bounding box info from the generated .epsi file
+    if (!extractBoundingBox(formBase,&x1,&y1,&x2,&y2,&x1hi,&y1hi,&x2hi,&y2hi)) return tempFiles;
+  }
+  else // for dark images the bounding box is wrong (includes the black) so
+       // use the bounding box of the light image instead.
+  {
+    QCString formBaseLight;
+    formBaseLight.sprintf("_form%d",pageNum);
+    if (!extractBoundingBox(formBaseLight,&x1,&y1,&x2,&y2,&x1hi,&y1hi,&x2hi,&y2hi)) return tempFiles;
+  }
+
+  // convert the corrected EPS to a bitmap
+  double scaleFactor = updateFormulaSize(formula,x1,y1,x2,y2);
+
+  if (format==FormulaManager::Format::Vector)
+  {
+    if (!createCroppedPDF(formBase,x1,y1,x2,y2)) return tempFiles;
+
+    // if we have pdf2svg available use it to create a SVG image
+    if (Portable::checkForExecutable("pdf2svg"))
+    {
+      createSVGFromPDF(formBase,outputFile);
+    }
+    else if (Portable::checkForExecutable("inkscape")) // alternative is to use inkscape
+    {
+      createSVGFromPDFviaInkscape(thisDir,formBase,outputFile);
+    }
+    else
+    {
+      err("Neither 'pdf2svg' nor 'inkscape' present for conversion of formula to 'svg'\n");
+      return tempFiles;
+    }
+
+    tempFiles.push_back(formBase.str()+"_tmp.pdf");
+  }
+  else // format==FormulaManager::Format::Bitmap
+  {
+    if (!createCroppedEPS(formBase)) return tempFiles;
+
+    if (!updateEPSBoundingBox(formBase,x1,y1,x2,y2,x1hi,y1hi,x2hi,y2hi)) return tempFiles;
+
+    if (hd==FormulaManager::HighDPI::On) // for high DPI display it looks much better if the
+                                         // image resolution is higher than the display resolution
+    {
+      scaleFactor*=2;
+    }
+
+    if (!createPNG(formBase,outputFile,scaleFactor)) return tempFiles;
+
+    tempFiles.push_back(formBase.str()+"_tmp.eps");
+    tempFiles.push_back(formBase.str()+"_tmp_corr.eps");
+  }
+
+  // remove intermediate image files
+  tempFiles.push_back(formBase.str()+"_tmp.ps");
+  if (mode==FormulaManager::Mode::Light)
+  {
+    tempFiles.push_back(formBase.str()+"_tmp.epsi");
+  }
+  return tempFiles;
 }
 
 void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd,Mode mode)
@@ -501,84 +560,50 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
   {
     if (!createDVIFile(formulaFileName)) return;
 
-    //printf("Running dvips...\n");
-    int pageIndex=1;
-    for (int pageNum : formulasToGenerate)
+    auto getFormula = [this](int pageNum) -> Formula *
     {
-      QCString outputFile;
-      outputFile.sprintf("form_%d%s.%s",pageNum, mode==Mode::Light?"":"_dark", format==Format::Vector?"svg":"png");
-      msg("Generating image %s for formula\n",qPrint(outputFile));
-
-      QCString formBase;
-      formBase.sprintf("_form%d%s",pageNum,mode==Mode::Light?"":"_dark");
-
-      if (!createPostscriptFile(formulaFileName,formBase,pageIndex)) break;
-
-      int x1=0,y1=0,x2=0,y2=0;
-      double x1hi=0.0,y1hi=0.0,x2hi=0.0,y2hi=0.0;
-      if (mode==Mode::Light)
+      auto it = p->formulaIdMap.find(pageNum);
+      if (it!=p->formulaIdMap.end())
       {
-        if (!createEPSbboxFile(formBase)) break;
-        // extract the bounding box info from the generated .epsi file
-        if (!extractBoundingBox(formBase,&x1,&y1,&x2,&y2,&x1hi,&y1hi,&x2hi,&y2hi)) break;
+        return it->second;
       }
-      else // for dark images the bounding box is wrong (includes the black) so
-           // use the bounding box of the light image instead.
+      return nullptr;
+    };
+
+    int pageIndex=1;
+    std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+    if (numThreads>1) // multi-threaded version
+    {
+      ThreadPool threadPool(numThreads);
+      std::vector< std::future< StringVector > > results;
+      for (int pageNum : formulasToGenerate)
       {
-        QCString formBaseLight;
-        formBaseLight.sprintf("_form%d",pageNum);
-        if (!extractBoundingBox(formBaseLight,&x1,&y1,&x2,&y2,&x1hi,&y1hi,&x2hi,&y2hi)) break;
-      }
-
-      // convert the corrected EPS to a bitmap
-      double scaleFactor = updateFormulaSize(pageNum,x1,y1,x2,y2);
-
-      if (format==Format::Vector)
-      {
-        if (!createCroppedPDF(formBase,x1,y1,x2,y2)) break;
-
-        // if we have pdf2svg available use it to create a SVG image
-        if (Portable::checkForExecutable("pdf2svg"))
+        // create images for each formula.
+        auto formula = getFormula(pageNum);
+        auto processFormula = [=]() -> StringVector
         {
-          createSVGFromPDF(formBase,outputFile);
-        }
-        else if (Portable::checkForExecutable("inkscape")) // alternative is to use inkscape
-        {
-          createSVGFromPDFviaInkscape(thisDir,formBase,outputFile);
-        }
-        else
-        {
-          err("Neither 'pdf2svg' nor 'inkscape' present for conversion of formula to 'svg'\n");
-          return;
-        }
-
-        p->tempFiles.push_back(formBase.str()+"_tmp.pdf");
+          return generateFormula(thisDir,formulaFileName,formula,pageNum,pageIndex,format,hd,mode);
+        };
+        results.emplace_back(threadPool.queue(processFormula));
+        pageIndex++;
       }
-      else // format==Format::Bitmap
+      for (auto &f : results)
       {
-        if (!createCroppedEPS(formBase)) break;
-
-        if (!updateEPSBoundingBox(formBase,x1,y1,x2,y2,x1hi,y1hi,x2hi,y2hi)) break;
-
-        if (hd==HighDPI::On) // for high DPI display it looks much better if the
-                             // image resolution is higher than the display resolution
-        {
-          scaleFactor*=2;
-        }
-
-        if (!createPNG(formBase,outputFile,scaleFactor)) break;
-
-        p->tempFiles.push_back(formBase.str()+"_tmp.eps");
-        p->tempFiles.push_back(formBase.str()+"_tmp_corr.eps");
+        auto tf = f.get();
+        p->tempFiles.insert(p->tempFiles.end(),tf.begin(),tf.end()); // append tf to p->tempFiles
       }
-
-      // remove intermediate image files
-      p->tempFiles.push_back(formBase.str()+"_tmp.ps");
-      if (mode==Mode::Light)
+    }
+    else // single threaded version
+    {
+      for (int pageNum : formulasToGenerate)
       {
-        p->tempFiles.push_back(formBase.str()+"_tmp.epsi");
+        // create images for each formula.
+        auto formula = getFormula(pageNum);
+        StringVector tf = generateFormula(thisDir,formulaFileName,formula,pageNum,pageIndex,format,hd,mode);
+        p->tempFiles.insert(p->tempFiles.end(),tf.begin(),tf.end()); // append tf to p->tempFiles
+
+        pageIndex++;
       }
-      pageIndex++;
     }
     // remove intermediate files produced by latex
     p->tempFiles.push_back(formulaFileName.str()+".dvi");
@@ -592,8 +617,7 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
   // generated images represent (we use this next time to avoid regeneration
   // of the images, and to avoid forcing the user to delete all images in order
   // to let a browser refresh the images).
-  std::ofstream f;
-  f.open("formula.repository",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream("formula.repository");
   if (f.is_open())
   {
     TextStream t(&f);
@@ -619,9 +643,23 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   }
   std::string oldDir = Dir::currentDirPath();
 
+  QCString macroFile = Config_getString(FORMULA_MACROFILE);
+  QCString stripMacroFile;
+  if (!macroFile.isEmpty())
+  {
+    FileInfo fi(macroFile.str());
+    macroFile=fi.absFilePath();
+    stripMacroFile = fi.fileName();
+  }
+
   // go to the html output directory (i.e. path)
   Dir::setCurrent(d.absPath());
   Dir thisDir;
+
+  if (!macroFile.isEmpty())
+  {
+    copyFile(macroFile,stripMacroFile);
+  }
 
   createFormulasTexFile(thisDir,format,hd,Mode::Light);
   if (Config_getEnum(HTML_COLORSTYLE)!=HTML_COLORSTYLE_t::LIGHT) // all modes other than light need a dark version
@@ -632,7 +670,7 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   }
 
   // clean up temporary files
-  if (RM_TMP_FILES)
+  if (!Debug::isFlagSet(Debug::Formula))
   {
     for (const auto &file : p->tempFiles)
     {
@@ -660,7 +698,7 @@ int FormulaManager::addFormula(const std::string &formulaText,int width,int heig
   // add new formula
   int id = static_cast<int>(p->formulas.size());
   formula = p->formulas.add(formulaText.c_str(),id,width,height);
-  p->formulaIdMap.insert(std::make_pair(id,formula));
+  p->formulaIdMap.emplace(id,formula);
   return id;
 }
 
@@ -684,10 +722,13 @@ bool FormulaManager::hasFormulas() const
   return !p->formulas.empty();
 }
 
+static std::mutex g_inkscapeDetectionMutex;
+
 // helper function to detect and return the major version of inkscape.
 // return -1 if the version cannot be determined.
-static int determineInkscapeVersion(Dir &thisDir)
+static int determineInkscapeVersion(const Dir &thisDir)
 {
+  std::lock_guard<std::mutex> lock(g_inkscapeDetectionMutex);
   // The command line interface (CLI) of Inkscape 1.0 has changed in comparison to
   // previous versions. In order to invokine Inkscape, the used version is detected
   // and based on the version the right syntax of the CLI is chosen.
@@ -697,19 +738,17 @@ static int determineInkscapeVersion(Dir &thisDir)
     QCString inkscapeVersionFile = "inkscape_version" ;
     inkscapeVersion = -1;
     QCString args = "-z --version >"+inkscapeVersionFile+" 2>"+Portable::devNull();
-    Portable::sysTimerStart();
     if (Portable::system("inkscape",args)!=0)
     {
       // looks like the old syntax gave problems, lets try the new syntax
       args = " --version >"+inkscapeVersionFile+" 2>"+Portable::devNull();
       if (Portable::system("inkscape",args)!=0)
       {
-        Portable::sysTimerStop();
         return -1;
       }
     }
     // read version file and determine major version
-    std::ifstream inkscapeVersionIn(inkscapeVersionFile.str(),std::ifstream::in);
+    std::ifstream inkscapeVersionIn = Portable::openInputStream(inkscapeVersionFile);
     if (inkscapeVersionIn.is_open())
     {
       std::string line;
@@ -727,14 +766,12 @@ static int determineInkscapeVersion(Dir &thisDir)
     }
     else // failed to open version file
     {
-      Portable::sysTimerStop();
       return -1;
     }
-    if (RM_TMP_FILES)
+    if (!Debug::isFlagSet(Debug::Formula))
     {
       thisDir.remove(inkscapeVersionFile.str());
     }
-    Portable::sysTimerStop();
   }
   return inkscapeVersion;
 }

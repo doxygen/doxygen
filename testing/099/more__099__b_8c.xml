@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="more__099__b_8c" kind="file" language="C++">
+    <compoundname>more_099_b.c</compoundname>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="more__099__b_8c_1aa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no" strong="no">
+        <type/>
+        <name>E</name>
+        <enumvalue id="more__099__b_8c_1aa57b8491d1d8fc1014dd54bcf83b130aa42a4ade1acd55a49164099104990e09f" prot="public">
+          <name>A</name>
+          <briefdescription>
+            <para>A in b.c. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="more__099__b_8c_1aa57b8491d1d8fc1014dd54bcf83b130aa3f2a77ecd272aa6d6b5902faa5e5fc68" prot="public">
+          <name>B</name>
+          <briefdescription>
+            <para>B in b.c. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para><ref refid="more__099__b_8c_1aa57b8491d1d8fc1014dd54bcf83b130a" kindref="member">E</ref> in b.c. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_099_b.c" line="10" column="1" bodyfile="more_099_b.c" bodystart="10" bodyend="20"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>b.c </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="more_099_b.c"/>
+  </compounddef>
+</doxygen>

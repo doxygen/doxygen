@@ -27,14 +27,15 @@
 class FortranOutlineParser : public OutlineParserInterface
 {
   public:
-    FortranOutlineParser(FortranFormat format=FortranFormat_Unknown);
-   ~FortranOutlineParser();
+    FortranOutlineParser(FortranFormat format=FortranFormat::Unknown);
+   ~FortranOutlineParser() override;
+    NON_COPYABLE(FortranOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser);
-    bool needsPreprocessing(const QCString &extension) const;
-    void parsePrototype(const QCString &text);
+                    ClangTUParser *clangParser) override;
+    bool needsPreprocessing(const QCString &extension) const override;
+    void parsePrototype(const QCString &text) override;
 
   private:
     struct Private;
@@ -44,13 +45,13 @@ class FortranOutlineParser : public OutlineParserInterface
 class FortranOutlineParserFree : public FortranOutlineParser
 {
   public:
-    FortranOutlineParserFree() : FortranOutlineParser(FortranFormat_Free) { }
+    FortranOutlineParserFree() : FortranOutlineParser(FortranFormat::Free) { }
 };
 
 class FortranOutlineParserFixed : public FortranOutlineParser
 {
   public:
-    FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat_Fixed) { }
+    FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat::Fixed) { }
 };
 
 const char* prepassFixedForm(const char* contents, int *hasContLine, int fixedCommentAfter);

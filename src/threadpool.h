@@ -66,18 +66,23 @@ class ThreadPool
     {
       finish();
     }
+    ThreadPool(const ThreadPool &) = delete;
+    ThreadPool &operator=(const ThreadPool &) = delete;
+    ThreadPool(ThreadPool &&) = delete;
+    ThreadPool &operator=(ThreadPool &&) = delete;
 
     /// Queue the callable function \a f for the threads to execute.
     /// A future of the return type of the function is returned to capture the result.
-    template<class F, class R=std::result_of_t<F&()> >
-    std::future<R> queue(F&& f)
+    template<class F, typename ...Args>
+    auto queue(F&& f, Args&&... args) -> std::future<decltype(f(args...))>
     {
       // We wrap the function object into a packaged task, splitting
       // execution from the return value.
       // Since the packaged_task object is not copyable, we create it on the heap
       // and capture it via a shared pointer in a lambda and then assign that lambda
       // to a std::function.
-      auto ptr = std::make_shared< std::packaged_task<R()> >(std::forward<F>(f));
+      using RetType = decltype(f(args...));
+      auto ptr = std::make_shared< std::packaged_task<RetType()> >(std::forward<F>(f), std::forward<Args>(args)...);
       auto taskFunc = [ptr]() { if (ptr->valid()) (*ptr)(); };
 
       auto r=ptr->get_future(); // get the return value before we hand off the task
@@ -98,18 +103,14 @@ class ThreadPool
         std::unique_lock<std::mutex> l(m_mutex);
         for(auto&& u : m_finished)
         {
-          unused_variable(u);
-          m_work.push_back({}); // insert empty function object to signal abort
+          (void)u; //unused_variable, to silence the compiler warning about unused variables
+          m_work.emplace_back(); // insert empty function object to signal abort
         }
       }
       m_cond.notify_all();
       m_finished.clear();
     }
   private:
-
-    // helper to silence the compiler warning about unused variables
-    template <typename ...Args>
-    void unused_variable(Args&& ...args) { (void)(sizeof...(args)); }
 
     // the work that a worker thread does:
     void threadTask()

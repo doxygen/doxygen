@@ -60,6 +60,7 @@ function(set_project_warnings project_name)
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output
                  # (ie printf)
+      -Wpedantic # warn if non-standard C++ is used
 
       # turn off warning caused by generated code (flex)
       -Wno-unused-parameter
@@ -67,6 +68,9 @@ function(set_project_warnings project_name)
       -Wno-sign-conversion
       -Wno-format-nonliteral
       -Wno-shorten-64-to-32
+
+      # allow comma removal for empty __VA_ARGS__ in ,##__VA_ARGS__
+      -Wno-gnu-zero-variadic-macro-arguments
 
       # enable to turn warnings into errors
       #-Werror

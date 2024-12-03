@@ -50,7 +50,7 @@ void DotGfxHierarchyTable::computeTheGraph()
   {
     if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
-      node->write(md5stream,Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE);
+      node->write(md5stream,GraphType::Hierarchy,GraphOutputFormat::BITMAP,FALSE,TRUE,TRUE);
     }
   }
   writeGraphFooter(md5stream);
@@ -69,7 +69,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
   m_graphId = id;
   m_noDivTag = TRUE;
   m_zoomable = FALSE;
-  DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
+  DotGraph::writeGraph(out, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, fileName, "", TRUE, 0);
 }
 
 void DotGfxHierarchyTable::writeGraph(TextStream &out,
@@ -91,8 +91,8 @@ void DotGfxHierarchyTable::writeGraph(TextStream &out,
   out << "<table border=\"0\" cellspacing=\"10\" cellpadding=\"0\">\n";
 
   int count=0;
-  std::sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
-            [](auto n1,auto n2) { return qstricmp(n1->label(),n2->label())<0; });
+  std::stable_sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
+            [](auto n1,auto n2) { return qstricmp_sort(n1->label(),n2->label())<0; });
   for (auto n : m_rootSubgraphs)
   {
     out << "<tr><td>";
@@ -109,12 +109,12 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
   {
     ClassDef *bClass=bcd.classDef;
     //printf("  Trying sub class='%s' usedNodes=%d\n",qPrint(bClass->name()),m_usedNodes->count());
-    if (bClass && bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
+    if (bClass && bClass->isVisibleInHierarchy() && classHasVisibleRoot(bClass->baseClasses()))
     {
       auto it = m_usedNodes.find(bClass->name().str());
       //printf("  Node '%s' Found visible class='%s'\n",qPrint(n->label()),
       //                                              qPrint(bClass->name()));
-      DotNode *root = 0;
+      DotNode *root = nullptr;
       if (it!=m_usedNodes.end()) // node already present
       {
         const auto &bn = it->second;
@@ -123,7 +123,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
         auto child_it = std::find(children.begin(),children.end(),bn.get());
         if (child_it==children.end()) // no arrow yet
         {
-          n->addChild(bn.get(),bcd.prot);
+          n->addChild(bn.get(),EdgeInfo::protectionToColor(bcd.prot));
           bn->addParent(n);
           //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
           //       qPrint(n->label()),
@@ -149,12 +149,12 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
           }
         }
         QCString tooltip = bClass->briefDescriptionAsTooltip();
-        auto bn = std::make_unique<DotNode>(getNextNodeNumber(),
+        auto bn = std::make_unique<DotNode>(this,
             bClass->displayName(),
             tooltip,
             tmp_url
             );
-        n->addChild(bn.get(),bcd.prot);
+        n->addChild(bn.get(),EdgeInfo::protectionToColor(bcd.prot));
         bn->addParent(n);
         root = bn.get();
         //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
@@ -164,7 +164,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
         //   bn->parents()  ? bn->parents()->count()  : 0
         //  );
         //printf("  inserting %s (%p)\n",qPrint(bClass->name()),bn);
-        m_usedNodes.insert(std::make_pair(bClass->name().str(),std::move(bn))); // add node to the used list
+        m_usedNodes.emplace(bClass->name().str(),std::move(bn)); // add node to the used list
       }
       if (visitedClasses.find(bClass)==visitedClasses.end() && !bClass->subClasses().empty())
       {
@@ -181,7 +181,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
   for (const auto &cd : cl)
   {
     //printf("Trying %s subClasses=%d\n",qPrint(cd->name()),cd->subClasses()->count());
-    if (cd->getLanguage()==SrcLangExt_VHDL &&
+    if (cd->getLanguage()==SrcLangExt::VHDL &&
       VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS
       )
     {
@@ -191,7 +191,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
     {
       continue;
     }
-    if (!hasVisibleRoot(cd->baseClasses()) &&
+    if (!classHasVisibleRoot(cd->baseClasses()) &&
       cd->isVisibleInHierarchy()
       ) // root node in the forest
     {
@@ -206,13 +206,13 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
       }
       //printf("Inserting root class %s\n",qPrint(cd->name()));
       QCString tooltip = cd->briefDescriptionAsTooltip();
-      auto n = std::make_unique<DotNode>(getNextNodeNumber(),
+      auto n = std::make_unique<DotNode>(this,
         cd->displayName(),
         tooltip,
         tmp_url);
       DotNode *root = n.get();
 
-      m_usedNodes.insert(std::make_pair(cd->name().str(),std::move(n)));
+      m_usedNodes.emplace(cd->name().str(),std::move(n));
       m_rootNodes.push_back(root);
       if (visitedClasses.find(cd.get())==visitedClasses.end() && !cd->subClasses().empty())
       {

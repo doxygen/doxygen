@@ -32,8 +32,8 @@ std::tm getCurrentDateTime()
   QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
   if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
   {
-    bool ok;
-    uint64 epoch = sourceDateEpoch.toUInt64(&ok);
+    bool ok = false;
+    uint64_t epoch = sourceDateEpoch.toUInt64(&ok);
     if (!ok)
     {
       static bool warnedOnce=FALSE;
@@ -60,7 +60,7 @@ std::tm getCurrentDateTime()
   return *localtime(&time);
 }
 
-QCString dateToString(bool includeTime)
+QCString dateToString(DateTimeType includeTime)
 {
   auto current = getCurrentDateTime();
   return theTranslator->trDateTime(current.tm_year + 1900,
@@ -97,26 +97,26 @@ struct DateTimeField
   const char *name;
 };
 
-static std::array<SpecFormat,5> g_specFormats
-{{
+static std::array g_specFormats
+{
   // regular expression,                            num values, offset, format bits
-  { std::string(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+):(\d+))"),  6,  0,  SF_Date|SF_Time|SF_Seconds }, // format 13-04-2015 12:34:56
-  { std::string(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+))"),        5,  0,  SF_Date|SF_Time            }, // format 13-04-2015 12:34
-  { std::string(R"((\d+)-(\d+)-(\d+))"),                      3,  0,  SF_Date                    }, // format 13-04-2015
-  { std::string(R"((\d+):(\d+):(\d+))"),                      3,  3,  SF_Time|SF_Seconds         }, // format 12:34:56
-  { std::string(R"((\d+):(\d+))"),                            2,  3,  SF_Time                    }  // format 12:34
-}};
+  SpecFormat{ std::string_view(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+):(\d+))"),  6,  0,  SF_Date|SF_Time|SF_Seconds }, // format 13-04-2015 12:34:56
+  SpecFormat{ std::string_view(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+))"),        5,  0,  SF_Date|SF_Time            }, // format 13-04-2015 12:34
+  SpecFormat{ std::string_view(R"((\d+)-(\d+)-(\d+))"),                      3,  0,  SF_Date                    }, // format 13-04-2015
+  SpecFormat{ std::string_view(R"((\d+):(\d+):(\d+))"),                      3,  3,  SF_Time|SF_Seconds         }, // format 12:34:56
+  SpecFormat{ std::string_view(R"((\d+):(\d+))"),                            2,  3,  SF_Time                    }  // format 12:34
+};
 
-static std::array<DateTimeField,6> g_assignValues
-{{
+static std::array g_assignValues
+{
   // assigner,                                            minVal,     maxVal,    name
-  { [](std::tm &tm,int value) { tm.tm_year = value-1900; }, 1900,       9999,    "year"   },
-  { [](std::tm &tm,int value) { tm.tm_mon  = value-1;    },    1,         12,    "month"  },
-  { [](std::tm &tm,int value) { tm.tm_mday = value;      },    1,         31,    "day"    },
-  { [](std::tm &tm,int value) { tm.tm_hour = value;      },    0,         23,    "hour"   },
-  { [](std::tm &tm,int value) { tm.tm_min  = value;      },    0,         59,    "minute" },
-  { [](std::tm &tm,int value) { tm.tm_sec  = value;      },    0,         59,    "second" }
-}};
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_year = value-1900; }, 1900,       9999,    "year"   },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_mon  = value-1;    },    1,         12,    "month"  },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_mday = value;      },    1,         31,    "day"    },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_hour = value;      },    0,         23,    "hour"   },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_min  = value;      },    0,         59,    "minute" },
+  DateTimeField{ [](std::tm &tm,int value) { tm.tm_sec  = value;      },    0,         59,    "second" }
+};
 
 static void determine_weekday( std::tm& tm )
 {
@@ -180,12 +180,12 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
   auto getDay       = [](const std::tm &dat) { return dat.tm_mday;         };
   auto getDayOfWeek = [](const std::tm &dat) { return (dat.tm_wday+6)%7+1; };
   GrowBuf growBuf;
-  char c;
+  char c = 0;
   const char *p            = format.data();
   const char *fmt_zero     = "%02d";
   const char *fmt_nonzero  = "%d";
-  const char *fmt_selected = 0;
-  if (p==0) return QCString();
+  const char *fmt_selected = nullptr;
+  if (p==nullptr) return QCString();
   while ((c=*p++))
   {
     char nc = *p;
@@ -209,7 +209,7 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
           case 'A': growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dt),false,true));   formatUsed|=SF_Date;    break;
           case 'H': growBuf.addInt(fmt_selected,dt.tm_hour);                                   formatUsed|=SF_Time;    break;
           case 'I': growBuf.addInt(fmt_selected,dt.tm_hour%12);                                formatUsed|=SF_Time;    break;
-          case 'p': growBuf.addStr(theTranslator->trDayPeriod(dt.tm_hour>=12?1:0));            formatUsed|=SF_Time;    break;
+          case 'p': growBuf.addStr(theTranslator->trDayPeriod(dt.tm_hour>=12));                formatUsed|=SF_Time;    break;
           case 'M': growBuf.addInt(fmt_selected,dt.tm_min);                                    formatUsed|=SF_Time;    break;
           case 'S': growBuf.addInt(fmt_selected,dt.tm_sec);                                    formatUsed|=SF_Seconds; break;
           default:

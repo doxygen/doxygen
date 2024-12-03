@@ -55,7 +55,13 @@ class XMLHandlers
 class XMLLocator
 {
   public:
-    virtual ~XMLLocator() {}
+    XMLLocator() = default;
+    XMLLocator(const XMLLocator &) = delete;
+    XMLLocator &operator=(const XMLLocator &) = delete;
+    XMLLocator(XMLLocator &&) = delete;
+    XMLLocator &operator=(XMLLocator &&) = delete;
+    virtual ~XMLLocator() = default;
+
     virtual int lineNr() const = 0;
     virtual std::string fileName() const = 0;
 };
@@ -71,18 +77,34 @@ class XMLParser : public XMLLocator
      */
     XMLParser(const XMLHandlers &handlers);
     /*! Destructor */
-   ~XMLParser();
+   ~XMLParser() override;
+    XMLParser(const XMLParser &) = delete;
+    XMLParser &operator=(const XMLParser &) = delete;
+    XMLParser(XMLParser &&) = delete;
+    XMLParser &operator=(XMLParser &&) = delete;
+
+   using Transcode = bool(std::string &,const char *);
 
     /*! Parses a file gives the contents of the file as a string.
      *  @param fileName the name of the file, used for error reporting.
      *  @param inputString the contents of the file as a zero terminated UTF-8 string.
      *  @param debugEnabled indicates if debugging via -d lex is enabled or not.
+     *  @param debugStart hook that is to be called before starting with parsing
+     *  @param debugEnd   hook that is to be called after finishing with parsing
+     *  @param transcoder hook that is to be called when transcoding text to UTF-8
      */
-    void parse(const char *fileName,const char *inputString,bool debugEnabled);
+    void parse(const char *fileName,
+               const char *inputString,
+               bool debugEnabled,
+               std::function<void()> debugStart,
+               std::function<void()> debugEnd,
+               std::function<Transcode> transcoder =
+                   [](std::string&s,const char *){ return true; }
+              );
 
   private:
-   virtual int lineNr() const override;
-   virtual std::string fileName() const override;
+   int lineNr() const override;
+   std::string fileName() const override;
    struct Private;
    std::unique_ptr<Private> p;
 };

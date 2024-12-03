@@ -1,0 +1,117 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page xmlcmds XML Commands
+
+Doxygen supports most of the XML commands that are typically used in C# 
+code comments. The XML tags are defined in Appendix D of the
+<a href="https://ecma-international.org/publications-and-standards/standards/ecma-334/">ECMA-334</a>
+standard, which defines the C# language. Unfortunately, the specification is
+not very precise and a number of the examples given are of poor quality.
+
+Here is the list of tags supported by Doxygen:
+
+<table class="markdownTable">
+<tr class="markdownTableHead"><th class="markdownTableHeadLeft">XML Command</th><th class="markdownTableHeadLeft">Description</th></tr>
+<tr><td valign="top">\startalign\anchor xmltag_c \addindex "\<c\>"\endalign<tt> \<c\></tt></td><td valign="top">Identifies inline text that should be rendered as a 
+                       piece of code. Similar to using <tt>\<tt\></tt>text<tt>\</tt\></tt>.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_code \addindex "\<code\>"\endalign<tt> <code\></tt></td><td valign="top">Set one or more lines of source code or program output.
+                       Note that this command behaves like \ref cmdcode "\\code" ... \ref cmdendcode "\\endcode"
+                       for C# code, but it behaves like the HTML equivalent
+                       \ref htmltag_CODE "\<CODE\>"...\ref htmltag_endCODE "\</CODE\>" for other languages.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_description \addindex "\<description\>"\endalign<tt> \<description\></tt></td><td valign="top">Part of a \ref xmltag_list "\<list\>" command, describes an item.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_example \addindex "\<example\>"\endalign<tt> \<example\></tt></td><td valign="top">Marks a block of text as an example, ignored by Doxygen.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_exception \addindex "\<exception\>"\endalign<tt> \<exception cref="member"\></tt></td><td valign="top">Identifies the exception a 
+                         method can throw.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_include \addindex "\<include\>"\endalign<tt> \<include\></tt></td><td valign="top">Can be used to import a piece of XML from an external
+                         file. Ignored by Doxygen at the moment.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_inheritdoc \addindex "\<inheritdoc\>"\endalign<tt> \<inheritdoc\></tt></td><td valign="top">Can be used to insert the documentation of a 
+                         member of a base class into the documentation of a 
+                         member of a derived class that reimplements it.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_item \addindex "\<item\>"\endalign<tt> \<item\></tt></td><td valign="top">List item. Can only be used inside a \ref xmltag_list "\<list\>" context.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_list \addindex "\<list\>"\endalign<tt> \<list type="type"\></tt></td><td valign="top">Starts a list, supported types are <tt>bullet</tt>
+                         or <tt>number</tt> and <tt>table</tt>. 
+                         A list consists of a number of <tt>\<item\></tt> tags.
+                         A list of type table, is a two column table which can have
+                         a header.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_listheader \addindex "\<listheader\>"\endalign<tt> \<listheader\></tt></td><td valign="top">Starts the header of a list of type "table".</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_para \addindex "\<para\>"\endalign<tt> \<para\></tt></td><td valign="top">Identifies a paragraph of text.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_param \addindex "\<param\>"\endalign<tt> \<param name="paramName"\></tt></td><td valign="top">Marks a piece of text as the documentation
+                         for parameter "paramName". Similar to 
+                         using \ref cmdparam "\\param".</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_paramref \addindex "\<paramref\>"\endalign<tt> \<paramref name="paramName"\></tt></td><td valign="top">Refers to a parameter with name
+                         "paramName". Similar to using \ref cmda "\\a".</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_permission \addindex "\<permission\>"\endalign<tt> \<permission\></tt></td><td valign="top">Identifies the security accessibility of a member.
+                         Ignored by Doxygen.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_remarks \addindex "\<remarks\>"\endalign<tt> \<remarks\></tt></td><td valign="top">Identifies the detailed description. </td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_returns \addindex "\<returns\>"\endalign<tt> \<returns\></tt></td><td valign="top">Marks a piece of text as the return value of a
+                         function or method. Similar to using \ref cmdreturn "\\return".</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_see \addindex "\<see\>"\endalign<tt> \<see cref="member"\></tt></td><td valign="top">Refers to a member. Similar to \ref cmdref "\\ref".</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_seealso \addindex "\<seealso\>"\endalign<tt> \<seealso cref="member"\></tt></td><td valign="top">Starts a "See also" section referring
+                         to "member". Similar to using \ref cmdsa "\\sa" member.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_summary \addindex "\<summary\>"\endalign<tt> \<summary\></tt></td><td valign="top">
+                         In case this tag is used outside a \ref htmltag_DETAILS "\<DETAILS\>" tag this tag
+                         identifies the brief description.
+                         Similar to using \ref cmdbrief "\\brief".
+                         In case this tag is used inside a \ref htmltag_DETAILS "\<DETAILS\>" tag this tag
+                         identifies the heading of the \ref htmltag_DETAILS "\<DETAILS\>" tag.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_term \addindex "\<term\>"\endalign<tt> \<term\></tt></td><td valign="top">Part of a \ref xmltag_list "\<list\>" command.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_typeparam \addindex "\<typeparam\>"\endalign<tt> \<typeparam name="paramName"\></tt></td><td valign="top">Marks a piece of text as the documentation
+                         for type parameter "paramName". Similar to 
+                         using \ref cmdparam "\\param".</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_typeparamref \addindex "\<typeparamref\>"\endalign<tt>\<typeparamref name="paramName"\></tt></td><td valign="top">Refers to a parameter with name
+                         "paramName". Similar to using \ref cmda "\\a".</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_value \addindex "\<value\>"\endalign<tt> \<value\></tt></td><td valign="top">Identifies a property. Ignored by Doxygen.</td></tr>
+<tr><td valign="top">\startalign\anchor xmltag_CDATA \addindex "\<![CDATA[...]]\>"\endalign<tt> \<![CDATA[...]]\></tt></td><td valign="top">The text inside this tag (on the ...) is  handled as normal
+                         Doxygen comment except for the XML special characters `<`, `>` and
+                         `&` that are used as if they were escaped.</td></tr>
+</table>
+
+Here is an example of a typical piece of code using some of the above commands:
+
+\code
+/// <summary>
+/// A search engine.
+/// </summary>
+class Engine
+{
+  /// <summary>
+  /// The Search method takes a series of parameters to specify the search criterion
+  /// and returns a dataset containing the result set.
+  /// </summary>
+  /// <param name="connectionString">the connection string to connect to the
+  /// database holding the content to search</param>
+  /// <param name="maxRows">The maximum number of rows to
+  /// return in the result set</param>
+  /// <param name="searchString">The text that we are searching for</param>
+  /// <returns>A DataSet instance containing the matching rows. It contains a maximum
+  /// number of rows specified by the maxRows parameter</returns>
+  public DataSet Search(string connectionString, int maxRows, int searchString)
+  {
+    DataSet ds = new DataSet();
+    return ds;
+  }
+}
+\endcode
+
+
+\htmlonly
+Go to the <a href="emojisup.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+ 

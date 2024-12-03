@@ -18,7 +18,9 @@
 
 #include <memory>
 
+#include "indexlist.h"
 #include "qcstring.h"
+#include "construct.h"
 
 class TextStream;
 
@@ -30,13 +32,12 @@ class MemberDef;
  *  These files can be used to create context help
  *  for use within Apple's Xcode 3.0 development environment
  */
-class DocSets
+class DocSets : public IndexIntf
 {
-
   public:
     DocSets();
-    virtual ~DocSets();
-    DocSets(DocSets &&);
+    ~DocSets();
+    NON_COPYABLE(DocSets)
 
     void initialize();
     void finalize();

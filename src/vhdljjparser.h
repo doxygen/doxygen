@@ -17,7 +17,7 @@
 #include "config.h"
 #include "util.h"
 
-enum  { GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
+enum  class VhdlSection { UNKNOWN = 0, GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
 //void  parserVhdlfile(const char* inputBuffer);
 
 /** \brief VHDL parser using state-based lexical scanning.
@@ -28,14 +28,15 @@ class VHDLOutlineParser : public OutlineParserInterface
 {
   public:
     VHDLOutlineParser();
-    virtual ~VHDLOutlineParser();
+   ~VHDLOutlineParser() override;
+    NON_COPYABLE(VHDLOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser);
+                    ClangTUParser *clangParser) override;
 
-    bool needsPreprocessing(const QCString &) const { return TRUE; }
-    void parsePrototype(const QCString &text);
+    bool needsPreprocessing(const QCString &) const override { return TRUE; }
+    void parsePrototype(const QCString &text) override;
 
 
     // interface for generated parser code
@@ -43,15 +44,14 @@ class VHDLOutlineParser : public OutlineParserInterface
     void setLineParsed(int tok);
     int getLine(int tok);
     int getLine();
-    void lineCount(const char*);
+    void lineCount(const QCString &);
     void lineCount();
-    void addProto(const char *s1,const char *s2,const char *s3,const char *s4,const char *s5,const char *s6);
-    //void addConfigureNode(const char* a,const char*b, bool,bool isLeaf,bool inlineConf);
-    void createFunction(const char *impure,uint64 spec,const char *fname);
-    void addVhdlType(const char *n,int startLine,int section, uint64 spec,const char* args,const char* type,Protection prot);
-    void addCompInst(const char *n, const char* instName, const char* comp,int iLine);
+    void addProto(const QCString &s1,const QCString &s2,const QCString &s3,const QCString &s4,const QCString &s5,const QCString &s6);
+    void createFunction(const QCString &impure,VhdlSpecifier spec,const QCString &fname);
+    void addVhdlType(const QCString &n,int startLine,EntryType section, VhdlSpecifier spec,const QCString &args,const QCString &type,Protection prot);
+    void addCompInst(const QCString &n, const QCString &instName, const QCString &comp,int iLine);
     void handleCommentBlock(const QCString &doc,bool brief);
-    void handleFlowComment(const char*);
+    void handleFlowComment(const QCString &);
     void initEntry(Entry *e);
     void newEntry();
     bool isFuncProcProced();
@@ -75,6 +75,6 @@ class VHDLOutlineParser : public OutlineParserInterface
 
 const EntryList &getVhdlInstList();
 
-QCString filter2008VhdlComment(const char *s);
+QCString filter2008VhdlComment(const QCString &s);
 
 #endif

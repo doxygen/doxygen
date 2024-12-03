@@ -25,7 +25,6 @@
 
 #include "parserintf.h"
 
-class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 class QCString;
@@ -35,23 +34,26 @@ class PythonCodeParser : public CodeParserInterface
 {
   public:
     PythonCodeParser();
-    virtual ~PythonCodeParser();
-    void parseCode(CodeOutputInterface &codeOutIntf,
+   ~PythonCodeParser() override;
+    NON_COPYABLE(PythonCodeParser)
+
+    void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
+                   bool stripCodeComments,
                    bool isExampleBlock,
                    const QCString &exampleName=QCString(),
-                   const FileDef *fileDef=0,
+                   const FileDef *fileDef=nullptr,
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,
-                   const MemberDef *memberDef=0,
+                   const MemberDef *memberDef=nullptr,
                    bool showLineNumbers=TRUE,
-                   const Definition *searchCtx=0,
+                   const Definition *searchCtx=nullptr,
                    bool collectXrefs=TRUE
-                  );
-    void resetCodeParserState();
+                  ) override;
+    void resetCodeParserState() override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

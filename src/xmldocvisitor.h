@@ -26,14 +26,14 @@
 #include "docnode.h"
 #include "textstream.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class QCString;
 
 /*! @brief Concrete visitor implementation for XML output. */
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
+    XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -82,12 +82,14 @@ class XmlDocVisitor : public DocVisitor
     void operator()(const DocHtmlCaption &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlSummary &);
     void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);
     void operator()(const DocDotFile &);
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
+    void operator()(const DocPlantUmlFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &);
     void operator()(const DocSecRefItem &);
@@ -125,10 +127,11 @@ class XmlDocVisitor : public DocVisitor
     //--------------------------------------
 
     TextStream &m_t;
-    CodeOutputInterface &m_ci;
-    bool m_insidePre;
-    bool m_hide;
+    OutputCodeList &m_ci;
+    bool m_insidePre = false;
+    bool m_hide = false;
     QCString m_langExt;
+    int m_sectionLevel;
 };
 
 #endif

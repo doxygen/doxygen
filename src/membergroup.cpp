@@ -33,7 +33,7 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
                          const QCString &d,const QCString &docFile,int docLine,
                          MemberListContainer con)
   : m_container(container),
-    memberList(std::make_unique<MemberList>(MemberListType_memberGroup,con)),
+    memberList(std::make_unique<MemberList>(MemberListType::MemberGroup(),con)),
     grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
@@ -41,26 +41,19 @@ MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
   //printf("Member group docs='%s'\n",qPrint(doc));
 }
 
-MemberGroup::~MemberGroup()
+void MemberGroup::insertMember(MemberDef *md)
 {
-}
+  //printf("MemberGroup::insertMember(%s) inSameSection=%d md->getSectionList()=%s\n",qPrint(md->name()),
+  //    inSameSection,qPrint(md->getSectionList(m_container)->listType().to_string()));
 
-void MemberGroup::insertMember(const MemberDef *md)
-{
-  //printf("MemberGroup::insertMember memberList=%p count=%d"
-  //       " member section list: %p: md=%p:%s\n",
-  //       memberList->first() ? memberList->first()->getSectionList() : 0,
-  //       memberList->count(),
-  //       md->getSectionList(),
-  //       md,qPrint(md->name()));
-
-  const MemberDef *firstMd = memberList->empty() ? 0 : memberList->front();
+  MemberDef *firstMd = memberList->empty() ? nullptr : memberList->front();
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
+    //printf("inSameSection=FALSE\n");
     inSameSection=FALSE;
   }
-  else if (inDeclSection==0)
+  else if (inDeclSection==nullptr)
   {
     inDeclSection = const_cast<MemberList*>(md->getSectionList(m_container));
     //printf("inDeclSection=%p type=%d\n",inDeclSection,inDeclSection->listType());
@@ -68,8 +61,8 @@ void MemberGroup::insertMember(const MemberDef *md)
   memberList->push_back(md);
 
   // copy the group of the first member in the memberGroup
-  GroupDef *gd;
-  if (firstMd && !firstMd->isAlias() && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
+  GroupDef *gd = nullptr;
+  if (firstMd && !firstMd->isAlias() && (gd=firstMd->getGroupDef()))
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
@@ -90,21 +83,21 @@ void MemberGroup::setAnchors()
 }
 
 void MemberGroup::writeDeclarations(OutputList &ol,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                bool showInline) const
 {
   //printf("MemberGroup::writeDeclarations() %s\n",qPrint(grpHeader));
   QCString ldoc = doc;
-  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
+  memberList->writeDeclarations(ol,cd,nd,fd,gd,mod,grpHeader,ldoc,FALSE,showInline);
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,bool inGroup,
-               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
                int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId
               ) const
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,indentLevel,inheritedFrom,inheritId);
+  memberList->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,mod,indentLevel,inheritedFrom,inheritId);
 }
 
 void MemberGroup::writeDocumentation(OutputList &ol,const QCString &scopeName,
@@ -139,7 +132,7 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
       MemberList mml(lt,MemberListContainer::Class);
       mml.push_back(md);
       mml.countDecMembers();
-      mml.writePlainDeclarations(ol,false,cd,0,0,0,0,inheritedFrom,inheritId);
+      mml.writePlainDeclarations(ol,false,cd,nullptr,nullptr,nullptr,nullptr,0,inheritedFrom,inheritId);
     }
   }
 }
@@ -195,15 +188,15 @@ const Definition *MemberGroup::memberContainer() const
   // Note this can be different from container() in case
   // the member is rendered as part of a file but the members
   // are actually of a namespace.
-  const Definition *ctx = 0;
+  const Definition *ctx = nullptr;
   if (memberList && !memberList->empty())
   {
     const MemberDef *md = memberList->front();
     ctx = md->getClassDef();
-    if (ctx==0) ctx = md->getNamespaceDef();
-    if (ctx==0) ctx = md->getFileDef();
+    if (ctx==nullptr) ctx = md->getNamespaceDef();
+    if (ctx==nullptr) ctx = md->getFileDef();
   }
-  return ctx==0 ? m_container : ctx;
+  return ctx==nullptr ? m_container : ctx;
 }
 
 int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
@@ -215,7 +208,7 @@ int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
 void MemberGroup::distributeMemberGroupDocumentation()
 {
   //printf("MemberGroup::distributeMemberGroupDocumentation() %s\n",qPrint(grpHeader));
-  const MemberDef *md = 0;
+  const MemberDef *md = nullptr;
   for (const auto &smd : *memberList)
   {
     //printf("checking md=%s\n",qPrint(md->name()));

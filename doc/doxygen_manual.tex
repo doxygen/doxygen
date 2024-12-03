@@ -13,6 +13,8 @@
 % input used in their production; they are not affected by this license.
 
 \batchmode
+\pdfminorversion=7
+\pdfsuppresswarningpagegroup=1
 \documentclass{book}
 %% moved from doxygen.sty due to workaround for LaTex 2019 version and unmaintained tabu package
 \usepackage{ifthen}
@@ -21,6 +23,14 @@
 \else
 \usepackage{array}[=2016-10-06]
 \fi
+%%
+\makeatletter
+% suppress package identification of infwarerr as it contains the word "warning"
+\let\@@protected@wlog\protected@wlog
+\def\protected@wlog#1{\wlog{package info suppressed}}
+\RequirePackage{infwarerr}
+\let\protected@wlog\@@protected@wlog
+\makeatother
 %%
 \usepackage[a4paper,left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{makeidx}
@@ -60,7 +70,6 @@
 \usepackage{mathptmx}
 \usepackage[scaled=.90]{helvet}
 \usepackage{courier}
-\usepackage{sectsty}
 \usepackage[titles]{tocloft}
 \usepackage{amssymb}
 \usepackage{doxygen}
@@ -84,11 +93,11 @@
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
                                      {\raggedright\normalfont\normalsize\bfseries}}
-\renewcommand\doxysubsubsection{\@startsection{paragraph}{4}{\z@}%
+\renewcommand\doxysubsubsection{\@startsection{paragraph}{8}{\z@}%
                                     {3.25ex \@plus1ex \@minus.2ex}%
                                     {-1em}%
                                     {\raggedright\normalfont\normalsize\bfseries}}
-\renewcommand\doxyparagraph{\@startsection{subparagraph}{5}{\parindent}%
+\renewcommand\doxyparagraph{\@startsection{subparagraph}{9}{\parindent}%
                                        {3.25ex \@plus1ex \@minus .2ex}%
                                        {-1em}%
                                       {\raggedright\normalfont\normalsize\bfseries}}
@@ -119,8 +128,17 @@
 \doxynormalparskip
 \hbadness=750
 \tolerance=750
-\usepackage{etoc}
+\makeatletter
+\providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}
+\makeatother
+\IfFormatAtLeastTF{2023/05/01}{\usepackage[deeplevels]{etoc}}{\usepackage[deeplevels]{etoc_doxygen}}
 \etocsettocstyle{\doxytocparskip}{\doxynormalparskip}
+\etocsetlevel{subsubsubsection}{4}
+\etocsetlevel{subsubsubsubsection}{5}
+\etocsetlevel{subsubsubsubsubsection}{6}
+\etocsetlevel{subsubsubsubsubsubsection}{7}
+\etocsetlevel{paragraph}{8}
+\etocsetlevel{subparagraph}{9}
 \begin{document}
 \raggedbottom
 \pagenumbering{alph}
@@ -139,38 +157,39 @@ Written by Dimitri van Heesch\\[2ex]
 \clearemptydoublepage
 \pagenumbering{arabic}
 \part{User Manual}
-\chapter{Introduction}\label{intro}\hypertarget{intro}{}\input{index}
-\chapter{Installation}\label{install}\hypertarget{install}{}\input{install}
-\chapter{Getting started}\label{starting}\hypertarget{starting}{}\input{starting}
-\chapter{Documenting the code}\label{docblocks}\hypertarget{docblocks}{}\input{docblocks}
-\chapter{Markdown support}\label{markdown}\hypertarget{markdown}{}\input{markdown}
-\chapter{Lists}\label{lists}\hypertarget{lists}{}\input{lists}
-\chapter{Grouping}\label{grouping}\hypertarget{grouping}{}\input{grouping}
-\chapter{Including formulas}\label{formulas}\hypertarget{formulas}{}\input{formulas}
-\chapter{Including tables}\label{tables}\hypertarget{tables}{}\input{tables}
-\chapter{Graphs and diagrams}\label{diagrams}\hypertarget{diagrams}{}\input{diagrams}
-\chapter{Preprocessing}\label{preprocessing}\hypertarget{preprocessing}{}\input{preprocessing}
-\chapter{Automatic link generation}\label{autolink}\hypertarget{autolink}{}\input{autolink}
-\chapter{Output Formats}\label{output}\hypertarget{output}{}\input{output}
-\chapter{Searching}\label{searching}\hypertarget{searching}{}\input{searching}
-\chapter{Customizing the output}\label{customize}\hypertarget{customize}{}\input{customize}
-\chapter{Custom commands}\label{custcmd}\hypertarget{custcmd}{}\input{custcmd}
-\chapter{Linking to external documentation}\label{external}\hypertarget{external}{}\input{external}
-\chapter{Frequently Asked Questions}\label{faq}\hypertarget{faq}{}\input{faq}
-\chapter{Troubleshooting}\label{trouble}\hypertarget{trouble}{}\input{trouble}
+\input{index}
+\input{install}
+\input{starting}
+\input{docblocks}
+\input{additional}
+\input{markdown}
+\input{lists}
+\input{grouping}
+\input{formulas}
+\input{tables}
+\input{diagrams}
+\input{preprocessing}
+\input{autolink}
+\input{output}
+\input{searching}
+\input{customize}
+\input{custcmd}
+\input{external}
+\input{faq}
+\input{trouble}
 \part{Reference Manual}
-\chapter{Features}\label{features}\hypertarget{features}{}\input{features}
-\chapter{Doxygen usage}\label{doxygen_usage}\hypertarget{doxygen_usage}{}\input{doxygen_usage}
-\chapter{Doxywizard usage}\label{doxywizard_usage}\hypertarget{doxywizard_usage}{}\input{doxywizard_usage}
-\chapter{Configuration}\label{config}\hypertarget{config}{}\input{config}
-\chapter{Special Commands}\label{commands}\hypertarget{commands}{}\input{commands}
-\chapter{HTML Commands}\label{htmlcmds}\hypertarget{htmlcmds}{}\input{htmlcmds}
-\chapter{XML Commands}\label{xmlcmds}\hypertarget{xmlcmds}{}\input{xmlcmds}
-\chapter{Emoji support}\label{emojisup}\hypertarget{emojisup}{}\input{emojisup}
+\input{features}
+\input{doxygen_usage}
+\input{doxywizard_usage}
+\input{config}
+\input{commands}
+\input{htmlcmds}
+\input{xmlcmds}
+\input{emojisup}
 \part{Developers Manual}
-\chapter{Internationalization}\label{langhowto}\hypertarget{langhowto}{}\input{langhowto}
-\chapter{Perl Module Output}\label{perlmod}\hypertarget{perlmod}{}\input{perlmod}
-\chapter{Doxygen's internals}\label{arch}\hypertarget{arch}{}\input{arch}
+\input{langhowto}
+\input{perlmod}
+\input{arch}
 \renewcommand{\thepart}{}
 \renewcommand{\partname}{}
 \part{Appendices}
@@ -187,7 +206,7 @@ Written by Dimitri van Heesch\\[2ex]
   \subinputfrom{examples/diagrams/latex/}{refman_doc}
 }{}
 
-\chapter{Modules Example}\label{modules_example}\hypertarget{modules_example}{}
+\chapter{Grouping Example}\label{modules_example}\hypertarget{grouping_example}{}
 \subinputfrom{examples/group/latex/}{refman_doc}
 \chapter{Member Groups Example}\label{memgrp_example}\hypertarget{memgrp_example}{}
 \subinputfrom{examples/memgrp/latex/}{refman_doc}
