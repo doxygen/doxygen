@@ -109,6 +109,7 @@
 #include "trace.h"
 #include "moduledef.h"
 #include "stringutil.h"
+#include "singlecomment.h"
 
 #include <sqlite3.h>
 
@@ -181,6 +182,10 @@ static OutputList      *g_outputList = nullptr;          // list of output gener
 static StringSet        g_usingDeclarations; // used classes
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
+static QCString         g_commentFileName;
+static bool             g_singleComment=false;
+
+
 
 // keywords recognized as compounds
 static const StringUnorderedSet g_compoundKeywords =
@@ -11195,6 +11200,7 @@ static void devUsage()
   msg("Developer parameters:\n");
   msg("  -m          dump symbol map\n");
   msg("  -b          making messages output unbuffered\n");
+  msg("  -c <file>   process input file as a comment block and produce HTML output\n");
 #if ENABLE_TRACING
   msg("  -t        [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout)\n");
   msg("  -t_time   [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout),\n"
@@ -11479,6 +11485,22 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(0);
         }
+        break;
+      case 'c':
+        if (optInd+1>=argc) // no file name given
+        {
+          err("option \"-c\" is missing the file name to read\n");
+          devUsage();
+          cleanUpDoxygen();
+          exit(1);
+        }
+        else
+        {
+          g_commentFileName=argv[optInd+1];
+          optInd++;
+        }
+        g_singleComment=true;
+        quiet=true;
         break;
       case 'd':
         {
@@ -12355,29 +12377,32 @@ void parseInput()
    *            Make sure the output directory exists
    **************************************************************************/
   QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
-  if (outputDirectory.isEmpty())
+  if (!g_singleComment)
   {
-    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,Dir::currentDirPath().c_str());
-  }
-  else
-  {
-    Dir dir(outputDirectory.str());
-    if (!dir.exists())
+    if (outputDirectory.isEmpty())
     {
-      dir.setPath(Dir::currentDirPath());
-      if (!dir.mkdir(outputDirectory.str()))
-      {
-        term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-             "exist and cannot be created\n",qPrint(outputDirectory));
-      }
-      else
-      {
-        msg("Notice: Output directory '%s' does not exist. "
-            "I have created it for you.\n", qPrint(outputDirectory));
-      }
-      dir.setPath(outputDirectory.str());
+      outputDirectory = Config_updateString(OUTPUT_DIRECTORY,Dir::currentDirPath().c_str());
     }
-    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,dir.absPath().c_str());
+    else
+    {
+      Dir dir(outputDirectory.str());
+      if (!dir.exists())
+      {
+        dir.setPath(Dir::currentDirPath());
+        if (!dir.mkdir(outputDirectory.str()))
+        {
+          term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
+              "exist and cannot be created\n",qPrint(outputDirectory));
+        }
+        else
+        {
+          msg("Notice: Output directory '%s' does not exist. "
+              "I have created it for you.\n", qPrint(outputDirectory));
+        }
+        dir.setPath(outputDirectory.str());
+      }
+      outputDirectory = Config_updateString(OUTPUT_DIRECTORY,dir.absPath().c_str());
+    }
   }
   AUTO_TRACE_ADD("outputDirectory={}",outputDirectory);
 
@@ -12405,82 +12430,86 @@ void parseInput()
    *            Check/create output directories                             *
    **************************************************************************/
 
+  bool generateHtml    = Config_getBool(GENERATE_HTML);
+  bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
+  bool generateXml     = Config_getBool(GENERATE_XML);
+  bool generateLatex   = Config_getBool(GENERATE_LATEX);
+  bool generateRtf     = Config_getBool(GENERATE_RTF);
+  bool generateMan     = Config_getBool(GENERATE_MAN);
+  bool generateSql     = Config_getBool(GENERATE_SQLITE3);
   QCString htmlOutput;
-  bool generateHtml = Config_getBool(GENERATE_HTML);
-  if (generateHtml)
-  {
-    htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
-    Config_updateString(HTML_OUTPUT,htmlOutput);
+  QCString docbookOutput;
+  QCString xmlOutput;
+  QCString latexOutput;
+  QCString rtfOutput;
+  QCString manOutput;
+  QCString sqlOutput;
 
-    QCString sitemapUrl = Config_getString(SITEMAP_URL);
-    bool generateSitemap = !sitemapUrl.isEmpty();
-    if (generateSitemap && !sitemapUrl.endsWith("/"))
+  if (!g_singleComment)
+  {
+    if (generateHtml)
     {
-      Config_updateString(SITEMAP_URL,sitemapUrl+"/");
+      htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
+      Config_updateString(HTML_OUTPUT,htmlOutput);
+
+      QCString sitemapUrl = Config_getString(SITEMAP_URL);
+      bool generateSitemap = !sitemapUrl.isEmpty();
+      if (generateSitemap && !sitemapUrl.endsWith("/"))
+      {
+        Config_updateString(SITEMAP_URL,sitemapUrl+"/");
+      }
+
+      // add HTML indexers that are enabled
+      bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
+      bool generateEclipseHelp = Config_getBool(GENERATE_ECLIPSEHELP);
+      bool generateQhp         = Config_getBool(GENERATE_QHP);
+      bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
+      bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
+      if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
+      if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
+      if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
+      if (generateSitemap)     Doxygen::indexList->addIndex<Sitemap>();
+      if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
+      if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
+      Doxygen::indexList->addIndex<Crawlmap>();
+      Doxygen::indexList->initialize();
     }
 
-    // add HTML indexers that are enabled
-    bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
-    bool generateEclipseHelp = Config_getBool(GENERATE_ECLIPSEHELP);
-    bool generateQhp         = Config_getBool(GENERATE_QHP);
-    bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
-    bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
-    if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
-    if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
-    if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
-    if (generateSitemap)     Doxygen::indexList->addIndex<Sitemap>();
-    if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
-    if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
-    Doxygen::indexList->addIndex<Crawlmap>();
-    Doxygen::indexList->initialize();
-  }
+    if (generateDocbook)
+    {
+      docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),"/docbook");
+      Config_updateString(DOCBOOK_OUTPUT,docbookOutput);
+    }
 
-  QCString docbookOutput;
-  bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
-  if (generateDocbook)
-  {
-    docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),"/docbook");
-    Config_updateString(DOCBOOK_OUTPUT,docbookOutput);
-  }
+    if (generateXml)
+    {
+      xmlOutput = createOutputDirectory(outputDirectory,Config_getString(XML_OUTPUT),"/xml");
+      Config_updateString(XML_OUTPUT,xmlOutput);
+    }
 
-  QCString xmlOutput;
-  bool generateXml = Config_getBool(GENERATE_XML);
-  if (generateXml)
-  {
-    xmlOutput = createOutputDirectory(outputDirectory,Config_getString(XML_OUTPUT),"/xml");
-    Config_updateString(XML_OUTPUT,xmlOutput);
-  }
+    if (generateLatex)
+    {
+      latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT), "/latex");
+      Config_updateString(LATEX_OUTPUT,latexOutput);
+    }
 
-  QCString latexOutput;
-  bool generateLatex = Config_getBool(GENERATE_LATEX);
-  if (generateLatex)
-  {
-    latexOutput = createOutputDirectory(outputDirectory,Config_getString(LATEX_OUTPUT), "/latex");
-    Config_updateString(LATEX_OUTPUT,latexOutput);
-  }
+    if (generateRtf)
+    {
+      rtfOutput = createOutputDirectory(outputDirectory,Config_getString(RTF_OUTPUT),"/rtf");
+      Config_updateString(RTF_OUTPUT,rtfOutput);
+    }
 
-  QCString rtfOutput;
-  bool generateRtf = Config_getBool(GENERATE_RTF);
-  if (generateRtf)
-  {
-    rtfOutput = createOutputDirectory(outputDirectory,Config_getString(RTF_OUTPUT),"/rtf");
-    Config_updateString(RTF_OUTPUT,rtfOutput);
-  }
+    if (generateMan)
+    {
+      manOutput = createOutputDirectory(outputDirectory,Config_getString(MAN_OUTPUT),"/man");
+      Config_updateString(MAN_OUTPUT,manOutput);
+    }
 
-  QCString manOutput;
-  bool generateMan = Config_getBool(GENERATE_MAN);
-  if (generateMan)
-  {
-    manOutput = createOutputDirectory(outputDirectory,Config_getString(MAN_OUTPUT),"/man");
-    Config_updateString(MAN_OUTPUT,manOutput);
-  }
-
-  QCString sqlOutput;
-  bool generateSql = Config_getBool(GENERATE_SQLITE3);
-  if (generateSql)
-  {
-    sqlOutput = createOutputDirectory(outputDirectory,Config_getString(SQLITE3_OUTPUT),"/sqlite3");
-    Config_updateString(SQLITE3_OUTPUT,sqlOutput);
+    if (generateSql)
+    {
+      sqlOutput = createOutputDirectory(outputDirectory,Config_getString(SQLITE3_OUTPUT),"/sqlite3");
+      Config_updateString(SQLITE3_OUTPUT,sqlOutput);
+    }
   }
 
   if (Config_getBool(HAVE_DOT))
@@ -12502,8 +12531,6 @@ void parseInput()
       Portable::setenv("DOTFONTPATH",qPrint(curFontPath));
     }
   }
-
-
 
   /**************************************************************************
    *             Handle layout file                                         *
@@ -12545,23 +12572,26 @@ void parseInput()
   if (generateMan)     exclPatterns.push_back(manOutput.str());
   Config_updateList(EXCLUDE_PATTERNS,exclPatterns);
 
-  searchInputFiles();
+  if (!g_singleComment)
+  {
+    searchInputFiles();
 
-  checkMarkdownMainfile();
+    checkMarkdownMainfile();
+  }
 
   // Notice: the order of the function calls below is very important!
 
-  if (Config_getBool(GENERATE_HTML) && !Config_getBool(USE_MATHJAX))
+  if (generateHtml && !Config_getBool(USE_MATHJAX))
   {
-    FormulaManager::instance().initFromRepository(Config_getString(HTML_OUTPUT));
+    FormulaManager::instance().initFromRepository(htmlOutput);
   }
-  if (Config_getBool(GENERATE_RTF))
+  if (generateRtf)
   {
-    FormulaManager::instance().initFromRepository(Config_getString(RTF_OUTPUT));
+    FormulaManager::instance().initFromRepository(rtfOutput);
   }
-  if (Config_getBool(GENERATE_DOCBOOK))
+  if (generateDocbook)
   {
-    FormulaManager::instance().initFromRepository(Config_getString(DOCBOOK_OUTPUT));
+    FormulaManager::instance().initFromRepository(docbookOutput);
   }
 
   FormulaManager::instance().checkRepositories();
@@ -12571,12 +12601,15 @@ void parseInput()
    **************************************************************************/
 
   std::shared_ptr<Entry> root = std::make_shared<Entry>();
-  msg("Reading and parsing tag files\n");
 
-  const StringVector &tagFileList = Config_getList(TAGFILES);
-  for (const auto &s : tagFileList)
+  if (!g_singleComment)
   {
-    readTagFile(root,s.c_str());
+    msg("Reading and parsing tag files\n");
+    const StringVector &tagFileList = Config_getList(TAGFILES);
+    for (const auto &s : tagFileList)
+    {
+      readTagFile(root,s.c_str());
+    }
   }
 
   /**************************************************************************
@@ -12586,13 +12619,38 @@ void parseInput()
   addSTLSupport(root);
 
   g_s.begin("Parsing files\n");
-  if (Config_getInt(NUM_PROC_THREADS)==1)
+  if (g_singleComment)
   {
-    parseFilesSingleThreading(root);
+    //printf("Parsing comment %s\n",qPrint(g_commentFileName));
+    if (g_commentFileName=="-")
+    {
+      std::string text = fileToString(g_commentFileName).str();
+      addTerminalCharIfMissing(text,'\n');
+      generateHtmlForComment("stdin.md",text);
+    }
+    else if (FileInfo(g_commentFileName.str()).isFile())
+    {
+      std::string text;
+      readInputFile(g_commentFileName,text);
+      addTerminalCharIfMissing(text,'\n');
+      generateHtmlForComment(g_commentFileName.str(),text);
+    }
+    else
+    {
+    }
+    cleanUpDoxygen();
+    exit(0);
   }
   else
   {
-    parseFilesMultiThreading(root);
+    if (Config_getInt(NUM_PROC_THREADS)==1)
+    {
+      parseFilesSingleThreading(root);
+    }
+    else
+    {
+      parseFilesMultiThreading(root);
+    }
   }
   g_s.end();
 

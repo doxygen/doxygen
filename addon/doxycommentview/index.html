@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doxygen comment viewer</title>
+    <link rel="stylesheet" type="text/css" href="/doxygen.css"/>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+        .panel {
+            width: 50%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #input {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            resize: none; /* Prevent resizing */
+        }
+        #output {
+            border-left: 1px solid #ccc;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <textarea id="input"></textarea>
+    </div>
+    <div class="panel" id="output">
+        <!-- Processed output will appear here -->
+    </div>
+    <script>
+        function processInput() {
+            const input = document.getElementById('input').value;
+            localStorage.setItem('userInput', input);
+            fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ input: input }),
+            })
+            .then(response => response.text())
+            .then(result => {
+                document.getElementById('output').innerHTML = result;
+            });
+        }
+
+        document.getElementById('input').addEventListener('input', () => {
+            processInput();
+        });
+
+        // Load previously saved input from local storage
+        window.onload = () => {
+            const savedInput = localStorage.getItem('userInput');
+            if (savedInput) {
+                document.getElementById('input').value = savedInput;
+                processInput();
+            }
+        };
+    </script>
+</body>
+</html>

@@ -310,6 +310,7 @@ add_library(doxymain STATIC
     rtfstyle.cpp
     searchindex.cpp
     searchindex_js.cpp
+    singlecomment.cpp
     sitemap.cpp
     sqlite3gen.cpp
     stlsupport.cpp
