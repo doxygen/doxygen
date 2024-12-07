@@ -3420,12 +3420,44 @@ void HtmlGenerator::startLabels()
   m_t << "<span class=\"mlabels\">";
 }
 
-void HtmlGenerator::writeLabel(const QCString &l,bool /*isLast*/)
+void HtmlGenerator::writeLabel(const QCString &label,bool /*isLast*/)
 {
-  DBG_HTML(m_t << "<!-- writeLabel(" << l << ") -->\n";)
-  //m_t << "<tt>[" << l << "]</tt>";
-  //if (!isLast) m_t << ", ";
-  m_t << "<span class=\"mlabel\">" << l << "</span>";
+  DBG_HTML(m_t << "<!-- writeLabel(" << label << ") -->\n";)
+
+  auto convertLabelToClass = [](const std::string &lab) {
+    QCString input = convertUTF8ToLower(lab);
+    QCString result;
+    size_t l=input.length();
+    result.reserve(l);
+
+    // Create valid class selector, see 10.2 here https://www.w3.org/TR/selectors-3/#w3cselgrammar
+    // ident     [-]?{nmstart}{nmchar}*
+    // nmstart   [_a-z]|{nonascii}
+    // nonascii  [^\0-\177]
+    // nmchar    [_a-z0-9-]|{nonascii}
+
+    bool nmstart=false;
+    for (size_t i=0; i<l; i++)
+    {
+      char c = input.at(i);
+      if (c<0 || (c>='a' && c<='z') || c=='_') // nmstart pattern
+      {
+        nmstart=true;
+        result+=c;
+      }
+      else if (nmstart && (c<0 || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_')) // nmchar pattern
+      {
+        result+=c;
+      }
+      else if (nmstart && (c==' ' || c=='-')) // show whitespace as -
+      {
+        result+='-';
+      }
+    }
+    return result;
+  };
+
+  m_t << "<span class=\"mlabel " << convertLabelToClass(label.stripWhiteSpace().str()) << "\">" << label << "</span>";
 }
 
 void HtmlGenerator::endLabels()
