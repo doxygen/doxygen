@@ -630,7 +630,8 @@ void DocParser::handleStyleEnter(DocNodeVariant *parent,DocNodeList &children,
           DocStyleChange::Style s,const QCString &tagName,const HtmlAttribList *attribs)
 {
   AUTO_TRACE("tagName={}",tagName);
-  children.append<DocStyleChange>(this,parent,context.nodeStack.size(),s,tagName,TRUE,attribs);
+  children.append<DocStyleChange>(this,parent,context.nodeStack.size(),s,tagName,TRUE,
+                                  context.fileName,tokenizer.getLineNr(),attribs);
   context.styleStack.push(&children.back());
 }
 
@@ -767,11 +768,22 @@ void DocParser::handleUnclosedStyleCommands()
   if (!context.initialStyleStack.empty())
   {
     QCString tagName = std::get<DocStyleChange>(*context.initialStyleStack.top()).tagName();
+    QCString fileName = std::get<DocStyleChange>(*context.initialStyleStack.top()).fileName();
+    int lineNr = std::get<DocStyleChange>(*context.initialStyleStack.top()).lineNr();
     context.initialStyleStack.pop();
     handleUnclosedStyleCommands();
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),
-             "end of comment block while expecting "
-             "command </%s>",qPrint(tagName));
+    if (lineNr != -1)
+    {
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),
+               "end of comment block while expecting "
+               "command </%s> (Probable start '%s' at line %d)",qPrint(tagName), qPrint(fileName), lineNr);
+    }
+    else
+    {
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),
+               "end of comment block while expecting "
+               "command </%s>",qPrint(tagName));
+    }
   }
 }
 

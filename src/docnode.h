@@ -289,12 +289,24 @@ class DocStyleChange : public DocNode
       if (attribs) m_attribs=*attribs;
       m_tagName = tagName.lower();
     }
+    DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,
+                   const QCString &tagName,bool enable,
+                   const QCString &fileName,int lineNr,
+                   const HtmlAttribList *attribs=nullptr)
+      : DocNode(parser,parent), m_position(position), m_style(s), m_enable(enable),
+        m_fileName(fileName), m_lineNr(lineNr)
+    {
+      if (attribs) m_attribs=*attribs;
+      m_tagName = tagName.lower();
+    }
     Style style() const                   { return m_style; }
     const char *styleString() const;
     bool enable() const                   { return m_enable; }
     size_t position() const               { return m_position; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     QCString tagName() const              { return m_tagName; }
+    QCString fileName() const             { return m_fileName; }
+    int lineNr() const                    { return m_lineNr; }
 
   private:
     size_t   m_position = 0;
@@ -302,6 +314,8 @@ class DocStyleChange : public DocNode
     bool     m_enable = false;
     HtmlAttribList m_attribs;
     QCString m_tagName;
+    QCString m_fileName;
+    int      m_lineNr = -1;
 };
 
 /** Node representing a special symbol */
