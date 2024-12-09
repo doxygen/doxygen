@@ -229,7 +229,7 @@ class ParserManager
 
     /** Gets the name of the parser associated with given \a extension.
      *  If there is no parser explicitly registered for the supplied extension,
-     *  te empty string  will be reurned.
+     *  the empty string will be returned.
      */
     QCString getParserName(const QCString &extension)
     {
