@@ -643,8 +643,8 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef:
       case LayoutDocEntry::MemberDefStart:
       case LayoutDocEntry::MemberDefEnd:
-        err("Internal inconsistency: member %d should not be part of "
-            "LayoutDocManager::Directory entry list\n",lde->kind());
+        err("Internal inconsistency: member '%s' should not be part of "
+            "LayoutDocManager::Directory entry list\n",qPrint(lde->entryToString()));
         break;
     }
   }
