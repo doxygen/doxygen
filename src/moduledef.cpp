@@ -463,8 +463,8 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
-        err("Internal inconsistency: member %d should not be part of "
-            "LayoutDocManager::Module entry list\n",lde->kind());
+        err("Internal inconsistency: member '%s' should not be part of "
+            "LayoutDocManager::Module entry list\n",qPrint(lde->entryToString()));
         break;
     }
   }
