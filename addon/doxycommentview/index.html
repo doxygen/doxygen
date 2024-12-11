@@ -38,7 +38,7 @@
     <script>
         function processInput() {
             const input = document.getElementById('input').value;
-            localStorage.setItem('userInput', input);
+            sessionStorage.setItem('userInput', input);
             fetch('/process', {
                 method: 'POST',
                 headers: {
@@ -58,7 +58,7 @@
 
         // Load previously saved input from local storage
         window.onload = () => {
-            const savedInput = localStorage.getItem('userInput');
+            const savedInput = sessionStorage.getItem('userInput');
             if (savedInput) {
                 document.getElementById('input').value = savedInput;
                 processInput();

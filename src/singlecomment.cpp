@@ -13,6 +13,8 @@
  *
  */
 
+#include <cstdio>
+
 #include "singlecomment.h"
 #include "docnode.h"
 #include "htmldocvisitor.h"
@@ -37,19 +39,20 @@ static void generateHtmlOutput(const QCString &fileName,const QCString &doc)
     codeList.add<HtmlCodeGenerator>(&t);
     HtmlDocVisitor visitor(t,codeList,nullptr,fileName);
     std::visit(visitor,astImpl->root);
-    printf("%s\n",qPrint(t.str()));
+    std::string content = t.str()+"\n";
+    fwrite(content.c_str(),content.length(),1,stdout);
   }
 }
 
 void generateHtmlForComment(const std::string &fn,const std::string &text)
 {
-  QCString fileName(fn);
+  QCString fileName = "index.html";
   std::shared_ptr<Entry> root = std::make_shared<Entry>();
 
   // 1. Pass input through commentcnv
   std::string convBuf;
   convBuf.reserve(text.size()+1024);
-  convertCppComments(text,convBuf,fn);
+  convertCppComments(text,convBuf,"input.md");
 
   // 2. Pass result through commentscan
   MarkdownOutlineParser markdownParser;
@@ -63,8 +66,8 @@ void generateHtmlForComment(const std::string &fn,const std::string &text)
   QCString processedDocs = markdown.process(convBuf.data(),lineNr,true);
   std::shared_ptr<Entry> current = std::make_shared<Entry>();
   current->lang = SrcLangExt::Markdown;
-  current->fileName = fileName;
-  current->docFile  = fileName;
+  current->fileName = fn;
+  current->docFile  = fn;
   current->docLine  = 1;
   auto prot = Protection::Public;
   while (scanner.parseCommentBlock(&markdownParser,
@@ -97,11 +100,11 @@ void generateHtmlForComment(const std::string &fn,const std::string &text)
   {
     if (!child->brief.isEmpty())
     {
-      generateHtmlOutput(fileName,child->brief);
+      generateHtmlOutput(QCString(fn),child->brief);
     }
     if (!child->doc.isEmpty())
     {
-      generateHtmlOutput(fileName,child->doc);
+      generateHtmlOutput(QCString(fn),child->doc);
     }
   }
 }

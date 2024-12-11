@@ -1,9 +1,10 @@
-# Viewer for Doxygen style comments
+# Viewer for the content of a Doxygen style comment block
 
 ## Contents
 
 The directory contains an index.html page and a python3 helper script.
-The script can be used to start a local web server that can do life rendering of doxygen comments.
+The script can be used to start a local web server that can do life rendering of
+the content of a doxygen comment block.
 
 Similar to e.g. https://markdownlivepreview.com/ but using doxygen as render engine.
 
