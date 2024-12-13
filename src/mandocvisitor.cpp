@@ -43,7 +43,7 @@ ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
 void ManDocVisitor::operator()(const DocWord &w)
 {
   if (m_hide) return;
-  filter(w.word());
+  filter(w.word(), true);
   m_firstCol=FALSE;
 }
 
@@ -51,7 +51,7 @@ void ManDocVisitor::operator()(const DocLinkedWord &w)
 {
   if (m_hide) return;
   m_t << "\\fB";
-  filter(w.word());
+  filter(w.word(), true);
   m_t << "\\fP";
   m_firstCol=FALSE;
 }
@@ -216,18 +216,18 @@ void ManDocVisitor::operator()(const DocVerbatim &s)
       m_firstCol=TRUE;
       break;
     case DocVerbatim::JavaDocLiteral:
-      filter(s.text());
+      filter(s.text(), false);
       break;
     case DocVerbatim::JavaDocCode:
       m_t << "\\fR\n";
-      filter(s.text());
+      filter(s.text(), true);
       m_t << "\\fP\n";
       break;
     case DocVerbatim::Verbatim:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
-      filter(s.text());
+      filter(s.text(), false);
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";
@@ -427,7 +427,7 @@ void ManDocVisitor::operator()(const DocCite &cite)
   if (m_hide) return;
   m_t << "\\fB";
   if (cite.file().isEmpty()) m_t << "[";
-  filter(cite.text());
+  filter(cite.text(), true);
   if (cite.file().isEmpty()) m_t << "]";
   m_t << "\\fP";
 }
@@ -844,7 +844,7 @@ void ManDocVisitor::operator()(const DocRef &ref)
 {
   if (m_hide) return;
   m_t << "\\fB";
-  if (!ref.hasLinkText()) filter(ref.targetTitle());
+  if (!ref.hasLinkText()) filter(ref.targetTitle(), true);
   visitChildren(ref);
   m_t << "\\fP";
 }
@@ -935,7 +935,7 @@ void ManDocVisitor::operator()(const DocXRefItem &x)
     m_t << ".PP\n";
   }
   m_t << "\\fB";
-  filter(x.title());
+  filter(x.title(), true);
   m_t << "\\fP\n";
   m_t << ".RS 4\n";
   visitChildren(x);
@@ -984,7 +984,7 @@ void ManDocVisitor::operator()(const DocParBlock &pb)
   visitChildren(pb);
 }
 
-void ManDocVisitor::filter(const QCString &str)
+void ManDocVisitor::filter(const QCString &str, bool fixquotes)
 {
   if (!str.isEmpty())
   {
@@ -996,7 +996,8 @@ void ManDocVisitor::filter(const QCString &str)
       {
         case '.':  m_t << "\\&."; break; // see  bug652277
         case '\\': m_t << "\\\\"; break;
-        case '"':  c = '\''; // fall through
+        //case '"':  if(fixquotes)
+                     //c = '\''; // fall through
         default: m_t << c; break;
       }
     }
