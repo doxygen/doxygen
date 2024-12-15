@@ -119,27 +119,22 @@ int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
 /*! Count the number of members in this list that are visible in
  *  the declaration part of a compound's documentation page.
  */
-void MemberList::countDecMembers()
+std::pair<int,int> MemberList::countDecMembers(const ClassDef *inheritedFrom) const
 {
-  if (m_numDecMembers!=-1) return;
-
   //printf("----- countDecMembers count=%d ----\n",count());
-  /*
-  m_varCnt=m_funcCnt=m_enumCnt=m_enumValCnt=0;
-  m_typeCnt=m_seqCnt=m_dictCnt=m_protoCnt=m_defCnt=m_friendCnt=0;
-  */
-  m_numDecMembers=0;
+  int numDecMembers=0;
+  int numDecEnumValues=0;
   for (const auto &md : m_members)
   {
     //printf("MemberList::countDecMembers(md=%s,%d)\n",qPrint(md->name()),md->isBriefSectionVisible());
-    if (md->isBriefSectionVisible())
+    if ((inheritedFrom==nullptr || !md->isReimplementedBy(inheritedFrom)) &&
+        md->isBriefSectionVisible())
     {
       switch(md->memberType())
       {
         case MemberType::Variable:    // fall through
         case MemberType::Event:       // fall through
-        case MemberType::Property:    /*m_varCnt++,*/
-                                     m_numDecMembers++;
+        case MemberType::Property:   numDecMembers++;
                                      break;
 // apparently necessary to get this to show up in declarations section?
         case MemberType::Interface:   // fall through
@@ -147,34 +142,28 @@ void MemberList::countDecMembers()
         case MemberType::Function:    // fall through
         case MemberType::Signal:      // fall through
         case MemberType::DCOP:        // fall through
-        case MemberType::Slot:        if (!md->isRelated() || md->getClassDef())
-                                       /*m_funcCnt++,*/
-                                       m_numDecMembers++;
+        case MemberType::Slot:       if (!md->isRelated() || md->getClassDef())
+                                     numDecMembers++;
                                      break;
-        case MemberType::Enumeration: /*m_enumCnt++,*/
-                                     m_numDecMembers++;
+        case MemberType::Enumeration:
+                                     numDecMembers++;
                                      break;
-        case MemberType::EnumValue:   m_numDecEnumValues++;
-                                     m_numDecMembers++;
+        case MemberType::EnumValue:  numDecEnumValues++;
+                                     numDecMembers++;
                                      break;
-        case MemberType::Typedef:     /*m_typeCnt++,*/
-                                     m_numDecMembers++;
+        case MemberType::Typedef:    numDecMembers++;
                                      break;
-        case MemberType::Sequence:    /*m_seqCnt++,*/
-                                     m_numDecMembers++;
+        case MemberType::Sequence:   numDecMembers++;
                                      break;
-        case MemberType::Dictionary:  /*m_dictCnt++,*/
-                                     m_numDecMembers++;
+        case MemberType::Dictionary: numDecMembers++;
                                      break;
-        //case MemberType::Prototype:   m_protoCnt++,m_numDecMembers++; break;
         case MemberType::Define:      if (Config_getBool(EXTRACT_ALL) ||
                                          !md->argsString().isEmpty() ||
                                          !md->initializer().isEmpty() ||
                                          md->hasDocumentation()
-                                        ) /*m_defCnt++,*/ m_numDecMembers++;
+                                        ) numDecMembers++;
                                      break;
-        case MemberType::Friend:      /*m_friendCnt++,*/
-                                     m_numDecMembers++;
+        case MemberType::Friend:     numDecMembers++;
                                      break;
         default:
           err("Unknown member type found for member '%s'!\n",qPrint(md->name()));
@@ -184,24 +173,18 @@ void MemberList::countDecMembers()
   for (const auto &mg : m_memberGroupRefList)
   {
     mg->countDecMembers();
-    /*
-    m_varCnt+=mg->varCount();
-    m_funcCnt+=mg->funcCount();
-    m_enumCnt+=mg->enumCount();
-    m_enumValCnt+=mg->enumValueCount();
-    m_typeCnt+=mg->typedefCount();
-    m_seqCnt+=mg->sequenceCount();
-    m_dictCnt+=mg->dictionaryCount();
-    m_protoCnt+=mg->protoCount();
-    m_defCnt+=mg->defineCount();
-    m_friendCnt+=mg->friendCount();
-    */
-    m_numDecMembers+=mg->numDecMembers();
-    m_numDecEnumValues+=mg->numDecEnumValues();
+    numDecMembers+=mg->numDecMembers();
+    numDecEnumValues+=mg->numDecEnumValues();
   }
   //printf("----- end countDecMembers ----\n");
 
-  //printf("MemberList::countDecMembers()=%d\n",m_numDecMembers);
+  return std::make_pair(numDecMembers,numDecEnumValues);
+}
+
+void MemberList::countDecMembers() const
+{
+  if (m_numDecMembers!=-1) return; // already cached
+  std::tie(m_numDecMembers, m_numDecEnumValues) = countDecMembers(nullptr); // cache new values
 }
 
 void MemberList::countDocMembers()
@@ -528,9 +511,9 @@ void MemberList::writeDeclarations(OutputList &ol,
   //printf("%p: MemberList::writeDeclaration(title='%s',subtitle='%s')=%d inheritedFrom=%p\n",
   //       (void*)this,qPrint(title),qPrint(subtitle),numDecMembers(),(void*)inheritedFrom);
 
-  int num = numDecMembers();
+  int num = numDecMembers(inheritedFrom);
   int numEnumValues = numDecEnumValues();
-  if (inheritedFrom)
+  if (inheritedFrom && num>0)
   {
     if (cd && !optimizeVhdl)
     {

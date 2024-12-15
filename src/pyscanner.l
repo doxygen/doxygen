@@ -759,6 +759,10 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         newEntry(yyscanner);
                         BEGIN(SearchMemVars);
                       }
+    <<EOF>>           { incLineNr(yyscanner);
+                        newEntry(yyscanner);
+                        BEGIN(SearchMemVars);
+                      }
 }
 
 <FunctionBody>{

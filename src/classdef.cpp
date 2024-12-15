@@ -403,6 +403,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void writeTemplateSpec(OutputList &ol,const Definition *d,
             const QCString &type,SrcLangExt lang) const;
     void mergeMembersFromBaseClasses(bool mergeVirtualBaseClass);
+    void hideDerivedVariablesInPython(ClassDefMutable *cls);
 
     // PIMPL idiom
     class IMPL;
@@ -3739,7 +3740,7 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
                   found=matchArguments2(
                       srcMd->getOuterScope(),srcMd->getFileDef(),&srcAl,
                       dstMd->getOuterScope(),dstMd->getFileDef(),&dstAl,
-                      TRUE,getLanguage()
+                      TRUE,lang
                       );
                   //printf("      Yes, matching (%s<->%s): %d\n",
                   //    qPrint(argListToString(srcMd->argumentList())),
@@ -3805,7 +3806,8 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
             //       it seems that the member is not reachable by prefixing a
             //       scope name either (according to my compiler). Currently,
             //       this case is shown anyway.
-            if (!found && srcMd->protection()!=Protection::Private && !srcMd->isFriend() && srcMi->virtualBaseClass()==mergeVirtualBaseClass)
+            if (!found && srcMd->protection()!=Protection::Private && !srcMd->isFriend() &&
+                srcMi->virtualBaseClass()==mergeVirtualBaseClass && lang!=SrcLangExt::Python)
             {
               Protection prot = srcMd->protection();
               if (bcd.prot==Protection::Protected && prot==Protection::Public)
@@ -3830,7 +3832,7 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
               if (virt==Specifier::Normal && bcd.virt!=Specifier::Normal) virt=bcd.virt;
               bool virtualBaseClass = bcd.virt!=Specifier::Normal;
 
-              std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(srcMd,prot,virt,TRUE,virtualBaseClass);
+              auto newMi = std::make_unique<MemberInfo>(srcMd,prot,virt,TRUE,virtualBaseClass);
               newMi->setScopePath(bClass->name()+sep+srcMi->scopePath());
               if (ambiguous)
               {
@@ -3919,6 +3921,56 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
   }
 }
 
+// See issue11260, referring to a variable in a base class will make doxygen
+// add it as a member to the derived class, but this is not correct for non-private variables
+// so we correct this here, now we know the inheritance hierarchy
+void ClassDefImpl::hideDerivedVariablesInPython(ClassDefMutable *bClass)
+{
+  //printf("hideDerivedVariableInPython()\n");
+  if (bClass)
+  {
+    const MemberNameInfoLinkedMap &srcMnd  = bClass->memberNameInfoLinkedMap();
+    MemberNameInfoLinkedMap &dstMnd        = m_impl->allMemberNameInfoLinkedMap;
+
+    // recurse up the inheritance hierarchy
+    for (const auto &bcd : bClass->baseClasses())
+    {
+      hideDerivedVariablesInPython(toClassDefMutable(bcd.classDef));
+    }
+
+    for (auto &srcMni : srcMnd) // for each member in a base class
+    {
+      //printf("  candidate(%s)\n",qPrint(srcMni->memberName()));
+      MemberNameInfo *dstMni=dstMnd.find(srcMni->memberName());
+      if (dstMni) // that is also in this class
+      {
+        MemberNameInfo::iterator it;
+        //printf("%s member in %s and %s\n",qPrint(name()),qPrint(bClass->name()),qPrint(name()));
+        for (it=dstMni->begin();it!=dstMni->end();)
+        {
+          MemberDefMutable *dstMd = toMemberDefMutable((*it)->memberDef());
+          if (dstMd && dstMd->isVariable() && !dstMd->name().startsWith("__"))
+          {
+            //printf("  hiding member %s\n",qPrint(dstMd->name()));
+            // hide a member variable if it is already defined in a base class, unless
+            // it is a __private variable
+            removeMemberFromLists(dstMd);
+            it = dstMni->erase(it);
+          }
+          else
+          {
+            ++it;
+          }
+        }
+        if (dstMni->empty()) // if the list has become empty, remove the entry from the dictionary
+        {
+          dstMnd.del(srcMni->memberName());
+        }
+      }
+    }
+  }
+}
+
 /*!
  * recursively merges the 'all members' lists of a class base
  * with that of this class. Must only be called for classes without
@@ -3927,7 +3979,14 @@ void ClassDefImpl::mergeMembersFromBaseClasses(bool mergeVirtualBaseClass)
 void ClassDefImpl::mergeMembers()
 {
   if (m_impl->membersMerged) return;
-  if (getLanguage()==SrcLangExt::Python) return; // python does not have member overloading, see issue 8480
+  if (getLanguage()==SrcLangExt::Python)
+  {
+    for (const auto &bcd : baseClasses())
+    {
+      ClassDefMutable *bClass=toClassDefMutable(bcd.classDef);
+      hideDerivedVariablesInPython(bClass);
+    }
+  }
 
   //printf("> %s::mergeMembers()\n",qPrint(name()));
 
@@ -4519,7 +4578,7 @@ void ClassDefImpl::sortMemberLists()
 int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
                                       MemberListType lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const
 {
-  //printf("%s: countMemberDeclarations for %d and %d\n",qPrint(name()),lt.to_int(),lt2.to_int());
+  //printf("%s: countMemberDeclarations for %s and %s\n",qPrint(name()),lt.to_string(),lt2.to_string());
   int count=0;
   MemberList * ml  = getMemberList(lt);
   MemberList * ml2 = getMemberList(lt2);
@@ -4527,12 +4586,12 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inhe
   {
     if (ml)
     {
-      count+=ml->numDecMembers();
+      count+=ml->numDecMembers(inheritedFrom);
       //printf("-> ml=%d\n",ml->numDecMembers());
     }
     if (ml2)
     {
-      count+=ml2->numDecMembers();
+      count+=ml2->numDecMembers(inheritedFrom);
       //printf("-> ml2=%d\n",ml2->numDecMembers());
     }
     // also include grouped members that have their own section in the class (see bug 722759)
@@ -4601,8 +4660,8 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
   int inhCount = 0;
   int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
   bool process = count>0;
-  //printf("%s: countInheritedDecMembers: lt=%d process=%d count=%d invert=%d\n",
-  //    qPrint(name()),lt.to_int(),process,count,invert);
+  //printf("%s: countInheritedDecMembers: lt=%s process=%d count=%d invert=%d\n",
+  //    qPrint(name()),lt.to_string(),process,count,invert);
   if ((process^invert) || showAlways)
   {
     for (const auto &ibcd : m_impl->inherits)
@@ -4613,8 +4672,8 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
       if (icd && icd->isLinkable())
       {
         convertProtectionLevel(lt,ibcd.prot,&lt1,&lt2);
-        //printf("%s: convert %d->(%d,%d) prot=%d\n",
-        //    qPrint(icd->name()),lt.to_int(),lt1.to_int(),lt2.to_int(),ibcd.prot);
+        //printf("%s: convert %s->(%s,%s) prot=%d\n",
+        //    qPrint(icd->name()),lt.to_string(),lt1.to_string(),lt2.to_string(),ibcd.prot);
         if (visitedClasses.find(icd)==visitedClasses.end())
         {
           visitedClasses.insert(icd); // guard for multiple virtual inheritance
@@ -4626,6 +4685,7 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
       }
     }
   }
+  //printf("%s: count=%d\n",qPrint(name()),inhCount);
   return inhCount;
 }
 
@@ -4706,7 +4766,7 @@ int ClassDefImpl::countMembersIncludingGrouped(MemberListType lt,
     }
   }
   //printf("%s:countMembersIncludingGrouped(lt=%s,%s)=%d\n",
-  //    qPrint(name()),qPrint(lt.to_string()),ml?qPrint(ml->listType().toLabel()):"<none>",count);
+  //    qPrint(name()),qPrint(lt.to_string()),ml?qPrint(ml->listType().to_string()):"<none>",count);
   return count;
 }
 
@@ -4777,18 +4837,18 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
   }
   else
   {
-    //printf("%s::writeMemberDeclarations(%s) ml=%p ml2=%p\n",qPrint(name()),qPrint(title),ml,ml2);
+    //printf("%s::writeMemberDeclarations(%s) ml=%p ml2=%p\n",qPrint(name()),qPrint(title),(void*)ml,(void*)ml2);
     QCString tt = title, st = subTitle;
     if (ml)
     {
-      //printf("  writeDeclarations type=%s count=%d\n",qPrint(lt.to_string()),ml->numDecMembers());
+      //printf("  writeDeclarations ml type=%s count=%d\n",qPrint(lt.to_string()),ml->numDecMembers(inheritedFrom));
       ml->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,tt,st,FALSE,showInline,inheritedFrom,lt,true);
       tt.clear();
       st.clear();
     }
     if (ml2)
     {
-      //printf("  writeDeclarations type=%s count=%d\n",qPrint(lt2.to_string()),ml2->numDecMembers());
+      //printf("  writeDeclarations ml2 type=%s count=%d\n",qPrint(lt2.to_string()),ml2->numDecMembers(inheritedFrom));
       ml2->writeDeclarations(ol,this,nullptr,nullptr,nullptr,nullptr,tt,st,FALSE,showInline,inheritedFrom,lt,ml==nullptr);
     }
     bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);

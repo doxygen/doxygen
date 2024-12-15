@@ -8304,12 +8304,14 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
               MemberDefMutable *bmd = toMemberDefMutable(ibmd->memberDef());
               if (bmd) // not part of an inline namespace
               {
-                if (bmd->virtualness()!=Specifier::Normal     ||
-                    bmd->getLanguage()==SrcLangExt::Python     ||
-                    bmd->getLanguage()==SrcLangExt::Java       ||
-                    bmd->getLanguage()==SrcLangExt::PHP        ||
-                    mbcd->compoundType()==ClassDef::Interface ||
-                    mbcd->compoundType()==ClassDef::Protocol)
+                auto lang     = bmd->getLanguage();
+                auto compType = mbcd->compoundType();
+                if (bmd->virtualness()!=Specifier::Normal ||
+                    lang==SrcLangExt::Python              ||
+                    lang==SrcLangExt::Java                ||
+                    lang==SrcLangExt::PHP                 ||
+                    compType==ClassDef::Interface         ||
+                    compType==ClassDef::Protocol)
                 {
                   const ArgumentList &bmdAl = bmd->argumentList();
                   const ArgumentList &mdAl =  md->argumentList();
@@ -8318,13 +8320,14 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
                   //        qPrint(argListToString(mdAl))
                   //      );
                   if (
-                      bmd->getLanguage()==SrcLangExt::Python ||
+                      lang==SrcLangExt::Python ||
                       matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
                         md->getOuterScope(), md->getFileDef(), &mdAl,
-                        TRUE,bmd->getLanguage()
+                        TRUE,lang
                         )
                      )
                   {
+                    if (lang==SrcLangExt::Python && md->name().startsWith("__")) continue; // private members do not reimplement
                     //printf("match!\n");
                     const MemberDef *rmd = md->reimplements();
                     if (rmd==nullptr) // not already assigned

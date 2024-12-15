@@ -139,6 +139,7 @@ class MemberNameInfo
     Ptr &front()                           { return m_members.front();   }
     const Ptr &front() const               { return m_members.front();   }
     void push_back(Ptr &&p)                { m_members.push_back(std::move(p)); }
+    iterator erase(iterator pos)           { return m_members.erase(pos); }
 
   private:
     QCString m_name;

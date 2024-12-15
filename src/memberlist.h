@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 #include "memberdef.h"
 #include "linkedmap.h"
@@ -113,12 +114,16 @@ class MemberList : public MemberVector
     MemberListType listType() const { return m_listType; }
     MemberListContainer container() const { return m_container; }
 
-    int numDecMembers() const    { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
+    int numDecMembers(const ClassDef *inheritedFrom) const
+    { return countDecMembers(inheritedFrom).first; }
+    int numDecMembers() const
+    { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
     int numDecEnumValues() const { return m_numDecEnumValues; }
     int numDocMembers() const    { ASSERT(m_numDocMembers!=-1); return m_numDocMembers; }
     int numDocEnumValues() const { return m_numDocEnumValues; }
     bool needsSorting() const    { return m_needsSorting; }
-    void countDecMembers();
+    void countDecMembers() const;
+    std::pair<int,int> countDecMembers(const ClassDef *inheritedFrom) const;
     void countDocMembers();
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,bool inGroup,
@@ -147,8 +152,8 @@ class MemberList : public MemberVector
 
   private:
     int countEnumValues(const MemberDef *md) const;
-    int m_numDecMembers; // number of members in the brief part of the memberlist
-    int m_numDecEnumValues;
+    mutable int m_numDecMembers; // number of members in the brief part of the memberlist
+    mutable int m_numDecEnumValues;
     int m_numDocMembers; // number of members in the detailed part of the memberlist
     int m_numDocEnumValues;
     MemberGroupRefList m_memberGroupRefList;
