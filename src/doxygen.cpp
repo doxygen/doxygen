@@ -9917,13 +9917,13 @@ void printLayout()
        }
        else if (const LayoutDocEntryMemberDecl *lmdecl = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get()))
        {
-         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, type: %s\n",
-           extraIndent? "  " : "",qPrint(lde->entryToString()),qPrint(lmdecl->type.to_string()));
+         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, visible=%d, type: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()),lmdecl->visible(),qPrint(lmdecl->type.to_string()));
        }
        else if (const LayoutDocEntryMemberDef *lmdef = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get()))
        {
-         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, type: %s\n",
-           extraIndent? "  " : "",qPrint(lde->entryToString()),qPrint(lmdef->type.to_string()));
+         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, visible=%d, type: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()),lmdef->visible(),qPrint(lmdef->type.to_string()));
        }
        else
        {

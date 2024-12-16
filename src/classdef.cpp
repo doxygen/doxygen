@@ -2281,7 +2281,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
       else if (lde->kind()==LayoutDocEntry::MemberDecl)
       {
         const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-        if (lmd)
+        if (lmd && lmd->visible())
         {
           MemberList * ml = getMemberList(lmd->type);
           if (ml && ml->declVisible())
@@ -2386,7 +2386,7 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (lmd)
+          if (lmd && lmd->visible())
           {
             MemberList * ml = getMemberList(lmd->type);
             if (ml)
@@ -2485,7 +2485,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (lmd)
+          if (lmd && lmd->visible())
           {
             ClassDefSet visitedClasses;
             if (!isSimple) writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang),TRUE);
@@ -2504,7 +2504,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          if (lmd)
+          if (lmd && lmd->visible())
           {
             if (isSimple)
             {
@@ -2784,7 +2784,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         {
           ClassDefSet visitedClasses;
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (lmd)
+          if (lmd && lmd->visible())
           {
             writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang));
           }
@@ -2820,7 +2820,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          if (lmd)
+          if (lmd && lmd->visible())
           {
             writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
           }
@@ -3539,7 +3539,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd)
+      if (lmd && lmd->visible())
       {
         writePlainMemberDeclaration(ol,lmd->type,inGroup,indentLevel,inheritedFrom,inheritId);
       }
@@ -4620,7 +4620,7 @@ void ClassDefImpl::setAnonymousEnumType()
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd)
+      if (lmd && lmd->visible())
       {
         MemberList * ml = getMemberList(lmd->type);
         if (ml)
@@ -4698,7 +4698,7 @@ void ClassDefImpl::getTitleForMemberListType(MemberListType type,
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd && lmd->type==type)
+      if (lmd && lmd->type==type && lmd->visible())
       {
         title = lmd->title(lang);
         subtitle = lmd->subtitle(lang);
@@ -4718,7 +4718,7 @@ int ClassDefImpl::countAdditionalInheritedMembers() const
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd && lmd->type!=MemberListType::Friends()) // friendship is not inherited
+      if (lmd && lmd->visible() && lmd->type!=MemberListType::Friends()) // friendship is not inherited
       {
         ClassDefSet visited;
         totalCount+=countInheritedDecMembers(lmd->type,this,TRUE,FALSE,visited);
@@ -4737,7 +4737,7 @@ void ClassDefImpl::writeAdditionalInheritedMembers(OutputList &ol) const
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd && lmd->type!=MemberListType::Friends())
+      if (lmd && lmd->visible() && lmd->type!=MemberListType::Friends())
       {
         ClassDefSet visited;
         writeInheritedMemberDeclarations(ol,visited,lmd->type,MemberListType::Invalid(),lmd->title(getLanguage()),this,TRUE,FALSE);

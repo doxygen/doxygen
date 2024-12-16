@@ -550,7 +550,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
       if (kind==LayoutDocEntry::MemberDef)
       {
         const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-        if (lmd)
+        if (lmd && lmd->visible())
         {
           MemberList *ml = def->getMemberList(lmd->type);
           if (ml)
@@ -1757,7 +1757,7 @@ static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
     if (lde->kind()==LayoutDocEntry::MemberDef)
     {
       const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-      if (lmd)
+      if (lmd && lmd->visible())
       {
         MemberList *ml = nd->getMemberList(lmd->type);
         if (ml)
@@ -1783,7 +1783,7 @@ static void writeModuleMembers(const ModuleDef *mod,bool addToIndex)
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd)
+      if (lmd && lmd->visible())
       {
         MemberList *ml = mod->getMemberList(lmd->type);
         if (ml)
@@ -4066,7 +4066,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       if (lde->kind()==LayoutDocEntry::MemberDef && addToIndex)
       {
         const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-        if (lmd)
+        if (lmd && lmd->visible())
         {
           MemberList *ml = gd->getMemberList(lmd->type);
           if (ml)
