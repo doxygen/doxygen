@@ -996,7 +996,6 @@ void ManDocVisitor::filter(const QCString &str)
       {
         case '.':  m_t << "\\&."; break; // see  bug652277
         case '\\': m_t << "\\\\"; break;
-        case '"':  c = '\''; // fall through
         default: m_t << c; break;
       }
     }
