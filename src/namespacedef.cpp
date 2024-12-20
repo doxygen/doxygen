@@ -656,7 +656,7 @@ void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (lmd)
+          if (lmd && lmd->visible())
           {
             MemberList * ml = getMemberList(lmd->type);
             if (ml)
@@ -906,7 +906,7 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
     else if (lde->kind()== LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd)
+      if (lmd && lmd->visible())
       {
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
@@ -1050,7 +1050,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (lmd) writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
+          if (lmd && lmd->visible()) writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDeclEnd:
@@ -1070,7 +1070,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          if (lmd) writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
+          if (lmd && lmd->visible()) writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefEnd:
@@ -1319,7 +1319,7 @@ int NamespaceDefImpl::countVisibleMembers() const
     if (lde->kind()==LayoutDocEntry::MemberDef)
     {
       const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-      if (lmd)
+      if (lmd && lmd->visible())
       {
         MemberList *ml = getMemberList(lmd->type);
         if (ml)

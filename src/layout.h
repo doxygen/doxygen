@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2024 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -21,6 +18,8 @@
 
 #include <memory>
 #include <vector>
+#include <utility>
+
 #include "types.h"
 #include "construct.h"
 
@@ -71,7 +70,7 @@ struct LayoutDocEntry
 #undef ESPEC
             };
   virtual Kind kind() const = 0;
-  std::string entryToString()
+  std::string entryToString() const
   {
     switch (kind())
     {
@@ -81,6 +80,8 @@ struct LayoutDocEntry
       default: return "unknown"; // to satisfy compiler
     }
   }
+  virtual std::string id() const = 0;
+  virtual bool visible() const = 0;
 };
 
 /** @brief Represents of a piece of a documentation page without configurable parts */
@@ -89,7 +90,8 @@ struct LayoutDocEntrySimple : LayoutDocEntry
   public:
     LayoutDocEntrySimple(Kind k,bool v) : m_kind(k), m_visible(v) {}
     Kind kind() const override { return m_kind; }
-    bool visible() const { return m_visible; }
+    bool visible() const override { return m_visible; }
+    std::string id() const override { return entryToString(); }
   private:
     Kind m_kind;
     bool m_visible;
@@ -100,6 +102,7 @@ struct LayoutDocEntrySection: public LayoutDocEntrySimple
   LayoutDocEntrySection(Kind k,const QCString &tl,bool v) :
     LayoutDocEntrySimple(k,v), m_title(tl) {}
   QCString title(SrcLangExt lang) const;
+  std::string id() const override { return entryToString() + ":" + m_title.str(); }
 private:
   QCString m_title;
 };
@@ -108,30 +111,41 @@ private:
 struct LayoutDocEntryMemberDecl: public LayoutDocEntry
 {
   LayoutDocEntryMemberDecl(MemberListType tp,
-                           const QCString &tl,const QCString &ss)
-    : type(tp), m_title(tl), m_subscript(ss) {}
+                           const QCString &tl,const QCString &ss,bool v)
+    : type(tp), m_title(tl), m_subscript(ss), m_visible(v) {}
 
   Kind kind() const override { return MemberDecl; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
   QCString subtitle(SrcLangExt lang) const;
+  bool visible() const override { return m_visible; }
+  std::string id() const override { return entryToString() + ":" + type.to_string(); }
 private:
   QCString m_title;
   QCString m_subscript;
+  bool m_visible;
 };
 
 /** @brief Represents of a member definition list with configurable title. */
 struct LayoutDocEntryMemberDef: public LayoutDocEntry
 {
-  LayoutDocEntryMemberDef(MemberListType tp,const QCString &tl)
-    : type(tp), m_title(tl) {}
+  LayoutDocEntryMemberDef(MemberListType tp,const QCString &tl,bool v)
+    : type(tp), m_title(tl), m_visible(v) {}
 
   Kind kind() const override { return MemberDef; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
+  bool visible() const override { return m_visible; }
+  std::string id() const override { return entryToString() + ":" + type.to_string(); }
 private:
   QCString m_title;
+  bool m_visible;
 };
+
+using LayoutDocEntryPtr  = std::unique_ptr<LayoutDocEntry>;
+using LayoutDocEntryList = std::vector<LayoutDocEntryPtr>;
+
+//-------------------------------------------------------------------------------------------------
 
 using LayoutNavEntryList = std::vector< std::unique_ptr<LayoutNavEntry> >;
 
@@ -179,7 +193,7 @@ struct LayoutNavEntry
       NAV_SPECIFICATIONS
 #undef NSPEC
     };
-    std::string navToString()
+    std::string navToString() const
     {
       switch (kind())
       {
@@ -196,18 +210,29 @@ struct LayoutNavEntry
     LayoutNavEntry *parent() const   { return m_parent; }
     Kind kind() const                { return m_kind; }
     QCString baseFile() const        { return m_baseFile; }
+    std::string id() const           { return navToString()+":"+m_baseFile.str(); }
     QCString title() const           { return m_title; }
     QCString intro() const           { return m_intro; }
     QCString url() const;
-    void setVisible(bool v)          { m_visible = v; }
-    bool visible()                   { return m_visible; }
-    void clear()                     { m_children.clear(); }
-    void addChild(std::unique_ptr<LayoutNavEntry> &&e)
-    { m_children.push_back(std::move(e)); }
-    void prependChild(std::unique_ptr<LayoutNavEntry> &&e)
-    { m_children.insert(m_children.begin(),std::move(e)); }
     const LayoutNavEntryList &children() const { return m_children; }
+    LayoutNavEntryList &children()   { return m_children; }
+    void setVisible(bool v)          { m_visible = v; }
+    bool visible() const             { return m_visible; }
+    void clear()                     { m_children.clear(); }
+    void insertChild(size_t pos,std::unique_ptr<LayoutNavEntry> &&e);
+    void appendChild(std::unique_ptr<LayoutNavEntry> &&e);
+    void updateVisibility(LayoutNavEntry *parent);
     LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
+    void swap(LayoutNavEntry &other)
+    {
+      std::swap(m_parent,other.m_parent);
+      std::swap(m_kind,other.m_kind);
+      std::swap(m_visible,other.m_visible);
+      std::swap(m_baseFile,other.m_baseFile);
+      std::swap(m_title,other.m_title);
+      std::swap(m_intro,other.m_intro);
+      std::swap(m_children,other.m_children);
+    }
 
   private:
     LayoutNavEntry() : m_parent(nullptr), m_kind(None), m_visible(true) {}
@@ -220,9 +245,6 @@ struct LayoutNavEntry
     LayoutNavEntryList m_children;
     friend class LayoutDocManager;
 };
-
-using LayoutDocEntryPtr  = std::unique_ptr<LayoutDocEntry>;
-using LayoutDocEntryList = std::vector<LayoutDocEntryPtr>;
 
 #define PART_SPECIFICATIONS \
   PSPEC(Undefined, = -1)     \
@@ -256,15 +278,17 @@ class LayoutDocManager
 
     /** returns the (invisible) root of the navigation tree. */
     LayoutNavEntry *rootNavEntry() const;
-    LayoutNavEntry *createChildNavEntry(LayoutNavEntry *root,LayoutNavEntry::Kind k,bool vs,const QCString &bf,
-                                        const QCString &tl,const QCString &intro);
+    /** append a new node as a child to root. */
+    LayoutNavEntry *createChildNavEntry(LayoutNavEntry *root,
+                                        LayoutNavEntry::Kind k,bool vs,const QCString &bf,const QCString &tl,const QCString &intro);
 
     /** Parses a user provided layout */
     void parse(const QCString &fileName, const char* data = nullptr);
     void init();
   private:
     void addEntry(LayoutPart p,LayoutDocEntryPtr &&e);
-    void clear(LayoutPart p);
+    void mergeNavEntries(LayoutDocManager &manager);
+    void mergeDocEntries(LayoutDocManager &manager);
     LayoutDocManager();
     ~LayoutDocManager();
     NON_COPYABLE(LayoutDocManager)

@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2024 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -112,12 +109,24 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
   }
 }
 
-static bool parentIsVisible(LayoutNavEntry *parent)
+//---------------------------------------------------------------------------------
+
+void LayoutNavEntry::updateVisibility(LayoutNavEntry *parent)
 {
-  return parent==nullptr || parent->visible();
+  m_visible = m_visible && (parent==nullptr || parent->visible());
 }
 
-//---------------------------------------------------------------------------------
+void LayoutNavEntry::appendChild(std::unique_ptr<LayoutNavEntry> &&e)
+{
+  e->updateVisibility(this);
+  m_children.push_back(std::move(e));
+}
+
+void LayoutNavEntry::insertChild(size_t pos,std::unique_ptr<LayoutNavEntry> &&e)
+{
+  e->updateVisibility(this);
+  m_children.insert(m_children.begin()+pos,std::move(e));
+}
 
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
     const QCString &file) const
@@ -183,11 +192,7 @@ QCString LayoutNavEntry::url() const
 class LayoutParser
 {
   public:
-    static LayoutParser &instance()
-    {
-      static LayoutParser theInstance;
-      return theInstance;
-    }
+    LayoutParser(LayoutDocManager &manager) : m_layoutDocManager(manager) {}
 
     // =========== XMLHandler events
     void setDocumentLocator(const XMLLocator *locator)
@@ -203,10 +208,10 @@ class LayoutParser
 
     void startSimpleEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib)
     {
-      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
-      if (m_part!=LayoutDocManager::Undefined && isVisible)
+      bool isVisible = m_visible && elemIsVisible(attrib);
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(k,isVisible));
+        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(k,isVisible));
       }
     }
 
@@ -215,14 +220,14 @@ class LayoutParser
     void startSectionEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib,
                            const QCString &title)
     {
-      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      bool isVisible = m_visible && elemIsVisible(attrib);
       QCString userTitle = XMLHandlers::value(attrib,"title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    qPrint(title),qPrint(userTitle));
       if (userTitle.isEmpty())  userTitle = title;
-      if (m_part!=LayoutDocManager::Undefined && isVisible)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySection>(k,userTitle,isVisible));
+        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySection>(k,userTitle,isVisible));
       }
     }
 
@@ -234,10 +239,10 @@ class LayoutParser
       QCString userSubscript = XMLHandlers::value(attrib,"subtitle");
       if (userTitle.isEmpty())     userTitle     = title;
       if (userSubscript.isEmpty()) userSubscript = subscript;
-      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      bool isVisible = m_visible && elemIsVisible(attrib);
       if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntryMemberDecl>(type,userTitle,userSubscript));
+        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntryMemberDecl>(type,userTitle,userSubscript,isVisible));
       }
     }
 
@@ -247,10 +252,10 @@ class LayoutParser
       QCString userTitle = XMLHandlers::value(attrib,"title");
       if (userTitle.isEmpty()) userTitle = title;
       //printf("memberdef: %s\n",qPrint(userTitle));
-      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      bool isVisible = m_visible && elemIsVisible(attrib);
       if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntryMemberDef>(type,userTitle));
+        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntryMemberDef>(type,userTitle,isVisible));
       }
     }
 
@@ -261,11 +266,7 @@ class LayoutParser
     void startNavIndex(const XMLHandlers::Attributes &)
     {
       m_scope="navindex/";
-      m_rootNav = LayoutDocManager::instance().rootNavEntry();
-      if (m_rootNav)
-      {
-        m_rootNav->clear();
-      }
+      m_rootNav = m_layoutDocManager.rootNavEntry();
     }
 
     void endNavIndex()
@@ -274,7 +275,7 @@ class LayoutParser
       if (m_rootNav && !m_rootNav->find(LayoutNavEntry::MainPage))
       {
         // no MainPage node... add one as the first item of the root node...
-        m_rootNav->prependChild(std::make_unique<LayoutNavEntry>(m_rootNav,LayoutNavEntry::MainPage, TRUE,
+        m_rootNav->insertChild(0,std::make_unique<LayoutNavEntry>(m_rootNav,LayoutNavEntry::MainPage, TRUE,
                                                    "index",theTranslator->trMainPage(),""));
       }
     }
@@ -556,11 +557,11 @@ class LayoutParser
       LayoutNavEntry::Kind kind = mapping[i].kind;
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
-      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      bool isVisible = m_visible && elemIsVisible(attrib);
       if (title.isEmpty()) // use default title
       {
         title = mapping[i].mainName; // use title for main row
-        if (m_rootNav!=LayoutDocManager::instance().rootNavEntry() && !mapping[i].subName.isEmpty())
+        if (m_rootNav!=m_layoutDocManager.rootNavEntry() && !mapping[i].subName.isEmpty())
         {
           title = mapping[i].subName; // if this is a child of another row, use the subName if available
                                       // this is mainly done to get compatible naming with older versions.
@@ -595,7 +596,7 @@ class LayoutParser
         }
       }
       // create new item and make it the new root
-      m_rootNav = LayoutDocManager::instance().createChildNavEntry(m_rootNav,kind,isVisible,baseFile,title,intro);
+      m_rootNav = m_layoutDocManager.createChildNavEntry(m_rootNav,kind,isVisible,baseFile,title,intro);
     }
 
     void endNavEntry()
@@ -605,30 +606,12 @@ class LayoutParser
       m_invalidEntry=FALSE;
     }
 
-    void recurseNavEntryChildren(LayoutNavEntry &lne)
-    {
-      bool vis = lne.visible();
-      for (const auto &lne1 : lne.children())
-      {
-        lne1->setVisible(vis && lne1->visible());
-        recurseNavEntryChildren(*lne1);
-      }
-    }
-
     void startTop(const XMLHandlers::Attributes &attrib,LayoutDocManager::LayoutPart part,
                   const QCString &scope, LayoutNavEntry::Kind nav)
     {
-      LayoutDocManager::instance().clear(part);
       m_scope = scope;
       m_part = part;
       m_visible = elemIsVisible(attrib);
-      auto *lne = LayoutDocManager::instance().rootNavEntry()->find(nav);
-      if (lne)
-      {
-        m_visible = m_visible && lne->visible();
-        lne->setVisible(m_visible);
-        recurseNavEntryChildren(*lne);
-      }
     }
 
     void endTop()
@@ -642,8 +625,8 @@ class LayoutParser
       m_scope+="memberdef/";
       if (m_part!=LayoutDocManager::Undefined)
       {
-        bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
-        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefStart,isVisible));
+        bool isVisible = m_visible && elemIsVisible(attrib);
+        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefStart,isVisible));
       }
     }
 
@@ -657,14 +640,14 @@ class LayoutParser
         if (m_part!=LayoutDocManager::Undefined)
         {
           bool isVisible = true;
-          for (const auto &lde : LayoutDocManager::instance().docEntries(m_part))
+          for (const auto &lde : m_layoutDocManager.docEntries(m_part))
           {
             if (lde->kind() == LayoutDocEntry::MemberDefStart)
             {
                isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
             }
           }
-          LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefEnd,isVisible));
+          m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefEnd,isVisible));
         }
       }
     }
@@ -674,8 +657,8 @@ class LayoutParser
       m_scope+="memberdecl/";
       if (m_part!=LayoutDocManager::Undefined)
       {
-        bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
-        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclStart,isVisible));
+        bool isVisible = m_visible && elemIsVisible(attrib);
+        m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclStart,isVisible));
       }
     }
 
@@ -688,20 +671,21 @@ class LayoutParser
         if (m_part!=LayoutDocManager::Undefined)
         {
           bool isVisible = true;
-          for (const auto &lde : LayoutDocManager::instance().docEntries(m_part))
+          for (const auto &lde : m_layoutDocManager.docEntries(m_part))
           {
             if (lde->kind() == LayoutDocEntry::MemberDeclStart)
             {
                isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
             }
           }
-          LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclEnd,isVisible));
+          m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclEnd,isVisible));
         }
       }
     }
 
   private:
     QCString m_scope;
+    LayoutDocManager &m_layoutDocManager;
     LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
     LayoutNavEntry *m_rootNav = nullptr;
     bool m_invalidEntry = false;
@@ -1405,7 +1389,7 @@ LayoutDocManager::~LayoutDocManager()
 
 void LayoutDocManager::init()
 {
-  LayoutParser &layoutParser = LayoutParser::instance();
+  LayoutParser layoutParser(LayoutDocManager::instance());
   XMLHandlers handlers;
   handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
   handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
@@ -1436,29 +1420,36 @@ LayoutNavEntry* LayoutDocManager::rootNavEntry() const
   return &d->rootNav;
 }
 
-LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry *parent,LayoutNavEntry::Kind k,bool vs,const QCString &bf,
+LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry *parent,
+                                                      LayoutNavEntry::Kind k,bool vs,const QCString &bf,
                                                       const QCString &tl,const QCString &intro)
 {
   if (parent==nullptr) parent = &d->rootNav;
   auto ptr = std::make_unique<LayoutNavEntry>(parent,k,vs,bf,tl,intro);
   auto child = ptr.get();
-  parent->addChild(std::move(ptr));
+  parent->appendChild(std::move(ptr));
   return child;
 }
 
 void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntryPtr &&e)
 {
-  d->docEntries[static_cast<int>(p)].push_back(std::move(e));
-}
-
-void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
-{
-  d->docEntries[static_cast<int>(p)].clear();
+  auto &docEntry = d->docEntries[static_cast<int>(p)];
+  for (auto it = docEntry.begin(); it != docEntry.end(); ++it)
+  {
+    if ((*it)->id()==e->id()) // already added
+    {
+      *it = std::move(e); // replace
+      return;
+    }
+  }
+  docEntry.push_back(std::move(e)); // add
 }
 
 void LayoutDocManager::parse(const QCString &fileName, const char *data)
 {
-  LayoutParser &layoutParser = LayoutParser::instance();
+  //printf("LayoutDocManager::parse(%s)\n",qPrint(fileName));
+  LayoutDocManager layoutDocManager;
+  LayoutParser layoutParser(layoutDocManager);
   XMLHandlers handlers;
   handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
   handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
@@ -1472,6 +1463,194 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data)
                [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",qPrint(fileName)); },
                transcodeCharacterStringToUTF8
               );
+  // merge missing parts of the default layout into the user defined layout
+  mergeNavEntries(layoutDocManager);
+  mergeDocEntries(layoutDocManager);
+  // replace default layout with merged layout
+  d->docEntries.swap(layoutDocManager.d->docEntries);
+  d->rootNav.swap(layoutDocManager.d->rootNav);
+}
+
+// search for candidate node in tree with root target. Returns the match target node if found, or nullptr otherwise.
+static LayoutNavEntry *findNavEntryRec(LayoutNavEntry *root, const std::string &id)
+{
+  if (root)
+  {
+    if (root->id()==id) return root;
+    for (auto &child : root->children())
+    {
+      LayoutNavEntry *childNavEntry = findNavEntryRec(child.get(),id);
+      if (childNavEntry) return childNavEntry;
+    }
+  }
+  return nullptr;
+}
+
+// merge the missing nodes
+static void mergeNavTreeNodesRec(LayoutNavEntry *targetTree,LayoutNavEntry *sourceTree)
+{
+  using IdSet = std::unordered_set<std::string>;
+  using IdMap = std::unordered_map<std::string,size_t>;
+
+  auto prepareSet = [](const LayoutNavEntry *tree, IdSet &set) {
+    for (const auto &e : tree->children())
+    {
+      set.insert(e->id());
+    }
+  };
+
+  auto prepareMap = [](const LayoutNavEntry *tree, const IdSet &set, IdMap &map) {
+    for (size_t i=0; i<tree->children().size(); i++)
+    {
+      std::string id = tree->children()[i]->id();
+      auto it = set.find(id);
+      if (it != set.end())
+      {
+        map[id]=i;
+      }
+    }
+  };
+
+  IdSet sourceSet, targetSet;
+  prepareSet(sourceTree,sourceSet);
+  prepareSet(targetTree,targetSet);
+
+  IdMap sourceMap, targetMap;
+  prepareMap(targetTree,sourceSet,targetMap);
+  prepareMap(sourceTree,targetSet,sourceMap);
+
+  // calculate list of insertion positions in the target list for each id in the source list
+  std::vector<size_t> insertionList;
+  for (size_t i=0; i<sourceTree->children().size(); i++)
+  {
+    std::string id = sourceTree->children()[i]->id();
+    // If an id in the source list appears before a set of shared ids we want it also to
+    // appear before these id in the target list. To do this find the lowest target index of all shared
+    // ids that come after position i in the source list
+    size_t minIdx = targetTree->children().size();
+    for (const auto &kv : sourceMap) // iterator over shared ids
+    {
+      if (i < kv.second) // i appears before this shared id
+      {
+        size_t idx = targetMap[kv.first]; // get the corresponding index in the target list
+        if (idx<minIdx) // update minimum
+        {
+          minIdx=idx;
+        }
+      }
+    }
+    insertionList.push_back(minIdx);
+  }
+
+  // Insert the missing elements of the source list into the target list.
+  // Work backwards so the calculated insertion points don't change due to insertions.
+  size_t idx = sourceTree->children().size()-1;
+  for (auto it=insertionList.rbegin(); it!=insertionList.rend(); ++it, idx--)
+  {
+    std::string id = sourceTree->children()[idx]->id();
+    if (targetSet.find(id)==targetSet.end()) // need to add id
+    {
+      // for efficiency we move the elements from the source list to the target list, thus modifying the source list!
+      targetTree->insertChild(*it, std::move(sourceTree->children()[idx]));
+    }
+  }
+
+  for (auto &targetChild : targetTree->children())
+  {
+    auto *node = findNavEntryRec(sourceTree,targetChild->id());
+    if (node)
+    {
+      mergeNavTreeNodesRec(targetChild.get(),node);
+    }
+  }
+}
+
+void LayoutDocManager::mergeNavEntries(LayoutDocManager &other)
+{
+  mergeNavTreeNodesRec(other.rootNavEntry(),rootNavEntry());
+}
+
+static void mergeDocEntryLists(LayoutDocEntryList &targetList,LayoutDocEntryList &sourceList)
+{
+  using IdSet = std::unordered_set<std::string>;
+  using IdMap = std::unordered_map<std::string,size_t>;
+
+  auto prepareSet = [](const LayoutDocEntryList &list, IdSet &set) {
+    for (const auto &e : list)
+    {
+      //printf("set(%s)\n",qPrint(e->id()));
+      set.insert(e->id());
+    }
+  };
+
+  auto prepareMap = [](const LayoutDocEntryList &list, const IdSet &set, IdMap &map) {
+    for (size_t i=0; i<list.size(); i++)
+    {
+      std::string id = list[i]->id();
+      auto it = set.find(id);
+      if (it != set.end())
+      {
+        map[id]=i;
+      }
+    }
+  };
+
+  IdSet sourceSet, targetSet;
+  //printf("---- sourceSet\n");
+  prepareSet(sourceList,sourceSet);
+  //printf("---- targetSet\n");
+  prepareSet(targetList,targetSet);
+
+  IdMap sourceMap, targetMap;
+  prepareMap(targetList,sourceSet,targetMap);
+  prepareMap(sourceList,targetSet,sourceMap);
+
+  // calculate list of insertion positions in the target list for each id in the source list
+  std::vector<size_t> insertionList;
+  for (size_t i=0; i<sourceList.size(); i++)
+  {
+    std::string id = sourceList[i]->id();
+    // If an id in the source list appears before a set of shared ids we want it also to
+    // appear before these id in the target list. To do this find the lowest target index of all shared
+    // ids that come after position i in the source list
+    size_t minIdx = targetList.size();
+    for (const auto &kv : sourceMap) // iterator over shared ids
+    {
+      if (i < kv.second) // i appears before this shared id
+      {
+        size_t idx = targetMap[kv.first]; // get the corresponding index in the target list
+        if (idx<minIdx) // update minimum
+        {
+          minIdx=idx;
+        }
+      }
+    }
+    insertionList.push_back(minIdx);
+  }
+
+  // Insert the missing elements of the source list into the target list.
+  // Work backwards so the calculated insertion points don't change due to insertions.
+  size_t idx = sourceList.size()-1;
+  for (auto it=insertionList.rbegin(); it!=insertionList.rend(); ++it, idx--)
+  {
+    std::string id = sourceList[idx]->id();
+    //printf("entry %s\n",qPrint(id));
+    if (targetSet.find(id)==targetSet.end()) // need to add id
+    {
+      // for efficiency we move the elements from the source list to the target list, thus modifying the source list!
+      targetList.insert(targetList.begin()+*it, std::move(sourceList[idx]));
+      //printf("--> insert\n");
+    }
+  }
+}
+
+void LayoutDocManager::mergeDocEntries(LayoutDocManager &other)
+{
+   for (size_t i=0; i<d->docEntries.size(); i++)
+   {
+     //printf("========= part %zu\n",i);
+     mergeDocEntryLists(other.d->docEntries[i],d->docEntries[i]);
+   }
 }
 
 //---------------------------------------------------------------------------------
