@@ -1434,14 +1434,6 @@ LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry *parent,
 void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntryPtr &&e)
 {
   auto &docEntry = d->docEntries[static_cast<int>(p)];
-  for (auto it = docEntry.begin(); it != docEntry.end(); ++it)
-  {
-    if ((*it)->id()==e->id()) // already added
-    {
-      *it = std::move(e); // replace
-      return;
-    }
-  }
   docEntry.push_back(std::move(e)); // add
 }
 
