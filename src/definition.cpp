@@ -501,20 +501,23 @@ void DefinitionImpl::setBriefDescription(const QCString &b,const QCString &brief
 
 void DefinitionImpl::_setInbodyDocumentation(const QCString &doc,const QCString &inbodyFile,int inbodyLine)
 {
-  if (!p->inbodyDocs.has_value())
+  if (!_docsAlreadyAdded(doc,p->docSignatures))
   {
-    p->inbodyDocs = std::make_optional<DocInfo>();
-  }
-  DocInfo &inbodyDocs = p->inbodyDocs.value();
-  if (inbodyDocs.doc.isEmpty()) // fresh inbody docs
-  {
-    inbodyDocs.doc  = doc;
-    inbodyDocs.file = inbodyFile;
-    inbodyDocs.line = inbodyLine;
-  }
-  else // another inbody documentation fragment, append this to the end
-  {
-    inbodyDocs.doc += QCString("\n\n")+doc;
+    if (!p->inbodyDocs.has_value())
+    {
+      p->inbodyDocs = std::make_optional<DocInfo>();
+    }
+    DocInfo &inbodyDocs = p->inbodyDocs.value();
+    if (inbodyDocs.doc.isEmpty()) // fresh inbody docs
+    {
+      inbodyDocs.doc  = doc;
+      inbodyDocs.file = inbodyFile;
+      inbodyDocs.line = inbodyLine;
+    }
+    else // another inbody documentation fragment, append this to the end
+    {
+      inbodyDocs.doc += QCString("\n\n")+doc;
+    }
   }
 }
 
