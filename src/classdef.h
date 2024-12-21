@@ -344,13 +344,6 @@ class ClassDef : public Definition
                 MemberListType lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const = 0;
 
     //-----------------------------------------------------------------------------------
-    // --- helpers ----
-    //-----------------------------------------------------------------------------------
-
-    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
-                                const QCString &templSpec,bool &freshInstance) const = 0;
-
-    //-----------------------------------------------------------------------------------
     // --- write output ----
     //-----------------------------------------------------------------------------------
 
@@ -412,6 +405,13 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     // collaboration graph related members
     virtual bool hasCollaborationGraph() const = 0;
     virtual void overrideCollaborationGraph(bool e) = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- helpers ----
+    //-----------------------------------------------------------------------------------
+
+    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
+                                const QCString &templSpec,bool &freshInstance) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

@@ -1436,7 +1436,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = mdef->hasDetailedDescription();
-  if (!detailsVisible) // && !m_impl->annMemb)
+  if (!detailsVisible)
   {
     QCString doxyName=mdef->name();
     if (!cname.isEmpty()) doxyName.prepend(cname+"::");
@@ -1651,7 +1651,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
     ol.enable(OutputType::Html);
   }
 
-  if (!detailsVisible)// && !m_impl->annMemb)
+  if (!detailsVisible)
   {
     ol.endDoxyAnchor(cfname,mdef->anchor());
   }

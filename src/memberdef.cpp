@@ -5727,7 +5727,7 @@ QCString MemberDefImpl::getCachedTypedefTemplSpec() const
 
 QCString MemberDefImpl::getCachedResolvedTypedef() const
 {
-  //printf("MemberDefImpl::getCachedResolvedTypedef()=%s m_impl=%p\n",qPrint(m_cachedResolvedType),m_impl);
+  //printf("MemberDefImpl::getCachedResolvedTypedef()=%s\n",qPrint(m_cachedResolvedType));
   return m_cachedResolvedType;
 }
 
