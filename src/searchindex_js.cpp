@@ -355,7 +355,7 @@ void createJavaScriptSearchIndex()
   {
     if (cd->isLinkable())
     {
-      QCString n = cd->name();
+      QCString n = cd->localName();
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,cd.get()));
       g_searchIndexInfo[SEARCH_INDEX_CONCEPTS].add(SearchTerm(n,cd.get()));
     }
