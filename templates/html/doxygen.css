@@ -1420,6 +1420,11 @@ dl.invariant dt, dl.pre dt, dl.post dt {
 	padding: 2px 0px;
 }
 
+#side-nav #projectname
+{
+	font-size: 130%;
+}
+
 #projectbrief
 {
 	font-size: 90%;
