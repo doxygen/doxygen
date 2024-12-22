@@ -2221,7 +2221,7 @@ static void findUsingDeclImports(const Entry *root)
       const Definition *def = resolver.resolveSymbol(root->name.startsWith("::") ? nullptr : scope,root->name);
       if (def && def->definitionType()==Definition::TypeMember)
       {
-        int i=root->name.find("::");
+        int i=root->name.findRev("::");
         QCString memName;
         if (i!=-1)
         {
