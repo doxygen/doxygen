@@ -130,8 +130,10 @@ class AutoTrace
       }
     }
     template<typename... Args>
-    void setExit(const std::string &msg,Args&&...args)
+    void setExit(spdlog::source_loc loc,
+                 const std::string &msg,Args&&...args)
     {
+      m_loc = loc;
       m_exitMessage = fmt::format(msg,std::forward<Args>(args)...);
     }
   private:
@@ -142,7 +144,7 @@ class AutoTrace
 #if ENABLE_TRACING
 #define AUTO_TRACE(...)      AutoTrace trace_{spdlog::source_loc{__FILE__,__LINE__,SPDLOG_FUNCTION},__VA_ARGS__}
 #define AUTO_TRACE_ADD(...)  trace_.add(spdlog::source_loc{__FILE__,__LINE__,SPDLOG_FUNCTION},__VA_ARGS__)
-#define AUTO_TRACE_EXIT(...) trace_.setExit(__VA_ARGS__)
+#define AUTO_TRACE_EXIT(...) trace_.setExit(spdlog::source_loc{__FILE__,__LINE__,SPDLOG_FUNCTION},__VA_ARGS__)
 #else
 #define AUTO_TRACE(...)      (void)0
 #define AUTO_TRACE_ADD(...)  (void)0

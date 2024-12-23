@@ -43,6 +43,15 @@ static std::unordered_map<std::string, std::pair<QCString,const MemberDef *> > g
 
 //--------------------------------------------------------------------------------------
 
+static bool isCodeSymbol(Definition::DefType defType)
+{
+  return defType==Definition::TypeClass   || defType==Definition::TypeNamespace ||
+         defType==Definition::TypeModule  || defType==Definition::TypeMember    ||
+         defType==Definition::TypePackage || defType==Definition::TypeConcept;
+}
+
+//--------------------------------------------------------------------------------------
+
 /** Helper class representing the stack of items considered while resolving
  *  the scope.
  */
@@ -339,8 +348,11 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
 
     for (Definition *d : range)
     {
-      getResolvedType(visitedKeys,scope,d,explicitScopePart,actTemplParams.get(),
-          minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+      if (isCodeSymbol(d->definitionType()))
+      {
+        getResolvedType(visitedKeys,scope,d,explicitScopePart,actTemplParams.get(),
+            minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+      }
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
     }
 
@@ -507,8 +519,11 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 
     for (Definition *d : range)
     {
-      getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,false,
-          minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+      if (isCodeSymbol(d->definitionType()))
+      {
+         getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,false,
+            minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+      }
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
     }
 
@@ -518,8 +533,11 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     {
       for (Definition *d : range)
       {
-        getResolvedSymbol(visitedKeys,scope,d,QCString(),false,insideCode,explicitScopePart,true,
+        if (isCodeSymbol(d->definitionType()))
+        {
+          getResolvedSymbol(visitedKeys,scope,d,QCString(),false,insideCode,explicitScopePart,true,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+        }
         if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
       }
     }
@@ -1325,8 +1343,9 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
                                               const Definition *scope,
                                               const Definition *item)
 {
-  AUTO_TRACE("scope={} item={}",
-      scope?scope->name():QCString(), item?item->name():QCString());
+  AUTO_TRACE("scope={} item={} item.definitionType={}",
+      scope?scope->name():QCString(), item?item->name():QCString(),
+      item?(int)item->definitionType():-1);
 
   if (accessStack.find(scope,m_fileScope,item))
   {
@@ -1390,8 +1409,8 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
     if (nestedClassInsideBaseClass)
     {
       result++; // penalty for base class to prevent
-                                              // this is preferred over nested class in this class
-                                              // see bug 686956
+                // this is preferred over nested class in this class
+                // see bug 686956
     }
     else if (memberAccessibleFromScope &&
              itemScope &&
