@@ -600,8 +600,8 @@ ATTR      ({B}+[^>\n]*)?
 DOCNL     "\n"|"\\ilinebr"
 LC        "\\"{B}*"\n"
 NW        [^a-z_A-Z0-9]
-FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=@&#]
-FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=@&#]
+FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=@&#~]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=@&#~]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
@@ -1464,6 +1464,8 @@ STopt  [^\n@\\]*
                                           BEGIN( Comment );
                                         }
 <ClassDocArg2>{FILE}|"<>"               { // second argument; include file
+                                          if (yytext[0] == '~') REJECT;
+                                          if (yytext[0] == '"' && yytext[1] == '~') REJECT;
                                           yyextra->current->includeFile = yytext;
                                           BEGIN( ClassDocArg3 );
                                         }
@@ -1475,6 +1477,8 @@ STopt  [^\n@\\]*
                                         }
 
 <ClassDocArg3>[<"]?{FILE}?[">]?         { // third argument; include file name
+                                          if (yytext[0] == '~') REJECT;
+                                          if ((yytext[0] == '<' || yytext[0] == '"') && yytext[1] == '~') REJECT;
                                           yyextra->current->includeName = yytext;
                                           BEGIN( Comment );
                                         }
@@ -1569,6 +1573,9 @@ STopt  [^\n@\\]*
                                           QCString text = yytext;
                                           int start = text.find('{');
                                           int end   = text.find('}',start+1);
+                                          QCString tmp = text.mid(end+2);
+                                          tmp = stripQuotes(tmp.data());
+                                          if (tmp[0] == '~') REJECT;
                                           yyextra->current->name = text.mid(end+2);
                                           int istart = yyextra->current->name.find("\\ilinebr");
                                           if (istart != -1)
@@ -1582,7 +1589,9 @@ STopt  [^\n@\\]*
                                           BEGIN( PageDocArg2 );
                                         }
 <PageDocArg1>{FILE}                     { // first argument; page name
-                                          yyextra->current->name = stripQuotes(yytext);
+                                          QCString tmp = stripQuotes(yytext);
+                                          if (tmp[0] == '~') REJECT;
+                                          yyextra->current->name = tmp;
                                           yyextra->current->args = "";
                                           BEGIN( PageDocArg2 );
                                         }
@@ -1648,7 +1657,9 @@ STopt  [^\n@\\]*
                                           BEGIN( Comment );
                                         }
 <FileDocArg1>{FILE}                     { // first argument; name
-                                          yyextra->current->name = stripQuotes(yytext);
+                                          QCString tmp = stripQuotes(yytext);
+                                          if (tmp[0] == '~') REJECT;
+                                          yyextra->current->name = tmp;
                                           BEGIN( Comment );
                                         }
 <FileDocArg1>{LC}                       { yyextra->lineNr++;
@@ -1846,10 +1857,10 @@ STopt  [^\n@\\]*
   /* ----- handle arguments of the ifile command ----- */
 
 <IFile,IFileSection>{FILE}              {
+                                          QCString tmp = stripQuotes(yytext);
+                                          if (tmp[0] == '~') REJECT;
                                           addOutput(yyscanner,yytext);
-                                          QCString text(yytext);
-                                          if (yytext[0] == '\"') yyextra->fileName = text.mid(1,text.length()-2);
-                                          else yyextra->fileName = yytext;
+                                          yyextra->fileName = tmp;
                                           if (YY_START == IFile)
                                           {
                                             BEGIN(Comment);
@@ -2143,6 +2154,8 @@ STopt  [^\n@\\]*
   /* ----- handle arguments of the subpage command ------- */
 
 <SubpageLabel>{FILE}                    { // first argument
+                                          QCString tmp = stripQuotes(yytext);
+                                          if (tmp[0] == '~') REJECT;
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.

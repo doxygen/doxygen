@@ -311,8 +311,8 @@ PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON
 SCOPENAME ({ID}{BS}"::"{BS})*
 
 LINENR    {B}*[1-9][0-9]*
-FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@]
-FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=&#@]
+FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@~]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=&#@~]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
 HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
@@ -1452,8 +1452,10 @@ private                                 {
                                           yyextra->docBlock += yytext;
                                         }
 <DocBlock>{CMD}"ifile"{B}+{FILEMASK}    {
-                                          yyextra->fileName = &yytext[6];
-                                          yyextra->fileName = yyextra->fileName.stripWhiteSpace();
+                                          QCString tmp = &yytext[6];
+                                          tmp = tmp.stripWhiteSpace();
+                                          if (tmp[0] == '~') REJECT;
+                                          yyextra->fileName = tmp;
                                           yyextra->docBlock += yytext;
                                         }
 <DocBlock>{CMD}"iline"{LINENR}/[\n\.]   |
