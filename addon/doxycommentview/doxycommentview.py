@@ -44,7 +44,7 @@ def main():
 
                 # Run doxygen in single comment mode, reading from stdin and writing to stdout
                 result = subprocess.run([DOXYGEN, '-c', '-', DOXYFILE], \
-                                        input=input_text, capture_output=True, text=True)
+                                        input=input_text, capture_output=True, text=True, encoding="utf-8")
 
                 # Insert CSS link tag into the HTML output
                 self.send_response(200)
