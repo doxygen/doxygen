@@ -260,8 +260,8 @@ REFWORD2_NOCV  {REFWORD2_PRE}("("{FUNCPART}")")?
 REFWORD3       ({ID}":")*{ID}":"?
 REFWORD4_NOCV  (({SCOPEPRE}*"operator"{OPMASKOP2})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOP2}))
 REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
-REFWORD        {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
-REFWORD_NOCV   {LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
+REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
+REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
 LINENR {BLANK}*([1-9][0-9]*|"0"|"-1")
 
@@ -897,31 +897,19 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/{ID}"=" { // case 2: plain file name specified followed by an attribute
-                         QCString tmp = yytext;
-                         tmp = tmp.stripWhiteSpace();
-                         if (tmp[0] == '~') REJECT;
-                         yyextra->token.sectionId = tmp;
+                         yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
                          return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/"\"" { // case 3: plain file name specified followed by a quoted title
-                         QCString tmp = yytext;
-                         tmp = tmp.stripWhiteSpace();
-                         if (tmp[0] == '~') REJECT;
-                         yyextra->token.sectionId = tmp;
+                         yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
                          return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANKopt}/\n { // case 4: plain file name specified without title or attributes
-                         QCString tmp = yytext;
-                         tmp = tmp.stripWhiteSpace();
-                         if (tmp[0] == '~') REJECT;
-                         yyextra->token.sectionId = tmp;
+                         yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
                          return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANKopt}/"\\ilinebr" { // case 5: plain file name specified without title or attributes
-                         QCString tmp = yytext;
-                         tmp = tmp.stripWhiteSpace();
-                         if (tmp[0] == '~') REJECT;
-                         yyextra->token.sectionId = tmp;
+                         yyextra->token.sectionId = QCString(yytext).stripWhiteSpace();
                          return Token::make_RetVal_OK();
                        }
 <St_PlantUMLOpt>"\\ilinebr" |
@@ -1102,26 +1090,11 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          unput(*yytext);
                          return Token::make_TK_NONE();
                        }
-<St_Ref>{FILEMASK}/{BLANK}("const")[a-z_A-Z0-9] { // see bug776988
-                         if (yytext[0] == '~') REJECT;
-                         yyextra->token.name=yytext;
-                         return Token::make_TK_WORD();
-                       }
 <St_Ref>{REFWORD_NOCV}/{BLANK}("const")[a-z_A-Z0-9] { // see bug776988
                          yyextra->token.name=yytext;
                          return Token::make_TK_WORD();
                        }
-<St_Ref>{FILEMASK}/{BLANK}("volatile")[a-z_A-Z0-9] { // see bug776988
-                         if (yytext[0] == '~') REJECT;
-                         yyextra->token.name=yytext;
-                         return Token::make_TK_WORD();
-                       }
 <St_Ref>{REFWORD_NOCV}/{BLANK}("volatile")[a-z_A-Z0-9] { // see bug776988
-                         yyextra->token.name=yytext;
-                         return Token::make_TK_WORD();
-                       }
-<St_Ref>{FILEMASK}     { // label to refer to
-                         if (yytext[0] == '~') REJECT;
                          yyextra->token.name=yytext;
                          return Token::make_TK_WORD();
                        }
@@ -1156,14 +1129,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_IntRef>{BLANK}+"\"" {
                          BEGIN(St_Ref2);
                        }
-<St_SetScope>{FILEMASK} {
-                         QCString tmp = yytext;
-                         tmp = tmp.stripWhiteSpace();
-                         if (tmp[0] == '~') REJECT;
-                         yyextra->token.name = tmp;
-                         return Token::make_TK_WORD();
-                       }
-<St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK} {
+<St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK}|{FILEMASK} {
                          yyextra->token.name = yytext;
                          yyextra->token.name = yyextra->token.name.stripWhiteSpace();
                          return Token::make_TK_WORD();
@@ -1353,10 +1319,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return Token::make_TK_NONE();
                        }
 <St_IFile>{BLANK}*{FILEMASK} {
-                         QCString tmp = yytext;
-                         tmp = tmp.stripWhiteSpace();
-                         if (tmp[0] == '~') REJECT;
-                         yyextra->fileName = tmp;
+                         yyextra->fileName = QCString(yytext).stripWhiteSpace();
                          return Token::make_TK_WORD();
                        }
 <St_IFile>{BLANK}*"\""[^\n\"]+"\"" {
@@ -1366,10 +1329,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return Token::make_TK_WORD();
                        }
 <St_File>{FILEMASK}    {
-                         QCString tmp = yytext;
-                         tmp = tmp.stripWhiteSpace();
-                         if (tmp[0] == '~') REJECT;
-                         yyextra->token.name = tmp;
+                         yyextra->token.name = yytext;
                          return Token::make_TK_WORD();
                        }
 <St_File>"\""[^\n\"]+"\"" {
@@ -1391,11 +1351,6 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Pattern>.          {
                          yyextra->token.name += yytext;
-                       }
-<St_Link>{FILEMASK}    {
-                         if (yytext[0] == '~') REJECT;
-                         yyextra->token.name = yytext;
-                         return Token::make_TK_WORD();
                        }
 <St_Link>{LINKMASK}|{REFWORD}    {
                          yyextra->token.name = yytext;

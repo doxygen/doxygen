@@ -7092,10 +7092,8 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>{CMD}"ifile"{B}+{FILEMASK}    {
-                                          QCString tmp = &yytext[6];
-                                          tmp = tmp.stripWhiteSpace();
-                                          if (tmp[0] == '~') REJECT;
-                                          yyextra->fileName = tmp;
+                                          yyextra->fileName = &yytext[6];
+                                          yyextra->fileName = yyextra->fileName.stripWhiteSpace();
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>{CMD}"iline"{LINENR}{B}       {

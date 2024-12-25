@@ -1499,10 +1499,8 @@ ID        [a-z_A-Z%]+{IDSYM}*
                                     yyextra->docBlock+=yytext;
                                   }
     {CMD}"ifile"{B}+{FILEMASK}    {
-                                    QCString tmp = &yytext[6];
-                                    tmp = tmp.stripWhiteSpace();
-                                    if (tmp[0] == '~') REJECT;
-                                    yyextra->fileName = tmp;
+                                    yyextra->fileName = &yytext[6];
+                                    yyextra->fileName = yyextra->fileName.stripWhiteSpace();
                                     yyextra->docBlock+=yytext;
                                   }
     {CMD}"iline"{LINENR}/[\n\.]   |
@@ -1545,10 +1543,8 @@ ID        [a-z_A-Z%]+{IDSYM}*
                                     yyextra->docBlock+=yytext;
                                   }
     {CMD}"ifile"{B}+{FILEMASK}    {
-                                    QCString tmp = &yytext[6];
-                                    tmp = tmp.stripWhiteSpace();
-                                    if (tmp[0] == '~') REJECT;
-                                    yyextra->fileName = tmp;
+                                    yyextra->fileName = &yytext[6];
+                                    yyextra->fileName = yyextra->fileName.stripWhiteSpace();
                                     yyextra->docBlock+=yytext;
                                   }
     {CMD}"iline"{LINENR}/[\n\.]   |
