@@ -25,6 +25,7 @@
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wshadow"
 #endif
 #include <gunzip.hh>
 #if defined(__clang__)
