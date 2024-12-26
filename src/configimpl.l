@@ -1396,13 +1396,14 @@ void ConfigImpl::emptyValueToDefault()
 
 static const reg::Ex reEnvVar(R"(\$\((\a[\w.-]*)\))");                 // e.g. $(HOME)
 static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))"); // e.g. $(PROGRAMFILES(X86))
-static const reg::Ex reEnvVarCMake(R"(@\a\w*@)");                      // CMake type replacement
+static const reg::Ex reEnvVarCMake(R"(@\a\w*@)");                      // CMake type replacement (@...@)
+static const reg::Ex reEnvVar1CMake(R"(\${\a\w*})");                   // CMake type replacement (${...})
 
 static bool containsEnvVar(QCString &str)
 {
   reg::Match m;
   std::string s = str.str();
-  return reg::search(s,m,reEnvVar) || reg::search(s,m,reEnvVarExt) || reg::search(s,m,reEnvVarCMake);
+  return reg::search(s,m,reEnvVar) || reg::search(s,m,reEnvVarExt) || reg::search(s,m,reEnvVarCMake) || reg::search(s,m,reEnvVar1CMake);
 }
 
 static void substEnvVarsInString(QCString &str)
