@@ -21,13 +21,22 @@
 #pragma warning( disable : 4242 )
 #pragma warning( disable : 4244 )
 #pragma warning( disable : 4996 )
+#pragma warning( disable : 4456 )
+#pragma warning( disable : 4805 )
 #endif
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wshadow"
 #endif
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 #include <gunzip.hh>
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif

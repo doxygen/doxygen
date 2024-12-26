@@ -114,7 +114,14 @@
 #include <sqlite3.h>
 
 #if USE_LIBCLANG
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 #include <clang/Basic/Version.h>
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #endif
 
 // provided by the generated file resources.cpp
