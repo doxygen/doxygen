@@ -46,18 +46,11 @@ on the output in real time.
 
 \subsection minor_tweaks_treeview Navigation
 
-By default Doxygen will show an interactive navigation tree covering
-the full height of the left hand side of each HTML page.
-This corresponding with the following settings in the Doxyfile:
+By default, Doxygen will show a title area spanning the full width of the page and
+below the contents with a navigation tree as a sidebar on the left hand side of
+each HTML page.
 
-- \ref cfg_disable_index "DISABLE_INDEX" = \c YES
-- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
-- \ref cfg_full_sidebar "FULL_SIDEBAR" = \c YES
-
-\image html layout_noindex_and_sidebar.png
-\image latex layout_noindex_and_sidebar.png width=8cm
-
-you can make the title area span the whole width of the page using
+This corresponds to the following settings in the Doxyfile:
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c YES
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
@@ -66,8 +59,17 @@ you can make the title area span the whole width of the page using
 \image html layout_noindex_and_treeview.png
 \image latex layout_noindex_and_treeview.png width=8cm
 
+you can make the side bar span the whole height of the page using
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c YES
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_full_sidebar "FULL_SIDEBAR" = \c YES
+
+\image html layout_noindex_and_sidebar.png
+\image latex layout_noindex_and_sidebar.png width=8cm
+
 you can also replace the navigation tree by tabs on top of every HTML page,
-corresponding with the following settings:
+corresponding to the following settings:
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c NO
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c NO
