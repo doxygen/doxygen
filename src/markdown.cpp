@@ -458,6 +458,33 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     return 0;
   };
 
+  static const auto endOfLabel2 = [](std::string_view data_,size_t offset_) -> size_t
+  {
+    if (offset_<data_.size() && data_[offset_]==' ') // we expect a space before the label
+    {
+      char c = 0;
+      offset_++;
+      while (true)
+      {
+        // skip over spaces
+        while (offset_<data_.size() && data_[offset_]==' ') offset_++;
+        // skip over label
+        while (offset_<data_.size() && (c=data_[offset_])!=' ' && c!=',' && c!='\\' && c!='@' && c!='\n') offset_++;
+        if (offset_<data_.size() && (data_[offset_]==',' || data_[offset_]==' '))
+        {
+          size_t offset1 = offset_;
+          while (offset1<data_.size() && data_[offset1]==' ') offset1++;
+          if (offset1<data_.size() && data_[offset1]==',')  offset1++;
+          else break;
+          offset_ = offset1;
+        }
+        else break;
+      };
+      return offset_;
+    }
+    return 0;
+  };
+
   static const auto endOfLabelOpt = [](std::string_view data_,size_t offset_) -> size_t
   {
     size_t index=offset_;
@@ -493,7 +520,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
       if (index==data_.size() || data_[index]!=']') return 0; // invalid parameter
       offset_=index+1; // part after [...] is the parameter name
     }
-    return endOfLabel(data_,offset_);
+    return endOfLabel2(data_,offset_);
   };
 
   static const auto endOfFuncLike = [](std::string_view data_,size_t offset_,bool allowSpaces) -> size_t
@@ -604,7 +631,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "relatedalso",    endOfLabel },
     { "relates",        endOfLabel },
     { "relatesalso",    endOfLabel },
-    { "retval",         endOfLabel },
+    { "retval",         endOfLabel2},
     { "rtfinclude",     endOfLine  },
     { "section",        endOfLabel },
     { "skip",           endOfLine  },
