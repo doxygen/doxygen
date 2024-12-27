@@ -1456,8 +1456,12 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data)
                transcodeCharacterStringToUTF8
               );
   // merge missing parts of the default layout into the user defined layout
-  mergeNavEntries(layoutDocManager);
+
+  // For now merging in defaults has been disabled for navigation entries
+  // to avoid "extra entries" for projects that work with partial layout files.
+  //mergeNavEntries(layoutDocManager);
   mergeDocEntries(layoutDocManager);
+
   // replace default layout with merged layout
   d->docEntries.swap(layoutDocManager.d->docEntries);
   d->rootNav.swap(layoutDocManager.d->rootNav);
