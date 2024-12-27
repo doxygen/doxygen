@@ -4747,7 +4747,7 @@ static void findTemplateInstanceRelation(const Entry *root,
 
 static void resolveTemplateInstanceInType(const Entry *root,const Definition *scope,const MemberDef *md)
 {
-  //return; // disabled due to regression, need to find a better solutions
+  return; // disabled due to regression, need to find a better solutions
 
   // For a statement like 'using X = T<A>', add a template instance 'T<A>' as a symbol, so it can
   // be used to match arguments (see issue #11111)
