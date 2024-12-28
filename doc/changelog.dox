@@ -19,7 +19,6 @@ to your config file.
 </li>
 <li>If you have <code>README.md</code> files in subdirectories, they will be treated as directory descriptions.
 You can disable this by setting <code>IMPLICIT_DIR_DOCS=NO</code> in your config file.</li>
-</li>
 </ul>
 
 <h3>Features</h3>
@@ -38,7 +37,7 @@ You can disable this by setting <code>IMPLICIT_DIR_DOCS=NO</code> in your config
 
 <h3>Bug fixes</h3>
 <ul>
-<li>issue <a href="https://github.com/doxygen/doxygen/issues/1134">#1134</a> gswin64c.exe not recognised if path added to EXTERNAL_TOOL_PATH [<a href="https://github.com/doxygen/doxygen/commit/ad42b32ed7e88d28b452164067cc0a28c1d05e0a">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11134">#11134</a> gswin64c.exe not recognized if path added to EXTERNAL_TOOL_PATH [<a href="https://github.com/doxygen/doxygen/commit/ad42b32ed7e88d28b452164067cc0a28c1d05e0a">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/3760">#3760</a> C++ using directives are not understood (Origin: bugzilla #617285) [<a href="https://github.com/doxygen/doxygen/commit/4ebaa8ba334d9421c82b9cb359aa4fb0644f82ee">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/8f60e93ceac62ce196cc1c3b9e872ab9e8fde60d">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/9023781b60817c46dec9d640b99ce9393cf46a59">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/d067a7ffe6b2abe94595268487ca3461a62da0a5">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/9921">#9921</a> `HIDE_SCOP_NAMES` and `\ref` [<a href="https://github.com/doxygen/doxygen/commit/115f84801c7b685a5667455f75a4bbb4870f6244">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/10569">#10569</a> First sentence after defgroup no longer used as brief description [<a href="https://github.com/doxygen/doxygen/commit/a87b38e5fe3310b841bc79aed7f671d36b6f1927">view</a>]</li>
@@ -117,7 +116,7 @@ You can disable this by setting <code>IMPLICIT_DIR_DOCS=NO</code> in your config
 <li>Multiple parameters with underscores and one `\param` command [<a href="https://github.com/doxygen/doxygen/commit/c0e66c4ca1805479d484e703538123ecddb6cdac">view</a>]</li>
 <li>Output when brief description ends with multiple spaces [<a href="https://github.com/doxygen/doxygen/commit/30a0f873f24bae9ceac58f87efa087c8b42876cb">view</a>]</li>
 <li>Plantuml cache file name [<a href="https://github.com/doxygen/doxygen/commit/032a5a5c187ecc89c99775bc773446335ce6bbbc">view</a>]</li>
-<li>Remove inconsistency regaring whitespace at the end of template declaration [<a href="https://github.com/doxygen/doxygen/commit/3a02eed7421e35027b93fb3eb54a77281ab7ae48">view</a>]</li>
+<li>Remove inconsistency regarding whitespace at the end of template declaration [<a href="https://github.com/doxygen/doxygen/commit/3a02eed7421e35027b93fb3eb54a77281ab7ae48">view</a>]</li>
 <li>Remove some warnings regarding signed/unsigned mismatch [<a href="https://github.com/doxygen/doxygen/commit/eef776e239520326eadf8b22085a17cb34dbea34">view</a>]</li>
 <li>Remove warnings regarding bison package [<a href="https://github.com/doxygen/doxygen/commit/964acae4e439177dded9d0ecb7c489760eefe833">view</a>]</li>
 <li>Removing compiler warnings [<a href="https://github.com/doxygen/doxygen/commit/b4c5d6e03c8f2ec5da443197ec0318f0ef3193ca">view</a>]</li>
@@ -150,8 +149,8 @@ You can disable this by setting <code>IMPLICIT_DIR_DOCS=NO</code> in your config
 <li>Fix for coverity warning about dead code in memberdef.cpp (CID 218000) [<a href="https://github.com/doxygen/doxygen/commit/38a6679c77d47458135fc97ab3bf70b92768b3cc">view</a>]</li>
 <li>Fix for coverity warning about dead code in memberdef.cpp (CID 320261) [<a href="https://github.com/doxygen/doxygen/commit/fe3d30626c07a816215eceb067722e6ad0a4345c">view</a>]</li>
 <li>Coverity warning [<a href="https://github.com/doxygen/doxygen/commit/db97a3ecb6852b6598f08eb954af5ca9ccee42ee">view</a>]</li>
-<li>Replaced -t_notime by -t_time and maked -t behave as -t_notime did before [<a href="https://github.com/doxygen/doxygen/commit/22fc5a2c16b3834cb40166df1c4695b0355b7f67">view</a>]</li>
-<li>Optimise handling trimleft in code fragments [<a href="https://github.com/doxygen/doxygen/commit/283a679746c134b898d5735c3afabeeb05a870ef">view</a>]</li>
+<li>Replaced -t_notime by -t_time and make -t behave as -t_notime did before [<a href="https://github.com/doxygen/doxygen/commit/22fc5a2c16b3834cb40166df1c4695b0355b7f67">view</a>]</li>
+<li>Optimize handling trimleft in code fragments [<a href="https://github.com/doxygen/doxygen/commit/283a679746c134b898d5735c3afabeeb05a870ef">view</a>]</li>
 <li>Optimize stripping comment from code fragments [<a href="https://github.com/doxygen/doxygen/commit/64dfee0a4b65a4dc3687dfc6b31535a844681ffa">view</a>]</li>
 <li>Cleanup unused lexer definitions [<a href="https://github.com/doxygen/doxygen/commit/6fa156af0a78bd294e60540cf76f1728e309e8eb">view</a>]</li>
 <li>Consistency enum class CommandType / HtmlTagType [<a href="https://github.com/doxygen/doxygen/commit/69000a35fba1bc1fb4720e733add703efbac4a07">view</a>]</li>

@@ -39,6 +39,10 @@
      - added placeholder to input tag
      - added allowfullscreen to iframe tag
      - added data-start and data-end to div tag (needed for code folding)
+
+
+     December 28, 2024
+     - added entity &quest; as used in doxygen
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -1247,3 +1251,5 @@ several semantically related columns together.
   height      %Length;       #IMPLIED
   >
 
+<!-- added for doxygen:  &quest; -->
+<!ENTITY quest    "&#63;"> <!-- question mark, U+3f -->
