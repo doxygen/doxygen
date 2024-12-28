@@ -422,6 +422,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void insertExplicitTemplateInstance(ClassDef *instance,const QCString &spec) = 0;
     virtual void insertMember(MemberDef *) = 0;
     virtual void insertUsedFile(const FileDef *) = 0;
+    virtual void addMemberToTemplateInstance(const MemberDef *md, const ArgumentList &templateArguments, const QCString &templSpec) = 0;
     virtual void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) = 0;
     virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file) = 0;
     virtual void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;

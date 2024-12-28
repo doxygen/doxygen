@@ -383,7 +383,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void overrideInlineSource(bool e) = 0;
     virtual void overrideEnumValues(bool e) = 0;
 
-    virtual void setTemplateMaster(MemberDef *mt) = 0;
+    virtual void setTemplateMaster(const MemberDef *mt) = 0;
     virtual void setFormalTemplateArguments(const ArgumentList &al) = 0;
     virtual void addListReference(Definition *d) = 0;
     virtual void setDocsForDefinition(bool b) = 0;

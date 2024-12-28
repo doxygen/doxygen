@@ -4747,8 +4747,6 @@ static void findTemplateInstanceRelation(const Entry *root,
 
 static void resolveTemplateInstanceInType(const Entry *root,const Definition *scope,const MemberDef *md)
 {
-  return; // disabled due to regression, need to find a better solutions
-
   // For a statement like 'using X = T<A>', add a template instance 'T<A>' as a symbol, so it can
   // be used to match arguments (see issue #11111)
   AUTO_TRACE();
@@ -5906,11 +5904,14 @@ static bool isSpecialization(
 static bool scopeIsTemplate(const Definition *d)
 {
   bool result=FALSE;
+  //printf("> scopeIsTemplate(%s)\n",qPrint(d?d->name():"null"));
   if (d && d->definitionType()==Definition::TypeClass)
   {
-    result = !(toClassDef(d))->templateArguments().empty() ||
+    auto cd = toClassDef(d);
+    result = cd->templateArguments().hasParameters() || cd->templateMaster()!=nullptr ||
              scopeIsTemplate(d->getOuterScope());
   }
+  //printf("< scopeIsTemplate=%d\n",result);
   return result;
 }
 
@@ -6246,6 +6247,7 @@ static void addMemberFunction(const Entry *root,
       }
       else if (defTemplArgs.size()>declTemplArgs.size())
       {
+        AUTO_TRACE_ADD("Different number of template arguments {} vs {}",defTemplArgs.size(),declTemplArgs.size());
         // avoid matching a non-template function in a template class against a
         // template function with the same name and parameters, see issue #10184
         substDone = false;

@@ -309,7 +309,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void overrideReferencesRelation(bool e) override;
     void overrideEnumValues(bool e) override;
     void overrideInlineSource(bool e) override;
-    void setTemplateMaster(MemberDef *mt) override;
+    void setTemplateMaster(const MemberDef *mt) override;
     void setFormalTemplateArguments(const ArgumentList &al) override;
     void addListReference(Definition *d) override;
     void setDocsForDefinition(bool b) override;
@@ -442,7 +442,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
 
     ArgumentList m_tArgList;      // template argument list of function template
     ArgumentList m_typeConstraints; // type constraints for template parameters
-    MemberDef *m_templateMaster = nullptr;
+    const MemberDef *m_templateMaster = nullptr;
     std::optional<ArgumentList> m_formalTemplateArguments;
     ArgumentLists m_defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
@@ -1571,7 +1571,7 @@ void MemberDefImpl::insertReimplementedBy(MemberDef *md)
 {
   if (m_templateMaster)
   {
-    MemberDefMutable *mdm = toMemberDefMutable(m_templateMaster);
+    MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef *>(m_templateMaster));
     if (mdm)
     {
       mdm->insertReimplementedBy(md);
@@ -5961,7 +5961,7 @@ MemberDef *MemberDefImpl::fromAnonymousMember() const
   return m_annMemb;
 }
 
-void MemberDefImpl::setTemplateMaster(MemberDef *mt)
+void MemberDefImpl::setTemplateMaster(const MemberDef *mt)
 {
   m_templateMaster=mt;
   m_isLinkableCached = 0;

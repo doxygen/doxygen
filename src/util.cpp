@@ -4933,8 +4933,13 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
  */
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope)
 {
+  AUTO_TRACE("leftScope='{}' rightScope='{}'",leftScope,rightScope);
   // case leftScope=="A" rightScope=="A::B" => result = "A::B"
-  if (leftScopeMatch(rightScope,leftScope)) return rightScope;
+  if (leftScopeMatch(leftScope,rightScope))
+  {
+    AUTO_TRACE_EXIT("case1={}",rightScope);
+    return rightScope;
+  }
   QCString result;
   int i=0,p=static_cast<int>(leftScope.length());
 
@@ -4950,12 +4955,17 @@ QCString mergeScopes(const QCString &leftScope,const QCString &rightScope)
     }
     p=i-1;
   }
-  if (found) return result;
+  if (found)
+  {
+    AUTO_TRACE_EXIT("case2={}",result);
+    return result;
+  }
 
   // case leftScope=="A" rightScope=="B" => result = "A::B"
   result=leftScope;
   if (!result.isEmpty() && !rightScope.isEmpty()) result+="::";
   result+=rightScope;
+  AUTO_TRACE_EXIT("case3={}",result);
   return result;
 }
 

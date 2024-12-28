@@ -303,6 +303,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void setTemplateMaster(const ClassDef *tm) override;
     void setImplicitTemplateInstance(bool b) override;
     void setTypeConstraints(const ArgumentList &al) override;
+    void addMemberToTemplateInstance(const MemberDef *md, const ArgumentList &templateArguments, const QCString &templSpec) override;
     void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) override;
     void makeTemplateArgument(bool b=TRUE) override;
     void setCategoryOf(ClassDef *cd) override;
@@ -1308,6 +1309,20 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
     MemberNameInfo *mni = m_allMemberNameInfoLinkedMap.add(md->name());
     mni->push_back(std::make_unique<MemberInfo>(md,prot,md->virtualness(),false,false));
   }
+
+  // if we already created template instances before inserting this member (i.e. due to a typedef or using statement)
+  // then we also need to insert the member in the template instance.
+  for (const auto &ti : getTemplateInstances())
+  {
+    //printf("member %s of class %s with template instance %s\n",qPrint(md->name()),qPrint(name()),
+    //    qPrint(ti.templSpec));
+    ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
+    if (cdm)
+    {
+      cdm->addMemberToTemplateInstance(md,templateArguments(),ti.templSpec);
+    }
+  }
+
 }
 
 void ClassDefImpl::insertMember(MemberDef *md)
@@ -4285,6 +4300,8 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
     if (templateClass)
     {
       templateClass->setTemplateMaster(this);
+      ArgumentList tal = *stringToArgumentList(getLanguage(),templSpec);
+      templateClass->setTemplateArguments(tal);
       templateClass->setOuterScope(getOuterScope());
       templateClass->setHidden(isHidden());
       templateClass->setArtificial(isArtificial());
@@ -4330,6 +4347,32 @@ const TemplateNameMap &ClassDefImpl::getTemplateBaseClassNames() const
   return m_templBaseClassNames;
 }
 
+void ClassDefImpl::addMemberToTemplateInstance(const MemberDef *md,
+                                               const ArgumentList &templateArguments,
+                                               const QCString &templSpec)
+{
+  auto actualArguments_p = stringToArgumentList(getLanguage(),templSpec);
+  auto imd = md->createTemplateInstanceMember(templateArguments,actualArguments_p);
+  //printf("%s->setMemberClass(%p)\n",qPrint(imd->name()),this);
+  auto mmd = toMemberDefMutable(imd.get());
+  mmd->setMemberClass(this);
+  mmd->setTemplateMaster(md);
+  mmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+  mmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+  mmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+  mmd->setMemberSpecifiers(md->getMemberSpecifiers());
+  mmd->setMemberGroupId(md->getMemberGroupId());
+  mmd->setArtificial(true);
+  insertMember(imd.get());
+  //printf("Adding member=%s %s%s to class %s templSpec %s\n",
+  //    imd->typeString(),qPrint(imd->name()),imd->argsString(),
+  //    qPrint(imd->getClassDef()->name()),templSpec);
+  // insert imd in the list of all members
+  //printf("Adding member=%s class=%s\n",qPrint(imd->name()),qPrint(name()));
+  MemberName *mn = Doxygen::memberNameLinkedMap->add(imd->name());
+  mn->push_back(std::move(imd));
+}
+
 void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec)
 {
   //printf("%s::addMembersToTemplateInstance(%s,%s)\n",qPrint(name()),qPrint(cd->name()),templSpec);
@@ -4337,27 +4380,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
   {
     for (const auto &mi : *mni)
     {
-      auto actualArguments_p = stringToArgumentList(getLanguage(),templSpec);
-      MemberDef *md = mi->memberDef();
-      auto imd = md->createTemplateInstanceMember(templateArguments,actualArguments_p);
-      //printf("%s->setMemberClass(%p)\n",qPrint(imd->name()),this);
-      auto mmd = toMemberDefMutable(imd.get());
-      mmd->setMemberClass(this);
-      mmd->setTemplateMaster(md);
-      mmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
-      mmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
-      mmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
-      mmd->setMemberSpecifiers(md->getMemberSpecifiers());
-      mmd->setMemberGroupId(md->getMemberGroupId());
-      mmd->setArtificial(true);
-      insertMember(imd.get());
-      //printf("Adding member=%s %s%s to class %s templSpec %s\n",
-      //    imd->typeString(),qPrint(imd->name()),imd->argsString(),
-      //    qPrint(imd->getClassDef()->name()),templSpec);
-      // insert imd in the list of all members
-      //printf("Adding member=%s class=%s\n",qPrint(imd->name()),qPrint(name()));
-      MemberName *mn = Doxygen::memberNameLinkedMap->add(imd->name());
-      mn->push_back(std::move(imd));
+      addMemberToTemplateInstance(mi->memberDef(),templateArguments,templSpec);
     }
   }
   // also instantatie members for nested classes
