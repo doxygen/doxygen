@@ -102,7 +102,7 @@ struct LayoutDocEntrySection: public LayoutDocEntrySimple
   LayoutDocEntrySection(Kind k,const QCString &tl,bool v) :
     LayoutDocEntrySimple(k,v), m_title(tl) {}
   QCString title(SrcLangExt lang) const;
-  std::string id() const override { return entryToString() + ":" + m_title.str(); }
+  std::string id() const override { return entryToString(); }
 private:
   QCString m_title;
 };
