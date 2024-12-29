@@ -74,6 +74,7 @@ int constexpYYerror(yyscan_t yyscanner, const char *s)
 start: constant_expression
        {
          struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
+         /* dummy statement to silence a 'set but not used' compiler warning */ (void)yynerrs;
          yyextra->resultValue = $1; return 0;
        }
 ;
