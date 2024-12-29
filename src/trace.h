@@ -100,7 +100,7 @@ class AutoTrace
         }
         else
         {
-          g_tracer->log(m_loc,spdlog::level::trace,"> "+fmt,std::forward<Args>(args)...);
+          g_tracer->log(m_loc,spdlog::level::trace,fmt::runtime("> "+fmt),std::forward<Args>(args)...);
         }
       }
     }
@@ -126,7 +126,7 @@ class AutoTrace
     {
       if (g_tracer)
       {
-        g_tracer->log(loc,spdlog::level::trace,": "+fmt,std::forward<Args>(args)...);
+        g_tracer->log(loc,spdlog::level::trace,fmt::runtime(": "+fmt),std::forward<Args>(args)...);
       }
     }
     template<typename... Args>
@@ -134,7 +134,7 @@ class AutoTrace
                  const std::string &msg,Args&&...args)
     {
       m_loc = loc;
-      m_exitMessage = fmt::format(msg,std::forward<Args>(args)...);
+      m_exitMessage = fmt::format(fmt::runtime(msg),std::forward<Args>(args)...);
     }
   private:
    spdlog::source_loc m_loc;
