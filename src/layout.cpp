@@ -1462,6 +1462,23 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data)
   //mergeNavEntries(layoutDocManager);
   mergeDocEntries(layoutDocManager);
 
+  // remove invisible entries
+  for (auto &list : d->docEntries)
+  {
+    auto it = list.begin();
+    while (it!=list.end())
+    {
+      if (!(*it)->visible())
+      {
+        it = list.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+  }
+
   // replace default layout with merged layout
   d->docEntries.swap(layoutDocManager.d->docEntries);
   d->rootNav.swap(layoutDocManager.d->rootNav);
@@ -1638,6 +1655,7 @@ static void mergeDocEntryLists(LayoutDocEntryList &targetList,LayoutDocEntryList
       //printf("--> insert\n");
     }
   }
+
 }
 
 void LayoutDocManager::mergeDocEntries(LayoutDocManager &other)
