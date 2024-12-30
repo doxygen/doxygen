@@ -240,7 +240,7 @@ class LayoutParser
       if (userTitle.isEmpty())     userTitle     = title;
       if (userSubscript.isEmpty()) userSubscript = subscript;
       bool isVisible = m_visible && elemIsVisible(attrib);
-      if (m_part!=LayoutDocManager::Undefined && isVisible)
+      if (m_part!=LayoutDocManager::Undefined)
       {
         m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntryMemberDecl>(type,userTitle,userSubscript,isVisible));
       }
@@ -253,7 +253,7 @@ class LayoutParser
       if (userTitle.isEmpty()) userTitle = title;
       //printf("memberdef: %s\n",qPrint(userTitle));
       bool isVisible = m_visible && elemIsVisible(attrib);
-      if (m_part!=LayoutDocManager::Undefined && isVisible)
+      if (m_part!=LayoutDocManager::Undefined)
       {
         m_layoutDocManager.addEntry(m_part,std::make_unique<LayoutDocEntryMemberDef>(type,userTitle,isVisible));
       }
@@ -1468,7 +1468,7 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data)
     auto it = list.begin();
     while (it!=list.end())
     {
-      if (!(*it)->visible())
+      if (*it==nullptr || !(*it)->visible())
       {
         it = list.erase(it);
       }
