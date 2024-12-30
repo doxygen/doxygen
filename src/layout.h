@@ -232,6 +232,11 @@ struct LayoutNavEntry
       std::swap(m_title,other.m_title);
       std::swap(m_intro,other.m_intro);
       std::swap(m_children,other.m_children);
+      // reparent children
+      for (auto &child : m_children)
+      {
+        child->m_parent = this;
+      }
     }
 
   private:
