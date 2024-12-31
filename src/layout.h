@@ -81,28 +81,25 @@ struct LayoutDocEntry
     }
   }
   virtual std::string id() const = 0;
-  virtual bool visible() const = 0;
 };
 
 /** @brief Represents of a piece of a documentation page without configurable parts */
 struct LayoutDocEntrySimple : LayoutDocEntry
 {
   public:
-    LayoutDocEntrySimple(Kind k,bool v) : m_kind(k), m_visible(v) {}
+    LayoutDocEntrySimple(Kind k,const std::string &id) : m_kind(k), m_id(id) {}
     Kind kind() const override { return m_kind; }
-    bool visible() const override { return m_visible; }
-    std::string id() const override { return entryToString(); }
+    std::string id() const override { return m_id; }
   private:
     Kind m_kind;
-    bool m_visible;
+    std::string m_id;
 };
 
 struct LayoutDocEntrySection: public LayoutDocEntrySimple
 {
-  LayoutDocEntrySection(Kind k,const QCString &tl,bool v) :
-    LayoutDocEntrySimple(k,v), m_title(tl) {}
+  LayoutDocEntrySection(Kind k,const std::string &id,const QCString &tl) :
+    LayoutDocEntrySimple(k,id), m_title(tl) {}
   QCString title(SrcLangExt lang) const;
-  std::string id() const override { return entryToString(); }
 private:
   QCString m_title;
 };
@@ -110,36 +107,34 @@ private:
 /** @brief Represents of a member declaration list with configurable title and subtitle. */
 struct LayoutDocEntryMemberDecl: public LayoutDocEntry
 {
-  LayoutDocEntryMemberDecl(MemberListType tp,
-                           const QCString &tl,const QCString &ss,bool v)
-    : type(tp), m_title(tl), m_subscript(ss), m_visible(v) {}
+  LayoutDocEntryMemberDecl(MemberListType tp,const std::string &id,
+                           const QCString &tl,const QCString &ss)
+    : type(tp), m_id(id), m_title(tl), m_subscript(ss) {}
 
   Kind kind() const override { return MemberDecl; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
   QCString subtitle(SrcLangExt lang) const;
-  bool visible() const override { return m_visible; }
-  std::string id() const override { return entryToString() + ":" + type.to_string(); }
+  std::string id() const override { return m_id; }
 private:
+  std::string m_id;
   QCString m_title;
   QCString m_subscript;
-  bool m_visible;
 };
 
 /** @brief Represents of a member definition list with configurable title. */
 struct LayoutDocEntryMemberDef: public LayoutDocEntry
 {
-  LayoutDocEntryMemberDef(MemberListType tp,const QCString &tl,bool v)
-    : type(tp), m_title(tl), m_visible(v) {}
+  LayoutDocEntryMemberDef(MemberListType tp,const std::string &id, const QCString &tl)
+    : type(tp), m_id(id), m_title(tl) {}
 
   Kind kind() const override { return MemberDef; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
-  bool visible() const override { return m_visible; }
-  std::string id() const override { return entryToString() + ":" + type.to_string(); }
+  std::string id() const override { return m_id; }
 private:
+  std::string m_id;
   QCString m_title;
-  bool m_visible;
 };
 
 using LayoutDocEntryPtr  = std::unique_ptr<LayoutDocEntry>;

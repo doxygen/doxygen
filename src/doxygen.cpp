@@ -9922,19 +9922,19 @@ void printLayout()
        if (const LayoutDocEntrySimple *ldes = dynamic_cast<const LayoutDocEntrySimple*>(lde.get()))
        {
          if (lde->kind() == LayoutDocEntry::MemberDeclEnd || lde->kind() == LayoutDocEntry::MemberDefEnd) extraIndent = false;
-         Debug::print(Debug::Layout,0,"  %skind: %s, visible=%d\n",
-           extraIndent? "  " : "",qPrint(lde->entryToString()), ldes->visible());
+         Debug::print(Debug::Layout,0,"  %skind: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()));
          if (lde->kind() == LayoutDocEntry::MemberDeclStart || lde->kind() == LayoutDocEntry::MemberDefStart) extraIndent = true;
        }
        else if (const LayoutDocEntryMemberDecl *lmdecl = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get()))
        {
-         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, visible=%d, type: %s\n",
-           extraIndent? "  " : "",qPrint(lde->entryToString()),lmdecl->visible(),qPrint(lmdecl->type.to_string()));
+         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, type: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()),qPrint(lmdecl->type.to_string()));
        }
        else if (const LayoutDocEntryMemberDef *lmdef = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get()))
        {
-         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, visible=%d, type: %s\n",
-           extraIndent? "  " : "",qPrint(lde->entryToString()),lmdef->visible(),qPrint(lmdef->type.to_string()));
+         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, type: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()),qPrint(lmdef->type.to_string()));
        }
        else
        {

@@ -398,7 +398,7 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (lmd && lmd->visible()) writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
+          if (lmd) writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDeclEnd:
@@ -413,7 +413,7 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          if (lmd && lmd->visible()) writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
+          if (lmd) writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefEnd:
@@ -800,7 +800,7 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd && lmd->visible())
+      if (lmd)
       {
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
@@ -987,7 +987,7 @@ int ModuleDefImpl::countVisibleMembers() const
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd && lmd->visible())
+      if (lmd)
       {
         MemberList *ml = getMemberList(lmd->type);
         if (ml)

@@ -752,7 +752,7 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (lmd && lmd->visible())
+          if (lmd)
           {
             MemberList * ml = getMemberList(lmd->type);
             if (ml)
@@ -1143,7 +1143,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd && lmd->visible())
+      if (lmd)
       {
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
@@ -1237,7 +1237,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (lmd && lmd->visible())
+          if (lmd)
           {
             writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
           }
@@ -1255,7 +1255,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          if (lmd && lmd->visible())
+          if (lmd)
           {
             writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
           }
