@@ -284,7 +284,7 @@ static QCString escapeSpecialChars(const QCString &s)
 }
 
 /** helper function to convert presence of left and/or right alignment markers
- *  to a alignment value
+ *  to an alignment value
  */
 static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 {
@@ -2231,7 +2231,7 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   AUTO_TRACE("data='{}' refIndent={}",Trace::trunc(data),refIndent);
   const char dot = '.';
   auto isAlphaChar  = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z'); };
-  auto isAlphaNChar = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9'); };
+  auto isAlphaNChar = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || (c=='+'); };
   auto isLangChar   = [&](char c) { return c==dot || isAlphaChar(c); };
   // rules: at least 3 ~~~, end of the block same amount of ~~~'s, otherwise
   // return FALSE
