@@ -59,8 +59,12 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
     QCString displayName(bool=TRUE) const override { return name(); }
     QCString getOutputFileBase() const override;
     QCString anchor() const override { return ""; }
-    bool isLinkableInProject() const override { return isLinkable() && !isHidden() && !isReference(); }
-    bool isLinkable() const override { return hasDocumentation(); }
+    bool isLinkableInProject() const override {
+      if (m_primaryInterface) return m_primaryInterface->isLinkableInProject();
+      else return isLinkable() && !isHidden() && !isReference(); }
+    bool isLinkable() const override {
+      if (m_primaryInterface) return m_primaryInterface->isLinkable();
+      else return hasDocumentation(); }
     QCString qualifiedName() const override;
     void writeSummaryLinks(OutputList &ol) const override;
 

@@ -3135,7 +3135,7 @@ bool resolveLink(/* in */ const QCString &scName,
 
   QCString linkRef=lr;
   QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
-  //printf("ResolveLink linkRef=%s\n",qPrint(lr));
+  AUTO_TRACE("scName='{}',ref='{}'",scName,lr);
   const FileDef  *fd = nullptr;
   const GroupDef *gd = nullptr;
   const PageDef  *pd = nullptr;
@@ -3147,6 +3147,7 @@ bool resolveLink(/* in */ const QCString &scName,
   bool ambig = false;
   if (linkRef.isEmpty()) // no reference name!
   {
+    AUTO_TRACE_EXIT("no_ref");
     return FALSE;
   }
   else if ((pd=Doxygen::pageLinkedMap->find(linkRef))) // link to a page
@@ -3162,63 +3163,74 @@ bool resolveLink(/* in */ const QCString &scName,
     {
       *resContext=pd;
     }
+    AUTO_TRACE_EXIT("page");
     return TRUE;
   }
   else if ((si=SectionManager::instance().find(prefix+linkRef)))
   {
     *resContext=si->definition();
     resAnchor = si->label();
+    AUTO_TRACE_EXIT("section");
     return TRUE;
   }
   else if ((pd=Doxygen::exampleLinkedMap->find(linkRef))) // link to an example
   {
     *resContext=pd;
+    AUTO_TRACE_EXIT("example");
     return TRUE;
   }
   else if ((gd=Doxygen::groupLinkedMap->find(linkRef))) // link to a group
   {
     *resContext=gd;
+    AUTO_TRACE_EXIT("group");
     return TRUE;
   }
   else if ((fd=findFileDef(Doxygen::inputNameLinkedMap,linkRef,ambig)) // file link
       && fd->isLinkable())
   {
     *resContext=fd;
+    AUTO_TRACE_EXIT("file");
     return TRUE;
   }
   else if ((cd=getClass(linkRef))) // class link
   {
     *resContext=cd;
     resAnchor=cd->anchor();
+    AUTO_TRACE_EXIT("class");
     return TRUE;
   }
   else if ((cd=getClass(linkRefWithoutTemplates))) // C#/Java generic class link
   {
     *resContext=cd;
     resAnchor=cd->anchor();
+    AUTO_TRACE_EXIT("generic");
     return TRUE;
   }
   else if ((cd=getClass(linkRef+"-p"))) // Obj-C protocol link
   {
     *resContext=cd;
     resAnchor=cd->anchor();
+    AUTO_TRACE_EXIT("protocol");
     return TRUE;
   }
   else if ((cnd=getConcept(linkRef))) // C++20 concept definition
   {
     *resContext=cnd;
     resAnchor=cnd->anchor();
+    AUTO_TRACE_EXIT("concept");
     return TRUE;
   }
   else if ((nd=Doxygen::namespaceLinkedMap->find(linkRef)))
   {
     *resContext=nd;
+    AUTO_TRACE_EXIT("namespace");
     return TRUE;
   }
   else if ((dir=Doxygen::dirLinkedMap->find(FileInfo(linkRef.str()).absFilePath()+"/"))
       && dir->isLinkable()) // TODO: make this location independent like filedefs
   {
     *resContext=dir;
+    AUTO_TRACE_EXIT("directory");
     return TRUE;
   }
   else // probably a member reference
@@ -3226,6 +3238,7 @@ bool resolveLink(/* in */ const QCString &scName,
     const MemberDef *md = nullptr;
     bool res = resolveRef(scName,lr,TRUE,resContext,&md);
     if (md) resAnchor=md->anchor();
+    AUTO_TRACE_EXIT("member? res={}",res);
     return res;
   }
 }

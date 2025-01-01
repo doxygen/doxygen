@@ -707,7 +707,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
 {
   const Definition  *compound = nullptr;
   QCString     anchor;
-  //printf("DocRef::DocRef(target=%s,context=%s)\n",qPrint(target),qPrint(context));
+  AUTO_TRACE("target='{}',context='{}'",target,context);
   ASSERT(!target.isEmpty());
   m_relPath = parser->context.relPath;
   const SectionInfo *sec = SectionManager::instance().find(parser->context.prefix+target);
@@ -745,6 +745,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     m_sectionType = sec->type();
     //printf("m_text=%s,m_ref=%s,m_file=%s,type=%d\n",
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);
+    AUTO_TRACE_EXIT("section");
     return;
   }
   else if (resolveLink(context,target,true,&compound,anchor,parser->context.prefix))
@@ -781,6 +782,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
       m_ref  = compound->getReference();
       //printf("isFile=%d compound=%s (%d)\n",isFile,qPrint(compound->name()),
       //    compound->definitionType());
+      AUTO_TRACE_EXIT("compound");
       return;
     }
     else if (compound && compound->definitionType()==Definition::TypeFile &&
@@ -789,7 +791,12 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     {
       m_file = compound->getSourceFileBase();
       m_ref  = compound->getReference();
+      AUTO_TRACE_EXIT("source");
       return;
+    }
+    else
+    {
+      AUTO_TRACE_EXIT("compound '{}' not linkable",compound?compound->name():"none");
     }
   }
   m_text = target;
