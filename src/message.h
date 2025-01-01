@@ -32,6 +32,7 @@ extern void va_warn(const QCString &file, int line, const char* fmt, va_list arg
 extern void warn_undoc_(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
 extern void warn_incomplete_doc_(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
 extern void warn_doc_error_(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
+extern void warn_layout_(const QCString &file, int line, const char *fmt, ...) PRINTFLIKE(3, 4);
 extern void warn_uncond_(const char *fmt, ...) PRINTFLIKE(1, 2);
 extern void err_(const char *fmt, ...) PRINTFLIKE(1, 2);
 extern void err_full_(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);

@@ -251,6 +251,14 @@ void warn_doc_error_(const QCString &file,int line,const char *fmt, ...)
   va_end(args);
 }
 
+void warn_layout_(const QCString &file,int line,const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  do_warn(Config_getBool(WARN_LAYOUT_FILE), file, line, g_warningStr, fmt, args);
+  va_end(args);
+}
+
 void warn_uncond_(const char *fmt, ...)
 {
   va_list args;

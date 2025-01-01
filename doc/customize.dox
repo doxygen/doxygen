@@ -420,6 +420,11 @@ this attribute can be used anyway (the default is `visible="yes"`).
 Some elements have a \c title attribute. This attribute can be used
 to customize the title Doxygen will use as a header for the piece.
 
+Note that as of doxygen version 1.13.1 and layout version 2.0, Doxygen
+will insert defaults for elements that are missing in
+the user defined layout file. This allows for the introduction of new elements, without having
+to update the user defined layout files to make them appear.
+For older Doxygen or layout versions, missing elements are treated as being invisible.
 
 \section xmlgenerator Using the XML output
 

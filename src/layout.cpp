@@ -203,7 +203,7 @@ class LayoutParser
     }
     void error( const std::string &fileName,int lineNr,const std::string &msg)
     {
-      warn(fileName.c_str(),lineNr,"%s",msg.c_str());
+      warn_layout_(fileName.c_str(),lineNr,"%s",msg.c_str());
     }
     void startElement( const std::string &name, const XMLHandlers::Attributes& attrib );
     void endElement( const std::string &name );
@@ -559,11 +559,11 @@ class LayoutParser
         std::string fileName = m_locator->fileName();
         if (type.isEmpty())
         {
-          warn(fileName.c_str(),m_locator->lineNr(),"an entry tag within a navindex has no type attribute! Check your layout file!");
+          warn_layout_(fileName.c_str(),m_locator->lineNr(),"an entry tag within a navindex has no type attribute! Check your layout file!");
         }
         else
         {
-          warn(fileName.c_str(),m_locator->lineNr(),"the type '%s' is not supported for the entry tag within a navindex! Check your layout file!",qPrint(type));
+          warn_layout_(fileName.c_str(),m_locator->lineNr(),"the type '%s' is not supported for the entry tag within a navindex! Check your layout file!",qPrint(type));
         }
         m_invalidEntry=TRUE;
         return;
@@ -1365,7 +1365,7 @@ void LayoutParser::startElement( const std::string &name, const XMLHandlers::Att
   else
   {
     std::string fileName = m_locator->fileName();
-    warn(fileName.c_str(),m_locator->lineNr(),"Unexpected start tag '%s' found in scope='%s'!",
+    warn_layout_(fileName.c_str(),m_locator->lineNr(),"Unexpected start tag '%s' found in scope='%s'!",
         qPrint(name),qPrint(m_scope));
   }
 }
@@ -1711,7 +1711,7 @@ static void mergeDocEntryLists(const QCString &fileName,LayoutDocEntryList &targ
     {
       // for efficiency we move the elements from the source list to the target list, thus modifying the source list!
       //printf("--> insert at %zu before %s\n",*it,qPrint(*it<targetList.size()?targetList[*it]->id():"none"));
-      warn(fileName,1,"User defined layout misses entry '%s'. Using default value.",qPrint(id));
+      warn_layout_(fileName,1,"User defined layout misses entry '%s'. Using default value.",qPrint(id));
       targetList.insert(targetList.begin()+*it, std::move(sourceList[idx]));
     }
   }

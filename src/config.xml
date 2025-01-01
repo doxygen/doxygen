@@ -1461,6 +1461,16 @@ PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 ]]>
       </docs>
     </option>
+    <option type='bool' id='WARN_LAYOUT_FILE' defval='1'>
+      <docs>
+<![CDATA[
+ If \c WARN_LAYOUT_FILE option is set to \c YES, Doxygen will warn
+ about issues found while parsing the user defined layout file, such as missing
+ or wrong elements. See also \ref cfg_layout_file "LAYOUT_FILE" for details.
+ If set to \c NO, problems with the layout file will be suppressed.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='WARN_AS_ERROR' defval='NO'>
       <docs>
 <![CDATA[
