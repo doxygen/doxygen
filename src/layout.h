@@ -118,7 +118,7 @@ struct LayoutDocEntryMemberDecl: public LayoutDocEntry
   MemberListType type;
   QCString title(SrcLangExt lang) const;
   QCString subtitle(SrcLangExt lang) const;
-  bool visible() const override { return m_visible; }  
+  bool visible() const override { return m_visible; }
   std::string id() const override { return m_id; }
 private:
   std::string m_id;
@@ -136,7 +136,7 @@ struct LayoutDocEntryMemberDef: public LayoutDocEntry
   Kind kind() const override { return MemberDef; }
   MemberListType type;
   QCString title(SrcLangExt lang) const;
-  bool visible() const override { return m_visible; }  
+  bool visible() const override { return m_visible; }
   std::string id() const override { return m_id; }
 private:
   std::string m_id;
@@ -292,10 +292,12 @@ class LayoutDocManager
     /** Parses a user provided layout */
     void parse(const QCString &fileName, const char* data = nullptr);
     void init();
+    int majorVersion() const;
+    int minorVersion() const;
   private:
     void addEntry(LayoutPart p,LayoutDocEntryPtr &&e);
     void mergeNavEntries(LayoutDocManager &manager);
-    void mergeDocEntries(LayoutDocManager &manager);
+    void mergeDocEntries(const QCString &fileName,LayoutDocManager &manager);
     void removeInvisibleDocEntries();
     LayoutDocManager();
     ~LayoutDocManager();
@@ -305,6 +307,7 @@ class LayoutDocManager
 };
 
 void writeDefaultLayoutFile(const QCString &fileName);
+void printLayout();
 
 #endif
 

@@ -30,6 +30,7 @@
 #include "docparser.h"
 #include "docnode.h"
 #include "debug.h"
+#include "regex.h"
 
 inline QCString compileOptions(const QCString &def)
 {
@@ -262,8 +263,18 @@ class LayoutParser
       }
     }
 
-    void startLayout(const std::string &,const XMLHandlers::Attributes &)
+    void startLayout(const std::string &,const XMLHandlers::Attributes &attrib)
     {
+      // extract and store version number
+      QCString version = XMLHandlers::value(attrib,"version");
+      static const reg::Ex re(R"((\d+)\.(\d+))");
+      reg::Match match;
+      if (reg::match(version.view(),match,re))
+      {
+        m_majorVersion = atoi(match[1].str().c_str());
+        m_minorVersion = atoi(match[2].str().c_str());
+        //printf("layout version %d.%d\n",m_versionMajor,m_versionMinor);
+      }
     }
 
     void startNavIndex(const std::string &,const XMLHandlers::Attributes &)
@@ -689,6 +700,9 @@ class LayoutParser
       }
     }
 
+    int majorVersion() const { return m_majorVersion; }
+    int minorVersion() const { return m_minorVersion; }
+
   private:
     QCString m_scope;
     LayoutDocManager &m_layoutDocManager;
@@ -698,6 +712,8 @@ class LayoutParser
     bool m_visible = true;
     static int m_userGroupCount;
     const XMLLocator *m_locator = nullptr;
+    int m_majorVersion = 1;
+    int m_minorVersion = 0;
 };
 
 //---------------------------------------------------------------------------------
@@ -1384,6 +1400,8 @@ class LayoutDocManager::Private
   public:
     std::array<LayoutDocEntryList,LayoutDocManager::NrParts> docEntries;
     LayoutNavEntry rootNav;
+    int majorVersion;
+    int minorVersion;
 };
 
 LayoutDocManager::LayoutDocManager() : d(std::make_unique<Private>())
@@ -1410,6 +1428,8 @@ void LayoutDocManager::init()
                [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",layoutFile); }
               );
   removeInvisibleDocEntries();
+  d->majorVersion = layoutParser.majorVersion();
+  d->minorVersion = layoutParser.minorVersion();
 }
 
 LayoutDocManager & LayoutDocManager::instance()
@@ -1463,12 +1483,21 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data)
                [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",qPrint(fileName)); },
                transcodeCharacterStringToUTF8
               );
-  // merge missing parts of the default layout into the user defined layout
 
+  // version in the user defined layout overrides default one
+  d->majorVersion = layoutParser.majorVersion();
+  d->minorVersion = layoutParser.minorVersion();
+
+  // merge missing parts of the default layout into the user defined layout
   // For now merging in defaults has been disabled for navigation entries
   // to avoid "extra entries" for projects that work with partial layout files.
   //mergeNavEntries(layoutDocManager);
-  mergeDocEntries(layoutDocManager);
+
+  // for compatibility reasons we only merge defaults when the user defined layout has at least version 2.0 or higher
+  if (d->majorVersion>=2)
+  {
+    mergeDocEntries(fileName,layoutDocManager);
+  }
 
   layoutDocManager.removeInvisibleDocEntries();
 
@@ -1495,6 +1524,16 @@ void LayoutDocManager::removeInvisibleDocEntries()
       }
     }
   }
+}
+
+int LayoutDocManager::majorVersion() const
+{
+  return d->majorVersion;
+}
+
+int LayoutDocManager::minorVersion() const
+{
+  return d->minorVersion;
 }
 
 // search for candidate node in tree with root target. Returns the match target node if found, or nullptr otherwise.
@@ -1596,7 +1635,7 @@ void LayoutDocManager::mergeNavEntries(LayoutDocManager &other)
   mergeNavTreeNodesRec(other.rootNavEntry(),rootNavEntry());
 }
 
-static void mergeDocEntryLists(LayoutDocEntryList &targetList,LayoutDocEntryList &sourceList)
+static void mergeDocEntryLists(const QCString &fileName,LayoutDocEntryList &targetList,LayoutDocEntryList &sourceList)
 {
   using IdSet = std::unordered_set<std::string>;
   using IdMap = std::unordered_map<std::string,size_t>;
@@ -1672,18 +1711,19 @@ static void mergeDocEntryLists(LayoutDocEntryList &targetList,LayoutDocEntryList
     {
       // for efficiency we move the elements from the source list to the target list, thus modifying the source list!
       //printf("--> insert at %zu before %s\n",*it,qPrint(*it<targetList.size()?targetList[*it]->id():"none"));
+      warn(fileName,1,"User defined layout misses entry '%s'. Using default value.",qPrint(id));
       targetList.insert(targetList.begin()+*it, std::move(sourceList[idx]));
     }
   }
 
 }
 
-void LayoutDocManager::mergeDocEntries(LayoutDocManager &other)
+void LayoutDocManager::mergeDocEntries(const QCString &fileName,LayoutDocManager &other)
 {
    for (size_t i=0; i<d->docEntries.size(); i++)
    {
      //printf("========= part %zu\n",i);
-     mergeDocEntryLists(other.d->docEntries[i],d->docEntries[i]);
+     mergeDocEntryLists(fileName,other.d->docEntries[i],d->docEntries[i]);
    }
 }
 
@@ -1760,6 +1800,70 @@ QCString LayoutDocEntryMemberDef::title(SrcLangExt lang) const
   return extractLanguageSpecificTitle(m_title,lang);
 }
 
+//----------------------------------------------------------------------------------
+
+static void printNavLayout(LayoutNavEntry *root,int indent)
+{
+  if (Debug::isFlagSet(Debug::Layout))
+  {
+    QCString indentStr;
+    indentStr.fill(' ',indent);
+    Debug::print(Debug::Layout,0,"%skind=%s visible=%d title='%s'\n",
+        indentStr.isEmpty()?"":qPrint(indentStr),
+        qPrint(root->navToString()),
+        root->visible(),
+        qPrint(root->title())
+        );
+    for (const auto &e : root->children())
+    {
+      printNavLayout(e.get(),indent+2);
+    }
+  }
+}
+
+void printLayout()
+{
+  bool extraIndent = false;
+
+  auto &mgr = LayoutDocManager::instance();
+  Debug::print(Debug::Layout,0,"Layout version %d.%d\n",mgr.majorVersion(),mgr.minorVersion());
+
+  Debug::print(Debug::Layout,0,"Part: Navigation index\n");
+  for (const auto &e : mgr.rootNavEntry()->children())
+  {
+    printNavLayout(e.get(),2);
+  }
+
+  for (int i = 0; i < LayoutDocManager::NrParts; i++)
+  {
+     Debug::print(Debug::Layout,0,"\nPart: %s\n", qPrint(LayoutDocManager::partToString(i)));
+     for (const auto &lde : mgr.docEntries(static_cast<LayoutDocManager::LayoutPart>(i)))
+     {
+       if (const LayoutDocEntrySimple *ldes = dynamic_cast<const LayoutDocEntrySimple*>(lde.get()))
+       {
+         if (lde->kind() == LayoutDocEntry::MemberDeclEnd || lde->kind() == LayoutDocEntry::MemberDefEnd) extraIndent = false;
+         Debug::print(Debug::Layout,0,"  %skind: %s, visible=%d\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()), ldes->visible());
+         if (lde->kind() == LayoutDocEntry::MemberDeclStart || lde->kind() == LayoutDocEntry::MemberDefStart) extraIndent = true;
+       }
+       else if (const LayoutDocEntryMemberDecl *lmdecl = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get()))
+       {
+         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, visible=%d, type: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()),lmdecl->visible(),qPrint(lmdecl->type.to_string()));
+       }
+       else if (const LayoutDocEntryMemberDef *lmdef = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get()))
+       {
+         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, visible=%d, type: %s\n",
+           extraIndent? "  " : "",qPrint(lde->entryToString()),lmdef->visible(),qPrint(lmdef->type.to_string()));
+       }
+       else
+       {
+         // should not happen
+         Debug::print(Debug::Layout,0,"  %snot handled kind: %s\n",extraIndent? "  " : "",qPrint(lde->entryToString()));
+       }
+     }
+  }
+}
 
 
 
