@@ -12,6 +12,7 @@
 will insert defaults for elements that are missing in the user defined layout file. This allows for the introduction of new elements, without having
 to update the user defined layout files to make them appear. For older Doxygen
 or layout versions, missing elements are still treated as being invisible as before.
+</li>
 </ul>
 
 <h3>Features</h3>
