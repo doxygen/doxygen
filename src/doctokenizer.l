@@ -614,6 +614,15 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          QCString value = Portable::getenv(name);
                          for (int i=static_cast<int>(value.length())-1;i>=0;i--) unput(value.at(i));
                        }
+<St_Para>"<blockquote>&zwj;"  {
+                         // for a markdown inserted block quote,
+                         // tell flex that after putting the last indent
+                         // back we are at the beginning of the line, see issue #11309
+                         YY_CURRENT_BUFFER->yy_at_bol=1;
+                         lineCount(yytext,yyleng);
+                         handleHtmlTag(yyscanner,yytext);
+                         return Token::make_TK_HTMLTAG();
+                       }
 <St_Para>{HTMLTAG}     { /* html tag */
                          lineCount(yytext,yyleng);
                          handleHtmlTag(yyscanner,yytext);

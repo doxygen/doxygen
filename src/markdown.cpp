@@ -2796,7 +2796,7 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       j--;
     }
     AUTO_TRACE_ADD("indent={} i={} j={} end={} level={} line={}",indent,i,j,end,level,Trace::trunc(&data[i]));
-    if (level==0 && j<end-1)
+    if (level==0 && j<end-1 && !isListMarker(data.substr(j)) && !isHRuler(data.substr(j)))
     {
       level = curLevel; // lazy
     }
@@ -2835,7 +2835,7 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       }
       for (int l=level;l<decrLevel;l++)
       {
-        out += "</blockquote>";
+        out += "</blockquote>\\ilinebr ";
       }
     }
     if (level==0)
