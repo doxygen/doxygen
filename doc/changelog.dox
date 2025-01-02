@@ -1,6 +1,43 @@
 /** \page changelog Changelog
 \tableofcontents{html,latex}
 \section log_1_13 1.13 Series
+\subsection log_1_13_1 Release 1.13.1
+\htmlonly
+<b>(release date 02-01-2025)</b>
+</p>
+
+<h3>Minor incompatibilities</h3>
+<ul>
+<li>As of doxygen version 1.13.1 and layout version 2.0, Doxygen
+will insert defaults for elements that are missing in the user defined layout file. This allows for the introduction of new elements, without having
+to update the user defined layout files to make them appear. For older Doxygen
+or layout versions, missing elements are still treated as being invisible as before.
+</ul>
+
+<h3>Features</h3>
+<ul>
+<li>Add WARN_LAYOUT_FILE option to toggle warnings in layout file [<a href="https://github.com/doxygen/doxygen/commit/ba083a9e676e5e8bf2f7a865ef858fdd17f6460e">view</a>]</li>
+</ul>
+
+<h3>Bug fixes</h3>
+<ul>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11111">#11111</a> Overloaded functions are mixed when their arguments have template with object in other namespace [<a href="https://github.com/doxygen/doxygen/commit/8386ff0b7f80e9d1687738205188a8c335063899">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11299">#11299</a> Regression with HTML_DYNAMIC_MENUS = NO, DISABLE_INDEX = NO, and custom LAYOUT_FILE [<a href="https://github.com/doxygen/doxygen/commit/f46e21ed722193d74f56b2aa275a5cdc5e40b72b">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11301">#11301</a> Doxygen 1.13.0 ignores visibility=&quot;no&quot; for various layout elements [<a href="https://github.com/doxygen/doxygen/commit/07cad67300b47f399bba3836c8b1f109c1b6f475">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/ee1bb44f23724210b95ea4d4d87fcbd52128ad0e">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/d48b3705023cc327ec80d30eb84a50a7e48a67b7">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/61fa3f89106b53f4776f9203a1f5d6fede32f18e">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/4f16ac7c3eccc7af03f0257cf6cf03506e397f6a">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/9f5033c0e39076d44fdb4f676248f0e2d6dc3562">view</a>], and [<a href="https://github.com/doxygen/doxygen/commit/13978f38236799bc2978db507e2a5ef4950217f5">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11307">#11307</a> C++ 20 module partition: Links to class members not found [<a href="https://github.com/doxygen/doxygen/commit/64f2d998f053df36215c90f0525651ef01b78a33">view</a>]</li>
+<li>Fix compiler error when compiling doxygen in C++20 mode [<a href="https://github.com/doxygen/doxygen/commit/54259f7ad46f91316468248d92b2a65e58d4586d">view</a>]</li>
+<li>Silence compiler warning in generated ce_parse.cpp [<a href="https://github.com/doxygen/doxygen/commit/f1bf91e284fd8f67a9631b0146a5d574983f14f1">view</a>]</li>
+<li>cmake: Fix flex version check for overriding the register keyword [<a href="https://github.com/doxygen/doxygen/commit/e592cd7cdcd4630798c239944764d3ce8753b5ec">view</a>]</li>
+</ul>
+
+<h3>Improved user feedback and documentation</h3>
+<ul>
+<li>Add module part to customize documentation [<a href="https://github.com/doxygen/doxygen/commit/04d271d167892bcd87e097766c574a3ccf396f83">view</a>]</li>
+<li>Documentation corrections. [<a href="https://github.com/doxygen/doxygen/commit/acb534cb3ecd403a8e46b154b9f5df618a796903">view</a>]</li>
+</ul>
+<p>
+\endhtmlonly
+
 \subsection log_1_13_0 Release 1.13.0
 \htmlonly
 <b>(release date 28-12-2024)</b>

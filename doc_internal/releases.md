@@ -2,6 +2,7 @@
 
 The following table gives an overview of the doxygen releases together with the release dates.
 <ul class="multicol">
+<li><b>Release 1.13.1</b>&nbsp;&nbsp; 02-01-2025</li>
 <li><b>Release 1.13.0</b>&nbsp;&nbsp; 28-12-2024</li>
 <li><b>Release 1.12.0</b>&nbsp;&nbsp; 07-08-2024</li>
 <li><b>Release 1.11.0</b>&nbsp;&nbsp; 20-05-2024</li>

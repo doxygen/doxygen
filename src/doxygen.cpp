@@ -11201,7 +11201,7 @@ static void version(const bool extended)
 static void usage(const QCString &name,const QCString &versionString)
 {
   Debug::clearFlag(Debug::Time);
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2024\n\n",qPrint(versionString));
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2025\n\n",qPrint(versionString));
   msg("You can use Doxygen in a number of ways:\n\n");
   msg("1) Use Doxygen to generate a template configuration file*:\n");
   msg("    %s [-s] -g [configName]\n\n",qPrint(name));
