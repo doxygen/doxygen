@@ -453,8 +453,8 @@ which will produce:
 int func(int a,int b) { return a*b; }
 ~~~~~~~~~~~~~~~
 
-The dot is optional, the curly braces are optional when the that language name begins with a
-alphabetical character and further characters are alphanumerical characters.
+The dot is optional, the curly braces are optional when the that language name begins with an
+alphabetical character and further characters are alphanumerical characters or a plus sign.
 
 Another way to denote fenced code blocks is to use 3 or more backticks (```):
 
