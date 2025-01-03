@@ -551,6 +551,10 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
       // skip over name (and optionally type)
       while (offset_<data_.size() && (c=data_[offset_])!='\n' && (allowSpaces || c!=' ') && c!='(')
       {
+        if (offset_<data_.size()-9 && data_[offset_]=='\\')
+        {
+          if (qstrncmp(&data_[offset_+1],"ilinebr ",8)==0) break;
+        }
         offset_++;
       }
       if (c=='(') // find the end of the function
