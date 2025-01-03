@@ -27,6 +27,9 @@ The relevant settings, such as alias definitions, will be taken from the Doxyfil
 If desired you can set the port for the webserver using `--port` and
 point to the location of the doxygen binary using `--doxygen`
 
+Furthermore you can display the doxygen version used at the top of the output using `--version` and
+the warnings emitted by doxygen at the bottom of the output by means of `--debug`.
+
 Once the server is started, point your browser to the index page
 
     firefox http://localhost:8000/index.html
