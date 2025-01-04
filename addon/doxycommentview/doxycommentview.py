@@ -63,8 +63,9 @@ def main():
                     self.wfile.write("<hr>".encode())
                 self.wfile.write(result.stdout.encode())
                 if DEBUG:
-                    self.wfile.write("<hr>".encode())
-                    self.wfile.write(result.stderr.replace('\n','<br>').encode())
+                    self.wfile.write("<hr>\n<pre>".encode())
+                    self.wfile.write(result.stderr.replace('&','&amp;').replace("'","&apos;").replace('<','&lt;').replace('>','&gt;').encode())
+                    self.wfile.write("</pre>".encode())
 
     httpd = socketserver.TCPServer(("", PORT), RequestHandler)
 
