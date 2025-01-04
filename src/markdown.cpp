@@ -2854,6 +2854,9 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
       }
       else
       {
+        curLevel=level;
+        i = indent;
+        if (txt[0] == '#') break; // begin of markdown section command
         out += txt;
       }
       isGitHubFirst = false;
@@ -2875,6 +2878,7 @@ size_t Markdown::Private::writeBlockQuote(std::string_view data)
   {
     out+="</blockquote>";
   }
+  out+="\\ilinebr ";
   AUTO_TRACE_EXIT("i={}",i);
   return i;
 }
