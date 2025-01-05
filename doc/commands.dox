@@ -889,8 +889,8 @@ Structural indicators
 
   \addindex \\fileinfo
   Shows (part) of the file name in which this command is placed.
-  The `option` can be `name`, `extension`, `filename`, `directory` or, `full`,
-  with
+  The `option` can be `name`, `extension`, `filename`, `directory` or `full`
+  with:
   - `name` the name of the file without extension
   - `extension` the extension of the file
   - `filename` the filename i.e. `name` plus `extension`
@@ -3682,11 +3682,17 @@ class Receiver
   \ref cmdimage "\\image" command.
 
 <hr>
-\section cmddoxyconfig \\doxyconfig \<config_option\>
+\section cmddoxyconfig \\doxyconfig['{'option'}'] [\<config_option\>]
 
   \addindex \\doxyconfig
   Displays the value of the configuration option `<config_option>` as used in Doxygen's
   configuration file that is in use when this command is processed.
+
+  The `option` can be one of `full`, `help` or `all` with:
+  - `full` the name of the `config_option` (together with ` = `) is displayed along with the value
+  - `help` the help information of the `config_option` is displayed
+  - `all` the name and value (analogous to the format with `full`) s displayed for all possible
+    configuration options (so no the `config_option` should be given);
 
   \par Example:
   When creating this manual the following:

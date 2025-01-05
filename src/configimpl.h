@@ -74,6 +74,7 @@ class ConfigOption
     void addDependency(const char *dep) { m_dependency = dep; }
     void setEncoding(const QCString &e) { m_encoding = e; }
     void setUserComment(const QCString &u) { m_userComment += u; }
+    QCString getDocumentation() const { return m_doc; }
 
   protected:
     virtual void writeTemplate(TextStream &t,bool sl,bool upd) = 0;
@@ -229,6 +230,7 @@ class ConfigInt : public ConfigOption
       m_maxVal = maxVal;
     }
     QCString *valueStringRef() { return &m_valueString; }
+    QCString getDefaultStr() { return QCString().setNum(m_value); }
     int *valueRef() { return &m_value; }
     int minVal() const { return m_minVal; }
     int maxVal() const { return m_maxVal; }
@@ -262,6 +264,7 @@ class ConfigBool : public ConfigOption
       m_defValue = defVal;
     }
     QCString *valueStringRef() { return &m_valueString; }
+    QCString getDefaultStr() { return m_value ? "YES" : "NO"; }
     bool *valueRef() { return &m_value; }
     void convertStrToVal(Config::CompareMode compareMode) override;
     void substEnvVars() override;
@@ -609,6 +612,8 @@ class ConfigImpl
     static void config_err(const char *fmt, ...);
     static void config_term(const char *fmt, ...);
     static void config_warn(const char *fmt, ...);
+
+    ConfigOptionList *getOptions() {return &m_options;}
 
   private:
     ConfigOptionList m_options;

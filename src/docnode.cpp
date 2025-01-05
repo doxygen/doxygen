@@ -3358,99 +3358,194 @@ void DocPara::handleEmoji(char cmdChar,const QCString &cmdName)
 
 void DocPara::handleDoxyConfig(char cmdChar,const QCString &cmdName)
 {
-  // get the argument of the cite command.
+  QCString saveCmdName = cmdName;
   Token tok=parser()->tokenizer.lex();
-  if (!tok.is(TokenRetval::TK_WHITESPACE))
+  bool allConfig = false;
+  bool fullConfig = false;
+  bool helpConfig = false;
+  if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
+  {
+    parser()->tokenizer.setStateOptions();
+    parser()->tokenizer.lex();
+    parser()->tokenizer.setStatePara();
+    StringVector optList=split(parser()->context.token->name.str(),",");
+    for (const auto &opt : optList)
+    {
+      if (opt.empty()) continue;
+      QCString locOpt(opt);
+      locOpt = locOpt.stripWhiteSpace().lower();
+      if (locOpt == "all")
+      {
+        allConfig = true;
+      }
+      else if (locOpt == "full")
+      {
+        fullConfig = true;
+      }
+      else if (locOpt == "help")
+      {
+        helpConfig = true;
+      }
+      else if (!locOpt.isEmpty())
+      {
+        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown option '%s' for '%c%s'",qPrint(opt),
+            cmdChar,qPrint(saveCmdName));
+      }
+    }
+    int nrOpt = 0;
+    if (allConfig) nrOpt++;
+    if (fullConfig) nrOpt++;
+    if (helpConfig) nrOpt++;
+    if (nrOpt > 1)
+    {
+      allConfig = false;
+      fullConfig = false;
+      helpConfig = false;
+      warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+           "More than one option specified for '%c%s', discarding all options",
+            cmdChar,qPrint(saveCmdName));
+    }
+    if (!allConfig)
+    {
+      tok=parser()->tokenizer.lex();
+      if (!tok.is(TokenRetval::TK_WHITESPACE))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after %c%s command",
+            cmdChar,qPrint(saveCmdName));
+        return;
+      }
+    }
+  }
+  else if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '%c%s' command",
-      cmdChar,qPrint(cmdName));
+      cmdChar,qPrint(saveCmdName));
     return;
   }
-  parser()->tokenizer.setStateDoxyConfig();
-  tok=parser()->tokenizer.lex();
-  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
+  if (!allConfig)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command '%c%s'",cmdChar,qPrint(cmdName));
-    return;
-  }
-  else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
-        tok.to_string(),cmdChar,qPrint(cmdName));
-    return;
-  }
-  ConfigOption * opt = ConfigImpl::instance()->get(parser()->context.token->name);
-  if (opt)
-  {
-    QCString optionValue;
-    switch (opt->kind())
+    parser()->tokenizer.setStateDoxyConfig();
+    tok=parser()->tokenizer.lex();
+    if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
     {
-      case ConfigOption::O_Bool:
-        optionValue = *(static_cast<ConfigBool*>(opt)->valueStringRef());
-        break;
-      case ConfigOption::O_String:
-        optionValue = *(static_cast<ConfigString*>(opt)->valueRef());
-        break;
-      case ConfigOption::O_Enum:
-        optionValue = *(static_cast<ConfigEnum*>(opt)->valueRef());
-        break;
-      case ConfigOption::O_Int:
-        optionValue = *(static_cast<ConfigInt*>(opt)->valueStringRef());
-        break;
-      case ConfigOption::O_List:
-        {
-          StringVector *lst = static_cast<ConfigList*>(opt)->valueRef();
-          optionValue="";
-          if (!lst->empty())
-          {
-            std::string lstFormat = theTranslator->trWriteList(static_cast<int>(lst->size())).str();
-            static const reg::Ex marker(R"(@(\d+))");
-            reg::Iterator it(lstFormat,marker);
-            reg::Iterator end;
-            size_t index=0;
-            // now replace all markers with the real text
-            for ( ; it!=end ; ++it)
-            {
-              const auto &match = *it;
-              size_t newIndex = match.position();
-              size_t matchLen = match.length();
-              optionValue += lstFormat.substr(index,newIndex-index);
-              unsigned long entryIndex = std::stoul(match[1].str());
-              if (entryIndex<(unsigned long)lst->size())
-              {
-                optionValue += lst->at(entryIndex);
-              }
-              index=newIndex+matchLen;
-            }
-            optionValue+=lstFormat.substr(index);
-          }
-        }
-        break;
-      case ConfigOption::O_Obsolete:
-        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Obsolete setting for '%c%s': '%s'",
-              cmdChar,qPrint(cmdName),qPrint(parser()->context.token->name));
-        break;
-      case ConfigOption::O_Disabled:
-        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),
-              "Disabled setting (i.e. not supported in this doxygen executable) for '%c%s': '%s'",
-              cmdChar,qPrint(cmdName),qPrint(parser()->context.token->name));
-        break;
-      case ConfigOption::O_Info:
-        // nothing to show here
-        break;
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
+          "argument of command '%c%s'",cmdChar,qPrint(saveCmdName));
+      return;
     }
-    if (!optionValue.isEmpty())
+    else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
     {
-      children().append<DocWord>(parser(),thisVariant(),optionValue);
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of '%c%s'",
+          tok.to_string(),cmdChar,qPrint(saveCmdName));
+      return;
+    }
+  }
+
+  auto process = [&](const QCString &name)
+  {
+    ConfigOption * opt = ConfigImpl::instance()->get(name);
+    if (opt)
+    {
+      QCString optionValue;
+      bool isSet = true;
+      switch (opt->kind())
+      {
+        case ConfigOption::O_Bool:
+          optionValue = *(static_cast<ConfigBool*>(opt)->valueStringRef());
+          if (optionValue.isEmpty()) optionValue = static_cast<ConfigBool*>(opt)->getDefaultStr();
+          break;
+        case ConfigOption::O_String:
+          optionValue = *(static_cast<ConfigString*>(opt)->valueRef());
+          break;
+        case ConfigOption::O_Enum:
+          optionValue = *(static_cast<ConfigEnum*>(opt)->valueRef());
+          break;
+        case ConfigOption::O_Int:
+          optionValue = *(static_cast<ConfigInt*>(opt)->valueStringRef());
+          if (optionValue.isEmpty()) optionValue = static_cast<ConfigInt*>(opt)->getDefaultStr();
+          break;
+        case ConfigOption::O_List:
+          {
+            StringVector *lst = static_cast<ConfigList*>(opt)->valueRef();
+            optionValue="";
+            if (!lst->empty())
+            {
+              std::string lstFormat = theTranslator->trWriteList(static_cast<int>(lst->size())).str();
+              static const reg::Ex marker(R"(@(\d+))");
+              reg::Iterator it(lstFormat,marker);
+              reg::Iterator end;
+              size_t index=0;
+              // now replace all markers with the real text
+              for ( ; it!=end ; ++it)
+              {
+                const auto &match = *it;
+                size_t newIndex = match.position();
+                size_t matchLen = match.length();
+                optionValue += lstFormat.substr(index,newIndex-index);
+                unsigned long entryIndex = std::stoul(match[1].str());
+                if (entryIndex<(unsigned long)lst->size())
+                {
+                  optionValue += lst->at(entryIndex);
+                }
+                index=newIndex+matchLen;
+              }
+              optionValue+=lstFormat.substr(index);
+            }
+          }
+          break;
+        case ConfigOption::O_Obsolete:
+          warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Obsolete setting for '%c%s': '%s'",
+                cmdChar,qPrint(saveCmdName),qPrint(name));
+          isSet = false;
+          break;
+        case ConfigOption::O_Disabled:
+          warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+                "Disabled setting (i.e. not supported in this doxygen executable) for '%c%s': '%s'",
+                cmdChar,qPrint(saveCmdName),qPrint(name));
+          isSet = false;
+          break;
+        case ConfigOption::O_Info:
+          // nothing to show here
+          isSet = false;
+          break;
+      }
+      if (isSet && fullConfig)
+      {
+        children().append<DocWord>(parser(),thisVariant(),name + " = " + optionValue);
+      }
+      else if (isSet && allConfig)
+      {
+        children().append<DocWord>(parser(),thisVariant(),name + " = " + optionValue);
+        children().append<DocLineBreak>(parser(),thisVariant());
+      }
+      else if (isSet && helpConfig)
+      {
+        children().append<DocWord>(parser(),thisVariant(),opt->getDocumentation());
+      }
+      else if (!optionValue.isEmpty())
+      {
+        children().append<DocWord>(parser(),thisVariant(),optionValue);
+      }
+    }
+    else if (!allConfig)
+    {
+      warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown option for '%c%s': '%s'",
+           cmdChar,qPrint(saveCmdName),qPrint(name));
+           children().append<DocWord>(parser(),thisVariant(),name);
+    }
+  };
+
+  if (allConfig)
+  {
+    for (const auto &option : *(ConfigImpl::instance()->getOptions()))
+    {
+      process(option->name());
     }
   }
   else
   {
-    warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown option for '%c%s': '%s'",
-         cmdChar,qPrint(cmdName),qPrint(parser()->context.token->name));
-    children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
+    process(parser()->context.token->name);
   }
+
   parser()->tokenizer.setStatePara();
 }
 
