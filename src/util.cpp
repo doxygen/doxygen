@@ -2879,6 +2879,7 @@ bool resolveRef(/* in */  const QCString &scName,
     /* in */  bool inSeeBlock,
     /* out */ const Definition **resContext,
     /* out */ const MemberDef  **resMember,
+    /* in */ SrcLangExt lang,
     bool lookForSpecialization,
     const FileDef *currentFile,
     bool checkScope
@@ -2896,6 +2897,17 @@ bool resolveRef(/* in */  const QCString &scName,
   else
   {
     fullName = removeRedundantWhiteSpace(fullName);
+  }
+
+  int templStartPos;
+  if (lang==SrcLangExt::CSharp && (templStartPos=fullName.find('<'))!=-1)
+  {
+    int templEndPos = fullName.findRev('>');
+    if (templEndPos!=-1)
+    {
+      fullName = mangleCSharpGenericName(fullName.left(templEndPos+1))+fullName.mid(templEndPos+1);
+      AUTO_TRACE_ADD("C# mangled name='{}'",fullName);
+    }
   }
 
   int bracePos=findParameterList(fullName);
@@ -3078,7 +3090,7 @@ bool resolveRef(/* in */  const QCString &scName,
 
   if (tryUnspecializedVersion)
   {
-    bool b = resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,nullptr,checkScope);
+    bool b = resolveRef(scName,name,inSeeBlock,resContext,resMember,lang,FALSE,nullptr,checkScope);
     AUTO_TRACE_ADD("{}",b);
     return b;
   }
@@ -3128,12 +3140,17 @@ bool resolveLink(/* in */ const QCString &scName,
     /* in */ bool /*inSeeBlock*/,
     /* out */ const Definition **resContext,
     /* out */ QCString &resAnchor,
+    /* in */ SrcLangExt lang,
     /* in */ const QCString &prefix
     )
 {
   *resContext=nullptr;
 
   QCString linkRef=lr;
+  if (lang==SrcLangExt::CSharp)
+  {
+    linkRef = mangleCSharpGenericName(linkRef);
+  }
   QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
   AUTO_TRACE("scName='{}',ref='{}'",scName,lr);
   const FileDef  *fd = nullptr;
@@ -3199,7 +3216,8 @@ bool resolveLink(/* in */ const QCString &scName,
     AUTO_TRACE_EXIT("class");
     return TRUE;
   }
-  else if ((cd=getClass(linkRefWithoutTemplates))) // C#/Java generic class link
+  else if (lang==SrcLangExt::Java &&
+           (cd=getClass(linkRefWithoutTemplates))) // Java generic class link
   {
     *resContext=cd;
     resAnchor=cd->anchor();
@@ -3236,7 +3254,7 @@ bool resolveLink(/* in */ const QCString &scName,
   else // probably a member reference
   {
     const MemberDef *md = nullptr;
-    bool res = resolveRef(scName,lr,TRUE,resContext,&md);
+    bool res = resolveRef(scName,lr,TRUE,resContext,&md,lang);
     if (md) resAnchor=md->anchor();
     AUTO_TRACE_EXIT("member? res={}",res);
     return res;
@@ -7256,4 +7274,30 @@ size_t updateColumnCount(const char *s,size_t col)
   }
   return col;
 }
+
+// in C# A, A<T>, and A<T,S> are different classes, so we need some way to disguish them using this name mangling
+// A      -> A
+// A<T>   -> A-1-g
+// A<T,S> -> A-2-g
+QCString mangleCSharpGenericName(const QCString &name)
+{
+  int idx = name.find('<');
+  if (idx!=-1)
+  {
+    return name.left(idx)+"-"+QCString().setNum(name.contains(",")+1)+"-g";
+  }
+  return name;
+}
+
+QCString demangleCSharpGenericName(const QCString &name,const QCString &templArgs)
+{
+  QCString result=name;
+  if (result.endsWith("-g"))
+  {
+    int idx = result.find('-');
+    result = result.left(idx)+templArgs;
+  }
+  return result;
+}
+
 

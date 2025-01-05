@@ -1602,12 +1602,14 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
       scope?scope->name():QCString(), name, mayBeUnlinkable, mayBeHidden);
   p->reset();
 
+  auto lang = scope ? scope->getLanguage() : SrcLangExt::Cpp;
+
   if (scope==nullptr ||
       (scope->definitionType()!=Definition::TypeClass &&
        scope->definitionType()!=Definition::TypeNamespace
       ) ||
       (name.stripWhiteSpace().startsWith("::")) ||
-      (scope->getLanguage()==SrcLangExt::Java && QCString(name).find("::")!=-1)
+      ((lang==SrcLangExt::Java || lang==SrcLangExt::CSharp) && QCString(name).find("::")!=-1)
      )
   {
     scope=Doxygen::globalScope;
@@ -1620,12 +1622,14 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   else
   {
     VisitedKeys visitedKeys;
-    result = p->getResolvedTypeRec(visitedKeys,scope,name,&p->typeDef,&p->templateSpec,&p->resolvedType);
+    QCString lookupName = lang==SrcLangExt::CSharp ? mangleCSharpGenericName(name) : name;
+    AUTO_TRACE_ADD("lookup={}",lookupName);
+    result = p->getResolvedTypeRec(visitedKeys,scope,lookupName,&p->typeDef,&p->templateSpec,&p->resolvedType);
     if (result==nullptr) // for nested classes imported via tag files, the scope may not
                    // present, so we check the class name directly as well.
                    // See also bug701314
     {
-      result = getClass(name);
+      result = getClass(lookupName);
     }
   }
   if (!mayBeUnlinkable && result && !result->isLinkable())

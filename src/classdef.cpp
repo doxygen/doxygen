@@ -79,10 +79,9 @@ static QCString makeQualifiedNameWithTemplateParameters(const ClassDef *cd,
   if (!scName.isEmpty()) scName+=scopeSeparator;
 
   bool isSpecialization = cd->localName().find('<')!=-1;
-
   QCString clName = cd->className();
   scName+=clName;
-  if (!cd->templateArguments().empty())
+  if (lang!=SrcLangExt::CSharp && !cd->templateArguments().empty())
   {
     if (actualParams && *actualParamIndex<actualParams->size())
     {
@@ -802,6 +801,7 @@ ClassDefImpl::ClassDefImpl(
     bool isSymbol,bool isJavaEnum)
  : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),nullptr,nullptr,isSymbol)
 {
+  AUTO_TRACE("name={}",name());
   setReference(lref);
   m_compType = ct;
   m_isJavaEnum = isJavaEnum;
@@ -853,6 +853,7 @@ ClassDefImpl::ClassDefImpl(
   {
     m_fileName = convertNameToFile(m_fileName);
   }
+  AUTO_TRACE_EXIT("m_fileName='{}'",m_fileName);
 }
 
 std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
@@ -2946,6 +2947,7 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
     hli = HighlightedItem::ClassVisible;
   }
 
+  AUTO_TRACE("name='{}' getOutputFileBase='{}'",name(),getOutputFileBase());
   startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView);
   if (!generateTreeView)
   {
@@ -4209,6 +4211,7 @@ QCString ClassDefImpl::getOutputFileBase() const
       }
     }
   }
+  AUTO_TRACE("name='{}' m_templateMaster={}",name(),(void*)m_templateMaster);
   if (m_templateMaster)
   {
     // point to the template of which this class is an instance
@@ -4442,14 +4445,13 @@ QCString ClassDefImpl::qualifiedNameWithTemplateParameters(
 
 QCString ClassDefImpl::className() const
 {
-  if (m_className.isEmpty())
+  QCString name = m_className.isEmpty() ? localName() : m_className;
+  auto lang = getLanguage();
+  if (lang==SrcLangExt::CSharp)
   {
-    return localName();
+    name = demangleCSharpGenericName(name,tempArgListToString(templateArguments(),lang));
   }
-  else
-  {
-    return m_className;
-  }
+  return name;
 }
 
 void ClassDefImpl::setClassName(const QCString &name)

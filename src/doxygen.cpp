@@ -1033,7 +1033,17 @@ static void addClassToContext(const Entry *root)
       // a Java/C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
       tArgList = stringToArgumentList(root->lang,fullName.mid(i));
-      fullName=fullName.left(i);
+      if (i!=-1 && root->lang==SrcLangExt::CSharp) // in C# A, A<T>, and A<T,S> are different classes, so we need some way to disguish them using this name mangling
+                                          // A      -> A
+                                          // A<T>   -> A-1-g
+                                          // A<T,S> -> A-2-g
+      {
+        fullName=mangleCSharpGenericName(fullName);
+      }
+      else
+      {
+        fullName=fullName.left(i);
+      }
     }
     else
     {
@@ -3887,7 +3897,14 @@ static void buildFunctionList(const Entry *root)
     if (!rname.isEmpty() && scope.find('@')==-1)
     {
       // check if this function's parent is a class
-      scope=stripTemplateSpecifiersFromScope(scope,FALSE);
+      if (root->lang==SrcLangExt::CSharp)
+      {
+        scope=mangleCSharpGenericName(scope);
+      }
+      else
+      {
+        scope=stripTemplateSpecifiersFromScope(scope,FALSE);
+      }
 
       FileDef *rfd=root->fileDef();
 
@@ -4827,7 +4844,7 @@ static bool findClassRelation(
                            bool isArtificial
                           )
 {
-  AUTO_TRACE("name={} base={} isArtificial={}",cd->name(),bi->name,isArtificial);
+  AUTO_TRACE("name={} base={} isArtificial={} mode={}",cd->name(),bi->name,isArtificial,(int)mode);
 
   QCString biName=bi->name;
   bool explicitGlobalScope=FALSE;
@@ -4854,10 +4871,11 @@ static bool findClassRelation(
       {
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
       }
-      //QCString stripped;
-      //baseClassName=stripTemplateSpecifiersFromScope
-      //                    (removeRedundantWhiteSpace(baseClassName),TRUE,
-      //                    &stripped);
+      if (root->lang==SrcLangExt::CSharp)
+      {
+        baseClassName = mangleCSharpGenericName(baseClassName);
+      }
+      AUTO_TRACE_ADD("cd='{}' baseClassName='{}'",cd->name(),baseClassName);
       SymbolResolver resolver(cd->getFileDef());
       ClassDefMutable *baseClass = resolver.resolveClassMutable(explicitGlobalScope ? Doxygen::globalScope : context,
                                            baseClassName,
@@ -4933,7 +4951,7 @@ static bool findClassRelation(
 
         //printf("cd=%p baseClass=%p\n",cd,baseClass);
         bool found=baseClass!=nullptr && (baseClass!=cd || mode==TemplateInstances);
-        //printf("1. found=%d\n",found);
+        AUTO_TRACE_ADD("1. found={}",found);
         if (!found && si!=-1)
         {
           // replace any namespace aliases
@@ -4947,7 +4965,7 @@ static bool findClassRelation(
           found=baseClass!=nullptr && baseClass!=cd;
           if (found) templSpec = resolver.getTemplateSpec();
         }
-        //printf("2. found=%d\n",found);
+        AUTO_TRACE_ADD("2. found={}",found);
 
         if (!found)
         {
@@ -4957,7 +4975,7 @@ static bool findClassRelation(
           found = baseClass!=nullptr && baseClass!=cd;
 
         }
-        //printf("3. found=%d\n",found);
+        AUTO_TRACE_ADD("3. found={}",found);
         if (!found)
         {
           // for PHP the "use A\B as C" construct map class C to A::B, so we lookup
@@ -4971,7 +4989,7 @@ static bool findClassRelation(
         }
         bool isATemplateArgument = templateNames.find(biName.str())!=templateNames.end();
 
-        //printf("4. found=%d\n",found);
+        AUTO_TRACE_ADD("4. found={}",found);
         if (found)
         {
           AUTO_TRACE_ADD("Documented base class '{}' templSpec='{}'",biName,templSpec);
@@ -5002,7 +5020,7 @@ static bool findClassRelation(
           {
             //printf("       => insert base class\n");
             QCString usedName;
-            if (baseClassTypeDef || cd->isCSharp())
+            if (baseClassTypeDef)
             {
               usedName=biName;
               //printf("***** usedName=%s templSpec=%s\n",qPrint(usedName),qPrint(templSpec));
@@ -5011,6 +5029,7 @@ static bool findClassRelation(
             if (Config_getBool(SIP_SUPPORT)) prot=Protection::Public;
             if (cd!=baseClass && !cd->isSubClass(baseClass) && baseClass->isBaseClass(cd,true,templSpec)==0) // check for recursion, see bug690787
             {
+              AUTO_TRACE_ADD("insertBaseClass name={} prot={} virt={} templSpec={}",usedName,prot,bi->virt,templSpec);
               cd->insertBaseClass(baseClass,usedName,prot,bi->virt,templSpec);
               // add this class as super class to the base class
               baseClass->insertSubClass(cd,prot,bi->virt,templSpec);
@@ -5084,6 +5103,7 @@ static bool findClassRelation(
             }
             if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true,templSpec)==0) // check for recursion
             {
+              AUTO_TRACE_ADD("insertBaseClass name={} prot={} virt={} templSpec={}",biName,bi->prot,bi->virt,templSpec);
               // add base class to this class
               cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
               // add this class as super class to the base class
@@ -5197,7 +5217,14 @@ static QCString extractClassName(const Entry *root)
   {
     // a Java/C# generic class looks like a C++ specialization, so we need to strip the
     // template part before looking for matches
-    bName=bName.left(i);
+    if (root->lang==SrcLangExt::CSharp)
+    {
+      bName = mangleCSharpGenericName(root->name);
+    }
+    else
+    {
+      bName = bName.left(i);
+    }
   }
   return bName;
 }
@@ -5226,7 +5253,7 @@ static void makeTemplateInstanceRelation(const Entry *root,ClassDefMutable *cd)
 {
   AUTO_TRACE("root->name={} cd={}",root->name,cd->name());
   int i = root->name.find('<');
-  if (i!=-1)
+  if (i!=-1 && root->lang!=SrcLangExt::CSharp && root->lang!=SrcLangExt::Java)
   {
     ClassDefMutable *master = getClassMutable(root->name.left(i));
     if (master && master!=cd && !cd->templateMaster())

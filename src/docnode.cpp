@@ -706,10 +706,11 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
    DocCompoundNode(parser,parent), m_refType(Unknown), m_isSubPage(FALSE)
 {
   const Definition  *compound = nullptr;
-  QCString     anchor;
+  QCString anchor;
   AUTO_TRACE("target='{}',context='{}'",target,context);
   ASSERT(!target.isEmpty());
   m_relPath = parser->context.relPath;
+  auto lang = parser->context.lang;
   const SectionInfo *sec = SectionManager::instance().find(parser->context.prefix+target);
   if (sec==nullptr && getLanguageFromFileName(target)==SrcLangExt::Markdown) // lookup as markdown file
   {
@@ -748,13 +749,13 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     AUTO_TRACE_EXIT("section");
     return;
   }
-  else if (resolveLink(context,target,true,&compound,anchor,parser->context.prefix))
+  else if (resolveLink(context,target,true,&compound,anchor,lang,parser->context.prefix))
   {
     bool isFile = compound ?
                  (compound->definitionType()==Definition::TypeFile ||
                   compound->definitionType()==Definition::TypePage ? TRUE : FALSE) :
                  FALSE;
-    m_text = linkToText(parser->context.lang,target,isFile);
+    m_text = linkToText(lang,target,isFile);
     m_anchor = anchor;
     if (compound && compound->isLinkable()) // ref to compound
     {
@@ -939,7 +940,9 @@ DocLink::DocLink(DocParser *parser,DocNodeVariant *parent,const QCString &target
   {
     m_refText = m_refText.right(m_refText.length()-1);
   }
-  if (resolveLink(parser->context.context,stripKnownExtensions(target),parser->context.inSeeBlock,&compound,anchor,parser->context.prefix))
+  if (resolveLink(parser->context.context,stripKnownExtensions(target),
+                  parser->context.inSeeBlock,&compound,anchor,
+                  parser->context.lang,parser->context.prefix))
   {
     m_anchor = anchor;
     if (compound && compound->isLinkable())
