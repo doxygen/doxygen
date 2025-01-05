@@ -605,11 +605,14 @@ Token DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childre
       {
         case TokenRetval::TK_HTMLTAG:
           if (insideLI(parent) && Mappers::htmlTagMapper->map(context.token->name)!=HtmlTagType::UNKNOWN && context.token->endTag)
-          { // ignore </li> as the end of a style command
-            continue;
+          {
+            // ignore </li> as the end of a style command
           }
-          AUTO_TRACE_EXIT("end tok={}",tok.to_string());
-          return tok;
+          else
+          {
+            AUTO_TRACE_EXIT("end tok={}",tok.to_string());
+            return tok;
+          }
           break;
         default:
 	  errorHandleDefaultToken(parent,tok,children,"\\" + saveCmdName + " command");
