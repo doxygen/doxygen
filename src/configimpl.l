@@ -2190,6 +2190,19 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
+  if (Config_getBool(INTERACTIVE_SVG))
+  {
+    // issue 11308
+    if ((Config_getEnum(DOT_IMAGE_FORMAT) == DOT_IMAGE_FORMAT_t::svg_cairo) ||
+        (Config_getEnum(DOT_IMAGE_FORMAT) == DOT_IMAGE_FORMAT_t::svg_cairo_cairo))
+    {
+      err("When using DOT_IMAGE_FORMAT with %s the %s option should be %s. I'll adjust it for you.\n",
+          qPrint(Config_getEnumAsString(DOT_IMAGE_FORMAT)),"INTERACTIVE_SVG","disabled");
+      Config_updateBool(INTERACTIVE_SVG,FALSE);
+    }
+  }
+
+  //------------------------
   // check for settings that are inconsistent with having OPTIMIZED_OUTPUT_VHDL enabled
   if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
   {
