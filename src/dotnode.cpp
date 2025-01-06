@@ -537,7 +537,7 @@ void DotNode::writeBox(TextStream &t,
     else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
     {
       labCol = "grey75";
-      if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
+      if (m_classDef->templateMaster() && m_classDef->isImplicitTemplateInstance() && m_classDef->templateMaster()->hasDocumentation())
       {
         labCol = "gray40";
       }

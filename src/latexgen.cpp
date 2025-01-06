@@ -1020,7 +1020,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==nullptr &&
+              !cd->isImplicitTemplateInstance() &&
               !cd->isEmbeddedInOuterScope() &&
               !cd->isAlias()
              )
@@ -1192,7 +1192,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==nullptr &&
+             !cd->isImplicitTemplateInstance() &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )

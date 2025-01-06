@@ -3045,7 +3045,7 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
   for (const auto &innerCd : m_innerClasses)
   {
     if (
-        innerCd->isLinkableInProject() && innerCd->templateMaster()==nullptr &&
+        innerCd->isLinkableInProject() && !innerCd->isImplicitTemplateInstance() &&
         protectionLevelVisible(innerCd->protection()) &&
         !innerCd->isEmbeddedInOuterScope()
        )
@@ -3536,7 +3536,7 @@ bool ClassDefImpl::isLinkableInProject() const
   bool extractLocal   = Config_getBool(EXTRACT_LOCAL_CLASSES);
   bool extractStatic  = Config_getBool(EXTRACT_STATIC);
   bool hideUndoc      = Config_getBool(HIDE_UNDOC_CLASSES);
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->isLinkableInProject();
   }
@@ -3565,7 +3565,7 @@ bool ClassDefImpl::isLinkableInProject() const
 
 bool ClassDefImpl::isLinkable() const
 {
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->isLinkable();
   }
@@ -3595,6 +3595,8 @@ bool ClassDefImpl::isVisibleInHierarchy() const
        (m_templateMaster && m_templateMaster->hasDocumentation()) ||
        isReference()
       ) &&
+      // if this is an implicit template instance then it most be part of the inheritance hierarchy
+      (!m_implicitTemplateInstance || !m_inherits.empty() || !m_inheritedBy.empty()) &&
       // is not part of an unnamed namespace or shown anyway
       (!m_isStatic || extractStatic);
 }
@@ -4211,8 +4213,8 @@ QCString ClassDefImpl::getOutputFileBase() const
       }
     }
   }
-  AUTO_TRACE("name='{}' m_templateMaster={}",name(),(void*)m_templateMaster);
-  if (m_templateMaster)
+  AUTO_TRACE("name='{}' m_templateMaster={} m_implicitTemplateInstance={}",name(),(void*)m_templateMaster,m_implicitTemplateInstance);
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     // point to the template of which this class is an instance
     return m_templateMaster->getOutputFileBase();
@@ -4227,7 +4229,7 @@ QCString ClassDefImpl::getInstanceOutputFileBase() const
 
 QCString ClassDefImpl::getSourceFileBase() const
 {
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->getSourceFileBase();
   }
@@ -4399,7 +4401,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
 
 QCString ClassDefImpl::getReference() const
 {
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->getReference();
   }
@@ -4411,7 +4413,7 @@ QCString ClassDefImpl::getReference() const
 
 bool ClassDefImpl::isReference() const
 {
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->isReference();
   }
@@ -5156,7 +5158,7 @@ QCString ClassDefImpl::anchor() const
   QCString anc;
   if (isEmbeddedInOuterScope() && !Doxygen::generatingXmlOutput)
   {
-    if (m_templateMaster)
+    if (m_templateMaster && m_implicitTemplateInstance)
     {
       // point to the template of which this class is an instance
       anc = m_templateMaster->getOutputFileBase();

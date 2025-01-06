@@ -196,7 +196,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
   const GroupDef *gd=nullptr;
   if (isLinkable &&
       (
-       ((cd=md->getClassDef()) && cd->isLinkable() && cd->templateMaster()==nullptr) ||
+       ((cd=md->getClassDef()) && cd->isLinkable() && !cd->isImplicitTemplateInstance()) ||
        ((gd=md->getGroupDef()) && gd->isLinkable())
       )
      )

@@ -8984,6 +8984,7 @@ static void countMembers()
 
 static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classList)
 {
+  AUTO_TRACE();
   std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
   if (numThreads>1) // multi threaded processing
   {
@@ -9000,7 +9001,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
     {
       //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
       if (cd->getOuterScope()==nullptr || // <-- should not happen, but can if we read an old tag file
-           cd->getOuterScope()==Doxygen::globalScope // only look at global classes
+          cd->getOuterScope()==Doxygen::globalScope // only look at global classes
          )
       {
         auto ctx = std::make_shared<DocContext>(cd,*g_outputList);
@@ -9011,7 +9012,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
           // skip external references, anonymous compounds and
           // template instances
           if (!ctx->cd->isHidden() && !ctx->cd->isEmbeddedInOuterScope() &&
-              ctx->cd->isLinkableInProject() && ctx->cd->templateMaster()==nullptr)
+              ctx->cd->isLinkableInProject() && !ctx->cd->isImplicitTemplateInstance())
           {
             ctx->cd->writeDocumentation(ctx->ol);
             ctx->cd->writeMemberList(ctx->ol);
@@ -9042,7 +9043,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
         // skip external references, anonymous compounds and
         // template instances
         if ( !cd->isHidden() && !cd->isEmbeddedInOuterScope() &&
-              cd->isLinkableInProject() && cd->templateMaster()==nullptr)
+              cd->isLinkableInProject() && !cd->isImplicitTemplateInstance())
         {
           msg("Generating docs for compound %s...\n",qPrint(cd->displayName()));
 
@@ -9062,7 +9063,13 @@ static void addClassAndNestedClasses(std::vector<ClassDefMutable*> &list,ClassDe
   for (const auto &innerCdi : cd->getClasses())
   {
     ClassDefMutable *innerCd = toClassDefMutable(innerCdi);
-    if (innerCd && innerCd->isLinkableInProject() && innerCd->templateMaster()==nullptr &&
+    if (innerCd)
+    {
+       AUTO_TRACE("innerCd={} isLinkable={} isImplicitTemplateInstance={} protectLevelVisible={} embeddedInOuterScope={}",
+           innerCd->name(),innerCd->isLinkableInProject(),innerCd->isImplicitTemplateInstance(),protectionLevelVisible(innerCd->protection()),
+           innerCd->isEmbeddedInOuterScope());
+    }
+    if (innerCd && innerCd->isLinkableInProject() && !innerCd->isImplicitTemplateInstance() &&
         protectionLevelVisible(innerCd->protection()) &&
         !innerCd->isEmbeddedInOuterScope()
        )
@@ -10017,7 +10024,7 @@ static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
         auto processFile = [ctx]()
         {
           if ( ( ctx->cdm->isLinkableInProject() &&
-                ctx->cdm->templateMaster()==nullptr
+                !ctx->cdm->isImplicitTemplateInstance()
                ) // skip external references, anonymous compounds and
               // template instances and nested classes
               && !ctx->cdm->isHidden() && !ctx->cdm->isEmbeddedInOuterScope()
@@ -10048,7 +10055,7 @@ static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
       if (cdm)
       {
         if ( ( cd->isLinkableInProject() &&
-              cd->templateMaster()==nullptr
+              !cd->isImplicitTemplateInstance()
              ) // skip external references, anonymous compounds and
             // template instances and nested classes
             && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
