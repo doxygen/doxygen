@@ -2354,7 +2354,7 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
         {
           for (const auto &innerCd : m_innerClasses)
           {
-            if (innerCd->isLinkableInProject() && innerCd->templateMaster()==nullptr &&
+            if (innerCd->isLinkableInProject() && !innerCd->isImplicitTemplateInstance() &&
                 protectionLevelVisible(innerCd->protection()) &&
                 !innerCd->isEmbeddedInOuterScope()
                )
