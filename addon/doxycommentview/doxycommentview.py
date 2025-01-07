@@ -21,6 +21,7 @@ import subprocess
 import argparse
 import signal
 import threading
+import html
 
 def main():
     # Set up argument parser
@@ -33,6 +34,7 @@ def main():
     PORT = args.port
     DOXYGEN = args.doxygen
     DOXYFILE = args.doxyfile
+    VERSION_STR = subprocess.run([DOXYGEN, '-v'], capture_output=True, text=True, encoding="utf-8").stdout
 
     class RequestHandler(http.server.SimpleHTTPRequestHandler):
         def do_POST(self):
@@ -42,15 +44,21 @@ def main():
                 data = json.loads(post_data)
                 input_text = data['input']
 
-                # Run doxygen in single comment mode, reading from stdin and writing to stdout
+                # Run doxygen in single comment mode, reading from stdin and writing to stdout and stderr
                 result = subprocess.run([DOXYGEN, '-c', '-', DOXYFILE], \
                                         input=input_text, capture_output=True, text=True, encoding="utf-8")
 
-                # Insert CSS link tag into the HTML output
+                # Prepare the response
+                response = json.dumps({
+                  'html_output': result.stdout,
+                  'error_output': "<b>Doxygen version "+html.escape(VERSION_STR)+"</b><pre>"+html.escape(result.stderr)+"</pre>"
+                })
+
+                # Send the result to the requesting HTML page
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-                self.wfile.write(result.stdout.encode())
+                self.wfile.write(response.encode())
 
     httpd = socketserver.TCPServer(("", PORT), RequestHandler)
 
