@@ -28,11 +28,19 @@ def main():
     parser.add_argument('--port', type=int, default=8000, help='Port number to run the server on')
     parser.add_argument('--doxygen', type=str, default='doxygen', help='Path to doxygen executable')
     parser.add_argument('--doxyfile', type=str, default='Doxyfile', help='Path to Doxyfile to use')
+    parser.add_argument('--debug', action="store_true", help='Display warnings')
+    parser.add_argument('--version', action="store_true", help='Display doxygen version used')
     args = parser.parse_args()
 
     PORT = args.port
     DOXYGEN = args.doxygen
     DOXYFILE = args.doxyfile
+    DEBUG = args.debug
+    VERSION = args.version
+
+    if VERSION:
+        VERSION_STR = subprocess.run([DOXYGEN, '-v'], \
+                                     capture_output=True, text=True, encoding="utf-8")
 
     class RequestHandler(http.server.SimpleHTTPRequestHandler):
         def do_POST(self):
@@ -50,7 +58,14 @@ def main():
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
+                if VERSION:
+                    self.wfile.write(VERSION_STR.stdout.encode())
+                    self.wfile.write("<hr>".encode())
                 self.wfile.write(result.stdout.encode())
+                if DEBUG:
+                    self.wfile.write("<hr>\n<pre>".encode())
+                    self.wfile.write(result.stderr.replace('&','&amp;').replace("'","&apos;").replace('<','&lt;').replace('>','&gt;').encode())
+                    self.wfile.write("</pre>".encode())
 
     httpd = socketserver.TCPServer(("", PORT), RequestHandler)
 
