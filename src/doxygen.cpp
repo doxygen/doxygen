@@ -942,11 +942,16 @@ static void addClassToContext(const Entry *root)
   QCString fullName = root->name;
 
   // strip off any template parameters (but not those for specializations)
+  int idx=fullName.find('>');
+  if (idx!=-1 && root->lang==SrcLangExt::CSharp) // mangle A<S,T>::N as A-2-g::N
+  {
+    fullName = mangleCSharpGenericName(fullName.left(idx+1))+fullName.mid(idx+1);
+  }
   fullName=stripTemplateSpecifiersFromScope(fullName);
 
   // name with scope (if not present already)
   QCString qualifiedName = fullName;
-  if (!scName.isEmpty() && !leftScopeMatch(fullName,scName))
+  if (!scName.isEmpty() && !leftScopeMatch(scName,fullName))
   {
     qualifiedName.prepend(scName+"::");
   }
@@ -3177,7 +3182,14 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   bool isMemberOf=FALSE;
 
   QCString classScope=stripAnonymousNamespaceScope(scope);
-  classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
+  if (root->lang==SrcLangExt::CSharp)
+  {
+    classScope=mangleCSharpGenericName(classScope);
+  }
+  else
+  {
+    classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
+  }
   QCString annScopePrefix=scope.left(scope.length()-classScope.length());
 
 
@@ -7496,6 +7508,10 @@ static void findEnums(const Entry *root)
     if (i!=-1) // scope is specified
     {
       scope=root->name.left(i); // extract scope
+      if (root->lang==SrcLangExt::CSharp)
+      {
+        scope = mangleCSharpGenericName(scope);
+      }
       name=root->name.right(root->name.length()-i-2); // extract name
       if ((cd=getClassMutable(scope))==nullptr)
       {
@@ -7667,6 +7683,10 @@ static void addEnumValuesToEnums(const Entry *root)
     if (i!=-1) // scope is specified
     {
       scope=root->name.left(i); // extract scope
+      if (root->lang==SrcLangExt::CSharp)
+      {
+        scope = mangleCSharpGenericName(scope);
+      }
       name=root->name.right(root->name.length()-i-2); // extract name
       if ((cd=getClassMutable(scope))==nullptr)
       {
@@ -7678,6 +7698,10 @@ static void addEnumValuesToEnums(const Entry *root)
       if (root->parent()->section.isScope() && !root->parent()->name.isEmpty()) // found enum docs inside a compound
       {
         scope=root->parent()->name;
+        if (root->lang==SrcLangExt::CSharp)
+        {
+          scope = mangleCSharpGenericName(scope);
+        }
         if ((cd=getClassMutable(scope))==nullptr) nd=getResolvedNamespaceMutable(scope);
       }
       name=root->name;
@@ -7748,6 +7772,11 @@ static void addEnumValuesToEnums(const Entry *root)
                 //printf("md->qualifiedName()=%s e->name=%s tagInfo=%p name=%s\n",
                 //    qPrint(md->qualifiedName()),qPrint(e->name),(void*)e->tagInfo(),qPrint(e->name));
                 QCString qualifiedName = root->name;
+                i = qualifiedName.findRev("::");
+                if (i!=-1 && sle==SrcLangExt::CSharp)
+                {
+                  qualifiedName = mangleCSharpGenericName(qualifiedName.left(i))+qualifiedName.mid(i);
+                }
                 if (isJavaLike)
                 {
                   qualifiedName=substitute(qualifiedName,"::",".");
