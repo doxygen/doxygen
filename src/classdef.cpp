@@ -862,6 +862,13 @@ std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
   auto result = std::make_unique<ClassDefImpl>(
         getDefFileName(),getDefLine(),getDefColumn(),name,compoundType(),
         std::string(),std::string(),true,m_isJavaEnum);
+  result->setBriefDescription(briefDescription(),briefFile(),briefLine());
+  result->setDocumentation(documentation(),docFile(),docLine());
+  result->setInbodyDocumentation(inbodyDocumentation(),inbodyFile(),inbodyLine());
+  result->setBodySegment(getStartDefLine(),getStartBodyLine(),getEndBodyLine());
+  result->setBodyDef(getBodyDef());
+  result->setLanguage(getLanguage());
+
   // copy other members
   result->m_memberListFileName = m_memberListFileName;
   result->m_collabFileName = m_collabFileName;
