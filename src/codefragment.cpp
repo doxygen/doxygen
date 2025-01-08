@@ -159,7 +159,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
 
     const char *ss = s;
     int minIndent=100000;
-    int indent = 0;
+    int indent = minIndent;
     while (ss<e)
     {
       indent = lineIndent(ss, indent);
