@@ -605,11 +605,14 @@ Token DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childre
       {
         case TokenRetval::TK_HTMLTAG:
           if (insideLI(parent) && Mappers::htmlTagMapper->map(context.token->name)!=HtmlTagType::UNKNOWN && context.token->endTag)
-          { // ignore </li> as the end of a style command
-            continue;
+          {
+            // ignore </li> as the end of a style command
           }
-          AUTO_TRACE_EXIT("end tok={}",tok.to_string());
-          return tok;
+          else
+          {
+            AUTO_TRACE_EXIT("end tok={}",tok.to_string());
+            return tok;
+          }
           break;
         default:
 	  errorHandleDefaultToken(parent,tok,children,"\\" + saveCmdName + " command");
@@ -813,11 +816,12 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   ClassDef *cd=nullptr;
   bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,context.fileName,ambig);
+  auto lang = context.lang;
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
   if (!context.insideHtmlLink &&
-      (resolveRef(context.context,context.token->name,context.inSeeBlock,&compound,&member,TRUE,fd,TRUE)
+      (resolveRef(context.context,context.token->name,context.inSeeBlock,&compound,&member,lang,TRUE,fd,TRUE)
        || (!context.context.isEmpty() &&  // also try with global scope
-           resolveRef(QCString(),context.token->name,context.inSeeBlock,&compound,&member,FALSE,nullptr,TRUE))
+           resolveRef(QCString(),context.token->name,context.inSeeBlock,&compound,&member,lang,FALSE,nullptr,TRUE))
       )
      )
   {

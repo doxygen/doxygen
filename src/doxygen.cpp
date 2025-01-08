@@ -942,11 +942,16 @@ static void addClassToContext(const Entry *root)
   QCString fullName = root->name;
 
   // strip off any template parameters (but not those for specializations)
+  int idx=fullName.find('>');
+  if (idx!=-1 && root->lang==SrcLangExt::CSharp) // mangle A<S,T>::N as A-2-g::N
+  {
+    fullName = mangleCSharpGenericName(fullName.left(idx+1))+fullName.mid(idx+1);
+  }
   fullName=stripTemplateSpecifiersFromScope(fullName);
 
   // name with scope (if not present already)
   QCString qualifiedName = fullName;
-  if (!scName.isEmpty() && !leftScopeMatch(fullName,scName))
+  if (!scName.isEmpty() && !leftScopeMatch(scName,fullName))
   {
     qualifiedName.prepend(scName+"::");
   }
@@ -1033,7 +1038,17 @@ static void addClassToContext(const Entry *root)
       // a Java/C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
       tArgList = stringToArgumentList(root->lang,fullName.mid(i));
-      fullName=fullName.left(i);
+      if (i!=-1 && root->lang==SrcLangExt::CSharp) // in C# A, A<T>, and A<T,S> are different classes, so we need some way to disguish them using this name mangling
+                                          // A      -> A
+                                          // A<T>   -> A-1-g
+                                          // A<T,S> -> A-2-g
+      {
+        fullName=mangleCSharpGenericName(fullName);
+      }
+      else
+      {
+        fullName=fullName.left(i);
+      }
     }
     else
     {
@@ -3167,7 +3182,14 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   bool isMemberOf=FALSE;
 
   QCString classScope=stripAnonymousNamespaceScope(scope);
-  classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
+  if (root->lang==SrcLangExt::CSharp)
+  {
+    classScope=mangleCSharpGenericName(classScope);
+  }
+  else
+  {
+    classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
+  }
   QCString annScopePrefix=scope.left(scope.length()-classScope.length());
 
 
@@ -3887,7 +3909,14 @@ static void buildFunctionList(const Entry *root)
     if (!rname.isEmpty() && scope.find('@')==-1)
     {
       // check if this function's parent is a class
-      scope=stripTemplateSpecifiersFromScope(scope,FALSE);
+      if (root->lang==SrcLangExt::CSharp)
+      {
+        scope=mangleCSharpGenericName(scope);
+      }
+      else
+      {
+        scope=stripTemplateSpecifiersFromScope(scope,FALSE);
+      }
 
       FileDef *rfd=root->fileDef();
 
@@ -4827,7 +4856,7 @@ static bool findClassRelation(
                            bool isArtificial
                           )
 {
-  AUTO_TRACE("name={} base={} isArtificial={}",cd->name(),bi->name,isArtificial);
+  AUTO_TRACE("name={} base={} isArtificial={} mode={}",cd->name(),bi->name,isArtificial,(int)mode);
 
   QCString biName=bi->name;
   bool explicitGlobalScope=FALSE;
@@ -4854,10 +4883,11 @@ static bool findClassRelation(
       {
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
       }
-      //QCString stripped;
-      //baseClassName=stripTemplateSpecifiersFromScope
-      //                    (removeRedundantWhiteSpace(baseClassName),TRUE,
-      //                    &stripped);
+      if (root->lang==SrcLangExt::CSharp)
+      {
+        baseClassName = mangleCSharpGenericName(baseClassName);
+      }
+      AUTO_TRACE_ADD("cd='{}' baseClassName='{}'",cd->name(),baseClassName);
       SymbolResolver resolver(cd->getFileDef());
       ClassDefMutable *baseClass = resolver.resolveClassMutable(explicitGlobalScope ? Doxygen::globalScope : context,
                                            baseClassName,
@@ -4933,7 +4963,7 @@ static bool findClassRelation(
 
         //printf("cd=%p baseClass=%p\n",cd,baseClass);
         bool found=baseClass!=nullptr && (baseClass!=cd || mode==TemplateInstances);
-        //printf("1. found=%d\n",found);
+        AUTO_TRACE_ADD("1. found={}",found);
         if (!found && si!=-1)
         {
           // replace any namespace aliases
@@ -4947,7 +4977,7 @@ static bool findClassRelation(
           found=baseClass!=nullptr && baseClass!=cd;
           if (found) templSpec = resolver.getTemplateSpec();
         }
-        //printf("2. found=%d\n",found);
+        AUTO_TRACE_ADD("2. found={}",found);
 
         if (!found)
         {
@@ -4957,7 +4987,7 @@ static bool findClassRelation(
           found = baseClass!=nullptr && baseClass!=cd;
 
         }
-        //printf("3. found=%d\n",found);
+        AUTO_TRACE_ADD("3. found={}",found);
         if (!found)
         {
           // for PHP the "use A\B as C" construct map class C to A::B, so we lookup
@@ -4971,7 +5001,7 @@ static bool findClassRelation(
         }
         bool isATemplateArgument = templateNames.find(biName.str())!=templateNames.end();
 
-        //printf("4. found=%d\n",found);
+        AUTO_TRACE_ADD("4. found={}",found);
         if (found)
         {
           AUTO_TRACE_ADD("Documented base class '{}' templSpec='{}'",biName,templSpec);
@@ -5002,7 +5032,7 @@ static bool findClassRelation(
           {
             //printf("       => insert base class\n");
             QCString usedName;
-            if (baseClassTypeDef || cd->isCSharp())
+            if (baseClassTypeDef)
             {
               usedName=biName;
               //printf("***** usedName=%s templSpec=%s\n",qPrint(usedName),qPrint(templSpec));
@@ -5011,6 +5041,7 @@ static bool findClassRelation(
             if (Config_getBool(SIP_SUPPORT)) prot=Protection::Public;
             if (cd!=baseClass && !cd->isSubClass(baseClass) && baseClass->isBaseClass(cd,true,templSpec)==0) // check for recursion, see bug690787
             {
+              AUTO_TRACE_ADD("insertBaseClass name={} prot={} virt={} templSpec={}",usedName,prot,bi->virt,templSpec);
               cd->insertBaseClass(baseClass,usedName,prot,bi->virt,templSpec);
               // add this class as super class to the base class
               baseClass->insertSubClass(cd,prot,bi->virt,templSpec);
@@ -5084,6 +5115,7 @@ static bool findClassRelation(
             }
             if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true,templSpec)==0) // check for recursion
             {
+              AUTO_TRACE_ADD("insertBaseClass name={} prot={} virt={} templSpec={}",biName,bi->prot,bi->virt,templSpec);
               // add base class to this class
               cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
               // add this class as super class to the base class
@@ -5197,7 +5229,14 @@ static QCString extractClassName(const Entry *root)
   {
     // a Java/C# generic class looks like a C++ specialization, so we need to strip the
     // template part before looking for matches
-    bName=bName.left(i);
+    if (root->lang==SrcLangExt::CSharp)
+    {
+      bName = mangleCSharpGenericName(root->name);
+    }
+    else
+    {
+      bName = bName.left(i);
+    }
   }
   return bName;
 }
@@ -5226,7 +5265,7 @@ static void makeTemplateInstanceRelation(const Entry *root,ClassDefMutable *cd)
 {
   AUTO_TRACE("root->name={} cd={}",root->name,cd->name());
   int i = root->name.find('<');
-  if (i!=-1)
+  if (i!=-1 && root->lang!=SrcLangExt::CSharp && root->lang!=SrcLangExt::Java)
   {
     ClassDefMutable *master = getClassMutable(root->name.left(i));
     if (master && master!=cd && !cd->templateMaster())
@@ -7469,6 +7508,10 @@ static void findEnums(const Entry *root)
     if (i!=-1) // scope is specified
     {
       scope=root->name.left(i); // extract scope
+      if (root->lang==SrcLangExt::CSharp)
+      {
+        scope = mangleCSharpGenericName(scope);
+      }
       name=root->name.right(root->name.length()-i-2); // extract name
       if ((cd=getClassMutable(scope))==nullptr)
       {
@@ -7640,6 +7683,10 @@ static void addEnumValuesToEnums(const Entry *root)
     if (i!=-1) // scope is specified
     {
       scope=root->name.left(i); // extract scope
+      if (root->lang==SrcLangExt::CSharp)
+      {
+        scope = mangleCSharpGenericName(scope);
+      }
       name=root->name.right(root->name.length()-i-2); // extract name
       if ((cd=getClassMutable(scope))==nullptr)
       {
@@ -7651,6 +7698,10 @@ static void addEnumValuesToEnums(const Entry *root)
       if (root->parent()->section.isScope() && !root->parent()->name.isEmpty()) // found enum docs inside a compound
       {
         scope=root->parent()->name;
+        if (root->lang==SrcLangExt::CSharp)
+        {
+          scope = mangleCSharpGenericName(scope);
+        }
         if ((cd=getClassMutable(scope))==nullptr) nd=getResolvedNamespaceMutable(scope);
       }
       name=root->name;
@@ -7721,6 +7772,11 @@ static void addEnumValuesToEnums(const Entry *root)
                 //printf("md->qualifiedName()=%s e->name=%s tagInfo=%p name=%s\n",
                 //    qPrint(md->qualifiedName()),qPrint(e->name),(void*)e->tagInfo(),qPrint(e->name));
                 QCString qualifiedName = root->name;
+                i = qualifiedName.findRev("::");
+                if (i!=-1 && sle==SrcLangExt::CSharp)
+                {
+                  qualifiedName = mangleCSharpGenericName(qualifiedName.left(i))+qualifiedName.mid(i);
+                }
                 if (isJavaLike)
                 {
                   qualifiedName=substitute(qualifiedName,"::",".");
@@ -8957,6 +9013,7 @@ static void countMembers()
 
 static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classList)
 {
+  AUTO_TRACE();
   std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
   if (numThreads>1) // multi threaded processing
   {
@@ -8973,7 +9030,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
     {
       //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
       if (cd->getOuterScope()==nullptr || // <-- should not happen, but can if we read an old tag file
-           cd->getOuterScope()==Doxygen::globalScope // only look at global classes
+          cd->getOuterScope()==Doxygen::globalScope // only look at global classes
          )
       {
         auto ctx = std::make_shared<DocContext>(cd,*g_outputList);
@@ -8984,7 +9041,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
           // skip external references, anonymous compounds and
           // template instances
           if (!ctx->cd->isHidden() && !ctx->cd->isEmbeddedInOuterScope() &&
-              ctx->cd->isLinkableInProject() && ctx->cd->templateMaster()==nullptr)
+              ctx->cd->isLinkableInProject() && !ctx->cd->isImplicitTemplateInstance())
           {
             ctx->cd->writeDocumentation(ctx->ol);
             ctx->cd->writeMemberList(ctx->ol);
@@ -9015,7 +9072,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
         // skip external references, anonymous compounds and
         // template instances
         if ( !cd->isHidden() && !cd->isEmbeddedInOuterScope() &&
-              cd->isLinkableInProject() && cd->templateMaster()==nullptr)
+              cd->isLinkableInProject() && !cd->isImplicitTemplateInstance())
         {
           msg("Generating docs for compound %s...\n",qPrint(cd->displayName()));
 
@@ -9035,7 +9092,13 @@ static void addClassAndNestedClasses(std::vector<ClassDefMutable*> &list,ClassDe
   for (const auto &innerCdi : cd->getClasses())
   {
     ClassDefMutable *innerCd = toClassDefMutable(innerCdi);
-    if (innerCd && innerCd->isLinkableInProject() && innerCd->templateMaster()==nullptr &&
+    if (innerCd)
+    {
+       AUTO_TRACE("innerCd={} isLinkable={} isImplicitTemplateInstance={} protectLevelVisible={} embeddedInOuterScope={}",
+           innerCd->name(),innerCd->isLinkableInProject(),innerCd->isImplicitTemplateInstance(),protectionLevelVisible(innerCd->protection()),
+           innerCd->isEmbeddedInOuterScope());
+    }
+    if (innerCd && innerCd->isLinkableInProject() && !innerCd->isImplicitTemplateInstance() &&
         protectionLevelVisible(innerCd->protection()) &&
         !innerCd->isEmbeddedInOuterScope()
        )
@@ -9990,7 +10053,7 @@ static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
         auto processFile = [ctx]()
         {
           if ( ( ctx->cdm->isLinkableInProject() &&
-                ctx->cdm->templateMaster()==nullptr
+                !ctx->cdm->isImplicitTemplateInstance()
                ) // skip external references, anonymous compounds and
               // template instances and nested classes
               && !ctx->cdm->isHidden() && !ctx->cdm->isEmbeddedInOuterScope()
@@ -10021,7 +10084,7 @@ static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
       if (cdm)
       {
         if ( ( cd->isLinkableInProject() &&
-              cd->templateMaster()==nullptr
+              !cd->isImplicitTemplateInstance()
              ) // skip external references, anonymous compounds and
             // template instances and nested classes
             && !cd->isHidden() && !cd->isEmbeddedInOuterScope()

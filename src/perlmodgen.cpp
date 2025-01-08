@@ -1749,7 +1749,7 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 
   if (cd->isReference())        return; // skip external references.
   if (cd->isAnonymous())        return; // skip anonymous compounds.
-  if (cd->templateMaster()!=nullptr)  return; // skip generated template instances.
+  if (cd->isImplicitTemplateInstance())  return; // skip generated template instances.
 
   m_output.openHash()
     .addFieldQuotedString("name", cd->name());

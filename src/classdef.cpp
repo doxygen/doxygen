@@ -79,10 +79,9 @@ static QCString makeQualifiedNameWithTemplateParameters(const ClassDef *cd,
   if (!scName.isEmpty()) scName+=scopeSeparator;
 
   bool isSpecialization = cd->localName().find('<')!=-1;
-
   QCString clName = cd->className();
   scName+=clName;
-  if (!cd->templateArguments().empty())
+  if (lang!=SrcLangExt::CSharp && !cd->templateArguments().empty())
   {
     if (actualParams && *actualParamIndex<actualParams->size())
     {
@@ -802,6 +801,7 @@ ClassDefImpl::ClassDefImpl(
     bool isSymbol,bool isJavaEnum)
  : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),nullptr,nullptr,isSymbol)
 {
+  AUTO_TRACE("name={}",name());
   setReference(lref);
   m_compType = ct;
   m_isJavaEnum = isJavaEnum;
@@ -853,6 +853,7 @@ ClassDefImpl::ClassDefImpl(
   {
     m_fileName = convertNameToFile(m_fileName);
   }
+  AUTO_TRACE_EXIT("m_fileName='{}'",m_fileName);
 }
 
 std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
@@ -861,6 +862,13 @@ std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const QCString &name) const
   auto result = std::make_unique<ClassDefImpl>(
         getDefFileName(),getDefLine(),getDefColumn(),name,compoundType(),
         std::string(),std::string(),true,m_isJavaEnum);
+  result->setBriefDescription(briefDescription(),briefFile(),briefLine());
+  result->setDocumentation(documentation(),docFile(),docLine());
+  result->setInbodyDocumentation(inbodyDocumentation(),inbodyFile(),inbodyLine());
+  result->setBodySegment(getStartDefLine(),getStartBodyLine(),getEndBodyLine());
+  result->setBodyDef(getBodyDef());
+  result->setLanguage(getLanguage());
+
   // copy other members
   result->m_memberListFileName = m_memberListFileName;
   result->m_collabFileName = m_collabFileName;
@@ -2353,7 +2361,7 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
         {
           for (const auto &innerCd : m_innerClasses)
           {
-            if (innerCd->isLinkableInProject() && innerCd->templateMaster()==nullptr &&
+            if (innerCd->isLinkableInProject() && !innerCd->isImplicitTemplateInstance() &&
                 protectionLevelVisible(innerCd->protection()) &&
                 !innerCd->isEmbeddedInOuterScope()
                )
@@ -2946,6 +2954,7 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
     hli = HighlightedItem::ClassVisible;
   }
 
+  AUTO_TRACE("name='{}' getOutputFileBase='{}'",name(),getOutputFileBase());
   startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView);
   if (!generateTreeView)
   {
@@ -3043,7 +3052,7 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
   for (const auto &innerCd : m_innerClasses)
   {
     if (
-        innerCd->isLinkableInProject() && innerCd->templateMaster()==nullptr &&
+        innerCd->isLinkableInProject() && !innerCd->isImplicitTemplateInstance() &&
         protectionLevelVisible(innerCd->protection()) &&
         !innerCd->isEmbeddedInOuterScope()
        )
@@ -3534,7 +3543,7 @@ bool ClassDefImpl::isLinkableInProject() const
   bool extractLocal   = Config_getBool(EXTRACT_LOCAL_CLASSES);
   bool extractStatic  = Config_getBool(EXTRACT_STATIC);
   bool hideUndoc      = Config_getBool(HIDE_UNDOC_CLASSES);
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->isLinkableInProject();
   }
@@ -3563,7 +3572,7 @@ bool ClassDefImpl::isLinkableInProject() const
 
 bool ClassDefImpl::isLinkable() const
 {
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->isLinkable();
   }
@@ -3593,6 +3602,8 @@ bool ClassDefImpl::isVisibleInHierarchy() const
        (m_templateMaster && m_templateMaster->hasDocumentation()) ||
        isReference()
       ) &&
+      // if this is an implicit template instance then it most be part of the inheritance hierarchy
+      (!m_implicitTemplateInstance || !m_inherits.empty() || !m_inheritedBy.empty()) &&
       // is not part of an unnamed namespace or shown anyway
       (!m_isStatic || extractStatic);
 }
@@ -4209,7 +4220,8 @@ QCString ClassDefImpl::getOutputFileBase() const
       }
     }
   }
-  if (m_templateMaster)
+  AUTO_TRACE("name='{}' m_templateMaster={} m_implicitTemplateInstance={}",name(),(void*)m_templateMaster,m_implicitTemplateInstance);
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     // point to the template of which this class is an instance
     return m_templateMaster->getOutputFileBase();
@@ -4224,7 +4236,7 @@ QCString ClassDefImpl::getInstanceOutputFileBase() const
 
 QCString ClassDefImpl::getSourceFileBase() const
 {
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->getSourceFileBase();
   }
@@ -4396,7 +4408,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
 
 QCString ClassDefImpl::getReference() const
 {
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->getReference();
   }
@@ -4408,7 +4420,7 @@ QCString ClassDefImpl::getReference() const
 
 bool ClassDefImpl::isReference() const
 {
-  if (m_templateMaster)
+  if (m_templateMaster && m_implicitTemplateInstance)
   {
     return m_templateMaster->isReference();
   }
@@ -4442,14 +4454,13 @@ QCString ClassDefImpl::qualifiedNameWithTemplateParameters(
 
 QCString ClassDefImpl::className() const
 {
-  if (m_className.isEmpty())
+  QCString name = m_className.isEmpty() ? localName() : m_className;
+  auto lang = getLanguage();
+  if (lang==SrcLangExt::CSharp)
   {
-    return localName();
+    name = demangleCSharpGenericName(name,tempArgListToString(templateArguments(),lang));
   }
-  else
-  {
-    return m_className;
-  }
+  return name;
 }
 
 void ClassDefImpl::setClassName(const QCString &name)
@@ -5154,7 +5165,7 @@ QCString ClassDefImpl::anchor() const
   QCString anc;
   if (isEmbeddedInOuterScope() && !Doxygen::generatingXmlOutput)
   {
-    if (m_templateMaster)
+    if (m_templateMaster && m_implicitTemplateInstance)
     {
       // point to the template of which this class is an instance
       anc = m_templateMaster->getOutputFileBase();

@@ -65,6 +65,9 @@ class Tester:
         self.test      = test
         self.update    = args.updateref
         self.config    = self.get_config()
+        if not 'objective' in self.config:
+            print("Test %s is missing the objective." % self.test)
+            sys.exit(1)
         self.test_name = '[%s]: %s' % (self.test,self.config['objective'][0])
         self.test_id   = self.test.split('_')[0]
         if self.update:

@@ -1936,7 +1936,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
   if (cd->isAnonymous())        return; // skip anonymous compounds.
-  if (cd->templateMaster()!=nullptr)  return; // skip generated template instances.
+  if (cd->isImplicitTemplateInstance())  return; // skip generated template instances.
 
   struct Refid refid = insertRefid(cd->getOutputFileBase());
 

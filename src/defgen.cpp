@@ -332,7 +332,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 
   if (cd->isReference()) return; // skip external references.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
-  if (cd->templateMaster()!=nullptr) return; // skip generated template instances.
+  if (cd->isImplicitTemplateInstance()) return; // skip generated template instances.
 
   t << cd->compoundTypeString() << " = {\n";
   t << "  cp-id     = '" << cd->getOutputFileBase() << "';\n";
