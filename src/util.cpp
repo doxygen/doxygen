@@ -1056,7 +1056,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       {
         GetDefInput input(scopeName,matchWord,QCString());
         GetDefResult result = getDefs(input);
-        if (result.found &&
+        if (result.found && result.md &&
             (external ? result.md->isLinkable() : result.md->isLinkableInProject())
            )
         {
@@ -2240,6 +2240,26 @@ GetDefResult getDefsNew(const GetDefInput &input)
     result.gd = result.md->getGroupDef();
     result.found = true;
   }
+  else if (symbol && symbol->definitionType()==Definition::TypeClass)
+  {
+    result.cd = toClassDef(symbol);
+    result.found = true;
+  }
+  else if (symbol && symbol->definitionType()==Definition::TypeNamespace)
+  {
+    result.nd = toNamespaceDef(symbol);
+    result.found = true;
+  }
+  else if (symbol && symbol->definitionType()==Definition::TypeConcept)
+  {
+    result.cnd = toConceptDef(symbol);
+    result.found = true;
+  }
+  else if (symbol && symbol->definitionType()==Definition::TypeModule)
+  {
+    result.modd = toModuleDef(symbol);
+    result.found = true;
+  }
   return result;
 }
 
@@ -2808,9 +2828,12 @@ GetDefResult getDefs(const GetDefInput &input)
  *   - if `nd` is non zero, the scope was a namespace pointed to by nd.
  */
 static bool getScopeDefs(const QCString &docScope,const QCString &scope,
-    ClassDef *&cd, ConceptDef *&cnd, NamespaceDef *&nd)
+    ClassDef *&cd, ConceptDef *&cnd, NamespaceDef *&nd,ModuleDef *&modd)
 {
-  cd=nullptr;nd=nullptr;
+  cd=nullptr;
+  cnd=nullptr;
+  nd=nullptr;
+  modd=nullptr;
 
   QCString scopeName=scope;
   //printf("getScopeDefs: docScope='%s' scope='%s'\n",qPrint(docScope),qPrint(scope));
@@ -2848,6 +2871,10 @@ static bool getScopeDefs(const QCString &docScope,const QCString &scope,
     else if ((cnd=Doxygen::conceptLinkedMap->find(fullName)) && cnd->isLinkable())
     {
       return TRUE; // concept link written => quit
+    }
+    else if ((modd=ModuleManager::instance().modules().find(fullName)) && modd->isLinkable())
+    {
+      return TRUE; // module link written => quit
     }
     if (scopeOffset==0)
     {
@@ -2937,11 +2964,12 @@ bool resolveRef(/* in */  const QCString &scName,
     ClassDef *cd=nullptr;
     NamespaceDef *nd=nullptr;
     ConceptDef *cnd=nullptr;
+    ModuleDef *modd=nullptr;
 
     //printf("scName=%s fullName=%s\n",qPrint(scName),qPrint(fullName));
 
     // check if this is a class or namespace reference
-    if (scName!=fullName && getScopeDefs(scName,fullName,cd,cnd,nd))
+    if (scName!=fullName && getScopeDefs(scName,fullName,cd,cnd,nd,modd))
     {
       //printf("found scopeDef\n");
       if (cd) // scope matches that of a class
@@ -2951,6 +2979,10 @@ bool resolveRef(/* in */  const QCString &scName,
       else if (cnd)
       {
         *resContext = cnd;
+      }
+      else if (modd)
+      {
+        *resContext = modd;
       }
       else // scope matches that of a namespace
       {
@@ -3014,6 +3046,7 @@ bool resolveRef(/* in */  const QCString &scName,
 
   const GroupDef     *gd = nullptr;
   const ConceptDef   *cnd = nullptr;
+  const ModuleDef    *modd = nullptr;
 
   // check if nameStr is a member or global.
   //printf("getDefs(scope=%s,name=%s,args=%s checkScope=%d)\n",
@@ -3040,7 +3073,8 @@ bool resolveRef(/* in */  const QCString &scName,
       return FALSE;
     }
     //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
-    if      (result.md) {
+    if (result.md)
+    {
       if (!allowTypeOnly || result.md->isTypedef() || result.md->isEnumerate())
       {
         *resMember=result.md;
@@ -3054,11 +3088,18 @@ bool resolveRef(/* in */  const QCString &scName,
         return FALSE;
       }
     }
-    else if (result.cd) *resContext=result.cd;
-    else if (result.nd) *resContext=result.nd;
-    else if (result.fd) *resContext=result.fd;
-    else if (result.gd) *resContext=result.gd;
-    else         { *resContext=nullptr; *resMember=nullptr; return FALSE; }
+    else if (result.cd)   *resContext=result.cd;
+    else if (result.nd)   *resContext=result.nd;
+    else if (result.fd)   *resContext=result.fd;
+    else if (result.gd)   *resContext=result.gd;
+    else if (result.cnd)  *resContext=result.cnd;
+    else if (result.modd) *resContext=result.modd;
+    else
+    {
+      *resContext=nullptr; *resMember=nullptr;
+        AUTO_TRACE_ADD("false");
+      return FALSE;
+    }
     //printf("member=%s (md=%p) anchor=%s linkable()=%d context=%s\n",
     //    qPrint(md->name()), md, qPrint(md->anchor()), md->isLinkable(), qPrint((*resContext)->name()));
     AUTO_TRACE_ADD("true");
@@ -3073,6 +3114,12 @@ bool resolveRef(/* in */  const QCString &scName,
   else if ((cnd=Doxygen::conceptLinkedMap->find(nameStr)))
   {
     *resContext=cnd;
+    AUTO_TRACE_ADD("true");
+    return TRUE;
+  }
+  else if ((modd=ModuleManager::instance().modules().find(nameStr)))
+  {
+    *resContext=modd;
     AUTO_TRACE_ADD("true");
     return TRUE;
   }
@@ -3159,6 +3206,7 @@ bool resolveLink(/* in */ const QCString &scName,
   const ClassDef *cd = nullptr;
   const DirDef   *dir = nullptr;
   const ConceptDef *cnd = nullptr;
+  const ModuleDef *modd = nullptr;
   const NamespaceDef *nd = nullptr;
   const SectionInfo *si = nullptr;
   bool ambig = false;
@@ -3236,6 +3284,13 @@ bool resolveLink(/* in */ const QCString &scName,
     *resContext=cnd;
     resAnchor=cnd->anchor();
     AUTO_TRACE_EXIT("concept");
+    return TRUE;
+  }
+  else if ((modd=ModuleManager::instance().modules().find(linkRef)))
+  {
+    *resContext=modd;
+    resAnchor=modd->anchor();
+    AUTO_TRACE_EXIT("module");
     return TRUE;
   }
   else if ((nd=Doxygen::namespaceLinkedMap->find(linkRef)))

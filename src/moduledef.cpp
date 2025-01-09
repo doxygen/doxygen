@@ -1512,6 +1512,11 @@ const ModuleLinkedMap &ModuleManager::modules() const
   return p->moduleFileMap;
 }
 
+ModuleLinkedMap &ModuleManager::modules()
+{
+  return p->moduleFileMap;
+}
+
 void ModuleManager::addDocs(const Entry *root)
 {
   AUTO_TRACE("file={} module={}",root->fileName,root->name);

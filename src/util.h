@@ -127,6 +127,8 @@ struct GetDefResult
   const FileDef      *fd=nullptr;
   const NamespaceDef *nd=nullptr;
   const GroupDef     *gd=nullptr;
+  const ConceptDef   *cnd=nullptr;
+  const ModuleDef    *modd=nullptr;
 };
 
 GetDefResult getDefs(const GetDefInput &input);

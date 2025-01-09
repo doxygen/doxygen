@@ -1811,7 +1811,6 @@ void MemberDefImpl::_computeLinkableInProject()
     return;
   }
   const GroupDef *groupDef = getGroupDef();
-  const ModuleDef *moduleDef = getModuleDef();
   const ClassDef *classDef = getClassDef();
   if (groupDef && !groupDef->isLinkableInProject())
   {
@@ -1823,12 +1822,6 @@ void MemberDefImpl::_computeLinkableInProject()
   {
     AUTO_TRACE_ADD("in not linkable class");
     m_isLinkableCached = 1; // in class but class not linkable
-    return;
-  }
-  if (!groupDef && moduleDef && !moduleDef->isLinkableInProject())
-  {
-    AUTO_TRACE_ADD("in not linkable module");
-    m_isLinkableCached = 1; // in module but module not linkable
     return;
   }
   const NamespaceDef *nspace = getNamespaceDef();
@@ -2232,10 +2225,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   ASSERT (cd!=nullptr || nd!=nullptr || fd!=nullptr || gd!=nullptr || mod!=nullptr); // member should belong to something
   if (cd) d=cd;
   else if (nd) d=nd;
-  else if (mod) d=mod;
   else if (fd) d=fd;
   else d=gd;
-  if (d==gd) // see bug 753608
+  if (d==gd || d==mod) // see bug 753608
   {
     if (getClassDef())          d = getClassDef();
     else if (getNamespaceDef()) d = getNamespaceDef();
@@ -2267,11 +2259,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                                                           OutputGenerator::MemberItemType::Normal;
   ol.startMemberItem(anchor(), anonType, inheritId);
 
+
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = hasDetailedDescription();
   bool writeAnchor = (inGroup || getGroupDef()==nullptr) &&     // only write anchors for member that have no details and are
-                     !detailsVisible && !m_annMemb && // rendered inside the group page or are not grouped at all
+                     !detailsVisible && !m_annMemb &&           // rendered inside the group page or are not grouped at all
                      inheritId.isEmpty();
+
   if (writeAnchor)
   {
     QCString doxyArgs=argsString();
@@ -2746,6 +2740,10 @@ bool MemberDefImpl::hasDetailedDescription() const
     // this is not a global static or global statics should be extracted
     bool staticFilter = getClassDef()!=nullptr || !isStatic() || extractStatic;
 
+    // a module does not contain details for members, so either the namespace or file should be linkable
+    bool moduleFilter = getModuleDef()==nullptr || (getFileDef() && getFileDef()->isLinkable()) ||
+                                                   (getNamespaceDef() && getNamespaceDef()->isLinkable());
+
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a   group
     bool privateFilter = protectionLevelVisible(protection()) || m_mtype==MemberType::Friend ||
@@ -2756,7 +2754,7 @@ bool MemberDefImpl::hasDetailedDescription() const
     bool friendCompoundFilter = !(Config_getBool(HIDE_FRIEND_COMPOUNDS) && isFriend());
 
     m_detailedDescriptionCachedValue =
-        (docFilter && staticFilter && privateFilter && friendCompoundFilter && !isHidden());
+        (docFilter && staticFilter && moduleFilter && privateFilter && friendCompoundFilter && !isHidden());
     //printf("docFilter=%d docInfo=%d staticFilter=%d privateFilter=%d friendCompoundFilter=%d !isHidden()=%d",
     //    docFilter,docInfo,staticFilter,privateFilter,friendCompoundFilter,!isHidden());
     m_hasDetailedDescriptionCached = true;

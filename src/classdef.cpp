@@ -3057,7 +3057,7 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
         !innerCd->isEmbeddedInOuterScope()
        )
     {
-      msg("Generating docs for nested compound %s...\n",qPrint(innerCd->name()));
+      msg("Generating docs for nested compound %s...\n",qPrint(innerCd->displayName()));
       innerCd->writeDocumentation(ol);
       innerCd->writeMemberList(ol);
     }

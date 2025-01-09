@@ -855,7 +855,8 @@ void SymbolResolver::Private::getResolvedSymbol(
       }
     }
     else if ((d->definitionType()==Definition::TypeNamespace ||
-              d->definitionType()==Definition::TypeFile))
+              d->definitionType()==Definition::TypeFile ||
+              d->definitionType()==Definition::TypeModule))
     {
       if (distance<minDistance) // found a definition that is "closer"
       {
