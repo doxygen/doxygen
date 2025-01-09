@@ -2845,7 +2845,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       }
     }
   }
-  if (result.found && (!varOnly || result.md->isVariable()))
+  if (result.found && result.md && (!varOnly || result.md->isVariable()))
   {
     if (result.md->isLinkable())
     {

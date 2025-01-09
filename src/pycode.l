@@ -1174,7 +1174,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
   input.insideCode = true;
   GetDefResult result = getDefs(input);
   //printf("Trying '%s'::'%s'\n",qPrint(c),qPrint(m));
-  if (result.found && result.md->isLinkable())
+  if (result.found && result.md && result.md->isLinkable())
   {
     const Definition *d = result.md->getOuterScope()==Doxygen::globalScope ?
                           result.md->getBodyDef() : result.md->getOuterScope();
