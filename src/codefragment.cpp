@@ -129,7 +129,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     }
     return startPos;
   };
-  static auto lineIndent = [](const char *&ss) -> int
+  static auto lineIndent = [](const char *&ss, int orgCol) -> int
   {
     int tabSize=Config_getInt(TAB_SIZE);
     int col = 0;
@@ -138,14 +138,15 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
     {
       if (cc==' ') col++;
       else if (cc=='\t') col+=tabSize-(col%tabSize);
+      else if (cc=='\n') return orgCol;
       else
       {
         // goto end of the line
         while ((cc=*ss++) && cc!='\n');
-        break;
+        return col;
       }
     }
-    return col;
+    return orgCol;
   };
   lineNr=1;
   const char *startBuf = s;
@@ -158,9 +159,10 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
 
     const char *ss = s;
     int minIndent=100000;
+    int indent = minIndent;
     while (ss<e)
     {
-      int indent = lineIndent(ss);
+      indent = lineIndent(ss, indent);
       if (indent<minIndent)
       {
         minIndent=indent;
