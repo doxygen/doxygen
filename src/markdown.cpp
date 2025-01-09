@@ -1048,7 +1048,7 @@ int Markdown::Private::processHtmlTagWrite(std::string_view data,size_t offset,b
   {
     if (l>0 && i<size)
     {
-      if (data[i]=='/' && i<size-1 && data[i+1]=='>') // <bla/>
+      if (data[i]=='/' && i+1<size && data[i+1]=='>') // <bla/>
       {
         //printf("Found htmlTag={%s}\n",qPrint(QCString(data).left(i+2)));
         if (doWrite) out+=data.substr(0,i+2);
@@ -1650,7 +1650,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
       pc = '\n';
       i = 0;
     }
-    else if (data[end]=='\'' && nb==1 && (end==size-1 || (end<size-1 && !isIdChar(data[end+1]))))
+    else if (data[end]=='\'' && nb==1 && (end==size-1 || (end+1<size && !isIdChar(data[end+1]))))
     { // look for quoted strings like 'some word', but skip strings like `it's cool`
       out+="&lsquo;";
       out+=data.substr(nb,end-nb);
@@ -2133,7 +2133,7 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
            (data[i]=='+' || data[i]=='-' || data[i]=='*' ||  // unordered list char
             (data[i]=='#' && i>0 && data[i-1]=='-') ||       // -# item
             (isDigit=(data[i]>='1' && data[i]<='9')) ||      // ordered list marker?
-            (isLi=(size>=3 && i<size-3 && isLiTag(i)))       // <li> tag
+            (isLi=(size>=3 && i+3<size && isLiTag(i)))       // <li> tag
            )
           )
          )
@@ -2146,7 +2146,7 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
       {
         if (data[j]=='.') // should be end of the list marker
         {
-          if (j<size-1 && data[j+1]==' ') // valid list marker
+          if (j+1<size && data[j+1]==' ') // valid list marker
           {
             listMarkerSkipped=TRUE;
             indent+=j+1-i;
@@ -2167,13 +2167,13 @@ static size_t computeIndentExcludingListMarkers(std::string_view data)
       indent+=3;
       listMarkerSkipped=TRUE;
     }
-    else if (data[i]=='-' && size>=2 && i<size-2 && data[i+1]=='#' && data[i+2]==' ')
+    else if (data[i]=='-' && size>=2 && i+2<size && data[i+1]=='#' && data[i+2]==' ')
     { // case "-# "
       listMarkerSkipped=TRUE; // only a single list marker is accepted
       i++; // skip over #
       indent++;
     }
-    else if (data[i]!=' ' && i<size-1 && data[i+1]==' ')
+    else if (data[i]!=' ' && i+1<size && data[i+1]==' ')
     { // case "- " or "+ " or "* "
       listMarkerSkipped=TRUE; // only a single list marker is accepted
     }
@@ -2892,7 +2892,7 @@ bool skipOverFileAndLineCommands(std::string_view data,size_t indent,size_t &off
     if (i>offset) locStart--; // include the space before \ifile
     i+=8;
     bool found=false;
-    while (i<size-9 && data[i]!='\n')
+    while (i+9<size && data[i]!='\n')
     {
       if (data[i]=='\\' && qstrncmp(&data[i+1],"ilinebr ",8)==0)
       {
@@ -3002,7 +3002,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
       if (!endBlockName.isEmpty())
       {
         size_t l = endBlockName.length();
-        for (;end<size-l-1;end++) // search for end of block marker
+        for (;end+l+1<size;end++) // search for end of block marker
         {
           if ((data[end]=='\\' || data[end]=='@') &&
               data[end-1]!='\\' && data[end-1]!='@'
@@ -3019,7 +3019,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
         }
       }
     }
-    else if (nb==0 && data[end-1]=='<' && size>=6 && end<size-6 &&
+    else if (nb==0 && data[end-1]=='<' && size>=6 && end+6<size &&
              (end<=1 || (data[end-2]!='\\' && data[end-2]!='@'))
             )
     {
@@ -3455,7 +3455,7 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
     {
       i++;
     }
-    if (i<size-5 && data[i]=='<' && qstrncmp(&data[i],"<!--!",5)==0) // skip over <!--! marker
+    if (i+5<size && data[i]=='<' && qstrncmp(&data[i],"<!--!",5)==0) // skip over <!--! marker
     {
       i+=5;
       while (i<size && (data[i]==' ' || data[i]=='\n')) // skip over spaces after the <!--! marker
@@ -3463,7 +3463,7 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
         i++;
       }
     }
-    if (i<size-1 &&
+    if (i+1<size &&
         (data[i]=='\\' || data[i]=='@') &&
         (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
        )
@@ -3479,7 +3479,7 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
         return ExplicitPageResult::explicitMainPage;
       }
     }
-    else if (i<size-1 &&
+    else if (i+1<size &&
              (data[i]=='\\' || data[i]=='@') &&
              (qstrncmp(&data[i+1],"dir\n",4)==0 || qstrncmp(&data[i+1],"dir ",4)==0)
             )
