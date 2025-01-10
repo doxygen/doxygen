@@ -69,7 +69,7 @@ class DotNode
   public:
     static constexpr auto placeholderUrl = "-";
     static void deleteNodes(DotNode* node);
-    static QCString convertLabel(const QCString& , bool htmlLike=false);
+    static QCString convertLabel(const QCString& , bool htmlLike=false, bool tableLike=false);
     DotNode(DotGraph *graph,const QCString &lab,const QCString &tip,const QCString &url,
         bool rootNode=FALSE,const ClassDef *cd=nullptr);
 
