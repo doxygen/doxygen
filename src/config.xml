@@ -737,7 +737,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
   This tag specifies a list of words that, when matching the start of a word in the documentation,
   will suppress auto links generation, if it is enabled via AUTOLINK_SUPPORT. 
-  This list does not affect affect links explicitly created using \# or 
+  This list does not affect links explicitly created using \# or 
   the \ref cmdlink "\\link" or \ref cmdref "\\ref" commands.
 ]]>
       </docs>
