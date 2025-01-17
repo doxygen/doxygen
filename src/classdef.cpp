@@ -1615,6 +1615,16 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   // write type constraints
   writeTypeConstraints(ol,this,m_typeConstraints);
 
+  ol.generateDoc(
+        docFile(),docLine(),
+        this,
+        nullptr,         // memberDef
+        inlineTemplateArgListToDoc(m_tempArgs),    // docStr
+        TRUE,         // indexWords
+        FALSE,        // isExample
+        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
+        );
+
   // write examples
   if (hasExamples())
   {
@@ -1633,7 +1643,7 @@ bool ClassDefImpl::hasDetailedDescription() const
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
-          !documentation().isEmpty() ||
+          (!documentation().isEmpty() || m_tempArgs.hasTemplateDocumentation()) ||
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()));
 }
 
@@ -3556,7 +3566,7 @@ bool ClassDefImpl::isLinkableInProject() const
     //      !isAnonymous(),
     //      m_prot,
     //      !m_isLocal   || extractLocal,
-    //      hasDocumentation() || !hideUndoc,
+    //      hasDocumentation() ||  m_tempArgs.hasTemplateDocumentation() || !hideUndoc,
     //      !m_isStatic  || extractStatic,
     //      !isReference());
     return
@@ -3564,7 +3574,7 @@ bool ClassDefImpl::isLinkableInProject() const
       !isAnonymous() &&                            /* not anonymous */
       protectionLevelVisible(m_prot)      && /* private/internal */
       (!m_isLocal      || extractLocal)   && /* local */
-      (hasDocumentation()    || !hideUndoc)     && /* documented */
+      (hasDocumentation() || m_tempArgs.hasTemplateDocumentation() || !hideUndoc)     && /* documented */
       (!m_isStatic     || extractStatic)  && /* static */
       !isReference();                              /* not an external reference */
   }

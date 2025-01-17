@@ -2692,7 +2692,10 @@ bool MemberDefImpl::hasDetailedDescription() const
            // has one or more documented arguments
            (m_templateMaster ?
             m_templateMaster->argumentList().hasDocumentation() :
-            m_defArgList.hasDocumentation());
+            m_defArgList.hasDocumentation()) ||
+           (m_templateMaster ?
+            m_templateMaster->templateArguments().hasTemplateDocumentation() :
+            m_tArgList.hasTemplateDocumentation());
 
     // generate function                  guard
     // ==================                 =======
@@ -3874,6 +3877,19 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
         );
 
+  const ArgumentList &docTemplateArgList = m_templateMaster ?
+                                   m_templateMaster->templateArguments() :
+                                   m_tArgList;
+  ol.generateDoc(
+        docFile(),docLine(),
+        scopedContainer,
+        this,         // memberDef
+        inlineTemplateArgListToDoc(docTemplateArgList),    // docStr
+        TRUE,         // indexWords
+        FALSE,        // isExample
+        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
+        );
+
   _writeEnumValues(ol,scopedContainer,cfname,ciname,cname);
   _writeReimplements(ol);
   _writeReimplementedBy(ol);
@@ -4300,7 +4316,7 @@ bool MemberDefImpl::hasDocumentation() const
 {
   return DefinitionMixin::hasDocumentation() ||
          (m_mtype==MemberType::Enumeration && m_docEnumValues) ||  // has enum values
-         (m_defArgList.hasDocumentation());   // has doc arguments
+         (m_defArgList.hasDocumentation()|| m_tArgList.hasTemplateDocumentation());   // has doc (template) arguments
 }
 
 

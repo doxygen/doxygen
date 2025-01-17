@@ -5034,6 +5034,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=*yytext;
                                           //printf("end template list '%s'\n",qPrint(*yyextra->copyArgString));
                                           *yyextra->currentArgumentList = *stringToArgumentList(yyextra->language, yyextra->fullArgString);
+                                          handleParametersCommentBlocks(yyscanner,yyextra->current->tArgLists.back());
                                           BEGIN( yyextra->currentArgumentContext );
                                         }
 <CopyArgRound>"("                       {
