@@ -6948,6 +6948,7 @@ NONLopt [^\n]*
 <CSAccessorDecl>"add"                   { if (yyextra->curlyCount==0) yyextra->current->spec.setAddable(true);           }
 <CSAccessorDecl>"remove"                { if (yyextra->curlyCount==0) yyextra->current->spec.setRemovable(true);         }
 <CSAccessorDecl>"raise"                 { if (yyextra->curlyCount==0) yyextra->current->spec.setRaisable(true);          }
+<CSAccessorDecl>{CHARLIT}               {}
 <CSAccessorDecl>"\""                    { BEGIN(CSString);}
 <CSAccessorDecl>"."                     {}
 <CSAccessorDecl>\n                      { lineCount(yyscanner); }
