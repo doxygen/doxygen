@@ -401,7 +401,14 @@ SLASHopt [/]*
 					 while (i<(int)yyleng && yytext[i]=='/') i++;
 				       }
 				       yyextra->blockHeadCol=yyextra->col+1;
-				       copyToOutput(yyscanner,"/**");
+                                       if (yytext[2] == '!')
+                                       {
+				         copyToOutput(yyscanner,"/*!");
+                                       }
+                                       else
+                                       {
+				         copyToOutput(yyscanner,"/**");
+                                       }
 				       if (i<yyleng) replaceAliases(yyscanner,yytext+i);
 				       yyextra->inSpecialComment=TRUE;
 				       //BEGIN(SComment);
