@@ -41,7 +41,7 @@
 #include "codefragment.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
-static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
+static const char g_types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
 enum class contexts_t
 {
     NONE,      // 0
@@ -1020,7 +1020,7 @@ void HtmlDocVisitor::operator()(const DocAutoList &l)
     //       A.
     //         1. (repeat)...
     //
-    m_t << "<ol type=\"" << types[l.depth() % NUM_HTML_LIST_TYPES] << "\">";
+    m_t << "<ol type=\"" << g_types[l.depth() % NUM_HTML_LIST_TYPES] << "\">";
   }
   else
   {
