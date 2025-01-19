@@ -33,6 +33,11 @@ struct Argument
     return !name.isEmpty() && !docs.isEmpty();
   }
 
+  bool hasTemplateDocumentation() const
+  {
+    return (!name.isEmpty() || !type.isEmpty()) && !docs.isEmpty();
+  }
+
   QCString attrib;   /*!< Argument's attribute (IDL only) */
   QCString type;     /*!< Argument's type */
   QCString canType;  /*!< Cached value of canonical type (after type resolution). Empty initially. */
@@ -65,6 +70,8 @@ class ArgumentList
 
     /*! Does any argument of this list have documentation? */
     bool hasDocumentation() const;
+    /*! Does any template argument of this list have documentation? */
+    bool hasTemplateDocumentation() const;
     /*! Does this list have zero or more parameters */
     bool hasParameters() const
     {
