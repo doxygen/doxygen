@@ -1213,7 +1213,7 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
         { // found function in global scope
           if (cd == nullptr)
           { // Skip if bound to type
-            if (md.get()->getOutputFileBase() == yyextra->sourceFileDef->getOutputFileBase()) return md.get();
+            if (md.get()->getFileDef() == yyextra->sourceFileDef) return md.get();
             else if (!potentialMd) potentialMd = md.get();
           }
         }
