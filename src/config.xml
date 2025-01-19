@@ -208,6 +208,32 @@ Here Doxygen's preprocessor is used to substitute some
 macro names that are normally substituted by the C preprocessor,
 but without doing full macro expansion.
 
+\subsection config_examples_staticinlines Show static inline functions
+
+Supppose you have a c library project contained within a single directory with
+minimal configuration file:
+\verbatim
+INPUT                 = *.c *.h
+OPTIMIZE_OUTPUT_FOR_C = YES
+\endverbatim
+
+What if some of the headers contain \b static \b inline functions for general use?
+Doxygen will not show their documentation because they are static
+(you have to declare an inline function to be static
+otherwise it can only be used once).\n
+And, some static inline functions may be intended only for internal library use.
+The convention here is that internal functions have names starting with 2
+underscores.\n
+You can expose the wanted functions with an
+\ref cfg_input_filter "INPUT_FILTER":
+\verbatim
+INPUT                 = *.c *.h
+OPTIMIZE_OUTPUT_FOR_C = YES
+INPUT_FILTER          = "sed -E '/^static inline [^ ]* [^_]{2}/s/static //'"
+\endverbatim
+This filter drops the \b static from \b static \b inline.
+You will get an entry for `foo()` but not for `__bar()`.
+
 
 \htmlonly
 Go to the <a href="commands.html">next</a> section or return to the
