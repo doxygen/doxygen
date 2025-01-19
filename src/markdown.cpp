@@ -2016,7 +2016,7 @@ QCString Markdown::Private::extractTitleId(QCString &title, int level, bool *pIs
     AUTO_TRACE_EXIT("id={}",id);
     return id;
   }
-  if ((level>0) && (level<=Config_getInt(TOC_INCLUDE_HEADINGS)))
+  if (((level>0) && (level<=Config_getInt(TOC_INCLUDE_HEADINGS))) || (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB))
   {
     QCString id = AnchorGenerator::instance().generate(ti);
     if (pIsIdGenerated) *pIsIdGenerated=true;
