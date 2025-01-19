@@ -3,8 +3,8 @@
   <compounddef id="107__define__in__enums_8cpp" kind="file" language="C++">
     <compoundname>107_define_in_enums.cpp</compoundname>
     <sectiondef kind="define">
-      <memberdef kind="define" id="107__define__in__enums_8cpp_1aee80934e9528cc7801303ace34d76873" prot="public" static="no">
-        <name>ID</name>
+      <memberdef kind="define" id="107__define__in__enums_8cpp_1af5306e4b64f0a20303086d3936c64e0c" prot="public" static="no">
+        <name>ID_A</name>
         <param>
           <defname>X</defname>
         </param>
@@ -17,8 +17,8 @@
         </inbodydescription>
         <location file="107_define_in_enums.cpp" line="7" column="9" bodyfile="107_define_in_enums.cpp" bodystart="7" bodyend="-1"/>
       </memberdef>
-      <memberdef kind="define" id="107__define__in__enums_8cpp_1aee80934e9528cc7801303ace34d76873" prot="public" static="no">
-        <name>ID</name>
+      <memberdef kind="define" id="107__define__in__enums_8cpp_1a244e85f8f6926f9cb8e576ad9c797f47" prot="public" static="no">
+        <name>ID_B</name>
         <param>
           <defname>X</defname>
         </param>
@@ -29,7 +29,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="107_define_in_enums.cpp" line="13" column="9" bodyfile="107_define_in_enums.cpp" bodystart="7" bodyend="-1"/>
+        <location file="107_define_in_enums.cpp" line="13" column="9" bodyfile="107_define_in_enums.cpp" bodystart="13" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="enum">
