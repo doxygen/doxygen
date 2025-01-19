@@ -3072,6 +3072,15 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           yyextra->anchorCount++;
         }
       }
+      else if (sym->definitionType()==Definition::TypeMember)
+      {
+        MemberDefMutable *mdm = toMemberDefMutable(const_cast<Definition*>(sym));
+        if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
+        {
+          ol.writeCodeAnchor(anchor);
+          yyextra->anchorCount++;
+        }
+      }
     }
     writeMultiLineCodeLink(yyscanner,ol,sym,scName);
     addToSearchIndex(yyscanner,scopeName);
