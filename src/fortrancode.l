@@ -1171,6 +1171,7 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
                                  const UseMap &useMap)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  MemberDef *potentialMd = nullptr;
   if (memberName.isEmpty()) return nullptr; /* empty name => nothing to link */
 
   // look in local variables
@@ -1212,7 +1213,8 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
         { // found function in global scope
           if (cd == nullptr)
           { // Skip if bound to type
-            return md.get();
+            if (md.get()->getFileDef() == yyextra->sourceFileDef) return md.get();
+            else if (!potentialMd) potentialMd = md.get();
           }
         }
         else if (moduleName == nspace->name())
@@ -1248,7 +1250,7 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
       } // if linkable
     } // for
   }
-  return nullptr;
+  return potentialMd;
 }
 
 /**
