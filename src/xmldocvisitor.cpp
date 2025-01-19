@@ -194,7 +194,7 @@ void XmlDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("XML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("XML: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 

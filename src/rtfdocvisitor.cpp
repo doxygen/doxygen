@@ -102,7 +102,7 @@ void RTFDocVisitor::incIndentLevel()
   m_indentLevel++;
   if (m_indentLevel>=maxIndentLevels)
   {
-    err("Maximum indent level (%d) exceeded while generating RTF output!\n",maxIndentLevels-1);
+    err("Maximum indent level ({}) exceeded while generating RTF output!\n",maxIndentLevels-1);
   }
 }
 
@@ -159,7 +159,7 @@ void RTFDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("RTF: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
   m_lastIsPara=FALSE;
 }
@@ -377,7 +377,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",qPrint(fileName));
+          err("Could not open file {} for writing\n",qPrint(fileName));
         }
         else
         {
@@ -406,7 +406,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
         std::ofstream file = Portable::openOutputStream(baseName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",qPrint(baseName));
+          err("Could not open file {} for writing\n",qPrint(baseName));
         }
         QCString text = "msc {";
         text+=s.text();

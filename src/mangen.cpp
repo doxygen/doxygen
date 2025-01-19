@@ -276,12 +276,12 @@ void ManGenerator::init()
   Dir d(manOutput.str());
   if (!d.exists() && !d.mkdir(manOutput.str()))
   {
-    term("Could not create output directory %s\n",qPrint(manOutput));
+    term("Could not create output directory {}\n",manOutput);
   }
   std::string manDir = manOutput.str()+"/"+getSubdir().str();
   if (!d.exists(manDir) && !d.mkdir(manDir))
   {
-    term("Could not create output directory %s/%s\n",qPrint(manOutput), qPrint(getSubdir()));
+    term("Could not create output directory {}/{}\n",manOutput,getSubdir());
   }
   createSubDirs(d);
 }

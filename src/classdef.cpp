@@ -1275,11 +1275,11 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                 addMemberToList(MemberListType::VariableMembers(),md,FALSE);
                 break;
               case MemberType::Define:
-                warn(md->getDefFileName(),md->getDefLine()-1,"A define (%s) cannot be made a member of %s",
-                     qPrint(md->name()), qPrint(this->name()));
+                warn(md->getDefFileName(),md->getDefLine()-1,"A define ({}) cannot be made a member of {}",
+                     md->name(), this->name());
                 break;
               default:
-                err("Unexpected member type '%s' found!\n",qPrint(md->memberTypeName()));
+                err("Unexpected member type '{}' found!\n",md->memberTypeName());
             }
           }
           break;
@@ -1827,8 +1827,8 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     DotClassGraph inheritanceGraph(this,GraphType::Inheritance);
     if (inheritanceGraph.isTooBig())
     {
-       warn_uncond("Inheritance graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
-           qPrint(name()), inheritanceGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
+       warn_uncond("Inheritance graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           name(), inheritanceGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!inheritanceGraph.isTrivial())
     {
@@ -1953,8 +1953,8 @@ void ClassDefImpl::writeCollaborationGraph(OutputList &ol) const
     DotClassGraph usageImplGraph(this,GraphType::Collaboration);
     if (usageImplGraph.isTooBig())
     {
-       warn_uncond("Collaboration graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
-           qPrint(name()), usageImplGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
+       warn_uncond("Collaboration graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           name(), usageImplGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!usageImplGraph.isTrivial())
     {
@@ -2862,8 +2862,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
-        err("Internal inconsistency: member '%s' should not be part of "
-            "LayoutDocManager::Class entry list\n",qPrint(lde->entryToString()));
+        err("Internal inconsistency: member '{}' should not be part of LayoutDocManager::Class entry list\n",lde->entryToString());
         break;
     }
   }
@@ -3057,7 +3056,7 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
         !innerCd->isEmbeddedInOuterScope()
        )
     {
-      msg("Generating docs for nested compound %s...\n",qPrint(innerCd->displayName()));
+      msg("Generating docs for nested compound {}...\n",innerCd->displayName());
       innerCd->writeDocumentation(ol);
       innerCd->writeMemberList(ol);
     }
@@ -3449,7 +3448,7 @@ static bool hasNonReferenceSuperClassRec(const ClassDef *cd,int level)
     const ClassDef *bcd=ibcd.classDef;
     if (level>256)
     {
-      err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(cd->name()),qPrint(bcd->name()));
+      err("Possible recursive class relation while inside {} and looking for base class {}\n",cd->name(),bcd->name());
       return FALSE;
     }
     // recurse into the super class branch
@@ -3639,7 +3638,7 @@ int ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances,const QC
       int d = ccd->isBaseClass(bcd,followInstances,templSpec);
       if (d>256)
       {
-        err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(name()),qPrint(bcd->name()));
+        err("Possible recursive class relation while inside {} and looking for base class {}\n",name(),bcd->name());
         return 0;
       }
       else if (d>0) // path found
@@ -3661,7 +3660,7 @@ bool ClassDefImpl::isSubClass(ClassDef *cd,int level) const
   bool found=FALSE;
   if (level>256)
   {
-    err("Possible recursive class relation while inside %s and looking for derived class %s\n",qPrint(name()),qPrint(cd->name()));
+    err("Possible recursive class relation while inside {} and looking for derived class {}\n",name(),cd->name());
     return FALSE;
   }
   for (const auto &iscd : subClasses())
@@ -5486,8 +5485,7 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
   if (cd==bcd) return level;
   if (level==256)
   {
-    warn_uncond("class %s seem to have a recursive "
-        "inheritance relation!\n",qPrint(cd->name()));
+    warn_uncond("class {} seem to have a recursive inheritance relation!\n",cd->name());
     return -1;
   }
   int m=maxInheritanceDepth;
@@ -5513,8 +5511,8 @@ Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,
   }
   if (level==256)
   {
-    err("Internal inconsistency: found class %s seem to have a recursive "
-        "inheritance relation! Please send a bug report to doxygen@gmail.com\n",qPrint(cd->name()));
+    err("Internal inconsistency: found class {} seem to have a recursive "
+        "inheritance relation! Please send a bug report to doxygen@gmail.com\n",cd->name());
   }
   else if (prot!=Protection::Private)
   {

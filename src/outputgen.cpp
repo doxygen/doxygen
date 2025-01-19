@@ -36,7 +36,7 @@ void OutputGenerator::startPlainFile(const QCString &name)
   m_file = Portable::fopen(m_fileName.data(),"wb");
   if (m_file==nullptr)
   {
-    term("Could not open file %s for writing\n",qPrint(m_fileName));
+    term("Could not open file {} for writing\n",m_fileName);
   }
   m_t.setFile(m_file);
 }

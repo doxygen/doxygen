@@ -111,7 +111,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
       }
       else // unexpected content
       {
-        warn_uncond("%s/formula.repository contains invalid content at line %d: found: '%s'\n",qPrint(dir),lineNr,line.c_str());
+        warn_uncond("{}/formula.repository contains invalid content at line {}: found: '{}'\n",dir,lineNr,line);
         p->repositoriesValid = false;
         break;
       }
@@ -251,7 +251,7 @@ static bool createDVIFile(const QCString &fileName)
     if ((Portable::system(latexCmd,args)!=0) || (Portable::system(latexCmd,args)!=0))
     {
       err("Problems running latex. Check your installation or look "
-          "for typos in %s.tex and check %s.log!\n",qPrint(fileName),qPrint(fileName));
+          "for typos in {0}.tex and check {0}.log!\n",fileName);
       return false;
     }
     // check the log file if we need to run latex again to resolve references
@@ -290,7 +290,7 @@ static bool createEPSbboxFile(const QCString &formBase)
       qPrint(formBase),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
-    err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
+    err("Problems running {}. Check your installation!\n",Portable::ghostScriptCommand());
     return false;
   }
   return true;
@@ -311,7 +311,7 @@ static bool extractBoundingBox(const QCString &formBase,
     }
     else
     {
-      err("Couldn't extract bounding box from %s_tmp.epsi\n",qPrint(formBase));
+      err("Couldn't extract bounding box from {}_tmp.epsi\n",formBase);
       return false;
     }
     i = eps.find("%%HiResBoundingBox:");
@@ -321,7 +321,7 @@ static bool extractBoundingBox(const QCString &formBase,
     }
     else
     {
-      err("Couldn't extract high resolution bounding box from %s_tmp.epsi\n",qPrint(formBase));
+      err("Couldn't extract high resolution bounding box from {}_tmp.epsi\n",formBase);
       return false;
     }
   }
@@ -357,7 +357,7 @@ static bool createCroppedPDF(const QCString &formBase,int x1,int y1,int x2,int y
       qPrint(formBase),x1,y1,x2,y2,qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
-    err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
+    err("Problems running {}. Check your installation!\n",Portable::ghostScriptCommand());
     return false;
   }
   return true;
@@ -372,7 +372,7 @@ static bool createCroppedEPS(const QCString &formBase)
               " -o %s_tmp.eps -f %s_tmp.ps",qPrint(formBase),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
-    err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
+    err("Problems running {}. Check your installation!\n",Portable::ghostScriptCommand());
     return false;
   }
   return true;
@@ -449,8 +449,8 @@ static bool updateEPSBoundingBox(const QCString &formBase,
   }
   else
   {
-    err("Problems correcting the eps files from %s_tmp.eps to %s_tmp_corr.eps\n",
-        qPrint(formBase),qPrint(formBase));
+    err("Problems correcting the eps files from {}_tmp.eps to {}_tmp_corr.eps\n",
+        formBase,formBase);
     return false;
   }
   return true;
@@ -464,7 +464,7 @@ static bool createPNG(const QCString &formBase,const QCString &outFile,double sc
                "-r%d -sOutputFile=%s %s_tmp_corr.eps",static_cast<int>(scaleFactor*72),qPrint(outFile),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
-    err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
+    err("Problems running {}. Check your installation!\n",Portable::ghostScriptCommand());
     return false;
   }
   return true;
@@ -476,7 +476,7 @@ static StringVector generateFormula(const Dir &thisDir,const QCString &formulaFi
   StringVector tempFiles;
   QCString outputFile;
   outputFile.sprintf("form_%d%s.%s",pageNum, mode==FormulaManager::Mode::Light?"":"_dark", format==FormulaManager::Format::Vector?"svg":"png");
-  msg("Generating image %s for formula\n",qPrint(outputFile));
+  msg("Generating image {} for formula\n",outputFile);
 
   QCString formBase;
   formBase.sprintf("_form%d%s",pageNum,mode==FormulaManager::Mode::Light?"":"_dark");
@@ -639,7 +639,7 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   // store the original directory
   if (!d.exists())
   {
-    term("Output directory '%s' does not exist!\n",qPrint(path));
+    term("Output directory '{}' does not exist!\n",path);
   }
   std::string oldDir = Dir::currentDirPath();
 

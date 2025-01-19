@@ -1509,7 +1509,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                                     int nr = QCString(&yytext[6]).toInt(&ok);
                                     if (!ok)
                                     {
-                                      warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                                      warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '{}' for iline command",yytext);
                                     }
                                     else
                                     {
@@ -1553,7 +1553,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                                     int nr = QCString(&yytext[6]).toInt(&ok);
                                     if (!ok)
                                     {
-                                      warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                                      warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '{}' for iline command",yytext);
                                     }
                                     else
                                     {
@@ -2225,7 +2225,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   yyextra->fileName = fileName;
   yyextra->checkDupEntry = false;
   //setContext();
-  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
+  msg("Parsing file {}...\n",yyextra->fileName);
 
   FileInfo fi(fileName.str());
   yyextra->moduleScope = findPackageScope(yyscanner,fileName);

@@ -221,15 +221,15 @@ static QCString readTextFileByName(const QCString &file)
   {
     if (ambig)
     {
-      err("included file name '%s' is ambiguous.\nPossible candidates:\n%s\n",qPrint(file),
-           qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,file))
+      err("included file name '{}' is ambiguous.\nPossible candidates:\n{}\n",file,
+           showFileDefMatches(Doxygen::exampleNameLinkedMap,file)
           );
     }
     return fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES));
   }
   else
   {
-    err("included file %s is not found. Check your EXAMPLE_PATH\n",qPrint(file));
+    err("included file {} is not found. Check your EXAMPLE_PATH\n",file);
   }
   return QCString();
 }

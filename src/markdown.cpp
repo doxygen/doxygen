@@ -2010,7 +2010,7 @@ QCString Markdown::Private::extractTitleId(QCString &title, int level, bool *pIs
     title = title.left(match.position());
     if (AnchorGenerator::instance().reserve(id)>0)
     {
-      warn(fileName, lineNr, "An automatically generated id already has the name '%s'!", id.c_str());
+      warn(fileName, lineNr, "An automatically generated id already has the name '{}'!", id);
     }
     //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
     AUTO_TRACE_EXIT("id={}",id);
@@ -3570,11 +3570,11 @@ QCString Markdown::process(const QCString &input, int &startNewlines, bool fromP
   prv->processInline(s.view());
   if (fromParseInput)
   {
-    Debug::print(Debug::Markdown,0,"---- output -----\n%s\n=========\n",qPrint(prv->out));
+    Debug::print(Debug::Markdown,0,"---- output -----\n{}\n=========\n",qPrint(prv->out));
   }
   else
   {
-    Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(prv->out));
+    Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n{}\n---- output -----\n{}\n=========\n",input,prv->out);
   }
 
   // post processing
@@ -3637,7 +3637,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   current->docFile  = fileName;
   current->docLine  = 1;
   QCString docs = fileBuf;
-  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n",qPrint(fileBuf));
+  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n{}\n",fileBuf);
   QCString id;
   Markdown markdown(fileName,1,0);
   bool isIdGenerated = false;

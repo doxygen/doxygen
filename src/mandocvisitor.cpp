@@ -82,7 +82,7 @@ void ManDocVisitor::operator()(const DocSymbol &s)
   else
   {
     // no error or warning to be supplied
-    // err("man: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+    // err("man: non supported HTML-entity found: &{};\n",get_symbol_item(s->symbol()));
   }
   m_firstCol=FALSE;
 }

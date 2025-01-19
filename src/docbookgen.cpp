@@ -376,7 +376,7 @@ void DocbookGenerator::init()
   Dir d(dir.str());
   if (!d.exists() && !d.mkdir(dir.str()))
   {
-    term("Could not create output directory %s\n",qPrint(dir));
+    term("Could not create output directory {}\n",dir);
   }
 
   createSubDirs(d);

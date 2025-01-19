@@ -1033,7 +1033,7 @@ STopt  [^\n@\\]*
                                             if (!Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
                                             {
                                                warn(yyextra->fileName,yyextra->lineNr,
-                                               "non supported language '%s' specified in '%s'",langId.data(),QCString(yytext).stripWhiteSpace().data());
+                                               "non supported language '{}' specified in '{}'",langId,QCString(yytext).stripWhiteSpace());
                                             }
                                             BEGIN(SkipLang);
                                           }
@@ -1344,8 +1344,7 @@ STopt  [^\n@\\]*
                                         }
 <NameSpaceDocArg1>{DOCNL}               { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "missing argument after "
-                                               "'\\namespace'."
+                                               "missing argument after '\\namespace'."
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
@@ -1365,8 +1364,7 @@ STopt  [^\n@\\]*
                                         }
 <PackageDocArg1>{DOCNL}                 { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "missing argument after "
-                                               "\\package."
+                                               "missing argument after \\package."
                                               );
                                           unput_string(yytext,yyleng);
                                           //addOutput(yyscanner,'\n');
@@ -1389,8 +1387,7 @@ STopt  [^\n@\\]*
                                         }
 <ConceptDocArg1>{DOCNL}                 { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "missing argument after "
-                                               "'\\concept'."
+                                               "missing argument after '\\concept'."
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
@@ -1410,8 +1407,7 @@ STopt  [^\n@\\]*
                                         }
 <ModuleDocArg1>{DOCNL}                  { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "missing argument after "
-                                               "'\\module'."
+                                               "missing argument after '\\module'."
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
@@ -1450,8 +1446,7 @@ STopt  [^\n@\\]*
                                         }
 <ClassDocArg1,CategoryDocArg1>{DOCNL}   {
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "missing argument after "
-                                               "'\\%s'.",qPrint(yyextra->currentCmd)
+                                               "missing argument after '\\{}'.",yyextra->currentCmd
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
@@ -1510,7 +1505,7 @@ STopt  [^\n@\\]*
                                         }
 <GroupDocArg1>{DOCNL}                   { // missing argument!
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                               "missing group name after %s",
+                                               "missing group name after {}",
                                                yyextra->current->groupDocCmd()
                                               );
                                           //addOutput(yyscanner,'\n');
@@ -1535,7 +1530,7 @@ STopt  [^\n@\\]*
                                           {
                                               warn(yyextra->fileName,yyextra->lineNr,
                                                  "missing title after "
-                                                 "\\defgroup %s", qPrint(yyextra->current->name)
+                                                 "\\defgroup {}", yyextra->current->name
                                                 );
                                           }
                                           unput_string(yytext,yyleng);
@@ -1591,8 +1586,7 @@ STopt  [^\n@\\]*
                                         }
 <PageDocArg1>{DOCNL}                    {
                                             warn(yyextra->fileName,yyextra->lineNr,
-                                               "missing argument after "
-                                               "\\page."
+                                               "missing argument after \\page."
                                               );
                                           unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
@@ -1738,7 +1732,7 @@ STopt  [^\n@\\]*
                                         }
 <RelatesParam1>{DOCNL}                  { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                              "Missing argument of '\\%s' command",qPrint(yyextra->currentCmd)
+                                              "Missing argument of '\\{}' command",yyextra->currentCmd
                                               );
                                           unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
@@ -1761,14 +1755,14 @@ STopt  [^\n@\\]*
                                         }
 <Qualifier>{DOCNL}                      { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                              "Missing argument of '\\%s' command",qPrint(yyextra->currentCmd)
+                                              "Missing argument of '\\{}' command",yyextra->currentCmd
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <Qualifier>.                            {
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                              "Argument of '\\%s' command should be quoted",qPrint(yyextra->currentCmd)
+                                              "Argument of '\\{}' command should be quoted",yyextra->currentCmd
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN( Comment );
@@ -1780,7 +1774,7 @@ STopt  [^\n@\\]*
                                           int nr = QCString(yytext).toInt(&ok);
                                           if (!ok)
                                           {
-                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid line number '%s' for iline command",yytext);
+                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid line number '{}' for iline command",yytext);
                                           }
                                           else
                                           {
@@ -1817,7 +1811,7 @@ STopt  [^\n@\\]*
                                           int nr = QCString(yytext).toInt(&ok);
                                           if (!ok)
                                           {
-                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid level '%s' for iraise command",yytext);
+                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid level '{}' for iraise command",yytext);
                                           }
                                           else
                                           {
@@ -1881,8 +1875,7 @@ STopt  [^\n@\\]*
                                         }
 <LinkSection><<EOF>>                    {
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                            "reached end of comment while inside a '\\%s' command, missing '\\%s' command",
-                                            "link","endlink"
+                                            "reached end of comment while inside a '\\link' command, missing '\\endlink' command"
                                           );
                                           yyterminate();
                                         }
@@ -1963,8 +1956,8 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner," \\ilinebr ");
                                           addSection(yyscanner,false);
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                                "'\\%s' command is not allowed in section title, ending section title.",
-                                               qPrint(QCString(yytext).stripWhiteSpace())
+                                                "'\\{}' command is not allowed in section title, ending section title.",
+                                               QCString(yytext).stripWhiteSpace()
                                               );
                                           unput_string(yytext,yyleng);
                                           BEGIN(Comment);
@@ -2016,7 +2009,7 @@ STopt  [^\n@\\]*
                                                   addOutput(yyscanner,'@');
                                                   addOutput(yyscanner,qPrint(fullMatch.mid(i)));
                                                   warn(yyextra->fileName,yyextra->lineNr,
-                                                    "'\\%s' command is not allowed in section title, escaping command.",qPrint(cmdName)
+                                                    "'\\{}' command is not allowed in section title, escaping command.",cmdName
                                                   );
                                                 }
                                                 break;
@@ -2025,7 +2018,7 @@ STopt  [^\n@\\]*
                                                   addSection(yyscanner,false);
                                                   addOutput(yyscanner," \\ilinebr ");
                                                   warn(yyextra->fileName,yyextra->lineNr,
-                                                    "'\\%s' command is not allowed in section title, ending section title.",qPrint(cmdName)
+                                                    "'\\{}' command is not allowed in section title, ending section title.",cmdName
                                                   );
                                                   unput_string(yytext,yyleng);
                                                   BEGIN(Comment);
@@ -2116,7 +2109,7 @@ STopt  [^\n@\\]*
                                                   {
                                                     yyextra->sectionTitle+=yytext;
                                                     warn(yyextra->fileName,yyextra->lineNr,
-                                                      "internal error '\\%s' command is to be replaced in section title.",qPrint(cmdName)
+                                                      "internal error '\\{}' command is to be replaced in section title.",cmdName
                                                     );
                                                   }
                                                 }
@@ -2265,7 +2258,8 @@ STopt  [^\n@\\]*
                                               QCString endTag = "end"+yyextra->blockName;
                                               if (yyextra->blockName=="startuml") endTag="enduml";
                                               warn(yyextra->fileName,yyextra->lineNr,
-                                                 "found */ without matching /* while inside a \\%s block! Perhaps a missing \\%s?",qPrint(yyextra->blockName),qPrint(endTag));
+                                                 "found */ without matching /* while inside a \\{} block! Perhaps a missing \\{}?",
+                                                 yyextra->blockName,endTag);
                                             }
                                           }
                                         }
@@ -2276,8 +2270,8 @@ STopt  [^\n@\\]*
                                           QCString endTag = "end"+yyextra->blockName;
                                           if (yyextra->blockName=="startuml") endTag="enduml";
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                            "reached end of comment while inside a \\%s block; check for missing \\%s tag!",
-                                            qPrint(yyextra->blockName),qPrint(endTag)
+                                            "reached end of comment while inside a \\{} block; check for missing \\{} tag!",
+                                            yyextra->blockName,endTag
                                           );
                                           yyterminate();
                                         }
@@ -2307,7 +2301,7 @@ STopt  [^\n@\\]*
                                         }
 <GuardExpr>\n                           {
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                                "invalid expression '%s' for yyextra->guards",qPrint(yyextra->guardExpr));
+                                                "invalid expression '{}' for yyextra->guards",yyextra->guardExpr);
                                           unput(*yytext);
                                           BEGIN(GuardParam);
                                         }
@@ -2565,7 +2559,7 @@ STopt  [^\n@\\]*
   /* ----- handle argument of raisewarning command ------- */
 <RaiseWarning,RaiseWarningSection>{DOCNL} { // end of argument
                                           warn_doc_error(yyextra->fileName,yyextra->lineNr,
-                                                         "%s",qPrint(yyextra->raiseWarning));
+                                                         "{}",yyextra->raiseWarning);
                                           yyextra->raiseWarning = "";
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
@@ -2618,8 +2612,7 @@ STopt  [^\n@\\]*
                                             if (yyextra->functionProto.stripWhiteSpace().isEmpty())
                                             {
                                               warn(yyextra->fileName,yyextra->lineNr,
-                                                   "missing argument after "
-                                                   "'\\%s'.",qPrint(yyextra->currentCmd)
+                                                   "missing argument after '\\{}'.",yyextra->currentCmd
                                                   );
                                             }
                                             else
@@ -2709,7 +2702,7 @@ STopt  [^\n@\\]*
                                         }
 <ExtendsParam>{DOCNL}                   { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                              "'\\%s' command has no argument",qPrint(yyextra->currentCmd)
+                                              "'\\{}' command has no argument",yyextra->currentCmd
                                               );
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
@@ -2726,7 +2719,7 @@ STopt  [^\n@\\]*
                                           if (!langId.isEmpty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
                                           {
                                              warn(yyextra->fileName,yyextra->lineNr,
-                                             "non supported language '%s' specified in '%s'",langId.data(),QCString(yytext).stripWhiteSpace().data());
+                                             "non supported language '{}' specified in '{}'",langId,QCString(yytext).stripWhiteSpace());
                                           }
                                           else if (langId.isEmpty() ||
                                               qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)==0)
@@ -3090,7 +3083,7 @@ static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const StringVe
     else
     {
       warn(yyextra->fileName,yyextra->lineNr,
-          "unsupported option '%s' for command '\\%s'",opt.c_str(),qPrint(cmd));
+          "unsupported option '{}' for command '\\{}'",opt,cmd);
     }
   }
   bool stop=makeStructuralIndicator(yyscanner,sectionMaker);
@@ -3471,7 +3464,7 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
     {
       if (!first)
       {
-        warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '%s'", qPrint(optStripped));
+        warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '{}'", optStripped);
       }
       else
       {
@@ -3481,7 +3474,7 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\fileinfo: '%s'", qPrint(optStripped));
+      warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\fileinfo: '{}'", optStripped);
     }
   }
   if (first) // no options specified
@@ -3861,7 +3854,8 @@ static bool handleInheritanceGraph(yyscan_t yyscanner,const QCString &, const St
       }
       else
       {
-        warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\inheritancegraph: '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+        warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\inheritancegraph: '{}'",
+            QCString(opt_).stripWhiteSpace());
       }
     }
   }
@@ -4006,7 +4000,8 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
         char dum=0;
         if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&level,&dum) != 1)
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+          warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '{}'",
+              qPrint(QCString(opt_).stripWhiteSpace()));
           opt = "";
         }
         else
@@ -4035,7 +4030,8 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
         }
         else
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\tableofcontents: '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+          warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\tableofcontents: '{}'",
+              QCString(opt_).stripWhiteSpace());
         }
       }
     }
@@ -4250,11 +4246,13 @@ static void addXRefItem(yyscan_t yyscanner,
         }
         else if (si->lineNr() != -1)
         {
-          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",qPrint(anchorLabel),qPrint(si->fileName()),si->lineNr());
+          warn(listName,yyextra->lineNr,"multiple use of section label '{}', (first occurrence: {}, line {})",
+              anchorLabel,si->fileName(),si->lineNr());
         }
         else
         {
-          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",qPrint(anchorLabel),qPrint(si->fileName()));
+          warn(listName,yyextra->lineNr,"multiple use of section label '{}', (first occurrence: {})",
+              anchorLabel,si->fileName());
         }
       }
       else
@@ -4324,11 +4322,13 @@ static void addSection(yyscan_t yyscanner, bool addYYtext)
     }
     else if (si->lineNr() != -1)
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",qPrint(yyextra->sectionLabel),qPrint(si->fileName()),si->lineNr());
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '{}' while adding section, (first occurrence: {}, line {})",
+          yyextra->sectionLabel,si->fileName(),si->lineNr());
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s)",qPrint(yyextra->sectionLabel),qPrint(si->fileName()));
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '{}' while adding section, (first occurrence: {})",
+          yyextra->sectionLabel,si->fileName());
     }
   }
   else
@@ -4560,13 +4560,13 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor, const QCString 
     else if (si->lineNr() != -1)
     {
       warn(yyextra->fileName,yyextra->lineNr,
-          "multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",
-          qPrint(anchor),qPrint(si->fileName()),si->lineNr());
+          "multiple use of section label '{}' while adding anchor, (first occurrence: {}, line {})",
+          anchor,si->fileName(),si->lineNr());
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",
-          qPrint(anchor),qPrint(si->fileName()));
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '{}' while adding anchor, (first occurrence: {})",
+          anchor,si->fileName());
     }
   }
   else
@@ -4752,8 +4752,8 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
     yyextra->current->inbodyDocs+=cmd;
   }
 
-  Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
-               "input=[\n%s]\n",qPrint(fileName),lineNr,qPrint(yyextra->inputString)
+  Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: {}:{}\n"
+               "input=[\n{}]\n",fileName,lineNr,yyextra->inputString
               );
 
   commentscanYYrestart( nullptr, yyscanner );
@@ -4787,12 +4787,12 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
     yyextra->docGroup.open(yyextra->current,yyextra->fileName,yyextra->lineNr,true);
   }
 
-  Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\noutput=[\n"
-               "brief=[line=%d\n%s]\ndocs=[line=%d\n%s]\ninbody=[line=%d\n%s]\n]\n===========\n",
-               qPrint(fileName),lineNr,
-               yyextra->current->briefLine,qPrint(yyextra->current->brief),
-               yyextra->current->docLine,qPrint(yyextra->current->doc),
-               yyextra->current->inbodyLine,qPrint(yyextra->current->inbodyDocs)
+  Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: {}:{}\noutput=[\n"
+               "brief=[line={}\n{}]\ndocs=[line={}\n{}]\ninbody=[line={}\n{}]\n]\n===========\n",
+               fileName,lineNr,
+               yyextra->current->briefLine,yyextra->current->brief,
+               yyextra->current->docLine,yyextra->current->doc,
+               yyextra->current->inbodyLine,yyextra->current->inbodyDocs
               );
 
   checkFormula(yyscanner);

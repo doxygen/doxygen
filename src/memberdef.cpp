@@ -1278,7 +1278,7 @@ static void writeExceptionListImpl(
     else
     {
       warn(md->getDefFileName(),md->getDefLine(),
-          "missing ) in exception list on member %s",qPrint(md->name()));
+          "missing ) in exception list on member {}",md->name());
     }
   }
   else // Java Exception
@@ -1698,8 +1698,7 @@ QCString MemberDefImpl::getOutputFileBase() const
   if (baseName.isEmpty())
   {
     warn(getDefFileName(),getDefLine(),
-       "Internal inconsistency: member %s does not belong to any"
-       " container!",qPrint(name())
+       "Internal inconsistency: member {} does not belong to any container!",name()
       );
     return "dummy";
   }
@@ -2239,7 +2238,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
   if (d==nullptr)
   {
-    err("No context could be derived for member '%s'\n",qPrint(name()));
+    err("No context could be derived for member '{}'\n",name());
     return; // should not happen
   }
 
@@ -2925,12 +2924,12 @@ void MemberDefImpl::_writeCallGraph(OutputList &ol) const
     DotCallGraph callGraph(this,FALSE);
     if (callGraph.isTooBig())
     {
-       warn_uncond("Call graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
-           qPrint(qualifiedName()), callGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
+       warn_uncond("Call graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           qualifiedName(), callGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!callGraph.isTrivial())
     {
-      msg("Generating call graph for function %s\n",qPrint(qualifiedName()));
+      msg("Generating call graph for function {}\n",qualifiedName());
       ol.disable(OutputType::Man);
       ol.startCallGraph();
       ol.parseText(theTranslator->trCallGraph());
@@ -2947,12 +2946,12 @@ void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
     DotCallGraph callerGraph(this, TRUE);
     if (callerGraph.isTooBig())
     {
-       warn_uncond("Caller graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
-           qPrint(qualifiedName()), callerGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
+       warn_uncond("Caller graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           qualifiedName(), callerGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!callerGraph.isTrivial())
     {
-      msg("Generating caller graph for function %s\n",qPrint(qualifiedName()));
+      msg("Generating caller graph for function {}\n",qualifiedName());
       ol.disable(OutputType::Man);
       ol.startCallGraph();
       ol.parseText(theTranslator->trCallerGraph());
@@ -4110,9 +4109,9 @@ void MemberDefImpl::warnIfUndocumented() const
   {
     SrcLangExt lang = getLanguage();
     QCString sep = getLanguageSpecificSeparator(lang,TRUE);
-    warn_undoc(getDefFileName(),getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
-         qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),qPrint(t),
-         qPrint(substitute(d->name(),"::",sep)));
+    warn_undoc(getDefFileName(),getDefLine(),"Member {}{} ({}) of {} {} is not documented.",
+         name(),argsString(),memberTypeName(),t,
+         substitute(d->name(),"::",sep));
   }
   else if (!hasDetailedDescription())
   {
@@ -4128,8 +4127,8 @@ void MemberDefImpl::warnIfUndocumented() const
       {
         SrcLangExt lang = getLanguage();
         QCString sep = getLanguageSpecificSeparator(lang,TRUE);
-        warn(fmd->getDefFileName(),fmd->getDefLine(), "Documentation for enum member '%s%s%s' is missing.",
-             qPrint(qualifiedName()),qPrint(sep),qPrint(fmd->name()));
+        warn(fmd->getDefFileName(),fmd->getDefLine(), "Documentation for enum member '{}{}{}' is missing.",
+             qualifiedName(),sep,fmd->name());
       }
     }
   }
@@ -4251,8 +4250,8 @@ void MemberDefImpl::warnIfUndocumentedParams() const
     if (!m_hasDocumentedParams)
     {
       warn_doc_error(docFile(),docLine(),
-          "parameters of member %s are not documented",
-          qPrint(qualifiedName()));
+          "parameters of member {} are not documented",
+          qualifiedName());
     }
     if (!m_hasDocumentedReturnType &&
         hasDocumentation() && !returnType.isEmpty() &&
@@ -4265,8 +4264,8 @@ void MemberDefImpl::warnIfUndocumentedParams() const
        )
     {
       warn_doc_error(docFile(),docLine(),
-          "return type of member %s is not documented",
-          qPrint(qualifiedName()));
+          "return type of member {} is not documented",
+          qualifiedName());
     }
   }
   if (Config_getBool(WARN_IF_DOC_ERROR) &&
@@ -4276,8 +4275,8 @@ void MemberDefImpl::warnIfUndocumentedParams() const
              isConstructor()     || // a constructor
              isDestructor()))       // or destructor
   {
-    warn_doc_error(docFile(),docLine(),"found documented return type for %s that does not return anything",
-                   qPrint(qualifiedName()));
+    warn_doc_error(docFile(),docLine(),"found documented return type for {} that does not return anything",
+                   qualifiedName());
   }
 }
 
@@ -4550,9 +4549,7 @@ Specifier MemberDefImpl::virtualness(int count) const
   if (count>25)
   {
      warn(getDefFileName(),getDefLine(),
-       "Internal inconsistency: recursion detected in overload relation for member %s!"
-       ,qPrint(name())
-      );
+       "Internal inconsistency: recursion detected in overload relation for member {}!",name());
      return Specifier::Normal;
   }
   Specifier v = m_virt;

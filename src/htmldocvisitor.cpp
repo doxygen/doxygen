@@ -321,7 +321,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
     }
     else
     {
-      err("HTML: non supported HTML-entity found: %s\n",
+      err("HTML: non supported HTML-entity found: {}\n",
           HtmlEntityMapper::instance().html(s.symbol(),TRUE));
     }
   }
@@ -611,7 +611,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",qPrint(fileName));
+          err("Could not open file {} for writing\n",fileName);
         }
         else
         {
@@ -643,7 +643,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         std::ofstream file = Portable::openOutputStream(baseName.str()+".msc");
         if (!file.is_open())
         {
-          err("Could not open file %s.msc for writing\n",qPrint(baseName));
+          err("Could not open file {}.msc for writing\n",baseName);
         }
         else
         {

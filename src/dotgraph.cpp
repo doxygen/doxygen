@@ -152,7 +152,7 @@ bool DotGraph::prepareDotFile()
 {
   if (!m_dir.exists())
   {
-    term("Output dir %s does not exist!\n", m_dir.path().c_str());
+    term("Output dir {} does not exist!\n", m_dir.path());
   }
 
   char sigStr[33];
@@ -180,7 +180,7 @@ bool DotGraph::prepareDotFile()
   std::ofstream f = Portable::openOutputStream(absDotName());
   if (!f.is_open())
   {
-    err("Could not open file %s for writing\n",qPrint(absDotName()));
+    err("Could not open file {} for writing\n",absDotName());
     return TRUE;
   }
   f << m_theGraph;

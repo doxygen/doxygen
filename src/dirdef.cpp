@@ -320,7 +320,7 @@ void DirDefImpl::writeDirectoryGraph(OutputList &ol)
     DotDirDeps dirDep(this);
     if (!dirDep.isTrivial())
     {
-      msg("Generating dependency graph for directory %s\n",qPrint(displayName()));
+      msg("Generating dependency graph for directory {}\n",displayName());
       ol.disable(OutputType::Man);
       //ol.startParagraph();
       ol.startDirDepGraph();
@@ -643,7 +643,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef:
       case LayoutDocEntry::MemberDefStart:
       case LayoutDocEntry::MemberDefEnd:
-        err("Internal inconsistency: member '%s' should not be part of "
+        err("Internal inconsistency: member '{}' should not be part of "
             "LayoutDocManager::Directory entry list\n",qPrint(lde->entryToString()));
         break;
     }

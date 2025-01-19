@@ -567,8 +567,8 @@ class FilterCache
         auto item = it->second;
         //printf("getFileContents(%s): cache hit\n",qPrint(fileName));
         // file already processed, get the results after filtering from the tmp file
-        Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%lld size=%zu\n",
-               qPrint(fileName),qPrint(Doxygen::filterDBFileName),item.filePos,item.fileSize);
+        Debug::print(Debug::FilterOutput,0,"Reusing filter result for {} from {} at offset={} size={}\n",
+               fileName,Doxygen::filterDBFileName,item.filePos,item.fileSize);
 
         auto it_off = m_lineOffsets.find(fileName.str());
         assert(it_off!=m_lineOffsets.end());
@@ -584,12 +584,12 @@ class FilterCache
         //printf("getFileContents(%s): cache miss\n",qPrint(fileName));
         // filter file
         QCString cmd=filter+" \""+fileName+"\"";
-        Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+        Debug::print(Debug::ExtCmd,0,"Executing popen(`{}`)\n",cmd);
         FILE *f = Portable::popen(cmd,"r");
         if (f==nullptr)
         {
           // handle error
-          err("Error opening filter pipe command '%s'\n",qPrint(cmd));
+          err("Error opening filter pipe command '{}'\n",cmd);
           return false;
         }
         FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
@@ -598,7 +598,7 @@ class FilterCache
         if (bf==nullptr)
         {
           // handle error
-          err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
+          err("Error opening filter database file {}\n",Doxygen::filterDBFileName);
           Portable::pclose(f);
           return false;
         }
@@ -613,8 +613,8 @@ class FilterCache
           if (bytesRead!=bytesWritten)
           {
             // handle error
-            err("Failed to write to filter database %s. Wrote %zu out of %zu bytes\n",
-                qPrint(Doxygen::filterDBFileName),bytesWritten,bytesRead);
+            err("Failed to write to filter database {}. Wrote {} out of {} bytes\n",
+                Doxygen::filterDBFileName,bytesWritten,bytesRead);
             Portable::pclose(f);
             fclose(bf);
             return false;
@@ -625,8 +625,8 @@ class FilterCache
         item.fileSize = size;
         // add location entry to the dictionary
         m_cache.emplace(fileName.str(),item);
-        Debug::print(Debug::FilterOutput,0,"Storing new filter result for %s in %s at offset=%lld size=%zu\n",
-               qPrint(fileName),qPrint(Doxygen::filterDBFileName),item.filePos,item.fileSize);
+        Debug::print(Debug::FilterOutput,0,"Storing new filter result for {} in {} at offset={} size={}\n",
+               fileName,Doxygen::filterDBFileName,item.filePos,item.fileSize);
         // update end of file position
         m_endPos += size;
         Portable::pclose(f);
@@ -878,7 +878,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
     if (usePipe)
     {
       Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(result));
+      Debug::print(Debug::FilterOutput,0,"-------------\n{}\n-------------\n",result);
     }
   }
   QCString encoding = getEncoding(FileInfo(fileName.str()));
@@ -892,8 +892,8 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
     }
     else
     {
-      err("failed to transcode characters in code fragment in file %s lines %d to %d, from input encoding %s to UTF-8\n",
-          qPrint(fileName),startLine,endLine,qPrint(encoding));
+      err("failed to transcode characters in code fragment in file {} lines {} to {}, from input encoding {} to UTF-8\n",
+          fileName,startLine,endLine,encoding);
 
     }
   }

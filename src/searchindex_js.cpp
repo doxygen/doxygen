@@ -579,7 +579,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
   std::ofstream ti = Portable::openOutputStream(dataFileName);
   if (!ti.is_open())
   {
-    err("Failed to open file '%s' for writing...\n",qPrint(dataFileName));
+    err("Failed to open file '{}' for writing...\n",dataFileName);
     return;
   }
 

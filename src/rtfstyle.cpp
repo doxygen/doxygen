@@ -303,7 +303,7 @@ bool StyleData::setStyle(const std::string &command, const std::string &styleNam
   reg::Match match;
   if (!reg::search(command,match,s_clause))
   {
-    err("Style sheet '%s' contains no '\\s' clause.\n{%s}\n", styleName.c_str(), command.c_str());
+    err("Style sheet '{}' contains no '\\s' clause.\n{{{}}}\n", styleName, command);
     return false;
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
@@ -324,10 +324,10 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF style sheet file %s. Using defaults.\n",qPrint(name));
+    err("Can't open RTF style sheet file {}. Using defaults.\n",name);
     return;
   }
-  msg("Loading RTF style sheet %s...\n",qPrint(name));
+  msg("Loading RTF style sheet {}...\n",name);
 
   uint32_t lineNr=1;
 
@@ -348,12 +348,12 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
       }
       else
       {
-        warn(name,lineNr,"Unknown style sheet name %s ignored.",key.data());
+        warn(name,lineNr,"Unknown style sheet name {} ignored.",key);
       }
     }
     else
     {
-      warn(name,lineNr,"Assignment of style sheet name expected line='%s'!",line.c_str());
+      warn(name,lineNr,"Assignment of style sheet name expected line='{}'!",line);
     }
     lineNr++;
   }
@@ -366,10 +366,10 @@ void loadExtensions(const QCString &name)
   std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF extensions file %s. Using defaults.\n",qPrint(name));
+    err("Can't open RTF extensions file {}. Using defaults.\n",name);
     return;
   }
-  msg("Loading RTF extensions %s...\n",qPrint(name));
+  msg("Loading RTF extensions {}...\n",name);
 
   uint32_t lineNr=1;
 
@@ -389,7 +389,7 @@ void loadExtensions(const QCString &name)
       }
       else
       {
-        warn(name,lineNr,"Ignoring unknown extension key '%s'...",key.c_str());
+        warn(name,lineNr,"Ignoring unknown extension key '{}'...",key);
       }
     }
     else

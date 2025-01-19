@@ -52,9 +52,9 @@ bool Htags::execute(const QCString &htmldir)
   {
     g_inputDir.setPath(inputSource.back());
     if (!g_inputDir.exists())
-      err("Cannot find directory %s. "
+      err("Cannot find directory {}. "
           "Check the value of the INPUT tag in the configuration file.\n",
-          inputSource.back().c_str()
+          inputSource.back()
          );
   }
   else
@@ -92,7 +92,7 @@ bool Htags::execute(const QCString &htmldir)
   bool result=Portable::system("htags",commandLine,FALSE)==0;
   if (!result)
   {
-    err("Problems running %s. Check your installation\n", "htags");
+    err("Problems running htags. Check your installation\n");
   }
   Dir::setCurrent(oldDir);
   return result;
@@ -144,7 +144,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
     }
     else
     {
-      err("file %s cannot be opened\n",qPrint(fileMapName));
+      err("file {} cannot be opened\n",fileMapName);
     }
   }
   return false;

@@ -53,7 +53,7 @@ class HtmlHelpRecoder
       m_fromUtf8 = portable_iconv_open(str.data(),"UTF-8");
       if (m_fromUtf8==m_iconv_null)
       {
-        term("unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", qPrint(str));
+        term("unsupported character conversion for CHM_INDEX_ENCODING: '{}'->'UTF-8'\n", str);
       }
     }
     void finalize()
@@ -375,7 +375,7 @@ void HtmlHelp::initialize()
   p->cts = Portable::openOutputStream(fName);
   if (!p->cts.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(fName));
+    term("Could not open file {} for writing\n",fName);
   }
   /* Write the header of the contents file */
   p->cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
@@ -390,7 +390,7 @@ void HtmlHelp::initialize()
   p->kts = Portable::openOutputStream(fName);
   if (!p->kts.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(fName));
+    term("Could not open file {} for writing\n",fName);
   }
   /* Write the header of the contents file */
   p->kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
@@ -478,7 +478,7 @@ void HtmlHelp::Private::createProjectFile()
   }
   else
   {
-    err("Could not open file %s for writing\n",qPrint(fName));
+    err("Could not open file {} for writing\n",fName);
   }
 }
 

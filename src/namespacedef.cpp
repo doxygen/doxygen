@@ -552,11 +552,8 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         //  fallthrough, explicitly no break here
       default:
         err("NamespaceDefImpl::insertMembers(): "
-            "member '%s' with unexpected type '%s' and class scope '%s' inserted in namespace scope '%s'!\n",
-            qPrint(md->name()),
-            qPrint(md->memberTypeName()),
-            md->getClassDef() ? qPrint(md->getClassDef()->name()) : "",
-            qPrint(name()));
+            "member '{}' with unexpected type '{}' and class scope '{}' inserted in namespace scope '{}'!\n",
+            md->name(), md->memberTypeName(), md->getClassDef() ? md->getClassDef()->name() : "", name());
     }
     // if this is an inline namespace, then insert an alias of this member in the outer scope.
     if (isInline())
@@ -1116,8 +1113,8 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
-        err("Internal inconsistency: member '%s' should not be part of "
-            "LayoutDocManager::Namespace entry list\n",qPrint(lde->entryToString()));
+        err("Internal inconsistency: member '{}' should not be part of "
+            "LayoutDocManager::Namespace entry list\n",lde->entryToString());
         break;
     }
   }
@@ -1505,7 +1502,7 @@ static bool hasNonReferenceNestedNamespaceRec(const NamespaceDef *nd,int level)
 {
   if (level>30)
   {
-    err("Possible recursive namespace relation while inside %s\n",qPrint(nd->name()));
+    err("Possible recursive namespace relation while inside {}\n",nd->name());
     return false;
   }
   bool found=nd->isLinkableInProject();

@@ -528,7 +528,7 @@ void generateDEF()
   Dir defDir(outputDirectory.str());
   if (!defDir.exists() && !defDir.mkdir(outputDirectory.str()))
   {
-    err("Could not create def directory in %s\n",qPrint(outputDirectory));
+    err("Could not create def directory in {}\n",outputDirectory);
     return;
   }
 
@@ -536,7 +536,7 @@ void generateDEF()
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
