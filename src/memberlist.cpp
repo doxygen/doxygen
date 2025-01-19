@@ -166,7 +166,7 @@ std::pair<int,int> MemberList::countDecMembers(const ClassDef *inheritedFrom) co
         case MemberType::Friend:     numDecMembers++;
                                      break;
         default:
-          err("Unknown member type found for member '%s'!\n",qPrint(md->name()));
+          err("Unknown member type found for member '{}'!\n",md->name());
       }
     }
   }

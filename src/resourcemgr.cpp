@@ -68,7 +68,7 @@ bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &tar
       }
       if (!ok)
       {
-        err("Failed to write resource '%s' to directory '%s'\n",res.name,qPrint(targetDir));
+        err("Failed to write resource '{}' to directory '{}'\n",res.name,targetDir);
         return FALSE;
       }
     }
@@ -170,7 +170,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
   }
   else
   {
-    err("requested resource '%s' not compiled in!\n",qPrint(name));
+    err("requested resource '{}' not compiled in!\n",name);
   }
   return FALSE;
 }

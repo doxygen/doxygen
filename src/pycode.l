@@ -1623,7 +1623,7 @@ static inline void pop_state(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if ( yyg->yy_start_stack_ptr <= 0 )
-    warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected statement '%s'",yytext );
+    warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected statement '{}'",yytext );
   else
     yy_pop_state(yyscanner);
 }

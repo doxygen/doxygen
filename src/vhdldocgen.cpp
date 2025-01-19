@@ -2181,9 +2181,6 @@ void VhdlDocGen::computeVhdlComponentRelations()
       continue;
     }
 
-    // if (classEntity==nullptr)
-    //   err("%s:%d:Entity:%s%s",qPrint(cur->fileName),cur->startLine,qPrint(entity)," could not be found");
-
     addInstance(classEntity,ar,cd,cur);
   }
 
@@ -2326,7 +2323,7 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
   //printf("isBaseClass(cd=%s) looking for %s\n",qPrint(name()),qPrint(bcd->name()));
   if (level>255)
   {
-    err("Possible recursive class relation while inside %s and looking for %s\n",qPrint(cd->name()),qPrint(scd->name()));
+    err("Possible recursive class relation while inside {} and looking for {}\n",cd->name(),scd->name());
     abort();
   }
 
@@ -3092,7 +3089,7 @@ void FlowChart::writeFlowChart()
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing\n",qPrint(fileName));
+    err("Cannot open file {} for writing\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -3360,7 +3357,7 @@ size_t FlowChart::findLabel(size_t index,const QCString &label)
       return j;
     }
   }
-  err("could not find label: '%s'\n",qPrint(label));
+  err("could not find label: '{}'\n",label);
   return 0;
 }
 

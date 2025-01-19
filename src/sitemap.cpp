@@ -50,7 +50,7 @@ void Sitemap::initialize()
   p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
   {
-    term("Could not open file %s for writing\n", qPrint(fileName));
+    term("Could not open file {} for writing\n", fileName);
   }
   p->doc.setStream(&p->docFile);
 
@@ -99,7 +99,7 @@ void Crawlmap::initialize()
   p->crawlFile = Portable::openOutputStream(fileName);
   if (!p->crawlFile.is_open())
   {
-    term("Could not open file %s for writing\n", qPrint(fileName));
+    term("Could not open file {} for writing\n",fileName);
   }
   p->crawl.setStream(&p->crawlFile);
   p->crawl << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";

@@ -123,7 +123,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
   fullCmd += " ";
   fullCmd += args;
 #ifndef NODEBUG
-  Debug::print(Debug::ExtCmd,0,"Executing external command `%s`\n",qPrint(fullCmd));
+  Debug::print(Debug::ExtCmd,0,"Executing external command `{}`\n",fullCmd);
 #endif
 
 #if !defined(_WIN32) || defined(__CYGWIN__)

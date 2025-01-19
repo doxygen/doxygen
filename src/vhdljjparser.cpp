@@ -140,7 +140,7 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
 
   bool inLine = fileName.isEmpty();
 
-  if (!inLine) msg("Parsing file %s...\n",qPrint(fileName));
+  if (!inLine) msg("Parsing file {}...\n",fileName);
 
   p->yyFileName=fileName;
 

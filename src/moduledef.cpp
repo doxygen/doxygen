@@ -467,8 +467,8 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
-        err("Internal inconsistency: member '%s' should not be part of "
-            "LayoutDocManager::Module entry list\n",qPrint(lde->entryToString()));
+        err("Internal inconsistency: member '{}' should not be part of "
+            "LayoutDocManager::Module entry list\n",lde->entryToString());
         break;
     }
   }
@@ -1523,8 +1523,8 @@ void ModuleManager::addDocs(const Entry *root)
   if (root->doc.isEmpty() && root->brief.isEmpty()) return;
   if (root->name.find(':')!=-1)
   {
-    warn(root->fileName,root->startLine,"Ignoring documentation for module partition %s. Please place documentation at the primary module name",
-        qPrint(root->name));
+    warn(root->fileName,root->startLine,"Ignoring documentation for module partition {}. Please place documentation at the primary module name",
+        root->name);
   }
   else
   {
@@ -1545,12 +1545,12 @@ void ModuleManager::addDocs(const Entry *root)
       }
       else
       {
-        warn(root->fileName,root->startLine,"Found documentation for module %s but it has no primary interface unit.",qPrint(root->name));
+        warn(root->fileName,root->startLine,"Found documentation for module {} but it has no primary interface unit.",root->name);
       }
     }
     else
     {
-      warn(root->fileName,root->startLine,"Found documentation for unknown module %s.",qPrint(root->name));
+      warn(root->fileName,root->startLine,"Found documentation for unknown module {}.",root->name);
     }
   }
 }

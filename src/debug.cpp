@@ -78,14 +78,11 @@ static FILE *g_debugFile = stdout;
 Debug::DebugMask Debug::curMask = Debug::Quiet;
 int Debug::curPrio = 0;
 
-void Debug::print(DebugMask mask,int prio,const char *fmt,...)
+void Debug::print_(DebugMask mask, int prio, fmt::string_view fmt, fmt::format_args args)
 {
   if ((curMask&mask) && prio<=curPrio)
   {
-    va_list args;
-    va_start(args,fmt);
-    vfprintf(g_debugFile, fmt, args);
-    va_end(args);
+    fmt::print(g_debugFile,"{}",fmt::vformat(fmt,args));
   }
 }
 
@@ -141,7 +138,7 @@ void Debug::printFlags()
 {
   for (const auto &v : s_labels)
   {
-     msg("\t%s\n",v.first.c_str());
+     msg("\t{}\n",v.first);
   }
 }
 

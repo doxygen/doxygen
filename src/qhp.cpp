@@ -215,7 +215,7 @@ void Qhp::initialize()
   p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
   {
-    term("Could not open file %s for writing\n", fileName.data());
+    term("Could not open file {} for writing\n",fileName);
   }
   p->doc.setStream(&p->docFile);
 
@@ -340,7 +340,7 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
       std::ofstream blankFile = Portable::openOutputStream(fileName); // we just need an empty file
       if (!blankFile.is_open())
       {
-        term("Could not open file %s for writing\n", qPrint(fileName));
+        term("Could not open file {} for writing\n",fileName);
       }
       TextStream blank;
       blank.setStream(&blankFile);

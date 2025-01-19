@@ -637,7 +637,7 @@ void FileDefImpl::writeIncludeGraph(OutputList &ol)
     DotInclDepGraph incDepGraph(this,FALSE);
     if (incDepGraph.isTooBig())
     {
-       warn_uncond("Include graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+       warn_uncond("Include graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
            qPrint(name()), incDepGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!incDepGraph.isTrivial())
@@ -662,7 +662,7 @@ void FileDefImpl::writeIncludedByGraph(OutputList &ol)
     DotInclDepGraph incDepGraph(this,TRUE);
     if (incDepGraph.isTooBig())
     {
-       warn_uncond("Included by graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+       warn_uncond("Included by graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
            qPrint(name()), incDepGraph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!incDepGraph.isTrivial())
@@ -1027,8 +1027,8 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
-        err("Internal inconsistency: member '%s' should not be part of "
-            "LayoutDocManager::File entry list\n",qPrint(lde->entryToString()));
+        err("Internal inconsistency: member '{}' should not be part of "
+            "LayoutDocManager::File entry list\n",lde->entryToString());
         break;
     }
   }
@@ -1331,10 +1331,10 @@ void FileDefImpl::insertMember(MemberDef *md)
       break;
     default:
        err("FileDefImpl::insertMembers(): "
-           "member '%s' with class scope '%s' inserted in file scope '%s'!\n",
-           qPrint(md->name()),
-           md->getClassDef() ? qPrint(md->getClassDef()->name()) : "<global>",
-           qPrint(name()));
+           "member '{}' with class scope '{}' inserted in file scope '{}'!\n",
+           md->name(),
+           md->getClassDef() ? md->getClassDef()->name() : "<global>",
+           name());
   }
   //addMemberToGroup(md,groupId);
 }
@@ -1643,13 +1643,13 @@ void FileDefImpl::acquireFileVersion()
   if (!vercmd.isEmpty() && !m_filePath.isEmpty() && !isReference() &&
       m_filePath!="generated" && m_filePath!="graph_legend.dox")
   {
-    msg("Version of %s : ",qPrint(m_filePath));
+    msg("Version of {} : ",m_filePath);
     QCString cmd = vercmd+" \""+m_filePath+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`{}`)\n",cmd);
     FILE *f=Portable::popen(cmd,"r");
     if (!f)
     {
-      err("could not execute %s\n",qPrint(vercmd));
+      err("could not execute {}\n",vercmd);
       return;
     }
     const int bufSize=1024;
@@ -1662,7 +1662,7 @@ void FileDefImpl::acquireFileVersion()
       m_fileVersion=QCString(buf,numRead).stripWhiteSpace();
       if (!m_fileVersion.isEmpty())
       {
-        msg("%s\n",qPrint(m_fileVersion));
+        msg("{}\n",m_fileVersion);
         return;
       }
     }

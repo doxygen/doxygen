@@ -100,11 +100,9 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
   {
     if (ambig & doWarn)
     {
-      QCString text;
-      text.sprintf("image file name '%s' is ambiguous.\n",qPrint(fileName));
-      text+="Possible candidates:\n";
-      text+=showFileDefMatches(Doxygen::imageNameLinkedMap,fileName);
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"%s", qPrint(text));
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),
+          "image file name '{}' is ambiguous.\n"
+          "Possible candidates:\n{}", fileName,showFileDefMatches(Doxygen::imageNameLinkedMap,fileName));
     }
 
     QCString inputFile = fd->absFilePath();
@@ -148,8 +146,8 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
       {
         Dir().remove(outputFile.str());
         warn_doc_error(context.fileName,tokenizer.getLineNr(),
-            "destination of image %s is a symlink, replacing with image",
-            qPrint(outputFile));
+            "destination of image {} is a symlink, replacing with image",
+            outputFile);
       }
       if (outputFile!=inputFile) // prevent copying to ourself
       {
@@ -162,7 +160,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
     else
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),
-	  "could not open image %s",qPrint(fileName));
+	  "could not open image {}",fileName);
     }
 
     if (type==DocImage::Latex && Config_getBool(USE_PDFLATEX) &&
@@ -192,8 +190,8 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
     if (!result.startsWith("http:") && !result.startsWith("https:") && doWarn)
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),
-           "image file %s is not found in IMAGE_PATH: "
-	   "assuming external image.",qPrint(fileName)
+           "image file {} is not found in IMAGE_PATH: "
+	   "assuming external image.",fileName
           );
     }
   }
@@ -261,10 +259,10 @@ void DocParser::checkArgumentName()
       }
       QCString alStr = argListToString(al);
       warn_doc_error(docFile,docLine,
-	  "argument '%s' of command @param "
-	  "is not found in the argument list of %s%s%s%s",
-	  qPrint(aName), qPrint(scope), qPrint(context.memberDef->name()),
-	  qPrint(alStr), qPrint(inheritedFrom));
+	  "argument '{}' of command @param "
+	  "is not found in the argument list of {}{}{}{}",
+	  aName, scope, context.memberDef->name(),
+	  alStr, inheritedFrom);
     }
   }
 }
@@ -280,10 +278,8 @@ void DocParser::checkRetvalName()
   {
      warn_doc_error(context.memberDef->getDefFileName(),
                     context.memberDef->getDefLine(),
-                    "%s",
-                    qPrint("return value '" + name + "' of " +
-                    QCString(context.memberDef->qualifiedName()) +
-                    " has multiple documentation sections"));
+                    "return value '{}' of {} has multiple documentation sections",
+                    name, context.memberDef->qualifiedName());
   }
   context.retvalsFound.insert(name.str());
 }
@@ -331,11 +327,8 @@ void DocParser::checkUnOrMultipleDocumentedParams()
           {
             warn_doc_error(context.memberDef->docFile(),
                            context.memberDef->docLine(),
-                           "%s",
-                           qPrint("argument '" + aName +
-                           "' from the argument list of " +
-                           QCString(context.memberDef->qualifiedName()) +
-                           " has multiple @param documentation sections"));
+                           "argument {} from the argument list of {} has multiple @param documentation sections",
+                           aName, context.memberDef->qualifiedName());
           }
         }
       }
@@ -357,10 +350,7 @@ void DocParser::checkUnOrMultipleDocumentedParams()
           first=FALSE;
           errMsg+="  parameter '"+argName+"'";
         }
-        warn_incomplete_doc(context.memberDef->docFile(),
-                            context.memberDef->docLine(),
-                            "%s",
-                            qPrint(substitute(errMsg,"%","%%")));
+        warn_incomplete_doc(context.memberDef->docFile(), context.memberDef->docLine(), "{}", errMsg);
       }
     }
     else
@@ -369,9 +359,8 @@ void DocParser::checkUnOrMultipleDocumentedParams()
       {
         warn_doc_error(context.memberDef->docFile(),
                        context.memberDef->docLine(),
-                       "%s",
-                       qPrint(context.memberDef->qualifiedName() +
-                              " has @param documentation sections but no arguments"));
+                       "{} has @param documentation sections but no arguments",
+                       context.memberDef->qualifiedName());
       }
     }
   }
@@ -554,22 +543,22 @@ void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,Token tok,
       {
         char cs[2] = { tok.command_to_char(), 0 };
         children.append<DocWord>(this,parent,cs + context.token->name);
-        warn_doc_error(context.fileName,tokenizer.getLineNr(),"Illegal command '%c%s' found as part of a %s",
-         tok.command_to_char(),qPrint(context.token->name),qPrint(txt));
+        warn_doc_error(context.fileName,tokenizer.getLineNr(),"Illegal command '{:c}{}' found as part of a {}",
+         tok.command_to_char(),context.token->name,txt);
       }
       break;
     case TokenRetval::TK_SYMBOL:
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol '%s' found as part of a %s",
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol '{}' found as part of a {}",
            qPrint(context.token->name), qPrint(txt));
       break;
     case TokenRetval::TK_HTMLTAG:
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported HTML tag <%s%s> found as part of a %s",
-           context.token->endTag ? "/" : "",qPrint(context.token->name), qPrint(txt));
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported HTML tag <{}{}> found as part of a {}",
+           context.token->endTag ? "/" : "",context.token->name, txt);
       break;
     default:
       children.append<DocWord>(this,parent,context.token->name);
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unexpected token %s found as part of a %s",
-        tok.to_string(), qPrint(txt));
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unexpected token {} found as part of a {}",
+        tok.to_string(), txt);
       break;
   }
 }
@@ -583,8 +572,8 @@ Token DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &childre
   Token tok=tokenizer.lex();
   if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
-	qPrint(saveCmdName));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\{} command",
+	saveCmdName);
     return tok;
   }
   tok = tokenizer.lex();
@@ -660,23 +649,18 @@ void DocParser::handleStyleLeave(DocNodeVariant *parent,DocNodeList &children,
   {
     if (context.styleStack.empty())
     {
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </%s> tag without matching <%s>",
-          qPrint(tagName),qPrint(tagName));
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </{0}> tag without matching <{0}>",tagName);
     }
-    else if (topStyleChange(context.styleStack).tagName()!=tagNameLower)
+    else if (topStyleChange(context.styleStack).tagName()!=tagNameLower ||
+             topStyleChange(context.styleStack).style()!=s)
     {
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </%s> tag while expecting </%s>",
-          qPrint(tagName),qPrint(topStyleChange(context.styleStack).tagName()));
-    }
-    else if (topStyleChange(context.styleStack).style()!=s)
-    {
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </%s> tag while expecting </%s>",
-          qPrint(tagName),qPrint(topStyleChange(context.styleStack).tagName()));
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </{}> tag while expecting </{}>",
+          tagName,topStyleChange(context.styleStack).tagName());
     }
     else
     {
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </%s> at different nesting level (%zu) than expected (%zu)",
-          qPrint(tagName),context.nodeStack.size(),topStyleChange(context.styleStack).position());
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </{}> at different nesting level ({}) than expected ({})",
+          tagName,context.nodeStack.size(),topStyleChange(context.styleStack).position());
     }
   }
   else // end the section
@@ -779,13 +763,12 @@ void DocParser::handleUnclosedStyleCommands()
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),
                "end of comment block while expecting "
-               "command </%s> (Probable start '%s' at line %d)",qPrint(tagName), qPrint(fileName), lineNr);
+               "command </{}> (Probable start '{}' at line {})",tagName, fileName, lineNr);
     }
     else
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),
-               "end of comment block while expecting "
-               "command </%s>",qPrint(tagName));
+               "end of comment block while expecting command </{}>",tagName);
     }
   }
 }
@@ -904,7 +887,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
     AUTO_TRACE_ADD("non-linkable");
     if (context.token->name.startsWith("#"))
     {
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"explicit link request to '%s' could not be resolved",qPrint(name));
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"explicit link request to '{}' could not be resolved",name);
     }
     children.append<DocWord>(this,parent,context.token->name);
   }
@@ -941,16 +924,15 @@ void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
   AUTO_TRACE("name={}",tokenName);
   if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
-        qPrint(tokenName));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\{} command", tokenName);
     return;
   }
   tokenizer.setStateInternalRef();
   tok=tokenizer.lex(); // get the reference id
   if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        tok.to_string(),qPrint(tokenName));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of {}",
+        tok.to_string(),tokenName);
     return;
   }
   children.append<DocInternalRef>(this,parent,context.token->name);
@@ -963,8 +945,8 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
   Token tok=tokenizer.lex();
   if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
-        qPrint(context.token->name));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\{} command",
+        context.token->name);
     return;
   }
   tokenizer.setStateAnchor();
@@ -972,13 +954,13 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
   if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command %s",qPrint(context.token->name));
+        "argument of command {}",context.token->name);
     return;
   }
   else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        tok.to_string(),qPrint(context.token->name));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of {}",
+        tok.to_string(),context.token->name);
     return;
   }
   tokenizer.setStatePara();
@@ -991,8 +973,7 @@ void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
   Token tok=tokenizer.lex();
   if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
-        qPrint(context.token->name));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\{} command", context.token->name);
     return;
   }
   tokenizer.setStatePrefix();
@@ -1000,13 +981,13 @@ void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
   if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command %s",qPrint(context.token->name));
+        "argument of command {}",context.token->name);
     return;
   }
   else if (!tok.is(TokenRetval::TK_WORD))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        tok.to_string(),qPrint(context.token->name));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of {}",
+        tok.to_string(),context.token->name);
     return;
   }
   context.prefix = context.token->name;
@@ -1074,8 +1055,8 @@ void DocParser::defaultHandleTitleAndSize(const CommandType cmd, DocNodeVariant 
       else // other text after the title -> treat as normal text
       {
         tokenizer.unputString(context.token->name);
-        //warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unknown option '%s' after \\%s command, expected 'width' or 'height'",
-        //               qPrint(context.token->name), qPrint(Mappers::cmdMapper->find(cmd)));
+        //warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unknown option '{}' after \\{} command, expected 'width' or 'height'",
+        //               context.token->name, Mappers::cmdMapper->find(cmd));
         break;
       }
     }
@@ -1139,8 +1120,8 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
             if (!anchorStr.isEmpty())
             {
                warn_doc_error(context.fileName,tokenizer.getLineNr(),
-                  "multiple use of option 'anchor' for 'image' command, ignoring: '%s'",
-                  qPrint(locOpt.mid(7)));
+                  "multiple use of option 'anchor' for 'image' command, ignoring: '{}'",
+                  locOpt.mid(7));
             }
             else
             {
@@ -1150,8 +1131,8 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
           else
           {
             warn_doc_error(context.fileName,tokenizer.getLineNr(),
-                  "unknown option '%s' for 'image' command specified",
-                  qPrint(locOpt));
+                  "unknown option '{}' for 'image' command specified",
+                  locOpt);
           }
         }
         tok=tokenizer.lex();
@@ -1171,7 +1152,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   tok=tokenizer.lex();
   if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of \\image",
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of \\image",
         tok.to_string());
     return;
   }
@@ -1190,9 +1171,8 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   else if (imgType=="xml")     t=DocImage::Xml;
   else
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"output format `%s` specified as the first argument of "
-        "\\image command is not valid",
-        qPrint(imgType));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"output format `{}` specified as the first argument of "
+        "\\image command is not valid", imgType);
     return;
   }
   tokenizer.setStateFile();
@@ -1200,8 +1180,7 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
   tokenizer.setStatePara();
   if (!tok.is(TokenRetval::TK_WORD))
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token %s as the argument of \\image",
-        tok.to_string());
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of \\image", tok.to_string());
     return;
   }
   if (!anchorStr.isEmpty())
@@ -1763,16 +1742,14 @@ void DocParser::readTextFileByName(const QCString &file,QCString &text)
     text = fileToString(filePath,Config_getBool(FILTER_SOURCE_FILES));
     if (ambig)
     {
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file name '%s' is ambiguous"
-          "Possible candidates:\n%s",qPrint(file),
-          qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,file))
-          );
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file name '{}' is ambiguous"
+          "Possible candidates:\n{}",file, showFileDefMatches(Doxygen::exampleNameLinkedMap,file));
     }
   }
   else
   {
-    warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file '%s' is not found. "
-           "Check your EXAMPLE_PATH",qPrint(file));
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"included file '{}' is not found. "
+           "Check your EXAMPLE_PATH",file);
   }
 }
 
@@ -1935,8 +1912,8 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
         if (found && def->isReference())
         {
           warn_doc_error(context.fileName,tokenizer.getLineNr(),
-               "@copy%s or @copydoc target '%s' found but is from a tag file, skipped", isBrief?"brief":"details",
-               qPrint(id));
+               "@copy{} or @copydoc target '{}' found but is from a tag file, skipped",
+               isBrief?"brief":"details", id);
         }
         else if (found)
         {
@@ -1976,15 +1953,14 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
           else
           {
             warn_doc_error(context.fileName,tokenizer.getLineNr(),
-	         "Found recursive @copy%s or @copydoc relation for argument '%s'.",
-                 isBrief?"brief":"details",qPrint(id));
+	         "Found recursive @copy{} or @copydoc relation for argument '{}'.",
+                 isBrief?"brief":"details",id);
           }
         }
         else
         {
           warn_doc_error(context.fileName,tokenizer.getLineNr(),
-               "@copy%s or @copydoc target '%s' not found", isBrief?"brief":"details",
-               qPrint(id));
+               "@copy{} or @copydoc target '{}' not found", isBrief?"brief":"details",id);
         }
         // skip over command
         i=j;

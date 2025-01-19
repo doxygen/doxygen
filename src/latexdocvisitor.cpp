@@ -339,7 +339,7 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+    err("LaTeX: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
@@ -501,7 +501,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",qPrint(fileName));
+          err("Could not open file {} for writing\n",fileName);
         }
         else
         {
@@ -529,7 +529,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",qPrint(fileName));
+          err("Could not open file {} for writing\n",fileName);
         }
         else
         {
@@ -2098,7 +2098,7 @@ void LatexDocVisitor::incIndentLevel()
   m_indentLevel++;
   if (m_indentLevel>=maxIndentLevels)
   {
-    err("Maximum indent level (%d) exceeded while generating LaTeX output!\n",maxIndentLevels-1);
+    err("Maximum indent level ({}) exceeded while generating LaTeX output!\n",maxIndentLevels-1);
   }
 }
 

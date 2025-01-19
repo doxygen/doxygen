@@ -500,10 +500,10 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
       break;
     default:
       err("GroupDefImpl::insertMembers(): "
-           "member '%s' (typeid='%s') with scope '%s' inserted in group scope '%s'!\n",
-           qPrint(md->name()),qPrint(md->memberTypeName()),
-           md->getClassDef() ? qPrint(md->getClassDef()->name()) : "",
-           qPrint(name()));
+           "member '{}' (typeid='{}') with scope '{}' inserted in group scope '{}'!\n",
+           md->name(),md->memberTypeName(),
+           md->getClassDef() ? md->getClassDef()->name() : "",
+           name());
   }
   return TRUE;
 }
@@ -884,12 +884,12 @@ void GroupDefImpl::writeGroupGraph(OutputList &ol)
     DotGroupCollaboration graph(this);
     if (graph.isTooBig())
     {
-       warn_uncond("Group dependency graph for '%s' not generated, too many nodes (%d), threshold is %d. Consider increasing DOT_GRAPH_MAX_NODES.\n",
-           qPrint(name()), graph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
+       warn_uncond("Group dependency graph for '{}' not generated, too many nodes ({}), threshold is {}. Consider increasing DOT_GRAPH_MAX_NODES.\n",
+           name(), graph.numNodes(), Config_getInt(DOT_GRAPH_MAX_NODES));
     }
     else if (!graph.isTrivial())
     {
-      msg("Generating dependency graph for group %s\n",qPrint(qualifiedName()));
+      msg("Generating dependency graph for group {}\n",qualifiedName());
       ol.pushGeneratorState();
       ol.disable(OutputType::Man);
       //ol.startParagraph();
@@ -1317,8 +1317,8 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DirSubDirs:
       case LayoutDocEntry::DirFiles:
       case LayoutDocEntry::DirGraph:
-        err("Internal inconsistency: member '%s' should not be part of "
-            "LayoutDocManager::Group entry list\n",qPrint(lde->entryToString()));
+        err("Internal inconsistency: member '{}' should not be part of "
+            "LayoutDocManager::Group entry list\n",lde->entryToString());
         break;
     }
   }
@@ -1427,8 +1427,8 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
       warn(root->fileName, root->startLine,
-          "Found non-existing group '%s' for the command '%s', ignoring command",
-          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
           );
     }
   }
@@ -1451,8 +1451,8 @@ void addConceptToGroups(const Entry *root,ConceptDef *cd)
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
       warn(root->fileName, root->startLine,
-          "Found non-existing group '%s' for the command '%s', ignoring command",
-          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
           );
     }
   }
@@ -1471,8 +1471,8 @@ void addModuleToGroups(const Entry *root,ModuleDef *mod)
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
       warn(root->fileName, root->startLine,
-          "Found non-existing group '%s' for the command '%s', ignoring command",
-          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
           );
     }
   }
@@ -1499,8 +1499,8 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
       warn(root->fileName, root->startLine,
-          "Found non-existing group '%s' for the command '%s', ignoring command",
-          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
           );
     }
   }
@@ -1522,8 +1522,8 @@ void addDirToGroups(const Entry *root,DirDef *dd)
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
       warn(root->fileName, root->startLine,
-          "Found non-existing group '%s' for the command '%s', ignoring command",
-          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
           );
     }
   }
@@ -1539,13 +1539,13 @@ void addGroupToGroups(const Entry *root,GroupDef *subGroup)
     {
       if (gd==subGroup)
       {
-        warn(root->fileName,root->startLine,"Refusing to add group %s to itself",
-            qPrint(gd->name()));
+        warn(root->fileName,root->startLine,"Refusing to add group {} to itself",
+            gd->name());
       }
       else if (subGroup->findGroup(gd))
       {
-        warn(root->fileName,root->startLine,"Refusing to add group %s to group %s, since the latter is already a "
-                                            "subgroup of the former", qPrint(subGroup->name()),qPrint(gd->name()));
+        warn(root->fileName,root->startLine,"Refusing to add group {} to group {}, since the latter is already a "
+                                            "subgroup of the former", subGroup->name(),gd->name());
       }
       else if (!gd->findGroup(subGroup))
       {
@@ -1556,8 +1556,8 @@ void addGroupToGroups(const Entry *root,GroupDef *subGroup)
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
       warn(root->fileName, root->startLine,
-          "Found non-existing group '%s' for the command '%s', ignoring command",
-          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
           );
     }
   }
@@ -1581,10 +1581,10 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
       if (fgd && gd!=fgd && g.pri==pri)
       {
         warn(root->fileName, root->startLine,
-            "Member %s found in multiple %s groups! "
-            "The member will be put in group %s, and not in group %s",
-            qPrint(md->name()), Grouping::getGroupPriName( pri ),
-            qPrint(gd->name()), qPrint(fgd->name())
+            "Member {} found in multiple {} groups! "
+            "The member will be put in group {}, and not in group {}",
+            md->name(), Grouping::getGroupPriName( pri ),
+            gd->name(), fgd->name()
             );
       }
 
@@ -1594,8 +1594,8 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
       warn(root->fileName, root->startLine,
-          "Found non-existing group '%s' for the command '%s', ignoring command",
-          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
           );
     }
   }
@@ -1633,12 +1633,11 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
           else if (!root->doc.isEmpty() && md->getGroupHasDocs())
           {
             warn(md->getGroupFileName(),md->getGroupStartLine(),
-                "Member documentation for %s found several times in %s groups!\n"
-                "%s:%d: The member will remain in group %s, and won't be put into group %s",
-                qPrint(md->name()), Grouping::getGroupPriName( pri ),
-                qPrint(root->fileName), root->startLine,
-                qPrint(mgd->name()),
-                qPrint(fgd->name())
+                "Member documentation for {} found several times in {} groups!\n"
+                "{}:{}: The member will remain in group {}, and won't be put into group {}",
+                md->name(), Grouping::getGroupPriName( pri ),
+                root->fileName, root->startLine,
+                mgd->name(), fgd->name()
                 );
           }
         }
@@ -1704,8 +1703,8 @@ void addExampleToGroups(const Entry *root,PageDef *eg)
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
       warn(root->fileName, root->startLine,
-          "Found non-existing group '%s' for the command '%s', ignoring command",
-          qPrint(g.groupname), Grouping::getGroupPriName( g.pri )
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
           );
     }
   }
@@ -1896,7 +1895,7 @@ static bool hasNonReferenceNestedGroupRec(const GroupDef *gd,int level)
 {
   if (level>30)
   {
-    err("Possible recursive group relation while inside %s\n",qPrint(gd->name()));
+    err("Possible recursive group relation while inside {}\n",gd->name());
     return false;
   }
   bool found=gd->isLinkableInProject();

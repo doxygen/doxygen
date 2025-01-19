@@ -19,6 +19,7 @@
 #include <cstdint>
 #include "qcstring.h"
 #include "construct.h"
+#include "message.h"
 
 /** Class containing a print function for diagnostics. */
 class Debug
@@ -69,7 +70,13 @@ class Debug
                      Lex_xml           = 0x0000'0400'0000'0000ULL,
                      Lex_xmlcode       = 0x0000'0800'0000'0000ULL
                    };
-    static void print(DebugMask mask,int prio,const char *fmt,...);
+    static void print_(DebugMask mask, int prio, fmt::string_view fmt, fmt::format_args args);
+
+    template<typename ...Args>
+    static void print(DebugMask mask,int prio,fmt::format_string<Args...> fmt, Args&&... args)
+    {
+      print_(mask,prio,fmt,fmt::make_format_args(args...));
+    }
 
     static bool setFlagStr(const QCString &label);
     static void setFlag(const DebugMask mask);

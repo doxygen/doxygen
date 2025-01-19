@@ -105,7 +105,7 @@ DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& 
     // we have a match
     if (md5Hash != runit->second->getMd5Hash())
     {
-      err("md5 hash does not match for two different runs of %s !\n", qPrint(absDotName));
+      err("md5 hash does not match for two different runs of {} !\n", absDotName);
     }
     rv = runit->second.get();
   }
@@ -137,7 +137,7 @@ bool DotManager::run()
     }
     else
     {
-      msg("Generating dot graphs using %d parallel threads...\n",Config_getInt(DOT_NUM_THREADS));
+      msg("Generating dot graphs using {:d} parallel threads...\n",Config_getInt(DOT_NUM_THREADS));
     }
   }
   size_t i=1;
@@ -169,7 +169,7 @@ bool DotManager::run()
   {
     for (auto & dr : m_runners)
     {
-      msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
+      msg("Running dot for graph {}/{}\n",prev,numDotRuns);
       dr.second->run();
       prev++;
     }
@@ -189,7 +189,7 @@ bool DotManager::run()
     for (auto &f : results)
     {
       f.get();
-      msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
+      msg("Running dot for graph {}/{}\n",prev,numDotRuns);
       prev++;
     }
   }
@@ -208,7 +208,7 @@ bool DotManager::run()
   {
     if (fp.second.isSVGFile())
     {
-      msg("Patching output file %zu/%zu\n",i,numFilePatchers);
+      msg("Patching output file {}/{}\n",i,numFilePatchers);
       if (!fp.second.run()) return FALSE;
       i++;
     }
@@ -217,7 +217,7 @@ bool DotManager::run()
   {
     if (!fp.second.isSVGFile())
     {
-      msg("Patching output file %zu/%zu\n",i,numFilePatchers);
+      msg("Patching output file {}/{}\n",i,numFilePatchers);
       if (!fp.second.run()) return FALSE;
       i++;
     }
@@ -234,7 +234,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   Dir d(outDir.str());
   if (!d.exists())
   {
-    term("Output dir %s does not exist!\n",qPrint(outDir));
+    term("Output dir {} does not exist!\n",outDir);
   }
 
   QCString imgExt = getDotImageExtension();
@@ -290,7 +290,7 @@ void writeDotImageMapFromFile(TextStream &t,
   Dir d(outDir.str());
   if (!d.exists())
   {
-    term("Output dir %s does not exist!\n",qPrint(outDir));
+    term("Output dir {} does not exist!\n",outDir);
   }
 
   QCString mapName = baseName+".map";

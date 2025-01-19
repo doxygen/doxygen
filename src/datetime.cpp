@@ -39,8 +39,8 @@ std::tm getCurrentDateTime()
       static bool warnedOnce=FALSE;
       if (!warnedOnce)
       {
-        warn_uncond("Environment variable SOURCE_DATE_EPOCH does not contain a valid number; value is '%s'\n",
-            qPrint(sourceDateEpoch));
+        warn_uncond("Environment variable SOURCE_DATE_EPOCH does not contain a valid number; value is '{}'\n",
+            sourceDateEpoch);
         warnedOnce=TRUE;
       }
     }

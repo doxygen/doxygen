@@ -95,8 +95,8 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     }
     else if (!opt)
     {
-      err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
-          qPrint(visible),(defVal?"yes":"no"));
+      err("found unsupported value '{}' for visible attribute in layout file, reverting to '{}'\n",
+          visible,(defVal?"yes":"no"));
       return defVal;
     }
   }
@@ -105,8 +105,8 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
   else if (visibleLow=="yes" || visibleLow=="true" || visibleLow=="1") return TRUE;
   else
   {
-    err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
-        qPrint(visible),(defVal?"yes":"no"));
+    err("found unsupported value '{}' for visible attribute in layout file, reverting to '{}'\n",
+        visible,(defVal?"yes":"no"));
     return defVal;
   }
 }
@@ -182,7 +182,7 @@ QCString LayoutNavEntry::url() const
     }
     if (!found)
     {
-      msg("explicit link request to '%s' in layout file '%s' could not be resolved\n",qPrint(url.mid(5)),qPrint(Config_getString(LAYOUT_FILE)));
+      msg("explicit link request to '{}' in layout file '{}' could not be resolved\n",url.mid(5),Config_getString(LAYOUT_FILE));
     }
   }
   //printf("LayoutNavEntry::url()=%s\n",qPrint(url));
@@ -203,7 +203,7 @@ class LayoutParser
     }
     void error( const std::string &fileName,int lineNr,const std::string &msg)
     {
-      warn_layout_(fileName.c_str(),lineNr,"%s",msg.c_str());
+      warn_layout(fileName.c_str(),lineNr,"{}",msg.c_str());
     }
     void startElement( const std::string &name, const XMLHandlers::Attributes& attrib );
     void endElement( const std::string &name );
@@ -559,11 +559,11 @@ class LayoutParser
         std::string fileName = m_locator->fileName();
         if (type.isEmpty())
         {
-          warn_layout_(fileName.c_str(),m_locator->lineNr(),"an entry tag within a navindex has no type attribute! Check your layout file!");
+          warn_layout(fileName.c_str(),m_locator->lineNr(),"an entry tag within a navindex has no type attribute! Check your layout file!");
         }
         else
         {
-          warn_layout_(fileName.c_str(),m_locator->lineNr(),"the type '%s' is not supported for the entry tag within a navindex! Check your layout file!",qPrint(type));
+          warn_layout(fileName.c_str(),m_locator->lineNr(),"the type '{}' is not supported for the entry tag within a navindex! Check your layout file!",type);
         }
         m_invalidEntry=TRUE;
         return;
@@ -1365,8 +1365,8 @@ void LayoutParser::startElement( const std::string &name, const XMLHandlers::Att
   else
   {
     std::string fileName = m_locator->fileName();
-    warn_layout_(fileName.c_str(),m_locator->lineNr(),"Unexpected start tag '%s' found in scope='%s'!",
-        qPrint(name),qPrint(m_scope));
+    warn_layout(fileName.c_str(),m_locator->lineNr(),"Unexpected start tag '{}' found in scope='{}'!",
+        name,m_scope);
   }
 }
 
@@ -1711,7 +1711,7 @@ static void mergeDocEntryLists(const QCString &fileName,LayoutDocEntryList &targ
     {
       // for efficiency we move the elements from the source list to the target list, thus modifying the source list!
       //printf("--> insert at %zu before %s\n",*it,qPrint(*it<targetList.size()?targetList[*it]->id():"none"));
-      warn_layout_(fileName,1,"User defined layout misses entry '%s'. Using default value.",qPrint(id));
+      warn_layout(fileName,1,"User defined layout misses entry '{}'. Using default value.",id);
       targetList.insert(targetList.begin()+*it, std::move(sourceList[idx]));
     }
   }
@@ -1740,7 +1740,7 @@ void writeDefaultLayoutFile(const QCString &fileName)
   }
   else
   {
-    err("Failed to open file %s for writing!\n",qPrint(fileName));
+    err("Failed to open file {} for writing!\n",fileName);
     return;
   }
   f.close();
@@ -1808,12 +1808,8 @@ static void printNavLayout(LayoutNavEntry *root,int indent)
   {
     QCString indentStr;
     indentStr.fill(' ',indent);
-    Debug::print(Debug::Layout,0,"%skind=%s visible=%d title='%s'\n",
-        indentStr.isEmpty()?"":qPrint(indentStr),
-        qPrint(root->navToString()),
-        root->visible(),
-        qPrint(root->title())
-        );
+    Debug::print(Debug::Layout,0,"{}kind={} visible={} title='{}'\n",
+        indentStr, root->navToString(), root->visible(), root->title());
     for (const auto &e : root->children())
     {
       printNavLayout(e.get(),indent+2);
@@ -1826,7 +1822,7 @@ void printLayout()
   bool extraIndent = false;
 
   auto &mgr = LayoutDocManager::instance();
-  Debug::print(Debug::Layout,0,"Layout version %d.%d\n",mgr.majorVersion(),mgr.minorVersion());
+  Debug::print(Debug::Layout,0,"Layout version {}.{}\n",mgr.majorVersion(),mgr.minorVersion());
 
   Debug::print(Debug::Layout,0,"Part: Navigation index\n");
   for (const auto &e : mgr.rootNavEntry()->children())
@@ -1836,30 +1832,30 @@ void printLayout()
 
   for (int i = 0; i < LayoutDocManager::NrParts; i++)
   {
-     Debug::print(Debug::Layout,0,"\nPart: %s\n", qPrint(LayoutDocManager::partToString(i)));
+     Debug::print(Debug::Layout,0,"\nPart: {}\n", LayoutDocManager::partToString(i));
      for (const auto &lde : mgr.docEntries(static_cast<LayoutDocManager::LayoutPart>(i)))
      {
        if (const LayoutDocEntrySimple *ldes = dynamic_cast<const LayoutDocEntrySimple*>(lde.get()))
        {
          if (lde->kind() == LayoutDocEntry::MemberDeclEnd || lde->kind() == LayoutDocEntry::MemberDefEnd) extraIndent = false;
-         Debug::print(Debug::Layout,0,"  %skind: %s, visible=%d\n",
-           extraIndent? "  " : "",qPrint(lde->entryToString()), ldes->visible());
+         Debug::print(Debug::Layout,0,"  {}kind: {}, visible={}\n",
+           extraIndent? "  " : "",lde->entryToString(), ldes->visible());
          if (lde->kind() == LayoutDocEntry::MemberDeclStart || lde->kind() == LayoutDocEntry::MemberDefStart) extraIndent = true;
        }
        else if (const LayoutDocEntryMemberDecl *lmdecl = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get()))
        {
-         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, visible=%d, type: %s\n",
-           extraIndent? "  " : "",qPrint(lde->entryToString()),lmdecl->visible(),qPrint(lmdecl->type.to_string()));
+         Debug::print(Debug::Layout,0,"  {}complex kind: {}, visible={}, type: {}\n",
+           extraIndent? "  " : "",lde->entryToString(),lmdecl->visible(),lmdecl->type.to_string());
        }
        else if (const LayoutDocEntryMemberDef *lmdef = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get()))
        {
-         Debug::print(Debug::Layout,0,"  %scomplex kind: %s, visible=%d, type: %s\n",
-           extraIndent? "  " : "",qPrint(lde->entryToString()),lmdef->visible(),qPrint(lmdef->type.to_string()));
+         Debug::print(Debug::Layout,0,"  {}complex kind: {}, visible={}, type: {}\n",
+           extraIndent? "  " : "",lde->entryToString(),lmdef->visible(),lmdef->type.to_string());
        }
        else
        {
          // should not happen
-         Debug::print(Debug::Layout,0,"  %snot handled kind: %s\n",extraIndent? "  " : "",qPrint(lde->entryToString()));
+         Debug::print(Debug::Layout,0,"  {}not handled kind: {}\n",extraIndent? "  " : "",lde->entryToString());
        }
      }
   }

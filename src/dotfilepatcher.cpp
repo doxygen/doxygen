@@ -223,9 +223,9 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
   std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
   {
-    err("problems opening map file %s for inclusion in the docs!\n"
+    err("problems opening map file {} for inclusion in the docs!\n"
       "If you installed Graphviz/dot after a previous failing run, \n"
-      "try deleting the output directory and rerun doxygen.\n",qPrint(mapName));
+      "try deleting the output directory and rerun doxygen.\n",mapName);
     return FALSE;
   }
   std::string line;
@@ -322,20 +322,20 @@ bool DotFilePatcher::run() const
   Dir thisDir;
   if (!thisDir.rename(m_patchFile.str(),tmpName.str()))
   {
-    err("Failed to rename file %s to %s!\n",qPrint(m_patchFile),qPrint(tmpName));
+    err("Failed to rename file {} to {}!\n",m_patchFile,tmpName);
     return FALSE;
   }
   std::ifstream fi = Portable::openInputStream(tmpName);
   std::ofstream fo = Portable::openOutputStream(m_patchFile);
   if (!fi.is_open())
   {
-    err("problem opening file %s for patching!\n",qPrint(tmpName));
+    err("problem opening file {} for patching!\n",tmpName);
     thisDir.rename(tmpName.str(),m_patchFile.str());
     return FALSE;
   }
   if (!fo.is_open())
   {
-    err("problem opening file %s for patching!\n",qPrint(m_patchFile));
+    err("problem opening file {} for patching!\n",m_patchFile);
     thisDir.rename(tmpName.str(),m_patchFile.str());
     return FALSE;
   }
@@ -432,13 +432,13 @@ bool DotFilePatcher::run() const
         //  qPrint(m_patchFile),map.zoomable);
         if (!writeSVGFigureLink(t,map.relPath,map.label,map.mapFile))
         {
-          err("Problem extracting size from SVG file %s\n",qPrint(map.mapFile));
+          err("Problem extracting size from SVG file {}\n",map.mapFile);
         }
         if (e!=-1) t << line.mid(e+3);
       }
       else // error invalid map id!
       {
-        err("Found invalid SVG id in file %s!\n",qPrint(m_patchFile));
+        err("Found invalid SVG id in file {}!\n",m_patchFile);
         t << line.mid(i);
       }
     }
@@ -463,7 +463,7 @@ bool DotFilePatcher::run() const
       }
       else // error invalid map id!
       {
-        err("Found invalid MAP id in file %s!\n",qPrint(m_patchFile));
+        err("Found invalid MAP id in file {}!\n",m_patchFile);
         t << line.mid(i);
       }
     }
@@ -479,13 +479,13 @@ bool DotFilePatcher::run() const
         //   mapId,qPrint(m_patchFile),qPrint(map.mapFile));
         if (!writeVecGfxFigure(t,map.label,map.mapFile))
         {
-          err("problem writing FIG %d figure!\n",mapId);
+          err("problem writing FIG {} figure!\n",mapId);
           return FALSE;
         }
       }
       else // error invalid map id!
       {
-        err("Found invalid bounding FIG %d in file %s!\n",mapId,qPrint(m_patchFile));
+        err("Found invalid bounding FIG {} in file {}!\n",mapId,m_patchFile);
         t << line;
       }
     }
@@ -513,12 +513,12 @@ bool DotFilePatcher::run() const
     fo = Portable::openOutputStream(orgName);
     if (!fi.is_open())
     {
-      err("problem opening file %s for reading!\n",qPrint(tmpName));
+      err("problem opening file {} for reading!\n",tmpName);
       return FALSE;
     }
     if (!fo.is_open())
     {
-      err("problem opening file %s for writing!\n",qPrint(orgName));
+      err("problem opening file {} for writing!\n",orgName);
       return FALSE;
     }
     t.setStream(&fo);

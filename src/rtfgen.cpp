@@ -461,7 +461,7 @@ void RTFGenerator::init()
   Dir d(dir.str());
   if (!d.exists() && !d.mkdir(dir.str()))
   {
-    term("Could not create output directory %s\n",qPrint(dir));
+    term("Could not create output directory {}\n",dir);
   }
 
   // first duplicate strings of rtf_Style_Default
@@ -470,7 +470,7 @@ void RTFGenerator::init()
   {
     if (def->definition == nullptr)
     {
-      err("Internal: rtf_Style_Default[%s] has no definition.\n", def->name);
+      err("Internal: rtf_Style_Default[{}] has no definition.\n", def->name);
     }
     else
     {
@@ -497,8 +497,8 @@ void RTFGenerator::init()
       FileInfo fi(rtf_logoFilename.str());
       if (!fi.exists())
       {
-        err("Logo '%s' specified by 'LogoFilename' in the rtf extension file '%s' does not exist!\n",
-            qPrint(rtf_logoFilename), qPrint(rtfExtensionsFile));
+        err("Logo '{}' specified by 'LogoFilename' in the rtf extension file '{}' does not exist!\n",
+            rtf_logoFilename, rtfExtensionsFile);
         rtf_logoFilename = "";
       }
       else
@@ -604,7 +604,7 @@ void RTFGenerator::beginRTFDocument()
     uint32_t index = data.index();
     if (array[index] != nullptr)
     {
-      err("Style '%s' redefines \\s%d.\n", name.c_str(), index);
+      err("Style '{}' redefines \\s{}.\n", name, index);
     }
     array[index] = &data;
   }
@@ -2038,7 +2038,8 @@ void RTFGenerator::incIndentLevel()
   if (m_indentLevel>=maxIndentLevels)
   {
     m_indentLevel = maxIndentLevels-1;
-    err("Maximum indent level (%d) exceeded while generating RTF output!\n",maxIndentLevels);
+    int m = maxIndentLevels;
+    err("Maximum indent level ({}) exceeded while generating RTF output!\n",m);
   }
   m_codeGen->setIndentLevel(m_indentLevel);
 }
@@ -2248,7 +2249,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   std::ifstream f = Portable::openInputStream(infName);
   if (!f.is_open())
   {
-    err("problems opening rtf file '%s' for reading\n",infName.data());
+    err("problems opening rtf file '{}' for reading\n",infName);
     return false;
   }
 
@@ -2294,7 +2295,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
     size_t pos = line.rfind('}');
     if (pos==std::string::npos)
     {
-      err("Strange, the last char was not a '}'\n");
+      err("Strange, the last char was not a '}}'\n");
       pos = line.length();
     }
     encodeForOutput(t,line.substr(0,pos).c_str());
@@ -2445,9 +2446,9 @@ void testRTFOutput(const QCString &name)
   }
   if (bcount==0) return; // file is OK.
 err:
-  err("RTF integrity test failed at line %d of %s due to a bracket mismatch.\n"
+  err("RTF integrity test failed at line {:d} of {} due to a bracket mismatch.\n"
       "       Please try to create a small code example that produces this error \n"
-      "       and send that to doxygen@gmail.com.\n",line,qPrint(name));
+      "       and send that to doxygen@gmail.com.\n",line,name);
 }
 
 /**
@@ -2462,7 +2463,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   // store the original directory
   if (!d.exists())
   {
-    err("Output dir %s does not exist!\n",qPrint(path));
+    err("Output dir {} does not exist!\n",path);
     return FALSE;
   }
   std::string oldDir = Dir::currentDirPath();
@@ -2477,7 +2478,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   std::ofstream f = Portable::openOutputStream(combinedName);
   if (!f.is_open())
   {
-    err("Failed to open %s for writing!\n",combinedName.data());
+    err("Failed to open {} for writing!\n",combinedName);
     Dir::setCurrent(oldDir);
     return FALSE;
   }
@@ -2902,7 +2903,7 @@ QCString rtfFormatBmkStr(const QCString &name)
     }
   }
 
-  Debug::print(Debug::Rtf,0,"Name = %s RTF_tag = %s\n",qPrint(name),qPrint(tag));
+  Debug::print(Debug::Rtf,0,"Name = {} RTF_tag = {}\n",name,tag);
   return tag;
 }
 
