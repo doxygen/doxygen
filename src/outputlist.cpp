@@ -385,4 +385,7 @@ void OutputCodeRecorder::replay(OutputCodeList &ol,int startLine,int endLine,boo
     ol.endSpecialComment();
     ol.endCodeLine();
   }
+
+  ol.stripCodeComments(false);
+  ol.setStripIndentAmount(0);
 }
