@@ -3924,6 +3924,18 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
+    <option type='int' id='UML_LIMIT_EDGE_FIELDS' defval='10' minval='0' maxval='100' depends='UML_LOOK'>
+      <docs>
+<![CDATA[
+ If the \ref cfg_uml_look "UML_LOOK" tag is enabled, fields are shown along
+ the edge between 2 clas nodes.
+ If there are many fields and many nodes the
+ graph may become too big to be useful. The \c UML_LIMIT_EDGE_FIELDS
+ threshold limits the number of items to make the size more
+ manageable. Set this to 0 for no limit.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='DOT_UML_DETAILS' defval='NO' depends='UML_LOOK'>
       <docs>
 <![CDATA[
