@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="107__define__in__enums_8cpp" kind="file" language="C++">
+    <compoundname>107_define_in_enums.cpp</compoundname>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="107__define__in__enums_8cpp_1af5306e4b64f0a20303086d3936c64e0c" prot="public" static="no">
+        <name>ID_A</name>
+        <param>
+          <defname>X</defname>
+        </param>
+        <initializer>X,</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="107_define_in_enums.cpp" line="7" column="9" bodyfile="107_define_in_enums.cpp" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="107__define__in__enums_8cpp_1a244e85f8f6926f9cb8e576ad9c797f47" prot="public" static="no">
+        <name>ID_B</name>
+        <param>
+          <defname>X</defname>
+        </param>
+        <initializer>X,</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="107_define_in_enums.cpp" line="13" column="9" bodyfile="107_define_in_enums.cpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="107__define__in__enums_8cpp_1a3b98e2dffc6cb06a89dcb0d5c60a0206" prot="public" static="no" strong="no">
+        <type/>
+        <name>A</name>
+        <enumvalue id="107__define__in__enums_8cpp_1a3b98e2dffc6cb06a89dcb0d5c60a0206a6ff26890857c886c86453f0c8078bf95" prot="public">
+          <name>A1</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="107__define__in__enums_8cpp_1a3b98e2dffc6cb06a89dcb0d5c60a0206a47329f455692c2a8284d7594405f16d4" prot="public">
+          <name>A2</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="107_define_in_enums.cpp" line="6" column="1" bodyfile="107_define_in_enums.cpp" bodystart="6" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="enum" id="107__define__in__enums_8cpp_1a9d3d9048db16a7eee539e93e3618cbe7" prot="public" static="no" strong="yes">
+        <type/>
+        <name>B</name>
+        <enumvalue id="107__define__in__enums_8cpp_1a9d3d9048db16a7eee539e93e3618cbe7ac9512565ef6194ca664dc41ec0de7a53" prot="public">
+          <name>B1</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="107__define__in__enums_8cpp_1a9d3d9048db16a7eee539e93e3618cbe7abbd97b00c539801e32317ab550867ec4" prot="public">
+          <name>B2</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="107_define_in_enums.cpp" line="12" column="1" bodyfile="107_define_in_enums.cpp" bodystart="12" bodyend="16"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="107_define_in_enums.cpp"/>
+  </compounddef>
+</doxygen>

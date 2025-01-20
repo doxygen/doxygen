@@ -7751,6 +7751,7 @@ static void addEnumValuesToEnums(const Entry *root)
               bool isJavaLike = sle==SrcLangExt::CSharp || sle==SrcLangExt::Java || sle==SrcLangExt::XML;
               if ( isJavaLike || root->spec.isStrong())
               {
+                if (sle == SrcLangExt::Cpp && e->section.isDefine()) continue;
                 // Unlike classic C/C++ enums, for C++11, C# & Java enum
                 // values are only visible inside the enum scope, so we must create
                 // them here and only add them to the enum
