@@ -322,10 +322,6 @@ static const std::vector<HtmlEntityInfo> g_htmlEntities
 /* 18 */  { SYM(Quest),    "?",            "&quest;",    "?",                    "?",             "?",                      "?",      "?",           { "?",          HtmlEntityMapper::Perl_char    }}
 };
 
-//! Number of doxygen commands mapped as if it were HTML entities
-static const int g_numberHtmlMappedCmds = 16;
-
-
 HtmlEntityMapper::HtmlEntityMapper()
 {
   for (const auto &entity : g_htmlEntities)
@@ -467,7 +463,7 @@ HtmlEntityMapper::SymType HtmlEntityMapper::name2sym(const QCString &symName) co
 
 void HtmlEntityMapper::writeXMLSchema(TextStream &t)
 {
-  for (size_t i=0;i<g_htmlEntities.size() - g_numberHtmlMappedCmds;i++)
+  for (size_t i=0;i<g_htmlEntities.size();i++)
   {
     QCString bareName = g_htmlEntities[i].xml;
     if (!bareName.isEmpty() && bareName.at(0)=='<' && bareName.endsWith("/>"))
