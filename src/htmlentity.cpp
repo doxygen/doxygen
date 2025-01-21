@@ -488,7 +488,7 @@ void HtmlEntityMapper::validate()
   {
     if (i != entity.symb)
     {
-      warn_uncond("Internal inconsistency, htmlentries code %d (item=%s)\n",i,entity.item);
+      warn_uncond("Internal inconsistency, htmlentries code {} (item={})\n",i,entity.item);
     }
     i++;
   }

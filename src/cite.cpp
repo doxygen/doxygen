@@ -134,13 +134,13 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   FileInfo fi(bibFile.str());
   if (!fi.exists())
   {
-    err("bib file %s not found!\n",qPrint(bibFile));
+    err("bib file {} not found!\n",bibFile);
     return;
   }
   std::ifstream f = Portable::openInputStream(bibFile);
   if (!f.is_open())
   {
-    err("could not open file %s for reading\n",qPrint(bibFile));
+    err("could not open file {} for reading\n",bibFile);
     return;
   }
 
@@ -200,8 +200,8 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
         auto it = p->citePosition.find(lCiteName);
         if (it != p->citePosition.end())
         {
-          warn(bibFile,lineCount,"multiple use of citation name '%s', (first occurrence: %s, line %d)",
-               qPrint(lCiteName),qPrint(it->second.fileName),it->second.lineNr);
+          warn(bibFile,lineCount,"multiple use of citation name '{}', (first occurrence: {}, line {})",
+               lCiteName,it->second.fileName,it->second.lineNr);
         }
         else
         {
@@ -348,7 +348,7 @@ void CitationManager::generatePage()
     std::ofstream t = Portable::openOutputStream(citeListFile);
     if (!t.is_open())
     {
-      err("could not open file %s for writing\n",qPrint(citeListFile));
+      err("could not open file {} for writing\n",citeListFile);
     }
     t << "<!-- BEGIN CITATIONS -->\n";
     t << "<!--\n";
@@ -380,7 +380,7 @@ void CitationManager::generatePage()
   Dir thisDir;
   if (!thisDir.exists(bibOutputDir.str()) && !thisDir.mkdir(bibOutputDir.str()))
   {
-    err("Failed to create temporary output directory '%s', skipping citations\n",qPrint(bibOutputDir));
+    err("Failed to create temporary output directory '{}', skipping citations\n",bibOutputDir);
     return;
   }
   int i = 0;
@@ -396,12 +396,12 @@ void CitationManager::generatePage()
         std::ifstream f_org = Portable::openInputStream(bibFile);
         if (!f_org.is_open())
         {
-          err("could not open file %s for reading\n",qPrint(bibFile));
+          err("could not open file {} for reading\n",bibFile);
         }
         std::ofstream f_out = Portable::openOutputStream(bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib");
         if (!f_out.is_open())
         {
-          err("could not open file %s for reading\n",qPrint(bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib"));
+          err("could not open file {}{}{:d}{} for reading\n",bibOutputDir,bibTmpFile,i,".bib");
         }
         QCString docs;
         std::string lineStr;
@@ -428,7 +428,7 @@ void CitationManager::generatePage()
   int exitCode = Portable::system("perl",perlArgs);
   if (exitCode!=0)
   {
-    err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
+    err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: {}\n",
         exitCode);
   }
 
@@ -440,7 +440,7 @@ void CitationManager::generatePage()
     std::ifstream f = Portable::openInputStream(citeListFile);
     if (!f.is_open())
     {
-      err("could not open file %s for reading\n",qPrint(citeListFile));
+      err("could not open file {} for reading\n",citeListFile);
     }
 
     bool insideBib=FALSE;
@@ -533,7 +533,7 @@ void CitationManager::generatePage()
       }
       else
       {
-        err("bib file %s not found!\n",qPrint(bibFile));
+        err("bib file {} not found!\n",bibFile);
       }
     }
   }

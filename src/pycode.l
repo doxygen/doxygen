@@ -1174,7 +1174,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
   input.insideCode = true;
   GetDefResult result = getDefs(input);
   //printf("Trying '%s'::'%s'\n",qPrint(c),qPrint(m));
-  if (result.found && result.md->isLinkable())
+  if (result.found && result.md && result.md->isLinkable())
   {
     const Definition *d = result.md->getOuterScope()==Doxygen::globalScope ?
                           result.md->getBodyDef() : result.md->getOuterScope();
@@ -1623,7 +1623,7 @@ static inline void pop_state(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if ( yyg->yy_start_stack_ptr <= 0 )
-    warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected statement '%s'",yytext );
+    warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected statement '{}'",yytext );
   else
     yy_pop_state(yyscanner);
 }

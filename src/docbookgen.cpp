@@ -376,7 +376,7 @@ void DocbookGenerator::init()
   Dir d(dir.str());
   if (!d.exists() && !d.mkdir(dir.str()))
   {
-    term("Could not create output directory %s\n",qPrint(dir));
+    term("Could not create output directory {}\n",dir);
   }
 
   createSubDirs(d);
@@ -652,7 +652,7 @@ DB_GEN_C2("IndexSection " << is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==nullptr &&
+             !cd->isImplicitTemplateInstance() &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )

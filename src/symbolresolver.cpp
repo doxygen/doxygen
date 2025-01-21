@@ -181,6 +181,7 @@ struct SymbolResolver::Private
                            bool  checkCV,                                       // in
                            bool insideCode,                                     // in
                            const QCString &explicitScopePart,                   // in
+                           const QCString &strippedTemplateParams,              // in
                            bool forceCallable,                                  // in
                            int &minDistance,                                    // inout
                            const Definition *&bestMatch,                        // out
@@ -419,7 +420,8 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     replaceNamespaceAliases(explicitScopePart);
     name=name.mid(qualifierIndex+2);
   }
-  AUTO_TRACE_ADD("qualifierIndex={} name={} explicitScopePart={}",qualifierIndex,name,explicitScopePart);
+  AUTO_TRACE_ADD("qualifierIndex={} name={} explicitScopePart={} strippedTemplateParams={}",
+                 qualifierIndex,name,explicitScopePart,strippedTemplateParams);
 
   if (name.isEmpty())
   {
@@ -450,13 +452,14 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   size_t scopeNameLen = scope!=Doxygen::globalScope ? scope->name().length()+1 : 0;
   size_t nameLen = name.length()+1;
   size_t explicitPartLen = explicitScopePart.length();
+  size_t strippedTemplateParamsLen = strippedTemplateParams.length();
   size_t fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
   size_t argsLen = args.length()+1;
 
   // below is a more efficient coding of
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
   std::string key;
-  key.reserve(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+argsLen);
+  key.reserve(scopeNameLen+nameLen+explicitPartLen+strippedTemplateParamsLen+fileScopeLen+argsLen);
   if (scope!=Doxygen::globalScope)
   {
     key+=scope->name().str();
@@ -465,6 +468,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   key+=name.str();
   key+='+';
   key+=explicitScopePart.str();
+  key+=strippedTemplateParams.str();
 
   // if a file scope is given and it contains using statements we should
   // also use the file part in the key (as a class name can be in
@@ -521,7 +525,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     {
       if (isCodeSymbol(d->definitionType()))
       {
-         getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,false,
+         getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,strippedTemplateParams,false,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       }
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
@@ -535,7 +539,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
       {
         if (isCodeSymbol(d->definitionType()))
         {
-          getResolvedSymbol(visitedKeys,scope,d,QCString(),false,insideCode,explicitScopePart,true,
+          getResolvedSymbol(visitedKeys,scope,d,QCString(),false,insideCode,explicitScopePart,strippedTemplateParams,true,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
         }
         if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
@@ -745,6 +749,7 @@ void SymbolResolver::Private::getResolvedSymbol(
                          bool  checkCV,                                       // in
                          bool  insideCode,                                    // in
                          const QCString &explicitScopePart,                   // in
+                         const QCString &strippedTemplateParams,              // in
                          bool forceCallable,                                  // in
                          int &minDistance,                                    // inout
                          const Definition *&bestMatch,                        // out
@@ -758,7 +763,11 @@ void SymbolResolver::Private::getResolvedSymbol(
   VisitedNamespaces visitedNamespaces;
   AccessStack accessStack;
   // test accessibility of definition within scope.
-  int distance = isAccessibleFromWithExpScope(visitedKeys,visitedNamespaces,accessStack,scope,d,explicitScopePart);
+  int distance = isAccessibleFromWithExpScope(visitedKeys,visitedNamespaces,accessStack,scope,d,explicitScopePart+strippedTemplateParams);
+  if (distance==-1 && !strippedTemplateParams.isEmpty())
+  {
+    distance = isAccessibleFromWithExpScope(visitedKeys,visitedNamespaces,accessStack,scope,d,explicitScopePart);
+  }
   AUTO_TRACE_ADD("distance={}",distance);
   if (distance!=-1) // definition is accessible
   {
@@ -846,7 +855,8 @@ void SymbolResolver::Private::getResolvedSymbol(
       }
     }
     else if ((d->definitionType()==Definition::TypeNamespace ||
-              d->definitionType()==Definition::TypeFile))
+              d->definitionType()==Definition::TypeFile ||
+              d->definitionType()==Definition::TypeModule))
     {
       if (distance<minDistance) // found a definition that is "closer"
       {
@@ -1602,12 +1612,14 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
       scope?scope->name():QCString(), name, mayBeUnlinkable, mayBeHidden);
   p->reset();
 
+  auto lang = scope ? scope->getLanguage() : SrcLangExt::Cpp;
+
   if (scope==nullptr ||
       (scope->definitionType()!=Definition::TypeClass &&
        scope->definitionType()!=Definition::TypeNamespace
       ) ||
       (name.stripWhiteSpace().startsWith("::")) ||
-      (scope->getLanguage()==SrcLangExt::Java && QCString(name).find("::")!=-1)
+      ((lang==SrcLangExt::Java || lang==SrcLangExt::CSharp) && QCString(name).find("::")!=-1)
      )
   {
     scope=Doxygen::globalScope;
@@ -1620,12 +1632,14 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   else
   {
     VisitedKeys visitedKeys;
-    result = p->getResolvedTypeRec(visitedKeys,scope,name,&p->typeDef,&p->templateSpec,&p->resolvedType);
+    QCString lookupName = lang==SrcLangExt::CSharp ? mangleCSharpGenericName(name) : name;
+    AUTO_TRACE_ADD("lookup={}",lookupName);
+    result = p->getResolvedTypeRec(visitedKeys,scope,lookupName,&p->typeDef,&p->templateSpec,&p->resolvedType);
     if (result==nullptr) // for nested classes imported via tag files, the scope may not
                    // present, so we check the class name directly as well.
                    // See also bug701314
     {
-      result = getClass(name);
+      result = getClass(lookupName);
     }
   }
   if (!mayBeUnlinkable && result && !result->isLinkable())

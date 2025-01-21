@@ -54,8 +54,7 @@ bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
   }
   if (!m_err.isEmpty())
   {
-    warn(fileName,lineNr,"problem evaluating expression '%s': %s",
-        qPrint(expr),qPrint(m_err));
+    warn(fileName,lineNr,"problem evaluating expression '{}': {}", expr, m_err);
   }
   //printf("expr='%s' answer=%d\n",expr,answer);
   return answer;

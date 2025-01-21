@@ -4257,7 +4257,7 @@ NONLopt [^\n]*
                                           yyextra->current->program << yytext ;
                                           --yyextra->curlyCount ;
                                         }
-<ReadBody,ReadNSBody>"}"                { //err("%d:ReadBody count=%d\n",yyextra->yyLineNr,yyextra->curlyCount);
+<ReadBody,ReadNSBody>"}"                {
                                           if ( yyextra->curlyCount>0 )
                                           {
                                             yyextra->current->program << yytext ;
@@ -4367,7 +4367,7 @@ NONLopt [^\n]*
                                             }
                                           }
                                         }
-<ReadBody>"}"{BN}+"typedef"{BN}+        { //err("ReadBody count=%d\n",yyextra->curlyCount);
+<ReadBody>"}"{BN}+"typedef"{BN}+        { 
                                           lineCount(yyscanner);
                                           if ( yyextra->curlyCount>0 )
                                           {
@@ -5019,7 +5019,7 @@ NONLopt [^\n]*
 <CopyArgComment,CopyArgVerbatim>.       { yyextra->fullArgString+=*yytext; }
 <CopyArgComment>{CMD}("brief"|"short"){B}+ {
                                           warn(yyextra->fileName,yyextra->yyLineNr,
-                                              "Ignoring %cbrief command inside argument documentation",*yytext
+                                              "Ignoring {:c}brief command inside argument documentation",*yytext
                                              );
                                           yyextra->fullArgString+=' ';
                                         }
@@ -5291,8 +5291,8 @@ NONLopt [^\n]*
                                           else
                                           {
                                             warn(yyextra->fileName,yyextra->yyLineNr,
-                                                 "Found ')' without opening '(' for trailing return type '%s)...'",
-                                                 qPrint(yyextra->current->argList.trailingReturnType()));
+                                                 "Found ')' without opening '(' for trailing return type '{})...'",
+                                                 yyextra->current->argList.trailingReturnType());
                                           }
                                           yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
                                           yyextra->current->args+=yytext;
@@ -6948,6 +6948,7 @@ NONLopt [^\n]*
 <CSAccessorDecl>"add"                   { if (yyextra->curlyCount==0) yyextra->current->spec.setAddable(true);           }
 <CSAccessorDecl>"remove"                { if (yyextra->curlyCount==0) yyextra->current->spec.setRemovable(true);         }
 <CSAccessorDecl>"raise"                 { if (yyextra->curlyCount==0) yyextra->current->spec.setRaisable(true);          }
+<CSAccessorDecl>{CHARLIT}               {}
 <CSAccessorDecl>"\""                    { BEGIN(CSString);}
 <CSAccessorDecl>"."                     {}
 <CSAccessorDecl>\n                      { lineCount(yyscanner); }
@@ -7101,7 +7102,7 @@ NONLopt [^\n]*
                                           int nr = QCString(&yytext[6]).toInt(&ok);
                                           if (!ok)
                                           {
-                                            warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                                            warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '{}' for iline command",yytext);
                                           }
                                           else
                                           {
@@ -7314,9 +7315,9 @@ NONLopt [^\n]*
                                         }
 <DocCopyBlock><<EOF>>                   {
                                           warn(yyextra->fileName,yyextra->yyLineNr,
-                                              "reached end of file while inside a '%s' block!"
+                                              "reached end of file while inside a '{}' block!"
                                               " The command that should end the block seems to be missing!",
-                                              qPrint(yyextra->docBlockName));
+                                              yyextra->docBlockName);
                                           yyterminate();
                                         }
 
@@ -8250,7 +8251,7 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->clangParser = clangParser;
   setContext(yyscanner);
   rt->lang = yyextra->language;
-  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
+  msg("Parsing file {}...\n",yyextra->fileName);
 
   yyextra->current_root  = rt;
   initParser(yyscanner);

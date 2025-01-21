@@ -958,7 +958,7 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->clangParser = clangParser;
   yyextra->language    = getLanguageFromFileName(yyextra->fileName);
   rt->lang = yyextra->language;
-  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
+  msg("Parsing file {}...\n",yyextra->fileName);
 
   yyextra->current_root  = rt;
   yyextra->current = std::make_shared<Entry>();

@@ -41,7 +41,7 @@
 #include "codefragment.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
-static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
+static const char g_types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
 enum class contexts_t
 {
     NONE,      // 0
@@ -321,7 +321,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
     }
     else
     {
-      err("HTML: non supported HTML-entity found: %s\n",
+      err("HTML: non supported HTML-entity found: {}\n",
           HtmlEntityMapper::instance().html(s.symbol(),TRUE));
     }
   }
@@ -611,7 +611,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",qPrint(fileName));
+          err("Could not open file {} for writing\n",fileName);
         }
         else
         {
@@ -643,7 +643,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         std::ofstream file = Portable::openOutputStream(baseName.str()+".msc");
         if (!file.is_open())
         {
-          err("Could not open file %s.msc for writing\n",qPrint(baseName));
+          err("Could not open file {}.msc for writing\n",baseName);
         }
         else
         {
@@ -1020,7 +1020,7 @@ void HtmlDocVisitor::operator()(const DocAutoList &l)
     //       A.
     //         1. (repeat)...
     //
-    m_t << "<ol type=\"" << types[l.depth() % NUM_HTML_LIST_TYPES] << "\">";
+    m_t << "<ol type=\"" << g_types[l.depth() % NUM_HTML_LIST_TYPES] << "\">";
   }
   else
   {

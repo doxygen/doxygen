@@ -531,7 +531,7 @@ void SearchIndexExternal::write(const QCString &fileName)
   }
   else
   {
-    err("Failed to open file %s for writing!\n",qPrint(fileName));
+    err("Failed to open file {} for writing!\n",fileName);
   }
 }
 

@@ -1,6 +1,34 @@
 /** \page changelog Changelog
 \tableofcontents{html,latex}
 \section log_1_13 1.13 Series
+\subsection log_1_13_2 Release 1.13.2
+\htmlonly
+<b>(release date 09-01-2025)</b>
+</p>
+
+<h3>Bug fixes</h3>
+<ul>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/8803">#8803</a> Template class with the same name as existing class gets in the same output file [<a href="https://github.com/doxygen/doxygen/commit/791bcf852e5e4d9de19cdbb80e5f22e9d4ff3a04">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/fc0c847acb4d4c237f7fb688cc0a3f78fd409de7">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11308">#11308</a> SVG dot graphs have added padding [<a href="https://github.com/doxygen/doxygen/commit/eeed4d69992d21e18ab38d6c1d894147ce639681">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11309">#11309</a> Markdown blockquotes with lists do not render as expected [<a href="https://github.com/doxygen/doxygen/commit/aadb4572d8152d08c9c11ea0487dbb5fdd37fc60">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11313">#11313</a> Template class specializations are ignored, which leads to invalid links [<a href="https://github.com/doxygen/doxygen/commit/4a8f03ac813f5c4b4439f8cb2a5ff6a7b258d672">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11314">#11314</a> &quot;Copy to clipboard&quot; button broken with XHTML [<a href="https://github.com/doxygen/doxygen/commit/d9ac09659a5ec370892b82bb5bc931681ca47510">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11320">#11320</a> Documentation fails to build (it freezes, no crash) [<a href="https://github.com/doxygen/doxygen/commit/104c809f5dde9a36c0f060d20d1cacbf44492506">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11322">#11322</a> C++ 20 Modules: Links to global functions, links to modules [<a href="https://github.com/doxygen/doxygen/commit/8172a2037b048501612f129f7e7a5bed53db4158">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11326">#11326</a> Missing description for a class member of a using-declared class [<a href="https://github.com/doxygen/doxygen/commit/8ef5f08b3ed90f6c23300d33fecd87f408a9c782">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11330">#11330</a> Snippet trimleft option does not handle newlines well [<a href="https://github.com/doxygen/doxygen/commit/0d3a51a5e7afd8e436b8952109644277e16c9215">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/de1eab62eb7e5ad915e150a805cc03a4fc9d2a10">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/11333">#11333</a> rebuilding fedora ignition-transport causes abort in isExplicitPage with doxygen 1.13.1 [<a href="https://github.com/doxygen/doxygen/commit/b58548e0bace2a8448891f22874e6c276804a0a5">view</a>]</li>
+<li>String representation at &quot;show configuration&quot; in doxywizard [<a href="https://github.com/doxygen/doxygen/commit/d3d0a1d0a5ce23e7b1d1995dc2b69ee4b493baaa">view</a>]</li>
+<li>Support for Plus sign code fence directives - GitHub flavor [<a href="https://github.com/doxygen/doxygen/commit/852adf3f130e2094fc0c02426eee9fa11a49bc60">view</a>]</li>
+</ul>
+
+<h3>Improved user feedback and documentation</h3>
+<ul>
+<li>Adding debug and version information to doxycommentview [<a href="https://github.com/doxygen/doxygen/commit/0f8c402df63b1642cb065845ab6b4c97abcad1f9">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/d2318586d268810833374a2d2771dda3e9f51f58">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/254f3c916702773a1c7117ee281857d25a8a074b">view</a>], and [<a href="https://github.com/doxygen/doxygen/commit/e546444baac939078984fb161cf8016850fdaef4">view</a>]</li>
+</ul>
+<p>
+\endhtmlonly
+
 \subsection log_1_13_1 Release 1.13.1
 \htmlonly
 <b>(release date 02-01-2025)</b>

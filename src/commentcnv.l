@@ -401,7 +401,14 @@ SLASHopt [/]*
 					 while (i<(int)yyleng && yytext[i]=='/') i++;
 				       }
 				       yyextra->blockHeadCol=yyextra->col+1;
-				       copyToOutput(yyscanner,"/**");
+                                       if (yytext[2] == '!')
+                                       {
+				         copyToOutput(yyscanner,"/*!");
+                                       }
+                                       else
+                                       {
+				         copyToOutput(yyscanner,"/**");
+                                       }
 				       if (i<yyleng) replaceAliases(yyscanner,yytext+i);
 				       yyextra->inSpecialComment=TRUE;
 				       //BEGIN(SComment);
@@ -1149,7 +1156,7 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,yyleng);
                                      insertCommentStart(yyscanner);
                                      // missing file name
-                                     //warn(yyextra->fileName,yyextra->lineNr,"Found \\include{doc} command without valid file name argument");
+                                     //warn(yyextra->fileName,yyextra->lineNr,"Found \\include{{doc}} command without valid file name argument");
                                      BEGIN(yyextra->includeCtx);
                                    }
 <IncludeDoc,SnippetDoc>.           { // invalid character
@@ -1304,8 +1311,8 @@ SLASHopt [/]*
                                      if (YY_START == ReadAliasArgs)
                                      {
                                        warn(yyextra->fileName,yyextra->lineNr,
-                                           "Reached end of file while still searching closing '}' of an alias argument (probable start: '%s')",
-                                           qPrint(yyextra->aliasCmd));
+                                           "Reached end of file while still searching closing '}}' of an alias argument (probable start: '{}')",
+                                           yyextra->aliasCmd);
                                      }
                                      if (yyextra->includeStack.empty())
                                      {
@@ -1392,7 +1399,7 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
         yyextra->raiseIncrement = atoi(value.data());
         if (yyextra->raiseLevel+yyextra->raiseIncrement>=SectionType::MaxLevel) // check range
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Raising section level from %d to %d, exceeds allowed range [0-%d], adjusting",
+          warn(yyextra->fileName,yyextra->lineNr,"Raising section level from {} to {}, exceeds allowed range [0-{}], adjusting",
               yyextra->raiseLevel,yyextra->raiseLevel+yyextra->raiseIncrement,SectionType::MaxLevel-1);
           yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
         }
@@ -1403,7 +1410,7 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
       }
       else
       {
-        warn(yyextra->fileName,yyextra->lineNr,"Unsupported option '%s' for %s command",qPrint(option), qPrint(cmdName));
+        warn(yyextra->fileName,yyextra->lineNr,"Unsupported option '{}' for {} command",option, cmdName);
       }
     }
   }
@@ -1701,10 +1708,8 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
   {
     if (ambig)
     {
-      warn_doc_error(yyextra->fileName,yyextra->lineNr,"included file name '%s' is ambiguous"
-	  "Possible candidates:\n%s",qPrint(inc),
-	  qPrint(showFileDefMatches(Doxygen::exampleNameLinkedMap,inc))
-	  );
+      warn_doc_error(yyextra->fileName,yyextra->lineNr,"included file name '{}' is ambiguous"
+	  "Possible candidates:\n{}",inc, showFileDefMatches(Doxygen::exampleNameLinkedMap,inc));
     }
     bool alreadyProcessed = std::any_of(
       yyextra->includeStack.begin(),
@@ -1717,12 +1722,12 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     {
       if (!blockId.isEmpty())
       {
-        warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\snippet{doc}' block with name '%s' and file name '%s', skipping",
-             qPrint(blockId),qPrint(absFileName));
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\snippet{{doc}}' block with name '{}' and file name '{}', skipping",
+             blockId,absFileName);
       }
       else
       {
-        warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\include{doc}' with file name '%s', skipping", qPrint(absFileName));
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\include{{doc}}' with file name '{}', skipping", absFileName);
       }
       return false;
     }
@@ -1730,7 +1735,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
     auto fs = std::make_unique<commentcnv_FileState>();
     if (!readInputFile(absFileName,fs->fileBuf,false))
     {
-      warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' could not be read",blockId.isEmpty()?"include":"snippet",qPrint(absFileName));
+      warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' could not be read",blockId.isEmpty()?"include":"snippet",absFileName);
       fs.reset();
       return false;
     }
@@ -1741,8 +1746,8 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       int count = incText.contains(blockId.data());
       if (count!=2)
       {
-        warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with [%s] for \\snippet{doc} should appear twice in file %s, found it %d times, skipping",
-            qPrint(blockId),qPrint(absFileName),count);
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with [{}] for \\snippet{{doc}} should appear twice in file {}, found it {:d} times, skipping",
+            blockId,absFileName,count);
         return false;
       }
       lineNr = lineBlock(incText, blockId);
@@ -1792,7 +1797,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
   }
   else
   {
-    warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\%s{doc} file '%s' not found",blockId.isEmpty()?"include":"snippet",qPrint(inc));
+    warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' not found",blockId.isEmpty()?"include":"snippet",inc);
     return false;
   }
   return true;
@@ -1965,31 +1970,30 @@ void convertCppComments(const std::string &inBuf,std::string &outBuf,const std::
     const commentcnvYY_CondCtx &ctx = yyextra->condStack.top();
     QCString sectionInfo(" ");
     if (ctx.sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx.sectionId.stripWhiteSpace().data());
-    warn(yyextra->fileName,ctx.lineNr,"Conditional section%sdoes not have "
+    warn(yyextra->fileName,ctx.lineNr,"Conditional section{}does not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
     yyextra->condStack.pop();
   }
   if (yyextra->nestingCount>0 && yyextra->lang!=SrcLangExt::Markdown && yyextra->lang!=SrcLangExt::Fortran)
   {
-    QCString tmp("(probable line reference: ");
-    bool first = TRUE;
+    QCString lines;
+    bool first = true;
     while (!yyextra->commentStack.empty())
     {
       int lineNr = yyextra->commentStack.top();
-      if (!first) tmp += ", ";
-      tmp += QCString().setNum(lineNr);
-      first = FALSE;
+      if (!first) lines += ", ";
+      lines += QCString().setNum(lineNr);
+      first = false;
       yyextra->commentStack.pop();
     }
-    tmp += ")";
     warn(yyextra->fileName,yyextra->lineNr,"Reached end of file while still inside a (nested) comment. "
-        "Nesting level %d %s",yyextra->nestingCount,tmp.data());
+        "Nesting level {} (possible line reference(s): {})",yyextra->nestingCount,lines);
   }
   yyextra->nestingCount = 0;
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
-    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
-                 "output=[\n%s]\n-----------\n",qPrint(fileName),qPrint(yyextra->outBuf)
+    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: {}\n"
+                 "output=[\n{}]\n-----------\n",fileName,yyextra->outBuf
                 );
   }
   commentcnvYYlex_destroy(yyscanner);

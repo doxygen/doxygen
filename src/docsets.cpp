@@ -68,7 +68,7 @@ void DocSets::initialize()
     std::ofstream ts = Portable::openOutputStream(mfName);
     if (!ts.is_open())
     {
-      term("Could not open file %s for writing\n",qPrint(mfName));
+      term("Could not open file {} for writing\n",mfName);
     }
 
     ts << "DOCSET_NAME=" << bundleId << ".docset\n"
@@ -117,7 +117,7 @@ void DocSets::initialize()
     std::ofstream ts = Portable::openOutputStream(plName);
     if (!ts.is_open())
     {
-      term("Could not open file %s for writing\n",qPrint(plName));
+      term("Could not open file {} for writing\n",plName);
     }
 
     ts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -153,7 +153,7 @@ void DocSets::initialize()
   p->ntf = Portable::openOutputStream(notes);
   if (!p->ntf.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(notes));
+    term("Could not open file {} for writing\n",notes);
   }
   p->nts.setStream(&p->ntf);
   //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
@@ -171,7 +171,7 @@ void DocSets::initialize()
   p->ttf = Portable::openOutputStream(tokens);
   if (!p->ttf.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(tokens));
+    term("Could not open file {} for writing\n",tokens);
   }
   p->tts.setStream(&p->ttf);
   p->tts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";

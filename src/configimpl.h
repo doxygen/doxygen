@@ -29,6 +29,7 @@
 #include "qcstring.h"
 #include "config.h"
 #include "construct.h"
+#include "message.h"
 
 class TextStream;
 
@@ -606,9 +607,27 @@ class ConfigImpl
       return substitute(result,"\r","");
     }
 
-    static void config_err(const char *fmt, ...);
-    static void config_term(const char *fmt, ...);
-    static void config_warn(const char *fmt, ...);
+    static void config_err_ (fmt::string_view fmt, fmt::format_args args);
+    static void config_term_(fmt::string_view fmt, fmt::format_args args);
+    static void config_warn_(fmt::string_view fmt, fmt::format_args args);
+
+    template<typename ...Args>
+    static void config_err(fmt::format_string<Args...> fmt, Args&&... args)
+    {
+      config_err_(fmt,fmt::make_format_args(args...));
+    }
+
+    template<typename ...Args>
+    static void config_term(fmt::format_string<Args...> fmt, Args&&... args)
+    {
+      config_term_(fmt,fmt::make_format_args(args...));
+    }
+
+    template<typename ...Args>
+    static void config_warn(fmt::format_string<Args...> fmt, Args&&... args)
+    {
+      config_warn_(fmt,fmt::make_format_args(args...));
+    }
 
   private:
     ConfigOptionList m_options;

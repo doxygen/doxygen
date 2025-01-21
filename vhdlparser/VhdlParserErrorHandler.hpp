@@ -20,21 +20,21 @@ class VhdlErrorHandler: public ErrorHandler
 
     virtual void handleUnexpectedToken(int /* expectedKind */, const JJString& /* expectedToken */, Token *actual, VhdlParser * /* parser */)
     {
-      warn(m_fileName,actual->beginLine,"syntax error '%s'",actual->image.data());
+      warn(m_fileName,actual->beginLine,"syntax error '{}'",(const char*)actual->image.c_str());
       error_count++;
       throw std::exception();
     }
 
     virtual void handleParseError(Token *last, Token *unexpected, const JJSimpleString& /* production */, VhdlParser * /* parser */)
     {
-      warn(m_fileName,last->beginLine,"unexpected token: '%s'", unexpected->image.data());
+      warn(m_fileName,last->beginLine,"unexpected token: '{}'", (const char*)unexpected->image.c_str());
       error_count++;
       throw std::exception();
     }
 
     virtual void handleOtherError(const JJString& message, VhdlParser * /* parser */)
     {
-      warn(m_fileName, -1, "unexpected error: '%s'", (char*)message.c_str());
+      warn(m_fileName, -1, "unexpected error: '{}'", (const char*)message.c_str());
       error_count++;
       throw std::exception();
     }
@@ -50,12 +50,12 @@ class VhdlTokenManagerErrorHandler: public TokenManagerErrorHandler
 
     virtual void lexicalError(bool EOFSeen, int /* lexState */, int errorLine, int /* errorColumn */, const JJString& errorAfter, JJChar curChar, VhdlParserTokenManager* /* token_manager */)
     {
-      warn(m_fileName,errorLine,"Lexical error, Encountered: '%c' after: '%s'",curChar, (EOFSeen? "EOF" : (const char*)errorAfter.c_str()));
+      warn(m_fileName,errorLine,"Lexical error, Encountered: '{:c}' after: '{}'",curChar, (EOFSeen? "EOF" : (const char*)errorAfter.c_str()));
     }
 
     virtual void lexicalError(const JJString& errorMessage, VhdlParserTokenManager* /* token_manager */)
     {
-      warn(m_fileName,-1,"Unknown error: '%s'", (char*)errorMessage.c_str());
+      warn(m_fileName,-1,"Unknown error: '{}'", (const char*)errorMessage.c_str());
     }
 
   private:

@@ -557,7 +557,7 @@ void PerlModDocVisitor::operator()(const DocSymbol &sy)
   }
   else
   {
-    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(sy.symbol(),TRUE));
+    err("perl: non supported HTML-entity found: {}\n",HtmlEntityMapper::instance().html(sy.symbol(),TRUE));
   }
 }
 
@@ -1749,7 +1749,7 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 
   if (cd->isReference())        return; // skip external references.
   if (cd->isAnonymous())        return; // skip anonymous compounds.
-  if (cd->templateMaster()!=nullptr)  return; // skip generated template instances.
+  if (cd->isImplicitTemplateInstance())  return; // skip generated template instances.
 
   m_output.openHash()
     .addFieldQuotedString("name", cd->name());
@@ -2236,7 +2236,7 @@ bool PerlModGenerator::createOutputFile(std::ofstream &f, const QCString &s)
   f = Portable::openOutputStream(s);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n", qPrint(s));
+    err("Cannot open file {} for writing!\n", s);
     return false;
   }
   return true;
@@ -2248,7 +2248,7 @@ bool PerlModGenerator::createOutputDir(Dir &perlModDir)
   perlModDir.setPath(outputDirectory+"/perlmod");
   if (!perlModDir.exists() && !perlModDir.mkdir(outputDirectory+"/perlmod"))
   {
-    err("Could not create perlmod directory in %s\n",outputDirectory.data());
+    err("Could not create perlmod directory in {}\n",outputDirectory);
     return false;
   }
   return true;

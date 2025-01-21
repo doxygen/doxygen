@@ -70,7 +70,7 @@
 # ifdef SQLITE3_DEBUG_SQL
 // used by sqlite3_trace in generateSqlite3()
 static void sqlLog(void *dbName, const char *sql){
-  msg("SQL: '%s'\n", sql);
+  msg("SQL: '{}'\n", sql);
 }
 # endif
 
@@ -863,12 +863,12 @@ static bool bindTextParameter(SqlStmt &s,const char *name,const QCString &value)
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
-    err("sqlite3_bind_parameter_index(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_parameter_index({})[{}] failed: {}\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   int rv = sqlite3_bind_text(s.stmt, idx, value.data(), -1, SQLITE_TRANSIENT);
   if (rv!=SQLITE_OK) {
-    err("sqlite3_bind_text(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_text({})[{}] failed: {}\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   return true;
@@ -878,12 +878,12 @@ static bool bindIntParameter(SqlStmt &s,const char *name,int value)
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
-    err("sqlite3_bind_parameter_index(%s)[%s] failed to find column: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_parameter_index({})[{}] failed to find column: {}\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   int rv = sqlite3_bind_int(s.stmt, idx, value);
   if (rv!=SQLITE_OK) {
-    err("sqlite3_bind_int(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
+    err("sqlite3_bind_int({})[{}] failed: {}\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
   return true;
@@ -1151,7 +1151,7 @@ static int prepareStatement(sqlite3 *db, SqlStmt &s)
   int rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,nullptr);
   if (rc!=SQLITE_OK)
   {
-    err("prepare failed for:\n  %s\n  %s\n", s.query, sqlite3_errmsg(db));
+    err("prepare failed for:\n  {}\n  {}\n", s.query, sqlite3_errmsg(db));
     s.db = nullptr;
     return -1;
   }
@@ -1221,7 +1221,7 @@ static int initializeTables(sqlite3* db)
     int rc = sqlite3_exec(db, q, nullptr, nullptr, &errmsg);
     if (rc != SQLITE_OK)
     {
-      err("failed to execute query: %s\n\t%s\n", q, errmsg);
+      err("failed to execute query: {}\n\t{}\n", q, errmsg);
       return -1;
     }
   }
@@ -1238,7 +1238,7 @@ static int initializeViews(sqlite3* db)
     int rc = sqlite3_exec(db, q, nullptr, nullptr, &errmsg);
     if (rc != SQLITE_OK)
     {
-      err("failed to execute query: %s\n\t%s\n", q, errmsg);
+      err("failed to execute query: {}\n\t{}\n", q, errmsg);
       return -1;
     }
   }
@@ -1936,7 +1936,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
   if (cd->isAnonymous())        return; // skip anonymous compounds.
-  if (cd->templateMaster()!=nullptr)  return; // skip generated template instances.
+  if (cd->isImplicitTemplateInstance())  return; // skip generated template instances.
 
   struct Refid refid = insertRefid(cd->getOutputFileBase());
 
@@ -2579,7 +2579,7 @@ static sqlite3* openDbConnection()
   if (rc != SQLITE_OK)
   {
     sqlite3_close(db);
-    err("Database open failed: %s\n", "doxygen_sqlite3.db");
+    err("Database open failed: doxygen_sqlite3.db\n");
   }
   return db;
 }
@@ -2622,28 +2622,28 @@ void generateSqlite3()
   // + classes
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    msg("Generating Sqlite3 output for class %s\n",qPrint(cd->name()));
+    msg("Generating Sqlite3 output for class {}\n",cd->name());
     generateSqlite3ForClass(cd.get());
   }
 
   // + concepts
   for (const auto &cd : *Doxygen::conceptLinkedMap)
   {
-    msg("Generating Sqlite3 output for concept %s\n",qPrint(cd->name()));
+    msg("Generating Sqlite3 output for concept {}\n",cd->name());
     generateSqlite3ForConcept(cd.get());
   }
 
   // + modules
   for (const auto &mod : ModuleManager::instance().modules())
   {
-    msg("Generating Sqlite3 output for module %s\n",qPrint(mod->name()));
+    msg("Generating Sqlite3 output for module {}\n",mod->name());
     generateSqlite3ForModule(mod.get());
   }
 
   // + namespaces
   for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    msg("Generating Sqlite3 output for namespace %s\n",qPrint(nd->name()));
+    msg("Generating Sqlite3 output for namespace {}\n",nd->name());
     generateSqlite3ForNamespace(nd.get());
   }
 
@@ -2652,7 +2652,7 @@ void generateSqlite3()
   {
     for (const auto &fd : *fn)
     {
-      msg("Generating Sqlite3 output for file %s\n",qPrint(fd->name()));
+      msg("Generating Sqlite3 output for file {}\n",fd->name());
       generateSqlite3ForFile(fd.get());
     }
   }
@@ -2660,28 +2660,28 @@ void generateSqlite3()
   // + groups
   for (const auto &gd : *Doxygen::groupLinkedMap)
   {
-    msg("Generating Sqlite3 output for group %s\n",qPrint(gd->name()));
+    msg("Generating Sqlite3 output for group {}\n",gd->name());
     generateSqlite3ForGroup(gd.get());
   }
 
   // + page
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
-    msg("Generating Sqlite3 output for page %s\n",qPrint(pd->name()));
+    msg("Generating Sqlite3 output for page {}\n",pd->name());
     generateSqlite3ForPage(pd.get(),FALSE);
   }
 
   // + dirs
   for (const auto &dd : *Doxygen::dirLinkedMap)
   {
-    msg("Generating Sqlite3 output for dir %s\n",qPrint(dd->name()));
+    msg("Generating Sqlite3 output for dir {}\n",dd->name());
     generateSqlite3ForDir(dd.get());
   }
 
   // + examples
   for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
-    msg("Generating Sqlite3 output for example %s\n",qPrint(pd->name()));
+    msg("Generating Sqlite3 output for example {}\n",pd->name());
     generateSqlite3ForPage(pd.get(),TRUE);
   }
 

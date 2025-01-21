@@ -196,7 +196,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
   const GroupDef *gd=nullptr;
   if (isLinkable &&
       (
-       ((cd=md->getClassDef()) && cd->isLinkable() && cd->templateMaster()==nullptr) ||
+       ((cd=md->getClassDef()) && cd->isLinkable() && !cd->isImplicitTemplateInstance()) ||
        ((gd=md->getGroupDef()) && gd->isLinkable())
       )
      )
@@ -579,7 +579,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
   std::ofstream ti = Portable::openOutputStream(dataFileName);
   if (!ti.is_open())
   {
-    err("Failed to open file '%s' for writing...\n",qPrint(dataFileName));
+    err("Failed to open file '{}' for writing...\n",dataFileName);
     return;
   }
 

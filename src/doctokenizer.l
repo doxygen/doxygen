@@ -397,7 +397,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            yyextra->token.id = ok ? id : -1;
                            if (!ok)
                            {
-                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '%s' ",match.str().c_str());
+                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '{}' ",match.str());
                            }
                            yyextra->token.indent     = computeIndent(yytext,markPos);
                            return Token::make_TK_LISTITEM();
@@ -469,7 +469,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            yyextra->token.id = ok ? id : -1;
                            if (!ok)
                            {
-                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '%s' ",match.str().c_str());
+                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '{}' ",match.str());
                            }
                            yyextra->token.indent     = computeIndent(text.c_str(),markPos);
                            return Token::make_TK_LISTITEM();
@@ -1317,7 +1317,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          int nr = QCString(yytext).toInt(&ok);
                          if (!ok)
                          {
-                           warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                           warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '{}' for iline command",yytext);
                          }
                          else
                          {
@@ -1537,7 +1537,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          BEGIN(St_Sections);
                        }
 <St_SecTitle,St_SecLabel1,St_SecLabel2>. {
-                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s' while looking for section label or title",yytext);
+                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '{}' while looking for section label or title",yytext);
                        }
 
 <St_Snippet>[^\\\n]+   {
@@ -1560,12 +1560,12 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <*>"\\ilinebr"         {
                        }
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
-                         //warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext);
+                         //warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '{}', assuming command \\{} was meant.",yytext,yytext);
                          yyextra->token.name = yytext;
                          return Token::char_to_command(yytext[0]);
                        }
 <*>.                   {
-                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s'",yytext);
+                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '{}'",yytext);
                        }
 %%
 
@@ -1592,7 +1592,7 @@ static void processSection(yyscan_t yyscanner)
   }
   else
   {
-    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor %s without context",qPrint(yyextra->secLabel));
+    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor {} without context",yyextra->secLabel);
   }
   SectionInfo *si = SectionManager::instance().find(yyextra->secLabel);
   if (si)

@@ -408,10 +408,10 @@ void dumpDecl(const char *s)
   QCString funcTNames;
   msg("-----------------------------------------\n");
   parseFuncDecl(s,yyextra->className,classTNames,yyextra->type,yyextra->name,yyextra->args,funcTNames);
-  msg("yyextra->type='%s' class='%s' classTempl='%s' yyextra->name='%s' "
-         "funcTemplateNames='%s' yyextra->args='%s'\n",
-	    qPrint(yyextra->type),qPrint(yyextra->className),qPrint(classTNames),
-	    qPrint(yyextra->name),qPrint(funcTNames),qPrint(yyextra->args)
+  msg("yyextra->type='{}' class='{}' classTempl='{}' yyextra->name='{}' "
+         "funcTemplateNames='{}' yyextra->args='{}'\n",
+	    yyextra->type,yyextra->className,classTNames,
+	    yyextra->name,funcTNames,yyextra->args
 	);
 }
 

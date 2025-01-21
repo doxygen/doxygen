@@ -1056,7 +1056,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       {
         GetDefInput input(scopeName,matchWord,QCString());
         GetDefResult result = getDefs(input);
-        if (result.found &&
+        if (result.found && result.md &&
             (external ? result.md->isLinkable() : result.md->isLinkableInProject())
            )
         {
@@ -1430,7 +1430,7 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
     FileInfo fi(name.str());
     if (!fi.exists() || !fi.isFile())
     {
-      err("file '%s' not found\n",qPrint(name));
+      err("file '{}' not found\n",name);
       return "";
     }
     std::string buf;
@@ -1443,7 +1443,7 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
   }
   if (!fileOpened)
   {
-    err("cannot open file '%s' for reading\n",qPrint(name));
+    err("cannot open file '{}' for reading\n",name);
   }
   return "";
 }
@@ -2240,6 +2240,26 @@ GetDefResult getDefsNew(const GetDefInput &input)
     result.gd = result.md->getGroupDef();
     result.found = true;
   }
+  else if (symbol && symbol->definitionType()==Definition::TypeClass)
+  {
+    result.cd = toClassDef(symbol);
+    result.found = true;
+  }
+  else if (symbol && symbol->definitionType()==Definition::TypeNamespace)
+  {
+    result.nd = toNamespaceDef(symbol);
+    result.found = true;
+  }
+  else if (symbol && symbol->definitionType()==Definition::TypeConcept)
+  {
+    result.cnd = toConceptDef(symbol);
+    result.found = true;
+  }
+  else if (symbol && symbol->definitionType()==Definition::TypeModule)
+  {
+    result.modd = toModuleDef(symbol);
+    result.found = true;
+  }
   return result;
 }
 
@@ -2808,9 +2828,12 @@ GetDefResult getDefs(const GetDefInput &input)
  *   - if `nd` is non zero, the scope was a namespace pointed to by nd.
  */
 static bool getScopeDefs(const QCString &docScope,const QCString &scope,
-    ClassDef *&cd, ConceptDef *&cnd, NamespaceDef *&nd)
+    ClassDef *&cd, ConceptDef *&cnd, NamespaceDef *&nd,ModuleDef *&modd)
 {
-  cd=nullptr;nd=nullptr;
+  cd=nullptr;
+  cnd=nullptr;
+  nd=nullptr;
+  modd=nullptr;
 
   QCString scopeName=scope;
   //printf("getScopeDefs: docScope='%s' scope='%s'\n",qPrint(docScope),qPrint(scope));
@@ -2849,6 +2872,10 @@ static bool getScopeDefs(const QCString &docScope,const QCString &scope,
     {
       return TRUE; // concept link written => quit
     }
+    else if ((modd=ModuleManager::instance().modules().find(fullName)) && modd->isLinkable())
+    {
+      return TRUE; // module link written => quit
+    }
     if (scopeOffset==0)
     {
       scopeOffset=-1;
@@ -2879,6 +2906,7 @@ bool resolveRef(/* in */  const QCString &scName,
     /* in */  bool inSeeBlock,
     /* out */ const Definition **resContext,
     /* out */ const MemberDef  **resMember,
+    /* in */ SrcLangExt lang,
     bool lookForSpecialization,
     const FileDef *currentFile,
     bool checkScope
@@ -2896,6 +2924,17 @@ bool resolveRef(/* in */  const QCString &scName,
   else
   {
     fullName = removeRedundantWhiteSpace(fullName);
+  }
+
+  int templStartPos;
+  if (lang==SrcLangExt::CSharp && (templStartPos=fullName.find('<'))!=-1)
+  {
+    int templEndPos = fullName.findRev('>');
+    if (templEndPos!=-1)
+    {
+      fullName = mangleCSharpGenericName(fullName.left(templEndPos+1))+fullName.mid(templEndPos+1);
+      AUTO_TRACE_ADD("C# mangled name='{}'",fullName);
+    }
   }
 
   int bracePos=findParameterList(fullName);
@@ -2925,11 +2964,12 @@ bool resolveRef(/* in */  const QCString &scName,
     ClassDef *cd=nullptr;
     NamespaceDef *nd=nullptr;
     ConceptDef *cnd=nullptr;
+    ModuleDef *modd=nullptr;
 
     //printf("scName=%s fullName=%s\n",qPrint(scName),qPrint(fullName));
 
     // check if this is a class or namespace reference
-    if (scName!=fullName && getScopeDefs(scName,fullName,cd,cnd,nd))
+    if (scName!=fullName && getScopeDefs(scName,fullName,cd,cnd,nd,modd))
     {
       //printf("found scopeDef\n");
       if (cd) // scope matches that of a class
@@ -2939,6 +2979,10 @@ bool resolveRef(/* in */  const QCString &scName,
       else if (cnd)
       {
         *resContext = cnd;
+      }
+      else if (modd)
+      {
+        *resContext = modd;
       }
       else // scope matches that of a namespace
       {
@@ -3002,6 +3046,7 @@ bool resolveRef(/* in */  const QCString &scName,
 
   const GroupDef     *gd = nullptr;
   const ConceptDef   *cnd = nullptr;
+  const ModuleDef    *modd = nullptr;
 
   // check if nameStr is a member or global.
   //printf("getDefs(scope=%s,name=%s,args=%s checkScope=%d)\n",
@@ -3028,7 +3073,8 @@ bool resolveRef(/* in */  const QCString &scName,
       return FALSE;
     }
     //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
-    if      (result.md) {
+    if (result.md)
+    {
       if (!allowTypeOnly || result.md->isTypedef() || result.md->isEnumerate())
       {
         *resMember=result.md;
@@ -3042,11 +3088,18 @@ bool resolveRef(/* in */  const QCString &scName,
         return FALSE;
       }
     }
-    else if (result.cd) *resContext=result.cd;
-    else if (result.nd) *resContext=result.nd;
-    else if (result.fd) *resContext=result.fd;
-    else if (result.gd) *resContext=result.gd;
-    else         { *resContext=nullptr; *resMember=nullptr; return FALSE; }
+    else if (result.cd)   *resContext=result.cd;
+    else if (result.nd)   *resContext=result.nd;
+    else if (result.fd)   *resContext=result.fd;
+    else if (result.gd)   *resContext=result.gd;
+    else if (result.cnd)  *resContext=result.cnd;
+    else if (result.modd) *resContext=result.modd;
+    else
+    {
+      *resContext=nullptr; *resMember=nullptr;
+        AUTO_TRACE_ADD("false");
+      return FALSE;
+    }
     //printf("member=%s (md=%p) anchor=%s linkable()=%d context=%s\n",
     //    qPrint(md->name()), md, qPrint(md->anchor()), md->isLinkable(), qPrint((*resContext)->name()));
     AUTO_TRACE_ADD("true");
@@ -3064,6 +3117,12 @@ bool resolveRef(/* in */  const QCString &scName,
     AUTO_TRACE_ADD("true");
     return TRUE;
   }
+  else if ((modd=ModuleManager::instance().modules().find(nameStr)))
+  {
+    *resContext=modd;
+    AUTO_TRACE_ADD("true");
+    return TRUE;
+  }
   else if (tsName.find('.')!=-1) // maybe a link to a file
   {
     bool ambig = false;
@@ -3078,7 +3137,7 @@ bool resolveRef(/* in */  const QCString &scName,
 
   if (tryUnspecializedVersion)
   {
-    bool b = resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,nullptr,checkScope);
+    bool b = resolveRef(scName,name,inSeeBlock,resContext,resMember,lang,FALSE,nullptr,checkScope);
     AUTO_TRACE_ADD("{}",b);
     return b;
   }
@@ -3128,12 +3187,17 @@ bool resolveLink(/* in */ const QCString &scName,
     /* in */ bool /*inSeeBlock*/,
     /* out */ const Definition **resContext,
     /* out */ QCString &resAnchor,
+    /* in */ SrcLangExt lang,
     /* in */ const QCString &prefix
     )
 {
   *resContext=nullptr;
 
   QCString linkRef=lr;
+  if (lang==SrcLangExt::CSharp)
+  {
+    linkRef = mangleCSharpGenericName(linkRef);
+  }
   QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
   AUTO_TRACE("scName='{}',ref='{}'",scName,lr);
   const FileDef  *fd = nullptr;
@@ -3142,6 +3206,7 @@ bool resolveLink(/* in */ const QCString &scName,
   const ClassDef *cd = nullptr;
   const DirDef   *dir = nullptr;
   const ConceptDef *cnd = nullptr;
+  const ModuleDef *modd = nullptr;
   const NamespaceDef *nd = nullptr;
   const SectionInfo *si = nullptr;
   bool ambig = false;
@@ -3199,7 +3264,8 @@ bool resolveLink(/* in */ const QCString &scName,
     AUTO_TRACE_EXIT("class");
     return TRUE;
   }
-  else if ((cd=getClass(linkRefWithoutTemplates))) // C#/Java generic class link
+  else if (lang==SrcLangExt::Java &&
+           (cd=getClass(linkRefWithoutTemplates))) // Java generic class link
   {
     *resContext=cd;
     resAnchor=cd->anchor();
@@ -3220,6 +3286,13 @@ bool resolveLink(/* in */ const QCString &scName,
     AUTO_TRACE_EXIT("concept");
     return TRUE;
   }
+  else if ((modd=ModuleManager::instance().modules().find(linkRef)))
+  {
+    *resContext=modd;
+    resAnchor=modd->anchor();
+    AUTO_TRACE_EXIT("module");
+    return TRUE;
+  }
   else if ((nd=Doxygen::namespaceLinkedMap->find(linkRef)))
   {
     *resContext=nd;
@@ -3236,7 +3309,7 @@ bool resolveLink(/* in */ const QCString &scName,
   else // probably a member reference
   {
     const MemberDef *md = nullptr;
-    bool res = resolveRef(scName,lr,TRUE,resContext,&md);
+    bool res = resolveRef(scName,lr,TRUE,resContext,&md,lang);
     if (md) resAnchor=md->anchor();
     AUTO_TRACE_EXIT("member? res={}",res);
     return res;
@@ -4016,7 +4089,7 @@ void createSubDirs(const Dir &d)
       subdir.sprintf("d%x",l1);
       if (!d.exists(subdir.str()) && !d.mkdir(subdir.str()))
       {
-        term("Failed to create output directory '%s'\n",qPrint(subdir));
+        term("Failed to create output directory '{}'\n",subdir);
       }
       for (int l2=0; l2<createSubdirsLevelPow2; l2++)
       {
@@ -4024,7 +4097,7 @@ void createSubDirs(const Dir &d)
         subsubdir.sprintf("d%x/d%02x",l1,l2);
         if (!d.exists(subsubdir.str()) && !d.mkdir(subsubdir.str()))
         {
-          term("Failed to create output directory '%s'\n",qPrint(subsubdir));
+          term("Failed to create output directory '{}'\n",subsubdir);
         }
       }
     }
@@ -5056,8 +5129,8 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
   {
     if (!xref && !title.isEmpty() && pd->title()!=pd->name() && pd->title()!=title)
     {
-      warn(fileName,startLine,"multiple use of page label '%s' with different titles, (other occurrence: %s, line: %d)",
-         qPrint(name),qPrint(pd->docFile()),pd->getStartBodyLine());
+      warn(fileName,startLine,"multiple use of page label '{}' with different titles, (other occurrence: {}, line: {})",
+         name,pd->docFile(),pd->getStartBodyLine());
     }
     if (!title.isEmpty() && pd->title()==pd->name()) // pd has no real title yet
     {
@@ -5142,11 +5215,11 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
         }
         else if (si->lineNr() != -1)
         {
-          warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s, line %d)",qPrint(pd->name()),qPrint(si->fileName()),si->lineNr());
+          warn(orgFile,line,"multiple use of section label '{}', (first occurrence: {}, line {})",pd->name(),si->fileName(),si->lineNr());
         }
         else
         {
-          warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s)",qPrint(pd->name()),qPrint(si->fileName()));
+          warn(orgFile,line,"multiple use of section label '{}', (first occurrence: {})",pd->name(),si->fileName());
         }
       }
       else
@@ -5485,13 +5558,13 @@ bool updateLanguageMapping(const QCString &extension,const QCString &language)
   g_extLookup.emplace(extName.str(),parserId);
   if (!Doxygen::parserManager->registerExtension(extName,it1->parserName))
   {
-    err("Failed to assign extension %s to parser %s for language %s\n",
-        extName.data(),it1->parserName,qPrint(language));
+    err("Failed to assign extension {} to parser {} for language {}\n",
+        extName.data(),it1->parserName,language);
   }
   else
   {
-    //msg("Registered extension %s to language parser %s...\n",
-    //    extName.data(),qPrint(language));
+    //msg("Registered extension {} to language parser {}...\n",
+    //    extName,language);
   }
   return TRUE;
 }
@@ -5833,9 +5906,9 @@ static void transcodeCharacterBuffer(const QCString &fileName,std::string &conte
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {
-    term("unsupported character conversion: '%s'->'%s': %s\n"
+    term("unsupported character conversion: '{}'->'{}': {}\n"
         "Check the INPUT_ENCODING setting in the config file!\n",
-        qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno));
+        inputEncoding,outputEncoding,strerror(errno));
   }
   size_t      iLeft      = contents.size();
   const char *srcPtr     = contents.data();
@@ -5854,8 +5927,8 @@ static void transcodeCharacterBuffer(const QCString &fileName,std::string &conte
   }
   else
   {
-    term("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
-        qPrint(fileName),qPrint(inputEncoding),qPrint(outputEncoding));
+    term("{}: failed to translate characters from {} to {}: check INPUT_ENCODING\n",
+        fileName,inputEncoding,outputEncoding);
   }
   portable_iconv_close(cd);
 }
@@ -5872,7 +5945,7 @@ bool readInputFile(const QCString &fileName,std::string &contents,bool filter,bo
     std::ifstream f = Portable::openInputStream(fileName,true);
     if (!f.is_open())
     {
-      err("could not open file %s\n",qPrint(fileName));
+      err("could not open file {}\n",fileName);
       return FALSE;
     }
     // read the file
@@ -5881,18 +5954,18 @@ bool readInputFile(const QCString &fileName,std::string &contents,bool filter,bo
     f.read(contents.data(),fileSize);
     if (f.fail())
     {
-      err("problems while reading file %s\n",qPrint(fileName));
+      err("problems while reading file {}\n",fileName);
       return FALSE;
     }
   }
   else
   {
     QCString cmd=filterName+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`{}`)\n",cmd);
     FILE *f=Portable::popen(cmd,"r");
     if (!f)
     {
-      err("could not execute filter %s\n",qPrint(filterName));
+      err("could not execute filter {}\n",filterName);
       return FALSE;
     }
     const int bufSize=4096;
@@ -5905,7 +5978,7 @@ bool readInputFile(const QCString &fileName,std::string &contents,bool filter,bo
     }
     Portable::pclose(f);
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-    Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(contents));
+    Debug::print(Debug::FilterOutput,0,"-------------\n{}\n-------------\n",contents);
   }
 
   if (contents.size()>=2 &&
@@ -6194,7 +6267,7 @@ bool copyFile(const QCString &src,const QCString &dest)
 {
   if (!Dir().copy(src.str(),dest.str()))
   {
-    err("could not copy file %s to %s\n",qPrint(src),qPrint(dest));
+    err("could not copy file {} to {}\n",src,dest);
     return false;
   }
   return true;
@@ -6891,13 +6964,13 @@ void checkBlocks(const QCString &s, const QCString fileName,const SelectionMarke
         {
           if (markerInfo.closeLen==0 && *p=='\n') // matching end of line
           {
-            warn(fileName,-1,"Remaining begin replacement with marker '%s'",qPrint(marker));
+            warn(fileName,-1,"Remaining begin replacement with marker '{}'",marker);
             break;
           }
           else if (markerInfo.closeLen!= 0 && qstrncmp(p,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
           {
             p += markerInfo.closeLen;
-            warn(fileName,-1,"Remaining begin replacement with marker '%s'",qPrint(marker));
+            warn(fileName,-1,"Remaining begin replacement with marker '{}'",marker);
             break;
           }
           marker += *p;
@@ -6915,13 +6988,13 @@ void checkBlocks(const QCString &s, const QCString fileName,const SelectionMarke
         {
           if (markerInfo.closeLen==0 && *p=='\n') // matching end of line
           {
-            warn(fileName,-1,"Remaining end replacement with marker '%s'",qPrint(marker));
+            warn(fileName,-1,"Remaining end replacement with marker '{}'",marker);
             break;
           }
           else if (markerInfo.closeLen!= 0 && qstrncmp(p,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
           {
             p += markerInfo.closeLen;
-            warn(fileName,-1,"Remaining end replacement with marker '%s'",qPrint(marker));
+            warn(fileName,-1,"Remaining end replacement with marker '{}'",marker);
             break;
           }
           marker += *p;
@@ -7256,4 +7329,30 @@ size_t updateColumnCount(const char *s,size_t col)
   }
   return col;
 }
+
+// in C# A, A<T>, and A<T,S> are different classes, so we need some way to disguish them using this name mangling
+// A      -> A
+// A<T>   -> A-1-g
+// A<T,S> -> A-2-g
+QCString mangleCSharpGenericName(const QCString &name)
+{
+  int idx = name.find('<');
+  if (idx!=-1)
+  {
+    return name.left(idx)+"-"+QCString().setNum(name.contains(",")+1)+"-g";
+  }
+  return name;
+}
+
+QCString demangleCSharpGenericName(const QCString &name,const QCString &templArgs)
+{
+  QCString result=name;
+  if (result.endsWith("-g"))
+  {
+    int idx = result.find('-');
+    result = result.left(idx)+templArgs;
+  }
+  return result;
+}
+
 

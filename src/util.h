@@ -127,6 +127,8 @@ struct GetDefResult
   const FileDef      *fd=nullptr;
   const NamespaceDef *nd=nullptr;
   const GroupDef     *gd=nullptr;
+  const ConceptDef   *cnd=nullptr;
+  const ModuleDef    *modd=nullptr;
 };
 
 GetDefResult getDefs(const GetDefInput &input);
@@ -138,6 +140,7 @@ bool resolveRef(/* in */  const QCString &scName,
                 /* in */  bool inSeeBlock,
                 /* out */ const Definition **resContext,
                 /* out */ const MemberDef  **resMember,
+                /* in */  SrcLangExt lang,
                 /* in */  bool lookForSpecializations = TRUE,
                 /* in */  const FileDef *currentFile = nullptr,
                 /* in */  bool checkScope = FALSE
@@ -148,6 +151,7 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* in */  bool inSeeBlock,
                  /* out */ const Definition **resContext,
                  /* out */ QCString &resAnchor,
+                 /* in */  SrcLangExt lang,
                  /* in */  const QCString &prefix=QCString()
                 );
 
@@ -471,5 +475,8 @@ QCString projectLogoFile();
 void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
 
 size_t updateColumnCount(const char *s,size_t col);
+
+QCString mangleCSharpGenericName(const QCString &name);
+QCString demangleCSharpGenericName(const QCString &name,const QCString &templArgs);
 
 #endif

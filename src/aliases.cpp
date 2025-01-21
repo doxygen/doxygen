@@ -91,7 +91,7 @@ static void addValidAliasToMap(std::string_view alias)
             while (m<l && isValidSeparator(name[m])) m++;
             if (m<l-1)
             {
-              err("Invalid alias '%s': invalid separator character '%c' (code %d), allowed characters: %s. Check your config file.\n",qPrint(alias),name[m],name[m],qPrint(std::string{separators}));
+              err("Invalid alias '{}': invalid separator character '{:c}' (code {:d}), allowed characters: {}. Check your config file.\n",alias,name[m],name[m],std::string{separators});
               valid=false;
             }
             else
@@ -102,19 +102,19 @@ static void addValidAliasToMap(std::string_view alias)
           if (valid) // valid alias with parameters
           {
             aliasName = name.substr(0,j);
-            Debug::print(Debug::Alias,0,"Alias definition: name='%s' #param='%d' separator='%s' value='%s'\n",
-                qPrint(aliasName),numParams,qPrint(separator),qPrint(aliasValue));
+            Debug::print(Debug::Alias,0,"Alias definition: name='{}' #param='{}' separator='{}' value='{}'\n",
+                aliasName,numParams,separator,aliasValue);
           }
         }
         else
         {
-          err("Invalid alias '%s': missing number of parameters. Check your config file.\n",qPrint(std::string{alias}));
+          err("Invalid alias '{}': missing number of parameters. Check your config file.\n",std::string{alias});
           valid=false;
         }
       }
       else
       {
-        err("Invalid alias '%s': missing closing bracket. Check your config file.\n",qPrint(std::string{alias}));
+        err("Invalid alias '{}': missing closing bracket. Check your config file.\n",std::string{alias});
         valid=false;
       }
     }
@@ -122,12 +122,12 @@ static void addValidAliasToMap(std::string_view alias)
     {
       aliasName = name;
       numParams = 0;
-      Debug::print(Debug::Alias,0,"Alias definition: name='%s' value='%s'\n",qPrint(aliasName),qPrint(aliasValue));
+      Debug::print(Debug::Alias,0,"Alias definition: name='{}' value='{}'\n",aliasName,aliasValue);
     }
   }
   else
   {
-    err("Invalid alias '%s': invalid 'name=' or 'name{...}=' part. Check you config file.\n",qPrint(std::string{alias}));
+    err("Invalid alias '{}': invalid 'name=' or 'name{{...}}=' part. Check you config file.\n",std::string{alias});
     valid=false;
   }
 
@@ -507,7 +507,7 @@ std::string resolveAliasCmd(std::string_view aliasCmd)
   //printf("Expanding: '%s'\n",qPrint(aliasCmd));
   std::string result = expandAliasRec(aliasesProcessed,aliasCmd);
   //printf("Expanding result: '%s'->'%s'\n",qPrint(aliasCmd),qPrint(result));
-  Debug::print(Debug::Alias,0,"Resolving alias: cmd='%s' result='%s'\n",qPrint(std::string{aliasCmd}),qPrint(result));
+  Debug::print(Debug::Alias,0,"Resolving alias: cmd='{}' result='{}'\n",std::string{aliasCmd},result);
   return result;
 }
 
@@ -521,7 +521,7 @@ static std::string expandAlias(std::string_view aliasName,std::string_view alias
   //printf("Expanding: '%s'->'%s'\n",qPrint(aliasName),qPrint(aliasValue));
   result = expandAliasRec(aliasesProcessed,aliasValue);
   //printf("Expanding result: '%s'->'%s'\n",qPrint(aliasName),qPrint(result));
-  Debug::print(Debug::Alias,0,"Expanding alias: input='%s' result='%s'\n",qPrint(std::string{aliasValue}),qPrint(result));
+  Debug::print(Debug::Alias,0,"Expanding alias: input='{}' result='{}'\n",std::string{aliasValue},result);
   return result;
 }
 

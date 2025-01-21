@@ -132,7 +132,7 @@ static void writeCombineScript()
   std::ofstream t = Portable::openOutputStream(fileName);
   if (!t.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
 
@@ -1455,10 +1455,10 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
   if (cd->isAnonymous())        return; // skip anonymous compounds.
-  if (cd->templateMaster()!=nullptr)  return; // skip generated template instances.
+  if (cd->isImplicitTemplateInstance())  return; // skip generated template instances.
   if (cd->isArtificial())       return; // skip artificially created classes
 
-  msg("Generating XML output for class %s\n",qPrint(cd->name()));
+  msg("Generating XML output for class {}\n",cd->name());
 
   ti << "  <compound refid=\"" << classOutputFileBase(cd)
      << "\" kind=\"" << cd->compoundTypeString()
@@ -1469,7 +1469,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -1640,7 +1640,7 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -1685,7 +1685,7 @@ static void generateXMLForModule(const ModuleDef *mod,TextStream &ti)
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -1750,7 +1750,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -1828,7 +1828,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -1940,7 +1940,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -1997,7 +1997,7 @@ static void generateXMLForDir(DirDef *dd,TextStream &ti)
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -2050,7 +2050,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   TextStream t(&f);
@@ -2196,7 +2196,7 @@ void generateXML()
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   {
@@ -2232,7 +2232,7 @@ void generateXML()
   f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   {
@@ -2268,7 +2268,7 @@ void generateXML()
   f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing\n",fileName.data());
+    err("Cannot open file {} for writing\n",fileName);
     return;
   }
   else
@@ -2282,7 +2282,7 @@ void generateXML()
   f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",qPrint(fileName));
+    err("Cannot open file {} for writing!\n",fileName);
     return;
   }
   else
@@ -2303,45 +2303,45 @@ void generateXML()
     }
     for (const auto &cd : *Doxygen::conceptLinkedMap)
     {
-      msg("Generating XML output for concept %s\n",qPrint(cd->displayName()));
+      msg("Generating XML output for concept {}\n",cd->displayName());
       generateXMLForConcept(cd.get(),t);
     }
     for (const auto &nd : *Doxygen::namespaceLinkedMap)
     {
-      msg("Generating XML output for namespace %s\n",qPrint(nd->displayName()));
+      msg("Generating XML output for namespace {}\n",nd->displayName());
       generateXMLForNamespace(nd.get(),t);
     }
     for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
       for (const auto &fd : *fn)
       {
-        msg("Generating XML output for file %s\n",qPrint(fd->name()));
+        msg("Generating XML output for file {}\n",fd->name());
         generateXMLForFile(fd.get(),t);
       }
     }
     for (const auto &gd : *Doxygen::groupLinkedMap)
     {
-      msg("Generating XML output for group %s\n",qPrint(gd->name()));
+      msg("Generating XML output for group {}\n",gd->name());
       generateXMLForGroup(gd.get(),t);
     }
     for (const auto &pd : *Doxygen::pageLinkedMap)
     {
-      msg("Generating XML output for page %s\n",qPrint(pd->name()));
+      msg("Generating XML output for page {}\n",pd->name());
       generateXMLForPage(pd.get(),t,FALSE);
     }
     for (const auto &dd : *Doxygen::dirLinkedMap)
     {
-      msg("Generate XML output for dir %s\n",qPrint(dd->name()));
+      msg("Generate XML output for dir {}\n",dd->name());
       generateXMLForDir(dd.get(),t);
     }
     for (const auto &mod : ModuleManager::instance().modules())
     {
-      msg("Generating XML output for module %s\n",qPrint(mod->name()));
+      msg("Generating XML output for module {}\n",mod->name());
       generateXMLForModule(mod.get(),t);
     }
     for (const auto &pd : *Doxygen::exampleLinkedMap)
     {
-      msg("Generating XML output for example %s\n",qPrint(pd->name()));
+      msg("Generating XML output for example {}\n",pd->name());
       generateXMLForPage(pd.get(),t,TRUE);
     }
     if (Doxygen::mainPage)

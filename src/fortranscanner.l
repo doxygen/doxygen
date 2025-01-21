@@ -1462,7 +1462,7 @@ private                                 {
                                           int nr = QCString(&yytext[6]).toInt(&ok);
                                           if (!ok)
                                           {
-                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid line number '%s' for iline command",yytext);
+                                            warn(yyextra->fileName,yyextra->lineNr,"Invalid line number '{}' for iline command",yytext);
                                           }
                                           else
                                           {
@@ -3132,8 +3132,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     else
     {
       // something different specified, give warning and leave error.
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
-             qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: {}{} inconsistency between intent attribute and documentation for parameter {}:",
+             yyextra->current->name,yyextra->current->args,yyextra->argName);
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
     }
@@ -3156,8 +3156,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
-             qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: {}{} inconsistency between intent attribute and documentation for parameter {}:",
+             yyextra->current->name,yyextra->current->args,yyextra->argName);
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
     }
@@ -3178,8 +3178,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
-             qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: {}{} inconsistency between intent attribute and documentation for parameter {}:",
+             yyextra->current->name,yyextra->current->args,yyextra->argName);
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
     }
@@ -3251,15 +3251,15 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   if (yyextra->isFixedForm)
   {
     yyextra->fixedCommentAfter = Config_getInt(FORTRAN_COMMENT_AFTER);
-    msg("Prepassing fixed form of %s\n", qPrint(fileName));
+    msg("Prepassing fixed form of {}\n", fileName);
     //printf("---strlen=%d\n", strlen(fileBuf));
     //clock_t start=clock();
 
     //printf("Input fixed form string:\n%s\n", fileBuf);
     //printf("===========================\n");
     yyextra->inputString = prepassFixedForm(fileBuf, nullptr,yyextra->fixedCommentAfter);
-    Debug::print(Debug::FortranFixed2Free,0,"======== Fixed to Free format  =========\n---- Input fixed form string ------- \n%s\n", fileBuf);
-    Debug::print(Debug::FortranFixed2Free,0,"---- Resulting free form string ------- \n%s\n", yyextra->inputString);
+    Debug::print(Debug::FortranFixed2Free,0,"======== Fixed to Free format  =========\n---- Input fixed form string ------- \n{}\n", fileBuf);
+    Debug::print(Debug::FortranFixed2Free,0,"---- Resulting free form string ------- \n{}\n", yyextra->inputString);
     //printf("Resulting free form string:\n%s\n", yyextra->inputString);
     //printf("===========================\n");
 
@@ -3277,7 +3277,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   yyextra->lineNr= 1 ;
   yyextra->fileName = fileName;
-  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
+  msg("Parsing file {}...\n",yyextra->fileName);
 
   yyextra->global_scope = rt.get();
   startScope(yyscanner,rt.get()); // implies yyextra->current_root = rt
@@ -3416,7 +3416,7 @@ static inline void pop_state(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if ( yyg->yy_start_stack_ptr <= 0 )
-    warn(yyextra->fileName,yyextra->lineNr,"Unexpected statement '%s'",yytext );
+    warn(yyextra->fileName,yyextra->lineNr,"Unexpected statement '{}'",yytext );
   else
     yy_pop_state(yyscanner);
 }

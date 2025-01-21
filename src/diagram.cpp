@@ -1115,7 +1115,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
   std::ofstream f = Portable::openOutputStream(epsName);
   if (!f.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(epsName));
+    term("Could not open file {} for writing\n",epsName);
   }
   else
   {

@@ -84,7 +84,7 @@ void DotGfxHierarchyTable::writeGraph(TextStream &out,
   // store the original directory
   if (!d.exists())
   {
-    term("Output dir %s does not exist!\n",qPrint(path));
+    term("Output dir {} does not exist!\n",path);
   }
 
   // put each connected subgraph of the hierarchy in a row of the HTML output

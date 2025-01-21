@@ -366,7 +366,7 @@ static void writeLatexMakefile()
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(fileName));
+    term("Could not open file {} for writing\n",fileName);
   }
   TextStream t(&f);
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
@@ -509,7 +509,7 @@ static void writeMakeBat()
   std::ofstream t = Portable::openOutputStream(fileName);
   if (!t.is_open())
   {
-    term("Could not open file %s for writing\n",qPrint(fileName));
+    term("Could not open file {} for writing\n",fileName);
   }
   t << "pushd %~dp0\r\n";
   t << "if not %errorlevel% == 0 goto :end1\r\n";
@@ -631,7 +631,7 @@ void LatexGenerator::init()
   Dir d(dname.str());
   if (!d.exists() && !d.mkdir(dname.str()))
   {
-    term("Could not create output directory %s\n",qPrint(dname));
+    term("Could not create output directory {}\n",dname);
   }
 
   if (!Config_getString(LATEX_HEADER).isEmpty())
@@ -1020,7 +1020,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==nullptr &&
+              !cd->isImplicitTemplateInstance() &&
               !cd->isEmbeddedInOuterScope() &&
               !cd->isAlias()
              )
@@ -1192,7 +1192,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
-              cd->templateMaster()==nullptr &&
+             !cd->isImplicitTemplateInstance() &&
              !cd->isEmbeddedInOuterScope() &&
              !cd->isAlias()
              )

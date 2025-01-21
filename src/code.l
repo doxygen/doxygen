@@ -2845,7 +2845,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       }
     }
   }
-  if (result.found && (!varOnly || result.md->isVariable()))
+  if (result.found && result.md && (!varOnly || result.md->isVariable()))
   {
     if (result.md->isLinkable())
     {
@@ -3067,6 +3067,15 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       {
         ClassDefMutable *cdm = toClassDefMutable(const_cast<Definition*>(sym));
         if (cdm && cdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
+        {
+          ol.writeCodeAnchor(anchor);
+          yyextra->anchorCount++;
+        }
+      }
+      else if (sym->definitionType()==Definition::TypeMember)
+      {
+        MemberDefMutable *mdm = toMemberDefMutable(const_cast<Definition*>(sym));
+        if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
         {
           ol.writeCodeAnchor(anchor);
           yyextra->anchorCount++;
