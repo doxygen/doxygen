@@ -215,6 +215,7 @@ inline bool isIdJS(int c)
 QCString removeRedundantWhiteSpace(const QCString &s);
 
 QCString inlineArgListToDoc(const ArgumentList &al);
+QCString inlineTemplateArgListToDoc(const ArgumentList &al);
 
 QCString argListToString(const ArgumentList &al,bool useCanonicalType=FALSE,bool showDefVals=TRUE);
 

@@ -59,6 +59,12 @@
 // debug inside output
 //#define XML_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
+static void writeXMLDocBlock(TextStream &t,
+                      const QCString &fileName,
+                      int lineNr,
+                      const Definition *scope,
+                      const MemberDef * md,
+                      const QCString &text);
 //------------------
 
 inline void writeXMLString(TextStream &t,const QCString &s)
@@ -402,6 +408,20 @@ static void writeTemplateArgumentList(TextStream &t,
         t << indentStr << "    <typeconstraint>";
         linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,nullptr,a.typeConstraint);
         t << "</typeconstraint>\n";
+      }
+      if (a.hasTemplateDocumentation())
+      {
+        t << indentStr << "    <briefdescription>\n";
+        t << indentStr << "      ";
+        if (scope)
+        {
+          writeXMLDocBlock(t,scope->briefFile(),scope->briefLine(),scope,nullptr,a.docs);
+        }
+        else
+        {
+          writeXMLDocBlock(t,fileScope->briefFile(),fileScope->briefLine(),fileScope,nullptr,a.docs);
+        }
+        t << indentStr << "    </briefdescription>\n";
       }
       t << indentStr << "  </param>\n";
     }

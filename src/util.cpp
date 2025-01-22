@@ -1171,6 +1171,33 @@ QCString inlineArgListToDoc(const ArgumentList &al)
   return paramDocs;
 }
 
+QCString inlineTemplateArgListToDoc(const ArgumentList &al)
+{
+  QCString paramDocs;
+  if (al.hasTemplateDocumentation())
+  {
+    for (const Argument &a : al)
+    {
+      if (!a.docs.isEmpty())
+      {
+        if (!a.name.isEmpty())
+        {
+          paramDocs+=" \\ilinebr @tparam "+a.name+" "+a.docs;
+        }
+        else if (!a.type.isEmpty())
+        {
+          QCString type = a.type;
+          type.stripPrefix("class ");
+          type.stripPrefix("typename ");
+          type = type.stripWhiteSpace();
+          paramDocs+=" \\ilinebr @tparam "+type+" "+a.docs;
+        }
+      }
+    }
+  }
+  return paramDocs;
+}
+
 QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showDefVals)
 {
   QCString result;
