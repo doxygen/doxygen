@@ -3678,6 +3678,10 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       }
       else if (isSubdirDocs)
       {
+        if (!generatedId.isEmpty() && !title.isEmpty())
+        {
+          docs.prepend("@ianchor{" + title + "} " + generatedId + "\\ilinebr ");
+        }
         docs.prepend("@dir\\ilinebr ");
       }
       else
