@@ -25,6 +25,7 @@
 #include "mscgen_api.h"
 #include "dir.h"
 #include "textstream.h"
+#include "stringutil.h"
 
 static const int maxCmdLine = 40960;
 
@@ -48,7 +49,7 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
   {
     bool isRef = false;
     //printf("ReadLine '%s'\n",line.c_str());
-    if (qstrncmp(line.c_str(),"rect",4)==0)
+    if (literal_at(line.c_str(),"rect"))
     {
       // obtain the url and the coordinates in the order used by graphviz-1.5
       sscanf(line.c_str(),"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);

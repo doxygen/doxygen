@@ -63,6 +63,7 @@ typedef yyguts_t *yyscan_t;
 #include "fileinfo.h"
 #include "trace.h"
 #include "debug.h"
+#include "stringutil.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -3159,7 +3160,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
           continue;
         }
       }
-      else if (c=='s' && qstrncmp(p,"sizeof",6)==0) // sizeof(...)
+      else if (c=='s' && literal_at(p,"sizeof")) // sizeof(...)
       {
         const char *q = p+6;
         while (*q==' ' || *q=='\t') q++;
@@ -3200,7 +3201,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
       }
       else if (c=='d' && !inNum) // identifier starting with a 'd'
       {
-        if (qstrncmp(p,"defined ",8)==0 || qstrncmp(p,"defined(",8)==0)
+        if (literal_at(p,"defined ") || literal_at(p,"defined("))
                    // defined keyword
         {
           p+=7; // skip defined

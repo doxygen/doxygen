@@ -38,6 +38,7 @@
 #include "util.h"
 #include "indexlist.h"
 #include "trace.h"
+#include "stringutil.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE
@@ -1779,7 +1780,7 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
           found=(round==0);
           break;
         case ' ':  // allow spaces in cast operator (see issue #11169)
-          found=(round==0) && (j<8 || qstrncmp(data+j-8,"operator",8)!=0);
+          found=(round==0) && (j<8 || !literal_at(data+j-8,"operator"));
           break;
       }
     }
@@ -1801,11 +1802,11 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
   }
 
   // include const and volatile
-  if (qstrncmp(data+j," const",6)==0)
+  if (literal_at(data+j," const"))
   {
     j+=6;
   }
-  else if (qstrncmp(data+j," volatile",9)==0)
+  else if (literal_at(data+j," volatile"))
   {
     j+=9;
   }
@@ -1829,7 +1830,7 @@ static QCString extractCopyDocId(const char *data, size_t &j, size_t len)
 // and the sizeof(str) returns the size of str including the '\0' terminator;
 // a fact we abuse to skip over the start of the command character.
 #define CHECK_FOR_COMMAND(str,action) \
-   do if ((i+sizeof(str)<len) && qstrncmp(data+i+1,str,sizeof(str)-1)==0) \
+   do if ((i+sizeof(str)<len) && literal_at(data+i+1,str)) \
    { j=i+sizeof(str); action; } while(0)
 
 static size_t isCopyBriefOrDetailsCmd(const char *data, size_t i,size_t len,bool &brief)

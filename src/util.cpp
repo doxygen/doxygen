@@ -5472,7 +5472,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   while ((c=*p))
   {
     if (c==' ' || c=='\t' || c=='\r') i++,p++;
-    else if (c=='\\' && qstrncmp(p,"\\ilinebr",8)==0) i+=8,li=i,p+=8;
+    else if (c=='\\' && literal_at(p,"\\ilinebr")) i+=8,li=i,p+=8;
     else if (c=='\n') i++,li=i,docLine++,p++;
     else break;
   }
@@ -5484,8 +5484,8 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   {
     c=*p;
     if (c==' ' || c=='\t' || c=='\r') b--,p--;
-    else if (c=='r' && b>=7 && qstrncmp(p-7,"\\ilinebr",8)==0) bi=b-7,b-=8,p-=8;
-    else if (c=='>' && b>=11 && qstrncmp(p-11,"\\ilinebr<br>",12)==0) bi=b-11,b-=12,p-=12;
+    else if (c=='r' && b>=7 && literal_at(p-7,"\\ilinebr")) bi=b-7,b-=8,p-=8;
+    else if (c=='>' && b>=11 && literal_at(p-11,"\\ilinebr<br>")) bi=b-11,b-=12,p-=12;
     else if (c=='\n') bi=b,b--,p--;
     else break;
   }
@@ -6431,7 +6431,7 @@ QCString stripIndentation(const QCString &s)
         indent++;
       }
     }
-    else if (c=='\\' && qstrncmp(p,"ilinebr ",8)==0)
+    else if (c=='\\' && literal_at(p,"ilinebr "))
       // we also need to remove the indentation after a \ilinebr command at the end of a line
     {
       result << "\\ilinebr ";
@@ -6443,7 +6443,7 @@ QCString stripIndentation(const QCString &s)
         p+=skipAmount; // remove the indent
       }
     }
-    else if (c=='@' && qstrncmp(p,"ilinebr",7)==0)
+    else if (c=='@' && literal_at(p,"ilinebr"))
     {
       result << "\\ilinebr";
       p+=7;
@@ -7173,12 +7173,12 @@ QCString detab(const QCString &s,size_t &refIndent)
           out.addChar(data[i++]);
           col+=2;
         }
-        else if (i+5<size && qstrncmp(&data[i],"iskip",5)==0) // \iskip command
+        else if (i+5<size && literal_at(data+i,"iskip")) // \iskip command
         {
           i+=5;
           skip = true;
         }
-        else if (i+8<size && qstrncmp(&data[i],"endiskip",8)==0) // \endiskip command
+        else if (i+8<size && literal_at(data+i,"endiskip")) // \endiskip command
         {
           i+=8;
           skip = false;

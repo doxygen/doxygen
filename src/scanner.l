@@ -50,6 +50,7 @@ typedef yyguts_t *yyscan_t;
 #include "commentscan.h"
 #include "arguments.h"
 #include "moduledef.h"
+#include "stringutil.h"
 
 #include "clangparser.h"
 #include "markdown.h"
@@ -984,7 +985,7 @@ NONLopt [^\n]*
                                             yyextra->roundCount=0;
                                             BEGIN( SkipRound );
                                           }
-                                          else if (qstrncmp(yytext,"@property",9)==0) // ObjC 2.0 property
+                                          else if (literal_at(yytext,"@property")) // ObjC 2.0 property
                                           {
                                             yyextra->current->mtype = yyextra->mtype = MethodTypes::Property;
                                             yyextra->current->spec.setReadable(true).setWritable(true).setAssign(true);
@@ -6079,7 +6080,7 @@ NONLopt [^\n]*
                                           BEGIN( ClassVar );
                                         }
 <ClassVar>{SCOPENAME}{BNopt}/"("        {
-                                          if (yyextra->insideIDL && qstrncmp(yytext,"switch",6)==0 && !isId(yytext[6]))
+                                          if (yyextra->insideIDL && literal_at(yytext,"switch") && !isId(yytext[6]))
                                           {
                                             // Corba IDL style union
                                             yyextra->roundCount=0;

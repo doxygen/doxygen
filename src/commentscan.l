@@ -4375,7 +4375,7 @@ static void stripTrailingWhiteSpace(QCString &s)
     {
       i--;
     }
-    else if (c=='r' && i>=7 && qstrncmp("\\ilinebr",s.data()+i-7,8)==0) // special line break marker
+    else if (c=='r' && i>=7 && literal_at(s.data()+i-7,"\\ilinebr")) // special line break marker
     {
       i-=8;
     }

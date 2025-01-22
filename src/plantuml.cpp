@@ -23,6 +23,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "indexlist.h"
+#include "stringutil.h"
 
 QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
                                               const QCString &content,OutputFormat format, const QCString &engine,
@@ -94,7 +95,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
         case '\t': break;
         case ' ':  break;
         case '@':
-          if (initial && qstrncmp(p,"start",5)==0) // @start...
+          if (initial && literal_at(p,"start")) // @start...
           {
             while ((c=*p++) && isId(c)) text+=c;
             // insert the image name

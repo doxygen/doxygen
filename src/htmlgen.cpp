@@ -56,6 +56,7 @@
 #include "datetime.h"
 #include "portable.h"
 #include "outputlist.h"
+#include "stringutil.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -172,11 +173,11 @@ static QCString getConvertLatexMacro()
       return "";
     }
     i++;
-    if (!qstrncmp(data + i, "newcommand", strlen("newcommand")))
+    if (literal_at(data+i,"newcommand"))
     {
       i += strlen("newcommand");
     }
-    else if (!qstrncmp(data + i, "renewcommand", strlen("renewcommand")))
+    else if (literal_at(data+i,"renewcommand"))
     {
       i += strlen("renewcommand");
     }

@@ -24,6 +24,7 @@
 #include "dot.h"
 #include "dir.h"
 #include "portable.h"
+#include "stringutil.h"
 
 // top part of the interactive SVG header
 static const char svgZoomHeader0[] = R"svg(
@@ -552,7 +553,7 @@ static bool readSVGSize(const QCString &fileName,int *width,int *height)
   std::string line;
   while (getline(f,line) && !found)
   {
-    if (qstrncmp(line.c_str(),"<!--zoomable ",13)==0)
+    if (literal_at(line.c_str(),"<!--zoomable "))
     {
       *width=-1;
       *height=-1;

@@ -48,6 +48,7 @@ typedef yyguts_t *yyscan_t;
 #include "regex.h"
 #include "debug.h"
 #include "docnode.h"
+#include "stringutil.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -138,7 +139,7 @@ static int computeIndent(const char *str,size_t length)
     {
       indent=0;
     }
-    else if (str[i]=='\\' && qstrncmp(str+i+1,"ilinebr",7)==0)
+    else if (literal_at(&str[i],"\\ilinebr"))
     {
       indent=0;
       i+=7;
