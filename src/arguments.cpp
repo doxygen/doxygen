@@ -23,3 +23,10 @@ bool ArgumentList::hasDocumentation() const
   return std::any_of(begin(),end(),[](const Argument &a){ return a.hasDocumentation(); });
 }
 
+/*! the template argument list is documented if one of its
+ *  template arguments is documented
+ */
+bool ArgumentList::hasTemplateDocumentation() const
+{
+  return std::any_of(begin(),end(),[](const Argument &a){ return a.hasTemplateDocumentation(); });
+}
