@@ -209,7 +209,10 @@ inline size_t isNewline(std::string_view data)
   // normal newline
   if (data[0] == '\n') return 1;
   // artificial new line from ^^ in ALIASES
-  if (literal_at(data,"\\ilinebr ")) return 8;
+  if (literal_at(data,"\\ilinebr"))
+  {
+    return (data.size()>8 && data[8]==' ') ? 9 : 8; // also count space after \ilinebr if present
+  }
   return 0;
 }
 
