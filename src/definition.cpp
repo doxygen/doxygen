@@ -405,17 +405,18 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
       p->details = std::make_optional<DocInfo>();
     }
     DocInfo &details = p->details.value();
+    QCString docPre = " \\ifile \"" + docFile + "\" \\iline " + std::to_string(docLine) + " ";
     if (details.doc.isEmpty()) // fresh detailed description
     {
-      details.doc = doc;
+      details.doc = docPre + doc;
     }
     else if (atTop) // another detailed description, append it to the start
     {
-      details.doc = doc+"\n\n"+details.doc;
+      details.doc = docPre + doc+"\n\n"+details.doc;
     }
     else // another detailed description, append it to the end
     {
-      details.doc += "\n\n"+doc;
+      details.doc += "\n\n" + docPre + doc;
     }
     if (docLine!=-1) // store location if valid
     {
