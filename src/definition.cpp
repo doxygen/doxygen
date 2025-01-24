@@ -405,7 +405,7 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
       p->details = std::make_optional<DocInfo>();
     }
     DocInfo &details = p->details.value();
-    QCString docPre = " \\ifile \"" + docFile + "\" \\iline " + std::to_string(docLine) + " ";
+    QCString docPre = " \\ifile \"" + docFile + "\" \\iline " + std::to_string(docLine) + " \\ilinebr ";
     if (details.doc.isEmpty()) // fresh detailed description
     {
       details.doc = docPre + doc;
