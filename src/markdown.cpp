@@ -3683,7 +3683,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       {
         if (!generatedId.isEmpty() && !title.isEmpty())
         {
-          docs.prepend("@ianchor{" + title + "} " + generatedId + "\\ilinebr ");
+          docs.prepend("@section " + generatedId + " " + title + "\\ilinebr ");
         }
         docs.prepend("@dir\\ilinebr ");
       }
