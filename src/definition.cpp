@@ -1405,7 +1405,7 @@ QCString DefinitionImpl::navigationPathAsString() const
     }
     else if (p->def->definitionType()==Definition::TypeClass)
     {
-      QCString name = locName;
+      QCString name = toClassDef(p->def)->className();
       if (name.endsWith("-p"))
       {
         name = name.left(name.length()-2);
