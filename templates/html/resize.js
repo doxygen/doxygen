@@ -53,20 +53,20 @@ function initResizable(treeview) {
       const footerHeight = footer.outerHeight();
       let navtreeHeight,sideNavHeight;
       if (typeof page_layout==='undefined' || page_layout==0) { /* DISABLE_INDEX=NO */
-        contentHeight = windowHeight - headerHeight - footerHeight;
+        contentHeight = windowHeight - headerHeight - footerHeight - 1;
         navtreeHeight = contentHeight;
         sideNavHeight = contentHeight;
       } else if (page_layout==1) { /* DISABLE_INDEX=YES */
-        contentHeight = windowHeight - footerHeight;
-        navtreeHeight = windowHeight - headerHeight;
-        sideNavHeight = windowHeight;
+        contentHeight = windowHeight - footerHeight - 1;
+        navtreeHeight = windowHeight - headerHeight - 1;
+        sideNavHeight = windowHeight - 1;
       }
       navtree.css({height:navtreeHeight + "px"});
       sidenav.css({height:sideNavHeight + "px"});
     }
     else
     {
-      contentHeight = windowHeight - headerHeight;
+      contentHeight = windowHeight - headerHeight - 1;
     }
     content.css({height:contentHeight + "px"});
     if (location.hash.slice(1)) {
@@ -91,27 +91,7 @@ function initResizable(treeview) {
   content = $("#doc-content");
   footer  = $("#nav-path");
   sidenav = $("#side-nav");
-  if (!treeview) {
-//    title   = $("#titlearea");
-//    titleH  = $(title).height();
-//    let animating = false;
-//    content.on("scroll", function() {
-//      slideOpts = { duration: 200,
-//                    step: function() {
-//                        contentHeight = $(window).height() - header.outerHeight();
-//                        content.css({ height : contentHeight + "px" });
-//                      },
-//                    done: function() { animating=false; }
-//                  };
-//      if (content.scrollTop()>titleH && title.css('display')!='none' && !animating) {
-//        title.slideUp(slideOpts);
-//        animating=true;
-//      } else if (content.scrollTop()<=titleH && title.css('display')=='none' && !animating) {
-//        title.slideDown(slideOpts);
-//        animating=true;
-//      }
-//    });
-  } else {
+  if (treeview) {
     navtree = $("#nav-tree");
     $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(); } });
     $(sidenav).resizable({ minWidth: 0 });
@@ -139,8 +119,6 @@ function initResizable(treeview) {
   {
     $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
     $(".ui-resizable-handle").dblclick(collapseExpand);
-    // workaround for firefox
-    $("body").css({overflow: "hidden"});
   }
   $(window).on('load',function() { resizeHeight(treeview); });
 }
