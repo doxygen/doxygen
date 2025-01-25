@@ -32,6 +32,7 @@ function SearchBox(name, resultsPath, extension) {
       this.DOMSearchBox().className = 'MSearchBoxInactive';
     }
   }
+  this.CloseResultsWindow = function() {}
 }
 
 function trim(s) {
