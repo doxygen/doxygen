@@ -990,12 +990,15 @@ void ManDocVisitor::filter(const QCString &str)
   {
     const char *p=str.data();
     char c=0;
+    bool insideDoubleQuote = false;
     while ((c=*p++))
     {
       switch(c)
       {
         case '.':  m_t << "\\&."; break; // see  bug652277
         case '\\': m_t << "\\\\"; break;
+        case '\"': m_t << "\""; insideDoubleQuote = !insideDoubleQuote; break;
+        case '\n': if (!insideDoubleQuote) m_t << c; break;
         default: m_t << c; break;
       }
     }
