@@ -6647,8 +6647,8 @@ QCString extractDirection(QCString &docs)
                               ),dir.end());
       unsigned char ioMask=0;
       size_t inIndex  = dir.find( "in");
-      size_t outIndex = dir.find("out");
       if ( inIndex!=std::string::npos) dir.erase( inIndex,2),ioMask|=(1<<0);
+      size_t outIndex = dir.find("out");
       if (outIndex!=std::string::npos) dir.erase(outIndex,3),ioMask|=(1<<1);
       if (dir.empty() && ioMask!=0) // only in and/or out attributes found
       {
