@@ -2750,24 +2750,7 @@ STopt  [^\n@\\]*
                                             BEGIN(SectionTitle);
                                           }
                                         }
-<CiteLabel,CiteLabelSection>{DOCNL}     { // missing argument
-                                          warn(yyextra->fileName,yyextra->lineNr,
-                                              "\\cite command has no label"
-                                              );
-                                          //if (*yytext=='\n') yyextra->lineNr++;
-                                          //addOutput(yyscanner,'\n');
-                                          if (YY_START == CiteLabel)
-                                          {
-                                            unput_string(yytext,yyleng);
-                                            BEGIN(Comment);
-                                          }
-                                          else
-                                          {
-                                            yyextra->sectionTitle+=yytext;
-                                            unput_string(yytext,yyleng);
-                                            BEGIN(SectionTitle);
-                                          }
-                                        }
+<CiteLabel,CiteLabelSection>{DOCNL}     { if (*yytext=='\n') yyextra->lineNr++;}
 <CiteLabel,CiteLabelSection>.           { // invalid character for cite label
                                            warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing cite label"
