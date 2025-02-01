@@ -193,7 +193,7 @@ static void writeBoxMemberList(TextStream &t,
   }
 }
 
-QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
+QCString DotNode::convertLabel(const QCString &l, bool htmlLike, bool tableLike)
 {
   QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
   QCString bAfter(">]),:;|");              // break after  character set
@@ -206,16 +206,30 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
   QCString br;
+  QCString br1;
+  if (tableLike)
+  {
+    result += "<<TABLE CELLBORDER=\"0\" BORDER=\"0\"><TR><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+  }
   if (htmlLike)
+  {
     br = "<BR ALIGN=\"LEFT\"/>";
+  }
+  else if (tableLike)
+  {
+    br1 = "</TD></TR>\n<TR><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+    br = br1 + "&nbsp;&nbsp;";
+  }
   else
+  {
     br = "\\l";
+  }
   while (idx < p.length())
   {
     char c = p[idx++];
     char cs[2] = { c, 0 };
     const char *replacement = cs;
-    if (htmlLike)
+    if (htmlLike || tableLike)
     {
       switch(c)
       {
@@ -246,7 +260,14 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
     // boxes and at the same time prevent ugly breaks
     if (c=='\n')
     {
-      result+=replacement;
+      if (tableLike)
+      {
+        result+=br1;
+      }
+      else
+      {
+        result+=replacement;
+      }
       foldLen = (3*foldLen+sinceLast+2)/4;
       sinceLast=1;
     }
@@ -283,6 +304,10 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   if (htmlLike)
   {
      result = result.stripWhiteSpace();
+  }
+  if (tableLike)
+  {
+    result += "</TD></TR>\n</TABLE>>";
   }
   return result;
 }
@@ -609,7 +634,7 @@ void DotNode::writeArrow(TextStream &t,
   t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0 -> Node1' is used
   if (!ei->label().isEmpty())
   {
-    t << ",label=\" " << convertLabel(ei->label()) << "\",fontcolor=\"grey\" ";
+    t << ",label=" << convertLabel(ei->label(),false,true) << " ,fontcolor=\"grey\" ";
   }
   if (Config_getBool(UML_LOOK) &&
     eProps->arrowStyleMap[ei->color()] &&
