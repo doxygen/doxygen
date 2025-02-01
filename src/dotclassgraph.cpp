@@ -243,7 +243,7 @@ static QCString joinLabels(const StringSet &ss)
     }
     if (maxLabels!=0 && count==maxLabels)
     {
-      label+="\n...";
+      label+="\n  ...";
     }
   }
   return label;

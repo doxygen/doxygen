@@ -175,7 +175,7 @@ static void writeBoxMemberList(TextStream &t,
               label+="()";
             }
           }
-          t << DotNode::convertLabel(label,true);
+          t << DotNode::convertLabel(label,DotNode::LabelStyle::List);
           t << br << tr_end;
           lineWritten = true;
           count++;
@@ -193,7 +193,7 @@ static void writeBoxMemberList(TextStream &t,
   }
 }
 
-QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
+QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
 {
   QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
   QCString bAfter(">]),:;|");              // break after  character set
@@ -206,16 +206,30 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
   QCString br;
-  if (htmlLike)
+  QCString br1;
+  if (style==LabelStyle::Table)
+  {
+    result += "<<TABLE CELLBORDER=\"0\" BORDER=\"0\"><TR><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+  }
+  if (style==LabelStyle::List)
+  {
     br = "<BR ALIGN=\"LEFT\"/>";
-  else
+  }
+  else if (style==LabelStyle::Table)
+  {
+    br1 = "</TD></TR>\n<TR><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+    br = br1 + "&nbsp;&nbsp;";
+  }
+  else // style==LabelStyle::Plain
+  {
     br = "\\l";
+  }
   while (idx < p.length())
   {
     char c = p[idx++];
     char cs[2] = { c, 0 };
     const char *replacement = cs;
-    if (htmlLike)
+    if (style!=LabelStyle::Plain)
     {
       switch(c)
       {
@@ -228,7 +242,7 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
         case '&':  replacement="&amp;";  break;
       }
     }
-    else
+    else // style==LabelStyle::Plain
     {
       switch(c)
       {
@@ -246,7 +260,14 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
     // boxes and at the same time prevent ugly breaks
     if (c=='\n')
     {
-      result+=replacement;
+      if (style==LabelStyle::Table)
+      {
+        result+=br1;
+      }
+      else
+      {
+        result+=replacement;
+      }
       foldLen = (3*foldLen+sinceLast+2)/4;
       sinceLast=1;
     }
@@ -280,9 +301,13 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
     charsLeft--;
     pc=c;
   }
-  if (htmlLike)
+  if (style==LabelStyle::List)
   {
      result = result.stripWhiteSpace();
+  }
+  if (style==LabelStyle::Table)
+  {
+    result += "</TD></TR>\n</TABLE>>";
   }
   return result;
 }
@@ -422,7 +447,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     constexpr auto empty_line = "<TR><TD COLSPAN=\"2\" CELLPADDING=\"1\" CELLSPACING=\"0\">&nbsp;</TD></TR>\n";
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
     t << "<<TABLE CELLBORDER=\"0\" BORDER=\"1\">";
-    t << hr_start << convertLabel(m_label,true) << hr_end;
+    t << hr_start << convertLabel(m_label,LabelStyle::List) << hr_end;
     auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
@@ -479,11 +504,11 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     else if (m_truncated == Truncated)
       t << "<<i>" << convertToXML(m_label) << "</i>>";
     else
-      t << '"' << convertLabel(m_label) << '"';
+      t << '"' << convertLabel(m_label,LabelStyle::Plain) << '"';
   }
   else // standard look
   {
-    t << "label=" << '"' << convertLabel(m_label) << '"';
+    t << "label=" << '"' << convertLabel(m_label,LabelStyle::Plain) << '"';
   }
 }
 
@@ -609,7 +634,7 @@ void DotNode::writeArrow(TextStream &t,
   t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0 -> Node1' is used
   if (!ei->label().isEmpty())
   {
-    t << ",label=\" " << convertLabel(ei->label()) << "\",fontcolor=\"grey\" ";
+    t << ",label=" << convertLabel(ei->label(),LabelStyle::Table) << " ,fontcolor=\"grey\" ";
   }
   if (Config_getBool(UML_LOOK) &&
     eProps->arrowStyleMap[ei->color()] &&
