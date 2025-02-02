@@ -121,6 +121,7 @@ struct pyscannerYY_state
   TextStream              decoratorCommentStr;
   int                     decoratorRound = 0;
   bool                    checkDupEntry = false;
+  bool                    firstPass = true;
 };
 
 //-----------------------------------------------------------------------------
@@ -1480,7 +1481,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
 
 
     ^{BB}               { // leading whitespace, compensate for """! / '''!
-                          if (yyextra->docBlockSpecial && yyleng >= yyextra->curIndent)
+                          if (yyextra->firstPass && yyextra->docBlockSpecial && yyleng >= yyextra->curIndent)
                             yyextra->docBlock += yytext + yyextra->curIndent;
                           else
                             yyextra->docBlock += yytext;
@@ -2164,6 +2165,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       yyextra->programStr = ce->program.str();
       yyextra->inputString = yyextra->programStr.data();
       yyextra->inputPosition = 0;
+      yyextra->firstPass     = false;
       pyscannerYYrestart( nullptr, yyscanner );
       if (ce->section.isCompound())
       {
@@ -2221,9 +2223,10 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   yyextra->current_root  = rt;
   yyextra->specialBlock  = false;
 
-  yyextra->yyLineNr= 1 ;
-  yyextra->fileName = fileName;
+  yyextra->yyLineNr      = 1 ;
+  yyextra->fileName      = fileName;
   yyextra->checkDupEntry = false;
+  yyextra->firstPass     = true;
   //setContext();
   msg("Parsing file {}...\n",yyextra->fileName);
 
