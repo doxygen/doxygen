@@ -22,7 +22,6 @@ def main():
 
     inp_cpp_file, out_cpp_file, corr_cpp_file, org_lex, gen_lex = sys.argv[1:]
 
-    quoted_inp_cpp_file = '"' + inp_cpp_file + '"'
     quoted_gen_lex      = '"' + gen_lex      + '"'
 
     corr_list = []
@@ -80,7 +79,7 @@ def main():
                                 rule_num = int(rule_cnt)
                                 rule_num -= get_line_correction(rule_num)
                                 out_list.append("{0:5d}".format(rule_num))
-                            out_file.write(','.join(out_list));
+                            out_file.write(','.join(out_list))
                             if re.search(r',$', line): # re-add trailing comma
                                 out_file.write(",")
                             out_file.write("\n")
