@@ -117,7 +117,7 @@ class ManDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str);
+    void filter(const QCString &str, const bool retainNewline = false);
 
     //--------------------------------------
     // state variables
