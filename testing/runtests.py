@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import argparse, glob, itertools, re, shutil, os, sys
+import argparse
+import glob
+import itertools
+import re
+import shutil
+import os
+import sys
 import subprocess
 import shlex
 
@@ -65,7 +71,7 @@ class Tester:
         self.test      = test
         self.update    = args.updateref
         self.config    = self.get_config()
-        if not 'objective' in self.config:
+        if 'objective' not in self.config:
             print("Test %s is missing the objective." % self.test)
             sys.exit(1)
         self.test_name = '[%s]: %s' % (self.test,self.config['objective'][0])
@@ -274,14 +280,9 @@ class Tester:
     # check the relevant files of a doxygen run with the reference material
     def perform_test(self,testmgr):
         if (sys.platform == 'win32'):
-            redir=' > nul:'
             separ='&'
         else:
-            redir=' 2> /dev/null'
             separ=';'
-
-        if (self.args.noredir):
-            redir=''
 
         failed_xml=False
         failed_html=False
@@ -511,7 +512,7 @@ class Tester:
             if outType:
                 exe_string += ' %s more temp' % (separ)
             latex_out = xpopen(exe_string,exe_string1,getStderr=outType)
-            os.chdir(cur_directory);
+            os.chdir(cur_directory)
             if (outType and latex_out.find("Error")!=-1):
                 msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
                 failed_latex=True
@@ -678,7 +679,7 @@ def main():
     # sanity check
     if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
         args.xml=True
-    if (not args.updateref is None) and (args.ids is None) and (args.all is None):
+    if (args.updateref is not None) and (args.ids is None) and (args.all is None):
         parser.error('--updateref requires either --id or --all')
 
     starting_directory = os.getcwd()

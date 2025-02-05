@@ -36,8 +36,8 @@ class Metrics:
     def print(self):
         numMethods    = self.numPubMethods    + self.numProMethods    + self.numPriMethods
         numDocMethods = self.numDocPubMethods + self.numDocProMethods + self.numDocPriMethods
-        print("Metrics:");
-        print("-----------------------------------");
+        print("Metrics:")
+        print("-----------------------------------")
         if self.numClasses>0:
             print("Classes:     {:=10} ({} documented)".format(self.numClasses,self.numDocClasses))
         if self.numStructs>0:
@@ -70,12 +70,12 @@ class Metrics:
             print("Variables:   {:=10} ({} documented)".format(self.numVariables,self.numDocVariables))
         if self.numParams>0:
             print("Params:      {:=10}".format(self.numParams))
-        print("-----------------------------------");
+        print("-----------------------------------")
         if self.numClasses>0:
             print("Avg. #methods/compound:  {:=10}".format(float(numMethods)/float(self.numClasses)))
         if numMethods>0:
             print("Avg. #params/method:     {:=10}".format(float(self.numParams)/float(numMethods)))
-        print("-----------------------------------");
+        print("-----------------------------------")
 
 
 def description_is_empty(description):
