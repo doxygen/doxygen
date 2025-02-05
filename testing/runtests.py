@@ -174,6 +174,12 @@ class Tester:
                 print('DOCBOOK_OUTPUT=%s/docbook' % self.test_out, file=f)
             else:
                 print('GENERATE_DOCBOOK=NO', file=f)
+            if (self.args.man):
+                print('GENERATE_MAN=YES', file=f)
+                print('MAN_LINKS=YES', file=f)
+                print('MAN_OUTPUT=%s/man' % self.test_out, file=f)
+            else:
+                print('GENERATE_MAN=NO', file=f)
             if (self.args.qhp):
                 print('GENERATE_QHP=YES', file=f)
             if (self.args.xhtml or self.args.qhp):
@@ -291,6 +297,7 @@ class Tester:
         failed_docbook=False
         failed_rtf=False
         failed_xmlxsd=False
+        failed_man=False
         msg = ()
         # look for files to check against the reference
         if self.args.xml or self.args.xmlxsd:
@@ -455,6 +462,10 @@ class Tester:
             elif not self.args.keep:
                 shutil.rmtree(docbook_output,ignore_errors=True)
 
+        if (self.args.man):
+            # For future work
+            pass
+
         if (self.args.xhtml or self.args.qhp):
             html_output='%s/html' % self.test_out
             if (sys.platform == 'win32'):
@@ -533,7 +544,7 @@ class Tester:
         if failed_warn:
             msg += (warnings,)
 
-        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
+        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd or failed_man:
             testmgr.ok(False,self.test_name,msg)
             return False
 
@@ -659,6 +670,8 @@ def main():
         'create qhp output and check with xmllint',action="store_true")
     parser.add_argument('--xmlxsd',help=
         'create xml output and check with xmllint against xsd',action="store_true")
+    parser.add_argument('--man',help=
+        'create man output',action="store_true")
     parser.add_argument('--pdf',help='create LaTeX output and create pdf from it',
         action="store_true")
     parser.add_argument('--subdirs',help='use the configuration parameter CREATE_SUBDIRS=YES',
@@ -677,7 +690,7 @@ def main():
     args = parser.parse_args(test_flags + sys.argv[1:])
 
     # sanity check
-    if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
+    if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd) and (not args.man)):
         args.xml=True
     if (args.updateref is not None) and (args.ids is None) and (args.all is None):
         parser.error('--updateref requires either --id or --all')
