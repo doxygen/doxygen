@@ -3999,7 +3999,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CommandType::CMD_EMPHASIS:
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE);
-              retval=parser()->handleStyleArgument(thisVariant(),children(),cmdName);
+      retval=parser()->handleStyleArgument(thisVariant(),children(),cmdName);
       children().append<DocStyleChange>(parser(),thisVariant(),parser()->context.nodeStack.size(),DocStyleChange::Italic,cmdName,FALSE);
       if (!retval.is(TokenRetval::TK_WORD)) children().append<DocWhiteSpace>(parser(),thisVariant()," ");
       break;
