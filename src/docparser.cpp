@@ -1455,6 +1455,16 @@ reparsetoken:
           case HtmlTagType::HTML_PRE:
             warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <pre> tag in heading");
             break;
+          case HtmlTagType::HTML_SPAN:
+            if (!context.token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Span,tokenName,&context.token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Span,tokenName);
+            }
+            break;
           case HtmlTagType::HTML_BOLD:
             if (!context.token->endTag)
             {
