@@ -950,22 +950,59 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
         context.token->name);
     return;
   }
+  tokenizer.pushState();
   tokenizer.setStateAnchor();
   tok=tokenizer.lex();
   if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
         "argument of command {}",context.token->name);
+    tokenizer.popState();
     return;
   }
   else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of {}",
         tok.to_string(),context.token->name);
+    tokenizer.popState();
     return;
   }
-  tokenizer.setStatePara();
+  tokenizer.popState();
   children.append<DocAnchor>(this,parent,context.token->name,FALSE);
+}
+
+void DocParser::handleCite(DocNodeVariant *parent,DocNodeList &children)
+{
+  AUTO_TRACE();
+  // get the argument of the cite command.
+  Token tok=tokenizer.lex();
+  if (!tok.is(TokenRetval::TK_WHITESPACE))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after '{}' command",
+      context.token->name);
+    return;
+  }
+  tokenizer.pushState();
+  tokenizer.setStateCite();
+  tok=tokenizer.lex();
+  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
+        "argument of command '{}'",context.token->name);
+    tokenizer.popState();
+    return;
+  }
+  else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
+  {
+    warn_doc_error(context.fileName,tokenizer.getLineNr(),"unexpected token {} as the argument of '{}'",
+        tok.to_string(),context.token->name);
+    tokenizer.popState();
+    return;
+  }
+  context.token->sectionId = context.token->name;
+  children.append<DocCite>(this,parent,context.token->name);
+
+  tokenizer.popState();
 }
 
 void DocParser::handlePrefix(DocNodeVariant *parent,DocNodeList &children)
@@ -1404,6 +1441,11 @@ reparsetoken:
         case CommandType::CMD_IANCHOR:
           {
             handleAnchor(parent,children);
+          }
+          break;
+        case CommandType::CMD_CITE:
+          {
+            handleCite(parent,children);
           }
           break;
         case CommandType::CMD_IPREFIX:
