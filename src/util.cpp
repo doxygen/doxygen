@@ -6402,7 +6402,7 @@ bool protectionLevelVisible(Protection prot)
 
 //---------------------------------------------------------------------------
 
-QCString stripIndentation(const QCString &s)
+QCString stripIndentation(const QCString &s,bool skipFirstLine)
 {
   if (s.isEmpty()) return s; // empty string -> we're done
 
@@ -6412,16 +6412,17 @@ QCString stripIndentation(const QCString &s)
   char c=0;
   int indent=0;
   int minIndent=1000000; // "infinite"
-  bool searchIndent=TRUE;
+  bool searchIndent=true;
   int tabSize=Config_getInt(TAB_SIZE);
+  bool skipFirst = skipFirstLine;
   while ((c=*p++))
   {
     if      (c=='\t') indent+=tabSize - (indent%tabSize);
-    else if (c=='\n') indent=0,searchIndent=TRUE;
+    else if (c=='\n') indent=0,searchIndent=true,skipFirst=false;
     else if (c==' ')  indent++;
-    else if (searchIndent)
+    else if (searchIndent && !skipFirst)
     {
-      searchIndent=FALSE;
+      searchIndent=false;
       if (indent<minIndent) minIndent=indent;
     }
   }
@@ -6433,14 +6434,16 @@ QCString stripIndentation(const QCString &s)
   TextStream result;
   p=s.data();
   indent=0;
+  skipFirst=skipFirstLine;
   while ((c=*p++))
   {
     if (c=='\n') // start of new line
     {
       indent=0;
       result << c;
+      skipFirst=false;
     }
-    else if (indent<minIndent) // skip until we reach minIndent
+    else if (indent<minIndent && !skipFirst) // skip until we reach minIndent
     {
       if (c=='\t')
       {

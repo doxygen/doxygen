@@ -433,7 +433,7 @@ QCString processMarkup(const QCString &s);
 
 bool protectionLevelVisible(Protection prot);
 
-QCString stripIndentation(const QCString &s);
+QCString stripIndentation(const QCString &s,bool skipFirstLine=false);
 void stripIndentationVerbatim(QCString &doc,const int indentationLevel);
 
 QCString getDotImageExtension();
