@@ -169,6 +169,8 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 
 void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE);
 
+bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl);
+
 QCString substituteClassNames(const QCString &s);
 
 struct SelectionBlock

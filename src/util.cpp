@@ -2193,6 +2193,39 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
 
 //---------------------------------------------------------------------------------------
 
+bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl)
+{
+  AUTO_TRACE("srcAl=%s dstAl=%s",argListToString(srcAl),argListToString(dstAl));
+  if (srcAl.size()!=dstAl.size()) // different number of template parameters -> overload
+  {
+    AUTO_TRACE_EXIT("different number of parameters");
+    return false;
+  }
+  auto isUnconstraintTemplate = [](const QCString &type)
+  {
+    return type=="typename" || type=="class" || type.startsWith("typename ") || type.startsWith("class ");
+  };
+  auto srcIt = srcAl.begin();
+  auto dstIt = dstAl.begin();
+  while (srcIt!=srcAl.end() && dstIt!=dstAl.end())
+  {
+    const Argument &srcA = *srcIt;
+    const Argument &dstA = *dstIt;
+    if ((!isUnconstraintTemplate(srcA.type) || !isUnconstraintTemplate(dstA.type)) && srcA.type!=dstA.type) // different constraints -> overload
+    {
+      AUTO_TRACE_EXIT("different constraints");
+      return false;
+    }
+    ++srcIt;
+    ++dstIt;
+  }
+  AUTO_TRACE_EXIT("same");
+  // no overload with respect to the template parameters
+  return true;
+}
+
+//---------------------------------------------------------------------------------------
+
 static void findMembersWithSpecificName(const MemberName *mn,
                                         const QCString &args,
                                         bool checkStatics,
