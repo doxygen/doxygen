@@ -401,7 +401,8 @@ void HtmlDocVisitor::operator()(const DocURL &u)
   else // web address
   {
     m_t << "<a href=\"";
-    m_t << u.url() << "\">";
+    filter(u.url());
+    m_t << "\">";
     filter(u.url());
     m_t << "</a>";
   }
