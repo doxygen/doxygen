@@ -1784,7 +1784,7 @@ void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
   }
   else
   {
-    m_t << "<a class=\"el\" ";
+    m_t << "<a class=\"RENAMED_el\" ";   // paule32: 16-02-2023 TODO !!!
   }
   m_t << "href=\"";
   QCString fn = f;
