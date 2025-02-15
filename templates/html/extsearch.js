@@ -54,10 +54,53 @@ const entityMap = {
   "/": '&#x2F;'
 };
 
+const iconMap = {
+  "source": "code",
+  "function": "data_object",
+  "slot": "location_chip",
+  "signal": "data_alert",
+  "variable": "variables",
+  "typedef": "numbers",
+  "enum": "data_array",
+  "enumvalue": "data_array",
+  "property": "list_alt",
+  "event": "overview",
+  "related": "read_more",
+  "friend": "contact_page",
+  "define": "numbers",
+  "file": "description",
+  "namespace": "clarify",
+  "concept": "quick_phrases",
+  "group": "full_coverage",
+  "package": "folder_zip",
+  "page": "article",
+  "dir": "folder",
+  "module": "grid_view",
+  "constants": "pin",
+  "library": "book_5",
+  "type": "type_specimen",
+  "union": "join",
+  "interface": "login",
+  "protocol category": "handshake",
+  "exception": "warning",
+  "class": "category",
+  "struct": "foundation",
+  "service": "settings_applications",
+  "singleton": "looks_one"
+};
+
+function getIcon(t) {
+  return iconMap[t] || "asterisk";
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"'/]/g, function (s) {
     return entityMap[s];
   });
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function searchFor(query,page,count) {
@@ -79,16 +122,16 @@ function searchFor(query,page,count) {
       $.each(data.items, function(i,item){
         let prefix = tagMap[item.tag];
         if (prefix) prefix+='/'; else prefix='';
-        r+='<tr class="searchresult">'+
-           '<td align="right">'+(data.first+i+1)+'.</td>'+
-           '<td>'+escapeHtml(item.type)+'&#160;'+
-                '<a href="'+escapeHtml(prefix+item.url)+
+
+        r+='<tr class="searchresult" title="'+capitalize(escapeHtml(item.type))+'">'+
+           '<td align="right"><span class="material-symbols-outlined">'+getIcon(item.type)+'</span></td>'+
+           '<td><a href="'+escapeHtml(prefix+item.url)+
                 '">'+escapeHtml(item.name)+'</a>';
         if (item.type=="source") {
           const l=item.url.match(/[1-9][0-9]*$/);
           if (l) r+=' at line '+parseInt(l[0]);
         }
-        r+='</td>';
+        
         for (let i=0;i<item.fragments.length;i++) {
           r+='<tr><td></td><td>'+item.fragments[i]+'</td></tr>';
         }
