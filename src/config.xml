@@ -3802,6 +3802,18 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
+    <option type='list' id='DOT_GRAPH_ATTR' format='string' depends='HAVE_DOT'
+      defval='bgcolor=\"transparent\"'>
+      <docs>
+<![CDATA[
+ \c DOT_GRAPH_ATTR is common attributes for graphs.
+ For details please see
+ <a href="https://graphviz.org/doc/info/attrs.html">Node, Edge and Graph Attributes specification</a>.
+ <br>The default value is:<br>
+]]>
+      </docs>
+      <value name='bgcolor=\"transparent\"'/>
+    </option>
     <option type='string' id='DOT_COMMON_ATTR' format='string' depends='HAVE_DOT'
       defval='fontname=Helvetica,fontsize=10'>
       <docs>
