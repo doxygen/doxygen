@@ -5510,6 +5510,11 @@ static void addListReferences()
 static void generateXRefPages()
 {
   AUTO_TRACE();
+  std::stable_sort(RefListManager::instance().begin(),
+            RefListManager::instance().end(),
+            [](const RefListManager::Ptr& left,
+            const RefListManager::Ptr& right)
+            { return qstricmp_sort(left->pageTitle(),right->pageTitle()) < 0; });
   for (RefListManager::Ptr &rl : RefListManager::instance())
   {
     rl->generatePage();
