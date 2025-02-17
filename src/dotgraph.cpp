@@ -273,7 +273,7 @@ void DotGraph::generateCode(TextStream &t)
   }
 }
 
-void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
+void DotGraph::writeGraphHeader(TextStream &t,const QCString &title, const QCString& rankdir)
 {
   t << "digraph ";
   if (title.isEmpty())
@@ -296,6 +296,10 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
   if (!c.isEmpty()) c += ",";
   t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
   t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
+  if (!rankdir.isEmpty())
+  {
+    t << "  rankdir=\"" << rankdir << "\";\n";
+  }
 }
 
 void DotGraph::writeGraphFooter(TextStream &t)
@@ -314,11 +318,7 @@ void DotGraph::computeGraph(DotNode *root,
 {
   //printf("computeMd5Signature\n");
   TextStream md5stream;
-  writeGraphHeader(md5stream,title);
-  if (!rank.isEmpty())
-  {
-    md5stream << "  rankdir=\"" << rank << "\";\n";
-  }
+  writeGraphHeader(md5stream,title,rank);
   root->clearWriteFlag();
   root->write(md5stream, gt, format, gt!=GraphType::CallGraph && gt!=GraphType::Dependency, TRUE, backArrows);
   if (renderParents)

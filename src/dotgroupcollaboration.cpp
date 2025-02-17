@@ -333,6 +333,5 @@ int DotGroupCollaboration::numNodes() const
 
 void DotGroupCollaboration::writeGraphHeader(TextStream &t,const QCString &title) const
 {
-  DotGraph::writeGraphHeader(t, title);
-  t << "  rankdir=LR;\n";
+  DotGraph::writeGraphHeader(t, title, "LR");
 }

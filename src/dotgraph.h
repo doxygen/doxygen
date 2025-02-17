@@ -56,7 +56,9 @@ class DotGraph
                         int graphId=-1
                        );
 
-    static void writeGraphHeader(TextStream& t, const QCString& title = QCString());
+    static void writeGraphHeader(TextStream& t,
+                                 const QCString& title = QCString(),
+                                 const QCString& rankdir = QCString());
     static void writeGraphFooter(TextStream& t);
     static void computeGraph(DotNode* root,
                              GraphType gt,
