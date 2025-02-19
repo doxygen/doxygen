@@ -342,8 +342,6 @@ const int maxItemsBeforeQuickIndex = MAX_ITEMS_BEFORE_QUICK_INDEX;
 
 //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-
 static void startQuickIndexList(OutputList &ol,bool letterTabs=FALSE)
 {
   if (letterTabs)
@@ -403,10 +401,13 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
                const QCString &altSidebarName, int hierarchyLevel)
 {
-  bool disableIndex = Config_getBool(DISABLE_INDEX);
+  bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
   ol.startFile(name,manName,title,hierarchyLevel);
   ol.startQuickIndices();
-  if (!disableIndex)
+  if (!disableIndex && !quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(hli,name);
   }
@@ -415,6 +416,10 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
     ol.endQuickIndices();
   }
   ol.writeSplitBar(!altSidebarName.isEmpty() ? altSidebarName : name);
+  if (quickLinksAfterSplitbar)
+  {
+    ol.writeQuickLinks(hli,name);
+  }
   ol.writeSearchInfo();
 }
 
@@ -3100,6 +3105,9 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
   if (index.numDocumentedClassMembers(hl)==0) return;
 
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
 
   bool multiPageIndex=FALSE;
   if (index.numDocumentedClassMembers(hl)>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
@@ -3139,11 +3147,10 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
         Doxygen::indexList->addContentsItem(FALSE,cs,QCString(),fileName,QCString(),FALSE,TRUE);
       }
     }
+
     bool quickIndex = index.numDocumentedClassMembers(hl)>maxItemsBeforeQuickIndex;
 
-    ol.startFile(fileName+extension,QCString(),title);
-    ol.startQuickIndices();
-    if (!disableIndex)
+    auto writeQuickLinks = [&,cap_letter=letter]()
     {
       ol.writeQuickLinks(HighlightedItem::Functions,QCString());
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
@@ -3174,13 +3181,24 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
         // quick alphabetical index
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isClassIndexLetterUsed(hl),letter,
+          writeQuickMemberIndex(ol,index.isClassIndexLetterUsed(hl),cap_letter,
               getCmhlInfo(hl)->fname,multiPageIndex);
         }
       }
+    };
+
+    ol.startFile(fileName+extension,QCString(),title);
+    ol.startQuickIndices();
+    if (!disableIndex && !quickLinksAfterSplitbar)
+    {
+      writeQuickLinks();
     }
     ol.endQuickIndices();
     ol.writeSplitBar(fileName);
+    if (quickLinksAfterSplitbar)
+    {
+      writeQuickLinks();
+    }
     ol.writeSearchInfo();
 
     ol.startContents();
@@ -3268,6 +3286,9 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
   if (index.numDocumentedFileMembers(hl)==0) return;
 
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
 
   bool multiPageIndex=FALSE;
   if (Index::instance().numDocumentedFileMembers(hl)>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
@@ -3306,11 +3327,10 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
         Doxygen::indexList->addContentsItem(FALSE,cs,QCString(),fileName,QCString(),FALSE,TRUE);
       }
     }
+
     bool quickIndex = index.numDocumentedFileMembers(hl)>maxItemsBeforeQuickIndex;
 
-    ol.startFile(fileName+extension,QCString(),title);
-    ol.startQuickIndices();
-    if (!disableIndex)
+    auto writeQuickLinks = [&,cap_letter=letter]()
     {
       ol.writeQuickLinks(HighlightedItem::Globals,QCString());
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
@@ -3339,13 +3359,24 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isFileIndexLetterUsed(hl),letter,
+          writeQuickMemberIndex(ol,index.isFileIndexLetterUsed(hl),cap_letter,
               getFmhlInfo(hl)->fname,multiPageIndex);
         }
       }
+    };
+
+    ol.startFile(fileName+extension,QCString(),title);
+    ol.startQuickIndices();
+    if (!disableIndex && !quickLinksAfterSplitbar)
+    {
+      writeQuickLinks();
     }
     ol.endQuickIndices();
     ol.writeSplitBar(fileName);
+    if (quickLinksAfterSplitbar)
+    {
+      writeQuickLinks();
+    }
     ol.writeSearchInfo();
 
     ol.startContents();
@@ -3431,7 +3462,9 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
   if (index.numDocumentedNamespaceMembers(hl)==0) return;
 
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
-
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
 
   bool multiPageIndex=FALSE;
   if (index.numDocumentedNamespaceMembers(hl)>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
@@ -3470,11 +3503,10 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
         Doxygen::indexList->addContentsItem(FALSE,cs,QCString(),fileName,QCString(),FALSE,TRUE);
       }
     }
+
     bool quickIndex = index.numDocumentedNamespaceMembers(hl)>maxItemsBeforeQuickIndex;
 
-    ol.startFile(fileName+extension,QCString(),title);
-    ol.startQuickIndices();
-    if (!disableIndex)
+    auto writeQuickLinks = [&,cap_letter=letter]()
     {
       ol.writeQuickLinks(HighlightedItem::NamespaceMembers,QCString());
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
@@ -3503,13 +3535,24 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isNamespaceIndexLetterUsed(hl),letter,
+          writeQuickMemberIndex(ol,index.isNamespaceIndexLetterUsed(hl),cap_letter,
               getNmhlInfo(hl)->fname,multiPageIndex);
         }
       }
+    };
+
+    ol.startFile(fileName+extension,QCString(),title);
+    ol.startQuickIndices();
+    if (!disableIndex && !quickLinksAfterSplitbar)
+    {
+      writeQuickLinks();
     }
     ol.endQuickIndices();
     ol.writeSplitBar(fileName);
+    if (quickLinksAfterSplitbar)
+    {
+      writeQuickLinks();
+    }
     ol.writeSearchInfo();
 
     ol.startContents();
@@ -3588,7 +3631,9 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
   if (index.numDocumentedModuleMembers(hl)==0) return;
 
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
-
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
 
   bool multiPageIndex=FALSE;
   if (index.numDocumentedModuleMembers(hl)>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
@@ -3627,11 +3672,10 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
         Doxygen::indexList->addContentsItem(FALSE,cs,QCString(),fileName,QCString(),FALSE,TRUE);
       }
     }
+
     bool quickIndex = index.numDocumentedModuleMembers(hl)>maxItemsBeforeQuickIndex;
 
-    ol.startFile(fileName+extension,QCString(),title);
-    ol.startQuickIndices();
-    if (!disableIndex)
+    auto writeQuickLinks = [&,cap_letter=letter]()
     {
       ol.writeQuickLinks(HighlightedItem::ModuleMembers,QCString());
       if (!Config_getBool(HTML_DYNAMIC_MENUS))
@@ -3660,13 +3704,24 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isModuleIndexLetterUsed(hl),letter,
+          writeQuickMemberIndex(ol,index.isModuleIndexLetterUsed(hl),cap_letter,
               getMmhlInfo(hl)->fname,multiPageIndex);
         }
       }
+    };
+
+    ol.startFile(fileName+extension,QCString(),title);
+    ol.startQuickIndices();
+    if (!disableIndex && !quickLinksAfterSplitbar)
+    {
+      writeQuickLinks();
     }
     ol.endQuickIndices();
     ol.writeSplitBar(fileName);
+    if (quickLinksAfterSplitbar)
+    {
+      writeQuickLinks();
+    }
     ol.writeSearchInfo();
 
     ol.startContents();
@@ -4706,9 +4761,12 @@ static void writeUserGroupStubPage(OutputList &ol,LayoutNavEntry *lne)
 
 static void writeIndex(OutputList &ol)
 {
-  bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-  bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-  QCString projectName = Config_getString(PROJECT_NAME);
+  bool fortranOpt       = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+  bool vhdlOpt          = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  QCString projectName  = Config_getString(PROJECT_NAME);
   // save old generator state
   ol.pushGeneratorState();
 
@@ -4762,13 +4820,18 @@ static void writeIndex(OutputList &ol)
     }
   }
 
+  bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
   ol.startQuickIndices();
-  if (!Config_getBool(DISABLE_INDEX))
+  if (!disableIndex && !quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(HighlightedItem::Main,QCString());
   }
   ol.endQuickIndices();
   ol.writeSplitBar(indexName);
+  if (quickLinksAfterSplitbar)
+  {
+    ol.writeQuickLinks(HighlightedItem::Main,QCString());
+  }
   ol.writeSearchInfo();
   bool headerWritten=FALSE;
   if (Doxygen::mainPage)
