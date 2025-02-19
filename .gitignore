@@ -27,3 +27,4 @@ cmake-build-debug-event-trace/
 
 /examples/html/*
 /examples/latex/*
+*.bak

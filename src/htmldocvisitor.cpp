@@ -401,8 +401,7 @@ void HtmlDocVisitor::operator()(const DocURL &u)
   else // web address
   {
     m_t << "<a href=\"";
-    filter(u.url());
-    m_t << "\">";
+    m_t << u.url() << "\">";
     filter(u.url());
     m_t << "</a>";
   }
@@ -1613,7 +1612,7 @@ void HtmlDocVisitor::operator()(const DocHRef &href)
   else
   {
     QCString url = correctURL(href.url(),href.relPath());
-    m_t << "<a href=\"" << convertToHtml(url)  << "\""
+    m_t << "iiiiiii<a href=\"" << convertToHtml(url)  << "\""
         << href.attribs().toString() << ">";
   }
   visitChildren(href);
@@ -2179,12 +2178,12 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   //printf("HtmlDocVisitor: file=%s anchor=%s\n",qPrint(file),qPrint(anchor));
   if (!ref.isEmpty()) // link to entity imported via tag file
   {
-    m_t << "<a class=\"elRef\" ";
+    m_t << "<a class=\"el\" ";
     m_t << externalLinkTarget();
   }
   else // local link
   {
-    m_t << "<a class=\"el\" ";
+    m_t << "<a class=\"UUUel\" ";
   }
   m_t << "href=\"";
   QCString fn = file;

@@ -2201,7 +2201,6 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
 
 //----------------------------------------------------------------------------
 
-
 static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *fileBuf,const std::shared_ptr<Entry> &rt)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;

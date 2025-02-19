@@ -57,7 +57,10 @@ enum class SrcLangExt
   Markdown = 0x10000,
   SQL      = 0x20000,
   Slice    = 0x40000,
-  Lex      = 0x80000
+  Lex      = 0x80000,
+  
+  Pascal   = 0x100000,
+  dBase    = 0x200000,
 };
 
 /** Grouping info */
