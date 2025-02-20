@@ -3070,7 +3070,7 @@ void FlowChart::createSVG()
 void FlowChart::startDot(TextStream &t)
 {
   t << " digraph G { \n";
-  t << "rankdir=TB \n";
+  t << "rankdir=\"" << Config_getString(DOT_RANKDIR_VHDL) << "\" \n";
   t << "concentrate=true\n";
   t << "stylesheet=\"doxygen.css\"\n";
 }
