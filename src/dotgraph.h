@@ -40,6 +40,8 @@ class DotGraph
     virtual ~DotGraph() = default;
     NON_COPYABLE(DotGraph)
 
+    static void writeGraphHeader(TextStream& t, const QCString& title, const QCString& rankdir);
+    static void writeGraphFooter(TextStream& t);
   protected:
     /** returns the node number. */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
@@ -56,8 +58,6 @@ class DotGraph
                         int graphId=-1
                        );
 
-    static void writeGraphHeader(TextStream& t, const QCString& title, const QCString& rankdir);
-    static void writeGraphFooter(TextStream& t);
     static void computeGraph(DotNode* root,
                              GraphType gt,
                              GraphOutputFormat format,

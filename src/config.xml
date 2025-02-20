@@ -3916,7 +3916,7 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
  \c DOT_RANKDIR_VHDL specifies the rankdir used by dot for VHDL flow charts.
  For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
  and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
- An empty string will use graphviz's
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
  default if no rankdir was specified.
 ]]>
       </docs>
