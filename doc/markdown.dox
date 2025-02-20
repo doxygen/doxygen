@@ -162,6 +162,7 @@ seen as a level 2 header (see \ref md_headers).
 
 To emphasize a text fragment you start and end the fragment with an underscore or star.
 Using two stars or underscores will produce strong emphasis.
+Three stars or underscores will combine the emphasis from the previous two options.
 
 Examples:
 
@@ -172,6 +173,10 @@ Examples:
 *    **double asterisks**
 *
 *    __double underscores__
+*
+*    ***triple asterisks***
+*
+*    ___triple underscores___
 
 See section \ref mddox_emph_spans for more info how Doxygen handles
 emphasis / strikethrough spans slightly different than standard / Markdown GitHub Flavored Markdown.
