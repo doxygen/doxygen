@@ -37,7 +37,7 @@ QCString DotGfxHierarchyTable::getBaseName() const
 void DotGfxHierarchyTable::computeTheGraph()
 {
   TextStream md5stream;
-  writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy(),"LR");
+  writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy(),Config_getString(DOT_RANKDIR_HIERARCHY));
   for (auto node : m_rootNodes)
   {
     if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
