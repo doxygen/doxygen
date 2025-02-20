@@ -24,30 +24,22 @@
  */
 
 function initResizable(treeview) {
-  let sidenav,mainnav,navtree,content,header,footer,barWidth=6;
+  let sidenav,navtree,content,header,footer,barWidth=6;
   const RESIZE_COOKIE_NAME = '$PROJECTID'+'width';
 
   function resizeWidth() {
     const sidenavWidth = $(sidenav).outerWidth();
-    const widthStr = parseInt(sidenavWidth)+"px";
-    content.css({marginLeft:widthStr});
+    content.css({marginLeft:parseInt(sidenavWidth)+"px"});
     if (typeof page_layout!=='undefined' && page_layout==1) {
-      footer.css({marginLeft:widthStr});
-      if (mainnav) {
-        mainnav.css({marginLeft:widthStr});
-      }
+      footer.css({marginLeft:parseInt(sidenavWidth)+"px"});
     }
     Cookie.writeSetting(RESIZE_COOKIE_NAME,sidenavWidth-barWidth);
   }
 
   function restoreWidth(navWidth) {
-    const widthStr=parseInt(navWidth)+barWidth+"px";
-    content.css({marginLeft:widthStr});
+    content.css({marginLeft:parseInt(navWidth)+barWidth+"px"});
     if (typeof page_layout!=='undefined' && page_layout==1) {
-      footer.css({marginLeft:widthStr});
-      if (mainnav) {
-        mainnav.css({marginLeft:widthStr});
-      }
+      footer.css({marginLeft:parseInt(navWidth)+barWidth+"px"});
     }
     sidenav.css({width:navWidth + "px"});
   }
@@ -68,9 +60,6 @@ function initResizable(treeview) {
         contentHeight = windowHeight - footerHeight - 1;
         navtreeHeight = windowHeight - headerHeight - 1;
         sideNavHeight = windowHeight - 1;
-        if (mainnav) {
-          contentHeight -= mainnav.outerHeight();
-        }
       }
       navtree.css({height:navtreeHeight + "px"});
       sidenav.css({height:sideNavHeight + "px"});
@@ -102,9 +91,6 @@ function initResizable(treeview) {
   content = $("#doc-content");
   footer  = $("#nav-path");
   sidenav = $("#side-nav");
-  if (document.getElementById('main-nav')) {
-    mainnav = $("#main-nav");
-  }
   if (treeview) {
     navtree = $("#nav-tree");
     $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(); } });

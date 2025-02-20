@@ -190,7 +190,7 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 %x SnippetDocTag
 %x IncludeFile
 
-CMD [\\@]
+CMD ("\\"|"@")
   //- start: NUMBER -------------------------------------------------------------------------
   // Note same defines in code.l: keep in sync
 DECIMAL_INTEGER  [1-9][0-9']*[0-9]?[uU]?[lL]?[lL]?
