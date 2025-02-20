@@ -19,7 +19,7 @@ else()
     find_package(Doxygen)
 endif()
 
-configure_file(${CMAKE_SOURCE_DIR}/doc_internal/Doxyfile.in "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
 
 set(DOC_FILES
         language.tpl
