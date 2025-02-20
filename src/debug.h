@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -69,8 +69,6 @@ class Debug
                      Lex_vhdlcode      = 0x0000'0200'0000'0000ULL,
                      Lex_xml           = 0x0000'0400'0000'0000ULL,
                      Lex_xmlcode       = 0x0000'0800'0000'0000ULL,
-                     
-                     
                      Lex_pascode       = 0x0000'1000'0000'0000ULL,
                      Lex_passcanner    = 0x0000'2000'0000'0000ULL,
                      Lex_dbcode        = 0x0000'4000'0000'0000ULL,

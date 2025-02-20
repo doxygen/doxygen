@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -1612,7 +1612,7 @@ void HtmlDocVisitor::operator()(const DocHRef &href)
   else
   {
     QCString url = correctURL(href.url(),href.relPath());
-    m_t << "iiiiiii<a href=\"" << convertToHtml(url)  << "\""
+    m_t << "<a href=\"" << convertToHtml(url)  << "\""
         << href.attribs().toString() << ">";
   }
   visitChildren(href);
@@ -2183,7 +2183,7 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   }
   else // local link
   {
-    m_t << "<a class=\"UUUel\" ";
+    m_t << "<a class=\"el\" ";
   }
   m_t << "href=\"";
   QCString fn = file;

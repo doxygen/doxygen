@@ -8362,11 +8362,9 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
                 auto lang     = bmd->getLanguage();
                 auto compType = mbcd->compoundType();
                 if (bmd->virtualness()!=Specifier::Normal ||
-                
                     lang     == SrcLangExt::Python        ||
                     lang     == SrcLangExt::Java          ||
                     lang     == SrcLangExt::PHP           ||
-                    
                     compType == ClassDef::Interface       ||
                     compType == ClassDef::Protocol)
                 {
@@ -11330,13 +11328,10 @@ void initDoxygen()
                                                          make_parser_factory<CCodeParser>());
   Doxygen::parserManager->registerParser("python",       make_parser_factory<PythonOutlineParser>(),
                                                          make_parser_factory<PythonCodeParser>());
-                                                         
   Doxygen::parserManager->registerParser("pascal",       make_parser_factory<PascalOutlineParser>(),
                                                          make_parser_factory<PascalCodeParser>());
-
   Doxygen::parserManager->registerParser("dbase",        make_parser_factory<dBaseOutlineParser>(),
                                                          make_parser_factory<dBaseCodeParser>());
-
   Doxygen::parserManager->registerParser("fortran",      make_parser_factory<FortranOutlineParser>(),
                                                          make_parser_factory<FortranCodeParser>());
   Doxygen::parserManager->registerParser("fortranfree",  make_parser_factory<FortranOutlineParserFree>(),

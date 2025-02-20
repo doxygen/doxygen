@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -12,7 +12,13 @@
  * input used in their production; they are not affected by this license.
  *
  */
-
+/*  This code is based on the work done by the MoxyPyDoxy team
+ *  (Linda Leong, Mike Rivera, Kim Truong, and Gabriel Estrada)
+ *  in Spring 2005 as part of CS 179E: Compiler Design Project
+ *  at the University of California, Riverside; the course was
+ *  taught by Peter H. Froehlich <phf@acm.org>.
+ */
+ 
 %option never-interactive
 %option prefix="dbscannerYY"
 %option reentrant

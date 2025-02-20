@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -12,7 +12,13 @@
  * input used in their production; they are not affected by this license.
  *
  */
-
+/*  This code is based on the work done by the MoxyPyDoxy team
+ *  (Linda Leong, Mike Rivera, Kim Truong, and Gabriel Estrada)
+ *  in Spring 2005 as part of CS 179E: Compiler Design Project
+ *  at the University of California, Riverside; the course was
+ *  taught by Peter H. Froehlich <phf@acm.org>.
+ */
+ 
 %option never-interactive
 %option prefix="pascodeYY"
 %option reentrant
@@ -54,9 +60,7 @@ typedef yyguts_t *yyscan_t;
 #include "symbolresolver.h"
 #include "debug.h"
 
-// Toggle for some debugging info
-//#define DBG_CTX(x) fprintf x
-#define DBG_CTX(x) do { } while(0)
+# define DBG_CTX(x) fprintf x
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -151,15 +155,18 @@ IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
 
 %%
 
+<Body>\n    {
+    yyextra->yyLineNr += 1;
+    std::cerr << "[3] newline" <<
+    std::endl;
+}
 <Body>{WS}* {
-    std::cout << "whitespace" <<
+    std::cerr << "[1] whitespace" <<
     std::endl;
 }
 <Body>{WS}{IDENTIFIER} {
-    std::cout << "white with ident: " << yytext <<
+    std::cerr << "[2] white with ident: " << yytext <<
     std::endl;
-    
-  codify(yyscanner,yytext);
 }
 %%
 
@@ -378,6 +385,9 @@ void PascalCodeParser::resetCodeParserState()
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->codeClassMap.clear();
   
+  std::cerr << "parse file {" << yyextra->fileName << "}..." <<
+  std::endl;
+
   BEGIN( Body );
 }
 

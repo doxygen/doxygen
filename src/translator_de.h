@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -141,7 +141,7 @@
 //    - Updated for 1.10.0
 //
 //   2025/02/19 Jens Kallup (kallup-dev@web.de)
-//    - Updated for 1.13.0
+//    - Updated for 1.13.2
 
 //   Todo:
 //    - see FIXME
@@ -149,7 +149,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_13_0
+class TranslatorGerman : public Translator
 {
   public:
 

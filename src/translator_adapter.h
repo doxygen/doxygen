@@ -38,15 +38,6 @@ class TranslatorAdapterBase : public Translator
     virtual QCString updateNeededMessage() override = 0;
 };
 
-class TranslatorAdapter_1_13_0 : public TranslatorAdapterBase
-{
-  public:
-    QCString updateNeededMessage() override
-    { return createUpdateNeededMessage(idLanguage(),"release 1.13.0"); }
-    QCString trImportant() override
-    { return english.trImportant(); }
-};
-
 class TranslatorAdapter_1_11_0 : public TranslatorAdapterBase
 {
   public:
