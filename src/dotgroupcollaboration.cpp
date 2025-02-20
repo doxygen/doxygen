@@ -216,7 +216,7 @@ QCString DotGroupCollaboration::getBaseName() const
 void DotGroupCollaboration::computeTheGraph()
 {
   TextStream md5stream;
-  writeGraphHeader(md5stream,m_rootNode->label());
+  writeGraphHeader(md5stream,m_rootNode->label(),Config_getString(DOT_RANKDIR_GROUP_COL));
 
   // clean write flags
   for (const auto &[name,node] : m_usedNodes)
@@ -329,9 +329,4 @@ bool DotGroupCollaboration::isTooBig() const
 int DotGroupCollaboration::numNodes() const
 {
   return static_cast<int>(m_usedNodes.size());
-}
-
-void DotGroupCollaboration::writeGraphHeader(TextStream &t,const QCString &title) const
-{
-  DotGraph::writeGraphHeader(t, title, "LR");
 }

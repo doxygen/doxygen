@@ -3814,6 +3814,22 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
       </docs>
       <value name='bgcolor=\"transparent\"'/>
     </option>
+    <option type='string' id='DOT_RANKDIR_GROUP_COL' format='string' depends='HAVE_DOT' defval='LR'>
+      <docs>
+<![CDATA[
+ \c DOT_RANKDIR_GROUP_COL specifies the rankdir used by dot for group collaboration graphs.
+ For details see <a href="https://graphviz.org/docs/attrs/rankdir/">rankdir attribute</a>
+ and <a href="https://graphviz.org/docs/attr-types/rankdir/">rankdir values</a>.
+ An empty string will use the rankdir specified in \c DOT_GRAPH_ATTR or graphviz's
+ default if no rankdir was specified.
+]]>
+      </docs>
+      <value name=''/>
+      <value name='TB'/>
+      <value name='LR'/>
+      <value name='BT'/>
+      <value name='RL'/>
+    </option>
     <option type='string' id='DOT_RANKDIR_INCLUDE' format='string' depends='HAVE_DOT' defval=''>
       <docs>
 <![CDATA[
