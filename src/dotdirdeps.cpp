@@ -418,7 +418,7 @@ void DotDirDeps::computeTheGraph()
 {
   // compute md5 checksum of the graph were are about to generate
   TextStream md5stream;
-  writeGraphHeader(md5stream, m_dir->displayName());
+  writeGraphHeader(md5stream, m_dir->displayName(), Config_getString(DOT_RANKDIR_DIR_DEP));
   md5stream << "  compound=true\n";
   writeDotDirDepGraph(md5stream,m_dir,m_linkRelations);
   writeGraphFooter(md5stream);
