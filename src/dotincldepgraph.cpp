@@ -165,7 +165,7 @@ QCString DotInclDepGraph::getBaseName() const
 
 void DotInclDepGraph::computeTheGraph()
 {
-  computeGraph(m_startNode, GraphType::Dependency, m_graphFormat, "", FALSE,
+  computeGraph(m_startNode, GraphType::Dependency, m_graphFormat, Config_getString(DOT_RANKDIR_INCLUDE), FALSE,
                m_inverse, m_startNode->label(), m_theGraph);
 }
 
