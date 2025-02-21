@@ -125,7 +125,22 @@ struct passcannerYY_state
 //-----------------------------------------------------------------------------
 [[maybe_unused]] static const char *stateToString(int state);
 
-static int yyread(yyscan_t yyscanner,char *buf,int max_size);
+/* ----------------------------------------------------------------- */
+/* paule32 pascal:                                                   */
+/* ----------------------------------------------------------------- */
+static bool have_errors = false;
+static int  lineNumber  = 1;
+
+static int  yyread(yyscan_t yyscanner,char *buf,int max_size);
+static int  yy_state = 0;
+
+static void yy_Error(std::string msg="");  // display error text on console
+static void yy_Info (std::string msg="");  // display information text on console
+
+static bool yy_check_error(bool debug=true);
+
+static int inline yy_module_ident();
+static int inline yy_module_comment();
 
 //-----------------------------------------------------------------------------
 /* ----------------------------------------------------------------- */
@@ -144,16 +159,11 @@ PAS2CS              \{
 PAS2CE              \}
 PAS3CC              "//"
 
-CDEFINE             "define"
-CIF                 "if"
-CELSE               "else"
-CENDIF              "endif"
-
 WS                  [ \t]
 NEWLINE             \n
 
 DIGIT               [0-9]
-LETTER              [A-Za-z\x80-\xFF]
+LETTER              [A-Za-z]
 IDENTIFIER          ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
 
 ASSIGN              \:\=
@@ -257,7 +267,6 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 
 %x COMMENT
 
-%x Body
 %x BodyModuleIdent
 %x BodyModuleIdentEnd
 
@@ -266,93 +275,122 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 
 %%
 
-{NEWLINE}                           {   yyextra->yyLineNr += 1; }
-
-<COMMENT>[^*]*                      ;   // all chars, except: *
-<COMMENT>"*"[^)]                    ;   // * next with no )
-<COMMENT>"*)"                       {
-    BEGIN(Body);                        // switch to mode: INITIAL
-}
-<COMMENT>{NEWLINE}                  {
-    yyextra->yyLineNr += 1;
-}
-<COMMENT><<EOF>>                    {
-    std::cerr << "comment not terminated." <<
-    std::endl;
-    exit(1);
-}
-
-<Body>{PROGRAM}|{LIBRARY}|{UNIT}    {
+<INITIAL>[ \t]*                     {   have_errors = false;                BEGIN(INITIAL); }
+<INITIAL>\n*                        {   have_errors = false; lineNumber++;  BEGIN(INITIAL); }
+<INITIAL>"(*"                       {   have_errors = true ;                BEGIN(COMMENT); }
+<INITIAL>{PROGRAM}|{LIBRARY}|{UNIT} {
     std::string ident = std::string(yytext);
     if (ident == std::string("program")
     ||  ident == std::string("library")
     ||  ident == std::string("unit")) {
         std::cerr
             << "line: "
-            << yyextra->yyLineNr
+            << lineNumber
             << ": is a: "
-            << ident
-            << ": ";
+            << ident;
+        have_errors = true;
         BEGIN(BodyModuleIdent);
     }   else {
-        std::cerr
-            << "line: "
-            << yyextra->yyLineNr
-            << ": error: not a comform pascal syntax."
-            <<
-        std::endl;
-        exit(1);
+        yy_Error(std::string("not a comform pascal syntax."));
     }
 }
-<Body>"(*"                          {
-    BEGIN(COMMENT); // switch to mode: COMMENT
-}
-<Body>\n                            { yyextra->yyLineNr += 1; }
-<Body>.                             {
-    std::cerr
-        << "line: "
-        << yyextra->yyLineNr
-        << ": unknown character found."
-        <<
-    std::endl;
-    exit(1);
-}
-<Body><<EOF>>                       {
-    std::cerr
-        << "expected: PROGRAM, LIBRARY or UNIT"
-        << "file reached end."
-        <<
-    std::endl;
-    exit(1);
-}
-<BodyModuleIdent>{IDENTIFIER}       {
-    auto buffer = new char[255];
-    strcpy(buffer, yytext);
-    
-    std::cerr << buffer << std::endl;
-    delete [] buffer;
-    
-    BEGIN(BodyModuleIdentEnd);
-}
-<BodyModuleIdent>{WS}*              ;
-<BodyModuleIdent>{NEWLINE}          { yyextra->yyLineNr += 1; }
-<BodyModuleIdent><<EOF>>            {
-    std::cerr << "error: module missing Semicolon (;) at end." <<
-    std::endl;
-    exit(1);
-}
-<BodyModuleIdentEnd>{SEMICOLON}     { BEGIN(INITIAL); }
-<BodyModuleIdentEnd>{WS}*           ;
-<BodyModuleIdentEnd>{NEWLINE}       { yyextra->yyLineNr += 1; }
-<BodyModuleIdentEnd><<EOF>>         {
-    std::cerr << "error: module missing semicolon (;) at end." <<
+<INITIAL><<EOF>> {
+    std::cerr << "end of file" <<
     std::endl;
     exit(1);
 }
 
+<COMMENT>[ \t]*                     {   have_errors = true;                  }
+<COMMENT>\n*                        {   have_errors = true ; lineNumber++;   }
+<COMMENT>"*)"                       {   have_errors = false;
+    switch (yy_state) {
+        case 0: { BEGIN(INITIAL);            break; }
+        case 1: { BEGIN(BodyModuleIdent);    break; }
+        case 2: { BEGIN(BodyModuleIdentEnd); break; }
+    }
+}
+<COMMENT>\**                        {   have_errors = true ;                 }  // ignore all character
+<COMMENT>.                          {   have_errors = true ;                 }  // ignore all character
+<COMMENT><<EOF>>                    {
+    if (have_errors)
+    yy_Error(std::string("comment not terminated."));
+}
+
+<BodyModuleIdent>[ \t]*             {   have_errors = true; }
+<BodyModuleIdent>\n*                {   have_errors = true; lineNumber++  ; }
+<BodyModuleIdent>"(*"               {   have_errors = true; yy_state = 1; BEGIN(COMMENT); }
+<BodyModuleIdent>{IDENTIFIER}       {
+    std::string  tok =  std::string(yytext);
+    std::cerr << "token: " << tok << std::endl;
+    
+    have_errors = true;
+    BEGIN(BodyModuleIdentEnd);
+}
+<BodyModuleIdent>.                  {   yy_Error(std::string("unexpected character found.")); }
+<BodyModuleIdent><<EOF>>            {   yy_Error(std::string("identifier expected."));        }
+
+<BodyModuleIdentEnd>[ \t]*          {   have_errors = true ; }
+<BodyModuleIdentEnd>\n*             {   have_errors = true ; lineNumber++  ; }
+<BodyModuleIdentEnd>"(*"            {   have_errors = true ; yy_state = 2; BEGIN(COMMENT); }
+<BodyModuleIdentEnd>\;              {   have_errors = false; yy_state = 3; BEGIN(INITIAL); }
+<BodyModuleIdentEnd>.               {   yy_Error(std::string("unexpected character found.")); }
+<BodyModuleIdentEnd><<EOF>>         {   yy_Error(std::string("Semicolon expected."));         }
+
+<<EOF>>                             {
+    exit(1);
+}
 %%
 
 //----------------------------------------------------------------------------
+
+static int inline yy_module_comment() { return 1; }
+static int inline yy_module_ident  () { return 2; }
+
+static bool
+yy_check_error(bool debug)
+{
+    if (have_errors) {
+        if (debug) {
+            std::cerr << "parser detected errors." <<
+            std::endl;
+            exit(1);
+        }
+        return have_errors;
+    }   else {
+        return have_errors;
+    }
+}
+
+static void
+yy_Error(
+    std::string msg)
+{
+    std::stringstream txt;
+    txt << "line: "
+        << lineNumber
+        << ": ";
+    
+    if (msg.length() > 0)
+        txt << "error: " << msg; else
+        txt << "syntax error." ;
+    
+    std::cerr << txt.str() << std::endl;
+    exit(1);
+}
+
+static void
+yy_Info(
+    std::string msg)
+{
+    if (msg.length() > 0) {
+        std::cerr
+            << "line: "
+            << lineNumber
+            << ": info: " << msg
+            <<
+        std::endl;
+    }
+}
 
 static int
 yyread(
@@ -415,13 +453,13 @@ parseMain(
 
     std::cerr << "lex file {" << yyextra->fileName << "}..." <<
     std::endl;
-    BEGIN( Body );
+    BEGIN( INITIAL );
     
 
     passcannerYYlex(yyscanner);
     yyextra->lexInit = TRUE;
 
-    yyextra->commentScanner.leaveFile(yyextra->fileName,yyextra->yyLineNr);
+    yyextra->commentScanner.leaveFile(yyextra->fileName,lineNumber);
 
     yyextra->programStr.clear();
     yyextra->current_root->program.str(std::string());
@@ -438,7 +476,7 @@ parsePrototype(
     //printf("**** parsePrototype(%s) begin\n",qPrint(text));
     if (text.isEmpty())
     {
-        warn(yyextra->fileName,yyextra->yyLineNr,"Empty prototype found!");
+        warn(yyextra->fileName,lineNumber,"Empty prototype found!");
         return;
     }
 
@@ -456,7 +494,7 @@ parsePrototype(
 
     std::cerr << "lex proto file {" << yyextra->fileName << "}..." <<
     std::endl;
-    BEGIN( Body );
+    BEGIN( INITIAL );
 
     passcannerYYlex(yyscanner);
     yyextra->lexInit=TRUE;

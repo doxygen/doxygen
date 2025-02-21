@@ -330,6 +330,8 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     case SrcLangExt::Markdown:lang="markdown"; break;   // Markdown
     case SrcLangExt::Slice:   lang="slice"; break;      // Slice
     case SrcLangExt::Lex:     lang="lex"; break;        // Lex
+    case SrcLangExt::Pascal:  lang="pascal"; break;     // Pascal
+    case SrcLangExt::dBase:   lang="dbase"; break;      // dBase
     case SrcLangExt::Unknown: lang="unknown"; break;    // should not happen!
   }
 
