@@ -62,6 +62,8 @@
 #define DBG_HTML(x)
 
 static QCString g_header;
+static QCString g_header_file;
+static QCString g_footer_file;
 static QCString g_footer;
 static QCString g_mathjax_code;
 static QCString g_latex_macro;
@@ -317,7 +319,8 @@ static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSe
   return t.str();
 }
 
-static QCString substituteHtmlKeywords(const QCString &str,
+static QCString substituteHtmlKeywords(const QCString &file,
+                                       const QCString &str,
                                        const QCString &title,
                                        const QCString &relPath,
                                        const QCString &navPath=QCString())
@@ -580,13 +583,13 @@ static QCString substituteHtmlKeywords(const QCString &str,
   }
 
   // first substitute generic keywords
-  QCString result = substituteKeywords(str,title,
+  QCString result = substituteKeywords(file,str,title,
         convertToHtml(Config_getString(PROJECT_NAME)),
         convertToHtml(Config_getString(PROJECT_NUMBER)),
         convertToHtml(Config_getString(PROJECT_BRIEF)));
 
   // then do the HTML specific keywords
-  result = substituteKeywords(result,
+  result = substituteKeywords(file,result,
   {
     // keyword           value getter
     { "$navpath",        [&]() { return navPath;        } },
@@ -1144,29 +1147,33 @@ void HtmlGenerator::init()
   //writeLogo(dname);
   if (!Config_getString(HTML_HEADER).isEmpty())
   {
-    g_header=fileToString(Config_getString(HTML_HEADER));
+    g_header_file=Config_getString(HTML_HEADER);
+    g_header=fileToString(g_header_file);
     //printf("g_header='%s'\n",qPrint(g_header));
-    QCString result = substituteHtmlKeywords(g_header,QCString(),QCString());
+    QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
     checkBlocks(result,Config_getString(HTML_HEADER),htmlMarkerInfo);
   }
   else
   {
-    g_header = ResourceMgr::instance().getAsString("header.html");
-    QCString result = substituteHtmlKeywords(g_header,QCString(),QCString());
+    g_header_file="header.html";
+    g_header = ResourceMgr::instance().getAsString(g_header_file);
+    QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
     checkBlocks(result,"<default header.html>",htmlMarkerInfo);
   }
 
   if (!Config_getString(HTML_FOOTER).isEmpty())
   {
-    g_footer=fileToString(Config_getString(HTML_FOOTER));
+    g_footer_file=Config_getString(HTML_FOOTER);
+    g_footer=fileToString(g_footer_file);
     //printf("g_footer='%s'\n",qPrint(g_footer));
-    QCString result = substituteHtmlKeywords(g_footer,QCString(),QCString());
+    QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
     checkBlocks(result,Config_getString(HTML_FOOTER),htmlMarkerInfo);
   }
   else
   {
-    g_footer = ResourceMgr::instance().getAsString("footer.html");
-    QCString result = substituteHtmlKeywords(g_footer,QCString(),QCString());
+    g_footer_file = "footer.html";
+    g_footer = ResourceMgr::instance().getAsString(g_footer_file);
+    QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
     checkBlocks(result,"<default footer.html>",htmlMarkerInfo);
   }
 
@@ -1481,7 +1488,7 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   }
 
   m_lastFile = fileName;
-  m_t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title)),m_relPath);
+  m_t << substituteHtmlKeywords(g_header_file,g_header,convertToHtml(filterTitle(title)),m_relPath);
 
   m_t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
@@ -1581,7 +1588,7 @@ void HtmlGenerator::writeLogo()
 void HtmlGenerator::writePageFooter(TextStream &t,const QCString &lastTitle,
                               const QCString &relPath,const QCString &navPath)
 {
-  t << substituteHtmlKeywords(g_footer,convertToHtml(lastTitle),relPath,navPath);
+  t << substituteHtmlKeywords(g_footer_file,g_footer,convertToHtml(lastTitle),relPath,navPath);
 }
 
 void HtmlGenerator::writeFooter(const QCString &navPath)
@@ -3137,7 +3144,7 @@ void HtmlGenerator::writeSearchPage()
   if (f.is_open())
   {
     TextStream t(&f);
-    t << substituteHtmlKeywords(g_header,"Search","");
+    t << substituteHtmlKeywords(g_header_file,g_header,"Search","");
 
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
@@ -3203,7 +3210,7 @@ void HtmlGenerator::writeExternalSearchPage()
   if (f.is_open())
   {
     TextStream t(&f);
-    t << substituteHtmlKeywords(g_header,"Search","");
+    t << substituteHtmlKeywords(g_header_file,g_header,"Search","");
 
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";

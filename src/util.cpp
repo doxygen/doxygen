@@ -3561,9 +3561,10 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 
 //----------------------------------------------------------------------
 
-QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords)
+QCString substituteKeywords(const QCString &file, const QCString &s,const KeywordSubstitutionList &keywords)
 {
   std::string substRes;
+  int line = 1;
   const char *p = s.data();
   if (p)
   {
@@ -3600,6 +3601,7 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
               else
               {
                 //printf("missing argument\n");
+                warn(file,line,"Missing argument for '{}'",kw.keyword);
                 p+=keyLen;
               }
             }
@@ -3610,6 +3612,12 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
               //printf("found '%s'->'%s'\n",kw.keyword,qPrint(getValue()));
               p+=keyLen;
             }
+            else
+            {
+              //printf("%s %d Expected arguments, none specified '%s'\n",qPrint(file), line, qPrint(kw.keyword));
+              warn(file,line,"Expected arguments for '{}' but none were specified",kw.keyword);
+              p+=keyLen;
+            }
             found = true;
             break;
           }
@@ -3617,6 +3625,7 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
       }
       if (!found) // copy
       {
+        if (c=='\n') line++;
         substRes+=c;
         p++;
       }
@@ -3704,10 +3713,10 @@ static QCString projectLogoSize()
   return sizeVal;
 }
 
-QCString substituteKeywords(const QCString &s,const QCString &title,
+QCString substituteKeywords(const QCString &file,const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief)
 {
-  return substituteKeywords(s,
+  return substituteKeywords(file,s,
   {
     // keyword          value getter
     { "$title",           [&]() { return !title.isEmpty() ? title : projName;       } },
