@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -65,6 +65,10 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "lex:pre",            Debug::Lex_pre            },
   { "lex:pycode",         Debug::Lex_pycode         },
   { "lex:pyscanner",      Debug::Lex_pyscanner      },
+  { "lex:pascode",        Debug::Lex_pascode        },
+  { "lex:passcanner",     Debug::Lex_passcanner     },
+  { "lex:dbcode",         Debug::Lex_dbcode         },
+  { "lex:dbscanner",      Debug::Lex_dbscanner      },
   { "lex:scanner",        Debug::Lex_scanner        },
   { "lex:sqlcode",        Debug::Lex_sqlcode        },
   { "lex:vhdlcode",       Debug::Lex_vhdlcode       },
