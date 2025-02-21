@@ -341,7 +341,7 @@ void MainWindow::saveConfig(const QString &fileName)
   }
   QTextStream t(&f);
   t.device()->setTextModeEnabled(false);
-  m_expert->writeConfig(t,false,false);
+  m_expert->writeConfig(t,false,false,false);
   updateConfigFileName(fileName);
   m_modified = false;
   updateTitle();
@@ -586,7 +586,7 @@ void MainWindow::runDoxygen()
       return;
     }
     QTextStream t(m_runProcess);
-    m_expert->writeConfig(t,false,false);
+    m_expert->writeConfig(t,false,false,false);
     t.flush();
     m_runProcess->closeWriteChannel();
 
@@ -718,11 +718,11 @@ void MainWindow::showSettings()
   QTextStream t(&text);
   if (m_showCondensedSettings->isChecked())
   {
-    m_expert->writeConfig(t,true,true);
+    m_expert->writeConfig(t,true,true,true);
   }
   else
   {
-    m_expert->writeConfig(t,true,false);
+    m_expert->writeConfig(t,true,false,true);
   }
   m_outputLog->clear();
   m_outputLog->append(APPQT(text));

@@ -791,7 +791,7 @@ void Expert::loadConfig(const QString &fileName)
 }
 
 void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
-                       bool brief,bool condensed)
+                       bool brief,bool condensed,bool convert)
 {
   if (!brief)
   {
@@ -832,7 +832,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
             if (option && !option->isEmpty())
             {
               t << " ";
-              option->writeValue(t,codec);
+              option->writeValue(t,codec,convert);
             }
             t << "\n";
           }
@@ -843,7 +843,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
   }
 }
 
-bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
+bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed, bool convert)
 {
   // write global header
   t << "# Doxyfile " << getDoxygenVersion().c_str() << "\n\n";
@@ -859,7 +859,7 @@ bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
   {
     if (childElem.tagName()==SA("group"))
     {
-      saveTopic(t,childElem,&codec,brief,condensed);
+      saveTopic(t,childElem,&codec,brief,condensed,convert);
     }
     childElem = childElem.nextSiblingElement();
   }
