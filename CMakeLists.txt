@@ -1,5 +1,7 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
+project(doxygen)
+
 include_directories(
     ${PROJECT_SOURCE_DIR}/deps/TinyDeflate
     ${PROJECT_SOURCE_DIR}/deps/filesystem
