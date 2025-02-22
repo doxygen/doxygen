@@ -175,10 +175,10 @@ foreach(lex_file ${LEX_FILES})
         )
     endif()
 
-    FLEX_TARGET(${lex_file}
-                ${GENERATED_SRC}/${lex_file}.l
-                ${GENERATED_SRC}/${lex_file}_intermediate.cpp
-                COMPILE_FLAGS "${LEX_FLAGS}")
+#    FLEX_TARGET(${lex_file}
+#                ${GENERATED_SRC}/${lex_file}.l
+#                ${GENERATED_SRC}/${lex_file}_intermediate.cpp
+#                COMPILE_FLAGS "${LEX_FLAGS}")
     add_custom_command(
         COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.cpp  ${GENERATED_SRC}/${lex_file}.corr ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l
         DEPENDS ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.corr

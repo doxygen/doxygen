@@ -18,28 +18,28 @@ jobs:
             os: ubuntu-20.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
+            cmake_extra_opts: "-Wno-dev -Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
             os: ubuntu-20.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
+            cmake_extra_opts: "-Wno-dev -Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release",
             os: ubuntu-20.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
+            cmake_extra_opts: "-Wno-dev -Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "Ubuntu Latest Clang Debug",
             os: ubuntu-20.04,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
+            cmake_extra_opts: "-Wno-dev -Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "macOS Latest Release (Intel)",
@@ -90,7 +90,6 @@ jobs:
         target: .
       if: matrix.config.os == 'windows-latest'
 
-    # pre-bvilt: paule32
     - name: Install localization files (Windows)
       run: |
         git clone https://github.com/paule32/doxygen-translations.git
@@ -102,9 +101,9 @@ jobs:
         mkdir inc
         mkdir lib
         cd ..
-        cp doxygen-translations\bin\dll\*.* .\gettext\bin\
-        cp doxygen-translations\bin\inc\*.* .\gettext\inc\
-        cp doxygen-translations\bin\lib\*.* .\gettext\lib\
+        cp doxygen-translations/bin/dll/*.* ./gettext/bin/
+        cp doxygen-translations/bin/inc/*.* ./gettext/inc/
+        cp doxygen-translations/bin/lib/*.* ./gettext/lib/
       if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Linux)
