@@ -1,3 +1,13 @@
+# ----------------------------------------------------------
+# project: doxygen
+# autor:   Dimitri van Heesch
+#
+# desc:    this workflow provides some translations for the
+#          doxygen project.
+#          The files that are created by this workflow file
+#          can be used platform independed, so no need for
+#          more workflows for translations.
+# ----------------------------------------------------------
 name: Build Locales for Doxygen
 
 on:
@@ -32,7 +42,19 @@ jobs:
         msgfmt -o locale/de/LC_MESSAGES/messages.mo locale/de.po
         mkdir -p bin/locale/de/LC_MESSAGES
         cp locale/de/LC_MESSAGES/messages.po bin/locale/de/LC_MESSAGES/messages.po
-
+        
+    - name: Create Archive
+      run: |
+        mkdir -p build_artifacts
+        cp -r locale build_artifacts/
+        tar -czvf build_artifacts/translations.tar.gz locale/
+        
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: doxygen-translations
+        path: build_artifacts/
+        
     #- name: Build C++ Application
     #  run: g++ main.cpp -o app -lintl
 
