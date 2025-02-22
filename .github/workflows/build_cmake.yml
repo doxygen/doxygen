@@ -99,9 +99,9 @@ jobs:
         mkdir gettext
         mkdir gettext\inc
         mkdir gettext\lib
-        cp doxygen-translations\bin\*.* .\gettext\bin\
-        cp doxygen-translations\inc\*.* .\gettext\inc\
-        cp doxygen-translations\lib\*.* .\gettext\lib\
+        cp doxygen-translations\bin\dll\*.* .\gettext\bin\
+        cp doxygen-translations\bin\inc\*.* .\gettext\inc\
+        cp doxygen-translations\bin\lib\*.* .\gettext\lib\
       if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Linux)
