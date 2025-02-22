@@ -19,10 +19,19 @@ jobs:
     - name: Install gettext
       run: sudo apt-get install -y gettext
 
+    - name: Compile Translations (English)
+      run: |
+        mkdir -p locale/en/LC_MESSAGES
+        msgfmt -o locale/en/LC_MESSAGES/messages.mo locale/en.po
+        mkdir -p bin/locale/en/LC_MESSAGES
+        cp locale/en/LC_MESSAGES/messages.po bin/locale/en/LC_MESSAGES/messages.po
+    
     - name: Compile Translations (German)
       run: |
         mkdir -p locale/de/LC_MESSAGES
         msgfmt -o locale/de/LC_MESSAGES/messages.mo locale/de.po
+        mkdir -p bin/locale/de/LC_MESSAGES
+        cp locale/de/LC_MESSAGES/messages.po bin/locale/de/LC_MESSAGES/messages.po
 
     #- name: Build C++ Application
     #  run: g++ main.cpp -o app -lintl
