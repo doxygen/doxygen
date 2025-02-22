@@ -11312,12 +11312,24 @@ template<class T> std::function< std::unique_ptr<T>() > make_parser_factory()
 
 void initDoxygen()
 {
+    // paule32: I switch C++ stl locales to C GNU gettext - may todo !!!
+    ::setlocale(LC_ALL, ::getenv("LC_ALL"));
+    ::setlocale(LC_CTYPE,"C");  // to get isspace(0xA0)==0, needed for UTF-8
+    ::setlocale(LC_NUMERIC,"C");
+    
+    bindtextdomain("messages", "./locale"); 
+    textdomain("messages");
+    
   initResources();
+  
   QCString lang = Portable::getenv("LC_ALL");
   if (!lang.isEmpty()) Portable::setenv("LANG",lang);
+  
+  #if 0
   std::setlocale(LC_ALL,"");
   std::setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   std::setlocale(LC_NUMERIC,"C");
+  #endif
 
   Doxygen::symbolMap = new SymbolMap<Definition>;
 

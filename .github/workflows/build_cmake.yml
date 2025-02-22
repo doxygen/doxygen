@@ -90,6 +90,18 @@ jobs:
         target: .
       if: matrix.config.os == 'windows-latest'
 
+    # pre-bvilt: paule32
+    - name: Install localization files (Windows)
+      run: |
+        git clone https://github.com/paule32/doxygen-translations.git
+        mkdir -p build/bin
+        mkdir -p gettext/inc
+        mkdir -p gettext/lib
+        cp doxygen-translations/bin/*.* ./gettext/bin/
+        cp doxygen-translations/inc/*.* ./gettext/inc/
+        cp doxygen-translations/lib/*.* ./gettext/lib/
+      if: matrix.config.os == 'windows-latest'
+
     - name: Install LaTeX (Linux)
       run: |
         sudo apt update --fix-missing

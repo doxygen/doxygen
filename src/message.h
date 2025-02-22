@@ -248,10 +248,8 @@ template<> struct fmt::formatter<SrcLangExt> : formatter<std::string>
       case SrcLangExt::Cpp:      result="C++";         break;
       case SrcLangExt::JS:       result="Javascript";  break;
       case SrcLangExt::Python:   result="Python";      break;
-      
       case SrcLangExt::Pascal:   result="Pascal";      break;
       case SrcLangExt::dBase:    result="dBase";       break;
-      
       case SrcLangExt::Fortran:  result="Fortran";     break;
       case SrcLangExt::VHDL:     result="VHDL";        break;
       case SrcLangExt::XML:      result="XML";         break;

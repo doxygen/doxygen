@@ -128,8 +128,7 @@ struct passcannerYY_state
 /* ----------------------------------------------------------------- */
 /* paule32 pascal:                                                   */
 /* ----------------------------------------------------------------- */
-static bool have_errors = false;
-static int  lineNumber  = 1;
+static std::map<int line, std::string> have_errors;
 
 static int  yyread(yyscan_t yyscanner,char *buf,int max_size);
 static int  yy_state = 0;
@@ -141,6 +140,11 @@ static bool yy_check_error(bool debug=true);
 
 static int inline yy_module_ident();
 static int inline yy_module_comment();
+
+/* ----------------------------------------------------------------- */
+/* inline error messages functions ...                               */
+/* ----------------------------------------------------------------- */
+static std::string ERROR_COMMENT();
 
 //-----------------------------------------------------------------------------
 /* ----------------------------------------------------------------- */
@@ -270,14 +274,25 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 %x BodyModuleIdent
 %x BodyModuleIdentEnd
 
+%x BodyInterface
+%x BodyInterfacePart
+%x BodyImplementation
+%x BodyEnd
+
 %x Interface
 %x Implementation
 
 %%
 
-<INITIAL>[ \t]*                     {   have_errors = false;                BEGIN(INITIAL); }
-<INITIAL>\n*                        {   have_errors = false; lineNumber++;  BEGIN(INITIAL); }
-<INITIAL>"(*"                       {   have_errors = true ;                BEGIN(COMMENT); }
+<INITIAL>[ \t]*                     {                         BEGIN(INITIAL); }
+<INITIAL>\n*                        {   yyextra->yyLineNr++;  BEGIN(INITIAL); }
+<INITIAL>"(*"                       {
+    have_errors.emplace(yyextra->yyLineNr,
+    ERROR_COMMENT());
+    BEGIN(COMMENT);
+    
+    yy_check_error();
+}
 <INITIAL>{PROGRAM}|{LIBRARY}|{UNIT} {
     std::string ident = std::string(yytext);
     if (ident == std::string("program")
@@ -285,11 +300,14 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
     ||  ident == std::string("unit")) {
         std::cerr
             << "line: "
-            << lineNumber
+            << yyextra->yyLineNr
             << ": is a: "
             << ident;
-        have_errors = true;
+        have_errors.emplace(yyextra->yyLineNr,
+        "PROGRAM, LIBRARY or UNIT expected.")
         BEGIN(BodyModuleIdent);
+        
+        yy_check_error();
     }   else {
         yy_Error(std::string("not a comform pascal syntax."));
     }
@@ -300,41 +318,121 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
     exit(1);
 }
 
-<COMMENT>[ \t]*                     {   have_errors = true;                  }
-<COMMENT>\n*                        {   have_errors = true ; lineNumber++;   }
-<COMMENT>"*)"                       {   have_errors = false;
+<COMMENT>[ \t]*                     ;
+<COMMENT>\n*                        {   yyextra->yyLineNr++; }
+<COMMENT>"*)"                       {
+    yy_check_error();
     switch (yy_state) {
         case 0: { BEGIN(INITIAL);            break; }
         case 1: { BEGIN(BodyModuleIdent);    break; }
         case 2: { BEGIN(BodyModuleIdentEnd); break; }
+        case 3: { BEGIN(BodyInterface);      break; }
+        case 4: { BEGIN(BodyImplementation); break; }
     }
 }
-<COMMENT>\**                        {   have_errors = true ;                 }  // ignore all character
-<COMMENT>.                          {   have_errors = true ;                 }  // ignore all character
+<COMMENT>.                          ; // ignore all character
 <COMMENT><<EOF>>                    {
     if (have_errors)
     yy_Error(std::string("comment not terminated."));
 }
 
-<BodyModuleIdent>[ \t]*             {   have_errors = true; }
-<BodyModuleIdent>\n*                {   have_errors = true; lineNumber++  ; }
-<BodyModuleIdent>"(*"               {   have_errors = true; yy_state = 1; BEGIN(COMMENT); }
+<BodyModuleIdent>[ \t]*             ;
+<BodyModuleIdent>\n*                {   yyextra->yyLineNr++; }
+<BodyModuleIdent>"(*"               {
+    yy_state = 1;
+    have_errors.emplace(yyextra->yyLineNr,
+    ERROR_COMMENT());
+    BEGIN(COMMENT);
+}
 <BodyModuleIdent>{IDENTIFIER}       {
     std::string  tok =  std::string(yytext);
     std::cerr << "token: " << tok << std::endl;
     
-    have_errors = true;
     BEGIN(BodyModuleIdentEnd);
+    BEGIN(BodyInterface);
+    BEGIN(BodyImplementation);
 }
 <BodyModuleIdent>.                  {   yy_Error(std::string("unexpected character found.")); }
 <BodyModuleIdent><<EOF>>            {   yy_Error(std::string("identifier expected."));        }
 
-<BodyModuleIdentEnd>[ \t]*          {   have_errors = true ; }
-<BodyModuleIdentEnd>\n*             {   have_errors = true ; lineNumber++  ; }
-<BodyModuleIdentEnd>"(*"            {   have_errors = true ; yy_state = 2; BEGIN(COMMENT); }
-<BodyModuleIdentEnd>\;              {   have_errors = false; yy_state = 3; BEGIN(INITIAL); }
+<BodyModuleIdentEnd>[ \t]*          ;
+<BodyModuleIdentEnd>\n*             {   yyextra->yyLineNr++; }
+<BodyModuleIdentEnd>"(*"            {
+    yy_state = 2;
+    have_errors.emplace(yyextra->yyLineNr,
+    ERROR_COMMENT());
+    BEGIN(COMMENT);
+}
+<BodyModuleIdentEnd>\;              {
+    yy_check_error();
+    yy_state = 3;
+    BEGIN(INITIAL);
+}
 <BodyModuleIdentEnd>.               {   yy_Error(std::string("unexpected character found.")); }
-<BodyModuleIdentEnd><<EOF>>         {   yy_Error(std::string("Semicolon expected."));         }
+<BodyModuleIdentEnd><<EOF>>         {   yy_Error(std::string("semicolon expected."));         }
+
+<BodyInterface>[ \t]*               ;
+<BodyInterface>\n*                  {   yyextra->yyLineNr++; }
+<BodyInterface>"(*"                 {
+    yy_state = 3;
+    have_errors.emplace(yyextra->yyLineNr,
+    ERROR_COMMENT());
+    BEGIN(COMMENT);
+}
+<BodyInterface>{INTERFACE}          {
+    std::string ident = std::string(yytext);
+    if (ident == std::string("interface")) {
+        BEGIN(BodyInterfacePart);
+    }   else {
+        yy_Error("INTERFACE expected.");
+    }
+}
+<BodyInterface>.                    {   yy_Error(std::string("unexpected character found.")); }
+<BodyInterface><<EOF>>              {   yy_Error(std::string("INTERFACE expected."));         }
+
+<BodyInterfacePart>[ \t]*           ;
+<BodyInterfacePart>\n*              {   yyextra->yyLineNr++; }
+<BodyInterfacePart>"(*"             {
+    yy_state = 4;
+    have_errors.emplace(yyextra->yyLineNr,
+    ERROR_COMMENT());
+    BEGIN(COMMENT);
+}
+<BodyInterfacePart>{IDENTIFIER}     {
+}
+<BodyInterfacePart>.                {   yy_Error(std::string("unexpected character found.")); }
+<BodyInterfacePart><<EOF>>          {   yy_Error(std::string("INTERFACe expected."));         }
+
+<BodyImplementation>[ \t]*          ;
+<BodyImplementation>\n*             {   yyextra->yyLineNr++; }
+<BodyImplementation>"(*"            {
+    yy_state = 5;
+    have_errors.emplace(yyextra->yyLineNr,
+    ERROR_COMMENT());
+    BEGIN(COMMENT);
+}
+<BodyImplementation>{IMPLEMENTATION}{
+    std::string ident = std::string(yytext);
+    if (ident == std::string("implementation")) {
+        BEGIN(BodyEnd);
+    }   else {
+        yy_Error("IMPLEMENTATION expected.");
+    }
+}
+<BodyImplementation>.               {   yy_Error(std::string("unexpected character found.")); }
+<BodyImplementation><<EOF>>         {   yy_Error(std::string("IMPLEMENTATION expected."));    }
+
+<BodyEnd>[ \t]*                     ;
+<BodyEnd>\n*                        {   yyextra->yyLineNr++; }
+<BodyEnd>"(*"                       {
+    yy_state = 6;
+    have_errors.emplace(yyextra->yyLineNr,
+    ERROR_COMMENT());
+    BEGIN(COMMENT);
+}
+<BodyEnd>{END}                      ;
+<BodyEnd>.                          {   yy_Error(std::string("unexpected character found.")); }
+<BodyEnd><<EOF>>                    {   yy_Error(std::string("END expected."));               }
 
 <<EOF>>                             {
     exit(1);
@@ -346,19 +444,24 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 static int inline yy_module_comment() { return 1; }
 static int inline yy_module_ident  () { return 2; }
 
+static std::string ERROR_COMMENT() { return std::string("comment not terminated."); }
+
 static bool
 yy_check_error(bool debug)
 {
-    if (have_errors) {
-        if (debug) {
-            std::cerr << "parser detected errors." <<
-            std::endl;
-            exit(1);
-        }
-        return have_errors;
-    }   else {
-        return have_errors;
+    if (!have_errors.empty()) {
+        auto last = std::prev(hace_errors.end());  // last element
+        int  line = last->first;
+        std::string txt = last->second;
+        have_errors.erase(last);
+        
+        std::cerr <<
+        std::endl << "error: " << txt << std::endl;
+        
+        have_errors.clear();
+        exit(1);
     }
+    return false;
 }
 
 static void
@@ -367,7 +470,7 @@ yy_Error(
 {
     std::stringstream txt;
     txt << "line: "
-        << lineNumber
+        << yyextra->yyLineNr
         << ": ";
     
     if (msg.length() > 0)
@@ -385,7 +488,7 @@ yy_Info(
     if (msg.length() > 0) {
         std::cerr
             << "line: "
-            << lineNumber
+            << yyextra->yyLineNr
             << ": info: " << msg
             <<
         std::endl;
@@ -459,7 +562,9 @@ parseMain(
     passcannerYYlex(yyscanner);
     yyextra->lexInit = TRUE;
 
-    yyextra->commentScanner.leaveFile(yyextra->fileName,lineNumber);
+    yyextra->commentScanner.leaveFile(
+    yyextra->fileName ,
+    yyextra->yyLineNr);
 
     yyextra->programStr.clear();
     yyextra->current_root->program.str(std::string());
@@ -476,8 +581,9 @@ parsePrototype(
     //printf("**** parsePrototype(%s) begin\n",qPrint(text));
     if (text.isEmpty())
     {
-        warn(yyextra->fileName,lineNumber,"Empty prototype found!");
-        return;
+        warn(
+        yyextra->fileName,
+        yyextra->yyLineNr,"Empty prototype found!"); return;
     }
 
     // save scanner state
@@ -494,6 +600,8 @@ parsePrototype(
 
     std::cerr << "lex proto file {" << yyextra->fileName << "}..." <<
     std::endl;
+    
+    have_errors.clear();
     BEGIN( INITIAL );
 
     passcannerYYlex(yyscanner);

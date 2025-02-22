@@ -29,3 +29,5 @@ cmake-build-debug-event-trace/
 /examples/latex/*
 /1
 *.bak
+locale/de.po
+locale/de.po
