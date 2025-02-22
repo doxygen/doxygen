@@ -1,14 +1,13 @@
 # ---------------------------------------------------------------------------
 # File:   de.po - localization translated stuff for doxygen
-# Author: Jens Kallup - paule32
+# Author: Dimitri van Heesch
 #
 # Rights: (c) 1997-2025 Dimitri Heesh
 #         all rights reserved
-#
 # ---------------------------------------------------------------------------
 msgid ""
 msgstr ""
-"Project-Id-Version: 1.0.0\n"
+"Project-Id-Version: 1.13.2\n"
 "POT-Creation-Date: 2025-02-21 20:33+0100\n"
 "PO-Revision-Date: 2025-02-21 20:15+0100\n"
 "Last-Translator: Jens Kallup <paule32@gmail.com>\n"
