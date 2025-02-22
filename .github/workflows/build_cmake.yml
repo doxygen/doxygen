@@ -97,8 +97,11 @@ jobs:
         dir
         dir doxygen-translations
         mkdir gettext
-        mkdir gettext\inc
-        mkdir gettext\lib
+        cd    gettext
+        mkdir bin
+        mkdir inc
+        mkdir lib
+        cd ..
         cp doxygen-translations\bin\dll\*.* .\gettext\bin\
         cp doxygen-translations\bin\inc\*.* .\gettext\inc\
         cp doxygen-translations\bin\lib\*.* .\gettext\lib\
