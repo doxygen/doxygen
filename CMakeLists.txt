@@ -1,5 +1,5 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
-
+cmake_minimum_required(VERSION 3.31)
 project(doxygen)
 
 include_directories(
