@@ -247,9 +247,9 @@ struct KeywordSubstitution
 
 using KeywordSubstitutionList = std::vector<KeywordSubstitution>;
 
-QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords);
+QCString substituteKeywords(const QCString &file,const QCString &s,const KeywordSubstitutionList &keywords);
 
-QCString substituteKeywords(const QCString &s,const QCString &title,
+QCString substituteKeywords(const QCString &file,const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief);
 
 int getPrefixIndex(const QCString &name);
