@@ -50,7 +50,7 @@ jobs:
         tar -czvf build_artifacts/translations.tar.gz locale/
         
     - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: doxygen-translations
         path: build_artifacts/
