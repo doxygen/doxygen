@@ -1,0 +1,31 @@
+name: Build Locales for Doxygen
+
+on:
+  push:
+    branches:
+      - private
+  pull_request:
+    branches:
+      - private
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Install gettext
+      run: sudo apt-get install -y gettext
+
+    - name: Compile Translations (German)
+      run: |
+        mkdir -p locale/de/LC_MESSAGES
+        msgfmt -o locale/de/LC_MESSAGES/messages.mo locale/de.po
+
+    #- name: Build C++ Application
+    #  run: g++ main.cpp -o app -lintl
+
+    #- name: Test Application (German)
+    #  run: LANG=de_DE ./app
