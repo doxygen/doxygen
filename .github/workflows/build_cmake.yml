@@ -94,13 +94,12 @@ jobs:
     - name: Install localization files (Windows)
       run: |
         git clone https://github.com/paule32/doxygen-translations.git
-        dir
-        mkdir -p gettext/bin
-        mkdir -p gettext/inc
-        mkdir -p gettext/lib
-        cp doxygen-translations/bin/*.* ./gettext/bin/
-        cp doxygen-translations/inc/*.* ./gettext/inc/
-        cp doxygen-translations/lib/*.* ./gettext/lib/
+        mkdir gettext
+        mkdir gettext\inc
+        mkdir gettext\lib
+        cp doxygen-translations\bin\*.* .\gettext\bin\
+        cp doxygen-translations\inc\*.* .\gettext\inc\
+        cp doxygen-translations\lib\*.* .\gettext\lib\
       if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Linux)
