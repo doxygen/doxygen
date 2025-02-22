@@ -94,6 +94,7 @@ jobs:
     - name: Install localization files (Windows)
       run: |
         git clone https://github.com/paule32/doxygen-translations.git
+        dir
         mkdir -p gettext/bin
         mkdir -p gettext/inc
         mkdir -p gettext/lib
