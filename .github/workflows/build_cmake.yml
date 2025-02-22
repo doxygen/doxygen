@@ -410,4 +410,3 @@ jobs:
          publish_dir: build/doxygen_docs/html
          force_orphan: true
       if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
-
