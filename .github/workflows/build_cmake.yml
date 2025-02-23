@@ -93,6 +93,7 @@ jobs:
     # pre-bvilt: paule32
     - name: Install localization files (Windows)
       run: |
+        echo "download translation as seperate package..."
         git clone https://github.com/paule32/doxygen-translations.git
         mkdir -p build/bin
         mkdir -p gettext/dll
@@ -102,6 +103,17 @@ jobs:
         cp doxygen-translations/bin/lib/*.* gettext/lib/
         cp doxygen-translations/bin/dll/*.* build/bin/
       if: matrix.config.os == 'windows-latest'
+
+    - name: Install localization files (Linux)
+      run: |
+        echo "download translation as seperate package..."
+	sudo apt install gettext:amd64 libgettextpo-dev:amd64 libiconv-hook-dev:amd64
+        git clone https://github.com/paule32/doxygen-translations.git
+        mkdir -p build/bin
+        mkdir -p gettext/inc
+        cp doxygen-translations/bin/inc/*.* gettext/inc/
+      if: matrix.config.os != 'windows-latest'
+
 
     - name: Install LaTeX (Linux)
       run: |
