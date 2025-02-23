@@ -123,7 +123,7 @@ void InputInt::reset()
   setValue(m_default);
 }
 
-void InputInt::writeValue(QTextStream &t,TextCodecAdapter *)
+void InputInt::writeValue(QTextStream &t,TextCodecAdapter *,bool)
 {
   t << m_val;
 }
