@@ -18,6 +18,9 @@
 
 #include <mutex>
 
+#include <locale.h>     // for localization
+#include <libintl.h>
+
 #include "containers.h"
 #include "membergroup.h"
 #include "dirdef.h"
@@ -29,6 +32,9 @@
 
 #define THREAD_LOCAL thread_local
 #define AtomicInt    std::atomic_int
+
+// placeholder
+#define _tr(STRING) gettext(STRING);
 
 class RefList;
 class PageLinkedMap;

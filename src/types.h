@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -57,7 +57,10 @@ enum class SrcLangExt
   Markdown = 0x10000,
   SQL      = 0x20000,
   Slice    = 0x40000,
-  Lex      = 0x80000
+  Lex      = 0x80000,
+  
+  Pascal   = 0x100000,
+  dBase    = 0x200000,
 };
 
 /** Grouping info */

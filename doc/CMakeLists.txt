@@ -115,7 +115,6 @@ set(DOC_FILES
         install.dox
         layout_index_and_notreeview.png
         layout_index_and_treeview.png
-        layout_index_and_sidebar.png
         layout_noindex_and_notreeview.png
         layout_noindex_and_treeview.png
         layout_noindex_and_sidebar.png
