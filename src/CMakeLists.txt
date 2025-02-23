@@ -428,13 +428,6 @@ if(WIN32 AND CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
         ${PROJECT_SOURCE_DIR}/gettext/lib/iconv.lib
         ${PROJECT_SOURCE_DIR}/gettext/lib/intl.lib
     )
-elseif(UNIX)
-    message(STATUS "Building for Linux/macOS: Adding alternative libraries")
-    target_link_libraries(doxygen PRIVATE
-        iconv
-        intl
-        pthread
-    )
 endif()
 
 set_project_warnings(doxycfg)
