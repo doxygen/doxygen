@@ -196,6 +196,16 @@ jobs:
          sudo apt-get install libxml2-utils
       if: startsWith(matrix.config.os,'ubuntu-')
 
+    - name: Install gettext for localization (MacOS)
+      run: |
+        brew install gettext
+        brew link --force gettext
+        ls -l $(brew --prefix gettext)/lib/libintl.*
+        brew install pkg-config
+        pkg-config --libs --cflags gettext
+        brew info gettext
+      if: startsWith(matrix.config.os,'macos-')
+
     - name: Install xmllint (MacOS)
       run: |
          brew install --force --overwrite python@3.11 # temp hack
