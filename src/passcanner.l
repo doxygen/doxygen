@@ -37,35 +37,39 @@ typedef yyguts_t *yyscan_t;
  *      includes
  */
 
-#include <algorithm>
-#include <sstream>
-#include <map>
+# include <algorithm>
+# include <sstream>
+# include <string>
+# include <map>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
-#include <string.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <assert.h>
+# include <ctype.h>
+# include <string.h>
 
-#include "passcanner.h"
-#include "entry.h"
-#include "message.h"
-#include "config.h"
-#include "doxygen.h"
-#include "util.h"
-#include "defargs.h"
-#include "language.h"
-#include "commentscan.h"
-#include "arguments.h"
-#include "markdown.h"
-#include "fileinfo.h"
-#include "debug.h"
-#include "stringutil.h"
+# include "passcanner.h"
+# include "entry.h"
+# include "message.h"
+# include "config.h"
+# include "doxygen.h"
+# include "util.h"
+# include "defargs.h"
+# include "language.h"
+# include "commentscan.h"
+# include "arguments.h"
+# include "markdown.h"
+# include "fileinfo.h"
+# include "debug.h"
+# include "stringutil.h"
+
+extern char *gettext(const char*);
+# define _(STRING) gettext(STRING)
 
 # define DBG_CTX(x) fprintf x
 
-#define YY_NO_INPUT 1
-#define YY_NO_UNISTD_H 1
+# define YY_NO_INPUT 1
+# define YY_NO_UNISTD_H 1
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -558,7 +562,7 @@ parseMain(
     std::cerr << "lex file {" << yyextra->fileName << "}..." <<
     std::endl;
     
-    std::cerr << _tr("LICENSE") << std::endl;
+    std::cerr << _("LICENSE") << std::endl;
     BEGIN( INITIAL );
     
 
