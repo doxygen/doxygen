@@ -198,9 +198,9 @@ jobs:
 
     - name: Install gettext for localization (MacOS)
       run: |
-        brew install gettext
-        brew link --force gettext
-        ls -l $(brew --prefix gettext)/lib/libintl.*
+        brew reinstall gettext
+        brew unlink gettext && brew link gettext
+        brew reinstall pkgconf
         brew install pkg-config
         pkg-config --libs --cflags gettext
         brew info gettext
