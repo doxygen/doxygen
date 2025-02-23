@@ -9,11 +9,15 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/libversion
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
-    ${PROJECT_SOURCE_DIR}/gettext/inc
     ${PROJECT_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
+
+# only for Windows x64
+if(WIN32 AND CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
+    include_directories(${PROJECT_SOURCE_DIR}/gettext/inc)
+endif()
 
 if (NOT use_sys_spdlog)
     include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
