@@ -107,7 +107,7 @@ jobs:
     - name: Install localization files (Linux)
       run: |
         echo "download translation as seperate package..."
-	sudo apt install gettext libgettextpo-dev libiconv-hook-dev
+        sudo apt install gettext libgettextpo-dev libiconv-hook-dev
         git clone https://github.com/paule32/doxygen-translations.git
         mkdir -p build/bin
         mkdir -p gettext/inc
