@@ -107,7 +107,10 @@ jobs:
     - name: Install localization files (Linux)
       run: |
         echo "download translation as seperate package..."
-	sudo apt install gettext libgettextpo-dev libiconv-hook-dev
+        sudo apt update --fix-missing
+        sudo apt upgrade
+        sudo apt update
+        sudo apt install gettext
         git clone https://github.com/paule32/doxygen-translations.git
         mkdir -p build/bin
         mkdir -p gettext/inc
@@ -193,12 +196,24 @@ jobs:
          sudo apt-get install libxml2-utils
       if: startsWith(matrix.config.os,'ubuntu-')
 
+    - name: Install gettext for localization (MacOS)
+      run: |
+        #brew update
+        #brew install gettext
+        #brew link --force gettext
+        #export PKG_CONFIG_PATH="/opt/homebrew/opt/gettext/lib/pkgconfig:$PKG_CONFIG_PATH"
+        #pkg-config --libs --cflags gettext
+        brew info gettext
+      if: startsWith(matrix.config.os,'macos-')
+
     - name: Install xmllint (MacOS)
       run: |
-         brew install --force --overwrite python@3.11 # temp hack
-         brew install --force --overwrite python@3.12 # temp hack
-         brew update
-         brew install libxml2
+        export LDFLAGS="-L/opt/homebrew/opt/gettext/lib"
+        export CPPFLAGS="-I/opt/homebrew/opt/gettext/include"
+        brew install --force --overwrite python@3.11 # temp hack
+        brew install --force --overwrite python@3.12 # temp hack
+        brew update
+        brew install libxml2
       if: startsWith(matrix.config.os,'macos-')
 
     - name: Install bison (MacOS)
