@@ -3720,10 +3720,6 @@ QCString substituteKeywords(const QCString &file,const QCString &s,const QCStrin
   {
     // keyword          value getter
     { "$title",           [&]() { return !title.isEmpty() ? title : projName;       } },
-    { "$datetime",        [&]() { return dateToString(DateTimeType::DateTime);      } },
-    { "$date",            [&]() { return dateToString(DateTimeType::Date);          } },
-    { "$time",            [&]() { return dateToString(DateTimeType::Time);          } },
-    { "$year",            [&]() { return yearToString();                            } },
     { "$doxygenversion",  [&]() { return getDoxygenVersion();                       } },
     { "$projectname",     [&]() { return projName;                                  } },
     { "$projectnumber",   [&]() { return projNum;                                   } },

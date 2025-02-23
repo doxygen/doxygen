@@ -122,6 +122,32 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
   }
 }
 
+const char *replaceDatetime =  "<span class=\"datetime\"></span>;";
+const char *replaceDate     =  "<span class=\"date\"></span>;";
+const char *replaceTime     =  "<span class=\"time\"></span>;";
+const char *replaceYear     =  "<span class=\"year\"></span>;";
+static void writeBuildDateJS(TextStream &t)
+{
+  t << "$(function(){\n";
+      t << "let elements = document.getElementsByClassName(\"datetime\");\n";
+      t << "for (let i = 0; i < elements.length; i++) {\n";
+      t << "   elements.item(i).textContent = \"" << dateToString(DateTimeType::DateTime) << "\";\n";
+      t << "}\n";
+      t << "let elementsD= document.getElementsByClassName(\"date\");\n";
+      t << "for (let i = 0; i < elementsD.length; i++) {\n";
+      t << "   elementsD.item(i).textContent = \"" << dateToString(DateTimeType::Date) << "\";\n";
+      t << "}\n";
+      t << "let elementsT = document.getElementsByClassName(\"time\");\n";
+      t << "for (let i = 0; i < elementsT.length; i++) {\n";
+      t << "   elementsT.item(i).textContent = \"" << dateToString(DateTimeType::Time) << "\";\n";
+      t << "}\n";
+      t << "let elementsY = document.getElementsByClassName(\"year\");\n";
+      t << "for (let i = 0; i < elementsY.length; i++) {\n";
+      t << "   elementsY.item(i).textContent = \"" << yearToString() << "\";\n";
+      t << "}\n";
+  t << "});\n";
+}
+
 //------------------------------------------------------------------------
 /// Convert a set of LaTeX  commands `\(re)newcommand`  to a form readable by MathJax
 /// LaTeX syntax:
@@ -398,11 +424,11 @@ static QCString substituteHtmlKeywords(const QCString &file,
   {
     case TIMESTAMP_t::YES:
     case TIMESTAMP_t::DATETIME:
-      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime),
+      generatedBy = theTranslator->trGeneratedAt(replaceDatetime,
                                                  convertToHtml(Config_getString(PROJECT_NAME)));
       break;
     case TIMESTAMP_t::DATE:
-      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::Date),
+      generatedBy = theTranslator->trGeneratedAt(replaceDate,
                                                  convertToHtml(Config_getString(PROJECT_NAME)));
       break;
     case TIMESTAMP_t::NO:
@@ -592,6 +618,11 @@ static QCString substituteHtmlKeywords(const QCString &file,
   result = substituteKeywords(file,result,
   {
     // keyword           value getter
+    { "$datetime",       [&]() { return replaceDatetime; } },
+    { "$date",           [&]() { return replaceDate;     } },
+    { "$time",           [&]() { return replaceTime;     } },
+    { "$year",           [&]() { return replaceYear;     } },
+
     { "$navpath",        [&]() { return navPath;        } },
     { "$stylesheet",     [&]() { return cssFile;        } },
     { "$treeview",       [&]() { return treeViewCssJs;  } },
@@ -1284,6 +1315,15 @@ void HtmlGenerator::init()
       {
         t << replaceVariables(mgr.getAsString("dynsections_tooltips.js"));
       }
+    }
+  }
+
+  { 
+    std::ofstream f = Portable::openOutputStream(dname+"/build_date.js");
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      writeBuildDateJS(t);
     }
   }
 }
