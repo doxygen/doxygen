@@ -785,7 +785,7 @@ bool parseConfig(
   return true;
 }
 
-void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
+void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s,bool convert)
 {
   QChar c;
   bool needsEscaping=false;
@@ -823,10 +823,17 @@ void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
         if (*p   ==QChar::fromLatin1(' ') &&
            *(p+1)==QChar::fromLatin1('\0')) break; // skip inserted space at the end
         if (*p   ==QChar::fromLatin1('"')) t << "\\"; // escape quotes
-        if (*p   ==QChar::fromLatin1('<')) t << "&lt;";
-        else if (*p   ==QChar::fromLatin1('>')) t << "&gt;";
-        else if (*p   ==QChar::fromLatin1('&')) t << "&amp;";
-        else t << *p;
+        if (convert)
+        {
+          if (*p   ==QChar::fromLatin1('<')) t << "&lt;";
+          else if (*p   ==QChar::fromLatin1('>')) t << "&gt;";
+          else if (*p   ==QChar::fromLatin1('&')) t << "&amp;";
+          else t << *p;
+        }
+        else
+        {
+          t << *p;
+        }
         p++;
       }
     }
@@ -835,10 +842,17 @@ void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
       p=s.data();
       while (!p->isNull())
       {
-        if (*p   ==QChar::fromLatin1('<')) t << "&lt;";
-        else if (*p   ==QChar::fromLatin1('>')) t << "&gt;";
-        else if (*p   ==QChar::fromLatin1('&')) t << "&amp;";
-        else t << *p;
+        if (convert)
+        {
+          if (*p   ==QChar::fromLatin1('<')) t << "&lt;";
+          else if (*p   ==QChar::fromLatin1('>')) t << "&gt;";
+          else if (*p   ==QChar::fromLatin1('&')) t << "&amp;";
+          else t << *p;
+        }
+        else
+        {
+          t << *p;
+        }
         p++;
       }
     }

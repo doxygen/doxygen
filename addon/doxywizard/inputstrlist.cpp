@@ -242,7 +242,7 @@ void InputStrList::reset()
   setValue(m_default);
 }
 
-void InputStrList::writeValue(QTextStream &t,TextCodecAdapter *codec)
+void InputStrList::writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert)
 {
   bool first=true;
   foreach (QString s, m_strList)
@@ -253,7 +253,7 @@ void InputStrList::writeValue(QTextStream &t,TextCodecAdapter *codec)
       t << "                         ";
     }
     first=false;
-    writeStringValue(t,codec,s);
+    writeStringValue(t,codec,s,convert);
   }
 }
 

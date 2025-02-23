@@ -253,9 +253,9 @@ void InputString::reset()
   setDefault();
 }
 
-void InputString::writeValue(QTextStream &t,TextCodecAdapter *codec)
+void InputString::writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert)
 {
-  writeStringValue(t,codec,m_str);
+  writeStringValue(t,codec,m_str,convert);
 }
 
 bool InputString::isDefault()
