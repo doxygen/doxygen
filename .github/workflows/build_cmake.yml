@@ -198,20 +198,19 @@ jobs:
 
     - name: Install gettext for localization (MacOS)
       run: |
-        brew reinstall gettext
-        brew unlink gettext && brew link gettext
-        brew reinstall pkgconf
-        brew install pkg-config
+        export PKG_CONFIG_PATH="/opt/homebrew/opt/gettext/lib/pkgconfig:$PKG_CONFIG_PATH"
         pkg-config --libs --cflags gettext
         brew info gettext
       if: startsWith(matrix.config.os,'macos-')
 
     - name: Install xmllint (MacOS)
       run: |
-         brew install --force --overwrite python@3.11 # temp hack
-         brew install --force --overwrite python@3.12 # temp hack
-         brew update
-         brew install libxml2
+        export LDFLAGS="-L/opt/homebrew/opt/gettext/lib"
+        export CPPFLAGS="-I/opt/homebrew/opt/gettext/include"
+        brew install --force --overwrite python@3.11 # temp hack
+        brew install --force --overwrite python@3.12 # temp hack
+        brew update
+        brew install libxml2
       if: startsWith(matrix.config.os,'macos-')
 
     - name: Install bison (MacOS)
