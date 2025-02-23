@@ -1,6 +1,4 @@
-# vim:ts=4:sw=4:expandtab:autoindent
-cmake_minimum_required(VERSION 3.31)
-project(doxygen)
+# vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/deps/TinyDeflate
@@ -11,6 +9,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/libversion
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
+    ${PROJECT_SOURCE_DIR}/gettext/windows/inc
     ${PROJECT_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
@@ -352,10 +351,15 @@ endif()
 ##add_library(doxymain STATIC ${GENERATED_SRC}/${lex_file}.l.h)
 ##endforeach()
 
+#add_executable(doxygen
+#    main.cpp
+#    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
+#)
+
 add_executable(doxygen
     main.cpp
-    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
+
 
 # enable to monitor compilation times
 #set_property(TARGET doxymain PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
@@ -404,6 +408,9 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
+    ${PROJECT_SOURCE_DIR}/gettext/windows/lib/charset.lib
+    ${PROJECT_SOURCE_DIR}/gettext/windows/lib/iconv.lib
+    ${PROJECT_SOURCE_DIR}/gettext/windows/lib/intl.lib
     ${Iconv_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
