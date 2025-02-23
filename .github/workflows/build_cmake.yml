@@ -198,11 +198,11 @@ jobs:
 
     - name: Install gettext for localization (MacOS)
       run: |
-        brew update
-        brew install gettext
-        brew link --force gettext
-        export PKG_CONFIG_PATH="/opt/homebrew/opt/gettext/lib/pkgconfig:$PKG_CONFIG_PATH"
-        pkg-config --libs --cflags gettext
+        #brew update
+        #brew install gettext
+        #brew link --force gettext
+        #export PKG_CONFIG_PATH="/opt/homebrew/opt/gettext/lib/pkgconfig:$PKG_CONFIG_PATH"
+        #pkg-config --libs --cflags gettext
         brew info gettext
       if: startsWith(matrix.config.os,'macos-')
 
