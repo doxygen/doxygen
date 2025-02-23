@@ -38,6 +38,8 @@ typedef yyguts_t *yyscan_t;
  */
 
 #include <algorithm>
+#include <sstream>
+#include <map>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,7 +130,8 @@ struct passcannerYY_state
 /* ----------------------------------------------------------------- */
 /* paule32 pascal:                                                   */
 /* ----------------------------------------------------------------- */
-static std::map<int line, std::string> have_errors;
+static std::map<int, std::string> have_errors;
+static int  yyLineNumber  = 1;
 
 static int  yyread(yyscan_t yyscanner,char *buf,int max_size);
 static int  yy_state = 0;
@@ -284,10 +287,10 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 
 %%
 
-<INITIAL>[ \t]*                     {                         BEGIN(INITIAL); }
-<INITIAL>\n*                        {   yyextra->yyLineNr++;  BEGIN(INITIAL); }
+<INITIAL>[ \t]*                     {                    BEGIN(INITIAL); }
+<INITIAL>\n*                        {   yyLineNumber++;  BEGIN(INITIAL); }
 <INITIAL>"(*"                       {
-    have_errors.emplace(yyextra->yyLineNr,
+    have_errors.emplace(yyLineNumber,
     ERROR_COMMENT());
     BEGIN(COMMENT);
     
@@ -300,11 +303,10 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
     ||  ident == std::string("unit")) {
         std::cerr
             << "line: "
-            << yyextra->yyLineNr
+            << yyLineNumber
             << ": is a: "
             << ident;
-        have_errors.emplace(yyextra->yyLineNr,
-        "PROGRAM, LIBRARY or UNIT expected.")
+        have_errors.emplace(yyLineNumber,"PROGRAM, LIBRARY or UNIT expected.");
         BEGIN(BodyModuleIdent);
         
         yy_check_error();
@@ -319,7 +321,7 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 }
 
 <COMMENT>[ \t]*                     ;
-<COMMENT>\n*                        {   yyextra->yyLineNr++; }
+<COMMENT>\n*                        {    yyLineNumber++; }
 <COMMENT>"*)"                       {
     yy_check_error();
     switch (yy_state) {
@@ -332,15 +334,15 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 }
 <COMMENT>.                          ; // ignore all character
 <COMMENT><<EOF>>                    {
-    if (have_errors)
+    if (!have_errors.empty())
     yy_Error(std::string("comment not terminated."));
 }
 
 <BodyModuleIdent>[ \t]*             ;
-<BodyModuleIdent>\n*                {   yyextra->yyLineNr++; }
+<BodyModuleIdent>\n*                {   yyLineNumber++; }
 <BodyModuleIdent>"(*"               {
     yy_state = 1;
-    have_errors.emplace(yyextra->yyLineNr,
+    have_errors.emplace(yyLineNumber,
     ERROR_COMMENT());
     BEGIN(COMMENT);
 }
@@ -356,10 +358,10 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 <BodyModuleIdent><<EOF>>            {   yy_Error(std::string("identifier expected."));        }
 
 <BodyModuleIdentEnd>[ \t]*          ;
-<BodyModuleIdentEnd>\n*             {   yyextra->yyLineNr++; }
+<BodyModuleIdentEnd>\n*             {   yyLineNumber++; }
 <BodyModuleIdentEnd>"(*"            {
     yy_state = 2;
-    have_errors.emplace(yyextra->yyLineNr,
+    have_errors.emplace(yyLineNumber,
     ERROR_COMMENT());
     BEGIN(COMMENT);
 }
@@ -372,11 +374,10 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 <BodyModuleIdentEnd><<EOF>>         {   yy_Error(std::string("semicolon expected."));         }
 
 <BodyInterface>[ \t]*               ;
-<BodyInterface>\n*                  {   yyextra->yyLineNr++; }
+<BodyInterface>\n*                  {   yyLineNumber++; }
 <BodyInterface>"(*"                 {
     yy_state = 3;
-    have_errors.emplace(yyextra->yyLineNr,
-    ERROR_COMMENT());
+    have_errors.emplace(yyLineNumber,   ERROR_COMMENT());
     BEGIN(COMMENT);
 }
 <BodyInterface>{INTERFACE}          {
@@ -391,11 +392,10 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 <BodyInterface><<EOF>>              {   yy_Error(std::string("INTERFACE expected."));         }
 
 <BodyInterfacePart>[ \t]*           ;
-<BodyInterfacePart>\n*              {   yyextra->yyLineNr++; }
+<BodyInterfacePart>\n*              {   yyLineNumber++; }
 <BodyInterfacePart>"(*"             {
     yy_state = 4;
-    have_errors.emplace(yyextra->yyLineNr,
-    ERROR_COMMENT());
+    have_errors.emplace(yyLineNumber,   ERROR_COMMENT());
     BEGIN(COMMENT);
 }
 <BodyInterfacePart>{IDENTIFIER}     {
@@ -404,14 +404,13 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 <BodyInterfacePart><<EOF>>          {   yy_Error(std::string("INTERFACe expected."));         }
 
 <BodyImplementation>[ \t]*          ;
-<BodyImplementation>\n*             {   yyextra->yyLineNr++; }
+<BodyImplementation>\n*             {   yyLineNumber++; }
 <BodyImplementation>"(*"            {
     yy_state = 5;
-    have_errors.emplace(yyextra->yyLineNr,
-    ERROR_COMMENT());
+    have_errors.emplace(yyLineNumber,   ERROR_COMMENT());
     BEGIN(COMMENT);
 }
-<BodyImplementation>{IMPLEMENTATION}{
+<BodyImplementation>{IMPLEMENTATION} {
     std::string ident = std::string(yytext);
     if (ident == std::string("implementation")) {
         BEGIN(BodyEnd);
@@ -423,10 +422,10 @@ FINALZATION         ({F}{I}{N}{A}{L}{Z}{A}{T}{I}{O}{N})
 <BodyImplementation><<EOF>>         {   yy_Error(std::string("IMPLEMENTATION expected."));    }
 
 <BodyEnd>[ \t]*                     ;
-<BodyEnd>\n*                        {   yyextra->yyLineNr++; }
+<BodyEnd>\n*                        {   yyLineNumber++; }
 <BodyEnd>"(*"                       {
     yy_state = 6;
-    have_errors.emplace(yyextra->yyLineNr,
+    have_errors.emplace(yyLineNumber,
     ERROR_COMMENT());
     BEGIN(COMMENT);
 }
@@ -450,7 +449,7 @@ static bool
 yy_check_error(bool debug)
 {
     if (!have_errors.empty()) {
-        auto last = std::prev(hace_errors.end());  // last element
+        auto last = std::prev(have_errors.end());  // last element
         int  line = last->first;
         std::string txt = last->second;
         have_errors.erase(last);
@@ -470,7 +469,7 @@ yy_Error(
 {
     std::stringstream txt;
     txt << "line: "
-        << yyextra->yyLineNr
+        << yyLineNumber
         << ": ";
     
     if (msg.length() > 0)
@@ -488,7 +487,7 @@ yy_Info(
     if (msg.length() > 0) {
         std::cerr
             << "line: "
-            << yyextra->yyLineNr
+            << yyLineNumber
             << ": info: " << msg
             <<
         std::endl;
@@ -554,8 +553,12 @@ parseMain(
     yyextra->checkDupEntry = false;
     yyextra->firstPass     = true;
 
+    yyLineNumber           = 1;
+    
     std::cerr << "lex file {" << yyextra->fileName << "}..." <<
     std::endl;
+    
+    std::cerr << _tr("LICENSE") << std::endl;
     BEGIN( INITIAL );
     
 
@@ -563,8 +566,7 @@ parseMain(
     yyextra->lexInit = TRUE;
 
     yyextra->commentScanner.leaveFile(
-    yyextra->fileName ,
-    yyextra->yyLineNr);
+    yyextra->fileName, yyLineNumber);
 
     yyextra->programStr.clear();
     yyextra->current_root->program.str(std::string());
@@ -581,9 +583,8 @@ parsePrototype(
     //printf("**** parsePrototype(%s) begin\n",qPrint(text));
     if (text.isEmpty())
     {
-        warn(
-        yyextra->fileName,
-        yyextra->yyLineNr,"Empty prototype found!"); return;
+        warn(yyextra->fileName,yyLineNumber,"Empty prototype found!");
+        return;
     }
 
     // save scanner state
