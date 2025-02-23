@@ -19,22 +19,6 @@ if(WIN32 AND CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
     include_directories(${PROJECT_SOURCE_DIR}/gettext/inc)
 endif()
 
-if(APPLE AND MAKE_SYSTEM_NAME STREQUAL "Darwin")
-    message(STATUS "Compiling on macOS (Darwin)")
-    include_directories(
-        ${PROJECT_SOURCE_DIR}/gettext/inc
-        /opt/homebrew/opt/gettext/include
-        /usr/local/opt/gettext/include
-        /usr/local/include
-    )
-    link_directories(
-        /opt/homebrew/opt/gettext/lib
-        /usr/local/opt/gettext/lib
-        /usr/local/lib
-    )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DmacOS_BUILD")
-endif()
-
 if (NOT use_sys_spdlog)
     include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
 endif()
@@ -453,14 +437,6 @@ if(UNIX)
         intl
         pthread
     )
-endif()
-
-if(APPLE)
-    message(STATUS "Building for macOS: Adding alternative libraries")
-    find_library(Intl_LIBRARY NAMES intl)
-    find_path(Intl_INCLUDE_DIR NAMES libintl.h)
-    target_include_directories(doxygen PRIVATE ${Intl_INCLUDE_DIR})
-    target_link_libraries(doxygen PRIVATE ${Intl_LIBRARY})
 endif()
 
 set_project_warnings(doxycfg)
