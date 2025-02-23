@@ -9,7 +9,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/libversion
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
-    ${PROJECT_SOURCE_DIR}/gettext/windows/inc
+    ${PROJECT_SOURCE_DIR}/gettext/inc
     ${PROJECT_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
@@ -408,9 +408,9 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
-    ${PROJECT_SOURCE_DIR}/gettext/windows/lib/charset.lib
-    ${PROJECT_SOURCE_DIR}/gettext/windows/lib/iconv.lib
-    ${PROJECT_SOURCE_DIR}/gettext/windows/lib/intl.lib
+    ${PROJECT_SOURCE_DIR}/gettext/lib/charset.lib
+    ${PROJECT_SOURCE_DIR}/gettext/lib/iconv.lib
+    ${PROJECT_SOURCE_DIR}/gettext/lib/intl.lib
     ${Iconv_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}

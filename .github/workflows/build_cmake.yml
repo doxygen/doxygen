@@ -98,6 +98,9 @@ jobs:
         mkdir -p gettext/dll
         mkdir -p gettext/inc
         mkdir -p gettext/lib
+        cp doxygen-translations/bin/inc/*.* gettext/inc/
+        cp doxygen-translations/bin/lib/*.* gettext/lib/
+        cp doxygen-translations/bin/dll/*.* build/bin/
       if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Linux)
