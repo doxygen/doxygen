@@ -107,13 +107,12 @@ jobs:
     - name: Install localization files (Linux)
       run: |
         echo "download translation as seperate package..."
-	sudo apt install gettext:amd64 libgettextpo-dev:amd64 libiconv-hook-dev:amd64
+	sudo apt install gettext libgettextpo-dev libiconv-hook-dev
         git clone https://github.com/paule32/doxygen-translations.git
         mkdir -p build/bin
         mkdir -p gettext/inc
         cp doxygen-translations/bin/inc/*.* gettext/inc/
-      if: matrix.config.os != 'windows-latest'
-
+      if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install LaTeX (Linux)
       run: |
