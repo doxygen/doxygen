@@ -408,9 +408,6 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
-    ${PROJECT_SOURCE_DIR}/gettext/lib/charset.lib
-    ${PROJECT_SOURCE_DIR}/gettext/lib/iconv.lib
-    ${PROJECT_SOURCE_DIR}/gettext/lib/intl.lib
     ${Iconv_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
@@ -418,6 +415,23 @@ target_link_libraries(doxygen PRIVATE
     ${COVERAGE_LINKER_FLAGS}
     ${DOXYGEN_EXTRA_LINK_OPTIONS}
 )
+
+# only for Windows x64
+if(WIN32 AND CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
+    message(STATUS "Building for Windows 64-bit: Adding .lib files")
+    target_link_libraries(doxygen PRIVATE
+        ${PROJECT_SOURCE_DIR}/gettext/lib/charset.lib
+        ${PROJECT_SOURCE_DIR}/gettext/lib/iconv.lib
+        ${PROJECT_SOURCE_DIR}/gettext/lib/intl.lib
+    )
+elseif(UNIX)
+    message(STATUS "Building for Linux/macOS: Adding alternative libraries")
+    target_link_libraries(doxygen PRIVATE
+        iconv
+        intl
+        pthread
+    )
+endif()
 
 set_project_warnings(doxycfg)
 set_project_warnings(doxymain)
