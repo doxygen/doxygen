@@ -425,12 +425,18 @@ if(WIN32 AND CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
         ${PROJECT_SOURCE_DIR}/gettext/lib/intl.lib
     )
 elseif(UNIX)
-    message(STATUS "Building for Linux/macOS: Adding alternative libraries")
+    message(STATUS "Building for Linux: Adding alternative libraries")
     target_link_libraries(doxygen PRIVATE
         iconv
         intl
         pthread
     )
+else()
+    message(STATUS "Building for macOS: Adding alternative libraries")
+    find_library(Intl_LIBRARY NAMES intl)
+    find_path(Intl_INCLUDE_DIR NAMES libintl.h)
+    target_include_directories(doxygen PRIVATE ${Intl_INCLUDE_DIR})
+    target_link_libraries(doxygen PRIVATE ${Intl_LIBRARY})
 endif()
 
 set_project_warnings(doxycfg)
