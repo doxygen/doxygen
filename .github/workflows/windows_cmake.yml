@@ -41,13 +41,21 @@ jobs:
       run: |
         echo "download translation as seperate package..."
         git clone https://github.com/paule32/doxygen-translations.git
+        
         mkdir -p build/bin
+        mkdir -p build/bin/locale/en/LC_MESSAGES  # English
+        mkdir -p build/bin/locale/de/LC_MESSAGES  # German
+        
         mkdir -p gettext/dll
         mkdir -p gettext/inc
         mkdir -p gettext/lib
-        cp doxygen-translations/bin/inc/*.* gettext/inc/
+        
+        cp doxygen-translations/src/inc/*.* gettext/inc/
         cp doxygen-translations/bin/lib/*.* gettext/lib/
         cp doxygen-translations/bin/dll/*.* build/bin/
+        
+        cp doxygen-translations/bin/mob/en/LC_MESSAGES/doxygen.mo build/bin/locale/en/LC_MESSAGES/doxygen.mo
+        cp doxygen-translations/bin/mob/de/LC_MESSAGES/doxygen.mo build/bin/locale/de/LC_MESSAGES/doxygen.mo
 
     - name: Install LaTeX (Windows)
       uses: teatimeguest/setup-texlive-action@v3
