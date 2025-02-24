@@ -1,0 +1,137 @@
+name: CMake Build for Doxygen
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    permissions:
+      contents: write # to push pages branch (peaceiris/actions-gh-pages)
+
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Windows Latest MSVC Release",
+            os: windows-latest,
+            build_type: "Release", cc: "cl", cxx: "cl",
+            build_gen: "NMake Makefiles"
+          }
+    steps:
+    - name: Checkout doxygen
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install libiconv (Windows)
+      uses: suisei-cn/actions-download-file@v1
+      with:
+        url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
+        target: .
+
+    - name: Install localization files (Windows)
+      run: |
+        echo "download translation as seperate package..."
+        git clone https://github.com/paule32/doxygen-translations.git
+        
+        mkdir -p build/bin
+        # sort by language name:
+        mkdir -p build/bin/locale/nl/LC_MESSAGES  # Dutch
+        mkdir -p build/bin/locale/en/LC_MESSAGES  # English
+        mkdir -p build/bin/locale/de/LC_MESSAGES  # German
+        
+        mkdir -p gettext/dll
+        mkdir -p gettext/inc
+        mkdir -p gettext/lib
+        
+        cp doxygen-translations/src/inc/*.* gettext/inc/
+        cp doxygen-translations/bin/lib/*.* gettext/lib/
+        cp doxygen-translations/bin/dll/*.* build/bin/
+
+        # sort by language id:
+        cp doxygen-translations/bin/mob/de/LC_MESSAGES/doxygen.mo build/bin/locale/de/LC_MESSAGES/doxygen.mo
+        cp doxygen-translations/bin/mob/en/LC_MESSAGES/doxygen.mo build/bin/locale/en/LC_MESSAGES/doxygen.mo
+        cp doxygen-translations/bin/mob/nl/LC_MESSAGES/doxygen.mo build/bin/locale/nl/LC_MESSAGES/doxygen.mo
+
+    - name: Install bison/flex (Windows)
+      run: |
+        choco install winflexbison3
+
+    - name: Install Graphviz (Windows)
+      run:
+        choco install graphviz.portable
+
+    - name: Setup VS Environment (Windows)
+      uses: seanmiddleditch/gha-setup-vsdevenv@master
+
+    - name: Refresh Env (Windows)
+      run: |
+        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+        refreshenv
+
+    - name: Install Qt 5
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: 5.*
+
+    - name: Check tool versions (Windows)
+      shell: bash
+      run: |
+        echo "=== python ===";
+        python --version;
+        echo "=== cmake ===";
+        cmake --version;
+        echo "=== bison ===";
+        win_bison --version;
+        echo "=== flex ===";
+        win_flex --version;
+        echo "=== dot ===";
+        dot -V;
+
+    - name: Configure
+      shell: cmake -P {0}
+      run: |
+        set(ENV{CC} ${{ matrix.config.cc }})
+        set(ENV{CXX} ${{ matrix.config.cxx }})
+
+        execute_process(
+          COMMAND cmake
+            -S .
+            -B build
+            -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
+            -G "${{ matrix.config.build_gen }}"
+            -Dbuild_doc=YES
+            -Dbuild_wizard=YES
+            ${{ matrix.config.cmake_extra_opts }}
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+
+    - name: Build
+      shell: cmake -P {0}
+      run: |
+        include(ProcessorCount)
+        ProcessorCount(N)
+        execute_process(
+          COMMAND cmake --build build --parallel ${N}
+          RESULT_VARIABLE result
+          OUTPUT_VARIABLE output
+          ERROR_VARIABLE output
+          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+        )
+        if (NOT result EQUAL 0)
+          string(REGEX MATCH "FAILED:.*$" error_message "${output}")
+          string(REPLACE "\n" "%0A" error_message "${error_message}")
+          message("::error::${error_message}")
+          message(FATAL_ERROR "Build failed")
+        endif()
+
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: "${{ matrix.config.name }} build artifacts"
+        path: build/bin/

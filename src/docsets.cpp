@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -330,6 +330,8 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     case SrcLangExt::Markdown:lang="markdown"; break;   // Markdown
     case SrcLangExt::Slice:   lang="slice"; break;      // Slice
     case SrcLangExt::Lex:     lang="lex"; break;        // Lex
+    case SrcLangExt::Pascal:  lang="pascal"; break;     // Pascal
+    case SrcLangExt::dBase:   lang="dbase"; break;      // dBase
     case SrcLangExt::Unknown: lang="unknown"; break;    // should not happen!
   }
 

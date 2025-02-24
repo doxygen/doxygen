@@ -14,6 +14,11 @@ include_directories(
     ${GENERATED_SRC}
 )
 
+# only for Windows x64
+if(WIN32 AND CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
+    include_directories(${PROJECT_SOURCE_DIR}/gettext/inc)
+endif()
+
 if (NOT use_sys_spdlog)
     include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
 endif()
@@ -110,6 +115,10 @@ set(LEX_FILES
     pre
     pycode
     pyscanner
+    pascode
+    passcanner
+    dbcode
+    dbscanner
     scanner
     sqlcode
     vhdlcode
@@ -346,10 +355,15 @@ endif()
 ##add_library(doxymain STATIC ${GENERATED_SRC}/${lex_file}.l.h)
 ##endforeach()
 
+#add_executable(doxygen
+#    main.cpp
+#    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
+#)
+
 add_executable(doxygen
     main.cpp
-    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
+
 
 # enable to monitor compilation times
 #set_property(TARGET doxymain PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
@@ -405,6 +419,33 @@ target_link_libraries(doxygen PRIVATE
     ${COVERAGE_LINKER_FLAGS}
     ${DOXYGEN_EXTRA_LINK_OPTIONS}
 )
+
+# only for Windows x64
+if(WIN32 AND CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
+    message(STATUS "Building for Windows 64-bit: Adding .lib files")
+    target_link_libraries(doxygen PRIVATE
+        ${PROJECT_SOURCE_DIR}/gettext/lib/charset.lib
+        ${PROJECT_SOURCE_DIR}/gettext/lib/iconv.lib
+        ${PROJECT_SOURCE_DIR}/gettext/lib/intl.lib
+    )
+endif()
+
+if(UNIX)
+    message(STATUS "Building for Linux: Adding alternative libraries")
+    target_link_libraries(doxygen PRIVATE
+        iconv
+        intl
+        pthread
+    )
+endif()
+
+#if(APPLE)
+#    message(STATUS "Building for macOS: Adding alternative libraries")
+#    find_library(Intl_LIBRARY NAMES intl)
+#    find_path(Intl_INCLUDE_DIR NAMES libintl.h)
+#    target_include_directories(doxygen PRIVATE ${Intl_INCLUDE_DIR})
+#    target_link_libraries(doxygen PRIVATE ${Intl_LIBRARY})
+#endif()
 
 set_project_warnings(doxycfg)
 set_project_warnings(doxymain)

@@ -20,23 +20,22 @@
  *  at the University of California, Riverside; the course was
  *  taught by Peter H. Froehlich <phf@acm.org>.
  */
-
-
-#ifndef PYSCANNER_H
-#define PYSCANNER_H
+ 
+#ifndef PASSCANNER_H
+#define PASSCANNER_H
 
 #include "parserintf.h"
 
-/** \brief Python Language parser using state-based lexical scanning.
+/** \brief Pascal Language parser using state-based lexical scanning.
  *
- * This is the Python language parser for doxygen.
+ * This is the Pascal language parser for doxygen.
  */
-class PythonOutlineParser : public OutlineParserInterface
+class PascalOutlineParser : public OutlineParserInterface
 {
   public:
-    PythonOutlineParser();
-   ~PythonOutlineParser() override;
-    NON_COPYABLE(PythonOutlineParser)
+    PascalOutlineParser();
+   ~PascalOutlineParser() override;
+    NON_COPYABLE(PascalOutlineParser)
     void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
