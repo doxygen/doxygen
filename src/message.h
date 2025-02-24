@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2023 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -248,6 +248,8 @@ template<> struct fmt::formatter<SrcLangExt> : formatter<std::string>
       case SrcLangExt::Cpp:      result="C++";         break;
       case SrcLangExt::JS:       result="Javascript";  break;
       case SrcLangExt::Python:   result="Python";      break;
+      case SrcLangExt::Pascal:   result="Pascal";      break;
+      case SrcLangExt::dBase:    result="dBase";       break;
       case SrcLangExt::Fortran:  result="Fortran";     break;
       case SrcLangExt::VHDL:     result="VHDL";        break;
       case SrcLangExt::XML:      result="XML";         break;

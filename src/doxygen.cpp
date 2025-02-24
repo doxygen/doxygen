@@ -66,8 +66,16 @@
 #include "searchindex_js.h"
 #include "parserintf.h"
 #include "htags.h"
+
 #include "pycode.h"
 #include "pyscanner.h"
+
+# include "pascode.h"
+# include "passcanner.h"
+# include "dbcode.h"
+# include "dbscanner.h"
+
+
 #include "fortrancode.h"
 #include "fortranscanner.h"
 #include "xmlcode.h"
@@ -8354,14 +8362,15 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
                 auto lang     = bmd->getLanguage();
                 auto compType = mbcd->compoundType();
                 if (bmd->virtualness()!=Specifier::Normal ||
-                    lang==SrcLangExt::Python              ||
-                    lang==SrcLangExt::Java                ||
-                    lang==SrcLangExt::PHP                 ||
-                    compType==ClassDef::Interface         ||
-                    compType==ClassDef::Protocol)
+                    lang     == SrcLangExt::Python        ||
+                    lang     == SrcLangExt::Java          ||
+                    lang     == SrcLangExt::PHP           ||
+                    compType == ClassDef::Interface       ||
+                    compType == ClassDef::Protocol)
                 {
                   const ArgumentList &bmdAl = bmd->argumentList();
                   const ArgumentList &mdAl =  md->argumentList();
+                  
                   //printf(" Base argList='%s'\n Super argList='%s'\n",
                   //        qPrint(argListToString(bmdAl)),
                   //        qPrint(argListToString(mdAl))
@@ -11303,12 +11312,24 @@ template<class T> std::function< std::unique_ptr<T>() > make_parser_factory()
 
 void initDoxygen()
 {
+    // paule32: I switch C++ stl locales to C GNU gettext - may todo !!!
+    ::setlocale(LC_ALL, ::getenv("LC_ALL"));
+    ::setlocale(LC_CTYPE,"C");  // to get isspace(0xA0)==0, needed for UTF-8
+    ::setlocale(LC_NUMERIC,"C");
+    
+    bindtextdomain("messages", "./locale"); 
+    textdomain("messages");
+    
   initResources();
+  
   QCString lang = Portable::getenv("LC_ALL");
   if (!lang.isEmpty()) Portable::setenv("LANG",lang);
+  
+  #if 0
   std::setlocale(LC_ALL,"");
   std::setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   std::setlocale(LC_NUMERIC,"C");
+  #endif
 
   Doxygen::symbolMap = new SymbolMap<Definition>;
 
@@ -11319,6 +11340,10 @@ void initDoxygen()
                                                          make_parser_factory<CCodeParser>());
   Doxygen::parserManager->registerParser("python",       make_parser_factory<PythonOutlineParser>(),
                                                          make_parser_factory<PythonCodeParser>());
+  Doxygen::parserManager->registerParser("pascal",       make_parser_factory<PascalOutlineParser>(),
+                                                         make_parser_factory<PascalCodeParser>());
+  Doxygen::parserManager->registerParser("dbase",        make_parser_factory<dBaseOutlineParser>(),
+                                                         make_parser_factory<dBaseCodeParser>());
   Doxygen::parserManager->registerParser("fortran",      make_parser_factory<FortranOutlineParser>(),
                                                          make_parser_factory<FortranCodeParser>());
   Doxygen::parserManager->registerParser("fortranfree",  make_parser_factory<FortranOutlineParserFree>(),
@@ -12450,12 +12475,14 @@ void parseInput()
       bool generateQhp         = Config_getBool(GENERATE_QHP);
       bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
       bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
+      
       if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
       if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
       if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
       if (generateSitemap)     Doxygen::indexList->addIndex<Sitemap>();
       if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
       if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
+      
       Doxygen::indexList->addIndex<Crawlmap>();
       Doxygen::indexList->initialize();
     }
@@ -13118,6 +13145,7 @@ void generateOutput()
   if (generateHtml)
   {
     FTVHelp::generateTreeViewImages();
+    
     copyStyleSheet();
     copyLogo(Config_getString(HTML_OUTPUT));
     copyIcon(Config_getString(HTML_OUTPUT));

@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- *
- *
  * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -22,30 +20,44 @@
  */
 
 
-#ifndef PYSCANNER_H
-#define PYSCANNER_H
+#ifndef DBASECODE_H
+#define DBASECODE_H
 
 #include "parserintf.h"
 
-/** \brief Python Language parser using state-based lexical scanning.
- *
- * This is the Python language parser for doxygen.
- */
-class PythonOutlineParser : public OutlineParserInterface
+class FileDef;
+class MemberDef;
+class QCString;
+class Definition;
+
+class dBaseCodeParser : public CodeParserInterface
 {
   public:
-    PythonOutlineParser();
-   ~PythonOutlineParser() override;
-    NON_COPYABLE(PythonOutlineParser)
-    void parseInput(const QCString &fileName,
-                    const char *fileBuf,
-                    const std::shared_ptr<Entry> &root,
-                    ClangTUParser *clangParser) override;
-    bool needsPreprocessing(const QCString &extension) const override;
-    void parsePrototype(const QCString &text) override;
+    dBaseCodeParser();
+   ~dBaseCodeParser() override;
+    NON_COPYABLE(dBaseCodeParser)
+
+    void parseCode(OutputCodeList &codeOutIntf,
+                   const QCString &scopeName,
+                   const QCString &input,
+                   SrcLangExt lang,
+                   bool stripCodeComments,
+                   bool isExampleBlock,
+                   const QCString &exampleName=QCString(),
+                   const FileDef *fileDef=nullptr,
+                   int startLine=-1,
+                   int endLine=-1,
+                   bool inlineFragment=FALSE,
+                   const MemberDef *memberDef=nullptr,
+                   bool showLineNumbers=TRUE,
+                   const Definition *searchCtx=nullptr,
+                   bool collectXrefs=TRUE
+                  ) override;
+    void resetCodeParserState() override;
   private:
     struct Private;
     std::unique_ptr<Private> p;
 };
+
 
 #endif

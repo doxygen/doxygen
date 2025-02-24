@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2023 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -110,7 +110,7 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
   }
   t << "\" method=\"get\">\n";
   t << "              <span id=\"MSearchSelectExt\">&#160;</span>\n";
-  if (!highlightSearch || !Config_getBool(HTML_DYNAMIC_MENUS))
+  if (!highlightSearch)
   {
     t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\""
       << theTranslator->trSearch() << "\" size=\"20\" accesskey=\"S\" \n";
@@ -346,7 +346,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
   bool hasProjectBrief = !Config_getString(PROJECT_BRIEF).isEmpty();
   bool hasProjectLogo = !Config_getString(PROJECT_LOGO).isEmpty();
   bool hasProjectIcon = !Config_getString(PROJECT_ICON).isEmpty();
-  bool hasFullSideBar = Config_getBool(FULL_SIDEBAR) && /*disableIndex &&*/ treeView;
+  bool hasFullSideBar = Config_getBool(FULL_SIDEBAR) && disableIndex && treeView;
   bool hasCopyClipboard = Config_getBool(HTML_COPY_CLIPBOARD);
   bool hasCookie = treeView || searchEngine || Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE;
   static bool titleArea = (hasProjectName || hasProjectBrief || hasProjectLogo || (disableIndex && searchEngine));
@@ -428,7 +428,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
 
     if (!serverBasedSearch)
     {
-      if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS) || Config_getBool(FULL_SIDEBAR))
+      if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
 					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
@@ -2825,36 +2825,25 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
       {
         bool searchEngine      = Config_getBool(SEARCHENGINE);
         bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
-        bool disableIndex      = Config_getBool(DISABLE_INDEX);
-        bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
-        bool fullSidebar       = Config_getBool(FULL_SIDEBAR);
-        // case where DISABLE_INDEX=NO & GENERATE_TREEVIEW=YES & FULL_SIDEBAR=YES has search box in the side panel
         if (searchEngine)
         {
           t << "      <li>\n";
-          if (disableIndex || !generateTreeView || !fullSidebar)
+          if (!serverBasedSearch) // pure client side search
           {
-            if (!serverBasedSearch) // pure client side search
-            {
-              writeClientSearchBox(t,relPath);
-              t << "      </li>\n";
-            }
-            else // server based search
-            {
-              writeServerSearchBox(t,relPath,highlightSearch);
-              if (!highlightSearch)
-              {
-                t << "      </li>\n";
-              }
-            }
-          }
-          else
-          {
+            writeClientSearchBox(t,relPath);
             t << "      </li>\n";
           }
+          else // server based search
+          {
+            writeServerSearchBox(t,relPath,highlightSearch);
+            if (!highlightSearch)
+            {
+              t << "      </li>\n";
+            }
+          }
         }
-        if (!highlightSearch || Config_getBool(FULL_SIDEBAR))
-          // on the search page the index will be ended by the page itself if the search box is part of the navigation bar
+        if (!highlightSearch) // on the search page the index will be ended by the
+          // page itself
         {
           endQuickIndexList(t);
         }
@@ -2873,11 +2862,9 @@ static void writeDefaultQuickLinks(TextStream &t,
                                    const QCString &relPath)
 {
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
-  bool searchEngine      = Config_getBool(SEARCHENGINE);
-  bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
-  bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
-  bool fullSidebar       = Config_getBool(FULL_SIDEBAR);
-  bool disableIndex      = Config_getBool(DISABLE_INDEX);
+  bool searchEngine = Config_getBool(SEARCHENGINE);
+  bool externalSearch = Config_getBool(EXTERNAL_SEARCH);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
   LayoutNavEntry::Kind kind = LayoutNavEntry::None;
   LayoutNavEntry::Kind altKind = LayoutNavEntry::None; // fall back for the old layout file
@@ -2928,7 +2915,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     case HighlightedItem::Search: break;
   }
 
-  if (!disableIndex && Config_getBool(HTML_DYNAMIC_MENUS))
+  if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
   {
     QCString searchPage;
     if (externalSearch)
@@ -2945,7 +2932,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     t << "$(function() {\n";
     t << "  initMenu('" << relPath << "',"
-      << (searchEngine && !(generateTreeView && fullSidebar)?"true":"false") << ","
+      << (searchEngine?"true":"false") << ","
       << (serverBasedSearch?"true":"false") << ",'"
       << searchPage << "','"
       << theTranslator->trSearch() << "',"
@@ -2969,7 +2956,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     t << "</script>\n";
     t << "<div id=\"main-nav\"></div>\n";
   }
-  else if (!disableIndex) // && !Config_getBool(HTML_DYNAMIC_MENUS)
+  else if (!Config_getBool(DISABLE_INDEX)) // && !Config_getBool(HTML_DYNAMIC_MENUS)
   {
     // find highlighted index item
     LayoutNavEntry *hlEntry = root->find(kind,kind==LayoutNavEntry::UserGroup ? file : QCString());
@@ -2991,17 +2978,11 @@ static void writeDefaultQuickLinks(TextStream &t,
         hlEntry = e;
       }
     }
-    t << "<div id=\"main-nav\">\n";
     renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HighlightedItem::Search);
-    t << "</div>\n";
   }
-  else if (!generateTreeView)
+  else if (!Config_getBool(GENERATE_TREEVIEW))
   {
     renderQuickLinksAsTree(t,relPath,root);
-  }
-  if (generateTreeView && !disableIndex && fullSidebar)
-  {
-     t << "<div id=\"doc-content\">\n";
   }
 }
 
@@ -3024,12 +3005,12 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   {
     QCString fn = name;
     addHtmlExtensionIfMissing(fn);
-    if (/*!Config_getBool(DISABLE_INDEX) ||*/ !Config_getBool(FULL_SIDEBAR))
+    if (!Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
     {
       result += QCString(
         "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n");
     }
-    result+=
+    result+= QCString(
      "  <div id=\"nav-tree\">\n"
      "    <div id=\"nav-tree-contents\">\n"
      "      <div id=\"nav-sync\" class=\"sync\"></div>\n"
@@ -3041,15 +3022,12 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "</div>\n"
      "<script type=\"text/javascript\">\n"
      "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-     "$(function(){initNavTree('" + fn +
-     "','" + relpath +
-     "'); initResizable(true); });\n"
+     "$(function(){initNavTree('") + fn +
+     QCString("','") + relpath +
+     QCString("'); initResizable(true); });\n"
      "/* @license-end */\n"
-     "</script>\n";
-     if (Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
-     {
-       result+="<div id=\"doc-content\">\n";
-     }
+     "</script>\n"
+     "<div id=\"doc-content\">\n");
   }
   else
   {
@@ -3100,12 +3078,10 @@ void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file)
 // PHP based search script
 void HtmlGenerator::writeSearchPage()
 {
-  bool disableIndex            = Config_getBool(DISABLE_INDEX);
-  bool generateTreeView        = Config_getBool(GENERATE_TREEVIEW);
-  bool fullSidebar             = Config_getBool(FULL_SIDEBAR);
-  bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
-  QCString projectName         = Config_getString(PROJECT_NAME);
-  QCString htmlOutput          = Config_getString(HTML_OUTPUT);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool disableIndex = Config_getBool(DISABLE_INDEX);
+  QCString projectName = Config_getString(PROJECT_NAME);
+  QCString htmlOutput = Config_getString(HTML_OUTPUT);
 
   // OPENSEARCH_PROVIDER {
   QCString configFileName = htmlOutput+"/search_config.php";
@@ -3118,7 +3094,6 @@ void HtmlGenerator::writeSearchPage()
     t << "  'PROJECT_NAME' => \"" << convertToHtml(projectName) << "\",\n";
     t << "  'GENERATE_TREEVIEW' => " << (generateTreeView?"true":"false") << ",\n";
     t << "  'DISABLE_INDEX' => " << (disableIndex?"true":"false") << ",\n";
-    t << "  'FULL_SIDEBAR' => " << (fullSidebar?"true":"false") << ",\n";
     t << ");\n\n";
     t << "$translator = array(\n";
     t << "  'search_results_title' => \"" << theTranslator->trSearchResultsTitle() << "\",\n";
@@ -3129,6 +3104,7 @@ void HtmlGenerator::writeSearchPage()
     t << "  ),\n";
     t << "  'search_matches' => \"" << theTranslator->trSearchMatches() << "\",\n";
     t << "  'search' => \"" << theTranslator->trSearch() << "\",\n";
+    t << "  'split_bar' => \"" << substitute(substitute(writeSplitBarAsString("search",""), "\"","\\\""), "\n","\\n") << "\",\n";
     t << "  'logo' => \"" << substitute(substitute(writeLogoAsString(""), "\"","\\\""), "\n","\\n") << "\",\n";
     t << ");\n\n";
     t << "?>\n";
@@ -3154,21 +3130,14 @@ void HtmlGenerator::writeSearchPage()
       << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
-
-    if (!disableIndex && !quickLinksAfterSplitbar)
+    if (!Config_getBool(DISABLE_INDEX))
     {
       writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
     }
-    if (generateTreeView)
+    else
     {
-      t << "</div><!-- top -->\n";
+      t << "</div>\n";
     }
-    t << writeSplitBarAsString("search.php",QCString());
-    if (quickLinksAfterSplitbar)
-    {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
-    }
-    t << "<!-- generated -->\n";
 
     t << "<?php\n";
     t << "require_once \"search_functions.php\";\n";
@@ -3200,12 +3169,9 @@ void HtmlGenerator::writeSearchPage()
 
 void HtmlGenerator::writeExternalSearchPage()
 {
-  bool disableIndex            = Config_getBool(DISABLE_INDEX);
-  bool generateTreeView        = Config_getBool(GENERATE_TREEVIEW);
-  bool fullSidebar             = Config_getBool(FULL_SIDEBAR);
-  bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
-  QCString dname               = Config_getString(HTML_OUTPUT);
-  QCString fileName            = dname+"/search"+Doxygen::htmlFileExtension;
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  QCString dname = Config_getString(HTML_OUTPUT);
+  QCString fileName = dname+"/search"+Doxygen::htmlFileExtension;
   std::ofstream f = Portable::openOutputStream(fileName);
   if (f.is_open())
   {
@@ -3220,21 +3186,27 @@ void HtmlGenerator::writeExternalSearchPage()
       << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
-
-    if (!disableIndex && !quickLinksAfterSplitbar)
+    if (!Config_getBool(DISABLE_INDEX))
     {
       writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      if (!Config_getBool(HTML_DYNAMIC_MENUS)) // for dynamic menus, menu.js creates this part
+      {
+        t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\"" << theTranslator->trSearch() <<
+             "\" size=\"20\" accesskey=\"S\" onfocus=\"searchBox.OnSearchFieldFocus(true)\" onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
+      }
+      t << "            </form>\n";
+      t << "          </div><div class=\"right\"></div>\n";
+      t << "        </div>\n";
+      t << "      </li>\n";
+      t << "    </ul>\n";
+      t << "  </div>\n";
+      t << "</div>\n";
     }
-    if (generateTreeView)
+    else
     {
-      t << "</div><!-- top -->\n";
+      t << "</div>\n";
     }
-    t << writeSplitBarAsString("search.php",QCString());
-    if (quickLinksAfterSplitbar)
-    {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
-    }
-
+    t << writeSplitBarAsString("search","");
     t << "<div class=\"header\">\n";
     t << "  <div class=\"headertitle\">\n";
     t << "    <div class=\"title\">" << theTranslator->trSearchResultsTitle() << "</div>\n";

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -401,8 +401,7 @@ void HtmlDocVisitor::operator()(const DocURL &u)
   else // web address
   {
     m_t << "<a href=\"";
-    filter(u.url());
-    m_t << "\">";
+    m_t << u.url() << "\">";
     filter(u.url());
     m_t << "</a>";
   }
@@ -2179,7 +2178,7 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   //printf("HtmlDocVisitor: file=%s anchor=%s\n",qPrint(file),qPrint(anchor));
   if (!ref.isEmpty()) // link to entity imported via tag file
   {
-    m_t << "<a class=\"elRef\" ";
+    m_t << "<a class=\"el\" ";
     m_t << externalLinkTarget();
   }
   else // local link

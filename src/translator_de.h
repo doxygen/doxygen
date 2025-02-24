@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2025 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -140,13 +140,16 @@
 //   2024/05/03 Jens Kallup (kallup-dev@web.de)
 //    - Updated for 1.10.0
 //
+//   2025/02/19 Jens Kallup (kallup-dev@web.de)
+//    - Updated for 1.13.2
+
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_8_15
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -180,6 +183,142 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
 
     // --- Language translation methods -------------------
 
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result=clName;
+      if (isLocal) result+=" Local";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Klasse"; break;
+        case ClassDef::Struct:     result+=" Struktur"; break;
+        case ClassDef::Union:      result+=" Vereinigung"; break;
+        case ClassDef::Interface:  result+=" Schnittstelle"; break;
+        case ClassDef::Protocol:   result+=" Protokoll"; break;
+        case ClassDef::Category:   result+=" Kategorie"; break;
+        case ClassDef::Exception:  result+=" Ausnahme"; break;
+        default: break;
+      }
+      result+=" Referenzen";
+      return result;
+    }
+
+    QCString trConstants() override
+    {
+        return "Konstanten";
+    }
+    
+    QCString trConstantDocumentation() override
+    {
+        return "Fortlaufende Dokumentation";
+    }
+    
+    QCString trDataMembers() override
+    {
+        return "Datenmitglieder";
+    }
+
+    QCString trDataMemberDocumentation() override
+    {
+        return "Dokumentation der Datenelemente";
+    }
+    QCString trDictionaries() override
+    {
+        return "Wörterbücher";
+    }
+    QCString trDictionaryDocumentation() override
+    {
+        return "Wörterbuch-Dokumentation";
+    }
+    QCString trExceptionHierarchyDescription() override
+    {
+        return "Beschreibung der Ausnahme-Hierarchie";
+    }
+    QCString trExceptionHierarchy() override
+    {
+        return "Ausnahme-Hierarchie";
+    }
+    QCString trExceptionIndex() override
+    {
+        return "Ausnahme-Index";
+    }
+    QCString trExceptionList() override
+    {
+        return "Ausnahme-Liste";
+    }
+    QCString trExceptionListDescription() override
+    {
+        return "Beschreibung der Ausnahme-Liste";
+    }
+    QCString trExceptionDocumentation() override
+    {
+        return "Ausnahme-Dokumentation";
+    }
+    QCString trInterfaceHierarchy() override
+    {
+        return "Schnittstellen Hierarchie";
+    }
+    QCString trInterfaceDocumentation() override
+    {
+        return "Schnittstellen Dokumentation";
+    }
+    
+    QCString trInterfaceHierarchyDescription() override
+    {
+        return "Beschreibung der Schnittstellen-Hierarchie";
+    }
+    QCString trInterfaceIndex() override
+    {
+        return "Schnittstellen-Index";
+    }
+    QCString trInterfaceList() override
+    {
+        return "Schnittstellen-Liste";
+    }
+    QCString trInterfaceListDescription() override
+    {
+        return "Schnittstellen-Beschreibung";
+    }
+    QCString trOperationDocumentation() override
+    {
+        return "Aktivitäten-Dokumentation";
+    }
+    QCString trOperations() override
+    {
+        return "Aktivitäten";
+    }
+    QCString trSequenceDocumentation() override
+    {
+        return "Abfolgen-Dokumentation";
+    }
+    QCString trSequences() override
+    {
+        return "Abfolgen";
+    }
+    QCString trSliceInterfaces() override
+    {
+        return "Schnittstellen-Teile";
+    }
+    QCString trStructDocumentation() override
+    {
+        return "Struktur-Dokumentation";
+    }
+    QCString trStructIndex() override
+    {
+        return "Struktur-Index";
+    }
+    QCString trStructList() override
+    {
+        return "Struktur-Listen";
+    }
+    QCString trStructListDescription() override
+    {
+        return "Struktur-Listen-Beschreibung";
+    }
+    QCString trStructs() override
+    {
+        return "Strukturen";
+    }
+    
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions() override
     { return "Verwandte Funktionen"; }
@@ -2349,12 +2488,12 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
           if (lang == SrcLangExt::Fortran) trType(true,true);
           else result=trClass(true,true);
           break;
-        case ClassDef::Struct:     result="Struct"; break;
-        case ClassDef::Union:      result="Union"; break;
-        case ClassDef::Interface:  result="Interface"; break;
-        case ClassDef::Protocol:   result="Protocol"; break;
-        case ClassDef::Category:   result="Category"; break;
-        case ClassDef::Exception:  result="Exception"; break;
+        case ClassDef::Struct:     result="Struktur"; break;
+        case ClassDef::Union:      result="Vereinigung"; break;
+        case ClassDef::Interface:  result="Schnittstelle"; break;
+        case ClassDef::Protocol:   result="Protokoll"; break;
+        case ClassDef::Category:   result="Kategorie"; break;
+        case ClassDef::Exception:  result="Ausnahme"; break;
         case ClassDef::Service:    result="Service"; break;
         case ClassDef::Singleton:  result="Singleton"; break;
         default: break;
@@ -2366,14 +2505,14 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
       QCString result="Hier ist eine Lister aller ";
-      if (!extractAll) result+="documented ";
+      if (!extractAll) result+="dokumentierten ";
 
       switch (hl)
       {
         case FileMemberHighlight::All:
           if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
           {
-            result+="functions, variables, defines, enums, and typedefs";
+            result+="Functionen, Variablen, Makros, Aufzählungen, und Zuweisungen";
           }
           else
           {
