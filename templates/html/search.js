@@ -623,7 +623,11 @@ function createResults(resultsPath) {
     srLink.innerHTML = elem[1][0];
     srEntry.appendChild(srLink);
     if (elem[1].length==2) { // single result
-      srLink.setAttribute('href',resultsPath+elem[1][1][0]);
+      if (elem[1][1][0].startsWith('http://') || elem[1][1][0].startsWith('https://')) { // absolute path
+        srLink.setAttribute('href',elem[1][1][0]);
+      } else { // relative path
+        srLink.setAttribute('href',resultsPath+elem[1][1][0]);
+      }
       srLink.setAttribute('onclick','searchBox.CloseResultsWindow()');
       if (elem[1][1][1]) {
        srLink.setAttribute('target','_parent');
@@ -643,7 +647,11 @@ function createResults(resultsPath) {
         srChild.setAttribute('id','Item'+index+'_c'+c);
         setKeyActions(srChild,'return searchResults.NavChild(event,'+index+','+c+')');
         setClassAttr(srChild,'SRScope');
-        srChild.setAttribute('href',resultsPath+elem[1][c+1][0]);
+        if (elem[1][c+1][0].startsWith('http://') || elem[1][c+1][0].startsWith('https://')) { // absolute path
+          srLink.setAttribute('href',elem[1][c+1][0]);
+        } else { // relative path
+          srLink.setAttribute('href',resultsPath+elem[1][c+1][0]);
+        }
         srChild.setAttribute('onclick','searchBox.CloseResultsWindow()');
         if (elem[1][c+1][1]) {
          srChild.setAttribute('target','_parent');
