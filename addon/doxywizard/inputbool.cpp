@@ -134,7 +134,7 @@ void InputBool::reset()
   setValue(m_default);
 }
 
-void InputBool::writeValue(QTextStream &t,TextCodecAdapter *codec)
+void InputBool::writeValue(QTextStream &t,TextCodecAdapter *codec,bool)
 {
   if (m_state)
     t << codec->encode(QString::fromLatin1("YES"));
