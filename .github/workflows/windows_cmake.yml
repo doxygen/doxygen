@@ -37,6 +37,8 @@ jobs:
         git clone https://github.com/paule32/doxygen-translations.git
         
         mkdir -p build/bin
+        # sort by language name:
+        mkdir -p build/bin/locale/nl/LC_MESSAGES  # Dutch
         mkdir -p build/bin/locale/en/LC_MESSAGES  # English
         mkdir -p build/bin/locale/de/LC_MESSAGES  # German
         
@@ -47,9 +49,11 @@ jobs:
         cp doxygen-translations/src/inc/*.* gettext/inc/
         cp doxygen-translations/bin/lib/*.* gettext/lib/
         cp doxygen-translations/bin/dll/*.* build/bin/
-        
-        cp doxygen-translations/bin/mob/en/LC_MESSAGES/doxygen.mo build/bin/locale/en/LC_MESSAGES/doxygen.mo
+
+        # sort by language id:
         cp doxygen-translations/bin/mob/de/LC_MESSAGES/doxygen.mo build/bin/locale/de/LC_MESSAGES/doxygen.mo
+        cp doxygen-translations/bin/mob/en/LC_MESSAGES/doxygen.mo build/bin/locale/en/LC_MESSAGES/doxygen.mo
+        cp doxygen-translations/bin/mob/nl/LC_MESSAGES/doxygen.mo build/bin/locale/nl/LC_MESSAGES/doxygen.mo
 
     - name: Install bison/flex (Windows)
       run: |
