@@ -163,7 +163,10 @@ void warn_(WarningType type, const QCString &file, int line, fmt::string_view fm
 
 void warn_uncond_(fmt::string_view fmt, fmt::format_args args)
 {
-  if (checkWarnMessage(g_errorStr+fmt::vformat(fmt,args))) fmt::print(g_warnFile,"{}{}",g_warningStr,vformat(fmt,args));
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    if (checkWarnMessage(g_errorStr+fmt::vformat(fmt,args))) fmt::print(g_warnFile,"{}{}",g_warningStr,vformat(fmt,args));
+  }
   handle_warn_as_error();
 }
 
@@ -171,7 +174,10 @@ void warn_uncond_(fmt::string_view fmt, fmt::format_args args)
 
 void err_(fmt::string_view fmt, fmt::format_args args)
 {
-  if (checkWarnMessage(g_errorStr+fmt::vformat(fmt,args))) fmt::print(g_warnFile,"{}{}",g_errorStr,fmt::vformat(fmt,args));
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    if (checkWarnMessage(g_errorStr+fmt::vformat(fmt,args))) fmt::print(g_warnFile,"{}{}",g_errorStr,fmt::vformat(fmt,args));
+  }
   handle_warn_as_error();
 }
 
