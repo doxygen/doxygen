@@ -1386,25 +1386,12 @@ static void addPerlModDocBlock(PerlModOutput &output,
 
 static const char *getProtectionName(Protection prot)
 {
-  switch (prot)
-  {
-    case Protection::Public:    return "public";
-    case Protection::Protected: return "protected";
-    case Protection::Private:   return "private";
-    case Protection::Package:   return "package";
-  }
-  return nullptr;
+  return to_string_lower(prot);
 }
 
 static const char *getVirtualnessName(Specifier virt)
 {
-  switch(virt)
-  {
-    case Specifier::Normal:  return "non_virtual";
-    case Specifier::Virtual: return "virtual";
-    case Specifier::Pure:    return "pure_virtual";
-  }
-  return nullptr;
+  return to_string_lower(virt);
 }
 
 static QCString pathDoxyfile;

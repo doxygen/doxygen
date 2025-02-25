@@ -6368,27 +6368,7 @@ int lineBlock(const QCString &text,const QCString &marker)
 /** Returns a string representation of \a lang. */
 QCString langToString(SrcLangExt lang)
 {
-  switch(lang)
-  {
-    case SrcLangExt::Unknown:  return "Unknown";
-    case SrcLangExt::IDL:      return "IDL";
-    case SrcLangExt::Java:     return "Java";
-    case SrcLangExt::CSharp:   return "C#";
-    case SrcLangExt::D:        return "D";
-    case SrcLangExt::PHP:      return "PHP";
-    case SrcLangExt::ObjC:     return "Objective-C";
-    case SrcLangExt::Cpp:      return "C++";
-    case SrcLangExt::JS:       return "JavaScript";
-    case SrcLangExt::Python:   return "Python";
-    case SrcLangExt::Fortran:  return "Fortran";
-    case SrcLangExt::VHDL:     return "VHDL";
-    case SrcLangExt::XML:      return "XML";
-    case SrcLangExt::SQL:      return "SQL";
-    case SrcLangExt::Markdown: return "Markdown";
-    case SrcLangExt::Slice:    return "Slice";
-    case SrcLangExt::Lex:      return "Lex";
-  }
-  return "Unknown";
+  return to_string(lang);
 }
 
 /** Returns the scope separator to use given the programming language \a lang */
