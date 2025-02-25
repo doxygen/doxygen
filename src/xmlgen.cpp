@@ -1498,7 +1498,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     if (bcd.prot == Protection::Package) ASSERT(0);
     t << "    <derivedcompoundref refid=\""
       << classOutputFileBase(bcd.classDef)
-      << "prot=\"";
+      << "\" prot=\"";
     t << to_string_lower(bcd.prot);
     t << "\" virt=\"";
     t << to_string_lower(bcd.virt);
