@@ -706,7 +706,7 @@ void ClangTUParser::linkMacro(OutputCodeList &ol,const FileDef *fd,
 void ClangTUParser::linkIdentifier(OutputCodeList &ol,const FileDef *fd,
     uint32_t &line,uint32_t &column,const char *text,int tokenIndex)
 {
-  AUTO_TRACE("line={} colum={} text={}",line,column,text);
+  AUTO_TRACE("line={} column={} text={}",line,column,text);
   CXCursor c = p->cursors[tokenIndex];
   CXCursorKind cKind = clang_getCursorKind(c);
   AUTO_TRACE_ADD("cursor kind={}",(int)cKind);
