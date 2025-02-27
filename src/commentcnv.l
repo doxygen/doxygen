@@ -1746,7 +1746,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       int count = incText.contains(blockId.data());
       if (count!=2)
       {
-        warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with [{}] for \\snippet{{doc}} should appear twice in file {}, found it {:d} times, skipping",
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with {} for \\snippet{{doc}} should appear twice in file {}, found it {:d} times, skipping",
             blockId,absFileName,count);
         return false;
       }

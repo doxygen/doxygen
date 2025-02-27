@@ -572,6 +572,7 @@ static inline const char *getLexerFILE() {return __FILE__;}
 CMD       ("\\"|"@")
 PRE       ("pre"|"PRE")
 TABLE     ("table"|"TABLE")
+TABLEDEL  ("table"|"tr"|"th"|"td"|"TABLE"|"TR"|"TH"|"TD")
 P         [pP]
 UL        ("ul"|"UL")
 OL        ("ol"|"OL")
@@ -1212,6 +1213,17 @@ STopt  [^\n@\\]*
 <Comment>{DOCNL}                        { // newline
                                           addOutput(yyscanner,yytext);
                                           if (*yytext == '\n') yyextra->lineNr++;
+                                        }
+<Comment>"<"[/]?{TABLEDEL}">"           { // In case in xrefitem type some special handling is required
+                                          if (yyextra->inContext==OutputXRef)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner,yytext);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
                                         }
 <Comment>.                              { // catch-all for anything else
                                           addOutput(yyscanner,*yytext);
