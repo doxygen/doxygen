@@ -3537,6 +3537,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   ldef.stripPrefix("constexpr ");
   ldef.stripPrefix("consteval ");
   ldef.stripPrefix("constinit ");
+  ldef.stripPrefix("static ");
 
   //----------------------------------------
 
