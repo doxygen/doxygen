@@ -3367,8 +3367,12 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
   bool showGroupedMembInc = Config_getBool(SHOW_GROUPED_MEMB_INC);
   const FileDef *fd = getFileDef();
   QCString nm;
-  if (fd) nm = getFileDef()->docName();
-  if (inGroup && fd && showGroupedMembInc && !nm.isEmpty())
+  if (inGroup && fd && showGroupedMembInc)
+  {
+    nm = fd->absFilePath();
+    nm = stripFromIncludePath(nm);
+  }
+  if (!nm.isEmpty())
   {
     ol.startParagraph();
     ol.startTypewriter();
