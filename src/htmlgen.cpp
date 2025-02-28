@@ -67,6 +67,8 @@ static QCString g_footer_file;
 static QCString g_footer;
 static QCString g_mathjax_code;
 static QCString g_latex_macro;
+static QCString g_build_date_str;
+static bool g_build_date = false;
 static constexpr auto hex="0123456789ABCDEF";
 
 static const SelectionMarkerInfo htmlMarkerInfo = { '<', "<!--BEGIN ",10,"<!--END ",8,"-->",3 };
@@ -628,6 +630,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
     { "$treeview",       [&]() { return treeViewCssJs;  } },
     { "$searchbox",      [&]() { return searchBox;      } },
     { "$search",         [&]() { return searchCssJs;    } },
+    { "$builddate",      [&]() { return g_build_date_str;} },
     { "$mathjax",        [&]() { return mathJaxJs;      } },
     { "$darkmode",       [&]() { return darkModeJs;     } },
     { "$generatedby",    [&]() { return generatedBy;    } },
@@ -1167,6 +1170,19 @@ void HtmlGenerator::addCodeGen(OutputCodeList &list)
   list.add<HtmlCodeGeneratorDefer>(m_codeGen);
 }
 
+static bool hasDateReplacement(const QCString &str)
+{
+  return (str.contains("$datetime",false) ||
+          str.contains("$date",false) ||
+          str.contains("$time",false) ||
+          str.contains("$year",false) ||
+          ((Config_getEnum(TIMESTAMP) != TIMESTAMP_t::NO) && str.contains("$generatedby",false)) ||
+          str.contains("class=\"datetime\"",false) ||
+          str.contains("class=\"date\"",false) ||
+          str.contains("class=\"time\"",false) ||
+          str.contains("class=\"year\"",false)
+         );
+}
 void HtmlGenerator::init()
 {
   QCString dname = Config_getString(HTML_OUTPUT);
@@ -1180,6 +1196,7 @@ void HtmlGenerator::init()
   {
     g_header_file=Config_getString(HTML_HEADER);
     g_header=fileToString(g_header_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_header));
     //printf("g_header='%s'\n",qPrint(g_header));
     QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
     checkBlocks(result,Config_getString(HTML_HEADER),htmlMarkerInfo);
@@ -1188,6 +1205,7 @@ void HtmlGenerator::init()
   {
     g_header_file="header.html";
     g_header = ResourceMgr::instance().getAsString(g_header_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_header));
     QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
     checkBlocks(result,"<default header.html>",htmlMarkerInfo);
   }
@@ -1196,6 +1214,7 @@ void HtmlGenerator::init()
   {
     g_footer_file=Config_getString(HTML_FOOTER);
     g_footer=fileToString(g_footer_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_footer));
     //printf("g_footer='%s'\n",qPrint(g_footer));
     QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
     checkBlocks(result,Config_getString(HTML_FOOTER),htmlMarkerInfo);
@@ -1204,6 +1223,7 @@ void HtmlGenerator::init()
   {
     g_footer_file = "footer.html";
     g_footer = ResourceMgr::instance().getAsString(g_footer_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_footer));
     QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
     checkBlocks(result,"<default footer.html>",htmlMarkerInfo);
   }
@@ -1318,6 +1338,7 @@ void HtmlGenerator::init()
     }
   }
 
+  if (g_build_date)
   { 
     std::ofstream f = Portable::openOutputStream(dname+"/build_date.js");
     if (f.is_open())
@@ -1325,6 +1346,7 @@ void HtmlGenerator::init()
       TextStream t(&f);
       writeBuildDateJS(t);
     }
+    g_build_date_str = "<script type=\"text/javascript\" src=\"$relpath^build_date.js\"></script>";
   }
 }
 
