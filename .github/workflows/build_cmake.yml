@@ -427,15 +427,14 @@ jobs:
       with:
         name: "Html documentation artifacts"
         path: build/html/
-      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' || matrix.config.name == 'Ubuntu Latest GCC Release (Arm)'
-
+      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
 
     - name: Archive Latex documentation artifacts
       uses: actions/upload-artifact@v4
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf
-      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' || matrix.config.name == 'Ubuntu Latest GCC Release (Arm)'
+      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
 
     - name: Generate Internal documentation
       shell: cmake -P {0}
@@ -447,7 +446,7 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Building internal documentation failed")
         endif()
-      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' || matrix.config.name == 'Ubuntu Latest GCC Release (Arm)'
+      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)'
 
     - name: Publish Internal documentation to Github pages
       uses: peaceiris/actions-gh-pages@v4
@@ -456,5 +455,5 @@ jobs:
          external_repository: doxygen/doxygen-docs
          publish_dir: build/doxygen_docs/html
          force_orphan: true
-      if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
+      if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' }}
 
