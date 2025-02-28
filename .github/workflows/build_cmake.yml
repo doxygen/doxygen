@@ -155,11 +155,29 @@ jobs:
         clang++ -v
       if: matrix.config.os == 'ubuntu-20.04'
 
-    - name: Install libxapian (Ubuntu 20.04)
+    - name: Install libclang (Ubuntu 22.04 ARM)
+      run: |
+        sudo apt update
+        sudo apt remove llvm-12 llvm-12-dev llvm-12-tools llvm-12-runtime clang-12 clang-format-12 libclang-common-12-dev libclang-cpp12 libclang1-12 libllvm12
+        sudo apt remove llvm-13 llvm-13-dev llvm-13-tools llvm-13-runtime clang-13 clang-format-13 libclang-common-13-dev libclang-cpp13 libclang1-13 libllvm13
+        sudo apt-get autoremove
+        sudo apt-get clean
+        sudo apt install -y libclang-common-14-dev libclang-14-dev clang-14 llvm-14 llvm-14-dev
+        apt list --installed | egrep '(clang|llvm)'
+        ls -d /usr/lib/llvm-*/include/
+        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-14   100
+        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 100
+        ls -al /usr/bin/clang++
+        ls -al /etc/alternatives/clang++
+        which clang++
+        clang++ -v
+      if: matrix.config.os == 'ubuntu-22.04-arm'
+
+    - name: Install libxapian (Ubuntu)
       run: |
         sudo apt update
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-20.04'
+      if: matrix.config.os == 'ubuntu-20.04' || matrix.config.os == 'ubuntu-22.04-arm'
 
     - name: Install LaTeX (Windows)
       uses: teatimeguest/setup-texlive-action@v3
@@ -409,7 +427,7 @@ jobs:
       with:
         name: "Html documentation artifacts"
         path: build/html/
-      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' || matrix.config.name == 'Ubuntu Latest GCC Release (Arm)'
 
 
     - name: Archive Latex documentation artifacts
@@ -417,7 +435,7 @@ jobs:
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf
-      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' || matrix.config.name == 'Ubuntu Latest GCC Release (Arm)'
 
     - name: Generate Internal documentation
       shell: cmake -P {0}
@@ -429,7 +447,7 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Building internal documentation failed")
         endif()
-      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+      if: matrix.config.name == 'Ubuntu Latest GCC Release (Intel)' || matrix.config.name == 'Ubuntu Latest GCC Release (Arm)'
 
     - name: Publish Internal documentation to Github pages
       uses: peaceiris/actions-gh-pages@v4
