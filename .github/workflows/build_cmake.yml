@@ -272,13 +272,13 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Qt 6
-      uses: jurplel/install-qt-action@v4
+      uses: jdpurcell/install-qt-action@v4
       with:
         version: 6.2.*
       if: startsWith(matrix.config.os,'macos-')
 
     - name: Install Qt 5
-      uses: jurplel/install-qt-action@v4
+      uses: jdpurcell/install-qt-action@v4
       with:
         version: 5.*
       if: startsWith(matrix.config.os,'macos-')!=true
