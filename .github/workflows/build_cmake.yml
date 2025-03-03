@@ -269,19 +269,19 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Qt 6.8
-      uses: jdpurcell/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4
       with:
         version: 6.8.*
       if: matrix.config.os == 'ubuntu-24.04-arm'
 
     - name: Install Qt 6.2
-      uses: jdpurcell/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4
       with:
         version: 6.2.*
       if: startsWith(matrix.config.os,'macos-')
 
     - name: Install Qt 5
-      uses: jdpurcell/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4
       with:
         version: 5.*
       if: startsWith(matrix.config.os,'macos-')!=true && matrix.config.os != 'ubuntu-24.04-arm'
