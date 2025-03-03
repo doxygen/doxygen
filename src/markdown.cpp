@@ -84,7 +84,7 @@ enum class ExplicitPageResult
 #define extraChar(c) \
   (c=='-' || c=='+' || c=='!' || \
    c=='?' || c=='$' || c=='@' || \
-   c=='&' || c=='*' || c=='%' || \
+   c=='&' || c=='*' || c=='_' || c=='%' || \
    c=='[' || c=='(' || c=='.' || \
    c=='>' || c==':' || c==',' || \
    c==';' || c=='\'' || c=='"' || c=='`')
@@ -3640,7 +3640,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   current->fileName = fileName;
   current->docFile  = fileName;
   current->docLine  = 1;
-  QCString docs = fileBuf;
+  QCString docs = stripIndentation(fileBuf);
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n{}\n",fileBuf);
   QCString id;
   Markdown markdown(fileName,1,0);

@@ -1927,7 +1927,7 @@ WSopt [ \t\r]*
                                             }
                                             else
                                             {
-                                              if (def->fileName != yyextra->fileName) addDefine(yyscanner);
+                                              if (def->fileName != yyextra->fileName && !yyextra->expandOnlyPredef) addDefine(yyscanner);
                                               //printf("error: define %s is defined more than once!\n",qPrint(yyextra->defName));
                                             }
                                           }

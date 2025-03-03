@@ -81,9 +81,19 @@ or even have both forms of navigation:
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c NO
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_full_sidebar "FULL_SIDEBAR" = \c NO
 
 \image html layout_index_and_treeview.png
 \image latex layout_index_and_treeview.png width=8cm
+
+and this also works with the side bar spanning the full height
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c NO
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_full_sidebar "FULL_SIDEBAR" = \c YES
+
+\image html layout_index_and_sidebar.png
+\image latex layout_index_and_sidebar.png width=8cm
 
 if you already use an external index (i.e. have one of the following
 options enabled

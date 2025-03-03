@@ -190,7 +190,7 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 %x SnippetDocTag
 %x IncludeFile
 
-CMD ("\\"|"@")
+CMD [\\@]
   //- start: NUMBER -------------------------------------------------------------------------
   // Note same defines in code.l: keep in sync
 DECIMAL_INTEGER  [1-9][0-9']*[0-9]?[uU]?[lL]?[lL]?
@@ -561,7 +561,7 @@ SLASHopt [/]*
                                      yyextra->inVerbatim=true;
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,ReadLine,IncludeFile>"\\ilinebr"[ \t]+("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
+<CComment,ReadLine,IncludeFile>{CMD}"ilinebr"[ \t]+("```"[`]*|"~~~"[~]*) { /* start of markdown code block */
                                      if (!Config_getBool(MARKDOWN_SUPPORT))
                                      {
                                        REJECT;
@@ -1070,7 +1070,7 @@ SLASHopt [/]*
 <ReadLine,CopyLine>{RL}            {
 				     copyToOutput(yyscanner,yytext,yyleng);
 				   }
-<ReadLine,CopyLine>{RL}/{B}"\\ilinebr"{B} {
+<ReadLine,CopyLine>{RL}/{B}{CMD}"ilinebr"{B} {
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <ReadLine,CopyLine>{RLopt}/\n      {
@@ -1132,13 +1132,13 @@ SLASHopt [/]*
                                      yyextra->snippetName = "";
                                      BEGIN(SnippetDocTag);
                                    }
-<SnippetDocTag>[^\\\n]+            {
+<SnippetDocTag>[^\\@\n]+            {
                                      yyextra->snippetName += yytext;
                                    }
-<SnippetDocTag>"\\"                {
+<SnippetDocTag>{CMD}               {
                                      yyextra->snippetName += yytext;
                                    }
-<SnippetDocTag>(\n|"\\ilinebr")    {
+<SnippetDocTag>(\n|{CMD}"ilinebr") {
                                      for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
                                      yyextra->snippetName = yyextra->snippetName.stripWhiteSpace();
                                      QCString blockId = "["+yyextra->snippetName+"]";
@@ -1204,7 +1204,7 @@ SLASHopt [/]*
 <CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,yytext,YY_START==ReadLine && yyextra->readLineCtx==SComment);
   				   }
-<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{B}?"\\ilinebr"{B}[\\@]"ialias{" { // expand alias with arguments
+<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{B}?{CMD}"ilinebr"{B}[\\@]"ialias{" { // expand alias with arguments
 				     yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
                                      int extraSpace = (yytext[0]==' '? 1:0);
@@ -1746,7 +1746,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
       int count = incText.contains(blockId.data());
       if (count!=2)
       {
-        warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with [{}] for \\snippet{{doc}} should appear twice in file {}, found it {:d} times, skipping",
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with {} for \\snippet{{doc}} should appear twice in file {}, found it {:d} times, skipping",
             blockId,absFileName,count);
         return false;
       }

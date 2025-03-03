@@ -24,6 +24,7 @@
 #include "tooltip.h"
 #include "utf8.h"
 #include "searchindex.h"
+#include "trace.h"
 #endif
 
 //--------------------------------------------------------------------------
@@ -343,7 +344,7 @@ void ClangTUParser::switchToFile(const FileDef *fd)
 
 std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
 {
-  //printf("ClangParser::lookup(%d,%s)\n",line,symbol);
+  AUTO_TRACE("line={},symbol={}",line,symbol);
   std::string result;
   if (symbol==nullptr) return result;
   bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
@@ -379,10 +380,10 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
   while (l<=line && p->curToken<p->numTokens && !found)
   {
     CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[p->curToken]);
-    //if (l==line)
-    //{
-    //  printf("try to match symbol %s with token %s\n",symbol,clang_getCString(tokenString));
-    //}
+    if (l==line)
+    {
+      AUTO_TRACE_ADD("try to match symbol {} with token {}",symbol,clang_getCString(tokenString));
+    }
     const char *ts = clang_getCString(tokenString);
     int tl = strlen(ts);
     int startIndex = p->curToken;
@@ -413,14 +414,14 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
           //printf("no match '%s'<->'%s'\n",ts,symbol+offset);
           break; // no match
         }
-        //printf("partial match '%s'<->'%s'\n",ts,symbol+offset);
+        AUTO_TRACE_ADD("partial match '{}'<->'{}'",ts,symbol+offset);
         offset+=tl;
       }
       if (offset==sl) // symbol matches the token(s)
       {
         CXCursor c = p->cursors[p->curToken];
         CXString usr = clang_getCursorUSR(c);
-        //printf("found full match %s usr='%s'\n",symbol,clang_getCString(usr));
+        AUTO_TRACE_ADD("found full match {} usr='{}'",symbol,clang_getCString(usr));
         result = clang_getCString(usr);
         clang_disposeString(usr);
         found=TRUE;
@@ -437,14 +438,14 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
       l = getCurrentTokenLine();
     }
   }
-  //if (!found)
-  //{
-  //  printf("Did not find symbol %s at line %d :-(\n",symbol,line);
-  //}
-  //else
-  //{
-  //  printf("Found symbol %s usr=%s\n",symbol,result.data());
-  //}
+  if (!found)
+  {
+    AUTO_TRACE_EXIT("Did not find symbol {} at line {} :-(",symbol,line);
+  }
+  else
+  {
+    AUTO_TRACE_EXIT("Found symbol {} usr={}",symbol,result);
+  }
   return result;
 }
 
@@ -705,19 +706,29 @@ void ClangTUParser::linkMacro(OutputCodeList &ol,const FileDef *fd,
 void ClangTUParser::linkIdentifier(OutputCodeList &ol,const FileDef *fd,
     uint32_t &line,uint32_t &column,const char *text,int tokenIndex)
 {
+  AUTO_TRACE("line={} column={} text={}",line,column,text);
   CXCursor c = p->cursors[tokenIndex];
+  CXCursorKind cKind = clang_getCursorKind(c);
+  AUTO_TRACE_ADD("cursor kind={}",(int)cKind);
   CXCursor r = clang_getCursorReferenced(c);
+  AUTO_TRACE_ADD("cursor reference kind={}",(int)clang_getCursorKind(r));
   if (!clang_equalCursors(r, c))
   {
+    AUTO_TRACE_ADD("link to referenced location");
     c=r; // link to referenced location
   }
-  CXCursor t = clang_getSpecializedCursorTemplate(c);
-  if (!clang_Cursor_isNull(t) && !clang_equalCursors(t,c))
+  if (!clang_isDeclaration(cKind))
   {
-    c=t; // link to template
+    CXCursor t = clang_getSpecializedCursorTemplate(c);
+    AUTO_TRACE_ADD("cursor template kind={}",(int)clang_getCursorKind(t));
+    if (!clang_Cursor_isNull(t) && !clang_equalCursors(t,c))
+    {
+      c=t; // link to template
+    }
   }
   CXString usr = clang_getCursorUSR(c);
   const char *usrStr = clang_getCString(usr);
+  AUTO_TRACE_ADD("usr={}",usrStr);
 
   const Definition *d = nullptr;
   auto kv = Doxygen::clangUsrMap->find(usrStr);
@@ -725,17 +736,17 @@ void ClangTUParser::linkIdentifier(OutputCodeList &ol,const FileDef *fd,
   {
     d = kv->second;
   }
-  //CXCursorKind kind = clang_getCursorKind(c);
-  //if (d==0)
-  //{
-  //  printf("didn't find definition for '%s' usr='%s' kind=%d\n",
-  //      text,usrStr,kind);
-  //}
-  //else
-  //{
-  //  printf("found definition for '%s' usr='%s' name='%s'\n",
-  //      text,usrStr,d->name().data());
-  //}
+  CXCursorKind kind = clang_getCursorKind(c);
+  if (d==0)
+  {
+    AUTO_TRACE_ADD("didn't find definition for '{}' usr='{}' kind={}",
+        text,usrStr,(int)kind);
+  }
+  else
+  {
+    AUTO_TRACE_ADD("found definition for '{}' usr='{}' name='{}'",
+        text,usrStr,d->name().data());
+  }
 
   if (d && d->isLinkable())
   {
@@ -788,6 +799,7 @@ void ClangTUParser::detectFunctionBody(const char *s)
 
 void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
 {
+  AUTO_TRACE("file={}",fd->name());
   // (re)set global parser state
   p->currentMemberDef=nullptr;
   p->currentLine=0;

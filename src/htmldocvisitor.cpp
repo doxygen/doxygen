@@ -401,7 +401,8 @@ void HtmlDocVisitor::operator()(const DocURL &u)
   else // web address
   {
     m_t << "<a href=\"";
-    m_t << u.url() << "\">";
+    filter(u.url());
+    m_t << "\">";
     filter(u.url());
     m_t << "</a>";
   }
@@ -1694,7 +1695,7 @@ void HtmlDocVisitor::operator()(const DocImage &img)
     {
       src = correctURL(url,img.relPath());
     }
-    if (typeSVG && !inlineImage)
+    if (typeSVG && !inlineImage && !src.startsWith("http://") && !src.startsWith("https://"))
     {
       m_t << "<object type=\"image/svg+xml\" data=\"" << convertToHtml(src)
         << "\"" << sizeAttribs << attrs;

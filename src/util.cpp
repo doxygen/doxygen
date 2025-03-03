@@ -2193,6 +2193,39 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
 
 //---------------------------------------------------------------------------------------
 
+bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl)
+{
+  AUTO_TRACE("srcAl=%s dstAl=%s",argListToString(srcAl),argListToString(dstAl));
+  if (srcAl.size()!=dstAl.size()) // different number of template parameters -> overload
+  {
+    AUTO_TRACE_EXIT("different number of parameters");
+    return false;
+  }
+  auto isUnconstraintTemplate = [](const QCString &type)
+  {
+    return type=="typename" || type=="class" || type.startsWith("typename ") || type.startsWith("class ");
+  };
+  auto srcIt = srcAl.begin();
+  auto dstIt = dstAl.begin();
+  while (srcIt!=srcAl.end() && dstIt!=dstAl.end())
+  {
+    const Argument &srcA = *srcIt;
+    const Argument &dstA = *dstIt;
+    if ((!isUnconstraintTemplate(srcA.type) || !isUnconstraintTemplate(dstA.type)) && srcA.type!=dstA.type) // different constraints -> overload
+    {
+      AUTO_TRACE_EXIT("different constraints");
+      return false;
+    }
+    ++srcIt;
+    ++dstIt;
+  }
+  AUTO_TRACE_EXIT("same");
+  // no overload with respect to the template parameters
+  return true;
+}
+
+//---------------------------------------------------------------------------------------
+
 static void findMembersWithSpecificName(const MemberName *mn,
                                         const QCString &args,
                                         bool checkStatics,
@@ -3528,9 +3561,10 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 
 //----------------------------------------------------------------------
 
-QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords)
+QCString substituteKeywords(const QCString &file, const QCString &s,const KeywordSubstitutionList &keywords)
 {
   std::string substRes;
+  int line = 1;
   const char *p = s.data();
   if (p)
   {
@@ -3567,6 +3601,7 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
               else
               {
                 //printf("missing argument\n");
+                warn(file,line,"Missing argument for '{}'",kw.keyword);
                 p+=keyLen;
               }
             }
@@ -3577,6 +3612,12 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
               //printf("found '%s'->'%s'\n",kw.keyword,qPrint(getValue()));
               p+=keyLen;
             }
+            else
+            {
+              //printf("%s %d Expected arguments, none specified '%s'\n",qPrint(file), line, qPrint(kw.keyword));
+              warn(file,line,"Expected arguments for '{}' but none were specified",kw.keyword);
+              p+=keyLen;
+            }
             found = true;
             break;
           }
@@ -3584,6 +3625,7 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
       }
       if (!found) // copy
       {
+        if (c=='\n') line++;
         substRes+=c;
         p++;
       }
@@ -3671,10 +3713,10 @@ static QCString projectLogoSize()
   return sizeVal;
 }
 
-QCString substituteKeywords(const QCString &s,const QCString &title,
+QCString substituteKeywords(const QCString &file,const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief)
 {
-  return substituteKeywords(s,
+  return substituteKeywords(file,s,
   {
     // keyword          value getter
     { "$title",           [&]() { return !title.isEmpty() ? title : projName;       } },
@@ -6326,27 +6368,7 @@ int lineBlock(const QCString &text,const QCString &marker)
 /** Returns a string representation of \a lang. */
 QCString langToString(SrcLangExt lang)
 {
-  switch(lang)
-  {
-    case SrcLangExt::Unknown:  return "Unknown";
-    case SrcLangExt::IDL:      return "IDL";
-    case SrcLangExt::Java:     return "Java";
-    case SrcLangExt::CSharp:   return "C#";
-    case SrcLangExt::D:        return "D";
-    case SrcLangExt::PHP:      return "PHP";
-    case SrcLangExt::ObjC:     return "Objective-C";
-    case SrcLangExt::Cpp:      return "C++";
-    case SrcLangExt::JS:       return "JavaScript";
-    case SrcLangExt::Python:   return "Python";
-    case SrcLangExt::Fortran:  return "Fortran";
-    case SrcLangExt::VHDL:     return "VHDL";
-    case SrcLangExt::XML:      return "XML";
-    case SrcLangExt::SQL:      return "SQL";
-    case SrcLangExt::Markdown: return "Markdown";
-    case SrcLangExt::Slice:    return "Slice";
-    case SrcLangExt::Lex:      return "Lex";
-  }
-  return "Unknown";
+  return to_string(lang);
 }
 
 /** Returns the scope separator to use given the programming language \a lang */
@@ -6402,7 +6424,7 @@ bool protectionLevelVisible(Protection prot)
 
 //---------------------------------------------------------------------------
 
-QCString stripIndentation(const QCString &s)
+QCString stripIndentation(const QCString &s,bool skipFirstLine)
 {
   if (s.isEmpty()) return s; // empty string -> we're done
 
@@ -6412,16 +6434,17 @@ QCString stripIndentation(const QCString &s)
   char c=0;
   int indent=0;
   int minIndent=1000000; // "infinite"
-  bool searchIndent=TRUE;
+  bool searchIndent=true;
   int tabSize=Config_getInt(TAB_SIZE);
+  bool skipFirst = skipFirstLine;
   while ((c=*p++))
   {
     if      (c=='\t') indent+=tabSize - (indent%tabSize);
-    else if (c=='\n') indent=0,searchIndent=TRUE;
+    else if (c=='\n') indent=0,searchIndent=true,skipFirst=false;
     else if (c==' ')  indent++;
-    else if (searchIndent)
+    else if (searchIndent && !skipFirst)
     {
-      searchIndent=FALSE;
+      searchIndent=false;
       if (indent<minIndent) minIndent=indent;
     }
   }
@@ -6433,14 +6456,16 @@ QCString stripIndentation(const QCString &s)
   TextStream result;
   p=s.data();
   indent=0;
+  skipFirst=skipFirstLine;
   while ((c=*p++))
   {
     if (c=='\n') // start of new line
     {
       indent=0;
       result << c;
+      skipFirst=false;
     }
-    else if (indent<minIndent) // skip until we reach minIndent
+    else if (indent<minIndent && !skipFirst) // skip until we reach minIndent
     {
       if (c=='\t')
       {
@@ -6647,8 +6672,8 @@ QCString extractDirection(QCString &docs)
                               ),dir.end());
       unsigned char ioMask=0;
       size_t inIndex  = dir.find( "in");
-      size_t outIndex = dir.find("out");
       if ( inIndex!=std::string::npos) dir.erase( inIndex,2),ioMask|=(1<<0);
+      size_t outIndex = dir.find("out");
       if (outIndex!=std::string::npos) dir.erase(outIndex,3),ioMask|=(1<<1);
       if (dir.empty() && ioMask!=0) // only in and/or out attributes found
       {

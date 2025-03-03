@@ -1275,11 +1275,12 @@ void FileDefImpl::addMembersToMemberGroup()
 void FileDefImpl::insertMember(MemberDef *md)
 {
   if (md->isHidden()) return;
-  //printf("%s:FileDefImpl::insertMember(%s (=%p) list has %d elements)\n",
-  //    qPrint(name()),qPrint(md->name()),md,allMemberList.count());
   MemberList *allMemberList = getMemberList(MemberListType::AllMembersList());
+  //printf("%s:FileDefImpl::insertMember(%s (=%p) list has %zu elements)\n",
+  //    qPrint(name()),qPrint(md->name()),(void*)md,allMemberList ? allMemberList->size() : 0);
   if (allMemberList && allMemberList->contains(md))
   {
+    //printf("already added\n");
     return;
   }
 

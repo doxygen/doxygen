@@ -231,17 +231,20 @@ static QCString joinLabels(const StringSet &ss)
 {
   QCString label;
   int count=1;
-  int maxLabels=10;
+  int maxLabels = Config_getInt(UML_MAX_EDGE_LABELS);
   auto it = std::begin(ss), e = std::end(ss);
   if (it!=e) // set not empty
   {
-    label += (*it++).c_str();
-    for (; it!=e && count < maxLabels ; ++it,++count)
+    label = *it++;
+    for (; it!=e && (maxLabels==0 || count<maxLabels) ; ++it,++count)
     {
       label += '\n';
-      label += (*it).c_str();
+      label += *it;
     }
-    if (count==maxLabels) label+="\n...";
+    if (maxLabels!=0 && count==maxLabels)
+    {
+      label+="\n  ...";
+    }
   }
   return label;
 }

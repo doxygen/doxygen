@@ -2064,6 +2064,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->lastInitializerContext = UsingAlias;
                                           yyextra->initBracketCount=0;
+                                          storeClangId(yyscanner,yyextra->current->name.data());
                                           BEGIN(ReadInitializer);
                                         }
 <UsingAlias>";"                         {
@@ -5884,6 +5885,7 @@ NONLopt [^\n]*
 <CompoundName>{SCOPENAME}/{BN}*"<"      {
                                           yyextra->sharpCount = 0;
                                           yyextra->current->name = yytext ;
+                                          storeClangId(yyscanner,yytext);
                                           if (yyextra->current->spec.isProtocol())
                                           {
                                             yyextra->current->name+="-p";
@@ -5964,6 +5966,7 @@ NONLopt [^\n]*
                                             // a purpose of its own
                                             yyextra->current->name = yytext;
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-1).stripWhiteSpace();
+                                            storeClangId(yyscanner,yyextra->current->name.data());
                                             //printf("template class declaration for %s!\n",qPrint(yyextra->current->name));
                                             QCString rn = yyextra->current_root->name;
                                             //printf("cn='%s' rn='%s' yyextra->isTypedef=%d\n",qPrint(cn),qPrint(rn),yyextra->isTypedef);
@@ -6017,6 +6020,7 @@ NONLopt [^\n]*
                                         }
 <CompoundName>{SCOPENAME}/{BN}*"("      {
                                           yyextra->current->name = yytext ;
+                                          storeClangId(yyscanner,yytext);
                                           lineCount(yyscanner);
                                           if (yyextra->insideCpp && yyextra->current->name=="alignas") // C++11
                                           {
@@ -6047,6 +6051,7 @@ NONLopt [^\n]*
 <AlignAsEnd>.
 <ConceptName>{ID}                       {
                                           yyextra->current->name = yytext ;
+                                          storeClangId(yyscanner,yytext);
                                         }
 <ConceptName>"="                        {
                                           yyextra->current->bodyLine = yyextra->yyLineNr;
@@ -6094,6 +6099,7 @@ NONLopt [^\n]*
                                             yyextra->yyBegLineNr=yyextra->yyLineNr;
                                             yyextra->current->name = yytext;
                                             yyextra->current->name = yyextra->current->name.stripWhiteSpace();
+                                            storeClangId(yyscanner,yyextra->current->name.data());
                                             lineCount(yyscanner);
                                             BEGIN( FindMembers );
                                           }

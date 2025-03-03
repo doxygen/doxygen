@@ -156,15 +156,7 @@ template<> struct fmt::formatter<QCString> : formatter<std::string>
 template<> struct fmt::formatter<Protection> : formatter<std::string>
 {
   auto format(Protection prot, format_context& ctx) const {
-    std::string result="Unknown";
-    switch (prot)
-    {
-      case Protection::Public:    result="Public";     break;
-      case Protection::Protected: result="Protected";  break;
-      case Protection::Private:   result="Private";    break;
-      case Protection::Package:   result="Package";    break;
-    }
-    return formatter<std::string>::format(result, ctx);
+    return formatter<std::string>::format(to_string(prot), ctx);
   }
 };
 
@@ -172,14 +164,7 @@ template<> struct fmt::formatter<Protection> : formatter<std::string>
 template<> struct fmt::formatter<Specifier> : formatter<std::string>
 {
   auto format(Specifier spec, format_context& ctx) const {
-    std::string result="Unknown";
-    switch (spec)
-    {
-      case Specifier::Normal:   result="Normal";  break;
-      case Specifier::Virtual:  result="Virtual"; break;
-      case Specifier::Pure:     result="Pure";    break;
-    }
-    return formatter<std::string>::format(result, ctx);
+    return formatter<std::string>::format(to_string(spec), ctx);
   }
 };
 
@@ -187,17 +172,7 @@ template<> struct fmt::formatter<Specifier> : formatter<std::string>
 template<> struct fmt::formatter<MethodTypes> : formatter<std::string>
 {
   auto format(MethodTypes mtype, format_context& ctx) const {
-    std::string result="Unknown";
-    switch (mtype)
-    {
-      case MethodTypes::Method:   result="Method";   break;
-      case MethodTypes::Signal:   result="Signal";   break;
-      case MethodTypes::Slot:     result="Slot";     break;
-      case MethodTypes::DCOP:     result="DCOP";     break;
-      case MethodTypes::Property: result="Property"; break;
-      case MethodTypes::Event:    result="Event";    break;
-    }
-    return formatter<std::string>::format(result, ctx);
+    return formatter<std::string>::format(to_string(mtype), ctx);
   }
 };
 
@@ -205,14 +180,7 @@ template<> struct fmt::formatter<MethodTypes> : formatter<std::string>
 template<> struct fmt::formatter<RelatesType> : formatter<std::string>
 {
   auto format(RelatesType type, format_context& ctx) const {
-    std::string result="Unknown";
-    switch (type)
-    {
-      case RelatesType::Simple:    result="Simple";    break;
-      case RelatesType::Duplicate: result="Duplicate"; break;
-      case RelatesType::MemberOf:  result="MemberOf";  break;
-    }
-    return formatter<std::string>::format(result, ctx);
+    return formatter<std::string>::format(to_string(type), ctx);
   }
 };
 
@@ -220,14 +188,7 @@ template<> struct fmt::formatter<RelatesType> : formatter<std::string>
 template<> struct fmt::formatter<Relationship> : formatter<std::string>
 {
   auto format(Relationship relation, format_context& ctx) const {
-    std::string result="Unknown";
-    switch (relation)
-    {
-      case Relationship::Member:  result="Member";  break;
-      case Relationship::Related: result="Related"; break;
-      case Relationship::Foreign: result="Foreign"; break;
-    }
-    return formatter<std::string>::format(result, ctx);
+    return formatter<std::string>::format(to_string(relation), ctx);
   }
 };
 
@@ -235,29 +196,7 @@ template<> struct fmt::formatter<Relationship> : formatter<std::string>
 template<> struct fmt::formatter<SrcLangExt> : formatter<std::string>
 {
   auto format(SrcLangExt lang, format_context& ctx) const {
-    std::string result="Unknown";
-    switch (lang)
-    {
-      case SrcLangExt::Unknown:  result="Unknown";     break;
-      case SrcLangExt::IDL:      result="IDL";         break;
-      case SrcLangExt::Java:     result="Java";        break;
-      case SrcLangExt::CSharp:   result="C#";          break;
-      case SrcLangExt::D:        result="D";           break;
-      case SrcLangExt::PHP:      result="PHP";         break;
-      case SrcLangExt::ObjC:     result="Objective-C"; break;
-      case SrcLangExt::Cpp:      result="C++";         break;
-      case SrcLangExt::JS:       result="Javascript";  break;
-      case SrcLangExt::Python:   result="Python";      break;
-      case SrcLangExt::Fortran:  result="Fortran";     break;
-      case SrcLangExt::VHDL:     result="VHDL";        break;
-      case SrcLangExt::XML:      result="XML";         break;
-      //case SrcLangExt::Tcl:    result="Tcl";         break;
-      case SrcLangExt::Markdown: result="Markdown";    break;
-      case SrcLangExt::SQL:      result="SQL";         break;
-      case SrcLangExt::Slice:    result="Slice";       break;
-      case SrcLangExt::Lex:      result="Lex";         break;
-    }
-    return formatter<std::string>::format(result, ctx);
+    return formatter<std::string>::format(to_string(lang), ctx);
   }
 };
 

@@ -121,6 +121,7 @@ struct pyscannerYY_state
   TextStream              decoratorCommentStr;
   int                     decoratorRound = 0;
   bool                    checkDupEntry = false;
+  bool                    firstPass = true;
 };
 
 //-----------------------------------------------------------------------------
@@ -803,13 +804,16 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         yyextra->current->program << yytext;
                       }
     ^{BB}             { // something at indent >0
-                        yyextra->current->program << yytext;
                         yyextra->curIndent = computeIndent(yytext);
                         if (yyextra->curIndent<=yyextra->indent)
                           // jumped out of the function
                         {
                           endOfDef(yyscanner,1);
                           BEGIN(Search);
+                        }
+                        else
+                        {
+                          yyextra->current->program << yytext;
                         }
                       }
     "'"               { // start of a single quoted string
@@ -1480,7 +1484,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
 
 
     ^{BB}               { // leading whitespace, compensate for """! / '''!
-                          if (yyextra->docBlockSpecial && yyleng >= yyextra->curIndent)
+                          if (yyextra->firstPass && yyextra->docBlockSpecial && yyleng >= yyextra->curIndent)
                             yyextra->docBlock += yytext + yyextra->curIndent;
                           else
                             yyextra->docBlock += yytext;
@@ -1767,6 +1771,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->lang       = SrcLangExt::Python;
   yyextra->current->type.clear();
   yyextra->current->name.clear();
+  yyextra->current->initializer.clear();
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
   yyextra->isStatic = FALSE;
 }
@@ -1774,6 +1779,11 @@ static void initEntry(yyscan_t yyscanner)
 static void newEntry(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->current->name.isEmpty())
+  {
+    initEntry(yyscanner);
+    return;
+  }
   bool found = false;
   if (yyextra->checkDupEntry)
   {
@@ -2019,7 +2029,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   Markdown markdown(yyextra->fileName,lineNr);
   GuardedSectionStack guards;
-  QCString strippedDoc = stripIndentation(doc);
+  QCString strippedDoc = stripIndentation(doc,true);
+  //printf("stippedDoc=[%s]\n",qPrint(strippedDoc));
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,lineNr) : strippedDoc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
@@ -2079,10 +2090,6 @@ static void initTriDoubleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlock.clear();
   yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = TRUE;
-  if (yyextra->docBlockSpecial)
-  {
-    yyextra->docBlock.fill(' ',yyextra->indent);
-  }
   startCommentBlock(yyscanner,FALSE);
 }
 
@@ -2096,10 +2103,6 @@ static void initTriSingleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlock.clear();
   yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = FALSE;
-  if (yyextra->docBlockSpecial)
-  {
-    yyextra->docBlock.fill(' ',yyextra->indent);
-  }
   startCommentBlock(yyscanner,FALSE);
 }
 
@@ -2164,6 +2167,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       yyextra->programStr = ce->program.str();
       yyextra->inputString = yyextra->programStr.data();
       yyextra->inputPosition = 0;
+      yyextra->firstPass     = false;
       pyscannerYYrestart( nullptr, yyscanner );
       if (ce->section.isCompound())
       {
@@ -2221,9 +2225,10 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   yyextra->current_root  = rt;
   yyextra->specialBlock  = false;
 
-  yyextra->yyLineNr= 1 ;
-  yyextra->fileName = fileName;
+  yyextra->yyLineNr      = 1 ;
+  yyextra->fileName      = fileName;
   yyextra->checkDupEntry = false;
+  yyextra->firstPass     = true;
   //setContext();
   msg("Parsing file {}...\n",yyextra->fileName);
 

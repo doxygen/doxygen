@@ -4019,15 +4019,12 @@ static void buildFunctionList(const Entry *root)
 
               // in case of template functions, we need to check if the
               // functions have the same number of template parameters
-              bool sameNumTemplateArgs = TRUE;
+              bool sameTemplateArgs = TRUE;
               bool matchingReturnTypes = TRUE;
               bool sameRequiresClause = TRUE;
               if (!mdTempl.empty() && !root->tArgLists.empty())
               {
-                if (mdTempl.size()!=root->tArgLists.back().size())
-                {
-                  sameNumTemplateArgs = FALSE;
-                }
+                sameTemplateArgs = matchTemplateArguments(mdTempl,root->tArgLists.back());
                 if (md->typeString()!=removeRedundantWhiteSpace(root->type))
                 {
                   matchingReturnTypes = FALSE;
@@ -4040,7 +4037,7 @@ static void buildFunctionList(const Entry *root)
               else if (!mdTempl.empty() || !root->tArgLists.empty())
               { // if one has template parameters and the other doesn't then that also counts as a
                 // difference
-                sameNumTemplateArgs = FALSE;
+                sameTemplateArgs = FALSE;
               }
 
               bool staticsInDifferentFiles =
@@ -4050,7 +4047,7 @@ static void buildFunctionList(const Entry *root)
                   matchArguments2(md->getOuterScope(),mfd,&mdAl,
                     rnd ? rnd : Doxygen::globalScope,rfd,&root->argList,
                     FALSE,root->lang) &&
-                  sameNumTemplateArgs &&
+                  sameTemplateArgs &&
                   matchingReturnTypes &&
                   sameRequiresClause &&
                   !staticsInDifferentFiles

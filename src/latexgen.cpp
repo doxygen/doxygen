@@ -49,10 +49,12 @@
 #include "moduledef.h"
 
 static QCString g_header;
+static QCString g_header_file;
 static QCString g_footer;
+static QCString g_footer_file;
 static const SelectionMarkerInfo latexMarkerInfo = { '%', "%%BEGIN ",8 ,"%%END ",6, "",0 };
 
-static QCString substituteLatexKeywords(const QCString &str, const QCString &title);
+static QCString substituteLatexKeywords(const QCString &file, const QCString &str, const QCString &title);
 
 LatexCodeGenerator::LatexCodeGenerator(TextStream *t,const QCString &relPath,const QCString &sourceFileName)
   : m_t(t), m_relPath(relPath), m_sourceFileName(sourceFileName)
@@ -636,28 +638,32 @@ void LatexGenerator::init()
 
   if (!Config_getString(LATEX_HEADER).isEmpty())
   {
-    g_header=fileToString(Config_getString(LATEX_HEADER));
+    g_header_file=Config_getString(LATEX_HEADER);
+    g_header=fileToString(g_header_file);
     //printf("g_header='%s'\n",qPrint(g_header));
-    QCString result = substituteLatexKeywords(g_header,QCString());
-    checkBlocks(result,Config_getString(LATEX_HEADER),latexMarkerInfo);
+    QCString result = substituteLatexKeywords(g_header_file,g_header,QCString());
+    checkBlocks(result,g_header_file,latexMarkerInfo);
   }
   else
   {
-    g_header = ResourceMgr::instance().getAsString("header.tex");
-    QCString result = substituteLatexKeywords(g_header,QCString());
+    g_header_file = "header.tex";
+    g_header = ResourceMgr::instance().getAsString(g_header_file);
+    QCString result = substituteLatexKeywords(g_header_file,g_header,QCString());
     checkBlocks(result,"<default header.tex>",latexMarkerInfo);
   }
   if (!Config_getString(LATEX_FOOTER).isEmpty())
   {
-    g_footer=fileToString(Config_getString(LATEX_FOOTER));
+    g_footer_file=Config_getString(LATEX_FOOTER);
+    g_footer=fileToString(g_footer_file);
     //printf("g_footer='%s'\n",qPrint(g_footer));
-    QCString result = substituteLatexKeywords(g_footer,QCString());
-    checkBlocks(result,Config_getString(LATEX_FOOTER),latexMarkerInfo);
+    QCString result = substituteLatexKeywords(g_footer_file,g_footer,QCString());
+    checkBlocks(result,g_footer_file,latexMarkerInfo);
   }
   else
   {
-    g_footer = ResourceMgr::instance().getAsString("footer.tex");
-    QCString result = substituteLatexKeywords(g_footer,QCString());
+    g_footer_file = "footer.tex";
+    g_footer = ResourceMgr::instance().getAsString(g_footer_file);
+    QCString result = substituteLatexKeywords(g_footer_file,g_footer,QCString());
     checkBlocks(result,"<default footer.tex>",latexMarkerInfo);
   }
 
@@ -787,7 +793,8 @@ static QCString latex_batchmode()
   return "";
 }
 
-static QCString substituteLatexKeywords(const QCString &str,
+static QCString substituteLatexKeywords(const QCString &file,
+                                        const QCString &str,
                                         const QCString &title)
 {
   bool compactLatex = Config_getBool(COMPACT_LATEX);
@@ -855,13 +862,13 @@ static QCString substituteLatexKeywords(const QCString &str,
   QCString projectNumber = Config_getString(PROJECT_NUMBER);
 
   // first substitute generic keywords
-  QCString result = substituteKeywords(str,title,
+  QCString result = substituteKeywords(file,str,title,
         convertToLaTeX(Config_getString(PROJECT_NAME),false),
         convertToLaTeX(projectNumber,false),
         convertToLaTeX(Config_getString(PROJECT_BRIEF),false));
 
   // additional LaTeX only keywords
-  result = substituteKeywords(result,
+  result = substituteKeywords(file,result,
   {
     // keyword                     value getter
     { "$latexdocumentpre",         [&]() { return theTranslator->latexDocumentPre();            } },
@@ -908,7 +915,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
   switch (is)
   {
     case IndexSection::isTitlePageStart:
-      m_t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen->insideTabbing()));
+      m_t << substituteLatexKeywords(g_header_file,g_header,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen->insideTabbing()));
       break;
     case IndexSection::isTitlePageAuthor:
       break;
@@ -1260,7 +1267,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
     case IndexSection::isPageDocumentation2:
       break;
     case IndexSection::isEndIndex:
-      m_t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen->insideTabbing()));
+      m_t << substituteLatexKeywords(g_footer_file,g_footer,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen->insideTabbing()));
       break;
   }
 }

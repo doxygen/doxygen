@@ -169,6 +169,8 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
 
 void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE);
 
+bool matchTemplateArguments(const ArgumentList &srcAl,const ArgumentList &dstAl);
+
 QCString substituteClassNames(const QCString &s);
 
 struct SelectionBlock
@@ -245,9 +247,9 @@ struct KeywordSubstitution
 
 using KeywordSubstitutionList = std::vector<KeywordSubstitution>;
 
-QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords);
+QCString substituteKeywords(const QCString &file,const QCString &s,const KeywordSubstitutionList &keywords);
 
-QCString substituteKeywords(const QCString &s,const QCString &title,
+QCString substituteKeywords(const QCString &file,const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief);
 
 int getPrefixIndex(const QCString &name);
@@ -433,7 +435,7 @@ QCString processMarkup(const QCString &s);
 
 bool protectionLevelVisible(Protection prot);
 
-QCString stripIndentation(const QCString &s);
+QCString stripIndentation(const QCString &s,bool skipFirstLine=false);
 void stripIndentationVerbatim(QCString &doc,const int indentationLevel);
 
 QCString getDotImageExtension();

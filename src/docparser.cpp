@@ -1447,6 +1447,16 @@ reparsetoken:
       break;
     case TokenRetval::TK_HTMLTAG:
       {
+        auto handleEnterLeaveStyle = [this,&parent,&children,&tokenName](DocStyleChange::Style style) {
+            if (!context.token->endTag)
+            {
+              handleStyleEnter(parent,children,style,tokenName,&context.token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,style,tokenName);
+            }
+        };
         switch (Mappers::htmlTagMapper->map(tokenName))
         {
           case HtmlTagType::HTML_DIV:
@@ -1455,150 +1465,57 @@ reparsetoken:
           case HtmlTagType::HTML_PRE:
             warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <pre> tag in heading");
             break;
+          case HtmlTagType::HTML_SPAN:
+            handleEnterLeaveStyle(DocStyleChange::Span);
+            break;
           case HtmlTagType::HTML_BOLD:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Bold,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Bold,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Bold);
             break;
           case HtmlTagType::HTML_S:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::S,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::S,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::S);
             break;
           case HtmlTagType::HTML_STRIKE:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Strike,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Strike,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Strike);
             break;
           case HtmlTagType::HTML_DEL:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Del,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Del,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Del);
             break;
           case HtmlTagType::HTML_UNDERLINE:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Underline,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Underline,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Underline);
             break;
           case HtmlTagType::HTML_INS:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Ins,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Ins,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Ins);
             break;
           case HtmlTagType::HTML_CODE:
           case HtmlTagType::XML_C:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Code,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Code,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Code);
             break;
           case HtmlTagType::HTML_KBD:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Kbd,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Kbd,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Kbd);
             break;
           case HtmlTagType::HTML_EMPHASIS:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Italic,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Italic,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Italic);
             break;
           case HtmlTagType::HTML_SUB:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Subscript,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Subscript,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Subscript);
             break;
           case HtmlTagType::HTML_SUP:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Superscript,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Superscript,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Superscript);
             break;
           case HtmlTagType::HTML_CENTER:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Center,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Center,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Center);
             break;
           case HtmlTagType::HTML_SMALL:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Small,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Small,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Small);
             break;
           case HtmlTagType::HTML_CITE:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Cite,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Cite,tokenName);
-            }
+            handleEnterLeaveStyle(DocStyleChange::Cite);
             break;
           case HtmlTagType::HTML_IMG:
             if (!context.token->endTag)
+            {
               handleImg(parent,children,context.token->attribs);
+            }
 	    break;
           default:
             return FALSE;
@@ -2013,7 +1930,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   if (parser==nullptr) return nullptr;
   //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?qPrint(ctx->name()):"<none>",
   //                                     md?qPrint(md->name()):"<none>",
-  //                                     input);
+  //                                     qPrint(input));
   //printf("========== validating %s at line %d\n",qPrint(fileName),startLine);
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",qPrint(input));
 

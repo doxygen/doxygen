@@ -339,7 +339,7 @@ jobs:
 
         execute_process(
           COMMAND
-            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf"
+            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --man"
             cmake --build build --target tests
           RESULT_VARIABLE result
         )
@@ -355,7 +355,7 @@ jobs:
 
         execute_process(
           COMMAND
-            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --pdf"
+            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --man --pdf"
             cmake --build build --target tests
           RESULT_VARIABLE result
         )

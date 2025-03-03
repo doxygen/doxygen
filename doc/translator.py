@@ -70,7 +70,6 @@
 from __future__ import print_function
 
 import os
-import platform
 import re
 import sys
 import textwrap
@@ -487,7 +486,7 @@ class Transl:
                     self.status = '0.0.00'
 
             # Check whether status was set, or set 'strange'.
-            if self.status == None:
+            if self.status is None:
                 self.status = 'strange'
             if not self.readableStatus:
                 self.readableStatus = 'strange'
@@ -765,7 +764,7 @@ class Transl:
         the source file."""
 
         assert(self.classId != 'Translator')
-        assert self.baseClassId != None, 'Class ' + self.classId + ' from the file ' + self.fname + ' does not have a base class.'
+        assert self.baseClassId is not None, 'Class ' + self.classId + ' from the file ' + self.fname + ' does not have a base class.'
 
         # The following finite automaton slightly differs from the one
         # inside self.collectPureVirtualPrototypes(). It produces the
@@ -782,7 +781,6 @@ class Transl:
         # identifiers.
         prototype = ''    # readable prototype (with everything)
         uniPrototype = '' # unified prototype (without arg. identifiers)
-        warning = ''      # warning message -- if something special detected
         methodId = None   # processed method id
 
         # Collect the method prototypes. Stop on the closing
@@ -1097,7 +1095,7 @@ class Transl:
         # Eat the rest of the source to cause closing the file.
         while True:
             try:
-                t = next(tokenIterator)
+                next(tokenIterator)
             except StopIteration:
                 break
 
@@ -1414,7 +1412,8 @@ class TrManager:
         # of the list.
         langReadableLst = []
         for name, obj in self.langLst:
-            if obj.status == 'En': continue
+            if obj.status == 'En':
+                continue
 
             # Append the 'En' to the classId to possibly obtain the classId
             # of the English-based object. If the object exists, modify the
@@ -1665,7 +1664,8 @@ class TrManager:
                 f.write('  %-6s' % obj.readableStatus)
                 numimpl = len(obj.missingMethods)
                 pluralS = ''
-                if numimpl > 1: pluralS = 's'
+                if numimpl > 1:
+                    pluralS = 's'
                 percent = 100 * numimpl / numRequired
                 f.write('\t%2d method%s to implement (%d %%)' % (
                         numimpl, pluralS, percent))
@@ -1693,7 +1693,8 @@ class TrManager:
                 lst.sort()
                 plural = len(lst) > 1
                 note = 'Note: The adapter class'
-                if plural: note += 'es'
+                if plural:
+                    note += 'es'
                 note += ' ' + ', '.join(lst)
                 if not plural:
                     note += ' is'
@@ -1777,7 +1778,6 @@ class TrManager:
         inside = False  # inside the record for the language
         lineReady = True
         classId = None
-        maintainersLst = None
         self.__maintainersDic = {}
         while lineReady:
             line = f.readline()            # next line
@@ -1787,14 +1787,13 @@ class TrManager:
             if line != '' and line[0] == '%':    # skip the comment line
                 continue
 
-            if not inside:                 # if outside of the record
+            if not inside:                # if outside of the record
                 if line != '':            # should be language identifier
                     classId = line
-                    maintainersLst = []
                     inside = True
                 # Otherwise skip empty line that do not act as separator.
 
-            else:                          # if inside the record
+            else:                         # if inside the record
                 if line == '':            # separator found
                     inside = False
                 else:

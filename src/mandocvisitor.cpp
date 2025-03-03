@@ -216,18 +216,18 @@ void ManDocVisitor::operator()(const DocVerbatim &s)
       m_firstCol=TRUE;
       break;
     case DocVerbatim::JavaDocLiteral:
-      filter(s.text());
+      filter(s.text(),true);
       break;
     case DocVerbatim::JavaDocCode:
       m_t << "\\fR\n";
-      filter(s.text());
+      filter(s.text(),true);
       m_t << "\\fP\n";
       break;
     case DocVerbatim::Verbatim:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
-      filter(s.text());
+      filter(s.text(),true);
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";
@@ -984,18 +984,21 @@ void ManDocVisitor::operator()(const DocParBlock &pb)
   visitChildren(pb);
 }
 
-void ManDocVisitor::filter(const QCString &str)
+void ManDocVisitor::filter(const QCString &str, const bool retainNewline)
 {
   if (!str.isEmpty())
   {
     const char *p=str.data();
     char c=0;
+    bool insideDoubleQuote = false;
     while ((c=*p++))
     {
       switch(c)
       {
         case '.':  m_t << "\\&."; break; // see  bug652277
         case '\\': m_t << "\\\\"; break;
+        case '\"': m_t << "\""; insideDoubleQuote = !insideDoubleQuote; break;
+        case '\n': if (retainNewline || !insideDoubleQuote) m_t << c; break;
         default: m_t << c; break;
       }
     }
