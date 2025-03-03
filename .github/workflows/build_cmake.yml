@@ -44,28 +44,28 @@ jobs:
 
         - {
             name: "Ubuntu Latest GCC Release (Arm)",
-            os: ubuntu-22.04-arm,
+            os: ubuntu-24.04-arm,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug (Arm)",
-            os: ubuntu-22.04-arm,
+            os: ubuntu-24.04-arm,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release (Arm)",
-            os: ubuntu-22.04-arm,
+            os: ubuntu-24.04-arm,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "Ubuntu Latest Clang Debug (Arm)",
-            os: ubuntu-22.04-arm,
+            os: ubuntu-24.04-arm,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
@@ -168,13 +168,13 @@ jobs:
         ls -al /etc/alternatives/clang++
         which clang++
         clang++ -v
-      if: matrix.config.os == 'ubuntu-22.04-arm'
+      if: matrix.config.os == 'ubuntu-24.04-arm'
 
     - name: Install libxapian (Ubuntu 22.04)
       run: |
         sudo apt update
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-22.04' || matrix.config.os == 'ubuntu-22.04-arm'
+      if: matrix.config.os == 'ubuntu-22.04' || matrix.config.os == 'ubuntu-24.04-arm'
 
     - name: Install LaTeX (Windows)
       uses: teatimeguest/setup-texlive-action@v3
@@ -268,7 +268,13 @@ jobs:
         refreshenv
       if: matrix.config.os == 'windows-latest'
 
-    - name: Install Qt 6
+    - name: Install Qt 6.8
+      uses: jdpurcell/install-qt-action@v4
+      with:
+        version: 6.8.*
+      if: matrix.config.os == 'ubuntu-24.04-arm'
+
+    - name: Install Qt 6.2
       uses: jdpurcell/install-qt-action@v4
       with:
         version: 6.2.*
@@ -278,7 +284,7 @@ jobs:
       uses: jdpurcell/install-qt-action@v4
       with:
         version: 5.*
-      if: startsWith(matrix.config.os,'macos-')!=true
+      if: startsWith(matrix.config.os,'macos-')!=true && matrix.config.os != 'ubuntu-24.04-arm'
 
     - name: Check tool versions (Linux / MacOS)
       shell: bash
