@@ -71,6 +71,7 @@
 /** navigation bar/tree/menu */
 --nav-background-color: ##FA;
 --nav-foreground-color: ##45;
+--nav-border-color: ##E5;
 --nav-gradient-image: url('tab_b.png');
 --nav-gradient-hover-image: url('tab_h.png');
 --nav-gradient-active-image: url('tab_a.png');

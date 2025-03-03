@@ -1437,7 +1437,18 @@ static void writeDefaultStyleSheet(TextStream &t)
     t << "}\n\n";
   }
 
-  t << replaceVariables(ResourceMgr::instance().getAsString("doxygen.css"));
+  QCString cssStr = ResourceMgr::instance().getAsString("doxygen.css");
+  bool hasFullSidebar = Config_getBool(FULL_SIDEBAR) && Config_getBool(GENERATE_TREEVIEW);
+  if (hasFullSidebar)
+  {
+    cssStr+="\n"
+            "#titlearea {\n"
+            "  border-bottom: none;\n"
+            "  background-color: var(--nav-background-color);\n"
+            "  border-right: 1px solid var(--nav-border-color);\n"
+            "}\n";
+  }
+  t << replaceVariables(cssStr);
 
   // For Webkit based the scrollbar styling cannot be overruled (bug in chromium?).
   // To allow the user to style the scrollbars differently we should only add it in case

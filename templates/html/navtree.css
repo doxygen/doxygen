@@ -102,11 +102,17 @@
   background-size:100%;
   background-repeat:repeat-y;
   background-attachment: scroll;
+  transition: opacity 0.5s ease;
+  opacity:0;
   cursor:ew-resize;
   height:100%;
   right:0;
   top:0;
   width:6px;
+}
+
+.ui-resizable-e:hover {
+  opacity: 1.0;
 }
 
 .ui-resizable-handle {
@@ -124,6 +130,13 @@
   background-repeat:repeat-x;
   background-color: var(--nav-background-color);
   -webkit-overflow-scrolling : touch; /* iOS 5+ */
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+  border-right: 1px solid var(--nav-border-color);
+}
+
+#nav-tree.hovered {
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
 }
 
 #nav-sync {

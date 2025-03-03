@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   check_date:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: Check latest commit
     outputs:
       should_run: ${{ steps.should_run.outputs.should_run }}
@@ -32,7 +32,7 @@ jobs:
   scan:
     needs: check_date
     if: ${{ needs.check_date.outputs.should_run != 'false' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       CC: gcc
