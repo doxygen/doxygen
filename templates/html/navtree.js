@@ -474,6 +474,10 @@ function initNavTree(toroot,relpath) {
     }
   });
 
+  const navtree = $('#nav-tree');
+  navtree.on('mouseover', () => { navtree.addClass('hovered');    });
+  navtree.on('mouseout',  () => { navtree.removeClass('hovered'); });
+
   $("div.toc a[href]").click(function(e) {
     e.preventDefault();
     const aname = $(this).attr("href");

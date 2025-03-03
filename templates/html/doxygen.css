@@ -1216,16 +1216,12 @@ div.header
 	background-color: var(--header-background-color);
 	margin:  0px;
 	border-bottom: 1px solid var(--header-separator-color);
+	border-left: 1px solid var(--header-separator-color);
 }
 
 div.headertitle
 {
 	padding: 5px 5px 5px 10px;
-}
-
-.PageDocRTL-title div.headertitle {
-  text-align: right;
-  direction: rtl;
 }
 
 dl {
