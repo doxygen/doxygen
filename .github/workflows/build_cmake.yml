@@ -15,28 +15,28 @@ jobs:
         config:
         - {
             name: "Ubuntu Latest GCC Release",
-            os: ubuntu-20.04,
+            os: ubuntu-22.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
-            os: ubuntu-20.04,
+            os: ubuntu-22.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release",
-            os: ubuntu-20.04,
+            os: ubuntu-22.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "Ubuntu Latest Clang Debug",
-            os: ubuntu-20.04,
+            os: ubuntu-22.04,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
@@ -105,32 +105,29 @@ jobs:
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: startsWith(matrix.config.os,'macos-')
 
-    - name: Install libclang (Ubuntu 20.04)
+    - name: Install libclang (Ubuntu 22.04)
       run: |
         sudo apt update
-        sudo apt remove llvm-8 clang-8 libclang-common-8-dev clang-format-8 libllvm8
-        sudo apt remove llvm-9 llvm-9-dev llvm-9-tools llvm-9-runtime clang-9 libclang-common-9-dev clang-format-9 libllvm9
-        #sudo apt remove llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 libclang-common-10-dev libclang-cpp10 libclang1-10 libllvm10
-        sudo apt remove llvm-11 llvm-11-dev llvm-11-tools llvm-11-runtime clang-11 clang-format-11 libclang-common-11-dev libclang-cpp11 libclang1-11 libllvm11
-        sudo apt remove llvm-12 llvm-12-dev llvm-12-tools llvm-12-runtime clang-12 clang-format-12 libclang-common-12-dev libclang-cpp12 libclang1-12 libllvm12
+        sudo apt remove llvm-13 llvm-13-dev llvm-13-tools llvm-13-runtime clang-13 clang-format-13 libclang-common-13-dev libclang-cpp13 libclang1-13 libllvm13
+        sudo apt remove llvm-15 llvm-15-dev llvm-15-tools llvm-15-runtime clang-15 clang-format-15 libclang-common-15-dev libclang-cpp15 libclang1-15 libllvm15
         sudo apt-get autoremove
         sudo apt-get clean
-        sudo apt install libclang-common-10-dev libclang-10-dev
+        sudo apt install libclang-common-14-dev libclang-14-dev
         apt list --installed | egrep '(clang|llvm)'
         ls -d /usr/lib/llvm-*/include/
-        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-10   100
-        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100
+        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-14   100
+        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 100
         ls -al /usr/bin/clang++
         ls -al /etc/alternatives/clang++
         which clang++
         clang++ -v
-      if: matrix.config.os == 'ubuntu-20.04'
+      if: matrix.config.cc == 'clang' && matrix.config.os == 'ubuntu-22.04'
 
-    - name: Install libxapian (Ubuntu 20.04)
+    - name: Install libxapian (Ubuntu 22.04)
       run: |
         sudo apt update
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-20.04'
+      if: matrix.config.os == 'ubuntu-22.04'
 
     - name: Install LaTeX (Windows)
       uses: teatimeguest/setup-texlive-action@v3
@@ -410,4 +407,5 @@ jobs:
          publish_dir: build/doxygen_docs/html
          force_orphan: true
       if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
+
 
