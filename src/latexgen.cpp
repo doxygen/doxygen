@@ -14,6 +14,7 @@
  */
 
 #include <cstdlib>
+#include <mutex>
 
 #include "latexgen.h"
 #include "config.h"
@@ -55,6 +56,9 @@ static QCString g_footer_file;
 static const SelectionMarkerInfo latexMarkerInfo = { '%', "%%BEGIN ",8 ,"%%END ",6, "",0 };
 
 static QCString substituteLatexKeywords(const QCString &file, const QCString &str, const QCString &title);
+
+static std::mutex g_latexHasSvgImageMutex;
+static bool g_hasSvgImage = false;
 
 LatexCodeGenerator::LatexCodeGenerator(TextStream *t,const QCString &relPath,const QCString &sourceFileName)
   : m_t(t), m_relPath(relPath), m_sourceFileName(sourceFileName)
@@ -313,6 +317,12 @@ void LatexCodeGenerator::endCodeFragment(const QCString &style)
   *m_t << "\\end{" << style << "}\n";
 }
 
+void LatexCodeGenerator::setSvgImage()
+{
+  std::lock_guard<std::mutex> lock(g_latexHasSvgImageMutex);
+  g_hasSvgImage = true;
+}
+
 
 //-------------------------------
 
@@ -373,12 +383,15 @@ static void writeLatexMakefile()
   TextStream t(&f);
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   QCString latex_command = theTranslator->latexCommandName().quoted();
+  QCString latex_command_options;
+  if (g_hasSvgImage) latex_command_options=" -enable-write18";
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
   QCString bibtex_command = "bibtex";
   QCString manual_file = "refman";
   const int latex_count = 8;
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
     t << "LATEX_CMD?=" << latex_command << "\n"
+      << "LATEX_CMD_OPTIONS?=" << latex_command_options << "\n"
       << "MKIDX_CMD?=" << mkidx_command << "\n"
       << "BIBTEX_CMD?=" << bibtex_command << "\n"
       << "LATEX_COUNT?=" << latex_count << "\n"
@@ -403,7 +416,7 @@ static void writeLatexMakefile()
     t << "\tps2pdf $(MANUAL_FILE).ps $(MANUAL_FILE).pdf\n\n";
     t << "$(MANUAL_FILE).dvi: clean $(MANUAL_FILE).tex doxygen.sty\n"
       << "\techo \"Running latex...\"\n"
-      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex || \\\n"
+      << "\t$(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE).tex || \\\n"
       << "\tif [ $$? != 0 ] ; then \\\n"
       << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
       << "\t        false; \\\n"
@@ -415,20 +428,20 @@ static void writeLatexMakefile()
       t << "\techo \"Running bibtex...\"\n";
       t << "\t$(BIBTEX_CMD) $(MANUAL_FILE)\n";
       t << "\techo \"Rerunning latex....\"\n";
-      t << "\t$(LATEX_CMD) $(MANUAL_FILE).tex || \\\n"
+      t << "\t$(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE).tex || \\\n"
         << "\tif [ $$? != 0 ] ; then \\\n"
         << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
         << "\t        false; \\\n"
         << "\tfi\n";
     }
     t << "\techo \"Rerunning latex....\"\n"
-      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
+      << "\t$(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE).tex\n"
       << "\tlatex_count=$(LATEX_COUNT) ; \\\n"
       << "\twhile grep -E -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
-      << "\t      $(LATEX_CMD) $(MANUAL_FILE).tex ; \\\n"
-      << "\t      $(LATEX_CMD) $(MANUAL_FILE).tex || \\\n"
+      << "\t      $(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE).tex ; \\\n"
+      << "\t      $(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE).tex || \\\n"
       << "\t      if [ $$? != 0 ] ; then \\\n"
       << "\t              \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
       << "\t              false; \\\n"
@@ -436,7 +449,7 @@ static void writeLatexMakefile()
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
       << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n"
-      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex || \\\n"
+      << "\t$(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE).tex || \\\n"
       << "\tif [ $$? != 0 ] ; then \\\n"
       << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
       << "\t        false; \\\n"
@@ -452,7 +465,7 @@ static void writeLatexMakefile()
     t << "all: $(MANUAL_FILE).pdf\n\n"
       << "pdf: $(MANUAL_FILE).pdf\n\n";
     t << "$(MANUAL_FILE).pdf: clean $(MANUAL_FILE).tex\n";
-    t << "\t$(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+    t << "\t$(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE) || \\\n"
       << "\tif [ $$? != 0 ] ; then \\\n"
       << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
       << "\t        false; \\\n"
@@ -461,13 +474,13 @@ static void writeLatexMakefile()
     if (generateBib)
     {
       t << "\t$(BIBTEX_CMD) $(MANUAL_FILE)\n";
-      t << "\t$(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+      t << "\t$(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE) || \\\n"
         << "\tif [ $$? != 0 ] ; then \\\n"
         << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
         << "\t        false; \\\n"
         << "\tfi\n";
     }
-    t << "\t$(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+    t << "\t$(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE) || \\\n"
       << "\tif [ $$? != 0 ] ; then \\\n"
       << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
       << "\t        false; \\\n"
@@ -476,7 +489,7 @@ static void writeLatexMakefile()
       << "\twhile grep -E -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
-      << "\t      $(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+      << "\t      $(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE) || \\\n"
       << "\t      if [ $$? != 0 ] ; then \\\n"
       << "\t              \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
       << "\t              false; \\\n"
@@ -484,7 +497,7 @@ static void writeLatexMakefile()
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
       << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n"
-      << "\t$(LATEX_CMD) $(MANUAL_FILE) || \\\n"
+      << "\t$(LATEX_CMD) $(LATEX_CMD_OPTIONS) $(MANUAL_FILE) || \\\n"
       << "\tif [ $$? != 0 ] ; then \\\n"
       << "\t        \\echo \"Please consult $(MANUAL_FILE).log to see the error messages\" ; \\\n"
       << "\t        false; \\\n"
@@ -503,6 +516,8 @@ static void writeMakeBat()
   QCString dir=Config_getString(LATEX_OUTPUT);
   QCString fileName=dir+"/make.bat";
   QCString latex_command = theTranslator->latexCommandName().quoted();
+  QCString latex_command_options;
+  if (g_hasSvgImage) latex_command_options=" -enable-write18";
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
   QCString bibtex_command = "bibtex";
   QCString manual_file = "refman";
@@ -517,11 +532,13 @@ static void writeMakeBat()
   t << "if not %errorlevel% == 0 goto :end1\r\n";
   t << "\r\n";
   t << "set ORG_LATEX_CMD=%LATEX_CMD%\r\n";
+  t << "set ORG_LATEX_CMD_OPTIONS=%LATEX_CMD_OPTIONS%\r\n";
   t << "set ORG_MKIDX_CMD=%MKIDX_CMD%\r\n";
   t << "set ORG_BIBTEX_CMD=%BIBTEX_CMD%\r\n";
   t << "set ORG_LATEX_COUNT=%LATEX_COUNT%\r\n";
   t << "set ORG_MANUAL_FILE=%MANUAL_FILE%\r\n";
   t << "if \"X\"%LATEX_CMD% == \"X\" set LATEX_CMD=" << latex_command << "\r\n";
+  t << "if \"X\"%LATEX_CMD_OPTIONS% == \"X\" set LATEX_CMD_OPTIONS=" << latex_command_options << "\r\n";
   t << "if \"X\"%MKIDX_CMD% == \"X\" set MKIDX_CMD=" << mkidx_command << "\r\n";
   t << "if \"X\"%BIBTEX_CMD% == \"X\" set BIBTEX_CMD=" << bibtex_command << "\r\n";
   t << "if \"X\"%LATEX_COUNT% == \"X\" set LATEX_COUNT=" << latex_count << "\r\n";
@@ -531,7 +548,7 @@ static void writeMakeBat()
   t << "\r\n";
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+    t << "%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%.tex\r\n";
     t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "echo ----\r\n";
     t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
@@ -539,7 +556,7 @@ static void writeMakeBat()
     {
       t << "%BIBTEX_CMD% %MANUAL_FILE%\r\n";
       t << "echo ----\r\n";
-      t << "\t%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+      t << "\t%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%.tex\r\n";
       t << "@if ERRORLEVEL 1 goto :error\r\n";
     }
     t << "setlocal enabledelayedexpansion\r\n";
@@ -553,13 +570,13 @@ static void writeMakeBat()
     t << "set /a count-=1\r\n";
     t << "if !count! EQU 0 goto :skip\r\n\r\n";
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+    t << "%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%.tex\r\n";
     t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
     t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
-    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+    t << "%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%.tex\r\n";
     t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "dvips -o %MANUAL_FILE%.ps %MANUAL_FILE%.dvi\r\n";
     t << Portable::ghostScriptCommand();
@@ -568,18 +585,18 @@ static void writeMakeBat()
   }
   else // use pdflatex
   {
-    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+    t << "%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%\r\n";
     t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "echo ----\r\n";
     t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     if (generateBib)
     {
       t << "%BIBTEX_CMD% %MANUAL_FILE%\r\n";
-      t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+      t << "%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%\r\n";
       t << "@if ERRORLEVEL 1 goto :error\r\n";
     }
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+    t << "%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%\r\n";
     t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "\r\n";
     t << "setlocal enabledelayedexpansion\r\n";
@@ -593,13 +610,13 @@ static void writeMakeBat()
     t << "set /a count-=1\r\n";
     t << "if !count! EQU 0 goto :skip\r\n\r\n";
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+    t << "%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%\r\n";
     t << "@if ERRORLEVEL 1 goto :error\r\n";
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
     t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
-    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
+    t << "%LATEX_CMD% %LATEX_CMD_OPTIONS% %MANUAL_FILE%\r\n";
     t << "@if ERRORLEVEL 1 goto :error\r\n";
   }
   t<< "\r\n";
@@ -614,6 +631,8 @@ static void writeMakeBat()
   t<< "popd\r\n";
   t<< "set LATEX_CMD=%ORG_LATEX_CMD%\r\n";
   t<< "set ORG_LATEX_CMD=\r\n";
+  t<< "set LATEX_CMD_OPTIONS=%ORG_LATEX_CMD_OPTIONS%\r\n";
+  t<< "set ORG_LATEX_CMD_OPTIONS=\r\n";
   t<< "set MKIDX_CMD=%ORG_MKIDX_CMD%\r\n";
   t<< "set ORG_MKIDX_CMD=\r\n";
   t<< "set BIBTEX_CMD=%ORG_BIBTEX_CMD%\r\n";
@@ -667,14 +686,15 @@ void LatexGenerator::init()
     checkBlocks(result,"<default footer.tex>",latexMarkerInfo);
   }
 
-  writeLatexMakefile();
-  writeMakeBat();
-
   createSubDirs(d);
 }
 
 void LatexGenerator::cleanup()
 {
+
+  writeLatexMakefile();
+  writeMakeBat();
+
   QCString dname = Config_getString(LATEX_OUTPUT);
   Dir d(dname.str());
   clearSubDirs(d);
@@ -764,7 +784,7 @@ static QCString extraLatexStyleSheet()
 static QCString makeIndex()
 {
   QCString result;
-  QCString latex_mkidx_command = Config_getString(LATEX_MAKEINDEX_CMD);
+  QCString latex_mkidx_command = Config_getString(LATEX_MAKEINDEX_CMD).quoted();
   if (!latex_mkidx_command.isEmpty())
   {
     if (latex_mkidx_command[0] == '\\')
