@@ -67,6 +67,8 @@ static QCString g_footer_file;
 static QCString g_footer;
 static QCString g_mathjax_code;
 static QCString g_latex_macro;
+static QCString g_build_date_str;
+static bool g_build_date = false;
 static constexpr auto hex="0123456789ABCDEF";
 
 static const SelectionMarkerInfo htmlMarkerInfo = { '<', "<!--BEGIN ",10,"<!--END ",8,"-->",3 };
@@ -120,6 +122,32 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
     t << "          </div><div class=\"right\"></div>\n";
     t << "        </div>\n";
   }
+}
+
+const char *replaceDatetime =  "<span class=\"datetime\"></span>;";
+const char *replaceDate     =  "<span class=\"date\"></span>;";
+const char *replaceTime     =  "<span class=\"time\"></span>;";
+const char *replaceYear     =  "<span class=\"year\"></span>;";
+static void writeBuildDateJS(TextStream &t)
+{
+  t << "$(function(){\n";
+      t << "let elements = document.getElementsByClassName(\"datetime\");\n";
+      t << "for (let i = 0; i < elements.length; i++) {\n";
+      t << "   elements.item(i).textContent = \"" << dateToString(DateTimeType::DateTime) << "\";\n";
+      t << "}\n";
+      t << "let elementsD= document.getElementsByClassName(\"date\");\n";
+      t << "for (let i = 0; i < elementsD.length; i++) {\n";
+      t << "   elementsD.item(i).textContent = \"" << dateToString(DateTimeType::Date) << "\";\n";
+      t << "}\n";
+      t << "let elementsT = document.getElementsByClassName(\"time\");\n";
+      t << "for (let i = 0; i < elementsT.length; i++) {\n";
+      t << "   elementsT.item(i).textContent = \"" << dateToString(DateTimeType::Time) << "\";\n";
+      t << "}\n";
+      t << "let elementsY = document.getElementsByClassName(\"year\");\n";
+      t << "for (let i = 0; i < elementsY.length; i++) {\n";
+      t << "   elementsY.item(i).textContent = \"" << yearToString() << "\";\n";
+      t << "}\n";
+  t << "});\n";
 }
 
 //------------------------------------------------------------------------
@@ -398,11 +426,11 @@ static QCString substituteHtmlKeywords(const QCString &file,
   {
     case TIMESTAMP_t::YES:
     case TIMESTAMP_t::DATETIME:
-      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime),
+      generatedBy = theTranslator->trGeneratedAt(replaceDatetime,
                                                  convertToHtml(Config_getString(PROJECT_NAME)));
       break;
     case TIMESTAMP_t::DATE:
-      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::Date),
+      generatedBy = theTranslator->trGeneratedAt(replaceDate,
                                                  convertToHtml(Config_getString(PROJECT_NAME)));
       break;
     case TIMESTAMP_t::NO:
@@ -592,11 +620,17 @@ static QCString substituteHtmlKeywords(const QCString &file,
   result = substituteKeywords(file,result,
   {
     // keyword           value getter
+    { "$datetime",       [&]() { return replaceDatetime; } },
+    { "$date",           [&]() { return replaceDate;     } },
+    { "$time",           [&]() { return replaceTime;     } },
+    { "$year",           [&]() { return replaceYear;     } },
+
     { "$navpath",        [&]() { return navPath;        } },
     { "$stylesheet",     [&]() { return cssFile;        } },
     { "$treeview",       [&]() { return treeViewCssJs;  } },
     { "$searchbox",      [&]() { return searchBox;      } },
     { "$search",         [&]() { return searchCssJs;    } },
+    { "$builddate",      [&]() { return g_build_date_str;} },
     { "$mathjax",        [&]() { return mathJaxJs;      } },
     { "$darkmode",       [&]() { return darkModeJs;     } },
     { "$generatedby",    [&]() { return generatedBy;    } },
@@ -1136,6 +1170,19 @@ void HtmlGenerator::addCodeGen(OutputCodeList &list)
   list.add<HtmlCodeGeneratorDefer>(m_codeGen);
 }
 
+static bool hasDateReplacement(const QCString &str)
+{
+  return (str.contains("$datetime",false) ||
+          str.contains("$date",false) ||
+          str.contains("$time",false) ||
+          str.contains("$year",false) ||
+          ((Config_getEnum(TIMESTAMP) != TIMESTAMP_t::NO) && str.contains("$generatedby",false)) ||
+          str.contains("class=\"datetime\"",false) ||
+          str.contains("class=\"date\"",false) ||
+          str.contains("class=\"time\"",false) ||
+          str.contains("class=\"year\"",false)
+         );
+}
 void HtmlGenerator::init()
 {
   QCString dname = Config_getString(HTML_OUTPUT);
@@ -1149,6 +1196,7 @@ void HtmlGenerator::init()
   {
     g_header_file=Config_getString(HTML_HEADER);
     g_header=fileToString(g_header_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_header));
     //printf("g_header='%s'\n",qPrint(g_header));
     QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
     checkBlocks(result,Config_getString(HTML_HEADER),htmlMarkerInfo);
@@ -1157,6 +1205,7 @@ void HtmlGenerator::init()
   {
     g_header_file="header.html";
     g_header = ResourceMgr::instance().getAsString(g_header_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_header));
     QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
     checkBlocks(result,"<default header.html>",htmlMarkerInfo);
   }
@@ -1165,6 +1214,7 @@ void HtmlGenerator::init()
   {
     g_footer_file=Config_getString(HTML_FOOTER);
     g_footer=fileToString(g_footer_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_footer));
     //printf("g_footer='%s'\n",qPrint(g_footer));
     QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
     checkBlocks(result,Config_getString(HTML_FOOTER),htmlMarkerInfo);
@@ -1173,6 +1223,7 @@ void HtmlGenerator::init()
   {
     g_footer_file = "footer.html";
     g_footer = ResourceMgr::instance().getAsString(g_footer_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_footer));
     QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
     checkBlocks(result,"<default footer.html>",htmlMarkerInfo);
   }
@@ -1285,6 +1336,17 @@ void HtmlGenerator::init()
         t << replaceVariables(mgr.getAsString("dynsections_tooltips.js"));
       }
     }
+  }
+
+  if (g_build_date)
+  { 
+    std::ofstream f = Portable::openOutputStream(dname+"/build_date.js");
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      writeBuildDateJS(t);
+    }
+    g_build_date_str = "<script type=\"text/javascript\" src=\"$relpath^build_date.js\"></script>";
   }
 }
 
