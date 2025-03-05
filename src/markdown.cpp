@@ -67,7 +67,7 @@ enum class ExplicitPageResult
 {
   explicitPage,      /**< docs start with a page command */
   explicitMainPage,  /**< docs start with a mainpage command */
-  explicitDirPage,   /**< docs start with a dir command */
+  explicitOtherPage, /**< docs start with a dir / defgroup / addtogroup command */
   notExplicit        /**< docs doesn't start with either page or mainpage */
 };
 
@@ -3485,11 +3485,13 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
     }
     else if (i+1<size &&
              (data[i]=='\\' || data[i]=='@') &&
-             (literal_at(data.substr(i+1),"dir\n") || literal_at(data.substr(i+1),"dir "))
+             (literal_at(data.substr(i+1),"dir\n") || literal_at(data.substr(i+1),"dir ") ||
+              literal_at(data.substr(i+1),"defgroup\n") || literal_at(data.substr(i+1),"defgroup ") ||
+              literal_at(data.substr(i+1),"addtogroup\n") || literal_at(data.substr(i+1),"addtogroup "))
             )
     {
-      AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitDirPage");
-      return ExplicitPageResult::explicitDirPage;
+      AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitOtherPage");
+      return ExplicitPageResult::explicitOtherPage;
     }
   }
   AUTO_TRACE_EXIT("result=ExplicitPageResult::notExplicit");
@@ -3733,7 +3735,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       break;
     case ExplicitPageResult::explicitMainPage:
       break;
-    case ExplicitPageResult::explicitDirPage:
+    case ExplicitPageResult::explicitOtherPage:
       break;
   }
   int lineNr=1;
