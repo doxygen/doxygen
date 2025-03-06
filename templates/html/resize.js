@@ -29,7 +29,7 @@ function initResizable(treeview) {
 
   function resizeWidth() {
     const sidenavWidth = $(sidenav).outerWidth();
-    const widthStr = parseInt(sidenavWidth)+"px";
+    const widthStr = parseInt(sidenavWidth-barWidth)+"px";
     content.css({marginLeft:widthStr});
     if (typeof page_layout!=='undefined' && page_layout==1) {
       footer.css({marginLeft:widthStr});
@@ -41,7 +41,7 @@ function initResizable(treeview) {
   }
 
   function restoreWidth(navWidth) {
-    const widthStr=parseInt(navWidth)+barWidth+"px";
+    const widthStr = parseInt(navWidth)+"px";
     content.css({marginLeft:widthStr});
     if (typeof page_layout!=='undefined' && page_layout==1) {
       footer.css({marginLeft:widthStr});

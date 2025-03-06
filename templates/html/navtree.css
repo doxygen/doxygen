@@ -133,6 +133,7 @@
   scrollbar-color: transparent transparent;
   transition: scrollbar-color 0.3s ease;
   border-right: 1px solid var(--nav-border-color);
+  padding-left: 5px;
 }
 
 #nav-tree.hovered {

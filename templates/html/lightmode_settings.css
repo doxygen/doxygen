@@ -19,7 +19,7 @@
 --inherit-header-color: gray;
 
 --footer-foreground-color: ##33;
---footer-logo-width: 104px;
+--footer-logo-width: 75px;
 --citation-label-color: ##40;
 --glow-color: cyan;
 
@@ -77,8 +77,10 @@
 --nav-gradient-active-image: url('tab_a.png');
 --nav-gradient-active-image-parent: url("../tab_a.png");
 --nav-separator-image: url('tab_s.png');
---nav-breadcrumb-image: url('bc_s.png');
---nav-breadcrumb-border-color: ##CA;
+--nav-breadcrumb-separator-color: ##CC;
+--nav-breadcrumb-active-bg: ##F0;
+--nav-breadcrumb-color: ##44;
+--nav-breadcrumb-border-color: ##E5;
 --nav-splitbar-image: url('splitbar.png');
 --nav-font-size-level1: 13px;
 --nav-font-size-level2: 10px;

@@ -77,7 +77,9 @@
 --nav-gradient-active-image: url('tab_ad.png');
 --nav-gradient-active-image-parent: url("../tab_ad.png");
 --nav-separator-image: url('tab_sd.png');
---nav-breadcrumb-image: url('bc_sd.png');
+--nav-breadcrumb-separator-color: ##25;
+--nav-breadcrumb-active-bg: ##20;
+--nav-breadcrumb-color: ##A0;
 --nav-breadcrumb-border-color: ##33;
 --nav-splitbar-image: url('splitbard.png');
 --nav-font-size-level1: 13px;

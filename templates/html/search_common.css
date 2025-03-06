@@ -30,9 +30,9 @@ dark-mode-toggle {
     display: inline-block;
     vertical-align: middle;
     width: 20px;
-    height: 19px;
+    height: 18px;
     background-image: var(--search-magnification-select-image);
-    margin: 0 0 0 0.3em;
+    margin: 0 0 4px 0.3em;
     padding: 0;
 }
 
@@ -40,9 +40,9 @@ dark-mode-toggle {
     display: inline-block;
     vertical-align: middle;
     width: 10px;
-    height: 19px;
+    height: 18px;
     background-image: var(--search-magnification-image);
-    margin: 0 0 0 0.5em;
+    margin: 0 0 0 0.3em;
     padding: 0;
 }
 
