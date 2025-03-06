@@ -2887,31 +2887,73 @@ QCString ClassDefImpl::title() const
 
   if (lang==SrcLangExt::Fortran)
   {
-    pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
-              m_compType,
-              !m_tempArgs.empty());
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
+                m_compType,
+                !m_tempArgs.empty());
+    }
   }
   else if (lang==SrcLangExt::Slice)
   {
-    pageTitle = theTranslator->trCompoundReferenceSlice(displayName(),
-              m_compType,
-              isSliceLocal());
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trCompoundReferenceSlice(displayName(),
+                m_compType,
+                isSliceLocal());
+    }
   }
   else if (lang==SrcLangExt::VHDL)
   {
-    pageTitle = theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = VhdlDocGen::getClassName(this);
+    }
+    else
+    {
+      pageTitle = theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
+    }
   }
   else if (isJavaEnum())
   {
-    pageTitle = theTranslator->trEnumReference(displayName());
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trEnumReference(displayName());
+    }
   }
   else if (m_compType==Service)
   {
-    pageTitle = theTranslator->trServiceReference(displayName());
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trServiceReference(displayName());
+    }
   }
   else if (m_compType==Singleton)
   {
-    pageTitle = theTranslator->trSingletonReference(displayName());
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trSingletonReference(displayName());
+    }
   }
   else
   {
