@@ -342,7 +342,15 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   AUTO_TRACE("%s file=%s",name(),getDefFileName());
   SrcLangExt lang = getLanguage();
-  QCString pageTitle = theTranslator->trModuleReference(displayName());
+  QCString pageTitle;
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    pageTitle = displayName();
+  }
+  else
+  {
+    pageTitle = theTranslator->trModuleReference(displayName());
+  }
   startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::ModuleVisible,false,QCString(),0);
 
   // ---- title part
