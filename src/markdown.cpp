@@ -3446,6 +3446,31 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
   return out;
 }
 
+#define OPC(x) #x " ",#x "\n"
+static const StringVector otherPagingCmds = 
+{
+  OPC(dir), OPC(defgroup), OPC(addtogroup), OPC(weakgroup), OPC(ingroup),
+  OPC(fn), OPC(property), OPC(typedef), OPC(var), OPC(def),
+  OPC(enum), OPC(namespace), OPC(class), OPC(concept), OPC(module),
+  OPC(protocol), OPC(category), OPC(union), OPC(struct), OPC(interface),
+  OPC(idlexcept)
+};
+#undef OPC
+
+static bool literal_at_local(std::string_view data,const char *str)
+{
+  size_t len = strlen(str);
+  return len<=data.size() && data[0]==str[0] && qstrncmp(data.data()+1,str+1,len-1)==0;
+}
+
+static bool isOtherPage(std::string_view data)
+{
+  for (const auto &str : otherPagingCmds)
+  {
+    if (literal_at_local(data,str.c_str())) return true;
+  }
+  return false;
+}
 
 static ExplicitPageResult isExplicitPage(const QCString &docs)
 {
@@ -3483,12 +3508,7 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
         return ExplicitPageResult::explicitMainPage;
       }
     }
-    else if (i+1<size &&
-             (data[i]=='\\' || data[i]=='@') &&
-             (literal_at(data.substr(i+1),"dir\n") || literal_at(data.substr(i+1),"dir ") ||
-              literal_at(data.substr(i+1),"defgroup\n") || literal_at(data.substr(i+1),"defgroup ") ||
-              literal_at(data.substr(i+1),"addtogroup\n") || literal_at(data.substr(i+1),"addtogroup "))
-            )
+    else if (i+1<size && (data[i]=='\\' || data[i]=='@') && isOtherPage(data.substr(i+1)))
     {
       AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitOtherPage");
       return ExplicitPageResult::explicitOtherPage;
