@@ -3663,6 +3663,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   current->docFile  = fileName;
   current->docLine  = 1;
   QCString docs = stripIndentation(fileBuf);
+  if (!docs.stripWhiteSpace().size()) return;
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n{}\n",fileBuf);
   QCString id;
   Markdown markdown(fileName,1,0);
