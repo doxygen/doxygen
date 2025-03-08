@@ -176,6 +176,7 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 %x SkipString
 %x SkipVerbString
 %x SkipChar
+%x SkipLang
 %x SComment
 %x CComment
 %x CNComment
@@ -982,10 +983,44 @@ SLASHopt [/]*
 				     BEGIN(SkipString);
   				   }
    */
+<CComment,CNComment>{CMD}"~"[a-z_A-Z-]* { // language switch command
+                                     if (yyextra->lang!=SrcLangExt::Markdown) REJECT;
+                                     QCString langId = QCString(yytext).mid(2);
+                                     if (!langId.isEmpty() &&
+                                              qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)!=0)
+                                     { // enable language specific section
+                                       if (!Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
+                                       {
+                                         warn(yyextra->fileName,yyextra->lineNr,
+                                         "non supported language '{}' specified in '{}'",langId,QCString(yytext).stripWhiteSpace());
+                                       }
+                                       BEGIN(SkipLang);
+                                     }
+                                   }
 <CComment,CNComment>{CMD}{CMD}     |
 <CComment,CNComment>.	           {
                                      copyToOutput(yyscanner,yytext,yyleng);
   				   }
+<SkipLang>{CMD}"~"[a-zA-Z-]*       { /* language switch */
+                                     QCString langId(&yytext[2]);
+                                     if (!langId.isEmpty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
+                                     {
+                                        warn(yyextra->fileName,yyextra->lineNr,
+                                        "non supported language '{}' specified in '{}'",langId,QCString(yytext).stripWhiteSpace());
+                                     }
+                                     else if (langId.isEmpty() ||
+                                         qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)==0)
+                                     { // enable language specific section
+                                       BEGIN(CComment);
+                                     }
+                                   }
+<SkipLang>[^*@\\\n]*               { /* any character not a *, @, backslash or new line */
+                                   }
+<SkipLang>\n                       { /* new line in language block, needed for keeping track of line numbers */
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
+<SkipLang>.                        { /* any other character */
+                                   }
 <SComment>^[ \t]*{CPPC}"/"{SLASHopt}/\n     {
   				     replaceComment(yyscanner,0);
   				   }
