@@ -24,7 +24,7 @@
 --glow-color: cyan;
 
 --title-background-color: ##08;
---title-separator-color: ##43;
+--title-separator-color: ##25;
 --directory-separator-color: ##30;
 --separator-color: ##30;
 
@@ -94,6 +94,7 @@
 --nav-menu-button-color: ##C0;
 --nav-menu-background-color: ##04;
 --nav-menu-foreground-color: #BBBBBB;
+--nav-menu-active-bg: ##20;
 --nav-menu-toggle-color: rgba(255, 255, 255, 0.2);
 --nav-arrow-color: ##40;
 --nav-arrow-selected-color: ##A0;

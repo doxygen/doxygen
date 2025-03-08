@@ -1394,13 +1394,13 @@ QCString DefinitionImpl::navigationPathAsString() const
     if (p->def->definitionType()==Definition::TypeGroup &&
         !toGroupDef(p->def)->groupTitle().isEmpty())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
+      result+="<a href=\"$relpath^"+fn+"\">"+
               convertToHtml(toGroupDef(p->def)->groupTitle())+"</a>";
     }
     else if (p->def->definitionType()==Definition::TypePage &&
              toPageDef(p->def)->hasTitle())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
+      result+="<a href=\"$relpath^"+fn+"\">"+
             convertToHtml((toPageDef(p->def))->title())+"</a>";
     }
     else if (p->def->definitionType()==Definition::TypeClass)
@@ -1410,13 +1410,13 @@ QCString DefinitionImpl::navigationPathAsString() const
       {
         name = name.left(name.length()-2);
       }
-      result+="<a class=\"el\" href=\"$relpath^"+fn;
+      result+="<a href=\"$relpath^"+fn;
       if (!p->def->anchor().isEmpty()) result+="#"+p->def->anchor();
       result+="\">"+convertToHtml(name)+"</a>";
     }
     else
     {
-      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
+      result+="<a href=\"$relpath^"+fn+"\">"+
               convertToHtml(locName)+"</a>";
     }
   }

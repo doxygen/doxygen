@@ -24,7 +24,7 @@
 --glow-color: cyan;
 
 --title-background-color: white;
---title-separator-color: ##70;
+--title-separator-color: ##CC;
 --directory-separator-color: ##AA;
 --separator-color: ##66;
 
@@ -71,7 +71,7 @@
 /** navigation bar/tree/menu */
 --nav-background-color: ##FA;
 --nav-foreground-color: ##45;
---nav-border-color: ##E5;
+--nav-border-color: ##CC;
 --nav-gradient-image: url('tab_b.png');
 --nav-gradient-hover-image: url('tab_h.png');
 --nav-gradient-active-image: url('tab_a.png');
@@ -94,6 +94,7 @@
 --nav-menu-button-color: ##45;
 --nav-menu-background-color: white;
 --nav-menu-foreground-color: #555555;
+--nav-menu-active-bg: ##F0;
 --nav-menu-toggle-color: rgba(255, 255, 255, 0.5);
 --nav-arrow-color: ##AA;
 --nav-arrow-selected-color: ##AA;

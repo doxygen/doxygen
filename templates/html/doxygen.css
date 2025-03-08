@@ -209,7 +209,7 @@ a {
 	color: var(--page-visited-link-color);
 }
 
-a:hover {
+span.label a:hover {
 	text-decoration: none;
 	background:   linear-gradient(to bottom, transparent 0,transparent calc(100% - 1px), currentColor 100%);
 }
@@ -1124,9 +1124,13 @@ table.fieldtable {
 	padding-left: 4px;
 	background-image: none;
 	background: var(--page-background-color);
-	border-top: 1px solid var(--nav-breadcrumb-separator-color);
+	/*border-top: 1px solid var(--nav-breadcrumb-separator-color);*/
 	border-bottom: 1px solid var(--nav-breadcrumb-separator-color);
 	font-size: var(--nav-font-size-level1);
+}
+
+#main-nav {
+  border-bottom: 1px solid var(--nav-border-color);
 }
 
 .navpath li {
@@ -1371,8 +1375,8 @@ dl.invariant dt, dl.pre dt, dl.post dt {
 {
 	font-size: 200%;
 	font-family: var(--font-family-title);
-	margin: 0px;
-	padding: 2px 0px;
+	margin: 0;
+	padding: 0;
 }
 
 #side-nav #projectname
@@ -1398,9 +1402,8 @@ dl.invariant dt, dl.pre dt, dl.post dt {
 
 #titlearea
 {
-	padding: 5px 0 0 0;
+	padding: 0 0 0 5px;
 	margin: 0px;
-	width: 100%;
 	border-bottom: 1px solid var(--title-separator-color);
 	background-color: var(--title-background-color);
 }

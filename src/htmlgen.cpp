@@ -409,11 +409,11 @@ static QCString substituteHtmlKeywords(const QCString &file,
       generatedBy = theTranslator->trGeneratedBy();
       break;
   }
-  treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   if (treeView)
   {
-    treeViewCssJs += "<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-                     "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
+    treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
+                    "<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
+                    "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
   }
   treeViewCssJs += "<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n";
 
