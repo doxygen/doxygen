@@ -1499,7 +1499,7 @@ STopt  [^\n@\\]*
 
   /* --------- handle arguments of {def,add,weak}group commands --------- */
 
-<GroupDocArg1>{LABELID}(".html"?)       { // group name
+<GroupDocArg1>{LABELID}(".html"|".xhtml")? { // group name
                                            yyextra->current->name = yytext;
                                           //lastDefGroup.groupname = yytext;
                                           //lastDefGroup.pri = yyextra->current->groupingPri();
@@ -1507,6 +1507,10 @@ STopt  [^\n@\\]*
                                           if (yyextra->current->name.endsWith(".html"))
                                           {
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-5);
+                                          }
+                                          else if (yyextra->current->name.endsWith(".xhtml"))
+                                          {
+                                            yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-6);
                                           }
                                           yyextra->current->type.clear();
                                           BEGIN(GroupDocArg2);
