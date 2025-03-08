@@ -11189,9 +11189,9 @@ static void devUsage()
   msg("  -b          making messages output unbuffered\n");
   msg("  -c <file>   process input file as a comment block and produce HTML output\n");
 #if ENABLE_TRACING
-  msg("  -t        [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout)\n");
-  msg("  -t_time   [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout),\n"
-      "                                   and include time and thread information\n");
+  msg("  -t          [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout)\n");
+  msg("  -t_time     [<file|stdout|stderr>] trace debug info to file, stdout, or stderr (default file stdout),\n"
+      "                                     and include time and thread information\n");
 #endif
   msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
   Debug::printFlags();
@@ -11476,7 +11476,7 @@ void readConfiguration(int argc, char **argv)
       case 'c':
         if (optInd+1>=argc) // no file name given
         {
-          err("option \"-c\" is missing the file name to read\n");
+          msg("option \"-c\" is missing the file name to read\n");
           devUsage();
           cleanUpDoxygen();
           exit(1);
@@ -11501,7 +11501,7 @@ void readConfiguration(int argc, char **argv)
           int retVal = Debug::setFlagStr(debugLabel);
           if (!retVal)
           {
-            err("option \"-d\" has unknown debug specifier: \"{}\".\n",debugLabel);
+            msg("option \"-d\" has unknown debug specifier: \"{}\".\n",debugLabel);
             devUsage();
             cleanUpDoxygen();
             exit(1);
