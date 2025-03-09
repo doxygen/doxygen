@@ -1360,8 +1360,8 @@ Token DocHtmlHeader::parse()
           }
           break;
         default:
-	        char tmp[20];
-	        qsnprintf(tmp,20,"<h%d>tag",m_level);
+          char tmp[20];
+          qsnprintf(tmp,20,"<h%d> tag",m_level);
           parser()->errorHandleDefaultToken(thisVariant(),tok,children(),tmp);
       }
     }
@@ -2824,7 +2824,7 @@ Token DocAutoList::parse()
   int num=1;
   auto ns = AutoNodeStack(parser(),thisVariant());
   parser()->tokenizer.startAutoList();
-	  // first item or sub list => create new list
+  // first item or sub list => create new list
   do
   {
     switch (parser()->context.token->id)
@@ -2851,7 +2851,7 @@ Token DocAutoList::parse()
   }
   while (retval.is(TokenRetval::TK_LISTITEM) &&                // new list item
          m_indent==parser()->context.token->indent &&          // at same indent level
-	 m_isEnumList==parser()->context.token->isEnumList &&  // of the same kind
+         m_isEnumList==parser()->context.token->isEnumList &&  // of the same kind
          m_isCheckedList==parser()->context.token->isCheckedList &&  // of the same kind
          (parser()->context.token->id==-1 || parser()->context.token->id>=num)  // increasing number (or no number or checked list)
         );
@@ -5761,7 +5761,7 @@ endparagraph:
   }
   INTERNAL_ASSERT(retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF,TokenRetval::TK_NEWPARA,TokenRetval::TK_LISTITEM,
                                    TokenRetval::TK_ENDLIST,TokenRetval::RetVal_OK)
-	);
+                 );
 
   AUTO_TRACE_EXIT("retval={}",retval.to_string());
   return retval;
@@ -5951,11 +5951,11 @@ void DocText::parse()
     switch(tok.value())
     {
       case TokenRetval::TK_WORD:
-	children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
-	break;
+        children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
+        break;
       case TokenRetval::TK_WHITESPACE:
         children().append<DocWhiteSpace>(parser(),thisVariant(),parser()->context.token->chars);
-	break;
+        break;
       case TokenRetval::TK_SYMBOL:
         {
           HtmlEntityMapper::SymType s = DocSymbol::decodeSymbol(parser()->context.token->name);
