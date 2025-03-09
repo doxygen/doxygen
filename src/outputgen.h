@@ -250,7 +250,7 @@ class OutputGenIntf
     virtual void writeSplitBar(const QCString &name) = 0;
     virtual void writeNavigationPath(const QCString &s) = 0;
     virtual void writeLogo() = 0;
-    virtual void writeQuickLinks(HighlightedItem hli,const QCString &file) = 0;
+    virtual void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs) = 0;
     virtual void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first) = 0;
     virtual void startContents() = 0;
     virtual void endContents() = 0;

@@ -2881,7 +2881,8 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
 static void writeDefaultQuickLinks(TextStream &t,
                                    HighlightedItem hli,
                                    const QCString &file,
-                                   const QCString &relPath)
+                                   const QCString &relPath,
+                                   bool extraTabs)
 {
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool searchEngine      = Config_getBool(SEARCHENGINE);
@@ -3004,13 +3005,16 @@ static void writeDefaultQuickLinks(TextStream &t,
     }
     t << "<div id=\"main-nav\">\n";
     renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HighlightedItem::Search);
-    t << "</div>\n";
+    if (!extraTabs)
+    {
+      t << "</div><!-- main-nav -->\n";
+    }
   }
   else if (!generateTreeView)
   {
     renderQuickLinksAsTree(t,relPath,root);
   }
-  if (generateTreeView && !disableIndex && fullSidebar)
+  if (generateTreeView && !disableIndex && fullSidebar && !extraTabs)
   {
      t << "<div id=\"doc-content\">\n";
   }
@@ -3103,9 +3107,9 @@ void HtmlGenerator::endPageDoc()
   m_t << "</div><!-- PageDoc -->\n";
 }
 
-void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file)
+void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs)
 {
-  writeDefaultQuickLinks(m_t,hli,file,m_relPath);
+  writeDefaultQuickLinks(m_t,hli,file,m_relPath,extraTabs);
 }
 
 // PHP based search script
@@ -3168,7 +3172,7 @@ void HtmlGenerator::writeSearchPage()
 
     if (!disableIndex && !quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
     if (generateTreeView)
     {
@@ -3177,7 +3181,7 @@ void HtmlGenerator::writeSearchPage()
     t << writeSplitBarAsString("search.php",QCString());
     if (quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
     t << "<!-- generated -->\n";
 
@@ -3234,7 +3238,7 @@ void HtmlGenerator::writeExternalSearchPage()
 
     if (!disableIndex && !quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
     if (generateTreeView)
     {
@@ -3243,7 +3247,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << writeSplitBarAsString("search.php",QCString());
     if (quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
 
     t << "<div class=\"header\">\n";

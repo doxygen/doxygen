@@ -3107,6 +3107,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool dynamicMenus     = Config_getBool(HTML_DYNAMIC_MENUS);
   bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
 
   bool multiPageIndex=FALSE;
@@ -3152,8 +3153,8 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
 
     auto writeQuickLinks = [&,cap_letter=letter]()
     {
-      ol.writeQuickLinks(HighlightedItem::Functions,QCString());
-      if (!Config_getBool(HTML_DYNAMIC_MENUS))
+      ol.writeQuickLinks(HighlightedItem::Functions,QCString(),!dynamicMenus);
+      if (!dynamicMenus)
       {
         startQuickIndexList(ol);
 
@@ -3184,6 +3185,8 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
           writeQuickMemberIndex(ol,index.isClassIndexLetterUsed(hl),cap_letter,
               getCmhlInfo(hl)->fname,multiPageIndex);
         }
+
+        ol.writeString("</div><!-- main-nav -->\n");
       }
     };
 
@@ -3198,6 +3201,10 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
+      if (!dynamicMenus)
+      {
+         ol.writeString("<div id=\"doc-content\">\n");
+      }
     }
     ol.writeSearchInfo();
 
@@ -3288,6 +3295,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool dynamicMenus     = Config_getBool(HTML_DYNAMIC_MENUS);
   bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
 
   bool multiPageIndex=FALSE;
@@ -3332,8 +3340,8 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
 
     auto writeQuickLinks = [&,cap_letter=letter]()
     {
-      ol.writeQuickLinks(HighlightedItem::Globals,QCString());
-      if (!Config_getBool(HTML_DYNAMIC_MENUS))
+      ol.writeQuickLinks(HighlightedItem::Globals,QCString(),!dynamicMenus);
+      if (!dynamicMenus)
       {
         startQuickIndexList(ol);
 
@@ -3362,6 +3370,8 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
           writeQuickMemberIndex(ol,index.isFileIndexLetterUsed(hl),cap_letter,
               getFmhlInfo(hl)->fname,multiPageIndex);
         }
+
+        ol.writeString("</div><!-- main-nav -->\n");
       }
     };
 
@@ -3376,6 +3386,10 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
+      if (!dynamicMenus)
+      {
+         ol.writeString("<div id=\"doc-content\">\n");
+      }
     }
     ol.writeSearchInfo();
 
@@ -3464,6 +3478,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool dynamicMenus     = Config_getBool(HTML_DYNAMIC_MENUS);
   bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
 
   bool multiPageIndex=FALSE;
@@ -3508,8 +3523,8 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
     auto writeQuickLinks = [&,cap_letter=letter]()
     {
-      ol.writeQuickLinks(HighlightedItem::NamespaceMembers,QCString());
-      if (!Config_getBool(HTML_DYNAMIC_MENUS))
+      ol.writeQuickLinks(HighlightedItem::NamespaceMembers,QCString(),!dynamicMenus);
+      if (!dynamicMenus)
       {
         startQuickIndexList(ol);
 
@@ -3538,6 +3553,8 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
           writeQuickMemberIndex(ol,index.isNamespaceIndexLetterUsed(hl),cap_letter,
               getNmhlInfo(hl)->fname,multiPageIndex);
         }
+
+        ol.writeString("</div><!-- main-nav -->\n");
       }
     };
 
@@ -3552,6 +3569,10 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
+      if (!dynamicMenus)
+      {
+         ol.writeString("<div id=\"doc-content\">\n");
+      }
     }
     ol.writeSearchInfo();
 
@@ -3633,6 +3654,7 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
+  bool dynamicMenus     = Config_getBool(HTML_DYNAMIC_MENUS);
   bool quickLinksAfterSplitbar = !disableIndex && generateTreeView && fullSidebar;
 
   bool multiPageIndex=FALSE;
@@ -3677,8 +3699,8 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
 
     auto writeQuickLinks = [&,cap_letter=letter]()
     {
-      ol.writeQuickLinks(HighlightedItem::ModuleMembers,QCString());
-      if (!Config_getBool(HTML_DYNAMIC_MENUS))
+      ol.writeQuickLinks(HighlightedItem::ModuleMembers,QCString(),!dynamicMenus);
+      if (!dynamicMenus)
       {
         startQuickIndexList(ol);
 
@@ -3707,6 +3729,8 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
           writeQuickMemberIndex(ol,index.isModuleIndexLetterUsed(hl),cap_letter,
               getMmhlInfo(hl)->fname,multiPageIndex);
         }
+
+        ol.writeString("</div><!-- main-nav -->\n");
       }
     };
 
@@ -3721,6 +3745,10 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
+      if (!dynamicMenus)
+      {
+         ol.writeString("<div id=\"doc-content\">\n");
+      }
     }
     ol.writeSearchInfo();
 

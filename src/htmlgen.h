@@ -251,7 +251,7 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     void writeSplitBar(const QCString &name) override;
     void writeNavigationPath(const QCString &s) override;
     void writeLogo() override;
-    void writeQuickLinks(HighlightedItem hli,const QCString &file) override;
+    void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs) override;
     void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first) override;
     void startContents() override;
     void endContents() override;

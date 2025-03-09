@@ -610,8 +610,8 @@ class OutputList
     { foreach(&OutputGenIntf::writeNavigationPath,s); }
     void writeLogo()
     { foreach(&OutputGenIntf::writeLogo); }
-    void writeQuickLinks(HighlightedItem hli,const QCString &file)
-    { foreach(&OutputGenIntf::writeQuickLinks,hli,file); }
+    void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs=false)
+    { foreach(&OutputGenIntf::writeQuickLinks,hli,file,extraTabs); }
     void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first)
     { foreach(&OutputGenIntf::writeSummaryLink,file,anchor,title,first); }
     void startContents()

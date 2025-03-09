@@ -239,7 +239,7 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void writeSplitBar(const QCString &) override {}
     void writeNavigationPath(const QCString &) override {}
     void writeLogo() override {}
-    void writeQuickLinks(HighlightedItem,const QCString &) override {}
+    void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
     void startContents() override {}
     void endContents() override {}

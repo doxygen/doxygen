@@ -264,7 +264,7 @@ class DocbookGenerator : public OutputGenerator, public OutputGenIntf
     void writeSplitBar(const QCString &) override {DB_GEN_EMPTY};
     void writeNavigationPath(const QCString &) override {DB_GEN_NEW};
     void writeLogo() override {DB_GEN_NEW};
-    void writeQuickLinks(HighlightedItem,const QCString &) override {DB_GEN_EMPTY};
+    void writeQuickLinks(HighlightedItem,const QCString &,bool) override {DB_GEN_EMPTY};
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {DB_GEN_EMPTY};
     void startContents() override {DB_GEN_EMPTY};
     void endContents() override {DB_GEN_EMPTY};
