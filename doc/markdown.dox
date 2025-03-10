@@ -545,7 +545,12 @@ be `.md` or `.markdown` (see
 \ref cfg_extension_mapping "EXTENSION_MAPPING" if your Markdown files have
 a different extension, and use `md` as the name of the parser).
 Each file is converted to a page (see the \ref cmdpage "page" command for
-details).
+details). Doxygen will not create a dedicated page if the Markdown file
+starts with a dedicated command (a.o. `\defgroup`, `\dir`) to avoid creating
+an empty page when the file only contains directory or group documentation.
+A `README.md` file in a subdirectory will be treated as directory
+documentation, unless it is explicitly overruled by a dedicated command
+(a.o. `@page`, `@mainpage`) to create a new page.
 
 By default the name and title of the page are derived from the file name.
 If the file starts with a level 1 header however, it is used as the title
