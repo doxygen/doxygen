@@ -45,7 +45,7 @@ QCString DotLegendGraph::getBaseName() const
 void DotLegendGraph::computeTheGraph()
 {
   TextStream md5stream;
-  writeGraphHeader(md5stream,theTranslator->trLegendTitle());
+  writeGraphHeader(md5stream,theTranslator->trLegendTitle(),"");
 
   DotNode{this,"Inherited", "", "", TRUE}.setNodeId(9).writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
