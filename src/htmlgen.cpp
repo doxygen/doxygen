@@ -1362,13 +1362,13 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
     QCString searchCss;
     // the position of the search box depends on a number of settings.
     // Insert the right piece of CSS code depending on which options are selected
-    if (Config_getBool(DISABLE_INDEX))
+    if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(FULL_SIDEBAR))
     {
-      if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(FULL_SIDEBAR))
-      {
-        searchCss = mgr.getAsString("search_sidebar.css"); // we have a full height side bar
-      }
-      else if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
+      searchCss = mgr.getAsString("search_sidebar.css"); // we have a full height side bar
+    }
+    else if (Config_getBool(DISABLE_INDEX))
+    {
+      if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
       {
         searchCss = mgr.getAsString("search_nomenu_toggle.css"); // we have no tabs but do have a darkmode button
       }

@@ -107,9 +107,11 @@ h3.version {
 }
 
 div.navtab {
-	padding-right: 15px;
+	margin-right: 6px;
+	padding-right: 6px;
 	text-align: right;
 	line-height: 110%;
+	background-color: var(--nav-background-color);
 }
 
 div.navtab table {
@@ -122,19 +124,10 @@ td.navtab {
 }
 
 td.navtabHL {
-	background-image: var(--nav-gradient-active-image);
-	background-repeat:repeat-x;
 	padding-right: 6px;
 	padding-left: 6px;
-}
-
-td.navtabHL a, td.navtabHL a:visited {
-	color: var(--nav-text-hover-color);
-	text-shadow: var(--nav-text-hover-shadow);
-}
-
-a.navtab {
-	font-weight: bold;
+	border-radius: 0 6px 6px 0;
+	background-color: var(--nav-menu-active-bg);
 }
 
 div.qindex{
@@ -214,11 +207,6 @@ span.label a:hover {
 	background:   linear-gradient(to bottom, transparent 0,transparent calc(100% - 1px), currentColor 100%);
 }
 
-a:hover > span.arrow {
-        text-decoration: none;
-        background : var(--nav-background-color);
-}
-
 a.el {
 	font-weight: bold;
 }
@@ -226,7 +214,7 @@ a.el {
 a.elRef {
 }
 
-a.code, a.code:visited, a.line, a.line:visited {
+a.el, a.el:visited, a.code, a.code:visited, a.line, a.line:visited {
 	color: var(--code-link-color);
 }
 
@@ -936,7 +924,7 @@ div.directory {
 }
 
 .arrow {
-    color: var(--nav-arrow-color);
+    color: var(--nav-background-color);
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
@@ -947,6 +935,21 @@ div.directory {
     display: inline-block;
     width: 16px;
     height: 22px;
+}
+
+@media (hover: none) {
+  .item a span.arrow, td.entry span.arrow {
+      color: var(--nav-arrow-color);
+  }
+}
+
+@media (hover: hover) {
+  .item:hover a span.arrow, td.entry:hover span.arrow {
+      color: var(--nav-arrow-color);
+  }
+  .arrow:hover {
+      color: var(--nav-arrow-color);
+  }
 }
 
 .icon {
@@ -1102,17 +1105,6 @@ table.fieldtable {
         border-bottom: 1px solid var(--memdef-border-color);
 }
 
-
-.tabsearch {
-	top: 0px;
-	left: 10px;
-	height: 36px;
-	background-image: var(--nav-gradient-image);
-	z-index: 101;
-	overflow: hidden;
-	font-size: 13px;
-}
-
 /* ----------- navigation breadcrumb styling ----------- */
 
 #nav-path ul {
@@ -1127,6 +1119,9 @@ table.fieldtable {
 	/*border-top: 1px solid var(--nav-breadcrumb-separator-color);*/
 	border-bottom: 1px solid var(--nav-breadcrumb-separator-color);
 	font-size: var(--nav-font-size-level1);
+	font-family: var(--font-family-nav);
+	position: relative;
+	z-index: 100;
 }
 
 #main-nav {

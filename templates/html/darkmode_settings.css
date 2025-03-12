@@ -81,7 +81,8 @@
 --nav-breadcrumb-active-bg: ##20;
 --nav-breadcrumb-color: ##A0;
 --nav-breadcrumb-border-color: ##33;
---nav-splitbar-image: url('splitbard.png');
+--nav-splitbar-bg-color: ##30;
+--nav-splitbar-handle-color: ##60;
 --nav-font-size-level1: 13px;
 --nav-font-size-level2: 10px;
 --nav-font-size-level3: 9px;
@@ -120,7 +121,7 @@
 --search-results-background-color: ##10;
 --search-results-foreground-color: ##A0;
 --search-results-border-color: ##90;
---search-box-shadow: inset 0.5px 0.5px 3px 0px ##3A;
+--search-box-border-color: ##30;
 
 /** code fragments */
 --code-keyword-color: #CC99CD;

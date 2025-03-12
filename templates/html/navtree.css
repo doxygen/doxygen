@@ -11,8 +11,8 @@
 
 #nav-tree li {
   white-space:nowrap;
-  margin:0px;
-  padding:0px;
+  margin:0;
+  padding:0;
 }
 
 #nav-tree .plus {
@@ -20,15 +20,28 @@
 }
 
 #nav-tree .selected {
-  background-image: url('tab_a.png');
-  background-repeat:repeat-x;
-  color: var(--nav-text-active-color);
-  text-shadow: var(--nav-text-active-shadow);
+  position: relative;
+  background-color: var(--nav-menu-active-bg);
+  border-radius: 0 6px 6px 0;
+  /*margin-right: 5px;*/
 }
 
-#nav-tree .selected .arrow {
-  color: var(--nav-arrow-selected-color);
-  text-shadow: none;
+@media (hover: none) {
+  #nav-tree .selected .arrow {
+    color: var(--nav-arrow-selected-color);
+    text-shadow: none;
+  }
+}
+
+@media (hover: hover) {
+  #nav-tree .selected .arrow {
+    color: var(--nav-menu-active-bg);
+    text-shadow: none;
+  }
+
+  #nav-tree .selected:hover .arrow {
+    color: var(--nav-arrow-selected-color);
+  }
 }
 
 #nav-tree img {
@@ -56,7 +69,7 @@
 
 #nav-tree .selected a {
   text-decoration:none;
-  color:var(--nav-text-active-color);
+  color:var(--page-link-color);
 }
 
 #nav-tree .children_ul {
@@ -65,7 +78,7 @@
 }
 
 #nav-tree .item {
-  margin:0px;
+  margin:0 6px 0 0;
   padding:0px;
 }
 
@@ -98,21 +111,31 @@
 }
 
 .ui-resizable-e {
-  background-image:var(--nav-splitbar-image);
-  background-size:100%;
-  background-repeat:repeat-y;
-  background-attachment: scroll;
   transition: opacity 0.5s ease;
+  background-color: var(--nav-splitbar-bg-color);
   opacity:0;
   cursor:ew-resize;
   height:100%;
   right:0;
   top:0;
   width:6px;
+  position: relative;
+}
+
+.ui-resizable-e:after {
+  content: '';
+  display: block;
+  top: 50%;
+  left: 1px;
+  width: 2px;
+  height: 15px;
+  border-left: 1px solid var(--nav-splitbar-handle-color);
+  border-right: 1px solid var(--nav-splitbar-handle-color);
+  position: absolute;
 }
 
 .ui-resizable-e:hover {
-  opacity: 1.0;
+  opacity: 1;
 }
 
 .ui-resizable-handle {

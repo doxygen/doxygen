@@ -26,12 +26,24 @@
 function initResizable(treeview) {
   let sidenav,mainnav,navtree,content,header,footer,barWidth=6;
   const RESIZE_COOKIE_NAME = '$PROJECTID'+'width';
+  const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
+
+  function showHideNavBar() {
+    let bar = $('div.sm-dox');
+    if (fullSidebar && mainnav && bar) {
+      if (mainnav.width()<768) {
+        bar.hide();
+      } else {
+        bar.show();
+      }
+    }
+  }
 
   function resizeWidth() {
     const sidenavWidth = $(sidenav).outerWidth();
     const widthStr = parseInt(sidenavWidth-barWidth)+"px";
     content.css({marginLeft:widthStr});
-    if (typeof page_layout!=='undefined' && page_layout==1) {
+    if (fullSidebar) {
       footer.css({marginLeft:widthStr});
       if (mainnav) {
         mainnav.css({marginLeft:widthStr});
@@ -43,13 +55,14 @@ function initResizable(treeview) {
   function restoreWidth(navWidth) {
     const widthStr = parseInt(navWidth)+"px";
     content.css({marginLeft:widthStr});
-    if (typeof page_layout!=='undefined' && page_layout==1) {
+    if (fullSidebar) {
       footer.css({marginLeft:widthStr});
       if (mainnav) {
         mainnav.css({marginLeft:widthStr});
       }
     }
     sidenav.css({width:navWidth + "px"});
+    showHideNavBar();
   }
 
   function resizeHeight(treeview) {
@@ -60,11 +73,11 @@ function initResizable(treeview) {
     {
       const footerHeight = footer.outerHeight();
       let navtreeHeight,sideNavHeight;
-      if (typeof page_layout==='undefined' || page_layout==0) { /* DISABLE_INDEX=NO */
+      if (!fullSidebar) {
         contentHeight = windowHeight - headerHeight - footerHeight - 1;
         navtreeHeight = contentHeight;
         sideNavHeight = contentHeight;
-      } else if (page_layout==1) { /* DISABLE_INDEX=YES */
+      } else if (fullSidebar) {
         contentHeight = windowHeight - footerHeight - 1;
         navtreeHeight = windowHeight - headerHeight - 1;
         sideNavHeight = windowHeight - 1;
@@ -80,6 +93,7 @@ function initResizable(treeview) {
       contentHeight = windowHeight - headerHeight - 1;
     }
     content.css({height:contentHeight + "px"});
+    showHideNavBar();
     if (location.hash.slice(1)) {
       (document.getElementById(location.hash.slice(1))||document.body).scrollIntoView();
     }
@@ -113,14 +127,6 @@ function initResizable(treeview) {
   $(window).resize(function() { resizeHeight(treeview); });
   if (treeview)
   {
-    const device = navigator.userAgent.toLowerCase();
-    const touch_device = device.match(/(iphone|ipod|ipad|android)/);
-    if (touch_device) { /* wider split bar for touch only devices */
-      $(sidenav).css({ paddingRight:'20px' });
-      $('.ui-resizable-e').css({ width:'20px' });
-      $('#nav-sync').css({ right:'34px' });
-      barWidth=20;
-    }
     const width = Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH);
     if (width) { restoreWidth(width); } else { resizeWidth(); }
   }
