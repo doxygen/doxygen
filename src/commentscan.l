@@ -3368,7 +3368,7 @@ static bool handleImage(yyscan_t yyscanner,const QCString &s, const StringVector
   return FALSE;
 }
 
-static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector &)
+static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->spaceBeforeCmd.isEmpty())
@@ -3376,7 +3376,14 @@ static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector 
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
   }
-  addOutput(yyscanner,"@"+s+" ");
+  if (optList.empty())
+  {
+    addOutput(yyscanner,"@"+s+" ");
+  }
+  else
+  {
+    addOutput(yyscanner,"@"+s+"{"+QCString(join(optList,","))+"} ");
+  }
   BEGIN(CiteLabel);
   return FALSE;
 }
