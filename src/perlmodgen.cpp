@@ -41,6 +41,7 @@
 #include "portable.h"
 #include "moduledef.h"
 #include "construct.h"
+#include "cite.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -743,7 +744,19 @@ void PerlModDocVisitor::operator()(const DocSimpleSectSep &)
 void PerlModDocVisitor::operator()(const DocCite &cite)
 {
   openItem("cite");
-  m_output.addFieldQuotedString("text", cite.text());
+  int opt = cite.option();
+  QCString txt;
+  if (!cite.file().isEmpty())
+  {
+    txt = cite.getText();
+  }
+  else
+  {
+    if (!(opt & CiteInfo::NOPAR_BIT)) txt += "[";
+    txt += cite.target();
+    if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+  }
+  m_output.addFieldQuotedString("text", txt);
   closeItem();
 }
 
