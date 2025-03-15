@@ -14,7 +14,7 @@
 --header-background-color: ##FA;
 --header-separator-color: ##CC;
 --header-gradient-image: url('nav_h.png');
---group-header-separator-color: ##99;
+--group-header-separator-color: ##DE;
 --group-header-color: ##44;
 --inherit-header-color: gray;
 
@@ -50,7 +50,7 @@
 --memdef-border-color: ##B4;
 --memdef-title-background-color: ##E6;
 --memdef-title-gradient-image: url('nav_f.png');
---memdef-proto-background-color: ##E3;
+--memdef-proto-background-color: ##F0;
 --memdef-proto-text-color: ##2b;
 --memdef-proto-text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
 --memdef-doc-background-color: white;
@@ -163,7 +163,7 @@
 --fold-plus-image-relpath: url('../../plus.svg');
 
 /** font-family */
---font-family-normal: Roboto,sans-serif;
+--font-family-normal: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 --font-family-monospace: 'JetBrains Mono',Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace,fixed;
 --font-family-nav: 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
 --font-family-title: Tahoma,Arial,sans-serif;

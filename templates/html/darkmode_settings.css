@@ -14,7 +14,7 @@
 --header-background-color: ##06;
 --header-separator-color: ##14;
 --header-gradient-image: url('nav_hd.png');
---group-header-separator-color: ##30;
+--group-header-separator-color: ##38;
 --group-header-color: ##A0;
 --inherit-header-color: #A0A0A0;
 
@@ -163,7 +163,7 @@
 --fold-plus-image-relpath: url('../../plusd.svg');
 
 /** font-family */
---font-family-normal: Roboto,sans-serif;
+--font-family-normal: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 --font-family-monospace: 'JetBrains Mono',Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace,fixed;
 --font-family-nav: 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
 --font-family-title: Tahoma,Arial,sans-serif;
