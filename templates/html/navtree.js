@@ -25,8 +25,8 @@
 
 function initNavTree(toroot,relpath) {
   let navTreeSubIndices = [];
-  const ARROW_DOWN = '&#9660;';
-  const ARROW_RIGHT = '&#9658;';
+  const ARROW_DOWN = '<span class="arrowhead opened"></span>';
+  const ARROW_RIGHT = '<span class="arrowhead closed"></span>';
   const NAVPATH_COOKIE_NAME = '$PROJECTID'+'navpath';
 
   const getData = function(varName) {
@@ -97,7 +97,7 @@ function initNavTree(toroot,relpath) {
       node.expandToggle.onclick = function() {
         if (node.expanded) {
           $(node.getChildrenUL()).slideUp("fast");
-          node.plus_img.innerHTML=ARROW_RIGHT;
+          $(node.plus_img.childNodes[0]).removeClass('opened').addClass('closed');
           node.expanded = false;
         } else {
           expandNode(o, node, false, true);
@@ -253,7 +253,7 @@ function initNavTree(toroot,relpath) {
           getNode(o, node);
         }
         $(node.getChildrenUL()).slideDown("fast");
-        node.plus_img.innerHTML = ARROW_DOWN;
+        $(node.plus_img.childNodes[0]).addClass('opened').removeClass('closed');
         node.expanded = true;
         if (setFocus) {
           $(node.expandToggle).focus();
@@ -309,7 +309,7 @@ function initNavTree(toroot,relpath) {
           getNode(o, node);
         }
         $(node.getChildrenUL()).css({'display':'block'});
-        node.plus_img.innerHTML = ARROW_DOWN;
+        $(node.plus_img.childNodes[0]).removeClass('closed').addClass('opened');
         node.expanded = true;
         const n = node.children[o.breadcrumbs[index]];
         if (index+1<o.breadcrumbs.length) {
@@ -334,28 +334,13 @@ function initNavTree(toroot,relpath) {
     }
   }
 
-  const removeToInsertLater = function(element) {
-    const parentNode = element.parentNode;
-    const nextSibling = element.nextSibling;
-    parentNode.removeChild(element);
-    return function() {
-      if (nextSibling) {
-        parentNode.insertBefore(element, nextSibling);
-      } else {
-        parentNode.appendChild(element);
-      }
-    };
-  }
-
   const getNode = function(o, po) {
-    const insertFunction = removeToInsertLater(po.li);
     po.childrenVisited = true;
     const l = po.childrenData.length-1;
     for (let i in po.childrenData) {
       const nodeData = po.childrenData[i];
       po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2], i==l);
     }
-    insertFunction();
   }
 
   const gotoNode = function(o,subIndex,root,hash,relpath) {

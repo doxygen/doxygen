@@ -28,19 +28,13 @@
 
 @media (hover: none) {
   #nav-tree .selected .arrow {
-    color: var(--nav-arrow-selected-color);
-    text-shadow: none;
+     opacity: 1;
   }
 }
 
 @media (hover: hover) {
-  #nav-tree .selected .arrow {
-    color: var(--nav-menu-active-bg);
-    text-shadow: none;
-  }
-
-  #nav-tree .selected:hover .arrow {
-    color: var(--nav-arrow-selected-color);
+  #nav-tree .selected:hover .arrow .arrowhead {
+     opacity: 1;
   }
 }
 
@@ -61,6 +55,7 @@
   margin:0px;
   padding:0px;
   font: 12px var(--font-family-nav);
+  line-height: 22px;
 }
 
 #nav-tree .label a {
@@ -80,6 +75,7 @@
 #nav-tree .item {
   margin:0 6px 0 0;
   padding:0px;
+  height: 22px;
 }
 
 #nav-tree {

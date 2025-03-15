@@ -261,7 +261,9 @@ static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
   while (parent) { indent++; parent=parent->parent.lock(); }
   if (n->isDir)
   {
-    QCString dir = opened ? "&#9660;" : "&#9658;";
+    const char *ARROW_DOWN = "<span class=\"arrowhead opened\"></span>";
+    const char *ARROW_RIGHT = "<span class=\"arrowhead closed\"></span>";
+    QCString dir = opened ? ARROW_DOWN : ARROW_RIGHT;
     t << "<span style=\"width:" << (indent*16) << "px;display:inline-block;\">&#160;</span>"
       << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\" ";
     t << "onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0) << "')\"";

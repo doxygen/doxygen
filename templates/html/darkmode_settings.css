@@ -98,8 +98,8 @@
 --nav-menu-active-bg: ##20;
 --nav-menu-active-color: ##D0;
 --nav-menu-toggle-color: rgba(255, 255, 255, 0.2);
---nav-arrow-color: ##40;
---nav-arrow-selected-color: ##A0;
+--nav-arrow-color: ##A0;
+--nav-arrow-selected-color: ##C0;
 
 /* table of contents */
 --toc-background-color: ##15;

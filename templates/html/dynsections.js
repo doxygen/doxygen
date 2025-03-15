@@ -28,7 +28,6 @@ function toggleVisibility(linkObj) {
 }
 
 let dynsection = {
-
   // helper function
   updateStripes : function() {
     $('table.directory tr').
@@ -44,15 +43,13 @@ let dynsection = {
     const trigger = $('#'+base+'-trigger');
     const src=$(trigger).attr('src');
     if (content.is(':visible')===true) {
-      content.hide();
+      content.slideUp('fast');
       summary.show();
-      $(linkObj).addClass('closed').removeClass('opened');
-      $(trigger).attr('src',src.substring(0,src.length-8)+'closed.png');
+      $(linkObj).find('.arrowhead').addClass('closed').removeClass('opened');
     } else {
-      content.show();
+      content.slideDown('fast');
       summary.hide();
-      $(linkObj).removeClass('closed').addClass('opened');
-      $(trigger).attr('src',src.substring(0,src.length-10)+'open.png');
+      $(linkObj).find('.arrowhead').removeClass('closed').addClass('opened');
     }
     return false;
   },
@@ -60,15 +57,7 @@ let dynsection = {
   toggleLevel : function(level) {
     $('table.directory tr').each(function() {
       const l = this.id.split('_').length-1;
-      const i = $('#img'+this.id.substring(3));
-      const a = $('#arr'+this.id.substring(3));
-      if (l<level+1) {
-        i.removeClass('iconfopen iconfclosed').addClass('iconfopen');
-        a.html('&#9660;');
-        $(this).show();
-      } else if (l==level+1) {
-        i.removeClass('iconfclosed iconfopen').addClass('iconfclosed');
-        a.html('&#9658;');
+      if (l<=level+1) {
         $(this).show();
       } else {
         $(this).hide();
@@ -93,18 +82,15 @@ let dynsection = {
     if (childRows.filter(':first').is(':visible')===true) {
       // replace down arrow by right arrow for current row
       const currentRowSpans = currentRow.find("span");
-      currentRowSpans.filter(".iconfopen").removeClass("iconfopen").addClass("iconfclosed");
-      currentRowSpans.filter(".arrow").html('&#9658;');
+      currentRowSpans.filter(".opened").removeClass("opened").addClass("closed");
       rows.filter("[id^=row_"+id+"]").hide(); // hide all children
     } else { // we are SHOWING
       // replace right arrow by down arrow for current row
       const currentRowSpans = currentRow.find("span");
-      currentRowSpans.filter(".iconfclosed").removeClass("iconfclosed").addClass("iconfopen");
-      currentRowSpans.filter(".arrow").html('&#9660;');
+      currentRowSpans.filter(".closed").removeClass("closed").addClass("opened");
       // replace down arrows by right arrows for child rows
       const childRowsSpans = childRows.find("span");
-      childRowsSpans.filter(".iconfopen").removeClass("iconfopen").addClass("iconfclosed");
-      childRowsSpans.filter(".arrow").html('&#9658;');
+      childRowsSpans.filter(".opened").removeClass("opened").addClass("closed");
       childRows.show(); //show all children
     }
     this.updateStripes();

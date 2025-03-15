@@ -966,21 +966,38 @@ div.directory {
     font-size: 80%;
     display: inline-block;
     width: 16px;
-    height: 22px;
+    height: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
+span.arrowhead {
+    position: relative;
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-right: 2px solid var(--nav-arrow-color);
+    border-bottom: 2px solid var(--nav-arrow-color);
+    transform: rotate(-45deg);
+    transition: transform 0.3s ease;
+}
+
+span.arrowhead.opened {
+    transform: rotate(45deg);
+}
+
+
 @media (hover: none) {
-  .item a span.arrow, td.entry span.arrow {
-      color: var(--nav-arrow-color);
+  .item a .arrow .arrowhead, td.entry .arrow .arrowhead {
+      opacity: 1;
   }
 }
 
 @media (hover: hover) {
-  .item:hover a span.arrow, td.entry:hover span.arrow {
-      color: var(--nav-arrow-color);
-  }
-  .arrow:hover {
-      color: var(--nav-arrow-color);
+  #nav-tree-contents:hover .item a span.arrow, table:hover td.entry span.arrow {
+      opacity: 1;
   }
 }
 
@@ -1047,6 +1064,13 @@ div.dynheader {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+}
+
+span.dynarrow {
+        position: relative;
+        display: inline-block;
+        width: 12px;
+        bottom: 1px;
 }
 
 address {

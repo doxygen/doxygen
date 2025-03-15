@@ -1954,9 +1954,8 @@ static void startSectionHeader(TextStream &t,
     t << "<div id=\"dynsection-" << sectionCount << "\" "
          "onclick=\"return dynsection.toggleVisibility(this)\" "
          "class=\"dynheader closed\" "
-         "style=\"cursor:pointer;\">\n";
-    t << "  <img id=\"dynsection-" << sectionCount << "-trigger\" src=\""
-      << relPath << "closed.png\" alt=\"+\"/> ";
+         "style=\"cursor:pointer;\">"
+         "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>";
   }
   else
   {
