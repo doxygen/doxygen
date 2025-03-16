@@ -28,24 +28,8 @@ h2.groupheader {
 	/*border-bottom: 1px solid var(--group-header-separator-color);*/
 	box-shadow: 100px 0 var(--page-background-color),
 	           -100px 0 var(--page-background-color),
-		    100px 0.75px var(--group-header-separator-color),
-		   -100px 0.75px var(--group-header-separator-color),
-		    500px 0 var(--page-background-color),
-		   -500px 0 var(--page-background-color),
-		    500px 0.75px var(--group-header-separator-color),
-		   -500px 0.75px var(--group-header-separator-color),
-		    900px 0 var(--page-background-color),
-		   -900px 0 var(--page-background-color),
-		    900px 0.75px var(--group-header-separator-color),
-		   -900px 0.75px var(--group-header-separator-color),
-		   1400px 0 var(--page-background-color),
-		  -1400px 0 var(--page-background-color),
-		   1400px 0.75px var(--group-header-separator-color),
-		  -1400px 0.75px var(--group-header-separator-color),
-		   1900px 0 var(--page-background-color),
-		  -1900px 0 var(--page-background-color),
-		   1900px 0.75px var(--group-header-separator-color),
-		  -1900px 0.75px var(--group-header-separator-color);
+		    100px 1px var(--group-header-separator-color),
+		   -100px 1px var(--group-header-separator-color);
 	color: var(--group-header-color);
 	font-size: 150%;
 	font-weight: normal;
@@ -607,10 +591,10 @@ hr {
 	margin-top: 16px;
 	margin-bottom: 16px;
 	height: 1px;
-	background-color: var(--group-header-separator-color);
-	border: 0;
-	margin-left: -12px;
-	margin-right: -8px;
+	box-shadow: 100px 0 var(--page-background-color),
+	           -100px 0 var(--page-background-color),
+		    100px 1px var(--group-header-separator-color),
+		   -100px 1px var(--group-header-separator-color);
 }
 
 hr.footer {

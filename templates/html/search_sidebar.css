@@ -6,9 +6,9 @@
 
 #MSearchSelect {
 	width: 16px !important;
-	margin: 0 0 4px 0.3em !important;
 }
 
 dark-mode-toggle {
-        padding-top: 8px;
+        padding-top: 10px !important;
+	margin-left: 2px !important;
 }

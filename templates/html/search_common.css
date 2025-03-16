@@ -30,7 +30,7 @@ dark-mode-toggle {
     display: inline-block;
     vertical-align: middle;
     width: 20px;
-    height: 18px;
+    /*height: 18px;*/
     background-image: var(--search-magnification-select-image);
     margin: 0 0 -1px 0.3em;
     padding: 0;
@@ -51,8 +51,8 @@ dark-mode-toggle {
     display: inline-block;
     vertical-align: middle;
     width: 7.5em;
-    height: 19px;
-    margin: 0 0.15em;
+    height: 22px;
+    margin: 0 0 0 0.15em;
     padding: 0;
     line-height: 1em;
     border:none;
@@ -90,8 +90,8 @@ dark-mode-toggle {
 }
 
 #MSearchCloseImg {
-    padding: 0.3em;
-    margin: 0;
+    padding: 0.3em 0 0 0.2em;
+    margin: 2px 0 0 0;
 }
 
 .MSearchBoxActive #MSearchField {
@@ -165,17 +165,36 @@ iframe#MSearchResults {
     height: 15em;
 }
 
+@keyframes slideInSearchResults {
+    from {
+        opacity: 0;
+        transform: translate(0, 15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(0, 20px);
+    }
+}
+
 #MSearchResultsWindow {
     display: none;
     position: absolute;
-    left: 0; top: 0;
+    left: auto;
+    right: 4px;
+    top: 0;
     border: 1px solid var(--search-results-border-color);
     background-color: var(--search-results-background-color);
     z-index:10000;
     width: 300px;
     height: 400px;
     overflow: auto;
+    border-radius: 8px;
+    transform: translate(0, 20px);
+    animation: ease-out 280ms slideInSearchResults;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,.075);
 }
+
 
 /* ----------------------------------- */
 
@@ -190,8 +209,8 @@ iframe#MSearchResults {
 }
 
 .SRPage .SREntry {
-    font-size: 8pt;
-    padding: 1px 5px;
+    font-size: 10pt;
+    padding: 2px 5px;
 }
 
 div.SRPage {
