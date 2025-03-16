@@ -642,13 +642,23 @@ table.memberdecls {
 	box-shadow: 0 0 15px var(--glow-color);
 }
 
+.memberdecls tr[class^='memitem'] {
+	font-family: var(--font-family-monospace);
+}
+
 .mdescLeft, .mdescRight,
-.memItemLeft, .memItemRight,
-.memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+.memItemLeft, .memItemRight {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.memTemplParams {
+	padding-left: 10px;
+	padding-top: 5px;
+}
+
+.memItemLeft, .memItemRight, .memTemplParams {
 	background-color: var(--memdecl-background-color);
-	border: none;
-	margin: 4px;
-	padding: 1px 0 0 8px;
 }
 
 .mdescLeft, .mdescRight {
@@ -657,24 +667,55 @@ table.memberdecls {
 }
 
 .memSeparator {
-        border-bottom: 1px solid var(--memdecl-separator-color);
+        /*border-bottom: 1px solid var(--memdecl-separator-color);*/
         line-height: 1px;
         margin: 0px;
         padding: 0px;
+	transition: none;
+	height: 8px;
 }
 
-.memItemLeft, .memTemplItemLeft {
+.memItemLeft {
         white-space: nowrap;
+	border-radius: 4px 0 0 4px;
+	border-left: 1px solid var(--memdecl-border-color);
+	border-top: 1px solid var(--memdecl-border-color);
+	border-bottom: 1px solid var(--memdecl-border-color);
+	padding-left: 10px;
+	transition: none;
 }
 
-.memItemRight, .memTemplItemRight {
+.memItemRight {
 	width: 100%;
+	border-radius: 0 4px 4px 0;
+	border-right: 1px solid var(--memdecl-border-color);
+	border-top: 1px solid var(--memdecl-border-color);
+	border-bottom: 1px solid var(--memdecl-border-color);
+	padding-right: 10px;
+	transition: none;
+}
+
+tr.template .memItemLeft, tr.template .memItemRight {
+	border-top: none;
+	padding-top: 0;
+}
+
+tr.template .memItemLeft {
+	border-radius: 0 0 0 4px;
+}
+
+tr.template .memItemRight {
+	border-radius: 0 0 4px 0;
 }
 
 .memTemplParams {
 	color: var(--memdecl-template-color);
         white-space: nowrap;
 	font-size: 80%;
+	border-radius: 4px 4px 0 0;
+	border-left: 1px solid var(--memdecl-border-color);
+	border-right: 1px solid var(--memdecl-border-color);
+	border-top: 1px solid var(--memdecl-border-color);
 }
 
 /* @end */
@@ -727,6 +768,7 @@ table.memberdecls {
 .memtemplate {
 	font-size: 80%;
 	color: var(--memdef-template-color);
+	font-family: var(--font-family-monospace);
 	font-weight: normal;
 	margin-left: 9px;
 }
@@ -1582,7 +1624,7 @@ span.obfuscator {
 
 tr.heading h2 {
         margin-top: 12px;
-        margin-bottom: 4px;
+        margin-bottom: 12px;
 }
 
 /* tooltip related style info */

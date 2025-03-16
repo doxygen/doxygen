@@ -2092,7 +2092,7 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
 
 void HtmlGenerator::endMemberItem(MemberItemType type)
 {
-  if (type==MemberItemType::AnonymousStart || type==MemberItemType::AnonymousEnd)
+  if (type==MemberItemType::AnonymousStart)
   {
     insertMemberAlign(false);
   }
@@ -2111,7 +2111,7 @@ void HtmlGenerator::endMemberTemplateParams(const QCString &anchor,const QCStrin
   {
     m_t << " inherit " << inheritId;
   }
-  m_t << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
+  m_t << " template\"><td class=\"memItemLeft\" align=\"right\" valign=\"top\">";
 }
 
 void HtmlGenerator::startCompoundTemplateParams()
@@ -2124,11 +2124,10 @@ void HtmlGenerator::endCompoundTemplateParams()
   m_t << "</div>";
 }
 
-void HtmlGenerator::insertMemberAlign(bool templ)
+void HtmlGenerator::insertMemberAlign(bool)
 {
   DBG_HTML(m_t << "<!-- insertMemberAlign -->\n")
-  QCString className = templ ? "memTemplItemRight" : "memItemRight";
-  m_t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">";
+  m_t << "&#160;</td><td class=\"memItemRight\" valign=\"bottom\">";
 }
 
 void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
@@ -2137,8 +2136,8 @@ void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
   switch (type)
   {
     case MemberItemType::Normal:         m_t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
-    case MemberItemType::AnonymousStart: m_t << "<td class=\"memItemLeft\" >"; break;
-    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    case MemberItemType::AnonymousStart: m_t << "<td class=\"memItemLeft anon\">"; break;
+    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft anonEnd\" valign=\"top\">"; break;
     case MemberItemType::Templated:      m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
   }
 }

@@ -45,6 +45,7 @@
 --memdecl-separator-color: ##E2;
 --memdecl-foreground-color: #555;
 --memdecl-template-color: ##60;
+--memdecl-border-color: ##DA;
 
 /* detailed member list */
 --memdef-border-color: ##B4;

@@ -32,7 +32,7 @@ dark-mode-toggle {
     width: 20px;
     height: 18px;
     background-image: var(--search-magnification-select-image);
-    margin: 0 0 4px 0.3em;
+    margin: 0 0 -1px 0.3em;
     padding: 0;
 }
 
