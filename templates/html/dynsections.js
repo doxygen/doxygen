@@ -97,17 +97,17 @@ let dynsection = {
   },
 
   toggleInherit : function(id) {
-    const rows = $('tr.inherit.'+id);
-    const img = $('tr.inherit_header.'+id+' img');
-    const src = $(img).attr('src');
+    let rows = $('tr.inherit.'+id);
+    let header = $('tr.inherit_header.'+id);
     if (rows.filter(':first').is(':visible')===true) {
-      rows.css('display','none');
-      $(img).attr('src',src.substring(0,src.length-8)+'closed.png');
+      rows.hide();
+      $(header).find('.arrowhead').addClass('closed').removeClass('opened');
     } else {
-      rows.css('display','table-row'); // using show() causes jump in firefox
-      $(img).attr('src',src.substring(0,src.length-10)+'open.png');
+      rows.show();
+      $(header).find('.arrowhead').removeClass('closed').addClass('opened');
     }
   },
+
 };
 
 let codefold = {

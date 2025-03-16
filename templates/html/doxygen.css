@@ -15,8 +15,8 @@ body, table, div, p, dl {
 .title {
 	font-family: var(--font-family-normal);
 	line-height: 28px;
-	font-size: 150%;
-	font-weight: bold;
+	font-size: 180%;
+	font-weight: 400;
 	margin: 10px 2px;
 }
 
@@ -773,6 +773,7 @@ tr.template .memItemRight {
         display: table !important;
         width: 100%;
 	box-shadow: 0 2px 8px 0 rgba(0,0,0,.075);
+	border-radius: 4px;
 }
 
 .memitem.glow {
@@ -1599,7 +1600,7 @@ span.obfuscator {
 }
 
 .inherit_header td {
-        padding: 6px 0px 2px 5px;
+        padding: 6px 0 2px 0;
 }
 
 .inherit {

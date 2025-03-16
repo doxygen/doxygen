@@ -3541,7 +3541,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
   m_t << "<tr class=\"inherit_header " << id << "\">"
     << "<td colspan=\"2\" onclick=\"javascript:dynsection.toggleInherit('" << id << "')\">"
-    << "<img src=\"" << m_relPath << "closed.png\" alt=\"-\"/>&#160;"
+    << "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>"
     << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
     << "</td></tr>\n";
 }
