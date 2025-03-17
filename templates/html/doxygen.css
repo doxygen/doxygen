@@ -1621,8 +1621,8 @@ span.obfuscator {
 }
 
 .inherit_header {
-        font-weight: bold;
-        color: var(--inherit-header-color);
+        font-weight: 400;
+        /*color: var(--inherit-header-color);*/
         cursor: pointer;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;

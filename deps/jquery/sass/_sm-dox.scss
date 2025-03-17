@@ -102,7 +102,7 @@ $sm-dox__desktop-item-padding-horizontal:             6px !default;
 // Sub menu indicators
 $sm-dox__desktop-arrow-size:                          4px !default;       // border-width
 $sm-dox__desktop-arrow-color:                         $sm-dox__gray-darker !default;
-$sm-dox__desktop-arrow-spacing:                       4px !default;
+$sm-dox__desktop-arrow-spacing:                       10px !default;
 
 // Vertical menu box
 $sm-dox__desktop-vertical-border-radius:              $sm-dox__border-radius !default;
@@ -333,29 +333,7 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
             &:hover {
               background-color: var(--nav-menu-active-bg);
               border-radius: 5px !important;
-              /*
-              background-image: var(--nav-gradient-active-image);
-              background-repeat:repeat-x;
-              color: $sm-dox__main-highlight-color;
-              text-shadow: var(--nav-text-hover-shadow);
-              span.sub-arrow {
-                border-color: var(--nav-menu-active-bg) transparent transparent transparent;
-              }
-              */
             }
-            /*
-            &:hover:after {
-              content: '';
-              position: absolute;
-              left: 10px;
-              right: 10px;
-              top: 34px;
-              height: 2px;
-              display: block;
-              border: 1px solid orange;
-              border-radius: 2px 2px 0px 0px;
-            }
-            */
 
             // Make room for the sub arrows
             &.has-submenu {
