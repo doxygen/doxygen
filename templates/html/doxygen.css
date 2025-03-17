@@ -397,16 +397,57 @@ div.line.glow {
 }
 
 span.fold {
-        margin-left: 5px;
-        margin-right: 1px;
-        margin-top: 0px;
-        margin-bottom: 0px;
-        padding: 0px;
-	display: inline-block;
-	width: 12px;
-	height: 12px;
-	background-repeat:no-repeat;
-        background-position:center;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 4px;
+    margin-right: 1px;
+}
+
+span.foldnone {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+}
+
+span.fold.plus, span.fold.minus {
+    width: 10px;
+    height: 10px;
+    background-color: var(--fragment-background-color);
+    position: relative;
+    border: 1px solid var(--fold-line-color);
+    margin-right: 1px;
+}
+
+span.fold.plus::before, span.fold.minus::before {
+    content: '';
+    position: absolute;
+    background-color: var(--fold-line-color);
+}
+
+span.fold.plus::before {
+    width: 2px;
+    height: 6px;
+    top: 2px;
+    left: 4px;
+}
+
+span.fold.plus::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 2px;
+    top: 4px;
+    left: 2px;
+    background-color: var(--fold-line-color);
+}
+
+span.fold.minus::before {
+    width: 6px;
+    height: 2px;
+    top: 4px;
+    left: 2px;
 }
 
 span.lineno {

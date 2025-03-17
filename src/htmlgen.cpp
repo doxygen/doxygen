@@ -1517,7 +1517,7 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   {
     m_t << "<script type=\"text/javascript\">\n";
     m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-    m_t << "$(function() { codefold.init(" << (m_relPath.isEmpty() ? "0" : "1") << "); });\n";
+    m_t << "$(function() { codefold.init(); });\n";
     m_t << "/* @license-end */\n";
     m_t << "</script>\n";
   }

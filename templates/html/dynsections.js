@@ -113,18 +113,14 @@ let dynsection = {
 let codefold = {
   opened : true,
 
-  // in case HTML_COLORSTYLE is LIGHT or DARK the vars will be replaced, so we write them out explicitly and use double quotes
-  plusImg:  [ "var(--fold-plus-image)",  "var(--fold-plus-image-relpath)" ],
-  minusImg: [ "var(--fold-minus-image)", "var(--fold-minus-image-relpath)" ],
-
   // toggle all folding blocks
-  toggle_all : function(relPath) {
+  toggle_all : function() {
     if (this.opened) {
-      $('#fold_all').css('background-image',this.plusImg[relPath]);
+      $('#fold_all').addClass('plus').removeClass('minus');
       $('div[id^=foldopen]').hide();
       $('div[id^=foldclosed]').show();
     } else {
-      $('#fold_all').css('background-image',this.minusImg[relPath]);
+      $('#fold_all').addClass('minus').removeClass('plus');
       $('div[id^=foldopen]').show();
       $('div[id^=foldclosed]').hide();
     }
@@ -135,9 +131,10 @@ let codefold = {
   toggle : function(id) {
     $('#foldopen'+id).toggle();
     $('#foldclosed'+id).toggle();
+    $('#foldopen'+id).next().find('span.fold').addClass('plus').removeClass('minus');
   },
 
-  init : function(relPath) {
+  init : function() {
     $('span[class=lineno]').css({
       'padding-right':'4px',
       'margin-right':'2px',
@@ -146,9 +143,8 @@ let codefold = {
       'background':'linear-gradient(var(--fold-line-color),var(--fold-line-color)) no-repeat 46px/2px 100%'
     });
     // add global toggle to first line
-    $('span[class=lineno]:first').append('<span class="fold" id="fold_all" '+
-      'onclick="javascript:codefold.toggle_all('+relPath+');" '+
-      'style="background-image:'+this.minusImg[relPath]+';"></span>');
+    $('span[class=lineno]:first').append('<span class="fold minus" id="fold_all" '+
+      'onclick="javascript:codefold.toggle_all();"></span>');
     // add vertical lines to other rows
     $('span[class=lineno]').not(':eq(0)').append('<span class="fold"></span>');
     // add toggle controls to lines with fold divs
@@ -159,9 +155,8 @@ let codefold = {
       const start = $(this).attr('data-start');
       const end   = $(this).attr('data-end');
       // replace normal fold span with controls for the first line of a foldable fragment
-      $(this).find('span[class=fold]:first').replaceWith('<span class="fold" '+
-                   'onclick="javascript:codefold.toggle(\''+id+'\');" '+
-                   'style="background-image:'+codefold.minusImg[relPath]+';"></span>');
+      $(this).find('span[class=fold]:first').replaceWith('<span class="fold minus" '+
+                   'onclick="javascript:codefold.toggle(\''+id+'\');"></span>');
       // append div for folded (closed) representation
       $(this).after('<div id="foldclosed'+id+'" class="foldclosed" style="display:none;"></div>');
       // extract the first line from the "open" section to represent closed content
@@ -173,7 +168,7 @@ let codefold = {
         $(line).html($(line).html().replace(new RegExp('\\s*'+start+'\\s*$','g'),''));
       }
       // replace minus with plus symbol
-      $(line).find('span[class=fold]').css('background-image',codefold.plusImg[relPath]);
+      $(line).find('span[class=fold]').addClass('plus').removeClass('minus');
       // append ellipsis
       $(line).append(' '+start+'<a href="javascript:codefold.toggle(\''+id+'\')">&#8230;</a>'+end);
       // insert constructed line into closed div
