@@ -609,14 +609,6 @@ table.memberdecls {
 }
 
 .memberdecls td, .fieldtable tr {
-	-webkit-transition-property: background-color, box-shadow;
-	-webkit-transition-duration: 0.5s;
-	-moz-transition-property: background-color, box-shadow;
-	-moz-transition-duration: 0.5s;
-	-ms-transition-property: background-color, box-shadow;
-	-ms-transition-duration: 0.5s;
-	-o-transition-property: background-color, box-shadow;
-	-o-transition-duration: 0.5s;
 	transition-property: background-color, box-shadow;
 	transition-duration: 0.5s;
 }
