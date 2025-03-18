@@ -77,9 +77,10 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "        <span class=\"left\">\n";
-  t << "          <span id=\"MSearchSelect\" ";
-  t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\" ";
-  t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\">&#160;</span>\n";
+  t << "          <span id=\"MSearchSelect\" class=\"search-icon\" ";
+  t << "onmouseover=\"return searchBox.OnSearchSelectShow()\" ";
+  t << "onmouseout=\"return searchBox.OnSearchSelectHide()\">";
+  t << "<span class=\"search-icon-dropdown\"></span></span>\n";
   t << "          <input type=\"text\" id=\"MSearchField\" value=\"\" placeholder=\""
     << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
   t << "               onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
@@ -109,7 +110,7 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
     t << "search.php";
   }
   t << "\" method=\"get\">\n";
-  t << "              <span id=\"MSearchSelectExt\">&#160;</span>\n";
+  t << "              <span id=\"MSearchSelectExt\" class=\"search-icon\"></span>\n";
   if (!highlightSearch || !Config_getBool(HTML_DYNAMIC_MENUS))
   {
     t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\""
