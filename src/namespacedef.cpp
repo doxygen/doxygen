@@ -1566,17 +1566,38 @@ QCString NamespaceDefImpl::title() const
   }
   else if (lang==SrcLangExt::Fortran || lang==SrcLangExt::Slice)
   {
-    pageTitle = theTranslator->trModuleReference(displayName());
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trModuleReference(displayName());
+    }
   }
   else if (lang==SrcLangExt::IDL)
   {
-    pageTitle = isConstantGroup()
-        ? theTranslator->trConstantGroupReference(displayName())
-        : theTranslator->trModuleReference(displayName());
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = isConstantGroup()
+          ? theTranslator->trConstantGroupReference(displayName())
+          : theTranslator->trModuleReference(displayName());
+    }
   }
   else
   {
-    pageTitle = theTranslator->trNamespaceReference(displayName());
+    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trNamespaceReference(displayName());
+    }
   }
   return pageTitle;
 }
