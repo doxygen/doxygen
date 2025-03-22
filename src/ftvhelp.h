@@ -62,7 +62,6 @@ class FTVHelp : public IndexIntf
     void addStyleSheetFile(const QCString &) {}
     void generateTreeView();
     void generateTreeViewInline(TextStream &t);
-    static void generateTreeViewImages();
     void generateTreeViewScripts();
   private:
     struct Private;

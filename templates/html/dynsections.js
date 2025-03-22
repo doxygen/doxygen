@@ -58,11 +58,14 @@ let dynsection = {
     $('table.directory tr').each(function() {
       const l = this.id.split('_').length-1;
       const i = $('#img'+this.id.substring(3));
+      const a = $('#arr'+this.id.substring(3));
       if (l<level+1) {
-        i.removeClass('iconfopen iconfclosed').addClass('iconfopen');
+        i.find('.folder-icon').addClass('open');
+        a.find('.arrowhead').removeClass('closed').addClass('opened');
         $(this).show();
       } else if (l==level+1) {
-        i.removeClass('iconfclosed iconfopen').addClass('iconfclosed');
+        a.find('.arrowhead').removeClass('opened').addClass('closed');
+        i.find('.folder-icon').removeClass('open');
         $(this).show();
       } else {
         $(this).hide();
@@ -87,17 +90,17 @@ let dynsection = {
     if (childRows.filter(':first').is(':visible')===true) {
       // replace down arrow by right arrow for current row
       const currentRowSpans = currentRow.find("span");
-      currentRowSpans.filter(".iconfopen").removeClass("iconfopen").addClass("iconfclosed");
+      currentRowSpans.filter(".iconfolder").find('.folder-icon').removeClass("open");
       currentRowSpans.filter(".opened").removeClass("opened").addClass("closed");
       rows.filter("[id^=row_"+id+"]").hide(); // hide all children
     } else { // we are SHOWING
       // replace right arrow by down arrow for current row
       const currentRowSpans = currentRow.find("span");
-      currentRowSpans.filter(".iconfclosed").removeClass("iconfclosed").addClass("iconfopen");
+      currentRowSpans.filter(".iconfolder").find('.folder-icon').addClass("open");
       currentRowSpans.filter(".closed").removeClass("closed").addClass("opened");
       // replace down arrows by right arrows for child rows
       const childRowsSpans = childRows.find("span");
-      childRowsSpans.filter(".iconfopen").removeClass("iconfopen").addClass("iconfclosed");
+      childRowsSpans.filter(".iconfolder").find('.folder-icon').removeClass("open");
       childRowsSpans.filter(".opened").removeClass("opened").addClass("closed");
       childRows.show(); //show all children
     }

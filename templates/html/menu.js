@@ -69,8 +69,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search,treeview) {
                  '</span>'+
                  '<span class="right"><a id="MSearchClose" '+
                   'href="javascript:searchBox.CloseResultsWindow()">'+
-                  '<img id="MSearchCloseImg" border="0" src="'+relPath+
-                  'search/close.svg" alt=""/></a>'+
+                  '<div id="MSearchCloseImg" class="close-icon"></div></a>'+
                  '</span>'+
                 '</div>';
     }

@@ -13117,7 +13117,6 @@ void generateOutput()
   // copy static stuff
   if (generateHtml)
   {
-    FTVHelp::generateTreeViewImages();
     copyStyleSheet();
     copyLogo(Config_getString(HTML_OUTPUT));
     copyIcon(Config_getString(HTML_OUTPUT));

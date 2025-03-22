@@ -69,9 +69,38 @@ dark-mode-toggle {
 }
 
 #MSearchCloseImg {
-    padding: 0.3em 0 0 0.2em;
-    margin: 2px 0 0 0;
+    margin: 6px 0 0 4px;
 }
+
+.close-icon {
+  width: 11px;
+  height: 11px;
+  background-color: var(--search-close-icon-bg-color);
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: content-box;
+}
+
+.close-icon:before,
+.close-icon:after {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 1px;
+  background-color: var(--search-close-icon-fg-color);
+}
+
+.close-icon:before {
+  transform: rotate(45deg);
+}
+
+.close-icon:after {
+  transform: rotate(-45deg);
+}
+
 
 .MSearchBoxActive #MSearchField {
     color: var(--search-active-color);

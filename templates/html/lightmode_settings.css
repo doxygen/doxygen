@@ -13,7 +13,6 @@
 /* header */
 --header-background-color: ##FA;
 --header-separator-color: ##CC;
---header-gradient-image: url('nav_h.png');
 --group-header-separator-color: ##DE;
 --group-header-color: ##44;
 --inherit-header-color: gray;
@@ -36,9 +35,15 @@
 
 --icon-background-color: ##88;
 --icon-foreground-color: white;
+/*
 --icon-doc-image: url('doc.svg');
 --icon-folder-open-image: url('folderopen.svg');
---icon-folder-closed-image: url('folderclosed.svg');
+--icon-folder-closed-image: url('folderclosed.svg');*/
+--icon-folder-open-fill-color: ##CC;
+--icon-folder-fill-color: ##DD;
+--icon-folder-border-color: ##60;
+--icon-doc-fill-color: ##DD;
+--icon-doc-border-color: ##60;
 
 /* brief member declaration list */
 --memdecl-background-color: ##FA;
@@ -50,10 +55,8 @@
 /* detailed member list */
 --memdef-border-color: ##B4;
 --memdef-title-background-color: ##E6;
---memdef-title-gradient-image: url('nav_f.png');
 --memdef-proto-background-color: ##F0;
 --memdef-proto-text-color: ##2b;
---memdef-proto-text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
 --memdef-doc-background-color: white;
 --memdef-param-name-color: #602020;
 --memdef-template-color: ##60;
@@ -73,11 +76,6 @@
 --nav-background-color: ##FA;
 --nav-foreground-color: ##45;
 --nav-border-color: ##CC;
---nav-gradient-image: url('tab_b.png');
---nav-gradient-hover-image: url('tab_h.png');
---nav-gradient-active-image: url('tab_a.png');
---nav-gradient-active-image-parent: url("../tab_a.png");
---nav-separator-image: url('tab_s.png');
 --nav-breadcrumb-separator-color: ##CC;
 --nav-breadcrumb-active-bg: ##F0;
 --nav-breadcrumb-color: ##44;
@@ -111,8 +109,6 @@
 /** search field */
 --search-background-color: white;
 --search-foreground-color: #909090;
---search-magnification-image: url('mag.svg');
---search-magnification-select-image: url('mag_sel.svg');
 --search-active-color: black;
 --search-filter-background-color: ##FA;
 --search-filter-foreground-color: black;
@@ -122,7 +118,9 @@
 --search-results-foreground-color: ##58;
 --search-results-background-color: white;
 --search-results-border-color: ##A0;
---search-box-border-color: ##C0; /*transparent*/
+--search-box-border-color: ##C0;
+--search-close-icon-bg-color: #A0A0A0;
+--search-close-icon-fg-color: white;
 
 /** code fragments */
 --code-keyword-color: #008000;
@@ -158,10 +156,6 @@
 --tooltip-link-color: ##60;
 --tooltip-shadow: 1px 1px 7px gray;
 --fold-line-color: #808080;
---fold-minus-image: url('minus.svg');
---fold-plus-image: url('plus.svg');
---fold-minus-image-relpath: url('../../minus.svg');
---fold-plus-image-relpath: url('../../plus.svg');
 
 /** font-family */
 --font-family-normal: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";

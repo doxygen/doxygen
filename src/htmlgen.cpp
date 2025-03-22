@@ -88,7 +88,7 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
   t << "               onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
   t << "          </span><span class=\"right\">\n";
   t << "            <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
-    << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"" << relPath << "search/close.svg\" alt=\"\"/></a>\n";
+    << "<div id=\"MSearchCloseImg\" class=\"close-icon\"/></div></a>\n";
   t << "          </span>\n";
   t << "        </div>\n";
 }
@@ -433,7 +433,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
 					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-				"  $(function() { init_search(); });\n"
+				        "  $(function() { init_search(); });\n"
 					"/* @license-end */\n"
 					"</script>";
       }
@@ -1303,36 +1303,10 @@ void HtmlGenerator::writeTabData()
   QCString dname=Config_getString(HTML_OUTPUT);
   ResourceMgr &mgr = ResourceMgr::instance();
   //writeColoredImgData(dname,colored_tab_data);
-  mgr.copyResource("tab_a.lum",dname);  // active, light mode
-  mgr.copyResource("tab_b.lum",dname);  // normal, light mode
-  mgr.copyResource("tab_h.lum",dname);  // highlight, light mode
-  mgr.copyResource("tab_s.lum",dname);  // separator, light mode
-  mgr.copyResource("tab_ad.lum",dname); // active, dark mode
-  mgr.copyResource("tab_bd.lum",dname); // normal, dark mode
-  mgr.copyResource("tab_hd.lum",dname); // highlight, dark mode
-  mgr.copyResource("tab_sd.lum",dname); // separator, light mode
-  mgr.copyResource("nav_h.lum",dname);  // header gradient, light mode
-  mgr.copyResource("nav_hd.lum",dname); // header gradient, dark mode
-  mgr.copyResource("nav_f.lum",dname); // member definition header, light mode
-  mgr.copyResource("nav_fd.lum",dname); // member definition header, dark mode
-  mgr.copyResource("bc_s.luma",dname); // breadcrumb separator, light mode
-  mgr.copyResource("bc_sd.luma",dname); // breadcrumb separator, dark mode
   mgr.copyResource("doxygen.svg",dname);
   Doxygen::indexList->addImageFile("doxygen.svg");
-  mgr.copyResource("closed.luma",dname);
-  mgr.copyResource("open.luma",dname);
   mgr.copyResource("sync_on.luma",dname);
   mgr.copyResource("sync_off.luma",dname);
-  mgr.copyResource("nav_g.png",dname);
-  Doxygen::indexList->addImageFile("nav_g.png");
-  mgr.copyResource("plus.svg",dname);
-  Doxygen::indexList->addImageFile("plus.svg");
-  mgr.copyResource("minus.svg",dname);
-  Doxygen::indexList->addImageFile("minus.svg");
-  mgr.copyResource("plusd.svg",dname);
-  Doxygen::indexList->addImageFile("plusd.svg");
-  mgr.copyResource("minusd.svg",dname);
-  Doxygen::indexList->addImageFile("minusd.svg");
 }
 
 void HtmlGenerator::writeSearchData(const QCString &dname)
@@ -1340,20 +1314,6 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
   //bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   //writeImgData(dname,serverBasedSearch ? search_server_data : search_client_data);
   ResourceMgr &mgr = ResourceMgr::instance();
-
-  // server side search resources
-  mgr.copyResource("mag.svg",dname);
-  mgr.copyResource("mag_d.svg",dname);
-  Doxygen::indexList->addImageFile("search/mag.svg");
-  Doxygen::indexList->addImageFile("search/mag_d.svg");
-
-  // client side search resources
-  mgr.copyResource("close.svg",dname);
-  Doxygen::indexList->addImageFile("search/close.svg");
-  mgr.copyResource("mag_sel.svg",dname);
-  mgr.copyResource("mag_seld.svg",dname);
-  Doxygen::indexList->addImageFile("search/mag_sel.svg");
-  Doxygen::indexList->addImageFile("search/mag_seld.svg");
 
   QCString searchDirName = dname;
   std::ofstream f = Portable::openOutputStream(searchDirName+"/search.css");
@@ -2889,6 +2849,7 @@ static void writeDefaultQuickLinks(TextStream &t,
   bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
   bool fullSidebar       = Config_getBool(FULL_SIDEBAR);
   bool disableIndex      = Config_getBool(DISABLE_INDEX);
+  bool dynamicMenus      = Config_getBool(HTML_DYNAMIC_MENUS);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
   LayoutNavEntry::Kind kind = LayoutNavEntry::None;
   LayoutNavEntry::Kind altKind = LayoutNavEntry::None; // fall back for the old layout file
@@ -2939,7 +2900,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     case HighlightedItem::Search: break;
   }
 
-  if (!disableIndex && Config_getBool(HTML_DYNAMIC_MENUS))
+  if (!disableIndex && dynamicMenus)
   {
     QCString searchPage;
     if (externalSearch)
@@ -2962,11 +2923,14 @@ static void writeDefaultQuickLinks(TextStream &t,
       << theTranslator->trSearch() << "',"
       << (generateTreeView?"true":"false")
       << ");\n";
-    if (Config_getBool(SEARCHENGINE))
+    if (searchEngine)
     {
       if (!serverBasedSearch)
       {
-        t << "  $(function() { init_search(); });\n";
+        if (!disableIndex && dynamicMenus && !fullSidebar)
+        {
+          t << "  $(function() { init_search(); });\n";
+        }
       }
       else
       {

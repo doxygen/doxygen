@@ -361,7 +361,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
         {
           ol.pushGeneratorState();
           ol.disableAllBut(OutputType::Html);
-          ol.writeString("<span class=\"iconfclosed\"></span>");
+          ol.writeString("<span class=\"iconfolder\"><div class=\"folder-icon\"></div></span>");
           ol.enableAll();
           ol.disable(OutputType::Html);
           ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
@@ -432,7 +432,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
           {
             ol.startTextLink(fd->includeName(),QCString());
           }
-          ol.writeString("<span class=\"icondoc\"></span>");
+          ol.writeString("<span class=\"icondoc\"><div class=\"doc-icon\"></div></span>");
           if (genSrc)
           {
             ol.endTextLink();

@@ -73,8 +73,8 @@
 }
 
 #nav-tree .item {
-  margin:0 6px 0 0;
-  padding:0px;
+  margin: 0 6px 0 -5px;
+  padding: 0 0 0 5px;
   height: 22px;
 }
 

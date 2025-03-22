@@ -417,11 +417,11 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else
       {
-        t << "<span id=\"img_" << generateIndentLabel(n,0)
-          << "\" class=\"iconf"
-          << (nodeOpened?"open":"closed")
+        t << "<span id=\"img_" << generateIndentLabel(n,0) << "\" class=\"iconfolder"
           << "\" onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0)
-          << "')\">&#160;</span>";
+          << "')\"><div class=\"folder-icon"
+          << (nodeOpened ? " open" : "")
+          << "\"></div></span>";
       }
       generateLink(t,n);
       t << "</td><td class=\"desc\">";
@@ -485,11 +485,11 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeDir)
       {
-        t << "<span class=\"iconfclosed\"></span>";
+        t << "<span class=\"iconfolder\"><div class=\"folder-icon\"></div></span>";
       }
       else
       {
-        t << "<span class=\"icondoc\"></span>";
+        t << "<span class=\"icondoc\"><dic class=\"doc-icon\"></div></span>";
       }
       if (srcRef)
       {
@@ -849,21 +849,6 @@ static void generateJSNavTree(const FTVNodes &nodeList)
 
 //-----------------------------------------------------------
 
-// new style images
-void FTVHelp::generateTreeViewImages()
-{
-  QCString dname=Config_getString(HTML_OUTPUT);
-  const ResourceMgr &rm = ResourceMgr::instance();
-  rm.copyResource("doc.svg",dname);
-  rm.copyResource("docd.svg",dname);
-  rm.copyResource("folderopen.svg",dname);
-  rm.copyResource("folderopend.svg",dname);
-  rm.copyResource("folderclosed.svg",dname);
-  rm.copyResource("folderclosedd.svg",dname);
-  rm.copyResource("splitbar.lum",dname);
-  rm.copyResource("splitbard.lum",dname);
-}
-
 // new style scripts
 void FTVHelp::generateTreeViewScripts()
 {
@@ -937,6 +922,5 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
 // write old style index.html and tree.html
 void FTVHelp::generateTreeView()
 {
-  generateTreeViewImages();
   generateTreeViewScripts();
 }
