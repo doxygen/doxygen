@@ -489,7 +489,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else
       {
-        t << "<span class=\"icondoc\"><dic class=\"doc-icon\"></div></span>";
+        t << "<span class=\"icondoc\"><div class=\"doc-icon\"></div></span>";
       }
       if (srcRef)
       {

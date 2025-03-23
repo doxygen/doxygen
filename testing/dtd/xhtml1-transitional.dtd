@@ -43,6 +43,9 @@
 
      December 28, 2024
      - added entity &quest; as used in doxygen
+
+     March 23, 2025
+     - added div with special elements
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -219,7 +222,7 @@
 <!--=================== Text Elements ====================================-->
 
 <!ENTITY % special.extra
-   "object | applet | img | map | iframe | picture | details | summary">
+   "object | applet | img | div | map | iframe | picture | details | summary">
 	
 <!ENTITY % special.basic
 	"br | span | bdo">
