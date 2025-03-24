@@ -26,18 +26,6 @@
   /*margin-right: 5px;*/
 }
 
-@media (hover: none) {
-  #nav-tree .selected .arrow {
-     opacity: 1;
-  }
-}
-
-@media (hover: hover) {
-  #nav-tree .selected:hover .arrow .arrowhead {
-     opacity: 1;
-  }
-}
-
 #nav-tree img {
   margin:0px;
   padding:0px;
