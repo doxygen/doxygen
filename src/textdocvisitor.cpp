@@ -81,7 +81,7 @@ void TextDocVisitor::operator()(const DocCite &cite)
   }
   else
   {
-    filter(cite.text());
+    filter(cite.target());
   }
 }
 
