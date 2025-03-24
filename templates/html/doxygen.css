@@ -370,8 +370,8 @@ div.line {
 	white-space: -o-pre-wrap;   /* Opera 7 */
 	white-space: pre-wrap;      /* CSS3  */
 	word-wrap: break-word;      /* IE 5.5+ */
-	text-indent: -53px;
-	padding-left: 53px;
+	text-indent: -62px;
+	padding-left: 62px;
 	padding-bottom: 0px;
 	margin: 0px;
 	-webkit-transition-property: background-color, box-shadow;

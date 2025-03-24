@@ -130,6 +130,7 @@ let codefold = {
       $('#fold_all').addClass('plus').removeClass('minus');
       $('div[id^=foldopen]').hide();
       $('div[id^=foldclosed]').show();
+      $('div[id^=foldclosed] span.fold').removeClass('minus').addClass('plus');
     } else {
       $('#fold_all').addClass('minus').removeClass('plus');
       $('div[id^=foldopen]').show();
