@@ -88,7 +88,7 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
   t << "               onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
   t << "          </span><span class=\"right\">\n";
   t << "            <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
-    << "<div id=\"MSearchCloseImg\" class=\"close-icon\"/></a>\n";
+    << "<div id=\"MSearchCloseImg\" class=\"close-icon\"></div></a>\n";
   t << "          </span>\n";
   t << "        </div>\n";
 }

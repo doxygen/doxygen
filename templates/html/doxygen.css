@@ -488,9 +488,18 @@ div.classindex span.ai {
 }
 
 div.groupHeader {
-	margin-left: 16px;
-	margin-top: 12px;
-	font-weight: bold;
+	box-shadow: 100px 0 var(--page-background-color),
+	           -100px 0 var(--page-background-color),
+	            100px 1px var(--group-header-separator-color),
+	           -100px 1px var(--group-header-separator-color);
+	color: var(--group-header-color);
+	font-size: 110%;
+	font-weight: normal;
+	margin-left: 0px;
+	margin-top: 0em;
+	margin-bottom: 6px;
+	padding-top: 8px;
+	padding-bottom: 4px;
 }
 
 div.groupText {
@@ -683,6 +692,18 @@ table.memberdecls {
 	color: var(--memdecl-foreground-color);
 }
 
+.mdescLeft {
+	border-left: 1px solid var(--memdecl-border-color);
+	border-bottom: 1px solid var(--memdecl-border-color);
+	border-radius: 0 0 0 4px;
+}
+
+.mdescRight {
+	border-right: 1px solid var(--memdecl-border-color);
+	border-bottom: 1px solid var(--memdecl-border-color);
+	border-radius: 0 0 4px 0;
+}
+
 .memSeparator {
 	line-height: 1px;
 	margin: 0px;
@@ -699,6 +720,14 @@ table.memberdecls {
 	border-bottom: 1px solid var(--memdecl-border-color);
 	padding-left: 10px;
 	transition: none;
+}
+
+.memberdecls tr[class^='memitem']:has(+ tr[class^='memdesc']) td.memItemLeft {
+	border-radius: 4px 0 0 0;
+}
+
+.memberdecls tr[class^='memitem']:has(+ tr[class^='memdesc']) td.memItemRight {
+	border-radius: 0 4px 0 0;
 }
 
 .memItemRight {
