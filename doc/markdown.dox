@@ -471,7 +471,8 @@ also a fenced code block
 
 For the image formats `dot`, `msc` and `plantuml` the fenced block will be shown as 
 an image provided the image format is enabled (see \ref cfg_have_dot "HAVE_DOT" and
-\ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH"), otherwise it is shown as plain code.
+\ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" or \ref cfg_plantuml_jar_path "PLANTUML_BIN_PATH"),
+otherwise it is shown as plain code.
 
 Example:
 ~~~~~~{.unparsed}

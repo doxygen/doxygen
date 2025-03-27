@@ -4151,8 +4151,20 @@ to be found in the default search path.
 <![CDATA[
  When using PlantUML, the \c PLANTUML_JAR_PATH tag should be used to specify the path where
  java can find the \c plantuml.jar file or to the filename of \c jar file to be used.
+ See \c PLANTUML_BIN_PATH if you use a native image.
  If left blank, it is assumed PlantUML is not used or
  called during a preprocessing step. Doxygen will generate a warning when it encounters a
+ \ref cmdstartuml "\\startuml" command in this case and will not generate output for the diagram.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='PLANTUML_BIN_PATH' format='file' defval=''>
+      <docs>
+<![CDATA[
+ Similar to \c PLANTUML_JAR_PATH but assuming that the path provided is a binary
+ capable to convert PlanUML diagrams. Usualy a PlantUML nativ image.
+ If left blank, it is assumed PlantUML is not used or called during a preprocessing step.
+ Doxygen will generate a warning when it encounters a
  \ref cmdstartuml "\\startuml" command in this case and will not generate output for the diagram.
 ]]>
       </docs>
