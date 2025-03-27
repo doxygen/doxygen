@@ -112,11 +112,9 @@ class DefinitionImpl::Private
 void DefinitionImpl::Private::setDefFileName(const QCString &df)
 {
   defFileName = df;
-  int lastDot = defFileName.findRev('.');
-  if (lastDot!=-1)
-  {
-    defFileExt = defFileName.mid(lastDot);
-  }
+  FileInfo fi(df.data());
+  QCString ext = fi.extension(false);
+  if (!ext.isEmpty()) defFileExt = "." + ext;
 }
 
 void DefinitionImpl::Private::init(const QCString &df, const QCString &n)
