@@ -25,11 +25,10 @@ h1.groupheader {
 }
 
 h2.groupheader {
-	/*border-bottom: 1px solid var(--group-header-separator-color);*/
-	box-shadow: 100px 0 var(--page-background-color),
-		   -100px 0 var(--page-background-color),
-		    100px 1px var(--group-header-separator-color),
-		   -100px 1px var(--group-header-separator-color);
+	box-shadow: 8px 0 var(--page-background-color),
+		   -12px 0 var(--page-background-color),
+		    8px 1px var(--group-header-separator-color),
+		   -12px 1px var(--group-header-separator-color);
 	color: var(--group-header-color);
 	font-size: 150%;
 	font-weight: normal;
@@ -37,6 +36,13 @@ h2.groupheader {
 	padding-top: 8px;
 	padding-bottom: 4px;
 	width: 100%;
+}
+
+td h2.groupheader {
+	box-shadow: 9px 0 var(--page-background-color),
+		   -13px 0 var(--page-background-color),
+		    9px 1px var(--group-header-separator-color),
+		   -13px 1px var(--group-header-separator-color);
 }
 
 h3.groupheader {
@@ -488,13 +494,13 @@ div.classindex span.ai {
 }
 
 div.groupHeader {
-	box-shadow: 100px 0 var(--page-background-color),
-	           -100px 0 var(--page-background-color),
-	            100px 1px var(--group-header-separator-color),
-	           -100px 1px var(--group-header-separator-color);
+	box-shadow: 9px 0 var(--page-background-color),
+	           -13px 0 var(--page-background-color),
+	            9px 1px var(--group-header-separator-color),
+	           -13px 1px var(--group-header-separator-color);
 	color: var(--group-header-color);
 	font-size: 110%;
-	font-weight: normal;
+	font-weight: 500;
 	margin-left: 0px;
 	margin-top: 0em;
 	margin-bottom: 6px;
@@ -641,10 +647,10 @@ hr {
 	margin-top: 16px;
 	margin-bottom: 16px;
 	height: 1px;
-	box-shadow: 100px 0 var(--page-background-color),
-		   -100px 0 var(--page-background-color),
-		    100px 1px var(--group-header-separator-color),
-		   -100px 1px var(--group-header-separator-color);
+	box-shadow: 9px 0 var(--page-background-color),
+		   -13px 0 var(--page-background-color),
+		    9px 1px var(--group-header-separator-color),
+		   -13px 1px var(--group-header-separator-color);
 }
 
 hr.footer {
@@ -674,8 +680,8 @@ table.memberdecls {
 
 .mdescLeft, .mdescRight,
 .memItemLeft, .memItemRight {
-	padding-top: 5px;
-	padding-bottom: 5px;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
 
 .memTemplParams {
@@ -692,52 +698,82 @@ table.memberdecls {
 	color: var(--memdecl-foreground-color);
 }
 
+tr[class^='memdesc'] {
+	box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,.075);
+}
+
 .mdescLeft {
 	border-left: 1px solid var(--memdecl-border-color);
 	border-bottom: 1px solid var(--memdecl-border-color);
-	border-radius: 0 0 0 4px;
 }
 
 .mdescRight {
 	border-right: 1px solid var(--memdecl-border-color);
 	border-bottom: 1px solid var(--memdecl-border-color);
-	border-radius: 0 0 4px 0;
 }
 
-.memSeparator {
-	line-height: 1px;
-	margin: 0px;
-	padding: 0px;
-	transition: none;
-	height: 8px;
+.memTemplParams {
+	color: var(--memdecl-template-color);
+	white-space: nowrap;
+	font-size: 80%;
+	border-left: 1px solid var(--memdecl-border-color);
+	border-right: 1px solid var(--memdecl-border-color);
 }
 
 .memItemLeft {
 	white-space: nowrap;
-	border-radius: 4px 0 0 4px;
 	border-left: 1px solid var(--memdecl-border-color);
-	border-top: 1px solid var(--memdecl-border-color);
 	border-bottom: 1px solid var(--memdecl-border-color);
 	padding-left: 10px;
 	transition: none;
 }
 
-.memberdecls tr[class^='memitem']:has(+ tr[class^='memdesc']) td.memItemLeft {
-	border-radius: 4px 0 0 0;
-}
-
-.memberdecls tr[class^='memitem']:has(+ tr[class^='memdesc']) td.memItemRight {
-	border-radius: 0 4px 0 0;
-}
-
 .memItemRight {
 	width: 100%;
-	border-radius: 0 4px 4px 0;
 	border-right: 1px solid var(--memdecl-border-color);
-	border-top: 1px solid var(--memdecl-border-color);
 	border-bottom: 1px solid var(--memdecl-border-color);
 	padding-right: 10px;
 	transition: none;
+}
+
+tr.heading        + tr[class^='memitem'] td.memItemLeft,
+tr.groupHeader    + tr[class^='memitem'] td.memItemLeft,
+tr.inherit_header + tr[class^='memitem'] td.memItemLeft {
+        border-top: 1px solid var(--memdecl-border-color);
+	border-top-left-radius: 4px;
+}
+
+tr.heading        + tr[class^='memitem'] td.memItemRight,
+tr.groupHeader    + tr[class^='memitem'] td.memItemRight,
+tr.inherit_header + tr[class^='memitem'] td.memItemRight {
+        border-top: 1px solid var(--memdecl-border-color);
+	border-top-right-radius: 4px;
+}
+
+tr.heading        + tr[class^='memitem'] td.memTemplParams,
+tr.groupHeader    + tr[class^='memitem'] td.memTemplParams,
+tr.inherit_header + tr[class^='memitem'] td.memTemplParams {
+        border-top: 1px solid var(--memdecl-border-color);
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+}
+
+table.memberdecls tr:last-child td.memItemLeft,
+table.memberdecls tr:last-child td.mdescLeft,
+table.memberdecls tr[class^='memitem']:has(+ tr.groupHeader)    td.memItemLeft,
+table.memberdecls tr[class^='memitem']:has(+ tr.inherit_header) td.memItemLeft,
+table.memberdecls tr[class^='memdesc']:has(+ tr.groupHeader)    td.mdescLeft,
+table.memberdecls tr[class^='memdesc']:has(+ tr.inherit_header) td.mdescLeft {
+	border-bottom-left-radius: 4px;
+}
+
+table.memberdecls tr:last-child td.memItemRight,
+table.memberdecls tr:last-child td.mdescRight,
+table.memberdecls tr[class^='memitem']:has(+ tr.groupHeader)    td.memItemRight,
+table.memberdecls tr[class^='memitem']:has(+ tr.inherit_header) td.memItemRight,
+table.memberdecls tr[class^='memdesc']:has(+ tr.groupHeader)    td.mdescRight,
+table.memberdecls tr[class^='memdesc']:has(+ tr.inherit_header) td.mdescRight {
+	border-bottom-right-radius: 4px;
 }
 
 tr.template .memItemLeft, tr.template .memItemRight {
@@ -745,23 +781,6 @@ tr.template .memItemLeft, tr.template .memItemRight {
 	padding-top: 0;
 }
 
-tr.template .memItemLeft {
-	border-radius: 0 0 0 4px;
-}
-
-tr.template .memItemRight {
-	border-radius: 0 0 4px 0;
-}
-
-.memTemplParams {
-	color: var(--memdecl-template-color);
-	white-space: nowrap;
-	font-size: 80%;
-	border-radius: 4px 4px 0 0;
-	border-left: 1px solid var(--memdecl-border-color);
-	border-right: 1px solid var(--memdecl-border-color);
-	border-top: 1px solid var(--memdecl-border-color);
-}
 
 /* @end */
 
@@ -826,11 +845,6 @@ tr.template .memItemRight {
 	padding: 0;
 	margin-bottom: 10px;
 	margin-right: 5px;
-	-webkit-transition: box-shadow 0.5s linear;
-	-moz-transition: box-shadow 0.5s linear;
-	-ms-transition: box-shadow 0.5s linear;
-	-o-transition: box-shadow 0.5s linear;
-	transition: box-shadow 0.5s linear;
 	display: table !important;
 	width: 100%;
 	box-shadow: 0 2px 8px 0 rgba(0,0,0,.075);
@@ -1289,8 +1303,6 @@ table.fieldtable {
 }
 
 .fieldtable th {
-	background-image: var(--memdef-title-gradient-image);
-	background-repeat:repeat-x;
 	background-color: var(--memdef-title-background-color);
 	font-size: 90%;
 	color: var(--memdef-proto-text-color);

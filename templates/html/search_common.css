@@ -333,7 +333,7 @@ div.searchresults {
 /*---------------- External search page results */
 
 .pages b {
-   color: var(--foreground-color);
+   color: var(--nav-foreground-color);
    padding: 5px 5px 3px 5px;
    background-color: var(--nav-menu-active-bg);
    border-radius: 4px;

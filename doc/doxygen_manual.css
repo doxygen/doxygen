@@ -51,10 +51,6 @@ h1
 div.contents
 {
   background-color: var(--page-background-color);
-}
-
-div.contents
-{
   border: 1px solid var(--toc-border-color);
   border-radius: 7px 7px 7px 7px;
 }
@@ -95,6 +91,11 @@ div.contents, div.headertitle
   width: 800px;
   margin-left: auto;
   margin-right: auto;
+}
+
+div.contents {
+  padding-left: 12px;
+  padding-right: 8px;
 }
 
 } /* end @media */

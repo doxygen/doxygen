@@ -681,9 +681,15 @@ static QCString replaceVariables(const QCString &input)
       int j=input.find(")",i+4);
       assert(j!=-1);
       auto it = mapping.find(input.mid(i+4,j-i-4).str()); // find variable
-      assert(it!=mapping.end());                          // should be found
-      output.addStr(it->second);                          // add it value
-      //printf("replace '%s' by '%s'\n",qPrint(input.mid(i+4,j-i-4)),qPrint(it->second));
+      if (it==mapping.end())
+      {                            // should be found
+        err("failed to find value variable {}. It is not longer defined in doxygen.css\n",input.mid(i+4,j-i-4));
+      }
+      else
+      {
+        //printf("replace '%s' by '%s'\n",qPrint(input.mid(i+4,j-i-4)),qPrint(it->second));
+        output.addStr(it->second);                          // add it value
+      }
       p=j+1;
     }
     output.addStr(input.data()+p,input.length()-p);
@@ -2502,7 +2508,7 @@ void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 
 void HtmlGenerator::startMemberGroupHeader(bool)
 {
-  m_t << "<tr><td colspan=\"2\"><div class=\"groupHeader\">";
+  m_t << "<tr class=\"groupHeader\"><td colspan=\"2\"><div class=\"groupHeader\">";
 }
 
 void HtmlGenerator::endMemberGroupHeader()
@@ -3540,12 +3546,6 @@ void HtmlGenerator::writeSummaryLink(const QCString &file,const QCString &anchor
 
 void HtmlGenerator::endMemberDeclaration(const QCString &anchor,const QCString &inheritId)
 {
-  m_t << "<tr class=\"separator:" << anchor;
-  if (!inheritId.isEmpty())
-  {
-    m_t << " inherit " << inheritId;
-  }
-  m_t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
 }
 
 QCString HtmlGenerator::getMathJaxMacros()
