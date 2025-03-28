@@ -46,6 +46,9 @@
 
      March 23, 2025
      - added div with special elements
+
+     March 28, 2025
+     - added loading attribute with special iframe amd img
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -428,6 +431,7 @@
   height      %Length;       #IMPLIED
   width       %Length;       #IMPLIED
   allowfullscreen (true|false)   "true"
+  loading     (eager|lazy)   #IMPLIED
   >
 
 <!-- alternate content container for non frame-based rendering -->
@@ -889,6 +893,7 @@
   border      %Length;       #IMPLIED
   hspace      %Pixels;       #IMPLIED
   vspace      %Pixels;       #IMPLIED
+  loading     (eager|lazy)   #IMPLIED
   >
 
 <!ELEMENT source EMPTY>
