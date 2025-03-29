@@ -330,6 +330,10 @@ div.searchresults {
     margin-right: 10px;
 }
 
+#searchBoxPos1 dark-mode-toggle {
+    margin-top: 4px;
+}
+
 /*---------------- External search page results */
 
 .pages b {
