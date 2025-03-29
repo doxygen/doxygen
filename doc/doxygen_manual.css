@@ -84,6 +84,16 @@ div.headertitle
   color: var(--title-text-color);
 }
 
+div.headertitle .title
+{
+  line-height: 38px;
+}
+
+div.contents {
+  padding-left: 12px;
+  padding-right: 8px;
+}
+
 @media(min-width: 1120px) {
 
 div.contents, div.headertitle
@@ -91,11 +101,6 @@ div.contents, div.headertitle
   width: 800px;
   margin-left: auto;
   margin-right: auto;
-}
-
-div.contents {
-  padding-left: 12px;
-  padding-right: 8px;
 }
 
 } /* end @media */
