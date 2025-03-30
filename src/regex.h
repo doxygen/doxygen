@@ -226,7 +226,7 @@ class Match
     bool m_insideCapture=false;
 };
 
-/** Iterator class to iterator through matches.
+/** Class to iterate through matches.
  */
 class Iterator
 {
