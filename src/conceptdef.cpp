@@ -285,7 +285,14 @@ const ModuleDef *ConceptDefImpl::getModuleDef() const
 
 QCString ConceptDefImpl::title() const
 {
-  return theTranslator->trConceptReference(displayName());
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    return displayName();
+  }
+  else
+  {
+    return theTranslator->trConceptReference(displayName());
+  }
 }
 
 int ConceptDefImpl::groupId() const
@@ -513,7 +520,15 @@ void ConceptDefImpl::addConceptAttributes(OutputList &ol) const
 void ConceptDefImpl::writeDocumentation(OutputList &ol)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
-  QCString pageTitle = theTranslator->trConceptReference(displayName());
+  QCString pageTitle;
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    pageTitle = displayName();
+  }
+  else
+  {
+    pageTitle = theTranslator->trConceptReference(displayName());
+  }
   startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::ConceptVisible,!generateTreeView);
 
   // ---- navigation part

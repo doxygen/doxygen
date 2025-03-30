@@ -486,7 +486,14 @@ void DirDefImpl::endMemberDeclarations(OutputList &ol)
 
 QCString DirDefImpl::shortTitle() const
 {
-  return theTranslator->trDirReference(m_shortName);
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    return m_shortName;
+  }
+  else
+  {
+    return theTranslator->trDirReference(m_shortName);
+  }
 }
 
 bool DirDefImpl::hasDetailedDescription() const
@@ -539,7 +546,15 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
 
-  QCString title=theTranslator->trDirReference(m_dispName);
+  QCString title;
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    title=m_dispName;
+  }
+  else
+  {
+    title=theTranslator->trDirReference(m_dispName);
+  }
   AUTO_TRACE("title={}",title);
   startFile(ol,getOutputFileBase(),name(),title,HighlightedItem::Files,!generateTreeView);
 
