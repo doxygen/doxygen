@@ -867,7 +867,15 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
     versionTitle=("("+m_fileVersion+")");
   }
   QCString title = m_docname+versionTitle;
-  QCString pageTitle=theTranslator->trFileReference(m_docname);
+  QCString pageTitle;
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    pageTitle=m_docname;
+  }
+  else
+  {
+    pageTitle=theTranslator->trFileReference(m_docname);
+  }
 
   if (getDirDef())
   {
@@ -880,12 +888,28 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
     startTitle(ol,getOutputFileBase(),this);
     ol.pushGeneratorState();
       ol.disableAllBut(OutputType::Html);
-      ol.parseText(theTranslator->trFileReference(displayName())); // Html only
+      if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+      {
+        ol.parseText(displayName()); // Html only
+      }
+      else
+      {
+        ol.parseText(theTranslator->trFileReference(displayName())); // Html only
+      }
       ol.enableAll();
       ol.disable(OutputType::Html);
-      ol.parseText(Config_getBool(FULL_PATH_NAMES) ?  // other output formats
-                   pageTitle :
-                   theTranslator->trFileReference(name()));
+      if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+      {
+        ol.parseText(Config_getBool(FULL_PATH_NAMES) ?  // other output formats
+                     pageTitle :
+                     name());
+      }
+      else
+      {
+        ol.parseText(Config_getBool(FULL_PATH_NAMES) ?  // other output formats
+                     pageTitle :
+                     theTranslator->trFileReference(name()));
+      }
     ol.popGeneratorState();
     addGroupListToTitle(ol,this);
     endTitle(ol,getOutputFileBase(),title);
@@ -1819,7 +1843,14 @@ void FileDefImpl::getAllIncludeFilesRecursively(StringVector &incFiles) const
 
 QCString FileDefImpl::title() const
 {
-  return theTranslator->trFileReference(name());
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    return name();
+  }
+  else
+  {
+    return theTranslator->trFileReference(name());
+  }
 }
 
 QCString FileDefImpl::fileVersion() const

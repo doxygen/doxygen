@@ -1558,25 +1558,37 @@ const MemberDef * NamespaceDefImpl::getMemberByName(const QCString &n) const
 
 QCString NamespaceDefImpl::title() const
 {
-  SrcLangExt lang = getLanguage();
   QCString pageTitle;
+  SrcLangExt lang = getLanguage();
+
+  auto getReferenceTitle = [this](std::function<QCString()> translateFunc) -> QCString
+  {
+    return Config_getBool(HIDE_COMPOUND_REFERENCE) ? displayName() : translateFunc();
+  };
+
   if (lang==SrcLangExt::Java)
   {
     pageTitle = theTranslator->trPackage(displayName());
   }
   else if (lang==SrcLangExt::Fortran || lang==SrcLangExt::Slice)
   {
-    pageTitle = theTranslator->trModuleReference(displayName());
+    pageTitle = getReferenceTitle([this](){
+        return theTranslator->trModuleReference(displayName());
+    });
   }
   else if (lang==SrcLangExt::IDL)
   {
-    pageTitle = isConstantGroup()
+    pageTitle = getReferenceTitle([this](){
+        return isConstantGroup()
         ? theTranslator->trConstantGroupReference(displayName())
         : theTranslator->trModuleReference(displayName());
+    });
   }
   else
   {
-    pageTitle = theTranslator->trNamespaceReference(displayName());
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trNamespaceReference(displayName());
+    });
   }
   return pageTitle;
 }
