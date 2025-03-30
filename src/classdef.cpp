@@ -2885,88 +2885,54 @@ QCString ClassDefImpl::title() const
   QCString pageTitle;
   SrcLangExt lang = getLanguage();
 
+  auto getReferenceTitle = [this](std::function<QCString()> translateFunc) -> QCString
+  {
+    return Config_getBool(HIDE_COMPOUND_REFERENCE) ? displayName() : translateFunc();
+  };
+
   if (lang==SrcLangExt::Fortran)
   {
-    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
-    {
-      pageTitle = displayName();
-    }
-    else
-    {
-      pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
-                m_compType,
-                !m_tempArgs.empty());
-    }
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trCompoundReferenceFortran(displayName(), m_compType, !m_tempArgs.empty());
+    });
   }
   else if (lang==SrcLangExt::Slice)
   {
-    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
-    {
-      pageTitle = displayName();
-    }
-    else
-    {
-      pageTitle = theTranslator->trCompoundReferenceSlice(displayName(),
-                m_compType,
-                isSliceLocal());
-    }
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trCompoundReferenceSlice(displayName(), m_compType, isSliceLocal());
+    });
   }
   else if (lang==SrcLangExt::VHDL)
   {
-    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
-    {
-      pageTitle = VhdlDocGen::getClassName(this);
-    }
-    else
-    {
-      pageTitle = theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
-    }
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
+    });
   }
   else if (isJavaEnum())
   {
-    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
-    {
-      pageTitle = displayName();
-    }
-    else
-    {
-      pageTitle = theTranslator->trEnumReference(displayName());
-    }
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trEnumReference(displayName());
+    });
   }
   else if (m_compType==Service)
   {
-    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
-    {
-      pageTitle = displayName();
-    }
-    else
-    {
-      pageTitle = theTranslator->trServiceReference(displayName());
-    }
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trServiceReference(displayName());
+    });
   }
   else if (m_compType==Singleton)
   {
-    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
-    {
-      pageTitle = displayName();
-    }
-    else
-    {
-      pageTitle = theTranslator->trSingletonReference(displayName());
-    }
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trSingletonReference(displayName());
+    });
   }
   else
   {
-    if (Config_getBool(HIDE_COMPOUND_REFERENCE))
-    {
-      pageTitle = displayName();
-    }
-    else
-    {
-      pageTitle = theTranslator->trCompoundReference(displayName(),
-                m_compType == Interface && getLanguage()==SrcLangExt::ObjC ? Class : m_compType,
-                !m_tempArgs.empty());
-    }
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trCompoundReference(displayName(),
+              m_compType == Interface && getLanguage()==SrcLangExt::ObjC ? Class : m_compType,
+              !m_tempArgs.empty());
+    });
   }
   return pageTitle;
 }
