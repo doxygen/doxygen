@@ -1749,13 +1749,14 @@ tr.heading h2 {
 	cursor: default;
 	color: var(--tooltip-foreground-color);
 	background-color: var(--tooltip-background-color);
+	backdrop-filter: var(--tooltip-backdrop-filter);
+	-webkit-backdrop-filter: var(--tooltip-backdrop-filter);
 	border: 1px solid var(--tooltip-border-color);
-	border-radius: 4px 4px 4px 4px;
+	border-radius: 4px;
 	box-shadow: var(--tooltip-shadow);
 	display: none;
 	font-size: smaller;
 	max-width: 80%;
-	opacity: 0.9;
 	padding: 1ex 1em 1em;
 	position: absolute;
 	z-index: 2147483647;
@@ -1832,7 +1833,7 @@ tr.heading h2 {
 }
 
 #powerTip.n:after, #powerTip.ne:after, #powerTip.nw:after {
-	border-top-color: var(--tooltip-background-color);
+	border-top-color: var(--tooltip-arrow-background-color);
 	border-width: 10px;
 	margin: 0px -10px;
 }
@@ -1860,7 +1861,7 @@ tr.heading h2 {
 }
 
 #powerTip.s:after, #powerTip.se:after, #powerTip.sw:after {
-	border-bottom-color: var(--tooltip-background-color);
+	border-bottom-color: var(--tooltip-arrow-background-color);
 	border-width: 10px;
 	margin: 0px -10px;
 }

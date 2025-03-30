@@ -36,11 +36,6 @@
 
 --icon-background-color: ##40;
 --icon-foreground-color: ##CC;
-/*
---icon-doc-image: url('docd.svg');
---icon-folder-open-image: url('folderopend.svg');
---icon-folder-closed-image: url('folderclosedd.svg');
-*/
 --icon-folder-open-fill-color: ##60;
 --icon-folder-fill-color: ##70;
 --icon-folder-border-color: ##CC;
@@ -90,9 +85,6 @@
 --nav-text-normal-color: ##C0;
 --nav-text-hover-color: ##E0;
 --nav-text-active-color: ##E0;
---nav-text-normal-shadow: 0px 1px 1px black;
---nav-text-hover-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
---nav-text-active-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
 --nav-menu-button-color: ##C0;
 --nav-menu-background-color: ##04;
 --nav-menu-foreground-color: #BBBBBB;
@@ -114,11 +106,13 @@
 --search-active-color: #F5F5F5;
 --search-filter-background-color: ##10;
 --search-filter-foreground-color: ##A0;
+--search-filter-backdrop-filter: none;
 --search-filter-border-color: ##90;
 --search-filter-highlight-text-color: ##C5;
 --search-filter-highlight-bg-color: ##30;
 --search-results-background-color: black;
 --search-results-foreground-color: ##A0;
+--search-results-backdrop-filter: none;
 --search-results-border-color: ##40;
 --search-box-border-color: ##40;
 --search-close-icon-bg-color: #909090;
@@ -152,6 +146,8 @@
 --fragment-copy-ok-color: #0EA80E;
 --tooltip-foreground-color: #C9D1D9;
 --tooltip-background-color: #202020;
+--tooltip-arrow-background-color: #202020;
+--tooltip-backdrop-filter: none;
 --tooltip-border-color: #C9D1D9;
 --tooltip-doc-color: #D9E1E9;
 --tooltip-declaration-color: #20C348;

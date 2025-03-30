@@ -170,15 +170,12 @@ dark-mode-toggle {
     left: 0; top: 0;
     border: 1px solid var(--search-filter-border-color);
     background-color: var(--search-filter-background-color);
+    backdrop-filter: var(--search-filter-backdrop-filter);
+    -webkit-backdrop-filter: var(--search-filter-backdrop-filter);
     z-index: 10001;
     padding-top: 4px;
     padding-bottom: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-top-left-radius: 4px;
-    -webkit-border-top-right-radius: 4px;
-    -webkit-border-bottom-left-radius: 4px;
-    -webkit-border-bottom-right-radius: 4px;
-    -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
 }
 
 .SelectItem {
@@ -247,6 +244,8 @@ iframe#MSearchResults {
     top: 0;
     border: 1px solid var(--search-results-border-color);
     background-color: var(--search-results-background-color);
+    backdrop-filter: var(--search-results-backdrop-filter);
+    -webkit-backdrop-filter: var(--search-results-backdrop-filter);
     z-index:10000;
     width: 300px;
     height: 400px;
@@ -277,7 +276,7 @@ iframe#MSearchResults {
 
 div.SRPage {
     margin: 5px 2px;
-    background-color: var(--search-results-background-color);
+    /*background-color: var(--search-results-background-color);*/
 }
 
 .SRChildren {

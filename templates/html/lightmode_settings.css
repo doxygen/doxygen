@@ -89,9 +89,6 @@
 --nav-text-normal-color: ##30;
 --nav-text-hover-color: white;
 --nav-text-active-color: white;
---nav-text-normal-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
---nav-text-hover-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
---nav-text-active-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
 --nav-menu-button-color: ##45;
 --nav-menu-background-color: white;
 --nav-menu-foreground-color: #555555;
@@ -111,14 +108,16 @@
 --search-background-color: white;
 --search-foreground-color: #909090;
 --search-active-color: black;
---search-filter-background-color: ##FA;
+--search-filter-background-color: rgba(255,255,255,.7);
+--search-filter-backdrop-filter: blur(4px);
 --search-filter-foreground-color: black;
---search-filter-border-color: ##A0;
+--search-filter-border-color: rgba(150,150,150,.4);
 --search-filter-highlight-text-color: white;
 --search-filter-highlight-bg-color: ##50;
 --search-results-foreground-color: ##58;
---search-results-background-color: white;
---search-results-border-color: ##A0;
+--search-results-background-color: rgba(255,255,255,.8);
+--search-results-backdrop-filter: blur(4px);
+--search-results-border-color: rgba(150,150,150,.4);
 --search-box-border-color: ##C0;
 --search-close-icon-bg-color: #A0A0A0;
 --search-close-icon-fg-color: white;
@@ -150,12 +149,14 @@
 --fragment-lineno-link-hover-bg-color: #C8C8C8;
 --fragment-copy-ok-color: #2EC82E;
 --tooltip-foreground-color: black;
---tooltip-background-color: white;
---tooltip-border-color: gray;
+--tooltip-background-color: rgba(255,255,255,0.8);
+--tooltip-arrow-background-color: white;
+--tooltip-border-color: rgba(150,150,150,0.7);
+--tooltip-backdrop-filter: blur(3px);
 --tooltip-doc-color: grey;
 --tooltip-declaration-color: #006318;
 --tooltip-link-color: ##60;
---tooltip-shadow: 1px 1px 7px gray;
+--tooltip-shadow: 0 4px 8px 0 rgba(0,0,0,.25);
 --fold-line-color: #808080;
 
 /** font-family */
