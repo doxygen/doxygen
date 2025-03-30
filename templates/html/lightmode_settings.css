@@ -2,7 +2,8 @@
 --page-background-color: white;
 --page-foreground-color: black;
 --page-link-color: ##50;
---page-visited-link-color: ##60;
+--page-visited-link-color: ##50;
+--page-external-link-color: ##40;
 
 /* index */
 --index-odd-item-bg-color: ##F9;

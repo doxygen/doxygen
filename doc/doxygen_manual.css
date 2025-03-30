@@ -79,7 +79,6 @@ div.contents, div.headertitle
 
 div.headertitle
 {
-  font-size: 150%;
   text-shadow: 0px 2px 2px var(--title-shadow-color);
   color: var(--title-text-color);
 }

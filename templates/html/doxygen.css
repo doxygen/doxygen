@@ -15,7 +15,7 @@ body, table, div, p, dl {
 .title {
 	font-family: var(--font-family-normal);
 	line-height: 28px;
-	font-size: 180%;
+	font-size: 160%;
 	font-weight: 400;
 	margin: 10px 2px;
 }
@@ -225,11 +225,11 @@ a.elRef {
 }
 
 a.el, a.el:visited, a.code, a.code:visited, a.line, a.line:visited {
-	color: var(--code-link-color);
+	color: var(--page-link-color);
 }
 
 a.codeRef, a.codeRef:visited, a.lineRef, a.lineRef:visited {
-	color: var(--code-external-link-color);
+	color: var(--page-external-link-color);
 }
 
 a.code.hl_class { /* style for links to class names in code snippets */ }

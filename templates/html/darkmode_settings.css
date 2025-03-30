@@ -2,7 +2,8 @@
 --page-background-color: black;
 --page-foreground-color: #C9D1D9;
 --page-link-color: ##A0;
---page-visited-link-color: ##B0;
+--page-visited-link-color: ##A0;
+--page-external-link-color: ##B0;
 
 /* index */
 --index-odd-item-bg-color: ##0A;
@@ -13,7 +14,7 @@
 /* header */
 --header-background-color: ##06;
 --header-separator-color: ##14;
---group-header-separator-color: ##38;
+--group-header-separator-color: ##20;
 --group-header-color: ##A0;
 --inherit-header-color: #A0A0A0;
 
@@ -51,7 +52,7 @@
 --memdecl-separator-color: ##35;
 --memdecl-foreground-color: #BBB;
 --memdecl-template-color: ##90;
---memdecl-border-color: ##30;
+--memdecl-border-color: ##28;
 
 /* detailed member list */
 --memdef-border-color: ##28;
