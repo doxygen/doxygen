@@ -98,6 +98,13 @@
 --nav-arrow-color: ##C0;
 --nav-arrow-selected-color: ##A0;
 
+/* sync icon */
+--sync-icon-border-color: ##CC;
+--sync-icon-background-color: ##FA;
+--sync-icon-selected-background-color: ##F0;
+--sync-icon-color: ##CC;
+--sync-icon-selected-color: ##80;
+
 /* table of contents */
 --toc-background-color: ##F6;
 --toc-border-color: ##DD;

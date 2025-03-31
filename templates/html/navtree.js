@@ -292,7 +292,6 @@ function initNavTree(toroot,relpath) {
     if ($('#nav-tree-contents .item:first').hasClass('selected')) {
       topOffset+=25;
     }
-    $('#nav-sync').css('top',topOffset+'px');
     showRoot();
   }
 
@@ -386,11 +385,11 @@ function initNavTree(toroot,relpath) {
   }
 
   const showSyncOff = function(n,relpath) {
-    n.html('<img src="'+relpath+'sync_off.png" title="'+SYNCOFFMSG+'"/>');
+    n.html('<div class="nav-sync-icon" title="'+SYNCOFFMSG+'"><span class="sync-icon-left"></span><span class="sync-icon-right"></span></div>');
   }
 
   const showSyncOn = function(n,relpath) {
-    n.html('<img src="'+relpath+'sync_on.png" title="'+SYNCONMSG+'"/>');
+    n.html('<div class="nav-sync-icon active" title="'+SYNCONMSG+'"/><span class="sync-icon-left"></span><span class="sync-icon-right"></span></div>');
   }
 
   const o = {

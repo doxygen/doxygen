@@ -94,6 +94,13 @@
 --nav-arrow-color: ##60;
 --nav-arrow-selected-color: ##80;
 
+/* sync icon */
+--sync-icon-border-color: ##25;
+--sync-icon-background-color: ##10;
+--sync-icon-selected-background-color: ##20;
+--sync-icon-color: ##45;
+--sync-icon-selected-color: ##70;
+
 /* table of contents */
 --toc-background-color: ##15;
 --toc-border-color: ##24;

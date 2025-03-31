@@ -149,8 +149,8 @@
 
 #nav-sync {
   position:absolute;
-  top:5px;
-  right:24px;
+  top:0px;
+  right:0px;
   z-index:0;
 }
 
@@ -158,8 +158,75 @@
   opacity:0.3;
 }
 
-#nav-sync img:hover {
-  opacity:0.9;
+div.nav-sync-icon {
+	position: relative;
+	width: 24px;
+	height: 17px;
+	left: -6px;
+	top: -1px;
+	opacity: 0.7;
+	display: inline-block;
+	background-color: var(--sync-icon-background-color);
+	border: 1px solid var(--sync-icon-border-color);
+	box-sizing: content-box;
+}
+
+div.nav-sync-icon:hover {
+	background-color: var(--sync-icon-selected-background-color);
+	opacity: 1.0;
+}
+
+div.nav-sync-icon.active:after {
+	content: '';
+	background-color: var(--sync-icon-background-color);
+	border-top: 2px solid var(--sync-icon-color);
+	position: absolute;
+	width: 16px;
+	height: 0px;
+	top: 7px;
+	left: 4px;
+}
+
+div.nav-sync-icon.active:hover:after {
+	border-top: 2px solid var(--sync-icon-selected-color);
+}
+
+span.sync-icon-left {
+	position: absolute;
+	padding: 0;
+	margin: 0;
+	top: 3px;
+	left: 4px;
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-left: 2px solid var(--sync-icon-color);
+	border-top: 2px solid var(--sync-icon-color);
+	transform: rotate(-45deg);
+}
+
+span.sync-icon-right {
+	position: absolute;
+	padding: 0;
+	margin: 0;
+	top: 3px;
+	left: 10px;
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-right: 2px solid var(--sync-icon-color);
+	border-bottom: 2px solid var(--sync-icon-color);
+	transform: rotate(-45deg);
+}
+
+div.nav-sync-icon:hover span.sync-icon-left {
+	border-left: 2px solid var(--sync-icon-selected-color);
+	border-top: 2px solid var(--sync-icon-selected-color);
+}
+
+div.nav-sync-icon:hover span.sync-icon-right {
+	border-right: 2px solid var(--sync-icon-selected-color);
+	border-bottom: 2px solid var(--sync-icon-selected-color);
 }
 
 #nav-path ul {

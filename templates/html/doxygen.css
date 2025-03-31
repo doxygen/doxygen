@@ -25,9 +25,9 @@ h1.groupheader {
 }
 
 h2.groupheader {
-	box-shadow: 8px 0 var(--page-background-color),
+	box-shadow: 12px 0 var(--page-background-color),
 		   -12px 0 var(--page-background-color),
-		    8px 1px var(--group-header-separator-color),
+		    12px 1px var(--group-header-separator-color),
 		   -12px 1px var(--group-header-separator-color);
 	color: var(--group-header-color);
 	font-size: 150%;
@@ -39,9 +39,9 @@ h2.groupheader {
 }
 
 td h2.groupheader {
-	box-shadow: 9px 0 var(--page-background-color),
+	box-shadow: 13px 0 var(--page-background-color),
 		   -13px 0 var(--page-background-color),
-		    9px 1px var(--group-header-separator-color),
+		    13px 1px var(--group-header-separator-color),
 		   -13px 1px var(--group-header-separator-color);
 }
 
@@ -494,9 +494,9 @@ div.classindex span.ai {
 }
 
 div.groupHeader {
-	box-shadow: 9px 0 var(--page-background-color),
+	box-shadow: 13px 0 var(--page-background-color),
 	           -13px 0 var(--page-background-color),
-	            9px 1px var(--group-header-separator-color),
+	            13px 1px var(--group-header-separator-color),
 	           -13px 1px var(--group-header-separator-color);
 	color: var(--group-header-color);
 	font-size: 110%;
@@ -521,7 +521,7 @@ body {
 div.contents {
 	margin-top: 10px;
 	margin-left: 12px;
-	margin-right: 8px;
+	margin-right: 12px;
 }
 
 p.formulaDsp {
@@ -647,9 +647,9 @@ hr {
 	margin-top: 16px;
 	margin-bottom: 16px;
 	height: 1px;
-	box-shadow: 9px 0 var(--page-background-color),
+	box-shadow: 13px 0 var(--page-background-color),
 		   -13px 0 var(--page-background-color),
-		    9px 1px var(--group-header-separator-color),
+		    13px 1px var(--group-header-separator-color),
 		   -13px 1px var(--group-header-separator-color);
 }
 

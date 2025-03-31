@@ -1308,11 +1308,8 @@ void HtmlGenerator::writeTabData()
   Doxygen::indexList->addStyleSheetFile("tabs.css");
   QCString dname=Config_getString(HTML_OUTPUT);
   ResourceMgr &mgr = ResourceMgr::instance();
-  //writeColoredImgData(dname,colored_tab_data);
   mgr.copyResource("doxygen.svg",dname);
   Doxygen::indexList->addImageFile("doxygen.svg");
-  mgr.copyResource("sync_on.luma",dname);
-  mgr.copyResource("sync_off.luma",dname);
 }
 
 void HtmlGenerator::writeSearchData(const QCString &dname)
