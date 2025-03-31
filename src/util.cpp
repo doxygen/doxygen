@@ -6115,12 +6115,6 @@ bool genericPatternMatch(const FileInfo &fi,
   bool caseSenseNames = getCaseSenseNames();
   bool found = FALSE;
 
-  // For platforms where the file system is non case sensitive overrule the setting
-  if (!Portable::fileSystemIsCaseSensitive())
-  {
-    caseSenseNames = FALSE;
-  }
-
   if (!patList.empty())
   {
     std::string fn = fi.fileName();
