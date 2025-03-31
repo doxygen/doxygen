@@ -542,6 +542,37 @@
   \mbox{\hyperlink{#1}{#2}}%
 }
 
+% Used for the cite command
+\newcommand{\DoxyCite}[3]{%
+  \ifthenelse{#3=1}% 1 with square parenthesis
+  {
+    \ifthenelse{\equal{#2}{number}}%
+    { \cite{#1} }%
+    {%
+      \ifthenelse{\equal{#2}{shortauthor}}%
+      { \citetext{\citeauthor{#1}} }%
+      {%
+        \ifthenelse{\equal{#2}{year}}%
+        { \citeyearpar{#1} }%
+        {}%
+      }%
+    }%
+  }%
+  {%
+    \ifthenelse{\equal{#2}{number}}%
+    { \citealp{#1} }%
+    {%
+      \ifthenelse{\equal{#2}{shortauthor}}%
+      { \citeauthor{#1} }%
+      {%
+        \ifthenelse{\equal{#2}{year}}%
+        { \citeyear{#1} }%
+        {}%
+      }%
+    }%
+  }%
+}
+
 % Used when hyperlinks are turned on
 % Third argument is the SectionType, see the doxygen internal
 % documentation for the values (relevant: Page ... Subsubsection).

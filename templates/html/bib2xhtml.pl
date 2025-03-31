@@ -204,8 +204,9 @@ while (<BBLFILE>) {
     }
     $nentry++;
     ($bcite, $blabel) = m:<dt><a\s+name=\"([^\"]*)\">\[([^\]]*)\]</a></dt><dd>:;
-    $blabel = "$nentry";
+    $blabel = "$nentry,$2$3";
     $bibcite{$bcite} = $blabel;
+    $bibnum{$bcite}  = $nentry;
 }
 close(BBLFILE);
 $label_style = $LABEL_DEFAULT if (! defined $label_style);
@@ -228,7 +229,7 @@ while (<BBLFILE>) {
     }
     s/\%\n//g;
     s/(\.(<\/cite>|<\/a>|\')+)\./$1/g;
-    s:(<dt><a\s+name=\"[^\"]*\">\[)[^\]]*(\]</a></dt><dd>):$1$nentry$2:;
+    s:(<dt><a\s+name=\"[^\"]*\">)\[([^\]]*)\](</a></dt><dd>):$1\[$nentry\]<!--\[$nentry,$2\]-->$3:;
     while (m/(\\(cite(label)?)(\001\d+)\{([^\001]+)\4\})/) {
 	$old = $1;
 	$cmd = $2;
@@ -237,7 +238,7 @@ while (<BBLFILE>) {
 	if (! defined $bibcite{$bcite}) {
 	    $blabel = " [" . $bcite . "]";
 	} elsif ($doxref) {
-	    $blabel = " <a href=\"#$bcite\">[" . $bibcite{$bcite} . "]<\/a>";
+	    $blabel = " <a href=\"#$bcite\">[" . $bibnum{$bcite} . "]<\/a>";
 	} else {
 	    $blabel = " [" . $bibcite{$bcite} . "]";
 	}
@@ -296,6 +297,7 @@ while (<BBLFILE>) {
     s/(\\\((([^\\]|\\[^\(\)])+)\\\))/&domath($2)/ge;
     s/\\mbox(\001\d+)\{(.*)\1\}/$2/gs;
     while (s/(\<a href\=\"[^"]*?)\~/$1\005/g) { ; }
+    s/et~al/et al/g;
     s/([^\\])~/$1&nbsp;/g;
     s/\\\,/&thinsp;/g;
     s/\\ldots\b/&hellip;/g;
