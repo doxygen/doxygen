@@ -1620,7 +1620,6 @@ PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
       <value name='*.hxx'/>
       <value name='*.hpp'/>
       <value name='*.h++'/>
-      <value name='*.ixx'/>
       <value name='*.l'/>
       <value name='*.cs'/>
       <value name='*.d'/>
