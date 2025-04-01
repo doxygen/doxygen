@@ -29,6 +29,22 @@ function initNavTree(toroot,relpath) {
   const ARROW_RIGHT = '<span class="arrowhead closed"></span>';
   const NAVPATH_COOKIE_NAME = '$PROJECTID'+'navpath';
 
+  function getScrollBarWidth () {
+    let outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body');
+    let widthWithScroll = $('<div>').css({width: '100%'}).appendTo(outer).outerWidth();
+    outer.remove();
+    return 100 - widthWithScroll;
+  }
+  const scrollbarWidth = getScrollBarWidth();
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const hasFadingScrollbars = !isSafari;
+
+  function adjustSyncIconPosition() {
+    const nt = document.getElementById("nav-tree");
+    const hasVerticalScrollbar = nt.scrollHeight > nt.clientHeight;
+    $("#nav-sync").css({right:parseInt(hasVerticalScrollbar?scrollbarWidth:0)});
+  }
+
   const getData = function(varName) {
     const i = varName.lastIndexOf('/');
     const n = i>=0 ? varName.substring(i+1) : varName;
@@ -96,7 +112,7 @@ function initNavTree(toroot,relpath) {
       node.expandToggle.href = "javascript:void(0)";
       node.expandToggle.onclick = function() {
         if (node.expanded) {
-          $(node.getChildrenUL()).slideUp("fast");
+          $(node.getChildrenUL()).slideUp("fast",adjustSyncIconPosition);
           $(node.plus_img.childNodes[0]).removeClass('opened').addClass('closed');
           node.expanded = false;
         } else {
@@ -252,7 +268,7 @@ function initNavTree(toroot,relpath) {
         if (!node.childrenVisited) {
           getNode(o, node);
         }
-        $(node.getChildrenUL()).slideDown("fast");
+        $(node.getChildrenUL()).slideDown("fast",adjustSyncIconPosition);
         $(node.plus_img.childNodes[0]).addClass('opened').removeClass('closed');
         node.expanded = true;
         if (setFocus) {
@@ -459,8 +475,21 @@ function initNavTree(toroot,relpath) {
   });
 
   const navtree = $('#nav-tree');
-  navtree.on('mouseover', () => { navtree.addClass('hovered');    });
-  navtree.on('mouseout',  () => { navtree.removeClass('hovered'); });
+  navtree.on('mouseover', () => {
+    navtree.addClass('hovered');
+    if (hasFadingScrollbars) {
+      adjustSyncIconPosition();
+    }
+  });
+  navtree.on('mouseout',  () => {
+    navtree.removeClass('hovered');
+    if (hasFadingScrollbars) {
+      $("#nav-sync").css({right:'0'});
+    }
+  });
+  if (!hasFadingScrollbars) {
+    $(window).resize(function() { adjustSyncIconPosition(); });
+  }
 
   $("div.toc a[href]").click(function(e) {
     e.preventDefault();
