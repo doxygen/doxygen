@@ -131,7 +131,7 @@ class TranslatorDutch : public Translator
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "Glabale members";
+        return "Globale members";
       }
       else
       {
