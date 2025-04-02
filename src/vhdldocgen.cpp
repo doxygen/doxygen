@@ -3101,7 +3101,10 @@ void FlowChart::writeFlowChart()
    printFlowTree();
 #endif
 
-  if (!Config_getString(PLANTUML_JAR_PATH).isEmpty())
+  QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
+  QCString binPath = Config_getString(PLANTUML_BIN_PATH);
+  bool plantuml_missing = jarPath.isEmpty() && binPath.isEmpty();
+  if (!plantuml_missing)
   {
     printUmlTree();
     delFlowList();

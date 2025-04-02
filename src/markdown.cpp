@@ -3186,7 +3186,10 @@ QCString Markdown::Private::processQuotations(std::string_view data,size_t refIn
           if (addNewLines) out+='\n';
         };
 
-        if (!Config_getString(PLANTUML_JAR_PATH).isEmpty() && lang=="plantuml")
+        QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
+        QCString binPath = Config_getString(PLANTUML_BIN_PATH);
+        bool plantuml_missing = jarPath.isEmpty() && binPath.isEmpty();
+        if (!plantuml_missing && lang=="plantuml")
         {
           addSpecialCommand("startuml","enduml");
         }

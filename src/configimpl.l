@@ -2062,6 +2062,30 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
+  // check plantuml bin
+  QCString plantumlBinPath = Config_getString(PLANTUML_BIN_PATH);
+  if (!plantumlBinPath.isEmpty())
+  {
+    FileInfo pu(plantumlBinPath.str());
+    if (!pu.exists() || !pu.isFile()) // PLANTUML_BIN_PATH is file
+    {
+      err("PLANTUML_BIN_PATH is not a file or does not exists: {}\n",plantumlBinPath);
+      plantumlBinPath="";
+    }
+    Config_updateString(PLANTUML_BIN_PATH,plantumlBinPath);
+  }
+
+  //------------------------
+  // check plantuml bin or jar
+  plantumlBinPath = Config_getString(PLANTUML_BIN_PATH);
+  plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
+  if (!plantumlBinPath.isEmpty() && !plantumlJarPath.isEmpty())
+  {
+    err("PLANTUML_BIN_PATH: {} and PLANTUML_JAR_PATH: {} are set, unsetting PLANTUML_BIN_PATH and only using the jar file\n",plantumlBinPath, plantumlJarPath);
+    Config_updateString(PLANTUML_BIN_PATH,"");
+  }
+
+  //------------------------
   // check dia path
   QCString diaPath = Config_getString(DIA_PATH);
   if (!diaPath.isEmpty())
