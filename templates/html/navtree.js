@@ -28,6 +28,7 @@ function initNavTree(toroot,relpath) {
   const ARROW_DOWN = '<span class="arrowhead opened"></span>';
   const ARROW_RIGHT = '<span class="arrowhead closed"></span>';
   const NAVPATH_COOKIE_NAME = '$PROJECTID'+'navpath';
+  const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
 
   function getScrollBarWidth () {
     let outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body');
@@ -40,9 +41,11 @@ function initNavTree(toroot,relpath) {
   const hasFadingScrollbars = !isSafari;
 
   function adjustSyncIconPosition() {
-    const nt = document.getElementById("nav-tree");
-    const hasVerticalScrollbar = nt.scrollHeight > nt.clientHeight;
-    $("#nav-sync").css({right:parseInt(hasVerticalScrollbar?scrollbarWidth:0)});
+    if (!fullSidebar) {
+      const nt = document.getElementById("nav-tree");
+      const hasVerticalScrollbar = nt.scrollHeight > nt.clientHeight;
+      $("#nav-sync").css({right:parseInt(hasVerticalScrollbar?scrollbarWidth:0)});
+    }
   }
 
   const getData = function(varName) {
