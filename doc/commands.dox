@@ -3522,6 +3522,8 @@ class Receiver
   The location of the PlantUML file should be specified using
   \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". The other jar files should also reside
   in this directory.
+  Instead of a jar file a binary capable to convert PlanUML diagrams can be provided.
+  Usually a PlantUML native image.
   \note The use of the `<engine>` `ditaa` is not possible in \LaTeX as PlantUML only
   supports the `png` format and Doxygen requires, temporary, `eps` output.
 

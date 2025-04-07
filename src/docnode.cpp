@@ -4379,7 +4379,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       break;
     case CommandType::CMD_STARTUML:
       {
-        QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
+        QCString plantumlPath = Config_getString(PLANTUML_JAR_PATH);
         parser()->tokenizer.setStatePlantUMLOpt();
         parser()->tokenizer.lex();
         QCString fullMatch = parser()->context.token->sectionId;
@@ -4465,7 +4465,7 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(parser()->context.fileName,parser()->tokenizer.getLineNr());
-        if (jarPath.isEmpty())
+        if (plantumlPath.isEmpty())
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"ignoring \\startuml command because PLANTUML_JAR_PATH is not set");
           children().pop_back();
