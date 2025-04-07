@@ -83,8 +83,8 @@ if (build_wizard)
     endif()
 endif()
 
-# use C++17 standard for compiling
-set(CMAKE_CXX_STANDARD 17)
+# use C++20 standard for compiling
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
@@ -189,7 +189,7 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 endif()
 
 # needed for JavaCC
-set(JAVA_CC_EXTRA_FLAGS "-DJAVACC_CHAR_TYPE=\"unsigned char\"")
+set(JAVA_CC_EXTRA_FLAGS "-DJAVACC_CHAR_TYPE=\"char8_t\"")
 set(CMAKE_CXX_FLAGS       "${CMAKE_CXX_FLAGS}       ${JAVA_CC_EXTRA_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${JAVA_CC_EXTRA_FLAGS}")
 
