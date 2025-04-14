@@ -784,7 +784,7 @@ enum class VhdlSpecifier
  ETYPE(ObjcImpl,           None)            \
  ETYPE(ExportedInterface,  None)            \
  ETYPE(IncludedService,    None)            \
- ETYPE(ExampleLineno,      None)            \
+ ETYPE(ExampleLineno,      Doc)             \
 
 /** Wrapper class for the Entry type. Can be set only during construction.
  *  Packs the type together with category flags.
