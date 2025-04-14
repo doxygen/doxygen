@@ -3985,10 +3985,20 @@ class Receiver
 \endverbatim
 
   \warning The image format for HTML is limited to what your
-           browser supports.<br>For \LaTeX, the image format
+           browser supports.
+           <br>
+           For \LaTeX, the image format
            must be supported by the \LaTeX `\includegraphics` command i.e.
            Encapsulated PostScript (eps), Portable network graphics (png),
            Joint photographic experts group (jpg / jpeg).
+           <br>
+           Besides the formats supported by the \LaTeX `\includegraphics`
+           command it is also posible to use the Scalable Vector Graphics (svg) format.
+           In order for this to work the external program Inkscape (https://inkscape.org/) has
+           to be installed and must be reachable throught the path.
+           Note: when a svg image is found the option `-enable-write18` is automatically added
+           to the latex command (see the generated `Makefile` or `make.bat` in your
+           Doxygen latex directory).
            <br><br>
            Doxygen does not check if the image is in the correct format.
            So \e you have to make sure this is the case!

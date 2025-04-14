@@ -70,6 +70,8 @@ class LatexCodeGenerator : public OutputCodeIntf
     void setInsideTabbing(bool b) { m_insideTabbing=b; }
     bool insideTabbing() const { return m_insideTabbing; }
 
+    void setSvgImage();
+
   private:
     void _writeCodeLink(const QCString &className,
                         const QCString &ref,const QCString &file,
