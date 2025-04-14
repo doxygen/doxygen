@@ -675,13 +675,16 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         {
           format = PlantumlManager::PUML_SVG;
         }
-        QCString baseName = PlantumlManager::instance().writePlantUMLSource(
+        std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(
                                     htmlOutput,s.exampleFile(),
                                     s.text(),format,s.engine(),s.srcFile(),s.srcLine(),true);
-        m_t << "<div class=\"plantumlgraph\">\n";
-        writePlantUMLFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
-        visitCaption(m_t, s);
-        m_t << "</div>\n";
+        for(const auto &baseName: baseNameVector)
+        {
+          m_t << "<div class=\"plantumlgraph\">\n";
+          writePlantUMLFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          visitCaption(m_t, s);
+          m_t << "</div>\n";
+        }
         forceStartParagraph(s);
       }
       break;
@@ -1836,22 +1839,25 @@ void HtmlDocVisitor::operator()(const DocPlantUmlFile &df)
   }
   std::string inBuf;
   readInputFile(df.file(),inBuf);
-  QCString baseName = PlantumlManager::instance().writePlantUMLSource(
+  std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(
                                     htmlOutput,QCString(),
                                     inBuf.c_str(),format,QCString(),df.srcFile(),df.srcLine(),false);
-  baseName=makeBaseName(baseName);
-  m_t << "<div class=\"plantumlgraph\">\n";
-  writePlantUMLFile(baseName,df.relPath(),QCString(),df.srcFile(),df.srcLine());
-  if (df.hasCaption())
+  for(auto &baseName: baseNameVector)
   {
-    m_t << "<div class=\"caption\">\n";
-  }
-  visitChildren(df);
-  if (df.hasCaption())
-  {
+    baseName=makeBaseName(baseName);
+    m_t << "<div class=\"plantumlgraph\">\n";
+    writePlantUMLFile(baseName,df.relPath(),QCString(),df.srcFile(),df.srcLine());
+    if (df.hasCaption())
+    {
+      m_t << "<div class=\"caption\">\n";
+    }
+    visitChildren(df);
+    if (df.hasCaption())
+    {
+      m_t << "</div>\n";
+    }
     m_t << "</div>\n";
   }
-  m_t << "</div>\n";
   forceStartParagraph(df);
 }
 
