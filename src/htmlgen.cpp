@@ -1797,20 +1797,25 @@ void HtmlGenerator::endTextLink()
   m_t << "</a>";
 }
 
-void HtmlGenerator::startGroupHeader(int extraIndentLevel)
+void HtmlGenerator::startGroupHeader(const QCString &id,int extraIndentLevel)
 {
   if (extraIndentLevel==2)
   {
-    m_t << "<h4 class=\"groupheader\">";
+    m_t << "<h4";
   }
   else if (extraIndentLevel==1)
   {
-    m_t << "<h3 class=\"groupheader\">";
+    m_t << "<h3";
   }
   else // extraIndentLevel==0
   {
-    m_t << "<h2 class=\"groupheader\">";
+    m_t << "<h2";
   }
+  if (!id.isEmpty())
+  {
+    m_t <<" id=\"header-"+convertToId(id)+"\"";
+  }
+  m_t << " class=\"groupheader\">";
 }
 
 void HtmlGenerator::endGroupHeader(int extraIndentLevel)
@@ -2048,7 +2053,7 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
   m_t << "\"";
   if (!anchor.isEmpty())
   {
-    m_t << " id=\"r_" << anchor << "\"";
+    m_t << " id=\"r_" << convertToId(anchor) << "\"";
   }
   m_t << ">";
   insertMemberAlignLeft(type, true);
@@ -2161,7 +2166,12 @@ void HtmlGenerator::startMemberHeader(const QCString &anchor, int typ)
     m_t << "<table class=\"memberdecls\">\n";
     m_emptySection=FALSE;
   }
-  m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
+  m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2";
+  if (!anchor.isEmpty())
+  {
+    m_t << " id=\"header-" << anchor << "\"";
+  }
+  m_t << " class=\"groupheader\">";
   if (!anchor.isEmpty())
   {
     m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>\n";
@@ -2503,9 +2513,9 @@ void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
   g.writeGraph(m_t,dir(),fileName());
 }
 
-void HtmlGenerator::startMemberGroupHeader(bool)
+void HtmlGenerator::startMemberGroupHeader(const QCString &id,bool)
 {
-  m_t << "<tr class=\"groupHeader\"><td colspan=\"2\"><div class=\"groupHeader\">";
+  m_t << "<tr id=\"" << id << "\"class=\"groupHeader\"><td colspan=\"2\"><div class=\"groupHeader\">";
 }
 
 void HtmlGenerator::endMemberGroupHeader()
@@ -2982,7 +2992,7 @@ static void writeDefaultQuickLinks(TextStream &t,
   }
   if (generateTreeView && !disableIndex && fullSidebar && !extraTabs)
   {
-     t << "<div id=\"doc-content\">\n";
+     t << "<div id=\"container\"><div id=\"doc-content\">\n";
   }
 }
 
@@ -2996,7 +3006,7 @@ void HtmlGenerator::endQuickIndices()
   }
 }
 
-QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath)
+QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath,bool showListOfAllMembers)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString result;
@@ -3005,7 +3015,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   {
     QCString fn = name;
     addHtmlExtensionIfMissing(fn);
-    if (/*!Config_getBool(DISABLE_INDEX) ||*/ !Config_getBool(FULL_SIDEBAR))
+    if (!Config_getBool(FULL_SIDEBAR))
     {
       result += QCString(
         "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n");
@@ -3024,12 +3034,13 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
      "$(function(){initNavTree('" + fn +
      "','" + relpath +
-     "'); initResizable(true); });\n"
+     "'" + QCString(showListOfAllMembers ? ",true" : "") +
+     "); initResizable(true); });\n"
      "/* @license-end */\n"
      "</script>\n";
      if (Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
      {
-       result+="<div id=\"doc-content\">\n";
+       result+="<div id=\"container\">\n<div id=\"doc-content\">\n";
      }
   }
   else
@@ -3043,9 +3054,9 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   return result;
 }
 
-void HtmlGenerator::writeSplitBar(const QCString &name)
+void HtmlGenerator::writeSplitBar(const QCString &name,bool showListOfAllMembers)
 {
-  m_t << writeSplitBarAsString(name,m_relPath);
+  m_t << writeSplitBarAsString(name,m_relPath,showListOfAllMembers);
 }
 
 void HtmlGenerator::writeNavigationPath(const QCString &s)
@@ -3144,7 +3155,7 @@ void HtmlGenerator::writeSearchPage()
     {
       t << "</div><!-- top -->\n";
     }
-    t << writeSplitBarAsString("search.php",QCString());
+    t << writeSplitBarAsString("search.php",QCString(),false);
     if (quickLinksAfterSplitbar)
     {
       writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
@@ -3160,6 +3171,7 @@ void HtmlGenerator::writeSearchPage()
     if (generateTreeView)
     {
       t << "</div><!-- doc-content -->\n";
+      t << "</div><!-- container -->\n";
     }
 
     writePageFooter(t,"Search","","");
@@ -3210,7 +3222,7 @@ void HtmlGenerator::writeExternalSearchPage()
     {
       t << "</div><!-- top -->\n";
     }
-    t << writeSplitBarAsString("search.php",QCString());
+    t << writeSplitBarAsString("search.php",QCString(),false);
     if (quickLinksAfterSplitbar)
     {
       writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
@@ -3229,6 +3241,7 @@ void HtmlGenerator::writeExternalSearchPage()
     if (generateTreeView)
     {
       t << "</div><!-- doc-content -->\n";
+      t << "</div><!-- container -->\n";
     }
 
     writePageFooter(t,"Search","","");
@@ -3539,6 +3552,15 @@ void HtmlGenerator::writeSummaryLink(const QCString &file,const QCString &anchor
   m_t << "\">";
   m_t << title;
   m_t << "</a>";
+}
+
+void HtmlGenerator::writePageOutline()
+{
+  m_t << "<div id=\"page-nav\" class=\"page-nav-panel\">\n";
+  m_t << "<div id=\"page-nav-resize-handle\"></div>\n";
+  m_t << "<div id=\"page-nav-contents\">\n";
+  m_t << "</div><!-- page-nav-contents -->\n";
+  m_t << "</div><!-- page-nav -->\n";
 }
 
 void HtmlGenerator::endMemberDeclaration(const QCString &anchor,const QCString &inheritId)

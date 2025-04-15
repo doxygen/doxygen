@@ -290,9 +290,9 @@ struct Grouping
   ML_TYPE(DcopMethods,         OnlyPublic,   Invalid,           Invalid,          "dcop-methods",          "dcop-func"               ) \
   ML_TYPE(Properties,          OnlyPublic,   Invalid,           Invalid,          "properties",            "property"                ) \
   ML_TYPE(Events,              OnlyPublic,   Invalid,           Invalid,          "events",                "event"                   ) \
-  ML_TYPE(AllMembersList,      OnlyPublic,   Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EnumFields,          OnlyPublic,   Invalid,           Invalid,          "enum-fields",           ""                        ) \
-  ML_TYPE(MemberGroup,         OnlyPublic,   Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(AllMembersList,      OnlyPublic,   Invalid,           Invalid,          "all-members-list",      "all-members-list"        ) \
+  ML_TYPE(EnumFields,          OnlyPublic,   Invalid,           Invalid,          "enum-fields",           "enum-fields"             ) \
+  ML_TYPE(MemberGroup,         OnlyPublic,   Invalid,           Invalid,          "member-group",          "member-group"            ) \
   ML_TYPE(Interfaces,          OnlyPublic,   Invalid,           Invalid,          "interfaces",            "interfaces"              ) \
   ML_TYPE(Services,            OnlyPublic,   Invalid,           Invalid,          "services",              "services"                ) \
   ML_TYPE(DecDefineMembers,    Declaration,  Invalid,           Invalid,          "define-members",        "define"                  ) \
@@ -311,33 +311,33 @@ struct Grouping
   ML_TYPE(DecPropMembers,      Declaration,  Invalid,           Invalid,          "prop-members",          ""                        ) \
   ML_TYPE(DecSequenceMembers,  Declaration,  Invalid,           Invalid,          "sequence-members",      "sequence"                ) \
   ML_TYPE(DecDictionaryMembers,Declaration,  Invalid,           Invalid,          "dictionary-members",    "dictionary"              ) \
-  ML_TYPE(TypedefMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EnumMembers,         Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EnumValMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(FunctionMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(RelatedMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(VariableMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(PropertyMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EventMembers,        Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(Constructors,        Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(TypedefMembers,      Detailed,     Invalid,           Invalid,          "doc-typedef-members",   ""                        ) \
+  ML_TYPE(EnumMembers,         Detailed,     Invalid,           Invalid,          "doc-enum-members",      ""                        ) \
+  ML_TYPE(EnumValMembers,      Detailed,     Invalid,           Invalid,          "doc-enum-val-members",  ""                        ) \
+  ML_TYPE(FunctionMembers,     Detailed,     Invalid,           Invalid,          "doc-func-members",      ""                        ) \
+  ML_TYPE(RelatedMembers,      Detailed,     Invalid,           Invalid,          "doc-related-members",   ""                        ) \
+  ML_TYPE(VariableMembers,     Detailed,     Invalid,           Invalid,          "doc-variable-members",  ""                        ) \
+  ML_TYPE(PropertyMembers,     Detailed,     Invalid,           Invalid,          "doc-property-members",  ""                        ) \
+  ML_TYPE(EventMembers,        Detailed,     Invalid,           Invalid,          "doc-event-members",     ""                        ) \
+  ML_TYPE(Constructors,        Detailed,     Invalid,           Invalid,          "doc-constructors",      ""                        ) \
   ML_TYPE(InterfaceMembers,    Detailed,     Invalid,           Invalid,          "interface-members",     ""                        ) \
   ML_TYPE(ServiceMembers,      Detailed,     Invalid,           Invalid,          "service-members",       ""                        ) \
-  ML_TYPE(DocDefineMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocProtoMembers,     Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocTypedefMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocEnumMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocFuncMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocVarMembers,       Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocEnumValMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocPubSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocProSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocPriSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocSignalMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocEventMembers,     Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocFriendMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocPropMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocSequenceMembers,  Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocDictionaryMembers,Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocDefineMembers,    Documentation,Invalid,           Invalid,          "doc-define-members",    ""                        ) \
+  ML_TYPE(DocProtoMembers,     Documentation,Invalid,           Invalid,          "doc-proto-members",     ""                        ) \
+  ML_TYPE(DocTypedefMembers,   Documentation,Invalid,           Invalid,          "doc-typedef-members",   ""                        ) \
+  ML_TYPE(DocEnumMembers,      Documentation,Invalid,           Invalid,          "doc-enum-members",      ""                        ) \
+  ML_TYPE(DocFuncMembers,      Documentation,Invalid,           Invalid,          "doc-func-members",      ""                        ) \
+  ML_TYPE(DocVarMembers,       Documentation,Invalid,           Invalid,          "doc-var-members",       ""                        ) \
+  ML_TYPE(DocEnumValMembers,   Documentation,Invalid,           Invalid,          "doc-enum-val-members",  ""                        ) \
+  ML_TYPE(DocPubSlotMembers,   Documentation,Invalid,           Invalid,          "doc-pub-slot-members",  ""                        ) \
+  ML_TYPE(DocProSlotMembers,   Documentation,Invalid,           Invalid,          "doc-pro-slot-members",  ""                        ) \
+  ML_TYPE(DocPriSlotMembers,   Documentation,Invalid,           Invalid,          "doc-pri-slot-members",  ""                        ) \
+  ML_TYPE(DocSignalMembers,    Documentation,Invalid,           Invalid,          "doc-signal-members",    ""                        ) \
+  ML_TYPE(DocEventMembers,     Documentation,Invalid,           Invalid,          "doc-event-members",     ""                        ) \
+  ML_TYPE(DocFriendMembers,    Documentation,Invalid,           Invalid,          "doc-friend-members",    ""                        ) \
+  ML_TYPE(DocPropMembers,      Documentation,Invalid,           Invalid,          "doc-prop-members",      ""                        ) \
+  ML_TYPE(DocSequenceMembers,  Documentation,Invalid,           Invalid,          "doc-sequence-members",  ""                        ) \
+  ML_TYPE(DocDictionaryMembers,Documentation,Invalid,           Invalid,          "doc-dictionary-members",""                        ) \
 
 /** Wrapper class for the MemberListType type. Can be set only during construction.
  *  Packs the type together with category flags.

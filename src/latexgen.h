@@ -156,7 +156,7 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void endTextLink() override;
     void startTypewriter() override { m_t << "{\\ttfamily "; }
     void endTypewriter() override { m_t << "}";      }
-    void startGroupHeader(int) override;
+    void startGroupHeader(const QCString &,int) override;
     void endGroupHeader(int) override;
     void startItemListItem() override { m_t << "\\item \n"; }
     void endItemListItem() override {}
@@ -184,7 +184,7 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void startCompoundTemplateParams() override { m_t << "\\subsubsection*{";}
     void endCompoundTemplateParams() override { m_t << "}\n"; }
 
-    void startMemberGroupHeader(bool) override;
+    void startMemberGroupHeader(const QCString &,bool) override;
     void endMemberGroupHeader() override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
@@ -236,11 +236,12 @@ class LatexGenerator : public OutputGenerator, public OutputGenIntf
     void endPageRef(const QCString &,const QCString &) override;
     void startQuickIndices() override {}
     void endQuickIndices() override {}
-    void writeSplitBar(const QCString &) override {}
+    void writeSplitBar(const QCString &,bool) override {}
     void writeNavigationPath(const QCString &) override {}
     void writeLogo() override {}
     void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void writePageOutline() override {}
     void startContents() override {}
     void endContents() override {}
     void writeNonBreakableSpace(int) override;

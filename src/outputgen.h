@@ -168,7 +168,7 @@ class OutputGenIntf
                             const QCString &path,const QCString &name) = 0;
     virtual void startTypewriter() = 0;
     virtual void endTypewriter() = 0;
-    virtual void startGroupHeader(int extraLevels=0) = 0;
+    virtual void startGroupHeader(const QCString &id,int extraLevels=0) = 0;
     virtual void endGroupHeader(int extraLevels=0) = 0;
     virtual void startItemListItem() = 0;
     virtual void endItemListItem() = 0;
@@ -194,7 +194,7 @@ class OutputGenIntf
     virtual void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId) = 0;
     virtual void startCompoundTemplateParams() = 0;
     virtual void endCompoundTemplateParams() = 0;
-    virtual void startMemberGroupHeader(bool b) = 0;
+    virtual void startMemberGroupHeader(const QCString &id,bool b) = 0;
     virtual void endMemberGroupHeader() = 0;
     virtual void startMemberGroupDocs() = 0;
     virtual void endMemberGroupDocs() = 0;
@@ -247,11 +247,12 @@ class OutputGenIntf
     virtual void endPageRef(const QCString &c,const QCString &a) = 0;
     virtual void startQuickIndices() = 0;
     virtual void endQuickIndices() = 0;
-    virtual void writeSplitBar(const QCString &name) = 0;
+    virtual void writeSplitBar(const QCString &name,bool showListOfAllMembers) = 0;
     virtual void writeNavigationPath(const QCString &s) = 0;
     virtual void writeLogo() = 0;
     virtual void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs) = 0;
     virtual void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first) = 0;
+    virtual void writePageOutline() = 0;
     virtual void startContents() = 0;
     virtual void endContents() = 0;
     virtual void startPageDoc(const QCString &pageTitle) = 0;

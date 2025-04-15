@@ -23,7 +23,7 @@
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
 
-function initNavTree(toroot,relpath) {
+function initNavTree(toroot,relpath,showListOfAllMembers=false) {
   let navTreeSubIndices = [];
   const ARROW_DOWN = '<span class="arrowhead opened"></span>';
   const ARROW_RIGHT = '<span class="arrowhead closed"></span>';
@@ -363,15 +363,36 @@ function initNavTree(toroot,relpath) {
 
   const gotoNode = function(o,subIndex,root,hash,relpath) {
     const nti = navTreeSubIndices[subIndex][root+hash];
-    o.breadcrumbs = $.extend(true, [], nti ? nti : navTreeSubIndices[subIndex][root]);
-    if (!o.breadcrumbs && root!=NAVTREE[0][1]) { // fallback: show index
-      navTo(o,NAVTREE[0][1],"",relpath);
-      $('.item').removeClass('selected');
-      $('.item').removeAttr('id');
+    if (nti==undefined && hash.length>0) { // try root page without hash as fallback
+      gotoUrl(o,root,'',relpath);
+    } else {
+      o.breadcrumbs = $.extend(true, [], nti);
+      if (!o.breadcrumbs && root!=NAVTREE[0][1]) { // fallback: show index
+        navTo(o,NAVTREE[0][1],"",relpath);
+        $('.item').removeClass('selected');
+        $('.item').removeAttr('id');
+      }
+      if (o.breadcrumbs) {
+        o.breadcrumbs.unshift(0); // add 0 for root node
+        showNode(o, o.node, 0, hash);
+      }
     }
-    if (o.breadcrumbs) {
-      o.breadcrumbs.unshift(0); // add 0 for root node
-      showNode(o, o.node, 0, hash);
+  }
+
+  const gotoUrl = function(o,root,hash,relpath) {
+    const url=root+hash;
+    let i=-1;
+    while (NAVTREEINDEX[i+1]<=url) i++;
+    if (i==-1) { i=0; root=NAVTREE[0][1]; } // fallback: show index
+    if (navTreeSubIndices[i]) {
+      gotoNode(o,i,root,hash,relpath)
+    } else {
+      getScript(relpath+'navtreeindex'+i,function() {
+        navTreeSubIndices[i] = eval('NAVTREEINDEX'+i);
+        if (navTreeSubIndices[i]) {
+          gotoNode(o,i,root,hash,relpath);
+        }
+      });
     }
   }
 
@@ -387,20 +408,7 @@ function initNavTree(toroot,relpath) {
       glowEffect(anchor.parent(),1000); // line number
       hash=''; // strip line number anchors
     }
-    const url=root+hash;
-    let i=-1;
-    while (NAVTREEINDEX[i+1]<=url) i++;
-    if (i==-1) { i=0; root=NAVTREE[0][1]; } // fallback: show index
-    if (navTreeSubIndices[i]) {
-      gotoNode(o,i,root,hash,relpath)
-    } else {
-      getScript(relpath+'navtreeindex'+i,function() {
-        navTreeSubIndices[i] = eval('NAVTREEINDEX'+i);
-        if (navTreeSubIndices[i]) {
-          gotoNode(o,i,root,hash,relpath);
-        }
-      });
-    }
+    gotoUrl(o,root,hash,relpath);
   }
 
   const showSyncOff = function(n,relpath) {
@@ -494,10 +502,121 @@ function initNavTree(toroot,relpath) {
     $(window).resize(function() { adjustSyncIconPosition(); });
   }
 
-  $("div.toc a[href]").click(function(e) {
-    e.preventDefault();
-    const aname = $(this).attr("href");
-    gotoAnchor($(aname),aname);
-  });
+  const pagenav = $('#page-nav');
+  pagenav.on('mouseover', () => pagenav.addClass('hovered') );
+  pagenav.on('mouseout',  () => pagenav.removeClass('hovered') );
+
+  function initPageToc() {
+    const toc_contents = $('#page-nav-contents');
+    content='<ul class="page-outline">';
+    const groupSections = [];
+    let currentGroup = null;
+    $('h2.groupheader, h2.memtitle').each(function(){
+      const $element = $(this);
+      if ($element.hasClass('groupheader')) {
+        currentGroup = { groupHeader: $element, memTitles: [] };
+        groupSections.push(currentGroup);
+      } else if ($element.hasClass('memtitle') && currentGroup) {
+        currentGroup.memTitles.push($element);
+      }
+    });
+
+    groupSections.forEach(function(item){
+      const title = item.groupHeader.text().trim();
+      let id = item.groupHeader.attr('id');
+      const table = item.groupHeader.parents('table.memberdecls'); //.filter('tr[class^=memitem] td.memItemLeft a');
+      let rows = $();
+      if (table.length>0) {
+        rows = table.find("tr[class^='memitem:'] td.memItemRight a, tr[class^='memitem:'] td.memItemLeft.anon a, tr[class=groupHeader] td div.groupHeader");
+      }
+      function hasSubItems() {
+        return item.memTitles.length>0 || rows.toArray().some(function(el) { return $(el).is(':visible'); });
+      }
+      content+='<li><div class="item"><span class="arrow" style="padding-left:0px;">';
+      if (hasSubItems()) {
+        content+='<span class="arrowhead opened"></span>';
+      }
+      content+='</span><a href="#'+id+'">'+title+'</a></div>';
+      if (hasSubItems()) {
+        let indent=16;
+        content+='<ul class="nested">';
+        let last_id = undefined;
+        let inMemberGroup = false;
+        // declaration sections have rows for items
+        rows.each(function(){
+          let td = $(this).parent();
+          let tr = $(td).parent();
+          const is_anon_enum = td.contents().first().text().trim()=='{';
+          if (tr.hasClass('template')) {
+            tr = tr.prev();
+          }
+          id = $(tr).attr('id');
+          text = is_anon_enum ? 'anonymous enum' : $(this).text();
+          let isMemberGroupHeader = $(tr).hasClass('groupHeader');
+          if ($(tr).is(":visible") && last_id!=id) {
+            if (isMemberGroupHeader && inMemberGroup) {
+              indent-=16;
+              content+='</ul></li>';
+              inMemberGroup=false;
+            }
+            if (isMemberGroupHeader) {
+              content+='<li><div class="item"><span class="arrow" style="padding-left:'+parseInt(indent)+'px;">'+
+                       '<span class="arrowhead opened"></span></span><a href="#'+id+'">'+text+'</a></div>';
+              content+='<ul class="nested">';
+              inMemberGroup=true;
+              indent+=16;
+            } else {
+              content+='<li><div class="item"><span class="arrow" style="padding-left:'+parseInt(indent)+'px;">'+
+                       '</span><a href="#'+id+'">'+text+'</a></div></li>';
+            }
+            last_id=id;
+          }
+        });
+        if (inMemberGroup) {
+          content+='</ul></li>';
+        }
+        // detailed documentation has h2.memtitle sections for items
+        item.memTitles.forEach(function(data) {
+          const text = $(data).contents().not($(data).children().first()).text();
+          const name = (text.match(/^[^\w:]*([\w.:]+)/u) || [])[1];
+          id = $(data).find('span.permalink a').attr('href')
+          if (name!=undefined) {
+            content+='<li><div class="item"><span class="arrow" style="padding-left:16px;"></span><a href="'+
+                     id+'">'+name+'</a></div></li>';
+          }
+        });
+        content+='</ul>';
+      }
+      content+='</li>';
+    });
+    if (showListOfAllMembers) {
+      const url = pathName().replace(/(\.[^/.]+)$/, '-members$1')
+      content+='<li><div class="item"><span class="arrow" style="padding-left:0px;"></span><a href="'+url+
+                '" class="noscroll">'+LISTOFALLMEMBERS+'</a></div></li>';
+    }
+    content+='<ul>';
+    toc_contents.html(content);
+
+    $('.page-outline .arrow').on('click', function() {
+        var nestedList = $(this).parent().siblings('.nested');
+        var arrowhead = $(this).find('.arrowhead');
+        if (nestedList.is(':visible')) {
+            nestedList.slideUp('fast');
+            arrowhead.removeClass('opened');
+        } else {
+            nestedList.slideDown('fast');
+            arrowhead.addClass('opened');
+        }
+    });
+
+    $(".page-outline a[href]:not(.noscroll)").click(function(e) {
+      e.preventDefault();
+      const aname = $(this).attr("href");
+      gotoAnchor($(aname),aname);
+    });
+
+  }
+  $(document).ready(initPageToc);
+
 }
 /* @license-end */

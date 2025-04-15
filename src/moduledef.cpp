@@ -67,6 +67,7 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
       else return hasDocumentation(); }
     QCString qualifiedName() const override;
     void writeSummaryLinks(OutputList &ol) const override;
+    void writePageNavigation(OutputList &ol) const override;
 
     // --- ModuleDef
     Type moduleType() const override { return m_type; }
@@ -339,6 +340,7 @@ void ModuleDefImpl::mergeSymbolsFrom(ModuleDefImpl *other)
 void ModuleDefImpl::writeDocumentation(OutputList &ol)
 {
   if (isReference()) return;
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
   AUTO_TRACE("%s file=%s",name(),getDefFileName());
   SrcLangExt lang = getLanguage();
@@ -355,7 +357,7 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
 
   // ---- title part
   ol.startHeaderSection();
-  writeSummaryLinks(ol);
+  if (!generateTreeView) writeSummaryLinks(ol);
   ol.startTitleHead(getOutputFileBase());
 
   ol.pushGeneratorState();
@@ -482,7 +484,17 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
   }
 
   //---------------------------------------- end flexible part -------------------------------
-  endFile(ol);
+  if (generateTreeView)
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputType::Html);
+    ol.endContents();
+    ol.writeString("</div><!-- doc-content -->\n");
+    writePageNavigation(ol);
+    ol.writeString("</div><!-- container -->\n");
+    ol.popGeneratorState();
+  }
+  endFile(ol,generateTreeView,true);
 
   ol.popGeneratorState();
 }
@@ -537,7 +549,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
       ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
-    ol.startGroupHeader();
+    ol.startGroupHeader("details");
     ol.parseText(title);
     ol.endGroupHeader();
 
@@ -621,7 +633,7 @@ void ModuleDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,con
 void ModuleDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,name(),this,title);
+  if (ml) ml->writeDocumentation(ol,name(),this,title,ml->listType().toLabel());
 }
 
 void ModuleDefImpl::writeAuthorSection(OutputList &ol)
@@ -830,6 +842,11 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
   ol.popGeneratorState();
 }
 
+void ModuleDefImpl::writePageNavigation(OutputList &ol) const
+{
+  ol.writePageOutline();
+}
+
 void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCString &header,bool localNames) const
 {
   if (isLinkable())
@@ -850,9 +867,11 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
       found=TRUE;
     }
     ol.startMemberDeclaration();
-    ol.startMemberItem(anchor(),OutputGenerator::MemberItemType::Normal);
-    ol.writeString("module ");
     QCString cname = displayName(!localNames);
+    QCString anc = anchor();
+    if (anc.isEmpty()) anc=cname; else anc.prepend(cname+"_");
+    ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
+    ol.writeString("module ");
     ol.insertMemberAlign();
     if (isLinkable())
     {

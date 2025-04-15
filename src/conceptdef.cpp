@@ -428,7 +428,7 @@ QCString ConceptDefImpl::initializer() const
 
 void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
 {
-    ol.startGroupHeader();
+    ol.startGroupHeader("conceptdef");
       ol.parseText(title);
     ol.endGroupHeader();
 
@@ -460,7 +460,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
 
-    ol.startGroupHeader();
+    ol.startGroupHeader("details");
       ol.parseText(title);
     ol.endGroupHeader();
 
@@ -657,9 +657,11 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
       found=TRUE;
     }
     ol.startMemberDeclaration();
-    ol.startMemberItem(anchor(),OutputGenerator::MemberItemType::Normal);
-    ol.writeString("concept ");
     QCString cname = displayName(!localNames);
+    QCString anc=anchor();
+    if (anc.isEmpty()) anc=cname; else anc.prepend(cname+"_");
+    ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
+    ol.writeString("concept ");
     ol.insertMemberAlign();
     if (isLinkable())
     {

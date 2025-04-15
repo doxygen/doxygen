@@ -125,7 +125,7 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endTextLink() override {}
     void startTypewriter() override { m_t << "\\fR"; m_firstCol=FALSE; }
     void endTypewriter() override { m_t << "\\fP"; m_firstCol=FALSE; }
-    void startGroupHeader(int) override;
+    void startGroupHeader(const QCString &,int) override;
     void endGroupHeader(int) override;
     void startMemberSections() override {}
     void endMemberSections() override {}
@@ -154,7 +154,7 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void startCompoundTemplateParams() override;
     void endCompoundTemplateParams() override;
 
-    void startMemberGroupHeader(bool) override;
+    void startMemberGroupHeader(const QCString &,bool) override;
     void endMemberGroupHeader() override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;
@@ -206,11 +206,12 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void endPageRef(const QCString &,const QCString &) override {}
     void startQuickIndices() override {}
     void endQuickIndices() override {}
-    void writeSplitBar(const QCString &) override {}
+    void writeSplitBar(const QCString &,bool) override {}
     void writeNavigationPath(const QCString &) override {}
     void writeLogo() override {}
     void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void writePageOutline() override {}
     void startContents() override {}
     void endContents() override {}
     void writeNonBreakableSpace(int n) override { for (int i=0;i<n;i++) m_t << " "; }

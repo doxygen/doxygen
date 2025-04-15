@@ -1823,6 +1823,10 @@ void DefinitionImpl::writeSummaryLinks(OutputList &) const
 {
 }
 
+void DefinitionImpl::writePageNavigation(OutputList &) const
+{
+}
+
 //---------------------------------------------------------------------------------
 
 DefinitionAliasImpl::DefinitionAliasImpl(Definition *def,const Definition *scope, const Definition *alias)

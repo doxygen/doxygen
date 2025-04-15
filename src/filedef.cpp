@@ -174,6 +174,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void writeMemberPages(OutputList &ol) override;
     void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const override;
     void writeSummaryLinks(OutputList &ol) const override;
+    void writePageNavigation(OutputList &ol) const override;
     void writeTagFile(TextStream &t) override;
     void writeSourceHeader(OutputList &ol) override;
     void writeSourceBody(OutputList &ol,ClangTUParser *clangParser) override;
@@ -480,7 +481,7 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
-    ol.startGroupHeader();
+    ol.startGroupHeader("details");
     ol.parseText(title);
     ol.endGroupHeader();
 
@@ -843,6 +844,11 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
     ol.writeString("  </div>\n");
   }
   ol.popGeneratorState();
+}
+
+void FileDefImpl::writePageNavigation(OutputList &ol) const
+{
+  ol.writePageOutline();
 }
 
 /*! Write the documentation page for this file to the file of output
@@ -1243,7 +1249,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
 void FileDefImpl::writeSourceFooter(OutputList &ol)
 {
   ol.endContents();
-  endFileWithNavPath(ol,this);
+  endFileWithNavPath(ol,this,false);
   ol.enableAll();
 }
 
@@ -1810,7 +1816,7 @@ void FileDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const
 void FileDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,name(),this,title);
+  if (ml) ml->writeDocumentation(ol,name(),this,title,ml->listType().toLabel());
 }
 
 bool FileDefImpl::isLinkableInProject() const

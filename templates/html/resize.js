@@ -26,6 +26,7 @@
 function initResizable(treeview) {
   let sidenav,mainnav,navtree,content,header,footer,barWidth=6;
   const RESIZE_COOKIE_NAME = '$PROJECTID'+'width';
+  const PAGENAV_COOKIE_NAME = '$PROJECTID'+'pagenav';
   const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
 
   function showHideNavBar() {
@@ -52,7 +53,7 @@ function initResizable(treeview) {
     Cookie.writeSetting(RESIZE_COOKIE_NAME,sidenavWidth-barWidth);
   }
 
-  function restoreWidth(navWidth) {
+  function restoreWidth(navWidth,pagenavWidth) {
     const widthStr = parseInt(navWidth)+"px";
     content.css({marginLeft:widthStr});
     if (fullSidebar) {
@@ -62,6 +63,10 @@ function initResizable(treeview) {
       }
     }
     sidenav.css({width:navWidth + "px"});
+    if (pagenav.length!=0) {
+      container.css({gridTemplateColumns:'auto '+parseInt(pagenavWidth)+'px'});
+      pagenav.css({width:parseInt(pagenavWidth)+'px'});
+    }
     showHideNavBar();
   }
 
@@ -87,9 +92,7 @@ function initResizable(treeview) {
       }
       navtree.css({height:navtreeHeight + "px"});
       sidenav.css({height:sideNavHeight + "px"});
-    }
-    else
-    {
+    } else {
       contentHeight = windowHeight - headerHeight - 1;
     }
     content.css({height:contentHeight + "px"});
@@ -107,7 +110,7 @@ function initResizable(treeview) {
       const width = Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH);
       newWidth = (width>$TREEVIEW_WIDTH && width<$(window).width()) ? width : $TREEVIEW_WIDTH;
     }
-    restoreWidth(newWidth);
+    restoreWidth(newWidth,250);
     const sidenavWidth = $(sidenav).outerWidth();
     Cookie.writeSetting(RESIZE_COOKIE_NAME,sidenavWidth-barWidth);
   }
@@ -121,14 +124,41 @@ function initResizable(treeview) {
   }
   if (treeview) {
     navtree = $("#nav-tree");
+    pagenav   = $("#page-nav");
+    container = $("#container");
     $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(); } });
     $(sidenav).resizable({ minWidth: 0 });
+    if (pagenav.length!=0) {
+      pagehandle  = $("#page-nav-resize-handle");
+      pagehandle.on('mousedown',function(e) { 
+         container.addClass('resizing');
+         pagehandle.addClass('dragging');
+         $(document).on('mousemove',function(e) {
+           let pagenavWidth = container[0].offsetWidth-e.clientX+barWidth/2;
+           if (pagenavWidth<barWidth) {
+             pagenavWidth = barWidth;
+           }
+           container.css({gridTemplateColumns:'auto '+parseInt(pagenavWidth)+'px'});
+           pagenav.css({width:parseInt(pagenavWidth)+'px'});
+           Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
+         });
+         $(document).on('mouseup', function(e) {
+           container.removeClass('resizing');
+           pagehandle.removeClass('dragging');
+           $(document).off('mousemove');
+           $(document).off('mouseup');
+         });
+      });
+    } else {
+      container.css({gridTemplateColumns:'auto'});
+    }
   }
   $(window).resize(function() { resizeHeight(treeview); });
   if (treeview)
   {
     const width = Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH);
-    if (width) { restoreWidth(width); } else { resizeWidth(); }
+    const pagenavWidth = Cookie.readSetting(PAGENAV_COOKIE_NAME,250);
+    if (width) { restoreWidth(width,pagenavWidth); } else { resizeWidth(); }
   }
   resizeHeight(treeview);
   const url = location.href;

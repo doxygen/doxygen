@@ -142,7 +142,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endTextLink() override;
     void startTypewriter() override { m_t << "{\\f2 "; }
     void endTypewriter() override { m_t << "}";      }
-    void startGroupHeader(int) override;
+    void startGroupHeader(const QCString &,int) override;
     void endGroupHeader(int) override;
     void startItemListItem() override;
     void endItemListItem() override;
@@ -151,7 +151,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endMemberSections() override {}
     void startHeaderSection() override {}
     void endHeaderSection() override {}
-    void startMemberHeader(const QCString &,int) override { startGroupHeader(0); }
+    void startMemberHeader(const QCString &,int) override { startGroupHeader("",0); }
     void endMemberHeader() override { endGroupHeader(FALSE); }
     void startMemberSubtitle() override;
     void endMemberSubtitle() override;
@@ -216,11 +216,12 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endPageRef(const QCString &,const QCString &) override;
     void startQuickIndices() override {}
     void endQuickIndices() override {}
-    void writeSplitBar(const QCString &) override {}
+    void writeSplitBar(const QCString &,bool) override {}
     void writeNavigationPath(const QCString &) override {}
     void writeLogo() override {}
     void writeQuickLinks(HighlightedItem,const QCString &,bool) override {}
     void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) override {}
+    void writePageOutline() override {}
     void startContents() override {}
     void endContents() override {}
     void writeNonBreakableSpace(int) override;
@@ -248,7 +249,7 @@ class RTFGenerator : public OutputGenerator, public OutputGenIntf
     void endDirDepGraph(DotDirDeps &g) override;
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) override {}
 
-    void startMemberGroupHeader(bool) override;
+    void startMemberGroupHeader(const QCString &,bool) override;
     void endMemberGroupHeader() override;
     void startMemberGroupDocs() override;
     void endMemberGroupDocs() override;

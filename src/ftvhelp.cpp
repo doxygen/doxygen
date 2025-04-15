@@ -834,6 +834,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     }
     t << "\nvar SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
     t << "\nvar SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
+    t << "\nvar LISTOFALLMEMBERS = '" << theTranslator->trListOfAllMembers() << "';";
   }
 
   auto &mgr = ResourceMgr::instance();

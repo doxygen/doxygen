@@ -324,6 +324,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,int indentLevel,
                           const ClassDef *inheritedFrom,const QCString &inheritId) const override;
     void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const override;
+    void writePageNavigation(OutputList &ol) const override;
     void writeSummaryLinks(OutputList &ol) const override;
     void reclassifyMember(MemberDefMutable *md,MemberType t) override;
     void writeInlineDocumentation(OutputList &ol) const override;
@@ -764,6 +765,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { getCdAlias()->writeQuickMemberLinks(ol,md); }
     void writeSummaryLinks(OutputList &ol) const override
     { getCdAlias()->writeSummaryLinks(ol); }
+    void writePageNavigation(OutputList &ol) const override
+    { getCdAlias()->writePageNavigation(ol); }
     void writeInlineDocumentation(OutputList &ol) const override
     { getCdAlias()->writeInlineDocumentation(ol); }
     void writeTagFile(TextStream &ol) const override
@@ -1672,7 +1675,7 @@ void ClassDefImpl::writeDetailedDescription(OutputList &ol, const QCString &/*pa
       ol.popGeneratorState();
     }
 
-    ol.startGroupHeader();
+    ol.startGroupHeader("details");
     ol.parseText(title);
     ol.endGroupHeader();
 
@@ -2307,6 +2310,11 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
   ol.popGeneratorState();
 }
 
+void ClassDefImpl::writePageNavigation(OutputList &ol) const
+{
+  ol.writePageOutline();
+}
+
 void ClassDefImpl::writeTagFile(TextStream &tagFile) const
 {
   if (!isLinkableInProject() || isArtificial()) return;
@@ -2451,7 +2459,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
   ol.disable(OutputType::Html);
   {
     // for LaTeX/RTF/Man
-    ol.startGroupHeader(1);
+    ol.startGroupHeader("",1);
     ol.parseText(s);
     ol.endGroupHeader(1);
   }
@@ -2641,9 +2649,11 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       found=TRUE;
     }
     ol.startMemberDeclaration();
-    ol.startMemberItem(anchor(),OutputGenerator::MemberItemType::Normal);
     QCString ctype = compoundTypeString();
     QCString cname = displayName(!localNames);
+    QCString anc = anchor();
+    if (anc.isEmpty()) anc = cname; else anc.prepend(cname+"_");
+    ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
 
     if (lang!=SrcLangExt::VHDL) // for VHDL we swap the name and the type
     {
@@ -2972,7 +2982,17 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
   }
 
   AUTO_TRACE("name='{}' getOutputFileBase='{}'",name(),getOutputFileBase());
-  startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView);
+  bool hasAllMembersLink=false;
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
+  {
+    if (lde->kind()==LayoutDocEntry::ClassAllMembersLink)
+    {
+      hasAllMembersLink = true;
+      break;
+    }
+  }
+  bool hasAllMembersPage = hasAllMembersLink && !m_allMemberNameInfoLinkedMap.empty() && !Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
+  startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView,QCString(),0,hasAllMembersPage);
   if (!generateTreeView)
   {
     if (getOuterScope()!=Doxygen::globalScope)
@@ -4895,7 +4915,7 @@ void ClassDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,con
 {
   //printf("%s: ClassDefImpl::writeMemberDocumentation()\n",qPrint(name()));
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,displayName(),this,title,FALSE,showInline);
+  if (ml) ml->writeDocumentation(ol,displayName(),this,title,ml->listType().toLabel(),FALSE,showInline);
 }
 
 void ClassDefImpl::writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt) const

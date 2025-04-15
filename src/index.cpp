@@ -383,8 +383,9 @@ static void endQuickIndexItem(OutputList &ol)
 
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def)
 {
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.startHeaderSection();
-  if (def) def->writeSummaryLinks(ol);
+  if (!generateTreeView && def) def->writeSummaryLinks(ol);
   ol.startTitleHead(fileName);
   ol.pushGeneratorState();
   ol.disable(OutputType::Man);
@@ -399,7 +400,7 @@ void endTitle(OutputList &ol,const QCString &fileName,const QCString &name)
 
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
-               const QCString &altSidebarName, int hierarchyLevel)
+               const QCString &altSidebarName, int hierarchyLevel, bool showListOfAllMembers)
 {
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
@@ -415,7 +416,7 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
   {
     ol.endQuickIndices();
   }
-  ol.writeSplitBar(!altSidebarName.isEmpty() ? altSidebarName : name);
+  ol.writeSplitBar(!altSidebarName.isEmpty() ? altSidebarName : name, showListOfAllMembers);
   if (quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(hli,name);
@@ -435,6 +436,7 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
     if (generateTreeView)
     {
       ol.writeString("</div><!-- doc-content -->\n");
+      ol.writeString("</div><!-- container -->\n");
     }
   }
 
@@ -443,7 +445,7 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
   ol.endFile();
 }
 
-void endFileWithNavPath(OutputList &ol,const Definition *d)
+void endFileWithNavPath(OutputList &ol,const DefinitionMutable *d,bool showPageNavigation)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString navPath;
@@ -452,8 +454,10 @@ void endFileWithNavPath(OutputList &ol,const Definition *d)
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString("</div><!-- doc-content -->\n");
+    if (showPageNavigation) d->writePageNavigation(ol);
+    ol.writeString("</div><!-- container -->\n");
     ol.popGeneratorState();
-    navPath = d->navigationPathAsString();
+    navPath = toDefinition(const_cast<DefinitionMutable*>(d))->navigationPathAsString();
   }
   endFile(ol,generateTreeView,TRUE,navPath);
 }
@@ -3197,12 +3201,13 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName);
+    ol.writeSplitBar(fileName,false);
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
       if (!dynamicMenus)
       {
+         ol.writeString("<div id=\"container\">\n");
          ol.writeString("<div id=\"doc-content\">\n");
       }
     }
@@ -3382,12 +3387,13 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName);
+    ol.writeSplitBar(fileName,false);
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
       if (!dynamicMenus)
       {
+         ol.writeString("<div id=\"container\">\n");
          ol.writeString("<div id=\"doc-content\">\n");
       }
     }
@@ -3565,12 +3571,13 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName);
+    ol.writeSplitBar(fileName,false);
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
       if (!dynamicMenus)
       {
+         ol.writeString("<div id=\"container\">\n");
          ol.writeString("<div id=\"doc-content\">\n");
       }
     }
@@ -3741,12 +3748,13 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName);
+    ol.writeSplitBar(fileName,false);
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
       if (!dynamicMenus)
       {
+         ol.writeString("<div id=\"container\">\n");
          ol.writeString("<div id=\"doc-content\">\n");
       }
     }
@@ -4855,7 +4863,7 @@ static void writeIndex(OutputList &ol)
     ol.writeQuickLinks(HighlightedItem::Main,QCString());
   }
   ol.endQuickIndices();
-  ol.writeSplitBar(indexName);
+  ol.writeSplitBar(indexName,false);
   if (quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(HighlightedItem::Main,QCString());
