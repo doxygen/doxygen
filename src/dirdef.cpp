@@ -229,8 +229,8 @@ QCString DirDefImpl::getOutputFileBase() const
 void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   AUTO_TRACE();
-  if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF)) ||
-      !documentation().isEmpty())
+  if ((!briefDescription().stripWhiteSpace().isEmpty() && Config_getBool(REPEAT_BRIEF)) ||
+      !documentation().stripWhiteSpace().isEmpty())
   {
     ol.pushGeneratorState();
       ol.disable(OutputType::Html);
