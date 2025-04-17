@@ -1838,13 +1838,13 @@ void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionTyp
 {
   switch(type.level())
   {
-    case SectionType::Page:             m_t << "\n\n<h1>"; break;
-    case SectionType::Section:          m_t << "\n\n<h2>"; break;
-    case SectionType::Subsection:       m_t << "\n\n<h3>"; break;
-    case SectionType::Subsubsection:    m_t << "\n\n<h4>"; break;
-    case SectionType::Paragraph:        m_t << "\n\n<h5>"; break;
-    case SectionType::Subparagraph:     m_t << "\n\n<h6>"; break;
-    case SectionType::Subsubparagraph:  m_t << "\n\n<h6>"; break;
+    case SectionType::Page:             m_t << "\n\n<h1 class=\"doxsection\">"; break;
+    case SectionType::Section:          m_t << "\n\n<h2 class=\"doxsection\">"; break;
+    case SectionType::Subsection:       m_t << "\n\n<h3 class=\"doxsection\">"; break;
+    case SectionType::Subsubsection:    m_t << "\n\n<h4 class=\"doxsection\">"; break;
+    case SectionType::Paragraph:        m_t << "\n\n<h5 class=\"doxsection\">"; break;
+    case SectionType::Subparagraph:     m_t << "\n\n<h6 class=\"doxsection\">"; break;
+    case SectionType::Subsubparagraph:  m_t << "\n\n<h6 class=\"doxsection\">"; break;
     default: ASSERT(0); break;
   }
   m_t << "<a id=\"" << lab << "\" name=\"" << lab << "\"></a>";
@@ -2045,7 +2045,7 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
     m_t << "<table class=\"memberdecls\">\n";
     m_emptySection=FALSE;
   }
-  m_t << "<tr class=\"memitem:" << anchor;
+  m_t << "<tr class=\"memitem:" << convertToId(anchor);
   if (!inheritId.isEmpty())
   {
     m_t << " inherit " << inheritId;
@@ -2075,7 +2075,7 @@ void HtmlGenerator::startMemberTemplateParams()
 void HtmlGenerator::endMemberTemplateParams(const QCString &anchor,const QCString &inheritId)
 {
   m_t << "</td></tr>\n";
-  m_t << "<tr class=\"memitem:" << anchor;
+  m_t << "<tr class=\"memitem:" << convertToId(anchor);
   if (!inheritId.isEmpty())
   {
     m_t << " inherit " << inheritId;
@@ -2515,7 +2515,7 @@ void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 
 void HtmlGenerator::startMemberGroupHeader(const QCString &id,bool)
 {
-  m_t << "<tr id=\"" << id << "\"class=\"groupHeader\"><td colspan=\"2\"><div class=\"groupHeader\">";
+  m_t << "<tr id=\"" << id << "\" class=\"groupHeader\"><td colspan=\"2\"><div class=\"groupHeader\">";
 }
 
 void HtmlGenerator::endMemberGroupHeader()

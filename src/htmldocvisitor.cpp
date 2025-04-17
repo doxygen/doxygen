@@ -1460,7 +1460,7 @@ void HtmlDocVisitor::operator()(const DocSection &s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<h" << s.level() << ">";
+  m_t << "<h" << s.level() << " class=\"doxsection\">";
   m_t << "<a class=\"anchor\" id=\"" << s.anchor();
   m_t << "\"></a>\n";
   if (s.title())
