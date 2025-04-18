@@ -322,8 +322,7 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
 
 bool DefinitionImpl::hasSections() const
 {
-  //printf("DefinitionImpl::hasSections(%s) #sections=%d\n",qPrint(name()),
-  //    p->sectionRefs.size());
+  //printf("DefinitionImpl::hasSections(%s) #sections=%zu\n",qPrint(name()), p->sectionRefs.size());
   if (p->sectionRefs.empty()) return FALSE;
   for (const SectionInfo *si : p->sectionRefs)
   {
@@ -1445,7 +1444,7 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 
 void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
 {
-  if (p->sectionRefs.empty()) return;
+  if (p->sectionRefs.empty() || Config_getBool(GENERATE_TREEVIEW)) return;
   ol.writeLocalToc(p->sectionRefs,localToc);
 }
 

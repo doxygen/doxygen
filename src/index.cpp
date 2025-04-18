@@ -4918,7 +4918,7 @@ static void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage)
   {
-    if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections())
+    if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections() && !generateTreeView)
     {
       Doxygen::mainPage->writeToc(ol,Doxygen::mainPage->localToc());
     }
@@ -4936,7 +4936,18 @@ static void writeIndex(OutputList &ol)
   ol.writeString("<a href=\"" + fn + "\"></a>\n");
   Doxygen::indexList->addIndexFile(fn);
 
-  endFile(ol);
+  if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections() && generateTreeView)
+  {
+    ol.writeString("</div><!-- doc-content -->\n");
+    ol.endContents();
+    Doxygen::mainPage->writePageNavigation(ol);
+    ol.writeString("</div><!-- container -->\n");
+    endFile(ol,true,true);
+  }
+  else
+  {
+    endFile(ol);
+  }
 
   ol.disable(OutputType::Html);
 

@@ -509,6 +509,24 @@ function initNavTree(toroot,relpath,showListOfAllMembers=false) {
   function initPageToc() {
     const toc_contents = $('#page-nav-contents');
     content='<ul class="page-outline">';
+
+    var entityMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+      '`': '&#x60;',
+      '=': '&#x3D;'
+    };
+    function escapeHtml (string) {
+      return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+        return entityMap[s];
+      });
+    }
+
+    // for ClassDef/GroupDef/ModuleDef/ConceptDef/DirDef
     const groupSections = [];
     let currentGroup = null;
     $('h2.groupheader, h2.memtitle').each(function(){
@@ -520,11 +538,10 @@ function initNavTree(toroot,relpath,showListOfAllMembers=false) {
         currentGroup.memTitles.push($element);
       }
     });
-
     groupSections.forEach(function(item){
       const title = item.groupHeader.text().trim();
       let id = item.groupHeader.attr('id');
-      const table = item.groupHeader.parents('table.memberdecls'); //.filter('tr[class^=memitem] td.memItemLeft a');
+      const table = item.groupHeader.parents('table.memberdecls');
       let rows = $();
       if (table.length>0) {
         rows = table.find("tr[class^='memitem:'] td.memItemRight a, tr[class^='memitem:'] td.memItemLeft.anon a, tr[class=groupHeader] td div.groupHeader");
@@ -561,13 +578,13 @@ function initNavTree(toroot,relpath,showListOfAllMembers=false) {
             }
             if (isMemberGroupHeader) {
               content+='<li><div class="item"><span class="arrow" style="padding-left:'+parseInt(indent)+'px;">'+
-                       '<span class="arrowhead opened"></span></span><a href="#'+id+'">'+text+'</a></div>';
+                       '<span class="arrowhead opened"></span></span><a href="#'+id+'">'+escapeHtml(text)+'</a></div>';
               content+='<ul class="nested">';
               inMemberGroup=true;
               indent+=16;
             } else {
               content+='<li><div class="item"><span class="arrow" style="padding-left:'+parseInt(indent)+'px;">'+
-                       '</span><a href="#'+id+'">'+text+'</a></div></li>';
+                       '</span><a href="#'+id+'">'+escapeHtml(text)+'</a></div></li>';
             }
             last_id=id;
           }
@@ -594,7 +611,38 @@ function initNavTree(toroot,relpath,showListOfAllMembers=false) {
       content+='<li><div class="item"><span class="arrow" style="padding-left:0px;"></span><a href="'+url+
                 '" class="noscroll">'+LISTOFALLMEMBERS+'</a></div></li>';
     }
-    content+='<ul>';
+    content+='</ul>';
+
+    if (groupSections.length==0) {
+      // for PageDef
+      const sectionTree = [], sectionStack = [];
+      $('h1.doxsection, h2.doxsection, h3.doxsection, h4.doxsection, h5.doxsection, h6.doxsection').each(function(){
+          const level = parseInt(this.tagName[1]);
+          const anchor = $(this).find('a.anchor').attr('id');
+          const node = { text: $(this).text(), id: anchor, children: [] };
+          while (sectionStack.length && sectionStack[sectionStack.length - 1].level >= level) sectionStack.pop();
+          (sectionStack.length ? sectionStack[sectionStack.length - 1].children : sectionTree).push(node);
+          sectionStack.push({ ...node, level });
+      });
+      if (sectionTree.length>0)
+      {
+        function render(nodes, level=0) {
+            return $('<ul class="nested">').append(nodes.map(n => {
+                const li = $('<li>');
+                const div = $('<div>').addClass('item');
+                const span = $('<span>').addClass('arrow').attr('style','padding-left:'+parseInt(level*16)+'px;');
+                if (n.children.length > 0) { span.append($('<span>').addClass('arrowhead opened')); }
+                const url = $('<a>').attr('href','#'+n.id);
+                url.append(escapeHtml(n.text))
+                div.append(span).append(url)
+                li.append(div,render(n.children,level+1));
+                return li;
+            }));
+        }
+        content = '<ul class="page-outline">'+render(sectionTree).html()+'</ul>';
+      }
+    }
+
     toc_contents.html(content);
 
     $('.page-outline .arrow').on('click', function() {

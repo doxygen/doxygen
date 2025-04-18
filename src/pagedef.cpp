@@ -65,6 +65,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     void setNestingLevel(int l) override;
     void writePageDocumentation(OutputList &ol) const override;
     void addSectionsToIndex() override;
+    void writePageNavigation(OutputList &ol) const override;
 
   private:
     QCString m_fileName;
@@ -324,9 +325,10 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //2.}
 
+  bool pageWithSections = hasSections();
   ol.startContents();
   if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled() || m_localToc.isDocbookEnabled())
-    && hasSections())
+    && pageWithSections)
   {
     writeToc(ol, m_localToc);
   }
@@ -341,7 +343,20 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   }
   else
   {
-    endFile(ol,FALSE,TRUE);
+    if (generateTreeView && pageWithSections)
+    {
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputType::Html);
+      ol.writeString("</div><!-- doc-content -->\n");
+      writePageNavigation(ol);
+      ol.writeString("</div><!-- container -->\n");
+      ol.popGeneratorState();
+      endFile(ol,true,true);
+    }
+    else
+    {
+      endFile(ol);
+    }
   }
 
   ol.popGeneratorState();
@@ -408,6 +423,11 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
 
     ol.popGeneratorState();
   }
+}
+
+void PageDefImpl::writePageNavigation(OutputList &ol) const
+{
+  ol.writePageOutline();
 }
 
 bool PageDefImpl::visibleInIndex() const
