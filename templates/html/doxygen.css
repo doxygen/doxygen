@@ -370,7 +370,8 @@ div.line {
 	font-size: 13px;
 	min-height: 13px;
 	line-height: 1.2;
-	text-wrap: unrestricted;
+	text-wrap: wrap; 
+	word-break: break-all;
 	white-space: -moz-pre-wrap; /* Moz */
 	white-space: -pre-wrap;     /* Opera 4-6 */
 	white-space: -o-pre-wrap;   /* Opera 7 */
