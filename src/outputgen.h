@@ -247,7 +247,7 @@ class OutputGenIntf
     virtual void endPageRef(const QCString &c,const QCString &a) = 0;
     virtual void startQuickIndices() = 0;
     virtual void endQuickIndices() = 0;
-    virtual void writeSplitBar(const QCString &name,bool showListOfAllMembers) = 0;
+    virtual void writeSplitBar(const QCString &name,const QCString &allMembersFile) = 0;
     virtual void writeNavigationPath(const QCString &s) = 0;
     virtual void writeLogo() = 0;
     virtual void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs) = 0;

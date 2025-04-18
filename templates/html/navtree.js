@@ -23,7 +23,7 @@
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
 
-function initNavTree(toroot,relpath,showListOfAllMembers=false) {
+function initNavTree(toroot,relpath,allMembersFile) {
   let navTreeSubIndices = [];
   const ARROW_DOWN = '<span class="arrowhead opened"></span>';
   const ARROW_RIGHT = '<span class="arrowhead closed"></span>';
@@ -31,14 +31,12 @@ function initNavTree(toroot,relpath,showListOfAllMembers=false) {
   const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
 
   function getScrollBarWidth () {
-    let outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body');
+    let outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll', scrollbarWidth: 'thin'}).appendTo('body');
     let widthWithScroll = $('<div>').css({width: '100%'}).appendTo(outer).outerWidth();
     outer.remove();
     return 100 - widthWithScroll;
   }
   const scrollbarWidth = getScrollBarWidth();
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  const hasFadingScrollbars = !isSafari;
 
   function adjustSyncIconPosition() {
     if (!fullSidebar) {
@@ -96,7 +94,7 @@ function initNavTree(toroot,relpath,showListOfAllMembers=false) {
     const script = document.createElement('script');
     script.id = scriptName;
     script.type = 'text/javascript';
-    script.onload = func;
+    script.onload = function() { func(); adjustSyncIconPosition(); }
     script.src = scriptName+'.js';
     head.appendChild(script);
   }
@@ -485,26 +483,7 @@ function initNavTree(toroot,relpath,showListOfAllMembers=false) {
     }
   });
 
-  const navtree = $('#nav-tree');
-  navtree.on('mouseover', () => {
-    navtree.addClass('hovered');
-    if (hasFadingScrollbars) {
-      adjustSyncIconPosition();
-    }
-  });
-  navtree.on('mouseout',  () => {
-    navtree.removeClass('hovered');
-    if (hasFadingScrollbars) {
-      $("#nav-sync").css({right:'0'});
-    }
-  });
-  if (!hasFadingScrollbars) {
-    $(window).resize(function() { adjustSyncIconPosition(); });
-  }
-
-  const pagenav = $('#page-nav');
-  pagenav.on('mouseover', () => pagenav.addClass('hovered') );
-  pagenav.on('mouseout',  () => pagenav.removeClass('hovered') );
+  $(window).resize(function() { adjustSyncIconPosition(); });
 
   function initPageToc() {
     const toc_contents = $('#page-nav-contents');
@@ -606,9 +585,16 @@ function initNavTree(toroot,relpath,showListOfAllMembers=false) {
       }
       content+='</li>';
     });
-    if (showListOfAllMembers) {
-      const url = pathName().replace(/(\.[^/.]+)$/, '-members$1')
-      content+='<li><div class="item"><span class="arrow" style="padding-left:0px;"></span><a href="'+url+
+    if (allMembersFile.length) {
+      const url = location.href;
+      let srcBaseUrl = '';
+      let dstBaseUrl = '';
+      if (relpath.length) { // CREATE_SUBDIRS=YES -> find target location
+        srcBaseUrl = url.substring(0, url.lastIndexOf('/')) + '/' + relpath;
+        dstBaseUrl = allMembersFile.substr(0, allMembersFile.lastIndexOf('/'))+'/';
+      }
+      const pageName = url.split('/').pop().split('#')[0].replace(/(\.[^/.]+)$/, '-members$1');
+      content+='<li><div class="item"><span class="arrow" style="padding-left:0px;"></span><a href="'+srcBaseUrl+dstBaseUrl+pageName+
                 '" class="noscroll">'+LISTOFALLMEMBERS+'</a></div></li>';
     }
     content+='</ul>';

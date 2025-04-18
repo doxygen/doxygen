@@ -400,7 +400,7 @@ void endTitle(OutputList &ol,const QCString &fileName,const QCString &name)
 
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
-               const QCString &altSidebarName, int hierarchyLevel, bool showListOfAllMembers)
+               const QCString &altSidebarName, int hierarchyLevel, const QCString &allMembersFile)
 {
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
@@ -416,7 +416,7 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
   {
     ol.endQuickIndices();
   }
-  ol.writeSplitBar(!altSidebarName.isEmpty() ? altSidebarName : name, showListOfAllMembers);
+  ol.writeSplitBar(!altSidebarName.isEmpty() ? altSidebarName : name, allMembersFile);
   if (quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(hli,name);
@@ -3201,7 +3201,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName,false);
+    ol.writeSplitBar(fileName,QCString());
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
@@ -3387,7 +3387,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName,false);
+    ol.writeSplitBar(fileName,QCString());
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
@@ -3571,7 +3571,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName,false);
+    ol.writeSplitBar(fileName,QCString());
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
@@ -3748,7 +3748,7 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName,false);
+    ol.writeSplitBar(fileName,QCString());
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
@@ -4863,7 +4863,7 @@ static void writeIndex(OutputList &ol)
     ol.writeQuickLinks(HighlightedItem::Main,QCString());
   }
   ol.endQuickIndices();
-  ol.writeSplitBar(indexName,false);
+  ol.writeSplitBar(indexName,QCString());
   if (quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(HighlightedItem::Main,QCString());
@@ -4936,7 +4936,7 @@ static void writeIndex(OutputList &ol)
   ol.writeString("<a href=\"" + fn + "\"></a>\n");
   Doxygen::indexList->addIndexFile(fn);
 
-  if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections() && generateTreeView)
+  if (Doxygen::mainPage && Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections() && generateTreeView)
   {
     ol.writeString("</div><!-- doc-content -->\n");
     ol.endContents();

@@ -10,6 +10,10 @@ body, table, div, p, dl {
 	line-height: 22px;
 }
 
+#doc-content {
+	scrollbar-width: thin;
+}
+
 /* @group Heading Levels */
 
 .title {

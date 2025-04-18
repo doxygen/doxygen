@@ -351,11 +351,11 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
       writePageNavigation(ol);
       ol.writeString("</div><!-- container -->\n");
       ol.popGeneratorState();
-      endFile(ol,true,true);
+      endFile(ol,true);
     }
     else
     {
-      endFile(ol);
+      endFile(ol,false,true);
     }
   }
 

@@ -432,9 +432,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS) || Config_getBool(FULL_SIDEBAR))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
 				        "  $(function() { init_search(); });\n"
-					"/* @license-end */\n"
 					"</script>";
       }
     }
@@ -443,11 +441,9 @@ static QCString substituteHtmlKeywords(const QCString &file,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
 					"  $(function() {\n"
 					"    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
 					"  });\n"
-					"  /* @license-end */\n"
 					"</script>\n";
       }
 
@@ -1471,18 +1467,14 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   if (searchEngine /*&& !generateTreeView*/)
   {
     m_t << "<script type=\"text/javascript\">\n";
-    m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     m_t << "var searchBox = new SearchBox(\"searchBox\", \""
         << m_relPath<< "search/\",'" << Doxygen::htmlFileExtension << "');\n";
-    m_t << "/* @license-end */\n";
     m_t << "</script>\n";
   }
   if (Config_getBool(HTML_CODE_FOLDING))
   {
     m_t << "<script type=\"text/javascript\">\n";
-    m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     m_t << "$(function() { codefold.init(); });\n";
-    m_t << "/* @license-end */\n";
     m_t << "</script>\n";
   }
   m_sectionCount=0;
@@ -2927,7 +2919,6 @@ static void writeDefaultQuickLinks(TextStream &t,
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>\n";
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>\n";
     t << "<script type=\"text/javascript\">\n";
-    t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     t << "$(function() {\n";
     t << "  initMenu('" << relPath << "',"
       << (searchEngine && !(generateTreeView && fullSidebar)?"true":"false") << ","
@@ -2953,7 +2944,6 @@ static void writeDefaultQuickLinks(TextStream &t,
       }
     }
     t << "});\n";
-    t << "/* @license-end */\n";
     t << "</script>\n";
     t << "<div id=\"main-nav\"></div>\n";
   }
@@ -3006,7 +2996,7 @@ void HtmlGenerator::endQuickIndices()
   }
 }
 
-QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath,bool showListOfAllMembers)
+QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath,const QCString &allMembersFile)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString result;
@@ -3031,12 +3021,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "  </div>\n"
      "</div>\n"
      "<script type=\"text/javascript\">\n"
-     "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-     "$(function(){initNavTree('" + fn +
-     "','" + relpath +
-     "'" + QCString(showListOfAllMembers ? ",true" : "") +
-     "); initResizable(true); });\n"
-     "/* @license-end */\n"
+     "$(function(){initNavTree('" + fn + "','" + relpath + "','" + allMembersFile + "'); initResizable(true); });\n"
      "</script>\n";
      if (Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
      {
@@ -3046,17 +3031,15 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   else
   {
      result += "<script type=\"text/javascript\">\n"
-     "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
      "$(function(){ initResizable(false); });\n"
-     "/* @license-end */\n"
      "</script>\n";
   }
   return result;
 }
 
-void HtmlGenerator::writeSplitBar(const QCString &name,bool showListOfAllMembers)
+void HtmlGenerator::writeSplitBar(const QCString &name,const QCString &allMembersFile)
 {
-  m_t << writeSplitBarAsString(name,m_relPath,showListOfAllMembers);
+  m_t << writeSplitBarAsString(name,m_relPath,allMembersFile);
 }
 
 void HtmlGenerator::writeNavigationPath(const QCString &s)
@@ -3141,10 +3124,8 @@ void HtmlGenerator::writeSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
+    t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
-		t << "/* @license-end */\n";
     t << "</script>\n";
 
     if (!disableIndex && !quickLinksAfterSplitbar)
@@ -3155,7 +3136,7 @@ void HtmlGenerator::writeSearchPage()
     {
       t << "</div><!-- top -->\n";
     }
-    t << writeSplitBarAsString("search.php",QCString(),false);
+    t << writeSplitBarAsString("search.php",QCString(),QCString());
     if (quickLinksAfterSplitbar)
     {
       writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
@@ -3208,10 +3189,8 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
+    t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
-		t << "/* @license-end */\n";
     t << "</script>\n";
 
     if (!disableIndex && !quickLinksAfterSplitbar)
@@ -3222,7 +3201,7 @@ void HtmlGenerator::writeExternalSearchPage()
     {
       t << "</div><!-- top -->\n";
     }
-    t << writeSplitBarAsString("search.php",QCString(),false);
+    t << writeSplitBarAsString("search.php",QCString(),QCString());
     if (quickLinksAfterSplitbar)
     {
       writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
@@ -3558,8 +3537,10 @@ void HtmlGenerator::writePageOutline()
 {
   m_t << "<div id=\"page-nav\" class=\"page-nav-panel\">\n";
   m_t << "<div id=\"page-nav-resize-handle\"></div>\n";
+  m_t << "<div id=\"page-nav-tree\">\n";
   m_t << "<div id=\"page-nav-contents\">\n";
   m_t << "</div><!-- page-nav-contents -->\n";
+  m_t << "</div><!-- page-nav-tree -->\n";
   m_t << "</div><!-- page-nav -->\n";
 }
 

@@ -228,7 +228,7 @@ void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli=HighlightedItem::None,
                bool additionalIndices=false,const QCString &altSidebarName=QCString(), int hierarchyLevel=0,
-               bool showListOfAllMembers=false);
+               const QCString &allMembersFile=QCString());
 void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
              const QCString &navPath=QCString());
 void endFileWithNavPath(OutputList &ol,const DefinitionMutable *d,bool showPageNavigation=true);

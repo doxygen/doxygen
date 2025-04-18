@@ -2991,8 +2991,12 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
       break;
     }
   }
-  bool hasAllMembersPage = hasAllMembersLink && !m_allMemberNameInfoLinkedMap.empty() && !Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
-  startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView,QCString(),0,hasAllMembersPage);
+  QCString memListFile;
+  if (hasAllMembersLink && !m_allMemberNameInfoLinkedMap.empty() && !Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+  {
+    memListFile = getMemberListFileName();
+  }
+  startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView,QCString(),0,memListFile);
   if (!generateTreeView)
   {
     if (getOuterScope()!=Doxygen::globalScope)

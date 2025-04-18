@@ -261,7 +261,7 @@ class DocbookGenerator : public OutputGenerator, public OutputGenIntf
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) override {DB_GEN_NEW}
     void startQuickIndices() override {DB_GEN_EMPTY}
     void endQuickIndices() override {DB_GEN_EMPTY}
-    void writeSplitBar(const QCString &,bool) override {DB_GEN_EMPTY}
+    void writeSplitBar(const QCString &,const QCString &) override {DB_GEN_EMPTY}
     void writeNavigationPath(const QCString &) override {DB_GEN_NEW}
     void writeLogo() override {DB_GEN_NEW}
     void writeQuickLinks(HighlightedItem,const QCString &,bool) override {DB_GEN_EMPTY}

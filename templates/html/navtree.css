@@ -136,14 +136,9 @@
 #nav-tree {
   background-color: var(--nav-background-color);
   -webkit-overflow-scrolling : touch; /* iOS 5+ */
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.3s ease;
+  scrollbar-width: thin;
   border-right: 1px solid var(--nav-border-color);
   padding-left: 5px;
-}
-
-#nav-tree.hovered {
-  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
 }
 
 #nav-sync {
@@ -251,15 +246,11 @@ div.nav-sync-icon:hover span.sync-icon-right {
 	width: 250px;
 	box-sizing: content-box;
         position: relative;
-        overflow: auto;
-        -webkit-overflow-scrolling : touch; /* iOS 5+ */
-        scrollbar-color: transparent transparent;
-        transition: scrollbar-color 0.3s ease;
 	border-left: 1px solid var(--nav-border-color);
 }
 
-#page-nav.hovered {
-  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
+#page-nav-tree {
+	display: inline-block;
 }
 
 #page-nav-resize-handle {
@@ -294,11 +285,17 @@ div.nav-sync-icon:hover span.sync-icon-right {
 }
 
 #page-nav-contents {
+  padding: 0;
+  margin: 0;
   display: block;
   top: 0;
   left: 0;
+  height: 100%;
+  width: 100%;
   position: absolute;
-  padding: 0 0 0 6px;
+  overflow: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling : touch; /* iOS 5+ */
 }
 
 ul.page-outline,
@@ -309,7 +306,7 @@ ul.page-outline ul {
 }
 
 ul.page-outline {
-  margin: 4px 0;
+  margin: 0 4px 4px 6px;
 }
 
 ul.page-outline div.item {

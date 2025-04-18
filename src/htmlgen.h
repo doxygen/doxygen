@@ -111,7 +111,7 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     static void writeSearchPage();
     static void writeExternalSearchPage();
     static QCString writeLogoAsString(const QCString &path);
-    static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath,bool showListOfAllMembers);
+    static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath,const QCString &allMembersFile);
     static QCString getMathJaxMacros();
     static QCString getNavTreeCss();
     void clearBuffer();
@@ -248,7 +248,7 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     void endPageRef(const QCString &,const QCString &) override {}
     void startQuickIndices() override {}
     void endQuickIndices() override;
-    void writeSplitBar(const QCString &name,bool showListOfAllMembers) override;
+    void writeSplitBar(const QCString &name,const QCString &allMembersFile) override;
     void writeNavigationPath(const QCString &s) override;
     void writeLogo() override;
     void writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs) override;

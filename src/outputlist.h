@@ -604,8 +604,8 @@ class OutputList
     { foreach(&OutputGenIntf::startQuickIndices); }
     void endQuickIndices()
     { foreach(&OutputGenIntf::endQuickIndices); }
-    void writeSplitBar(const QCString &name,bool showListOfAllMembers)
-    { foreach(&OutputGenIntf::writeSplitBar,name,showListOfAllMembers); }
+    void writeSplitBar(const QCString &name,const QCString &allMembersFile)
+    { foreach(&OutputGenIntf::writeSplitBar,name,allMembersFile); }
     void writeNavigationPath(const QCString &s)
     { foreach(&OutputGenIntf::writeNavigationPath,s); }
     void writeLogo()

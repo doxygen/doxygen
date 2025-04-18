@@ -966,7 +966,10 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
       if (fd)
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(fd->anchor(),OutputGenerator::MemberItemType::Normal);
+        QCString fname = fd->displayName();
+        QCString anc = fd->anchor();
+        if (anc.isEmpty()) anc=fname; else anc.prepend(fname+"_");
+        ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         QCString path=fd->getPath();
@@ -976,7 +979,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
         }
         if (fd->isLinkable())
         {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->displayName());
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fname);
         }
         else
         {
