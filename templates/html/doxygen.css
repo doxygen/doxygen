@@ -1597,7 +1597,7 @@ dl.invariant dt, dl.pre dt, dl.post dt {
 #projectnumber
 {
 	font-size: 50%;
-	font-family: 50% var(--font-family-title);
+	font-family: var(--font-family-title);
 	margin: 0px;
 	padding: 0px;
 }
