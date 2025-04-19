@@ -229,7 +229,7 @@ static bool startOfRequiresExpression(const QCString &req);
 static QCString extractBeginRawStringDelimiter(const char *str);
 static QCString extractEndRawStringDelimiter(const char *str);
 
-// forward declarations for statefull functions
+// forward declarations for stateful functions
 static void initParser(yyscan_t yyscanner);
 static void initEntry(yyscan_t yyscanner);
 static void lineCount(yyscan_t yyscanner);

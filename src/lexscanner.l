@@ -92,7 +92,7 @@ struct lexscannerYY_state
 [[maybe_unused]] static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 
-// forward declarations for statefull functions
+// forward declarations for stateful functions
 static void handleCCode(yyscan_t yyscanner);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
