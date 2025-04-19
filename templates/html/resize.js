@@ -65,7 +65,7 @@ function initResizable(treeview) {
     sidenav.css({width:navWidth + "px"});
     if (pagenav.length!=0) {
       container.css({gridTemplateColumns:'auto '+parseInt(pagenavWidth)+'px'});
-      pagenav.css({width:parseInt(pagenavWidth)+'px'});
+      pagenav.css({width:parseInt(pagenavWidth-1)+'px'});
     }
     showHideNavBar();
   }
@@ -139,7 +139,7 @@ function initResizable(treeview) {
              pagenavWidth = barWidth;
            }
            container.css({gridTemplateColumns:'auto '+parseInt(pagenavWidth)+'px'});
-           pagenav.css({width:parseInt(pagenavWidth)+'px'});
+           pagenav.css({width:parseInt(pagenavWidth-1)+'px'});
            Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
          });
          $(document).on('mouseup', function(e) {

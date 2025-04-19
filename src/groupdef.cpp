@@ -1185,7 +1185,8 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
             FALSE /* additionalIndices*/, QCString() /*altSidebarName*/, hierarchyLevel);
 
   ol.startHeaderSection();
-  if (!generateTreeView) writeSummaryLinks(ol);
+  bool writeOutlinePanel = generateTreeView && Config_getBool(PAGE_OUTLINE_PANEL);
+  if (!writeOutlinePanel) writeSummaryLinks(ol);
   ol.startTitleHead(getOutputFileBase());
   ol.pushGeneratorState();
   ol.disable(OutputType::Man);
@@ -1346,7 +1347,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
       }
     }
   }
-  if (generateTreeView)
+  if (generateTreeView && Config_getBool(PAGE_OUTLINE_PANEL))
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
@@ -1356,7 +1357,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
     ol.writeString("</div><!-- container -->\n");
     ol.popGeneratorState();
   }
-  endFile(ol,generateTreeView,true);
+  endFile(ol,generateTreeView && Config_getBool(PAGE_OUTLINE_PANEL),true);
 
   ol.popGeneratorState();
 

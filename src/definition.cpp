@@ -1444,7 +1444,9 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 
 void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
 {
-  if (p->sectionRefs.empty() || Config_getBool(GENERATE_TREEVIEW)) return;
+  // first check if we have anything to show or if the outline is already shown on the outline panel
+  if (p->sectionRefs.empty() || (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(PAGE_OUTLINE_PANEL))) return;
+  // generate the embedded toc
   ol.writeLocalToc(p->sectionRefs,localToc);
 }
 

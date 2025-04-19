@@ -383,9 +383,9 @@ static void endQuickIndexItem(OutputList &ol)
 
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def)
 {
-  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateOutlinePanel = Config_getBool(GENERATE_TREEVIEW) && Config_getBool(PAGE_OUTLINE_PANEL);
   ol.startHeaderSection();
-  if (!generateTreeView && def) def->writeSummaryLinks(ol);
+  if (!generateOutlinePanel && def) def->writeSummaryLinks(ol);
   ol.startTitleHead(fileName);
   ol.pushGeneratorState();
   ol.disable(OutputType::Man);
@@ -447,19 +447,20 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
 
 void endFileWithNavPath(OutputList &ol,const DefinitionMutable *d,bool showPageNavigation)
 {
-  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeview = Config_getBool(GENERATE_TREEVIEW);
+  bool generateOutlinePanel = Config_getBool(PAGE_OUTLINE_PANEL);
   QCString navPath;
-  if (generateTreeView)
+  if (generateTreeview)
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString("</div><!-- doc-content -->\n");
-    if (showPageNavigation) d->writePageNavigation(ol);
+    if (generateOutlinePanel && showPageNavigation) d->writePageNavigation(ol);
     ol.writeString("</div><!-- container -->\n");
     ol.popGeneratorState();
     navPath = toDefinition(const_cast<DefinitionMutable*>(d))->navigationPathAsString();
   }
-  endFile(ol,generateTreeView,TRUE,navPath);
+  endFile(ol,generateTreeview,TRUE,navPath);
 }
 
 //----------------------------------------------------------------------
@@ -4936,7 +4937,12 @@ static void writeIndex(OutputList &ol)
   ol.writeString("<a href=\"" + fn + "\"></a>\n");
   Doxygen::indexList->addIndexFile(fn);
 
-  if (Doxygen::mainPage && Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections() && generateTreeView)
+  if (Doxygen::mainPage &&
+      generateTreeView &&
+      Config_getBool(PAGE_OUTLINE_PANEL) &&
+      Doxygen::mainPage->localToc().isHtmlEnabled() &&
+      Doxygen::mainPage->hasSections()
+     )
   {
     ol.writeString("</div><!-- doc-content -->\n");
     ol.endContents();

@@ -357,7 +357,8 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
 
   // ---- title part
   ol.startHeaderSection();
-  if (!generateTreeView) writeSummaryLinks(ol);
+  bool writeOutlinePanel = generateTreeView && Config_getBool(PAGE_OUTLINE_PANEL);
+  if (!writeOutlinePanel) writeSummaryLinks(ol);
   ol.startTitleHead(getOutputFileBase());
 
   ol.pushGeneratorState();

@@ -343,7 +343,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   }
   else
   {
-    if (generateTreeView && pageWithSections)
+    if (generateTreeView && Config_getBool(PAGE_OUTLINE_PANEL) && pageWithSections)
     {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputType::Html);
