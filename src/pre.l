@@ -2259,6 +2259,7 @@ static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const QCSt
     }
     else
     {
+      addTerminalCharIfMissing(fs->fileBuf,'\n');
       fs->oldFileBuf    = state->inputBuf;
       fs->oldFileBufPos = state->inputBufPos;
     }
