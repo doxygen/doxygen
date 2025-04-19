@@ -24,9 +24,9 @@
  */
 
 function initResizable(treeview) {
-  let sidenav,mainnav,navtree,content,header,footer,barWidth=6;
-  const RESIZE_COOKIE_NAME = '$PROJECTID'+'width';
-  const PAGENAV_COOKIE_NAME = '$PROJECTID'+'pagenav';
+  let sidenav,mainnav,pagenav,container,navtree,content,header,footer,barWidth=6;
+  const RESIZE_COOKIE_NAME = ''+'width';
+  const PAGENAV_COOKIE_NAME = ''+'pagenav';
   const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
 
   function showHideNavBar() {
@@ -40,21 +40,29 @@ function initResizable(treeview) {
     }
   }
 
-  function resizeWidth() {
-    const sidenavWidth = $(sidenav).outerWidth();
-    const widthStr = parseInt(sidenavWidth-barWidth)+"px";
-    content.css({marginLeft:widthStr});
-    if (fullSidebar) {
-      footer.css({marginLeft:widthStr});
-      if (mainnav) {
-        mainnav.css({marginLeft:widthStr});
+  function constrainPanelWidths(leftPanelWidth,rightPanelWidth) {
+    const contentWidth = container.width()-leftPanelWidth-rightPanelWidth;
+    const minContentWidth = 250;
+    const minPanelWidth = barWidth;
+    if (contentWidth<minContentWidth) // need to shrink panels
+    {
+      const deficit = minContentWidth - contentWidth;
+      const shrinkRight = Math.min(deficit, rightPanelWidth-minPanelWidth);
+      rightPanelWidth -= shrinkRight;
+      const remainingDeficit = deficit - shrinkRight;
+      const shrinkLeft = Math.min(remainingDeficit, leftPanelWidth-minPanelWidth);
+      leftPanelWidth -= shrinkLeft;
+    } else {
+      rightPanelWidth = pagenav.length ? Math.max(minPanelWidth,rightPanelWidth) : 0;
+      leftPanelWidth = Math.max(minPanelWidth,leftPanelWidth);
       }
-    }
-    Cookie.writeSetting(RESIZE_COOKIE_NAME,sidenavWidth-barWidth);
+    return { leftPanelWidth, rightPanelWidth }
   }
 
-  function restoreWidth(navWidth,pagenavWidth) {
-    const widthStr = parseInt(navWidth)+"px";
+  function updateWidths(sidenavWidth,pagenavWidth)
+  {
+    const widths = constrainPanelWidths(sidenavWidth,pagenavWidth);
+    const widthStr = parseInt(widths.leftPanelWidth)+"px";
     content.css({marginLeft:widthStr});
     if (fullSidebar) {
       footer.css({marginLeft:widthStr});
@@ -62,11 +70,26 @@ function initResizable(treeview) {
         mainnav.css({marginLeft:widthStr});
       }
     }
-    sidenav.css({width:navWidth + "px"});
-    if (pagenav.length!=0) {
-      container.css({gridTemplateColumns:'auto '+parseInt(pagenavWidth)+'px'});
-      pagenav.css({width:parseInt(pagenavWidth-1)+'px'});
+    sidenav.css({width:widthStr});
+    if (pagenav.length) {
+      container.css({gridTemplateColumns:'auto '+parseInt(widths.rightPanelWidth)+'px'});
+      pagenav.css({width:parseInt(widths.rightPanelWidth-1)+'px'});
     }
+    return widths;
+  }
+
+  function resizeWidth() {
+    const sidenavWidth = $(sidenav).outerWidth()-barWidth;
+    const pagenavWidth = pagenav.length ? $(pagenav).outerWidth() : 0;
+    const widths = updateWidths(sidenavWidth,pagenavWidth);
+    Cookie.writeSetting(RESIZE_COOKIE_NAME,widths.leftPanelWidth-barWidth);
+    if (pagenav.length) {
+      Cookie.writeSetting(PAGENAV_COOKIE_NAME,widths.rightPanelWidth);
+    }
+  }
+
+  function restoreWidth(sidenavWidth,pagenavWidth) {
+    updateWidths(sidenavWidth,pagenavWidth);
     showHideNavBar();
   }
 
@@ -96,23 +119,11 @@ function initResizable(treeview) {
       contentHeight = windowHeight - headerHeight - 1;
     }
     content.css({height:contentHeight + "px"});
+    resizeWidth();
     showHideNavBar();
     if (location.hash.slice(1)) {
       (document.getElementById(location.hash.slice(1))||document.body).scrollIntoView();
     }
-  }
-
-  function collapseExpand() {
-    let newWidth;
-    if (sidenav.width()>0) {
-      newWidth=0;
-    } else {
-      const width = Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH);
-      newWidth = (width>$TREEVIEW_WIDTH && width<$(window).width()) ? width : $TREEVIEW_WIDTH;
-    }
-    restoreWidth(newWidth,250);
-    const sidenavWidth = $(sidenav).outerWidth();
-    Cookie.writeSetting(RESIZE_COOKIE_NAME,sidenavWidth-barWidth);
   }
 
   header  = $("#top");
@@ -128,18 +139,18 @@ function initResizable(treeview) {
     container = $("#container");
     $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(); } });
     $(sidenav).resizable({ minWidth: 0 });
-    if (pagenav.length!=0) {
+    if (pagenav.length) {
       pagehandle  = $("#page-nav-resize-handle");
       pagehandle.on('mousedown',function(e) { 
          container.addClass('resizing');
          pagehandle.addClass('dragging');
          $(document).on('mousemove',function(e) {
            let pagenavWidth = container[0].offsetWidth-e.clientX+barWidth/2;
-           if (pagenavWidth<barWidth) {
-             pagenavWidth = barWidth;
-           }
-           container.css({gridTemplateColumns:'auto '+parseInt(pagenavWidth)+'px'});
-           pagenav.css({width:parseInt(pagenavWidth-1)+'px'});
+           const sidenavWidth = sidenav.width();
+           const widths = constrainPanelWidths(sidenavWidth,pagenavWidth);
+           container.css({gridTemplateColumns:'auto '+parseInt(widths.rightPanelWidth)+'px'});
+           pagenav.css({width:parseInt(widths.rightPanelWidth-1)+'px'});
+           content.css({marginLeft:parseInt(widths.leftPanelWidth)+'px'});
            Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
          });
          $(document).on('mouseup', function(e) {
@@ -156,9 +167,9 @@ function initResizable(treeview) {
   $(window).resize(function() { resizeHeight(treeview); });
   if (treeview)
   {
-    const width = Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH);
-    const pagenavWidth = Cookie.readSetting(PAGENAV_COOKIE_NAME,250);
-    if (width) { restoreWidth(width,pagenavWidth); } else { resizeWidth(); }
+    const width = parseInt(Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH));
+    const pagenavWidth = parseInt(Cookie.readSetting(PAGENAV_COOKIE_NAME,250));
+    if (width) { restoreWidth(width+barWidth,pagenavWidth); } else { resizeWidth(); }
   }
   resizeHeight(treeview);
   const url = location.href;
@@ -168,7 +179,6 @@ function initResizable(treeview) {
   if (treeview)
   {
     $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
-    $(".ui-resizable-handle").dblclick(collapseExpand);
   }
   $(window).on('load',function() { resizeHeight(treeview); });
 }
