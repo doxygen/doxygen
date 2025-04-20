@@ -10,6 +10,11 @@ body, table, div, p, dl {
 	line-height: 22px;
 }
 
+body.resizing {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
 #doc-content {
 	scrollbar-width: thin;
 }

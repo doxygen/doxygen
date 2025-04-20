@@ -142,7 +142,7 @@ function initResizable(treeview) {
     if (pagenav.length) {
       pagehandle  = $("#page-nav-resize-handle");
       pagehandle.on('mousedown',function(e) { 
-         container.addClass('resizing');
+         $('body').addClass('resizing');
          pagehandle.addClass('dragging');
          $(document).on('mousemove',function(e) {
            let pagenavWidth = container[0].offsetWidth-e.clientX+barWidth/2;
@@ -154,7 +154,7 @@ function initResizable(treeview) {
            Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
          });
          $(document).on('mouseup', function(e) {
-           container.removeClass('resizing');
+           $('body').removeClass('resizing');
            pagehandle.removeClass('dragging');
            $(document).off('mousemove');
            $(document).off('mouseup');

@@ -98,7 +98,7 @@
   transition: opacity 0.5s ease;
   background-color: var(--nav-splitbar-bg-color);
   opacity:0;
-  cursor:ew-resize;
+  cursor:col-resize;
   height:100%;
   right:0;
   top:0;
@@ -257,7 +257,7 @@ div.nav-sync-icon:hover span.sync-icon-right {
   transition: opacity 0.5s ease;
   background-color: var(--nav-splitbar-bg-color);
   opacity:0;
-  cursor:ew-resize;
+  cursor:col-resize;
   height:100%;
   right:0;
   top:0;
@@ -319,6 +319,6 @@ ul.page-outline li {
 }
 
 #container.resizing {
-  cursor: ew-resize;
+  cursor: col-resize;
   user-select: none;
 }
