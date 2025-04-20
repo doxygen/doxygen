@@ -523,7 +523,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       const table = item.groupHeader.parents('table.memberdecls');
       let rows = $();
       if (table.length>0) {
-        rows = table.find("tr[class^='memitem:'] td.memItemRight a, tr[class^='memitem:'] td.memItemLeft.anon a, tr[class=groupHeader] td div.groupHeader");
+        rows = table.find("tr[class^='memitem:'] td.memItemRight, tr[class^='memitem:'] td.memItemLeft.anon, tr[class=groupHeader] td");
       }
       function hasSubItems() {
         return item.memTitles.length>0 || rows.toArray().some(function(el) { return $(el).is(':visible'); });
@@ -540,14 +540,14 @@ function initNavTree(toroot,relpath,allMembersFile) {
         let inMemberGroup = false;
         // declaration sections have rows for items
         rows.each(function(){
-          let td = $(this).parent();
+          let td = $(this);
           let tr = $(td).parent();
           const is_anon_enum = td.contents().first().text().trim()=='{';
           if (tr.hasClass('template')) {
             tr = tr.prev();
           }
           id = $(tr).attr('id');
-          text = is_anon_enum ? 'anonymous enum' : $(this).text();
+          text = is_anon_enum ? 'anonymous enum' : $(this).find('a,b,div.groupHeader').text();
           let isMemberGroupHeader = $(tr).hasClass('groupHeader');
           if ($(tr).is(":visible") && last_id!=id) {
             if (isMemberGroupHeader && inMemberGroup) {

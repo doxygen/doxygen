@@ -916,7 +916,9 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
     {
       if (!fd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
-      ol.startMemberItem(fd->anchor(),OutputGenerator::MemberItemType::Normal);
+      QCString anc = fd->anchor();
+      if (anc.isEmpty()) anc=fd->displayName(); else anc.prepend(fd->displayName()+"_");
+      ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->displayName());
@@ -960,9 +962,9 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
       {
         if (!gd->hasDocumentation()) continue;
         ol.startMemberDeclaration();
-        ol.startMemberItem(gd->anchor(),OutputGenerator::MemberItemType::Normal);
-        //ol.docify(theTranslator->trGroup(FALSE,TRUE));
-        //ol.docify(" ");
+        QCString anc = gd->anchor();
+        if (anc.isEmpty()) anc=gd->name(); else anc.prepend(gd->name()+"_");
+        ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.insertMemberAlign();
         ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),QCString(),gd->groupTitle());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
@@ -993,7 +995,9 @@ void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
     {
       if (!dd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
-      ol.startMemberItem(dd->anchor(),OutputGenerator::MemberItemType::Normal);
+      QCString anc = dd->anchor();
+      if (anc.isEmpty()) anc=dd->shortName(); else anc.prepend(dd->shortName()+"_");
+      ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
       ol.parseText(theTranslator->trDir(FALSE,TRUE));
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
