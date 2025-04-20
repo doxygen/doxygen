@@ -574,7 +574,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
         // detailed documentation has h2.memtitle sections for items
         item.memTitles.forEach(function(data) {
           const text = $(data).contents().not($(data).children().first()).text();
-          const name = (text.match(/^[^\w:]*([\w.:]+)/u) || [])[1];
+          const name = text.replace(/\(\)(\s*\[\d+\/\d+\])?$/, '') // func() [2/8] -> func
           id = $(data).find('span.permalink a').attr('href')
           if (name!=undefined) {
             content+='<li><div class="item"><span class="arrow" style="padding-left:16px;"></span><a href="'+
