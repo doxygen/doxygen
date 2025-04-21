@@ -36,6 +36,7 @@ option(enable_coverage "Enable coverage reporting for gcc/clang [development]" O
 option(enable_tracing  "Enable tracing option in release builds [development]" OFF)
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
+include(CheckCXXCompilerFlag)
 
 set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
 set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
@@ -116,11 +117,28 @@ if (CMAKE_SYSTEM MATCHES "Darwin")
     set(EXTRA_LIBS ${CORESERVICES_LIB})
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_LIBCPP_ENABLE_ASSERTIONS=1")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_ASSERTIONS")
-endif()
+check_cxx_source_compiles(
+  "
+  #include <algorithm>
+
+  #if !defined(__clang__) || !defined(_LIBCPP_VERSION)
+  # error \"This is not clang with libcxx by llvm\"
+  #endif
+
+  int main() {
+    return 0;
+  }
+  "
+  IS_CLANG_LIBCPP
+  FAIL_REGEX "This is not clang with libcxx by llvm"
+)
+
+add_compile_definitions(
+    # LLVM's clang in combination with libc++
+    $<$<AND:$<CONFIG:Debug>,$<BOOL:${IS_CLANG_LIBCPP}>>:_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG>
+    # LLVM's clang or gcc in combination with libstdc++ (GNU)
+    $<$<AND:$<CONFIG:Debug>,$<NOT:$<BOOL:${IS_CLANG_LIBCPP}>>>:_GLIBCXX_ASSERTIONS>
+)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_OMIT_LOAD_EXTENSION=1")
 
