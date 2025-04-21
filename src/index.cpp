@@ -4802,6 +4802,7 @@ static void writeIndex(OutputList &ol)
   bool vhdlOpt          = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool pageOutlinePanel = Config_getBool(PAGE_OUTLINE_PANEL);
   bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
   QCString projectName  = Config_getString(PROJECT_NAME);
   // save old generator state
@@ -4919,7 +4920,7 @@ static void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage)
   {
-    if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections() && !generateTreeView)
+    if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections() && !(generateTreeView && pageOutlinePanel))
     {
       Doxygen::mainPage->writeToc(ol,Doxygen::mainPage->localToc());
     }
@@ -4939,7 +4940,7 @@ static void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage &&
       generateTreeView &&
-      Config_getBool(PAGE_OUTLINE_PANEL) &&
+      pageOutlinePanel &&
       Doxygen::mainPage->localToc().isHtmlEnabled() &&
       Doxygen::mainPage->hasSections()
      )
