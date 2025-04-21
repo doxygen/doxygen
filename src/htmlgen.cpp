@@ -414,9 +414,9 @@ static QCString substituteHtmlKeywords(const QCString &file,
   {
     treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
                     "<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-                    "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
+                    "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n"
+                    "<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n";
   }
-  treeViewCssJs += "<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n";
 
   if (searchEngine)
   {
@@ -3030,9 +3030,9 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   }
   else
   {
-     result += "<script type=\"text/javascript\">\n"
-     "$(function(){ initResizable(false); });\n"
-     "</script>\n";
+     //result += "<script type=\"text/javascript\">\n"
+     //"$(function(){ initResizable(false); });\n"
+     //"</script>\n";
   }
   return result;
 }
