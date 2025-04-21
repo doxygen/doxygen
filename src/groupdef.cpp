@@ -1360,8 +1360,12 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
     writePageNavigation(ol);
     ol.writeString("</div><!-- container -->\n");
     ol.popGeneratorState();
+    endFile(ol,true,true);
   }
-  endFile(ol,generateTreeView && Config_getBool(PAGE_OUTLINE_PANEL),true);
+  else
+  {
+    endFile(ol);
+  }
 
   ol.popGeneratorState();
 
