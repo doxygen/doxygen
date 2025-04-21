@@ -414,7 +414,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
   }
 
   const showSyncOn = function(n,relpath) {
-    n.html('<div class="nav-sync-icon active" title="'+SYNCONMSG+'"/><span class="sync-icon-left"></span><span class="sync-icon-right"></span></div>');
+    n.html('<div class="nav-sync-icon active" title="'+SYNCONMSG+'"><span class="sync-icon-left"></span><span class="sync-icon-right"></span></div>');
   }
 
   const o = {
@@ -487,7 +487,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
   function initPageToc() {
     const toc_contents = $('#page-nav-contents');
-    content='<ul class="page-outline">';
+    const content=$('<ul>').addClass('page-outline');
 
     var entityMap = {
       '&': '&amp;',
@@ -528,14 +528,17 @@ function initNavTree(toroot,relpath,allMembersFile) {
       function hasSubItems() {
         return item.memTitles.length>0 || rows.toArray().some(function(el) { return $(el).is(':visible'); });
       }
-      content+='<li><div class="item"><span class="arrow" style="padding-left:0px;">';
+      const li = $('<li>');
+      const div = $('<div>').addClass('item');
+      const span = $('<span>').addClass('<arrow>').css({ paddingLeft:'0' });
       if (hasSubItems()) {
-        content+='<span class="arrowhead opened"></span>';
+        span.append($('<span>').addClass('arrowHead opened'));
       }
-      content+='</span><a href="#'+id+'">'+title+'</a></div>';
+      const ahref = $('<a>').attr('href','#'+id).append(title);
+      content.append(li.append(div.append(span).append(ahref)));
+      const ulStack = [];
+      ulStack.push(content);
       if (hasSubItems()) {
-        let indent=16;
-        content+='<ul class="nested">';
         let last_id = undefined;
         let inMemberGroup = false;
         // declaration sections have rows for items
@@ -547,45 +550,47 @@ function initNavTree(toroot,relpath,allMembersFile) {
             tr = tr.prev();
           }
           id = $(tr).attr('id');
-          text = is_anon_enum ? 'anonymous enum' : $(this).find('a,b,div.groupHeader').text();
+          const text = is_anon_enum ? 'anonymous enum' : $(this).find('a:first,b,div.groupHeader').text();
           let isMemberGroupHeader = $(tr).hasClass('groupHeader');
           if ($(tr).is(":visible") && last_id!=id) {
             if (isMemberGroupHeader && inMemberGroup) {
-              indent-=16;
-              content+='</ul></li>';
+              ulStack.pop();
               inMemberGroup=false;
             }
+            const li2 = $('<li>');
+            const div2 = $('<div>').addClass('item');
+            const span2 = $('<span>').addClass('arrow').css({ paddingLeft:parseInt(ulStack.length*16)+'px' });
+            const ahref = $('<a>').attr('href','#'+id).append(escapeHtml(text));
+            li2.append(div2.append(span2).append(ahref));
             if (isMemberGroupHeader) {
-              content+='<li><div class="item"><span class="arrow" style="padding-left:'+parseInt(indent)+'px;">'+
-                       '<span class="arrowhead opened"></span></span><a href="#'+id+'">'+escapeHtml(text)+'</a></div>';
-              content+='<ul class="nested">';
+              span2.append($('<span>').addClass('arrowhead opened'));
+              ulStack[ulStack.length-1].append(li2);
+              const ul2 = $('<ul>');
+              ulStack.push(ul2);
+              li2.append(div2).append(ul2);
               inMemberGroup=true;
-              indent+=16;
             } else {
-              content+='<li><div class="item"><span class="arrow" style="padding-left:'+parseInt(indent)+'px;">'+
-                       '</span><a href="#'+id+'">'+escapeHtml(text)+'</a></div></li>';
+              ulStack[ulStack.length-1].append(li2);
             }
             last_id=id;
           }
         });
-        if (inMemberGroup) {
-          content+='</ul></li>';
-        }
         // detailed documentation has h2.memtitle sections for items
         item.memTitles.forEach(function(data) {
           const text = $(data).contents().not($(data).children().first()).text();
           const name = text.replace(/\(\)(\s*\[\d+\/\d+\])?$/, '') // func() [2/8] -> func
           id = $(data).find('span.permalink a').attr('href')
           if (name!=undefined) {
-            content+='<li><div class="item"><span class="arrow" style="padding-left:16px;"></span><a href="'+
-                     id+'">'+name+'</a></div></li>';
+            const li2 = $('<li>');
+            const div2 = $('<div>').addClass('item');
+            const span2 = $('<span>').addClass('arrow').css({paddingLeft:parseInt(ulStack.length*16)+'px'});
+            const ahref = $('<a>').attr('href',id).append(escapeHtml(name));
+            ulStack[ulStack.length-1].append(li2.append(div2.append(span2).append(ahref)));
           }
         });
-        content+='</ul>';
       }
-      content+='</li>';
     });
-    if (allMembersFile.length) {
+    if (allMembersFile.length) { // add entry linking to all members page
       const url = location.href;
       let srcBaseUrl = '';
       let dstBaseUrl = '';
@@ -594,10 +599,12 @@ function initNavTree(toroot,relpath,allMembersFile) {
         dstBaseUrl = allMembersFile.substr(0, allMembersFile.lastIndexOf('/'))+'/';
       }
       const pageName = url.split('/').pop().split('#')[0].replace(/(\.[^/.]+)$/, '-members$1');
-      content+='<li><div class="item"><span class="arrow" style="padding-left:0px;"></span><a href="'+srcBaseUrl+dstBaseUrl+pageName+
-                '" class="noscroll">'+LISTOFALLMEMBERS+'</a></div></li>';
+      const li = $('<li>');
+      const div = $('<div>').addClass('item');
+      const span = $('<span>').addClass('<arrow>').css({ paddingLeft:'0' });
+      const ahref = $('<a>').attr('href',srcBaseUrl+dstBaseUrl+pageName).addClass('noscroll');
+      content.append(li.append(div.append(span.append(ahref.append(LISTOFALLMEMBERS)))));
     }
-    content+='</ul>';
 
     if (groupSections.length==0) {
       // for PageDef
@@ -613,7 +620,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       if (sectionTree.length>0)
       {
         function render(nodes, level=0) {
-            return $('<ul class="nested">').append(nodes.map(n => {
+            return $('<ul>').addClass('nested').append(nodes.map(n => {
                 const li = $('<li>');
                 const div = $('<div>').addClass('item');
                 const span = $('<span>').addClass('arrow').attr('style','padding-left:'+parseInt(level*16)+'px;');
@@ -625,11 +632,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
                 return li;
             }));
         }
-        content = '<ul class="page-outline">'+render(sectionTree).html()+'</ul>';
+        content.append(render(sectionTree));
       }
     }
 
-    toc_contents.html(content);
+    toc_contents.append(content);
 
     $('.page-outline .arrow').on('click', function() {
         var nestedList = $(this).parent().siblings('.nested');

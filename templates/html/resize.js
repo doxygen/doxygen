@@ -171,7 +171,6 @@ function initResizable(treeview) {
     const pagenavWidth = parseInt(Cookie.readSetting(PAGENAV_COOKIE_NAME,250));
     if (width) { restoreWidth(width+barWidth,pagenavWidth); } else { resizeWidth(); }
   }
-  resizeHeight(treeview);
   const url = location.href;
   const i=url.indexOf("#");
   if (i>=0) window.location.hash=url.substr(i);
@@ -180,6 +179,14 @@ function initResizable(treeview) {
   {
     $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
   }
-  $(window).on('load',function() { resizeHeight(treeview); });
+  $(window).ready(function() { 
+    resizeHeight(treeview); 
+    $(window).resize(function() { resizeHeight(treeview); });
+    content.scroll(function() {
+      if (typeof navtree_trampoline!=='undefined') {
+        navtree_trampoline.updateScroll(content.scrollTop());
+      }
+    });
+  });
 }
 /* @license-end */
