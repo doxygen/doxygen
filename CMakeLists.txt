@@ -22,7 +22,7 @@ option(build_parse     "Parses source code and dumps the dependencies between th
 option(build_search    "Build external search tools (doxysearch and doxyindexer)" OFF)
 option(build_doc       "Build user manual (HTML and PDF)" OFF)
 option(build_doc_chm   "Build user manual (CHM)" OFF)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     option(use_libc++  "Use libc++ as C++ standard library." ON)
 endif()
 option(use_libclang    "Add support for libclang parsing." OFF)
@@ -83,8 +83,17 @@ if (build_wizard)
     endif()
 endif()
 
-# use C++17 standard for compiling
-set(CMAKE_CXX_STANDARD 17)
+# use C++17 standard for compiling (unless very new Clang is present)
+if (
+    (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND
+     CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 17) OR
+    (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+     CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19)
+)
+    set(CMAKE_CXX_STANDARD 20)
+else()
+    set(CMAKE_CXX_STANDARD 17)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
@@ -189,7 +198,11 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 endif()
 
 # needed for JavaCC
-set(JAVA_CC_EXTRA_FLAGS "-DJAVACC_CHAR_TYPE=\"unsigned char\"")
+if (CMAKE_CXX_STANDARD EQUAL 20)
+    set(JAVA_CC_EXTRA_FLAGS "-DJAVACC_CHAR_TYPE=\"char8_t\"")
+else()
+    set(JAVA_CC_EXTRA_FLAGS "-DJAVACC_CHAR_TYPE=\"unsigned char\"")
+endif()
 set(CMAKE_CXX_FLAGS       "${CMAKE_CXX_FLAGS}       ${JAVA_CC_EXTRA_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${JAVA_CC_EXTRA_FLAGS}")
 
