@@ -40,18 +40,26 @@ function initResizable(treeview) {
     }
   }
 
-  function constrainPanelWidths(leftPanelWidth,rightPanelWidth) {
+  function constrainPanelWidths(leftPanelWidth,rightPanelWidth,dragLeft) {
     const contentWidth = container.width()-leftPanelWidth-rightPanelWidth;
     const minContentWidth = 250;
     const minPanelWidth = barWidth;
     if (contentWidth<minContentWidth) // need to shrink panels
     {
       const deficit = minContentWidth - contentWidth;
-      const shrinkRight = Math.min(deficit, rightPanelWidth-minPanelWidth);
-      rightPanelWidth -= shrinkRight;
-      const remainingDeficit = deficit - shrinkRight;
-      const shrinkLeft = Math.min(remainingDeficit, leftPanelWidth-minPanelWidth);
-      leftPanelWidth -= shrinkLeft;
+      if (dragLeft) { // dragging left handle -> try to keep right panel width
+        const shrinkLeft = Math.min(deficit, leftPanelWidth-minPanelWidth);
+        leftPanelWidth -= shrinkLeft;
+        const remainingDeficit = deficit - shrinkLeft;
+        const shrinkRight = Math.min(remainingDeficit, rightPanelWidth-minPanelWidth);
+        rightPanelWidth -= shrinkRight;
+      } else { // dragging right handle -> try to keep left panel width
+        const shrinkRight = Math.min(deficit, rightPanelWidth-minPanelWidth);
+        rightPanelWidth -= shrinkRight;
+        const remainingDeficit = deficit - shrinkRight;
+        const shrinkLeft = Math.min(remainingDeficit, leftPanelWidth-minPanelWidth);
+        leftPanelWidth -= shrinkLeft;
+      }
     } else {
       rightPanelWidth = pagenav.length ? Math.max(minPanelWidth,rightPanelWidth) : 0;
       leftPanelWidth = Math.max(minPanelWidth,leftPanelWidth);
@@ -59,9 +67,9 @@ function initResizable(treeview) {
     return { leftPanelWidth, rightPanelWidth }
   }
 
-  function updateWidths(sidenavWidth,pagenavWidth)
+  function updateWidths(sidenavWidth,pagenavWidth,dragLeft)
   {
-    const widths = constrainPanelWidths(sidenavWidth,pagenavWidth);
+    const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,dragLeft);
     const widthStr = parseInt(widths.leftPanelWidth)+"px";
     content.css({marginLeft:widthStr});
     if (fullSidebar) {
@@ -78,10 +86,10 @@ function initResizable(treeview) {
     return widths;
   }
 
-  function resizeWidth() {
+  function resizeWidth(dragLeft) {
     const sidenavWidth = $(sidenav).outerWidth()-barWidth;
     const pagenavWidth = pagenav.length ? $(pagenav).outerWidth() : 0;
-    const widths = updateWidths(sidenavWidth,pagenavWidth);
+    const widths = updateWidths(sidenavWidth,pagenavWidth,dragLeft);
     Cookie.writeSetting(RESIZE_COOKIE_NAME,widths.leftPanelWidth-barWidth);
     if (pagenav.length) {
       Cookie.writeSetting(PAGENAV_COOKIE_NAME,widths.rightPanelWidth);
@@ -89,7 +97,7 @@ function initResizable(treeview) {
   }
 
   function restoreWidth(sidenavWidth,pagenavWidth) {
-    updateWidths(sidenavWidth,pagenavWidth);
+    updateWidths(sidenavWidth,pagenavWidth,false);
     showHideNavBar();
   }
 
@@ -119,7 +127,7 @@ function initResizable(treeview) {
       contentHeight = windowHeight - headerHeight - 1;
     }
     content.css({height:contentHeight + "px"});
-    resizeWidth();
+    resizeWidth(false);
     showHideNavBar();
     if (location.hash.slice(1)) {
       (document.getElementById(location.hash.slice(1))||document.body).scrollIntoView();
@@ -137,7 +145,7 @@ function initResizable(treeview) {
     navtree = $("#nav-tree");
     pagenav   = $("#page-nav");
     container = $("#container");
-    $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(); } });
+    $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(true); } });
     $(sidenav).resizable({ minWidth: 0 });
     if (pagenav.length) {
       pagehandle  = $("#page-nav-resize-handle");
@@ -148,7 +156,7 @@ function initResizable(treeview) {
            const clientX = e.clientX || e.originalEvent.touches[0].clientX;
            let pagenavWidth = container[0].offsetWidth-clientX+barWidth/2;
            const sidenavWidth = sidenav.width();
-           const widths = constrainPanelWidths(sidenavWidth,pagenavWidth);
+           const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
            container.css({gridTemplateColumns:'auto '+parseInt(widths.rightPanelWidth)+'px'});
            pagenav.css({width:parseInt(widths.rightPanelWidth-1)+'px'});
            content.css({marginLeft:parseInt(widths.leftPanelWidth)+'px'});
@@ -164,7 +172,6 @@ function initResizable(treeview) {
       container.css({gridTemplateColumns:'auto'});
     }
   }
-  $(window).resize(function() { resizeHeight(treeview); });
   if (treeview)
   {
     const width = parseInt(Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH));
@@ -180,6 +187,16 @@ function initResizable(treeview) {
     $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
   }
   $(window).ready(function() { 
+    let lastWidth = -1;
+    let lastHeight = -1;
+    $(window).resize(function() {
+        const newWidth  = $(this).width(), newHeight = $(this).height();
+        if (newWidth!=lastWidth || newHeight!=lastHeight) {
+          resizeHeight(treeview);
+          lastWidth = newWidth;
+          lastHeight = newHeight;
+        }
+    });
     resizeHeight(treeview); 
     $(window).resize(function() { resizeHeight(treeview); });
     content.scroll(function() {
