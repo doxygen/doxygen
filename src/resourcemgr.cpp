@@ -99,6 +99,19 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
           }
         }
         break;
+      case Resource::CSS:
+        {
+          std::ofstream t = Portable::openOutputStream(pathName,append);
+          if (t.is_open())
+          {
+            QCString buf(res->size, QCString::ExplicitSize);
+            memcpy(buf.rawData(),res->data,res->size);
+            buf = replaceColorMarkers(buf);
+            t << substitute(buf,"$doxygenversion",getDoxygenVersion());
+            return TRUE;
+          }
+        }
+        break;
       case Resource::SVG:
         {
           std::ofstream t = Portable::openOutputStream(pathName,append);
