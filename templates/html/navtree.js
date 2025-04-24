@@ -485,6 +485,178 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
   $(window).resize(function() { adjustSyncIconPosition(); });
 
+  function initResizable() {
+    let sidenav,mainnav,pagenav,container,navtree,content,header,footer,barWidth=6;
+    const RESIZE_COOKIE_NAME = ''+'width';
+    const PAGENAV_COOKIE_NAME = ''+'pagenav';
+    const fullSidebar = typeof page_layout!=='undefined' && page_layout==1;
+
+    function showHideNavBar() {
+      let bar = $('div.sm-dox');
+      if (fullSidebar && mainnav && bar) {
+        if (mainnav.width()<768) {
+          bar.hide();
+        } else {
+          bar.show();
+        }
+      }
+    }
+
+    function constrainPanelWidths(leftPanelWidth,rightPanelWidth,dragLeft) {
+      const contentWidth = container.width()-leftPanelWidth-rightPanelWidth;
+      const minContentWidth = $TREEVIEW_WIDTH;
+      const minPanelWidth = barWidth;
+      if (contentWidth<minContentWidth) // need to shrink panels
+      {
+        const deficit = minContentWidth - contentWidth;
+        if (dragLeft) { // dragging left handle -> try to keep right panel width
+          const shrinkLeft = Math.min(deficit, leftPanelWidth-minPanelWidth);
+          leftPanelWidth -= shrinkLeft;
+          const remainingDeficit = deficit - shrinkLeft;
+          const shrinkRight = Math.min(remainingDeficit, rightPanelWidth-minPanelWidth);
+          rightPanelWidth -= shrinkRight;
+        } else { // dragging right handle -> try to keep left panel width
+          const shrinkRight = Math.min(deficit, rightPanelWidth-minPanelWidth);
+          rightPanelWidth -= shrinkRight;
+          const remainingDeficit = deficit - shrinkRight;
+          const shrinkLeft = Math.min(remainingDeficit, leftPanelWidth-minPanelWidth);
+          leftPanelWidth -= shrinkLeft;
+        }
+      } else {
+        rightPanelWidth = pagenav.length ? Math.max(minPanelWidth,rightPanelWidth) : 0;
+        leftPanelWidth = Math.max(minPanelWidth,leftPanelWidth);
+        }
+      return { leftPanelWidth, rightPanelWidth }
+    }
+
+    function updateWidths(sidenavWidth,pagenavWidth,dragLeft)
+    {
+      const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,dragLeft);
+      const widthStr = parseInt(widths.leftPanelWidth)+"px";
+      content.css({marginLeft:widthStr});
+      if (fullSidebar) {
+        footer.css({marginLeft:widthStr});
+        if (mainnav) {
+          mainnav.css({marginLeft:widthStr});
+        }
+      }
+      sidenav.css({width:widthStr});
+      if (pagenav.length) {
+        container.css({gridTemplateColumns:'auto '+parseInt(widths.rightPanelWidth)+'px'});
+        pagenav.css({width:parseInt(widths.rightPanelWidth-1)+'px'});
+      }
+      return widths;
+    }
+
+    function resizeWidth(dragLeft) {
+      const sidenavWidth = $(sidenav).outerWidth()-barWidth;
+      const pagenavWidth = pagenav.length ? $(pagenav).outerWidth() : 0;
+      const widths = updateWidths(sidenavWidth,pagenavWidth,dragLeft);
+      Cookie.writeSetting(RESIZE_COOKIE_NAME,widths.leftPanelWidth-barWidth);
+      if (pagenav.length) {
+        Cookie.writeSetting(PAGENAV_COOKIE_NAME,widths.rightPanelWidth);
+      }
+    }
+
+    function restoreWidth(sidenavWidth,pagenavWidth) {
+      updateWidths(sidenavWidth,pagenavWidth,false);
+      showHideNavBar();
+    }
+
+    function resizeHeight() {
+      const headerHeight = header.outerHeight();
+      const windowHeight = $(window).height();
+      let contentHeight;
+      const footerHeight = footer.outerHeight();
+      let navtreeHeight,sideNavHeight;
+      if (!fullSidebar) {
+        contentHeight = windowHeight - headerHeight - footerHeight - 1;
+        navtreeHeight = contentHeight;
+        sideNavHeight = contentHeight;
+      } else if (fullSidebar) {
+        contentHeight = windowHeight - footerHeight - 1;
+        navtreeHeight = windowHeight - headerHeight - 1;
+        sideNavHeight = windowHeight - 1;
+        if (mainnav) {
+          contentHeight -= mainnav.outerHeight();
+        }
+      }
+      navtree.css({height:navtreeHeight + "px"});
+      sidenav.css({height:sideNavHeight + "px"});
+      content.css({height:contentHeight + "px"});
+      resizeWidth(false);
+      showHideNavBar();
+      if (location.hash.slice(1)) {
+        (document.getElementById(location.hash.slice(1))||document.body).scrollIntoView();
+      }
+    }
+
+    header  = $("#top");
+    content = $("#doc-content");
+    footer  = $("#nav-path");
+    sidenav = $("#side-nav");
+    if (document.getElementById('main-nav')) {
+      mainnav = $("#main-nav");
+    }
+    navtree = $("#nav-tree");
+    pagenav   = $("#page-nav");
+    container = $("#container");
+    $(".side-nav-resizable").resizable({resize: function(e, ui) { resizeWidth(true); } });
+    $(sidenav).resizable({ minWidth: 0 });
+    if (pagenav.length) {
+      pagehandle  = $("#page-nav-resize-handle");
+      pagehandle.on('mousedown touchstart',function(e) { 
+         $('body').addClass('resizing');
+         pagehandle.addClass('dragging');
+         $(document).on('mousemove touchmove',function(e) {
+           const clientX = e.clientX || e.originalEvent.touches[0].clientX;
+           let pagenavWidth = container[0].offsetWidth-clientX+barWidth/2;
+           const sidenavWidth = sidenav.width();
+           const widths = constrainPanelWidths(sidenavWidth,pagenavWidth,false);
+           container.css({gridTemplateColumns:'auto '+parseInt(widths.rightPanelWidth)+'px'});
+           pagenav.css({width:parseInt(widths.rightPanelWidth-1)+'px'});
+           content.css({marginLeft:parseInt(widths.leftPanelWidth)+'px'});
+           Cookie.writeSetting(PAGENAV_COOKIE_NAME,pagenavWidth);
+         });
+         $(document).on('mouseup touchend', function(e) {
+           $('body').removeClass('resizing');
+           pagehandle.removeClass('dragging');
+           $(document).off('mousemove mouseup touchmove touchend');
+         });
+      });
+    } else {
+      container.css({gridTemplateColumns:'auto'});
+    }
+    const width = parseInt(Cookie.readSetting(RESIZE_COOKIE_NAME,$TREEVIEW_WIDTH));
+    const pagenavWidth = parseInt(Cookie.readSetting(PAGENAV_COOKIE_NAME,$TREEVIEW_WIDTH));
+    if (width) { restoreWidth(width+barWidth,pagenavWidth); } else { resizeWidth(); }
+    const url = location.href;
+    const i=url.indexOf("#");
+    if (i>=0) window.location.hash=url.substr(i);
+    const _preventDefault = function(evt) { evt.preventDefault(); };
+    $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
+    $(window).ready(function() {
+      let lastWidth = -1;
+      let lastHeight = -1;
+      $(window).resize(function() {
+          const newWidth  = $(this).width(), newHeight = $(this).height();
+          if (newWidth!=lastWidth || newHeight!=lastHeight) {
+            resizeHeight();
+            lastWidth = newWidth;
+            lastHeight = newHeight;
+          }
+      });
+      resizeHeight();
+      $(window).resize(function() { resizeHeight(); });
+      content.scroll(function() {
+        if (typeof navtree_trampoline!=='undefined') {
+          navtree_trampoline.updateScroll(content.scrollTop());
+        }
+      });
+    });
+  }
+
+
   function initPageToc() {
     const toc_contents = $('#page-nav-contents');
     const content=$('<ul>').addClass('page-outline');
@@ -657,7 +829,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     });
 
   }
-  $(document).ready(initPageToc);
+  $(document).ready(function() { initPageToc(); initResizable(); });
 
 }
 /* @license-end */

@@ -414,8 +414,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
   {
     treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
                     "<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-                    "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n"
-                    "<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n";
+                    "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
   }
 
   if (searchEngine)
@@ -1237,19 +1236,6 @@ void HtmlGenerator::init()
     }
   }
 
-  // copy resize.js
-  {
-    std::ofstream f = Portable::openOutputStream(dname+"/resize.js");
-    if (f.is_open())
-    {
-      TextStream t(&f);
-      t << substitute(
-             substitute(mgr.getAsString("resize.js"),
-                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
-                "$PROJECTID",      getProjectId());
-    }
-  }
-
   if (Config_getBool(HTML_COPY_CLIPBOARD))
   {
     std::ofstream f = Portable::openOutputStream(dname+"/clipboard.js");
@@ -1627,7 +1613,6 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
 
     Doxygen::indexList->addStyleSheetFile("jquery.js");
-    Doxygen::indexList->addStyleSheetFile("resize.js");
     Doxygen::indexList->addStyleSheetFile("navtree.css");
 
     Doxygen::indexList->addStyleSheetFile("dynsections.js");
@@ -3021,18 +3006,12 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "  </div>\n"
      "</div>\n"
      "<script type=\"text/javascript\">\n"
-     "$(function(){initNavTree('" + fn + "','" + relpath + "','" + allMembersFile + "'); initResizable(true); });\n"
+     "$(function(){initNavTree('" + fn + "','" + relpath + "','" + allMembersFile + "'); });\n"
      "</script>\n";
      if (Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
      {
        result+="<div id=\"container\">\n<div id=\"doc-content\">\n";
      }
-  }
-  else
-  {
-     //result += "<script type=\"text/javascript\">\n"
-     //"$(function(){ initResizable(false); });\n"
-     //"</script>\n";
   }
   return result;
 }
