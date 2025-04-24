@@ -24,7 +24,7 @@
 /** @brief Compiled resource */
 struct Resource
 {
-  enum Type { Verbatim, Luminance, LumAlpha, CSS, SVG };
+  enum Type { Verbatim, CSS, SVG };
   const char *category;
   const char *name;
   const unsigned char *data;

@@ -86,7 +86,6 @@
   display:block;
   position: absolute;
   left: 0px;
-  width: $width;
   overflow : hidden;
 }
 
