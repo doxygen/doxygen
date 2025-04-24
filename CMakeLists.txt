@@ -151,6 +151,12 @@ add_compile_definitions(
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_OMIT_LOAD_EXTENSION=1")
 
+# Use 64-bit off_t on 32-bit Linux
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+  # ensure 64bit offsets are used for filesystem accesses for 32bit compilation
+  add_compile_definitions(_FILE_OFFSET_BITS=64)
+endif()
+
 if (WIN32)
     if (MSVC)
         if (NOT ICONV_DIR)
