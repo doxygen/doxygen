@@ -317,6 +317,10 @@ ul.page-outline li {
   white-space: nowrap;
 }
 
+ul.page-outline li.vis {
+  background-color: var(--nav-breadcrumb-active-bg);
+}
+
 #container.resizing {
   cursor: col-resize;
   user-select: none;

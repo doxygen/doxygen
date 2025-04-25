@@ -485,6 +485,10 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
   $(window).resize(function() { adjustSyncIconPosition(); });
 
+  let navtree_trampoline = {
+    updateContentTop : function(c) {}
+  }
+
   function initResizable() {
     let sidenav,mainnav,pagenav,container,navtree,content,header,footer,barWidth=6;
     const RESIZE_COOKIE_NAME = ''+'width';
@@ -642,6 +646,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
           const newWidth  = $(this).width(), newHeight = $(this).height();
           if (newWidth!=lastWidth || newHeight!=lastHeight) {
             resizeHeight();
+            navtree_trampoline.updateContentTop(content);
             lastWidth = newWidth;
             lastHeight = newHeight;
           }
@@ -649,15 +654,14 @@ function initNavTree(toroot,relpath,allMembersFile) {
       resizeHeight();
       $(window).resize(function() { resizeHeight(); });
       content.scroll(function() {
-        if (typeof navtree_trampoline!=='undefined') {
-          navtree_trampoline.updateScroll(content.scrollTop());
-        }
+        navtree_trampoline.updateContentTop(content);
       });
     });
   }
 
 
   function initPageToc() {
+    const topMapping = [];
     const toc_contents = $('#page-nav-contents');
     const content=$('<ul>').addClass('page-outline');
 
@@ -700,14 +704,15 @@ function initNavTree(toroot,relpath,allMembersFile) {
       function hasSubItems() {
         return item.memTitles.length>0 || rows.toArray().some(function(el) { return $(el).is(':visible'); });
       }
-      const li = $('<li>');
+      const li = $('<li>').attr('id','nav-'+id);
       const div = $('<div>').addClass('item');
-      const span = $('<span>').addClass('<arrow>').css({ paddingLeft:'0' });
+      const span = $('<span>').addClass('arrow').css({ paddingLeft:'0' });
       if (hasSubItems()) {
-        span.append($('<span>').addClass('arrowHead opened'));
+        span.append($('<span>').addClass('arrowhead opened'));
       }
       const ahref = $('<a>').attr('href','#'+id).append(title);
       content.append(li.append(div.append(span).append(ahref)));
+      topMapping.push(id);
       const ulStack = [];
       ulStack.push(content);
       if (hasSubItems()) {
@@ -729,11 +734,12 @@ function initNavTree(toroot,relpath,allMembersFile) {
               ulStack.pop();
               inMemberGroup=false;
             }
-            const li2 = $('<li>');
+            const li2 = $('<li>').attr('id','nav-'+id);
             const div2 = $('<div>').addClass('item');
             const span2 = $('<span>').addClass('arrow').css({ paddingLeft:parseInt(ulStack.length*16)+'px' });
             const ahref = $('<a>').attr('href','#'+id).append(escapeHtml(text));
             li2.append(div2.append(span2).append(ahref));
+            topMapping.push(id);
             if (isMemberGroupHeader) {
               span2.append($('<span>').addClass('arrowhead opened'));
               ulStack[ulStack.length-1].append(li2);
@@ -753,11 +759,12 @@ function initNavTree(toroot,relpath,allMembersFile) {
           const name = text.replace(/\(\)(\s*\[\d+\/\d+\])?$/, '') // func() [2/8] -> func
           id = $(data).find('span.permalink a').attr('href')
           if (name!=undefined) {
-            const li2 = $('<li>');
+            const li2 = $('<li>').attr('id','nav-'+id.substring(1));
             const div2 = $('<div>').addClass('item');
             const span2 = $('<span>').addClass('arrow').css({paddingLeft:parseInt(ulStack.length*16)+'px'});
             const ahref = $('<a>').attr('href',id).append(escapeHtml(name));
             ulStack[ulStack.length-1].append(li2.append(div2.append(span2).append(ahref)));
+            topMapping.push(id.substring(1));
           }
         });
       }
@@ -773,9 +780,9 @@ function initNavTree(toroot,relpath,allMembersFile) {
       const pageName = url.split('/').pop().split('#')[0].replace(/(\.[^/.]+)$/, '-members$1');
       const li = $('<li>');
       const div = $('<div>').addClass('item');
-      const span = $('<span>').addClass('<arrow>').css({ paddingLeft:'0' });
+      const span = $('<span>').addClass('arrow').css({ paddingLeft:'0' });
       const ahref = $('<a>').attr('href',srcBaseUrl+dstBaseUrl+pageName).addClass('noscroll');
-      content.append(li.append(div.append(span.append(ahref.append(LISTOFALLMEMBERS)))));
+      content.append(li.append(div.append(span).append(ahref.append(LISTOFALLMEMBERS))));
     }
 
     if (groupSections.length==0) {
@@ -789,11 +796,10 @@ function initNavTree(toroot,relpath,allMembersFile) {
           (sectionStack.length ? sectionStack[sectionStack.length - 1].children : sectionTree).push(node);
           sectionStack.push({ ...node, level });
       });
-      if (sectionTree.length>0)
-      {
+      if (sectionTree.length>0) {
         function render(nodes, level=0) {
             return $('<ul>').addClass('nested').append(nodes.map(n => {
-                const li = $('<li>');
+                const li = $('<li>').attr('id','nav-'+n.id);
                 const div = $('<div>').addClass('item');
                 const span = $('<span>').addClass('arrow').attr('style','padding-left:'+parseInt(level*16)+'px;');
                 if (n.children.length > 0) { span.append($('<span>').addClass('arrowhead opened')); }
@@ -801,6 +807,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
                 url.append(escapeHtml(n.text))
                 div.append(span).append(url)
                 li.append(div,render(n.children,level+1));
+                topMapping.push(n.id);
                 return li;
             }));
         }
@@ -810,24 +817,49 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
     toc_contents.append(content);
 
-    $('.page-outline .arrow').on('click', function() {
-        var nestedList = $(this).parent().siblings('.nested');
-        var arrowhead = $(this).find('.arrowhead');
-        if (nestedList.is(':visible')) {
-            nestedList.slideUp('fast');
-            arrowhead.removeClass('opened');
-        } else {
-            nestedList.slideDown('fast');
-            arrowhead.addClass('opened');
-        }
-    });
-
     $(".page-outline a[href]:not(.noscroll)").click(function(e) {
       e.preventDefault();
       const aname = $(this).attr("href");
       gotoAnchor($(aname),aname);
     });
 
+    navtree_trampoline.updateContentTop = function(c) {
+      const pagenavcontents = $("#page-nav-contents");
+      if (pagenavcontents.length) {
+        const height = $('#doc-content').height();
+        const navy = pagenavcontents.offset().top;
+        const yc = $(c).offset().top;
+        let offsets = []
+        for (let i=0;i<topMapping.length;i++) {
+          offsets.push({id:topMapping[i],y:$('#'+topMapping[i]).offset().top-yc});
+        }
+        offsets.push({id:'',y:1000000});
+        let scrollTarget = undefined, minNavY=100000, maxNavY=0;
+        for (let i=0;i<topMapping.length;i++) {
+          const ys = offsets[i].y;
+          const ye = offsets[i+1].y;
+          const id = offsets[i].id;
+          const nav = $('#nav-'+id);
+          if ((ys>2 || ye>2) && (ys<height-2 || ye<height-2)) {
+            if (!scrollTarget) scrollTarget=nav;
+            nav.addClass('vis');
+            const ny = nav.offset().top;
+            minNavY = Math.min(minNavY,ny);
+            maxNavY = Math.max(maxNavY,ny);
+          } else {
+            nav.removeClass('vis');
+          }
+        }
+        if (scrollTarget) {
+          const my = (maxNavY-minNavY)/2;
+          pagenavcontents.scrollTo(scrollTarget,{offset:-height/2+my});
+        }
+      }
+    }
+    // TODO: find out how to avoid a timeout
+    setTimeout(() => {
+      navtree_trampoline.updateContentTop(content);
+    },200);
   }
   $(document).ready(function() { initPageToc(); initResizable(); });
 
