@@ -652,7 +652,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
           }
       });
       resizeHeight();
-      $(window).resize(function() { resizeHeight(); });
+      lastWidth = $(window).width();
+      lastHeight = $(window).height();
       content.scroll(function() {
         navtree_trampoline.updateContentTop(content);
       });
