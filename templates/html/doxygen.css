@@ -1083,7 +1083,7 @@ div.directory {
 span.arrowhead {
 	position: relative;
 	padding: 0;
-	margin: 0;
+	margin: 0 0 0 2px;
 	display: inline-block;
 	width: 5px;
 	height: 5px;

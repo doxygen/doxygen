@@ -486,7 +486,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
   $(window).resize(function() { adjustSyncIconPosition(); });
 
   let navtree_trampoline = {
-    updateContentTop : function(c) {}
+    updateContentTop : function() {}
   }
 
   function initResizable() {
@@ -646,7 +646,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
           const newWidth  = $(this).width(), newHeight = $(this).height();
           if (newWidth!=lastWidth || newHeight!=lastHeight) {
             resizeHeight();
-            navtree_trampoline.updateContentTop(content);
+            navtree_trampoline.updateContentTop();
             lastWidth = newWidth;
             lastHeight = newHeight;
           }
@@ -655,7 +655,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       lastWidth = $(window).width();
       lastHeight = $(window).height();
       content.scroll(function() {
-        navtree_trampoline.updateContentTop(content);
+        navtree_trampoline.updateContentTop();
       });
     });
   }
@@ -790,29 +790,27 @@ function initNavTree(toroot,relpath,allMembersFile) {
       // for PageDef
       const sectionTree = [], sectionStack = [];
       $('h1.doxsection, h2.doxsection, h3.doxsection, h4.doxsection, h5.doxsection, h6.doxsection').each(function(){
-          const level = parseInt(this.tagName[1]);
-          const anchor = $(this).find('a.anchor').attr('id');
-          const node = { text: $(this).text(), id: anchor, children: [] };
-          while (sectionStack.length && sectionStack[sectionStack.length - 1].level >= level) sectionStack.pop();
-          (sectionStack.length ? sectionStack[sectionStack.length - 1].children : sectionTree).push(node);
-          sectionStack.push({ ...node, level });
+        const level = parseInt(this.tagName[1]);
+        const anchor = $(this).find('a.anchor').attr('id');
+        const node = { text: $(this).text(), id: anchor, children: [] };
+        while (sectionStack.length && sectionStack[sectionStack.length - 1].level >= level) sectionStack.pop();
+        (sectionStack.length ? sectionStack[sectionStack.length - 1].children : sectionTree).push(node);
+        sectionStack.push({ ...node, level });
       });
       if (sectionTree.length>0) {
         function render(nodes, level=0) {
-            return $('<ul>').addClass('nested').append(nodes.map(n => {
-                const li = $('<li>').attr('id','nav-'+n.id);
-                const div = $('<div>').addClass('item');
-                const span = $('<span>').addClass('arrow').attr('style','padding-left:'+parseInt(level*16)+'px;');
-                if (n.children.length > 0) { span.append($('<span>').addClass('arrowhead opened')); }
-                const url = $('<a>').attr('href','#'+n.id);
-                url.append(escapeHtml(n.text))
-                div.append(span).append(url)
-                li.append(div,render(n.children,level+1));
-                topMapping.push(n.id);
-                return li;
-            }));
+          nodes.map(n => {
+            const li = $('<li>').attr('id','nav-'+n.id);
+            const div = $('<div>').addClass('item');
+            const span = $('<span>').addClass('arrow').attr('style','padding-left:'+parseInt(level*16)+'px;');
+            if (n.children.length > 0) { span.append($('<span>').addClass('arrowhead opened')); }
+            const url = $('<a>').attr('href','#'+n.id);
+            content.append(li.append(div.append(span).append(url.append(escapeHtml(n.text)))));
+            topMapping.push(n.id);
+            render(n.children,level+1);
+          });
         }
-        content.append(render(sectionTree));
+        render(sectionTree);
       }
     }
 
@@ -824,18 +822,20 @@ function initNavTree(toroot,relpath,allMembersFile) {
       gotoAnchor($(aname),aname);
     });
 
-    navtree_trampoline.updateContentTop = function(c) {
+    navtree_trampoline.updateContentTop = function() {
       const pagenavcontents = $("#page-nav-contents");
       if (pagenavcontents.length) {
-        const height = $('#doc-content').height();
+        const content = $("#doc-content");
+        const height = content.height();
         const navy = pagenavcontents.offset().top;
-        const yc = $(c).offset().top;
+        const yc = content.offset().top;
         let offsets = []
         for (let i=0;i<topMapping.length;i++) {
-          offsets.push({id:topMapping[i],y:$('#'+topMapping[i]).offset().top-yc});
+          const heading = $('#'+topMapping[i]);
+          offsets.push({id:topMapping[i],y:heading.offset().top-yc});
         }
-        offsets.push({id:'',y:1000000});
-        let scrollTarget = undefined, minNavY=100000, maxNavY=0;
+        offsets.push({id:'',y:1e10});
+        let scrollTarget = undefined, minNavY=1e10, maxNavY=0;
         for (let i=0;i<topMapping.length;i++) {
           const ys = offsets[i].y;
           const ye = offsets[i+1].y;
@@ -853,13 +853,18 @@ function initNavTree(toroot,relpath,allMembersFile) {
         }
         if (scrollTarget) {
           const my = (maxNavY-minNavY)/2;
-          pagenavcontents.scrollTo(scrollTarget,{offset:-height/2+my});
+          pagenavcontents.stop();
+          pagenavcontents.scrollTo(scrollTarget,{
+                 duration: 100, 
+                 interrupt: true, 
+                 offset:-height/2+my
+          });
         }
       }
     }
     // TODO: find out how to avoid a timeout
     setTimeout(() => {
-      navtree_trampoline.updateContentTop(content);
+      navtree_trampoline.updateContentTop();
     },200);
   }
   $(document).ready(function() { initPageToc(); initResizable(); });
