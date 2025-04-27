@@ -125,30 +125,17 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
   }
 }
 
-const char *replaceDatetime =  "<span class=\"datetime\"></span>;";
-const char *replaceDate     =  "<span class=\"date\"></span>;";
-const char *replaceTime     =  "<span class=\"time\"></span>;";
-const char *replaceYear     =  "<span class=\"year\"></span>;";
-static void writeBuildDateJS(TextStream &t)
+const char *replaceDatetime =  "<span class=\"show_datetime\"></span>;";
+const char *replaceDate     =  "<span class=\"show_date\"></span>;";
+const char *replaceTime     =  "<span class=\"show_time\"></span>;";
+const char *replaceYear     =  "<span class=\"show_year\"></span>;";
+static void writeBuildDateCSS(TextStream &t)
 {
-  t << "$(function(){\n";
-      t << "let elements = document.getElementsByClassName(\"datetime\");\n";
-      t << "for (let i = 0; i < elements.length; i++) {\n";
-      t << "   elements.item(i).textContent = \"" << dateToString(DateTimeType::DateTime) << "\";\n";
-      t << "}\n";
-      t << "let elementsD= document.getElementsByClassName(\"date\");\n";
-      t << "for (let i = 0; i < elementsD.length; i++) {\n";
-      t << "   elementsD.item(i).textContent = \"" << dateToString(DateTimeType::Date) << "\";\n";
-      t << "}\n";
-      t << "let elementsT = document.getElementsByClassName(\"time\");\n";
-      t << "for (let i = 0; i < elementsT.length; i++) {\n";
-      t << "   elementsT.item(i).textContent = \"" << dateToString(DateTimeType::Time) << "\";\n";
-      t << "}\n";
-      t << "let elementsY = document.getElementsByClassName(\"year\");\n";
-      t << "for (let i = 0; i < elementsY.length; i++) {\n";
-      t << "   elementsY.item(i).textContent = \"" << yearToString() << "\";\n";
-      t << "}\n";
-  t << "});\n";
+
+      t << ".show_datetime:after { content: \"" << dateToString(DateTimeType::DateTime) << "\"; }\n";
+      t << ".show_date:after { content: \"" << dateToString(DateTimeType::Date) << "\"; }\n";
+      t << ".show_time:after { content: \"" << dateToString(DateTimeType::Time) << "\"; }\n";
+      t << ".show_year:after { content: \"" << yearToString() << "\"; }\n";
 }
 
 //------------------------------------------------------------------------
@@ -1329,13 +1316,14 @@ void HtmlGenerator::init()
 
   if (g_build_date)
   { 
-    std::ofstream f = Portable::openOutputStream(dname+"/build_date.js");
+    std::ofstream f = Portable::openOutputStream(dname+"/build_date.css");
     if (f.is_open())
     {
       TextStream t(&f);
-      writeBuildDateJS(t);
+      writeBuildDateCSS(t);
     }
-    g_build_date_str = "<script type=\"text/javascript\" src=\"$relpath^build_date.js\"></script>";
+    g_build_date_str = "<link href=\"$relpath^build_date.css\" rel=\"stylesheet\" type=\"text/css\"/>";
+    Doxygen::indexList->addStyleSheetFile("build_date.css");
   }
 }
 
