@@ -822,6 +822,10 @@ function initNavTree(toroot,relpath,allMembersFile) {
       gotoAnchor($(aname),aname);
     });
 
+    let lastScrollSourceOffset = -1;
+    let lastScrollTargetOffset = -1;
+    let lastScrollTargetId = '';
+
     navtree_trampoline.updateContentTop = function() {
       const pagenavcontents = $("#page-nav-contents");
       if (pagenavcontents.length) {
@@ -835,7 +839,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
           offsets.push({id:topMapping[i],y:heading.offset().top-yc});
         }
         offsets.push({id:'',y:1e10});
-        let scrollTarget = undefined, minNavY=1e10, maxNavY=0;
+        let scrollTarget = undefined, numItems=0;
         for (let i=0;i<topMapping.length;i++) {
           const ys = offsets[i].y;
           const ye = offsets[i+1].y;
@@ -843,23 +847,31 @@ function initNavTree(toroot,relpath,allMembersFile) {
           const nav = $('#nav-'+id);
           if ((ys>2 || ye>2) && (ys<height-2 || ye<height-2)) {
             if (!scrollTarget) scrollTarget=nav;
-            nav.addClass('vis');
-            const ny = nav.offset().top;
-            minNavY = Math.min(minNavY,ny);
-            maxNavY = Math.max(maxNavY,ny);
+            nav.addClass('vis'); // mark navigation entry as visible within content area
+            numItems+=1;
           } else {
             nav.removeClass('vis');
           }
         }
-        if (scrollTarget) {
-          const my = (maxNavY-minNavY)/2;
-          pagenavcontents.stop();
-          pagenavcontents.scrollTo(scrollTarget,{
-                 duration: 100, 
-                 interrupt: true, 
-                 offset:-height/2+my
-          });
+        const contentScrollOffset = $('div.contents').offset().top;
+        const scrollTargetId = scrollTarget.attr('id');
+        if (scrollTarget && lastScrollTargetId!=scrollTargetId) { // new item to scroll to
+          const scrollDown = contentScrollOffset<lastScrollSourceOffset;
+          const range = 22*numItems;
+          const my = range/2-height/2;
+          const ulOffset = $('ul.page-outline').offset().top-navy;
+          const targetPos=scrollTarget.offset().top-navy-ulOffset;
+          const targetOffset=targetPos+my;
+          if ( (scrollDown && targetOffset>lastScrollTargetOffset) ||
+              (!scrollDown && targetOffset<lastScrollTargetOffset)) 
+          { // force panel to scroll in the same direction as content window
+            pagenavcontents.stop(); // avoid build-up of history
+            pagenavcontents.scrollTo({ left:0, top:targetOffset },{ duration: 500, interrupt: true });
+            lastScrollTargetOffset = targetOffset;
+          }
+          lastScrollTargetId = scrollTargetId;
         }
+        lastScrollSourceOffset = contentScrollOffset;
       }
     }
     // TODO: find out how to avoid a timeout
