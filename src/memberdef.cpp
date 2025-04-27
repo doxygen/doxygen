@@ -2256,7 +2256,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   OutputGenerator::MemberItemType anonType = isAnonType ? OutputGenerator::MemberItemType::AnonymousStart :
                               !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
                                                           OutputGenerator::MemberItemType::Normal;
-  ol.startMemberItem(anchor(), anonType, inheritId);
+  ol.startMemberItem(annoClassDef ? QCString() : anchor(), anonType, inheritId);
 
 
   // If there is no detailed description we need to write the anchor here.
@@ -3367,8 +3367,12 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
   bool showGroupedMembInc = Config_getBool(SHOW_GROUPED_MEMB_INC);
   const FileDef *fd = getFileDef();
   QCString nm;
-  if (fd) nm = getFileDef()->docName();
-  if (inGroup && fd && showGroupedMembInc && !nm.isEmpty())
+  if (inGroup && fd && showGroupedMembInc)
+  {
+    nm = fd->absFilePath();
+    nm = stripFromIncludePath(nm);
+  }
+  if (!nm.isEmpty())
   {
     ol.startParagraph();
     ol.startTypewriter();
@@ -3533,6 +3537,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   ldef.stripPrefix("constexpr ");
   ldef.stripPrefix("consteval ");
   ldef.stripPrefix("constinit ");
+  ldef.stripPrefix("static ");
 
   //----------------------------------------
 
@@ -4178,6 +4183,7 @@ static std::mutex g_detectUndocumentedParamsMutex;
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
+  //printf("%s:detectUndocumentedParams(%d,%d)\n",qPrint(name()),hasParamCommand,hasReturnCommand);
   bool isPython = getLanguage()==SrcLangExt::Python;
 
   // this function is called while parsing the documentation. A member can have multiple
@@ -4201,29 +4207,29 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
       // see if all parameters have documentation
       for (auto it = al.begin(); it!=al.end() && allDoc; ++it)
       {
-        Argument a = *it;
-        if (!a.name.isEmpty() && a.type!="void" &&
+        const Argument &a = *it;
+        if (!a.name.isEmpty() && a.type!="void" && a.name!="..." &&
             !(isPython && (a.name=="self" || a.name=="cls"))
            )
         {
           allDoc = !a.docs.isEmpty();
         }
-        //printf("a->type=%s a->name=%s doc=%s\n",
-        //        qPrint(a->type),qPrint(a->name),qPrint(a->docs));
+        //printf("a.type=%s a.name=%s doc=%s\n",
+        //        qPrint(a.type),qPrint(a.name),qPrint(a.docs));
       }
       if (!allDoc && declAl.empty()) // try declaration arguments as well
       {
         allDoc=true;
         for (auto it = al.begin(); it!=al.end() && allDoc; ++it)
         {
-          Argument a = *it;
-          if (!a.name.isEmpty() && a.type!="void" &&
+          const Argument &a = *it;
+          if (!a.name.isEmpty() && a.type!="void" && a.name!="..." &&
               !(isPython && (a.name=="self" || a.name=="cls"))
              )
           {
             allDoc = !a.docs.isEmpty();
           }
-          //printf("a->name=%s doc=%s\n",qPrint(a->name),qPrint(a->docs));
+          //printf("a.name=%s doc=%s\n",qPrint(a.name),qPrint(a.docs));
         }
       }
     }

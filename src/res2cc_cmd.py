@@ -55,9 +55,9 @@ class File(object):
     @staticmethod
     def factory(directory,subdir,fname):
         ext = splitext(fname)[1]
-        if ext=='.lum':
+        if ext=='.lum':  # TODO: remove this format
             return LumFile(directory,subdir,fname)
-        if ext=='.luma':
+        if ext=='.luma': # TODO: remove this format
             return LumaFile(directory,subdir,fname)
         if ext=='.css':
             return CSSFile(directory,subdir,fname)

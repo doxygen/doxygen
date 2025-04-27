@@ -2259,6 +2259,7 @@ static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const QCSt
     }
     else
     {
+      addTerminalCharIfMissing(fs->fileBuf,'\n');
       fs->oldFileBuf    = state->inputBuf;
       fs->oldFileBufPos = state->inputBufPos;
     }
@@ -4068,6 +4069,11 @@ void Preprocessor::processFile(const QCString &fileName,const std::string &input
   }
   // make sure we don't extend a \cond with missing \endcond over multiple files (see bug 624829)
   forceEndCondSection(yyscanner);
+
+  if (!state->levelGuard.empty())
+  {
+    warn(state->fileName,state->yyLineNr,"More #if's than #endif's found (might be in an included file).");
+  }
 
   if (Debug::isFlagSet(Debug::Preprocessor))
   {

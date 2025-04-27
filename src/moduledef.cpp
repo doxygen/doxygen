@@ -67,6 +67,7 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
       else return hasDocumentation(); }
     QCString qualifiedName() const override;
     void writeSummaryLinks(OutputList &ol) const override;
+    void writePageNavigation(OutputList &ol) const override;
 
     // --- ModuleDef
     Type moduleType() const override { return m_type; }
@@ -339,15 +340,25 @@ void ModuleDefImpl::mergeSymbolsFrom(ModuleDefImpl *other)
 void ModuleDefImpl::writeDocumentation(OutputList &ol)
 {
   if (isReference()) return;
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
   AUTO_TRACE("%s file=%s",name(),getDefFileName());
   SrcLangExt lang = getLanguage();
-  QCString pageTitle = theTranslator->trModuleReference(displayName());
+  QCString pageTitle;
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    pageTitle = displayName();
+  }
+  else
+  {
+    pageTitle = theTranslator->trModuleReference(displayName());
+  }
   startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::ModuleVisible,false,QCString(),0);
 
   // ---- title part
   ol.startHeaderSection();
-  writeSummaryLinks(ol);
+  bool writeOutlinePanel = generateTreeView && Config_getBool(PAGE_OUTLINE_PANEL);
+  if (!writeOutlinePanel) writeSummaryLinks(ol);
   ol.startTitleHead(getOutputFileBase());
 
   ol.pushGeneratorState();
@@ -474,7 +485,17 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
   }
 
   //---------------------------------------- end flexible part -------------------------------
-  endFile(ol);
+  if (generateTreeView)
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputType::Html);
+    ol.endContents();
+    ol.writeString("</div><!-- doc-content -->\n");
+    writePageNavigation(ol);
+    ol.writeString("</div><!-- container -->\n");
+    ol.popGeneratorState();
+  }
+  endFile(ol,generateTreeView,true);
 
   ol.popGeneratorState();
 }
@@ -529,7 +550,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
       ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
-    ol.startGroupHeader();
+    ol.startGroupHeader("details");
     ol.parseText(title);
     ol.endGroupHeader();
 
@@ -613,7 +634,7 @@ void ModuleDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,con
 void ModuleDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,name(),this,title);
+  if (ml) ml->writeDocumentation(ol,name(),this,title,ml->listType().toLabel());
 }
 
 void ModuleDefImpl::writeAuthorSection(OutputList &ol)
@@ -822,6 +843,11 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
   ol.popGeneratorState();
 }
 
+void ModuleDefImpl::writePageNavigation(OutputList &ol) const
+{
+  ol.writePageOutline();
+}
+
 void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCString &header,bool localNames) const
 {
   if (isLinkable())
@@ -842,9 +868,11 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
       found=TRUE;
     }
     ol.startMemberDeclaration();
-    ol.startMemberItem(anchor(),OutputGenerator::MemberItemType::Normal);
-    ol.writeString("module ");
     QCString cname = displayName(!localNames);
+    QCString anc = anchor();
+    if (anc.isEmpty()) anc=cname; else anc.prepend(cname+"_");
+    ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
+    ol.writeString("module ");
     ol.insertMemberAlign();
     if (isLinkable())
     {
@@ -939,7 +967,10 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
       if (fd)
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(fd->anchor(),OutputGenerator::MemberItemType::Normal);
+        QCString fname = fd->displayName();
+        QCString anc = fd->anchor();
+        if (anc.isEmpty()) anc=fname; else anc.prepend(fname+"_");
+        ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         QCString path=fd->getPath();
@@ -949,7 +980,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
         }
         if (fd->isLinkable())
         {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->displayName());
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fname);
         }
         else
         {

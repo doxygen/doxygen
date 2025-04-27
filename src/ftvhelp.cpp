@@ -261,7 +261,9 @@ static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
   while (parent) { indent++; parent=parent->parent.lock(); }
   if (n->isDir)
   {
-    QCString dir = opened ? "&#9660;" : "&#9658;";
+    const char *ARROW_DOWN = "<span class=\"arrowhead opened\"></span>";
+    const char *ARROW_RIGHT = "<span class=\"arrowhead closed\"></span>";
+    QCString dir = opened ? ARROW_DOWN : ARROW_RIGHT;
     t << "<span style=\"width:" << (indent*16) << "px;display:inline-block;\">&#160;</span>"
       << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\" ";
     t << "onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0) << "')\"";
@@ -415,11 +417,11 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else
       {
-        t << "<span id=\"img_" << generateIndentLabel(n,0)
-          << "\" class=\"iconf"
-          << (nodeOpened?"open":"closed")
+        t << "<span id=\"img_" << generateIndentLabel(n,0) << "\" class=\"iconfolder"
           << "\" onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0)
-          << "')\">&#160;</span>";
+          << "')\"><div class=\"folder-icon"
+          << (nodeOpened ? " open" : "")
+          << "\"></div></span>";
       }
       generateLink(t,n);
       t << "</td><td class=\"desc\">";
@@ -483,11 +485,11 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeDir)
       {
-        t << "<span class=\"iconfclosed\"></span>";
+        t << "<span class=\"iconfolder\"><div class=\"folder-icon\"></div></span>";
       }
       else
       {
-        t << "<span class=\"icondoc\"></span>";
+        t << "<span class=\"icondoc\"><div class=\"doc-icon\"></div></span>";
       }
       if (srcRef)
       {
@@ -832,6 +834,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     }
     t << "\nvar SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
     t << "\nvar SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
+    t << "\nvar LISTOFALLMEMBERS = '" << theTranslator->trListOfAllMembers() << "';";
   }
 
   auto &mgr = ResourceMgr::instance();
@@ -840,27 +843,15 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     if (fn.is_open())
     {
       TextStream t(&fn);
-      t << substitute(mgr.getAsString("navtree.js"),"$PROJECTID",getProjectId());
+      t << substitute(
+             substitute(mgr.getAsString("navtree.js"),
+                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
+                "$PROJECTID",getProjectId());
     }
   }
 }
 
 //-----------------------------------------------------------
-
-// new style images
-void FTVHelp::generateTreeViewImages()
-{
-  QCString dname=Config_getString(HTML_OUTPUT);
-  const ResourceMgr &rm = ResourceMgr::instance();
-  rm.copyResource("doc.svg",dname);
-  rm.copyResource("docd.svg",dname);
-  rm.copyResource("folderopen.svg",dname);
-  rm.copyResource("folderopend.svg",dname);
-  rm.copyResource("folderclosed.svg",dname);
-  rm.copyResource("folderclosedd.svg",dname);
-  rm.copyResource("splitbar.lum",dname);
-  rm.copyResource("splitbard.lum",dname);
-}
 
 // new style scripts
 void FTVHelp::generateTreeViewScripts()
@@ -935,6 +926,5 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
 // write old style index.html and tree.html
 void FTVHelp::generateTreeView()
 {
-  generateTreeViewImages();
   generateTreeViewScripts();
 }

@@ -594,14 +594,14 @@ bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
     out << "<div class=\"zoom\">";
     //out << "<object type=\"image/svg+xml\" data=\""
     //out << "<embed type=\"image/svg+xml\" src=\""
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\""
+    out << "<iframe scrolling=\"no\" loading=\"lazy\" frameborder=\"0\" src=\""
         << relPath << baseName << ".svg\" width=\"100%\" height=\"" << height << "\">";
   }
   else
   {
     //out << "<object type=\"image/svg+xml\" data=\""
     //out << "<embed type=\"image/svg+xml\" src=\""
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\""
+    out << "<iframe scrolling=\"no\" loading=\"lazy\" frameborder=\"0\" src=\""
         << relPath << baseName << ".svg\" width=\""
         << ((width*96+48)/72) << "\" height=\""
         << ((height*96+48)/72) << "\">";

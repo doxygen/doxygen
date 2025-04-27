@@ -357,6 +357,7 @@ class ClassDef : public Definition
                  int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
+    virtual void writePageNavigation(OutputList &ol) const = 0;
     virtual void writeInlineDocumentation(OutputList &ol) const = 0;
     virtual void writeTagFile(TextStream &) const = 0;
     virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,

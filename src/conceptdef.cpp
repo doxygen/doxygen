@@ -285,7 +285,14 @@ const ModuleDef *ConceptDefImpl::getModuleDef() const
 
 QCString ConceptDefImpl::title() const
 {
-  return theTranslator->trConceptReference(displayName());
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    return displayName();
+  }
+  else
+  {
+    return theTranslator->trConceptReference(displayName());
+  }
 }
 
 int ConceptDefImpl::groupId() const
@@ -421,7 +428,7 @@ QCString ConceptDefImpl::initializer() const
 
 void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
 {
-    ol.startGroupHeader();
+    ol.startGroupHeader("conceptdef");
       ol.parseText(title);
     ol.endGroupHeader();
 
@@ -453,7 +460,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
 
-    ol.startGroupHeader();
+    ol.startGroupHeader("details");
       ol.parseText(title);
     ol.endGroupHeader();
 
@@ -513,7 +520,15 @@ void ConceptDefImpl::addConceptAttributes(OutputList &ol) const
 void ConceptDefImpl::writeDocumentation(OutputList &ol)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
-  QCString pageTitle = theTranslator->trConceptReference(displayName());
+  QCString pageTitle;
+  if (Config_getBool(HIDE_COMPOUND_REFERENCE))
+  {
+    pageTitle = displayName();
+  }
+  else
+  {
+    pageTitle = theTranslator->trConceptReference(displayName());
+  }
   startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::ConceptVisible,!generateTreeView);
 
   // ---- navigation part
@@ -642,9 +657,11 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
       found=TRUE;
     }
     ol.startMemberDeclaration();
-    ol.startMemberItem(anchor(),OutputGenerator::MemberItemType::Normal);
-    ol.writeString("concept ");
     QCString cname = displayName(!localNames);
+    QCString anc=anchor();
+    if (anc.isEmpty()) anc=cname; else anc.prepend(cname+"_");
+    ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
+    ol.writeString("concept ");
     ol.insertMemberAlign();
     if (isLinkable())
     {

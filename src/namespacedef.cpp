@@ -122,6 +122,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     void setMetaData(const QCString &m) override;
     int countVisibleMembers() const override;
     void writeSummaryLinks(OutputList &ol) const override;
+    void writePageNavigation(OutputList &ol) const override;
 
   private:
     void addMemberToList(MemberListType lt,MemberDef *md);
@@ -691,7 +692,7 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
       ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
-    ol.startGroupHeader();
+    ol.startGroupHeader("details");
     ol.parseText(title);
     ol.endGroupHeader();
 
@@ -919,6 +920,11 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
     ol.writeString("  </div>\n");
   }
   ol.popGeneratorState();
+}
+
+void NamespaceDefImpl::writePageNavigation(OutputList &ol) const
+{
+  ol.writePageOutline();
 }
 
 void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
@@ -1174,13 +1180,13 @@ void NamespaceDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *cur
           {
             ol.writeString("          <tr><td class=\"navtab\">");
           }
-          ol.writeString("<a class=\"navtab\" ");
+          ol.writeString("<span class=\"label\"><a ");
           ol.writeString("href=\"");
           if (createSubDirs) ol.writeString("../../");
           ol.writeString(fn+"#"+md->anchor());
           ol.writeString("\">");
           ol.writeString(convertToHtml(md->localName()));
-          ol.writeString("</a>");
+          ol.writeString("</a></span>");
           ol.writeString("</td></tr>\n");
         }
       }
@@ -1395,20 +1401,14 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
       if (lang==SrcLangExt::IDL && (isConstantGroup != nd->isConstantGroup()))
           continue; // will be output in another pass, see layout_default.xml
       ol.startMemberDeclaration();
-      ol.startMemberItem(nd->anchor(),OutputGenerator::MemberItemType::Normal);
+      QCString name = localName ? nd->localName() : nd->displayName();
+      QCString anc = nd->anchor();
+      if (anc.isEmpty()) anc=name; else anc.prepend(name+"_");
+      ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
       QCString ct = nd->compoundTypeString();
       ol.docify(ct);
       ol.docify(" ");
       ol.insertMemberAlign();
-      QCString name;
-      if (localName)
-      {
-        name = nd->localName();
-      }
-      else
-      {
-        name = nd->displayName();
-      }
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),QCString(),name);
       ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
       if (!nd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
@@ -1495,7 +1495,7 @@ void NamespaceDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,
 void NamespaceDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,displayName(),this,title);
+  if (ml) ml->writeDocumentation(ol,displayName(),this,title,ml->listType().toLabel());
 }
 
 static bool hasNonReferenceNestedNamespaceRec(const NamespaceDef *nd,int level)
@@ -1558,25 +1558,37 @@ const MemberDef * NamespaceDefImpl::getMemberByName(const QCString &n) const
 
 QCString NamespaceDefImpl::title() const
 {
-  SrcLangExt lang = getLanguage();
   QCString pageTitle;
+  SrcLangExt lang = getLanguage();
+
+  auto getReferenceTitle = [this](std::function<QCString()> translateFunc) -> QCString
+  {
+    return Config_getBool(HIDE_COMPOUND_REFERENCE) ? displayName() : translateFunc();
+  };
+
   if (lang==SrcLangExt::Java)
   {
     pageTitle = theTranslator->trPackage(displayName());
   }
   else if (lang==SrcLangExt::Fortran || lang==SrcLangExt::Slice)
   {
-    pageTitle = theTranslator->trModuleReference(displayName());
+    pageTitle = getReferenceTitle([this](){
+        return theTranslator->trModuleReference(displayName());
+    });
   }
   else if (lang==SrcLangExt::IDL)
   {
-    pageTitle = isConstantGroup()
+    pageTitle = getReferenceTitle([this](){
+        return isConstantGroup()
         ? theTranslator->trConstantGroupReference(displayName())
         : theTranslator->trModuleReference(displayName());
+    });
   }
   else
   {
-    pageTitle = theTranslator->trNamespaceReference(displayName());
+    pageTitle = getReferenceTitle([this](){
+      return theTranslator->trNamespaceReference(displayName());
+    });
   }
   return pageTitle;
 }

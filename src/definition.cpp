@@ -112,11 +112,9 @@ class DefinitionImpl::Private
 void DefinitionImpl::Private::setDefFileName(const QCString &df)
 {
   defFileName = df;
-  int lastDot = defFileName.findRev('.');
-  if (lastDot!=-1)
-  {
-    defFileExt = defFileName.mid(lastDot);
-  }
+  FileInfo fi(df.data());
+  QCString ext = fi.extension(false);
+  if (!ext.isEmpty()) defFileExt = "." + ext;
 }
 
 void DefinitionImpl::Private::init(const QCString &df, const QCString &n)
@@ -324,8 +322,7 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
 
 bool DefinitionImpl::hasSections() const
 {
-  //printf("DefinitionImpl::hasSections(%s) #sections=%d\n",qPrint(name()),
-  //    p->sectionRefs.size());
+  //printf("DefinitionImpl::hasSections(%s) #sections=%zu\n",qPrint(name()), p->sectionRefs.size());
   if (p->sectionRefs.empty()) return FALSE;
   for (const SectionInfo *si : p->sectionRefs)
   {
@@ -1394,13 +1391,13 @@ QCString DefinitionImpl::navigationPathAsString() const
     if (p->def->definitionType()==Definition::TypeGroup &&
         !toGroupDef(p->def)->groupTitle().isEmpty())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
+      result+="<a href=\"$relpath^"+fn+"\">"+
               convertToHtml(toGroupDef(p->def)->groupTitle())+"</a>";
     }
     else if (p->def->definitionType()==Definition::TypePage &&
              toPageDef(p->def)->hasTitle())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
+      result+="<a href=\"$relpath^"+fn+"\">"+
             convertToHtml((toPageDef(p->def))->title())+"</a>";
     }
     else if (p->def->definitionType()==Definition::TypeClass)
@@ -1410,13 +1407,13 @@ QCString DefinitionImpl::navigationPathAsString() const
       {
         name = name.left(name.length()-2);
       }
-      result+="<a class=\"el\" href=\"$relpath^"+fn;
+      result+="<a href=\"$relpath^"+fn;
       if (!p->def->anchor().isEmpty()) result+="#"+p->def->anchor();
       result+="\">"+convertToHtml(name)+"</a>";
     }
     else
     {
-      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
+      result+="<a href=\"$relpath^"+fn+"\">"+
               convertToHtml(locName)+"</a>";
     }
   }
@@ -1447,7 +1444,9 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 
 void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
 {
-  if (p->sectionRefs.empty()) return;
+  // first check if we have anything to show or if the outline is already shown on the outline panel
+  if (p->sectionRefs.empty() || (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(PAGE_OUTLINE_PANEL))) return;
+  // generate the embedded toc
   ol.writeLocalToc(p->sectionRefs,localToc);
 }
 
@@ -1822,6 +1821,10 @@ void DefinitionImpl::writeQuickMemberLinks(OutputList &,const MemberDef *) const
 }
 
 void DefinitionImpl::writeSummaryLinks(OutputList &) const
+{
+}
+
+void DefinitionImpl::writePageNavigation(OutputList &) const
 {
 }
 

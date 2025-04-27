@@ -23,42 +23,204 @@
  */
 
 /** Protection level of members */
-enum class Protection   { Public, Protected, Private, Package } ;
+#define PROTECTION_SPECIFICATIONS \
+  PROTSPEC(Public,public,public) \
+  PROTSPEC(Protected,protected,protected) \
+  PROTSPEC(Private,private,private) \
+  PROTSPEC(Package,package,protected)
+
+enum class Protection   {
+#define PROTSPEC(x,y,z) x,
+  PROTECTION_SPECIFICATIONS
+#undef PROTSPEC
+};
+
+[[maybe_unused]] static const char *to_string(Protection prot)
+{
+  const char *result = "ERROR";
+  switch (prot)
+  {
+#define PROTSPEC(x,y,z) case Protection::x: result = #x; break;
+    PROTECTION_SPECIFICATIONS
+#undef PROTSPEC
+  }
+  return result;
+}
+
+[[maybe_unused]] static const char *to_string_lower(Protection prot)
+{
+  const char *result = "error";
+  switch (prot)
+  {
+#define PROTSPEC(x,y,z) case Protection::x: result = #y; break;
+    PROTECTION_SPECIFICATIONS
+#undef PROTSPEC
+  }
+  return result;
+}
+
+[[maybe_unused]] static const char *to_string_lower_class(Protection prot)
+{
+  const char *result = "error";
+  switch (prot)
+  {
+#define PROTSPEC(x,y,z) case Protection::x: result = #z; break;
+    PROTECTION_SPECIFICATIONS
+#undef PROTSPEC
+  }
+  return result;
+}
 
 /** Virtualness of a member. */
-enum class Specifier    { Normal, Virtual, Pure } ;
+#define SPECIFIER_SPECIFICATIONS \
+  SPECSPEC(Normal,non-virtual) \
+  SPECSPEC(Virtual,virtual) \
+  SPECSPEC(Pure,pure-virtual)
+
+enum class Specifier   {
+#define SPECSPEC(x,y) x,
+  SPECIFIER_SPECIFICATIONS
+#undef SPECSPEC
+};
+
+[[maybe_unused]] static const char *to_string(Specifier spec)
+{
+  const char *result = "ERROR";
+  switch (spec)
+  {
+#define SPECSPEC(x,y) case Specifier::x: result = #x; break;
+    SPECIFIER_SPECIFICATIONS
+#undef SPECSPEC
+  }
+  return result;
+}
+
+[[maybe_unused]] static const char *to_string_lower(Specifier spec)
+{
+  const char *result = "error";
+  switch (spec)
+  {
+#define SPECSPEC(x,y) case Specifier::x: result = #y; break;
+  SPECIFIER_SPECIFICATIONS
+#undef SPECSPEC
+  }
+  return result;
+}
 
 /** Kind of method */
-enum class MethodTypes  { Method, Signal, Slot, DCOP, Property, Event };
+#define METHODTYPE_SPECIFICATIONS \
+  MTSPEC(Method) \
+  MTSPEC(Signal) \
+  MTSPEC(Slot) \
+  MTSPEC(DCOP) \
+  MTSPEC(Property) \
+  MTSPEC(Event)
+
+enum class MethodTypes   {
+#define MTSPEC(x) x,
+  METHODTYPE_SPECIFICATIONS
+#undef MTSPEC
+};
+
+[[maybe_unused]] static const char *to_string(MethodTypes mt)
+{
+  const char *result = "ERROR";
+  switch (mt)
+  {
+#define MTSPEC(x) case MethodTypes::x: result = #x; break;
+    METHODTYPE_SPECIFICATIONS
+#undef MTSPEC
+  }
+  return result;
+}
 
 /** Type of member relation */
-enum class RelatesType  { Simple, Duplicate, MemberOf };
+#define RELATESTYPE_SPECIFICATIONS \
+  RTSPEC(Simple) \
+  RTSPEC(Duplicate) \
+  RTSPEC(MemberOf)
+
+enum class RelatesType   {
+#define RTSPEC(x) x,
+  RELATESTYPE_SPECIFICATIONS
+#undef RTSPEC
+};
+
+[[maybe_unused]] static const char *to_string(RelatesType rt)
+{
+  const char *result = "ERROR";
+  switch (rt)
+  {
+#define RTSPEC(x) case RelatesType::x: result = #x; break;
+    RELATESTYPE_SPECIFICATIONS
+#undef RTSPEC
+  }
+  return result;
+}
 
 /** Kind of member relationship */
-enum class Relationship { Member, Related, Foreign };
+#define RELATIONSHIP_SPECIFICATIONS \
+  RSSPEC(Member) \
+  RSSPEC(Related) \
+  RSSPEC(Foreign)
+
+enum class Relationship   {
+#define RSSPEC(x) x,
+  RELATIONSHIP_SPECIFICATIONS
+#undef RSSPEC
+};
+
+[[maybe_unused]] static const char *to_string(Relationship rs)
+{
+  const char *result = "ERROR";
+  switch (rs)
+  {
+#define RSSPEC(x) case Relationship::x: result = #x; break;
+    RELATIONSHIP_SPECIFICATIONS
+#undef RSSPEC
+  }
+  return result;
+}
 
 /** Language as given by extension */
-enum class SrcLangExt
-{
-  Unknown  = 0x00000,
-  IDL      = 0x00008,
-  Java     = 0x00010,
-  CSharp   = 0x00020,
-  D        = 0x00040,
-  PHP      = 0x00080,
-  ObjC     = 0x00100,
-  Cpp      = 0x00200,
-  JS       = 0x00400,
-  Python   = 0x00800,
-  Fortran  = 0x01000,
-  VHDL     = 0x02000,
-  XML      = 0x04000,
-  //Tcl      = 0x08000, // no longer supported
-  Markdown = 0x10000,
-  SQL      = 0x20000,
-  Slice    = 0x40000,
-  Lex      = 0x80000
+#define SRCLANGEXT_SPECIFICATIONS \
+  SRCLANGEXT(Unknown  , 0x00000, Unknown) \
+  SRCLANGEXT(IDL      , 0x00008, IDL) \
+  SRCLANGEXT(Java     , 0x00010, Java) \
+  SRCLANGEXT(CSharp   , 0x00020, C#) \
+  SRCLANGEXT(D        , 0x00040, D) \
+  SRCLANGEXT(PHP      , 0x00080, PHP) \
+  SRCLANGEXT(ObjC     , 0x00100, Objective-C) \
+  SRCLANGEXT(Cpp      , 0x00200, C++) \
+  SRCLANGEXT(JS       , 0x00400, Javascript) \
+  SRCLANGEXT(Python   , 0x00800, Python) \
+  SRCLANGEXT(Fortran  , 0x01000, Fortran) \
+  SRCLANGEXT(VHDL     , 0x02000, VHDL) \
+  SRCLANGEXT(XML      , 0x04000, XML) \
+  SRCLANGEXT(Markdown , 0x10000, Markdown) \
+  SRCLANGEXT(SQL      , 0x20000, SQL) \
+  SRCLANGEXT(Slice    , 0x40000, Slice) \
+  SRCLANGEXT(Lex      , 0x80000, Lex)
+
+  /* SRCLANGEXT(Tcl      , 0x08000, Tcl ) // no longer supported */
+
+enum class SrcLangExt {
+#define SRCLANGEXT(x, v, z) x = v,
+  SRCLANGEXT_SPECIFICATIONS
+#undef SRCLANGEXT
 };
+
+[[maybe_unused]] static const char *to_string(SrcLangExt sle)
+{
+  const char *result = "ERROR";
+  switch (sle)
+  {
+#define SRCLANGEXT(x,v,z) case SrcLangExt::x: result = #z; break;
+    SRCLANGEXT_SPECIFICATIONS
+#undef SRCLANGEXT
+  }
+  return result;
+}
 
 /** Grouping info */
 struct Grouping
@@ -128,9 +290,9 @@ struct Grouping
   ML_TYPE(DcopMethods,         OnlyPublic,   Invalid,           Invalid,          "dcop-methods",          "dcop-func"               ) \
   ML_TYPE(Properties,          OnlyPublic,   Invalid,           Invalid,          "properties",            "property"                ) \
   ML_TYPE(Events,              OnlyPublic,   Invalid,           Invalid,          "events",                "event"                   ) \
-  ML_TYPE(AllMembersList,      OnlyPublic,   Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EnumFields,          OnlyPublic,   Invalid,           Invalid,          "enum-fields",           ""                        ) \
-  ML_TYPE(MemberGroup,         OnlyPublic,   Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(AllMembersList,      OnlyPublic,   Invalid,           Invalid,          "all-members-list",      "all-members-list"        ) \
+  ML_TYPE(EnumFields,          OnlyPublic,   Invalid,           Invalid,          "enum-fields",           "enum-fields"             ) \
+  ML_TYPE(MemberGroup,         OnlyPublic,   Invalid,           Invalid,          "member-group",          "member-group"            ) \
   ML_TYPE(Interfaces,          OnlyPublic,   Invalid,           Invalid,          "interfaces",            "interfaces"              ) \
   ML_TYPE(Services,            OnlyPublic,   Invalid,           Invalid,          "services",              "services"                ) \
   ML_TYPE(DecDefineMembers,    Declaration,  Invalid,           Invalid,          "define-members",        "define"                  ) \
@@ -149,33 +311,33 @@ struct Grouping
   ML_TYPE(DecPropMembers,      Declaration,  Invalid,           Invalid,          "prop-members",          ""                        ) \
   ML_TYPE(DecSequenceMembers,  Declaration,  Invalid,           Invalid,          "sequence-members",      "sequence"                ) \
   ML_TYPE(DecDictionaryMembers,Declaration,  Invalid,           Invalid,          "dictionary-members",    "dictionary"              ) \
-  ML_TYPE(TypedefMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EnumMembers,         Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EnumValMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(FunctionMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(RelatedMembers,      Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(VariableMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(PropertyMembers,     Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(EventMembers,        Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(Constructors,        Detailed,     Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(TypedefMembers,      Detailed,     Invalid,           Invalid,          "doc-typedef-members",   ""                        ) \
+  ML_TYPE(EnumMembers,         Detailed,     Invalid,           Invalid,          "doc-enum-members",      ""                        ) \
+  ML_TYPE(EnumValMembers,      Detailed,     Invalid,           Invalid,          "doc-enum-val-members",  ""                        ) \
+  ML_TYPE(FunctionMembers,     Detailed,     Invalid,           Invalid,          "doc-func-members",      ""                        ) \
+  ML_TYPE(RelatedMembers,      Detailed,     Invalid,           Invalid,          "doc-related-members",   ""                        ) \
+  ML_TYPE(VariableMembers,     Detailed,     Invalid,           Invalid,          "doc-variable-members",  ""                        ) \
+  ML_TYPE(PropertyMembers,     Detailed,     Invalid,           Invalid,          "doc-property-members",  ""                        ) \
+  ML_TYPE(EventMembers,        Detailed,     Invalid,           Invalid,          "doc-event-members",     ""                        ) \
+  ML_TYPE(Constructors,        Detailed,     Invalid,           Invalid,          "doc-constructors",      ""                        ) \
   ML_TYPE(InterfaceMembers,    Detailed,     Invalid,           Invalid,          "interface-members",     ""                        ) \
   ML_TYPE(ServiceMembers,      Detailed,     Invalid,           Invalid,          "service-members",       ""                        ) \
-  ML_TYPE(DocDefineMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocProtoMembers,     Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocTypedefMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocEnumMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocFuncMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocVarMembers,       Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocEnumValMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocPubSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocProSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocPriSlotMembers,   Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocSignalMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocEventMembers,     Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocFriendMembers,    Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocPropMembers,      Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocSequenceMembers,  Documentation,Invalid,           Invalid,          "",                      ""                        ) \
-  ML_TYPE(DocDictionaryMembers,Documentation,Invalid,           Invalid,          "",                      ""                        ) \
+  ML_TYPE(DocDefineMembers,    Documentation,Invalid,           Invalid,          "doc-define-members",    ""                        ) \
+  ML_TYPE(DocProtoMembers,     Documentation,Invalid,           Invalid,          "doc-proto-members",     ""                        ) \
+  ML_TYPE(DocTypedefMembers,   Documentation,Invalid,           Invalid,          "doc-typedef-members",   ""                        ) \
+  ML_TYPE(DocEnumMembers,      Documentation,Invalid,           Invalid,          "doc-enum-members",      ""                        ) \
+  ML_TYPE(DocFuncMembers,      Documentation,Invalid,           Invalid,          "doc-func-members",      ""                        ) \
+  ML_TYPE(DocVarMembers,       Documentation,Invalid,           Invalid,          "doc-var-members",       ""                        ) \
+  ML_TYPE(DocEnumValMembers,   Documentation,Invalid,           Invalid,          "doc-enum-val-members",  ""                        ) \
+  ML_TYPE(DocPubSlotMembers,   Documentation,Invalid,           Invalid,          "doc-pub-slot-members",  ""                        ) \
+  ML_TYPE(DocProSlotMembers,   Documentation,Invalid,           Invalid,          "doc-pro-slot-members",  ""                        ) \
+  ML_TYPE(DocPriSlotMembers,   Documentation,Invalid,           Invalid,          "doc-pri-slot-members",  ""                        ) \
+  ML_TYPE(DocSignalMembers,    Documentation,Invalid,           Invalid,          "doc-signal-members",    ""                        ) \
+  ML_TYPE(DocEventMembers,     Documentation,Invalid,           Invalid,          "doc-event-members",     ""                        ) \
+  ML_TYPE(DocFriendMembers,    Documentation,Invalid,           Invalid,          "doc-friend-members",    ""                        ) \
+  ML_TYPE(DocPropMembers,      Documentation,Invalid,           Invalid,          "doc-prop-members",      ""                        ) \
+  ML_TYPE(DocSequenceMembers,  Documentation,Invalid,           Invalid,          "doc-sequence-members",  ""                        ) \
+  ML_TYPE(DocDictionaryMembers,Documentation,Invalid,           Invalid,          "doc-dictionary-members",""                        ) \
 
 /** Wrapper class for the MemberListType type. Can be set only during construction.
  *  Packs the type together with category flags.
@@ -622,7 +784,7 @@ enum class VhdlSpecifier
  ETYPE(ObjcImpl,           None)            \
  ETYPE(ExportedInterface,  None)            \
  ETYPE(IncludedService,    None)            \
- ETYPE(ExampleLineno,      None)            \
+ ETYPE(ExampleLineno,      Doc)             \
 
 /** Wrapper class for the Entry type. Can be set only during construction.
  *  Packs the type together with category flags.

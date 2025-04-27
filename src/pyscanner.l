@@ -1771,6 +1771,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->lang       = SrcLangExt::Python;
   yyextra->current->type.clear();
   yyextra->current->name.clear();
+  yyextra->current->initializer.clear();
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
   yyextra->isStatic = FALSE;
 }
@@ -1778,6 +1779,11 @@ static void initEntry(yyscan_t yyscanner)
 static void newEntry(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->current->name.isEmpty())
+  {
+    initEntry(yyscanner);
+    return;
+  }
   bool found = false;
   if (yyextra->checkDupEntry)
   {

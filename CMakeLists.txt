@@ -22,7 +22,7 @@ option(build_parse     "Parses source code and dumps the dependencies between th
 option(build_search    "Build external search tools (doxysearch and doxyindexer)" OFF)
 option(build_doc       "Build user manual (HTML and PDF)" OFF)
 option(build_doc_chm   "Build user manual (CHM)" OFF)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     option(use_libc++  "Use libc++ as C++ standard library." ON)
 endif()
 option(use_libclang    "Add support for libclang parsing." OFF)
@@ -36,6 +36,7 @@ option(enable_coverage "Enable coverage reporting for gcc/clang [development]" O
 option(enable_tracing  "Enable tracing option in release builds [development]" OFF)
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
+include(CheckCXXCompilerFlag)
 
 set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
 set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
@@ -82,8 +83,17 @@ if (build_wizard)
     endif()
 endif()
 
-# use C++17 standard for compiling
-set(CMAKE_CXX_STANDARD 17)
+# use C++17 standard for compiling (unless very new Clang is present)
+if (
+    (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND
+     CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 17) OR
+    (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+     CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19)
+)
+    set(CMAKE_CXX_STANDARD 20)
+else()
+    set(CMAKE_CXX_STANDARD 17)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
@@ -116,13 +126,36 @@ if (CMAKE_SYSTEM MATCHES "Darwin")
     set(EXTRA_LIBS ${CORESERVICES_LIB})
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_LIBCPP_ENABLE_ASSERTIONS=1")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_ASSERTIONS")
-endif()
+check_cxx_source_compiles(
+  "
+  #include <algorithm>
+
+  #if !defined(__clang__) || !defined(_LIBCPP_VERSION)
+  # error \"This is not clang with libcxx by llvm\"
+  #endif
+
+  int main() {
+    return 0;
+  }
+  "
+  IS_CLANG_LIBCPP
+  FAIL_REGEX "This is not clang with libcxx by llvm"
+)
+
+add_compile_definitions(
+    # LLVM's clang in combination with libc++
+    $<$<AND:$<CONFIG:Debug>,$<BOOL:${IS_CLANG_LIBCPP}>>:_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG>
+    # LLVM's clang or gcc in combination with libstdc++ (GNU)
+    $<$<AND:$<CONFIG:Debug>,$<NOT:$<BOOL:${IS_CLANG_LIBCPP}>>>:_GLIBCXX_ASSERTIONS>
+)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_OMIT_LOAD_EXTENSION=1")
+
+# Use 64-bit off_t on 32-bit Linux
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+  # ensure 64bit offsets are used for filesystem accesses for 32bit compilation
+  add_compile_definitions(_FILE_OFFSET_BITS=64)
+endif()
 
 if (WIN32)
     if (MSVC)
@@ -171,7 +204,11 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 endif()
 
 # needed for JavaCC
-set(JAVA_CC_EXTRA_FLAGS "-DJAVACC_CHAR_TYPE=\"unsigned char\"")
+if (CMAKE_CXX_STANDARD EQUAL 20)
+    set(JAVA_CC_EXTRA_FLAGS "-DJAVACC_CHAR_TYPE=\"char8_t\"")
+else()
+    set(JAVA_CC_EXTRA_FLAGS "-DJAVACC_CHAR_TYPE=\"unsigned char\"")
+endif()
 set(CMAKE_CXX_FLAGS       "${CMAKE_CXX_FLAGS}       ${JAVA_CC_EXTRA_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${JAVA_CC_EXTRA_FLAGS}")
 

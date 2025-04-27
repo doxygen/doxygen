@@ -576,13 +576,15 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);
+    int groupId=0;
     for (const auto &mg : m_memberGroupRefList)
     {
       bool hasHeader=!mg->header().isEmpty();
       if (inheritId.isEmpty())
       {
+        QCString groupAnchor = QCString(listType().toLabel())+"-"+QCString().setNum(groupId++);
         //printf("mg->header=%s hasHeader=%d\n",qPrint(mg->header()),hasHeader);
-        ol.startMemberGroupHeader(hasHeader);
+        ol.startMemberGroupHeader(groupAnchor,hasHeader);
         if (hasHeader)
         {
           ol.parseText(mg->header());
@@ -617,7 +619,8 @@ void MemberList::writeDeclarations(OutputList &ol,
 
 void MemberList::writeDocumentation(OutputList &ol,
                      const QCString &scopeName, const Definition *container,
-                     const QCString &title,bool showEnumValues,bool showInline) const
+                     const QCString &title,const QCString &anchor,
+                     bool showEnumValues,bool showInline) const
 {
   if (numDocMembers()==-1)
   {
@@ -634,7 +637,8 @@ void MemberList::writeDocumentation(OutputList &ol,
       ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
-    ol.startGroupHeader(showInline ? 2 : 0);
+    if (container) ol.writeAnchor(container->getOutputFileBase(),anchor);
+    ol.startGroupHeader(anchor,showInline ? 2 : 0);
     ol.parseText(title);
     ol.endGroupHeader(showInline ? 2 : 0);
   }
@@ -754,7 +758,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         md->writeDocumentation(this,count++,overloadCount,ol,scopeName,container_d,m_container==MemberListContainer::Group);
 
         ol.endContents();
-        endFileWithNavPath(ol,container_d);
+        endFileWithNavPath(ol,container);
       }
       else
       {

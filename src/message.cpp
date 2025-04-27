@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <mutex>
 #include <atomic>
+#include <unordered_set>
 
 #include "config.h"
 #include "debug.h"
@@ -25,6 +26,7 @@
 #include "doxygen.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "md5.h"
 
 // globals
 static QCString        g_warnFormat;
@@ -37,8 +39,19 @@ static QCString        g_warnlogFile;
 static bool            g_warnlogTemp = false;
 static std::atomic_bool g_warnStat = false;
 static std::mutex      g_mutex;
+static std::unordered_set<std::string> g_warnHash;
 
 //-----------------------------------------------------------------------------------------
+
+static bool checkWarnMessage(QCString result)
+{
+  uint8_t md5_sig[16];
+  char sigStr[33];
+  MD5Buffer(result.data(),result.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr);
+
+  return g_warnHash.insert(sigStr).second;
+}
 
 static void format_warn(const QCString &file,int line,const QCString &text)
 {
@@ -70,7 +83,7 @@ static void format_warn(const QCString &file,int line,const QCString &text)
   {
     std::unique_lock<std::mutex> lock(g_mutex);
     // print resulting message
-    fwrite(msgText.data(),1,msgText.length(),g_warnFile);
+    if (checkWarnMessage(msgText)) fwrite(msgText.data(),1,msgText.length(),g_warnFile);
   }
   if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {
@@ -150,7 +163,10 @@ void warn_(WarningType type, const QCString &file, int line, fmt::string_view fm
 
 void warn_uncond_(fmt::string_view fmt, fmt::format_args args)
 {
-  fmt::print(g_warnFile,"{}{}",g_warningStr,vformat(fmt,args));
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    if (checkWarnMessage(g_errorStr+fmt::vformat(fmt,args))) fmt::print(g_warnFile,"{}{}",g_warningStr,vformat(fmt,args));
+  }
   handle_warn_as_error();
 }
 
@@ -158,7 +174,10 @@ void warn_uncond_(fmt::string_view fmt, fmt::format_args args)
 
 void err_(fmt::string_view fmt, fmt::format_args args)
 {
-  fmt::print(g_warnFile,"{}{}",g_errorStr,fmt::vformat(fmt,args));
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    if (checkWarnMessage(g_errorStr+fmt::vformat(fmt,args))) fmt::print(g_warnFile,"{}{}",g_errorStr,fmt::vformat(fmt,args));
+  }
   handle_warn_as_error();
 }
 
@@ -175,7 +194,7 @@ void term_(fmt::string_view fmt, fmt::format_args args)
 {
   {
     std::unique_lock<std::mutex> lock(g_mutex);
-    fmt::print(g_warnFile, "{}{}", g_errorStr, fmt::vformat(fmt,args));
+    if (checkWarnMessage(g_errorStr+fmt::vformat(fmt,args))) fmt::print(g_warnFile, "{}{}", g_errorStr, fmt::vformat(fmt,args));
     if (g_warnFile != stderr)
     {
       size_t l = strlen(g_errorStr);

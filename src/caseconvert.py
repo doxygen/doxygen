@@ -47,7 +47,7 @@ inline const char *convertUnicodeToUpper(uint32_t code)
   {
 ''')
 writeMapping(file,toupper)
-file.write(r'''    default: return nullptr
+file.write(r'''    default: return nullptr;
   }
 }
 
@@ -57,7 +57,7 @@ inline const char *convertUnicodeToLower(uint32_t code)
   {
 ''')
 writeMapping(file,tolower)
-file.write(r'''    default: return nullptr
+file.write(r'''    default: return nullptr;
   }
 }
 
@@ -67,9 +67,9 @@ inline bool isPunctuationCharacter(uint32_t code)
   {
 ''')
 writePunctuationCodes(file)
-file.write(r'''    default: return false
+file.write(r'''    default: return false;
   }
-  return false
+  return false;
 }
 
 #endif

@@ -1930,7 +1930,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   if (parser==nullptr) return nullptr;
   //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?qPrint(ctx->name()):"<none>",
   //                                     md?qPrint(md->name()):"<none>",
-  //                                     input);
+  //                                     qPrint(input));
   //printf("========== validating %s at line %d\n",qPrint(fileName),startLine);
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",qPrint(input));
 

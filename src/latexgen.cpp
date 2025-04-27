@@ -1517,7 +1517,7 @@ void LatexGenerator::startTitle()
   }
 }
 
-void LatexGenerator::startGroupHeader(int extraIndentLevel)
+void LatexGenerator::startGroupHeader(const QCString &,int extraIndentLevel)
 {
   if (Config_getBool(COMPACT_LATEX))
   {
@@ -1983,7 +1983,7 @@ void LatexGenerator::endMemberList()
 }
 
 
-void LatexGenerator::startMemberGroupHeader(bool hasHeader)
+void LatexGenerator::startMemberGroupHeader(const QCString &,bool hasHeader)
 {
   if (hasHeader) m_t << "\\begin{Indent}";
   m_t << "\\textbf{ ";

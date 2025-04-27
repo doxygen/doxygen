@@ -79,9 +79,10 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "        <span class=\"left\">\n";
-  t << "          <span id=\"MSearchSelect\" ";
-  t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\" ";
-  t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\">&#160;</span>\n";
+  t << "          <span id=\"MSearchSelect\" class=\"search-icon\" ";
+  t << "onmouseover=\"return searchBox.OnSearchSelectShow()\" ";
+  t << "onmouseout=\"return searchBox.OnSearchSelectHide()\">";
+  t << "<span class=\"search-icon-dropdown\"></span></span>\n";
   t << "          <input type=\"text\" id=\"MSearchField\" value=\"\" placeholder=\""
     << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
   t << "               onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
@@ -89,7 +90,7 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
   t << "               onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
   t << "          </span><span class=\"right\">\n";
   t << "            <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
-    << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"" << relPath << "search/close.svg\" alt=\"\"/></a>\n";
+    << "<div id=\"MSearchCloseImg\" class=\"close-icon\"></div></a>\n";
   t << "          </span>\n";
   t << "        </div>\n";
 }
@@ -111,7 +112,7 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
     t << "search.php";
   }
   t << "\" method=\"get\">\n";
-  t << "              <span id=\"MSearchSelectExt\">&#160;</span>\n";
+  t << "              <span id=\"MSearchSelectExt\" class=\"search-icon\"></span>\n";
   if (!highlightSearch || !Config_getBool(HTML_DYNAMIC_MENUS))
   {
     t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\""
@@ -437,13 +438,12 @@ static QCString substituteHtmlKeywords(const QCString &file,
       generatedBy = theTranslator->trGeneratedBy();
       break;
   }
-  treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   if (treeView)
   {
-    treeViewCssJs += "<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-                     "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
+    treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
+                    "<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
+                    "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
   }
-  treeViewCssJs += "<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n";
 
   if (searchEngine)
   {
@@ -459,9 +459,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS) || Config_getBool(FULL_SIDEBAR))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-				"  $(function() { init_search(); });\n"
-					"/* @license-end */\n"
+				        "  $(function() { init_search(); });\n"
 					"</script>";
       }
     }
@@ -470,11 +468,9 @@ static QCString substituteHtmlKeywords(const QCString &file,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
 					"  $(function() {\n"
 					"    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
 					"  });\n"
-					"  /* @license-end */\n"
 					"</script>\n";
       }
 
@@ -714,9 +710,15 @@ static QCString replaceVariables(const QCString &input)
       int j=input.find(")",i+4);
       assert(j!=-1);
       auto it = mapping.find(input.mid(i+4,j-i-4).str()); // find variable
-      assert(it!=mapping.end());                          // should be found
-      output.addStr(it->second);                          // add it value
-      //printf("replace '%s' by '%s'\n",qPrint(input.mid(i+4,j-i-4)),qPrint(it->second));
+      if (it==mapping.end())
+      {                            // should be found
+        err("failed to find value variable {}. It is not longer defined in doxygen.css\n",input.mid(i+4,j-i-4));
+      }
+      else
+      {
+        //printf("replace '%s' by '%s'\n",qPrint(input.mid(i+4,j-i-4)),qPrint(it->second));
+        output.addStr(it->second);                          // add it value
+      }
       p=j+1;
     }
     output.addStr(input.data()+p,input.length()-p);
@@ -1285,19 +1287,6 @@ void HtmlGenerator::init()
     }
   }
 
-  // copy resize.js
-  {
-    std::ofstream f = Portable::openOutputStream(dname+"/resize.js");
-    if (f.is_open())
-    {
-      TextStream t(&f);
-      t << substitute(
-             substitute(mgr.getAsString("resize.js"),
-                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
-                "$PROJECTID",      getProjectId());
-    }
-  }
-
   if (Config_getBool(HTML_COPY_CLIPBOARD))
   {
     std::ofstream f = Portable::openOutputStream(dname+"/clipboard.js");
@@ -1363,37 +1352,8 @@ void HtmlGenerator::writeTabData()
   Doxygen::indexList->addStyleSheetFile("tabs.css");
   QCString dname=Config_getString(HTML_OUTPUT);
   ResourceMgr &mgr = ResourceMgr::instance();
-  //writeColoredImgData(dname,colored_tab_data);
-  mgr.copyResource("tab_a.lum",dname);  // active, light mode
-  mgr.copyResource("tab_b.lum",dname);  // normal, light mode
-  mgr.copyResource("tab_h.lum",dname);  // highlight, light mode
-  mgr.copyResource("tab_s.lum",dname);  // separator, light mode
-  mgr.copyResource("tab_ad.lum",dname); // active, dark mode
-  mgr.copyResource("tab_bd.lum",dname); // normal, dark mode
-  mgr.copyResource("tab_hd.lum",dname); // highlight, dark mode
-  mgr.copyResource("tab_sd.lum",dname); // separator, light mode
-  mgr.copyResource("nav_h.lum",dname);  // header gradient, light mode
-  mgr.copyResource("nav_hd.lum",dname); // header gradient, dark mode
-  mgr.copyResource("nav_f.lum",dname); // member definition header, light mode
-  mgr.copyResource("nav_fd.lum",dname); // member definition header, dark mode
-  mgr.copyResource("bc_s.luma",dname); // breadcrumb separator, light mode
-  mgr.copyResource("bc_sd.luma",dname); // breadcrumb separator, dark mode
   mgr.copyResource("doxygen.svg",dname);
   Doxygen::indexList->addImageFile("doxygen.svg");
-  mgr.copyResource("closed.luma",dname);
-  mgr.copyResource("open.luma",dname);
-  mgr.copyResource("sync_on.luma",dname);
-  mgr.copyResource("sync_off.luma",dname);
-  mgr.copyResource("nav_g.png",dname);
-  Doxygen::indexList->addImageFile("nav_g.png");
-  mgr.copyResource("plus.svg",dname);
-  Doxygen::indexList->addImageFile("plus.svg");
-  mgr.copyResource("minus.svg",dname);
-  Doxygen::indexList->addImageFile("minus.svg");
-  mgr.copyResource("plusd.svg",dname);
-  Doxygen::indexList->addImageFile("plusd.svg");
-  mgr.copyResource("minusd.svg",dname);
-  Doxygen::indexList->addImageFile("minusd.svg");
 }
 
 void HtmlGenerator::writeSearchData(const QCString &dname)
@@ -1401,20 +1361,6 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
   //bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   //writeImgData(dname,serverBasedSearch ? search_server_data : search_client_data);
   ResourceMgr &mgr = ResourceMgr::instance();
-
-  // server side search resources
-  mgr.copyResource("mag.svg",dname);
-  mgr.copyResource("mag_d.svg",dname);
-  Doxygen::indexList->addImageFile("search/mag.svg");
-  Doxygen::indexList->addImageFile("search/mag_d.svg");
-
-  // client side search resources
-  mgr.copyResource("close.svg",dname);
-  Doxygen::indexList->addImageFile("search/close.svg");
-  mgr.copyResource("mag_sel.svg",dname);
-  mgr.copyResource("mag_seld.svg",dname);
-  Doxygen::indexList->addImageFile("search/mag_sel.svg");
-  Doxygen::indexList->addImageFile("search/mag_seld.svg");
 
   QCString searchDirName = dname;
   std::ofstream f = Portable::openOutputStream(searchDirName+"/search.css");
@@ -1424,13 +1370,13 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
     QCString searchCss;
     // the position of the search box depends on a number of settings.
     // Insert the right piece of CSS code depending on which options are selected
-    if (Config_getBool(DISABLE_INDEX))
+    if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(FULL_SIDEBAR))
     {
-      if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(FULL_SIDEBAR))
-      {
-        searchCss = mgr.getAsString("search_sidebar.css"); // we have a full height side bar
-      }
-      else if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
+      searchCss = mgr.getAsString("search_sidebar.css"); // we have a full height side bar
+    }
+    else if (Config_getBool(DISABLE_INDEX))
+    {
+      if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
       {
         searchCss = mgr.getAsString("search_nomenu_toggle.css"); // we have no tabs but do have a darkmode button
       }
@@ -1499,7 +1445,18 @@ static void writeDefaultStyleSheet(TextStream &t)
     t << "}\n\n";
   }
 
-  t << replaceVariables(ResourceMgr::instance().getAsString("doxygen.css"));
+  QCString cssStr = ResourceMgr::instance().getAsString("doxygen.css");
+  bool hasFullSidebar = Config_getBool(FULL_SIDEBAR) && Config_getBool(GENERATE_TREEVIEW);
+  if (hasFullSidebar)
+  {
+    cssStr+="\n"
+            "#titlearea {\n"
+            "  border-bottom: none;\n"
+            "  background-color: var(--nav-background-color);\n"
+            "  border-right: 1px solid var(--nav-border-color);\n"
+            "}\n";
+  }
+  t << replaceVariables(cssStr);
 
   // For Webkit based the scrollbar styling cannot be overruled (bug in chromium?).
   // To allow the user to style the scrollbars differently we should only add it in case
@@ -1558,18 +1515,14 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   if (searchEngine /*&& !generateTreeView*/)
   {
     m_t << "<script type=\"text/javascript\">\n";
-    m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     m_t << "var searchBox = new SearchBox(\"searchBox\", \""
         << m_relPath<< "search/\",'" << Doxygen::htmlFileExtension << "');\n";
-    m_t << "/* @license-end */\n";
     m_t << "</script>\n";
   }
   if (Config_getBool(HTML_CODE_FOLDING))
   {
     m_t << "<script type=\"text/javascript\">\n";
-    m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-    m_t << "$(function() { codefold.init(" << (m_relPath.isEmpty() ? "0" : "1") << "); });\n";
-    m_t << "/* @license-end */\n";
+    m_t << "$(function() { codefold.init(); });\n";
     m_t << "</script>\n";
   }
   m_sectionCount=0;
@@ -1722,7 +1675,6 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
 
     Doxygen::indexList->addStyleSheetFile("jquery.js");
-    Doxygen::indexList->addStyleSheetFile("resize.js");
     Doxygen::indexList->addStyleSheetFile("navtree.css");
 
     Doxygen::indexList->addStyleSheetFile("dynsections.js");
@@ -1884,20 +1836,25 @@ void HtmlGenerator::endTextLink()
   m_t << "</a>";
 }
 
-void HtmlGenerator::startGroupHeader(int extraIndentLevel)
+void HtmlGenerator::startGroupHeader(const QCString &id,int extraIndentLevel)
 {
   if (extraIndentLevel==2)
   {
-    m_t << "<h4 class=\"groupheader\">";
+    m_t << "<h4";
   }
   else if (extraIndentLevel==1)
   {
-    m_t << "<h3 class=\"groupheader\">";
+    m_t << "<h3";
   }
   else // extraIndentLevel==0
   {
-    m_t << "<h2 class=\"groupheader\">";
+    m_t << "<h2";
   }
+  if (!id.isEmpty())
+  {
+    m_t <<" id=\"header-"+convertToId(id)+"\"";
+  }
+  m_t << " class=\"groupheader\">";
 }
 
 void HtmlGenerator::endGroupHeader(int extraIndentLevel)
@@ -1920,13 +1877,13 @@ void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionTyp
 {
   switch(type.level())
   {
-    case SectionType::Page:             m_t << "\n\n<h1>"; break;
-    case SectionType::Section:          m_t << "\n\n<h2>"; break;
-    case SectionType::Subsection:       m_t << "\n\n<h3>"; break;
-    case SectionType::Subsubsection:    m_t << "\n\n<h4>"; break;
-    case SectionType::Paragraph:        m_t << "\n\n<h5>"; break;
-    case SectionType::Subparagraph:     m_t << "\n\n<h6>"; break;
-    case SectionType::Subsubparagraph:  m_t << "\n\n<h6>"; break;
+    case SectionType::Page:             m_t << "\n\n<h1 class=\"doxsection\">"; break;
+    case SectionType::Section:          m_t << "\n\n<h2 class=\"doxsection\">"; break;
+    case SectionType::Subsection:       m_t << "\n\n<h3 class=\"doxsection\">"; break;
+    case SectionType::Subsubsection:    m_t << "\n\n<h4 class=\"doxsection\">"; break;
+    case SectionType::Paragraph:        m_t << "\n\n<h5 class=\"doxsection\">"; break;
+    case SectionType::Subparagraph:     m_t << "\n\n<h6 class=\"doxsection\">"; break;
+    case SectionType::Subsubparagraph:  m_t << "\n\n<h6 class=\"doxsection\">"; break;
     default: ASSERT(0); break;
   }
   m_t << "<a id=\"" << lab << "\" name=\"" << lab << "\"></a>";
@@ -2005,9 +1962,8 @@ static void startSectionHeader(TextStream &t,
     t << "<div id=\"dynsection-" << sectionCount << "\" "
          "onclick=\"return dynsection.toggleVisibility(this)\" "
          "class=\"dynheader closed\" "
-         "style=\"cursor:pointer;\">\n";
-    t << "  <img id=\"dynsection-" << sectionCount << "-trigger\" src=\""
-      << relPath << "closed.png\" alt=\"+\"/> ";
+         "style=\"cursor:pointer;\">"
+         "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>";
   }
   else
   {
@@ -2128,7 +2084,7 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
     m_t << "<table class=\"memberdecls\">\n";
     m_emptySection=FALSE;
   }
-  m_t << "<tr class=\"memitem:" << anchor;
+  m_t << "<tr class=\"memitem:" << convertToId(anchor);
   if (!inheritId.isEmpty())
   {
     m_t << " inherit " << inheritId;
@@ -2136,7 +2092,7 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
   m_t << "\"";
   if (!anchor.isEmpty())
   {
-    m_t << " id=\"r_" << anchor << "\"";
+    m_t << " id=\"r_" << convertToId(anchor) << "\"";
   }
   m_t << ">";
   insertMemberAlignLeft(type, true);
@@ -2144,7 +2100,7 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,c
 
 void HtmlGenerator::endMemberItem(MemberItemType type)
 {
-  if (type==MemberItemType::AnonymousStart || type==MemberItemType::AnonymousEnd)
+  if (type==MemberItemType::AnonymousStart)
   {
     insertMemberAlign(false);
   }
@@ -2158,12 +2114,12 @@ void HtmlGenerator::startMemberTemplateParams()
 void HtmlGenerator::endMemberTemplateParams(const QCString &anchor,const QCString &inheritId)
 {
   m_t << "</td></tr>\n";
-  m_t << "<tr class=\"memitem:" << anchor;
+  m_t << "<tr class=\"memitem:" << convertToId(anchor);
   if (!inheritId.isEmpty())
   {
     m_t << " inherit " << inheritId;
   }
-  m_t << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
+  m_t << " template\"><td class=\"memItemLeft\" align=\"right\" valign=\"top\">";
 }
 
 void HtmlGenerator::startCompoundTemplateParams()
@@ -2176,11 +2132,10 @@ void HtmlGenerator::endCompoundTemplateParams()
   m_t << "</div>";
 }
 
-void HtmlGenerator::insertMemberAlign(bool templ)
+void HtmlGenerator::insertMemberAlign(bool)
 {
   DBG_HTML(m_t << "<!-- insertMemberAlign -->\n")
-  QCString className = templ ? "memTemplItemRight" : "memItemRight";
-  m_t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">";
+  m_t << "&#160;</td><td class=\"memItemRight\" valign=\"bottom\">";
 }
 
 void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
@@ -2189,8 +2144,8 @@ void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
   switch (type)
   {
     case MemberItemType::Normal:         m_t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
-    case MemberItemType::AnonymousStart: m_t << "<td class=\"memItemLeft\" >"; break;
-    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    case MemberItemType::AnonymousStart: m_t << "<td class=\"memItemLeft anon\">"; break;
+    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft anonEnd\" valign=\"top\">"; break;
     case MemberItemType::Templated:      m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
   }
 }
@@ -2250,7 +2205,12 @@ void HtmlGenerator::startMemberHeader(const QCString &anchor, int typ)
     m_t << "<table class=\"memberdecls\">\n";
     m_emptySection=FALSE;
   }
-  m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
+  m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2";
+  if (!anchor.isEmpty())
+  {
+    m_t << " id=\"header-" << anchor << "\"";
+  }
+  m_t << " class=\"groupheader\">";
   if (!anchor.isEmpty())
   {
     m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>\n";
@@ -2592,9 +2552,9 @@ void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
   g.writeGraph(m_t,dir(),fileName());
 }
 
-void HtmlGenerator::startMemberGroupHeader(bool)
+void HtmlGenerator::startMemberGroupHeader(const QCString &id,bool)
 {
-  m_t << "<tr><td colspan=\"2\"><div class=\"groupHeader\">";
+  m_t << "<tr id=\"" << id << "\" class=\"groupHeader\"><td colspan=\"2\"><div class=\"groupHeader\">";
 }
 
 void HtmlGenerator::endMemberGroupHeader()
@@ -2932,7 +2892,8 @@ static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
 static void writeDefaultQuickLinks(TextStream &t,
                                    HighlightedItem hli,
                                    const QCString &file,
-                                   const QCString &relPath)
+                                   const QCString &relPath,
+                                   bool extraTabs)
 {
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool searchEngine      = Config_getBool(SEARCHENGINE);
@@ -2940,6 +2901,7 @@ static void writeDefaultQuickLinks(TextStream &t,
   bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
   bool fullSidebar       = Config_getBool(FULL_SIDEBAR);
   bool disableIndex      = Config_getBool(DISABLE_INDEX);
+  bool dynamicMenus      = Config_getBool(HTML_DYNAMIC_MENUS);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
   LayoutNavEntry::Kind kind = LayoutNavEntry::None;
   LayoutNavEntry::Kind altKind = LayoutNavEntry::None; // fall back for the old layout file
@@ -2990,7 +2952,7 @@ static void writeDefaultQuickLinks(TextStream &t,
     case HighlightedItem::Search: break;
   }
 
-  if (!disableIndex && Config_getBool(HTML_DYNAMIC_MENUS))
+  if (!disableIndex && dynamicMenus)
   {
     QCString searchPage;
     if (externalSearch)
@@ -3004,7 +2966,6 @@ static void writeDefaultQuickLinks(TextStream &t,
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>\n";
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>\n";
     t << "<script type=\"text/javascript\">\n";
-    t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     t << "$(function() {\n";
     t << "  initMenu('" << relPath << "',"
       << (searchEngine && !(generateTreeView && fullSidebar)?"true":"false") << ","
@@ -3013,11 +2974,14 @@ static void writeDefaultQuickLinks(TextStream &t,
       << theTranslator->trSearch() << "',"
       << (generateTreeView?"true":"false")
       << ");\n";
-    if (Config_getBool(SEARCHENGINE))
+    if (searchEngine)
     {
       if (!serverBasedSearch)
       {
-        t << "  $(function() { init_search(); });\n";
+        if (!disableIndex && dynamicMenus && !fullSidebar)
+        {
+          t << "  $(function() { init_search(); });\n";
+        }
       }
       else
       {
@@ -3027,7 +2991,6 @@ static void writeDefaultQuickLinks(TextStream &t,
       }
     }
     t << "});\n";
-    t << "/* @license-end */\n";
     t << "</script>\n";
     t << "<div id=\"main-nav\"></div>\n";
   }
@@ -3055,15 +3018,18 @@ static void writeDefaultQuickLinks(TextStream &t,
     }
     t << "<div id=\"main-nav\">\n";
     renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HighlightedItem::Search);
-    t << "</div>\n";
+    if (!extraTabs)
+    {
+      t << "</div><!-- main-nav -->\n";
+    }
   }
   else if (!generateTreeView)
   {
     renderQuickLinksAsTree(t,relPath,root);
   }
-  if (generateTreeView && !disableIndex && fullSidebar)
+  if (generateTreeView && !disableIndex && fullSidebar && !extraTabs)
   {
-     t << "<div id=\"doc-content\">\n";
+     t << "<div id=\"container\"><div id=\"doc-content\">\n";
   }
 }
 
@@ -3077,7 +3043,7 @@ void HtmlGenerator::endQuickIndices()
   }
 }
 
-QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath)
+QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCString &relpath,const QCString &allMembersFile)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString result;
@@ -3086,7 +3052,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   {
     QCString fn = name;
     addHtmlExtensionIfMissing(fn);
-    if (/*!Config_getBool(DISABLE_INDEX) ||*/ !Config_getBool(FULL_SIDEBAR))
+    if (!Config_getBool(FULL_SIDEBAR))
     {
       result += QCString(
         "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n");
@@ -3102,31 +3068,19 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "  </div>\n"
      "</div>\n"
      "<script type=\"text/javascript\">\n"
-     "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-     "$(function(){initNavTree('" + fn +
-     "','" + relpath +
-     "'); initResizable(true); });\n"
-     "/* @license-end */\n"
+     "$(function(){initNavTree('" + fn + "','" + relpath + "','" + allMembersFile + "'); });\n"
      "</script>\n";
      if (Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
      {
-       result+="<div id=\"doc-content\">\n";
+       result+="<div id=\"container\">\n<div id=\"doc-content\">\n";
      }
-  }
-  else
-  {
-     result += "<script type=\"text/javascript\">\n"
-     "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-     "$(function(){ initResizable(false); });\n"
-     "/* @license-end */\n"
-     "</script>\n";
   }
   return result;
 }
 
-void HtmlGenerator::writeSplitBar(const QCString &name)
+void HtmlGenerator::writeSplitBar(const QCString &name,const QCString &allMembersFile)
 {
-  m_t << writeSplitBarAsString(name,m_relPath);
+  m_t << writeSplitBarAsString(name,m_relPath,allMembersFile);
 }
 
 void HtmlGenerator::writeNavigationPath(const QCString &s)
@@ -3154,9 +3108,9 @@ void HtmlGenerator::endPageDoc()
   m_t << "</div><!-- PageDoc -->\n";
 }
 
-void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file)
+void HtmlGenerator::writeQuickLinks(HighlightedItem hli,const QCString &file,bool extraTabs)
 {
-  writeDefaultQuickLinks(m_t,hli,file,m_relPath);
+  writeDefaultQuickLinks(m_t,hli,file,m_relPath,extraTabs);
 }
 
 // PHP based search script
@@ -3211,24 +3165,22 @@ void HtmlGenerator::writeSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
+    t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
-		t << "/* @license-end */\n";
     t << "</script>\n";
 
     if (!disableIndex && !quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
     if (generateTreeView)
     {
       t << "</div><!-- top -->\n";
     }
-    t << writeSplitBarAsString("search.php",QCString());
+    t << writeSplitBarAsString("search.php",QCString(),QCString());
     if (quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
     t << "<!-- generated -->\n";
 
@@ -3241,6 +3193,7 @@ void HtmlGenerator::writeSearchPage()
     if (generateTreeView)
     {
       t << "</div><!-- doc-content -->\n";
+      t << "</div><!-- container -->\n";
     }
 
     writePageFooter(t,"Search","","");
@@ -3277,24 +3230,22 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
+    t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
-		t << "/* @license-end */\n";
     t << "</script>\n";
 
     if (!disableIndex && !quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
     if (generateTreeView)
     {
       t << "</div><!-- top -->\n";
     }
-    t << writeSplitBarAsString("search.php",QCString());
+    t << writeSplitBarAsString("search.php",QCString(),QCString());
     if (quickLinksAfterSplitbar)
     {
-      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,HighlightedItem::Search,QCString(),QCString(),false);
     }
 
     t << "<div class=\"header\">\n";
@@ -3310,6 +3261,7 @@ void HtmlGenerator::writeExternalSearchPage()
     if (generateTreeView)
     {
       t << "</div><!-- doc-content -->\n";
+      t << "</div><!-- container -->\n";
     }
 
     writePageFooter(t,"Search","","");
@@ -3590,7 +3542,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
   m_t << "<tr class=\"inherit_header " << id << "\">"
     << "<td colspan=\"2\" onclick=\"javascript:dynsection.toggleInherit('" << id << "')\">"
-    << "<img src=\"" << m_relPath << "closed.png\" alt=\"-\"/>&#160;"
+    << "<span class=\"dynarrow\"><span class=\"arrowhead closed\"></span></span>"
     << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
     << "</td></tr>\n";
 }
@@ -3622,14 +3574,19 @@ void HtmlGenerator::writeSummaryLink(const QCString &file,const QCString &anchor
   m_t << "</a>";
 }
 
+void HtmlGenerator::writePageOutline()
+{
+  m_t << "<div id=\"page-nav\" class=\"page-nav-panel\">\n";
+  m_t << "<div id=\"page-nav-resize-handle\"></div>\n";
+  m_t << "<div id=\"page-nav-tree\">\n";
+  m_t << "<div id=\"page-nav-contents\">\n";
+  m_t << "</div><!-- page-nav-contents -->\n";
+  m_t << "</div><!-- page-nav-tree -->\n";
+  m_t << "</div><!-- page-nav -->\n";
+}
+
 void HtmlGenerator::endMemberDeclaration(const QCString &anchor,const QCString &inheritId)
 {
-  m_t << "<tr class=\"separator:" << anchor;
-  if (!inheritId.isEmpty())
-  {
-    m_t << " inherit " << inheritId;
-  }
-  m_t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
 }
 
 QCString HtmlGenerator::getMathJaxMacros()

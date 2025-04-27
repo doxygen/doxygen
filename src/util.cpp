@@ -4384,7 +4384,7 @@ QCString convertToId(const QCString &s)
   while ((c=*p++))
   {
     char encChar[4];
-    if ((c>='0' && c<='9') || (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='-' || c==':' || c=='.')
+    if ((c>='0' && c<='9') || (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='-' || c==':' /*|| c=='.'*/)
     { // any permissive character except _
       if (first && c>='0' && c<='9') growBuf.addChar('a'); // don't start with a digit
       growBuf.addChar(c);
@@ -6111,12 +6111,6 @@ bool genericPatternMatch(const FileInfo &fi,
   bool caseSenseNames = getCaseSenseNames();
   bool found = FALSE;
 
-  // For platforms where the file system is non case sensitive overrule the setting
-  if (!Portable::fileSystemIsCaseSensitive())
-  {
-    caseSenseNames = FALSE;
-  }
-
   if (!patList.empty())
   {
     std::string fn = fi.fileName();
@@ -6364,27 +6358,7 @@ int lineBlock(const QCString &text,const QCString &marker)
 /** Returns a string representation of \a lang. */
 QCString langToString(SrcLangExt lang)
 {
-  switch(lang)
-  {
-    case SrcLangExt::Unknown:  return "Unknown";
-    case SrcLangExt::IDL:      return "IDL";
-    case SrcLangExt::Java:     return "Java";
-    case SrcLangExt::CSharp:   return "C#";
-    case SrcLangExt::D:        return "D";
-    case SrcLangExt::PHP:      return "PHP";
-    case SrcLangExt::ObjC:     return "Objective-C";
-    case SrcLangExt::Cpp:      return "C++";
-    case SrcLangExt::JS:       return "JavaScript";
-    case SrcLangExt::Python:   return "Python";
-    case SrcLangExt::Fortran:  return "Fortran";
-    case SrcLangExt::VHDL:     return "VHDL";
-    case SrcLangExt::XML:      return "XML";
-    case SrcLangExt::SQL:      return "SQL";
-    case SrcLangExt::Markdown: return "Markdown";
-    case SrcLangExt::Slice:    return "Slice";
-    case SrcLangExt::Lex:      return "Lex";
-  }
-  return "Unknown";
+  return to_string(lang);
 }
 
 /** Returns the scope separator to use given the programming language \a lang */

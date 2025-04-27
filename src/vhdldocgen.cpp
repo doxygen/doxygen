@@ -1765,13 +1765,15 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
 
   VhdlDocGen::writePlainVHDLDeclarations(ml,ol,cd,nd,fd,gd,mod,type);
 
+  int groupId=0;
   for (const auto &mg : ml->getMemberGroupList())
   {
     if (membersHaveSpecificType(&mg->members(),type))
     {
       //printf("mg->header=%s\n",qPrint(mg->header()));
       bool hasHeader=!mg->header().isEmpty();
-      ol.startMemberGroupHeader(hasHeader);
+      QCString groupAnchor = QCString(ml->listType().toLabel())+"-"+QCString().setNum(groupId++);
+      ol.startMemberGroupHeader(groupAnchor,hasHeader);
       if (hasHeader)
       {
         ol.parseText(mg->header());

@@ -53,7 +53,7 @@ $sm-dox__border-radius:                               5px !default;
 
 // Menu box
 //$sm-dox__collapsible-bg:                              $sm-dox__gray !default;
-$sm-dox__collapsible-bg:                              var(--nav-gradient-image) !default;
+$sm-dox__collapsible-bg:                              var(--nav-menu-background-color) !default;
 $sm-dox__collapsible-border-radius:                   $sm-dox__border-radius !default;
 
 // Items
@@ -87,7 +87,7 @@ $sm-dox__collapsible-sub-item-indentation:            8px !default;
 
 // Menu box
 //$sm-dox__desktop-bg:                                  $sm-dox__gray !default;
-$sm-dox__desktop-bg:                                  var(--nav-gradient-image) !default;
+$sm-dox__desktop-bg:                                  var(--nav-menu-background-color) !default;
 //$sm-dox__desktop-border-radius:                       100px !default;
 $sm-dox__desktop-padding-horizontal:                  10px !default;
 
@@ -97,12 +97,12 @@ $sm-dox__desktop-item-hover-color:                    var(--nav-text-hover-color
 $sm-dox__desktop-item-current-color:                  var(--nav-text-disabled-color) !default; //$sm-dox__red !default;
 $sm-dox__desktop-item-disabled-color:                 darken($sm-dox__gray, 20%) !default;
 $sm-dox__desktop-item-padding-vertical:               0px !default;
-$sm-dox__desktop-item-padding-horizontal:             12px !default;
+$sm-dox__desktop-item-padding-horizontal:             6px !default;
 
 // Sub menu indicators
 $sm-dox__desktop-arrow-size:                          4px !default;       // border-width
 $sm-dox__desktop-arrow-color:                         $sm-dox__gray-darker !default;
-$sm-dox__desktop-arrow-spacing:                       4px !default;
+$sm-dox__desktop-arrow-spacing:                       10px !default;
 
 // Vertical menu box
 $sm-dox__desktop-vertical-border-radius:              $sm-dox__border-radius !default;
@@ -163,7 +163,7 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
 
 // Main menu box
 .sm-dox {
-    background-image: $sm-dox__collapsible-bg;
+    background-color: $sm-dox__collapsible-bg;
     //@include border-radius($sm-dox__collapsible-border-radius);
 
     // Main menu items
@@ -175,22 +175,17 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
             padding: $sm-dox__collapsible-item-padding-vertical $sm-dox__collapsible-item-padding-horizontal;
             /* make room for the toggle button (sub indicator) */
             padding-right: $sm-dox__collapsible-item-padding-horizontal + $sm-dox__toggle-size + $sm-dox__toggle-spacing;
-            /* color: $sm-dox__collapsible-item-color; */
             font-family: $sm-dox__font-family;
             font-size: $sm-dox__font-size-base;
-            font-weight: bold;
-            line-height: 36px; //$sm-dox__line-height;
+            line-height: 36px;
             text-decoration: none;
-            text-shadow: var(--nav-text-normal-shadow);
             color: $sm-dox__main-text-color;
             outline: none;
         }
 
         &:hover {
-            background-image: var(--nav-gradient-active-image);
-            background-repeat:repeat-x;
-            color: $sm-dox__main-highlight-color;
-            text-shadow: var(--nav-text-hover-shadow);
+            background-color: var(--nav-menu-active-bg);
+            border-radius: 5px;
         }
 
         &.current {
@@ -214,7 +209,6 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
             font: bold #{$sm-dox__font-size-small}/#{$sm-dox__toggle-size} monospace !important;
             text-align: center;
             text-shadow: none;
-            background: $sm-dox__collapsible-toggle-bg;
             @include border-radius($sm-dox__border-radius);
         }
         & span.sub-arrow:before {
@@ -265,12 +259,8 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
             }
 
             &:hover {
-        //        color: $sm-dox__collapsible-item-current-color;
-        //        background-color: $sm-dox__gray;
-            background-image: var(--nav-gradient-active-image);
-            background-repeat:repeat-x;
-            color: $sm-dox__main-highlight-color;
-            text-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
+                background-color: var(--nav-menu-active-bg);
+                border-radius: 5px;
             }
 
         }
@@ -305,23 +295,27 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
     // Main menu box
     .sm-dox {
         padding: 0 $sm-dox__desktop-padding-horizontal;
-        background-image: $sm-dox__desktop-bg;
+        background-color: $sm-dox__desktop-bg;
         line-height: 36px;
+        //border-bottom: 1px solid var(--nav-border-color);
         //@include border-radius($sm-dox__desktop-border-radius);
 
         // Main menu items
         a {
             // Sub menu indicators
             span.sub-arrow {
-                top: 50%;
-                margin-top: -(ceil($sm-dox__desktop-arrow-size / 2));
-                right: $sm-dox__desktop-item-padding-horizontal;
-                width: 0;
-                height: 0;
-                border-width: $sm-dox__desktop-arrow-size;
-                border-style: solid dashed dashed dashed;
-                border-color: $sm-dox__main-text-color transparent transparent transparent;
-                background: transparent;
+                top: 15px;
+                right: 10px;
+                box-sizing: content-box;
+                padding: 0;
+                margin: 0;
+                display: inline-block;
+                width: 5px;
+                height: 5px;
+                background-color: var(--nav-menu-background-color);
+                border-right: 2px solid var(--nav-arrow-color);
+                border-bottom: 2px solid var(--nav-arrow-color);
+                transform: rotate(45deg);
                 @include border-radius(0);
             }
 
@@ -331,20 +325,16 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
             &:hover,
             &.highlighted {
                 padding: $sm-dox__desktop-item-padding-vertical $sm-dox__desktop-item-padding-horizontal;
-                /*color: $sm-dox__desktop-item-color;*/
-                background-image:var(--nav-separator-image);
-                background-repeat:no-repeat;
-                background-position:right;
-                @include border-radius(0 !important);
             }
             &:hover {
-              background-image: var(--nav-gradient-active-image);
-              background-repeat:repeat-x;
-              color: $sm-dox__main-highlight-color;
-              text-shadow: var(--nav-text-hover-shadow);
-              span.sub-arrow {
-                border-color: $sm-dox__main-highlight-color transparent transparent transparent;
-              }
+              background-color: var(--nav-menu-active-bg);
+              border-radius: 5px !important;
+            }
+
+            &:hover span.sub-arrow {
+              background-color: var(--nav-menu-active-bg);
+              border-right: 2px solid var(--nav-arrow-selected-color);
+              border-bottom: 2px solid var(--nav-arrow-selected-color);
             }
 
             // Make room for the sub arrows
@@ -356,6 +346,7 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
         // No main menu items separators
         li {
             border-top: 0;
+            padding: 3px;
         }
 
         // First sub level carets
@@ -390,12 +381,7 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
             // Sub menus items
             a {
                  span.sub-arrow {
-                  right: 8px;
-                  top: 50%;
-                  margin-top: -$sm-dox__desktop-sub-arrow-size;
-                  border-width: $sm-dox__desktop-sub-arrow-size;
-                  border-color: transparent transparent transparent $sm-dox__desktop-sub-item-color;
-                  border-style: dashed dashed dashed solid;
+                  transform: rotate(-45deg);
                 }
 
                 &,
@@ -409,13 +395,8 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
                 }
 
                 &:hover {
-                    background-image: var(--nav-gradient-active-image);
-                    background-repeat:repeat-x;
-                    color: $sm-dox__main-highlight-color;
-                    text-shadow: var(--nav-text-hover-shadow);
-                  span.sub-arrow {
-                    border-color: transparent transparent transparent $sm-dox__main-highlight-color;
-                  }
+                  background-color: var(--nav-menu-active-bg);
+                  border-radius: 5px;
                 }
             }
         }
@@ -552,7 +533,7 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
                 }
 
                 &.disabled {
-                    background-image: $sm-dox__desktop-bg;
+                    //background-image: $sm-dox__desktop-bg;
                 }
 
                 // Sub menu indicators
