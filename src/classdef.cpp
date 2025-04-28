@@ -4433,7 +4433,11 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
   {
     for (const auto &mi : *mni)
     {
-      addMemberToTemplateInstance(mi->memberDef(),templateArguments,templSpec);
+      const MemberDef *md = mi->memberDef();
+      if (m_allMemberNameInfoLinkedMap.find(md->name())==nullptr) // only insert the member if not hidden by one with the same name (#11541)
+      {
+        addMemberToTemplateInstance(md,templateArguments,templSpec);
+      }
     }
   }
   // also instantatie members for nested classes
