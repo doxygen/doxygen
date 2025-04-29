@@ -834,6 +834,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     }
     t << "\nvar SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
     t << "\nvar SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
+    t << "\nvar LISTOFALLMEMBERS = '" << theTranslator->trListOfAllMembers() << "';";
   }
 
   auto &mgr = ResourceMgr::instance();
@@ -842,7 +843,10 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     if (fn.is_open())
     {
       TextStream t(&fn);
-      t << substitute(mgr.getAsString("navtree.js"),"$PROJECTID",getProjectId());
+      t << substitute(
+             substitute(mgr.getAsString("navtree.js"),
+                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
+                "$PROJECTID",getProjectId());
     }
   }
 }

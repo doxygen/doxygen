@@ -66,6 +66,12 @@ tools should be installed.
     <a href="https://www.ghostscript.com/">www.ghostscript.com</a>.
 </ul>
 
+For testing at least these additional dependencies should be available:
+<ul>
+<li>xmllint (libxml2-ultils)</li>
+<li>bibtex (texlive-binaries)</li>
+</ul>
+
 Compilation is now done by performing the following steps:
 
 <ol>

@@ -4388,7 +4388,7 @@ QCString convertToId(const QCString &s)
   while ((c=*p++))
   {
     char encChar[4];
-    if ((c>='0' && c<='9') || (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='-' || c==':' || c=='.')
+    if ((c>='0' && c<='9') || (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='-' || c==':' /*|| c=='.'*/)
     { // any permissive character except _
       if (first && c>='0' && c<='9') growBuf.addChar('a'); // don't start with a digit
       growBuf.addChar(c);

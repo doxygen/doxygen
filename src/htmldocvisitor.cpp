@@ -1461,7 +1461,8 @@ void HtmlDocVisitor::operator()(const DocSection &s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<h" << s.level() << ">";
+
+  m_t << "<h" << s.level() << " class=\"doxsection\">";
 
   if( m_anchorHtml.length() )
   {

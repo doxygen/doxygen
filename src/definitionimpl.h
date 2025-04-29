@@ -119,6 +119,7 @@ class DefinitionImpl
     QCString navigationPathAsString() const;
     void writeQuickMemberLinks(OutputList &,const MemberDef *) const;
     void writeSummaryLinks(OutputList &) const;
+    void writePageNavigation(OutputList &ol) const;
     QCString pathFragment() const;
     void writeDocAnchorsToTagFile(TextStream &) const;
     void setLocalName(const QCString &name);
@@ -275,6 +276,8 @@ class DefinitionMixin : public Base
     { m_impl.writeQuickMemberLinks(ol,md); }
     void writeSummaryLinks(OutputList &ol) const override
     { m_impl.writeSummaryLinks(ol); }
+    void writePageNavigation(OutputList &ol) const override
+    { m_impl.writePageNavigation(ol); }
     QCString pathFragment() const override
     { return m_impl.pathFragment(); }
     void writeDocAnchorsToTagFile(TextStream &fs) const override

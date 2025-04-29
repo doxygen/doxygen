@@ -322,8 +322,7 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
 
 bool DefinitionImpl::hasSections() const
 {
-  //printf("DefinitionImpl::hasSections(%s) #sections=%d\n",qPrint(name()),
-  //    p->sectionRefs.size());
+  //printf("DefinitionImpl::hasSections(%s) #sections=%zu\n",qPrint(name()), p->sectionRefs.size());
   if (p->sectionRefs.empty()) return FALSE;
   for (const SectionInfo *si : p->sectionRefs)
   {
@@ -1445,7 +1444,9 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 
 void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
 {
-  if (p->sectionRefs.empty()) return;
+  // first check if we have anything to show or if the outline is already shown on the outline panel
+  if (p->sectionRefs.empty() || (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(PAGE_OUTLINE_PANEL))) return;
+  // generate the embedded toc
   ol.writeLocalToc(p->sectionRefs,localToc);
 }
 
@@ -1820,6 +1821,10 @@ void DefinitionImpl::writeQuickMemberLinks(OutputList &,const MemberDef *) const
 }
 
 void DefinitionImpl::writeSummaryLinks(OutputList &) const
+{
+}
+
+void DefinitionImpl::writePageNavigation(OutputList &) const
 {
 }
 

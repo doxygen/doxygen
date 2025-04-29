@@ -381,6 +381,7 @@ class DefinitionMutable
     virtual void writeNavigationPath(OutputList &ol) const = 0;
     virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const = 0;
     virtual void writeSummaryLinks(OutputList &) const = 0;
+    virtual void writePageNavigation(OutputList &) const = 0;
     virtual void writeDocAnchorsToTagFile(TextStream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
 

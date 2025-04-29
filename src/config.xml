@@ -2675,25 +2675,36 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  example that shows how to put an image at the root of the tree instead of
  the \ref cfg_project_name "PROJECT_NAME".
 
- Since the tree basically has the same information as the tab index, you could
+ Since the tree basically has more details information than the tab index, you could
  consider setting \ref cfg_disable_index "DISABLE_INDEX" to \c YES when
  enabling this option.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='PAGE_OUTLINE_PANEL' defval='1' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+  When \ref cfg_generate_treeview "GENERATE_TREEVIEW" is set to \c YES, the
+  \c PAGE_OUTLINE_PANEL option determines if an additional navigation panel is
+  shown at the right hand side of the screen, displaying an outline of
+  the contents of the main page, similar to e.g. https://developer.android.com/reference
+
+  If \ref cfg_generate_treeview "GENERATE_TREEVIEW" is set to \c NO, this option
+  has no effect.
 ]]>
       </docs>
     </option>
     <option type='bool' id='FULL_SIDEBAR' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
-  When both \ref cfg_generate_treeview "GENERATE_TREEVIEW" and \ref cfg_disable_index "DISABLE_INDEX"
-  are set to \c YES, then the
+  When \ref cfg_generate_treeview "GENERATE_TREEVIEW" is set to \c YES, the
   \c FULL_SIDEBAR option determines if the side bar is limited to only the
   treeview area (value \c NO) or if it should extend to the full height of the
-  window (value \c YES). Setting this to \c YES gives a layout similar to
+  window (value \c YES). Setting this to \c YES gives a layout similar to e.g.
   https://docs.readthedocs.io with more room for contents,
   but less room for the project logo, title, and description.
 
-  If either \ref cfg_generate_treeview "GENERATE_TREEVIEW" or \ref cfg_disable_index "DISABLE_INDEX"
-  is set to \c NO, this option
+  If \ref cfg_generate_treeview "GENERATE_TREEVIEW" is set to \c NO, this option
   has no effect.
 ]]>
       </docs>

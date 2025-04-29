@@ -2993,7 +2993,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
   // find end of the line
   const size_t size = data.size();
   size_t nb=0, end=offset+1, j=0;
-  while (end<=size && (j=isNewline(data.data()+end-1))==0)
+  while (end<=size && (j=isNewline(data.substr(end-1)))==0)
   {
     // while looking for the end of the line we might encounter a block
     // that needs to be passed unprocessed.

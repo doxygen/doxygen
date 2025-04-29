@@ -63,6 +63,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     QCString shortTitle() const override;
     bool hasDetailedDescription() const override;
     void writeDocumentation(OutputList &ol) override;
+    void writePageNavigation(OutputList &ol) const override;
     void writeTagFile(TextStream &t) override;
     void setDiskName(const QCString &name) override { m_diskName = name; }
     void sort() override;
@@ -240,7 +241,7 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
-    ol.startGroupHeader();
+    ol.startGroupHeader("details");
     ol.parseText(title);
     ol.endGroupHeader();
 
@@ -312,6 +313,11 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
   ol.writeSynopsis();
 }
 
+void DirDefImpl::writePageNavigation(OutputList &ol) const
+{
+  ol.writePageOutline();
+}
+
 void DirDefImpl::writeDirectoryGraph(OutputList &ol)
 {
   // write graph dependency graph
@@ -357,7 +363,9 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
       if (dd->hasDocumentation() || !dd->getFiles().empty())
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(dd->anchor(),OutputGenerator::MemberItemType::Normal);
+        QCString anc=dd->anchor();
+        if (anc.isEmpty()) anc=dd->shortName(); else anc.prepend(dd->shortName()+"_");
+        ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         {
           ol.pushGeneratorState();
           ol.disableAllBut(OutputType::Html);
@@ -423,7 +431,9 @@ void DirDefImpl::writeFileList(OutputList &ol)
       if (doc || src)
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(fd->anchor(),OutputGenerator::MemberItemType::Normal);
+        QCString anc = fd->anchor();
+        if (anc.isEmpty()) anc=fd->displayName(); else anc.prepend(fd->displayName()+"_");
+        ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         {
           ol.pushGeneratorState();
           ol.disableAllBut(OutputType::Html);

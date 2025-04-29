@@ -31,7 +31,7 @@
 --blockquote-background-color: ##10;
 --blockquote-border-color: ##30;
 
---scrollbar-thumb-color: ##30;
+--scrollbar-thumb-color: ##35;
 --scrollbar-background-color: ##06;
 
 --icon-background-color: ##40;
@@ -98,7 +98,7 @@
 --sync-icon-border-color: ##25;
 --sync-icon-background-color: ##10;
 --sync-icon-selected-background-color: ##20;
---sync-icon-color: ##45;
+--sync-icon-color: ##60;
 --sync-icon-selected-color: ##70;
 
 /* table of contents */

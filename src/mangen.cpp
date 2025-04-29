@@ -427,7 +427,7 @@ void ManGenerator::writeObjectLink(const QCString &,const QCString &,
   startBold(); docify(name); endBold();
 }
 
-void ManGenerator::startGroupHeader(int)
+void ManGenerator::startGroupHeader(const QCString &,int)
 {
   if (!m_firstCol) m_t << "\n";
   m_t << ".SH \"";
@@ -648,7 +648,7 @@ void ManGenerator::endMemberList()
   }
 }
 
-void ManGenerator::startMemberGroupHeader(bool)
+void ManGenerator::startMemberGroupHeader(const QCString &,bool)
 {
   m_t << "\n.PP\n.RI \"\\fB";
 }
@@ -686,7 +686,7 @@ void ManGenerator::startSection(const QCString &,const QCString &,SectionType ty
     switch(type.level())
     {
       case SectionType::Page:             // fall through
-      case SectionType::Section:          startGroupHeader(0); break;
+      case SectionType::Section:          startGroupHeader("",0); break;
       case SectionType::Subsection:       // fall through
       case SectionType::Subsubsection:    // fall through
       case SectionType::Paragraph:        // fall through

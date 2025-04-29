@@ -104,7 +104,7 @@ void MemberGroup::writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const
 {
   //printf("MemberGroup::writeDocumentation() %s\n",qPrint(grpHeader));
-  memberList->writeDocumentation(ol,scopeName,container,QCString(),showEnumValues,showInline);
+  memberList->writeDocumentation(ol,scopeName,container,QCString(),memberList->listType().toLabel(),showEnumValues,showInline);
 }
 
 void MemberGroup::writeDocumentationPage(OutputList &ol,const QCString &scopeName,

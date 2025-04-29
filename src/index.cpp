@@ -383,8 +383,9 @@ static void endQuickIndexItem(OutputList &ol)
 
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def)
 {
+  bool generateOutlinePanel = Config_getBool(GENERATE_TREEVIEW) && Config_getBool(PAGE_OUTLINE_PANEL);
   ol.startHeaderSection();
-  if (def) def->writeSummaryLinks(ol);
+  if (!generateOutlinePanel && def) def->writeSummaryLinks(ol);
   ol.startTitleHead(fileName);
   ol.pushGeneratorState();
   ol.disable(OutputType::Man);
@@ -399,7 +400,7 @@ void endTitle(OutputList &ol,const QCString &fileName,const QCString &name)
 
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
-               const QCString &altSidebarName, int hierarchyLevel)
+               const QCString &altSidebarName, int hierarchyLevel, const QCString &allMembersFile)
 {
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
@@ -415,7 +416,7 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
   {
     ol.endQuickIndices();
   }
-  ol.writeSplitBar(!altSidebarName.isEmpty() ? altSidebarName : name);
+  ol.writeSplitBar(!altSidebarName.isEmpty() ? altSidebarName : name, allMembersFile);
   if (quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(hli,name);
@@ -435,6 +436,7 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
     if (generateTreeView)
     {
       ol.writeString("</div><!-- doc-content -->\n");
+      ol.writeString("</div><!-- container -->\n");
     }
   }
 
@@ -443,19 +445,22 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
   ol.endFile();
 }
 
-void endFileWithNavPath(OutputList &ol,const Definition *d)
+void endFileWithNavPath(OutputList &ol,const DefinitionMutable *d,bool showPageNavigation)
 {
-  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeview = Config_getBool(GENERATE_TREEVIEW);
+  bool generateOutlinePanel = Config_getBool(PAGE_OUTLINE_PANEL);
   QCString navPath;
-  if (generateTreeView)
+  if (generateTreeview)
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString("</div><!-- doc-content -->\n");
+    if (generateOutlinePanel && showPageNavigation) d->writePageNavigation(ol);
+    ol.writeString("</div><!-- container -->\n");
     ol.popGeneratorState();
-    navPath = d->navigationPathAsString();
+    navPath = toDefinition(const_cast<DefinitionMutable*>(d))->navigationPathAsString();
   }
-  endFile(ol,generateTreeView,TRUE,navPath);
+  endFile(ol,generateTreeview,TRUE,navPath);
 }
 
 //----------------------------------------------------------------------
@@ -3197,12 +3202,13 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName);
+    ol.writeSplitBar(fileName,QCString());
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
       if (!dynamicMenus)
       {
+         ol.writeString("<div id=\"container\">\n");
          ol.writeString("<div id=\"doc-content\">\n");
       }
     }
@@ -3382,12 +3388,13 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName);
+    ol.writeSplitBar(fileName,QCString());
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
       if (!dynamicMenus)
       {
+         ol.writeString("<div id=\"container\">\n");
          ol.writeString("<div id=\"doc-content\">\n");
       }
     }
@@ -3565,12 +3572,13 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName);
+    ol.writeSplitBar(fileName,QCString());
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
       if (!dynamicMenus)
       {
+         ol.writeString("<div id=\"container\">\n");
          ol.writeString("<div id=\"doc-content\">\n");
       }
     }
@@ -3741,12 +3749,13 @@ static void writeModuleMemberIndexFiltered(OutputList &ol,
       writeQuickLinks();
     }
     ol.endQuickIndices();
-    ol.writeSplitBar(fileName);
+    ol.writeSplitBar(fileName,QCString());
     if (quickLinksAfterSplitbar)
     {
       writeQuickLinks();
       if (!dynamicMenus)
       {
+         ol.writeString("<div id=\"container\">\n");
          ol.writeString("<div id=\"doc-content\">\n");
       }
     }
@@ -4793,6 +4802,7 @@ static void writeIndex(OutputList &ol)
   bool vhdlOpt          = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool pageOutlinePanel = Config_getBool(PAGE_OUTLINE_PANEL);
   bool fullSidebar      = Config_getBool(FULL_SIDEBAR);
   QCString projectName  = Config_getString(PROJECT_NAME);
   // save old generator state
@@ -4855,7 +4865,7 @@ static void writeIndex(OutputList &ol)
     ol.writeQuickLinks(HighlightedItem::Main,QCString());
   }
   ol.endQuickIndices();
-  ol.writeSplitBar(indexName);
+  ol.writeSplitBar(indexName,QCString());
   if (quickLinksAfterSplitbar)
   {
     ol.writeQuickLinks(HighlightedItem::Main,QCString());
@@ -4910,7 +4920,7 @@ static void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage)
   {
-    if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections())
+    if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections() && !(generateTreeView && pageOutlinePanel))
     {
       Doxygen::mainPage->writeToc(ol,Doxygen::mainPage->localToc());
     }
@@ -4928,7 +4938,23 @@ static void writeIndex(OutputList &ol)
   ol.writeString("<a href=\"" + fn + "\"></a>\n");
   Doxygen::indexList->addIndexFile(fn);
 
-  endFile(ol);
+  if (Doxygen::mainPage &&
+      generateTreeView &&
+      pageOutlinePanel &&
+      Doxygen::mainPage->localToc().isHtmlEnabled() &&
+      Doxygen::mainPage->hasSections()
+     )
+  {
+    ol.writeString("</div><!-- doc-content -->\n");
+    ol.endContents();
+    Doxygen::mainPage->writePageNavigation(ol);
+    ol.writeString("</div><!-- container -->\n");
+    endFile(ol,true,true);
+  }
+  else
+  {
+    endFile(ol);
+  }
 
   ol.disable(OutputType::Html);
 

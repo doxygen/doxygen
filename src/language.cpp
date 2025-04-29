@@ -122,5 +122,5 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
   }
 
   QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) ConfigImpl::config_warn("%s", qPrint(msg));
+  if (!msg.isEmpty()) ConfigImpl::config_warn("{}", qPrint(msg));
 }

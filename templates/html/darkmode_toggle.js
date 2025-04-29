@@ -74,10 +74,15 @@ class DarkModeToggle extends HTMLElement {
                     mainMenuVisible = menuStyle.display!=='none'
                   }
                   const searchBoxPos1 = document.getElementById("searchBoxPos1");
+                  const buttonLi = document.getElementById('toggle-dark-mode');
+                  if (buttonLi) {
+                    buttonLi.parentNode.removeChild(buttonLi);
+                  }
                   if (searchBox) { // (1) search box visible
                     searchBox.parentNode.appendChild(toggleButton)
                   } else if (navRow1) { // (2) no search box, static menu bar
                     const li = document.createElement('li');
+                    li.id = 'toggle-dark-mode';
                     li.style = 'float: right;'
                     li.appendChild(toggleButton);
                     toggleButton.style = 'width: 24px; height: 25px; padding-top: 11px; float: right;';
@@ -85,6 +90,7 @@ class DarkModeToggle extends HTMLElement {
                     row.appendChild(li)
                   } else if (mainMenu && mainMenuVisible) { // (3) no search box + dynamic menu bar expanded
                     const li = document.createElement('li');
+                    li.id = 'toggle-dark-mode';
                     li.style = 'float: right;'
                     li.appendChild(toggleButton);
                     toggleButton.style = 'width: 14px; height: 36px; padding-top: 10px; float: right;';

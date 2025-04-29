@@ -1637,7 +1637,7 @@ void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
   }
 }
 
-void RTFGenerator::startGroupHeader(int extraIndent)
+void RTFGenerator::startGroupHeader(const QCString &,int extraIndent)
 {
   DBG_RTF(m_t << "{\\comment startGroupHeader}\n")
   m_t << rtf_Style_Reset;
@@ -2520,7 +2520,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   return TRUE;
 }
 
-void RTFGenerator::startMemberGroupHeader(bool hasHeader)
+void RTFGenerator::startMemberGroupHeader(const QCString &,bool hasHeader)
 {
   DBG_RTF(m_t << "{\\comment startMemberGroupHeader}\n")
   m_t << "{\n";

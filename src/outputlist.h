@@ -451,8 +451,8 @@ class OutputList
     { foreach(&OutputGenIntf::startTypewriter); }
     void endTypewriter()
     { foreach(&OutputGenIntf::endTypewriter); }
-    void startGroupHeader(int extraLevels=0)
-    { foreach(&OutputGenIntf::startGroupHeader,extraLevels); }
+    void startGroupHeader(const QCString &id=QCString(),int extraLevels=0)
+    { foreach(&OutputGenIntf::startGroupHeader,id,extraLevels); }
     void endGroupHeader(int extraLevels=0)
     { foreach(&OutputGenIntf::endGroupHeader,extraLevels); }
     void startItemListItem()
@@ -503,8 +503,8 @@ class OutputList
     { foreach(&OutputGenIntf::startCompoundTemplateParams); }
     void endCompoundTemplateParams()
     { foreach(&OutputGenIntf::endCompoundTemplateParams); }
-    void startMemberGroupHeader(bool b)
-    { foreach(&OutputGenIntf::startMemberGroupHeader,b); }
+    void startMemberGroupHeader(const QCString &id,bool b)
+    { foreach(&OutputGenIntf::startMemberGroupHeader,id,b); }
     void endMemberGroupHeader()
     { foreach(&OutputGenIntf::endMemberGroupHeader); }
     void startMemberGroupDocs()
@@ -604,8 +604,8 @@ class OutputList
     { foreach(&OutputGenIntf::startQuickIndices); }
     void endQuickIndices()
     { foreach(&OutputGenIntf::endQuickIndices); }
-    void writeSplitBar(const QCString &name)
-    { foreach(&OutputGenIntf::writeSplitBar,name); }
+    void writeSplitBar(const QCString &name,const QCString &allMembersFile)
+    { foreach(&OutputGenIntf::writeSplitBar,name,allMembersFile); }
     void writeNavigationPath(const QCString &s)
     { foreach(&OutputGenIntf::writeNavigationPath,s); }
     void writeLogo()
@@ -614,6 +614,8 @@ class OutputList
     { foreach(&OutputGenIntf::writeQuickLinks,hli,file,extraTabs); }
     void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first)
     { foreach(&OutputGenIntf::writeSummaryLink,file,anchor,title,first); }
+    void writePageOutline()
+    { foreach(&OutputGenIntf::writePageOutline); }
     void startContents()
     { foreach(&OutputGenIntf::startContents); }
     void endContents()

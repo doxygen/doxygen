@@ -10,6 +10,15 @@ body, table, div, p, dl {
 	line-height: 22px;
 }
 
+body.resizing {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+#doc-content {
+	scrollbar-width: thin;
+}
+
 /* @group Heading Levels */
 
 .title {
@@ -370,7 +379,8 @@ div.line {
 	font-size: 13px;
 	min-height: 13px;
 	line-height: 1.2;
-	text-wrap: unrestricted;
+	text-wrap: wrap; 
+	word-break: break-all;
 	white-space: -moz-pre-wrap; /* Moz */
 	white-space: -pre-wrap;     /* Opera 4-6 */
 	white-space: -o-pre-wrap;   /* Opera 7 */
@@ -1073,7 +1083,7 @@ div.directory {
 span.arrowhead {
 	position: relative;
 	padding: 0;
-	margin: 0;
+	margin: 0 0 0 2px;
 	display: inline-block;
 	width: 5px;
 	height: 5px;
@@ -1597,7 +1607,7 @@ dl.invariant dt, dl.pre dt, dl.post dt {
 #projectnumber
 {
 	font-size: 50%;
-	font-family: 50% var(--font-family-title);
+	font-family: var(--font-family-title);
 	margin: 0px;
 	padding: 0px;
 }

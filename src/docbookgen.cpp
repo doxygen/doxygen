@@ -830,7 +830,7 @@ void DocbookGenerator::endBold()
 DB_GEN_C
   m_t << "</emphasis>";
 }
-void DocbookGenerator::startGroupHeader(int extraIndentLevel)
+void DocbookGenerator::startGroupHeader(const QCString &,int extraIndentLevel)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
@@ -969,7 +969,7 @@ void DocbookGenerator::endMemberDocName()
 {
 DB_GEN_C
 }
-void DocbookGenerator::startMemberGroupHeader(bool)
+void DocbookGenerator::startMemberGroupHeader(const QCString &,bool)
 {
 DB_GEN_C
   m_t << "<simplesect><title>";
