@@ -288,6 +288,7 @@ DB_VIS_C
       if (s.enable()) m_t << "<emphasis>";     else m_t << "</emphasis>";
       break;
     case DocStyleChange::Kbd:
+    case DocStyleChange::Typewriter:
     case DocStyleChange::Code:
       if (s.enable()) m_t << "<computeroutput>";   else m_t << "</computeroutput>";
       break;

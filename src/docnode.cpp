@@ -143,6 +143,7 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Underline:    return "u";
     case DocStyleChange::Ins:          return "ins";
     case DocStyleChange::Kbd:          return "kbd";
+    case DocStyleChange::Typewriter:   return "tt";
   }
   return "<invalid>";
 }
@@ -4802,6 +4803,9 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
     case HtmlTagType::HTML_KBD:
         parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Kbd,tagName,&parser()->context.token->attribs);
       break;
+    case HtmlTagType::HTML_TT:
+        parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Typewriter,tagName,&parser()->context.token->attribs);
+      break;
     case HtmlTagType::HTML_EMPHASIS:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant(),children(),DocStyleChange::Italic,tagName,&parser()->context.token->attribs);
       break;
@@ -5274,6 +5278,9 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
     case HtmlTagType::HTML_KBD:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Kbd,tagName);
+      break;
+    case HtmlTagType::HTML_TT:
+      parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Typewriter,tagName);
       break;
     case HtmlTagType::HTML_EMPHASIS:
       parser()->handleStyleLeave(thisVariant(),children(),DocStyleChange::Italic,tagName);

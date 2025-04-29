@@ -123,6 +123,9 @@ class PrintDocVisitor
         case DocStyleChange::Kbd:
           if (s.enable()) printf("<kbd>"); else printf("</kbd>");
           break;
+        case DocStyleChange::Typewriter:
+          if (s.enable()) printf("<tt>"); else printf("</tt>");
+          break;
         case DocStyleChange::Code:
           if (s.enable()) printf("<code>"); else printf("</code>");
           break;

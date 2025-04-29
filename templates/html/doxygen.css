@@ -335,6 +335,11 @@ pre.fragment {
 	font-family: var(--font-family-monospace);
 }
 
+span.tt {
+        white-space: pre;
+	font-family: var(--font-family-monospace);
+}
+
 .clipboard {
 	width: 24px;
 	height: 24px;

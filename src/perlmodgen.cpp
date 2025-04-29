@@ -614,6 +614,7 @@ void PerlModDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Div:           style = "div"; break;
     case DocStyleChange::Span:          style = "span"; break;
     case DocStyleChange::Kbd:           style = "kbd"; break;
+    case DocStyleChange::Typewriter:    style = "typewriter"; break;
   }
   openItem("style");
   m_output.addFieldQuotedString("style", style)

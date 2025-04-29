@@ -1493,6 +1493,9 @@ reparsetoken:
           case HtmlTagType::HTML_KBD:
             handleEnterLeaveStyle(DocStyleChange::Kbd);
             break;
+          case HtmlTagType::HTML_TT:
+            handleEnterLeaveStyle(DocStyleChange::Typewriter);
+            break;
           case HtmlTagType::HTML_EMPHASIS:
             handleEnterLeaveStyle(DocStyleChange::Italic);
             break;

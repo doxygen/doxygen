@@ -279,7 +279,8 @@ class DocStyleChange : public DocNode
                  Ins           = (1<<13),
                  S             = (1<<14),
                  Cite          = (1<<15),
-                 Kbd           = (1<<16)
+                 Kbd           = (1<<16),
+                 Typewriter    = (1<<17)
                };
 
     DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,

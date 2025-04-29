@@ -184,7 +184,7 @@ static const CommandMap<HtmlTagType>  g_htmlTagMap =
   { "ol",         HtmlTagType::HTML_OL },
   { "ul",         HtmlTagType::HTML_UL },
   { "li",         HtmlTagType::HTML_LI },
-  { "tt",         HtmlTagType::XML_C /*HtmlTagType::HTML_CODE*/ },
+  { "tt",         HtmlTagType::HTML_TT },
   { "kbd",        HtmlTagType::HTML_KBD },
   { "em",         HtmlTagType::HTML_EMPHASIS },
   { "hr",         HtmlTagType::HTML_HR },

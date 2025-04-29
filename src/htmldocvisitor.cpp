@@ -463,6 +463,18 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Kbd:
       if (s.enable()) m_t << "<kbd" << s.attribs().toString() << ">";    else m_t << "</kbd>";
       break;
+    case DocStyleChange::Typewriter:
+      if (s.enable())
+      {
+        m_t << "<span class=\"tt\"" << s.attribs().toString() << ">";
+        m_insidePre=true;
+      }
+      else
+      {
+        m_t << "</span>";
+        m_insidePre=false;
+      }
+      break;
     case DocStyleChange::Code:
       if (s.enable())
       {
@@ -472,9 +484,11 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
           attribs.mergeAttribute("class","param");
         }
         m_t << "<code" << attribs.toString() << ">";
+        m_insidePre=true;
       }
       else
       {
+        m_insidePre=false;
         m_t << "</code>";
       }
       break;

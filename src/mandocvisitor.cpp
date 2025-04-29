@@ -148,6 +148,7 @@ void ManDocVisitor::operator()(const DocStyleChange &s)
       m_firstCol=FALSE;
       break;
     case DocStyleChange::Kbd:
+    case DocStyleChange::Typewriter:
     case DocStyleChange::Code:
       if (s.enable()) m_t << "\\fR";   else m_t << "\\fP";
       m_firstCol=FALSE;

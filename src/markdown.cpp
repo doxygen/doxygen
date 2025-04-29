@@ -1672,24 +1672,12 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
     return 0;  // no matching delimiter
   }
 
-  // trimming outside whitespaces
-  size_t f_begin = nb;
-  while (f_begin < end && data[f_begin]==' ')
-  {
-    f_begin++;
-  }
-  size_t f_end = end - nb;
-  while (f_end > nb && data[f_end-1]==' ')
-  {
-    f_end--;
-  }
-
   //printf("found code span '%s'\n",qPrint(QCString(data+f_begin).left(f_end-f_begin)));
 
   /* real code span */
-  if (f_begin < f_end)
+  if (nb+nb < end)
   {
-    QCString codeFragment = data.substr(f_begin, f_end-f_begin);
+    QCString codeFragment = data.substr(nb, end-nb-nb);
     out+="<tt>";
     out+=escapeSpecialChars(codeFragment);
     out+="</tt>";
