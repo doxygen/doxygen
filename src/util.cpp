@@ -3298,6 +3298,13 @@ bool resolveLink(/* in */ const QCString &scName,
     AUTO_TRACE_EXIT("section");
     return TRUE;
   }
+  else if ((si=SectionManager::instance().find(linkRef)))
+  {
+    *resContext=si->definition();
+    resAnchor = si->label();
+    AUTO_TRACE_EXIT("section");
+    return TRUE;
+  }
   else if ((pd=Doxygen::exampleLinkedMap->find(linkRef))) // link to an example
   {
     *resContext=pd;
