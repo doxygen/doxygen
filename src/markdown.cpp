@@ -67,7 +67,7 @@ enum class ExplicitPageResult
 {
   explicitPage,      /**< docs start with a page command */
   explicitMainPage,  /**< docs start with a mainpage command */
-  explicitDirPage,   /**< docs start with a dir command */
+  explicitOtherPage, /**< docs start with a dir / defgroup / addtogroup command */
   notExplicit        /**< docs doesn't start with either page or mainpage */
 };
 
@@ -3434,6 +3434,18 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
   return out;
 }
 
+static bool isOtherPage(std::string_view data)
+{
+#define OPC(x) if (literal_at(data,#x " ") || literal_at(data,#x "\n")) return true
+  OPC(dir);      OPC(defgroup);  OPC(addtogroup); OPC(weakgroup); OPC(ingroup);
+  OPC(fn);       OPC(property);  OPC(typedef);    OPC(var);       OPC(def);
+  OPC(enum);     OPC(namespace); OPC(class);      OPC(concept);   OPC(module);
+  OPC(protocol); OPC(category);  OPC(union);      OPC(struct);    OPC(interface);
+  OPC(idlexcept);
+#undef OPC
+
+  return false;
+}
 
 static ExplicitPageResult isExplicitPage(const QCString &docs)
 {
@@ -3471,13 +3483,10 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
         return ExplicitPageResult::explicitMainPage;
       }
     }
-    else if (i+1<size &&
-             (data[i]=='\\' || data[i]=='@') &&
-             (literal_at(data.substr(i+1),"dir\n") || literal_at(data.substr(i+1),"dir "))
-            )
+    else if (i+1<size && (data[i]=='\\' || data[i]=='@') && isOtherPage(data.substr(i+1)))
     {
-      AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitDirPage");
-      return ExplicitPageResult::explicitDirPage;
+      AUTO_TRACE_EXIT("result=ExplicitPageResult::explicitOtherPage");
+      return ExplicitPageResult::explicitOtherPage;
     }
   }
   AUTO_TRACE_EXIT("result=ExplicitPageResult::notExplicit");
@@ -3629,6 +3638,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   current->docFile  = fileName;
   current->docLine  = 1;
   QCString docs = stripIndentation(fileBuf);
+  if (!docs.stripWhiteSpace().size()) return;
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n{}\n",fileBuf);
   QCString id;
   Markdown markdown(fileName,1,0);
@@ -3721,7 +3731,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       break;
     case ExplicitPageResult::explicitMainPage:
       break;
-    case ExplicitPageResult::explicitDirPage:
+    case ExplicitPageResult::explicitOtherPage:
       break;
   }
   int lineNr=1;
