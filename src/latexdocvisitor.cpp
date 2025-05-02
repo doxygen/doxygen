@@ -106,8 +106,9 @@ static void insertDimension(TextStream &t, QCString dimension, const char *orien
   t << dimension;
 }
 
-static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
+static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, LatexCodeGenerator &m_lcg, bool inlineImage = FALSE)
 {
+    bool isSvg = name.right(4)==".svg";
     if (inlineImage)
     {
       t << "\n\\begin{DoxyInlineImage}\n";
@@ -125,10 +126,20 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
       }
     }
 
-    t << "\\includegraphics";
+    if (isSvg)
+    {
+      m_lcg.setSvgImage();
+      t << "\\includesvg";
+    }
+    else 
+    {
+      t << "\\includegraphics";
+    }
+
     if (!width.isEmpty() || !height.isEmpty())
     {
       t << "[";
+      if (isSvg) t << "inkscapelatex=false,";
     }
     if (!width.isEmpty())
     {
@@ -147,13 +158,27 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     if (width.isEmpty() && height.isEmpty())
     {
       /* default setting */
-      if (inlineImage)
+      if (isSvg)
       {
-        t << "[height=\\baselineskip,keepaspectratio=true]";
+        if (inlineImage)
+        {
+          t << "[inkscapelatex=false,height=\\baselineskip]";
+        }
+        else
+        {
+          t << "[inkscapelatex=false,width=\\textwidth,height=0.5\\textheight]";
+        }
       }
       else
       {
-        t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+        if (inlineImage)
+        {
+          t << "[height=\\baselineskip,keepaspectratio=true]";
+        }
+        else
+        {
+          t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+        }
       }
     }
     else
@@ -1539,7 +1564,7 @@ void LatexDocVisitor::operator()(const DocImage &img)
       gfxName=gfxName.left(gfxName.length()-4);
     }
 
-    visitPreStart(m_t,img.hasCaption(), gfxName, img.width(),  img.height(), img.isInlineImage());
+    visitPreStart(m_t,img.hasCaption(), gfxName, img.width(),  img.height(), m_lcg, img.isInlineImage());
     visitChildren(img);
     visitPostEnd(m_t,img.hasCaption(), img.isInlineImage());
   }
@@ -1964,7 +1989,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   QCString outDir = Config_getString(LATEX_OUTPUT);
   QCString name = fileName;
   writeDotGraphFromFile(name,outDir,baseName,GraphOutputFormat::EPS,srcFile,srcLine);
-  visitPreStart(m_t,hasCaption, baseName, width, height);
+  visitPreStart(m_t,hasCaption, baseName, width, height, m_lcg);
 }
 
 void LatexDocVisitor::endDotFile(bool hasCaption)
@@ -1986,7 +2011,7 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
   writeMscGraphFromFile(fileName,outDir,baseName,MscOutputFormat::EPS,srcFile,srcLine);
-  visitPreStart(m_t,hasCaption, baseName, width, height);
+  visitPreStart(m_t,hasCaption, baseName, width, height, m_lcg);
 }
 
 void LatexDocVisitor::endMscFile(bool hasCaption)
@@ -2001,7 +2026,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &
   QCString shortName = makeShortName(baseName);
   QCString outDir = Config_getString(LATEX_OUTPUT);
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MscOutputFormat::EPS,s.srcFile(),s.srcLine());
-  visitPreStart(m_t, s.hasCaption(), shortName, s.width(),s.height());
+  visitPreStart(m_t, s.hasCaption(), shortName, s.width(),s.height(), m_lcg);
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -2020,7 +2045,7 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
   writeDiaGraphFromFile(fileName,outDir,baseName,DiaOutputFormat::EPS,srcFile,srcLine);
-  visitPreStart(m_t,hasCaption, baseName, width, height);
+  visitPreStart(m_t,hasCaption, baseName, width, height, m_lcg);
 }
 
 void LatexDocVisitor::endDiaFile(bool hasCaption)
@@ -2035,7 +2060,7 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName, const DocVerbatim &
   QCString shortName = makeShortName(baseName);
   QCString outDir = Config_getString(LATEX_OUTPUT);
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DiaOutputFormat::EPS,s.srcFile(),s.srcLine());
-  visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
+  visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height(), m_lcg);
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -2050,7 +2075,7 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, const DocVerba
   QCString outDir = Config_getString(LATEX_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,
                               s.useBitmap() ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS);
-  visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
+  visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height(), m_lcg);
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -2080,7 +2105,7 @@ void LatexDocVisitor::startPlantUmlFile(const QCString &fileName,
   }
   PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,
                               useBitmap ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS);
-  visitPreStart(m_t,hasCaption, shortName, width, height);
+  visitPreStart(m_t,hasCaption, shortName, width, height, m_lcg);
 }
 
 void LatexDocVisitor::endPlantUmlFile(bool hasCaption)
