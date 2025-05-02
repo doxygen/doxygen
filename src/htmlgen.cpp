@@ -3538,79 +3538,81 @@ QCString HtmlGenerator::getNavTreeCss()
   return replaceVariables(mgr.getAsString("navtree.css"));
 }
 
-void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc &localToc)
+void HtmlGenerator::startLocalToc(int level)
 {
-  if (localToc.isHtmlEnabled())
+  m_tocState.level=0;
+  m_tocState.indent=0;
+  m_tocState.maxLevel=level;
+  m_tocState.inLi = BoolVector(level+1,false);
+  m_t << "<div class=\"toc\">";
+  m_t << "<h3>" << theTranslator->trRTFTableOfContents() << "</h3>\n";
+}
+
+void HtmlGenerator::endLocalToc()
+{
+  if (m_tocState.level > m_tocState.maxLevel) m_tocState.level = m_tocState.maxLevel;
+  while (m_tocState.level>0)
   {
-    int level=0;
-    int indent=0;
-    auto writeIndent = [&]()                     { for (int i=0;i<indent*2;i++) m_t << " ";      };
-    auto incIndent   = [&](const QCString &text) { writeIndent(); m_t << text << "\n"; indent++; };
-    auto decIndent   = [&](const QCString &text) { indent--; writeIndent(); m_t << text << "\n"; };
-    m_t << "<div class=\"toc\">";
-    m_t << "<h3>" << theTranslator->trRTFTableOfContents() << "</h3>\n";
-    int maxLevel = localToc.htmlLevel();
-    char cs[2];
-    cs[1]='\0';
-    BoolVector inLi(maxLevel+1,false);
-    for (const SectionInfo *si : sectionRefs)
+    m_tocState.decIndent(m_t,"</li>");
+    m_tocState.decIndent(m_t,"</ul>");
+    m_tocState.level--;
+  }
+  m_t << "</div>\n";
+}
+
+void HtmlGenerator::startTocEntry(const SectionInfo *si)
+{
+  SectionType type = si->type();
+  if (type.isSection())
+  {
+    //printf("  level=%d title=%s maxLevel=%d\n",level,qPrint(si->title()),maxLevel);
+    int nextLevel = type.level();
+    if (nextLevel>m_tocState.level)
     {
-      //printf("Section: label=%s type=%d isSection()=%d\n",qPrint(si->label()),si->type(),isSection(si->type()));
-      SectionType type = si->type();
-      if (type.isSection())
+      for (int l=m_tocState.level;l<nextLevel;l++)
       {
-        //printf("  level=%d title=%s maxLevel=%d\n",level,qPrint(si->title()),maxLevel);
-        int nextLevel = type.level();
-        if (nextLevel>level)
+        if (l < m_tocState.maxLevel)
         {
-          for (int l=level;l<nextLevel;l++)
-          {
-            if (l < maxLevel)
-            {
-              incIndent("<ul>");
-              cs[0]=static_cast<char>('0'+l+1);
-              const char *empty = (l!=nextLevel-1) ? " empty" : "";
-              incIndent("<li class=\"level" + QCString(cs) + empty + "\">");
-            }
-          }
-        }
-        else if (nextLevel<level)
-        {
-          for (int l=level;l>nextLevel;l--)
-          {
-            if (l <= maxLevel) decIndent("</li>");
-            inLi[l] = false;
-            if (l <= maxLevel) decIndent("</ul>");
-          }
-        }
-        if (nextLevel <= maxLevel)
-        {
-          if (inLi[nextLevel] || level>nextLevel)
-          {
-            decIndent("</li>");
-            cs[0]=static_cast<char>('0'+nextLevel);
-            incIndent("<li class=\"level" + QCString(cs) + "\">");
-          }
-          QCString titleDoc = si->title();
-          QCString label = si->label();
-          if (titleDoc.isEmpty()) titleDoc = label;
-          writeIndent();
-          m_t  << "<a href=\"#"+label+"\">"
-               << convertToHtml(filterTitle(titleDoc))
-               << "</a>\n";
-          inLi[nextLevel]=true;
-          level = nextLevel;
+          m_tocState.incIndent(m_t,"<ul>");
+          char cs[2] = { static_cast<char>('0'+l+1), 0 };
+          const char *empty = (l!=nextLevel-1) ? " empty" : "";
+          m_tocState.incIndent(m_t,"<li class=\"level" + QCString(cs) + empty + "\">");
         }
       }
     }
-    if (level > maxLevel) level = maxLevel;
-    while (level>0)
+    else if (nextLevel<m_tocState.level)
     {
-      decIndent("</li>");
-      decIndent("</ul>");
-      level--;
+      for (int l=m_tocState.level;l>nextLevel;l--)
+      {
+        if (l <= m_tocState.maxLevel) m_tocState.decIndent(m_t,"</li>");
+        m_tocState.inLi[l] = false;
+        if (l <= m_tocState.maxLevel) m_tocState.decIndent(m_t,"</ul>");
+      }
     }
-    m_t << "</div>\n";
+    if (nextLevel <= m_tocState.maxLevel)
+    {
+      if (m_tocState.inLi[nextLevel] || m_tocState.level>nextLevel)
+      {
+        m_tocState.decIndent(m_t,"</li>");
+        char cs[2] = { static_cast<char>('0'+nextLevel), 0 };
+        m_tocState.incIndent(m_t,"<li class=\"level" + QCString(cs) + "\">");
+      }
+      QCString label = si->label();
+      m_tocState.writeIndent(m_t);
+      m_t  << "<a href=\"#"+label+"\">";
+    }
+  }
+}
+
+void HtmlGenerator::endTocEntry(const SectionInfo *si)
+{
+  SectionType type = si->type();
+  int nextLevel = type.level();
+  if (type.isSection() && nextLevel<=m_tocState.maxLevel)
+  {
+    m_t << "</a>\n";
+    m_tocState.inLi[nextLevel]=true;
+    m_tocState.level = nextLevel;
   }
 }
 

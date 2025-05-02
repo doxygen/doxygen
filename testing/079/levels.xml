@@ -6,16 +6,25 @@
     <tableofcontents>
       <tocsect>
         <name>A section that's in TOC</name>
+        <docs>
+          <para>A section that's in TOC </para>
+        </docs>
         <reference>levels_1first</reference>
         <tableofcontents>
           <tocsect>
             <name>A subsection that's in TOC</name>
+            <docs>
+              <para>A subsection that's in TOC </para>
+            </docs>
             <reference>levels_1first2</reference>
           </tocsect>
         </tableofcontents>
       </tocsect>
       <tocsect>
         <name>A section that's in TOC again</name>
+        <docs>
+          <para>A section that's in TOC again </para>
+        </docs>
         <reference>levels_1second</reference>
       </tocsect>
     </tableofcontents>

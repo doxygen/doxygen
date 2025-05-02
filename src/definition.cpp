@@ -1447,7 +1447,53 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
   // first check if we have anything to show or if the outline is already shown on the outline panel
   if (p->sectionRefs.empty() || (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(PAGE_OUTLINE_PANEL))) return;
   // generate the embedded toc
-  ol.writeLocalToc(p->sectionRefs,localToc);
+  //ol.writeLocalToc(p->sectionRefs,localToc);
+
+  auto generateTocEntries = [this,&ol]()
+  {
+    for (const SectionInfo *si : p->sectionRefs)
+    {
+      if (si->type().isSection())
+      {
+        ol.startTocEntry(si);
+        const MemberDef *md     = p->def->definitionType()==Definition::TypeMember ? toMemberDef(p->def) : nullptr;
+        const Definition *scope = p->def->definitionType()==Definition::TypeMember ? p->def->getOuterScope() : p->def;
+        QCString docTitle = si->title();
+        if (docTitle.isEmpty()) docTitle = si->label();
+        ol.generateDoc(docFile(),getStartBodyLine(),scope,md,docTitle,TRUE,FALSE,
+                       QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+        ol.endTocEntry(si);
+      }
+    }
+  };
+
+  if (localToc.isHtmlEnabled())
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputType::Html);
+    ol.startLocalToc(localToc.htmlLevel());
+    generateTocEntries();
+    ol.endLocalToc();
+    ol.popGeneratorState();
+  }
+  if (localToc.isDocbookEnabled())
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputType::Docbook);
+    ol.startLocalToc(localToc.docbookLevel());
+    generateTocEntries();
+    ol.endLocalToc();
+    ol.popGeneratorState();
+  }
+  if (localToc.isLatexEnabled())
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputType::Latex);
+    ol.startLocalToc(localToc.latexLevel());
+    // no gneerateTocEntries() needed for LaTeX
+    ol.endLocalToc();
+    ol.popGeneratorState();
+  }
 }
 
 //----------------------------------------------------------------------------------------

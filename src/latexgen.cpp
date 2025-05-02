@@ -2315,14 +2315,11 @@ void LatexGenerator::writeInheritedSectionTitle(
   m_t << "}\n";
 }
 
-void LatexGenerator::writeLocalToc(const SectionRefs &,const LocalToc &localToc)
+void LatexGenerator::startLocalToc(int level)
 {
-  if (localToc.isLatexEnabled())
-  {
-    int maxLevel = localToc.latexLevel() + m_hierarchyLevel;
-    m_t << "\\etocsetnexttocdepth{" << maxLevel << "}\n";
-    m_t << "\\localtableofcontents\n";
-  }
+  int maxLevel = level + m_hierarchyLevel;
+  m_t << "\\etocsetnexttocdepth{" << maxLevel << "}\n";
+  m_t << "\\localtableofcontents\n";
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -17,6 +17,7 @@
 #define HTMLGEN_H
 
 #include "outputgen.h"
+#include "containers.h"
 
 class OutputCodeList;
 
@@ -325,7 +326,10 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     void writeLabel(const QCString &l,bool isLast) override;
     void endLabels() override;
 
-    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt) override;
+    void startLocalToc(int level) override;
+    void endLocalToc() override;
+    void startTocEntry(const SectionInfo *si) override;
+    void endTocEntry(const SectionInfo *si) override;
 
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
@@ -344,6 +348,18 @@ class HtmlGenerator : public OutputGenerator, public OutputGenIntf
     std::unique_ptr<OutputCodeList> m_codeList;
     HtmlCodeGenerator              *m_codeGen = nullptr;
     int                             m_pageOutlineIndent = 0;
+
+    struct TocState
+    {
+      int level = 0;
+      int indent = 0;
+      int maxLevel = 0;
+      BoolVector inLi;
+      void writeIndent(TextStream &t) { for (int i=0;i<indent*2;i++) t << " "; };
+      void incIndent(TextStream &t,const QCString &text) { writeIndent(t); t << text << "\n"; indent++; };
+      void decIndent(TextStream &t,const QCString &text) { indent--; writeIndent(t); t << text << "\n"; };
+    };
+    TocState m_tocState;
 };
 
 #endif

@@ -742,8 +742,14 @@ class OutputList
     { foreach(&OutputGenIntf::writeLabel,l,isLast); }
     void endLabels()
     { foreach(&OutputGenIntf::endLabels); }
-    void writeLocalToc(const SectionRefs &refs,const LocalToc &lt)
-    { foreach(&OutputGenIntf::writeLocalToc,refs,lt); }
+    void startLocalToc(int level)
+    { foreach(&OutputGenIntf::startLocalToc,level); }
+    void endLocalToc()
+    { foreach(&OutputGenIntf::endLocalToc); }
+    void startTocEntry(const SectionInfo *si)
+    { foreach(&OutputGenIntf::startTocEntry,si); }
+    void endTocEntry(const SectionInfo *si)
+    { foreach(&OutputGenIntf::endTocEntry,si); }
     void cleanup()
     { foreach(&OutputGenIntf::cleanup); }
     void startPlainFile(const QCString &name)

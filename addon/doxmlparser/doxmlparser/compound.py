@@ -26894,11 +26894,113 @@ class tableofcontentsType(GeneratedsSuper):
 # end class tableofcontentsType
 
 
+class tableofcontentsNameType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, para=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        if para is None:
+            self.para = []
+        else:
+            self.para = para
+        self.para_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tableofcontentsNameType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if tableofcontentsNameType.subclass:
+            return tableofcontentsNameType.subclass(*args_, **kwargs_)
+        else:
+            return tableofcontentsNameType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_para(self):
+        return self.para
+    def set_para(self, para):
+        self.para = para
+    def add_para(self, value):
+        self.para.append(value)
+    def insert_para_at(self, index, value):
+        self.para.insert(index, value)
+    def replace_para_at(self, index, value):
+        self.para[index] = value
+    def hasContent_(self):
+        if (
+            self.para
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='tableofcontentsNameType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('tableofcontentsNameType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'tableofcontentsNameType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='tableofcontentsNameType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='tableofcontentsNameType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='tableofcontentsNameType'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='tableofcontentsNameType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for para_ in self.para:
+            namespaceprefix_ = self.para_nsprefix_ + ':' if (UseCapturedNS_ and self.para_nsprefix_) else ''
+            para_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='para', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'para':
+            obj_ = docParaType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.para.append(obj_)
+            obj_.original_tagname_ = 'para'
+# end class tableofcontentsNameType
+
+
 class tableofcontentsKindType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, reference=None, tableofcontents=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, docs=None, reference=None, tableofcontents=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -26906,6 +27008,8 @@ class tableofcontentsKindType(GeneratedsSuper):
         self.ns_prefix_ = None
         self.name = name
         self.name_nsprefix_ = None
+        self.docs = docs
+        self.docs_nsprefix_ = None
         self.reference = reference
         self.reference_nsprefix_ = None
         if tableofcontents is None:
@@ -26932,6 +27036,10 @@ class tableofcontentsKindType(GeneratedsSuper):
         return self.name
     def set_name(self, name):
         self.name = name
+    def get_docs(self):
+        return self.docs
+    def set_docs(self, docs):
+        self.docs = docs
     def get_reference(self):
         return self.reference
     def set_reference(self, reference):
@@ -26949,6 +27057,7 @@ class tableofcontentsKindType(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.name is not None or
+            self.docs is not None or
             self.reference is not None or
             self.tableofcontents
         ):
@@ -26989,6 +27098,9 @@ class tableofcontentsKindType(GeneratedsSuper):
             namespaceprefix_ = self.name_nsprefix_ + ':' if (UseCapturedNS_ and self.name_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sname>%s</%sname>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), namespaceprefix_ , eol_))
+        if self.docs is not None:
+            namespaceprefix_ = self.docs_nsprefix_ + ':' if (UseCapturedNS_ and self.docs_nsprefix_) else ''
+            self.docs.export(outfile, level, namespaceprefix_, namespacedef_='', name_='docs', pretty_print=pretty_print)
         if self.reference is not None:
             namespaceprefix_ = self.reference_nsprefix_ + ':' if (UseCapturedNS_ and self.reference_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
@@ -27016,6 +27128,11 @@ class tableofcontentsKindType(GeneratedsSuper):
             value_ = self.gds_validate_string(value_, node, 'name')
             self.name = value_
             self.name_nsprefix_ = child_.prefix
+        elif nodeName_ == 'docs':
+            obj_ = tableofcontentsNameType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.docs = obj_
+            obj_.original_tagname_ = 'docs'
         elif nodeName_ == 'reference':
             value_ = child_.text
             value_ = self.gds_parse_string(value_, node, 'reference')
@@ -27408,6 +27525,7 @@ __all__ = [
     "sectiondefType",
     "spType",
     "tableofcontentsKindType",
+    "tableofcontentsNameType",
     "tableofcontentsType",
     "templateparamlistType"
 ]

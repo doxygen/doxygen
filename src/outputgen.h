@@ -316,7 +316,10 @@ class OutputGenIntf
     virtual void startLabels() = 0;
     virtual void writeLabel(const QCString &l,bool isLast) = 0;
     virtual void endLabels() = 0;
-    virtual void writeLocalToc(const SectionRefs &refs,const LocalToc &lt) = 0;
+    virtual void startLocalToc(int level) = 0;
+    virtual void endLocalToc() = 0;
+    virtual void startTocEntry(const SectionInfo *si) = 0;
+    virtual void endTocEntry(const SectionInfo *si) = 0;
     virtual void cleanup() = 0;
     virtual void startPlainFile(const QCString &name) = 0;
     virtual void endPlainFile() = 0;

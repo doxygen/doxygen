@@ -281,7 +281,10 @@ class ManGenerator : public OutputGenerator, public OutputGenIntf
     void writeLabel(const QCString &l,bool isLast) override;
     void endLabels() override;
 
-    void writeLocalToc(const SectionRefs &,const LocalToc &) override {}
+    void startLocalToc(int) override {}
+    void endLocalToc() override {}
+    void startTocEntry(const SectionInfo *) override {}
+    void endTocEntry(const SectionInfo *) override {}
 
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }

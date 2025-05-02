@@ -312,7 +312,10 @@ class DocbookGenerator : public OutputGenerator, public OutputGenIntf
     void writeLabel(const QCString &,bool) override;
     void endLabels() override;
 
-    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt) override;
+    void startLocalToc(int level) override;
+    void endLocalToc() override;
+    void startTocEntry(const SectionInfo *si) override;
+    void endTocEntry(const SectionInfo *si) override;
 
     void startPlainFile(const QCString &name) override { OutputGenerator::startPlainFile(name); }
     void endPlainFile() override { OutputGenerator::endPlainFile(); }
@@ -336,6 +339,14 @@ private:
     bool m_firstMember = false;
     int m_openSectionCount = 0;
     QCString m_pageLinks;
+
+    struct TocState
+    {
+      int level = 0;
+      int maxLevel = 0;
+      BoolVector inLi;
+    };
+    TocState m_tocState;
 };
 
 QCString convertToDocBook(const QCString &s, const bool retainNewline = false);

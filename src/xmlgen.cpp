@@ -2085,7 +2085,13 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
           QCString label = convertToXML(si->label());
           if (titleDoc.isEmpty()) titleDoc = label;
           incIndent("<tocsect>");
-          writeIndent(); t << "<name>" << titleDoc << "</name>\n";
+          writeIndent(); t << "<name>" << titleDoc << "</name>\n"; // kept for backwards compatibility
+          writeIndent(); t << "<docs>";
+          if (!si->title().isEmpty())
+          {
+            writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,nullptr,si->title());
+          }
+          t << "</docs>\n";
           writeIndent(); t << "<reference>"  <<  convertToXML(pageName) << "_1" << label << "</reference>\n";
           inLi[nextLevel]=true;
           level = nextLevel;
