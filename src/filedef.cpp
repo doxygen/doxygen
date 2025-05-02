@@ -1162,7 +1162,12 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
       ol.endQuickIndices();
     }
     startTitle(ol,getSourceFileBase());
-    ol.parseText(name());
+    QCString nam;
+    if (Config_getBool(FULL_PATH_NAMES))
+      nam = m_docname;
+    else
+      nam = name();
+    ol.parseText(theTranslator->trSourceFile(nam));
     endTitle(ol,getSourceFileBase(),title);
   }
   else
