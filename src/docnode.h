@@ -243,19 +243,22 @@ class DocAnchor : public DocNode
 class DocCite : public DocNode
 {
   public:
-    DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context);
+    DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context, int opt);
     QCString file() const        { return m_file; }
     QCString relPath() const     { return m_relPath; }
     QCString ref() const         { return m_ref; }
     QCString anchor() const      { return m_anchor; }
-    QCString text() const        { return m_text; }
+    QCString target() const      { return m_target; }
+    int option() const           { return m_option; }
+    QCString getText() const;
 
   private:
     QCString   m_file;
     QCString   m_relPath;
     QCString   m_ref;
     QCString   m_anchor;
-    QCString   m_text;
+    QCString   m_target;
+    int        m_option;
 };
 
 

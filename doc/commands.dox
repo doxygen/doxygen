@@ -2477,7 +2477,7 @@ Commands to create links
   \sa section \ref cmdref "\\ref".
 
 <hr>
-\section cmdcite \\cite \<label\>
+\section cmdcite \\cite['{'[option]'}'] \<label\>
 
   \addindex \\cite
   Adds a bibliographic reference in the text and in the list of bibliographic
@@ -2487,6 +2487,18 @@ Commands to create links
   configured with \ref cfg_latex_bib_style "LATEX_BIB_STYLE". For other
   output formats a fixed representation is used. Note that using this
   command requires the \c bibtex tool to be present in the search path.
+
+  There are a number of options possible:
+  - `number`, `shortauthor`, `year`, these options are mutually exclusive,
+    in case none of these is specified `number` is assumed.
+    - `number` create a numerical reference
+    - `shortauthor` just the surname of the first author is given, and in case
+      multiple authors are present the text "et al." is added
+    - `year`, the year of publication is mentioned (when specified in the bibtex
+      file.
+  - `nopar`, no (square) brackets are added
+  - `nocite`, no link to a citation in the bibliography is made (and the
+    reference is not added to the bibliography based on this item)
 
 <hr>
 \section cmdendlink \\endlink
