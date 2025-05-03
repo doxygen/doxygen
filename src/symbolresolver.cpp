@@ -144,6 +144,7 @@ struct SymbolResolver::Private
                            const QCString &args,        // in
                            bool checkCV,                // in
                            bool insideCode,             // in
+                           bool onlyLinkable,           // in
                            const MemberDef **pTypeDef,  // out
                            QCString *pTemplSpec,        // out
                            QCString *pResolvedType);    // out
@@ -393,6 +394,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
            const QCString &args,
            bool checkCV,
            bool insideCode,
+           bool onlyLinkable,
            const MemberDef **pTypeDef,
            QCString *pTemplSpec,
            QCString *pResolvedType)
@@ -523,7 +525,15 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
 
     for (Definition *d : range)
     {
-      if (isCodeSymbol(d->definitionType()))
+      if (isCodeSymbol(d->definitionType()) &&
+          (!onlyLinkable ||
+           d->isLinkable() ||
+           d->isLinkableInProject() ||
+           (d->definitionType()==Definition::TypeFile &&
+            (toFileDef(d))->generateSourceFile()
+           ) // undocumented file that has source code we can link to
+          )
+         )
       {
          getResolvedSymbol(visitedKeys,scope,d,args,checkCV,insideCode,explicitScopePart,strippedTemplateParams,false,
             minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
@@ -1658,14 +1668,15 @@ const Definition *SymbolResolver::resolveSymbol(const Definition *scope,
                                                 const QCString &name,
                                                 const QCString &args,
                                                 bool checkCV,
-                                                bool insideCode)
+                                                bool insideCode,
+                                                bool onlyLinkable)
 {
   AUTO_TRACE("scope={} name={} args={} checkCV={} insideCode={}",
              scope?scope->name():QCString(), name, args, checkCV, insideCode);
   p->reset();
   if (scope==nullptr) scope=Doxygen::globalScope;
   VisitedKeys visitedKeys;
-  const Definition *result = p->getResolvedSymbolRec(visitedKeys,scope,name,args,checkCV,insideCode,&p->typeDef,&p->templateSpec,&p->resolvedType);
+  const Definition *result = p->getResolvedSymbolRec(visitedKeys,scope,name,args,checkCV,insideCode,onlyLinkable,&p->typeDef,&p->templateSpec,&p->resolvedType);
   AUTO_TRACE_EXIT("result={}{}", qPrint(result?result->qualifiedName():QCString()),
                                  qPrint(result && result->definitionType()==Definition::TypeMember ? toMemberDef(result)->argsString() : QCString()));
   return result;
