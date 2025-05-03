@@ -37,8 +37,45 @@
 #include "threadpool.h"
 #include "moduledef.h"
 #include "section.h"
+#include "htmldocvisitor.h"
+#include "outputlist.h"
 
 //-------------------------------------------------------------------------------------------
+
+static std::mutex                               g_titleCacheMutex;
+static std::unordered_map<std::string,QCString> g_titleCache;
+
+static QCString convertTitleToHtml(const Definition *scope,const QCString &fileName,int lineNr,const QCString &title)
+{
+  std::lock_guard lock(g_titleCacheMutex);
+  auto it = g_titleCache.find(title.str());
+  if (it != g_titleCache.end())
+  {
+    //printf("Cache: [%s]->[%s]\n",qPrint(title),qPrint(it->second));
+    return it->second;
+  }
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),fileName,lineNr,scope,nullptr,title,false,false,
+                                   QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT)) };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  QCString result;
+  if (astImpl)
+  {
+    TextStream t;
+    OutputCodeList codeList;
+    codeList.add<HtmlCodeGenerator>(&t);
+    HtmlDocVisitor visitor(t,codeList,scope,fileName);
+    std::visit(visitor,astImpl->root);
+    result = t.str();
+  }
+  else // fallback, should not happen
+  {
+    result = filterTitle(title);
+  }
+  //printf("Conversion: [%s]->[%s]\n",qPrint(title),qPrint(result));
+  g_titleCache.insert(std::make_pair(title.str(),result));
+  return result;
+}
 
 void SearchTerm::makeTitle()
 {
@@ -46,13 +83,14 @@ void SearchTerm::makeTitle()
   {
     const Definition *def = std::get<const Definition *>(info);
     Definition::DefType type = def->definitionType();
-    title = type==Definition::TypeGroup ?  filterTitle(toGroupDef(def)->groupTitle()) :
-            type==Definition::TypePage  ?  filterTitle(toPageDef(def)->title()) :
+    title = type==Definition::TypeGroup ?  convertTitleToHtml(def,def->getDefFileName(),def->getDefLine(),toGroupDef(def)->groupTitle()) :
+            type==Definition::TypePage  ?  convertTitleToHtml(def,def->getDefFileName(),def->getDefLine(),toPageDef(def)->title()) :
                                            def->localName();
   }
   else if (std::holds_alternative<const SectionInfo *>(info))
   {
-    title = std::get<const SectionInfo *>(info)->title();
+    const SectionInfo *si = std::get<const SectionInfo *>(info);
+    title = convertTitleToHtml(si->definition(),si->fileName(),si->lineNr(),si->title());
   }
   else
   {

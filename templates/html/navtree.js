@@ -792,7 +792,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       $('h1.doxsection, h2.doxsection, h3.doxsection, h4.doxsection, h5.doxsection, h6.doxsection').each(function(){
         const level = parseInt(this.tagName[1]);
         const anchor = $(this).find('a.anchor').attr('id');
-        const node = { text: $(this).text(), id: anchor, children: [] };
+        const node = { text: $(this).html(), id: anchor, children: [] };
         while (sectionStack.length && sectionStack[sectionStack.length - 1].level >= level) sectionStack.pop();
         (sectionStack.length ? sectionStack[sectionStack.length - 1].children : sectionTree).push(node);
         sectionStack.push({ ...node, level });
@@ -805,7 +805,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             const span = $('<span>').addClass('arrow').attr('style','padding-left:'+parseInt(level*16)+'px;');
             if (n.children.length > 0) { span.append($('<span>').addClass('arrowhead opened')); }
             const url = $('<a>').attr('href','#'+n.id);
-            content.append(li.append(div.append(span).append(url.append(escapeHtml(n.text)))));
+            content.append(li.append(div.append(span).append(url.append(n.text))));
             topMapping.push(n.id);
             render(n.children,level+1);
           });
