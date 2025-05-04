@@ -1420,7 +1420,6 @@ static void resolveClassNestingRelations()
     if (cd && visitedClasses.find(icd.get())==visitedClasses.end())
     {
       QCString name = stripAnonymousNamespaceScope(cd->name());
-      //printf("processing unresolved=%s, iteration=%d\n",qPrint(cd->name()),iteration);
       /// create the scope artificially
       // anyway, so we can at least relate scopes properly.
       Definition *d = buildScopeFromQualifiedName(name,cd->getLanguage(),nullptr);
@@ -1436,8 +1435,8 @@ static void resolveClassNestingRelations()
         }
         cd->setOuterScope(d);
         warn(cd->getDefFileName(),cd->getDefLine(),
-            "Internal inconsistency: scope for class {} not "
-            "found!",name
+            "Incomplete input: scope for class {} not found!{}",name,
+            name.startsWith("std::") ? " Try enabling BUILTIN_STL_SUPPORT." : ""
             );
       }
     }
