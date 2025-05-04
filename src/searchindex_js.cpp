@@ -134,7 +134,31 @@ static void splitSearchTokens(QCString &title,IntVector &indices)
   for (size_t si=0; si<title.length(); si++)
   {
     char c = title.at(si);
-    if (isId(c) || c==':') // add "word" character
+    if (c=='@' || c=='\\') // skip over special commands
+    {
+      title.at(di)=' ';
+      if (si<title.length()-1)
+      {
+        c = title.at(++si);
+        while (si<title.length() && (isId(c) || c==':')) c = title.at(++si);
+        --si;
+      }
+    }
+    else if (c=='<') // skip over html tags
+    {
+      if (si<title.length()-1)
+      {
+        for (size_t tsi = si; tsi<title.length(); ++tsi)
+        {
+          if (title.at(tsi)=='>')
+          {
+            si=tsi;
+            break;
+          }
+        }
+      }
+    }
+    else if (isId(c) || c==':') // add "word" character
     {
       title.at(di)=c;
       di++;
@@ -504,9 +528,11 @@ void createJavaScriptSearchIndex()
       QCString title = filterTitle(sectionInfo->title());
       IntVector tokenIndices;
       splitSearchTokens(title,tokenIndices);
+      //printf("split(%s)=(%s) %zu\n",qPrint(sectionInfo->title()),qPrint(title),tokenIndices.size());
       for (int index : tokenIndices)
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(title.mid(index),sectionInfo.get()));
+        g_searchIndexInfo[SEARCH_INDEX_PAGES].add(SearchTerm(title.mid(index),sectionInfo.get()));
       }
     }
   }
@@ -779,7 +805,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
       }
       else if (si)
       {
-        name = convertToXML(filterTitle(si->title()));
+        name = convertTitleToHtml(si->definition(),si->fileName(),si->lineNr(),si->title());
         found = true;
       }
       if (!found) // fallback

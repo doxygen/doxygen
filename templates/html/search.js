@@ -654,9 +654,9 @@ function createResults(resultsPath) {
         setKeyActions(srChild,'return searchResults.NavChild(event,'+index+','+c+')');
         setClassAttr(srChild,'SRScope');
         if (elem[1][c+1][0].startsWith('http://') || elem[1][c+1][0].startsWith('https://')) { // absolute path
-          srLink.setAttribute('href',elem[1][c+1][0]);
+          srChild.setAttribute('href',elem[1][c+1][0]);
         } else { // relative path
-          srLink.setAttribute('href',resultsPath+elem[1][c+1][0]);
+          srChild.setAttribute('href',resultsPath+elem[1][c+1][0]);
         }
         srChild.setAttribute('onclick','searchBox.CloseResultsWindow()');
         if (elem[1][c+1][1]) {
