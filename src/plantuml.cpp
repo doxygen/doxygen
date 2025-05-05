@@ -178,10 +178,18 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
                test_doxygen/DOXYGEN_OUTPUT/html/A
    */
   int exitCode = 0;
-  QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
+  QCString plantumlPath = Config_getString(PLANTUML_JAR_PATH);
   QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
 
-  QCString pumlExe = "java";
+  FileInfo plantumlPathFile(plantumlPath.str());
+  bool isJarPlantUML = plantumlPathFile.extension(false) == "jar";
+
+  QCString pumlExe = "";
+  if(isJarPlantUML)
+  {
+    pumlExe = "java";
+  }
+
   QCString pumlArgs = "";
   QCString pumlType = "";
   QCString pumlOutDir = "";
@@ -203,7 +211,11 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
     }
   }
   if (!pumlIncludePathList.empty()) pumlArgs += "\" ";
-  pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"\" ";
+  pumlArgs += "-Djava.awt.headless=true ";
+  if(isJarPlantUML)
+  {
+    "-jar \""+plantumlPath+"\" ";
+  }
   if (!plantumlConfigFile.isEmpty())
   {
     pumlArgs += "-config \"";
@@ -281,8 +293,14 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
 
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
-        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"{}\" -h' works from the command line. Exit code: {}.",
-            plantumlJarPath,exitCode);
+        QCString command = plantumlPath;
+        if(isJarPlantUML)
+        {
+          command = "java -jar \"" + plantumlPath + "\" -h";
+        }
+
+        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command '{}' works from the command line. Exit code: {}.",
+            command,exitCode);
       }
 
       if ( (format==PlantumlManager::PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
