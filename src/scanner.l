@@ -2063,6 +2063,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyLine = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->lastInitializerContext = UsingAlias;
+                                          yyextra->sharpCount=0;
                                           yyextra->initBracketCount=0;
                                           storeClangId(yyscanner,yyextra->current->name.data());
                                           BEGIN(ReadInitializer);
@@ -3054,6 +3055,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->initializer.str(yytext);
                                           yyextra->lastInitializerContext = YY_START;
+                                          yyextra->sharpCount=0;
                                           yyextra->initBracketCount=0;
                                           yyextra->current->mtype = yyextra->mtype = MethodTypes::Property;
                                           yyextra->current->spec.setGettable(true);
@@ -3064,6 +3066,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->initializer.str(yytext);
                                           yyextra->lastInitializerContext = YY_START;
+                                          yyextra->sharpCount=0;
                                           yyextra->initBracketCount=0;
                                           BEGIN(ReadInitializer);
                                         }
@@ -3207,15 +3210,26 @@ NONLopt [^\n]*
 <ReadInitializer,ReadInitializerPtr>("<<"|"<=") {
                                           yyextra->current->initializer << yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>(">>"|">=") {
+<ReadInitializer,ReadInitializerPtr>(">>") {
+                                          if (yyextra->initBracketCount<=yyextra->sharpCount && yyextra->sharpCount>=2)
+                                          {
+                                            // heuristic to detect '>>' in A<B<C>>::D as '> >', but not e.g. 'A>>B' or A<B<(C>>2)>::D>
+                                            yyextra->initBracketCount-=2;
+                                            yyextra->sharpCount-=2;
+                                          }
+                                          yyextra->current->initializer << yytext;
+                                        }
+<ReadInitializer,ReadInitializerPtr>(">=") {
                                           yyextra->current->initializer << yytext;
                                         }
 <ReadInitializer,ReadInitializerPtr>[<\[{(]             {
                                           yyextra->initBracketCount++;
+                                          yyextra->sharpCount++;
                                           yyextra->current->initializer << *yytext;
                                         }
 <ReadInitializer,ReadInitializerPtr>[>\]})]             {
                                           yyextra->initBracketCount--;
+                                          yyextra->sharpCount--;
                                           if (*yytext=='}')
                                           {
                                             yyextra->current->endBodyLine=yyextra->yyLineNr;
@@ -4061,12 +4075,14 @@ NONLopt [^\n]*
                                           // Java enum initializer
                                           unput(*yytext);
                                           yyextra->lastInitializerContext = YY_START;
+                                          yyextra->sharpCount=0;
                                           yyextra->initBracketCount=0;
                                           yyextra->current->initializer.str("=");
                                           BEGIN(ReadInitializer);
                                         }
 <FindFields>"="                         {
                                           yyextra->lastInitializerContext = YY_START;
+                                          yyextra->sharpCount=0;
                                           yyextra->initBracketCount=0;
                                           yyextra->current->initializer.str(yytext);
                                           BEGIN(ReadInitializer);
@@ -4588,6 +4604,7 @@ NONLopt [^\n]*
                                         }
 <MemberSpec>"="                         {
                                           yyextra->lastInitializerContext=YY_START;
+                                          yyextra->sharpCount=0;
                                           yyextra->initBracketCount=0;
                                           yyextra->current->initializer.str(yytext);
                                           BEGIN(ReadInitializer);
@@ -5331,6 +5348,7 @@ NONLopt [^\n]*
                                           {
                                             // typically an initialized function pointer
                                             yyextra->lastInitializerContext=YY_START;
+                                            yyextra->sharpCount=0;
                                             yyextra->initBracketCount=0;
                                             yyextra->current->initializer.str(yytext);
                                             BEGIN(ReadInitializer);
@@ -6058,6 +6076,7 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->initializer.str(std::string());
                                           yyextra->lastInitializerContext = FindMembers;
+                                          yyextra->sharpCount=0;
                                           yyextra->initBracketCount=0;
                                           BEGIN(ReadInitializer);
                                         }
@@ -6918,6 +6937,7 @@ NONLopt [^\n]*
                                               yyextra->current->bodyColumn = yyextra->yyColNr;
                                               yyextra->current->initializer.str(yytext);
                                               yyextra->lastInitializerContext = YY_START;
+                                              yyextra->sharpCount=0;
                                               yyextra->initBracketCount=1;
                                               BEGIN(ReadInitializer);
                                             }
