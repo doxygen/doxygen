@@ -68,12 +68,14 @@ class SymbolResolver
      *  @param args    Argument list associated with the symbol (for functions)
      *  @param checkCV Check const/volatile qualifiers (for methods)
      *  @param insideCode Is the symbol found in a code fragment
+     *  @param onlyLinkable Only search linkable definitions
      */
     const Definition *resolveSymbol(const Definition *scope,
                                     const QCString &name,
                                     const QCString &args=QCString(),
                                     bool checkCV=false,
-                                    bool insideCode=false
+                                    bool insideCode=false,
+                                    bool onlyLinkable=false
                                    );
 
     /** Checks if symbol \a item is accessible from within \a scope.
