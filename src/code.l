@@ -348,6 +348,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 %x      SkipComment
 %x      SkipCxxComment
 %x      Body
+%x      BodyVar
 %x      FuncCall
 %x      MemberCall
 %x      MemberCall2
@@ -570,38 +571,6 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <SkipCPP>{CPPC}/[^/!]                     {
                                           REJECT;
-                                        }
-<Body,FuncCall>"{"                      {
-                                          yyextra->theVarContext.pushScope();
-                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
-                                          yyextra->bracketCount = 0;
-
-                                          DBG_CTX((stderr,"** type='%s' name='%s'\n",qPrint(yyextra->type),qPrint(yyextra->name)));
-                                          if (yyextra->type.find("enum ")!=-1)
-                                          { // for strong enums we need to start a scope
-                                            DBG_CTX((stderr,"** scope stack push SCOPEBLOCK\n"));
-                                            pushScope(yyscanner,yyextra->name);
-                                            yyextra->scopeStack.push(SCOPEBLOCK);
-                                          }
-                                          else
-                                          {
-                                            DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
-                                            yyextra->scopeStack.push(INNERBLOCK);
-                                          }
-
-                                          if (yyextra->searchingForBody)
-                                          {
-                                            yyextra->searchingForBody=FALSE;
-                                            yyextra->insideBody=TRUE;
-                                          }
-                                          yyextra->code->codify(yytext);
-                                          if (yyextra->insideBody)
-                                          {
-                                            yyextra->bodyCurlyCount++;
-                                          }
-                                          yyextra->type.clear();
-                                          yyextra->name.clear();
-                                          BEGIN( Body );
                                         }
 <Body,FuncCall,MemberCall,MemberCall2>"}"  {
                                           yyextra->theVarContext.popScope();
@@ -1446,7 +1415,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->type.clear();
                                           BEGIN(yyextra->memCallContext);
                                         }
-<Body>[,=;\[]                           {
+<Body>[,=;\[{]                          {
                                           if (yyextra->insideObjC && *yytext=='[')
                                           {
                                             DBG_CTX((stderr,"Found start of ObjC call!\n"));
@@ -1466,7 +1435,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                           else
                                           {
-                                            yyextra->code->codify(yytext);
+                                            if (*yytext!='{') yyextra->code->codify(yytext);
                                             yyextra->saveName = yyextra->name;
                                             yyextra->saveType = yyextra->type;
                                             if (*yytext!='[' && !yyextra->type.isEmpty())
@@ -1480,7 +1449,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                               }
                                               yyextra->name.clear();
                                             }
-                                            if (*yytext==';' || *yytext=='=')
+                                            if (*yytext==';' || *yytext=='=' || *yytext=='{')
                                             {
                                               yyextra->type.clear();
                                               yyextra->name.clear();
@@ -1492,7 +1461,44 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             yyextra->args.clear();
                                             yyextra->parmType.clear();
                                             yyextra->parmName.clear();
+                                            if (*yytext=='{')
+                                            {
+                                              BEGIN( BodyVar );
+                                              unput('{');
+                                            }
                                           }
+                                        }
+<Body,FuncCall,BodyVar>"{"              {
+                                          yyextra->theVarContext.pushScope();
+                                          yyextra->theCallContext.pushScope(yyextra->name, yyextra->type, yyextra->bracketCount);
+                                          yyextra->bracketCount = 0;
+
+                                          DBG_CTX((stderr,"** type='%s' name='%s'\n",qPrint(yyextra->type),qPrint(yyextra->name)));
+                                          if (yyextra->type.find("enum ")!=-1)
+                                          { // for strong enums we need to start a scope
+                                            DBG_CTX((stderr,"** scope stack push SCOPEBLOCK\n"));
+                                            pushScope(yyscanner,yyextra->name);
+                                            yyextra->scopeStack.push(SCOPEBLOCK);
+                                          }
+                                          else
+                                          {
+                                            DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
+                                            yyextra->scopeStack.push(INNERBLOCK);
+                                          }
+
+                                          if (yyextra->searchingForBody)
+                                          {
+                                            yyextra->searchingForBody=FALSE;
+                                            yyextra->insideBody=TRUE;
+                                          }
+                                          yyextra->code->codify(yytext);
+                                          if (yyextra->insideBody)
+                                          {
+                                            yyextra->bodyCurlyCount++;
+                                          }
+                                          yyextra->type.clear();
+                                          yyextra->name.clear();
+                                          BEGIN( Body );
                                         }
 <ObjCCall,ObjCMName>"["|"{"       {
                                     saveObjCContext(yyscanner);
