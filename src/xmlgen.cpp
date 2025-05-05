@@ -1801,7 +1801,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
       t << " refid=\"" << inc.fileDef->getOutputFileBase() << "\"";
     }
     t << " local=\"" << ((inc.kind & IncludeKind_LocalMask) ? "yes" : "no") << "\">";
-    t << inc.includeName;
+    t << convertToXML(inc.includeName);
     t << "</includes>\n";
   }
 
@@ -1813,7 +1813,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
       t << " refid=\"" << inc.fileDef->getOutputFileBase() << "\"";
     }
     t << " local=\"" << ((inc.kind &IncludeKind_LocalMask) ? "yes" : "no") << "\">";
-    t << inc.includeName;
+    t << convertToXML(inc.includeName);
     t << "</includedby>\n";
   }
 
