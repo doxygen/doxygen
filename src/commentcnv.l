@@ -388,6 +388,14 @@ SLASHopt [/]*
 <Scan>\n                           { /* new line */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
+<Scan>{CPPC}[!/]/.*\n[ \t]*{CPPC}[!/][ \t]*{CMD}"}" {
+				     yyextra->inSpecialComment=true;
+				     yyextra->blockHeadCol=yyextra->col+1;
+                                     yyextra->insertCppCommentMarker=true;
+  				     copyToOutput(yyscanner,yytext,yyleng);
+				     yyextra->readLineCtx=YY_START;
+				     BEGIN(ReadLine);
+                                   }
 <Scan>{CPPC}"!"/.*\n[ \t]*{CPPC}[\/!][^\/] | /* start C++ style special comment block */
 <Scan>({CPPC}"/"[/]*)/[^/].*\n[ \t]*{CPPC}[\/!][^\/] { /* start C++ style special comment block */
   				     if (yyextra->mlBrief)
@@ -432,14 +440,6 @@ SLASHopt [/]*
                                      {
 				       yyextra->blockHeadCol=yyextra->col+1;
                                      }
-  				     copyToOutput(yyscanner,yytext,yyleng);
-				     yyextra->readLineCtx=YY_START;
-				     BEGIN(ReadLine);
-                                   }
-<Scan>{CPPC}[!/]/.*\n              { /* one line special C++ comment */
-				     yyextra->inSpecialComment=true;
-				     yyextra->blockHeadCol=yyextra->col+1;
-                                     yyextra->insertCppCommentMarker=true;
   				     copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
