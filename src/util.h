@@ -380,6 +380,7 @@ void addCodeOnlyMappings();
 bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCString &n);
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
+QCString parseCommentAsHtml(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
 bool transcodeCharacterStringToUTF8(std::string &input,const char *inputEncoding);
 

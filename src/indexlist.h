@@ -45,7 +45,8 @@ class IndexIntf
                          const QCString &anchor,
                          bool separateIndex,
                          bool addToNavIndex,
-                         const Definition *def
+                         const Definition *def,
+                         const QCString &nameAsHtml
                         ) = 0;
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
                       const QCString &sectionAnchor,const QCString &title) = 0;
@@ -114,8 +115,8 @@ class IndexList
 
     void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
                          const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
-                         const Definition *def=nullptr)
-    { if (m_enabled) foreach_locked(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
+                         const Definition *def=nullptr, const QCString &nameAsHtml = QCString())
+    { if (m_enabled) foreach_locked(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def,nameAsHtml); }
 
     void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())
     { if (m_enabled) foreach_locked(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }

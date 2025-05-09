@@ -551,7 +551,8 @@ void HtmlHelp::addContentsItem(bool isDir,
                                const QCString &anchor,
                                bool /* separateIndex */,
                                bool /* addToNavIndex */,
-                               const Definition * /* def */)
+                               const Definition * /* def */,
+                               const QCString & /* nameAsHtml */)
 {
   p->ctsItemPresent = true;
   for (int i=0; i<p->dc; i++) p->cts << "  ";

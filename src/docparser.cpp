@@ -785,8 +785,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   };
   QCString name = linkToText(context.lang,context.token->name,TRUE);
   AUTO_TRACE("word={}",name);
-  bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
-  if ((!autolinkSupport && !ignoreAutoLinkFlag) || ignoreWord(context.token->name)) // no autolinking -> add as normal word
+  if ((!context.autolinkSupport && !ignoreAutoLinkFlag) || ignoreWord(context.token->name)) // no autolinking -> add as normal word
   {
     children.append<DocWord>(this,parent,name);
     return;
@@ -1926,7 +1925,8 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
                             const QCString &input,bool indexWords,
                             bool isExample, const QCString &exampleName,
                             bool singleLine, bool linkFromIndex,
-                            bool markdownSupport)
+                            bool markdownSupport,
+                            bool autolinkSupport)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
   assert(parser!=nullptr);
@@ -2011,6 +2011,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   parser->context.retvalsFound.clear();
   parser->context.paramsFound.clear();
   parser->context.markdownSupport = markdownSupport;
+  parser->context.autolinkSupport = autolinkSupport;
 
   //printf("Starting comment block at %s:%d\n",qPrint(parser->context.fileName),startLine);
   parser->tokenizer.setLineNr(startLine);
@@ -2083,6 +2084,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   parser->context.searchUrl="";
   parser->context.lang = SrcLangExt::Unknown;
   parser->context.markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
+  parser->context.autolinkSupport = FALSE;
 
 
   auto ast = std::make_unique<DocNodeAST>(DocText(parser));

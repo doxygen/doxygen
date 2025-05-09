@@ -170,7 +170,8 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
                   const QCString &docStr,bool indexWords,
                   bool isExample,const QCString &exampleName,
                   bool singleLine,bool linkFromIndex,
-                  bool markdownSupport)
+                  bool markdownSupport,
+                  bool autolinkSupport)
 {
   if (docStr.isEmpty()) return;
 
@@ -184,7 +185,7 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
   auto ast    { validatingParseDoc(*parser.get(),
                                    fileName,startLine,
                                    ctx,md,docStr,indexWords,isExample,exampleName,
-                                   singleLine,linkFromIndex,markdownSupport) };
+                                   singleLine,linkFromIndex,markdownSupport,autolinkSupport) };
   if (ast && count>0) writeDoc(ast.get(),ctx,md);
 }
 

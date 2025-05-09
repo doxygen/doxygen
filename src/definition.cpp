@@ -1391,14 +1391,16 @@ QCString DefinitionImpl::navigationPathAsString() const
     if (p->def->definitionType()==Definition::TypeGroup &&
         !toGroupDef(p->def)->groupTitle().isEmpty())
     {
-      result+="<a href=\"$relpath^"+fn+"\">"+
-              convertToHtml(toGroupDef(p->def)->groupTitle())+"</a>";
+      QCString title = parseCommentAsHtml(p->def,nullptr,toGroupDef(p->def)->groupTitle(),
+                                          p->def->getDefFileName(),p->def->getDefLine());
+      result+="<a href=\"$relpath^"+fn+"\">"+title+"</a>";
     }
     else if (p->def->definitionType()==Definition::TypePage &&
              toPageDef(p->def)->hasTitle())
     {
-      result+="<a href=\"$relpath^"+fn+"\">"+
-            convertToHtml((toPageDef(p->def))->title())+"</a>";
+      QCString title = parseCommentAsHtml(p->def,nullptr,toPageDef(p->def)->title(),
+                                          p->def->getDefFileName(),p->def->getDefLine());
+      result+="<a href=\"$relpath^"+fn+"\">"+title+"</a>";
     }
     else if (p->def->definitionType()==Definition::TypeClass)
     {
@@ -1461,7 +1463,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
         QCString docTitle = si->title();
         if (docTitle.isEmpty()) docTitle = si->label();
         ol.generateDoc(docFile(),getStartBodyLine(),scope,md,docTitle,TRUE,FALSE,
-                       QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                       QCString(),TRUE,FALSE);
         ol.endTocEntry(si);
       }
     }

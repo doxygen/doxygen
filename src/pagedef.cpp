@@ -176,15 +176,19 @@ void PageDefImpl::addSectionsToIndex()
       QCString title = si->title();
       if (title.isEmpty()) title = si->label();
       title = parseCommentAsText(this,nullptr,title,si->fileName(),si->lineNr());
+      QCString titleAsHtml = parseCommentAsHtml(this,nullptr,si->title(),si->fileName(),si->lineNr());
       // determine if there is a next level inside this item, but be aware of the anchor and table section references.
       auto it_next = std::next(it);
       bool isDir = (it_next!=sectionRefs.end()) ?  ((*it_next)->type().isSection() && (*it_next)->type().level() > nextLevel) : false;
-      Doxygen::indexList->addContentsItem(isDir,title,
-                                         getReference(),
-                                         getOutputFileBase(),
-                                         si->label(),
-                                         false,
-                                         true);
+      Doxygen::indexList->addContentsItem(isDir,               // isDir
+                                          title,               // name
+                                          getReference(),      // ref
+                                          getOutputFileBase(), // file
+                                          si->label(),         // anchor
+                                          false,               // separateIndex
+                                          true,                // addToNavIndex
+                                          nullptr,             // def
+                                          titleAsHtml);        // nameAsHtml
       level = nextLevel;
     }
   }
@@ -290,8 +294,8 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
     if (si->title() != manPageName)
     {
-      ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),TRUE,FALSE,
-                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+      ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),true,false,
+                     QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT),false);
       ol.endSection(si->label(),si->type());
     }
   }
@@ -310,18 +314,17 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   if (!title.isEmpty() && !name().isEmpty() && si!=nullptr)
   {
     ol.startPageDoc(si->title());
-    //ol.startSection(si->label,si->title,si->type);
     ol.startHeaderSection();
     ol.startTitleHead(getOutputFileBase());
-    ol.parseText(title);
+    ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,title,true,false,
+                   QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT),false);
     ol.endTitleHead(getOutputFileBase(),title);
     ol.endHeaderSection();
-
-    /*ol.generateDoc(docFile(),getStartBodyLine(),this,nullptr,si->title(),TRUE,FALSE,
-                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));*/
   }
   else
+  {
     ol.startPageDoc("");
+  }
   ol.popGeneratorState();
   //2.}
 

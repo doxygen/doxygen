@@ -140,7 +140,7 @@ void Crawlmap::addIndexFile(const QCString & fileName)
 void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
                                const QCString & file, const QCString & anchor,
                                bool ,bool ,
-                               const Definition *)
+                               const Definition *, const QCString &)
 {
   if (!file.isEmpty() && ref.isEmpty())      // made file optional param and
                                              // don't place links in crawl file imported

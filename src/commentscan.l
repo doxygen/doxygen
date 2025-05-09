@@ -1537,9 +1537,9 @@ STopt  [^\n@\\]*
                                         }
 <GroupDocArg2>[^\n\\]+                  { // title (stored in type)
                                           yyextra->current->type += yytext;
-                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                         }
 <GroupDocArg2>{DOCNL}+                  {
+                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                           if ( yyextra->current->groupDocType==Entry::GROUPDOC_NORMAL &&
                                                yyextra->current->type.isEmpty()
                                              ) // defgroup requires second argument
@@ -1569,7 +1569,6 @@ STopt  [^\n@\\]*
                                         }
 <GroupDocArg2>.                         { // title (stored in type)
                                           yyextra->current->type += yytext;
-                                          yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                         }
 
   /* --------- handle arguments of page/mainpage command ------------------- */

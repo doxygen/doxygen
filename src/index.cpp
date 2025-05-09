@@ -1520,8 +1520,7 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
           FALSE, // isExample
           QCString(), // example name
           TRUE,  // single line
-          TRUE,  // link from index
-          Config_getBool(MARKDOWN_SUPPORT)
+          TRUE   // link from index
           );
       //ol.docify(")");
     }
@@ -2054,8 +2053,7 @@ static void writeNamespaceIndex(OutputList &ol)
                  FALSE, // isExample
                  QCString(),     // example name
                  TRUE,  // single line
-                 TRUE,  // link from index
-                 Config_getBool(MARKDOWN_SUPPORT)
+                 TRUE   // link from index
                 );
         //ol.docify(")");
       }
@@ -2182,8 +2180,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
                  FALSE,  // isExample
                  QCString(),     // example name
                  TRUE,  // single line
-                 TRUE,  // link from index
-                 Config_getBool(MARKDOWN_SUPPORT)
+                 TRUE   // link from index
                 );
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
@@ -3912,12 +3909,13 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
 
   if (pd->visibleInIndex())
   {
-    QCString pageTitle;
+    QCString pageTitle, pageTitleAsHtml;
 
     if (pd->title().isEmpty())
       pageTitle=pd->name();
     else
-      pageTitle=filterTitle(pd->title());
+      pageTitle = parseCommentAsText(pd,nullptr,pd->title(),pd->getDefFileName(),pd->getDefLine());
+    pageTitleAsHtml = parseCommentAsHtml(pd,nullptr,pd->title(),pd->getDefFileName(),pd->getDefLine());
 
     if (ftv)
     {
@@ -3925,14 +3923,14 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
       ftv->addContentsItem(
           hasSubPages,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
-          QCString(),hasSubPages,TRUE,pd);
+          QCString(),hasSubPages,TRUE,pd,pageTitleAsHtml);
     }
     if (addToIndex && pd!=Doxygen::mainPage.get())
     {
       Doxygen::indexList->addContentsItem(
           hasSubPages || hasSections,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
-          QCString(),hasSubPages,TRUE,pd);
+          QCString(),hasSubPages,TRUE,pd,pageTitleAsHtml);
     }
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
@@ -4121,17 +4119,22 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
     numSubItems += gd->getPages().size();
 
     bool isDir = hasSubGroups || hasSubPages || numSubItems>0;
+    QCString title = parseCommentAsText(gd,nullptr,gd->groupTitle(),gd->getDefFileName(),gd->getDefLine());
+    QCString titleAsHtml = parseCommentAsHtml(gd,nullptr,gd->groupTitle(),gd->getDefFileName(),gd->getDefLine());
+
     //printf("gd='%s': pageDict=%d\n",qPrint(gd->name()),gd->pageDict->count());
     if (addToIndex)
     {
-      Doxygen::indexList->addContentsItem(isDir,gd->groupTitle(),gd->getReference(),gd->getOutputFileBase(),QCString(),isDir,TRUE);
+      Doxygen::indexList->addContentsItem(isDir,title,
+                           gd->getReference(),gd->getOutputFileBase(),QCString(),
+                           isDir,TRUE,nullptr,titleAsHtml);
       Doxygen::indexList->incContentsDepth();
     }
     if (ftv)
     {
-      ftv->addContentsItem(hasSubGroups,gd->groupTitle(),
+      ftv->addContentsItem(hasSubGroups,title,
                            gd->getReference(),gd->getOutputFileBase(),QCString(),
-                           FALSE,FALSE,gd);
+                           FALSE,FALSE,gd,titleAsHtml);
       ftv->incContentsDepth();
     }
 
@@ -4264,14 +4267,22 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
           hasSubPages = pd->hasSubPages();
           bool hasSections = pd->hasSections();
+          QCString pageTitle;
+          if (pd->title().isEmpty())
+             pageTitle=pd->name();
+          else
+             pageTitle = parseCommentAsText(pd,nullptr,pd->title(),pd->getDefFileName(),pd->getDefLine());
+          QCString pageTitleAsHtml = parseCommentAsHtml(pd,nullptr,pd->title(),pd->getDefFileName(),pd->getDefLine());
           Doxygen::indexList->addContentsItem(
               hasSubPages || hasSections,
-              pd->title(),
+              pageTitle,
               gd->getReference(),
               gd->getOutputFileBase(),
               si ? si->label() : QCString(),
               hasSubPages || hasSections,
-              TRUE); // addToNavIndex
+              TRUE,
+              nullptr,
+              pageTitleAsHtml); // addToNavIndex
           if (hasSections || hasSubPages)
           {
             Doxygen::indexList->incContentsDepth();
@@ -4708,8 +4719,7 @@ static void writeConceptIndex(OutputList &ol)
                  FALSE, // isExample
                  QCString(),     // example name
                  TRUE,  // single line
-                 TRUE,  // link from index
-                 Config_getBool(MARKDOWN_SUPPORT)
+                 TRUE   // link from index
                 );
         //ol.docify(")");
       }
@@ -4824,14 +4834,17 @@ static void writeIndex(OutputList &ol)
   int defLine =
     Doxygen::mainPage ? Doxygen::mainPage->docLine() : -1;
 
-  QCString title;
+  QCString title, titleAsHtml;
   if (!mainPageHasTitle())
   {
     title = theTranslator->trMainPage();
   }
   else if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title());
+    title = parseCommentAsText(Doxygen::mainPage.get(),nullptr,Doxygen::mainPage->title(),
+                               Doxygen::mainPage->getDefFileName(),Doxygen::mainPage->getDefLine());
+    titleAsHtml = parseCommentAsHtml(Doxygen::mainPage.get(),nullptr,Doxygen::mainPage->title(),
+                                     Doxygen::mainPage->getDefFileName(),Doxygen::mainPage->getDefLine());
   }
 
   QCString indexName="index";
@@ -4850,7 +4863,9 @@ static void writeIndex(OutputList &ol)
                                           indexName,
                                           QCString(),
                                           hasSubs,
-                                          TRUE);
+                                          TRUE,
+                                          nullptr,
+                                          titleAsHtml);
     }
     if (hasSubs)
     {
@@ -4892,7 +4907,7 @@ static void writeIndex(OutputList &ol)
       ol.startTitleHead(QCString());
       ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->getStartBodyLine(),
                   Doxygen::mainPage.get(),nullptr,Doxygen::mainPage->title(),false,false,
-                  QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT));
+                  QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT),false);
       headerWritten = TRUE;
     }
   }
@@ -4928,7 +4943,8 @@ static void writeIndex(OutputList &ol)
     ol.startTextBlock();
     ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,
                 Doxygen::mainPage->documentation(),true,false,
-                QCString(),false,false,Config_getBool(MARKDOWN_SUPPORT));
+                QCString(),false,false,
+                Config_getBool(MARKDOWN_SUPPORT),false);
     ol.endTextBlock();
     ol.endPageDoc();
   }
@@ -4989,7 +5005,7 @@ static void writeIndex(OutputList &ol)
   {
     ol.startProjectNumber();
     ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,Config_getString(PROJECT_NUMBER),false,false,
-                   QCString(),false,false,Config_getBool(MARKDOWN_SUPPORT));
+                   QCString(),false,false);
     ol.endProjectNumber();
   }
   ol.endIndexSection(IndexSection::isTitlePageStart);

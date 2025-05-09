@@ -166,7 +166,8 @@ void EclipseHelp::addContentsItem(
     const QCString &anchor,
     bool /* separateIndex */,
     bool /* addToNavIndex */,
-    const Definition * /*def*/)
+    const Definition * /*def*/,
+    const QCString & /* nameAsHtml */)
 {
   // -- write the topic tag
   p->closedTag();

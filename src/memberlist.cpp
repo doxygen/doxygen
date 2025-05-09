@@ -415,8 +415,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                                                  cd,md,
                                                  md->briefDescription(),
                                                  TRUE,FALSE,
-                                                 QCString(),TRUE,FALSE,
-                                                 Config_getBool(MARKDOWN_SUPPORT)) };
+                                                 QCString(),TRUE,FALSE) };
                 if (!ast->isEmpty())
                 {
                   ol.startMemberDescription(md->anchor());
@@ -553,7 +552,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     {
       ol.startMemberSubtitle();
       ol.generateDoc("[generated]",-1,ctx,nullptr,subtitle,FALSE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
       ol.endMemberSubtitle();
     }
   }
@@ -595,7 +594,7 @@ void MemberList::writeDeclarations(OutputList &ol,
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
           ol.generateDoc(mg->docFile(),mg->docLine(),mg->memberContainer(),nullptr,mg->documentation()+"\n",FALSE,FALSE,
-              QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+              QCString(),FALSE,FALSE);
           ol.endMemberGroupDocs();
         }
         ol.startMemberGroup();

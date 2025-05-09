@@ -23,6 +23,7 @@
 #include "growvector.h"
 #include "construct.h"
 #include "types.h"
+#include "config.h"
 
 class MemberDef;
 class Definition;
@@ -83,7 +84,8 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,const QCString &fileNam
                             const QCString &input,bool indexWords,
                             bool isExample,const QCString &exampleName,
                             bool singleLine,bool linkFromIndex,
-                            bool markdownSupport);
+                            bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT),
+                            bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT));
 
 /*! Main entry point for parsing simple text fragments. These
  *  fragments are limited to words, whitespace and symbols.

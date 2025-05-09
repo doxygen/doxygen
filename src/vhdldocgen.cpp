@@ -1664,7 +1664,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDefMutable* mdef,OutputList &ol,
     ol.generateDoc(mdef->briefFile(),mdef->briefLine(),
                    mdef->getOuterScope()?mdef->getOuterScope():d,
                    mdef,s,TRUE,FALSE,
-                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                   QCString(),TRUE,FALSE);
     if (detailsVisible)
     {
       ol.pushGeneratorState();
@@ -1759,7 +1759,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
   {
     ol.startMemberSubtitle();
     ol.generateDoc("[generated]",-1,nullptr,nullptr,subtitle,FALSE,FALSE,
-                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                   QCString(),TRUE,FALSE);
     ol.endMemberSubtitle();
   } //printf("memberGroupList=%p\n",memberGroupList);
 
@@ -1784,7 +1784,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
         ol.generateDoc("[generated]",-1,nullptr,nullptr,mg->documentation()+"\n",FALSE,FALSE,
-            QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+            QCString(),FALSE,FALSE);
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();

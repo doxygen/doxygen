@@ -558,7 +558,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
         !documentation().isEmpty())
@@ -575,7 +575,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
     if (!documentation().isEmpty())
     {
       ol.generateDoc(docFile(),docLine(),this,nullptr,documentation()+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
     ol.endTextBlock();
   }
@@ -589,7 +589,7 @@ void ModuleDefImpl::writeBriefDescription(OutputList &ol)
     auto ast    { validatingParseDoc(*parser.get(),
                                      briefFile(),briefLine(),this,nullptr,
                                      briefDescription(),TRUE,FALSE,
-                                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                     QCString(),TRUE,FALSE) };
     if (!ast->isEmpty())
     {
       ol.startParagraph();
@@ -942,7 +942,7 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
         {
           ol.startMemberDescription(mod->getOutputFileBase());
           ol.generateDoc(briefFile(),briefLine(),mod,nullptr,mod->briefDescription(),FALSE,FALSE,
-              QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+              QCString(),TRUE,FALSE);
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(QCString(),QCString());
@@ -993,7 +993,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
         {
           ol.startMemberDescription(fd->getOutputFileBase());
           ol.generateDoc(briefFile(),briefLine(),fd,nullptr,fd->briefDescription(),FALSE,FALSE,
-              QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+              QCString(),TRUE,FALSE);
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(QCString(),QCString());

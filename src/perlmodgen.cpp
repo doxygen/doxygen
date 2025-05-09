@@ -1372,7 +1372,7 @@ static void addPerlModDocBlock(PerlModOutput &output,
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
                                      fileName,lineNr,scope,md,stext,FALSE,FALSE,
-                                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                     QCString(),FALSE,FALSE) };
     output.openHash(name);
     auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
     if (astImpl)

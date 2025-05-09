@@ -92,6 +92,7 @@ struct DocParserContext
   TokenInfo *token = nullptr;
   int      lineNo = 0;
   bool     markdownSupport = false;
+  bool     autolinkSupport = false;
 };
 
 class DocParser : public IDocParser

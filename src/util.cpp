@@ -53,6 +53,7 @@
 #include "doxygen.h"
 #include "textdocvisitor.h"
 #include "latexdocvisitor.h"
+#include "htmldocvisitor.h"
 #include "portable.h"
 #include "parserintf.h"
 #include "image.h"
@@ -5886,7 +5887,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   auto ast    { validatingParseDoc(*parser.get(),
                                    fileName,lineNr,
                                    scope,md,doc,FALSE,FALSE,
-                                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT),false) };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)
   {
@@ -5924,6 +5925,44 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 
 //--------------------------------------------------------------------------------------
 
+static std::mutex                               g_docCacheMutex;
+static std::unordered_map<std::string,QCString> g_docCache;
+
+QCString parseCommentAsHtml(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr)
+{
+  std::lock_guard lock(g_docCacheMutex);
+  auto it = g_docCache.find(doc.str());
+  if (it != g_docCache.end())
+  {
+    //printf("Cache: [%s]->[%s]\n",qPrint(doc),qPrint(it->second));
+    return it->second;
+  }
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),fileName,lineNr,scope,member,doc,false,false,
+                                   QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT),false) };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  QCString result;
+  if (astImpl)
+  {
+    TextStream t;
+    OutputCodeList codeList;
+    codeList.add<HtmlCodeGenerator>(&t);
+    HtmlDocVisitor visitor(t,codeList,scope,fileName);
+    std::visit(visitor,astImpl->root);
+    result = t.str();
+  }
+  else // fallback, should not happen
+  {
+    result = filterTitle(doc);
+  }
+  //printf("Conversion: [%s]->[%s]\n",qPrint(doc),qPrint(result));
+  g_docCache.insert(std::make_pair(doc.str(),result));
+  return result;
+}
+
+
+//--------------------------------------------------------------------------------------
+
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al)
 {
   if (al.empty()) return;
@@ -5938,7 +5977,7 @@ void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList 
     ol.endConstraintType();
     ol.startConstraintDocs();
     ol.generateDoc(d->docFile(),d->docLine(),d,nullptr,a.docs,TRUE,FALSE,
-                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                   QCString(),FALSE,FALSE);
     ol.endConstraintDocs();
   }
   ol.endConstraintList();

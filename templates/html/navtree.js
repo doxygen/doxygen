@@ -170,6 +170,16 @@ function initNavTree(toroot,relpath,allMembersFile) {
     }
   }
 
+  function htmlToNode(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    const nNodes = template.content.childNodes.length;
+    if (nNodes !== 1) {
+        throw new Error(`html parameter must represent a single node; got ${nNodes}. `);
+    }
+    return template.content.firstChild;
+  }
+
   const newNode = function(o, po, text, link, childrenData, lastNode) {
     const node = {
       children     : [],
@@ -181,7 +191,6 @@ function initNavTree(toroot,relpath,allMembersFile) {
       parentNode   : po,
       itemDiv      : document.createElement("div"),
       labelSpan    : document.createElement("span"),
-      label        : document.createTextNode(text),
       expanded     : false,
       childrenUL   : null,
       getChildrenUL : function() {
@@ -204,7 +213,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     const a = document.createElement("a");
     node.labelSpan.appendChild(a);
     po.getChildrenUL().appendChild(node.li);
-    a.appendChild(node.label);
+    a.appendChild(htmlToNode('<span>'+text+'</span>'));
     if (link) {
       let url;
       if (link.substring(0,1)=='^') {

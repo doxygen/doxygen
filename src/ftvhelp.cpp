@@ -51,10 +51,10 @@ using FTVNodes       = std::vector<FTVNodePtr>;
 struct FTVNode
 {
   FTVNode(bool dir,const QCString &r,const QCString &f,const QCString &a,
-          const QCString &n,bool sepIndex,bool navIndex,const Definition *df)
-    : isLast(TRUE), isDir(dir), ref(r), file(f), anchor(a), name(n),
-      separateIndex(sepIndex), addToNavIndex(navIndex),
-      def(df) {}
+          const QCString &n,bool sepIndex,bool navIndex,const Definition *df,
+          const QCString &nameAsHtml_)
+    : isLast(TRUE), isDir(dir), ref(r), file(f), anchor(a), name(n), nameAsHtml(nameAsHtml_),
+      separateIndex(sepIndex), addToNavIndex(navIndex), def(df) {}
   int computeTreeDepth(int level) const;
   int numNodesAtLevel(int level,int maxLevel) const;
   bool isLast;
@@ -63,6 +63,7 @@ struct FTVNode
   QCString file;
   QCString anchor;
   QCString name;
+  QCString nameAsHtml;
   int index = 0;
   FTVNodes children;
   FTVNodeWeakPtr parent;
@@ -174,6 +175,7 @@ void FTVHelp::decContentsDepth()
 /*! Add a list item to the contents file.
  *  \param isDir TRUE if the item is a directory, FALSE if it is a text
  *  \param name the name of the item.
+ *  \param nameAsHtml the name of the item in HTML format.
  *  \param ref  the URL of to the item.
  *  \param file the file containing the definition of the item
  *  \param anchor the anchor within the file.
@@ -188,7 +190,8 @@ void FTVHelp::addContentsItem(bool isDir,
                               const QCString &anchor,
                               bool separateIndex,
                               bool addToNavIndex,
-                              const Definition *def
+                              const Definition *def,
+                              const QCString &nameAsHtml
                               )
 {
   //printf("%p: p->indent=%d addContentsItem(%d,%s,%s,%s,%s)\n",(void*)this,p->indent,isDir,qPrint(name),qPrint(ref),qPrint(file),qPrint(anchor));
@@ -197,7 +200,7 @@ void FTVHelp::addContentsItem(bool isDir,
   {
     nl.back()->isLast=FALSE;
   }
-  auto newNode = std::make_shared<FTVNode>(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def);
+  auto newNode = std::make_shared<FTVNode>(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def,nameAsHtml);
   nl.push_back(newNode);
   newNode->index = static_cast<int>(nl.size()-1);
   if (p->indent>0)
@@ -281,9 +284,10 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
   bool setTarget = FALSE;
+  QCString text = n->nameAsHtml.isEmpty() ? convertToHtml(n->name) : n->nameAsHtml;
   if (n->file.isEmpty()) // no link
   {
-    t << "<b>" << convertToHtml(n->name) << "</b>";
+    t << "<b>" << text << "</b>";
   }
   else // link into other frame
   {
@@ -312,7 +316,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
     {
       t << "\">";
     }
-    t << convertToHtml(n->name);
+    t << text;
     t << "</a>";
     if (!n->ref.isEmpty())
     {
@@ -331,7 +335,7 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
     auto ast    { validatingParseDoc(*parser.get(),
                                      def->briefFile(),def->briefLine(),
                                      def,nullptr,brief,FALSE,FALSE,
-                                     QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                     QCString(),TRUE,TRUE) };
     const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
     if (astImpl)
     {
@@ -542,13 +546,13 @@ static bool dupOfParent(const FTVNodePtr &n)
 
 static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
+  QCString result = n->nameAsHtml.isEmpty() ? n->name : n->nameAsHtml;
   if (n->file.isEmpty()) // no link
   {
-    t << "\"" << convertToJSString(n->name) << "\", null, ";
+    t << "\"" << convertToJSString(result) << "\", null, ";
   }
   else // link into other page
   {
-    QCString result = n->name;
     if (Config_getBool(HIDE_SCOPE_NAMES)) result=stripScope(result);
     t << "\"" << convertToJSString(result) << "\", \"";
     t << externalRef("",n->ref,TRUE);

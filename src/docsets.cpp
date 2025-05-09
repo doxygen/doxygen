@@ -229,7 +229,8 @@ void DocSets::addContentsItem(bool isDir,
                               const QCString &anchor,
                               bool /* separateIndex */,
                               bool /* addToNavIndex */,
-                              const Definition * /*def*/)
+                              const Definition * /*def*/,
+                              const QCString & /* nameAsHtml */)
 {
   (void)isDir;
   //printf("DocSets::addContentsItem(%s) depth=%zu\n",name,p->indentStack.size());

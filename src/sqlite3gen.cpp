@@ -1430,8 +1430,7 @@ QCString getSQLDocBlock(const Definition *scope,
                 FALSE,
                 QCString(),
                 FALSE,
-                FALSE,
-                Config_getBool(MARKDOWN_SUPPORT))
+                FALSE)
               };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)

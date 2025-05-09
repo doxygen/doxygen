@@ -370,9 +370,10 @@ class OutputList
 
     void generateDoc(const QCString &fileName,int startLine,
                      const Definition *ctx,const MemberDef *md,const QCString &docStr,
-                     bool indexWords,bool isExample,const QCString &exampleName /*=0*/,
-                     bool singleLine /*=FALSE*/,bool linkFromIndex /*=FALSE*/,
-                     bool markdownSupport /*=FALSE*/);
+                     bool indexWords,bool isExample,const QCString &exampleName,
+                     bool singleLine,bool linkFromIndex,
+                     bool markdownSupport=Config_getBool(MARKDOWN_SUPPORT),
+                     bool autolinkSupport=Config_getBool(AUTOLINK_SUPPORT));
 
     void startFile(const QCString &name,const QCString &manName,const QCString &title, int hierarchyLevel=0);
     void parseText(const QCString &textStr);

@@ -700,7 +700,7 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
         !documentation().isEmpty())
@@ -717,7 +717,7 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
     if (!documentation().isEmpty())
     {
       ol.generateDoc(docFile(),docLine(),this,nullptr,documentation()+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
     ol.endTextBlock();
   }
@@ -731,7 +731,7 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
     auto ast    { validatingParseDoc(*parser.get(),
                                      briefFile(),briefLine(),this,nullptr,
                                      briefDescription(),TRUE,FALSE,
-                                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                     QCString(),TRUE,FALSE) };
     if (!ast->isEmpty())
     {
       ol.startParagraph();
@@ -1415,7 +1415,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
       {
         ol.startMemberDescription(nd->getOutputFileBase());
         ol.generateDoc(nd->briefFile(),nd->briefLine(),nd,nullptr,nd->briefDescription(),FALSE,FALSE,
-                       QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                       QCString(),TRUE,FALSE);
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(QCString(),QCString());

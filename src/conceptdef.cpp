@@ -329,7 +329,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
     auto ast    { validatingParseDoc(
                         *parser.get(),briefFile(),briefLine(),this,nullptr,
                         briefDescription(),TRUE,FALSE,
-                        QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                        QCString(),TRUE,FALSE) };
     if (!ast->isEmpty())
     {
       ol.startParagraph();
@@ -469,7 +469,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     if (!briefDescription().isEmpty() && repeatBrief)
     {
       ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
-          QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+          QCString(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && repeatBrief &&
         !documentation().isEmpty())
@@ -484,7 +484,7 @@ void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &tit
     if (!documentation().isEmpty())
     {
       ol.generateDoc(docFile(),docLine(),this,nullptr,documentation(),TRUE,FALSE,
-          QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+          QCString(),FALSE,FALSE);
     }
 
     writeSourceDef(ol);
@@ -685,7 +685,7 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
       auto ast    { validatingParseDoc(
                                 *parser.get(),briefFile(),briefLine(),this,nullptr,
                                 briefDescription(),FALSE,FALSE,
-                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                QCString(),TRUE,FALSE) };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());

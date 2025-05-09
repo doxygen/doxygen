@@ -2613,7 +2613,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                                      briefFile(),briefLine(),
                                      getOuterScope()?getOuterScope():d,
                                      this,briefDescription(),TRUE,FALSE,
-                                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                     QCString(),TRUE,FALSE) };
     if (!ast->isEmpty())
     {
       ol.startMemberDescription(anchor(),inheritId);
@@ -3262,14 +3262,14 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
           ol.generateDoc(fmd->briefFile(),fmd->briefLine(),
               getOuterScope()?getOuterScope():container,
               fmd,fmd->briefDescription(),TRUE,FALSE,
-              QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+              QCString(),FALSE,FALSE);
         }
         if (hasDetails)
         {
           ol.generateDoc(fmd->docFile(),fmd->docLine(),
               getOuterScope()?getOuterScope():container,
               fmd,fmd->documentation()+"\n",TRUE,FALSE,
-              QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+              QCString(),FALSE,FALSE);
         }
         ol.endDescTableData();
         ol.endDescTableRow();
@@ -3826,7 +3826,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     ol.generateDoc(briefFile(),briefLine(),
                 scopedContainer,this,
                 brief,FALSE,FALSE,
-                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                QCString(),TRUE,FALSE);
     ol.endParagraph();
   }
 
@@ -3844,7 +3844,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     else
     {
       ol.generateDoc(docFile(),docLine(),scopedContainer,this,detailed+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
 
     if (!inbodyDocumentation().isEmpty())
@@ -3852,7 +3852,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       ol.generateDoc(inbodyFile(),inbodyLine(),
                      scopedContainer,this,
                      inbodyDocumentation()+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
   }
   else if (!brief.isEmpty() && (Config_getBool(REPEAT_BRIEF) || !Config_getBool(BRIEF_MEMBER_DESC)))
@@ -3860,7 +3860,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     if (!inbodyDocumentation().isEmpty())
     {
       ol.generateDoc(inbodyFile(),inbodyLine(),scopedContainer,this,inbodyDocumentation()+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
   }
 
@@ -3878,7 +3878,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         inlineArgListToDoc(docArgList),    // docStr
         TRUE,         // indexWords
         FALSE,        // isExample
-        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
+        QCString(),FALSE,FALSE
         );
 
   const ArgumentList &docTemplateArgList = m_templateMaster ?
@@ -3891,7 +3891,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         inlineTemplateArgListToDoc(docTemplateArgList),    // docStr
         TRUE,         // indexWords
         FALSE,        // isExample
-        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
+        QCString(),FALSE,FALSE
         );
 
   _writeEnumValues(ol,scopedContainer,cfname,ciname,cname);
@@ -4037,7 +4037,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
     ol.generateDoc(briefFile(),briefLine(),
                 getOuterScope()?getOuterScope():container,this,
                 brief,FALSE,FALSE,
-                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                QCString(),TRUE,FALSE);
   }
 
   /* write detailed description */
@@ -4052,7 +4052,7 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
     ol.generateDoc(docFile(),docLine(),
                 getOuterScope()?getOuterScope():container,this,
                 detailed+"\n",FALSE,FALSE,
-                QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                QCString(),FALSE,FALSE);
 
   }
 

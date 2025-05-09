@@ -9970,8 +9970,7 @@ static void generateExampleDocs()
                          TRUE,                                     // is example
                          pd->name(),
                          FALSE,
-                         FALSE,
-                         Config_getBool(MARKDOWN_SUPPORT)
+                         FALSE
                         );
     endFile(*g_outputList); // contains g_outputList->endContents()
   }

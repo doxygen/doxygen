@@ -249,7 +249,7 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
     // separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
@@ -269,7 +269,7 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     if (!documentation().isEmpty())
     {
       ol.generateDoc(docFile(),docLine(),this,nullptr,documentation()+"\n",TRUE,FALSE,
-                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),FALSE,FALSE);
     }
   }
 }
@@ -282,7 +282,7 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(
          *parser.get(), briefFile(),briefLine(),this,nullptr,briefDescription(),TRUE,FALSE,
-         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+         QCString(),FALSE,FALSE) };
     if (!ast->isEmpty())
     {
       ol.startParagraph();
@@ -386,8 +386,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
               FALSE, // isExample
               QCString(), // exampleName
               TRUE,  // single line
-              TRUE,  // link from index
-              Config_getBool(MARKDOWN_SUPPORT)
+              TRUE   // link from index
               );
           ol.endMemberDescription();
         }
@@ -472,8 +471,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
               FALSE, // isExample
               QCString(), // exampleName
               TRUE,  // single line
-              TRUE,  // link from index
-              Config_getBool(MARKDOWN_SUPPORT)
+              TRUE   // link from index
               );
           ol.endMemberDescription();
         }

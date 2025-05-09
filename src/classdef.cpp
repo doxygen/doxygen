@@ -1567,7 +1567,7 @@ void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag) const
     ol.popGeneratorState();
     ol.generateDoc(briefFile(),briefLine(),this,nullptr,
                    briefDescription(),TRUE,FALSE,QCString(),
-                   TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                   TRUE,FALSE);
     ol.pushGeneratorState();
     ol.disable(OutputType::RTF);
     ol.writeString(" \n");
@@ -1599,7 +1599,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   if (!briefDescription().isEmpty() && repeatBrief)
   {
     ol.generateDoc(briefFile(),briefLine(),this,nullptr,briefDescription(),FALSE,FALSE,
-                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                   QCString(),FALSE,FALSE);
   }
   if (!briefDescription().isEmpty() && repeatBrief &&
       !documentation().isEmpty())
@@ -1613,7 +1613,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   if (!documentation().isEmpty())
   {
     ol.generateDoc(docFile(),docLine(),this,nullptr,documentation(),TRUE,FALSE,
-                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                   QCString(),FALSE,FALSE);
   }
   // write type constraints
   writeTypeConstraints(ol,this,m_typeConstraints);
@@ -1625,7 +1625,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
         inlineTemplateArgListToDoc(m_tempArgs),    // docStr
         TRUE,         // indexWords
         FALSE,        // isExample
-        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
+        QCString(),FALSE,FALSE
         );
 
   // write examples
@@ -2694,7 +2694,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       auto ast    { validatingParseDoc(*parser.get(),
                                 briefFile(),briefLine(),this,nullptr,
                                 briefDescription(),FALSE,FALSE,
-                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                QCString(),TRUE,FALSE) };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());

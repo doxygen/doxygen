@@ -369,7 +369,7 @@ void LatexDocVisitor::operator()(const DocURL &u)
     if (u.isEmail()) m_t << "mailto:";
     m_t << latexFilterURL(u.url()) << "}";
   }
-  m_t << "{\\texttt{ ";
+  m_t << "{\\texttt{";
   filter(u.url());
   m_t << "}}";
 }
@@ -1486,7 +1486,7 @@ void LatexDocVisitor::operator()(const DocHRef &href)
     m_t << latexFilterURL(href.url());
     m_t << "}";
   }
-  m_t << "{\\texttt{ ";
+  m_t << "{\\texttt{";
   visitChildren(href);
   m_t << "}}";
 }
@@ -1745,7 +1745,7 @@ void LatexDocVisitor::operator()(const DocParamList &pl)
   {
     if (pl.direction()!=DocParamSect::Unspecified)
     {
-      m_t << "\\mbox{\\texttt{ ";
+      m_t << "\\mbox{\\texttt{";
       if (pl.direction()==DocParamSect::In)
       {
         m_t << "in";
