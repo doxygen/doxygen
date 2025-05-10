@@ -49,7 +49,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
   const getData = function(varName) {
     const i = varName.lastIndexOf('/');
     const n = i>=0 ? varName.substring(i+1) : varName;
-    return eval(n.replace(/-/g,'_'));
+    const e = n.replace(/-/g,'_');
+    return window[e];
   }
 
   const stripPath = function(uri) {
@@ -395,7 +396,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
       gotoNode(o,i,root,hash,relpath)
     } else {
       getScript(relpath+'navtreeindex'+i,function() {
-        navTreeSubIndices[i] = eval('NAVTREEINDEX'+i);
+        navTreeSubIndices[i] = window['NAVTREEINDEX'+i];
         if (navTreeSubIndices[i]) {
           gotoNode(o,i,root,hash,relpath);
         }
