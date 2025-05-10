@@ -76,6 +76,7 @@ using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
  *                   the relative path when making a link.
  *  @param markdownSupport TRUE if the input needs to take markdown markup into
  *                   account.
+ *  @param autolinkSupport TRUE if the input need to perform auto linking of words
  *  @returns         An object representing the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */

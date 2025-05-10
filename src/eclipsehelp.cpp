@@ -157,6 +157,7 @@ void EclipseHelp::decContentsDepth()
  * @param separateIndex not used.
  * @param addToNavIndex not used.
  * @param def not used.
+ * @param nameAsHtml name parameter in HTML format
  */
 void EclipseHelp::addContentsItem(
     bool /* isDir */,
