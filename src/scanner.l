@@ -5771,7 +5771,7 @@ NONLopt [^\n]*
                                           *yyextra->pCopyRawString += yytext;
                                           BEGIN(RawString);
                                         }
-<SkipCurly,SkipCurlyCpp>[^\n#"'@\\/{}<\$]+ {
+<SkipCurly,SkipCurlyCpp>[^\n#"R'@\\/{}<\$]+ {
                                           lineCount(yyscanner);  // for yyextra->column updates
                                           //addToBody(yytext);
                                         }
