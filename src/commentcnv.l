@@ -388,7 +388,8 @@ SLASHopt [/]*
 <Scan>\n                           { /* new line */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
-<Scan>{CPPC}[!/]/.*\n[ \t]*{CPPC}[!/][ \t]*{CMD}"}" {
+<Scan>{CPPC}[!/]/.*\n[ \t]*{CPPC}[!/][ \t]*{CMD}"}" { // see bug #8731, don't treat multiline C++ comment as detailed description
+                                                      // if the next line is an end of group marker.
 				     yyextra->inSpecialComment=true;
 				     yyextra->blockHeadCol=yyextra->col+1;
                                      yyextra->insertCppCommentMarker=true;
@@ -443,6 +444,14 @@ SLASHopt [/]*
   				     copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
+                                   }
+<Scan>{CPPC}[!/]/.*\n              { /* one line special C++ comment */
+                                     yyextra->inSpecialComment=true;
+                                     yyextra->blockHeadCol=yyextra->col+1;
+                                     yyextra->insertCppCommentMarker=true;
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                     yyextra->readLineCtx=YY_START;
+                                     BEGIN(ReadLine);
                                    }
 <Scan>{CPPC}/.*\n                  { /* one line normal C++ comment */
 				     yyextra->inSpecialComment=false;
