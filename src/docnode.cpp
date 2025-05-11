@@ -747,7 +747,10 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
       m_refType = Section;
     }
     m_isSubPage    = pd && pd->hasParentPage();
-    if (secLevel!=SectionType::Page || m_isSubPage) m_anchor = sec->label();
+    if (secLevel!=SectionType::Page || m_isSubPage)
+    {
+      m_anchor = pd ? pd->getOutputFileBase() : sec->label();
+    }
     m_sectionType = sec->type();
     //printf("m_text=%s,m_ref=%s,m_file=%s,type=%d\n",
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);
