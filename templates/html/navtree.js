@@ -740,7 +740,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
           id = $(tr).attr('id');
           const text = is_anon_enum ? 'anonymous enum' : $(this).find('a:first,b,div.groupHeader').text();
           let isMemberGroupHeader = $(tr).hasClass('groupHeader');
-          if ($(tr).is(":visible") && last_id!=id) {
+          if ($(tr).is(":visible") && last_id!=id && id!==undefined) {
             if (isMemberGroupHeader && inMemberGroup) {
               ulStack.pop();
               inMemberGroup=false;
@@ -769,7 +769,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
           const text = $(data).contents().not($(data).children().first()).text();
           const name = text.replace(/\(\)(\s*\[\d+\/\d+\])?$/, '') // func() [2/8] -> func
           id = $(data).find('span.permalink a').attr('href')
-          if (name!=undefined) {
+          if (id!==undefined && name!==undefined) {
             const li2 = $('<li>').attr('id','nav-'+id.substring(1));
             const div2 = $('<div>').addClass('item');
             const span2 = $('<span>').addClass('arrow').css({paddingLeft:parseInt(ulStack.length*16)+'px'});
@@ -864,8 +864,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
           }
         }
         const contentScrollOffset = $('div.contents').offset().top;
-        const scrollTargetId = scrollTarget.attr('id');
-        if (scrollTarget && lastScrollTargetId!=scrollTargetId) { // new item to scroll to
+        if (scrollTarget && lastScrollTargetId!=scrollTarget.attr('id')) { // new item to scroll to
           const scrollDown = contentScrollOffset<lastScrollSourceOffset;
           const range = 22*numItems;
           const my = range/2-height/2;
@@ -879,7 +878,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
             pagenavcontents.scrollTo({ left:0, top:targetOffset },{ duration: 500, interrupt: true });
             lastScrollTargetOffset = targetOffset;
           }
-          lastScrollTargetId = scrollTargetId;
+          lastScrollTargetId = scrollTarget.attr('id');
         }
         lastScrollSourceOffset = contentScrollOffset;
       }
