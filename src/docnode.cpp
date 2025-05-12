@@ -900,7 +900,7 @@ void DocRef::parse()
 
 //---------------------------------------------------------------------------
 
-DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &) : DocNode(parser,parent)
+DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target) : DocNode(parser,parent)
 {
   size_t numBibFiles = Config_getList(CITE_BIB_FILES).size();
   //printf("DocCite::DocCite(target=%s)\n",qPrint(target));
@@ -3301,38 +3301,6 @@ Token DocPara::handleParamSection(const QCString &cmdName,
   return (!rv.is(TokenRetval::TK_NEWPARA)) ? rv : Token::make_RetVal_OK();
 }
 
-void DocPara::handleCite(char cmdChar,const QCString &cmdName)
-{
-  AUTO_TRACE();
-  // get the argument of the cite command.
-  Token tok=parser()->tokenizer.lex();
-  if (!tok.is(TokenRetval::TK_WHITESPACE))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
-      cmdChar,cmdName);
-    return;
-  }
-  parser()->tokenizer.setStateCite();
-  tok=parser()->tokenizer.lex();
-  if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command '{:c}{}'",cmdChar,cmdName);
-    return;
-  }
-  else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
-        tok.to_string(),cmdChar,cmdName);
-    return;
-  }
-  parser()->context.token->sectionId = parser()->context.token->name;
-  children().append<DocCite>(
-        parser(),thisVariant(),parser()->context.token->name,parser()->context.context);
-
-  parser()->tokenizer.setStatePara();
-}
-
 void DocPara::handleEmoji(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
@@ -4644,7 +4612,9 @@ Token DocPara::handleCommand(char cmdChar, const QCString &cmdName)
       handleLink(cmdName,TRUE);
       break;
     case CommandType::CMD_CITE:
-      handleCite(cmdChar,cmdName);
+      {
+        parser()->handleCite(thisVariant(),children());
+      }
       break;
     case CommandType::CMD_EMOJI:
       handleEmoji(cmdChar,cmdName);
