@@ -340,7 +340,7 @@ class TranslatorGerman : public Translator
       }
       else
       {
-        return "Die Liste der Ableitungen ist -mit Einschränkungen- "
+        return "Die Liste der Ableitungen ist, mit Einschränkungen, "
                "alphabetisch sortiert:";
       }
     }
@@ -2282,7 +2282,7 @@ class TranslatorGerman : public Translator
     { return "Schnittstellenhierarchie"; }
 
     QCString trInterfaceHierarchyDescription() override
-    { return "Die Liste aller Schnittstellen ist -mit Einschränkungen- alphabetisch sortiert:"; }
+    { return "Die Liste aller Schnittstellen ist, mit Einschränkungen, alphabetisch sortiert:"; }
 
     QCString trInterfaceDocumentation() override
     { return "Schnittstellen Dokumentation"; }
@@ -2315,7 +2315,7 @@ class TranslatorGerman : public Translator
     { return "Ausnahmen Hierarchie"; }
 
     QCString trExceptionHierarchyDescription() override
-    { return "Die Liste der Ausnahmen ist -mit Einschränkungen- alphabetisch sortiert:"; }
+    { return "Die Liste der Ausnahmen ist, mit Einschränkungen, alphabetisch sortiert:"; }
 
     QCString trExceptionDocumentation() override
     { return "Ausnahmen Dokumentation"; }
