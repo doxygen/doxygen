@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_c" kind="class" language="C++" prot="public" abstract="yes">
+    <compoundname>C</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_c_1a0b664e9b999fca39643fe34a77579794" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int C::f_pure</definition>
+        <argsstring>()=0</argsstring>
+        <name>f_pure</name>
+        <qualifiedname>C::f_pure</qualifiedname>
+        <briefdescription>
+          <para>Pure. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="8" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1a0c18882ecf4845fe4c4b36700f2494df" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int C::f_override</definition>
+        <argsstring>() override</argsstring>
+        <name>f_override</name>
+        <qualifiedname>C::f_override</qualifiedname>
+        <briefdescription>
+          <para>Override. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="10" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1a04dd9ca5948792c146024e91dc007446" prot="public" static="no" const="no" explicit="no" inline="no" final="yes" virt="virtual">
+        <type>int</type>
+        <definition>virtual int C::f_final</definition>
+        <argsstring>() final</argsstring>
+        <name>f_final</name>
+        <qualifiedname>C::f_final</qualifiedname>
+        <briefdescription>
+          <para>Final. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="12" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1a67f38ea378777e64ac87f0f50c619be9" prot="public" static="no" const="no" explicit="no" inline="no" final="yes" virt="virtual">
+        <type>int</type>
+        <definition>virtual int C::f_override_final</definition>
+        <argsstring>() override final</argsstring>
+        <name>f_override_final</name>
+        <qualifiedname>C::f_override_final</qualifiedname>
+        <briefdescription>
+          <para>Final and override. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="14" column="18"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A structure. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="108_trailing_return_types.cpp" line="5" column="1" bodyfile="108_trailing_return_types.cpp" bodystart="5" bodyend="15"/>
+    <listofallmembers>
+      <member refid="class_c_1a04dd9ca5948792c146024e91dc007446" prot="public" virt="virtual">
+        <scope>C</scope>
+        <name>f_final</name>
+      </member>
+      <member refid="class_c_1a0c18882ecf4845fe4c4b36700f2494df" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>f_override</name>
+      </member>
+      <member refid="class_c_1a67f38ea378777e64ac87f0f50c619be9" prot="public" virt="virtual">
+        <scope>C</scope>
+        <name>f_override_final</name>
+      </member>
+      <member refid="class_c_1a0b664e9b999fca39643fe34a77579794" prot="public" virt="pure-virtual">
+        <scope>C</scope>
+        <name>f_pure</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
