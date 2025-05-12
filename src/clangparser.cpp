@@ -736,11 +736,10 @@ void ClangTUParser::linkIdentifier(OutputCodeList &ol,const FileDef *fd,
   {
     d = kv->second;
   }
-  CXCursorKind kind = clang_getCursorKind(c);
   if (d==0)
   {
     AUTO_TRACE_ADD("didn't find definition for '{}' usr='{}' kind={}",
-        text,usrStr,(int)kind);
+        text,usrStr,(int)clang_getCursorKind(c));
   }
   else
   {
