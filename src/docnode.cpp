@@ -900,7 +900,7 @@ void DocRef::parse()
 
 //---------------------------------------------------------------------------
 
-DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &) : DocNode(parser,parent)
+DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &,int opt) : DocNode(parser,parent)
 {
   size_t numBibFiles = Config_getList(CITE_BIB_FILES).size();
   //printf("DocCite::DocCite(target=%s)\n",qPrint(target));
@@ -909,9 +909,10 @@ DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target
   const CitationManager &ct = CitationManager::instance();
   const CiteInfo *cite = ct.find(target);
   //printf("cite=%p text='%s' numBibFiles=%d\n",cite,cite?qPrint(cite->text):"<null>",numBibFiles);
+  m_option = opt;
+  m_target = target;
   if (numBibFiles>0 && cite && !cite->text().isEmpty()) // ref to citation
   {
-    m_text         = cite->text();
     m_ref          = "";
     m_anchor       = ct.anchorPrefix()+cite->label();
     m_file         = convertNameToFile(ct.fileName(),FALSE,TRUE);
@@ -919,7 +920,6 @@ DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),qPrint(m_anchor));
     return;
   }
-  m_text = target;
   if (numBibFiles==0)
   {
     warn_doc_error(parser->context.fileName,parser->tokenizer.getLineNr(),"\\cite command found but no bib files specified via CITE_BIB_FILES!");
@@ -935,6 +935,27 @@ DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target
              target);
   }
 }
+
+QCString DocCite::getText() const
+{
+  QCString txt;
+  int opt = m_option;
+  const CitationManager &ct = CitationManager::instance();
+  const CiteInfo *citeInfo = ct.find(m_target);
+
+  if (!(opt & CiteInfo::NOPAR_BIT))  txt += "[";
+
+  if (citeInfo)
+  {
+    if (opt & CiteInfo::NUMBER)  txt += citeInfo->text();
+    else if (opt & CiteInfo::SHORTAUTHOR)  txt += citeInfo->shortAuthor();
+    else if (opt & CiteInfo::YEAR)  txt += citeInfo->year();
+  }
+
+  if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+  return txt;
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -3304,31 +3325,102 @@ Token DocPara::handleParamSection(const QCString &cmdName,
 void DocPara::handleCite(char cmdChar,const QCString &cmdName)
 {
   AUTO_TRACE();
+  QCString saveCmdName = cmdName;
   // get the argument of the cite command.
   Token tok=parser()->tokenizer.lex();
-  if (!tok.is(TokenRetval::TK_WHITESPACE))
+
+  int option = CiteInfo::UNKNOWN;
+  bool nopar_bit = false;
+  bool nocite_bit = false;
+  if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
+  {
+    parser()->tokenizer.setStateOptions();
+    parser()->tokenizer.lex();
+    StringVector optList=split(parser()->context.token->name.str(),",");
+    for (auto const &opt : optList)
+    {
+      if (opt == "number")
+      {
+        if (option != CiteInfo::UNKNOWN)
+        {
+          warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
+        }
+        else
+        {
+          option = CiteInfo::NUMBER;
+        }
+      }
+      else if (opt == "year")
+      {
+        if (option != CiteInfo::UNKNOWN)
+        {
+          warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
+        }
+        else
+        {
+          option = CiteInfo::YEAR;
+        }
+      }
+      else if (opt == "shortauthor")
+      {
+        if (option != CiteInfo::UNKNOWN)
+        {
+          warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
+        }
+        else
+        {
+          option = CiteInfo::SHORTAUTHOR;
+        }
+      }
+      else if (opt == "nopar")  nopar_bit = true;
+      else if (opt == "nocite") nocite_bit = true;
+      else
+      {
+        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unkown option specified with \\{}, discarding '{}'", saveCmdName, opt);
+      }
+    }
+
+    if (option == CiteInfo::UNKNOWN) option = CiteInfo::NUMBER;
+    if (nopar_bit) option |= CiteInfo::NOPAR_BIT;
+    if (nocite_bit) option |= CiteInfo::NOCITE_BIT;
+
+    parser()->tokenizer.setStatePara();
+    tok=parser()->tokenizer.lex();
+    if (!tok.is(TokenRetval::TK_WHITESPACE))
+    {
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\{} command",
+          saveCmdName);
+      return;
+    }
+  }
+  else if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
-      cmdChar,cmdName);
+      cmdChar,saveCmdName);
     return;
   }
+  else
+  {
+    option = CiteInfo::NUMBER;
+  }
+
   parser()->tokenizer.setStateCite();
   tok=parser()->tokenizer.lex();
   if (tok.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command '{:c}{}'",cmdChar,cmdName);
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"THE ONE unexpected end of comment block while parsing the "
+        "argument of command '{:c}{}'",cmdChar,saveCmdName);
     return;
   }
   else if (!tok.is_any_of(TokenRetval::TK_WORD,TokenRetval::TK_LNKWORD))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}'",
-        tok.to_string(),cmdChar,cmdName);
+        tok.to_string(),cmdChar,saveCmdName);
     return;
   }
   parser()->context.token->sectionId = parser()->context.token->name;
   children().append<DocCite>(
-        parser(),thisVariant(),parser()->context.token->name,parser()->context.context);
+        parser(),thisVariant(),parser()->context.token->name,parser()->context.context,option);
 
   parser()->tokenizer.setStatePara();
 }

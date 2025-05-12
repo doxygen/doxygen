@@ -29,6 +29,18 @@ struct CiteInfo
 
   virtual QCString label() const = 0;
   virtual QCString text() const = 0;
+  virtual QCString shortAuthor() const = 0;
+  virtual QCString year() const = 0;
+
+  enum CiteOptionType {
+    UNKNOWN     = 0x00,
+    NUMBER      = 0x01,
+    SHORTAUTHOR = 0x02,
+    YEAR        = 0x04,
+
+    NOPAR_BIT   = 0x001000, //< Don't use square brackets
+    NOCITE_BIT  = 0x100000, //< Don't create a link
+  };
 };
 
 /**

@@ -22,6 +22,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "message.h"
+#include "cite.h"
 
 /*! Visitor implementation for pretty printing */
 class PrintDocVisitor
@@ -253,11 +254,23 @@ class PrintDocVisitor
     void operator()(const DocCite &cite)
     {
       indent_leaf();
+      int opt = cite.option();
+      QCString txt;
+      if (!cite.file().isEmpty())
+      {
+        txt = cite.getText();
+      }
+      else
+      {
+        if (!(opt & CiteInfo::NOPAR_BIT)) txt += "[";
+        txt += cite.target();
+        if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+      }
       printf("<cite ref=\"%s\" file=\"%s\" "
              "anchor=\"%s\" text=\"%s\""
              "/>\n",
              qPrint(cite.ref()),qPrint(cite.file()),qPrint(cite.anchor()),
-             qPrint(cite.text()));
+             qPrint(txt));
     }
     void operator()(const DocSeparator &)
     {

@@ -35,6 +35,7 @@
 #include "fileinfo.h"
 #include "portable.h"
 #include "codefragment.h"
+#include "cite.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -602,9 +603,23 @@ void DocbookDocVisitor::operator()(const DocCite &cite)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (!cite.file().isEmpty()) startLink(cite.file(),filterId(cite.anchor()));
-  filter(cite.text());
-  if (!cite.file().isEmpty()) endLink();
+  int opt = cite.option();
+  if (!cite.file().isEmpty())
+  {
+    if (!(opt & CiteInfo::NOCITE_BIT)) startLink(cite.file(),filterId(cite.anchor()));
+
+    filter(cite.getText());
+
+    if (!(opt & CiteInfo::NOCITE_BIT)) endLink();
+  }
+  else
+  {
+    if (!(opt & CiteInfo::NOPAR_BIT)) filter("[");
+    filter(cite.target());
+    if (!(opt & CiteInfo::NOPAR_BIT)) filter("]");
+
+  }
+
 }
 
 //--------------------------------------
