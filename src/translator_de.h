@@ -146,7 +146,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_8_15
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -340,7 +340,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       }
       else
       {
-        return "Die Liste der Ableitungen ist -mit Einschränkungen- "
+        return "Die Liste der Ableitungen ist, mit Einschränkungen, "
                "alphabetisch sortiert:";
       }
     }
@@ -2247,6 +2247,108 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /** VHDL design unit documentation */
     QCString trDesignUnitDocumentation() override
     { return "Entwurfseinheiten-Dokumentation"; }
+
+    QCString trConstants() override
+    { return "Konstanten"; }
+
+    QCString trConstantDocumentation() override
+    { return "Konstanten Dokumentation"; }
+
+    QCString trSequences() override
+    { return "Sequenzen"; }
+
+    QCString trSequenceDocumentation() override
+    { return "Sequenzen Dokumentation"; }
+
+    QCString trDictionaries() override
+    { return "Wörterbücher"; }
+
+    QCString trDictionaryDocumentation() override
+    { return "Wörterbuch Dokumentation"; }
+
+    QCString trSliceInterfaces() override
+    { return "Schnittstellen"; }
+
+    QCString trInterfaceIndex() override
+    { return "Schnittstellen-Verzeichnis"; }
+
+    QCString trInterfaceList() override
+    { return "Liste aller Schnittstellen"; }
+
+    QCString trInterfaceListDescription() override
+    { return "Hier folgen die Schnittstellen mit Kurzbeschreibung:"; }
+
+    QCString trInterfaceHierarchy() override
+    { return "Schnittstellenhierarchie"; }
+
+    QCString trInterfaceHierarchyDescription() override
+    { return "Die Liste aller Schnittstellen ist, mit Einschränkungen, alphabetisch sortiert:"; }
+
+    QCString trInterfaceDocumentation() override
+    { return "Schnittstellen Dokumentation"; }
+
+    QCString trStructs() override
+    { return "Strukturen"; }
+
+    QCString trStructIndex() override
+    { return "Strukturen-Verzeichnis"; }
+
+    QCString trStructList() override
+    { return "Liste aller Strukturen"; }
+
+    QCString trStructListDescription() override
+    { return "Hier sind alle Strukturen mit Kurzbeschreibung:"; }
+
+    QCString trStructDocumentation() override
+    { return "Strukturen Dokumentation"; }
+
+    QCString trExceptionIndex() override
+    { return "Ausnahmen-Verzeichnis"; }
+
+    QCString trExceptionList() override
+    { return "Liste aller Ausnahmen"; }
+
+    QCString trExceptionListDescription() override
+    { return "Hier folgen alle Ausnahmen mit Kurzbeschreibung:"; }
+
+    QCString trExceptionHierarchy() override
+    { return "Ausnahmen Hierarchie"; }
+
+    QCString trExceptionHierarchyDescription() override
+    { return "Die Liste der Ausnahmen ist, mit Einschränkungen, alphabetisch sortiert:"; }
+
+    QCString trExceptionDocumentation() override
+    { return "Ausnahmen Dokumentation"; }
+
+    QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      QCString result=clName;
+      if (isLocal) result+=" Lokal";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Klasse"; break;
+        case ClassDef::Struct:     result+=" Struktur"; break;
+        case ClassDef::Union:      result+=" Union"; break;
+        case ClassDef::Interface:  result+=" Schnittstelle"; break;
+        case ClassDef::Protocol:   result+=" Protokoll"; break;
+        case ClassDef::Category:   result+=" Kategorie"; break;
+        case ClassDef::Exception:  result+=" Ausnahme"; break;
+        default: break;
+      }
+      result+=" Referenz";
+      return result;
+    }
+    QCString trOperations() override
+    { return "Operationen"; }
+
+    QCString trOperationDocumentation() override
+    { return "Operationen Dokumentation"; }
+
+    QCString trDataMembers() override
+    { return "Data Members"; }
+
+    QCString trDataMemberDocumentation() override
+    { return "Data Member Dokumentation"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.2
