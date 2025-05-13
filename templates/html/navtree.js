@@ -846,7 +846,11 @@ function initNavTree(toroot,relpath,allMembersFile) {
         let offsets = []
         for (let i=0;i<topMapping.length;i++) {
           const heading = $('#'+topMapping[i]);
-          offsets.push({id:topMapping[i],y:heading.offset().top-yc});
+          if (heading.parent().hasClass('doxsection')) {
+            offsets.push({id:topMapping[i],y:heading.parent().offset().top-yc});
+          } else {
+            offsets.push({id:topMapping[i],y:heading.offset().top-yc});
+          }
         }
         offsets.push({id:'',y:1e10});
         let scrollTarget = undefined, numItems=0;
@@ -855,7 +859,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
           const ye = offsets[i+1].y;
           const id = offsets[i].id;
           const nav = $('#nav-'+id);
-          if ((ys>2 || ye>2) && (ys<height-2 || ye<height-2)) {
+          const margin = 10; // #pixels before content show as visible
+          if ((ys>margin || ye>margin) && (ys<height-margin || ye<height-margin)) {
             if (!scrollTarget) scrollTarget=nav;
             nav.addClass('vis'); // mark navigation entry as visible within content area
             numItems+=1;

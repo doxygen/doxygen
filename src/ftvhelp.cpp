@@ -284,7 +284,8 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
   bool setTarget = FALSE;
-  QCString text = n->nameAsHtml.isEmpty() ? convertToHtml(n->name) : n->nameAsHtml;
+  bool nameAsHtml = !n->nameAsHtml.isEmpty();
+  QCString text = nameAsHtml ? n->nameAsHtml : convertToHtml(n->name);
   if (n->file.isEmpty()) // no link
   {
     t << "<b>" << text << "</b>";
@@ -546,15 +547,17 @@ static bool dupOfParent(const FTVNodePtr &n)
 
 static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
-  QCString result = n->nameAsHtml.isEmpty() ? n->name : n->nameAsHtml;
+  bool nameAsHtml = !n->nameAsHtml.isEmpty();
+  QCString result = nameAsHtml ? n->nameAsHtml : n->name;
+  QCString link = convertToJSString(result,nameAsHtml);
   if (n->file.isEmpty()) // no link
   {
-    t << "\"" << convertToJSString(result) << "\", null, ";
+    t << "\"" << link << "\", null, ";
   }
   else // link into other page
   {
     if (Config_getBool(HIDE_SCOPE_NAMES)) result=stripScope(result);
-    t << "\"" << convertToJSString(result) << "\", \"";
+    t << "\"" << link << "\", \"";
     t << externalRef("",n->ref,TRUE);
     t << node2URL(n);
     t << "\", ";

@@ -4537,7 +4537,7 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
   return growBuf.get();
 }
 
-QCString convertToJSString(const QCString &s)
+QCString convertToJSString(const QCString &s,bool keepEntities)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
@@ -4555,7 +4555,7 @@ QCString convertToJSString(const QCString &s)
     }
   }
   growBuf.addChar(0);
-  return convertCharEntitiesToUTF8(growBuf.get());
+  return keepEntities ? growBuf.get() : convertCharEntitiesToUTF8(growBuf.get());
 }
 
 QCString convertCharEntitiesToUTF8(const QCString &str)

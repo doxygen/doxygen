@@ -273,11 +273,11 @@ QCString stripScope(const QCString &name);
 QCString convertToId(const QCString &s);
 QCString correctId(const QCString &s);
 
-QCString convertToHtml(const QCString &s,bool keepEntities=TRUE);
+QCString convertToHtml(const QCString &s,bool keepEntities=true);
 
-QCString convertToXML(const QCString &s, bool keepEntities=FALSE);
+QCString convertToXML(const QCString &s, bool keepEntities=false);
 
-QCString convertToJSString(const QCString &s);
+QCString convertToJSString(const QCString &s,bool keepEntities=false);
 
 QCString getOverloadDocs();
 
