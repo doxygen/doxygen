@@ -583,6 +583,54 @@ static QCString memberOutputFileBase(const MemberDef *md)
   return md->getOutputFileBase();
 }
 
+// Removes a keyword from a given string
+// @param str string from which to strip the keyword
+// @param needSpace true if spacing is required around the keyword
+// @return true if the keyword was removed, false otherwise
+static bool stripKeyword(QCString& str, const char *keyword, bool needSpace)
+{
+  bool found      = false;
+  int searchStart = 0;
+  int len         = static_cast<int>(strlen(keyword));
+  int searchEnd   = static_cast<int>(str.size());
+  while (searchStart<searchEnd)
+  {
+    int index = str.find(keyword, searchStart);
+    if (index==-1)
+    {
+      break; // no more occurrences found
+    }
+    int end = index + len;
+    if (needSpace)
+    {
+      if ((index>0        && str[index-1]!=' ') ||  // at the start of the string or preceded by a space, or
+          (end!=searchEnd && str[end]    !=' ')     // at the end of the string or followed by a space.
+         )
+      {
+        searchStart = end;
+        continue; // no a standalone word
+      }
+    }
+    if (needSpace && index>0) // strip with space before keyword
+    {
+      str.remove(index-1, len+1);
+      searchEnd -= (len+1);
+    }
+    else if (needSpace && end<searchEnd) // strip with space after string starting with keyword
+    {
+      str.remove(index, len+1);
+      searchEnd -= (len+1);
+    }
+    else // strip just keyword
+    {
+      str.remove(index, len);
+      searchEnd -= len;
+    }
+    found = true;
+  }
+  return found;
+}
+
 static QCString extractNoExcept(QCString &argsStr)
 {
   QCString expr;
@@ -689,6 +737,18 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     {
       typeStr=argsStr.mid(i+2).stripWhiteSpace();
       argsStr=argsStr.left(i).stripWhiteSpace();
+      if (stripKeyword(typeStr, "override", true))
+      {
+        argsStr += " override";
+      }
+      if (stripKeyword(typeStr, "final", true))
+      {
+        argsStr += " final";
+      }
+      if (stripKeyword(typeStr, "=0", false))
+      {
+        argsStr += "=0";
+      }
       i=defStr.find("auto ");
       if (i!=-1)
       {
