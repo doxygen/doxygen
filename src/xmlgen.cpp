@@ -583,6 +583,44 @@ static QCString memberOutputFileBase(const MemberDef *md)
   return md->getOutputFileBase();
 }
 
+static bool stripKeyword(QCString& str, const char* keyword, bool needSpace) {
+  bool found = false;
+  int searchStart = 0;
+  size_t len = strlen(keyword);
+  int searchEnd = (int) str.size();
+  while (searchStart < searchEnd) {
+    int index = str.find(keyword, searchStart);
+    if (index == -1) {
+      break;
+    }
+    int end = index + len;
+    if (needSpace) {
+      // Either at the start of the string or preceded by a space.
+      if (index > 0 && str[index - 1] != ' ') {
+        searchStart = end;
+        continue;
+      }
+      // Either at the end of the string or followed by a space.
+      if (end != searchEnd && str[end] != ' ') {
+        searchStart = end;
+        continue;
+      }
+    }
+    if (needSpace && index > 0) {
+      str.remove(index - 1, len + 1);
+      searchEnd -= (len + 1);
+    } else if (needSpace && end < searchEnd) {
+      str.remove(index, len + 1);
+      searchEnd -= (len + 1);
+    } else {
+      str.remove(index, len);
+      searchEnd -= len;
+    }
+    found = true;
+  }
+  return found;
+}
+
 static QCString extractNoExcept(QCString &argsStr)
 {
   QCString expr;
@@ -689,6 +727,15 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     {
       typeStr=argsStr.mid(i+2).stripWhiteSpace();
       argsStr=argsStr.left(i).stripWhiteSpace();
+      if (stripKeyword(typeStr, "override", true)) {
+        argsStr += " override";
+      }
+      if (stripKeyword(typeStr, "final", true)) {
+        argsStr += " final";
+      }
+      if (stripKeyword(typeStr, "=0", false)) {
+        argsStr += "=0";
+      }
       i=defStr.find("auto ");
       if (i!=-1)
       {
