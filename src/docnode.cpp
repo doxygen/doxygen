@@ -3384,7 +3384,7 @@ void DocPara::handleCite(char cmdChar,const QCString &cmdName)
       }
     }
 
-    if (option.isUnknown()) option = CiteInfoOption::makeNumber();
+    if (option.isUnknown()) option.changeToNumber();
 
     parser()->tokenizer.setStatePara();
     tok=parser()->tokenizer.lex();

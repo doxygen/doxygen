@@ -29,6 +29,8 @@ class CiteInfoOption
     static CiteInfoOption makeNumber()      { return CiteInfoOption(NUMBER); }
     static CiteInfoOption makeShortAuthor() { return CiteInfoOption(SHORTAUTHOR); }
     static CiteInfoOption makeYear()        { return CiteInfoOption(YEAR); }
+
+    void changeToNumber()         { m_bits = (m_bits & OptionMask) | NUMBER; }
     void setNoPar()               { m_bits |= NOPAR_BIT; }
     void setNoCite()              { m_bits |= NOCITE_BIT; }
 
