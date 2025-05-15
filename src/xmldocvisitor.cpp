@@ -30,6 +30,7 @@
 #include "filedef.h"
 #include "fileinfo.h"
 #include "codefragment.h"
+#include "cite.h"
 
 static void startSimpleSect(TextStream &t,const DocSimpleSect &s)
 {
@@ -589,9 +590,23 @@ void XmlDocVisitor::operator()(const DocSimpleSectSep &sep)
 void XmlDocVisitor::operator()(const DocCite &cite)
 {
   if (m_hide) return;
-  if (!cite.file().isEmpty()) startLink(cite.ref(),cite.file(),cite.anchor());
-  filter(cite.text());
-  if (!cite.file().isEmpty()) endLink();
+  auto opt = cite.option();
+  if (!cite.file().isEmpty())
+  {
+    if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.anchor());
+
+    filter(cite.getText());
+
+    if (!opt.noCite()) endLink();
+  }
+  else
+  {
+    m_t << "<b>";
+    if (!opt.noPar()) filter("[");
+    filter(cite.target());
+    if (!opt.noPar()) filter("]");
+    m_t << "</b>";
+  }
 }
 
 //--------------------------------------

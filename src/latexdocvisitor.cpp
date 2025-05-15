@@ -40,6 +40,7 @@
 #include "regex.h"
 #include "portable.h"
 #include "codefragment.h"
+#include "cite.h"
 
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =
@@ -736,19 +737,59 @@ void LatexDocVisitor::operator()(const DocSimpleSectSep &)
 void LatexDocVisitor::operator()(const DocCite &cite)
 {
   if (m_hide) return;
-  if (!cite.file().isEmpty())
+  auto opt = cite.option();
+  QCString txt;
+  if (opt.noCite())
   {
-    //startLink(cite.ref(),cite.file(),cite.anchor());
-    QCString anchor = cite.anchor();
-    QCString anchorPrefix = CitationManager::instance().anchorPrefix();
-    anchor = anchor.mid(anchorPrefix.length()); // strip prefix
-    m_t << "\\cite{" << anchor << "}";
+    if (!cite.file().isEmpty())
+    {
+      txt = cite.getText();
+    }
+    else
+    {
+      if (!opt.noPar()) txt += "[";
+      txt += cite.target();
+      if (!opt.noPar()) txt += "]";
+    }
+    m_t << "{\\bfseries ";
+    filter(txt);
+    m_t << "}";
   }
   else
   {
-    m_t << "{\\bfseries [";
-    filter(cite.text());
-    m_t << "]}";
+    if (!cite.file().isEmpty())
+    {
+      QCString anchor = cite.anchor();
+      QCString anchorPrefix = CitationManager::instance().anchorPrefix();
+      anchor = anchor.mid(anchorPrefix.length()); // strip prefix
+
+      txt = "\\DoxyCite{" + anchor + "}";
+      if (opt.isNumber())
+      {
+        txt += "{number}";
+      }
+      else if (opt.isShortAuthor())
+      {
+        txt += "{shortauthor}";
+      }
+      else if (opt.isYear())
+      {
+        txt += "{year}";
+      }
+      if (!opt.noPar()) txt += "{1}";
+      else txt += "{0}";
+
+      m_t << txt;
+    }
+    else
+    {
+      if (!opt.noPar()) txt += "[";
+      txt += cite.target();
+      if (!opt.noPar()) txt += "]";
+      m_t << "{\\bfseries ";
+      filter(txt);
+      m_t << "}";
+    }
   }
 }
 
