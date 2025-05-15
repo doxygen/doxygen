@@ -745,7 +745,7 @@ void PerlModDocVisitor::operator()(const DocSimpleSectSep &)
 void PerlModDocVisitor::operator()(const DocCite &cite)
 {
   openItem("cite");
-  int opt = cite.option();
+  auto opt = cite.option();
   QCString txt;
   if (!cite.file().isEmpty())
   {
@@ -753,9 +753,9 @@ void PerlModDocVisitor::operator()(const DocCite &cite)
   }
   else
   {
-    if (!(opt & CiteInfo::NOPAR_BIT)) txt += "[";
+    if (!opt.noPar()) txt += "[";
     txt += cite.target();
-    if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+    if (!opt.noPar()) txt += "]";
   }
   m_output.addFieldQuotedString("text", txt);
   closeItem();

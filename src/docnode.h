@@ -32,6 +32,7 @@
 #include "section.h"
 #include "construct.h"
 #include "doctokenizer.h"
+#include "cite.h"
 
 class MemberDef;
 class Definition;
@@ -243,13 +244,13 @@ class DocAnchor : public DocNode
 class DocCite : public DocNode
 {
   public:
-    DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context, int opt);
+    DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &context, CiteInfoOption opt);
     QCString file() const        { return m_file; }
     QCString relPath() const     { return m_relPath; }
     QCString ref() const         { return m_ref; }
     QCString anchor() const      { return m_anchor; }
     QCString target() const      { return m_target; }
-    int option() const           { return m_option; }
+    CiteInfoOption option() const  { return m_option; }
     QCString getText() const;
 
   private:
@@ -258,7 +259,7 @@ class DocCite : public DocNode
     QCString   m_ref;
     QCString   m_anchor;
     QCString   m_target;
-    int        m_option;
+    CiteInfoOption m_option;
 };
 
 

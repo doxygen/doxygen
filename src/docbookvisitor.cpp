@@ -603,20 +603,20 @@ void DocbookDocVisitor::operator()(const DocCite &cite)
 {
 DB_VIS_C
   if (m_hide) return;
-  int opt = cite.option();
+  auto opt = cite.option();
   if (!cite.file().isEmpty())
   {
-    if (!(opt & CiteInfo::NOCITE_BIT)) startLink(cite.file(),filterId(cite.anchor()));
+    if (!opt.noCite()) startLink(cite.file(),filterId(cite.anchor()));
 
     filter(cite.getText());
 
-    if (!(opt & CiteInfo::NOCITE_BIT)) endLink();
+    if (!opt.noCite()) endLink();
   }
   else
   {
-    if (!(opt & CiteInfo::NOPAR_BIT)) filter("[");
+    if (!opt.noPar()) filter("[");
     filter(cite.target());
-    if (!(opt & CiteInfo::NOPAR_BIT)) filter("]");
+    if (!opt.noPar()) filter("]");
 
   }
 

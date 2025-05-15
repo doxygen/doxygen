@@ -254,7 +254,7 @@ class PrintDocVisitor
     void operator()(const DocCite &cite)
     {
       indent_leaf();
-      int opt = cite.option();
+      auto opt = cite.option();
       QCString txt;
       if (!cite.file().isEmpty())
       {
@@ -262,9 +262,9 @@ class PrintDocVisitor
       }
       else
       {
-        if (!(opt & CiteInfo::NOPAR_BIT)) txt += "[";
+        if (!opt.noPar()) txt += "[";
         txt += cite.target();
-        if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+        if (!opt.noPar()) txt += "]";
       }
       printf("<cite ref=\"%s\" file=\"%s\" "
              "anchor=\"%s\" text=\"%s\""

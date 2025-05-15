@@ -648,21 +648,21 @@ void RTFDocVisitor::operator()(const DocCite &cite)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocCite &)}\n");
-  int opt = cite.option();
+  auto opt = cite.option();
   if (!cite.file().isEmpty())
   {
-    if (!(opt & CiteInfo::NOCITE_BIT)) startLink(cite.ref(),cite.file(),cite.anchor());
+    if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.anchor());
 
     filter(cite.getText());
 
-    if (!(opt & CiteInfo::NOCITE_BIT)) endLink(cite.ref());
+    if (!opt.noCite()) endLink(cite.ref());
   }
   else
   {
     m_t << "{\\b";
-    if (!(opt & CiteInfo::NOPAR_BIT)) filter("[");
+    if (!opt.noPar()) filter("[");
     filter(cite.target());
-    if (!(opt & CiteInfo::NOPAR_BIT)) filter("]");
+    if (!opt.noPar()) filter("]");
     m_t << "}";
   }
 }

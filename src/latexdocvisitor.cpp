@@ -737,9 +737,9 @@ void LatexDocVisitor::operator()(const DocSimpleSectSep &)
 void LatexDocVisitor::operator()(const DocCite &cite)
 {
   if (m_hide) return;
-  int opt = cite.option();
+  auto opt = cite.option();
   QCString txt;
-  if (opt & CiteInfo::NOCITE_BIT)
+  if (opt.noCite())
   {
     if (!cite.file().isEmpty())
     {
@@ -747,9 +747,9 @@ void LatexDocVisitor::operator()(const DocCite &cite)
     }
     else
     {
-      if (!(opt & CiteInfo::NOPAR_BIT)) txt += "[";
+      if (!opt.noPar()) txt += "[";
       txt += cite.target();
-      if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+      if (!opt.noPar()) txt += "]";
     }
     m_t << "{\\bfseries ";
     filter(txt);
@@ -764,28 +764,28 @@ void LatexDocVisitor::operator()(const DocCite &cite)
       anchor = anchor.mid(anchorPrefix.length()); // strip prefix
 
       txt = "\\DoxyCite{" + anchor + "}";
-      if (opt & CiteInfo::NUMBER)
+      if (opt.isNumber())
       {
         txt += "{number}";
       }
-      else if (opt & CiteInfo::SHORTAUTHOR)
+      else if (opt.isShortAuthor())
       {
         txt += "{shortauthor}";
       }
-      else if (opt & CiteInfo::YEAR)
+      else if (opt.isYear())
       {
         txt += "{year}";
       }
-      if (!(opt & CiteInfo::NOPAR_BIT)) txt += "{1}";
+      if (!opt.noPar()) txt += "{1}";
       else txt += "{0}";
 
       m_t << txt;
     }
     else
     {
-      if (!(opt & CiteInfo::NOPAR_BIT)) txt += "[";
+      if (!opt.noPar()) txt += "[";
       txt += cite.target();
-      if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+      if (!opt.noPar()) txt += "]";
       m_t << "{\\bfseries ";
       filter(txt);
       m_t << "}";

@@ -590,21 +590,21 @@ void XmlDocVisitor::operator()(const DocSimpleSectSep &sep)
 void XmlDocVisitor::operator()(const DocCite &cite)
 {
   if (m_hide) return;
-  int opt = cite.option();
+  auto opt = cite.option();
   if (!cite.file().isEmpty())
   {
-    if (!(opt & CiteInfo::NOCITE_BIT)) startLink(cite.ref(),cite.file(),cite.anchor());
+    if (!opt.noCite()) startLink(cite.ref(),cite.file(),cite.anchor());
 
     filter(cite.getText());
 
-    if (!(opt & CiteInfo::NOCITE_BIT)) endLink();
+    if (!opt.noCite()) endLink();
   }
   else
   {
     m_t << "<b>";
-    if (!(opt & CiteInfo::NOPAR_BIT)) filter("[");
+    if (!opt.noPar()) filter("[");
     filter(cite.target());
-    if (!(opt & CiteInfo::NOPAR_BIT)) filter("]");
+    if (!opt.noPar()) filter("]");
     m_t << "</b>";
   }
 }

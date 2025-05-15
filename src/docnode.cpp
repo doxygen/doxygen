@@ -900,7 +900,7 @@ void DocRef::parse()
 
 //---------------------------------------------------------------------------
 
-DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &,int opt) : DocNode(parser,parent)
+DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target,const QCString &,CiteInfoOption opt) : DocNode(parser,parent)
 {
   size_t numBibFiles = Config_getList(CITE_BIB_FILES).size();
   //printf("DocCite::DocCite(target=%s)\n",qPrint(target));
@@ -939,20 +939,20 @@ DocCite::DocCite(DocParser *parser,DocNodeVariant *parent,const QCString &target
 QCString DocCite::getText() const
 {
   QCString txt;
-  int opt = m_option;
+  auto opt = m_option;
   const CitationManager &ct = CitationManager::instance();
   const CiteInfo *citeInfo = ct.find(m_target);
 
-  if (!(opt & CiteInfo::NOPAR_BIT))  txt += "[";
+  if (!opt.noPar())  txt += "[";
 
   if (citeInfo)
   {
-    if (opt & CiteInfo::NUMBER)  txt += citeInfo->text();
-    else if (opt & CiteInfo::SHORTAUTHOR)  txt += citeInfo->shortAuthor();
-    else if (opt & CiteInfo::YEAR)  txt += citeInfo->year();
+    if      (opt.isNumber())      txt += citeInfo->text();
+    else if (opt.isShortAuthor()) txt += citeInfo->shortAuthor();
+    else if (opt.isYear())        txt += citeInfo->year();
   }
 
-  if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+  if (!opt.noPar()) txt += "]";
   return txt;
 }
 
@@ -3329,9 +3329,7 @@ void DocPara::handleCite(char cmdChar,const QCString &cmdName)
   // get the argument of the cite command.
   Token tok=parser()->tokenizer.lex();
 
-  int option = CiteInfo::UNKNOWN;
-  bool nopar_bit = false;
-  bool nocite_bit = false;
+  CiteInfoOption option;
   if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
   {
     parser()->tokenizer.setStateOptions();
@@ -3341,48 +3339,52 @@ void DocPara::handleCite(char cmdChar,const QCString &cmdName)
     {
       if (opt == "number")
       {
-        if (option != CiteInfo::UNKNOWN)
+        if (!option.isUnknown())
         {
           warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
         }
         else
         {
-          option = CiteInfo::NUMBER;
+          option = CiteInfoOption::makeNumber();
         }
       }
       else if (opt == "year")
       {
-        if (option != CiteInfo::UNKNOWN)
+        if (!option.isUnknown())
         {
           warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
         }
         else
         {
-          option = CiteInfo::YEAR;
+          option = CiteInfoOption::makeYear();
         }
       }
       else if (opt == "shortauthor")
       {
-        if (option != CiteInfo::UNKNOWN)
+        if (!option.isUnknown())
         {
           warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Multiple options specified with \\{}, discarding '{}'", saveCmdName, opt);
         }
         else
         {
-          option = CiteInfo::SHORTAUTHOR;
+          option = CiteInfoOption::makeShortAuthor();
         }
       }
-      else if (opt == "nopar")  nopar_bit = true;
-      else if (opt == "nocite") nocite_bit = true;
+      else if (opt == "nopar")
+      {
+        option.setNoPar();
+      }
+      else if (opt == "nocite")
+      {
+        option.setNoCite();
+      }
       else
       {
         warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unkown option specified with \\{}, discarding '{}'", saveCmdName, opt);
       }
     }
 
-    if (option == CiteInfo::UNKNOWN) option = CiteInfo::NUMBER;
-    if (nopar_bit) option |= CiteInfo::NOPAR_BIT;
-    if (nocite_bit) option |= CiteInfo::NOCITE_BIT;
+    if (option.isUnknown()) option = CiteInfoOption::makeNumber();
 
     parser()->tokenizer.setStatePara();
     tok=parser()->tokenizer.lex();
@@ -3401,7 +3403,7 @@ void DocPara::handleCite(char cmdChar,const QCString &cmdName)
   }
   else
   {
-    option = CiteInfo::NUMBER;
+    option = CiteInfoOption::makeNumber();
   }
 
   parser()->tokenizer.setStateCite();

@@ -428,7 +428,7 @@ void ManDocVisitor::operator()(const DocCite &cite)
 {
   if (m_hide) return;
   m_t << "\\fB";
-  int opt = cite.option();
+  auto opt = cite.option();
   QCString txt;
   if (!cite.file().isEmpty())
   {
@@ -436,9 +436,9 @@ void ManDocVisitor::operator()(const DocCite &cite)
   }
   else
   {
-    if (!(opt & CiteInfo::NOPAR_BIT)) txt += "[";
+    if (!opt.noPar()) txt += "[";
     txt += cite.target();
-    if (!(opt & CiteInfo::NOPAR_BIT)) txt += "]";
+    if (!opt.noPar()) txt += "]";
   }
   filter(txt);
   m_t << "\\fP";

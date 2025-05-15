@@ -22,6 +22,47 @@
 #include "qcstring.h"
 #include "construct.h"
 
+class CiteInfoOption
+{
+  public:
+    CiteInfoOption() {}
+    static CiteInfoOption makeNumber()      { return CiteInfoOption(NUMBER); }
+    static CiteInfoOption makeShortAuthor() { return CiteInfoOption(SHORTAUTHOR); }
+    static CiteInfoOption makeYear()        { return CiteInfoOption(YEAR); }
+    void setNoPar()               { m_bits |= NOPAR_BIT; }
+    void setNoCite()              { m_bits |= NOCITE_BIT; }
+
+    bool isUnknown() const        { return (m_bits & TypeMask)==0; }
+    bool isNumber() const         { return (m_bits & NUMBER)!=0; }
+    bool isShortAuthor() const    { return (m_bits & SHORTAUTHOR)!=0; }
+    bool isYear() const           { return (m_bits & YEAR)!=0; }
+
+    bool noPar() const            { return (m_bits & NOPAR_BIT)!=0; }
+    bool noCite() const           { return (m_bits & NOCITE_BIT)!=0; }
+
+    friend inline bool operator==(const CiteInfoOption &t1,const CiteInfoOption &t2) { return t1.m_bits==t2.m_bits; }
+    friend inline bool operator!=(const CiteInfoOption &t1,const CiteInfoOption &t2) { return !(operator==(t1,t2)); }
+
+  private:
+    CiteInfoOption(int bits) : m_bits(bits) {}
+
+    enum Bits
+    {
+      UNKNOWN     = 0,
+      NUMBER      = (1<<0),
+      SHORTAUTHOR = (1<<1),
+      YEAR        = (1<<2),
+
+      TypeMask    = 0x0000FFFF,
+      OptionMask  = 0xFFFF0000,
+
+      NOPAR_BIT   = (1<<16), //< Don't use square brackets
+      NOCITE_BIT  = (1<<17)  //< Don't create a link
+    };
+    unsigned int m_bits = UNKNOWN;
+};
+
+
 /// Citation-related data.
 struct CiteInfo
 {
@@ -31,16 +72,6 @@ struct CiteInfo
   virtual QCString text() const = 0;
   virtual QCString shortAuthor() const = 0;
   virtual QCString year() const = 0;
-
-  enum CiteOptionType {
-    UNKNOWN     = 0x00,
-    NUMBER      = 0x01,
-    SHORTAUTHOR = 0x02,
-    YEAR        = 0x04,
-
-    NOPAR_BIT   = 0x001000, //< Don't use square brackets
-    NOCITE_BIT  = 0x100000, //< Don't create a link
-  };
 };
 
 /**
