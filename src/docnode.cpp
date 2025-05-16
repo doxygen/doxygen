@@ -3380,7 +3380,7 @@ void DocPara::handleCite(char cmdChar,const QCString &cmdName)
       }
       else
       {
-        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unkown option specified with \\{}, discarding '{}'", saveCmdName, opt);
+        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unknown option specified with \\{}, discarding '{}'", saveCmdName, opt);
       }
     }
 
