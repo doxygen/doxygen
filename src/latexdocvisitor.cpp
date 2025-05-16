@@ -1228,9 +1228,9 @@ void LatexDocVisitor::operator()(const DocHtmlDescData &dd)
   decIndentLevel();
 }
 
-static bool tableIsNested(const DocNodeVariant *n)
+static bool tableIsNested(const DocNodeVariant *n,LatexCodeGenerator &m_lcg)
 {
-  bool isNested=FALSE;
+  bool isNested=m_lcg.usedTableLevel()>0;
   while (n && !isNested)
   {
     isNested = holds_one_of_alternatives<DocHtmlTable,DocParamSect>(*n);
@@ -1239,9 +1239,9 @@ static bool tableIsNested(const DocNodeVariant *n)
   return isNested;
 }
 
-static void writeStartTableCommand(TextStream &t,const DocNodeVariant *n,size_t cols)
+static void writeStartTableCommand(TextStream &t,const DocNodeVariant *n,size_t cols,LatexCodeGenerator &m_lcg)
 {
-  if (tableIsNested(n))
+  if (tableIsNested(n,m_lcg))
   {
     t << "{\\begin{tabularx}{\\linewidth}{|*{" << cols << "}{>{\\raggedright\\arraybackslash}X|}}";
   }
@@ -1252,9 +1252,9 @@ static void writeStartTableCommand(TextStream &t,const DocNodeVariant *n,size_t 
   //return isNested ? "TabularNC" : "TabularC";
 }
 
-static void writeEndTableCommand(TextStream &t,const DocNodeVariant *n)
+static void writeEndTableCommand(TextStream &t,const DocNodeVariant *n,LatexCodeGenerator &m_lcg)
 {
-  if (tableIsNested(n))
+  if (tableIsNested(n,m_lcg))
   {
     t << "\\end{tabularx}}\n";
   }
@@ -1281,7 +1281,7 @@ void LatexDocVisitor::operator()(const DocHtmlTable &t)
     m_t << "\n";
   }
 
-  writeStartTableCommand(m_t,t.parent(),t.numColumns());
+  writeStartTableCommand(m_t,t.parent(),t.numColumns(),m_lcg);
 
   if (c)
   {
@@ -1302,14 +1302,14 @@ void LatexDocVisitor::operator()(const DocHtmlTable &t)
   if (firstRow && firstRow->isHeading())
   {
     setFirstRow(TRUE);
-    if (!tableIsNested(t.parent()))
+    if (!tableIsNested(t.parent(),m_lcg))
     {
       std::visit(*this,*t.firstRow());
     }
     setFirstRow(FALSE);
   }
   visitChildren(t);
-  writeEndTableCommand(m_t,t.parent());
+  writeEndTableCommand(m_t,t.parent(),m_lcg);
   popTableState();
 }
 
@@ -1381,7 +1381,7 @@ void LatexDocVisitor::operator()(const DocHtmlRow &row)
   m_t << "\n";
 
   const DocNodeVariant *n = ::parent(row.parent());
-  if (row.isHeading() && row.rowIndex()==1 && !tableIsNested(n))
+  if (row.isHeading() && row.rowIndex()==1 && !tableIsNested(n,m_lcg))
   {
     if (firstRow())
     {
