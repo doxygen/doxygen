@@ -1228,7 +1228,7 @@ void LatexDocVisitor::operator()(const DocHtmlDescData &dd)
   decIndentLevel();
 }
 
-static bool tableIsNested(const DocNodeVariant *n,LatexCodeGenerator &m_lcg)
+bool LatexDocVisitor::isTableNested(const DocNodeVariant *n) const
 {
   bool isNested=m_lcg.usedTableLevel()>0;
   while (n && !isNested)
@@ -1239,28 +1239,28 @@ static bool tableIsNested(const DocNodeVariant *n,LatexCodeGenerator &m_lcg)
   return isNested;
 }
 
-static void writeStartTableCommand(TextStream &t,const DocNodeVariant *n,size_t cols,LatexCodeGenerator &m_lcg)
+void LatexDocVisitor::writeStartTableCommand(const DocNodeVariant *n,size_t cols)
 {
-  if (tableIsNested(n,m_lcg))
+  if (isTableNested(n))
   {
-    t << "{\\begin{tabularx}{\\linewidth}{|*{" << cols << "}{>{\\raggedright\\arraybackslash}X|}}";
+    m_t << "{\\begin{tabularx}{\\linewidth}{|*{" << cols << "}{>{\\raggedright\\arraybackslash}X|}}";
   }
   else
   {
-    t << "\\tabulinesep=1mm\n\\begin{longtabu}spread 0pt [c]{*{" << cols << "}{|X[-1]}|}\n";
+    m_t << "\\tabulinesep=1mm\n\\begin{longtabu}spread 0pt [c]{*{" << cols << "}{|X[-1]}|}\n";
   }
   //return isNested ? "TabularNC" : "TabularC";
 }
 
-static void writeEndTableCommand(TextStream &t,const DocNodeVariant *n,LatexCodeGenerator &m_lcg)
+void LatexDocVisitor::writeEndTableCommand(const DocNodeVariant *n)
 {
-  if (tableIsNested(n,m_lcg))
+  if (isTableNested(n))
   {
-    t << "\\end{tabularx}}\n";
+    m_t << "\\end{tabularx}}\n";
   }
   else
   {
-    t << "\\end{longtabu}\n";
+    m_t << "\\end{longtabu}\n";
   }
   //return isNested ? "TabularNC" : "TabularC";
 }
@@ -1281,7 +1281,7 @@ void LatexDocVisitor::operator()(const DocHtmlTable &t)
     m_t << "\n";
   }
 
-  writeStartTableCommand(m_t,t.parent(),t.numColumns(),m_lcg);
+  writeStartTableCommand(t.parent(),t.numColumns());
 
   if (c)
   {
@@ -1302,14 +1302,14 @@ void LatexDocVisitor::operator()(const DocHtmlTable &t)
   if (firstRow && firstRow->isHeading())
   {
     setFirstRow(TRUE);
-    if (!tableIsNested(t.parent(),m_lcg))
+    if (!isTableNested(t.parent()))
     {
       std::visit(*this,*t.firstRow());
     }
     setFirstRow(FALSE);
   }
   visitChildren(t);
-  writeEndTableCommand(m_t,t.parent(),m_lcg);
+  writeEndTableCommand(t.parent());
   popTableState();
 }
 
@@ -1381,7 +1381,7 @@ void LatexDocVisitor::operator()(const DocHtmlRow &row)
   m_t << "\n";
 
   const DocNodeVariant *n = ::parent(row.parent());
-  if (row.isHeading() && row.rowIndex()==1 && !tableIsNested(n,m_lcg))
+  if (row.isHeading() && row.rowIndex()==1 && !isTableNested(n))
   {
     if (firstRow())
     {

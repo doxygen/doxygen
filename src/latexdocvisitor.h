@@ -266,5 +266,9 @@ class LatexDocVisitor : public DocVisitor
       return !m_tableStateStack.empty();
     }
 
+    bool isTableNested(const DocNodeVariant *n) const;
+    void writeStartTableCommand(const DocNodeVariant *n,size_t cols);
+    void writeEndTableCommand(const DocNodeVariant *n);
+
 };
 #endif
