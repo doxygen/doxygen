@@ -112,7 +112,7 @@ void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
   //  	qPrint(e->name),e->section,m_autoGroupStack.size());
   if (e->section.isGroupDoc()) // auto group
   {
-    m_autoGroupStack.emplace_back(e->name,e->groupingPri());
+    m_autoGroupStack.emplace_back(e->name,e->groupingPri(),-1);
   }
   else // start of a member group
   {
