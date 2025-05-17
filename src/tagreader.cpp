@@ -1002,6 +1002,16 @@ class TagFileParser
                };
   private:
 
+    struct ClassNode
+    {
+      ClassNode(const std::string &n) : name(n) {}
+      std::string name;
+      const TagClassInfo *tci = nullptr;
+      std::unordered_map<std::string,std::unique_ptr<ClassNode>> children;
+    };
+
+    void buildClassEntry(const std::shared_ptr<Entry> &root, const TagClassInfo *tci);
+    void buildClassTree(const std::shared_ptr<Entry> &root, const ClassNode &node);
     //------------------------------------
 
     std::vector< TagCompoundVariant > m_tagFileCompounds;
@@ -1485,69 +1495,108 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
   }
 }
 
+void TagFileParser::buildClassEntry(const std::shared_ptr<Entry> &root, const TagClassInfo *tci)
+{
+  std::shared_ptr<Entry> ce = std::make_shared<Entry>();
+  ce->section = EntryType::makeClass();
+  switch (tci->kind)
+  {
+    case TagClassInfo::Kind::Class:     break;
+    case TagClassInfo::Kind::Struct:    ce->spec = TypeSpecifier().setStruct(true);    break;
+    case TagClassInfo::Kind::Union:     ce->spec = TypeSpecifier().setUnion(true);     break;
+    case TagClassInfo::Kind::Interface: ce->spec = TypeSpecifier().setInterface(true); break;
+    case TagClassInfo::Kind::Enum:      ce->spec = TypeSpecifier().setEnum(true);      break;
+    case TagClassInfo::Kind::Exception: ce->spec = TypeSpecifier().setException(true); break;
+    case TagClassInfo::Kind::Protocol:  ce->spec = TypeSpecifier().setProtocol(true);  break;
+    case TagClassInfo::Kind::Category:  ce->spec = TypeSpecifier().setCategory(true);  break;
+    case TagClassInfo::Kind::Service:   ce->spec = TypeSpecifier().setService(true);   break;
+    case TagClassInfo::Kind::Singleton: ce->spec = TypeSpecifier().setSingleton(true); break;
+    case TagClassInfo::Kind::None:      // should never happen, means not properly initialized
+                                        assert(tci->kind != TagClassInfo::Kind::None);
+                                        break;
+  }
+  ce->name     = tci->name;
+  if (tci->kind==TagClassInfo::Kind::Protocol)
+  {
+    ce->name+="-p";
+  }
+  addDocAnchors(ce,tci->docAnchors);
+  ce->tagInfoData.tagName  = m_tagName;
+  ce->tagInfoData.anchor   = tci->anchor;
+  ce->tagInfoData.fileName = tci->filename;
+  ce->startLine            = tci->lineNr;
+  ce->fileName             = m_tagName;
+  ce->hasTagInfo           = TRUE;
+  ce->id                   = tci->clangId;
+  ce->lang                 = tci->isObjC ? SrcLangExt::ObjC : SrcLangExt::Unknown;
+  // transfer base class list
+  ce->extends  = tci->bases;
+  if (!tci->templateArguments.empty())
+  {
+    ArgumentList al;
+    for (const auto &argName : tci->templateArguments)
+    {
+      Argument a;
+      a.type = "class";
+      a.name = argName.c_str();
+      al.push_back(a);
+    }
+    ce->tArgLists.push_back(al);
+  }
+
+  buildMemberList(ce,tci->members);
+  root->moveToSubEntryAndKeep(ce);
+}
+
+void TagFileParser::buildClassTree(const std::shared_ptr<Entry> &root,const ClassNode &node)
+{
+  if (node.tci)
+  {
+    buildClassEntry(root,node.tci);
+  }
+  for (const auto &child : node.children)
+  {
+    buildClassTree(root,*child.second);
+  }
+}
+
 /*! Injects the info gathered by the XML parser into the Entry tree.
  *  This tree contains the information extracted from the input in a
  *  "unrelated" form.
  */
 void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
 {
-  // build class list
+  // First reorganize the entries in m_tagFileCompounds such that
+  // outer scope is processed before the nested class scope.
+  // To solve issue #11569, where a class nested in a specialization is
+  // processed first, which later causes the wrong class to be used
+  ClassNode classRoot("");
   for (const auto &comp : m_tagFileCompounds)
   {
     const TagClassInfo *tci = comp.getClassInfo();
     if (tci)
     {
-      std::shared_ptr<Entry> ce = std::make_shared<Entry>();
-      ce->section = EntryType::makeClass();
-      switch (tci->kind)
+      ClassNode *current = &classRoot;
+      auto parts = split(tci->name.str(),"::");
+      for (size_t i=0; i<parts.size(); ++i)
       {
-        case TagClassInfo::Kind::Class:     break;
-        case TagClassInfo::Kind::Struct:    ce->spec = TypeSpecifier().setStruct(true);    break;
-        case TagClassInfo::Kind::Union:     ce->spec = TypeSpecifier().setUnion(true);     break;
-        case TagClassInfo::Kind::Interface: ce->spec = TypeSpecifier().setInterface(true); break;
-        case TagClassInfo::Kind::Enum:      ce->spec = TypeSpecifier().setEnum(true);      break;
-        case TagClassInfo::Kind::Exception: ce->spec = TypeSpecifier().setException(true); break;
-        case TagClassInfo::Kind::Protocol:  ce->spec = TypeSpecifier().setProtocol(true);  break;
-        case TagClassInfo::Kind::Category:  ce->spec = TypeSpecifier().setCategory(true);  break;
-        case TagClassInfo::Kind::Service:   ce->spec = TypeSpecifier().setService(true);   break;
-        case TagClassInfo::Kind::Singleton: ce->spec = TypeSpecifier().setSingleton(true); break;
-        case TagClassInfo::Kind::None:      // should never happen, means not properly initialized
-                                      assert(tci->kind != TagClassInfo::Kind::None);
-                                      break;
-      }
-      ce->name     = tci->name;
-      if (tci->kind==TagClassInfo::Kind::Protocol)
-      {
-        ce->name+="-p";
-      }
-      addDocAnchors(ce,tci->docAnchors);
-      ce->tagInfoData.tagName  = m_tagName;
-      ce->tagInfoData.anchor   = tci->anchor;
-      ce->tagInfoData.fileName = tci->filename;
-      ce->startLine            = tci->lineNr;
-      ce->fileName             = m_tagName;
-      ce->hasTagInfo           = TRUE;
-      ce->id                   = tci->clangId;
-      ce->lang                 = tci->isObjC ? SrcLangExt::ObjC : SrcLangExt::Unknown;
-      // transfer base class list
-      ce->extends  = tci->bases;
-      if (!tci->templateArguments.empty())
-      {
-        ArgumentList al;
-        for (const auto &argName : tci->templateArguments)
+        const auto &part = parts[i];
+        if (current->children.find(part)==current->children.end()) // new child node
         {
-          Argument a;
-          a.type = "class";
-          a.name = argName.c_str();
-          al.push_back(a);
+          current->children[part] = std::make_unique<ClassNode>(part);
         }
-        ce->tArgLists.push_back(al);
+        current = current->children[part].get();
+        if (i==parts.size()-1)
+        {
+          current->tci = tci;
+        }
       }
-
-      buildMemberList(ce,tci->members);
-      root->moveToSubEntryAndKeep(ce);
     }
   }
+
+  // now process the classes following the tree structure
+  buildClassTree(root,classRoot);
+
 
   // build file list
   for (const auto &comp : m_tagFileCompounds)
