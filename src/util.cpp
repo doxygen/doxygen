@@ -5938,8 +5938,7 @@ QCString parseCommentAsHtml(const Definition *scope,const MemberDef *member,cons
     return it->second;
   }
   auto parser { createDocParser() };
-  auto ast    { validatingParseDoc(*parser.get(),fileName,lineNr,scope,member,doc,false,false,
-                                   QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT),false) };
+  auto ast    { validatingParseTitle(*parser.get(),fileName,lineNr,doc) };
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   QCString result;
   if (astImpl)

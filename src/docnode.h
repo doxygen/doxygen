@@ -611,6 +611,7 @@ class DocTitle : public DocCompoundNode
     void parse();
     void parseFromString(DocNodeVariant *,const QCString &title);
     bool hasTitle() const { return !children().empty(); }
+    bool isEmpty() const  { return !hasTitle(); }
 
   private:
 };
@@ -1480,6 +1481,10 @@ class DocNodeAST : public IDocNodeAST
       else if (std::holds_alternative<DocText>(root))
       {
         return std::get<DocText>(root).isEmpty();
+      }
+      else if (std::holds_alternative<DocTitle>(root))
+      {
+        return std::get<DocTitle>(root).isEmpty();
       }
       return false;
     }

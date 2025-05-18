@@ -93,6 +93,12 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,const QCString &fileNam
  */
 IDocNodeASTPtr validatingParseText(IDocParser &parser,const QCString &input);
 
+
+/*! Main entry point for parsing titles. These allow limited markup commands */
+IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const QCString &fileName,int lineNr,
+                                    const QCString &input);
+
+
 IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCString &context, const QCString &srcFile = "", int srcLine = -1);
 
 //--------------------------------------------------------------------------------

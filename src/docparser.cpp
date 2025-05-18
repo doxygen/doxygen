@@ -2050,6 +2050,58 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   return ast;
 }
 
+IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const QCString &fileName,int lineNr,const QCString &input)
+{
+  DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
+  assert(parser!=nullptr);
+  if (parser==nullptr) return nullptr;
+
+  // set initial token
+  parser->context.token = parser->tokenizer.resetToken();
+
+  //printf("------------ input ---------\n%s\n"
+  //       "------------ end input -----\n",input);
+  parser->context.context = "";
+  parser->context.fileName = fileName;
+  parser->context.relPath = "";
+  parser->context.memberDef = nullptr;
+  while (!parser->context.nodeStack.empty()) parser->context.nodeStack.pop();
+  while (!parser->context.styleStack.empty()) parser->context.styleStack.pop();
+  while (!parser->context.initialStyleStack.empty()) parser->context.initialStyleStack.pop();
+  parser->context.inSeeBlock = FALSE;
+  parser->context.xmlComment = FALSE;
+  parser->context.insideHtmlLink = FALSE;
+  parser->context.includeFileText = "";
+  parser->context.includeFileOffset = 0;
+  parser->context.includeFileLength = 0;
+  parser->context.isExample = FALSE;
+  parser->context.exampleName = "";
+  parser->context.hasParamCommand = FALSE;
+  parser->context.hasReturnCommand = FALSE;
+  parser->context.retvalsFound.clear();
+  parser->context.paramsFound.clear();
+  parser->context.searchUrl="";
+  parser->context.lang = SrcLangExt::Unknown;
+  parser->context.markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
+  parser->context.autolinkSupport = false;
+
+  auto ast = std::make_unique<DocNodeAST>(DocTitle(parser,nullptr));
+
+  if (!input.isEmpty())
+  {
+    // build abstract syntax tree from title string
+    std::get<DocTitle>(ast->root).parseFromString(nullptr,input);
+
+    if (Debug::isFlagSet(Debug::PrintTree))
+    {
+      // pretty print the result
+      std::visit(PrintDocVisitor{},ast->root);
+    }
+  }
+
+  return ast;
+}
+
 IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
