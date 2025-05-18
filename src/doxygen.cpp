@@ -5261,7 +5261,9 @@ static void makeTemplateInstanceRelation(const Entry *root,ClassDefMutable *cd)
 {
   AUTO_TRACE("root->name={} cd={}",root->name,cd->name());
   int i = root->name.find('<');
-  if (i!=-1 && root->lang!=SrcLangExt::CSharp && root->lang!=SrcLangExt::Java)
+  int j = root->name.findRev('>');
+  int k = root->name.find("::",j+1); // A<T::B> => ok, A<T>::B => nok
+  if (i!=-1 && j!=-1 && k==-1 && root->lang!=SrcLangExt::CSharp && root->lang!=SrcLangExt::Java)
   {
     ClassDefMutable *master = getClassMutable(root->name.left(i));
     if (master && master!=cd && !cd->templateMaster())

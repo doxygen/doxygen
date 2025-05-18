@@ -1325,8 +1325,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
   // then we also need to insert the member in the template instance.
   for (const auto &ti : getTemplateInstances())
   {
-    //printf("member %s of class %s with template instance %s\n",qPrint(md->name()),qPrint(name()),
-    //    qPrint(ti.templSpec));
+    AUTO_TRACE_ADD("member {} of class {} with template instance {}\n",md->name(),name(),ti.templSpec);
     ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
     if (cdm)
     {
@@ -4387,6 +4386,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
 
 void ClassDefImpl::insertExplicitTemplateInstance(ClassDef *templateClass,const QCString &templSpec)
 {
+  AUTO_TRACE("this={} cd={} templSpec={}",name(),templateClass->name(),templSpec);
   m_templateInstances.emplace_back(templSpec,templateClass);
 }
 
@@ -4404,9 +4404,9 @@ void ClassDefImpl::addMemberToTemplateInstance(const MemberDef *md,
                                                const ArgumentList &templateArguments,
                                                const QCString &templSpec)
 {
+  AUTO_TRACE("this={} md={}",name(),md->name());
   auto actualArguments_p = stringToArgumentList(getLanguage(),templSpec);
   auto imd = md->createTemplateInstanceMember(templateArguments,actualArguments_p);
-  //printf("%s->setMemberClass(%p)\n",qPrint(imd->name()),this);
   auto mmd = toMemberDefMutable(imd.get());
   mmd->setMemberClass(this);
   mmd->setTemplateMaster(md);
@@ -4428,6 +4428,7 @@ void ClassDefImpl::addMemberToTemplateInstance(const MemberDef *md,
 
 void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec)
 {
+  AUTO_TRACE("this={} cd={} templSpec={}",name(),cd->name(),templSpec);
   //printf("%s::addMembersToTemplateInstance(%s,%s)\n",qPrint(name()),qPrint(cd->name()),templSpec);
   for (const auto &mni : cd->memberNameInfoLinkedMap())
   {
