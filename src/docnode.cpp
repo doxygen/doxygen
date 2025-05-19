@@ -4975,6 +4975,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
       {
         children().append<DocHtmlTable>(parser(),thisVariant(),tagHtmlAttribs);
         retval=children().get_last<DocHtmlTable>()->parse();
+        if (children().get_last<DocHtmlTable>()->children().empty()) children().pop_back();
       }
       break;
     case HtmlTagType::HTML_TR:
@@ -5270,6 +5271,7 @@ Token DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &
         {
           children().append<DocHtmlTable>(parser(),thisVariant(),emptyList);
           retval=children().get_last<DocHtmlTable>()->parseXml();
+          if (children().get_last<DocHtmlTable>()->children().empty()) children().pop_back();
         }
         else
         {
