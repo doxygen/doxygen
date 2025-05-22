@@ -1991,6 +1991,53 @@ Token DocHtmlRow::parse()
     isFirst=FALSE;
     retval=cell->parse();
     isHeading = retval.is(TokenRetval::RetVal_TableHCell);
+    //printf("DocHtmlRow:retval=%s\n",retval.to_string());
+    if (retval.is(TokenRetval::RetVal_EndTableCell))
+    {
+      // get next token
+      retval=parser()->tokenizer.lex();
+      // skip whitespace after </td> or </th>
+      while (retval.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) retval=parser()->tokenizer.lex();
+      //printf("DocHtmlRow:retval= next=%s name=%s endTag=%d\n",retval.to_string(),qPrint(parser()->context.token->name),parser()->context.token->endTag);
+      HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+      if (tok.is(TokenRetval::TK_HTMLTAG))
+      {
+        if ((tagId==HtmlTagType::HTML_TD || tagId==HtmlTagType::HTML_TH) &&
+          !parser()->context.token->endTag) // found new <td> or <td> tag
+        {
+          retval = Token::make_RetVal_TableCell();
+          isHeading = tagId==HtmlTagType::HTML_TH;
+        }
+        else if (tagId==HtmlTagType::HTML_TR)
+        {
+          if (parser()->context.token->endTag) // found </tr> tag
+          {
+            retval = Token::make_RetVal_EndTableRow();
+          }
+          else // found <tr> tag
+          {
+            retval = Token::make_RetVal_TableRow();
+          }
+        }
+        else if (tagId==HtmlTagType::HTML_TABLE && parser()->context.token->endTag) // found </table>
+        {
+          retval = Token::make_RetVal_EndTable();
+        }
+        else // found some other tag
+        {
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <td>, <th> or <tr> tag but "
+              "found <{}> instead!",parser()->context.token->name);
+          parser()->tokenizer.pushBackHtmlTag(parser()->context.token->name);
+          goto endrow;
+        }
+      }
+      else // token other than html token
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <td>, <th> or <tr> tag but found {} token instead!",
+            tok.to_string());
+        goto endrow;
+      }
+    }
   }
   while (retval.is_any_of(TokenRetval::RetVal_TableCell,TokenRetval::RetVal_TableHCell));
   cell->markLast(TRUE);
@@ -2150,6 +2197,31 @@ getrow:
   {
     children().append<DocHtmlRow>(parser(),thisVariant(),parser()->context.token->attribs);
     retval = children().get_last<DocHtmlRow>()->parse();
+    //printf("DocHtmlTable::retval=%s\n",retval.to_string());
+    if (retval.is(TokenRetval::RetVal_EndTableRow))
+    {
+      // get next token
+      retval=parser()->tokenizer.lex();
+      // skip whitespace after </td> or </th>
+      while (retval.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) retval=parser()->tokenizer.lex();
+      //printf("DocHtmlTable::retval= next=%s name=%s endTag=%d\n",retval.to_string(),qPrint(parser()->context.token->name),parser()->context.token->endTag);
+      HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+      if (tagId==HtmlTagType::HTML_TR && !parser()->context.token->endTag)
+      {
+        retval = Token::make_RetVal_TableRow();
+      }
+      else if (tagId==HtmlTagType::HTML_TABLE && parser()->context.token->endTag)
+      {
+        retval = Token::make_RetVal_EndTable();
+      }
+      else  // found some other tag
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <tr> or </table> tag but "
+            "found token {} instead!",retval.to_string());
+        retval=Token::make_RetVal_OK();
+        break;
+      }
+    }
   }
 
   computeTableGrid();
@@ -5431,13 +5503,13 @@ Token DocPara::handleHtmlEndTag(const QCString &tagName)
       retval = Token::make_RetVal_EndTable();
       break;
     case HtmlTagType::HTML_TR:
-      // ignore </tr> tag
+      retval = Token::make_RetVal_EndTableRow();
       break;
     case HtmlTagType::HTML_TD:
-      // ignore </td> tag
+      retval = Token::make_RetVal_EndTableCell();
       break;
     case HtmlTagType::HTML_TH:
-      // ignore </th> tag
+      retval = Token::make_RetVal_EndTableCell();
       break;
     case HtmlTagType::HTML_THEAD:
     case HtmlTagType::HTML_TBODY:

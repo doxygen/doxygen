@@ -60,15 +60,17 @@
   TKSPEC(RetVal_TableCell,       0x1000E)  \
   TKSPEC(RetVal_TableHCell,      0x1000F)  \
   TKSPEC(RetVal_EndTable,        0x10010)  \
-  TKSPEC(RetVal_Internal,        0x10011)  \
-  TKSPEC(RetVal_SwitchLang,      0x10012)  \
-  TKSPEC(RetVal_CloseXml,        0x10013)  \
-  TKSPEC(RetVal_EndBlockQuote,   0x10014)  \
-  TKSPEC(RetVal_CopyDoc,         0x10015)  \
-  TKSPEC(RetVal_EndInternal,     0x10016)  \
-  TKSPEC(RetVal_EndParBlock,     0x10017)  \
-  TKSPEC(RetVal_EndHtmlDetails,  0x10018)  \
-  TKSPEC(RetVal_SubSubParagraph, 0x10019)
+  TKSPEC(RetVal_EndTableCell,    0x10011)  \
+  TKSPEC(RetVal_EndTableRow,     0x10012)  \
+  TKSPEC(RetVal_Internal,        0x10013)  \
+  TKSPEC(RetVal_SwitchLang,      0x10014)  \
+  TKSPEC(RetVal_CloseXml,        0x10015)  \
+  TKSPEC(RetVal_EndBlockQuote,   0x10016)  \
+  TKSPEC(RetVal_CopyDoc,         0x10017)  \
+  TKSPEC(RetVal_EndInternal,     0x10018)  \
+  TKSPEC(RetVal_EndParBlock,     0x10019)  \
+  TKSPEC(RetVal_EndHtmlDetails,  0x1001A)  \
+  TKSPEC(RetVal_SubSubParagraph, 0x1001B)
 
 enum class TokenRetval
 {
