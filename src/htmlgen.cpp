@@ -2164,6 +2164,11 @@ void HtmlGenerator::endMemberHeader()
 void HtmlGenerator::startMemberSubtitle()
 {
   DBG_HTML(m_t << "<!-- startMemberSubtitle -->\n")
+  if (m_emptySection)
+  {
+    m_t << "<table class=\"memberdecls\">\n";
+    m_emptySection=FALSE;
+  }
   m_t << "<tr><td class=\"ititle\" colspan=\"2\">";
 }
 

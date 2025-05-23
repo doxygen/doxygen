@@ -735,6 +735,18 @@ tr[class^='memdesc'] {
 	border-right: 1px solid var(--memdecl-border-color);
 }
 
+td.ititle {
+	border: 1px solid var(--memdecl-border-color);
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	padding-left: 10px;
+}
+
+tr:not(:first-child) > td.ititle {
+	border-top: 0;
+	border-radius: 0;
+}
+
 .memItemLeft {
 	white-space: nowrap;
 	border-left: 1px solid var(--memdecl-border-color);
