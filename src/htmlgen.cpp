@@ -397,17 +397,12 @@ static QCString substituteHtmlKeywords(const QCString &file,
 
   switch (Config_getEnum(TIMESTAMP))
   {
-    case TIMESTAMP_t::YES:
-    case TIMESTAMP_t::DATETIME:
-      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime),
-                                                 convertToHtml(Config_getString(PROJECT_NAME)));
-      break;
-    case TIMESTAMP_t::DATE:
-      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::Date),
-                                                 convertToHtml(Config_getString(PROJECT_NAME)));
-      break;
     case TIMESTAMP_t::NO:
       generatedBy = theTranslator->trGeneratedBy();
+      break;
+    default:
+      generatedBy = theTranslator->trGeneratedAt("<span class=\"timestamp\"></span>",
+                    convertToHtml(Config_getString(PROJECT_NAME)));
       break;
   }
   if (treeView)
@@ -1396,6 +1391,29 @@ static void writeDefaultStyleSheet(TextStream &t)
   }
   t << replaceVariables(cssStr);
 
+  bool addTimestamp = Config_getEnum(TIMESTAMP)!=TIMESTAMP_t::NO;
+  if (addTimestamp)
+  {
+    QCString timeStampStr;
+    switch (Config_getEnum(TIMESTAMP))
+    {
+      case TIMESTAMP_t::YES:
+      case TIMESTAMP_t::DATETIME:
+        timeStampStr = dateToString(DateTimeType::DateTime);
+        break;
+      case TIMESTAMP_t::DATE:
+        timeStampStr = dateToString(DateTimeType::Date);
+        break;
+      default:
+        break;
+    }
+    t << "\nhtml {\n";
+    t << "--timestamp: '" << timeStampStr << "'\n";
+    t << "}\n";
+    t << "span.timestamp { content: ' '; }\n";
+    t << "span.timestamp:before { content: var(--timestamp); }\n\n";
+  }
+
   // For Webkit based the scrollbar styling cannot be overruled (bug in chromium?).
   // To allow the user to style the scrollbars differently we should only add it in case
   // the user did not specify any extra stylesheets.
@@ -1507,21 +1525,12 @@ QCString HtmlGenerator::writeLogoAsString(const QCString &path)
   QCString result;
   switch (Config_getEnum(TIMESTAMP))
   {
-    case TIMESTAMP_t::YES:
-    case TIMESTAMP_t::DATETIME:
-      result += theTranslator->trGeneratedAt(
-                 dateToString(DateTimeType::DateTime),
-                 Config_getString(PROJECT_NAME)
-                );
-      break;
-    case TIMESTAMP_t::DATE:
-      result += theTranslator->trGeneratedAt(
-                 dateToString(DateTimeType::Date),
-                 Config_getString(PROJECT_NAME)
-                );
-      break;
     case TIMESTAMP_t::NO:
-      result += theTranslator->trGeneratedBy();
+      result = theTranslator->trGeneratedBy();
+      break;
+    default:
+      result = theTranslator->trGeneratedAt("<span class=\"timestamp\"></span>",
+                    convertToHtml(Config_getString(PROJECT_NAME)));
       break;
   }
   result += "&#160;\n<a href=\"https://www.doxygen.org/index.html\">\n"
