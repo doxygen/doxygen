@@ -1962,7 +1962,7 @@ Token DocHtmlRow::parse()
     else // found some other tag
     {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <td> or <th> tag but "
-          "found <{}> instead!",parser()->context.token->name);
+          "found <{}{}> instead!",parser()->context.token->endTag ? "/" : "", parser()->context.token->name);
       parser()->tokenizer.pushBackHtmlTag(parser()->context.token->name);
       goto endrow;
     }
@@ -2026,7 +2026,7 @@ Token DocHtmlRow::parse()
         else // found some other tag
         {
           warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <td>, <th> or <tr> tag but "
-              "found <{}> instead!",parser()->context.token->name);
+              "found <{}{}> instead!",parser()->context.token->endTag ? "/" : "", parser()->context.token->name);
           parser()->tokenizer.pushBackHtmlTag(parser()->context.token->name);
           goto endrow;
         }

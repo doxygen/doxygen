@@ -851,7 +851,17 @@ void LatexDocVisitor::operator()(const DocPara &p)
       !(p.parent() &&           // and for parameter sections
         std::get_if<DocParamSect>(p.parent())
        )
-     ) m_t << "\n\n";
+     )
+  {
+    if (insideTable())
+    {
+      m_t << "~\\newline\n";
+    }
+    else
+    {
+      m_t << "\n\n";
+    }
+  }
 }
 
 void LatexDocVisitor::operator()(const DocRoot &r)
@@ -1909,7 +1919,7 @@ void LatexDocVisitor::operator()(const DocParBlock &pb)
 
 void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
-  //printf("LatexDocVisitor::filter(%s) m_insideTabbing=%d\n",qPrint(str),m_ci.insideTabbing());
+  //printf("LatexDocVisitor::filter(%s) m_insideTabbing=%d m_insideTable=%d\n",qPrint(str),m_lcg.insideTabbing(),m_lcg.usedTableLevel()>0);
   filterLatexString(m_t,str,
                     m_lcg.insideTabbing(),
                     m_insidePre,
