@@ -779,6 +779,7 @@ tr.inherit_header + tr[class^='memitem'] td.memItemRight {
 
 tr.heading        + tr[class^='memitem'] td.memTemplParams,
 tr.groupHeader    + tr[class^='memitem'] td.memTemplParams,
+tr.groupHeader    + tr td.ititle,
 tr.inherit_header + tr[class^='memitem'] td.memTemplParams {
         border-top: 1px solid var(--memdecl-border-color);
 	border-top-left-radius: 4px;

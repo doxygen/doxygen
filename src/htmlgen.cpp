@@ -2516,7 +2516,7 @@ void HtmlGenerator::endMemberGroupHeader()
 
 void HtmlGenerator::startMemberGroupDocs()
 {
-  m_t << "<tr><td colspan=\"2\"><div class=\"groupText\">";
+  m_t << "<tr><td colspan=\"2\" class=\"ititle\"><div class=\"groupText\">";
 }
 
 void HtmlGenerator::endMemberGroupDocs()
