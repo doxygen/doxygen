@@ -778,6 +778,7 @@ tr.inherit_header + tr[class^='memitem'] td.memItemRight {
 }
 
 tr.heading        + tr[class^='memitem'] td.memTemplParams,
+tr.heading        + tr td.ititle,
 tr.groupHeader    + tr[class^='memitem'] td.memTemplParams,
 tr.groupHeader    + tr td.ititle,
 tr.inherit_header + tr[class^='memitem'] td.memTemplParams {
