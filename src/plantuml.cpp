@@ -13,6 +13,7 @@
  *
  */
 
+#include <mutex>
 #include "plantuml.h"
 #include "util.h"
 #include "portable.h"
@@ -25,15 +26,17 @@
 #include "indexlist.h"
 #include "stringutil.h"
 
-QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
+static std::mutex g_PlantUmlMutex;
+
+StringVector PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
                                               const QCString &content,OutputFormat format, const QCString &engine,
                                               const QCString &srcFile,int srcLine,bool inlineCode)
 {
+  StringVector baseNameVector;
   QCString baseName;
   QCString puName;
   QCString imgName;
   QCString outDir(outDirArg);
-  static int umlindex=1;
 
   Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource fileName: {}\n",fileName);
   Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource outDir: {}\n",outDir);
@@ -45,8 +48,131 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
     outDir = outDir.left(l-1);
   }
 
+  generatePlantUmlFileNames(fileName,format,outDir,baseName,puName,imgName);
+
+  Debug::print(Debug::Plantuml,0,"*** writePlantUMLSourcebaseName: {}\n",baseName);
+  Debug::print(Debug::Plantuml,0,"*** writePlantUMLSourcebaseName puName: {}\n",puName);
+  Debug::print(Debug::Plantuml,0,"*** writePlantUMLSourcebaseName imgName: {}\n",imgName);
+
+  QCString text;
+  if (inlineCode) text = "@start"+engine+" "+imgName+"\n";
+  text.reserve(text.length()+content.length()+100); // add room for image name and end marker
+  const char *p = content.data();
+  if (p)
+  {
+    char c = 0;
+    bool insideComment = false;
+    QCString locEngine;
+    while ((c=*p++))
+    {
+      text+=c;
+      switch (c)
+      {
+        case '\'': insideComment=true; break;
+        case '\n': insideComment=false; break;
+        case '\t': break;
+        case ' ':  break;
+        case '@':
+          if (!insideComment && literal_at(p,"start")) // @start...
+          {
+            locEngine.clear();
+            p+=5;
+            text += "start";
+            while ((c=*p++) && isId(c))
+            {
+              locEngine += c;
+              text+=c;
+            }
+            QCString inpName;
+            QCString rest;
+
+            // skip leading whitespace
+            if (*p && (c==' ' || c=='\t'))
+            {
+              while ((c=*p++) && (c==' ' || c=='\t')) {}
+            }
+            // get everything till end or endOfLine, and split into inpName (without extension) and rest
+            enum State { InName, InExt, InRest };
+            State state = InName;
+            while (*p && c!='\n')
+            {
+              switch (state)
+              {
+                case InName: // looking for the name part
+                  if      (isId(c) || c=='-') inpName+=c;
+                  else if (c=='.')            state=InExt;
+                  else                        rest+=c, state=InRest;
+                  break;
+                case InExt: // skipping over extension part
+                  if (!isId(c) && c!='-')     rest+=c, state=InRest;
+                  break;
+                case InRest: // gather rest until new line
+                  rest+=c;
+                  break;
+              }
+              c = *p++;
+            }
+            //printf("inpName='%s' rest='%s'\n",qPrint(inpName),qPrint(rest));
+            generatePlantUmlFileNames(inpName,format,outDir,baseName,puName,imgName);
+
+            // insert the image name
+            text+=' ';
+            text+=imgName;
+
+            if (!rest.isEmpty())
+            {
+              text += '\n';
+              text += rest;
+            }
+            if (c) text+=c;
+          }
+          else if (!insideComment && strncmp(p,("end"+locEngine).data(), 3+strlen(engine.data()))==0) // @end...
+          {
+            text += "end"+locEngine+"\n";
+            p+=3+locEngine.length();
+            if (!inlineCode)
+            {
+              QCString qcOutDir(substitute(outDir,"\\","/"));
+              uint32_t pos = qcOutDir.findRev("/");
+              QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
+              Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
+              PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
+              Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
+              baseNameVector.push_back(baseName.str());
+              text.clear();
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    text+='\n';
+  }
+  if (inlineCode)
+  {
+    text +="@end"+engine+"\n";
+    //printf("content\n====\n%s\n=====\n->\n-----\n%s\n------\n",qPrint(content),qPrint(text));
+    QCString qcOutDir(substitute(outDir,"\\","/"));
+    uint32_t pos = qcOutDir.findRev("/");
+    QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
+    Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
+    PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
+    Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
+    baseNameVector.push_back(baseName.str());
+  }
+
+  return baseNameVector;
+}
+
+void PlantumlManager::generatePlantUmlFileNames(const QCString &fileName,OutputFormat format,const QCString &outDir,
+                                                QCString &baseName,QCString &puName,QCString &imgName)
+{
+  static int umlindex=1;
+
   if (fileName.isEmpty()) // generate name
   {
+    std::lock_guard<std::mutex> lock(g_PlantUmlMutex);
     puName = "inline_umlgraph_"+QCString().setNum(umlindex);
     baseName = outDir+"/inline_umlgraph_"+QCString().setNum(umlindex++);
   }
@@ -71,58 +197,6 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
       imgName =puName+".svg";
       break;
   }
-
-  Debug::print(Debug::Plantuml,0,"*** writePlantUMLSourcebaseName: {}\n",baseName);
-  Debug::print(Debug::Plantuml,0,"*** writePlantUMLSourcebaseName puName: {}\n",puName);
-  Debug::print(Debug::Plantuml,0,"*** writePlantUMLSourcebaseName imgName: {}\n",imgName);
-
-  QCString text;
-  if (inlineCode) text = "@start"+engine+" "+imgName+"\n";
-  text.reserve(text.length()+content.length()+100); // add room for image name and end marker
-  const char *p = content.data();
-  if (p)
-  {
-    char c = 0;
-    bool insideComment = false;
-    bool initial       = true;
-    while ((c=*p++))
-    {
-      text+=c;
-      switch (c)
-      {
-        case '\'': insideComment=true; break;
-        case '\n': insideComment=false; break;
-        case '\t': break;
-        case ' ':  break;
-        case '@':
-          if (initial && literal_at(p,"start")) // @start...
-          {
-            while ((c=*p++) && isId(c)) text+=c;
-            // insert the image name
-            text+=' ';
-            text+=imgName;
-            if (c) text+=c;
-          }
-          break;
-        default:
-          if (!insideComment) initial=false;
-          break;
-      }
-    }
-    text+='\n';
-  }
-  if (inlineCode) text +="@end"+engine+"\n";
-
-  //printf("content\n====\n%s\n=====\n->\n-----\n%s\n------\n",qPrint(content),qPrint(text));
-
-  QCString qcOutDir(substitute(outDir,"\\","/"));
-  uint32_t pos = qcOutDir.findRev("/");
-  QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
-  Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
-  PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
-  Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
-
-  return baseName;
 }
 
 void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &/* outDir */,OutputFormat format)

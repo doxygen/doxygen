@@ -433,13 +433,15 @@ DB_VIS_C
     case DocVerbatim::PlantUML:
       {
         QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
-        QCString baseName = PlantumlManager::instance().writePlantUMLSource(docbookOutput,
+        auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(docbookOutput,
             s.exampleFile(),s.text(),PlantumlManager::PUML_BITMAP,
             s.engine(),s.srcFile(),s.srcLine(),true);
-        QCString shortName = makeShortName(baseName);
-        m_t << "<para>\n";
-        writePlantUMLFile(baseName,s);
-        m_t << "</para>\n";
+        for (const auto &baseName: baseNameVector)
+        {
+          m_t << "<para>\n";
+          writePlantUMLFile(QCString(baseName),s);
+          m_t << "</para>\n";
+        }
       }
       break;
   }
@@ -1577,12 +1579,18 @@ DB_VIS_C
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   std::string inBuf;
   readInputFile(fileName,inBuf);
-  QCString baseName = PlantumlManager::instance().writePlantUMLSource(outDir,
-            QCString(),inBuf.c_str(),PlantumlManager::PUML_BITMAP,QCString(),srcFile,srcLine,false);
-  baseName=makeBaseName(baseName);
-  PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
-  m_t << "<para>\n";
-  visitPreStart(m_t, children, hasCaption, relPath + baseName + ".png",  width,  height);
+  auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(outDir,
+                           QCString(),inBuf.c_str(),PlantumlManager::PUML_BITMAP,QCString(),srcFile,srcLine,false);
+  bool first = true;
+  for (const auto &bName: baseNameVector)
+  {
+    QCString baseName=makeBaseName(QCString(bName));
+    PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
+    if (!first) endPlantUmlFile(hasCaption);
+    first = false;
+    m_t << "<para>\n";
+    visitPreStart(m_t, children, hasCaption, relPath + baseName + ".png",  width,  height);
+  }
 }
 
 void DocbookDocVisitor::endPlantUmlFile(bool hasCaption)
