@@ -3009,10 +3009,10 @@ void  FlowChart::printUmlTree()
   QCString htmlOutDir = Config_getString(HTML_OUTPUT);
 
   QCString n=convertNameToFileName();
-  std::vector<QCString> baseNameVector=PlantumlManager::instance().writePlantUMLSource(htmlOutDir,n,qcs,PlantumlManager::PUML_SVG,"uml",n,1,true);
-  for(const auto &baseName: baseNameVector)
+  auto baseNameVector=PlantumlManager::instance().writePlantUMLSource(htmlOutDir,n,qcs,PlantumlManager::PUML_SVG,"uml",n,1,true);
+  for (const auto &baseName: baseNameVector)
   {
-    PlantumlManager::instance().generatePlantUMLOutput(baseName,htmlOutDir,PlantumlManager::PUML_SVG);
+    PlantumlManager::instance().generatePlantUMLOutput(QCString(baseName),htmlOutDir,PlantumlManager::PUML_SVG);
   }
 }
 

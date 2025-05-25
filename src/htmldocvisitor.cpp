@@ -690,13 +690,13 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         {
           format = PlantumlManager::PUML_SVG;
         }
-        std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(
+        auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
                                     htmlOutput,s.exampleFile(),
                                     s.text(),format,s.engine(),s.srcFile(),s.srcLine(),true);
-        for(const auto &baseName: baseNameVector)
+        for (const auto &baseName: baseNameVector)
         {
           m_t << "<div class=\"plantumlgraph\">\n";
-          writePlantUMLFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          writePlantUMLFile(QCString(baseName),s.relPath(),s.context(),s.srcFile(),s.srcLine());
           visitCaption(m_t, s);
           m_t << "</div>\n";
         }
@@ -1852,12 +1852,11 @@ void HtmlDocVisitor::operator()(const DocPlantUmlFile &df)
   }
   std::string inBuf;
   readInputFile(df.file(),inBuf);
-  std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(
-                                    htmlOutput,QCString(),
+  auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(htmlOutput,QCString(),
                                     inBuf.c_str(),format,QCString(),df.srcFile(),df.srcLine(),false);
-  for(auto &baseName: baseNameVector)
+  for (const auto &bName: baseNameVector)
   {
-    baseName=makeBaseName(baseName);
+    QCString baseName=makeBaseName(QCString(bName));
     m_t << "<div class=\"plantumlgraph\">\n";
     writePlantUMLFile(baseName,df.relPath(),QCString(),df.srcFile(),df.srcLine());
     if (df.hasCaption())

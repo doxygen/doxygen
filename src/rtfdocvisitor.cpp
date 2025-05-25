@@ -426,13 +426,13 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::PlantUML:
       {
         QCString rtfOutput = Config_getString(RTF_OUTPUT);
-        std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(
+        auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
                        rtfOutput,s.exampleFile(),s.text(),PlantumlManager::PUML_BITMAP,
                        s.engine(),s.srcFile(),s.srcLine(),true);
 
-        for(const auto &baseName: baseNameVector)
+        for (const auto &baseName: baseNameVector)
         {
-          writePlantUMLFile(baseName, s.hasCaption());
+          writePlantUMLFile(QCString(baseName), s.hasCaption());
           visitChildren(s);
           includePicturePostRTF(true, s.hasCaption());
         }
@@ -1323,12 +1323,12 @@ void RTFDocVisitor::operator()(const DocPlantUmlFile &df)
   QCString rtfOutput = Config_getString(RTF_OUTPUT);
   std::string inBuf;
   readInputFile(df.file(),inBuf);
-  std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(
+  auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
                        rtfOutput,QCString(),inBuf.c_str(),PlantumlManager::PUML_BITMAP,
                        QCString(),df.srcFile(),df.srcLine(),false);
-  for(auto &baseName: baseNameVector)
+  for(const auto &baseName: baseNameVector)
   {
-    writePlantUMLFile(baseName, df.hasCaption());
+    writePlantUMLFile(QCString(baseName), df.hasCaption());
     visitChildren(df);
     includePicturePostRTF(true, df.hasCaption());
   }

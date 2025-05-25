@@ -550,14 +550,14 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
     case DocVerbatim::PlantUML:
       {
         QCString latexOutput = Config_getString(LATEX_OUTPUT);
-        std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(
+        auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
                               latexOutput,s.exampleFile(),s.text(),
                               s.useBitmap() ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS,
                               s.engine(),s.srcFile(),s.srcLine(),true);
 
-        for(const auto &baseName: baseNameVector)
+        for (const auto &baseName: baseNameVector)
         {
-          writePlantUMLFile(baseName, s);
+          writePlantUMLFile(QCString(baseName), s);
         }
       }
       break;
@@ -2122,14 +2122,14 @@ void LatexDocVisitor::startPlantUmlFile(const QCString &fileName,
   readInputFile(fileName,inBuf);
 
   bool useBitmap = inBuf.find("@startditaa") != std::string::npos;
-  std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(
+  auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
                               outDir,QCString(),inBuf.c_str(),
                               useBitmap ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS,
                               QCString(),srcFile,srcLine,false);
   bool first = true;
-  for(auto &baseName: baseNameVector)
+  for (const auto &bName: baseNameVector)
   {
-    baseName=makeBaseName(baseName);
+    QCString baseName = makeBaseName(QCString(bName));
     QCString shortName = makeShortName(baseName);
     if (useBitmap)
     {

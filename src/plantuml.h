@@ -18,7 +18,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "containers.h"
 #include "qcstring.h"
@@ -61,10 +60,10 @@ class PlantumlManager
      *   from the `\planumlfile` command (`false`)
      *  @returns The names of the generated files.
      */
-    std::vector<QCString> writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
-                                 const QCString &content, OutputFormat format,
-                                 const QCString &engine,const QCString &srcFile,
-                                 int srcLine,bool inlineCode);
+    StringVector writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
+                                     const QCString &content, OutputFormat format,
+                                     const QCString &engine,const QCString &srcFile,
+                                     int srcLine,bool inlineCode);
 
     /** Convert a PlantUML file to an image.
      *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())

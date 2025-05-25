@@ -433,14 +433,13 @@ DB_VIS_C
     case DocVerbatim::PlantUML:
       {
         QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
-        std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(docbookOutput,
+        auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(docbookOutput,
             s.exampleFile(),s.text(),PlantumlManager::PUML_BITMAP,
             s.engine(),s.srcFile(),s.srcLine(),true);
-        for(const auto &baseName: baseNameVector)
+        for (const auto &baseName: baseNameVector)
         {
-          QCString shortName = makeShortName(baseName);
           m_t << "<para>\n";
-          writePlantUMLFile(baseName,s);
+          writePlantUMLFile(QCString(baseName),s);
           m_t << "</para>\n";
         }
       }
@@ -1580,12 +1579,12 @@ DB_VIS_C
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   std::string inBuf;
   readInputFile(fileName,inBuf);
-  std::vector<QCString> baseNameVector = PlantumlManager::instance().writePlantUMLSource(outDir,
-            QCString(),inBuf.c_str(),PlantumlManager::PUML_BITMAP,QCString(),srcFile,srcLine,false);
+  auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(outDir,
+                           QCString(),inBuf.c_str(),PlantumlManager::PUML_BITMAP,QCString(),srcFile,srcLine,false);
   bool first = true;
-  for(auto &baseName: baseNameVector)
+  for (const auto &bName: baseNameVector)
   {
-    baseName=makeBaseName(baseName);
+    QCString baseName=makeBaseName(QCString(bName));
     PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
     if (!first) endPlantUmlFile(hasCaption);
     first = false;

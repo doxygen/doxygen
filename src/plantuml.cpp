@@ -28,11 +28,11 @@
 
 static std::mutex g_PlantUmlMutex;
 
-std::vector<QCString> PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
+StringVector PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
                                               const QCString &content,OutputFormat format, const QCString &engine,
                                               const QCString &srcFile,int srcLine,bool inlineCode)
 {
-  std::vector<QCString> baseNameVector;
+  StringVector baseNameVector;
   QCString baseName;
   QCString puName;
   QCString imgName;
@@ -83,60 +83,37 @@ std::vector<QCString> PlantumlManager::writePlantUMLSource(const QCString &outDi
               locEngine += c;
               text+=c;
             }
-            QCString line;
-            // get everything till end or endOfLine
-            if (c && (c!='\n'))
-            {
-              line += c;
-              while ((c=*p++) && (c!='\n')) line+=c;
-              line = line.stripWhiteSpace();
-            }
             QCString inpName;
             QCString rest;
-            // REGEXP (<fn>)(<ext>?)(<rest>)
-            static const reg::Ex re_new0(R"((([A-Za-z0-9_][A-Za-z0-9_-]*)))");
-            static const reg::Ex re_new1(R"((([A-Za-z0-9_][A-Za-z0-9_-]*)(\.[A-Za-z0-9_][A-Za-z0-9_-]*)))");
-            static const reg::Ex re_new2(R"((([A-Za-z0-9_][A-Za-z0-9_-]*)(\.[A-Za-z0-9_][A-Za-z0-9_-]*)(.*)))");
-            static const reg::Ex re_new3(R"(([A-Za-z0-9_][A-Za-z0-9_-]*)(.*))");
-            //std::string_view txtStr = line.view();
-            if (!line.isEmpty())
+
+            // skip leading whitespace
+            if (*p && (c==' ' || c=='\t'))
             {
-              reg::Match match0;
-              reg::Match match1;
-              reg::Match match2;
-              reg::Match match3;
-              bool matchSet = false;
-              if (matchSet = reg::match(line.str(),match0,re_new0))
-              {
-                inpName = match0[1].str();
-              }
-              else if (matchSet = reg::match(line.str(),match1,re_new1))
-              {
-                inpName = match1[1].str();
-              }
-              else if (matchSet = reg::match(line.str(),match2,re_new2))
-              {
-                inpName = match2[1].str();
-                rest = match2[3].str();
-              }
-              else if (matchSet = reg::match(line.str(),match3,re_new3))
-              {
-                inpName = match3[1].str();
-                rest = match3[2].str();
-              }
-              if (matchSet)
-              {
-                generatePlantUmlFileNames(inpName,format,outDir,baseName,puName,imgName);
-              }
-              else
-              {
-                generatePlantUmlFileNames(QCString(),format,outDir,baseName,puName,imgName);
-              }
+              while ((c=*p++) && (c==' ' || c=='\t')) {}
             }
-            else
+            // get everything till end or endOfLine, and split into inpName (without extension) and rest
+            enum State { InName, InExt, InRest };
+            State state = InName;
+            while (*p && c!='\n')
             {
-              generatePlantUmlFileNames(QCString(),format,outDir,baseName,puName,imgName);
+              switch (state)
+              {
+                case InName: // looking for the name part
+                  if      (isId(c) || c=='-') inpName+=c;
+                  else if (c=='.')            state=InExt;
+                  else                        rest+=c, state=InRest;
+                  break;
+                case InExt: // skipping over extension part
+                  if (!isId(c) && c!='-')     rest+=c, state=InRest;
+                  break;
+                case InRest: // gather rest until new line
+                  rest+=c;
+                  break;
+              }
+              c = *p++;
             }
+            //printf("inpName='%s' rest='%s'\n",qPrint(inpName),qPrint(rest));
+            generatePlantUmlFileNames(inpName,format,outDir,baseName,puName,imgName);
 
             // insert the image name
             text+=' ';
@@ -161,7 +138,7 @@ std::vector<QCString> PlantumlManager::writePlantUMLSource(const QCString &outDi
               Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
               PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
               Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
-              baseNameVector.emplace_back(baseName);
+              baseNameVector.push_back(baseName.str());
               text.clear();
             }
           }
@@ -182,7 +159,7 @@ std::vector<QCString> PlantumlManager::writePlantUMLSource(const QCString &outDi
     Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
     PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
     Debug::print(Debug::Plantuml,0,"*** writePlantUMLSource generateType: {}\n",generateType);
-    baseNameVector.emplace_back(baseName);
+    baseNameVector.push_back(baseName.str());
   }
 
   return baseNameVector;
