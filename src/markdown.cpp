@@ -3437,11 +3437,11 @@ QCString Markdown::Private::processBlocks(std::string_view data,const size_t ind
 static bool isOtherPage(std::string_view data)
 {
 #define OPC(x) if (literal_at(data,#x " ") || literal_at(data,#x "\n")) return true
-  OPC(dir);      OPC(defgroup);  OPC(addtogroup); OPC(weakgroup); OPC(ingroup);
-  OPC(fn);       OPC(property);  OPC(typedef);    OPC(var);       OPC(def);
-  OPC(enum);     OPC(namespace); OPC(class);      OPC(concept);   OPC(module);
-  OPC(protocol); OPC(category);  OPC(union);      OPC(struct);    OPC(interface);
-  OPC(idlexcept);
+  OPC(dir);       OPC(defgroup);  OPC(addtogroup); OPC(weakgroup); OPC(ingroup);
+  OPC(fn);        OPC(property);  OPC(typedef);    OPC(var);       OPC(def);
+  OPC(enum);      OPC(namespace); OPC(class);      OPC(concept);   OPC(module);
+  OPC(protocol);  OPC(category);  OPC(union);      OPC(struct);    OPC(interface);
+  OPC(idlexcept); OPC(file);
 #undef OPC
 
   return false;
