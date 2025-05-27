@@ -517,7 +517,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     }
 
     function constrainPanelWidths(leftPanelWidth,rightPanelWidth,dragLeft) {
-      const contentWidth = container.width()-leftPanelWidth-rightPanelWidth;
+      const contentWidth = Math.round(container.width())-leftPanelWidth-rightPanelWidth;
       const minContentWidth = $TREEVIEW_WIDTH;
       const minPanelWidth = barWidth;
       if (contentWidth<minContentWidth) // need to shrink panels
