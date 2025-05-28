@@ -517,7 +517,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
     }
 
     function constrainPanelWidths(leftPanelWidth,rightPanelWidth,dragLeft) {
-      const contentWidth = Math.round(container.width())-leftPanelWidth-rightPanelWidth;
+      const contentWidth = container.width()-leftPanelWidth-rightPanelWidth;
       const minContentWidth = $TREEVIEW_WIDTH;
       const minPanelWidth = barWidth;
       if (contentWidth<minContentWidth) // need to shrink panels
@@ -557,14 +557,16 @@ function initNavTree(toroot,relpath,allMembersFile) {
       sidenav.css({width:widthStr});
       if (pagenav.length) {
         container.css({gridTemplateColumns:'auto '+parseFloat(widths.rightPanelWidth)+'px'});
-        pagenav.css({width:parseFloat(widths.rightPanelWidth-1)+'px'});
+        if (!dragLeft) {
+          pagenav.css({width:parseFloat(widths.rightPanelWidth-1)+'px'});
+        }
       }
       return widths;
     }
 
     function resizeWidth(dragLeft) {
       const sidenavWidth = $(sidenav).outerWidth()-barWidth;
-      const pagenavWidth = Math.round(pagenav.length ? $(pagenav).outerWidth() : 0);
+      let pagenavWidth = pagenav.length ? $(pagenav).outerWidth() : 0;
       const widths = updateWidths(sidenavWidth,pagenavWidth,dragLeft);
       Cookie.writeSetting(RESIZE_COOKIE_NAME,widths.leftPanelWidth-barWidth);
       if (pagenav.length) {
