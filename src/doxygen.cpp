@@ -12976,6 +12976,24 @@ void parseInput()
   findSectionsInDocumentation();
   g_s.end();
 
+  g_s.begin("Finding leftover anchors and sections...\n");
+  if (Config_getBool(IMPLICIT_DIR_DOCS))
+  {
+    for (const auto &si : SectionManager::instance())
+    {
+      QCString m_file   = si->fileName();
+      if (m_file.lower().endsWith("/readme.md"))
+      {
+        m_file = m_file.left(m_file.length()-9);
+        for (const auto &dd : *Doxygen::dirLinkedMap)
+        {
+          if (dd->name() == m_file) {si->setFileName(dd->getOutputFileBase()); break;}
+        }
+      }
+    }
+  }
+  g_s.end();
+
   g_s.begin("Transferring function references...\n");
   transferFunctionReferences();
   g_s.end();
