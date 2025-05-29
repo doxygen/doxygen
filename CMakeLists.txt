@@ -177,7 +177,7 @@ if (WIN32)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
     endif()
 endif()
-if (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
+if (CYGWIN OR MINGW)
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -Wa,-mbig-obj")
 
    if (CMAKE_BUILD_TYPE STREQUAL  "")
