@@ -767,6 +767,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
       else if (si)
       {
         name = parseCommentAsHtml(si->definition(),nullptr,si->title(),si->fileName(),si->lineNr());
+        name = convertToXML(name);
         found = true;
       }
       if (!found) // fallback
