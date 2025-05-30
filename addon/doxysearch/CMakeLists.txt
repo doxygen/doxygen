@@ -2,7 +2,7 @@ find_package(xapian REQUIRED)
 find_package(ZLIB REQUIRED)
 
 if (WIN32)
-  set(WIN_EXTRA_LIBS uuid.lib rpcrt4.lib ws2_32.lib)
+  set(WIN_EXTRA_LIBS uuid rpcrt4 ws2_32)
 endif()
 
 include_directories(
