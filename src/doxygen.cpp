@@ -9320,6 +9320,11 @@ static void findSectionsInDocumentation()
   {
     pd->findSectionsInDocumentation();
   }
+  // for each directory
+  for (const auto &dd : *Doxygen::dirLinkedMap)
+  {
+    dd->findSectionsInDocumentation();
+  }
   ModuleManager::instance().findSectionsInDocumentation();
   if (Doxygen::mainPage) Doxygen::mainPage->findSectionsInDocumentation();
 }

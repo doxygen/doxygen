@@ -1536,6 +1536,34 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
     // --------------------------------------------------------
   }
 }
+//----------------------------------------------------------------------------
+
+static void writeDirIndex(OutputList &ol)
+{
+  if (Index::instance().numDocumentedDirs()==0) return;
+  ol.pushGeneratorState();
+  ol.disable(OutputType::Html);
+
+  QCString title = theTranslator->trDirectories();
+  startFile(ol,"dirs",QCString(),title,HighlightedItem::Files);
+  startTitle(ol,title);
+  ol.parseText(title);
+  endTitle(ol,QCString(),QCString());
+
+  ol.startIndexList();
+  for (const auto &dir : *Doxygen::dirLinkedMap)
+  {
+    if (dir->hasDocumentation())
+    {
+      writeDirTreeNode(ol, dir.get(), 1, nullptr, false);
+    }
+  }
+
+  ol.endIndexList();
+
+  endFile(ol);
+  ol.popGeneratorState();
+}
 
 //----------------------------------------------------------------------------
 
@@ -5049,6 +5077,12 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/ theTranslator->trTopicIndex());
       ol.endIndexSection(IndexSection::isTopicIndex);
     }
+    if (index.numDocumentedDirs()>0)
+    {
+      ol.startIndexSection(IndexSection::isDirIndex);
+      ol.parseText(theTranslator->trDirIndex());
+      ol.endIndexSection(IndexSection::isDirIndex);
+    }
     if (Config_getBool(SHOW_NAMESPACES) && (index.numDocumentedNamespaces()>0))
     {
       LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Namespaces);
@@ -5139,6 +5173,12 @@ static void writeIndex(OutputList &ol)
     ol.startIndexSection(IndexSection::isTopicDocumentation);
     ol.parseText(/*projPrefix+*/theTranslator->trTopicDocumentation());
     ol.endIndexSection(IndexSection::isTopicDocumentation);
+  }
+  if (index.numDocumentedDirs()>0)
+  {
+    ol.startIndexSection(IndexSection::isDirDocumentation);
+    ol.parseText(/*projPrefix+*/theTranslator->trDirDocumentation());
+    ol.endIndexSection(IndexSection::isDirDocumentation);
   }
   if (index.numDocumentedNamespaces()>0)
   {
@@ -5514,6 +5554,9 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
     }
     //printf("ending %s kind=%d\n",qPrint(lne->title()),lne->kind());
   }
+
+  // always write the directory index as it is used for non-HTML output only
+  writeDirIndex(ol);
 }
 
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)

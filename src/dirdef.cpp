@@ -73,6 +73,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect) override;
     void computeDependencies() override;
+    void findSectionsInDocumentation() override;
 
     bool hasDirectoryGraph() const override;
     void overrideDirectoryGraph(bool e) override;
@@ -759,6 +760,12 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
                                  dstDirect);
     }
   }
+}
+
+void DirDefImpl::findSectionsInDocumentation()
+{
+  docFindSections(briefDescription(),this,docFile());
+  docFindSections(documentation(),this,docFile());
 }
 
 /** Computes the dependencies between directories
