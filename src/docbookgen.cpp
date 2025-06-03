@@ -614,7 +614,7 @@ DB_GEN_C2("IndexSection " << is)
         {
           if (dd->isLinkableInProject())
           {
-            m_t << "<    xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "    <xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
@@ -627,7 +627,7 @@ DB_GEN_C2("IndexSection " << is)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
-            m_t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "    <xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
@@ -640,7 +640,7 @@ DB_GEN_C2("IndexSection " << is)
         {
           if (cd->isLinkableInProject() && !cd->isAlias())
           {
-            m_t << "<xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }

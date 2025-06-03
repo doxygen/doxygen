@@ -9612,10 +9612,11 @@ static void findDirDocumentation(const Entry *root)
     }
     if (matchingDir)
     {
-      //printf("Match for with dir %s\n",qPrint(matchingDir->name()));
+      //printf("Match for with dir %s #anchor=%zu\n",qPrint(matchingDir->name()),root->anchors.size());
       matchingDir->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       matchingDir->setDocumentation(root->doc,root->docFile,root->docLine);
       matchingDir->setRefItems(root->sli);
+      matchingDir->addSectionsToDefinition(root->anchors);
       root->commandOverrides.apply_directoryGraph([&](bool b) { matchingDir->overrideDirectoryGraph(b); });
       addDirToGroups(root,matchingDir);
     }
@@ -12073,6 +12074,11 @@ static void writeTagFile()
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (pd->isLinkableInProject()) pd->writeTagFile(tagFile);
+  }
+  // for each directory
+  for (const auto &dd : *Doxygen::dirLinkedMap)
+  {
+    if (dd->isLinkableInProject()) dd->writeTagFile(tagFile);
   }
   if (Doxygen::mainPage) Doxygen::mainPage->writeTagFile(tagFile);
 

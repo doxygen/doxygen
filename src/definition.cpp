@@ -307,7 +307,7 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
     //    qPrint(si->label()),qPrint(name()));
     SectionManager &sm = SectionManager::instance();
     SectionInfo *gsi=sm.find(si->label());
-    //printf("===== label=%s gsi=%p\n",qPrint(si->label),gsi);
+    //printf("===== label=%s gsi=%p\n",qPrint(si->label()),(void*)gsi);
     if (gsi==nullptr)
     {
       gsi = sm.add(*si);
@@ -315,8 +315,8 @@ void DefinitionImpl::addSectionsToDefinition(const std::vector<const SectionInfo
     if (p->sectionRefs.find(gsi->label())==nullptr)
     {
       p->sectionRefs.add(gsi);
-      gsi->setDefinition(p->def);
     }
+    gsi->setDefinition(p->def);
   }
 }
 

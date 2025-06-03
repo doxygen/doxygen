@@ -150,7 +150,7 @@ DirDefImpl::~DirDefImpl()
 
 bool DirDefImpl::isLinkableInProject() const
 {
-  return !isReference();
+  return !isReference() && hasDocumentation();
 }
 
 bool DirDefImpl::isLinkable() const

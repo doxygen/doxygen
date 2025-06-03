@@ -1585,7 +1585,7 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 static void processSection(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("%s: found section/anchor with name '%s'\n",qPrint(g_fileName),qPrint(g_secLabel));
+  //printf("%s: found section/anchor with name '%s'\n",qPrint(yyextra->fileName),qPrint(yyextra->secLabel));
   QCString file;
   if (yyextra->definition)
   {
