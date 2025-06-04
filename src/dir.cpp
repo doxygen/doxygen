@@ -334,6 +334,8 @@ bool Dir::copy(const std::string &srcName,const std::string &dstName,bool accept
   std::string sn = filePath(srcName,acceptsAbsPath);
   std::string dn = filePath(dstName,acceptsAbsPath);
   fs::copy(sn,dn,copyOptions,ec);
+  // make sure the destination is writable for the owner (see issue #11600)
+  fs::permissions(dn, fs::perms::owner_write, fs::perm_options::add, ec);
   return !ec;
 }
 
