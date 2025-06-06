@@ -871,6 +871,10 @@ static QCString substituteLatexKeywords(const QCString &file,
   result = substituteKeywords(file,result,
   {
     // keyword                     value getter
+    { "$datetime",                 [&]() { return dateToString(DateTimeType::DateTime);         } },
+    { "$date",                     [&]() { return dateToString(DateTimeType::Date);             } },
+    { "$time",                     [&]() { return dateToString(DateTimeType::Time);             } },
+    { "$year",                     [&]() { return yearToString();                               } },
     { "$latexdocumentpre",         [&]() { return theTranslator->latexDocumentPre();            } },
     { "$latexdocumentpost",        [&]() { return theTranslator->latexDocumentPost();           } },
     { "$generatedby",              [&]() { return generatedBy;                                  } },
