@@ -2068,7 +2068,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  <dt><code>$datetime</code><dd>will be replaced with the current date and time.
  <dt><code>$date</code><dd>will be replaced with the current date.
  <dt><code>$time</code><dd>will be replaced with the current time.
- <dt><code>$year</code><dd>will be replaces with the current year.
+ <dt><code>$year</code><dd>will be replaced with the current year.
  <dt><code>$showdate(<format>)</code><dd>will be replaced with the current date
            and time according to the format as specified by `<format>`. The
            `<format>` follows the rules as specified for the
@@ -3120,7 +3120,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  <dt><code>$datetime</code><dd>will be replaced with the current date and time.
  <dt><code>$date</code><dd>will be replaced with the current date.
  <dt><code>$time</code><dd>will be replaced with the current time.
- <dt><code>$year</code><dd>will be replaces with the current year.
+ <dt><code>$year</code><dd>will be replaced with the current year.
  <dt><code>$showdate(<format>)</code><dd>will be replaced with the current date
            and time according to the format as specified by `<format>`. The
            `<format>` follows the rules as specified for the
