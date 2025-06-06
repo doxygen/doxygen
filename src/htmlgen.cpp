@@ -67,6 +67,7 @@ static QCString g_footer_file;
 static QCString g_footer;
 static QCString g_mathjax_code;
 static QCString g_latex_macro;
+static bool g_build_date = false;
 static constexpr auto hex="0123456789ABCDEF";
 
 static const SelectionMarkerInfo htmlMarkerInfo = { '<', "<!--BEGIN ",10,"<!--END ",8,"-->",3 };
@@ -583,6 +584,10 @@ static QCString substituteHtmlKeywords(const QCString &file,
   result = substituteKeywords(file,result,
   {
     // keyword           value getter
+    { "$datetime",       [&]() { return "<span class=\"datetime\"></span>"; } },
+    { "$date",           [&]() { return "<span class=\"date\"></span>";     } },
+    { "$time",           [&]() { return "<span class=\"time\"></span>";     } },
+    { "$year",           [&]() { return "<span class=\"year\"></span>";     } },
     { "$navpath",        [&]() { return navPath;        } },
     { "$stylesheet",     [&]() { return cssFile;        } },
     { "$treeview",       [&]() { return treeViewCssJs;  } },
@@ -1133,6 +1138,15 @@ void HtmlGenerator::addCodeGen(OutputCodeList &list)
   list.add<HtmlCodeGeneratorDefer>(m_codeGen);
 }
 
+static bool hasDateReplacement(const QCString &str)
+{
+  return (str.contains("$datetime",false) ||
+          str.contains("$date",false) ||
+          str.contains("$time",false) ||
+          str.contains("$year",false)
+         );
+}
+
 void HtmlGenerator::init()
 {
   QCString dname = Config_getString(HTML_OUTPUT);
@@ -1146,6 +1160,7 @@ void HtmlGenerator::init()
   {
     g_header_file=Config_getString(HTML_HEADER);
     g_header=fileToString(g_header_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_header));
     //printf("g_header='%s'\n",qPrint(g_header));
     QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
     checkBlocks(result,Config_getString(HTML_HEADER),htmlMarkerInfo);
@@ -1154,6 +1169,7 @@ void HtmlGenerator::init()
   {
     g_header_file="header.html";
     g_header = ResourceMgr::instance().getAsString(g_header_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_header));
     QCString result = substituteHtmlKeywords(g_header_file,g_header,QCString(),QCString());
     checkBlocks(result,"<default header.html>",htmlMarkerInfo);
   }
@@ -1162,6 +1178,7 @@ void HtmlGenerator::init()
   {
     g_footer_file=Config_getString(HTML_FOOTER);
     g_footer=fileToString(g_footer_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_footer));
     //printf("g_footer='%s'\n",qPrint(g_footer));
     QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
     checkBlocks(result,Config_getString(HTML_FOOTER),htmlMarkerInfo);
@@ -1170,6 +1187,7 @@ void HtmlGenerator::init()
   {
     g_footer_file = "footer.html";
     g_footer = ResourceMgr::instance().getAsString(g_footer_file);
+    g_build_date = (g_build_date || hasDateReplacement(g_footer));
     QCString result = substituteHtmlKeywords(g_footer_file,g_footer,QCString(),QCString());
     checkBlocks(result,"<default footer.html>",htmlMarkerInfo);
   }
@@ -1392,26 +1410,52 @@ static void writeDefaultStyleSheet(TextStream &t)
   t << replaceVariables(cssStr);
 
   bool addTimestamp = Config_getEnum(TIMESTAMP)!=TIMESTAMP_t::NO;
-  if (addTimestamp)
+  if (g_build_date  || addTimestamp)
   {
-    QCString timeStampStr;
-    switch (Config_getEnum(TIMESTAMP))
-    {
-      case TIMESTAMP_t::YES:
-      case TIMESTAMP_t::DATETIME:
-        timeStampStr = dateToString(DateTimeType::DateTime);
-        break;
-      case TIMESTAMP_t::DATE:
-        timeStampStr = dateToString(DateTimeType::Date);
-        break;
-      default:
-        break;
-    }
     t << "\nhtml {\n";
-    t << "--timestamp: '" << timeStampStr << "'\n";
+
+    if (addTimestamp)
+    {
+      QCString timeStampStr;
+      switch (Config_getEnum(TIMESTAMP))
+      {
+        case TIMESTAMP_t::YES:
+        case TIMESTAMP_t::DATETIME:
+          timeStampStr = dateToString(DateTimeType::DateTime);
+          break;
+        case TIMESTAMP_t::DATE:
+          timeStampStr = dateToString(DateTimeType::Date);
+          break;
+        default:
+          break;
+      }
+      t << "--timestamp: '" << timeStampStr << "';\n";
+    }
+    if (g_build_date)
+    {
+      t << "--datetime: '" << dateToString(DateTimeType::DateTime) << "';\n";
+      t << "--date: '" << dateToString(DateTimeType::Date) << "';\n";
+      t << "--time: '" << dateToString(DateTimeType::Time) << "';\n";
+      t << "--year: '" << yearToString() << "';\n";
+    }
     t << "}\n";
-    t << "span.timestamp { content: ' '; }\n";
-    t << "span.timestamp:before { content: var(--timestamp); }\n\n";
+
+    if (addTimestamp)
+    {
+      t << "span.timestamp { content: ' '; }\n";
+      t << "span.timestamp:before { content: var(--timestamp); }\n\n";
+    }
+    if (g_build_date)
+    {
+      t << "span.datetime { content: ' '; }\n";
+      t << "span.datetime:before { content: var(--datetime); }\n\n";
+      t << "span.date { content: ' '; }\n";
+      t << "span.date:before { content: var(--date); }\n\n";
+      t << "span.time { content: ' '; }\n";
+      t << "span.time:before { content: var(--time); }\n\n";
+      t << "span.year { content: ' '; }\n";
+      t << "span.year:before { content: var(--year); }\n\n";
+    }
   }
 
   // For Webkit based the scrollbar styling cannot be overruled (bug in chromium?).
