@@ -2882,7 +2882,7 @@ BGD_DECLARE(gdImagePtr) gdImageClone (gdImagePtr src) {
 	dst->paletteQuantizationMethod     = src->paletteQuantizationMethod;
 	dst->paletteQuantizationSpeed      = src->paletteQuantizationSpeed;
 	dst->paletteQuantizationMinQuality = src->paletteQuantizationMinQuality;
-	dst->paletteQuantizationMinQuality = src->paletteQuantizationMinQuality;
+	dst->paletteQuantizationMaxQuality = src->paletteQuantizationMaxQuality;
 
 	dst->interpolation_id = src->interpolation_id;
 	dst->interpolation    = src->interpolation;
