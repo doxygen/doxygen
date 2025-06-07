@@ -104,6 +104,13 @@
 //
 // #define SPDLOG_LEVEL_NAMES { "MY TRACE", "MY DEBUG", "MY INFO", "MY WARNING", "MY ERROR", "MY
 // CRITICAL", "OFF" }
+//
+// For C++17 use string_view_literals:
+//
+// #include <string_view>
+// using namespace std::string_view_literals;
+// #define SPDLOG_LEVEL_NAMES { "MY TRACE"sv, "MY DEBUG"sv, "MY INFO"sv, "MY WARNING"sv, "MY
+// ERROR"sv, "MY CRITICAL"sv, "OFF"sv }
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
