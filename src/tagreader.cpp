@@ -1417,7 +1417,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->startLine  = tmi.lineNr;
     if (ce->section.isGroupDoc())
     {
-      me->groups.emplace_back(ce->name,Grouping::GROUPING_INGROUP);
+      me->groups.emplace_back(ce->name,Grouping::GROUPING_INGROUP,-1);
     }
     addDocAnchors(me,tmi.docAnchors);
     me->tagInfoData.tagName    = m_tagName;
@@ -1768,7 +1768,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
             [&](const std::shared_ptr<Entry> &e) { return e->name == sg.c_str(); });
         if (i!=children.end())
         {
-          (*i)->groups.emplace_back(tgi->name,Grouping::GROUPING_INGROUP);
+          (*i)->groups.emplace_back(tgi->name,Grouping::GROUPING_INGROUP,-1);
         }
       }
     }
