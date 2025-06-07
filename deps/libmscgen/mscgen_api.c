@@ -250,7 +250,6 @@ static char *splitStringToWidth(Context *ctx, char *l, unsigned int width)
 {
     char *p = l + strlen(l);
     char *orig = NULL;
-    int   m, n;
 
     if (ctx->drw.textWidth(&ctx->drw, l) > width)
     {
@@ -299,8 +298,8 @@ static char *splitStringToWidth(Context *ctx, char *l, unsigned int width)
         }
 
         /* Copy the remaining line to the start of the string */
-        m = 0;
-        n = (int)(p - l);
+        int m = 0;
+        int n = (int)(p - l);
 
         while (isspace(orig[n]) && orig[n] != '\0')
         {
@@ -464,7 +463,6 @@ static RowInfo *computeCanvasSize(Context      *ctx,
         const MscArcType   arcType           = MscGetCurrentArcType(m);
         const int          arcGradient       = isBoxArc(arcType) ? 0 : getArcGradient(ctx, m, NULL, 0);
         char             **arcLabelLines     = NULL;
-        unsigned int       arcLabelLineCount = 0;
         int                startCol = -1, endCol = -1;
 
         if (arcType == MSC_ARC_PARALLEL)
@@ -492,7 +490,7 @@ static RowInfo *computeCanvasSize(Context      *ctx,
             }
 
             /* Work out how the label fits the gap between entities */
-            arcLabelLineCount = computeLabelLines(ctx, m, arcType, &arcLabelLines,
+            unsigned int arcLabelLineCount = computeLabelLines(ctx, m, arcType, &arcLabelLines,
                                                   MscGetCurrentArcAttrib(m, MSC_ATTR_LABEL),
                                                   startCol, endCol);
 
@@ -910,12 +908,11 @@ static void arcBox(Context           *ctx,
                    const char        *lineColour,
                    const char        *bgColour)
 {
-    unsigned int t;
 
     /* Ensure the start is less than or equal to the end */
     if(boxStart > boxEnd)
     {
-        t = boxEnd;
+        unsigned int t = boxEnd;
         boxEnd = boxStart;
         boxStart = t;
     }
@@ -1677,7 +1674,6 @@ int mscgen_generate(const char *inputFile,
     const int          arcHasArrows      = MscGetCurrentArcAttrib(m, MSC_ATTR_NO_ARROWS) == NULL;
     const int          arcHasBiArrows    = MscGetCurrentArcAttrib(m, MSC_ATTR_BI_ARROWS) != NULL;
     char             **arcLabelLines     = NULL;
-    unsigned int       arcLabelLineCount = 0;
     int                startCol = -1, endCol = -1;
 
     if (arcType == MSC_ARC_PARALLEL)
@@ -1737,7 +1733,7 @@ int mscgen_generate(const char *inputFile,
       }
 
       /* Work out how the label fits the gap between entities */
-      arcLabelLineCount = computeLabelLines(&ctx, m, arcType, &arcLabelLines,
+      unsigned int arcLabelLineCount = computeLabelLines(&ctx, m, arcType, &arcLabelLines,
           MscGetCurrentArcAttrib(m, MSC_ATTR_LABEL),
           startCol, endCol);
 
