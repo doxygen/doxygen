@@ -650,11 +650,8 @@ const char *MscGetCurrentEntAttrib(struct MscTag *m, MscAttribType a)
 
 const char *MscGetEntAttrib(Msc m, unsigned int entIdx, MscAttribType a)
 {
-    struct MscEntityTag *entity;
-    const char          *r;
-
     /* Find the entity */
-    entity = m->entityList->head;
+    struct MscEntityTag *entity = m->entityList->head;
     while(entIdx > 0 && entity != NULL)
     {
         entity = entity->next;
@@ -664,7 +661,7 @@ const char *MscGetEntAttrib(Msc m, unsigned int entIdx, MscAttribType a)
     /* Search the attribute list if the entity was found */
     if(entity)
     {
-        r = findAttrib(entity->attr, a);
+        const char *r = findAttrib(entity->attr, a);
 
         /* If the entity label was sought but not found, return entity name */
         if(r == NULL && a == MSC_ATTR_LABEL)

@@ -1110,45 +1110,43 @@ BGD_DECLARE(int) gdImageColorReplaceArray (gdImagePtr im, int len, int *src, int
 */
 BGD_DECLARE(int) gdImageColorReplaceCallback (gdImagePtr im, gdCallbackImageColor callback)
 {
-	int c, d, n = 0;
+	int n = 0;
 
 	if (!callback) {
 		return 0;
 	}
 	if (im->trueColor) {
-		register int x, y;
-
-		for (y = im->cy1; y <= im->cy2; y++) {
-			for (x = im->cx1; x <= im->cx2; x++) {
-				c = gdImageTrueColorPixel(im, x, y);
-				if ( (d = callback(im, c)) != c) {
+		for (int y = im->cy1; y <= im->cy2; y++) {
+			for (int x = im->cx1; x <= im->cx2; x++) {
+				int c = gdImageTrueColorPixel(im, x, y);
+				int d = callback(im, c);
+				if (d != c) {
 					gdImageSetPixel(im, x, y, d);
 					n++;
 				}
 			}
 		}
 	} else { /* palette */
-		int *sarr, *darr;
-		int k, len = 0;
+		int len = 0;
 
-		sarr = (int *)gdCalloc(im->colorsTotal, sizeof(int));
+		int *sarr = (int *)gdCalloc(im->colorsTotal, sizeof(int));
 		if (!sarr) {
 			return -1;
 		}
-		for (c = 0; c < im->colorsTotal; c++) {
+		for (int c = 0; c < im->colorsTotal; c++) {
 			if (!im->open[c]) {
 				sarr[len++] = c;
 			}
 		}
-		darr = (int *)gdCalloc(len, sizeof(int));
+		int *darr = (int *)gdCalloc(len, sizeof(int));
 		if (!darr) {
 			gdFree(sarr);
 			return -1;
 		}
-		for (k = 0; k < len; k++) {
+		for (int k = 0; k < len; k++) {
 			darr[k] = callback(im, sarr[k]);
 		}
-		n = gdImageColorReplaceArray(im, k, sarr, darr);
+		n = gdImageColorReplaceArray(im, len, sarr, darr);
 		gdFree(darr);
 		gdFree(sarr);
 	}
@@ -1719,30 +1717,31 @@ static void dashedSet (gdImagePtr im, int x, int y, int color,
 */
 BGD_DECLARE(void) gdImageDashedLine (gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 {
-	int dx, dy, incr1, incr2, d, x, y, xend, yend, xdirflag, ydirflag;
+	int x, y;
 	int dashStep = 0;
 	int on = 1;
 	int wid;
 	int vert;
-	int thick = im->thick;
 
-	dx = abs (x2 - x1);
-	dy = abs (y2 - y1);
+	const int dx = abs (x2 - x1);
+	const int dy = abs (y2 - y1);
 	if (dy <= dx) {
 		/* More-or-less horizontal. use wid for vertical stroke */
 		/* 2.0.12: Michael Schwartz: divide rather than multiply;
 		   TBB: but watch out for /0! */
 		double as = sin (atan2 (dy, dx));
 		if (as != 0) {
-			wid = (int)(thick / as);
+			wid = (int)(im->thick / as);
 		} else {
 			wid = 1;
 		}
 		vert = 1;
 
-		d = 2 * dy - dx;
-		incr1 = 2 * dy;
-		incr2 = 2 * (dy - dx);
+		int d = 2 * dy - dx;
+		const int incr1 = 2 * dy;
+		const int incr2 = 2 * (dy - dx);
+		int xend;
+		int ydirflag;
 		if (x1 > x2) {
 			x = x2;
 			y = y2;
@@ -1783,15 +1782,17 @@ BGD_DECLARE(void) gdImageDashedLine (gdImagePtr im, int x1, int y1, int x2, int 
 		   TBB: but watch out for /0! */
 		double as = sin (atan2 (dy, dx));
 		if (as != 0) {
-			wid = (int)(thick / as);
+			wid = (int)(im->thick / as);
 		} else {
 			wid = 1;
 		}
 		vert = 0;
 
-		d = 2 * dx - dy;
-		incr1 = 2 * dx;
-		incr2 = 2 * (dx - dy);
+		int d = 2 * dx - dy;
+		const int incr1 = 2 * dx;
+		const int incr2 = 2 * (dx - dy);
+		int yend;
+		int xdirflag;
 		if (y1 > y2) {
 			y = y2;
 			x = x2;
@@ -1836,7 +1837,6 @@ dashedSet (gdImagePtr im, int x, int y, int color,
 {
 	int dashStep = *dashStepP;
 	int on = *onP;
-	int w, wstart;
 
 	dashStep++;
 	if (dashStep == gdDashSize) {
@@ -1845,12 +1845,12 @@ dashedSet (gdImagePtr im, int x, int y, int color,
 	}
 	if (on) {
 		if (vert) {
-			wstart = y - wid / 2;
-			for (w = wstart; w < wstart + wid; w++)
+			int wstart = y - wid / 2;
+			for (int w = wstart; w < wstart + wid; w++)
 				gdImageSetPixel (im, x, w, color);
 		} else {
-			wstart = x - wid / 2;
-			for (w = wstart; w < wstart + wid; w++)
+			int wstart = x - wid / 2;
+			for (int w = wstart; w < wstart + wid; w++)
 				gdImageSetPixel (im, w, y, color);
 		}
 	}
@@ -2936,10 +2936,6 @@ BGD_DECLARE(gdImagePtr) gdImageClone (gdImagePtr src) {
 BGD_DECLARE(void) gdImageCopy (gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int srcX,
 							   int srcY, int w, int h)
 {
-	int c;
-	int x, y;
-	int tox, toy;
-	int i;
 	int colorMap[gdMaxColors];
 
 	if (dst->trueColor) {
@@ -2949,8 +2945,8 @@ BGD_DECLARE(void) gdImageCopy (gdImagePtr dst, gdImagePtr src, int dstX, int dst
 		 */
 
 		if (src->trueColor) {
-			for (y = 0; (y < h); y++) {
-				for (x = 0; (x < w); x++) {
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
 					int c = gdImageGetTrueColorPixel (src, srcX + x, srcY + y);
 					if (c != src->transparent) {
 						gdImageSetPixel (dst, dstX + x, dstY + y, c);
@@ -2959,8 +2955,8 @@ BGD_DECLARE(void) gdImageCopy (gdImagePtr dst, gdImagePtr src, int dstX, int dst
 			}
 		} else {
 			/* source is palette based */
-			for (y = 0; (y < h); y++) {
-				for (x = 0; (x < w); x++) {
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
 					int c = gdImageGetPixel (src, srcX + x, srcY + y);
 					if (c != src->transparent) {
 						gdImageSetPixel(dst, dstX + x, dstY + y, gdTrueColorAlpha(src->red[c], src->green[c], src->blue[c], src->alpha[c]));
@@ -2971,16 +2967,15 @@ BGD_DECLARE(void) gdImageCopy (gdImagePtr dst, gdImagePtr src, int dstX, int dst
 		return;
 	}
 
-	for (i = 0; (i < gdMaxColors); i++) {
+	for (int i = 0; i < gdMaxColors; i++) {
 		colorMap[i] = (-1);
 	}
-	toy = dstY;
-	for (y = srcY; (y < (srcY + h)); y++) {
-		tox = dstX;
-		for (x = srcX; (x < (srcX + w)); x++) {
-			int nc;
+	int toy = dstY;
+	for (int y = srcY; y < (srcY + h); y++) {
+		int tox = dstX;
+		for (int x = srcX; x < (srcX + w); x++) {
 			int mapTo;
-			c = gdImageGetPixel (src, x, y);
+			int c = gdImageGetPixel (src, x, y);
 			/* Added 7/24/95: support transparent copies */
 			if (gdImageGetTransparent (src) == c) {
 				tox++;
@@ -2998,6 +2993,7 @@ BGD_DECLARE(void) gdImageCopy (gdImagePtr dst, gdImagePtr src, int dstX, int dst
 				                                  gdTrueColorGetBlue (c),
 				                                  gdTrueColorGetAlpha (c));
 			} else if (colorMap[c] == (-1)) {
+				int nc;
 				/* If it's the same image, mapping is trivial */
 				if (dst == src) {
 					nc = c;
@@ -3201,15 +3197,7 @@ BGD_DECLARE(void) gdImageCopyResized (gdImagePtr dst, gdImagePtr src, int dstX, 
 									  int srcX, int srcY, int dstW, int dstH, int srcW,
 									  int srcH)
 {
-	int c;
-	int x, y;
-	int tox, toy;
-	int ydest;
-	int i;
 	int colorMap[gdMaxColors];
-	/* Stretch vectors */
-	int *stx;
-	int *sty;
 	/* We only need to use floating point to determine the correct
 	   stretch vector for one line's worth. */
 	if (overflow2(sizeof (int), srcW)) {
@@ -3218,33 +3206,33 @@ BGD_DECLARE(void) gdImageCopyResized (gdImagePtr dst, gdImagePtr src, int dstX, 
 	if (overflow2(sizeof (int), srcH)) {
 		return;
 	}
-	stx = (int *) gdMalloc (sizeof (int) * srcW);
+	/* Stretch vectors */
+	int *stx = (int *) gdMalloc (sizeof (int) * srcW);
+	int *sty = (int *) gdMalloc (sizeof (int) * srcH);
 	if (!stx) {
 		return;
 	}
 
-	sty = (int *) gdMalloc (sizeof (int) * srcH);
 	if (!sty) {
 		gdFree(stx);
 		return;
 	}
 
 	/* Fixed by Mao Morimoto 2.0.16 */
-	for (i = 0; (i < srcW); i++) {
+	for (int i = 0; i < srcW; i++) {
 		stx[i] = dstW * (i + 1) / srcW - dstW * i / srcW;
 	}
-	for (i = 0; (i < srcH); i++) {
+	for (int i = 0; i < srcH; i++) {
 		sty[i] = dstH * (i + 1) / srcH - dstH * i / srcH;
 	}
-	for (i = 0; (i < gdMaxColors); i++) {
+	for (int i = 0; i < gdMaxColors; i++) {
 		colorMap[i] = (-1);
 	}
-	toy = dstY;
-	for (y = srcY; (y < (srcY + srcH)); y++) {
-		for (ydest = 0; (ydest < sty[y - srcY]); ydest++) {
-			tox = dstX;
-			for (x = srcX; (x < (srcX + srcW)); x++) {
-				int nc = 0;
+	int toy = dstY;
+	for (int y = srcY; y < (srcY + srcH); y++) {
+		for (int ydest = 0; ydest < sty[y - srcY]; ydest++) {
+			int tox = dstX;
+			for (int x = srcX; x < (srcX + srcW); x++) {
 				int mapTo;
 				if (!stx[x - srcX]) {
 					continue;
@@ -3271,7 +3259,7 @@ BGD_DECLARE(void) gdImageCopyResized (gdImagePtr dst, gdImagePtr src, int dstX, 
 						}
 					}
 				} else {
-					c = gdImageGetPixel (src, x, y);
+					int c = gdImageGetPixel (src, x, y);
 					/* Added 7/24/95: support transparent copies */
 					if (gdImageGetTransparent (src) == c) {
 						tox += stx[x - srcX];
@@ -3292,6 +3280,7 @@ BGD_DECLARE(void) gdImageCopyResized (gdImagePtr dst, gdImagePtr src, int dstX, 
 					} else {
 						/* Have we established a mapping for this color? */
 						if (colorMap[c] == (-1)) {
+							int nc = 0;
 							/* If it's the same image, mapping is trivial */
 							if (dst == src) {
 								nc = c;
@@ -3313,7 +3302,7 @@ BGD_DECLARE(void) gdImageCopyResized (gdImagePtr dst, gdImagePtr src, int dstX, 
 						mapTo = colorMap[c];
 					}
 				}
-				for (i = 0; (i < stx[x - srcX]); i++) {
+				for (int i = 0; i < stx[x - srcX]; i++) {
 					gdImageSetPixel (dst, tox, toy, mapTo);
 					tox++;
 				}
@@ -3460,21 +3449,18 @@ BGD_DECLARE(void) gdImageCopyResampled (gdImagePtr dst,
 										int srcX, int srcY,
 										int dstW, int dstH, int srcW, int srcH)
 {
-	int x, y;
 	if (!dst->trueColor) {
 		gdImageCopyResized (dst, src, dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH);
 		return;
 	}
-	for (y = dstY; (y < dstY + dstH); y++) {
-		for (x = dstX; (x < dstX + dstW); x++) {
-			float sy1, sy2, sx1, sx2;
-			float sx, sy;
+	for (int y = dstY; (y < dstY + dstH); y++) {
+		for (int x = dstX; (x < dstX + dstW); x++) {
 			float spixels = 0.0f;
 			float red = 0.0f, green = 0.0f, blue = 0.0f, alpha = 0.0f;
 			float alpha_factor, alpha_sum = 0.0f, contrib_sum = 0.0f;
-			sy1 = ((float)(y - dstY)) * (float)srcH / (float)dstH;
-			sy2 = ((float)(y + 1 - dstY)) * (float) srcH / (float) dstH;
-			sy = sy1;
+			float sy1 = ((float)(y - dstY)) * (float)srcH / (float)dstH;
+			float sy2 = ((float)(y + 1 - dstY)) * (float) srcH / (float) dstH;
+			float sy = sy1;
 			do {
 				float yportion;
 				if (floorf(sy) == floorf(sy1)) {
@@ -3488,9 +3474,9 @@ BGD_DECLARE(void) gdImageCopyResampled (gdImagePtr dst,
 				} else {
 					yportion = 1.0f;
 				}
-				sx1 = ((float)(x - dstX)) * (float) srcW / dstW;
-				sx2 = ((float)(x + 1 - dstX)) * (float) srcW / dstW;
-				sx = sx1;
+				float sx1 = ((float)(x - dstX)) * (float) srcW / dstW;
+				float sx2 = ((float)(x + 1 - dstX)) * (float) srcW / dstW;
+				float sx = sx1;
 				do {
 					float xportion;
 					float pcontribution;
@@ -3647,15 +3633,8 @@ BGD_DECLARE(void) gdImageOpenPolygon (gdImagePtr im, gdPointPtr p, int n, int c)
  */
 BGD_DECLARE(void) gdImageFilledPolygon (gdImagePtr im, gdPointPtr p, int n, int c)
 {
-	int i;
-	int j;
-	int index;
-	int y;
-	int miny, maxy, pmaxy;
 	int x1, y1;
 	int x2, y2;
-	int ind1, ind2;
-	int ints;
 	int fill_color;
 	if (n <= 0) {
 		return;
@@ -3689,9 +3668,9 @@ BGD_DECLARE(void) gdImageFilledPolygon (gdImagePtr im, gdPointPtr p, int n, int 
 			return;
 		}
 	}
-	miny = p[0].y;
-	maxy = p[0].y;
-	for (i = 1; (i < n); i++) {
+	int miny = p[0].y;
+	int maxy = p[0].y;
+	for (int i = 1; i < n; i++) {
 		if (p[i].y < miny) {
 			miny = p[i].y;
 		}
@@ -3702,7 +3681,7 @@ BGD_DECLARE(void) gdImageFilledPolygon (gdImagePtr im, gdPointPtr p, int n, int 
 	/* necessary special case: horizontal line */
 	if (n > 1 && miny == maxy) {
 		x1 = x2 = p[0].x;
-		for (i = 1; (i < n); i++) {
+		for (int i = 1; i < n; i++) {
 			if (p[i].x < x1) {
 				x1 = p[i].x;
 			} else if (p[i].x > x2) {
@@ -3712,7 +3691,7 @@ BGD_DECLARE(void) gdImageFilledPolygon (gdImagePtr im, gdPointPtr p, int n, int 
 		gdImageLine(im, x1, miny, x2, miny, c);
 		return;
 	}
-	pmaxy = maxy;
+	int pmaxy = maxy;
 	/* 2.0.16: Optimization by Ilia Chipitsine -- don't waste time offscreen */
 	/* 2.0.26: clipping rectangle is even better */
 	if (miny < im->cy1) {
@@ -3722,9 +3701,10 @@ BGD_DECLARE(void) gdImageFilledPolygon (gdImagePtr im, gdPointPtr p, int n, int 
 		maxy = im->cy2;
 	}
 	/* Fix in 1.3: count a vertex only once */
-	for (y = miny; (y <= maxy); y++) {
-		ints = 0;
-		for (i = 0; (i < n); i++) {
+	for (int y = miny; y <= maxy; y++) {
+		int ints = 0;
+		for (int i = 0; i < n; i++) {
+			int ind1, ind2;
 			if (!i) {
 				ind1 = n - 1;
 				ind2 = 0;
@@ -3763,16 +3743,16 @@ BGD_DECLARE(void) gdImageFilledPolygon (gdImagePtr im, gdPointPtr p, int n, int 
 		  cases, insertion sort is a good choice. Also a good choice for
 		  future implementations that may wish to indirect through a table.
 		*/
-		for (i = 1; (i < ints); i++) {
-			index = im->polyInts[i];
-			j = i;
+		for (int i = 1; i < ints; i++) {
+			int index = im->polyInts[i];
+			int j = i;
 			while ((j > 0) && (im->polyInts[j - 1] > index)) {
 				im->polyInts[j] = im->polyInts[j - 1];
 				j--;
 			}
 			im->polyInts[j] = index;
 		}
-		for (i = 0; (i < (ints-1)); i += 2) {
+		for (int i = 0; i < (ints-1); i += 2) {
 			/* 2.0.29: back to gdImageLine to prevent segfaults when
 			  performing a pattern fill */
 			gdImageLine (im, im->polyInts[i], y, im->polyInts[i + 1], y,
@@ -3844,12 +3824,10 @@ BGD_DECLARE(void) gdImageSetThickness (gdImagePtr im, int thickness)
  */
 BGD_DECLARE(void) gdImageSetBrush (gdImagePtr im, gdImagePtr brush)
 {
-	int i;
 	im->brush = brush;
 	if ((!im->trueColor) && (!im->brush->trueColor)) {
-		for (i = 0; (i < gdImageColorsTotal (brush)); i++) {
-			int index;
-			index = gdImageColorResolveAlpha (im,
+		for (int i = 0; (i < gdImageColorsTotal (brush)); i++) {
+			int index = gdImageColorResolveAlpha (im,
 			                                  gdImageRed (brush, i),
 			                                  gdImageGreen (brush, i),
 			                                  gdImageBlue (brush, i),
@@ -3864,10 +3842,9 @@ BGD_DECLARE(void) gdImageSetBrush (gdImagePtr im, gdImagePtr brush)
 */
 BGD_DECLARE(void) gdImageSetTile (gdImagePtr im, gdImagePtr tile)
 {
-	int i;
 	im->tile = tile;
 	if ((!im->trueColor) && (!im->tile->trueColor)) {
-		for (i = 0; (i < gdImageColorsTotal (tile)); i++) {
+		for (int i = 0; (i < gdImageColorsTotal (tile)); i++) {
 			int index;
 			index = gdImageColorResolveAlpha (im,
 			                                  gdImageRed (tile, i),
@@ -4346,7 +4323,6 @@ static void gdImageAALine (gdImagePtr im, int x1, int y1, int x2, int y2, int co
 	long x, y, inc, frac;
 	long dx, dy,tmp;
 	int w, wid, wstart; 
-	int thick = im->thick; 
 
 	if (!im->trueColor) {
 		/* TBB: don't crash when the image is of the wrong type */
@@ -4373,7 +4349,7 @@ static void gdImageAALine (gdImagePtr im, int x1, int y1, int x2, int y2, int co
 		 * This isn't a problem as computed dy/dx values came from ints above. */
 		ag = fabs(abs((int)dy) < abs((int)dx) ? cos(atan2(dy, dx)) : sin(atan2(dy, dx)));
 		if (ag != 0) {
-			wid = (int)(thick / ag);
+			wid = (int)(im->thick / ag);
 		} else {
 			wid = 1;
 		}
