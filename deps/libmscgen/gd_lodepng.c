@@ -14,7 +14,7 @@ BGD_DECLARE(void) gdImagePng (gdImagePtr im, FILE * outFile)
     int *pThisRow = *ptpixels++;
     for (x=0;x<im->sx;x++)
     {
-      int thisPixel = *pThisRow++;
+      const int thisPixel = *pThisRow++;
       *pOut++ = gdTrueColorGetRed(thisPixel);
       *pOut++ = gdTrueColorGetGreen(thisPixel);
       *pOut++ = gdTrueColorGetBlue(thisPixel);

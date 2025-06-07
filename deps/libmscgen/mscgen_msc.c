@@ -746,7 +746,7 @@ const char *MscGetCurrentArcAttrib(struct MscTag *m, MscAttribType a)
 
 Boolean MscGetOptAsFloat(struct MscTag *m, MscOptType type, float *const f)
 {
-    struct MscOptTag *opt = MscFindOpt(m->optList, type);
+    const struct MscOptTag *opt = MscFindOpt(m->optList, type);
 
     if(opt != NULL)
     {
