@@ -1947,17 +1947,17 @@ Token DocHtmlRow::parse()
   // get next token
   Token tok=parser()->tokenizer.lex();
   // skip whitespace and tbody, thead and tfoot tags
-  while (retval.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA,TokenRetval::TK_HTMLTAG))
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA,TokenRetval::TK_HTMLTAG))
   {
-    if (retval.is(TokenRetval::TK_HTMLTAG))
+    if (tok.is(TokenRetval::TK_HTMLTAG))
     {
       HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-      if ((tagId==HtmlTagType::HTML_TBODY) || (tagId==HtmlTagType::HTML_THEAD) || (tagId==HtmlTagType::HTML_TFOOT)) retval=parser()->tokenizer.lex();
+      if ((tagId==HtmlTagType::HTML_TBODY) || (tagId==HtmlTagType::HTML_THEAD) || (tagId==HtmlTagType::HTML_TFOOT)) tok=parser()->tokenizer.lex();
       else break;
     }
     else
     {
-      retval=parser()->tokenizer.lex();
+      tok=parser()->tokenizer.lex();
     }
   }
   // should find a html tag now
@@ -2160,17 +2160,17 @@ getrow:
   // get next token
   Token tok=parser()->tokenizer.lex();
   // skip whitespace and tbody, thead and tfoot tags
-  while (retval.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA,TokenRetval::TK_HTMLTAG))
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA,TokenRetval::TK_HTMLTAG))
   {
-    if (retval.is(TokenRetval::TK_HTMLTAG))
+    if (tok.is(TokenRetval::TK_HTMLTAG))
     {
       HtmlTagType tagId1=Mappers::htmlTagMapper->map(parser()->context.token->name);
-      if ((tagId1==HtmlTagType::HTML_TBODY) || (tagId1==HtmlTagType::HTML_THEAD) || (tagId1==HtmlTagType::HTML_TFOOT)) retval=parser()->tokenizer.lex();
+      if ((tagId1==HtmlTagType::HTML_TBODY) || (tagId1==HtmlTagType::HTML_THEAD) || (tagId1==HtmlTagType::HTML_TFOOT)) tok=parser()->tokenizer.lex();
       else break;
     }
     else
     {
-      retval=parser()->tokenizer.lex();
+      tok=parser()->tokenizer.lex();
     }
   }
   // should find a html tag now
