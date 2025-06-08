@@ -114,6 +114,10 @@ SPDLOG_API std::string getenv(const char *field);
 // Return true on success.
 SPDLOG_API bool fsync(FILE *fp);
 
+// Do non-locking fwrite if possible by the os or use the regular locking fwrite
+// Return true on success.
+SPDLOG_API bool fwrite_bytes(const void *ptr, const size_t n_bytes, FILE *fp);
+
 }  // namespace os
 }  // namespace details
 }  // namespace spdlog

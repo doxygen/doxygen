@@ -268,7 +268,7 @@ void PsTextR(struct ADrawTag *ctx,
               unsigned int     y,
               const char      *string)
 {
-    PsContext *context = getPsCtx(ctx);
+    const PsContext *context = getPsCtx(ctx);
 
     /* Push the string and get its width */
     fprintf(getPsFile(ctx), "(");
@@ -300,7 +300,7 @@ void PsTextL(struct ADrawTag *ctx,
               unsigned int     y,
               const char      *string)
 {
-    PsContext *context = getPsCtx(ctx);
+    const PsContext *context = getPsCtx(ctx);
 
     /* Draw the background box */
     setColour(ctx, context->penBgColour);
@@ -327,7 +327,7 @@ void PsTextC(struct ADrawTag *ctx,
               unsigned int     y,
               const char      *string)
 {
-    PsContext *context = getPsCtx(ctx);
+    const PsContext *context = getPsCtx(ctx);
 
     /* Push the string and get its width */
     fprintf(getPsFile(ctx), "(");
