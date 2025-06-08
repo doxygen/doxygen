@@ -2214,6 +2214,18 @@ getrow:
       {
         retval = Token::make_RetVal_EndTable();
       }
+      else if (tagId==HtmlTagType::HTML_TBODY && parser()->context.token->endTag)
+      {
+        // for time being ignore </t....> tag
+      }
+      else if (tagId==HtmlTagType::HTML_THEAD && parser()->context.token->endTag)
+      {
+        // for time being ignore </t....> tag
+      }
+      else if (tagId==HtmlTagType::HTML_TFOOT && parser()->context.token->endTag)
+      {
+        // for time being ignore </t....> tag
+      }
       else  // found some other tag
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected <tr> or </table> tag but "
