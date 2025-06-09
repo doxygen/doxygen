@@ -186,6 +186,7 @@ struct scannerYY_state
   int              docBlockContext = 0;
   TextStream       docBlock;
   QCString         docBlockName;
+  bool             isCodeBlock = false;
   bool             docBlockInBody = false;
   bool             docBlockAutoBrief = false;
   char             docBlockTerm = '\0';
@@ -246,7 +247,7 @@ static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void setJavaProtection(yyscan_t yyscanner);
 static void storeClangId(yyscan_t yyscanner,const char *id);
-static void startVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize=0);
+static void startVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize=0,bool codeBlock=false);
 static bool endVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize=0);
 
 
@@ -7148,22 +7149,27 @@ NONLopt [^\n]*
                                           startVerbatimBlock(yyscanner,"uml");
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
                                           startVerbatimBlock(yyscanner,&yytext[1]);
+                                          BEGIN(DocCopyBlock);
+                                        }
+<DocBlock>{CMD}("code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
+                                          yyextra->docBlock << yytext;
+                                          startVerbatimBlock(yyscanner,&yytext[1],0,true);
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
                                           yyextra->docBlock << "\\ilinebr ";
                                           yyextra->docBlock << pat;
-                                          startVerbatimBlock(yyscanner,"~~~",pat.stripWhiteSpace().length());
+                                          startVerbatimBlock(yyscanner,"~~~",pat.stripWhiteSpace().length(),true);
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
-                                          startVerbatimBlock(yyscanner,"~~~",pat.stripWhiteSpace().length());
+                                          startVerbatimBlock(yyscanner,"~~~",pat.stripWhiteSpace().length(),true);
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"\\ilinebr "({B}*"*"+)?{B}{0,3}"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
@@ -7172,7 +7178,7 @@ NONLopt [^\n]*
                                           QCString pat = substitute(yytext+9,"*"," "); // skip over "\ilinebr " part
                                           yyextra->docBlock << "\\ilinebr ";
                                           yyextra->docBlock << pat;
-                                          startVerbatimBlock(yyscanner,"```",pat.stripWhiteSpace().length());
+                                          startVerbatimBlock(yyscanner,"```",pat.stripWhiteSpace().length(),true);
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
@@ -7180,14 +7186,14 @@ NONLopt [^\n]*
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
-                                          startVerbatimBlock(yyscanner,"```",pat.stripWhiteSpace().length());
+                                          startVerbatimBlock(yyscanner,"```",pat.stripWhiteSpace().length(),true);
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{B}*"<"{CODE}">"              {
                                           if (yyextra->insideCS)
                                           {
                                             yyextra->docBlock << yytext;
-                                            startVerbatimBlock(yyscanner,"<code>");
+                                            startVerbatimBlock(yyscanner,"<code>",0,true);
                                             BEGIN(DocCopyBlock);
                                           }
                                           else
@@ -7332,7 +7338,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->nestedComment--;
                                           }
-                                          else if (yytext[0]=='*' && yyextra->nestedComment==0) // end comment without start
+                                          else if (yytext[0]=='*' && yyextra->nestedComment==0 && yyextra->isCodeBlock) // end comment without start
                                           {
                                             warn(yyextra->fileName,yyextra->yyLineNr,
                                                 "Found end of C comment inside a '{}' block without matching start of the comment!"
@@ -7718,7 +7724,7 @@ static QCString stripFuncPtr(const QCString &type)
 }
 
 //-----------------------------------------------------------------
-static void startVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize)
+static void startVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size_t fencedSize,bool codeBlock)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Config_getBool(MARKDOWN_SUPPORT))
@@ -7727,6 +7733,7 @@ static void startVerbatimBlock(yyscan_t yyscanner,const QCString &blockName,size
   }
   yyextra->docBlockName=blockName;
   yyextra->fencedSize=fencedSize;
+  yyextra->isCodeBlock=codeBlock;
   yyextra->nestedComment=0;
 }
 
