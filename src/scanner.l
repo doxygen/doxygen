@@ -5016,7 +5016,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
@@ -5024,7 +5024,7 @@ NONLopt [^\n]*
                                             BEGIN(CopyArgCommentLine);
                                           }
                                         }
-<CopyArgVerbatim>[\\@]("f$"|"f]"|"f}"|"f)") { // end of verbatim block
+<CopyArgVerbatim>{CMD}("f$"|"f]"|"f}"|"f)") { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
                                           if (yyextra->docBlockName==&yytext[1])
                                           {

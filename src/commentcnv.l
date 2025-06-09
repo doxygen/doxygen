@@ -435,7 +435,7 @@ SLASHopt [/]*
 				     yyextra->inRoseComment=TRUE;
 				     BEGIN(SComment);
   				   }
-<Scan>{CPPC}[!\/]/.*\n[ \t]*{CPPC}[|\/][ \t]*[@\\]"}" { // next line contains an end marker, see bug 752712
+<Scan>{CPPC}[!\/]/.*\n[ \t]*{CPPC}[|\/][ \t]*{CMD}"}" { // next line contains an end marker, see bug 752712
 				     yyextra->inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
                                      if (yyextra->inSpecialComment)
                                      {
@@ -595,7 +595,7 @@ SLASHopt [/]*
                                      yyextra->inVerbatim=true;
                                      BEGIN(VerbatimCode);
                                    }
-<CComment,ReadLine,IncludeFile>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine,IncludeFile>{CMD}("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=0;
@@ -610,7 +610,7 @@ SLASHopt [/]*
                                      yyextra->inVerbatim=true;
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,ReadLine,IncludeFile>[\\@]("f$"|"f["|"f{"|"f(") {
+<CComment,ReadLine,IncludeFile>{CMD}("f$"|"f["|"f{"|"f(") {
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->blockName=&yytext[1];
 				     if (yyextra->blockName.at(1)=='[')
@@ -651,7 +651,7 @@ SLASHopt [/]*
                                      yyextra->inVerbatim=true;
                                      BEGIN(Verbatim);
                                    }
-<CComment,ReadLine,IncludeFile>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine,IncludeFile>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     yyextra->blockName=QCString("end")+&yytext[1];
 				     yyextra->lastCommentContext = YY_START;
@@ -667,7 +667,7 @@ SLASHopt [/]*
 <Scan>.                            { /* any other character */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
-<Verbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
+<Verbatim>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     if (&yytext[1]==yyextra->blockName) // end of command or formula
 				     {
@@ -722,7 +722,7 @@ SLASHopt [/]*
                                        BEGIN(yyextra->lastCommentContext);
                                      }
                                    }
-<VerbatimCode>[\\@]("enddot"|"endcode"|"endmsc"|"enduml")/("{")? { /* end of verbatim block */
+<VerbatimCode>{CMD}("enddot"|"endcode"|"endmsc"|"enduml")/("{")? { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     if (&yytext[1]==yyextra->blockName)
 				     {
@@ -1041,7 +1041,7 @@ SLASHopt [/]*
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
   				   }
-<SComment>\n[ \t]*{CPPC}[\/!]("<")?[ \t]*[\\@]"}".*\n {
+<SComment>\n[ \t]*{CPPC}[\/!]("<")?[ \t]*{CMD}"}".*\n {
                                      /* See Bug 752712: end the multiline comment when finding a @} or \} command */
                                      copyToOutput(yyscanner," */");
 				     copyToOutput(yyscanner,yytext,yyleng);
@@ -1125,11 +1125,11 @@ SLASHopt [/]*
 <CComment,CNComment,ReadLine>"\\<" { /* escaped html comment */
 				     copyToOutput(yyscanner,yytext,yyleng);
   				   }
-<CComment,CNComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
+<CComment,CNComment,ReadLine>{CMD}{CMD}[~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yyscanner,yytext,yyleng);
   				   }
 
-<CComment,ReadLine,IncludeFile>[\\@]("include"{OPTS}|"includedoc"{OPTS}*) {
+<CComment,ReadLine,IncludeFile>{CMD}("include"{OPTS}|"includedoc"{OPTS}*) {
                                      if (!parseIncludeOptions(yyscanner,std::string_view{yytext,static_cast<size_t>(yyleng)})) REJECT;
                                      yyextra->includeCtx = YY_START;
                                      yyextra->firstIncludeLine = true;
@@ -1141,7 +1141,7 @@ SLASHopt [/]*
                                      //printf("blockHeadCol=%d insertCommentCol=%d\n",yyextra->blockHeadCol, yyextra->insertCommentCol);
                                      BEGIN(IncludeDoc);
                                    }
-<CComment,ReadLine,IncludeFile>[\\@]("snippet"{OPTS}|"snippetdoc"{OPTS}*) {
+<CComment,ReadLine,IncludeFile>{CMD}("snippet"{OPTS}|"snippetdoc"{OPTS}*) {
                                      if (!parseIncludeOptions(yyscanner,std::string_view{yytext,static_cast<size_t>(yyleng)})) REJECT;
                                      yyextra->includeCtx = YY_START;
                                      yyextra->firstIncludeLine = true;
@@ -1207,11 +1207,11 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,yyleng);
                                      BEGIN(yyextra->includeCtx);
                                    }
-<CComment,ReadLine,IncludeFile>[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
+<CComment,ReadLine,IncludeFile>{CMD}"cond"/[^a-z_A-Z0-9]	   { // conditional section
   				     yyextra->condCtx = YY_START;
   				     BEGIN(CondLine);
   				   }
-<CComment,ReadLine,IncludeFile>[\\@]"endcond"/[^a-z_A-Z0-9] { // end of conditional section
+<CComment,ReadLine,IncludeFile>{CMD}"endcond"/[^a-z_A-Z0-9] { // end of conditional section
   				     bool oldSkip=yyextra->skip;
   				     endCondSection(yyscanner);
 				     if (YY_START==CComment && oldSkip && !yyextra->skip)
@@ -1236,7 +1236,7 @@ SLASHopt [/]*
 <CondLine>[!()&| \ta-z_A-Z0-9.\-]+ {
                                      handleCondSectionId(yyscanner,yytext);
   				   }
-<CComment,ReadLine,IncludeFile>[\\@]"cond"{WSopt}/\n {
+<CComment,ReadLine,IncludeFile>{CMD}"cond"{WSopt}/\n {
   				     yyextra->condCtx=YY_START;
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
                                    }
@@ -1245,10 +1245,10 @@ SLASHopt [/]*
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
 				     if (*yytext=='\n') { copyToOutput(yyscanner,"\n");}
   				   }
-<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
+<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{CMD}[a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,yytext,YY_START==ReadLine && yyextra->readLineCtx==SComment);
   				   }
-<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{B}?{CMD}"ilinebr"{B}[\\@]"ialias{" { // expand alias with arguments
+<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{B}?{CMD}"ilinebr"{B}{CMD}"ialias{" { // expand alias with arguments
 				     yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
                                      int extraSpace = (yytext[0]==' '? 1:0);
@@ -1257,7 +1257,7 @@ SLASHopt [/]*
 				     yyextra->lastEscaped=0;
 				     BEGIN( ReadAliasArgs );
 				   }
-<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>[\\@][a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
+<CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{CMD}[a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
                                      yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
 				     yyextra->aliasString=yytext;
@@ -1278,7 +1278,7 @@ SLASHopt [/]*
                                      else                yyextra->lastEscaped=TRUE;
                                      yyextra->aliasString+=yytext;
                                    }
-<ReadAliasArgs>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
+<ReadAliasArgs>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
                                      yyextra->aliasString+=yytext;
                                      if (yyextra->inVerbatim && &yytext[1]==yyextra->blockName)
                                                               // For verbatim sections we do not support matching end block markers inside
