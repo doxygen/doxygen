@@ -3208,11 +3208,11 @@ BGD_DECLARE(void) gdImageCopyResized (gdImagePtr dst, gdImagePtr src, int dstX, 
 	}
 	/* Stretch vectors */
 	int *stx = (int *) gdMalloc (sizeof (int) * srcW);
-	int *sty = (int *) gdMalloc (sizeof (int) * srcH);
 	if (!stx) {
 		return;
 	}
 
+	int *sty = (int *) gdMalloc (sizeof (int) * srcH);
 	if (!sty) {
 		gdFree(stx);
 		return;
