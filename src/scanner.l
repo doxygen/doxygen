@@ -7324,13 +7324,20 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>{CCS}|{CCE}|{CPPC}        {
-                                          if (yytext[1]=='*')
+                                          if (yytext[1]=='*') // start comment
                                           {
                                             yyextra->nestedComment++;
                                           }
-                                          else if (yytext[0]=='*' && yyextra->nestedComment>0)
+                                          else if (yytext[0]=='*' && yyextra->nestedComment>0) // end comment
                                           {
                                             yyextra->nestedComment--;
+                                          }
+                                          else if (yytext[0]=='*' && yyextra->nestedComment==0) // end comment without start
+                                          {
+                                            warn(yyextra->fileName,yyextra->yyLineNr,
+                                                "Found end of C comment inside a '{}' block without matching start of the comment!"
+                                                " Maybe the end marker for the block is missing?",
+                                                yyextra->docBlockName);
                                           }
                                           yyextra->docBlock << yytext;
                                         }

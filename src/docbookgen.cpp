@@ -308,8 +308,11 @@ DB_GEN_C1(*m_t)
 void DocbookCodeGenerator::endCodeFragment(const QCString &)
 {
 DB_GEN_C1(*m_t)
+  bool wasHidden = m_hide;
+  m_hide = false;
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
+  m_hide = wasHidden;
 
   *m_t << "</programlisting>";
 }

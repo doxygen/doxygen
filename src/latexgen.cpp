@@ -308,7 +308,10 @@ void LatexCodeGenerator::startCodeFragment(const QCString &style)
 void LatexCodeGenerator::endCodeFragment(const QCString &style)
 {
   //endCodeLine checks is there is still an open code line, if so closes it.
+  bool wasHidden = m_hide;
+  m_hide = false;
   endCodeLine();
+  m_hide = wasHidden;
 
   *m_t << "\\end{" << style << "}\n";
 }

@@ -224,7 +224,10 @@ void RTFCodeGenerator::startCodeFragment(const QCString &)
 
 void RTFCodeGenerator::endCodeFragment(const QCString &)
 {
+  bool wasHidden = m_hide;
+  m_hide = false;
   endCodeLine();
+  m_hide = wasHidden;
 
   DBG_RTF(*m_t << "{\\comment (endCodeFragment) }\n")
   *m_t << "}\n";

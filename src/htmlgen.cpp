@@ -842,6 +842,7 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
   qsnprintf(lineNumber,maxLineNrStr,"%5d",l);
   qsnprintf(lineAnchor,maxLineNrStr,"l%05d",l);
 
+  //printf("writeLineNumber open=%d\n",m_lineOpen);
   if (!m_lineOpen)
   {
     *m_t << "<div class=\"line\">";
@@ -988,6 +989,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
 
 void HtmlCodeGenerator::startCodeLine(int)
 {
+  //printf("startCodeLine open=%d\n",m_lineOpen);
   m_col=0;
   if (m_hide) return;
   if (!m_lineOpen)
@@ -999,6 +1001,7 @@ void HtmlCodeGenerator::startCodeLine(int)
 
 void HtmlCodeGenerator::endCodeLine()
 {
+  //printf("endCodeLine hide=%d open=%d\n",m_hide,m_lineOpen);
   if (m_hide) return;
   if (m_col == 0)
   {
@@ -1037,14 +1040,19 @@ void HtmlCodeGenerator::startCodeFragment(const QCString &)
 
 void HtmlCodeGenerator::endCodeFragment(const QCString &)
 {
+  //printf("endCodeFragment hide=%d open=%d\n",m_hide,m_lineOpen);
+  bool wasHidden = m_hide;
+  m_hide = false;
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
+  m_hide = wasHidden;
 
   *m_t << "</div><!-- fragment -->";
 }
 
 void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const QCString &endMarker)
 {
+  //printf("startFold open=%d\n",m_lineOpen);
   if (m_lineOpen) // if we have a hidden comment in a code fold, we need to end the line
   {
     *m_t << "</div>\n";
@@ -1065,6 +1073,7 @@ void HtmlCodeGenerator::startFold(int lineNr,const QCString &startMarker,const Q
 
 void HtmlCodeGenerator::_startOpenLine()
 {
+  //printf("_startOpenLine open=%d\n",m_lineOpen);
   *m_t << "<div class=\"line\">";
   bool wasHidden=m_hide;
   m_hide = false;
@@ -1079,6 +1088,7 @@ void HtmlCodeGenerator::_startOpenLine()
 
 void HtmlCodeGenerator::endFold()
 {
+  //printf("endFold open=%d\n",m_lineOpen);
   if (m_lineOpen) // if we have a hidden comment in a code fold, we need to end the line
   {
     *m_t << "</div>\n";
