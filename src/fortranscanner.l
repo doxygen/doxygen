@@ -1571,7 +1571,7 @@ private                                 {
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)")     {
+<DocCopyBlock>{CMD}("f$"|"f]"|"f}"|"f)")     {
                                           yyextra->docBlock += yytext;
                                           if (yyextra->docBlockName==&yytext[1])
                                           {
@@ -1581,7 +1581,7 @@ private                                 {
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                                           yyextra->docBlock += yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {

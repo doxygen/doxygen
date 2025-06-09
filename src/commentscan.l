@@ -2477,13 +2477,13 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<SkipInternal>[@\\]"if"/[ \t]           {
+<SkipInternal>{CMD}"if"/[ \t]           {
                                           yyextra->condCount++;
                                           }
-<SkipInternal>[@\\]"ifnot"/[ \t]        {
+<SkipInternal>{CMD}"ifnot"/[ \t]        {
                                           yyextra->condCount++;
                                         }
-<SkipInternal>[@\\]/"endif"             {
+<SkipInternal>{CMD}/"endif"             {
                                           yyextra->condCount--;
                                           if (yyextra->condCount<0) // handle conditional section around of \internal, see bug607743
                                           {
@@ -2491,49 +2491,49 @@ STopt  [^\n@\\]*
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"section"[ \t]      {
+<SkipInternal>{CMD}/"section"[ \t]      {
                                           if (yyextra->sectionLevel>0)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsection"[ \t]   {
+<SkipInternal>{CMD}/"subsection"[ \t]   {
                                           if (yyextra->sectionLevel>1)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsubsection"[ \t] {
+<SkipInternal>{CMD}/"subsubsection"[ \t] {
                                           if (yyextra->sectionLevel>2)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"paragraph"[ \t]    {
+<SkipInternal>{CMD}/"paragraph"[ \t]    {
                                           if (yyextra->sectionLevel>3)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subparagraph"[ \t] {
+<SkipInternal>{CMD}/"subparagraph"[ \t] {
                                           if (yyextra->sectionLevel>4)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]/"subsubparagraph"[ \t] {
+<SkipInternal>{CMD}/"subsubparagraph"[ \t] {
                                           if (yyextra->sectionLevel>5)
                                           {
                                             unput('\\');
                                             BEGIN(Comment);
                                           }
                                         }
-<SkipInternal>[@\\]"endinternal"[ \t]*  {
+<SkipInternal>{CMD}"endinternal"[ \t]*  {
                                           BEGIN(Comment);
                                         }
 <SkipInternal>[^ \\@\n]+                { // skip non-special characters
@@ -2729,7 +2729,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle language specific sections ------- */
 
-<SkipLang>[\\@]"~"[a-zA-Z-]*            { /* language switch */
+<SkipLang>{CMD}"~"[a-zA-Z-]*            { /* language switch */
                                           QCString langId(&yytext[2]);
                                           if (!langId.isEmpty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
                                           {

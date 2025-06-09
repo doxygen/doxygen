@@ -365,11 +365,12 @@ RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
-FORMULA_START  [\\@]("f{"|"f$"|"f["|"f(")
-FORMULA_END    [\\@]("f}"|"f$"|"f]"|"f)")
-VERBATIM_START [\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+
-VERBATIM_END   [\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode")
-VERBATIM_LINE  [\\@]"noop"{B}+
+CMD            [\\@]
+FORMULA_START  {CMD}("f{"|"f$"|"f["|"f(")
+FORMULA_END    {CMD}("f}"|"f$"|"f]"|"f)")
+VERBATIM_START {CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+
+VERBATIM_END   {CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode")
+VERBATIM_LINE  {CMD}"noop"{B}+
 LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
 LITERAL_BLOCK_END {FORMULA_END}|{VERBATIM_END}
 
@@ -1460,7 +1461,7 @@ WSopt [ \t\r]*
                                           outputChar(yyscanner,'/');outputChar(yyscanner,'*');
                                           //yyextra->commentCount++;
                                         }
-<SkipCond>[\\@][\\@]                    { }
+<SkipCond>{CMD}{CMD}                    { }
 <SkipCond>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
                                           if (!markdownSupport || !yyextra->isSpecialComment)
@@ -1515,8 +1516,8 @@ WSopt [ \t\r]*
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>[\\@]{VERBATIM_LINE}      |
-<SkipCComment>[\\@]{LITERAL_BLOCK}      { // escaped command
+<SkipCComment>{CMD}{VERBATIM_LINE}      |
+<SkipCComment>{CMD}{LITERAL_BLOCK}      { // escaped command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                         }
@@ -1529,9 +1530,9 @@ WSopt [ \t\r]*
                                           determineBlockName(yyscanner);
                                           BEGIN(SkipVerbatim);
                                         }
-<SkipCond>[\\@][\\@]"cond"[ \t]+        {}// escaped cond command
-<SkipCond>[\\@]"cond"/\n                |  
-<SkipCond>[\\@]"cond"[ \t]+             { // cond command in a skipped cond section, this section has to be skipped as well
+<SkipCond>{CMD}{CMD}"cond"[ \t]+        {}// escaped cond command
+<SkipCond>{CMD}"cond"/\n                |  
+<SkipCond>{CMD}"cond"[ \t]+             { // cond command in a skipped cond section, this section has to be skipped as well
                                           // but has to be recorded to match the endcond command
                                           startCondSection(yyscanner," ");
                                         }
@@ -1545,15 +1546,15 @@ WSopt [ \t\r]*
                                           yyextra->javaBlock=1;
                                           BEGIN(JavaDocVerbatimCode);
                                         }
-<SkipCComment,SkipCPPComment>[\\@][\\@]"cond"[ \t\n]+ { // escaped cond command
+<SkipCComment,SkipCPPComment>{CMD}{CMD}"cond"[ \t\n]+ { // escaped cond command
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
-<SkipCPPComment>[\\@]"cond"[ \t]+       { // conditional section
+<SkipCPPComment>{CMD}"cond"[ \t]+       { // conditional section
                                           yyextra->ccomment=TRUE;
                                           yyextra->condCtx=YY_START;
                                           BEGIN(CondLineCpp);
                                         }
-<SkipCComment>[\\@]"cond"[ \t]+ { // conditional section
+<SkipCComment>{CMD}"cond"[ \t]+ { // conditional section
                                           yyextra->ccomment=FALSE;
                                           yyextra->condCtx=YY_START;
                                           BEGIN(CondLineC);
@@ -1601,7 +1602,7 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
                                         }
-<SkipCComment,SkipCPPComment>[\\@]"cond"{WSopt}/\n { // no guard
+<SkipCComment,SkipCPPComment>{CMD}"cond"{WSopt}/\n { // no guard
                                           if (YY_START==SkipCComment)
                                           {
                                             yyextra->ccomment=TRUE;
@@ -1630,13 +1631,13 @@ WSopt [ \t\r]*
 <SkipCond>[^\/\!*\\@\n]+                { }
 <SkipCond>{CPPC}[/!]                    { yyextra->ccomment=FALSE; }
 <SkipCond>{CCS}[*!]                     { yyextra->ccomment=TRUE; }
-<SkipCond,SkipCComment,SkipCPPComment>[\\@][\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
+<SkipCond,SkipCComment,SkipCPPComment>{CMD}{CMD}"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
                                           if (!yyextra->skip)
                                           {
                                             outputArray(yyscanner,yytext,yyleng);
                                           }
                                         }
-<SkipCond>[\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF]  {
+<SkipCond>{CMD}"endcond"/[^a-z_A-Z0-9\x80-\xFF]  {
                                           bool oldSkip = yyextra->skip;
                                           endCondSection(yyscanner);
                                           if (oldSkip && !yyextra->skip)
@@ -1648,7 +1649,7 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
                                         }
-<SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
+<SkipCComment,SkipCPPComment>{CMD}"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
                                           bool oldSkip = yyextra->skip;
                                           endCondSection(yyscanner);
                                           if (oldSkip && !yyextra->skip)
