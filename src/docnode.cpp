@@ -1934,6 +1934,37 @@ bool DocHtmlRow::isHeading() const
   return !children().empty() && heading;
 }
 
+static Token skipSpacesForTable(DocParser *parser)
+{
+  // get next token
+  Token tok=parser->tokenizer.lex();
+  // skip whitespace and tbody, thead and tfoot tags
+  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA,TokenRetval::TK_HTMLTAG))
+  {
+    if (tok.is(TokenRetval::TK_HTMLTAG))
+    {
+      HtmlTagType tagId=Mappers::htmlTagMapper->map(parser->context.token->name);
+      // skip over tbody, thead, tfoot tags
+      if (tagId==HtmlTagType::HTML_TBODY ||
+          tagId==HtmlTagType::HTML_THEAD ||
+          tagId==HtmlTagType::HTML_TFOOT)
+      {
+        tok=parser->tokenizer.lex();
+      }
+      else
+      {
+        break;
+      }
+    }
+    else
+    {
+      tok=parser->tokenizer.lex();
+    }
+  }
+  return tok;
+}
+
+
 Token DocHtmlRow::parse()
 {
   AUTO_TRACE();
@@ -1944,10 +1975,7 @@ Token DocHtmlRow::parse()
   bool isFirst=TRUE;
   DocHtmlCell *cell=nullptr;
 
-  // get next token
-  Token tok=parser()->tokenizer.lex();
-  // skip whitespace
-  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
+  Token tok = skipSpacesForTable(parser());
   // should find a html tag now
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
@@ -1995,9 +2023,7 @@ Token DocHtmlRow::parse()
     if (retval.is(TokenRetval::RetVal_EndTableCell))
     {
       // get next token
-      retval=parser()->tokenizer.lex();
-      // skip whitespace after </td> or </th>
-      while (retval.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) retval=parser()->tokenizer.lex();
+      retval = skipSpacesForTable(parser());
       //printf("DocHtmlRow:retval= next=%s name=%s endTag=%d\n",retval.to_string(),qPrint(parser()->context.token->name),parser()->context.token->endTag);
       HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
       if (tok.is(TokenRetval::TK_HTMLTAG))
@@ -2133,27 +2159,13 @@ Token DocHtmlTable::parse()
   auto ns = AutoNodeStack(parser(),thisVariant());
 
 getrow:
-  // get next token
-  Token tok=parser()->tokenizer.lex();
-  // skip whitespace
-  while (tok.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) tok=parser()->tokenizer.lex();
+  // skip whitespace and tbody, thead and tfoot tags
+  Token tok = skipSpacesForTable(parser());
   // should find a html tag now
   if (tok.is(TokenRetval::TK_HTMLTAG))
   {
     HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==HtmlTagType::HTML_THEAD && !parser()->context.token->endTag) // found <thead> tag
-    {
-      goto getrow;
-    }
-    else if (tagId==HtmlTagType::HTML_TBODY && !parser()->context.token->endTag) // found <tbody> tag
-    {
-      goto getrow;
-    }
-    else if (tagId==HtmlTagType::HTML_TFOOT && !parser()->context.token->endTag) // found <tfoot> tag
-    {
-      goto getrow;
-    }
-    else if (tagId==HtmlTagType::HTML_TR && !parser()->context.token->endTag) // found <tr> tag
+    if (tagId==HtmlTagType::HTML_TR && !parser()->context.token->endTag) // found <tr> tag
     {
       // no caption, just rows
       retval = Token::make_RetVal_TableRow();
@@ -2201,9 +2213,7 @@ getrow:
     if (retval.is(TokenRetval::RetVal_EndTableRow))
     {
       // get next token
-      retval=parser()->tokenizer.lex();
-      // skip whitespace after </td> or </th>
-      while (retval.is_any_of(TokenRetval::TK_WHITESPACE,TokenRetval::TK_NEWPARA)) retval=parser()->tokenizer.lex();
+      retval = skipSpacesForTable(parser());
       //printf("DocHtmlTable::retval= next=%s name=%s endTag=%d\n",retval.to_string(),qPrint(parser()->context.token->name),parser()->context.token->endTag);
       HtmlTagType tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
       if (tagId==HtmlTagType::HTML_TR && !parser()->context.token->endTag)
