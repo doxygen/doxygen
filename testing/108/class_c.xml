@@ -63,13 +63,49 @@
         </inbodydescription>
         <location file="108_trailing_return_types.cpp" line="14" column="18"/>
       </memberdef>
+      <memberdef kind="function" id="class_c_1af38c9dfcbee6ef5ee3d56fe3992f57b5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="class_c" kindref="compound">C</ref> &amp;</type>
+        <definition>C &amp; C::operator=</definition>
+        <argsstring>(C const &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>C::operator=</qualifiedname>
+        <param>
+          <type><ref refid="class_c" kindref="compound">C</ref> const &amp;</type>
+        </param>
+        <briefdescription>
+          <para>Deleted copy operator. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="17" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="class_c_1a5103c38b9ec827c03fe5f0b63071846b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="class_c" kindref="compound">C</ref> &amp;</type>
+        <definition>C &amp; C::operator=</definition>
+        <argsstring>(C &amp;&amp;)=default</argsstring>
+        <name>operator=</name>
+        <qualifiedname>C::operator=</qualifiedname>
+        <param>
+          <type><ref refid="class_c" kindref="compound">C</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+          <para>Defaulted move operator. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="108_trailing_return_types.cpp" line="19" column="10"/>
+      </memberdef>
     </sectiondef>
     <briefdescription>
       <para>A structure. </para>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="108_trailing_return_types.cpp" line="5" column="1" bodyfile="108_trailing_return_types.cpp" bodystart="5" bodyend="15"/>
+    <location file="108_trailing_return_types.cpp" line="5" column="1" bodyfile="108_trailing_return_types.cpp" bodystart="5" bodyend="20"/>
     <listofallmembers>
       <member refid="class_c_1a04dd9ca5948792c146024e91dc007446" prot="public" virt="virtual">
         <scope>C</scope>
@@ -86,6 +122,14 @@
       <member refid="class_c_1a0b664e9b999fca39643fe34a77579794" prot="public" virt="pure-virtual">
         <scope>C</scope>
         <name>f_pure</name>
+      </member>
+      <member refid="class_c_1af38c9dfcbee6ef5ee3d56fe3992f57b5" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>operator=</name>
+      </member>
+      <member refid="class_c_1a5103c38b9ec827c03fe5f0b63071846b" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>operator=</name>
       </member>
     </listofallmembers>
   </compounddef>
