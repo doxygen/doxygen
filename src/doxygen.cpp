@@ -8831,6 +8831,15 @@ static void buildDefineList()
         MemberName *mn=Doxygen::functionNameLinkedMap->add(def.name);
         if (def.fileDef)
         {
+          const MemberList *defMl = def.fileDef->getMemberList(MemberListType::DocDefineMembers());
+          if (defMl)
+          {
+            const MemberDef *defMd = defMl->findRev(def.name);
+            if (defMd) // definition already stored
+            {
+              mmd->setRedefineCount(defMd->redefineCount()+1);
+            }
+          }
           def.fileDef->insertMember(md.get());
         }
         AUTO_TRACE_ADD("adding macro {} with definition {}",def.name,def.definition);

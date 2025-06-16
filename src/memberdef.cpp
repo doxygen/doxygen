@@ -354,6 +354,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     StringVector getQualifiers() const override;
     ClassDefMutable *getClassDefMutable() override;
     void setModuleDef(ModuleDef *mod) override;
+    int redefineCount() const override;
+    void setRedefineCount(int) override;
 
   private:
     void _computeLinkableInProject();
@@ -511,6 +513,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     int m_declLine = -1;
     int m_declColumn = -1;
     int m_numberOfFlowKW = 0;
+    int m_redefineCount = 0;
 };
 
 std::unique_ptr<MemberDef> createMemberDef(const QCString &defFileName,int defLine,int defColumn,
@@ -932,6 +935,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->requiresClause(); }
     bool visibleInIndex() const override
     { return getMdAlias()->visibleInIndex(); }
+    int redefineCount() const override
+    { return getMdAlias()->redefineCount(); }
 
     void warnIfUndocumented() const override {}
     void warnIfUndocumentedParams() const override {}
@@ -4366,6 +4371,13 @@ void MemberDefImpl::setAnchor()
   {
     memAnchor+=" "+m_requiresClause;
   }
+  if (m_redefineCount>0)
+  {
+    char buf[20];
+    qsnprintf(buf,20,":%d",m_redefineCount);
+    buf[19]='\0';
+    memAnchor.append(buf);
+  }
 
   // convert to md5 hash
   uint8_t md5_sig[16];
@@ -6391,6 +6403,16 @@ CodeSymbolType MemberDefImpl::codeSymbolType() const
   return CodeSymbolType::Default;
 }
 
+int MemberDefImpl::redefineCount() const
+{
+  return m_redefineCount;
+}
+
+void MemberDefImpl::setRedefineCount(int count)
+{
+  m_redefineCount=count;
+}
+
 //-------------------------------------------------------------------------------
 // Helpers
 
@@ -6497,4 +6519,5 @@ MemberDefMutable *toMemberDefMutable(Definition *d)
     return nullptr;
   }
 }
+
 

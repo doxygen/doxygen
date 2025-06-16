@@ -90,15 +90,31 @@ class MemberVector
     {
       return std::find(m_members.begin(),m_members.end(),md)!=m_members.end();
     }
-    MemberDef *find(const QCString &name)
+    const MemberDef *find(const QCString &name) const
     {
       auto it = std::find_if(m_members.begin(),m_members.end(),[name=name](auto &el) { return el->name()==name; });
       if (it != m_members.end())
       {
         return *it;
       }
-
       return nullptr;
+    }
+    MemberDef *find(const QCString &name)
+    {
+      return const_cast<MemberDef *>(static_cast<const MemberVector *>(this)->find(name));
+    }
+    const MemberDef *findRev(const QCString &name) const
+    {
+      auto it = std::find_if(m_members.rbegin(),m_members.rend(),[name=name](auto &el) { return el->name()==name; });
+      if (it != m_members.rend())
+      {
+        return *it;
+      }
+      return nullptr;
+    }
+    MemberDef *findRev(const QCString &name)
+    {
+      return const_cast<MemberDef *>(static_cast<const MemberVector *>(this)->findRev(name));
     }
   protected:
     Vec m_members;
