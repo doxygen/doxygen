@@ -12,4 +12,9 @@ public:
     virtual auto f_final() -> int final;
     /** @brief Final and override. */
     virtual auto f_override_final() -> int override final;
+
+    /** @brief Deleted copy operator. */
+    auto operator=(C const&) -> C& = delete;
+    /** @brief Defaulted move operator. */
+    auto operator=(C&&) -> C& = default;
 };

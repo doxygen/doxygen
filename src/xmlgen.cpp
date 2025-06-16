@@ -749,6 +749,14 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       {
         argsStr += "=0";
       }
+      if (stripKeyword(typeStr, "=default", false))
+      {
+        argsStr += "=default";
+      }
+      if (stripKeyword(typeStr, "=delete", false))
+      {
+        argsStr += "=delete";
+      }
       i=defStr.find("auto ");
       if (i!=-1)
       {
