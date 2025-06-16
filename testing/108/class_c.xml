@@ -63,7 +63,7 @@
         </inbodydescription>
         <location file="108_trailing_return_types.cpp" line="14" column="18"/>
       </memberdef>
-      <memberdef kind="function" id="class_c_1ac89d613451bc4c7c2eb12c5121bbc35b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="class_c_1af38c9dfcbee6ef5ee3d56fe3992f57b5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="class_c" kindref="compound">C</ref> &amp;</type>
         <definition>C &amp; C::operator=</definition>
         <argsstring>(C const &amp;)=delete</argsstring>
@@ -79,9 +79,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="108_trailing_return_types.cpp" line="17" column="9"/>
+        <location file="108_trailing_return_types.cpp" line="17" column="10"/>
       </memberdef>
-      <memberdef kind="function" id="class_c_1a878c06a8ad8ce12df17af2ea4a838850" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="class_c_1a5103c38b9ec827c03fe5f0b63071846b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="class_c" kindref="compound">C</ref> &amp;</type>
         <definition>C &amp; C::operator=</definition>
         <argsstring>(C &amp;&amp;)=default</argsstring>
@@ -97,7 +97,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="108_trailing_return_types.cpp" line="19" column="9"/>
+        <location file="108_trailing_return_types.cpp" line="19" column="10"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -123,11 +123,11 @@
         <scope>C</scope>
         <name>f_pure</name>
       </member>
-      <member refid="class_c_1ac89d613451bc4c7c2eb12c5121bbc35b" prot="public" virt="non-virtual">
+      <member refid="class_c_1af38c9dfcbee6ef5ee3d56fe3992f57b5" prot="public" virt="non-virtual">
         <scope>C</scope>
         <name>operator=</name>
       </member>
-      <member refid="class_c_1a878c06a8ad8ce12df17af2ea4a838850" prot="public" virt="non-virtual">
+      <member refid="class_c_1a5103c38b9ec827c03fe5f0b63071846b" prot="public" virt="non-virtual">
         <scope>C</scope>
         <name>operator=</name>
       </member>
