@@ -1334,7 +1334,7 @@ SLASHopt [/]*
 <ReadLine>```                      {
   				     copyToOutput(yyscanner,yytext,yyleng);
                                    }
-<ReadLine>`[^`]+`                  {
+<ReadLine>`[^`\n]+`                {
   				     copyToOutput(yyscanner,yytext,yyleng);
                                    }
 <ReadLine>{CMD}{CMD}               |
