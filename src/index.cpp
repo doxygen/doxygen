@@ -4935,7 +4935,7 @@ static void writeIndex(OutputList &ol)
       ol.startTitleHead(QCString());
       ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->getStartBodyLine(),
                   Doxygen::mainPage.get(),nullptr,Doxygen::mainPage->title(),false,false,
-                  QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT),false);
+                  QCString(),true,false,Config_getBool(MARKDOWN_SUPPORT));
       headerWritten = TRUE;
     }
   }
@@ -4972,7 +4972,7 @@ static void writeIndex(OutputList &ol)
     ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),nullptr,
                 Doxygen::mainPage->documentation(),true,false,
                 QCString(),false,false,
-                Config_getBool(MARKDOWN_SUPPORT),false);
+                Config_getBool(MARKDOWN_SUPPORT));
     ol.endTextBlock();
     ol.endPageDoc();
   }
