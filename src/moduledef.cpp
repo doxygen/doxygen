@@ -896,7 +896,7 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
       auto ast    { validatingParseDoc(
                                 *parser.get(),briefFile(),briefLine(),this,nullptr,
                                 briefDescription(),FALSE,FALSE,
-                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+                                QCString(),TRUE,FALSE) };
       if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());
