@@ -5141,7 +5141,7 @@ NONLopt [^\n]*
                                           if (yyextra->insidePHP)
                                           {
                                             yyextra->lastCopyArgStringContext=YY_START;
-                                            BEGIN(CopyArgPHPString);
+                                            BEGIN(SkipPHPString);
                                           }
                                         }
 <ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>"<="|">="|"<=>" {
