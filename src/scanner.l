@@ -7189,6 +7189,14 @@ NONLopt [^\n]*
                                           startVerbatimBlock(yyscanner,"```",pat.stripWhiteSpace().length(),true);
                                           BEGIN(DocCopyBlock);
                                         }
+<DocBlock>"```"                         { // skip ``` if not at the start of a line
+                                          yyextra->docBlock << yytext;
+                                        }
+<DocBlock>"`"{1,2}                      {
+                                          yyextra->docBlock << yytext;
+                                          startVerbatimBlock(yyscanner,yytext,yyleng,true);
+                                          BEGIN(DocCopyBlock);
+                                        }
 <DocBlock>{B}*"<"{CODE}">"              {
                                           if (yyextra->insideCS)
                                           {
@@ -7201,7 +7209,7 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
-<DocBlock>[^@*~\/\\\n]+                 { // any character that isn't special
+<DocBlock>[^@*~`\/\\\n]+                { // any character that isn't special
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>\n                            { // newline
@@ -7314,7 +7322,21 @@ NONLopt [^\n]*
                                           }
                                           yyextra->docBlock << pat;
                                         }
-<DocCopyBlock>[^\<@/\*\]~"\$\\\n]+      { // any character that is not special
+<DocCopyBlock>"```"                     { // backtick + end marker
+                                          if (yyextra->docBlockName=="``" && endVerbatimBlock(yyscanner,"``",2))
+                                          {
+                                            BEGIN(DocBlock);
+                                          }
+                                          yyextra->docBlock << yytext;
+                                        }
+<DocCopyBlock>"`"{1,2}                  {
+                                          if (endVerbatimBlock(yyscanner,yytext,yyleng))
+                                          {
+                                            BEGIN(DocBlock);
+                                          }
+                                          yyextra->docBlock << yytext;
+                                        }
+<DocCopyBlock>[^\<@/\*\]`~"\$\\\n]+     { // any character that is not special
                                           yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>\"                        {
@@ -7344,6 +7366,7 @@ NONLopt [^\n]*
                                                 "Found end of C comment inside a '{}' block without matching start of the comment!"
                                                 " Maybe the end marker for the block is missing?",
                                                 yyextra->docBlockName);
+                                            BEGIN(DocBlock);
                                           }
                                           yyextra->docBlock << yytext;
                                         }
