@@ -7190,6 +7190,9 @@ NONLopt [^\n]*
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"```"                         { // skip ``` if not at the start of a line
+                                          yyextra->docBlock << "```";
+                                        }
+<DocBlock>"\\`"                         { // skip escaped backtick
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>"`"{1,2}                      {
@@ -7209,7 +7212,7 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
-<DocBlock>[^@*~`\/\\\n]+                { // any character that isn't special
+<DocBlock>[^@*~`'\/\\\n]+               { // any character that isn't special
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>\n                            { // newline
@@ -7323,7 +7326,20 @@ NONLopt [^\n]*
                                           yyextra->docBlock << pat;
                                         }
 <DocCopyBlock>"```"                     { // backtick + end marker
-                                          if (yyextra->docBlockName=="``" && endVerbatimBlock(yyscanner,"``",2))
+                                          if (yyextra->docBlockName=="``") 
+                                          {
+                                            yyextra->docBlock << "`";
+                                            endVerbatimBlock(yyscanner,"``",2);
+                                            yyextra->docBlock << "``";
+                                            BEGIN(DocBlock);
+                                          }
+                                          else
+                                          {
+                                            yyextra->docBlock << yytext;
+                                          }
+                                        }
+<DocCopyBlock>"'"/[^a-z_A-Z0-9-]        {
+                                          if (endVerbatimBlock(yyscanner,"`",1))
                                           {
                                             BEGIN(DocBlock);
                                           }
@@ -7336,7 +7352,7 @@ NONLopt [^\n]*
                                           }
                                           yyextra->docBlock << yytext;
                                         }
-<DocCopyBlock>[^\<@/\*\]`~"\$\\\n]+     { // any character that is not special
+<DocCopyBlock>[^\<@/\*\]`'~"\$\\\n]+    { // any character that is not special
                                           yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>\"                        {

@@ -18,7 +18,7 @@
 
   \tableofcontents{html,latex}
 
-  Most documentation systems have special 'see also' sections where links
+  Most documentation systems have special `see also' sections where links
   to other pieces of documentation can be inserted.
   Although Doxygen also has a command to start such a section (See section
   \ref cmdsa "\\sa"), it does allow you to put these kind of links anywhere in the

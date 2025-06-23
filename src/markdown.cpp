@@ -1626,9 +1626,9 @@ int Markdown::Private::processLink(const std::string_view data,size_t offset)
 }
 
 /** `` ` `` parsing a code span (assuming codespan != 0) */
-int Markdown::Private::processCodeSpan(std::string_view data,size_t)
+int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
 {
-  AUTO_TRACE("data='{}'",Trace::trunc(data));
+  AUTO_TRACE("data='{}' offset={}",Trace::trunc(data),offset);
   const size_t size = data.size();
 
   /* counting the number of backticks in the delimiter */
@@ -1650,7 +1650,11 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
     else if (data[end]=='\n')
     {
       // consecutive newlines
-      if (pc == '\n') return 0;
+      if (pc == '\n')
+      {
+        AUTO_TRACE_EXIT("new paragraph");
+        return 0;
+      }
       pc = '\n';
       i = 0;
     }
@@ -1659,6 +1663,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
       out+="&lsquo;";
       out+=data.substr(nb,end-nb);
       out+="&rsquo;";
+      AUTO_TRACE_EXIT("quoted end={}",end+1);
       return static_cast<int>(end+1);
     }
     else
@@ -1669,7 +1674,17 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
   }
   if (i < nb && end >= size)
   {
+    AUTO_TRACE_EXIT("no matching delimiter nb={} i={}",nb,i);
+    if (nb>=3) // found ``` that is not at the start of the line, keep it as-is.
+    {
+      out+=data.substr(0,nb);
+      return nb;
+    }
     return 0;  // no matching delimiter
+  }
+  while (end<size && data[end]=='`') // do greedy match in case we have more end backticks.
+  {
+    end++;
   }
 
   //printf("found code span '%s'\n",qPrint(QCString(data+f_begin).left(f_end-f_begin)));
@@ -1682,7 +1697,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t)
     out+=escapeSpecialChars(codeFragment);
     out+="</tt>";
   }
-  AUTO_TRACE_EXIT("result={}",end);
+  AUTO_TRACE_EXIT("result={} nb={}",end,nb);
   return static_cast<int>(end);
 }
 

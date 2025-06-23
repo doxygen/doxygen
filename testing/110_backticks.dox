@@ -1,0 +1,18 @@
+// objective: test various forms of backtick handling
+// check: indexpage.xml
+/** @mainpage
+Text with `single` backtick.  
+Text with `mixed' backtick.  
+Text `it's cool`. with embedded '  
+Text with ``double`` backtick.  
+Text with ``double and `single` form`` of backticks.  
+Text with ``double backtick `ending``` in triple backtick.  
+Text with \`escaped\` backticks.  
+Text with triple ``` backtick not at the start of the line.  
+```
+Text inside triple backticks
+Nested `single` backtick
+Nested ``double`` backtick
+```
+More text after triple backtick section.
+*/

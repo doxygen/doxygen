@@ -616,6 +616,9 @@ SLASHopt [/]*
                                      yyextra->verbatimLine=yyextra->lineNr;
                                      BEGIN(VerbatimCode);
   				   }
+<CComment,ReadLine,IncludeFile>"\\`" {
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                   }
 <CComment,ReadLine,IncludeFile>"```" { // skip ``` if not at the start of the line
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
@@ -740,7 +743,7 @@ SLASHopt [/]*
 				     }
   				   }
 <VerbatimCode>("```"[`]*|"~~~"[~]*) { /* end of markdown code block */
-                                     if (yyextra->blockName=="`" || yyextra->blockName=="``") // ``` inside single quote block
+                                     if (yytext[0]=='`' && (yyextra->blockName=="`" || yyextra->blockName=="``")) // ``` inside single quote block
                                      {
                                        // copy the end block marker
                                        copyToOutput(yyscanner,yytext,yyleng);
@@ -757,6 +760,14 @@ SLASHopt [/]*
                                        }
                                      }
                                    }
+<VerbatimCode>"'"                  {
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                     if (yyextra->blockName=="`") // support for `text'
+                                     {
+                                       yyextra->inVerbatim=false;
+                                       BEGIN(yyextra->lastCommentContext);
+                                     }
+                                   }
 <VerbatimCode>"`"{1,2}             {
                                      copyToOutput(yyscanner,yytext,yyleng);
                                      if (yytext==yyextra->blockName)
@@ -765,7 +776,7 @@ SLASHopt [/]*
                                        BEGIN(yyextra->lastCommentContext);
                                      }
                                    }
-<VerbatimCode>{CMD}("enddot"|"endcode"|"endmsc"|"enduml")/("{")? { /* end of verbatim block */
+<VerbatimCode>{CMD}("enddot"|"endcode"|"endmsc"|"enduml")/("{")? { // end of verbatim block
                                      copyToOutput(yyscanner,yytext,yyleng);
 				     if (&yytext[1]==yyextra->blockName)
 				     {
@@ -796,10 +807,10 @@ SLASHopt [/]*
                                        }
                                      }
   				   }
-<Verbatim,VerbatimCode>[^`~@\/\-\\\n{}]* { /* any character not a backslash or new line or } */
+<Verbatim,VerbatimCode>[^`'~@\/\-\\\n{}]* { /* any character not a backslash or new line or } */
                                      copyToOutput(yyscanner,yytext,yyleng);
                                    }
-<Verbatim,VerbatimCode>[^`~@\/\-\\\n{}]+/\n { /* premature end of comment block */
+<Verbatim,VerbatimCode>[^`'~@\/\-\\\n{}]+/\n { /* premature end of comment block */
                                      if (yyextra->lastCommentContext==ReadLine)
                                      {
                                        yyextra->inVerbatim=false;
