@@ -607,10 +607,10 @@ WSopt [ \t\r]*
                                           outputChar(yyscanner,*yytext);
                                           BEGIN( CopyStringFtn );
                                         }
-<CopyString>[^\"\\\r\n]+                {
+<CopyString>[^\"\\\r\n]{1,1000}         {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
-<CopyStringCs>[^\"\r\n]+                {
+<CopyStringCs>[^\"\r\n]{1,1000}         {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyStringCs>\"\"                      {
@@ -623,7 +623,7 @@ WSopt [ \t\r]*
                                           outputChar(yyscanner,*yytext);
                                           BEGIN( CopyLine );
                                         }
-<CopyStringFtnDouble>[^\"\\\r\n]+       {
+<CopyStringFtnDouble>[^\"\\\r\n]{1,1000} {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyStringFtnDouble>\\.                {
@@ -633,7 +633,7 @@ WSopt [ \t\r]*
                                           outputChar(yyscanner,*yytext);
                                           BEGIN( CopyLine );
                                         }
-<CopyStringFtn>[^\'\\\r\n]+             {
+<CopyStringFtn>[^\'\\\r\n]{1,1000}      {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyStringFtn>\\.                      {
@@ -652,7 +652,7 @@ WSopt [ \t\r]*
                                             BEGIN( CopyLine );
                                           }
                                         }
-<CopyRawString>[^)]+                    {
+<CopyRawString>[^)]{1,1000}             {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyRawString>.                        {

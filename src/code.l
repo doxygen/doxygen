@@ -1279,10 +1279,10 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->inForEachExpression = FALSE;
                                           BEGIN( SkipStringS );
                                         }
-<SkipString>[^\"\\\r\n]*                {
+<SkipString>[^\"\\\r\n]{1,100}          {
                                           yyextra->code->codify(yytext);
                                         }
-<SkipStringS>[^\'\\\r\n]*               {
+<SkipStringS>[^\'\\\r\n]{1,100}         {
                                           yyextra->code->codify(yytext);
                                         }
 <SkipString,SkipStringS>{CPPC}|{CCS}       {
