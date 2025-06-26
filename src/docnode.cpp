@@ -757,6 +757,20 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     AUTO_TRACE_EXIT("section");
     return;
   }
+  else if (Config_getBool(IMPLICIT_DIR_DOCS) && target.lower().endsWith("/readme.md"))
+  {
+    QCString dirTarget = target.left(target.length() - 9);
+    for (const auto &dd : *Doxygen::dirLinkedMap)
+    {
+      if (dd->name() == dirTarget)
+      {
+        m_text = target;
+        m_file = dd->getOutputFileBase();
+        AUTO_TRACE_EXIT("directory");
+        return;
+      }
+    }
+  }
   else if (resolveLink(context,target,true,&compound,anchor,lang,parser->context.prefix))
   {
     bool isFile = compound ?
