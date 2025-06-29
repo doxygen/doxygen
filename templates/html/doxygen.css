@@ -338,6 +338,7 @@ pre.fragment {
 span.tt {
         white-space: pre;
 	font-family: var(--font-family-monospace);
+	background-color: var(--fragment-background-color);
 }
 
 .clipboard {

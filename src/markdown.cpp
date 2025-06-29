@@ -1638,14 +1638,44 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
     nb++;
   }
 
-  /* finding the next delimiter */
+  /* finding the next delimiter with the same amount of backticks */
   size_t i = 0;
   char pc = '`';
-  for (end=nb; end<size && i<nb; end++)
+  for (end=nb; end<size; end++)
   {
+    //AUTO_TRACE_ADD("c={} nb={} i={} size={}",data[end],nb,i,size);
     if (data[end]=='`')
     {
       i++;
+      if (nb==1) // `...`
+      {
+        if (end<size && data[end+1]=='`') // skip over `` inside `...`
+        {
+          AUTO_TRACE_ADD("case1.1");
+          // skip
+          end++;
+          i=0;
+        }
+        else // normal end of `...`
+        {
+          AUTO_TRACE_ADD("case1.2");
+          break;
+        }
+      }
+      else if (i==nb) // ``...``
+      {
+        if (end<size && data[end+1]=='`') // do greedy match
+        {
+          // skip this quote and use the next one to terminate the sequence, e.g. ``X`Y```
+          i--;
+          AUTO_TRACE_ADD("case2.1");
+        }
+        else // normal end of ``...``
+        {
+          AUTO_TRACE_ADD("case2.2");
+          break;
+        }
+      }
     }
     else if (data[end]=='\n')
     {
@@ -1658,13 +1688,21 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
       pc = '\n';
       i = 0;
     }
-    else if (data[end]=='\'' && nb==1 && (end==size-1 || (end+1<size && !isIdChar(data[end+1]))))
+    else if (data[end]=='\'' && nb==1 && (end==size-1 || (end+1<size && data[end+1]!='\'' && !isIdChar(data[end+1]))))
     { // look for quoted strings like 'some word', but skip strings like `it's cool`
       out+="&lsquo;";
       out+=data.substr(nb,end-nb);
       out+="&rsquo;";
       AUTO_TRACE_EXIT("quoted end={}",end+1);
       return static_cast<int>(end+1);
+    }
+    else if (data[end]=='\'' && nb==2 && end<size-1 && data[end+1]=='\'')
+    { // look for '' to match a ``
+      out+="&ldquo;";
+      out+=data.substr(nb,end-nb);
+      out+="&rdquo;";
+      AUTO_TRACE_EXIT("double quoted end={}",end+1);
+      return static_cast<int>(end+2);
     }
     else
     {

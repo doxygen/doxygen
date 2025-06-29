@@ -693,6 +693,10 @@ added for backward compatibility reasons.
 In case you want to have single quotes inside a code span, don't use
 one backtick but two backticks around the code span.
 
+Double backticks are also ended by double quotes in the same way.
+
+    A ``cool'' word in a ``nice'' sentence.
+
 \subsection mddox_lists Lists Extensions
 
 With Markdown two lists separated by an empty line are joined together into

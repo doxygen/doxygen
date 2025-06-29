@@ -7338,7 +7338,14 @@ NONLopt [^\n]*
                                             yyextra->docBlock << yytext;
                                           }
                                         }
-<DocCopyBlock>"'"/[^a-z_A-Z0-9-]        {
+<DocCopyBlock>"''"/[^a-z_A-Z0-9-]       {
+                                          if (endVerbatimBlock(yyscanner,"``",2))
+                                          {
+                                            BEGIN(DocBlock);
+                                          }
+                                          yyextra->docBlock << yytext;
+                                        }
+<DocCopyBlock>"'"/[^'a-z_A-Z0-9-]       {
                                           if (endVerbatimBlock(yyscanner,"`",1))
                                           {
                                             BEGIN(DocBlock);

@@ -760,6 +760,14 @@ SLASHopt [/]*
                                        }
                                      }
                                    }
+<VerbatimCode>"''"                 {
+                                     copyToOutput(yyscanner,yytext,yyleng);
+                                     if (yyextra->blockName=="``") // support for ``text''
+                                     {
+                                       yyextra->inVerbatim=false;
+                                       BEGIN(yyextra->lastCommentContext);
+                                     }
+                                   }
 <VerbatimCode>"'"                  {
                                      copyToOutput(yyscanner,yytext,yyleng);
                                      if (yyextra->blockName=="`") // support for `text'
