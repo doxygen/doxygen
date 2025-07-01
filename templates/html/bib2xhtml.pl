@@ -119,6 +119,10 @@ sub html_ent {
 	s/\\rceil\b/&rceil;/g;
 	s/\\lfloor\b/&lfloor;/g;
 	s/\\rfloor\b/&rfloor;/g;
+	s/``/&ldquo;/g;
+	s/''/&rdquo;/g;
+	s/`/&lsquo;/g;
+	s/'/&rsquo;/g;
 }
 $bdebug = 0;
 foreach (@ARGV) {
