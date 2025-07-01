@@ -2973,7 +2973,8 @@ bool resolveRef(/* in */  const QCString &scName,
     bool checkScope
     )
 {
-  AUTO_TRACE("scope={} name={} inSeeBlock={}",scName,name,inSeeBlock);
+  AUTO_TRACE("scope={} name={} inSeeBlock={} lang={} lookForSpecialization={} currentFile={} checkScope={}",
+      scName,name,inSeeBlock,lang,lookForSpecialization,currentFile ? currentFile->name() : "", checkScope);
   //printf("resolveRef(scope=%s,name=%s,inSeeBlock=%d)\n",qPrint(scName),qPrint(name),inSeeBlock);
   QCString tsName = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
