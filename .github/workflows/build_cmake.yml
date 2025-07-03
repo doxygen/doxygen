@@ -179,14 +179,10 @@ jobs:
       if: matrix.config.os == 'ubuntu-22.04' || matrix.config.os == 'ubuntu-24.04-arm'
 
     - name: Install LaTeX (Windows)
-      uses: teatimeguest/setup-texlive-action@v3
+      uses: paolobrasolin/setup-texlive-action@v1
       with:
-        packages: >-
-          scheme-medium
-          collection-latexextra
-          babel-dutch
-          cjk
-          bibtex
+        profile-path: ${{ github.workspace }}/.github/texlive.profile
+        packages-path: ${{ github.workspace }}/.github/texlive.packages
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
