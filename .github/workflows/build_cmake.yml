@@ -425,7 +425,7 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Building documentation failed")
         endif()
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os != 'windows-latest'
 
     - name: Archive html documentation artifacts
       uses: actions/upload-artifact@v4
