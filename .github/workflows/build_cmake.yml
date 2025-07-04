@@ -178,6 +178,7 @@ jobs:
         sudo apt install libxapian-dev
       if: matrix.config.os == 'ubuntu-22.04' || matrix.config.os == 'ubuntu-24.04-arm'
 
+# TODO: package disappeared overnight, disabled for now
 #    - name: Install LaTeX (Windows)
 #      uses: teatimeguest/setup-texlive-action@v3
 #      with:
@@ -425,6 +426,7 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Building documentation failed")
         endif()
+# TODO: remove me when texlive installation is fixed
       if: matrix.config.os != 'windows-latest'
 
     - name: Archive html documentation artifacts
