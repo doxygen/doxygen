@@ -1256,11 +1256,11 @@ void LatexDocVisitor::writeStartTableCommand(const DocNodeVariant *n,size_t cols
 {
   if (isTableNested(n))
   {
-    m_t << "{\\begin{tabularx}{\\linewidth}{|*{" << cols << "}{>{\\raggedright\\arraybackslash}X|}}";
+    m_t << "\n\\begin{DoxyTableNested}{" << cols << "}\n";
   }
   else
   {
-    m_t << "\\tabulinesep=1mm\n\\begin{longtabu}spread 0pt [c]{*{" << cols << "}{|X[-1]}|}\n";
+    m_t << "\n\\begin{DoxyTable}{" << cols << "}\n";
   }
   //return isNested ? "TabularNC" : "TabularC";
 }
@@ -1269,11 +1269,11 @@ void LatexDocVisitor::writeEndTableCommand(const DocNodeVariant *n)
 {
   if (isTableNested(n))
   {
-    m_t << "\\end{tabularx}}\n";
+    m_t << "\\end{DoxyTableNested}\n";
   }
   else
   {
-    m_t << "\\end{longtabu}\n";
+    m_t << "\\end{DoxyTable}\n";
   }
   //return isNested ? "TabularNC" : "TabularC";
 }

@@ -346,6 +346,20 @@
   \end{DoxyDesc}%
 }
 
+\newenvironment{DoxyTable}[1]{%
+  \tabulinesep=1mm%
+  \begin{longtabu}spread 0pt [c]{*{#1}{|X[-1]}|}%
+}{%
+  \end{longtabu}%
+}
+
+\newenvironment{DoxyTableNested}[1]{%
+  \par\noindent
+  \tabularx{\linewidth}{|*{#1}{>{\raggedright\arraybackslash}X|}}%
+}{%
+  \endtabularx
+}
+
 % Used by parameter lists
 \newenvironment{DoxyParams}[2][]{%
     \tabulinesep=1mm%
