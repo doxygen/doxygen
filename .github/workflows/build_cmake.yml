@@ -404,7 +404,7 @@ jobs:
 #      shell: cmake -P {0}
 #      run: |
 #        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-#    
+#
 #        execute_process(
 #          COMMAND
 #            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --man --pdf"
