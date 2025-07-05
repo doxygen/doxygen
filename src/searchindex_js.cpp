@@ -753,7 +753,9 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
               // member in class or namespace scope
             {
               SrcLangExt lang = md->getLanguage();
-              name = convertToXML(d->getOuterScope()->qualifiedName()) + getLanguageSpecificSeparator(lang) + prefix;
+              QCString sep = getLanguageSpecificSeparator(lang);
+              if (sep == "\\") sep = "\\\\";
+              name = convertToXML(d->getOuterScope()->qualifiedName()) + sep + prefix;
               found = true;
             }
             else if (scope) // some thing else? -> show scope
