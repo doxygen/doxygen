@@ -277,7 +277,7 @@ QCString convertToHtml(const QCString &s,bool keepEntities=true);
 
 QCString convertToXML(const QCString &s, bool keepEntities=false);
 
-QCString convertToJSString(const QCString &s,bool keepEntities=false);
+QCString convertToJSString(const QCString &s,bool keepEntities=false,bool singleQuotes=false);
 
 QCString getOverloadDocs();
 

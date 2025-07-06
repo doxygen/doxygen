@@ -558,7 +558,7 @@ static void writeJavascriptSearchData(const QCString &searchDirName)
       if (!sii.symbolMap.empty())
       {
         if (j>0) t << ",\n";
-        t << "  " << j << ": \"" << sii.name << "\"";
+        t << "  " << j << ": \"" << convertToJSString(sii.name,true,false) << "\"";
         j++;
       }
     }
@@ -572,7 +572,7 @@ static void writeJavascriptSearchData(const QCString &searchDirName)
       if (!sii.symbolMap.empty())
       {
         if (j>0) t << ",\n";
-        t << "  " << j << ": \"" << convertToXML(sii.getText()) << "\"";
+        t << "  " << j << ": \"" << convertToJSString(convertToXML(sii.getText()),true,false) << "\"";
         j++;
       }
     }
@@ -653,11 +653,11 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
       ti << "  ['" << id << "_" << cnt++ << "',['";
       if (next==SearchTerm::LinkInfo() || it->word!=word) // unique result, show title
       {
-        ti << convertToXML(term.title);
+        ti << convertToJSString(convertToXML(term.title),true,true);
       }
       else // multiple results, show matching word only, expanded list will show title
       {
-        ti << convertToXML(term.word);
+        ti << convertToJSString(convertToXML(term.word),true,true);
       }
       ti << "',[";
       childCount=0;
@@ -671,12 +671,12 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
     QCString fn  = d ? d->getOutputFileBase() : si ? si->fileName() : QCString();
     QCString ref = d ? d->getReference()      : si ? si->ref()      : QCString();
     addHtmlExtensionIfMissing(fn);
-    ti << "'" << externalRef("../",ref,TRUE) << fn;
+    QCString extRef = externalRef("../",ref,true)+fn;
     if (!anchor.isEmpty())
     {
-      ti << "#" << anchor;
+      extRef+="#"+anchor;
     }
-    ti << "',";
+    ti << "'" << convertToJSString(extRef,true,true) << "',";
 
     bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
     if (!extLinksInWindow || ref.isEmpty())
@@ -692,7 +692,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
     {
       if (d && d->getOuterScope()!=Doxygen::globalScope)
       {
-        ti << "'" << convertToXML(d->getOuterScope()->name()) << "'";
+        ti << "'" << convertToJSString(convertToXML(d->getOuterScope()->name()),true,true) << "'";
       }
       else if (md)
       {
@@ -700,7 +700,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
         if (fd==nullptr) fd = md->getFileDef();
         if (fd)
         {
-          ti << "'" << convertToXML(fd->localName()) << "'";
+          ti << "'" << convertToJSString(convertToXML(fd->localName()),true,true) << "'";
         }
       }
       else
@@ -754,7 +754,6 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
             {
               SrcLangExt lang = md->getLanguage();
               QCString sep = getLanguageSpecificSeparator(lang);
-              if (sep == "\\") sep = "\\\\";
               name = convertToXML(d->getOuterScope()->qualifiedName()) + sep + prefix;
               found = true;
             }
@@ -777,7 +776,7 @@ static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCStri
         name = prefix + "("+theTranslator->trGlobalNamespace()+")";
       }
 
-      ti << "'" << name << "'";
+      ti << "'" << convertToJSString(name,true,true) << "'";
 
       prevScope = scope;
       childCount++;

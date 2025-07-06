@@ -4534,7 +4534,7 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
   return growBuf.get();
 }
 
-QCString convertToJSString(const QCString &s,bool keepEntities)
+QCString convertToJSString(const QCString &s,bool keepEntities,bool singleQuotes)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
@@ -4544,8 +4544,11 @@ QCString convertToJSString(const QCString &s,bool keepEntities)
   {
     switch (c)
     {
-      case '"':  growBuf.addStr("\\\""); break;
-      case '\\': if (*p=='u' && *(p+1)=='{') growBuf.addStr("\\");
+      case '"':  if (!singleQuotes) growBuf.addStr("\\\""); else growBuf.addChar(c);
+                 break;
+      case '\'': if (singleQuotes) growBuf.addStr("\\\'"); else growBuf.addChar(c);
+                 break;
+      case '\\': if (*p=='u' && *(p+1)=='{') growBuf.addStr("\\"); // keep \u{..} unicode escapes
                  else growBuf.addStr("\\\\");
                  break;
       default:   growBuf.addChar(c);   break;
