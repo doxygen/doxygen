@@ -280,6 +280,11 @@ QCString getBaseNameOfOutput(const QCString &output)
 
 bool DotRunner::run()
 {
+  if (Config_getBool(DOT_DRY_RUN)) {
+    // this is unexpected in dry run case; maybe we should report an error instead of silently skipping
+    return TRUE;
+  }
+
   int exitCode=0;
 
   QCString dotArgs;
@@ -360,5 +365,3 @@ error:
     exitCode,qPrint(m_dotExe),qPrint(dotArgs));
   return FALSE;
 }
-
-

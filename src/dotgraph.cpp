@@ -15,6 +15,8 @@
 
 #include <mutex>
 #include <regex>
+#include <map>
+#include <string>
 
 #include "config.h"
 #include "doxygen.h"
@@ -86,6 +88,10 @@ static bool deliverablesPresent(const QCString &file1,const QCString &file2)
 static bool insertMapFile(TextStream &out,const QCString &mapFile,
                           const QCString &relPath,const QCString &mapLabel)
 {
+  if (Config_getBool(DOT_DRY_RUN)) {
+    // not supported right now
+    return TRUE;
+  }
   FileInfo fi(mapFile.str());
   if (fi.exists() && fi.size()>0) // reuse existing map file
   {
@@ -110,7 +116,6 @@ QCString DotGraph::imgName() const
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
-std::mutex g_dotIndexListMutex;
 
 QCString DotGraph::writeGraph(
         TextStream& t,            // output stream for the code file (html, ...)
@@ -122,6 +127,9 @@ QCString DotGraph::writeGraph(
         bool generateImageMap,    // in case of bitmap, shall there be code generated?
         int graphId)              // number of this graph in the current code, used in svg code
 {
+  static std::mutex dotMdIndexMutex;
+  static std::mutex dotIndexListMutex;
+  static std::map<std::size_t, int> lt_mdindex{};
   m_graphFormat = gf;
   m_textFormat = ef;
   m_dir = Dir(path.str());
@@ -132,6 +140,14 @@ QCString DotGraph::writeGraph(
 
   m_absPath  = m_dir.absPath() + "/";
   m_baseName = getBaseName();
+  const size_t hash_baseName {std::hash<std::string>{}(m_baseName.str())};
+  {
+    std::lock_guard<std::mutex> lock(dotMdIndexMutex);
+    if (lt_mdindex.count(hash_baseName) > 1) {
+      return m_baseName;
+    }
+    lt_mdindex[hash_baseName] = 1;
+  }
 
   computeTheGraph();
 
@@ -139,7 +155,7 @@ QCString DotGraph::writeGraph(
 
   if (!m_doNotAddImageToIndex)
   {
-    std::lock_guard<std::mutex> lock(g_dotIndexListMutex);
+    std::lock_guard<std::mutex> lock(dotIndexListMutex);
     Doxygen::indexList->addImageFile(imgName());
   }
 
@@ -155,23 +171,28 @@ bool DotGraph::prepareDotFile()
     term("Output dir %s does not exist!\n", m_dir.path().c_str());
   }
 
-  char sigStr[33];
-  uint8_t md5_sig[16];
-  // calculate md5
-  MD5Buffer(m_theGraph.data(), static_cast<unsigned int>(m_theGraph.length()), md5_sig);
-  // convert result to a string
-  MD5SigToString(md5_sig, sigStr);
+  char sigStr[33] {};
 
-  // already queued files are processed again in case the output format has changed
+  if (!Config_getBool(DOT_FORCE_REGENERATING)) {
+    // check if the output file is already there; not needed if regeneration is forced anyway
 
-  if (sameMd5Signature(absBaseName(), sigStr) &&
-      deliverablesPresent(absImgName(),
-                          m_graphFormat == GraphOutputFormat::BITMAP && m_generateImageMap ? absMapName() : QCString()
-                         )
-     )
-  {
-    // all needed files are there
-    return FALSE;
+    uint8_t md5_sig[16];
+    // calculate md5
+    MD5Buffer(m_theGraph.data(), static_cast<unsigned int>(m_theGraph.length()), md5_sig);
+    // convert result to a string
+    MD5SigToString(md5_sig, sigStr);
+
+    // already queued files are processed again in case the output format has changed
+
+    if (sameMd5Signature(absBaseName(), sigStr) &&
+        deliverablesPresent(absImgName(),
+                            m_graphFormat == GraphOutputFormat::BITMAP && m_generateImageMap ? absMapName() : QCString()
+                          )
+      )
+    {
+      // all needed files are there
+      return FALSE;
+    }
   }
 
   // need to rebuild the image
@@ -186,26 +207,35 @@ bool DotGraph::prepareDotFile()
   f << m_theGraph;
   f.close();
 
-  if (m_graphFormat == GraphOutputFormat::BITMAP)
-  {
-    // run dot to create a bitmap image
-    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
-    dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
-  }
-  else if (m_graphFormat == GraphOutputFormat::EPS)
-  {
-    // run dot to create a .eps image
-    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
-    if (Config_getBool(USE_PDFLATEX))
+
+  if (Config_getBool(DOT_DRY_RUN)) {
+    // dot shall not be executed by doxygen, skip creating runner
+    // pretend dot file is existing and does not require post-processing
+    return FALSE;
+
+  } else {
+    if (m_graphFormat == GraphOutputFormat::BITMAP)
     {
-      dotRun->addJob("pdf",absImgName(),absDotName(),1);
+      // run dot to create a bitmap image
+      DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
+      dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
+      if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
     }
-    else
+    else if (m_graphFormat == GraphOutputFormat::EPS)
     {
-      dotRun->addJob("ps",absImgName(),absDotName(),1);
+      // run dot to create a .eps image
+      DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        dotRun->addJob("pdf",absImgName(),absDotName(),1);
+      }
+      else
+      {
+        dotRun->addJob("ps",absImgName(),absDotName(),1);
+      }
     }
   }
+
   return TRUE;
 }
 
@@ -228,7 +258,7 @@ void DotGraph::generateCode(TextStream &t)
   }
   else if (m_graphFormat==GraphOutputFormat::BITMAP && m_generateImageMap) // produce HTML to include the image
   {
-    if (imgExt=="svg") // add link to SVG file without map file
+    if (imgExt.endsWith("svg")) // add link to SVG file without map file
     {
       if (!m_noDivTag) t << "<div class=\"center\">";
       if (m_regenerate || !DotFilePatcher::writeSVGFigureLink(t,m_relPath,m_baseName,absImgName())) // need to patch the links in the generated SVG file
@@ -352,4 +382,3 @@ void DotGraph::computeGraph(DotNode *root,
 
   graphStr=md5stream.str();
 }
-

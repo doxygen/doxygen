@@ -701,7 +701,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         QCString htmlOutput = Config_getString(HTML_OUTPUT);
         QCString imgExt = getDotImageExtension();
         PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;	// default : PUML_BITMAP
-        if (imgExt=="svg")
+        if (imgExt.endsWith("svg"))
         {
           format = PlantumlManager::PUML_SVG;
         }
@@ -1864,7 +1864,7 @@ void HtmlDocVisitor::operator()(const DocPlantUmlFile &df)
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
   PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;	// default : PUML_BITMAP
-  if (imgExt=="svg")
+  if (imgExt.endsWith("svg"))
   {
     format = PlantumlManager::PUML_SVG;
   }
@@ -2278,7 +2278,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
   QCString baseName=makeBaseName(fileName);
   QCString outDir = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
-  if (imgExt=="svg")
+  if (imgExt.endsWith("svg"))
   {
     PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_SVG);
     //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />\n";
@@ -2439,4 +2439,3 @@ void HtmlDocVisitor::forceStartParagraph(const Node &n)
     if (needsTag) m_t << "<p>";
   }
 }
-

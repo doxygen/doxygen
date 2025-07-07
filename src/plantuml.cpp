@@ -23,16 +23,21 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "indexlist.h"
+#include <string>
+#include <map>
 
 QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
                                               const QCString &content,OutputFormat format, const QCString &engine,
                                               const QCString &srcFile,int srcLine,bool inlineCode)
 {
+  static std::mutex umlIndexListMutex;
+  bool isNewContent = true;
   QCString baseName;
   QCString puName;
   QCString imgName;
   QCString outDir(outDirArg);
   static int umlindex=1;
+  static std::map<std::size_t, unsigned int> lt_umlindex{};
 
   Debug::print(Debug::Plantuml,0,"*** %s fileName: %s\n","writePlantUMLSource",qPrint(fileName));
   Debug::print(Debug::Plantuml,0,"*** %s outDir: %s\n","writePlantUMLSource",qPrint(outDir));
@@ -46,8 +51,30 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
 
   if (fileName.isEmpty()) // generate name
   {
-    puName = "inline_umlgraph_"+QCString().setNum(umlindex);
-    baseName = outDir+"/inline_umlgraph_"+QCString().setNum(umlindex++);
+    unsigned int graph_id = 0U;
+
+    // check if the content is already known (in this we can reuse the existing image)
+    const std::size_t content_hash {std::hash<std::string>{}(content.str())};
+    {
+      std::lock_guard<std::mutex> lock(umlIndexListMutex);
+      
+      if (lt_umlindex.count(content_hash) > 0) {
+        isNewContent = false;
+        graph_id = lt_umlindex[content_hash];
+      } else {
+        graph_id = umlindex;
+        lt_umlindex[content_hash] = umlindex;
+        umlindex++;
+      }
+    }
+
+    puName = "inline_umlgraph_"+ QCString().setNum(graph_id);
+    baseName = outDir+"/inline_umlgraph_"+QCString().setNum(graph_id);
+
+    if (isNewContent == false) {
+      Debug::print(Debug::Plantuml,0,"*** %s UML content already known: %s\n","writePlantUMLSource",qPrint(fileName));
+    }
+    
   }
   else // user specified name
   {
@@ -58,69 +85,70 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
     baseName.prepend(outDir+"/");
   }
 
-  switch (format)
-  {
-    case PUML_BITMAP:
-      imgName =puName+".png";
-      break;
-    case PUML_EPS:
-      imgName =puName+".eps";
-      break;
-    case PUML_SVG:
-      imgName =puName+".svg";
-      break;
-  }
-
-  Debug::print(Debug::Plantuml,0,"*** %s baseName: %s\n","writePlantUMLSource",qPrint(baseName));
-  Debug::print(Debug::Plantuml,0,"*** %s puName: %s\n","writePlantUMLSource",qPrint(puName));
-  Debug::print(Debug::Plantuml,0,"*** %s imgName: %s\n","writePlantUMLSource",qPrint(imgName));
-
-  QCString text;
-  if (inlineCode) text = "@start"+engine+" "+imgName+"\n";
-  text.reserve(text.length()+content.length()+100); // add room for image name and end marker
-  const char *p = content.data();
-  if (p)
-  {
-    char c = 0;
-    bool insideComment = false;
-    bool initial       = true;
-    while ((c=*p++))
+  if (isNewContent) {
+    switch (format)
     {
-      text+=c;
-      switch (c)
-      {
-        case '\'': insideComment=true; break;
-        case '\n': insideComment=false; break;
-        case '\t': break;
-        case ' ':  break;
-        case '@':
-          if (initial && qstrncmp(p,"start",5)==0) // @start...
-          {
-            while ((c=*p++) && isId(c)) text+=c;
-            // insert the image name
-            text+=' ';
-            text+=imgName;
-            if (c) text+=c;
-          }
-          break;
-        default:
-          if (!insideComment) initial=false;
-          break;
-      }
+      case PUML_BITMAP:
+        imgName =puName+".png";
+        break;
+      case PUML_EPS:
+        imgName =puName+".eps";
+        break;
+      case PUML_SVG:
+        imgName =puName+".svg";
+        break;
     }
-    text+='\n';
+
+    Debug::print(Debug::Plantuml,0,"*** %s baseName: %s\n","writePlantUMLSource",qPrint(baseName));
+    Debug::print(Debug::Plantuml,0,"*** %s puName: %s\n","writePlantUMLSource",qPrint(puName));
+    Debug::print(Debug::Plantuml,0,"*** %s imgName: %s\n","writePlantUMLSource",qPrint(imgName));
+
+    QCString text;
+    if (inlineCode) text = "@start"+engine+" "+imgName+"\n";
+    text += "'source: "+srcFile+" line: "+QCString().setNum(srcLine)+"\n";
+    text.reserve(text.length()+content.length()+100); // add room for image name and end marker
+    const char *p = content.data();
+    if (p)
+    {
+      char c = 0;
+      bool insideComment = false;
+      bool initial       = true;
+      while ((c=*p++))
+      {
+        text+=c;
+        switch (c)
+        {
+          case '\'': insideComment=true; break;
+          case '\n': insideComment=false; break;
+          case '\t': break;
+          case ' ':  break;
+          case '@':
+            if (initial && qstrncmp(p,"start",5)==0) // @start...
+            {
+              while ((c=*p++) && isId(c)) text+=c;
+              // insert the image name
+              text+=' ';
+              text+=imgName;
+              if (c) text+=c;
+            }
+            break;
+          default:
+            if (!insideComment) initial=false;
+            break;
+        }
+      }
+      text+='\n';
+    }
+    if (inlineCode) text +="@end"+engine+"\n";
+
+    //printf("content\n====\n%s\n=====\n->\n-----\n%s\n------\n",qPrint(content),qPrint(text));
+
+    QCString qcOutDir(substitute(outDir,"\\","/"));
+    uint32_t pos = qcOutDir.findRev("/");
+    QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
+    Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
+    PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);    
   }
-  if (inlineCode) text +="@end"+engine+"\n";
-
-  //printf("content\n====\n%s\n=====\n->\n-----\n%s\n------\n",qPrint(content),qPrint(text));
-
-  QCString qcOutDir(substitute(outDir,"\\","/"));
-  uint32_t pos = qcOutDir.findRev("/");
-  QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
-  Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
-  PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
-  Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
-
   return baseName;
 }
 
@@ -185,6 +213,12 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   QCString pumlType = "";
   QCString pumlOutDir = "";
 
+  int num_threads {Config_getInt(NUM_PROC_THREADS)};
+  if (num_threads < 1)
+  {
+    num_threads = 8; // use 8 threads if "auto" is configured
+  }
+
   const StringVector &pumlIncludePathList = Config_getList(PLANTUML_INCLUDE_PATH);
   {
     auto it = pumlIncludePathList.begin();
@@ -235,7 +269,47 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   {
     for (const auto &[name,nb] : plantumlContent)
     {
-      if (nb.content.isEmpty()) continue;
+      if (nb.content_vec.empty()) continue;
+
+
+      /* iterate over content_vec and create up to N-files for N-threads */
+      unsigned int num_graphs = static_cast<unsigned int>(nb.content_vec.size() / num_threads + (nb.content_vec.size() % num_threads != 0));
+      Debug::print(Debug::Plantuml,0,"*** Creating %d PlantUML files with max %d graphs for %d threads. %d graphs in total.\n", num_threads, num_graphs,  num_threads, nb.content_vec.size());
+      ::std::vector<QCString> puFiles;
+      unsigned int graphIndex {0U};
+      unsigned int fileIndex {0U};
+      std::ofstream file;
+      for (const auto &content : nb.content_vec)
+      {
+        if (graphIndex == 0U)
+        {
+          if (file.is_open())
+          {
+            file.close();
+          }
+
+          QCString puFileName = nb.outDir + "/inline_umlgraph_" + pumlType + name.c_str() + "_" + QCString().setNum(fileIndex) + ".pu";
+          puFiles.push_back(puFileName);
+          ++fileIndex;
+
+          // open file in write-mode (existing content is overwritten)
+          file = Portable::openOutputStream(puFileName, false);
+
+          if (!file.is_open())
+          {
+            err_full(nb.srcFile,nb.srcLine,"Could not open file %s for writing",puFileName.data());
+            return;
+          }
+        }
+        file.write( content.data(), content.length() );
+
+        graphIndex = (graphIndex + 1) % num_graphs;
+      }
+
+      if (file.is_open())
+      {
+        file.close();
+      }
 
       QCString pumlArguments = pumlArgs;
       msg("Generating PlantUML %s Files in %s\n",qPrint(pumlType),name.c_str());
@@ -245,43 +319,29 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       pumlArguments+="-charset UTF-8 -t";
       pumlArguments+=pumlType;
       pumlArguments+=" ";
+      pumlArguments+="-nbthread ";
+      pumlArguments+=std::to_string(num_threads);
+      pumlArguments+=" ";
 
-      QCString puFileName("");
-      puFileName+=nb.outDir;
-      puFileName+="/";
-      pumlOutDir=puFileName;
-      puFileName+="inline_umlgraph_";
-      puFileName+=pumlType;
-      puFileName+=name.c_str();
-      puFileName+=".pu";
-
-      pumlArguments+="\"";
-      pumlArguments+=puFileName;
-      pumlArguments+="\" ";
-
-
-      QCString cachedContent;
-      FileInfo fi(puFileName.str());
-      if (fi.exists())
+      for (const auto &puFile : puFiles)
       {
-        cachedContent = fileToString(puFileName);
+        pumlArguments += "\"";
+        pumlArguments += puFile;
+        pumlArguments += "\" ";
       }
 
-      std::ofstream file = Portable::openOutputStream(puFileName);
-      if (!file.is_open())
-      {
-        err_full(nb.srcFile,nb.srcLine,"Could not open file %s for writing",puFileName.data());
-      }
-      file.write( nb.content.data(), nb.content.length() );
-      file.close();
-      Debug::print(Debug::Plantuml,0,"*** PlantumlManager::runPlantumlContent Running Plantuml arguments:%s\n",qPrint(pumlArguments));
+      Debug::print(Debug::Plantuml,0,"*** Executing PlantUML: %s\n", pumlArguments.data());
 
-      if (cachedContent == nb.content) continue;
-
-      if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
+      // run plantuml executable and check for errors
+      exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE);
+      if (exitCode == 200)
       {
-        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%s\" -h' works from the command line. Exit code: %d.",
-            plantumlJarPath.data(),exitCode);
+        // error code 200 corresponds to PlantUML's ErrorStatus::hasErrors
+        err("PlantUML file(s) contain(s) errors. Check the PlantUML output for details.\n");
+      } else if (exitCode!=0)
+      {
+        err("Problems running PlantUML for files. Verify that the command 'java -jar \"%s\" -h' works from the command line. Exit code: %d.\n",
+             plantumlJarPath.data(),exitCode);
       }
 
       if ( (format==PlantumlManager::PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
@@ -341,7 +401,11 @@ static void print(const PlantumlManager::ContentMap &plantumlContent)
     for (const auto &[key,content] : plantumlContent)
     {
       Debug::print(Debug::Plantuml,0,"*** PlantumlManager::print Content PlantumlContent key: %s\n",key.c_str());
-      Debug::print(Debug::Plantuml,0,"*** PlantumlManager::print Content:\n%s\n",content.content.data());
+      Debug::print(Debug::Plantuml,0,"*** PlantumlManager::print Content:\n");
+      for (const auto &contentItem : content.content_vec)
+      {
+        Debug::print(Debug::Plantuml,0,"%s\n",contentItem.data());
+      }
     }
   }
 }
@@ -366,7 +430,7 @@ static void addPlantumlContent(PlantumlManager::ContentMap &plantumlContent,
   {
     kv = plantumlContent.emplace(key,PlantumlContent("",outDir,srcFile,srcLine)).first;
   }
-  kv->second.content+=puContent;
+  kv->second.content_vec.push_back(puContent);
 }
 
 void PlantumlManager::insert(const std::string &key, const std::string &value,

@@ -21,6 +21,7 @@
 
 #include "containers.h"
 #include "qcstring.h"
+#include <vector>
 
 #define DIVIDE_COUNT            4
 #define MIN_PLANTUML_COUNT      8
@@ -29,11 +30,11 @@ class QCString;
 struct PlantumlContent
 {
   PlantumlContent(const QCString &content_, const QCString &outDir_, const QCString &srcFile_, int srcLine_)
-     : content(content_), outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {}
-  QCString content;
-  QCString outDir;
-  QCString srcFile;
-  int srcLine;
+     : outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {content_vec.push_back(content_);}
+    QCString outDir;
+    QCString srcFile;
+    int srcLine;
+    ::std::vector<QCString> content_vec;
 };
 
 /** Singleton that manages plantuml relation actions */
