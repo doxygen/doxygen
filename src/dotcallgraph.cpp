@@ -120,7 +120,7 @@ void DotCallGraph::determineTruncatedNodes(DotNodeDeque &queue)
 DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
 {
   m_inverse = inverse;
-  m_diskName = md->getOutputFileBase()+"_"+md->anchor();
+  m_diskName = md->anchor();
   m_scope    = md->getOuterScope();
   QCString uniqueId = getUniqueId(md);
   QCString name;

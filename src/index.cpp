@@ -4085,7 +4085,7 @@ void writeGraphInfo(OutputList &ol)
   int s = legendDocs.find("<center>");
   int e = legendDocs.find("</center>");
   QCString imgExt = getDotImageExtension();
-  if (imgExt=="svg" && s!=-1 && e!=-1)
+  if (imgExt.endsWith("svg") && s!=-1 && e!=-1)
   {
     legendDocs = legendDocs.left(s+8) + "[!-- " + "SVG 0 --]" + legendDocs.mid(e);
     //printf("legendDocs=%s\n",qPrint(legendDocs));

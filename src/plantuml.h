@@ -21,6 +21,7 @@
 
 #include "containers.h"
 #include "qcstring.h"
+#include <vector>
 
 #define DIVIDE_COUNT            4
 #define MIN_PLANTUML_COUNT      8
@@ -29,11 +30,11 @@ class QCString;
 struct PlantumlContent
 {
   PlantumlContent(const QCString &content_, const QCString &outDir_, const QCString &srcFile_, int srcLine_)
-     : content(content_), outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {}
-  QCString content;
-  QCString outDir;
-  QCString srcFile;
-  int srcLine;
+     : outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {content_vec.push_back(content_);}
+    QCString outDir;
+    QCString srcFile;
+    int srcLine;
+    ::std::vector<QCString> content_vec;
 };
 
 /** Singleton that manages plantuml relation actions */
@@ -83,8 +84,14 @@ class PlantumlManager
                 const QCString &puContent,
                 const QCString &srcFile,
                 int srcLine);
-    void generatePlantUmlFileNames(const QCString &fileName,OutputFormat format,const QCString &outDir,
-                                                    QCString &baseName,QCString &puName,QCString &imgName);
+    
+    /**
+     * Generate unique PlantUML file names.
+     * @return true if new file names were generated, false if existing names were reused.
+     */
+    bool generatePlantUmlFileNames(const QCString &fileName,OutputFormat format,const QCString &outDir,
+                                   QCString &baseName,QCString &puName,QCString &imgName,
+                                   const QCString &content);
 
     FilesMap   m_pngPlantumlFiles;
     FilesMap   m_svgPlantumlFiles;

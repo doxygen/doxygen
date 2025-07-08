@@ -29,7 +29,7 @@ void DotLegendGraph::writeGraph(const QCString &path)
   TextStream ts;
   DotGraph::writeGraph(ts, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, "", "", FALSE, 0);
 
-  if (getDotImageExtension()=="svg")
+  if (getDotImageExtension().endsWith("svg"))
   {
     DotManager::instance()->
       createFilePatcher(absBaseName()+Config_getString(HTML_FILE_EXTENSION))->
@@ -72,4 +72,3 @@ QCString DotLegendGraph::getMapLabel() const
 {
   return "";
 }
-

@@ -6804,6 +6804,10 @@ bool mainPageHasTitle()
 QCString getDotImageExtension()
 {
   QCString imgExt = Config_getEnumAsString(DOT_IMAGE_FORMAT);
+  if (Config_getBool(DOT_DRY_RUN)) {
+    // use ".dot.png", "dot.jpg", ... ending as this is the default if dot is executed with -O option.
+    imgExt = "dot." + imgExt;
+  }
   int i= imgExt.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
   return i==-1 ? imgExt : imgExt.left(i);
 }
