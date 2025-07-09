@@ -1867,6 +1867,24 @@ void GroupDefImpl::sortMemberLists()
     };
 
     std::stable_sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);
+
+    auto moduleComp = [](const ModuleLinkedRefMap::Ptr &m1,const ModuleLinkedRefMap::Ptr &m2)
+    {
+      return qstricmp_sort(m1->name(),m2->name())<0;
+    };
+
+    std::stable_sort(m_modules.begin(), m_modules.end(), moduleComp);
+
+    auto conceptComp = [](const ConceptLinkedRefMap::Ptr &c1,const ConceptLinkedRefMap::Ptr &c2)
+    {
+      return qstricmp_sort(c1->name(),c2->name())<0;
+    };
+
+    std::stable_sort(m_concepts.begin(), m_concepts.end(), conceptComp);
+
+    std::stable_sort(m_dirList.begin(), m_dirList.end(), compareDirDefs);
+    std::stable_sort(m_fileList.begin(), m_fileList.end(), compareFileDefs);
+
   }
   else
   {
@@ -1917,10 +1935,13 @@ void GroupDefImpl::removeMemberFromList(MemberListType lt,MemberDef *md)
 
 void GroupDefImpl::sortSubGroups()
 {
-  std::stable_sort(m_groups.begin(),
-            m_groups.end(),
-            [](const auto &g1,const auto &g2)
-            { return g1->groupTitle() < g2->groupTitle(); });
+  if (Config_getBool(SORT_BRIEF_DOCS))
+  {
+    std::stable_sort(m_groups.begin(),
+              m_groups.end(),
+              [](const auto &g1,const auto &g2)
+              { return g1->groupTitle() < g2->groupTitle(); });
+  }
 }
 
 static bool hasNonReferenceNestedGroupRec(const GroupDef *gd,int level)

@@ -1774,6 +1774,13 @@ void FileDefImpl::sortMemberLists()
     std::stable_sort(m_structs.begin(),   m_structs.end(),   classComp);
     std::stable_sort(m_exceptions.begin(),m_exceptions.end(),classComp);
 
+    auto conceptComp = [](const ConceptLinkedRefMap::Ptr &c1,const ConceptLinkedRefMap::Ptr &c2)
+    {
+      return qstricmp_sort(c1->name(),c2->name())<0;
+    };
+
+    std::stable_sort(m_concepts.begin(), m_concepts.end(), conceptComp);
+
     auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
     {
       return qstricmp_sort(n1->name(),n2->name())<0;

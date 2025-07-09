@@ -2,9 +2,9 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="namespacemymodule" kind="namespace" language="Fortran">
     <compoundname>mymodule</compoundname>
-    <innerclass refid="interfacemymodule_1_1abstractproc" prot="public">mymodule::abstractproc</innerclass>
     <innerclass refid="interfacemymodule_1_1externalproc" prot="public">mymodule::externalproc</innerclass>
     <innerclass refid="interfacemymodule_1_1genericproc" prot="public">mymodule::genericproc</innerclass>
+    <innerclass refid="interfacemymodule_1_1abstractproc" prot="public">mymodule::abstractproc</innerclass>
     <innerclass refid="interfacemymodule_1_1operator_07_8cross_8_08" prot="private">mymodule::operator(.cross.)</innerclass>
     <innerclass refid="interfacemymodule_1_1operator_07_2_2_08" prot="private">mymodule::operator(//)</innerclass>
     <sectiondef kind="func">

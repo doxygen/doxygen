@@ -4611,14 +4611,17 @@ void ClassDefImpl::sortMemberLists()
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
-  std::stable_sort(m_innerClasses.begin(),
-            m_innerClasses.end(),
-            [](const auto &c1,const auto &c2)
-            {
-               return Config_getBool(SORT_BY_SCOPE_NAME)                ?
-                      qstricmp_sort(c1->name(),      c2->name()     )<0 :
-                      qstricmp_sort(c1->className(), c2->className())<0 ;
-            });
+  if (Config_getBool(SORT_BRIEF_DOCS))
+  {
+    std::stable_sort(m_innerClasses.begin(),
+              m_innerClasses.end(),
+              [](const auto &c1,const auto &c2)
+              {
+                 return Config_getBool(SORT_BY_SCOPE_NAME)                ?
+                        qstricmp_sort(c1->name(),      c2->name()     )<0 :
+                        qstricmp_sort(c1->className(), c2->className())<0 ;
+              });
+  }
 }
 
 int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,

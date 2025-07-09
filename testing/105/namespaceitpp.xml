@@ -2,8 +2,8 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="namespaceitpp" kind="namespace" language="C++">
     <compoundname>itpp</compoundname>
-    <innerclass refid="classitpp_1_1_c_fix" prot="public">itpp::CFix</innerclass>
     <innerclass refid="classitpp_1_1_vec" prot="public">itpp::Vec</innerclass>
+    <innerclass refid="classitpp_1_1_c_fix" prot="public">itpp::CFix</innerclass>
     <sectiondef kind="typedef">
       <memberdef kind="typedef" id="namespaceitpp_1a057e78df9719352a7a2ae36c0e190982" prot="public" static="no">
         <type><ref refid="classitpp_1_1_vec" kindref="compound">Vec</ref>&lt; <ref refid="classitpp_1_1_c_fix" kindref="compound">CFix</ref> &gt;</type>

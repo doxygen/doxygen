@@ -2,18 +2,18 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="namespacestrings" kind="namespace" language="Fortran">
     <compoundname>strings</compoundname>
+    <innerclass refid="structstrings_1_1string" prot="public">strings::string</innerclass>
     <innerclass refid="interfacestrings_1_1append" prot="public">strings::append</innerclass>
     <innerclass refid="interfacestrings_1_1appendifunique" prot="public">strings::appendifunique</innerclass>
     <innerclass refid="interfacestrings_1_1find" prot="public">strings::find</innerclass>
+    <innerclass refid="interfacestrings_1_1operator_07_0a_0a_08" prot="public">strings::operator(==)</innerclass>
     <innerclass refid="interfacestrings_1_1grow" prot="public">strings::grow</innerclass>
     <innerclass refid="interfacestrings_1_1join" prot="public">strings::join</innerclass>
-    <innerclass refid="interfacestrings_1_1len" prot="public">strings::len</innerclass>
-    <innerclass refid="interfacestrings_1_1operator_07_0a_0a_08" prot="public">strings::operator(==)</innerclass>
     <innerclass refid="interfacestrings_1_1pack" prot="public">strings::pack</innerclass>
-    <innerclass refid="interfacestrings_1_1push" prot="private">strings::push</innerclass>
     <innerclass refid="interfacestrings_1_1replace" prot="public">strings::replace</innerclass>
     <innerclass refid="interfacestrings_1_1shrink" prot="public">strings::shrink</innerclass>
-    <innerclass refid="structstrings_1_1string" prot="public">strings::string</innerclass>
+    <innerclass refid="interfacestrings_1_1push" prot="private">strings::push</innerclass>
+    <innerclass refid="interfacestrings_1_1len" prot="public">strings::len</innerclass>
     <sectiondef kind="var">
       <memberdef kind="variable" id="namespacestrings_1a45584f6a9f6f13e5370bd883d744f0a6" prot="private" static="no" mutable="no">
         <type>integer, parameter</type>

@@ -108,11 +108,11 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     const MemberLists &getMemberLists() const override { return m_memberLists; }
     const MemberDef *getMemberByName(const QCString &) const override;
     const MemberGroupList &getMemberGroups() const override { return m_memberGroups; }
-    ClassLinkedRefMap getClasses() const override { return classes; }
-    ClassLinkedRefMap getInterfaces() const override { return interfaces; }
-    ClassLinkedRefMap getStructs() const override { return structs; }
-    ClassLinkedRefMap getExceptions() const override { return exceptions; }
-    NamespaceLinkedRefMap getNamespaces() const override { return namespaces; }
+    ClassLinkedRefMap getClasses() const override { return m_classes; }
+    ClassLinkedRefMap getInterfaces() const override { return m_interfaces; }
+    ClassLinkedRefMap getStructs() const override { return m_structs; }
+    ClassLinkedRefMap getExceptions() const override { return m_exceptions; }
+    NamespaceLinkedRefMap getNamespaces() const override { return m_namespaces; }
     ConceptLinkedRefMap getConcepts() const override { return m_concepts; }
     void setName(const QCString &name) override;
 
@@ -158,12 +158,12 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     MemberLinkedRefMap    m_allMembers;
     MemberLists           m_memberLists;
     MemberGroupList       m_memberGroups;
-    ClassLinkedRefMap     classes;
-    ClassLinkedRefMap     interfaces;
-    ClassLinkedRefMap     structs;
-    ClassLinkedRefMap     exceptions;
+    ClassLinkedRefMap     m_classes;
+    ClassLinkedRefMap     m_interfaces;
+    ClassLinkedRefMap     m_structs;
+    ClassLinkedRefMap     m_exceptions;
     ConceptLinkedRefMap   m_concepts;
-    NamespaceLinkedRefMap namespaces;
+    NamespaceLinkedRefMap m_namespaces;
     bool                  m_subGrouping = false;
     enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
     bool m_isPublished = false;
@@ -409,21 +409,21 @@ void NamespaceDefImpl::addInnerCompound(Definition *d)
 
 void NamespaceDefImpl::insertClass(ClassDef *cd)
 {
-  ClassLinkedRefMap *d = &classes;
+  ClassLinkedRefMap *d = &m_classes;
 
   if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
   {
     if (cd->compoundType()==ClassDef::Interface)
     {
-      d = &interfaces;
+      d = &m_interfaces;
     }
     else if (cd->compoundType()==ClassDef::Struct)
     {
-      d = &structs;
+      d = &m_structs;
     }
     else if (cd->compoundType()==ClassDef::Exception)
     {
-      d = &exceptions;
+      d = &m_exceptions;
     }
   }
 
@@ -437,7 +437,7 @@ void NamespaceDefImpl::insertConcept(ConceptDef *cd)
 
 void NamespaceDefImpl::insertNamespace(NamespaceDef *nd)
 {
-  namespaces.add(nd->name(),nd);
+  m_namespaces.add(nd->name(),nd);
 }
 
 
@@ -617,7 +617,7 @@ void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
     {
       case LayoutDocEntry::NamespaceNestedNamespaces:
         {
-          for (const auto &nd : namespaces)
+          for (const auto &nd : m_namespaces)
           {
             if (nd->isLinkableInProject())
             {
@@ -628,22 +628,22 @@ void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
         break;
       case LayoutDocEntry::NamespaceClasses:
         {
-          writeClassesToTagFile(tagFile, classes);
+          writeClassesToTagFile(tagFile, m_classes);
         }
         break;
       case LayoutDocEntry::NamespaceInterfaces:
         {
-          writeClassesToTagFile(tagFile, interfaces);
+          writeClassesToTagFile(tagFile, m_interfaces);
         }
         break;
       case LayoutDocEntry::NamespaceStructs:
         {
-          writeClassesToTagFile(tagFile, structs);
+          writeClassesToTagFile(tagFile, m_structs);
         }
         break;
       case LayoutDocEntry::NamespaceExceptions:
         {
-          writeClassesToTagFile(tagFile, exceptions);
+          writeClassesToTagFile(tagFile, m_exceptions);
         }
         break;
       case LayoutDocEntry::NamespaceConcepts:
@@ -817,13 +817,13 @@ void NamespaceDefImpl::writeConcepts(OutputList &ol,const QCString &title)
 
 void NamespaceDefImpl::writeInlineClasses(OutputList &ol)
 {
-  classes.writeDocumentation(ol,this);
+  m_classes.writeDocumentation(ol,this);
 }
 
 void NamespaceDefImpl::writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool const isConstantGroup)
 {
-  namespaces.writeDeclaration(ol,title,isConstantGroup,TRUE);
+  m_namespaces.writeDeclaration(ol,title,isConstantGroup,TRUE);
 }
 
 void NamespaceDefImpl::writeMemberGroups(OutputList &ol)
@@ -859,37 +859,37 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
   {
     const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-    if (lde->kind()==LayoutDocEntry::NamespaceClasses && classes.declVisible() && ls)
+    if (lde->kind()==LayoutDocEntry::NamespaceClasses && m_classes.declVisible() && ls)
     {
       QCString label = "nested-classes";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::NamespaceInterfaces && interfaces.declVisible() && ls)
+    else if (lde->kind()==LayoutDocEntry::NamespaceInterfaces && m_interfaces.declVisible() && ls)
     {
       QCString label = "interfaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::NamespaceStructs && structs.declVisible() && ls)
+    else if (lde->kind()==LayoutDocEntry::NamespaceStructs && m_structs.declVisible() && ls)
     {
       QCString label = "structs";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::NamespaceExceptions && exceptions.declVisible() && ls)
+    else if (lde->kind()==LayoutDocEntry::NamespaceExceptions && m_exceptions.declVisible() && ls)
     {
       QCString label = "exceptions";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::NamespaceNestedNamespaces && namespaces.declVisible(false) && ls)
+    else if (lde->kind()==LayoutDocEntry::NamespaceNestedNamespaces && m_namespaces.declVisible(false) && ls)
     {
       QCString label = "namespaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::NamespaceNestedConstantGroups && namespaces.declVisible(true) && ls)
+    else if (lde->kind()==LayoutDocEntry::NamespaceNestedConstantGroups && m_namespaces.declVisible(true) && ls)
     {
       QCString label = "constantgroups";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
@@ -1014,22 +1014,22 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::NamespaceClasses:
         {
-          if (ls) writeClassDeclarations(ol,ls->title(lang),classes);
+          if (ls) writeClassDeclarations(ol,ls->title(lang),m_classes);
         }
         break;
       case LayoutDocEntry::NamespaceInterfaces:
         {
-          if (ls) writeClassDeclarations(ol,ls->title(lang),interfaces);
+          if (ls) writeClassDeclarations(ol,ls->title(lang),m_interfaces);
         }
         break;
       case LayoutDocEntry::NamespaceStructs:
         {
-          if (ls) writeClassDeclarations(ol,ls->title(lang),structs);
+          if (ls) writeClassDeclarations(ol,ls->title(lang),m_structs);
         }
         break;
       case LayoutDocEntry::NamespaceExceptions:
         {
-          if (ls) writeClassDeclarations(ol,ls->title(lang),exceptions);
+          if (ls) writeClassDeclarations(ol,ls->title(lang),m_exceptions);
         }
         break;
       case LayoutDocEntry::NamespaceConcepts:
@@ -1453,25 +1453,35 @@ void NamespaceDefImpl::sortMemberLists()
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
 
-  auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
+  if (Config_getBool(SORT_BRIEF_DOCS))
   {
-    return Config_getBool(SORT_BY_SCOPE_NAME)          ?
-      qstricmp_sort(c1->name(), c2->name())<0          :
-      qstricmp_sort(c1->className(), c2->className())<0;
-  };
+    auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
+    {
+      return Config_getBool(SORT_BY_SCOPE_NAME)          ?
+        qstricmp_sort(c1->name(), c2->name())<0          :
+        qstricmp_sort(c1->className(), c2->className())<0;
+    };
 
-  std::stable_sort(classes.begin(),   classes.end(),   classComp);
-  std::stable_sort(interfaces.begin(),interfaces.end(),classComp);
-  std::stable_sort(structs.begin(),   structs.end(),   classComp);
-  std::stable_sort(exceptions.begin(),exceptions.end(),classComp);
+    std::stable_sort(m_classes.begin(),   m_classes.end(),   classComp);
+    std::stable_sort(m_interfaces.begin(),m_interfaces.end(),classComp);
+    std::stable_sort(m_structs.begin(),   m_structs.end(),   classComp);
+    std::stable_sort(m_exceptions.begin(),m_exceptions.end(),classComp);
 
+    auto conceptComp = [](const ConceptLinkedRefMap::Ptr &c1,const ConceptLinkedRefMap::Ptr &c2)
+    {
+      return qstricmp_sort(c1->name(),c2->name())<0;
+    };
 
-  auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
-  {
-    return qstricmp_sort(n1->name(),n2->name())<0;
-  };
+    std::stable_sort(m_concepts.begin(), m_concepts.end(), conceptComp);
 
-  std::stable_sort(namespaces.begin(),namespaces.end(),namespaceComp);
+    auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
+    {
+      return qstricmp_sort(n1->name(),n2->name())<0;
+    };
+
+    std::stable_sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);
+  }
+
 }
 
 MemberList *NamespaceDefImpl::getMemberList(MemberListType lt) const
