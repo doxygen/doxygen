@@ -3475,7 +3475,9 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
       {
         FileDef *fd = fd_p.get();
         QCString fdStripPath = stripFromIncludePath(fd->getPath());
-        if (path.isEmpty() || fdStripPath.right(pathStripped.length())==pathStripped)
+        if (path.isEmpty() ||
+            (!pathStripped.isEmpty() && fdStripPath.endsWith(pathStripped)) ||
+            (pathStripped.isEmpty() && fdStripPath.isEmpty()))
         {
           count++;
           lastMatch=fd;
