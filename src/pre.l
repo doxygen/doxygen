@@ -555,8 +555,7 @@ WSopt [ \t\r]*
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <CopyLine,LexCopyLine>{RAWBEGIN}        {
-                                          yyextra->delimiter = yytext+2;
-                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(CopyRawString);
                                         }
@@ -645,9 +644,7 @@ WSopt [ \t\r]*
                                         }
 <CopyRawString>{RAWEND}                 {
                                           outputArray(yyscanner,yytext,yyleng);
-                                          QCString delimiter = yytext+1;
-                                          delimiter=delimiter.left(delimiter.length()-1);
-                                          if (delimiter==yyextra->delimiter)
+                                          if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                                           {
                                             BEGIN( CopyLine );
                                           }

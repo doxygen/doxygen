@@ -173,10 +173,7 @@ CPPC  "/\/"
 <ReadFuncArgDef>"'"\\."'"		{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"."'"			{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>{RAWBEGIN}              { yyextra->curArgDefValue+=yytext; 
-                                          QCString text(yytext);
-                                          int i=text.find('"');
-                                          yyextra->delimiter = yytext+i+1;
-                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           BEGIN( CopyRawString );
                                         }
 <ReadFuncArgDef>\"			{
@@ -365,9 +362,7 @@ CPPC  "/\/"
   					}
 <CopyRawString>{RAWEND}                 {
 					  yyextra->curArgDefValue+=yytext;
-                                          QCString delimiter(yytext+1);
-                                          delimiter=delimiter.left(delimiter.length()-1);
-                                          if (delimiter==yyextra->delimiter)
+                                          if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                                           {
 					    BEGIN( ReadFuncArgDef );
                                           }

@@ -7448,4 +7448,18 @@ QCString demangleCSharpGenericName(const QCString &name,const QCString &templArg
   return result;
 }
 
+QCString extractBeginRawStringDelimiter(const char *rawStart)
+{
+  QCString text=rawStart;
+  int i = text.find('"');
+  assert(i!=-1);
+  return text.mid(i+1,text.length()-i-2); // text=...R"xyz( -> delimiter=xyz
+}
+
+QCString extractEndRawStringDelimiter(const char *rawEnd)
+{
+  QCString text=rawEnd;
+  return text.mid(1,text.length()-2); // text=)xyz" -> delimiter=xyz
+}
+
 

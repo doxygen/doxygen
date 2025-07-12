@@ -227,8 +227,6 @@ static QCString stripFuncPtr(const QCString &type);
 static bool nameIsOperator(QCString &name);
 void fixArgumentListForJavaScript(ArgumentList &al);
 static bool startOfRequiresExpression(const QCString &req);
-static QCString extractBeginRawStringDelimiter(const char *str);
-static QCString extractEndRawStringDelimiter(const char *str);
 
 // forward declarations for stateful functions
 static void initParser(yyscan_t yyscanner);
@@ -7696,20 +7694,6 @@ static inline int computeIndent(const char *s,int startIndent)
     else col++;
   }
   return col;
-}
-
-static QCString extractBeginRawStringDelimiter(const char *rawStart)
-{
-  QCString text=rawStart;
-  int i = text.find('"');
-  assert(i!=-1);
-  return text.mid(i+1,text.length()-i-2); // text=...R"xyz( -> delimiter=xyz
-}
-
-static QCString extractEndRawStringDelimiter(const char *rawEnd)
-{
-  QCString text=rawEnd;
-  return text.mid(1,text.length()-2); // text=)xyz" -> delimiter=xyz
 }
 
 static inline void initMethodProtection(yyscan_t yyscanner,Protection prot)

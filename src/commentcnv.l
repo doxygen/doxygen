@@ -141,6 +141,7 @@ struct commentcnvYY_state
   std::vector<std::string> expandedAliases;
   QCString snippetFileName;
   QCString snippetName;
+  QCString delimiter;
 };
 
 [[maybe_unused]] static const char *stateToString(int state);
@@ -190,6 +191,7 @@ MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a
 %x IncludeDoc
 %x SnippetDoc
 %x SnippetDocTag
+%x RawString
 %x IncludeFile
 
 CMD [\\@]
@@ -219,6 +221,9 @@ FLOAT_DECIMAL {DEC_FP1}|{DEC_FP2}
 FLOAT_HEXADECIMAL {HEX_FP1}|{HEX_FP2}
 FLOAT_NUMBER {FLOAT_DECIMAL}|{FLOAT_HEXADECIMAL}
 NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
+
+RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
+RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 
 FILEICHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=&#@]
 FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=&#@]
@@ -255,6 +260,11 @@ SLASHopt [/]*
 <Scan>{NUMBER}			    { //Note similar code in code.l
                                       if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
                                       copyToOutput(yyscanner,yytext,yyleng);
+                                    }
+<Scan>{RAWBEGIN}                    {
+                                      if (yyextra->lang!=SrcLangExt::Cpp) REJECT;
+                                      copyToOutput(yyscanner,yytext,yyleng);
+                                      BEGIN(RawString);
                                     }
 <Scan>[^"'!\/\n\\#,\-=; \t@$]*      { /* eat anything that is not " / , or \n */
                                        copyToOutput(yyscanner,yytext,yyleng);
@@ -552,6 +562,17 @@ SLASHopt [/]*
                                        BEGIN(CComment);
 				     }
   				   }
+<RawString>{RAWEND}                {
+                                      copyToOutput(yyscanner,yytext,yyleng);
+                                      if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
+                                      {
+                                        BEGIN(Scan);
+                                      }
+                                    }
+<RawString>[^)\n]+                 { copyToOutput(yyscanner,yytext,yyleng); }
+<RawString>\n                      { copyToOutput(yyscanner,yytext,yyleng); }
+<RawString>.                       { copyToOutput(yyscanner,yytext,yyleng); }
+
 <CComment,CNComment,ReadLine,IncludeFile>{MAILADDR}       |
 <CComment,CNComment,ReadLine,IncludeFile>"<"{MAILADDR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,yyleng);

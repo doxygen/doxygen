@@ -483,4 +483,7 @@ size_t updateColumnCount(const char *s,size_t col);
 QCString mangleCSharpGenericName(const QCString &name);
 QCString demangleCSharpGenericName(const QCString &name,const QCString &templArgs);
 
+QCString extractBeginRawStringDelimiter(const char *rawStart);
+QCString extractEndRawStringDelimiter(const char *rawEnd);
+
 #endif

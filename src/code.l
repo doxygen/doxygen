@@ -1257,8 +1257,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(QCString(yytext+i+1));
                                           yyextra->lastStringContext=YY_START;
                                           yyextra->inForEachExpression = FALSE;
-                                          yyextra->delimiter = yytext+i+2;
-                                          yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
+                                          yyextra->delimiter = extractBeginRawStringDelimiter(yytext);
                                           BEGIN( RawString );
                                         }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit,ClassVar,OldStyleArgs>\"   {
@@ -1306,9 +1305,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <RawString>{RAWEND}                     {
                                           yyextra->code->codify(yytext);
-                                          QCString delimiter(yytext+1);
-                                          delimiter=delimiter.left(delimiter.length()-1);
-                                          if (delimiter==yyextra->delimiter)
+                                          if (extractEndRawStringDelimiter(yytext)==yyextra->delimiter)
                                           {
                                             BEGIN( yyextra->lastStringContext );
                                           }
