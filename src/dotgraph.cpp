@@ -15,6 +15,8 @@
 
 #include <mutex>
 #include <regex>
+#include <map>
+#include <string>
 
 #include "config.h"
 #include "doxygen.h"
@@ -33,59 +35,19 @@
 
 #define MAP_CMD "cmapx"
 
+/* checks if the .dot file needs to be created */
+static bool indexedFile(const QCString &absDotName);
+
 //QCString DotGraph::DOT_FONTNAME; // will be initialized in initDot
 //int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot
-
-/*! Checks if a file "baseName".md5 exists. If so the contents
-*  are compared with \a md5. If equal FALSE is returned.
-*  The .md5 is created or updated after successful creation of the output file.
-*/
-static bool sameMd5Signature(const QCString &baseName,
-                             const QCString &md5)
-{
-  bool same = false;
-  char md5stored[33];
-  md5stored[0]=0;
-  std::ifstream f = Portable::openInputStream(baseName+".md5",true);
-  if (f.is_open())
-  {
-    // read checksum
-    f.read(md5stored,32);
-    md5stored[32]='\0';
-    // compare checksum
-    if (!f.fail() && md5==md5stored)
-    {
-      same = true;
-    }
-    //printf("sameSignature(%s,%s==%s)=%d\n",qPrint(baseName),md5stored,qPrint(md5),same);
-  }
-  else
-  {
-    //printf("sameSignature(%s) not found\n",qPrint(baseName));
-  }
-  return same;
-}
-
-static bool deliverablesPresent(const QCString &file1,const QCString &file2)
-{
-  bool file1Ok = true;
-  bool file2Ok = true;
-  if (!file1.isEmpty())
-  {
-    FileInfo fi(file1.str());
-    file1Ok = (fi.exists() && fi.size()>0);
-  }
-  if (!file2.isEmpty())
-  {
-    FileInfo fi(file2.str());
-    file2Ok = (fi.exists() && fi.size()>0);
-  }
-  return file1Ok && file2Ok;
-}
 
 static bool insertMapFile(TextStream &out,const QCString &mapFile,
                           const QCString &relPath,const QCString &mapLabel)
 {
+  if (Config_getBool(DOT_DRY_RUN)) {
+    // not supported right now
+    return TRUE;
+  }
   FileInfo fi(mapFile.str());
   if (fi.exists() && fi.size()>0) // reuse existing map file
   {
@@ -110,7 +72,8 @@ QCString DotGraph::imgName() const
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
-std::mutex g_dotIndexListMutex;
+
+
 
 QCString DotGraph::writeGraph(
         TextStream& t,            // output stream for the code file (html, ...)
@@ -122,6 +85,8 @@ QCString DotGraph::writeGraph(
         bool generateImageMap,    // in case of bitmap, shall there be code generated?
         int graphId)              // number of this graph in the current code, used in svg code
 {
+  static std::mutex dotIndexListMutex;
+  
   m_graphFormat = gf;
   m_textFormat = ef;
   m_dir = Dir(path.str());
@@ -139,7 +104,7 @@ QCString DotGraph::writeGraph(
 
   if (!m_doNotAddImageToIndex)
   {
-    std::lock_guard<std::mutex> lock(g_dotIndexListMutex);
+    std::lock_guard<std::mutex> lock(dotIndexListMutex);
     Doxygen::indexList->addImageFile(imgName());
   }
 
@@ -150,62 +115,60 @@ QCString DotGraph::writeGraph(
 
 bool DotGraph::prepareDotFile()
 {
+  const QCString l_absDotName = absDotName();
+  
+  if (indexedFile(l_absDotName)) {
+    // file is already indexed, thus we can skip regeneration
+    return FALSE;
+  }
+
+  // need to build the image
+
   if (!m_dir.exists())
   {
     term("Output dir {} does not exist!\n", m_dir.path());
   }
 
-  char sigStr[33];
-  uint8_t md5_sig[16];
-  // calculate md5
-  MD5Buffer(m_theGraph.data(), static_cast<unsigned int>(m_theGraph.length()), md5_sig);
-  // convert result to a string
-  MD5SigToString(md5_sig, sigStr);
-
-  // already queued files are processed again in case the output format has changed
-
-  if (sameMd5Signature(absBaseName(), sigStr) &&
-      deliverablesPresent(absImgName(),
-                          m_graphFormat == GraphOutputFormat::BITMAP && m_generateImageMap ? absMapName() : QCString()
-                         )
-     )
-  {
-    // all needed files are there
-    return FALSE;
-  }
-
-  // need to rebuild the image
 
   // write .dot file because image was new or has changed
-  std::ofstream f = Portable::openOutputStream(absDotName());
+  std::ofstream f = Portable::openOutputStream(l_absDotName);
   if (!f.is_open())
   {
-    err("Could not open file {} for writing\n",absDotName());
+    err("Could not open file {} for writing\n",l_absDotName);
     return TRUE;
   }
   f << m_theGraph;
   f.close();
 
-  if (m_graphFormat == GraphOutputFormat::BITMAP)
-  {
-    // run dot to create a bitmap image
-    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
-    dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
-  }
-  else if (m_graphFormat == GraphOutputFormat::EPS)
-  {
-    // run dot to create a .eps image
-    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
-    if (Config_getBool(USE_PDFLATEX))
+  if (Config_getBool(DOT_DRY_RUN)) {
+    // dot shall not be executed by doxygen, skip creating runner
+    // pretend dot file is existing and does not require post-processing
+    return FALSE;
+
+  } else {
+    char sigStr[33] {};
+    if (m_graphFormat == GraphOutputFormat::BITMAP)
     {
-      dotRun->addJob("pdf",absImgName(),absDotName(),1);
+      // run dot to create a bitmap image
+      DotRunner * dotRun = DotManager::instance()->createRunner(l_absDotName, sigStr);
+      dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), l_absDotName, 1);
+      if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), l_absDotName, 1);
     }
-    else
+    else if (m_graphFormat == GraphOutputFormat::EPS)
     {
-      dotRun->addJob("ps",absImgName(),absDotName(),1);
+      // run dot to create a .eps image
+      DotRunner *dotRun = DotManager::instance()->createRunner(l_absDotName, sigStr);
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        dotRun->addJob("pdf",absImgName(),l_absDotName,1);
+      }
+      else
+      {
+        dotRun->addJob("ps",absImgName(),l_absDotName,1);
+      }
     }
   }
+
   return TRUE;
 }
 
@@ -228,7 +191,7 @@ void DotGraph::generateCode(TextStream &t)
   }
   else if (m_graphFormat==GraphOutputFormat::BITMAP && m_generateImageMap) // produce HTML to include the image
   {
-    if (imgExt=="svg") // add link to SVG file without map file
+    if (imgExt.endsWith("svg")) // add link to SVG file without map file
     {
       if (!m_noDivTag) t << "<div class=\"center\">";
       if (m_regenerate || !DotFilePatcher::writeSVGFigureLink(t,m_relPath,m_baseName,absImgName())) // need to patch the links in the generated SVG file
@@ -353,3 +316,18 @@ void DotGraph::computeGraph(DotNode *root,
   graphStr=md5stream.str();
 }
 
+
+bool indexedFile(const QCString &absDotName)
+{
+  static std::mutex dotMdIndexMutex;
+  static std::map<std::size_t, char> lookUpMdindex{};
+  {
+    std::lock_guard<std::mutex> lock(dotMdIndexMutex);
+    const std::size_t hashBaseName = std::hash<std::string>{}(absDotName.str());
+    if (lookUpMdindex.count(hashBaseName) != 0) {
+      return TRUE;
+    }
+    lookUpMdindex[hashBaseName] = static_cast<char>(1);
+  }
+  return FALSE;
+}

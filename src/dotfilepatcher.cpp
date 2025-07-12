@@ -582,6 +582,13 @@ static void writeSVGNotSupported(TextStream &out)
 bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
                         const QCString &baseName,const QCString &absImgName)
 {
+  if (Config_getBool(DOT_DRY_RUN)) {
+    // Using CSS-stylesheet to scale graphic in HTML. Links within SVG will use target="_parent" to open destination in current tab.
+    out << "<embed src=\""
+        << relPath << baseName << "." << getDotImageExtension() << "\" style=\"max-width: 100%; object-fit: contain\" />";
+    return TRUE;
+  }
+
   int width=600,height=600;
   if (!readSVGSize(absImgName,&width,&height))
   {
@@ -621,6 +628,18 @@ bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
 bool DotFilePatcher::writeVecGfxFigure(TextStream &out,const QCString &baseName,
                                  const QCString &figureName)
 {
+  if (Config_getBool(DOT_DRY_RUN)) {
+    out << "\\nopagebreak\n"
+          "\\begin{figure}[H]\n"
+          "\\begin{center}\n"
+          "\\leavevmode\n"
+          "\\includegraphics[]"
+          "{" << baseName << "}\n"
+          "\\end{center}\n"
+          "\\end{figure}\n";
+    return TRUE;
+  }
+
   int width=400,height=550;
   if (Config_getBool(USE_PDFLATEX))
   {
