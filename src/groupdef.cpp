@@ -966,13 +966,16 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
         if (anc.isEmpty()) anc=gd->name(); else anc.prepend(gd->name()+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
         ol.insertMemberAlign();
-        ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),QCString(),gd->groupTitle());
+        ol.startIndexItem(gd->getReference(),gd->getOutputFileBase());
+        ol.generateDoc(gd->getDefFileName(),gd->getDefLine(),gd,nullptr,gd->groupTitle(),false,false,
+                       QCString(),true,false);
+        ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(gd->getOutputFileBase());
-          ol.generateDoc(briefFile(),briefLine(),gd,nullptr,gd->briefDescription(),FALSE,FALSE,
-                         QCString(),TRUE,FALSE);
+          ol.generateDoc(briefFile(),briefLine(),gd,nullptr,gd->briefDescription(),false,false,
+                         QCString(),true,false);
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(QCString(),QCString());

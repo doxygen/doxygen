@@ -4166,15 +4166,13 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       ftv->incContentsDepth();
     }
 
-    //ol.writeListItem();
-    //ol.startTextLink(gd->getOutputFileBase(),0);
-    //parseText(ol,gd->groupTitle());
-    //ol.endTextLink();
-
     ol.startIndexListItem();
     ol.startIndexItem(gd->getReference(),gd->getOutputFileBase());
-    ol.parseText(gd->groupTitle());
+    ol.generateDoc(gd->getDefFileName(),gd->getDefLine(),
+                  gd,nullptr,gd->groupTitle(),false,false,
+                  QCString(),true,false);
     ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
+
     if (gd->isReference())
     {
       ol.startTypewriter();
