@@ -138,10 +138,14 @@ static TextStream &common_attributes(TextStream &t, const DirDef *const dir, con
 {
   QCString url = dir->getOutputFileBase();
   addHtmlExtensionIfMissing(url);
-  return t <<
+  t <<
     "style=\""   << getDirectoryBorderStyle(prop) << "\", "
     "URL=\""     << url << "\","
     "tooltip=\"" << escapeTooltip(dir->briefDescriptionAsTooltip()) << "\"";
+  if (Config_getBool(DOT_DRY_RUN)) {
+    t << ", target=\"_parent\"";
+  }
+  return t;
 }
 
 /**

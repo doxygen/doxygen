@@ -514,26 +514,68 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
 
 void DotNode::writeUrl(TextStream &t) const
 {
-  if (m_url.isEmpty() || m_url == DotNode::placeholderUrl) return;
-  int tagPos = m_url.findRev('$');
-  t << ",URL=\"";
-  QCString noTagURL = m_url;
-  if (tagPos!=-1)
-  {
-    t << m_url.left(tagPos);
-    noTagURL = m_url.mid(tagPos);
-  }
-  int anchorPos = noTagURL.findRev('#');
-  if (anchorPos==-1)
-  {
-    addHtmlExtensionIfMissing(noTagURL);
-    t << noTagURL << "\"";
-  }
-  else // insert extensiom before anchor
-  {
-    QCString fn = noTagURL.left(anchorPos);
-    addHtmlExtensionIfMissing(fn);
-    t << fn << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+
+  if (Config_getBool(DOT_DRY_RUN)) {
+    QCString ref_url{};
+    QCString document_url{};
+    QCString anchor{};
+
+    int ref_marker = m_url.find('$');
+    if (ref_marker > 0)
+    {
+      // reference is not empty
+      ref_url = m_url.left(ref_marker);
+    }
+    document_url = m_url.mid(ref_marker+1);
+
+    int anchorPos = document_url.findRev('#');
+    if (anchorPos==-1)
+    {
+      // no url with #anchor ending
+      addHtmlExtensionIfMissing(document_url);
+    }
+    else // insert file type ending before anchor
+    {
+      anchor = document_url.right(document_url.length() - anchorPos);
+      document_url = document_url.left(anchorPos);
+      addHtmlExtensionIfMissing(document_url);
+    }
+
+    t << ",URL=\"";
+    if (!ref_url.isEmpty()) {
+      // TODO: handle relative path
+      t << externalRef("",ref_url,TRUE);
+    }
+    t << document_url << anchor << "\"";
+
+    if (ref_marker > 0) {
+      t << ", " << externalLinkTarget();
+    } else {
+      t << ", target=\"_parent\"";
+    }
+
+  } else {
+    if (m_url.isEmpty() || m_url == DotNode::placeholderUrl) return;
+    int tagPos = m_url.findRev('$');
+    t << ",URL=\"";
+    QCString noTagURL = m_url;
+    if (tagPos!=-1)
+    {
+      t << m_url.left(tagPos);
+      noTagURL = m_url.mid(tagPos);
+    }
+    int anchorPos = noTagURL.findRev('#');
+    if (anchorPos==-1)
+    {
+      addHtmlExtensionIfMissing(noTagURL);
+      t << noTagURL << "\"";
+    }
+    else // insert extension before anchor
+    {
+      QCString fn = noTagURL.left(anchorPos);
+      addHtmlExtensionIfMissing(fn);
+      t << fn << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+    }
   }
 }
 
@@ -592,11 +634,11 @@ void DotNode::writeBox(TextStream &t,
   }
   if (!m_tooltip.isEmpty())
   {
-    t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
+    t << " ,tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
   }
   else
   {
-    t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0' is used
+    t << " ,tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0' is used
   }
   t << "];\n";
 }
@@ -948,7 +990,3 @@ void DotNode::renumberNodes(int &number)
 #endif
   }
 }
-
-
-
-

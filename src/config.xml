@@ -4228,6 +4228,21 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='DOT_DRY_RUN' defval='0' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ If the \c DOT_DRY_RUN tag is set to \c YES Doxygen will omit running Graphiz' dot.
+ As a result only the dot files are generated and not the graph images. Running
+ dot from Doxygen can be slow, especially for large projects. You might want to
+ generate the graph images yourself by running dot with the -O option as shown
+ in the example below:
+ find . -type f -name "*.dot" -print0 | xargs -0 dot -Tsvg -O
+
+ Please note: The options DOT_CLEANUP, INTERACTIVE_SVG, DOT_MULTI_TARGETS and
+ DOT_PATH are ignored.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='GENERATE_LEGEND' defval='1' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
