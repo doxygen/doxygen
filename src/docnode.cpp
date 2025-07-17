@@ -1958,7 +1958,7 @@ static Token skipSpacesForTable(DocParser *parser)
   {
     if (tok.is(TokenRetval::TK_HTMLTAG))
     {
-      AUTO_TRACE_ADD("html_tag={}",parse->context.token->name);
+      AUTO_TRACE_ADD("html_tag={}",parser->context.token->name);
       HtmlTagType tagId=Mappers::htmlTagMapper->map(parser->context.token->name);
       // skip over tbody, thead, tfoot tags
       if (tagId==HtmlTagType::HTML_TBODY ||

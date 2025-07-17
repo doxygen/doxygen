@@ -626,6 +626,7 @@ void DocParser::handleStyleEnter(DocNodeVariant *parent,DocNodeList &children,
   children.append<DocStyleChange>(this,parent,context.nodeStack.size(),s,tagName,TRUE,
                                   context.fileName,tokenizer.getLineNr(),attribs);
   context.styleStack.push(&children.back());
+  context.inCodeStyle = s==DocStyleChange::Style::Typewriter;
 }
 
 /*! Called when a style change ends. For instance a \</b\> command is
@@ -670,6 +671,10 @@ void DocParser::handleStyleLeave(DocNodeVariant *parent,DocNodeList &children,
           this,parent,context.nodeStack.size(),s,
           topStyleChange(context.styleStack).tagName(),FALSE);
     context.styleStack.pop();
+  }
+  if (s==DocStyleChange::Style::Typewriter)
+  {
+    context.inCodeStyle = false;
   }
 }
 
@@ -800,11 +805,12 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   bool ambig = false;
   FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,context.fileName,ambig);
   auto lang = context.lang;
+  bool inSeeBlock = context.inSeeBlock || context.inCodeStyle;
   //printf("handleLinkedWord(%s) context.context=%s\n",qPrint(context.token->name),qPrint(context.context));
   if (!context.insideHtmlLink &&
-      (resolveRef(context.context,context.token->name,context.inSeeBlock,&compound,&member,lang,TRUE,fd,TRUE)
+      (resolveRef(context.context,context.token->name,inSeeBlock,&compound,&member,lang,TRUE,fd,TRUE)
        || (!context.context.isEmpty() &&  // also try with global scope
-           resolveRef(QCString(),context.token->name,context.inSeeBlock,&compound,&member,lang,FALSE,nullptr,TRUE))
+           resolveRef(QCString(),context.token->name,inSeeBlock,&compound,&member,lang,FALSE,nullptr,TRUE))
       )
      )
   {
@@ -815,7 +821,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
       if (member->isObjCMethod())
       {
         bool localLink = context.memberDef ? member->getClassDef()==context.memberDef->getClassDef() : FALSE;
-        name = member->objCMethodName(localLink,context.inSeeBlock);
+        name = member->objCMethodName(localLink,inSeeBlock);
       }
       children.append<DocLinkedWord>(
             this,parent,name,
@@ -1999,6 +2005,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   while (!parser->context.styleStack.empty()) parser->context.styleStack.pop();
   while (!parser->context.initialStyleStack.empty()) parser->context.initialStyleStack.pop();
   parser->context.inSeeBlock = FALSE;
+  parser->context.inCodeStyle = FALSE;
   parser->context.xmlComment = FALSE;
   parser->context.insideHtmlLink = FALSE;
   parser->context.includeFileText = "";
@@ -2069,6 +2076,7 @@ IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const QCString &fileN
   while (!parser->context.styleStack.empty()) parser->context.styleStack.pop();
   while (!parser->context.initialStyleStack.empty()) parser->context.initialStyleStack.pop();
   parser->context.inSeeBlock = FALSE;
+  parser->context.inCodeStyle = FALSE;
   parser->context.xmlComment = FALSE;
   parser->context.insideHtmlLink = FALSE;
   parser->context.includeFileText = "";
@@ -2122,6 +2130,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   while (!parser->context.styleStack.empty()) parser->context.styleStack.pop();
   while (!parser->context.initialStyleStack.empty()) parser->context.initialStyleStack.pop();
   parser->context.inSeeBlock = FALSE;
+  parser->context.inCodeStyle = FALSE;
   parser->context.xmlComment = FALSE;
   parser->context.insideHtmlLink = FALSE;
   parser->context.includeFileText = "";
