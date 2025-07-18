@@ -62,7 +62,7 @@
         <argsstring>()</argsstring>
         <name>foo</name>
         <briefdescription>
-          <para>My foo funciton. </para>
+          <para>My foo function. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
