@@ -31,7 +31,7 @@ typedef enum
 } my_enum_t;
 
 /**
- * @brief My foo funciton
+ * @brief My foo function
  */
 void foo();
 
