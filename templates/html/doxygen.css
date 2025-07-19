@@ -1509,6 +1509,10 @@ dl.warning dt, dl.attention dt, dl.important dt {
 	color: var(--warning-color-hl);
 }
 
+dl.warning .tt, dl.attention .tt, dl.important .tt {
+	background-color: hsl(from var(--warning-color-bg) h s calc(l + var(--fragment-highlight-filter)));
+}
+
 dl.note, dl.remark {
 	background: var(--note-color-bg);
 	border-left: 8px solid var(--note-color-hl);
@@ -1517,6 +1521,10 @@ dl.note, dl.remark {
 
 dl.note dt, dl.remark dt {
 	color: var(--note-color-hl);
+}
+
+dl.note .tt, dl.remark .tt {
+	background-color: hsl(from var(--note-color-bg) h s calc(l + var(--fragment-highlight-filter)));
 }
 
 dl.todo {
@@ -1529,6 +1537,10 @@ dl.todo dt {
 	color: var(--todo-color-hl);
 }
 
+dl.todo .tt {
+	background-color: hsl(from var(--todo-color-bg) h s calc(l + var(--fragment-highlight-filter)));
+}
+
 dl.test {
 	background: var(--test-color-bg);
 	border-left: 8px solid var(--test-color-hl);
@@ -1537,6 +1549,10 @@ dl.test {
 
 dl.test dt {
 	color: var(--test-color-hl);
+}
+
+dl.test .tt {
+	background-color: hsl(from var(--test-color-bg) h s calc(l + var(--fragment-highlight-filter)));
 }
 
 dl.bug dt a {
@@ -1553,6 +1569,10 @@ dl.bug dt a {
 	color: var(--bug-color-hl) !important;
 }
 
+dl.bug .tt {
+	background-color: hsl(from var(--bug-color-bg) h s calc(l + var(--fragment-highlight-filter)));
+}
+
 dl.deprecated {
 	background: var(--deprecated-color-bg);
 	border-left: 8px solid var(--deprecated-color-hl);
@@ -1563,11 +1583,10 @@ dl.deprecated dt a {
 	color: var(--deprecated-color-hl) !important;
 }
 
-dl.note dd, dl.warning dd, dl.pre dd, dl.post dd,
-dl.remark dd, dl.attention dd, dl.important dd, dl.invariant dd,
-dl.bug dd, dl.deprecated dd, dl.todo dd, dl.test dd {
-	margin-inline-start: 0px;
+dl.deprecated .tt {
+	background-color: hsl(from var(--deprecated-color-bg) h s calc(l + var(--fragment-highlight-filter)));
 }
+
 
 dl.invariant, dl.pre, dl.post {
 	background: var(--invariant-color-bg);
@@ -1577,6 +1596,16 @@ dl.invariant, dl.pre, dl.post {
 
 dl.invariant dt, dl.pre dt, dl.post dt {
 	color: var(--invariant-color-hl);
+}
+
+dl.invariant .tt, dl.pre .tt, dl.post .tt {
+	background-color: hsl(from var(--invariant-color-bg) h s calc(l + var(--fragment-highlight-filter)));
+}
+
+dl.note dd, dl.warning dd, dl.pre dd, dl.post dd,
+dl.remark dd, dl.attention dd, dl.important dd, dl.invariant dd,
+dl.bug dd, dl.deprecated dd, dl.todo dd, dl.test dd {
+	margin-inline-start: 0px;
 }
 
 

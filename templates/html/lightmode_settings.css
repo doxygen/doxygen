@@ -155,6 +155,7 @@
 --fragment-lineno-link-hover-fg-color: ##60;
 --fragment-lineno-link-hover-bg-color: #C8C8C8;
 --fragment-copy-ok-color: #2EC82E;
+--fragment-highlight-filter: -3;
 --tooltip-foreground-color: black;
 --tooltip-background-color: rgba(255,255,255,0.8);
 --tooltip-arrow-background-color: white;
