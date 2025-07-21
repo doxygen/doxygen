@@ -2699,7 +2699,9 @@ bool MemberDefImpl::hasDetailedDescription() const
             m_defArgList.hasDocumentation()) ||
            (m_templateMaster ?
             m_templateMaster->templateArguments().hasTemplateDocumentation() :
-            m_tArgList.hasTemplateDocumentation());
+            m_tArgList.hasTemplateDocumentation()) ||
+           // user-specified qualifiers
+           !m_qualifiers.empty();
 
     // generate function                  guard
     // ==================                 =======

@@ -9485,6 +9485,7 @@ static void addDefineDoc(const Entry *root, MemberDefMutable *md)
   md->setMaxInitLines(root->initLines);
   applyMemberOverrideOptions(root,md);
   md->setRefItems(root->sli);
+  md->addQualifiers(root->qualifiers);
   if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
   addMemberToGroups(root,md);
   ModuleManager::instance().addMemberToModule(root,md);
@@ -9508,6 +9509,7 @@ static void findDefineDocumentation(Entry *root)
       auto mmd = toMemberDefMutable(md.get());
       mmd->setTagInfo(root->tagInfo());
       mmd->setLanguage(root->lang);
+      mmd->addQualifiers(root->qualifiers);
       //printf("Searching for '%s' fd=%p\n",qPrint(filePathName),fd);
       mmd->setFileDef(root->parent()->fileDef());
       //printf("Adding member=%s\n",qPrint(md->name()));
