@@ -153,7 +153,7 @@ static inline void copyToOutput(yyscan_t yyscanner,const char *s,int len);
 static void startCondSection(yyscan_t yyscanner,const QCString &sectId);
 static void endCondSection(yyscan_t yyscanner);
 static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
-static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceComment=false);
+static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCppComment=false,bool replaceCComment=false);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
@@ -1343,7 +1343,9 @@ SLASHopt [/]*
 				     if (*yytext=='\n') { copyToOutput(yyscanner,"\n");}
   				   }
 <CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{CMD}[a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
-				     replaceAliases(yyscanner,yytext,YY_START==ReadLine && yyextra->readLineCtx==SComment);
+                                     bool inCppComment = YY_START==ReadLine && yyextra->readLineCtx==SComment;
+                                     bool inCComment   = YY_START==CComment;
+				     replaceAliases(yyscanner,yytext,inCppComment,inCComment);
   				   }
 <CComment,ReadLine,IncludeFile,Verbatim,VerbatimCode>{B}?{CMD}"ilinebr"{B}{CMD}"ialias{" { // expand alias with arguments
 				     yyextra->lastBlockContext=YY_START;
@@ -1410,8 +1412,9 @@ SLASHopt [/]*
 				     if (!yyextra->lastEscaped) yyextra->blockCount--;
 				     if (yyextra->blockCount==0)
 				     {
-				       replaceAliases(yyscanner,yyextra->aliasString.view(),
-                                           yyextra->lastBlockContext==ReadLine && yyextra->readLineCtx==SComment);
+                                       bool inCppComment = yyextra->lastBlockContext==ReadLine && yyextra->readLineCtx==SComment;
+                                       bool inCComment = yyextra->lastBlockContext==CComment;
+				       replaceAliases(yyscanner,yyextra->aliasString.view(),inCppComment,inCComment);
 				       BEGIN( yyextra->lastBlockContext );
 				     }
 				     yyextra->lastEscaped=FALSE;
@@ -1947,7 +1950,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const QCString &inc,const QCStrin
 /** copies string \a s with length \a len to the output, while
  *  replacing any alias commands found in the string.
  */
-static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceComment)
+static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCppComment,bool replaceCComment)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (s.empty()) return;
@@ -1994,11 +1997,22 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCom
   //printf("replaceAliases(%s)->'%s' replaceComment=%d\n",qPrint(s),qPrint(result),replaceComment);
   if (result!=s)
   {
-    if (replaceComment) // In case we are replacing a multiline /// comment by a C style comment
-                        // and we have new lines in the alias argument, we need to place back a /// for each new line
-                        // to prevent breaking the multiline comment into multiple C style comments
+    QCString spaces;
+    if (yyextra->blockHeadCol>1)
     {
-      result = substituteStringView(result,"\n","\n///");
+      spaces.fill(' ',yyextra->blockHeadCol-1);
+    }
+    if (replaceCppComment) // In case we are replacing a multiline /// comment by a C style comment
+                           // and we have new lines in the alias argument, we need to place back a /// for each new line
+                           // to prevent breaking the multiline comment into multiple C style comments
+    {
+      QCString replacement = "\n"+spaces+"///";
+      result = substituteStringView(result,"\n",replacement.view());
+    }
+    else if (replaceCComment)
+    {
+      QCString replacement = "\n"+spaces+" * ";
+      result = substituteStringView(result,"\n",replacement.view());
     }
     expAlias.push_back(cmd);
     // add a ialias command to allow expansion of cmd again
