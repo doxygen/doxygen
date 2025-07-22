@@ -448,7 +448,7 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
       int c = brief.at(bl-1);
       switch(c)
       {
-        case '.': case '!': case '?': case '>': case ':': case ')': break;
+        case '.': case '!': case '?': case ':': break;
         default:
           if (isUTF8CharUpperCase(brief.str(),0) && !lastUTF8CharIsMultibyte(brief.str())) brief+='.';
           break;
