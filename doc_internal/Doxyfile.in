@@ -350,6 +350,7 @@ DIR_GRAPH_MAX_DEPTH    = 1
 DOT_IMAGE_FORMAT       = svg
 INTERACTIVE_SVG        = YES
 DOT_PATH               =
+DOT_DRY_RUN            = NO
 DOTFILE_DIRS           =
 DIA_PATH               =
 DIAFILE_DIRS           =
