@@ -253,9 +253,10 @@ struct Grouping
     return "???";
   }
 
-  Grouping( const QCString &gn, GroupPri_t p ) : groupname(gn), pri(p) {}
+  Grouping( const QCString &gn, GroupPri_t p, int nr ) : groupname(gn), pri(p), lineNr(nr) {}
   QCString groupname;   //!< name of the group
   GroupPri_t pri;       //!< priority of this definition
+  int lineNr;           //!< lineNr of the group
 
 };
 

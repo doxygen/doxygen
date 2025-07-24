@@ -1461,7 +1461,7 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );
@@ -1485,7 +1485,7 @@ void addConceptToGroups(const Entry *root,ConceptDef *cd)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );
@@ -1505,7 +1505,7 @@ void addModuleToGroups(const Entry *root,ModuleDef *mod)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );
@@ -1533,7 +1533,7 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );
@@ -1556,7 +1556,7 @@ void addDirToGroups(const Entry *root,DirDef *dd)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );
@@ -1590,7 +1590,7 @@ void addGroupToGroups(const Entry *root,GroupDef *subGroup)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );
@@ -1615,7 +1615,7 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
     {
       if (fgd && gd!=fgd && g.pri==pri)
       {
-        warn(root->fileName, root->startLine,
+        warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
             "Member {} found in multiple {} groups! "
             "The member will be put in group {}, and not in group {}",
             md->name(), Grouping::getGroupPriName( pri ),
@@ -1628,7 +1628,7 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );
@@ -1737,7 +1737,7 @@ void addExampleToGroups(const Entry *root,PageDef *eg)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );

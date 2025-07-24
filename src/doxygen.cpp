@@ -327,12 +327,37 @@ static void addPageToContext(PageDef *pd,Entry *root)
 
 static void addRelatedPage(Entry *root)
 {
-  GroupDef *gd=nullptr;
+  Grouping::GroupPri_t pri = Grouping::GROUPING_LOWEST;
+  GroupDef *fgd=nullptr;
   for (const Grouping &g : root->groups)
   {
-    if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname))) break;
+    GroupDef *gd=nullptr;
+    if (!g.groupname.isEmpty()) gd=Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd && g.pri >= pri)
+    {
+      if (fgd && gd!=fgd && g.pri==pri)
+      {
+        warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
+            "Page {} ({}) found in multiple {} groups! "
+            "The page will be put in group {}, and not in group {}",
+            root->name, root->args.stripWhiteSpace(), Grouping::getGroupPriName( pri ),
+            gd->name(), fgd->name()
+            );
+      }
+
+      fgd = gd;
+      pri = g.pri;
+    }
+    else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+    {
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
+          "Found non-existing group '{}' for the command '{}', ignoring command",
+          g.groupname, Grouping::getGroupPriName( g.pri )
+          );
+    }
   }
-  //printf("---> addRelatedPage() %s gd=%p\n",qPrint(root->name),gd);
+
+  //printf("---> addRelatedPage() %s gd=%p\n",qPrint(root->name),fgd);
   QCString doc=root->doc+root->inbodyDocs;
 
   PageDef *pd = addRelatedPage(root->name,root->args,doc,
@@ -340,7 +365,7 @@ static void addRelatedPage(Entry *root)
       root->docLine,
       root->startLine,
       root->sli,
-      gd,root->tagInfo(),
+      fgd,root->tagInfo(),
       FALSE,
       root->lang
      );
@@ -546,7 +571,7 @@ static void buildFileList(const Entry *root)
         }
         else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
         {
-          warn(root->fileName, root->startLine,
+          warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
                "Found non-existing group '{}' for the command '{}', ignoring command",
                g.groupname, Grouping::getGroupPriName( g.pri )
               );
@@ -7956,7 +7981,7 @@ static bool tryAddEnumDocsToGroupMember(const Entry *root,const QCString &name)
     }
     else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
     {
-      warn(root->fileName, root->startLine,
+      warn(root->fileName, (g.lineNr == -1?  root->startLine : g.lineNr),
           "Found non-existing group '{}' for the command '{}', ignoring command",
           g.groupname, Grouping::getGroupPriName( g.pri )
           );

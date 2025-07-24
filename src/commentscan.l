@@ -2595,7 +2595,7 @@ STopt  [^\n@\\]*
 
 <InGroupParam>{LABELID}                 { // group id
                                           yyextra->current->groups.emplace_back(
-                                             QCString(yytext), Grouping::GROUPING_INGROUP
+                                             QCString(yytext), Grouping::GROUPING_INGROUP,yyextra->lineNr
                                           );
                                           yyextra->inGroupParamFound=TRUE;
                                         }
