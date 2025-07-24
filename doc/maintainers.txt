@@ -91,7 +91,7 @@ Alessandro Falappa: alex dot falappa at gmail dot com
 Ahmed Aldo Faisal: aaf23 at cam dot ac dot uk
 
 TranslatorJapanese
-Suzumizaki-Kimikata: szmml at h12u.com
+Suzumizaki-Kimikata: szmml at h12u dot com
 Hiroki Iseri: goyoki at gmail dot com
 Ryunosuke Satoh: sun594 at hotmail dot com
 Kenji Nagamatsu: [unreachable] naga at joyful dot club dot ne dot jp
@@ -103,7 +103,7 @@ SooYoung Jung: jung5000 at gmail dot com
 Richard Kim: [unreachable] ryk at dspwiz dot com
 
 TranslatorLatvian
-Lauris: lauris at nix.lv
+Lauris: lauris at nix dot lv
 
 TranslatorLithuanian
 Tomas Simonaitis: [unreachable] haden at homelan dot lt
@@ -158,7 +158,7 @@ Francisco Oltra Thennet: [unreachable] foltra at puc dot cl
 David Vaquero: david at grupoikusnet dot com
 
 TranslatorSwedish
-Björn Palmqvist: bjorn.palmqvist at aidium.se
+Björn Palmqvist: bjorn dot palmqvist at aidium dot se
 
 TranslatorTurkish
 Emin Ilker Cetinbas: niw3 at yahoo dot com
