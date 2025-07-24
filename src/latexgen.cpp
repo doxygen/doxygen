@@ -1297,14 +1297,6 @@ void LatexGenerator::writeStyleInfo(int part)
   writeDefaultStyleSheet(m_t);
   endPlainFile();
 
-  // workaround for the problem caused by change in LaTeX in version 2019
-  // in the unmaintained tabu package
-  startPlainFile("tabu_doxygen.sty");
-  m_t << ResourceMgr::instance().getAsString("tabu_doxygen.sty");
-  endPlainFile();
-  startPlainFile("longtable_doxygen.sty");
-  m_t << ResourceMgr::instance().getAsString("longtable_doxygen.sty");
-  endPlainFile();
   /// an extension of the etoc package is required that is only available in the
   /// newer version. Providing the updated version to be used with older versions
   /// of LaTeX

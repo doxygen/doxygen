@@ -61,6 +61,8 @@ ALIASES          += TeX="\f({\TeX}\f)"
 ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
 ALIASES          += startalign=" \latexonly\noalign{\endlatexonly"
 ALIASES          += endalign=" \latexonly}\endlatexonly"
+ALIASES          += startalign=
+ALIASES          += endalign=
 ALIASES          += startendhtmltag{1}="\startalign\anchor htmltag_\1 \addindex \"\<\1\>\" ^^ \anchor htmltag_end\1 \addindex \"\</\1\>\"\endalign <tt>\<\1\></tt> / <tt>\</\1\></tt>"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty

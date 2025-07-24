@@ -23,15 +23,6 @@
   \documentclass[twoside]{book}
 %%END !COMPACT_LATEX
 
-  %% moved from doxygen.sty due to workaround for LaTex 2019 version and unmaintained tabu package
-  \usepackage{ifthen}
-  \ifx\requestedLaTeXdate\undefined
-    \usepackage{array}
-  \else
-    \usepackage{array}[=2016-10-06]
-  \fi
-  %%
-
   % Packages required by doxygen
   \makeatletter
   \providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}

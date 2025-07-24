@@ -368,7 +368,7 @@ The list of special HTML4 character entities with their descriptions has been ta
 | <tt>\&lsaquo;</tt> | &lsaquo; | single left-pointing angle quotation mark |
 | <tt>\&rsaquo;</tt> | &rsaquo; | single right-pointing angle quotation mark |
 | <tt>\&euro;</tt> | &euro; | euro sign |
-| **Doxygen extensions:** |||
+| **Doxygen extensions** |||
 | <tt>\&tm;</tt> | &tm; | trade mark sign |
 | <tt>\&apos;</tt> | &apos; | apostrophe|
 

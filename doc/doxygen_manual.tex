@@ -16,13 +16,6 @@
 \pdfminorversion=7
 \pdfsuppresswarningpagegroup=1
 \documentclass{book}
-%% moved from doxygen.sty due to workaround for LaTex 2019 version and unmaintained tabu package
-\usepackage{ifthen}
-\ifx\requestedLaTeXdate\undefined
-\usepackage{array}
-\else
-\usepackage{array}[=2016-10-06]
-\fi
 %%
 \makeatletter
 % suppress package identification of infwarerr as it contains the word "warning"
@@ -41,7 +34,6 @@
 \usepackage{geometry}
 \usepackage{listings}
 \usepackage{color}
-%%\usepackage{ifthen} %% moved to top due to workaround for LaTex 2019 version and unmaintained tabu package
 \usepackage[table]{xcolor}
 \PassOptionsToPackage{warn}{textcomp}
 \usepackage{textcomp}

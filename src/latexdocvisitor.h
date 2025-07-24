@@ -188,8 +188,6 @@ class LatexDocVisitor : public DocVisitor
       RowSpanList rowSpans;
       size_t numCols = 0;
       size_t currentColumn = 0;
-      bool inRowSpan = false;
-      bool inColSpan = false;
       bool firstRow = false;
     };
     std::stack<TableState> m_tableStateStack; // needed for nested tables
@@ -228,22 +226,6 @@ class LatexDocVisitor : public DocVisitor
     void setNumCols(size_t num)
     {
       if (!m_tableStateStack.empty()) m_tableStateStack.top().numCols = num;
-    }
-    bool inRowSpan() const
-    {
-      return !m_tableStateStack.empty() ? m_tableStateStack.top().inRowSpan : FALSE;
-    }
-    void setInRowSpan(bool b)
-    {
-      if (!m_tableStateStack.empty()) m_tableStateStack.top().inRowSpan = b;
-    }
-    bool inColSpan() const
-    {
-      return !m_tableStateStack.empty() ? m_tableStateStack.top().inColSpan : FALSE;
-    }
-    void setInColSpan(bool b)
-    {
-      if (!m_tableStateStack.empty()) m_tableStateStack.top().inColSpan = b;
     }
     bool firstRow() const
     {
