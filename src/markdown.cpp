@@ -1649,7 +1649,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
       i++;
       if (nb==1) // `...`
       {
-        if (end<size && data[end+1]=='`') // skip over `` inside `...`
+        if (end+1<size && data[end+1]=='`') // skip over `` inside `...`
         {
           AUTO_TRACE_ADD("case1.1");
           // skip
@@ -1664,7 +1664,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
       }
       else if (i==nb) // ``...``
       {
-        if (end<size && data[end+1]=='`') // do greedy match
+        if (end+1<size && data[end+1]=='`') // do greedy match
         {
           // skip this quote and use the next one to terminate the sequence, e.g. ``X`Y```
           i--;
@@ -1688,7 +1688,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
       pc = '\n';
       i = 0;
     }
-    else if (data[end]=='\'' && nb==1 && (end==size-1 || (end+1<size && data[end+1]!='\'' && !isIdChar(data[end+1]))))
+    else if (data[end]=='\'' && nb==1 && (end+1==size || (end+1<size && data[end+1]!='\'' && !isIdChar(data[end+1]))))
     { // look for quoted strings like 'some word', but skip strings like `it's cool`
       out+="&lsquo;";
       out+=data.substr(nb,end-nb);
@@ -1696,7 +1696,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
       AUTO_TRACE_EXIT("quoted end={}",end+1);
       return static_cast<int>(end+1);
     }
-    else if (data[end]=='\'' && nb==2 && end<size-1 && data[end+1]=='\'')
+    else if (data[end]=='\'' && nb==2 && end+1<size && data[end+1]=='\'')
     { // look for '' to match a ``
       out+="&ldquo;";
       out+=data.substr(nb,end-nb);
