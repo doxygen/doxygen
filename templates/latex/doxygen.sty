@@ -383,20 +383,25 @@
 #5
 \end{tblr}%
 }% end of sbox0
-\ifdim\wd0>\linewidth% table spans entire width of the page, use flexible columns
-  \edef\DoxyTableColSpec{X[-1]}%
-\else% table width is smaller than the page width, use minimal left aligned columns
-  \edef\DoxyTableColSpec{l}%
-\fi%
-\edef\DoxyTableOptions{hlines,vlines,% automatically set horizontal and vertical cell lines
-                       measure=vbox,% needed to allow nested lists and tables
-                       colspec={*{#1}{\DoxyTableColSpec}},% set column type for all columns
-                       rowhead=#4,% set which row is the header (0=disable, 1=enable)
-		       row{#4}={bg=\tableheadbgcolor,font=\noexpand\bfseries}}% set header background color and font weight
+\ifdim\wd0>\linewidth% use flexible columns
 % now render the table for real
-\ExpandArgs{nV}\begin{longtblr}\DoxyTableOptions%
+\begin{longtblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
+                 measure=vbox,% needed to allow nested lists and tables
+                 colspec={*{#1}{X[-1]}},% set column type for all columns
+                 rowhead=#4,% set which row is the header (0=disable, 1=enable)
+                 row{#4}={bg=\tableheadbgcolor,font=\bfseries}}% set header background color and font weight
 #5
 \end{longtblr}%
+\else% use fixed left aligned columns
+% now render the table for real
+\begin{longtblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
+                 measure=vbox,% needed to allow nested lists and tables
+                 colspec={*{#1}{l}},% set column type for all columns
+                 rowhead=#4,% set which row is the header (0=disable, 1=enable)
+                 row{#4}={bg=\tableheadbgcolor,font=\bfseries}}% set header background color and font weight
+#5
+\end{longtblr}%
+\fi%
 }{% no end marker needed anymore
 }%
 
@@ -405,13 +410,12 @@
 % - #1: number of columns
 % - #2: 1=table has a heading row, 0=no heading row
 \NewDocumentEnvironment{DoxyTableNested}{m m}{%
-\edef\DoxyTableOptions{hlines,vlines,% automatically set horizontal and vertical cell lines
-                       measure=vbox,% needed to allow nested lists and tables
-		       colspec={*{#1}{X[-1]}},% set column type for all columns
-                       rowhead=#2,% set which row is the header (0=disable, 1=enable)
-                       row{#2}={bg=\tableheadbgcolor}}% set header background color
 % now render the table for real
-\ExpandArgs{nV}\begin{tblr}\DoxyTableOptions%
+\begin{tblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
+             measure=vbox,% needed to allow nested lists and tables
+	     colspec={*{#1}{X[-1]}},% set column type for all columns
+             rowhead=#2,% set which row is the header (0=disable, 1=enable)
+	     row{#2}={bg=\tableheadbgcolor,font=\bfseries}}% set header background color and font weight
 }{% no end marker needed anymore
 \end{tblr}
 }%
