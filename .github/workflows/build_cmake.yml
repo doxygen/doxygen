@@ -137,24 +137,6 @@ jobs:
     - name: Install libclang (Ubuntu 24.04)
       run: |
         sudo apt update
-        sudo apt remove llvm-13 llvm-13-dev llvm-13-tools llvm-13-runtime clang-13 clang-format-13 libclang-common-13-dev libclang-cpp13 libclang1-13 libllvm13
-        sudo apt remove llvm-15 llvm-15-dev llvm-15-tools llvm-15-runtime clang-15 clang-format-15 libclang-common-15-dev libclang-cpp15 libclang1-15 libllvm15
-        sudo apt-get autoremove
-        sudo apt-get clean
-        sudo apt install libclang-common-14-dev libclang-14-dev
-        apt list --installed | egrep '(clang|llvm)'
-        ls -d /usr/lib/llvm-*/include/
-        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-14   100
-        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 100
-        ls -al /usr/bin/clang++
-        ls -al /etc/alternatives/clang++
-        which clang++
-        clang++ -v
-      if: matrix.config.cc == 'clang' && matrix.config.os == 'ubuntu-24.04'
-
-    - name: Install libclang (Ubuntu 24.04 ARM)
-      run: |
-        sudo apt update
         sudo apt remove llvm-14 llvm-14-dev llvm-14-tools llvm-14-runtime clang-14 clang-format-14 libclang-common-14-dev libclang-cpp14 libclang1-14 libllvm14
         sudo apt remove llvm-15 llvm-15-dev llvm-15-tools llvm-15-runtime clang-15 clang-format-15 libclang-common-15-dev libclang-cpp15 libclang1-15 libllvm15
         sudo apt remove llvm-16 llvm-16-dev llvm-16-tools llvm-16-runtime clang-16 clang-format-16 libclang-common-16-dev libclang-cpp16 libclang1-16 libllvm16
@@ -170,7 +152,7 @@ jobs:
         ls -al /etc/alternatives/clang++
         which clang++
         clang++ -v
-      if: matrix.config.os == 'ubuntu-24.04-arm'
+      if: matrix.config.cc == 'clang' && (matrix.config.os == 'ubuntu-24.04' || matrix.config.os == 'ubuntu-24.04-arm')
 
     - name: Install libxapian (Ubuntu 24.04)
       run: |
