@@ -378,7 +378,7 @@
 \fi%
 \edef\DoxyTableOptions{hlines,vlines,% automatically set horizontal and vertical cell lines
                        measure=vbox,% needed to allow nested lists and tables
-                       colspec={*{#1}{\DoxyTableColSpec}},% set colomn type for all columns
+                       colspec={*{#1}{\DoxyTableColSpec}},% set column type for all columns
                        rowhead=#4,% set which row is the header (0=disable, 1=enable)
                        row{#4}={bg=\tableheadbgcolor}}% set header background color
 % now render the table for real
@@ -395,7 +395,7 @@
 \NewDocumentEnvironment{DoxyTableNested}{m m}{%
 \edef\DoxyTableOptions{hlines,vlines,% automatically set horizontal and vertical cell lines
                        measure=vbox,% needed to allow nested lists and tables
-		       colspec={*{#1}{X[-1]}},% set colomn type for all columns
+		       colspec={*{#1}{X[-1]}},% set column type for all columns
                        rowhead=#2,% set which row is the header (0=disable, 1=enable)
                        row{#2}={bg=\tableheadbgcolor}}% set header background color
 % now render the table for real
@@ -433,7 +433,7 @@
   \expanded{\noexpand\begin{longtblr}[l,theme=DoxyParamTableTheme]%
           {vline{1-Z}={2-Z}{solid},%    show vertical lines for all rows except the first
            measure=vbox,%               needed to allow nested lists and tables
-           colspec=\DoxyTableColSpec}}% set colomn type for all columns
+           colspec=\DoxyTableColSpec}}% set column type for all columns
   \SetCell[c=#1]{l} \tf{#3} \\[1ex]%
   \hline%
   #4
