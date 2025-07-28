@@ -134,7 +134,7 @@ jobs:
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: startsWith(matrix.config.os,'macos-')
 
-    - name: Install libclang (Ubuntu 22.04)
+    - name: Install libclang (Ubuntu 24.04)
       run: |
         sudo apt update
         sudo apt remove llvm-13 llvm-13-dev llvm-13-tools llvm-13-runtime clang-13 clang-format-13 libclang-common-13-dev libclang-cpp13 libclang1-13 libllvm13
@@ -150,7 +150,7 @@ jobs:
         ls -al /etc/alternatives/clang++
         which clang++
         clang++ -v
-      if: matrix.config.cc == 'clang' && matrix.config.os == 'ubuntu-22.04'
+      if: matrix.config.cc == 'clang' && matrix.config.os == 'ubuntu-24.04'
 
     - name: Install libclang (Ubuntu 24.04 ARM)
       run: |
@@ -172,11 +172,11 @@ jobs:
         clang++ -v
       if: matrix.config.os == 'ubuntu-24.04-arm'
 
-    - name: Install libxapian (Ubuntu 22.04)
+    - name: Install libxapian (Ubuntu 24.04)
       run: |
         sudo apt update
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-22.04' || matrix.config.os == 'ubuntu-24.04-arm'
+      if: matrix.config.os == 'ubuntu-24.04' || matrix.config.os == 'ubuntu-24.04-arm'
 
 # TODO: package disappeared overnight, disabled for now
 #    - name: Install LaTeX (Windows)
