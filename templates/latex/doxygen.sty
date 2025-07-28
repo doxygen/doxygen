@@ -349,8 +349,15 @@
   \end{DoxyDesc}%
 }
 
-% define a theme for the DoxyTable environment
-\NewTblrTheme{DoxyTableTheme}{
+% define a theme for the DoxyTable environment (without caption)
+\NewTblrTheme{DoxyTableBareTheme}{
+    \DefTblrTemplate{firsthead}{default}{}%
+    \DefTblrTemplate{middlehead, lasthead}{default}{}%
+    \DefTblrTemplate{contfoot-text}{default}{}%
+}
+
+% define a theme for the DoxyTable environment (with caption)
+\NewTblrTheme{DoxyTableCaptionTheme}{
     \SetTblrStyle{firsthead}{font=\bfseries}{}%
     \DefTblrTemplate{middlehead, lasthead}{default}{}%
     \DefTblrTemplate{contfoot-text}{default}{}%
@@ -365,7 +372,12 @@
 % - #5: body of the table (part between start{DoxyTable}..\end{DoxyTable}
 \NewDocumentEnvironment{DoxyTable}{m +m m m +b}{%
 \par%
-\SetTblrOuter[longtblr]{theme=DoxyTableTheme,caption={#2},label={#3}}% set table caption and label
+\def\hascaption{#2}%
+\ifx\hascaption\empty% if caption is empty
+  \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme}% table without caption or label
+\else% caption not empty
+  \SetTblrOuter[longtblr]{theme=DoxyTableCaptionTheme,caption={#2},label={#3}}% set table caption and label
+\fi%
 \sbox0{% first render the table in a savebox to calculate the width of the table which will be stored in \wd0
 \begin{tblr}{hlines,vlines,measure=vbox,colspec={*{#1}{l}}}%
 #5
@@ -380,7 +392,7 @@
                        measure=vbox,% needed to allow nested lists and tables
                        colspec={*{#1}{\DoxyTableColSpec}},% set column type for all columns
                        rowhead=#4,% set which row is the header (0=disable, 1=enable)
-                       row{#4}={bg=\tableheadbgcolor}}% set header background color
+		       row{#4}={bg=\tableheadbgcolor,font=\noexpand\bfseries}}% set header background color and font weight
 % now render the table for real
 \ExpandArgs{nV}\begin{longtblr}\DoxyTableOptions%
 #5
@@ -404,12 +416,6 @@
 \end{tblr}
 }%
 
-\NewTblrTheme{DoxyParamTableTheme}{
-    \DefTblrTemplate{firsthead}{default}{}%
-    \DefTblrTemplate{middlehead, lasthead}{default}{}%
-    \DefTblrTemplate{contfoot-text}{default}{}%
-}
-
 % Defines a parameter table
 % Arguments:
 % #1: Number of columns
@@ -417,7 +423,7 @@
 % #3: Title of the table ee.g. Params, Enumerator
 % #4: Body
 \NewDocumentCommand{\DoxyParamTable}{m m +m +m}{%
-  \SetTblrOuter[longtblr]{theme=DoxyParamTableTheme}% set table caption and label
+  \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme}% set table caption and label
   \sbox0{% render table off-screen first to capture its width in \wd0
     \begin{tblr}{measure=vbox,colspec={*{#1}{|l}|}}%
     \SetCell[c=#1]{l} \tf{#3} \\[1ex]%
@@ -430,7 +436,7 @@
   \else%
     \edef\DoxyTableColSpec{#2l}%
   \fi%
-  \expanded{\noexpand\begin{longtblr}[l,theme=DoxyParamTableTheme]%
+  \expanded{\noexpand\begin{longtblr}[l,theme=DoxyTableBareTheme]%
           {vline{1-Z}={2-Z}{solid},%    show vertical lines for all rows except the first
            measure=vbox,%               needed to allow nested lists and tables
            colspec=\DoxyTableColSpec}}% set column type for all columns
