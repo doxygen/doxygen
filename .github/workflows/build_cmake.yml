@@ -15,28 +15,28 @@ jobs:
         config:
         - {
             name: "Ubuntu Latest GCC Release (Intel)",
-            os: ubuntu-22.04,
+            os: ubuntu-24.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug (Intel)",
-            os: ubuntu-22.04,
+            os: ubuntu-24.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release (Intel)",
-            os: ubuntu-22.04,
+            os: ubuntu-24.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "Ubuntu Latest Clang Debug (Intel)",
-            os: ubuntu-22.04,
+            os: ubuntu-24.04,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
@@ -134,25 +134,7 @@ jobs:
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: startsWith(matrix.config.os,'macos-')
 
-    - name: Install libclang (Ubuntu 22.04)
-      run: |
-        sudo apt update
-        sudo apt remove llvm-13 llvm-13-dev llvm-13-tools llvm-13-runtime clang-13 clang-format-13 libclang-common-13-dev libclang-cpp13 libclang1-13 libllvm13
-        sudo apt remove llvm-15 llvm-15-dev llvm-15-tools llvm-15-runtime clang-15 clang-format-15 libclang-common-15-dev libclang-cpp15 libclang1-15 libllvm15
-        sudo apt-get autoremove
-        sudo apt-get clean
-        sudo apt install libclang-common-14-dev libclang-14-dev
-        apt list --installed | egrep '(clang|llvm)'
-        ls -d /usr/lib/llvm-*/include/
-        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-14   100
-        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 100
-        ls -al /usr/bin/clang++
-        ls -al /etc/alternatives/clang++
-        which clang++
-        clang++ -v
-      if: matrix.config.cc == 'clang' && matrix.config.os == 'ubuntu-22.04'
-
-    - name: Install libclang (Ubuntu 24.04 ARM)
+    - name: Install libclang (Ubuntu 24.04)
       run: |
         sudo apt update
         sudo apt remove llvm-14 llvm-14-dev llvm-14-tools llvm-14-runtime clang-14 clang-format-14 libclang-common-14-dev libclang-cpp14 libclang1-14 libllvm14
@@ -170,13 +152,13 @@ jobs:
         ls -al /etc/alternatives/clang++
         which clang++
         clang++ -v
-      if: matrix.config.os == 'ubuntu-24.04-arm'
+      if: matrix.config.cc == 'clang' && (matrix.config.os == 'ubuntu-24.04' || matrix.config.os == 'ubuntu-24.04-arm')
 
-    - name: Install libxapian (Ubuntu 22.04)
+    - name: Install libxapian (Ubuntu 24.04)
       run: |
         sudo apt update
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-22.04' || matrix.config.os == 'ubuntu-24.04-arm'
+      if: matrix.config.os == 'ubuntu-24.04' || matrix.config.os == 'ubuntu-24.04-arm'
 
 # TODO: package disappeared overnight, disabled for now
 #    - name: Install LaTeX (Windows)
