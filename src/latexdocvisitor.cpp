@@ -1307,7 +1307,7 @@ void LatexDocVisitor::operator()(const DocHtmlTable &t)
     m_t << "}";
     // write label
     m_t << "{";
-    if (c)
+    if (c && (!stripPath(c->file()).isEmpty() || !c->anchor().isEmpty()))
     {
       m_t << stripPath(c->file()) << "_" << c->anchor();
     }

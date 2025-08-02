@@ -373,10 +373,15 @@
 \NewDocumentEnvironment{DoxyTable}{m +m m m +b}{%
 \par%
 \def\hascaption{#2}%
+\def\haslabel{#3}%
 \ifx\hascaption\empty% if caption is empty
   \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme}% table without caption or label
 \else% caption not empty
-  \SetTblrOuter[longtblr]{theme=DoxyTableCaptionTheme,caption={#2},label={#3}}% set table caption and label
+  \ifx\haslabel\empty% if label is empty
+    \SetTblrOuter[longtblr]{theme=DoxyTableCaptionTheme,caption={#2}}% set table caption
+  \else% label not empty
+    \SetTblrOuter[longtblr]{theme=DoxyTableCaptionTheme,caption={#2},label={#3}}% set table caption and label
+  \fi%
 \fi%
 \sbox0{% first render the table in a savebox to calculate the width of the table which will be stored in \wd0
 \begin{tblr}{hlines,vlines,measure=vbox,colspec={*{#1}{l}}}%
@@ -424,7 +429,7 @@
 % Arguments:
 % #1: Number of columns
 % #2: Initial format for tblr, i.e. format except for last column
-% #3: Title of the table ee.g. Params, Enumerator
+% #3: Title of the table e.g. Params, Enumerator
 % #4: Body
 \NewDocumentCommand{\DoxyParamTable}{m m +m +m}{%
   \SetTblrOuter[longtblr]{theme=DoxyTableBareTheme}% set table caption and label
