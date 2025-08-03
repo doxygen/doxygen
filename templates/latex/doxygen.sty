@@ -393,8 +393,7 @@
 \begin{longtblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
                  measure=vbox,% needed to allow nested lists and tables
                  colspec={*{#1}{X[-1]}},% set column type for all columns
-                 rowhead=#4,% set which row is the header (0=disable, 1=enable)
-                 row{#4}={bg=\tableheadbgcolor,font=\bfseries}}% set header background color and font weight
+                 rowhead=#4} % set which row is the header (0=disable, 1=enable)
 #5
 \end{longtblr}%
 \else% use fixed left aligned columns
@@ -402,8 +401,7 @@
 \begin{longtblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
                  measure=vbox,% needed to allow nested lists and tables
                  colspec={*{#1}{l}},% set column type for all columns
-                 rowhead=#4,% set which row is the header (0=disable, 1=enable)
-                 row{#4}={bg=\tableheadbgcolor,font=\bfseries}}% set header background color and font weight
+                 rowhead=#4} % set which row is the header (0=disable, 1=enable)
 #5
 \end{longtblr}%
 \fi%
@@ -419,8 +417,8 @@
 \begin{tblr}{hlines,vlines,% automatically set horizontal and vertical cell lines
              measure=vbox,% needed to allow nested lists and tables
 	     colspec={*{#1}{X[-1]}},% set column type for all columns
-             rowhead=#2,% set which row is the header (0=disable, 1=enable)
-	     row{#2}={bg=\tableheadbgcolor,font=\bfseries}}% set header background color and font weight
+             rowhead=#2% set which row is the header (0=disable, 1=enable)
+            }
 }{% no end marker needed anymore
 \end{tblr}
 }%

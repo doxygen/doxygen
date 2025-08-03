@@ -2185,13 +2185,19 @@ const DocNodeVariant *DocHtmlTable::caption() const
   return m_caption.get();
 }
 
-const DocNodeVariant *DocHtmlTable::firstRow() const
+size_t DocHtmlTable::numberHeaderRows() const
 {
-  if (!children().empty() && std::holds_alternative<DocHtmlRow>(children().front()))
+  size_t hl = 0;
+  for (auto &rowNode : children())
   {
-    return &children().front();
+    const DocHtmlRow *row = std::get_if<DocHtmlRow>(&rowNode);
+    if (row)
+    {
+      if (!row->isHeading())  break;
+      hl++;
+    }
   }
-  return nullptr;
+  return hl;
 }
 
 Token DocHtmlTable::parse()

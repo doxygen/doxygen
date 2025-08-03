@@ -1262,7 +1262,6 @@ void LatexDocVisitor::writeStartTableCommand(const DocNodeVariant *n,size_t cols
   {
     m_t << "\n\\begin{DoxyTable}{" << cols << "}";
   }
-  //return isNested ? "TabularNC" : "TabularC";
 }
 
 void LatexDocVisitor::writeEndTableCommand(const DocNodeVariant *n)
@@ -1275,7 +1274,6 @@ void LatexDocVisitor::writeEndTableCommand(const DocNodeVariant *n)
   {
     m_t << "\\end{DoxyTable}\n";
   }
-  //return isNested ? "TabularNC" : "TabularC";
 }
 
 void LatexDocVisitor::operator()(const DocHtmlTable &t)
@@ -1294,7 +1292,6 @@ void LatexDocVisitor::operator()(const DocHtmlTable &t)
     m_t << "\n";
   }
 
-  const DocHtmlRow *firstRow = std::get_if<DocHtmlRow>(t.firstRow());
   writeStartTableCommand(t.parent(),t.numColumns());
   if (!isTableNested(t.parent()))
   {
@@ -1313,18 +1310,9 @@ void LatexDocVisitor::operator()(const DocHtmlTable &t)
     }
     m_t << "}";
   }
-  // write head row
-  m_t << "{";
-  if (firstRow && firstRow->isHeading())
-  {
-    m_t << "1";
-  }
-  else
-  {
-    m_t << "0";
-  }
-  m_t << "}";
-  m_t << "\n";
+
+  // write head row(s)
+  m_t << "{" << t.numberHeaderRows() << "}\n";
 
   setNumCols(t.numColumns());
 
@@ -1448,6 +1436,11 @@ void LatexDocVisitor::operator()(const DocHtmlCell &c)
     // update column to the end of the span, needs to be done *after* calling addRowSpan()
     setCurrentColumn(currentColumn()+cs-1);
     appendOpt("c="+QCString().setNum(cs));
+  }
+  if (c.isHeading())
+  {
+    appendSpec("bg=\\tableheadbgcolor");
+    appendSpec("font=\\bfseries");
   }
   switch(va) // vertical alignment
   {
