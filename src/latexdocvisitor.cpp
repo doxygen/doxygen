@@ -476,9 +476,18 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
       m_t << "}";
       break;
     case DocVerbatim::Verbatim:
-      m_t << "\\begin{DoxyVerb}";
-      m_t << s.text();
-      m_t << "\\end{DoxyVerb}\n";
+      if (isTableNested(s.parent())) // in table
+      {
+        m_t << "\\begin{DoxyCode}{0}";
+        filter(s.text(), true);
+        m_t << "\\end{DoxyCode}\n";
+      }
+      else
+      {
+        m_t << "\\begin{DoxyVerb}";
+        m_t << s.text();
+        m_t << "\\end{DoxyVerb}\n";
+      }
       break;
     case DocVerbatim::HtmlOnly:
     case DocVerbatim::XmlOnly:
@@ -632,9 +641,18 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
       m_t << inc.text();
       break;
     case DocInclude::VerbInclude:
-      m_t << "\n\\begin{DoxyVerbInclude}\n";
-      m_t << inc.text();
-      m_t << "\\end{DoxyVerbInclude}\n";
+      if (isTableNested(inc.parent())) // in table
+      {
+        m_t << "\\begin{DoxyCode}{0}";
+        filter(inc.text(), true);
+        m_t << "\\end{DoxyCode}\n";
+      }
+      else
+      {
+        m_t << "\n\\begin{DoxyVerbInclude}\n";
+        m_t << inc.text();
+        m_t << "\\end{DoxyVerbInclude}\n";
+      }
       break;
     case DocInclude::Snippet:
     case DocInclude::SnippetWithLines:
