@@ -1274,7 +1274,7 @@ void LatexDocVisitor::writeStartTableCommand(const DocNodeVariant *n,size_t cols
 {
   if (isTableNested(n))
   {
-    m_t << "\n\\begin{DoxyTableNested}{" << cols << "}";
+    m_t << "\\begin{DoxyTableNested}{" << cols << "}";
   }
   else
   {
