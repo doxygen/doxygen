@@ -2515,7 +2515,15 @@ void filterLatexString(TextStream &t,const QCString &str,
                    break;
         case '\'': t << "\\textquotesingle{}";
                    break;
-        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
+        case '\n': if (retainNewline)
+                   {
+                     t << "\\newline";
+                     if (insideTable) t << " ";
+                   }
+                   else
+                   {
+                     t << ' ';
+                   }
                    break;
         case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
                    break;
