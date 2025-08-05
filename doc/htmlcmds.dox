@@ -32,10 +32,10 @@ of a HTML tag are passed on to the HTML output only
                        (if supported by the output format).</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\endalign<tt>\<A NAME="..."\></tt></td><td valign="top">Starts a named anchor
                        (if supported by the output format).</td></tr>
-<tr><td valign="top">\startalign\anchor htmltag_endA \addindex "\</A\>"\endalign<tt>\</A\></tt></td><td valign="top">Ends a link or anchor</td></tr>
+<tr><td valign="top">\endhtmltag{A}</td><td valign="top">Ends a link or anchor</td></tr>
 <tr><td valign="top">\startendhtmltag{B}</td><td valign="top">Starts and ends a piece of text displayed in a bold font.</td></tr>
 <tr><td valign="top">\startendhtmltag{BLOCKQUOTE}</td><td valign="top">Starts and ends a quotation block.</td></tr>
-<tr><td valign="top">\startalign\anchor htmltag_BR \addindex "\<BR\>"\endalign<tt>\<BR\></tt></td><td valign="top">Forces a line break.</td></tr>
+<tr><td valign="top">\starthtmltag{BR}</td><td valign="top">Forces a line break.</td></tr>
 <tr><td valign="top">\startendhtmltag{CENTER}</td><td valign="top">Starts and ends a section of centered text.</td></tr>
 <tr><td valign="top">\startendhtmltag{CAPTION}</td><td valign="top">Starts and ends a caption. Use within a table only.</td></tr>
 <tr><td valign="top">\startendhtmltag{CITE}</td><td valign="top">Starts and ends a section of text displayed in a font specific for citations.</td></tr>
@@ -50,7 +50,7 @@ of a HTML tag are passed on to the HTML output only
 <tr><td valign="top">\startendhtmltag{DL}</td><td valign="top">Starts and ends a description list.</td></tr>
 <tr><td valign="top">\startendhtmltag{DT}</td><td valign="top">Starts and ends an item title.</td></tr>
 <tr><td valign="top">\startendhtmltag{EM}</td><td valign="top">Starts and ends a piece of text displayed in an italic font.</td></tr>
-<tr><td valign="top">\startalign\anchor htmltag_HR \addindex "\<HR\>"\endalign<tt>\<HR\></tt></td><td valign="top">Writes a horizontal ruler.</td></tr>
+<tr><td valign="top">\starthtmltag{HR}</td><td valign="top">Writes a horizontal ruler.</td></tr>
 <tr><td valign="top">\startendhtmltag{H1}</td><td valign="top">Starts and ends an unnumbered section.</td></tr>
 <tr><td valign="top">\startendhtmltag{H2}</td><td valign="top">Starts and ends an unnumbered subsection.</td></tr>
 <tr><td valign="top">\startendhtmltag{H3}</td><td valign="top">Starts and ends an unnumbered subsubsection.</td></tr>

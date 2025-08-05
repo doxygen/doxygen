@@ -59,11 +59,12 @@ HTML_EXTRA_FILES += translator_report.txt
 ALIASES           = LaTeX="\f({\LaTeX}\f)"
 ALIASES          += TeX="\f({\TeX}\f)"
 ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
-ALIASES          += startalign=" \latexonly\noalign{\endlatexonly"
-ALIASES          += endalign=" \latexonly}\endlatexonly"
 ALIASES          += startalign=
-ALIASES          += endalign=
-ALIASES          += startendhtmltag{1}="\startalign\anchor htmltag_\1 \addindex \"\<\1\>\" ^^ \anchor htmltag_end\1 \addindex \"\</\1\>\"\endalign <tt>\<\1\></tt> / <tt>\</\1\></tt>"
+ALIASES          += "endalign=\ilinebr"
+ALIASES          += starthtmltag{1}="\anchor htmltag_\1 \addindex \"\<\1\>\"\endalign<tt>\<\1\></tt>"
+ALIASES          +=   endhtmltag{1}="\anchor htmltag_end\1 \addindex \"\</\1\>\"\endalign<tt>\</\1\></tt>"
+ALIASES          += "startendhtmltag{1}=\starthtmltag{\1}&nbsp;/&nbsp;\endhtmltag{\1}"
+
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty
 LATEX_EMOJI_DIRECTORY  = ../doc
