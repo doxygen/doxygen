@@ -1277,7 +1277,7 @@ class DocHtmlTable : public DocCompoundNode
     Token parseXml();
     size_t numColumns() const { return m_numCols; }
     const DocNodeVariant *caption() const;
-    const DocNodeVariant *firstRow() const;
+    size_t numberHeaderRows() const;
 
   private:
     void computeTableGrid();
