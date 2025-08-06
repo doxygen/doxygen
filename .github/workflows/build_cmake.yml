@@ -172,6 +172,21 @@ jobs:
 #          bibtex
 #      if: matrix.config.os == 'windows-latest'
 
+    - name: Install MikTeX (Windows)
+      run: |
+        choco install miktex --no-progress
+        echo "%ProgramFiles%\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+        initexmf --admin --verbose --set-config-value=[MPM]AutoInstall=1
+        miktex --admin --verbose packages update-package-database
+        miktex --admin --verbose packages update
+        miktex --verbose packages update
+        miktex --admin --verbose packages install scheme-medium collection-latexextra babel-dutch cjk bibtex
+        miktex --admin --verbose fndb refresh
+        initexmf --admin --verbose --update-fndb
+        initexmf --admin --verbose --mklinks --force
+        updmap --admin
+      if: matrix.config.os == 'windows-latest'
+
     - name: Install Ghostscript (Linux)
       run: |
         sudo apt update
@@ -201,7 +216,7 @@ jobs:
     - name: Install xmllint (MacOS)
       run: |
          brew update || true
-         brew upgrade || true         
+         brew upgrade || true
          brew install libxml2
       if: startsWith(matrix.config.os,'macos-')
 
@@ -304,12 +319,12 @@ jobs:
         python --version;
         echo "=== cmake ===";
         cmake --version;
-        # echo "=== latex ===";
-        # latex --version;
-        # echo "=== bibtex ===";
-        # bibtex --version
-        # echo "=== dvips ===";
-        # dvips --version
+        echo "=== latex ===";
+        latex --version;
+        echo "=== bibtex ===";
+        bibtex --version
+        echo "=== dvips ===";
+        dvips --version
         echo "=== bison ===";
         win_bison --version;
         echo "=== flex ===";
@@ -382,21 +397,21 @@ jobs:
         endif()
       if: matrix.config.os != 'windows-latest'
 
-#    - name: Run tests (Windows)
-#      shell: cmake -P {0}
-#      run: |
-#        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-#
-#        execute_process(
-#          COMMAND
-#            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --man --pdf"
-#            cmake --build build --target tests
-#          RESULT_VARIABLE result
-#        )
-#        if (NOT result EQUAL 0)
-#          message(FATAL_ERROR "Running tests failed!")
-#        endif()
-#      if: matrix.config.os == 'windows-latest'
+    - name: Run tests (Windows)
+      shell: cmake -P {0}
+      run: |
+        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+
+        execute_process(
+          COMMAND
+            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --man --pdf"
+            cmake --build build --target tests
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Running tests failed!")
+        endif()
+      if: matrix.config.os == 'windows-latest'
 
     - name: Generate documentation
       shell: cmake -P {0}
@@ -408,8 +423,6 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Building documentation failed")
         endif()
-# TODO: remove me when texlive installation is fixed
-      if: matrix.config.os != 'windows-latest'
 
     - name: Archive html documentation artifacts
       uses: actions/upload-artifact@v4
