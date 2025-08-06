@@ -177,7 +177,7 @@ jobs:
       with:
         timeout_minutes: 10
         max_attempts: 3
-        commnd: |
+        command: |
           choco install miktex --no-progress --params "/Set:basic" -y
           echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
       if: matrix.config.os == 'windows-latest'
