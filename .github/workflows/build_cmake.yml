@@ -169,10 +169,11 @@ jobs:
     - name: Install MikTeX (Windows)
       uses: nick-invision/retry@v3
       with:
-        timeout_minutes: 10
-        max_attempts: 3
+        timeout_minutes: 15
+        max_attempts: 5
+        retry_wait_seconds: 60
         command: |
-          choco install miktex --no-progress --params "/Set:basic" -y
+          choco install miktex --debug --verbose --no-progress --params "/Set:basic" -y
           if ($?) { echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 }
       if: matrix.config.os == 'windows-latest'
 
