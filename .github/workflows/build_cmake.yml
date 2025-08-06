@@ -167,7 +167,8 @@ jobs:
         timeout_minutes: 10
         max_attempts: 3
         command: |
-          choco install miktex --no-progress --params "/Set:basic" -y && echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+          choco install miktex --no-progress --params "/Set:basic" -y
+          if ($?) { echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 }
       if: matrix.config.os == 'windows-latest'
 
     - name: Configure MikTeX (Windows)
