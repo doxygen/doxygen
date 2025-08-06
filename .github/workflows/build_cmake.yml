@@ -121,7 +121,12 @@ jobs:
 
     - name: Install LaTeX (Linux)
       run: |
-        sudo systemctl disable snapd.service snapd.socket # workaround to avoid hanging on restarting the snapd after installing the firefox snap
+        # workaround to avoid hanging on restarting the snapd after installing the firefox snap
+        sudo snap remove --purge firefox
+        sudo snap remove --purge snapd
+        sudo apt remove -y --purge snapd
+        sudo apt-mark hold snapd
+        # end workaround
         sudo apt update --fix-missing
         sudo apt upgrade
         sudo apt update
