@@ -180,11 +180,11 @@ jobs:
 
     - name: Configure MikTeX (Windows)
       run: |
-        initexmf --admin --verbose --set-config-value=[MPM]AutoInstall=1
         miktex --admin --verbose packages update-package-database
         miktex --admin --verbose packages update
-        miktex --verbose packages update
-        miktex --admin --verbose packages install scheme-medium collection-latexextra babel-dutch cjk bibtex
+        miktex --admin --verbose fndb refresh
+        initexmf --admin --verbose --set-config-value=[MPM]AutoInstall=1
+        miktex --admin --verbose packages install miktex-collection-latexextra miktex-collection-babel-dutch miktex-collection-cjk
         miktex --admin --verbose fndb refresh
         initexmf --admin --verbose --update-fndb
         initexmf --admin --verbose --mklinks --force
