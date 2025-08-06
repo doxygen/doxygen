@@ -121,6 +121,7 @@ jobs:
 
     - name: Install LaTeX (Linux)
       run: |
+        sudo systemctl stop snapd  # workaround to avoid hanging on restarting the snapd after installing the firefox snap
         sudo apt update --fix-missing
         sudo apt upgrade
         sudo apt update
@@ -152,25 +153,13 @@ jobs:
         ls -al /etc/alternatives/clang++
         which clang++
         clang++ -v
-      if: matrix.config.cc == 'clang' && (matrix.config.os == 'ubuntu-24.04' || matrix.config.os == 'ubuntu-24.04-arm')
+      if: matrix.config.cc == 'clang' && startsWith(matrix.config.os,'ubuntu-24')
 
     - name: Install libxapian (Ubuntu 24.04)
       run: |
         sudo apt update
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-24.04' || matrix.config.os == 'ubuntu-24.04-arm'
-
-# TODO: package disappeared overnight, disabled for now
-#    - name: Install LaTeX (Windows)
-#      uses: teatimeguest/setup-texlive-action@v3
-#      with:
-#        packages: >-
-#          scheme-medium
-#          collection-latexextra
-#          babel-dutch
-#          cjk
-#          bibtex
-#      if: matrix.config.os == 'windows-latest'
+      if: startsWith(matrix.config.os,'ubuntu-24')
 
     - name: Install MikTeX (Windows)
       uses: nick-invision/retry@v3
