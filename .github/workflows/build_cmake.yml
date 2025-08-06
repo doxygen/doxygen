@@ -174,7 +174,7 @@ jobs:
 
     - name: Install MikTeX (Windows)
       run: |
-        choco install miktex --no-progress
+        choco install miktex --no-progress --params "/Set:complete"
         echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
       if: matrix.config.os == 'windows-latest'
 
