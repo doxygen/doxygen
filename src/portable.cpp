@@ -200,59 +200,43 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
   }
   else
   {
-    // Because ShellExecuteEx can delegate execution to Shell extensions
-    // (data sources, context menu handlers, verb implementations) that
-    // are activated using Component Object Model (COM), COM should be
-    // initialized before ShellExecuteEx is called. Some Shell extensions
-    // require the COM single-threaded apartment (STA) type.
-    // For that case COM is initialized as follows
-    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    uint16_t* fullCmdW = nullptr;
+    recodeUtf8StringToW(fullCmd, &fullCmdW);
 
-    uint16_t *commandw = nullptr;
-    recodeUtf8StringToW( commandCorrectedPath, &commandw );
-    uint16_t *argsw = nullptr;
-    recodeUtf8StringToW( args, &argsw );
+    STARTUPINFOW sStartupInfo;
+    std::memset(&sStartupInfo, 0, sizeof(sStartupInfo));
+    sStartupInfo.cb = sizeof(sStartupInfo);
+    sStartupInfo.dwFlags |= STARTF_USESHOWWINDOW;
+    sStartupInfo.wShowWindow = SW_HIDE;
 
-    // gswin32 is a GUI api which will pop up a window and run
-    // asynchronously. To prevent both, we use ShellExecuteEx and
-    // WaitForSingleObject (thanks to Robert Golias for the code)
+    PROCESS_INFORMATION sProcessInfo;
+    std::memset(&sProcessInfo, 0, sizeof(sProcessInfo));
 
-    SHELLEXECUTEINFOW sInfo = {
-      sizeof(SHELLEXECUTEINFOW),   /* structure size */
-      SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI,  /* tell us the process
-                                                       *  handle so we can wait till it's done |
-                                                       *  do not display msg box if error
-                                                       */
-      nullptr,                       /* window handle */
-      nullptr,                       /* action to perform: open */
-      (LPCWSTR)commandw,          /* file to execute */
-      (LPCWSTR)argsw,             /* argument list */
-      nullptr,                       /* use current working dir */
-      SW_HIDE,                    /* minimize on start-up */
-      nullptr,                          /* application instance handle */
-      nullptr,                       /* ignored: id list */
-      nullptr,                       /* ignored: class name */
-      nullptr,                       /* ignored: key class */
-      0,                          /* ignored: hot key */
-      nullptr,                       /* ignored: icon */
-      nullptr                        /* resulting application handle */
-    };
-
-    if (!ShellExecuteExW(&sInfo))
+    if (!CreateProcessW(
+      nullptr, // No module name (use command line)
+      reinterpret_cast<wchar_t*>(fullCmdW), // Command line, can be mutated by CreateProcessW
+      nullptr, // Process handle not inheritable
+      nullptr, // Thread handle not inheritable
+      FALSE, // Set handle inheritance to FALSE
+      CREATE_NO_WINDOW,
+      nullptr, // Use parent's environment block
+      nullptr, // Use parent's starting directory
+      &sStartupInfo,
+      &sProcessInfo
+    ))
     {
-      delete[] commandw;
-      delete[] argsw;
+      delete[] fullCmdW;
       return -1;
     }
-    else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
+    else if (sProcessInfo.hProcess)      /* executable was launched, wait for it to finish */
     {
-      WaitForSingleObject(sInfo.hProcess,INFINITE);
+      WaitForSingleObject(sProcessInfo.hProcess,INFINITE);
       /* get process exit code */
       DWORD exitCode;
-      bool retval = GetExitCodeProcess(sInfo.hProcess,&exitCode);
-      CloseHandle(sInfo.hProcess);
-      delete[] commandw;
-      delete[] argsw;
+      bool retval = GetExitCodeProcess(sProcessInfo.hProcess,&exitCode);
+      CloseHandle(sProcessInfo.hProcess);
+      CloseHandle(sProcessInfo.hThread);
+      delete[] fullCmdW;
       if (!retval) return -1;
       return exitCode;
     }
