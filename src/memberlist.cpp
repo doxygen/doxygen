@@ -77,7 +77,7 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
   // then on line number at which the member is defined
   if (cmp==0)
   {
-    cmp = c1->getDefLine()-c2->getDefLine();
+    cmp = c2->getDefLine()-c1->getDefLine();
   }
   return cmp;
 }
