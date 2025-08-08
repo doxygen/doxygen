@@ -7337,14 +7337,14 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>"''"/[^a-z_A-Z0-9-]       {
-                                          if (endVerbatimBlock(yyscanner,"``",2))
+                                          if (!Config_getBool(MARKDOWN_STRICT) && endVerbatimBlock(yyscanner,"``",2))
                                           {
                                             BEGIN(DocBlock);
                                           }
                                           yyextra->docBlock << yytext;
                                         }
 <DocCopyBlock>"'"/[^'a-z_A-Z0-9-]       {
-                                          if (endVerbatimBlock(yyscanner,"`",1))
+                                          if (!Config_getBool(MARKDOWN_STRICT) && endVerbatimBlock(yyscanner,"`",1))
                                           {
                                             BEGIN(DocBlock);
                                           }

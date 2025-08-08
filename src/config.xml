@@ -701,6 +701,19 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='MARKDOWN_STRICT' defval='1' depends='MARKDOWN_SUPPORT'>
+      <docs>
+<![CDATA[
+ If the \c MARKDOWN_STRICT tag is enabled then Doxygen treats text in comments as Markdown formatted
+ also in cases where Doxygen's native markup format conflicts with that of Markdown. This is only relevant
+ in cases where backticks are used. Doxygen's native markup style allows a single quote to end a
+ text fragment started with a backtick and then treat it as a piece of quoted text, whereas in Markdown such text fragment
+ is treated as verbatim and only ends when a second matching backtick is found. Also, Doxygen's native markup
+ format requires double quotes to be escaped when they appear in a backtick section, whereas this is not needed
+ for Markdown.
+]]>
+      </docs>
+    </option>
     <option type='int' id='TOC_INCLUDE_HEADINGS' minval='0' maxval='99' defval='6' depends='MARKDOWN_SUPPORT'>
       <docs>
 <![CDATA[

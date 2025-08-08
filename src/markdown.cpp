@@ -248,7 +248,17 @@ static QCString escapeSpecialChars(const QCString &s)
     switch (c)
     {
       case '"':
-        if (pc!='\\')  { insideQuote=!insideQuote; }
+        if (pc!='\\')
+        {
+          if (Config_getBool(MARKDOWN_STRICT))
+          {
+            result+='\\';
+          }
+          else // For Doxygen's markup style a quoted text is left untouched
+          {
+            insideQuote=!insideQuote;
+          }
+        }
         result+=c;
         break;
       case '<':
@@ -1641,6 +1651,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
   /* finding the next delimiter with the same amount of backticks */
   size_t i = 0;
   char pc = '`';
+  bool markdownStrict = Config_getBool(MARKDOWN_STRICT);
   for (end=nb; end<size; end++)
   {
     //AUTO_TRACE_ADD("c={} nb={} i={} size={}",data[end],nb,i,size);
@@ -1688,7 +1699,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
       pc = '\n';
       i = 0;
     }
-    else if (data[end]=='\'' && nb==1 && (end+1==size || (end+1<size && data[end+1]!='\'' && !isIdChar(data[end+1]))))
+    else if (!markdownStrict && data[end]=='\'' && nb==1 && (end+1==size || (end+1<size && data[end+1]!='\'' && !isIdChar(data[end+1]))))
     { // look for quoted strings like 'some word', but skip strings like `it's cool`
       out+="&lsquo;";
       out+=data.substr(nb,end-nb);
@@ -1696,7 +1707,7 @@ int Markdown::Private::processCodeSpan(std::string_view data,size_t offset)
       AUTO_TRACE_EXIT("quoted end={}",end+1);
       return static_cast<int>(end+1);
     }
-    else if (data[end]=='\'' && nb==2 && end+1<size && data[end+1]=='\'')
+    else if (!markdownStrict && data[end]=='\'' && nb==2 && end+1<size && data[end+1]=='\'')
     { // look for '' to match a ``
       out+="&ldquo;";
       out+=data.substr(nb,end-nb);

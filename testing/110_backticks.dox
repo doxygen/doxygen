@@ -1,4 +1,5 @@
 // objective: test various forms of backtick handling
+// config: MARKDOWN_STRICT = NO
 // check: indexpage.xml
 /** @mainpage
 Text with `single` backtick.  

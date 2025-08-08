@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="md_113__markdown__strict" kind="page">
+    <compoundname>md_113__markdown__strict</compoundname>
+    <title>113_markdown_strict</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Single quote inside backtick fragment should not end the verbatim section:</para>
+      <para>Declare <computeroutput>x</computeroutput> like this <computeroutput>var x='c'</computeroutput>.</para>
+      <para>Single quote inside double backtick fragment should not end the verbatim section:</para>
+      <para>Declare <computeroutput>y</computeroutput> like this <computeroutput>var y='d'</computeroutput>.</para>
+      <para>Double quotes characters do not need to be escaped in a verbatim fragment:</para>
+      <para>Unescaped <computeroutput>"</computeroutput>quotes<computeroutput>"</computeroutput>. </para>
+    </detaileddescription>
+    <location file="113_markdown_strict.md"/>
+  </compounddef>
+</doxygen>

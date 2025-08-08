@@ -783,7 +783,7 @@ SLASHopt [/]*
                                    }
 <VerbatimCode>"''"                 {
                                      copyToOutput(yyscanner,yytext,yyleng);
-                                     if (yyextra->blockName=="``") // support for ``text''
+                                     if (!Config_getBool(MARKDOWN_STRICT) && yyextra->blockName=="``") // support for ``text''
                                      {
                                        yyextra->inVerbatim=false;
                                        BEGIN(yyextra->lastCommentContext);
@@ -791,7 +791,7 @@ SLASHopt [/]*
                                    }
 <VerbatimCode>"'"                  {
                                      copyToOutput(yyscanner,yytext,yyleng);
-                                     if (yyextra->blockName=="`") // support for `text'
+                                     if (!Config_getBool(MARKDOWN_STRICT) && yyextra->blockName=="`") // support for `text'
                                      {
                                        yyextra->inVerbatim=false;
                                        BEGIN(yyextra->lastCommentContext);
