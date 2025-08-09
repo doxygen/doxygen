@@ -464,6 +464,69 @@ static QCString substituteHtmlKeywords(const QCString &file,
 
     switch (mathJaxVersion)
     {
+      case MATHJAX_VERSION_t::MathJax_4:
+        {
+          mathJaxJs += "<script type=\"text/javascript\">\n"
+                       "window.MathJax = {\n"
+                       "  options: {\n"
+                       "    ignoreHtmlClass: 'tex2jax_ignore',\n"
+                       "    processHtmlClass: 'tex2jax_process'\n"
+                       "  }";
+         // MACRO / EXT
+         const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
+         if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
+         {
+           mathJaxJs+= ",\n";
+           if (!mathJaxExtensions.empty())
+           {
+             bool first = true;
+             mathJaxJs+= "  loader: {\n"
+                         "    load: [";
+             for (const auto &s : mathJaxExtensions)
+             {
+               if (!first) mathJaxJs+= ",";
+               mathJaxJs+= "'[tex]/"+QCString(s.c_str())+"'";
+               first = false;
+             }
+             mathJaxJs+= "]\n"
+                         "  },\n";
+           }
+           mathJaxJs+= "  tex: {\n"
+                       "    macros: {";
+           if (!g_latex_macro.isEmpty())
+           {
+             mathJaxJs += g_latex_macro+"    ";
+           }
+           mathJaxJs+="},\n"
+                       "    packages: {\n";
+           bool first = true;
+           for (const auto &s : mathJaxExtensions)
+           {
+             if (!first) mathJaxJs+= ",";
+             mathJaxJs+= "\n";
+             mathJaxJs+= "        '[+]': ['"+QCString(s.c_str())+"']";
+             first = false;
+           }
+           mathJaxJs += "\n    }\n";
+           mathJaxJs += "  }\n";
+         }
+         else
+         {
+           mathJaxJs += "\n";
+         }
+         mathJaxJs += "};\n";
+         // MATHJAX_CODEFILE
+         if (!g_mathjax_code.isEmpty())
+         {
+           mathJaxJs += g_mathjax_code;
+           mathJaxJs += "\n";
+         }
+         mathJaxJs+="</script>\n";
+         mathJaxJs += "<script type=\"text/javascript\" id=\"MathJax-script\" async=\"async\" src=\"" +
+                      path + "tex-" + mathJaxFormat.lower() + ".js\">";
+         mathJaxJs+="</script>\n";
+        }
+        break;
       case MATHJAX_VERSION_t::MathJax_3:
         {
           mathJaxJs += // "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n" // needed for IE11 only, see #10354
