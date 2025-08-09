@@ -2825,7 +2825,7 @@ obfuscate email addresses.
  directory should contain the `MathJax.js` script. For instance, if the \c mathjax
  directory is located at the same level as the HTML output directory, then
  \c MATHJAX_RELPATH should be <code>../mathjax</code>.s
- For Mathjax versions 3 and 3 the destination directory should contain the
+ For Mathjax versions 3 and 4 the destination directory should contain the
  `tex-<format>.js` script (where `<format>` is either `chtml` or `svg`).
  The default value points to
  the MathJax Content Delivery Network so you can quickly see the result without
@@ -2856,7 +2856,7 @@ For example for MathJax version 4 (see https://docs.mathjax.org/en/v4.0/input/te
 \verbatim
 MATHJAX_EXTENSIONS     = units
 \endverbatim
-Note that for Matjax version 4 quite a few extensions are already automatically loaded.
+Note that for Matjhax version 4 quite a few extensions are already automatically loaded.
 ]]>
       </docs>
     </option>
