@@ -1839,19 +1839,26 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   {
     auto mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
     auto mathjaxVersion = Config_getEnum(MATHJAX_VERSION);
-    if (mathjaxVersion == MATHJAX_VERSION_t::MathJax_2)
+    switch (mathjaxVersion)
     {
-      if (mathJaxFormat==MATHJAX_FORMAT_t::chtml)
-      {
-        Config_updateEnum(MATHJAX_FORMAT,MATHJAX_FORMAT_t::HTML_CSS);
-      }
-    }
-    else
-    {
-      if (mathJaxFormat==MATHJAX_FORMAT_t::HTML_CSS || mathJaxFormat==MATHJAX_FORMAT_t::NativeMML)
-      {
-        Config_updateEnum(MATHJAX_FORMAT,MATHJAX_FORMAT_t::chtml);
-      }
+      case MATHJAX_VERSION_t::MathJax_2:
+        if (mathJaxFormat==MATHJAX_FORMAT_t::chtml)
+        {
+          Config_updateEnum(MATHJAX_FORMAT,MATHJAX_FORMAT_t::HTML_CSS);
+        }
+        break;
+      case MATHJAX_VERSION_t::MathJax_3:
+        if (mathJaxFormat==MATHJAX_FORMAT_t::HTML_CSS || mathJaxFormat==MATHJAX_FORMAT_t::NativeMML)
+        {
+          Config_updateEnum(MATHJAX_FORMAT,MATHJAX_FORMAT_t::chtml);
+        }
+        break;
+      case MATHJAX_VERSION_t::MathJax_4:
+        if (mathJaxFormat==MATHJAX_FORMAT_t::HTML_CSS || mathJaxFormat==MATHJAX_FORMAT_t::NativeMML)
+        {
+          Config_updateEnum(MATHJAX_FORMAT,MATHJAX_FORMAT_t::chtml);
+        }
+        break;
     }
 
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
@@ -1872,6 +1879,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       {
         case MATHJAX_VERSION_t::MathJax_2: path += "2"; break;
         case MATHJAX_VERSION_t::MathJax_3: path += "3"; break;
+        case MATHJAX_VERSION_t::MathJax_4: path += "4"; break;
       }
     }
 
