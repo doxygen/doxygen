@@ -734,7 +734,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                         {
                           for (const auto &child : yyextra->current_root->children())
                           {
-                            if (child->name == QCString(yytext))
+                            if (child->name == yytext)
                             {
                                yyextra->current->type = child->type;
                                break;
@@ -1789,7 +1789,7 @@ static void newEntry(yyscan_t yyscanner)
   {
     for (auto &v : yyextra->current_root->children())
     {
-      //printf("candidate %s<->%s section=%s!\n",qPrint(v->name),qPrint(yyextra->current->name), v->section.to_string().c_str());
+      //printf("candidate %s<->%s section=%s!\n",qPrint(v->name),qPrint(yyextra->current->name), qPrint(v->section.to_string()));
       if (v->name==yyextra->current->name && v->section==yyextra->current->section) // name is already added, don't add it again
       {
         if (v->doc.isEmpty() && !yyextra->current->doc.isEmpty())
@@ -1932,7 +1932,7 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
   auto it = yyextra->packageNameCache.find(path.str());
   if (it!=yyextra->packageNameCache.end())
   {
-    return QCString(it->second);
+    return it->second;
   }
   FileInfo pf(path.str()+"/__init__.py"); // found package initialization file
   if (pf.exists())
@@ -1957,7 +1957,7 @@ static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName)
 {
   if (fileName.isEmpty()) return fileName;
   FileInfo fi(fileName.str());
-  return findPackageScopeFromPath(yyscanner,fi.dirPath(true).c_str());
+  return findPackageScopeFromPath(yyscanner,fi.dirPath(true));
 }
 
 static void addFrom(yyscan_t yyscanner,bool all)

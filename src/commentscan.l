@@ -967,7 +967,7 @@ STopt  [^\n@\\]*
 <Comment>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*        { // potentially interesting command
                                           // the {B}* in the front was added for bug620924
-                                          QCString fullMatch = QCString(yytext);
+                                          QCString fullMatch = yytext;
                                           int idx = fullMatch.find('{');
                                           /* handle `f{` command as special case */
                                           if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
@@ -976,7 +976,7 @@ STopt  [^\n@\\]*
                                           StringVector optList;
                                           if (idx == -1) // no options
                                           {
-                                            cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
+                                            cmdName = fullMatch.stripWhiteSpace().mid(1); // to remove {CMD}
                                           }
                                           else // options present
                                           {
@@ -990,7 +990,7 @@ STopt  [^\n@\\]*
                                           {
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
-                                            yyextra->spaceBeforeCmd = QCString(yytext).left(i);
+                                            yyextra->spaceBeforeCmd = fullMatch.left(i);
                                             CommandSpacing spacing = it->second.spacing;
                                             if ((spacing==CommandSpacing::Block || spacing==CommandSpacing::XRef) &&
                                                 !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
@@ -1347,7 +1347,7 @@ STopt  [^\n@\\]*
 <NameSpaceDocArg1>{SCOPENAME}           { // handle argument
                                           makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
-                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),QCString("."),QCString("::"));
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
                                           BEGIN( Comment );
                                         }
 <NameSpaceDocArg1>{LC}                  { // line continuation
@@ -1432,13 +1432,13 @@ STopt  [^\n@\\]*
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
                                           makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
-                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),".","::");
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1>{SCOPENAME}               { // first argument
                                           makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
-                                          yyextra->current->name = substitute(QCString(yytext),".","::");
+                                          yyextra->current->name = substitute(yytext,".","::");
                                           if (yyextra->current->section.isProtocolDoc())
                                           {
                                             yyextra->current->name+="-p";
@@ -1449,7 +1449,7 @@ STopt  [^\n@\\]*
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
                                           makeStructuralIndicator(yyscanner,yyextra->currentMakeEntryType);
                                           lineCount(yyscanner);
-                                          yyextra->current->name = substitute(QCString(yytext),".","::");
+                                          yyextra->current->name = substitute(yytext,".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1,CategoryDocArg1>{LC}      { // line continuation
@@ -1991,7 +1991,7 @@ STopt  [^\n@\\]*
                                         }
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+{B}*   { // handling command in section title
-                                          QCString fullMatch = QCString(yytext);
+                                          QCString fullMatch = yytext;
                                           int idx = fullMatch.find('{');
                                           /* handle `f{` command as special case */
                                           if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
@@ -2000,7 +2000,7 @@ STopt  [^\n@\\]*
                                           StringVector optList;
                                           if (idx == -1) // no options
                                           {
-                                            cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
+                                            cmdName = fullMatch.stripWhiteSpace().mid(1); // to remove {CMD}
                                           }
                                           else // options present
                                           {
@@ -2154,7 +2154,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
-                                          yyextra->current->extends.emplace_back(QCString(yytext),Protection::Public,Specifier::Normal);
+                                          yyextra->current->extends.emplace_back(yytext,Protection::Public,Specifier::Normal);
                                           BEGIN(SubpageTitle);
                                         }
 <SubpageLabel>{DOCNL}                   { // missing argument
@@ -2321,7 +2321,7 @@ STopt  [^\n@\\]*
                                           BEGIN(GuardParam);
                                         }
 <GuardParam>{B}*[a-z_A-Z0-9.\-]+        { // parameter of if/ifnot yyextra->guards
-                                          handleGuard(yyscanner,QCString(yytext));
+                                          handleGuard(yyscanner,yytext);
                                         }
 <GuardParam>{DOCNL}                     { // end of argument
                                           //next line is commented out due to bug620924
@@ -2595,7 +2595,7 @@ STopt  [^\n@\\]*
 
 <InGroupParam>{LABELID}                 { // group id
                                           yyextra->current->groups.emplace_back(
-                                             QCString(yytext), Grouping::GROUPING_INGROUP
+                                             yytext, Grouping::GROUPING_INGROUP
                                           );
                                           yyextra->inGroupParamFound=TRUE;
                                         }
@@ -2688,7 +2688,7 @@ STopt  [^\n@\\]*
 
 <InheritParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.emplace_back(
-                                            removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal
+                                            removeRedundantWhiteSpace(yytext),Protection::Public,Specifier::Normal
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2711,7 +2711,7 @@ STopt  [^\n@\\]*
 
 <ExtendsParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.emplace_back(
-                                            removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal
+                                            removeRedundantWhiteSpace(yytext),Protection::Public,Specifier::Normal
                                           );
                                           BEGIN( Comment );
                                         }
@@ -4306,7 +4306,7 @@ static QCString addFormula(yyscan_t yyscanner)
   //    qPrint(yyextra->formulaText.stripLeadingAndTrailingEmptyLines()),
   //    qPrint(formula)
   //    );
-  int id = FormulaManager::instance().addFormula(formula.str());
+  int id = FormulaManager::instance().addFormula(formula);
   formLabel.sprintf("\\_form#%d",id);
   for (int i=0;i<yyextra->formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
                                                          // keep the warnings

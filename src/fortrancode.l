@@ -204,7 +204,6 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // map with used mo
                     OutputCodeList &ol,
                     const QCString &text);
 static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const QCString &lname);
-static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const char *lname);
 static int countLines(yyscan_t yyscanner);
 static void startScope(yyscan_t yyscanner);
 static void endScope(yyscan_t yyscanner);
@@ -438,7 +437,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable declaration
                                           startFontClass(yyscanner,"keyword");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <ClassName>\n                           { // interface may be without name
@@ -511,7 +510,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yy_push_state(YY_START,yyscanner);
                                           BEGIN(Declaration);
                                           startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <Start>{TYPE_SPEC}/[,:( ]               {
@@ -522,7 +521,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yy_push_state(YY_START,yyscanner);
                                           BEGIN(Declaration);
                                           startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <Start>{ATTR_SPEC}                      {
@@ -533,20 +532,20 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                             yyextra->isExternal = true;
                                           }
                                           startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable declaration
                                           if (QCString(yytext) == "external") yyextra->isExternal = true;
                                           startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
 <Declaration>{ID}                       { // local var
                                           if (yyextra->isFixedForm && yy_my_start == 1)
                                           {
                                             startFontClass(yyscanner,"comment");
-                                            yyextra->code->codify(QCString(yytext));
+                                            yyextra->code->codify(yytext);
                                             endFontClass(yyscanner);
                                           }
                                           else if (yyextra->currentMemberDef &&
@@ -559,13 +558,13 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           else
                                           {
-                                            yyextra->code->codify(QCString(yytext));
-                                            addLocalVar(yyscanner,QCString(yytext));
+                                            yyextra->code->codify(yytext);
+                                            addLocalVar(yyscanner,yytext);
                                           }
                                         }
 <Declaration>{BS}("=>"|"="){BS}         { // Procedure binding
                                           BEGIN(DeclarationBinding);
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 <DeclarationBinding>{ID}                { // Type bound procedure link
                                           generateLink(yyscanner,*yyextra->code, yytext);
@@ -573,17 +572,17 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <Declaration>[(]                        { // start of array or type / class specification
                                           yyextra->bracketCount++;
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 
 <Declaration>[)]                        { // end array specification
                                           yyextra->bracketCount--;
                                           if (!yyextra->bracketCount) yyextra->inTypeDecl = 0;
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 
 <Declaration,DeclarationBinding>"&"     { // continuation line
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                           if (!yyextra->isFixedForm)
                                           {
                                             yy_push_state(YY_START,yyscanner);
@@ -739,7 +738,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
  /*------ variable references?  -------------------------------------*/
 
 <Start>"%"{BS}{ID}                      { // ignore references to elements
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 <Start>{ID}                             {
                                             yyextra->insideBody=TRUE;
@@ -791,7 +790,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->contLineNr++;
                                           YY_FTN_RESET
                                         }
-<*>^{BS}"type"{BS}"="                   { yyextra->code->codify(QCString(yytext)); }
+<*>^{BS}"type"{BS}"="                   { yyextra->code->codify(yytext); }
 
 <*>[\x80-\xFF]*                         { // keep utf8 characters together...
                                           if (yyextra->isFixedForm && yy_my_start > yyextra->fixedCommentAfter)
@@ -801,7 +800,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           else
                                           {
-                                            yyextra->code->codify(QCString(yytext));
+                                            yyextra->code->codify(yytext);
                                           }
                                         }
 <*>.                                    {
@@ -815,11 +814,11 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           else
                                           {
-                                            yyextra->code->codify(QCString(yytext));
+                                            yyextra->code->codify(yytext);
                                           }
                                         }
 <*>{LOG_OPER}                           { // Fortran logical comparison keywords
-                                          yyextra->code->codify(QCString(yytext));
+                                          yyextra->code->codify(yytext);
                                         }
 <*><<EOF>>                              {
                                           if (YY_START == DocBlock)
@@ -877,7 +876,7 @@ static void startFontClass(yyscan_t yyscanner,const char *s,bool specialComment)
   if (qstrcmp(yyextra->currentFontClass,s)!=0)
   {
     endFontClass(yyscanner);
-    yyextra->code->startFontClass(QCString(s));
+    yyextra->code->startFontClass(s);
     yyextra->currentFontClass=s;
   }
 }
@@ -1001,10 +1000,10 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
   yyextra->code->startCodeLine(yyextra->yyLineNr);
-  yyextra->insideCodeLine=true;  
+  yyextra->insideCodeLine=true;
   if (yyextra->currentFontClass)
   {
-    yyextra->code->startFontClass(QCString(yyextra->currentFontClass));
+    yyextra->code->startFontClass(yyextra->currentFontClass);
   }
 }
 
@@ -1048,13 +1047,12 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     {
       yyextra->yyLineNr++;
       size_t l = static_cast<size_t>(p-sp-1);
-      std::string tmp(sp,l);
-      yyextra->code->codify(tmp.c_str());
+      yyextra->code->codify(QCString(sp,l));
       nextCodeLine(yyscanner);
     }
     else
     {
-      yyextra->code->codify(QCString(sp));
+      yyextra->code->codify(sp);
       done=TRUE;
     }
   }
@@ -1338,11 +1336,6 @@ static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const QCString &
     //endFontClass(yyscanner); //test
     addToSearchIndex(yyscanner,name);
   }
-}
-
-static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const char *lname)
-{
-  generateLink(yyscanner,ol,QCString(lname));
 }
 
 /*! counts the number of lines in the input */

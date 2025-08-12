@@ -238,9 +238,9 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   }
 
   QCString imgExt = getDotImageExtension();
-  QCString imgName = QCString(outFile)+"."+imgExt;
-  QCString absImgName = QCString(d.absPath())+"/"+imgName;
-  QCString absOutFile = QCString(d.absPath())+"/"+outFile;
+  QCString imgName = outFile+"."+imgExt;
+  QCString absImgName = d.absPath()+"/"+imgName;
+  QCString absOutFile = d.absPath()+"/"+outFile;
 
   DotRunner dotRun(inFile);
   if (format==GraphOutputFormat::BITMAP)
@@ -296,7 +296,7 @@ void writeDotImageMapFromFile(TextStream &t,
   QCString mapName = baseName+".map";
   QCString imgExt = getDotImageExtension();
   QCString imgName = baseName+"."+imgExt;
-  QCString absOutFile = QCString(d.absPath())+"/"+mapName;
+  QCString absOutFile = d.absPath()+"/"+mapName;
 
   DotRunner dotRun(inFile);
   dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);

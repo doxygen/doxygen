@@ -129,7 +129,7 @@ void TextGeneratorOLImpl::writeString(std::string_view s,bool keepSpaces) const
   }
   else
   {
-    m_ol.docify(QCString(s));
+    m_ol.docify(s);
   }
 }
 
@@ -147,7 +147,7 @@ void TextGeneratorOLImpl::writeLink(const QCString &extRef,const QCString &file,
                                    ) const
 {
   //printf("TextGeneratorOlImpl::writeLink('%s')\n",text);
-  m_ol.writeObjectLink(extRef,file,anchor,QCString(text));
+  m_ol.writeObjectLink(extRef,file,anchor,text);
 }
 
 //------------------------------------------------------------------------
@@ -173,7 +173,7 @@ const int maxInheritanceDepth = 100000;
 QCString removeAnonymousScopes(const QCString &str)
 {
   std::string result;
-  if (str.isEmpty()) return QCString(result);
+  if (str.isEmpty()) return result;
 
   // helper to check if the found delimiter starts with a colon
   auto startsWithColon = [](const std::string &del)
@@ -234,7 +234,7 @@ QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement)
   std::string result = reg::replace(s.str(),marker,
                                     !replacement.isEmpty() ? replacement.data() : "__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",qPrint(s),qPrint(result));
-  return QCString(result);
+  return result;
 }
 
 
@@ -315,7 +315,7 @@ static QCString stripFromPath(const QCString &p,const StringVector &l)
   size_t length = 0;
   for (const auto &s : l)
   {
-    QCString prefix = s.c_str();
+    QCString prefix = s;
     if (prefix.length() > length &&
         qstricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
     {
@@ -979,7 +979,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     }
     // get word from string
     std::string_view word=txtStr.substr(newIndex,matchLen);
-    QCString matchWord = substitute(substitute(QCString(word),"\\","::"),".","::");
+    QCString matchWord = substitute(substitute(word,"\\","::"),".","::");
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    qPrint(word),qPrint(matchWord),scope ? qPrint(scope->name()) : "<none>");
     bool found=FALSE;
@@ -1332,7 +1332,7 @@ static QCString getFilterFromList(const QCString &name,const StringVector &filte
   // compare the file name to the filter pattern list
   for (const auto &filterStr : filterList)
   {
-    QCString fs = filterStr.c_str();
+    QCString fs = filterStr;
     int i_equals=fs.find('=');
     if (i_equals!=-1)
     {
@@ -1451,7 +1451,7 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
     {
       contents+=line+'\n';
     }
-    return QCString(contents);
+    return contents;
   }
   else // read from file
   {
@@ -1811,7 +1811,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
         size_t tl = match.length();
         std::string matchStr = match.str();
         canType += ts.substr(tp,ti-tp);
-        canType += getCanonicalTypeForIdentifier(d,fs,matchStr.c_str(),lang,nullptr);
+        canType += getCanonicalTypeForIdentifier(d,fs,matchStr,lang,nullptr);
         tp=ti+tl;
       }
       canType+=ts.substr(tp);
@@ -4120,7 +4120,7 @@ QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &in
   FileInfo fi(curFile.str());
   if (fi.exists())
   {
-    QCString absName = QCString(fi.dirPath(TRUE))+"/"+incFileName;
+    QCString absName = fi.dirPath(TRUE)+"/"+incFileName;
     FileInfo fi2(absName.str());
     if (fi2.exists())
     {
@@ -4134,7 +4134,7 @@ QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &in
         FileInfo fi3(incPath);
         if (fi3.exists() && fi3.isDir())
         {
-          absName = QCString(fi3.absFilePath())+"/"+incFileName;
+          absName = fi3.absFilePath()+"/"+incFileName;
           //printf("trying absName=%s\n",qPrint(absName));
           FileInfo fi4(absName.str());
           if (fi4.exists())
@@ -5454,7 +5454,7 @@ void replaceNamespaceAliases(QCString &scope,size_t i)
       auto it = Doxygen::namespaceAliasMap.find(ns.str());
       if (it!=Doxygen::namespaceAliasMap.end())
       {
-        scope=QCString(it->second)+scope.right(scope.length()-i);
+        scope=it->second+scope.right(scope.length()-i);
         i=it->second.length();
       }
     }
@@ -5896,7 +5896,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
     TextDocVisitor visitor(t);
     std::visit(visitor,astImpl->root);
   }
-  QCString result = convertCharEntitiesToUTF8(t.str().c_str()).stripWhiteSpace();
+  QCString result = convertCharEntitiesToUTF8(t.str()).stripWhiteSpace();
   int i=0;
   int charCnt=0;
   int l=static_cast<int>(result.length());
@@ -6148,7 +6148,7 @@ QCString filterTitle(const QCString &title)
     p=i+l;
   }
   tf+=t.substr(p);
-  return QCString(tf);
+  return tf;
 }
 
 //---------------------------------------------------------------------------------------------------
@@ -6207,14 +6207,14 @@ bool genericPatternMatch(const FileInfo &fi,
 bool patternMatch(const FileInfo &fi,const StringVector &patList)
 {
   std::string elem;
-  auto getter = [](std::string s) { return QCString(s); };
+  auto getter = [](std::string s) -> QCString { return s; };
   return genericPatternMatch(fi,patList,elem,getter);
 }
 
 QCString getEncoding(const FileInfo &fi)
 {
   InputFileEncoding elem;
-  auto getter = [](const InputFileEncoding &e) { return e.pattern; };
+  auto getter = [](const InputFileEncoding &e) -> QCString { return e.pattern; };
   if (genericPatternMatch(fi,Doxygen::inputFileEncodingList,elem,getter)) // check for file specific encoding
   {
     return elem.encoding;
@@ -6367,7 +6367,7 @@ QCString replaceColorMarkers(const QCString &str)
     p=i+l;
   }
   if (p<sl) result+=s.substr(p);
-  return QCString(result);
+  return result;
 }
 
 /** Copies the contents of file with name \a src to the newly created

@@ -52,7 +52,7 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define repeatChar(chr, cnt) std::string(cnt, chr).c_str()
+#define repeatChar(chr, cnt) QCString().fill(chr,cnt)
 
 struct lexscannerYY_state
 {

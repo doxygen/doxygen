@@ -98,13 +98,13 @@ void FormulaManager::initFromRepository(const QCString &dir)
         width  = std::stoi(match[2].str());
         height = std::stoi(match[3].str());
         text   = line.substr(match.position()+match.length());
-        //printf("new format found id=%d width=%d height=%d text=%s\n",id,width,height,text.c_str());
+        //printf("new format found id=%d width=%d height=%d text=%s\n",id,width,height,qPrinf(text));
       }
       else if (reg::search(line,match,re_old)) // check for old format
       {
         //id     = std::stoi(match[1].str());
         //text   = line.substr(match.position()+match.length());
-        //printf("old format found id=%d text=%s\n",id,text.c_str());
+        //printf("old format found id=%d text=%s\n",id,qPrint(text));
         msg("old formula.repository format detected; forcing upgrade.\n");
         p->repositoriesValid = false;
         break;
@@ -132,7 +132,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
       else // create new formula from cache
       {
         //printf("formula not found adding it under id=%d\n",id);
-        formula = p->formulas.add(text.c_str(),id,width,height);
+        formula = p->formulas.add(text,id,width,height);
         p->formulaIdMap.emplace(id,formula);
       }
 
@@ -688,7 +688,7 @@ void FormulaManager::clear()
   p->formulaIdMap.clear();
 }
 
-int FormulaManager::addFormula(const std::string &formulaText,int width,int height)
+int FormulaManager::addFormula(const QCString &formulaText,int width,int height)
 {
   Formula *formula = p->formulas.find(formulaText);
   if (formula) // same formula already stored
@@ -697,7 +697,7 @@ int FormulaManager::addFormula(const std::string &formulaText,int width,int heig
   }
   // add new formula
   int id = static_cast<int>(p->formulas.size());
-  formula = p->formulas.add(formulaText.c_str(),id,width,height);
+  formula = p->formulas.add(formulaText,id,width,height);
   p->formulaIdMap.emplace(id,formula);
   return id;
 }

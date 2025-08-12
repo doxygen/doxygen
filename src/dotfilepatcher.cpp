@@ -525,9 +525,9 @@ bool DotFilePatcher::run() const
     t.setStream(&fo);
     while (getline(fi,lineStr)) // foreach line
     {
-      std::string line = lineStr+'\n';
+      QCString line = lineStr+'\n';
       const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
-      t << replaceRef(line.c_str(),map.relPath,map.urlOnly,map.context,"_top");
+      t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
     }
     t.flush();
     fi.close();

@@ -566,7 +566,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
 
         for (const auto &baseName: baseNameVector)
         {
-          writePlantUMLFile(QCString(baseName), s);
+          writePlantUMLFile(baseName, s);
         }
       }
       break;
@@ -2082,13 +2082,13 @@ void LatexDocVisitor::startPlantUmlFile(const QCString &fileName,
 
   bool useBitmap = inBuf.find("@startditaa") != std::string::npos;
   auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
-                              outDir,QCString(),inBuf.c_str(),
+                              outDir,QCString(),inBuf,
                               useBitmap ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS,
                               QCString(),srcFile,srcLine,false);
   bool first = true;
   for (const auto &bName: baseNameVector)
   {
-    QCString baseName = makeBaseName(QCString(bName));
+    QCString baseName = makeBaseName(bName);
     QCString shortName = makeShortName(baseName);
     if (useBitmap)
     {

@@ -338,9 +338,9 @@ void DocParser::checkUnOrMultipleDocumentedParams()
         bool first=TRUE;
         QCString errMsg = "The following parameter";
         if (undocParams.size()>1) errMsg+="s";
-        errMsg+=" of "+
-            QCString(context.memberDef->qualifiedName()) +
-            QCString(argListToString(al)) +
+        errMsg+=QCString(" of ")+
+            context.memberDef->qualifiedName() +
+            argListToString(al) +
             (undocParams.size()>1 ? " are" : " is") + " not documented:\n";
         for (const Argument &a : undocParams)
         {
@@ -1997,7 +1997,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
 
   parser->context.fileName = fileName;
   parser->context.relPath = (!linkFromIndex && ctx) ?
-               QCString(relativePathToRoot(ctx->getOutputFileBase())) :
+               relativePathToRoot(ctx->getOutputFileBase()) :
                QCString("");
   //printf("ctx->name=%s relPath=%s\n",qPrint(ctx->name()),qPrint(parser->context.relPath));
   parser->context.memberDef = md;

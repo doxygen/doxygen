@@ -228,9 +228,9 @@ static void addMemberToSearchIndex(const MemberDef *md)
     if (!n.isEmpty())
     {
       bool isFriendToHide = hideFriendCompounds &&
-        (QCString(md->typeString())=="friend class" ||
-         QCString(md->typeString())=="friend struct" ||
-         QCString(md->typeString())=="friend union");
+        (md->typeString()=="friend class" ||
+         md->typeString()=="friend struct" ||
+         md->typeString()=="friend union");
       if (!(md->isFriend() && isFriendToHide))
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,md));

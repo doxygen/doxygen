@@ -432,7 +432,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
 
         for (const auto &baseName: baseNameVector)
         {
-          writePlantUMLFile(QCString(baseName), s.hasCaption());
+          writePlantUMLFile(baseName, s.hasCaption());
           visitChildren(s);
           includePicturePostRTF(true, s.hasCaption());
         }
@@ -1324,11 +1324,11 @@ void RTFDocVisitor::operator()(const DocPlantUmlFile &df)
   std::string inBuf;
   readInputFile(df.file(),inBuf);
   auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(
-                       rtfOutput,QCString(),inBuf.c_str(),PlantumlManager::PUML_BITMAP,
+                       rtfOutput,QCString(),inBuf,PlantumlManager::PUML_BITMAP,
                        QCString(),df.srcFile(),df.srcLine(),false);
   for(const auto &baseName: baseNameVector)
   {
-    writePlantUMLFile(QCString(baseName), df.hasCaption());
+    writePlantUMLFile(baseName, df.hasCaption());
     visitChildren(df);
     includePicturePostRTF(true, df.hasCaption());
   }

@@ -279,7 +279,7 @@ std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const
 */
 FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
                  const QCString &lref,const QCString &dn)
-   : DefinitionMixin(QCString(p)+nm,1,1,nm,nullptr,nullptr,!p.isEmpty())
+   : DefinitionMixin(p+nm,1,1,nm,nullptr,nullptr,!p.isEmpty())
 {
   m_path=removeLongPathMarker(p);
   m_filePath=p+nm;

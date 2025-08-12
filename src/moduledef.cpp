@@ -1437,7 +1437,7 @@ void ModuleManager::resolveImports()
     for (const auto &importInfo : importInfoList)
     {
       bool ambig = false;
-      FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,QCString(fileName),ambig);
+      FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,fileName,ambig);
       AUTO_TRACE_ADD("externalImport name={} fd={}",fileName,(void*)fd);
       if (fd)
       {
@@ -1446,7 +1446,7 @@ void ModuleManager::resolveImports()
         fd->addIncludeDependency(importedFd,importInfo.importName,IncludeKind::ImportModule);
         if (importedFd)
         {
-          importedFd->addIncludedByDependency(fd,stripFromPath(QCString(fileName)),IncludeKind::ImportModule);
+          importedFd->addIncludedByDependency(fd,stripFromPath(fileName),IncludeKind::ImportModule);
         }
       }
     }

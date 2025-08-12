@@ -581,22 +581,22 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       StringVector strl=split(yytext,".");
                                       if (strl.size()>2)
                                       {
-                                        std::string s1=strl[0];
-                                        std::string s2=strl[1];
-                                        std::string s3=strl[2];
+                                        QCString s1 = strl[0];
+                                        QCString s2 = strl[1];
+                                        QCString s3 = strl[2];
                                         s1.append(".");
-                                        s3.insert(0,".");
-                                        codifyLines(yyscanner,s1.c_str(),yyextra->currClass);
-                                        ClassDef *cd=VhdlDocGen::getPackageName(s2.c_str());
+                                        s3.prepend(".");
+                                        codifyLines(yyscanner,s1,yyextra->currClass);
+                                        ClassDef *cd=VhdlDocGen::getPackageName(s2);
                                         if (cd)
                                         {
-                                          generateClassOrGlobalLink(yyscanner,*yyextra->code,s2.c_str());
+                                          generateClassOrGlobalLink(yyscanner,*yyextra->code,s2);
                                         }
                                         else
                                         {
-                                          codifyLines(yyscanner,s2.c_str());
+                                          codifyLines(yyscanner,s2);
                                         }
-                                        codifyLines(yyscanner,s3.c_str());
+                                        codifyLines(yyscanner,s3);
                                       }
                                       else
                                       {
@@ -682,8 +682,8 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       QCString ss(yytext);
                                       QCString temp=VhdlDocGen::getIndexWord(yytext,2);
                                       StringVector ql=split(yytext,temp.str());
-                                      std::string ll=ql[0];
-                                      codifyLines(yyscanner,ll.c_str(),yyextra->currClass);
+                                      QCString ll = ql[0];
+                                      codifyLines(yyscanner,ll,yyextra->currClass);
                                       temp=temp.stripWhiteSpace();
                                       temp.prepend("_");
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,temp);
@@ -971,14 +971,14 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
   size_t len=name.length();
   if (len>2 && name.at(0)=='"' && name.at(len-1)=='"')
   {
-    std::string inside = name.str().substr(1,len-2);
+    QCString inside = name.mid(1,len-2);
     static const reg::Ex regg(R"(\s+)"); // any number of whitespace
-    auto qrl=split(inside,regg);
-    if (VhdlDocGen::isNumber(qrl[0]))
+    auto qrl=split(inside.str(),regg);
+    if (!qrl.empty() && VhdlDocGen::isNumber(qrl[0]))
     {
       yyextra->code->codify("\"");
       startFontClass(yyscanner,"vhdllogic");
-      yyextra->code->codify(inside.c_str());
+      yyextra->code->codify(inside);
       endFontClass(yyscanner);
       yyextra->code->codify("\"");
     }

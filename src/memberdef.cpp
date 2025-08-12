@@ -1295,7 +1295,7 @@ static void writeExceptionListImpl(
 
 static void writeExceptionList(OutputList &ol, const ClassDef *cd, const MemberDef *md)
 {
-  QCString exception(QCString(md->excpString()).stripWhiteSpace());
+  QCString exception = md->excpString().stripWhiteSpace();
   if ('{'==exception.at(0))
   {
     // this is an UNO IDL attribute - need special handling
@@ -2566,7 +2566,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
            ol.docify(", ");
          }
          first=false;
-         ol.docify(s.c_str());
+         ol.docify(s);
       }
       ol.docify("]");
       ol.endTypewriter();
@@ -2589,7 +2589,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
           ol.docify(", ");
         }
         first=false;
-        ol.docify(s.c_str());
+        ol.docify(s);
       }
       ol.docify("]");
       ol.endTypewriter();
@@ -3567,11 +3567,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         ol.startDoxyAnchor(cfname, cname, memAnchor, doxyName, doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
         ol.addLabel(cfname, memAnchor);
-        std::string prefix = match.prefix().str();
-        std::string suffix = match.suffix().str();
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix.c_str());
+        QCString prefix = match.prefix().str();
+        QCString suffix = match.suffix().str();
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix);
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef(),getModuleDef());
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix);
 
         found=true;
         break;
@@ -3590,11 +3590,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       ol.startMemberDocName(isObjCMethod());
       if (reg::search(sdef,match,reAnonymous))
       {
-        std::string prefix = match.prefix().str();
-        std::string suffix = match.suffix().str();
-        ol.docify(prefix.c_str());
+        QCString prefix = match.prefix().str();
+        QCString suffix = match.suffix().str();
+        ol.docify(prefix);
         ol.docify(" { ... } ");
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,removeAnonymousScopes(suffix.c_str()));
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,removeAnonymousScopes(suffix));
       }
       else
       {
@@ -3772,7 +3772,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     for (const auto &s : sl)
     {
       count++;
-      ol.writeLabel(s.c_str(),count==sl.size());
+      ol.writeLabel(s,count==sl.size());
     }
     ol.endLabels();
   }
@@ -3802,7 +3802,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     for (const auto &s : sl)
     {
       count++;
-      ol.writeLabel(s.c_str(),count==sl.size());
+      ol.writeLabel(s,count==sl.size());
     }
     ol.endLabels();
     ol.writeString("  </td>\n");
@@ -3938,8 +3938,8 @@ static QCString simplifyTypeForTable(const QCString &s)
   {
     t = match.prefix().str() + match.suffix().str(); // remove the matched part
   }
-  //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),t.c_str());
-  return QCString(t);
+  //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),qPrint(t));
+  return t;
 }
 
 QCString MemberDefImpl::fieldType() const

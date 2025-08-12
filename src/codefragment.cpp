@@ -210,7 +210,7 @@ static QCString readTextFileByName(const QCString &file)
     FileInfo fi(absFileName);
     if (fi.exists())
     {
-      return fileToString(QCString(absFileName),Config_getBool(FILTER_SOURCE_FILES));
+      return fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES));
     }
   }
 

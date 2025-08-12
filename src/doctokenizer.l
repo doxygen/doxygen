@@ -407,7 +407,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
                          if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
-                         QCString text=extractPartAfterNewLine(QCString(yytext));
+                         QCString text=extractPartAfterNewLine(yytext);
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
                          assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
@@ -436,7 +436,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          else
                          {
                            lineCount(yytext,yyleng);
-                           std::string text=extractPartAfterNewLine(QCString(yytext)).str();
+                           std::string text=extractPartAfterNewLine(yytext).str();
                            static const reg::Ex re(R"([*+][^*+]*$)"); // find last + or *
                            reg::Match match;
                            reg::search(text,match,re);
@@ -457,7 +457,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          else
                          {
                            lineCount(yytext,yyleng);
-                           std::string text=extractPartAfterNewLine(QCString(yytext)).str();
+                           std::string text=extractPartAfterNewLine(yytext).str();
                            static const reg::Ex re(R"(\d+)");
                            reg::Match match;
                            reg::search(text,match,re);
@@ -486,7 +486,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
                          if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
-                         QCString text=extractPartAfterNewLine(QCString(yytext));
+                         QCString text=extractPartAfterNewLine(yytext);
                          size_t dotPos = static_cast<size_t>(text.findRev('.'));
                          yyextra->token.indent = computeIndent(text.data(),dotPos);
                          return Token::make_TK_ENDLIST();

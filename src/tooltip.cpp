@@ -117,7 +117,7 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
 
     if (!written)
     {
-      //printf("%p: writeTooltips(%s) ol=%d\n",this,name.c_str(),ol.id());
+      //printf("%p: writeTooltips(%s) ol=%d\n",this,qPrint(name),ol.id());
       DocLinkInfo docInfo;
       docInfo.name   = d->qualifiedName();
       docInfo.ref    = d->getReference();
@@ -141,7 +141,7 @@ void TooltipManager::writeTooltips(OutputCodeList &ol)
           decl = md->declaration();
         }
       }
-      ol.writeTooltip(name.c_str(),    // id
+      ol.writeTooltip(name,                // id
           docInfo,                         // symName
           decl,                            // decl
           d->briefDescriptionAsTooltip(),  // desc

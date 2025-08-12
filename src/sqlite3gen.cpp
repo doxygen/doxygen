@@ -1049,7 +1049,7 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
         {
           QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
           struct Refid src_refid = insertRefid(qsrc_refid);
-          struct Refid dst_refid = insertRefid(s.c_str());
+          struct Refid dst_refid = insertRefid(s);
           insertMemberReference(src_refid,dst_refid, "argument");
         }
         bindTextParameter(param_select,":type",a.type);
@@ -1442,7 +1442,7 @@ QCString getSQLDocBlock(const Definition *scope,
         scope ? scope->getDefFileExtension() : QCString(""));
     std::visit(visitor,astImpl->root);
   }
-  return convertCharEntitiesToUTF8(t.str().c_str());
+  return convertCharEntitiesToUTF8(t.str());
 }
 
 static void getSQLDesc(SqlStmt &s,const char *col,const QCString &value,const Definition *def)
@@ -1800,12 +1800,12 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
       {
         DBG_CTX(("initializer:%s %s %s %d\n",
               qPrint(md->anchor()),
-              s.c_str(),
+              qPrint(s),
               qPrint(md->getBodyDef()->getDefFileName()),
               md->getStartBodyLine()));
         QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
         struct Refid src_refid = insertRefid(qsrc_refid);
-        struct Refid dst_refid = insertRefid(s.c_str());
+        struct Refid dst_refid = insertRefid(s);
         insertMemberReference(src_refid,dst_refid, "initializer");
       }
     }

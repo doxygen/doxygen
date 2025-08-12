@@ -748,14 +748,15 @@ static QCString extraLatexStyleSheet()
       if (fi.exists())
       {
         result += "\\usepackage{";
-        if (checkExtension(fi.fileName().c_str(), LATEX_STYLE_EXTENSION))
+        QCString fn = fi.fileName();
+        if (checkExtension(fn, LATEX_STYLE_EXTENSION))
         {
           // strip the extension, it will be added by the usepackage in the tex conversion process
-          result += stripExtensionGeneral(fi.fileName().c_str(), LATEX_STYLE_EXTENSION);
+          result += stripExtensionGeneral(fn, LATEX_STYLE_EXTENSION);
         }
         else
         {
-          result += fi.fileName();
+          result += fn;
         }
         result += "}\n";
       }
@@ -2333,9 +2334,9 @@ void writeExtraLatexPackages(TextStream &t)
     for (const auto &pkgName : extraPackages)
     {
       if ((pkgName[0] == '[') || (pkgName[0] == '{'))
-        t << "\\usepackage" << pkgName.c_str() << "\n";
+        t << "\\usepackage" << pkgName << "\n";
       else
-        t << "\\usepackage{" << pkgName.c_str() << "}\n";
+        t << "\\usepackage{" << pkgName << "}\n";
     }
     t << "\n";
   }

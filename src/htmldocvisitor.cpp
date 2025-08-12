@@ -696,7 +696,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         for (const auto &baseName: baseNameVector)
         {
           m_t << "<div class=\"plantumlgraph\">\n";
-          writePlantUMLFile(QCString(baseName),s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          writePlantUMLFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
           visitCaption(m_t, s);
           m_t << "</div>\n";
         }
@@ -942,7 +942,7 @@ void HtmlDocVisitor::operator()(const DocFormula &f)
       {
         t << "</picture>";
       }
-      return QCString(t.str());
+      return t.str();
     };
 
     auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
@@ -1853,10 +1853,10 @@ void HtmlDocVisitor::operator()(const DocPlantUmlFile &df)
   std::string inBuf;
   readInputFile(df.file(),inBuf);
   auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(htmlOutput,QCString(),
-                                    inBuf.c_str(),format,QCString(),df.srcFile(),df.srcLine(),false);
+                                    inBuf,format,QCString(),df.srcFile(),df.srcLine(),false);
   for (const auto &bName: baseNameVector)
   {
-    QCString baseName=makeBaseName(QCString(bName));
+    QCString baseName=makeBaseName(bName);
     m_t << "<div class=\"plantumlgraph\">\n";
     writePlantUMLFile(baseName,df.relPath(),QCString(),df.srcFile(),df.srcLine());
     if (df.hasCaption())

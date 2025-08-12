@@ -555,7 +555,7 @@ const ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
     StringVector ql=split(jj.str(),":");
     if (ql.size()>1)
     {
-      if (QCString(ql[0])==nn)
+      if (ql[0]==nn)
       {
         return citer.get();
       }
@@ -688,7 +688,7 @@ QCString VhdlDocGen::getIndexWord(const QCString &c,int index)
 
   if (index < static_cast<int>(ql.size()))
   {
-    return QCString(ql[index]);
+    return ql[index];
   }
 
   return "";
@@ -2119,7 +2119,7 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
   {
     arch=ql[2];
   }
-  return QCString(label);
+  return label;
 }
 
 
@@ -2296,7 +2296,7 @@ void VhdlDocGen::writeRecUnitDocu(
 
   for(size_t i=0;i<len;i++)
   {
-    QCString n=QCString(ql[i]);
+    QCString n = ql[i];
     ol.startParameterType(first,"");
     ol.endParameterType();
     ol.startParameterName(TRUE);
@@ -2376,7 +2376,7 @@ void VhdlDocGen::addBaseClass(ClassDef* cd,ClassDef *ent)
       VhdlDocGen::deleteAllChars(r,'(');
       r.setNum(r.toInt()+1);
       reg::replace(t, reg, r.str());
-      s.append(t.c_str());
+      s.append(t);
       bcd.usedName=s;
       bcd.templSpecifiers=t;
     }
@@ -2633,15 +2633,15 @@ void FlowChart::printNode(const FlowChart& flo)
     }
     if (flo.type & EMPTNODE)
     {
-      printf("\n NO: %s%s[%d,%d]",q.c_str(),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
+      printf("\n NO: %s%s[%d,%d]",qPrint(q),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
     }
     else if (flo.type & COMMENT_NO)
     {
-      printf("\n NO: %s%s[%d,%d]",t.c_str(),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
+      printf("\n NO: %s%s[%d,%d]",qPrint(t),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
     }
     else
     {
-      printf("\n NO: %s[%d,%d]",t.c_str(),flo.stamp,flo.id);
+      printf("\n NO: %s[%d,%d]",qPrint(t),flo.stamp,flo.id);
     }
   }
 }
@@ -3012,7 +3012,7 @@ void  FlowChart::printUmlTree()
   auto baseNameVector=PlantumlManager::instance().writePlantUMLSource(htmlOutDir,n,qcs,PlantumlManager::PUML_SVG,"uml",n,1,true);
   for (const auto &baseName: baseNameVector)
   {
-    PlantumlManager::instance().generatePlantUMLOutput(QCString(baseName),htmlOutDir,PlantumlManager::PUML_SVG);
+    PlantumlManager::instance().generatePlantUMLOutput(baseName,htmlOutDir,PlantumlManager::PUML_SVG);
   }
 }
 

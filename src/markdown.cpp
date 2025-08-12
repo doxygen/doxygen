@@ -2068,7 +2068,7 @@ QCString Markdown::Private::extractTitleId(QCString &title, int level, bool *pIs
     {
       warn(fileName, lineNr, "An automatically generated id already has the name '{}'!", id);
     }
-    //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
+    //printf("found match id='%s' title=%s\n",qPrint(id),qPrint(title));
     AUTO_TRACE_EXIT("id={}",id);
     return id;
   }
@@ -3664,8 +3664,8 @@ QCString Markdown::process(const QCString &input, int &startNewlines, bool fromP
 QCString markdownFileNameToId(const QCString &fileName)
 {
   AUTO_TRACE("fileName={}",fileName);
-  std::string absFileName = FileInfo(fileName.str()).absFilePath();
-  QCString baseFn  = stripFromPath(absFileName.c_str());
+  QCString absFileName = FileInfo(fileName.str()).absFilePath();
+  QCString baseFn = stripFromPath(absFileName);
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
   QCString baseName = escapeCharsInString(baseFn,false,false);

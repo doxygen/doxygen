@@ -439,7 +439,7 @@ DB_VIS_C
         for (const auto &baseName: baseNameVector)
         {
           m_t << "<para>\n";
-          writePlantUMLFile(QCString(baseName),s);
+          writePlantUMLFile(baseName,s);
           m_t << "</para>\n";
         }
       }
@@ -1580,11 +1580,11 @@ DB_VIS_C
   std::string inBuf;
   readInputFile(fileName,inBuf);
   auto baseNameVector = PlantumlManager::instance().writePlantUMLSource(outDir,
-                           QCString(),inBuf.c_str(),PlantumlManager::PUML_BITMAP,QCString(),srcFile,srcLine,false);
+                           QCString(),inBuf,PlantumlManager::PUML_BITMAP,QCString(),srcFile,srcLine,false);
   bool first = true;
   for (const auto &bName: baseNameVector)
   {
-    QCString baseName=makeBaseName(QCString(bName));
+    QCString baseName=makeBaseName(bName);
     PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
     if (!first) endPlantUmlFile(hasCaption);
     first = false;

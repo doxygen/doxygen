@@ -181,7 +181,7 @@ void ClangTUParser::parse()
     // add external include paths
     for (size_t i=0;i<includePath.size();i++)
     {
-      QCString inc = QCString("-I")+includePath[i].c_str();
+      QCString inc = "-I"+includePath[i];
       argv.push_back(qstrdup(inc.data()));
     }
     // user specified options
@@ -246,8 +246,8 @@ void ClangTUParser::parse()
             it != p->filesInSameTU.end() && i<numUnsavedFiles;
           ++it, i++)
   {
-    p->fileMapping.emplace(it->c_str(),static_cast<uint32_t>(i));
-    p->sources[i]      = detab(fileToString(it->c_str(),filterSourceFiles,TRUE),refIndent);
+    p->fileMapping.emplace(std::make_pair(*it,static_cast<uint32_t>(i)));
+    p->sources[i]      = detab(fileToString(QCString(*it),filterSourceFiles,TRUE),refIndent);
     p->ufs[i].Filename = qstrdup(it->c_str());
     p->ufs[i].Contents = p->sources[i].data();
     p->ufs[i].Length   = p->sources[i].length();
@@ -587,8 +587,7 @@ void ClangTUParser::codifyLines(OutputCodeList &ol,const FileDef *fd,const char 
       line++;
       size_t l = static_cast<size_t>(p-sp-1);
       column=l+1;
-      std::string tmp(sp,l);
-      ol.codify(tmp.c_str());
+      ol.codify(QCString(sp,l));
       if (fontClass) ol.endFontClass();
       ol.endCodeLine();
       writeLineNumber(ol,fd,line,inlineCodeFragment);

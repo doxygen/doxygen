@@ -2268,7 +2268,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   {
     line+='\n';
     if (line.find("\\comment begin body")!=std::string::npos) break;
-    if (bIncludeHeader) encodeForOutput(t,line.c_str());
+    if (bIncludeHeader) encodeForOutput(t,line);
   }
 
   std::string prevLine;
@@ -2281,14 +2281,14 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
     {
       size_t startNamePos  = prevLine.find('"',pos)+1;
       size_t endNamePos    = prevLine.find('"',startNamePos);
-      std::string fileName = prevLine.substr(startNamePos,endNamePos-startNamePos);
+      QCString fileName    = prevLine.substr(startNamePos,endNamePos-startNamePos);
       DBG_RTF(t << "{\\comment begin include " << fileName << "}\n")
-      if (!preProcessFile(d,fileName.c_str(),t,FALSE)) return FALSE;
+      if (!preProcessFile(d,fileName,t,FALSE)) return FALSE;
       DBG_RTF(t << "{\\comment end include " << fileName << "}\n")
     }
     else if (!first) // no INCLUDETEXT on this line
     {
-      encodeForOutput(t,prevLine.c_str());
+      encodeForOutput(t,prevLine);
     }
     prevLine = line;
     first=false;
@@ -2301,11 +2301,11 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
       err("Strange, the last char was not a '}}'\n");
       pos = line.length();
     }
-    encodeForOutput(t,line.substr(0,pos).c_str());
+    encodeForOutput(t,line.substr(0,pos));
   }
   else
   {
-    encodeForOutput(t,line.c_str());
+    encodeForOutput(t,line);
   }
   f.close();
   // remove temporary file
@@ -2515,7 +2515,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   QCString rtfOutputDir = Dir::currentDirPath();
   for (auto &s : removeSet)
   {
-    QCString s1(s.c_str());
+    QCString s1 = s;
     if (s1.startsWith(rtfOutputDir)) Portable::unlink(s1);
   }
 
@@ -2881,7 +2881,7 @@ QCString rtfFormatBmkStr(const QCString &name)
   auto it = g_tagMap.find(name.str());
   if (it!=g_tagMap.end()) // already known
   {
-    return QCString(it->second);
+    return it->second;
   }
 
   QCString tag = g_nextTag;

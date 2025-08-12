@@ -1188,7 +1188,7 @@ static void writeHierarchicalIndex(OutputList &ol)
     ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
     ol.popGeneratorState();
   }
   ol.popGeneratorState();
@@ -1293,7 +1293,7 @@ static void writeHierarchicalInterfaceIndex(OutputList &ol)
     ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
     ol.popGeneratorState();
   }
   ol.popGeneratorState();
@@ -1398,7 +1398,7 @@ static void writeHierarchicalExceptionIndex(OutputList &ol)
     ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
     ol.popGeneratorState();
   }
   ol.popGeneratorState();
@@ -1679,7 +1679,7 @@ static void writeFileIndex(OutputList &ol)
     writeDirHierarchy(ol,&ftv,addToIndex);
     TextStream t;
     ftv.generateTreeViewInline(t);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
   }
 
   ol.popGeneratorState();
@@ -2109,7 +2109,7 @@ static void writeNamespaceIndex(OutputList &ol)
     writeNamespaceTree(*Doxygen::namespaceLinkedMap,&ftv,TRUE,addToIndex);
     TextStream t;
     ftv.generateTreeViewInline(t);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -2311,10 +2311,10 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   {
     if (!first) alphaLinks += "&#160;|&#160;";
     first=false;
-    QCString li = letterToLabel(letter.c_str());
+    QCString li = letterToLabel(letter);
     alphaLinks += "<a class=\"qindex\" href=\"#letter_" +
                   li + "\">" +
-                  QCString(letter) + "</a>";
+                  letter + "</a>";
   }
   alphaLinks += "</div>\n";
   ol.writeString(alphaLinks);
@@ -2376,13 +2376,13 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
 
       // write character heading
       ol.writeString("<dt class=\"alphachar\">");
-      QCString s = letterToLabel(cl.first.c_str());
+      QCString s = letterToLabel(cl.first);
       ol.writeString("<a id=\"letter_");
       ol.writeString(s);
       ol.writeString("\" name=\"letter_");
       ol.writeString(s);
       ol.writeString("\">");
-      ol.writeString(cl.first.c_str());
+      ol.writeString(cl.first);
       ol.writeString("</a>");
       ol.writeString("</dt>\n");
 
@@ -2633,7 +2633,7 @@ static void writeAnnotatedIndexGeneric(OutputList &ol,const AnnotatedIndexContex
     writeClassTree(*Doxygen::classLinkedMap,&ftv,addToIndex,TRUE,ctx.compoundType);
     TextStream t;
     ftv.generateTreeViewInline(t);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -2816,9 +2816,9 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
         {
           if (!firstItem)    ol.endItemListItem();
           if (!firstSection) ol.endItemList();
-          QCString cs = letterToLabel(letter.c_str());
-          QCString anchor=QCString("index_")+convertToId(cs);
-          QCString title=QCString("- ")+letter.c_str()+" -";
+          QCString cs     = letterToLabel(letter);
+          QCString anchor = "index_"+convertToId(cs);
+          QCString title  = "- "+letter+" -";
           ol.startSection(anchor,title,SectionType::Subsection);
           ol.docify(title);
           ol.endSection(anchor,SectionType::Subsection);
@@ -2883,9 +2883,9 @@ void Index::addClassMemberNameToIndex(const MemberDef *md)
     {
       letter = convertUTF8ToLower(letter);
       bool isFriendToHide = hideFriendCompounds &&
-        (QCString(md->typeString())=="friend class" ||
-         QCString(md->typeString())=="friend struct" ||
-         QCString(md->typeString())=="friend union");
+        (md->typeString()=="friend class" ||
+         md->typeString()=="friend struct" ||
+         md->typeString()=="friend union");
       if (!(md->isFriend() && isFriendToHide) &&
           (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
          )
@@ -4016,7 +4016,7 @@ static void writePageIndex(OutputList &ol)
     }
     TextStream t;
     ftv.generateTreeViewInline(t);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
   }
 
 //  ol.popGeneratorState();
@@ -4428,7 +4428,7 @@ static void writeTopicIndex(OutputList &ol)
     TextStream t;
     ftv.generateTreeViewInline(t);
     ol.disableAllBut(OutputType::Html);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -4569,7 +4569,7 @@ static void writeModuleIndex(OutputList &ol)
     writeModuleList(ol,&ftv,addToIndex);
     TextStream t;
     ftv.generateTreeViewInline(t);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -4779,7 +4779,7 @@ static void writeConceptIndex(OutputList &ol)
     writeConceptRootList(&ftv,addToIndex);
     TextStream t;
     ftv.generateTreeViewInline(t);
-    ol.writeString(t.str().c_str());
+    ol.writeString(t.str());
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();

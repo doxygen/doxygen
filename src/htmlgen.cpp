@@ -379,7 +379,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
   {
     if (!fileName.empty())
     {
-      QCString htmlStyleSheet = fileName.c_str();
+      QCString htmlStyleSheet = fileName;
       if (htmlStyleSheet.startsWith("http:") || htmlStyleSheet.startsWith("https:"))
       {
         extraCssText += "<link href=\""+htmlStyleSheet+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
@@ -389,7 +389,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
         FileInfo fi(fileName);
         if (fi.exists())
         {
-          extraCssText += "<link href=\"$relpath^"+stripPath(fileName.c_str())+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+          extraCssText += "<link href=\"$relpath^"+stripPath(fileName)+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
         }
       }
     }
@@ -470,7 +470,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
       }
       for (const auto &s : mathJaxExtensions)
       {
-        mathJaxJs+= ",'"+QCString(s.c_str())+"'";
+        mathJaxJs+= ",'"+s+"'";
       }
       mathJaxJs += "]\n";
     };
@@ -482,7 +482,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
       for (const auto &s : mathJaxExtensions)
       {
         if (!first) mathJaxJs+= ",";
-        mathJaxJs+= "\n        '[+]': ['"+QCString(s.c_str())+"']";
+        mathJaxJs+= "\n        '[+]': ['"+s+"']";
         first = false;
       }
       mathJaxJs += "\n    }\n";
@@ -511,7 +511,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
           for (const auto &s : mathJaxExtensions)
           {
             if (!first) mathJaxJs+= ",";
-            mathJaxJs+= "'[tex]/"+QCString(s.c_str())+"'";
+            mathJaxJs+= "'[tex]/"+s+"'";
             first = false;
           }
           mathJaxJs+= "]\n"
@@ -1681,11 +1681,11 @@ void HtmlGenerator::writeStyleInfo(int part)
           // convert style sheet to string
           QCString fileStr = fileToString(cssName);
           // write the string into the output dir
-          startPlainFile(cssfi.fileName().c_str());
+          startPlainFile(cssfi.fileName());
           m_t << fileStr;
           endPlainFile();
         }
-        Doxygen::indexList->addStyleSheetFile(cssfi.fileName().c_str());
+        Doxygen::indexList->addStyleSheetFile(cssfi.fileName());
       }
     }
     const StringVector &extraCssFiles = Config_getList(HTML_EXTRA_STYLESHEET);
@@ -1696,7 +1696,7 @@ void HtmlGenerator::writeStyleInfo(int part)
         FileInfo fi(fileName);
         if (fi.exists())
         {
-          Doxygen::indexList->addStyleSheetFile(fi.fileName().c_str());
+          Doxygen::indexList->addStyleSheetFile(fi.fileName());
         }
       }
     }

@@ -153,22 +153,18 @@ void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
                        bool reversed)
 {
   static const reg::Ex re(R"(@\d+)");
-  std::string key = substitute(level1,"?","&quest;").str();
-  if (!level2.isEmpty()) key+= std::string("?") + substitute(level2,"?","&quest;").str();
-  if (reg::search(key,re)) // skip anonymous stuff
+  QCString key = substitute(level1,"?","&quest;");
+  if (!level2.isEmpty()) key+= "?" + substitute(level2,"?","&quest;");
+  if (reg::search(key.str(),re)) // skip anonymous stuff
   {
     return;
   }
-  std::string key_anchor;
+  QCString key_anchor = key;
   if (!anchor.isEmpty())
   {
-    key_anchor = key+anchor.str();
+    key_anchor += anchor;
   }
-  else
-  {
-    key_anchor = key;
-  }
-  m_map.add(key_anchor.c_str(),key.c_str(),url,anchor,hasLink,reversed);
+  m_map.add(key_anchor,key,url,anchor,hasLink,reversed);
 }
 
 static QCString field2URL(const IndexField *f,bool checkReversed)
@@ -464,15 +460,15 @@ void HtmlHelp::Private::createProjectFile()
     t << "[FILES]\n";
     for (auto &s : indexFiles)
     {
-      t << s.c_str() << "\n";
+      t << s << "\n";
     }
     for (auto &s : imageFiles)
     {
-      t << s.c_str() << "\n";
+      t << s << "\n";
     }
     for (auto &s : styleFiles)
     {
-      t << s.c_str() << "\n";
+      t << s << "\n";
     }
     t.close();
   }

@@ -134,7 +134,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				    REJECT;
 				  }
   				  addTypeName(yyscanner);
-				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
+				  yyextra->name += removeRedundantWhiteSpace(yytext);
   				}
 <Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
  				  if (!yyextra->scope.isEmpty())
@@ -152,7 +152,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
                                         // the leading ~ is for a destructor
                                         // the leading ! is for a C++/CLI finalizer (see bug 456475 and 635198)
   				  addTypeName(yyscanner);
-				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
+				  yyextra->name += removeRedundantWhiteSpace(yytext);
   				}
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
  				  if (!yyextra->scope.isEmpty() && !yyextra->scope.endsWith("::"))

@@ -1360,7 +1360,7 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vec
 {
   for (const auto &ta : l)
   {
-    if (SectionManager::instance().find(QCString(ta.label))==nullptr)
+    if (SectionManager::instance().find(ta.label)==nullptr)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
       //    qPrint(ta->fileName),qPrint(ta->label));
@@ -1538,7 +1538,7 @@ void TagFileParser::buildClassEntry(const std::shared_ptr<Entry> &root, const Ta
     {
       Argument a;
       a.type = "class";
-      a.name = argName.c_str();
+      a.name = argName;
       al.push_back(a);
     }
     ce->tArgLists.push_back(al);
@@ -1670,7 +1670,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
         std::vector<const SectionInfo *> anchorList;
         for (const auto &ta : tmi->docAnchors)
         {
-          if (SectionManager::instance().find(QCString(ta.label))==nullptr)
+          if (SectionManager::instance().find(ta.label)==nullptr)
           {
             //printf("New sectionInfo file=%s anchor=%s\n",
             //    qPrint(ta->fileName),qPrint(ta->label));
@@ -1765,7 +1765,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       {
         const auto &children = root->children();
         auto i = std::find_if(children.begin(),children.end(),
-            [&](const std::shared_ptr<Entry> &e) { return e->name == sg.c_str(); });
+            [&](const std::shared_ptr<Entry> &e) { return e->name == sg; });
         if (i!=children.end())
         {
           (*i)->groups.emplace_back(tgi->name,Grouping::GROUPING_INGROUP);
@@ -1789,7 +1789,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       {
         // we add subpage labels as a kind of "inheritance" relation to prevent
         // needing to add another list to the Entry class.
-        pe->extends.emplace_back(stripExtension(QCString(subpage)),Protection::Public,Specifier::Normal);
+        pe->extends.emplace_back(stripExtension(subpage),Protection::Public,Specifier::Normal);
       }
       addDocAnchors(pe,tpi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
@@ -1830,7 +1830,7 @@ void TagFileParser::addIncludes()
                 {
                   //printf("ifd->getOutputFileBase()=%s ii->id=%s\n",
                   //        qPrint(ifd->getOutputFileBase()),qPrint(ii->id));
-                  if (ifd->getOutputFileBase()==QCString(ii.id))
+                  if (ifd->getOutputFileBase()==ii.id)
                   {
                     IncludeKind kind = IncludeKind::IncludeSystem;
                     if (ii.isModule)
@@ -1868,10 +1868,10 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   XMLHandlers handlers;
   // connect the generic events handlers of the XML parser to the specific handlers of the tagFileParser object
   handlers.startDocument = [&tagFileParser]()                                                              { tagFileParser.startDocument(); };
-  handlers.startElement  = [&tagFileParser](const std::string &name,const XMLHandlers::Attributes &attrs)  { tagFileParser.startElement(QCString(name),attrs); };
-  handlers.endElement    = [&tagFileParser](const std::string &name)                                       { tagFileParser.endElement(QCString(name)); };
-  handlers.characters    = [&tagFileParser](const std::string &chars)                                      { tagFileParser.characters(QCString(chars)); };
-  handlers.error         = [&tagFileParser](const std::string &fileName,int lineNr,const std::string &msg) { tagFileParser.error(QCString(fileName),lineNr,QCString(msg)); };
+  handlers.startElement  = [&tagFileParser](const std::string &name,const XMLHandlers::Attributes &attrs)  { tagFileParser.startElement(name,attrs); };
+  handlers.endElement    = [&tagFileParser](const std::string &name)                                       { tagFileParser.endElement(name); };
+  handlers.characters    = [&tagFileParser](const std::string &chars)                                      { tagFileParser.characters(chars); };
+  handlers.error         = [&tagFileParser](const std::string &fileName,int lineNr,const std::string &msg) { tagFileParser.error(fileName,lineNr,msg); };
   XMLParser parser(handlers);
   tagFileParser.setDocumentLocator(&parser);
   parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex_xml),

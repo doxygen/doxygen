@@ -786,10 +786,9 @@ class Translator
       QCString result;
       if (first_capital)
       {
-        std::string res = getUTF8CharAt(base.str(),0);
-        res = convertUTF8ToUpper(res);
-        result = res.c_str();
-        result += base.mid(res.length());
+        QCString lc = getUTF8CharAt(base.str(),0);
+        QCString uc = convertUTF8ToUpper(lc.str());
+        result = uc + base.mid(lc.length());
       }
       else
       {

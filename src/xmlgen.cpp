@@ -183,14 +183,14 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
     TextGeneratorXMLImpl(TextStream &t): m_t(t) {}
     void writeString(std::string_view s,bool /*keepSpaces*/) const override
     {
-      writeXMLString(m_t,QCString(s));
+      writeXMLString(m_t,s);
     }
     void writeBreak(int) const override {}
     void writeLink(const QCString &extRef,const QCString &file,
                    const QCString &anchor,std::string_view text
                   ) const override
     {
-      writeXMLLink(m_t,extRef,file,anchor,QCString(text),QCString());
+      writeXMLLink(m_t,extRef,file,anchor,text,QCString());
     }
   private:
     TextStream &m_t;
@@ -1074,7 +1074,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
 
   for (const auto &qmd : md->getQualifiers())
   {
-    t << "        <qualifier>" << convertToXML(qmd.c_str()) << "</qualifier>\n";
+    t << "        <qualifier>" << convertToXML(qmd) << "</qualifier>\n";
   }
 
   if (md->isFriendClass()) // for friend classes we show a link to the class as a "parameter"
@@ -1602,7 +1602,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
 
   for (const auto &qcd : cd->getQualifiers())
   {
-    t << "    <qualifier>" << convertToXML(qcd.c_str()) << "</qualifier>\n";
+    t << "    <qualifier>" << convertToXML(qcd) << "</qualifier>\n";
   }
 
   t << "    <briefdescription>\n";

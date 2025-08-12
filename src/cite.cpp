@@ -316,7 +316,7 @@ QCString CitationManager::replaceFormulas(const QCString &s)
   QCString t;
   int pos=0;
   int i = -1;
-  while ((i=s.find(g_formulaMarker.c_str(),pos))!=-1)
+  while ((i=s.find(g_formulaMarker,pos))!=-1)
   {
     t += s.mid(pos,i-pos);
     int markerSize = static_cast<int>( g_formulaMarker.length());
@@ -343,7 +343,7 @@ void CitationManager::generatePage()
   const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = getBibFile(QCString(bibdata));
+    QCString bibFile = getBibFile(bibdata);
     insertCrossReferencesForBibFile(bibFile);
   }
 
@@ -392,7 +392,7 @@ void CitationManager::generatePage()
   int i = 0;
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = getBibFile(QCString(bibdata));
+    QCString bibFile = getBibFile(bibdata);
     FileInfo fi(bibFile.str());
     if (fi.exists())
     {
@@ -474,12 +474,12 @@ void CitationManager::generatePage()
           size_t uk=static_cast<size_t>(k1);
           QCString label = line.mid(ui+14,uj0-ui-14);
           StringVector optList = split(line.mid(uj+5,uk-uj-5).str(),",");
-          QCString number = optList[0].c_str();
-          QCString shortAuthor = optList[1].c_str();
+          QCString number = optList[0];
+          QCString shortAuthor = optList[1];
           QCString year;
           if (optList.size() == 3)
           {
-            year = optList[2].c_str();
+            year = optList[2];
           }
           line = line.left(ui+14) + label + line.right(line.length()-uj0);
           auto it = p->entries.find(label.lower().str());
@@ -537,7 +537,7 @@ void CitationManager::generatePage()
     i = 0;
     for (const auto &bibdata : citeDataList)
     {
-      QCString bibFile = getBibFile(QCString(bibdata));
+      QCString bibFile = getBibFile(bibdata);
       FileInfo fi(bibFile.str());
       if (fi.exists())
       {
@@ -581,7 +581,7 @@ QCString CitationManager::latexBibFiles()
   int i = 0;
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = getBibFile(QCString(bibdata));
+    QCString bibFile = getBibFile(bibdata);
     FileInfo fi(bibFile.str());
     if (fi.exists())
     {

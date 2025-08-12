@@ -260,13 +260,18 @@ class Mapper
 
     QCString find(const T n) const
     {
+      QCString result;
       for (const auto &[name,id] : m_map)
       {
         T curVal = id;
         // https://stackoverflow.com/a/15889501/1657886
-        if (curVal == n || (curVal == (static_cast<T>(static_cast<int>(n) | static_cast<int>(T::SIMPLESECT_BIT))))) return name.c_str();
+        if (curVal == n || (curVal == (static_cast<T>(static_cast<int>(n) | static_cast<int>(T::SIMPLESECT_BIT)))))
+        {
+          result = name;
+          break;
+        }
       }
-      return QCString();
+      return result;
     }
 
     Mapper(const CommandMap<T> &cm,bool caseSensitive) : m_map(cm), m_cs(caseSensitive)

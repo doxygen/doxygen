@@ -1175,7 +1175,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   addMemberToList(MemberListType::PubTypes(),md,TRUE);
                   isSimple=!md->isEnumerate() &&
                            !md->isEnumValue() &&
-                           QCString(md->typeString()).find(")(")==-1; // func ptr typedef
+                           md->typeString().find(")(")==-1; // func ptr typedef
                   break;
                 case Protection::Private:
                   addMemberToList(MemberListType::PriTypes(),md,TRUE);
@@ -1311,9 +1311,9 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
   if (addToAllList &&
       !(Config_getBool(HIDE_FRIEND_COMPOUNDS) &&
         md->isFriend() &&
-        (QCString(md->typeString())=="friend class" ||
-         QCString(md->typeString())=="friend struct" ||
-         QCString(md->typeString())=="friend union")))
+        (md->typeString()=="friend class" ||
+         md->typeString()=="friend struct" ||
+         md->typeString()=="friend union")))
   {
     //printf("=======> adding member %s to class %s\n",qPrint(md->name()),qPrint(name()));
 
@@ -1417,7 +1417,7 @@ static void writeInheritanceSpecifier(OutputList &ol,const BaseClassDef &bcd)
     for (const auto &s : sl)
     {
       if (!first) ol.docify(", ");
-      ol.docify(s.c_str());
+      ol.docify(s);
       first=false;
     }
     ol.docify("]");
@@ -2298,7 +2298,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
   {
     for (const auto &s : m_vhdlSummaryTitles)
     {
-      ol.writeSummaryLink(QCString(),convertToId(QCString(s)),QCString(s),first);
+      ol.writeSummaryLink(QCString(),convertToId(s),s,first);
       first=FALSE;
     }
   }
@@ -2736,7 +2736,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
     for (const auto &s : sl)
     {
       i++;
-      ol.writeLabel(s.c_str(),i==sl.size());
+      ol.writeLabel(s,i==sl.size());
     }
     ol.endLabels();
   }
@@ -3371,7 +3371,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
               ol.writeString("<span class=\"mlabel\">");
               firstSpan=false;
             }
-            ol.docify(s.c_str());
+            ol.docify(s);
           }
           if (!firstSpan) ol.writeString("</span>");
         }

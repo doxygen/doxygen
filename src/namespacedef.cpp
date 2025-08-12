@@ -1776,7 +1776,7 @@ static NamespaceDef *getResolvedNamespaceRec(StringSet &namespacesTried,const Na
     if (j==std::string::npos)
     {
       //printf("candidate %s\n",qPrint(aliasInfo.alias));
-      auto candidate = replaceNamespaceAliasesRec(namespacesTried,QCString(aliasInfo.alias));
+      auto candidate = replaceNamespaceAliasesRec(namespacesTried,aliasInfo.alias);
       auto nd = Doxygen::namespaceLinkedMap->find(candidate);
       if (nd)
       {

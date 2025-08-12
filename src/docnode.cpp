@@ -107,8 +107,7 @@ static QCString stripKnownExtensions(const QCString &text)
   {
     result=result.left(result.length()-4);
   }
-  else if (result.right(Doxygen::htmlFileExtension.length())==
-         QCString(Doxygen::htmlFileExtension))
+  else if (result.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
   {
     result=result.left(result.length()-Doxygen::htmlFileExtension.length());
   }

@@ -155,8 +155,8 @@ class LinkedMap
       T *result = find(k);
       if (result==nullptr)
       {
-        std::string key(k ? k : "");
-        Ptr ptr = std::make_unique<T>(key.c_str(),std::forward<Args>(args)...);
+        QCString key(k ? k : "");
+        Ptr ptr = std::make_unique<T>(key,std::forward<Args>(args)...);
         result = ptr.get();
         m_lookup.emplace(key,result);
         m_entries.push_front(std::move(ptr));

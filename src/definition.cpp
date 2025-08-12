@@ -161,7 +161,7 @@ static bool matchExcludedSymbols(const QCString &name)
   std::string symName = name.str();
   for (const auto &pat : exclSyms)
   {
-    QCString pattern = pat.c_str();
+    QCString pattern = pat;
     bool forceStart=FALSE;
     bool forceEnd=FALSE;
     if (pattern.at(0)=='^')
@@ -885,7 +885,7 @@ bool readCodeFragment(const QCString &fileName,bool isMacro,
     bool ok = transcodeCharacterStringToUTF8(encBuf,encoding.data());
     if (ok)
     {
-      result = QCString(encBuf);
+      result = encBuf;
     }
     else
     {
@@ -1559,7 +1559,7 @@ static QCString abbreviate(const QCString &s,const QCString &name)
   const StringVector &briefDescAbbrev = Config_getList(ABBREVIATE_BRIEF);
   for (const auto &p : briefDescAbbrev)
   {
-    QCString str = substitute(p.c_str(),"$name",scopelessName); // replace $name with entity name
+    QCString str = substitute(p,"$name",scopelessName); // replace $name with entity name
     str += " ";
     stripWord(result,str);
   }

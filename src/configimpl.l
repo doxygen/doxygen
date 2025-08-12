@@ -174,7 +174,7 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
   for (const auto &p : l)
   {
     if (!first) t << " \\\n";
-    QCString s=p.c_str();
+    QCString s = p;
     if (!first)
       t << "                        ";
     bool wasQuoted = ((s.at(0)=='"') && (s.at(s.length()-1)=='"'));
@@ -384,7 +384,7 @@ void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
 
 bool ConfigList::isDefault()
 {
-  auto get_stripped = [](const std::string &s)             { return QCString(s.c_str()).stripWhiteSpace(); };
+  auto get_stripped = [](const std::string &s)             { return QCString(s).stripWhiteSpace(); };
   auto is_not_empty = [get_stripped](const std::string &s) { return !get_stripped(s).isEmpty();            };
   size_t defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
   size_t valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
@@ -428,7 +428,7 @@ void ConfigList::writeXMLDoxyfile(TextStream &t)
   t << "\n";
   for (const auto &p : m_value)
   {
-    QCString s=p.c_str();
+    QCString s = p;
     t << "    <value>";
     t << "<![CDATA[";
     writeStringValue(t,s,false);
@@ -947,7 +947,7 @@ static FILE *findFile(const QCString &fileName)
   substEnvVarsInStrList(g_includePathList);
   for (const auto &s : g_includePathList)
   {
-    FILE *f = tryPath(s.c_str(),fileName);
+    FILE *f = tryPath(s,fileName);
     if (f) return f;
   }
   // try cwd if g_includePathList fails
@@ -1413,7 +1413,7 @@ static void substEnvVarsInString(QCString &str)
       size_t l = match.length();
       result+=s.substr(p,i-p);
       std::string matchContents = match[1].str();
-      QCString env=Portable::getenv(matchContents.c_str()); // get content of $(..) match
+      QCString env=Portable::getenv(matchContents); // get content of $(..) match
       substEnvVarsInString(env); // recursively expand variables if needed.
       result+=env.str();
       p=i+l;
@@ -1430,7 +1430,7 @@ static void substEnvVarsInStrList(StringVector &sl)
   StringVector results;
   for (const auto &s : sl)
   {
-    QCString result = s.c_str();
+    QCString result = s;
     bool wasQuoted = ((result.at(0)=='"') && (result.at(result.length()-1)=='"'));
     if (wasQuoted)
     {
@@ -1668,7 +1668,7 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
 {
   for (const auto &s: list)
   {
-    QCString item=s.c_str();
+    QCString item = s;
     item=item.stripWhiteSpace();
     int i=item.find('=');
     if (i==-1 && equalRequired)
@@ -1935,7 +1935,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     const StringVector &predefList = Config_getList(PREDEFINED);
     for (const auto &s : predefList)
     {
-      QCString predef=s.c_str();
+      QCString predef = s;
       predef=predef.stripWhiteSpace();
       int i_equals=predef.find('=');
       int i_obrace=predef.find('(');
@@ -2104,7 +2104,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   {
     for (const auto &s : inputSources)
     {
-      FileInfo fi(s.c_str());
+      FileInfo fi(s);
       if (!fi.exists())
       {
         warn_uncond("tag INPUT: input source '{}' does not exist\n",s);

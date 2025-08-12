@@ -650,11 +650,11 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
                                           }
                                         }
 <Module>{ID}                            {
-                                          addModule(yyscanner, QCString(yytext), TRUE);
+                                          addModule(yyscanner, yytext, TRUE);
                                           BEGIN(ModuleBody);
                                         }
 <Program>{ID}                           {
-                                            addModule(yyscanner, QCString(yytext), FALSE);
+                                            addModule(yyscanner, yytext, FALSE);
                                             BEGIN(ModuleBody);
                                         }
 
@@ -2605,7 +2605,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     for (const auto &kv : mdfsMap)
     {
       //cout<<it.key()<<": "<<qPrint(it)<<endl;
-      Argument *arg = findArgument(scope, QCString(kv.first));
+      Argument *arg = findArgument(scope, kv.first);
 
       if (arg)
       {

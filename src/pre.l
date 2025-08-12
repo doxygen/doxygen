@@ -172,7 +172,7 @@ class DefineManager
 
     void addInclude(const std::string &fromFileName,const std::string &toFileName)
     {
-      //printf("DefineManager::addInclude('%s'->'%s')\n",fromFileName.c_str(),toFileName.c_str());
+      //printf("DefineManager::addInclude('%s'->'%s')\n",qPrint(fromFileName),qPrint(toFileName));
       auto it = m_fileMap.find(fromFileName);
       if (it==m_fileMap.end())
       {
@@ -184,7 +184,7 @@ class DefineManager
 
     void store(const std::string &fileName,const DefineMap &fromMap)
     {
-      //printf("DefineManager::store(%s,#=%zu)\n",fileName.c_str(),fromMap.size());
+      //printf("DefineManager::store(%s,#=%zu)\n",qPrint(fileName),fromMap.size());
       auto it = m_fileMap.find(fileName);
       if (it==m_fileMap.end())
       {
@@ -201,7 +201,7 @@ class DefineManager
         auto &dpf = it->second;
         dpf->retrieve(toMap);
       }
-      //printf("DefineManager::retrieve(%s,#=%zu)\n",fileName.c_str(),toMap.size());
+      //printf("DefineManager::retrieve(%s,#=%zu)\n",qPrint(fileName),toMap.size());
     }
 
     bool alreadyProcessed(const std::string &fileName) const
@@ -2308,12 +2308,12 @@ static std::unique_ptr<FileState> findFile(yyscan_t yyscanner, const QCString &f
   }
   for (auto path : state->pathList)
   {
-    std::string absName = (path+"/"+fileName).str();
-    //printf("  Looking for %s in %s\n",fileName,path.c_str());
-    auto fs = checkAndOpenFile(yyscanner,absName.c_str(),alreadyProcessed);
+    QCString absName = path+"/"+fileName;
+    //printf("  Looking for %s in %s\n",fileName,qPrint(path));
+    auto fs = checkAndOpenFile(yyscanner,absName,alreadyProcessed);
     if (fs)
     {
-      setFileName(yyscanner,absName.c_str());
+      setFileName(yyscanner,absName);
       state->yyLineNr=1;
       //printf("  -> found it\n");
       return fs;
@@ -2766,7 +2766,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
           auto it = argTable.find(key.str());
           if (it!=argTable.end())
           {
-            QCString substArg = it->second.c_str();
+            QCString substArg = it->second;
             //printf("substArg='%s'\n",qPrint(substArg));
             // only if no ## operator is before or after the argument
             // marker we do macro expansion.
@@ -3888,7 +3888,7 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       std::map<std::string,int> argMap;
       std::string args  = ds.substr(i_obrace+1,i_cbrace-i_obrace-1); // part between ( and )
       bool   hasVarArgs = args.find("...")!=std::string::npos;
-      //printf("predefined function macro '%s'\n",ds.c_str());
+      //printf("predefined function macro '%s'\n",qPrint(ds));
       int count = 0;
       reg::Iterator arg_it(args,reId,0);
       reg::Iterator arg_end;
@@ -3954,7 +3954,7 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
     }
     else if (!ds.empty()) // predefined non-function macro definition
     {
-      //printf("predefined normal macro '%s'\n",ds.c_str());
+      //printf("predefined normal macro '%s'\n",qPrint(ds));
       Define def;
       if (i_equals==std::string::npos) // simple define without argument
       {

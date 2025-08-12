@@ -83,6 +83,11 @@ int QCString::find( const char *str, int index, bool cs ) const
   return pos ? static_cast<int>(pos - data()) : -1;
 }
 
+int QCString::find( const std::string &str, int index, bool cs ) const
+{
+  return find(str.c_str(),index,cs);
+}
+
 int QCString::find( const QCString &str, int index, bool cs ) const
 {
   return find(str.data(),index,cs);

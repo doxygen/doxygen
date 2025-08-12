@@ -524,7 +524,7 @@ void Portable::correctPath(const StringVector &extraPaths)
   {
     if (!first) result+=';';
     first=false;
-    result += substitute(QCString(path),"/","\\");
+    result += substitute(path,"/","\\");
   }
   if (!result.isEmpty() && !p.isEmpty()) result+=';';
   result += substitute(p,"/","\\");
@@ -533,7 +533,7 @@ void Portable::correctPath(const StringVector &extraPaths)
   {
     if (!first) result+=':';
     first=false;
-    result += QCString(path);
+    result += path;
   }
   if (!result.isEmpty() && !p.isEmpty()) result+=':';
   result += p;
