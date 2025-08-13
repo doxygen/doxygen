@@ -897,6 +897,9 @@ WSopt [ \t\r]*
 <FindDefineArgs>{CPPC}[/!].*\n          { // replace C++ single line style comment by C style comment
                                           yyextra->defArgsStr+=QCString("/**")+&yytext[3]+" */";
                                         }
+<FindDefineArgs>{CPPC}.*\n              { // replace C++ single line style comment by C style comment
+                                          yyextra->defArgsStr+=QCString("/*")+&yytext[2]+" */";
+                                        }
 <FindDefineArgs>\"                      {
                                           yyextra->defArgsStr+=*yytext;
                                           BEGIN(ReadString);
