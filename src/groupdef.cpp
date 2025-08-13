@@ -1058,8 +1058,8 @@ void GroupDefImpl::writePageDocumentation(OutputList &ol)
         ol.endSection(si->label(),SectionType::Subsection);
       }
       ol.startTextBlock();
-      ol.generateDoc(pd->docFile(),pd->docLine(),pd,nullptr,(pd->documentation()+pd->inbodyDocumentation()),TRUE,FALSE,
-                     QCString(),TRUE,FALSE);
+      ol.generateDoc(pd->docFile(),pd->docLine(),pd,nullptr,(pd->documentation()+pd->inbodyDocumentation()),true,false,
+                     QCString(),false,false);
       ol.endTextBlock();
     }
   }
