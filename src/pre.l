@@ -928,9 +928,8 @@ WSopt [ \t\r]*
                                           BEGIN(FindDefineArgs);
                                         }
 <ArgCopyCComment>\n                     {
-                                          yyextra->defArgsStr+=' ';
+                                          yyextra->defArgsStr+=yytext;
                                           yyextra->yyLineNr++;
-                                          outputChar(yyscanner,'\n');
                                         }
 <ArgCopyCComment>.                      {
                                           yyextra->defArgsStr+=yytext;
