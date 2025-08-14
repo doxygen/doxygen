@@ -399,6 +399,35 @@ ENDIMPORTopt [^\\\n]*
   // Optional white space
 WSopt [ \t\r]*
 
+  //- begin: NUMBER
+  // Note same defines in commentcnv.l: keep in sync
+DECIMAL_INTEGER  [1-9][0-9']*[0-9]?[uU]?[lL]?[lL]?
+HEXADECIMAL_INTEGER  "0"[xX][0-9a-zA-Z']+[0-9a-zA-Z]?
+OCTAL_INTEGER  "0"[0-7][0-7']+[0-7]?
+BINARY_INTEGER  "0"[bB][01][01']*[01]?
+INTEGER_NUMBER {DECIMAL_INTEGER}|{HEXADECIMAL_INTEGER}|{OCTAL_INTEGER}|{BINARY_INTEGER}
+
+FP_SUF [fFlL]
+
+DIGIT_SEQ [0-9][0-9']*[0-9]?
+FRAC_CONST {DIGIT_SEQ}"."|{DIGIT_SEQ}?"."{DIGIT_SEQ}
+FP_EXP [eE][+-]?{DIGIT_SEQ}
+DEC_FP1 {FRAC_CONST}{FP_EXP}?{FP_SUF}?
+DEC_FP2 {DIGIT_SEQ}{FP_EXP}{FP_SUF}
+
+HEX_DIGIT_SEQ [0-9a-fA-F][0-9a-fA-F']*[0-9a-fA-F]?
+HEX_FRAC_CONST {HEX_DIGIT_SEQ}"."|{HEX_DIGIT_SEQ}?"."{HEX_DIGIT_SEQ}
+BIN_EXP [pP][+-]?{DIGIT_SEQ}
+HEX_FP1 "0"[xX]{HEX_FRAC_CONST}{BIN_EXP}{FP_SUF}?
+HEX_FP2 "0"[xX]{HEX_DIGIT_SEQ}{BIN_EXP}{FP_SUF}?
+
+FLOAT_DECIMAL {DEC_FP1}|{DEC_FP2}
+FLOAT_HEXADECIMAL {HEX_FP1}|{HEX_FP2}
+FLOAT_NUMBER {FLOAT_DECIMAL}|{FLOAT_HEXADECIMAL}
+NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
+  //- end: NUMBER ---------------------------------------------------------------------------
+
+
 %option noyywrap
 
 %x      Start
@@ -1955,6 +1984,11 @@ WSopt [ \t\r]*
                                           {
                                             BEGIN(SkipDoubleQuote);
                                           }
+                                        }
+<DefineText>{NUMBER}                    {
+                                          outputSpaces(yyscanner,yytext);
+                                          yyextra->defText += yytext;
+                                          yyextra->defLitText+=yytext;
                                         }
 <DefineText>\'                          {
                                           outputChar(yyscanner,' ');
