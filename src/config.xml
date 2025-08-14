@@ -2869,7 +2869,9 @@ For example for MathJax version 4 (see https://docs.mathjax.org/en/v4.0/input/te
 \verbatim
 MATHJAX_EXTENSIONS     = units
 \endverbatim
-Note that for Mathjax version 4 quite a few extensions are already automatically loaded.
+Note that for Mathjax version 4 quite a few extensions are already automatically loaded. To disable
+a package in Mathjax version 4 one can use the package name prepended with a minus sign
+(`-` like `MATHJAX_EXTENSIONS += -textmacros`)
 ]]>
       </docs>
     </option>
