@@ -957,9 +957,8 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           BEGIN(FindDefineArgs);
                                         }
 <ArgCopyCComment>\n                     {
-                                          yyextra->defArgsStr+=' ';
+                                          yyextra->defArgsStr+=yytext;
                                           yyextra->yyLineNr++;
-                                          outputChar(yyscanner,'\n');
                                         }
 <ArgCopyCComment>.                      {
                                           yyextra->defArgsStr+=yytext;
