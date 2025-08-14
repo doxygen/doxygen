@@ -482,7 +482,16 @@ static QCString substituteHtmlKeywords(const QCString &file,
       for (const auto &s : mathJaxExtensions)
       {
         if (!first) mathJaxJs+= ",";
-        mathJaxJs+= "\n        '[+]': ['"+s+"']";
+        if (s.at(0) =='-')
+        {
+          mathJaxJs+= "\n        '[-]': ['";
+          mathJaxJs+=s.data()+1;
+          mathJaxJs+="']";
+        }
+        else
+        {
+          mathJaxJs+= "\n        '[+]': ['"+s+"']";
+        }
         first = false;
       }
       mathJaxJs += "\n    }\n";
@@ -510,9 +519,12 @@ static QCString substituteHtmlKeywords(const QCString &file,
                       "    load: [";
           for (const auto &s : mathJaxExtensions)
           {
-            if (!first) mathJaxJs+= ",";
-            mathJaxJs+= "'[tex]/"+s+"'";
-            first = false;
+            if (s.at(0) !='-')
+            {
+              if (!first) mathJaxJs+= ",";
+              mathJaxJs+= "'[tex]/"+s+"'"; // packages preceded by a minus sign should not be loaded
+              first = false;
+            }
           }
           mathJaxJs+= "]\n"
                       "  },\n";
