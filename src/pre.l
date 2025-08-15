@@ -920,11 +920,39 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           BEGIN(ArgCopyCComment);
                                         }
 <FindDefineArgs>{CPPC}[/!].*\n/{B}*{CPPC}[/!] { // replace multi line C++ style comment by C style comment
-                                          yyextra->defArgsStr+=QCString("/**")+&yytext[3];
+                                          if (Config_getBool(MULTILINE_CPP_IS_BRIEF) && !Config_getBool(QT_AUTOBRIEF))
+                                          {
+                                            if (yytext[3]=='<') // preserve < before @brief
+                                            {
+                                              yyextra->defArgsStr+=QCString("/**< @brief ")+&yytext[4];
+                                            }
+                                            else
+                                            {
+                                              yyextra->defArgsStr+=QCString("/** @brief ")+&yytext[3];
+                                            }
+                                          }
+                                          else
+                                          {
+                                            yyextra->defArgsStr+=QCString("/**")+&yytext[3];
+                                          }
                                           BEGIN(ArgCopyCppComment);
                                         }
 <FindDefineArgs>{CPPC}[/!].*\n          { // replace C++ single line style comment by C style comment
-                                          yyextra->defArgsStr+=QCString("/**")+&yytext[3]+" */";
+                                          if (Config_getBool(QT_AUTOBRIEF))
+                                          {
+                                            yyextra->defArgsStr+=QCString("/**")+&yytext[3]+" */";
+                                          }
+                                          else // add brief command explicitly when translating C++ to C comment style
+                                          {
+                                            if (yytext[3]=='<') // preserve < before @brief
+                                            {
+                                              yyextra->defArgsStr+=QCString("/**< @brief ")+&yytext[4]+" */";
+                                            }
+                                            else
+                                            {
+                                              yyextra->defArgsStr+=QCString("/** @brief ")+&yytext[3]+" */";
+                                            }
+                                          }
                                         }
 <FindDefineArgs>{CPPC}.*\n              { // replace C++ single line style comment by C style comment
                                           yyextra->defArgsStr+=QCString("/*")+&yytext[2]+" */";
