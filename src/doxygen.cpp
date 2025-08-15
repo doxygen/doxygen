@@ -11020,6 +11020,13 @@ static void readDir(FileInfo *fi,
   for (const auto &dirEntry : dir.iterator())
   {
     FileInfo cfi(dirEntry.path());
+    auto checkPatterns = [&]() -> bool
+    {
+      return (patList==nullptr     ||  patternMatch(cfi,*patList)) &&
+             (exclPatList==nullptr || !patternMatch(cfi,*exclPatList)) &&
+             (killSet==nullptr     ||  killSet->find(cfi.absFilePath())==killSet->end());
+    };
+
     if (exclSet==nullptr || exclSet->find(cfi.absFilePath())==exclSet->end())
     { // file should not be excluded
       //printf("killSet->find(%s)\n",qPrint(cfi->absFilePath()));
@@ -11028,16 +11035,12 @@ static void readDir(FileInfo *fi,
       }
       else if (!cfi.exists() || !cfi.isReadable())
       {
-        if (errorIfNotExist)
+        if (errorIfNotExist && checkPatterns())
         {
           warn_uncond("source '{}' is not a readable file or directory... skipping.\n",cfi.absFilePath());
         }
       }
-      else if (cfi.isFile() &&
-          (patList==nullptr || patternMatch(cfi,*patList)) &&
-          (exclPatList==nullptr || !patternMatch(cfi,*exclPatList)) &&
-          (killSet==nullptr || killSet->find(cfi.absFilePath())==killSet->end())
-          )
+      else if (cfi.isFile() && checkPatterns())
       {
         std::string name=cfi.fileName();
         std::string path=cfi.dirPath()+"/";
