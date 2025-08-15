@@ -2031,9 +2031,9 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // clip number of threads
   int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
-  if (dotNumThreads>32)
+  if (dotNumThreads>512)
   {
-    dotNumThreads=32;
+    dotNumThreads=512;
   }
   else if (dotNumThreads<=0)
   {
