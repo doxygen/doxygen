@@ -881,7 +881,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='int' id='NUM_PROC_THREADS' defval='1' minval='0' maxval='32'>
+    <option type='int' id='NUM_PROC_THREADS' defval='1' minval='0' maxval='512'>
       <docs>
 <![CDATA[
  The \c NUM_PROC_THREADS specifies the number of threads Doxygen is allowed to use during
@@ -3828,7 +3828,7 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
-    <option type='int' id='DOT_NUM_THREADS' defval='0' minval='0' maxval='32' depends='HAVE_DOT'>
+    <option type='int' id='DOT_NUM_THREADS' defval='0' minval='0' maxval='512' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
  The \c DOT_NUM_THREADS specifies the number of \c dot invocations Doxygen is
