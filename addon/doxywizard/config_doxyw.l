@@ -236,6 +236,10 @@ static void processList()
       {
         elemStr+='"';
       }
+      else if (insideQuote && i<l-2 && s.at(i+1)=='\\' && s.at(i+2)=='"') // escaped "\" at the end of a quoted section
+      {
+        elemStr+="\\";
+      }
       else // keep other escaped characters in escaped form
       {
         elemStr+=c;
@@ -803,6 +807,7 @@ void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s,bo
                          c==QChar::fromLatin1(',')  ||
                          c==QChar::fromLatin1('\n') ||
                          c==QChar::fromLatin1('\t') ||
+                         c==QChar::fromLatin1('\\') ||
                          c==QChar::fromLatin1('"'));
       }
       p=s.data();
@@ -823,6 +828,7 @@ void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s,bo
         if (*p   ==QChar::fromLatin1(' ') &&
            *(p+1)==QChar::fromLatin1('\0')) break; // skip inserted space at the end
         if (*p   ==QChar::fromLatin1('"')) t << "\\"; // escape quotes
+        if (*p   ==QChar::fromLatin1('\\') && (p+1)->isNull()) t << "\\"; // escape last "\", for e.g c:\temp\ where "\" is part of the path
         if (convert)
         {
           if (*p   ==QChar::fromLatin1('<')) t << "&lt;";

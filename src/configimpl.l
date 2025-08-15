@@ -861,6 +861,10 @@ static void processList()
       {
         elemStr+='"';
       }
+      else if (insideQuote && i<l-2 && s.at(i+1)=='\\' && s.at(i+2)=='"') // escaped "\" at the end of a quoted section
+      {
+        elemStr+="\\";
+      }
       else // keep other escaped characters in escaped form
       {
         elemStr+=c;
