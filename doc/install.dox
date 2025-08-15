@@ -181,7 +181,8 @@ or <a href="https://www.mingw-w64.org/">MinGW</a>.
 \addindex flex
 \addindex bison
 The next step is to install modern versions of \c bison and \c flex
-(see https://sourceforge.net/projects/winflexbison/. After installation and adding them to
+(see https://sourceforge.net/projects/winflexbison/files and select win_flex_bison3-latest.zip.
+After installation and adding them to
 your `path` rename `win_flex.exe` to `flex.exe` and `win_bison.exe` to `bison.exe`)
 \addindex python
 Furthermore you have to install \c python (version 2.7 or higher, see https://www.python.org).
