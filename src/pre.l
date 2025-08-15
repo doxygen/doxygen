@@ -915,7 +915,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <FindDefineArgs>{CHARLIT}               {
                                           yyextra->defArgsStr+=yytext;
                                         }
-<FindDefineArgs>{CCS}[*]?                {
+<FindDefineArgs>{CCS}[*!]?              {
                                           yyextra->defArgsStr+=yytext;
                                           BEGIN(ArgCopyCComment);
                                         }
