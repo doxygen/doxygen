@@ -764,12 +764,10 @@ SLASHopt [/]*
 				     }
   				   }
 <VerbatimCode>("```"[`]*|"~~~"[~]*) { /* end of markdown code block */
-                                     if (yytext[0]=='`' && (yyextra->blockName=="`" || yyextra->blockName=="``")) // ``` inside single quote block
+                                     if (yytext[0]=='`' && (yyextra->blockName=="`" || yyextra->blockName=="``")) // ``` type block inside single or double backtick "block"
                                      {
                                        // copy the end block marker
                                        copyToOutput(yyscanner,yytext,yyleng);
-                                       yyextra->inVerbatim=false;
-                                       BEGIN(yyextra->lastCommentContext);
                                      }
                                      else
                                      {
