@@ -529,7 +529,7 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
   {
     pageTitle = theTranslator->trConceptReference(displayName());
   }
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::ConceptVisible,!generateTreeView);
+  startFile(ol,getOutputFileBase(),false,name(),pageTitle,HighlightedItem::ConceptVisible,!generateTreeView);
 
   // ---- navigation part
   if (!generateTreeView)

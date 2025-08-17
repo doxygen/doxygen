@@ -744,7 +744,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       uint32_t &count = it->second.count;
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
-      startFile(ol,diskName,md->name(),title,HighlightedItem::None,!generateTreeView,diskName, hierarchyLevel);
+      startFile(ol,diskName,false,md->name(),title,HighlightedItem::None,!generateTreeView,diskName, hierarchyLevel);
       if (!generateTreeView)
       {
         container->writeNavigationPath(ol);

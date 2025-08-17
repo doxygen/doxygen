@@ -980,7 +980,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
 
   QCString pageTitle = title();
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::NamespaceVisible,!generateTreeView);
+  startFile(ol,getOutputFileBase(),false,name(),pageTitle,HighlightedItem::NamespaceVisible,!generateTreeView);
 
   if (!generateTreeView)
   {

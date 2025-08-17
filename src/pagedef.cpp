@@ -259,11 +259,11 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //2.{
   ol.disableAllBut(OutputType::Man);
-  startFile(ol,getOutputFileBase(),manPageName,title(),HighlightedItem::Pages,!generateTreeView,
+  startFile(ol,getOutputFileBase(),false,manPageName,title(),HighlightedItem::Pages,!generateTreeView,
             QCString() /* altSidebarName */, hierarchyLevel);
   ol.enableAll();
   ol.disable(OutputType::Man);
-  startFile(ol,getOutputFileBase(),pageName,title(),HighlightedItem::Pages,!generateTreeView,
+  startFile(ol,getOutputFileBase(),false,pageName,title(),HighlightedItem::Pages,!generateTreeView,
             QCString() /* altSidebarName */, hierarchyLevel);
   ol.popGeneratorState();
   //2.}

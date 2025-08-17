@@ -9966,7 +9966,7 @@ static void generateExampleDocs()
       intf->resetCodeParserState();
     }
     QCString n=pd->getOutputFileBase();
-    startFile(*g_outputList,n,n,pd->name());
+    startFile(*g_outputList,n,false,n,pd->name());
     startTitle(*g_outputList,n);
     g_outputList->docify(pd->name());
     endTitle(*g_outputList,n,QCString());

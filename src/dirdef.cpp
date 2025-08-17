@@ -565,7 +565,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
     title=theTranslator->trDirReference(m_dispName);
   }
   AUTO_TRACE("title={}",title);
-  startFile(ol,getOutputFileBase(),name(),title,HighlightedItem::Files,!generateTreeView);
+  startFile(ol,getOutputFileBase(),false,name(),title,HighlightedItem::Files,!generateTreeView);
 
   if (!generateTreeView)
   {
@@ -957,7 +957,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
   QCString title=theTranslator->trDirRelation(
                  (m_src->displayName()+" -> "+m_dst->dir()->shortName()));
   AUTO_TRACE("title={}",title);
-  startFile(ol,getOutputFileBase(),getOutputFileBase(),
+  startFile(ol,getOutputFileBase(),false,getOutputFileBase(),
             title,HighlightedItem::None,!generateTreeView,m_src->getOutputFileBase());
 
   if (!generateTreeView)

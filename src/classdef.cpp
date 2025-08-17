@@ -2995,7 +2995,7 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
   {
     memListFile = getMemberListFileName();
   }
-  startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView,QCString(),0,memListFile);
+  startFile(ol,getOutputFileBase(),false,name(),pageTitle,hli,!generateTreeView,QCString(),0,memListFile);
   if (!generateTreeView)
   {
     if (getOuterScope()!=Doxygen::globalScope)
@@ -3143,7 +3143,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
   }
 
   QCString memListFile = getMemberListFileName();
-  startFile(ol,memListFile,memListFile,theTranslator->trMemberList(),hli,!generateTreeView,getOutputFileBase());
+  startFile(ol,memListFile,false,memListFile,theTranslator->trMemberList(),hli,!generateTreeView,getOutputFileBase());
   if (!generateTreeView)
   {
     if (getOuterScope()!=Doxygen::globalScope)

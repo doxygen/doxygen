@@ -325,7 +325,8 @@ static QCString substituteHtmlKeywords(const QCString &file,
                                        const QCString &str,
                                        const QCString &title,
                                        const QCString &relPath,
-                                       const QCString &navPath=QCString())
+                                       const QCString &navPath=QCString(),
+                                       bool isSource = false)
 {
   // Build CSS/JavaScript tags depending on treeview, search engine settings
   QCString cssFile;
@@ -452,7 +453,7 @@ static QCString substituteHtmlKeywords(const QCString &file,
     searchBox = getSearchBox(serverBasedSearch, relPath, FALSE);
   }
 
-  if (mathJax)
+  if (mathJax && !isSource)
   {
     auto mathJaxVersion = Config_getEnum(MATHJAX_VERSION);
     QCString path = Config_getString(MATHJAX_RELPATH);
@@ -1537,7 +1538,7 @@ void HtmlGenerator::writeFooterFile(TextStream &t)
 
 static std::mutex g_indexLock;
 
-void HtmlGenerator::startFile(const QCString &name,const QCString &,
+void HtmlGenerator::startFile(const QCString &name,bool isSource,const QCString &,
                               const QCString &title,int /*id*/, int /*hierarchyLevel*/)
 {
   //printf("HtmlGenerator::startFile(%s)\n",qPrint(name));
@@ -1555,7 +1556,7 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   }
 
   m_lastFile = fileName;
-  m_t << substituteHtmlKeywords(g_header_file,g_header,convertToHtml(filterTitle(title)),m_relPath);
+  m_t << substituteHtmlKeywords(g_header_file,g_header,convertToHtml(filterTitle(title)),m_relPath,QCString(),isSource);
 
   m_t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
