@@ -4511,9 +4511,6 @@ void MemberDefImpl::setInitializer(const QCString &initializer)
 void MemberDefImpl::addListReference(Definition *)
 {
   bool optimizeOutputForC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
-  //bool hideScopeNames     = Config_getBool(HIDE_SCOPE_NAMES);
-  //bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-  //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   SrcLangExt lang = getLanguage();
   if (!isLinkableInProject()) return;
   QCString memLabel;
@@ -4535,17 +4532,7 @@ void MemberDefImpl::addListReference(Definition *)
                     (toClassDef(pd))->displayName() : pd->name();
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
   QCString memArgs;
-  if (!isRelated()
-      /* && commented out as a result of bug 597016
-      (
-       (!hideScopeNames &&                    // there is a scope
-        pd && pd!=Doxygen::globalScope)       // and we can show it
-       ||
-       (pd=getClassDef())                     // it's a class so we
-                                              // show the scope anyway
-      )
-      */
-     )
+  if (!isRelated())
   {
     if (isObjCMethod())
     {
