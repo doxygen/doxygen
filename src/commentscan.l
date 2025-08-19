@@ -67,6 +67,15 @@ typedef yyguts_t *yyscan_t;
 #include "debug.h"
 #include "stringutil.h"
 
+enum class CmdType
+{
+  PlainType,   //< fileinfo is just in running text
+  SectionType, //< fileinfo is in section title
+  HtmlAType    //< fileinfo is in a HTML A tag
+};
+
+static void textCmdType(yyscan_t yyscanner, CmdType type, const QCString &txt);
+
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -167,7 +176,8 @@ static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector 
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleFileInfo(yyscan_t yyscanner,const QCString &cmdName, const StringVector &optList);
 static bool handleFileInfoSection(yyscan_t yyscanner,const QCString &cmdName, const StringVector &optList);
-static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, bool isSection);
+static bool handleFileInfoHtmlA(yyscan_t yyscanner,const QCString &cmdName, const StringVector &optList);
+static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, CmdType type);
 static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleModule(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleIFile(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -852,6 +862,32 @@ STopt  [^\n@\\]*
                                             addOutput(yyscanner,id.data());
                                             addOutput(yyscanner," ");
                                             yyextra->htmlAnchor = true;
+                                          }
+                                        }
+<HtmlA>{B}*{CMD}"fileinfo{"[^}]*"}"     |
+<HtmlA>{B}*{CMD}("fileinfo"|"lineinfo") {
+                                          QCString fullMatch = QCString(yytext);
+                                          int idx = fullMatch.find('{');
+                                          int idxEnd = fullMatch.find("}",idx+1);
+                                          QCString cmdName;
+                                          StringVector optList;
+                                          if (idx == -1) // no options
+                                          {
+                                            cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
+                                          }
+                                          else // options present
+                                          {
+                                            cmdName = fullMatch.left(idx).stripWhiteSpace().mid(1); // to remove {CMD}
+                                            QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+                                            optList = split(optStr.str(),",");
+                                          }
+                                          if (cmdName == "fileinfo")
+                                          {
+                                            handleFileInfoHtmlA(yyscanner,cmdName,optList);
+                                          }
+                                          else
+                                          {
+                                            yyextra->htmlAnchorStr += QCString().setNum(yyextra->lineNr);
                                           }
                                         }
 <HtmlA>("\""[^\n\"]*"\""|"'"[^\n']*"'") {
@@ -3420,59 +3456,51 @@ static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVect
 
 static bool handleFileInfo(yyscan_t yyscanner,const QCString &cmdName, const StringVector &optList)
 {
-  return handleFileInfoResult(yyscanner,cmdName, optList, false);
+  return handleFileInfoResult(yyscanner,cmdName, optList, CmdType::PlainType);
 }
 static bool handleFileInfoSection(yyscan_t yyscanner,const QCString &cmdName, const StringVector &optList)
 {
-  return handleFileInfoResult(yyscanner,cmdName, optList, true);
+  return handleFileInfoResult(yyscanner,cmdName, optList, CmdType::SectionType);
 }
-static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, bool isSection)
+static bool handleFileInfoHtmlA(yyscan_t yyscanner,const QCString &cmdName, const StringVector &optList)
 {
-  using OutputWriter = std::function<void(yyscan_t,FileInfo &,bool)>;
+  return handleFileInfoResult(yyscanner,cmdName, optList, CmdType::HtmlAType);
+}
+
+static void textCmdType(yyscan_t yyscanner, CmdType type, const QCString &txt)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  switch (type)
+  {
+    case CmdType::PlainType:
+      addOutput(yyscanner,txt);
+      break;
+    case CmdType::SectionType:
+      yyextra->sectionTitle+=txt;
+      addOutput(yyscanner,txt);
+      break;
+    case CmdType::HtmlAType:
+      yyextra->htmlAnchorStr += txt;
+      break;
+  }
+}
+
+static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const StringVector &optList, CmdType type)
+{
+  using OutputWriter = std::function<void(yyscan_t,FileInfo &,CmdType)>;
   static std::unordered_map<std::string,OutputWriter> options =
   { // name,        writer
-    { "name",      [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.baseName());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.baseName();
-                                                             }
-                                                           } },
-    { "extension", [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.extension(true));
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.extension(true);
-                                                             }
-                                                           } },
-    { "filename",  [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.fileName());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.fileName();
-                                                             }
-                                                           } },
-    { "directory", [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.dirPath());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.dirPath();
-                                                             }
-                                                           } },
-    { "full",      [](yyscan_t s,FileInfo &fi,bool isSect) { addOutput(s,fi.absFilePath());
-                                                             if (isSect)
-                                                             {
-                                                               struct yyguts_t *yyg = (struct yyguts_t*)s;
-                                                               yyextra->sectionTitle+=fi.absFilePath();
-                                                             }
-                                                           } },
+    { "name",      [](yyscan_t s,FileInfo &fi,CmdType typ) { textCmdType(s,typ,fi.baseName()); } },
+    { "extension", [](yyscan_t s,FileInfo &fi,CmdType typ) { textCmdType(s,typ,fi.extension(true)); } },
+    { "filename",  [](yyscan_t s,FileInfo &fi,CmdType typ) { textCmdType(s,typ,fi.fileName()); } },
+    { "directory", [](yyscan_t s,FileInfo &fi,CmdType typ) { textCmdType(s,typ,fi.dirPath()); } },
+    { "full",      [](yyscan_t s,FileInfo &fi,CmdType typ) { textCmdType(s,typ,fi.absFilePath()); } },
   };
 
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
-    if (isSection) yyextra->sectionTitle+=yyextra->spaceBeforeCmd;
-    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    textCmdType(yyscanner,type,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.clear();
   }
   bool first = true;
@@ -3490,7 +3518,7 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
       }
       else
       {
-        it->second(yyscanner,fi,isSection);
+        it->second(yyscanner,fi,type);
       }
       first = false;
     }
@@ -3503,13 +3531,11 @@ static bool handleFileInfoResult(yyscan_t yyscanner,const QCString &, const Stri
   {
     if (Config_getBool(FULL_PATH_NAMES))
     {
-      if (isSection) yyextra->sectionTitle+=stripFromPath(yyextra->fileName);
-      addOutput(yyscanner,stripFromPath(yyextra->fileName));
+      textCmdType(yyscanner,type,stripFromPath(yyextra->fileName));
     }
     else
     {
-      if (isSection) yyextra->sectionTitle+=yyextra->fileName;
-      addOutput(yyscanner,yyextra->fileName);
+      textCmdType(yyscanner,type,yyextra->fileName);
     }
   }
   return false;
