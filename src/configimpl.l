@@ -2006,7 +2006,8 @@ void Config::checkAndCorrect(bool quiet, const bool check)
       if (eqPos!=std::string::npos) // tag command contains a destination
       {
         QCString url = QCString(s.substr(eqPos+1)).stripWhiteSpace().lower();
-        validUrl = url.startsWith("http:") || url.startsWith("https:");
+        validUrl = url.startsWith("http:") || url.startsWith("https:") ||
+                   url.startsWith("ms-its:");
       }
       if (validUrl)
       {
