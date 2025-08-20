@@ -2280,7 +2280,7 @@ GetDefResult getDefsNew(const GetDefInput &input)
   const Definition *scope = Doxygen::globalScope;
   SymbolResolver resolver;
   if (input.currentFile) resolver.setFileScope(input.currentFile);
-  if (!input.scopeName.isEmpty())
+  if (!input.scopeName.isEmpty() && !input.forceEmptyScope)
   {
     scope = resolver.resolveSymbol(scope,input.scopeName);
   }
@@ -3005,7 +3005,7 @@ bool resolveRef(/* in */  const QCString &scName,
   bool explicitScope = fullName.startsWith("::") &&   // ::scope or #scope
                        (scopePos>2 ||                 // ::N::A
                         tsName.startsWith("::") ||    // ::foo in local scope
-                        scName==nullptr                     // #foo  in global scope
+                        scName==nullptr               // #foo  in global scope
                        );
   bool allowTypeOnly=false;
 
