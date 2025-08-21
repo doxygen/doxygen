@@ -3038,7 +3038,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   }
   yyextra->isPrefixedWithThis = FALSE; // discard the "this" prefix for the next calls
 
-  if (sym && sym->isLinkable()) // is it a linkable class
+  if (sym && sym->isLinkable()) // is it a linkable symbol
   {
     DBG_CTX((stderr,"is linkable class %s\n",qPrint(scName)));
     if (yyextra->exampleBlock)

@@ -1674,7 +1674,7 @@ const Definition *SymbolResolver::resolveSymbol(const Definition *scope,
   AUTO_TRACE("scope={} name={} args={} checkCV={} insideCode={}",
              scope?scope->name():QCString(), name, args, checkCV, insideCode);
   p->reset();
-  if (scope==nullptr) scope=Doxygen::globalScope;
+  if (scope==nullptr || name.startsWith("::")) scope=Doxygen::globalScope;
   VisitedKeys visitedKeys;
   const Definition *result = p->getResolvedSymbolRec(visitedKeys,scope,name,args,checkCV,insideCode,onlyLinkable,&p->typeDef,&p->templateSpec,&p->resolvedType);
   AUTO_TRACE_EXIT("result={}{}", qPrint(result?result->qualifiedName():QCString()),
