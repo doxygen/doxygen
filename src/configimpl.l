@@ -2030,17 +2030,12 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  // clip number of threads
   int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
-  if (dotNumThreads>512)
-  {
-    dotNumThreads=512;
-  }
-  else if (dotNumThreads<=0)
+  if (dotNumThreads<=0)
   {
     dotNumThreads=std::max(2u,std::thread::hardware_concurrency()+1);
+    Config_updateInt(DOT_NUM_THREADS,dotNumThreads);
   }
-  Config_updateInt(DOT_NUM_THREADS,dotNumThreads);
 
   //------------------------
   // check plantuml path
