@@ -140,6 +140,5 @@ int AnchorGenerator::reserve(const std::string &anchor)
 bool AnchorGenerator::looksGenerated(const std::string &anchor)
 {
   return Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::DOXYGEN &&
-         QCString(anchor).startsWith("autotoc_md");
+         QCString(anchor).startsWith(prefix);
 }
-
