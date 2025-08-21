@@ -364,32 +364,32 @@ class ConfigImpl
      *  @{
      */
 
-    /*! Returns the value of the string option with name \a fileName.
-     *  The arguments \a num and \a name are for debugging purposes only.
+    /*! Returns the value of the string option with name \a name.
+     *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getString() for this.
      */
     QCString &getString(const char *fileName,int num,const char *name) const;
 
-    /*! Returns the value of the list option with name \a fileName.
-     *  The arguments \a num and \a name are for debugging purposes only.
+    /*! Returns the value of the list option with name \a name.
+     *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getList() for this.
      */
     StringVector &getList(const char *fileName,int num,const char *name) const;
 
-    /*! Returns the value of the enum option with name \a fileName.
-     *  The arguments \a num and \a name are for debugging purposes only.
+    /*! Returns the value of the enum option with name \a name.
+     *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getEnum() for this.
      */
     QCString &getEnum(const char *fileName,int num,const char *name) const;
 
-    /*! Returns the value of the integer option with name \a fileName.
-     *  The arguments \a num and \a name are for debugging purposes only.
+    /*! Returns the value of the integer option with name \a name.
+     *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getInt() for this.
      */
     int      &getInt(const char *fileName,int num,const char *name) const;
 
-    /*! Returns the value of the boolean option with name \a fileName.
-     *  The arguments \a num and \a name are for debugging purposes only.
+    /*! Returns the value of the boolean option with name \a name.
+     *  The arguments \a num and \a fileName are for debugging purposes only.
      *  There is a convenience function Config_getBool() for this.
      */
     bool     &getBool(const char *fileName,int num,const char *name) const;
