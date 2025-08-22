@@ -2807,6 +2807,16 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
                                         }
+<CopyDoc>"<"[/]?{TABLEDEL}">"           {
+                                          if (yyextra->braceCount==0)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
+                                            addOutput(yyscanner,yyextra->copyDocArg);
+                                            addOutput(yyscanner,yytext);
+                                            BEGIN(Comment);
+                                          }
+                                        }
 <CopyDoc>{DOCNL}                        {
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           if (yyextra->braceCount==0)
@@ -2821,7 +2831,7 @@ STopt  [^\n@\\]*
 <CopyDoc>{LC}                           { // line continuation
                                           yyextra->lineNr++;
                                         }
-<CopyDoc>[^@\\\n()]+                    { // non-special characters
+<CopyDoc>[^@\\\n()<]+                   { // non-special characters
                                           yyextra->copyDocArg+=yytext;
                                           addOutput(yyscanner,yytext);
                                         }
