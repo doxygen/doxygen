@@ -2275,6 +2275,8 @@ GetDefResult getDefsNew(const GetDefInput &input)
 {
   GetDefResult result;
   if (input.memberName.isEmpty()) return result;
+  AUTO_TRACE("getDefsNew(scopeName={},memberName={},forceEmptyScope={})",
+      input.scopeName,input.memberName,input.forceEmptyScope);
 
   //printf("@@ --- getDefsNew(%s,%s)-----------\n",qPrint(scName),qPrint(mbName));
   const Definition *scope = Doxygen::globalScope;
@@ -3101,7 +3103,7 @@ bool resolveRef(/* in */  const QCString &scName,
   }
 
   QCString scopeStr=scName;
-  if (nameStr.length()>scopeStr.length() && leftScopeMatch(scopeStr,nameStr))
+  if (!explicitScope && nameStr.length()>scopeStr.length() && leftScopeMatch(scopeStr,nameStr))
   {
     nameStr=nameStr.mid(scopeStr.length()+2);
   }
