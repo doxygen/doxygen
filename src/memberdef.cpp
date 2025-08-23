@@ -2614,11 +2614,13 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
      )
   {
     auto parser { createDocParser() };
+    Doxygen::searchIndex.setInherited(inheritedFrom!=nullptr);
     auto ast    { validatingParseDoc(*parser.get(),
                                      briefFile(),briefLine(),
                                      getOuterScope()?getOuterScope():d,
                                      this,briefDescription(),TRUE,FALSE,
                                      QCString(),TRUE,FALSE) };
+    Doxygen::searchIndex.setInherited(false);
     if (!ast->isEmpty())
     {
       ol.startMemberDescription(anchor(),inheritId);
