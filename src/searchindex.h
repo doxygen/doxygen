@@ -188,8 +188,11 @@ class SearchIndexIntf
       }
     }
     Kind kind() const { return m_kind; }
+    void setInherited(bool inh) {m_inherited = inh;}
+    bool inherited() {return m_inherited;}
   private:
     Kind m_kind;
+    bool m_inherited = false;
     SearchIndexVariant m_variant;
 };
 
