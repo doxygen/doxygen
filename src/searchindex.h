@@ -61,6 +61,13 @@ struct SIData_Word
 
 //-----------------------------
 
+/** Namespace for per-thread control */
+namespace SearchIndexThreadLocal
+{
+  bool isActive();
+  void setActive(bool b);
+}
+
 /** Writes search index for doxygen provided server based search engine that uses PHP. */
 class SearchIndex
 {
@@ -143,7 +150,7 @@ class SearchIndexIntf
     using SearchIndexVariant = std::variant<std::monostate,SearchIndex,SearchIndexExternal>;
     enum Kind { Disabled, Internal, External };
     SearchIndexIntf() : m_kind(Disabled) {}
-    bool enabled() const { return m_kind!=Disabled; }
+    bool enabled() const { return m_kind!=Disabled && SearchIndexThreadLocal::isActive(); }
 
     void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
     {
@@ -188,11 +195,8 @@ class SearchIndexIntf
       }
     }
     Kind kind() const { return m_kind; }
-    void setInherited(bool inh) {m_inherited = inh;}
-    bool inherited() {return m_inherited;}
   private:
     Kind m_kind;
-    bool m_inherited = false;
     SearchIndexVariant m_variant;
 };
 

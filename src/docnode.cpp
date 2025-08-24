@@ -180,7 +180,7 @@ DocWord::DocWord(DocParser *parser,DocNodeVariant *parent,const QCString &word) 
       DocNode(parser,parent), m_word(word)
 {
   //printf("new word %s url=%s\n",qPrint(word),qPrint(parser->context.searchUrl));
-  if (Doxygen::searchIndex.enabled() && !Doxygen::searchIndex.inherited() && !parser->context.searchUrl.isEmpty())
+  if (Doxygen::searchIndex.enabled() && !parser->context.searchUrl.isEmpty())
   {
     Doxygen::searchIndex.addWord(word,false);
   }
